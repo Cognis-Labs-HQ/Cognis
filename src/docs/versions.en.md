@@ -39,14 +39,14 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.2` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.2` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.5` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.2` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.2` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.2` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.3` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.3` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.3` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.2` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.3` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.2` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.1` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.5` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.6` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.9` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
@@ -56,7 +56,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
+| Authentication (auth) | `src/gateways/auth/`         | `1.5.1`  |
 | Share                 | `src/gateways/share/`        | `1.3.2`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
@@ -77,7 +77,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.1.10` |
+| API Server | `src/api/` | `0.1.11` |
 
 ## Modules
 

@@ -17,6 +17,7 @@ import { randomUUID } from "node:crypto";
 export type AccountRole = "user" | "teacher" | "moderator" | "admin" | "owner";
 export type AccountVisibility = "hidden" | "private" | "friends" | "community";
 export type PostVisibility = "only_me" | "private" | "friends" | "community";
+export type AccountLifecycleState = "active" | "deactivated" | "archived";
 
 export interface AccountProfile {
     accountId: string;
@@ -29,6 +30,7 @@ export interface AccountProfile {
     avatarKey: string | null;
     bannerKey: string | null;
     visibility: AccountVisibility;
+    lifecycleState: AccountLifecycleState;
     createdAt: string;
     updatedAt: string;
 }
@@ -79,6 +81,7 @@ export interface ProfileStore extends ProfileCreateStore {
                 | "avatarKey"
                 | "bannerKey"
                 | "displayName"
+                | "lifecycleState"
             >
         >,
     ): Promise<AccountProfile | null>;
@@ -143,6 +146,7 @@ export class VolatileProfileStore implements ProfileStore {
             avatarKey: null,
             bannerKey: null,
             visibility: "hidden",
+            lifecycleState: "active",
             createdAt: now,
             updatedAt: now,
         };
@@ -180,6 +184,7 @@ export class VolatileProfileStore implements ProfileStore {
                 | "avatarKey"
                 | "bannerKey"
                 | "displayName"
+                | "lifecycleState"
             >
         >,
     ): Promise<AccountProfile | null> {
@@ -243,8 +248,13 @@ export class VolatileProfileStore implements ProfileStore {
             ) {
                 continue;
             }
-            if (!options.includeHidden && profile.visibility === "hidden")
+            if (
+                !options.includeHidden &&
+                (profile.visibility === "hidden" ||
+                    profile.lifecycleState !== "active")
+            ) {
                 continue;
+            }
             if (
                 normalizedQuery &&
                 !handle.startsWith(normalizedQuery) &&

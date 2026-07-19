@@ -50,6 +50,13 @@ export function createUserRoutes(
         visibility: "friends",
     ) => Promise<void>,
     routeContext?: RouteContext,
+    getProfileLifecycleState?: (
+        accountId: string,
+    ) => Promise<string | null | undefined>,
+    setProfileLifecycleState?: (
+        accountId: string,
+        lifecycleState: "active" | "archived",
+    ) => Promise<void>,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -71,6 +78,10 @@ export function createUserRoutes(
             const users = await Promise.all(
                 (await accountStore.list()).map(async (user) => ({
                     ...user,
+                    lifecycleState:
+                        (await getProfileLifecycleState?.(user.username).catch(
+                            () => null,
+                        )) ?? "active",
                     role: resolveEffectiveRole(
                         user.role,
                         Boolean(user.isFounder),
@@ -158,7 +169,7 @@ export function createUserRoutes(
         }
 
         const match = url.pathname.match(
-            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|isfounder|preferences\/clear))?$/,
+            /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|dearchive|isfounder|preferences\/clear))?$/,
         );
         if (!match) return false;
         const adminClaims = ctx.requireAuth(req, res, "admin");
@@ -184,6 +195,7 @@ export function createUserRoutes(
             "password",
             "enable",
             "disable",
+            "dearchive",
             "isfounder",
             "preferences/clear",
         ]);
@@ -255,6 +267,7 @@ export function createUserRoutes(
             "role",
             "password",
             "disable",
+            "dearchive",
             "isfounder",
         ]);
         const isFounderProtectedRequest =
@@ -528,6 +541,30 @@ export function createUserRoutes(
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 revokedTokenCount: cleanupResult?.revokedTokenCount ?? 0,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { updated: true } }));
+            return true;
+        }
+
+        if (req.method === "POST" && action === "dearchive") {
+            if (!setProfileLifecycleState) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "profile_lifecycle_unavailable",
+                            message: "Profile lifecycle state unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            await setProfileLifecycleState(username, "active");
+            log?.("warn", "De-archived user profile.", {
+                ...logMeta,
+                accountId: adminClaims.sub,
+                targetAccountId: username,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));

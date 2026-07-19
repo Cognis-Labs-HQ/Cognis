@@ -289,6 +289,13 @@ function renderUsersTable() {
                       )
                       .join("");
                   const roleCellHtml = `<select class="users-role-select theme-select" data-username="${escapeHtml(user.username)}"${roleDisabled ? " disabled" : ""}>${roleOptionsHtml}</select>`;
+                  const lifecycleState = user.lifecycleState ?? "active";
+                  const statusLabel =
+                      lifecycleState === "archived"
+                          ? i18n.t("ui.app.users.archived")
+                          : user.enabled
+                            ? i18n.t("ui.app.users.enabled")
+                            : i18n.t("ui.app.users.disabled");
                   const deleteUserLabel = i18n.t("ui.app.users.delete_user");
                   const actionsHtml =
                       isOwner || protectPrivilegedFromViewer
@@ -302,7 +309,7 @@ function renderUsersTable() {
               <tr class="users-row" data-username="${escapeHtml(user.username)}">
                 <td>${escapeHtml(user.username)}</td>
                 <td>${roleCellHtml}</td>
-                <td>${user.enabled ? escapeHtml(i18n.t("ui.app.users.enabled")) : escapeHtml(i18n.t("ui.app.users.disabled"))}</td>
+                <td>${escapeHtml(statusLabel)}</td>
                 <td class="users-actions-cell">${actionsHtml}</td>
               </tr>
             `;
@@ -380,6 +387,23 @@ async function runUserMenuAction(action, username) {
 
     if (action === "storage-quotas") {
         await promptStorageQuotas(username);
+        return;
+    }
+
+    if (action === "dearchive") {
+        const response = await apiFetch(
+            `/api/v1/users/${encodeURIComponent(username)}/dearchive`,
+            { method: "POST" },
+        );
+        showToast(
+            response.ok
+                ? i18n.t("ui.app.users.dearchive_done")
+                : i18n.t("ui.reuse.save_failed"),
+            { variant: response.ok ? "success" : "error" },
+        );
+        if (!response.ok) return;
+        await refreshData();
+        composer.refresh(elements);
         return;
     }
 
@@ -508,6 +532,14 @@ function bindUsersInteractions() {
                     id: "storage-quotas",
                     label: i18n.t("ui.app.users.storage_quotas"),
                 },
+                ...(user?.lifecycleState === "archived"
+                    ? [
+                          {
+                              id: "dearchive",
+                              label: i18n.t("ui.app.users.dearchive"),
+                          },
+                      ]
+                    : []),
                 ...(user?.hasTfaConfigured === true
                     ? [
                           {

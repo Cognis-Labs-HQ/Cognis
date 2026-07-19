@@ -397,6 +397,10 @@ export function renderHero({
   `;
 
     const achievementRow = `<div class="profile-achievement-row" aria-label="${i18n.t("ui.app.profile.achievements")}"></div>`;
+    const archivedBanner =
+        profile?.lifecycleState === "archived"
+            ? `<div class="profile-archived-banner">${escapeHtml(i18n.t("ui.app.profile.archived_banner"))}</div>`
+            : "";
 
     const heroClass =
         bannerHeight === "full"
@@ -405,6 +409,7 @@ export function renderHero({
 
     if (bannerHeight === "full") {
         return `
+      ${archivedBanner}
       <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
         <div class="profile-hero-banner-wrap">
           ${bannerWrap}
@@ -427,6 +432,7 @@ export function renderHero({
     }
 
     return `
+    ${archivedBanner}
     <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
       <div class="profile-hero-banner-wrap">
         ${bannerWrap}

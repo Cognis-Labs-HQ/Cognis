@@ -344,10 +344,16 @@ const preferenceStore =
     capabilities.get<UserPreferenceStore>("preferences:store");
 
 const profileStore = capabilities.get<{
-    getProfile: (accountId: string) => Promise<{ visibility?: string } | null>;
+    getProfile: (accountId: string) => Promise<{
+        visibility?: string;
+        lifecycleState?: string;
+    } | null>;
     updateProfile: (
         accountId: string,
-        updates: { visibility?: "friends" },
+        updates: {
+            visibility?: "friends";
+            lifecycleState?: "active" | "archived";
+        },
     ) => Promise<unknown>;
     searchProfiles: (
         query: string,
@@ -385,6 +391,15 @@ const server = buildServer({
     setProfileVisibility: profileStore
         ? async (accountId: string, visibility: "friends") => {
               await profileStore.updateProfile(accountId, { visibility });
+          }
+        : undefined,
+    getProfileLifecycleState: profileStore
+        ? async (accountId: string) =>
+              (await profileStore.getProfile(accountId))?.lifecycleState
+        : undefined,
+    setProfileLifecycleState: profileStore
+        ? async (accountId: string, lifecycleState: "active" | "archived") => {
+              await profileStore.updateProfile(accountId, { lifecycleState });
           }
         : undefined,
     onModuleStateChanged: capabilities.get<

@@ -5,6 +5,7 @@ export {
 
 export type SocialProfileRole = "user" | "teacher" | "admin" | "owner";
 export type SocialProfileVisibility = "hidden" | "community" | "public";
+export type SocialProfileLifecycleState = "active" | "deactivated" | "archived";
 
 export interface SocialProfileRecord {
     accountId: string;
@@ -17,6 +18,7 @@ export interface SocialProfileRecord {
     avatarKey: string | null;
     bannerKey: string | null;
     visibility: SocialProfileVisibility;
+    lifecycleState: SocialProfileLifecycleState;
     createdAt: string;
     updatedAt: string;
 }
@@ -33,6 +35,12 @@ export function rowToProfile(row: any): SocialProfileRecord {
         avatarKey: row.avatar_key ?? null,
         bannerKey: row.banner_key ?? null,
         visibility: row.visibility as SocialProfileVisibility,
+        lifecycleState:
+            row.account_lifecycle_state === "archived"
+                ? "archived"
+                : row.account_lifecycle_state === "deactivated"
+                  ? "deactivated"
+                  : "active",
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };

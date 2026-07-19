@@ -651,4 +651,8 @@
   <string name="ui.app.settings.danger_invalid_password">Passwortbestätigung fehlgeschlagen.</string>
   <string name="ui.app.settings.danger_failed">Kontoaktion fehlgeschlagen.</string>
   <string name="ui.app.settings.danger_completed">Kontoaktion abgeschlossen.</string>
+  <string name="ui.app.users.archived">Archiviert</string>
+  <string name="ui.app.users.dearchive">Benutzer dearchivieren</string>
+  <string name="ui.app.users.dearchive_done">Benutzer wurde dearchiviert.</string>
+  <string name="ui.app.login.reason.account_archived">Dein Konto ist archiviert. Kontaktiere einen Administrator, um den Zugriff wiederherzustellen.</string>
 </resources>

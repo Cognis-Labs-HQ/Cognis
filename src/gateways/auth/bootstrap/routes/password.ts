@@ -5,6 +5,7 @@ import {
     revokeAccessTokensForSubject,
 } from "../../access-tokens.js";
 import type { CoreAuthGateway } from "../../gateway.js";
+import type { CapabilityStore } from "../../../shared.js";
 import type { AuthAccountStore } from "../index.js";
 import {
     readJson,
@@ -15,6 +16,7 @@ import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
 
 interface PasswordRouteDependencies {
     authGateway: CoreAuthGateway;
+    capabilities: CapabilityStore;
     accountStore: AuthAccountStore;
     dispatchNotification?: (envelope: {
         category: string;
@@ -27,6 +29,7 @@ interface PasswordRouteDependencies {
 
 export function createPasswordRoutes({
     authGateway,
+    capabilities,
     accountStore,
     dispatchNotification,
     log,
@@ -131,19 +134,31 @@ export function createPasswordRoutes({
             }
             if (action === "delete") {
                 await accountStore.delete(claims.sub);
-            } else if (accountStore.setEnabled) {
-                await accountStore.setEnabled(claims.sub, false);
             } else {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "account_lifecycle_unavailable",
-                            message: "Account lifecycle action unavailable",
+                const profileStore = capabilities.get<{
+                    updateProfile(
+                        accountId: string,
+                        updates: {
+                            lifecycleState: "deactivated" | "archived";
                         },
-                    }),
-                );
-                return true;
+                    ): Promise<unknown>;
+                }>("social:profileStore");
+                if (!profileStore) {
+                    res.writeHead(503, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "account_lifecycle_unavailable",
+                                message: "Account lifecycle action unavailable",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                await profileStore.updateProfile(claims.sub, {
+                    lifecycleState:
+                        action === "archive" ? "archived" : "deactivated",
+                });
             }
             const revokedTokenCount = revokeAccessTokensForSubject(claims.sub);
             log?.("warn", "Applied account lifecycle action.", {

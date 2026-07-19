@@ -651,4 +651,8 @@
   <string name="ui.app.settings.danger_invalid_password">パスワード確認に失敗しました。</string>
   <string name="ui.app.settings.danger_failed">アカウント操作に失敗しました。</string>
   <string name="ui.app.settings.danger_completed">アカウント操作が完了しました。</string>
+  <string name="ui.app.users.archived">アーカイブ済み</string>
+  <string name="ui.app.users.dearchive">ユーザーのアーカイブを解除</string>
+  <string name="ui.app.users.dearchive_done">ユーザーのアーカイブを解除しました。</string>
+  <string name="ui.app.login.reason.account_archived">アカウントはアーカイブされています。アクセスを復元するには管理者に連絡してください。</string>
 </resources>

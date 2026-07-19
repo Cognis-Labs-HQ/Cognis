@@ -651,4 +651,8 @@
   <string name="ui.app.settings.danger_invalid_password">Konfirmasi kata sandi gagal.</string>
   <string name="ui.app.settings.danger_failed">Tindakan akun gagal.</string>
   <string name="ui.app.settings.danger_completed">Tindakan akun selesai.</string>
+  <string name="ui.app.users.archived">Diarsipkan</string>
+  <string name="ui.app.users.dearchive">Batalkan Arsip Pengguna</string>
+  <string name="ui.app.users.dearchive_done">Pengguna tidak lagi diarsipkan.</string>
+  <string name="ui.app.login.reason.account_archived">Akun Anda diarsipkan. Hubungi administrator untuk memulihkan akses.</string>
 </resources>

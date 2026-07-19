@@ -125,14 +125,31 @@ export async function registerAuthBootstrapHook(
 
             let role: AccessRole = resolveRole(session.role);
             const profileStore = capabilities.get<{
-                getProfile(
+                getProfile(accountId: string): Promise<{
+                    role?: string;
+                    lifecycleState?: "active" | "deactivated" | "archived";
+                } | null>;
+                updateProfile?(
                     accountId: string,
-                ): Promise<{ role?: string } | null>;
+                    updates: { lifecycleState: "active" },
+                ): Promise<unknown>;
             }>("social:profileStore");
             if (profileStore) {
                 const existingProfile = await profileStore
                     .getProfile(session.accountId)
                     .catch(() => null);
+                if (existingProfile?.lifecycleState === "archived") {
+                    return {
+                        sessionResult: { outcome: "account_archived" },
+                    };
+                }
+                if (existingProfile?.lifecycleState === "deactivated") {
+                    await profileStore
+                        .updateProfile?.(session.accountId, {
+                            lifecycleState: "active",
+                        })
+                        .catch(() => undefined);
+                }
                 if (existingProfile?.role === "owner") {
                     role = "owner";
                 }

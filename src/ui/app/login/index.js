@@ -55,6 +55,7 @@ export async function mount(root) {
         const keyByReason = {
             session_expired: "ui.app.login.reason.session_expired",
             account_disabled: "ui.app.login.reason.account_disabled",
+            account_archived: "ui.app.login.reason.account_archived",
             account_deleted: "ui.app.login.reason.account_deleted",
         };
         const reasonKey = keyByReason[loginReason];
