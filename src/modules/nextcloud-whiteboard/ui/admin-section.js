@@ -118,6 +118,10 @@ export async function openModuleConfigPopup({
             labelKey: "ui.reuse.enable",
             onChange: setEnabled,
         },
+        enableTest: {
+            url: "/api/v1/modules/nextcloud-whiteboard/admin/enable-test",
+            failedKey: "module.nextcloud_whiteboard.enable_test_failed",
+        },
         fields: [
             {
                 id: "nextcloud-whiteboard-server-url",

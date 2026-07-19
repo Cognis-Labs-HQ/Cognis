@@ -89,5 +89,6 @@
   <string name="module.nextcloud_whiteboard.share_copy_failed">Freigabelink konnte nicht kopiert werden.</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">Freigabelink konnte nicht widerrufen werden.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Dadurch werden alle Elemente auf dem aktuellen Whiteboard dauerhaft gelöscht. Fortfahren?</string>
+  <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard muss die Serverprüfung bestehen, bevor es aktiviert werden kann.</string>
 </resources>
 

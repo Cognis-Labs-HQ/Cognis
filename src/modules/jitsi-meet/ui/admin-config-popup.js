@@ -32,6 +32,10 @@ export async function openModuleConfigPopup({
             labelKey: "ui.reuse.enable",
             onChange: setEnabled,
         },
+        enableTest: {
+            url: "/api/v1/modules/jitsi-meet/admin/enable-test",
+            failedKey: "module.jitsi_meet.admin.enable_test_failed",
+        },
         fields: [
             {
                 id: "jitsi-instance-url",

@@ -9,6 +9,11 @@ import { checkHttpLiveness } from "../../../api/reuse/http-liveness.js";
 import { NextcloudWhiteboardStore } from "./store.js";
 import { registerWhiteboardShareFlowHooks } from "./share-hooks.js";
 import { registerWhiteboardImageRoutes } from "./image-routes.js";
+import { publicConfig, resolveExpiry } from "./config-values.js";
+import {
+    createWhiteboardEnableTest,
+    registerWhiteboardEnableTestRoute,
+} from "./enable-test.js";
 
 const LIVENESS_TIMEOUT_MS = 5000;
 const PRESENCE_ACTIVE_WINDOW_MS = 15_000;
@@ -118,27 +123,6 @@ async function resolveWhiteboardUserAccess({
               message:
                   "You are not listed as an allowed whiteboard participant.",
           };
-}
-
-function resolveExpiry(hoursValue) {
-    if (
-        hoursValue === null ||
-        hoursValue === undefined ||
-        String(hoursValue).trim() === ""
-    )
-        return "";
-    const parsed = Number(hoursValue);
-    if (!Number.isFinite(parsed) || parsed <= 0) return null;
-    return new Date(Date.now() + parsed * 60 * 60 * 1000).toISOString();
-}
-
-function publicConfig(config) {
-    return {
-        serverUrl: config.serverUrl,
-        imageUploadMaxBytes: config.imageUploadMaxBytes,
-        apiKeyConfigured: config.apiKeyConfigured,
-        updatedAt: config.updatedAt,
-    };
 }
 
 function registerConfiguredOrigin(registerScriptOrigins, config) {
@@ -265,6 +249,21 @@ export function registerApiRoutes(router, ctx) {
     });
 
     const store = resolveStore(dbExecutor, log);
+    const runEnableTest = createWhiteboardEnableTest({
+        store,
+        checkHttpLiveness,
+        timeoutMs: LIVENESS_TIMEOUT_MS,
+    });
+    ctx.getCapability("system:ctx")?.contributePublicCapability?.(
+        "module:nextcloud-whiteboard:enableTest",
+        runEnableTest,
+    );
+    registerWhiteboardEnableTestRoute({
+        router,
+        runEnableTest,
+        sendError,
+        sendJson,
+    });
     const ensureShareFlowHooks = () =>
         registerWhiteboardShareFlowHooks({
             ctx: systemCtx ?? ctx,

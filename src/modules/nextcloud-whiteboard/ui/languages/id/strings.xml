@@ -89,5 +89,6 @@
   <string name="module.nextcloud_whiteboard.share_copy_failed">Tidak dapat menyalin tautan berbagi.</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">Tidak dapat mencabut tautan berbagi.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Ini akan menghapus permanen semua item di papan tulis saat ini. Lanjutkan?</string>
+  <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard harus lulus pemeriksaan server sebelum dapat diaktifkan.</string>
 </resources>
 

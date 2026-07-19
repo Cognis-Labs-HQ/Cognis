@@ -157,6 +157,20 @@ function bootstrapLog(
 ) {
     writeConsoleLog(level, message, meta);
 }
+
+type ModuleEnableTest = () => Promise<{ ok?: boolean; message?: string }>;
+
+function getModuleEnableTest(
+    moduleId: string,
+    systemCtx: Ctx,
+    capabilities: CapabilityStore,
+): ModuleEnableTest | undefined {
+    const capabilityKey = `module:${moduleId}:enableTest`;
+    return (
+        systemCtx.getCapability<ModuleEnableTest>(capabilityKey) ??
+        capabilities.get<ModuleEnableTest>(capabilityKey)
+    );
+}
 bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
 const cliTokenPath =
@@ -387,6 +401,17 @@ const server = buildServer({
               await profileStore.updateProfile(accountId, { visibility });
           }
         : undefined,
+    validateModuleEnable: async (moduleId) => {
+        const test = getModuleEnableTest(moduleId, systemCtx, capabilities);
+        if (!test) return;
+        const result = await test();
+        if (result?.ok === false) {
+            throw new Error(
+                result.message ??
+                    `Module ${moduleId} did not pass its enablement test`,
+            );
+        }
+    },
     onModuleStateChanged: capabilities.get<
         (moduleId: string, enabled: boolean) => Promise<void> | void
     >("modules:onStateChanged"),

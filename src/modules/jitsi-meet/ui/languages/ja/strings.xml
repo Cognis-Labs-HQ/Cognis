@@ -102,4 +102,5 @@
   <string name="module.jitsi_meet.share.create_failed">共有リンクを作成できませんでした。</string>
   <string name="module.jitsi_meet.share.delete_failed">共有リンクを無効化できませんでした。</string>
   <string name="module.jitsi_meet.share.no_meeting">共有する前にミーティングを開始するか参加してください。</string>
+  <string name="module.jitsi_meet.admin.enable_test_failed">Jitsi Meet を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
 </resources>

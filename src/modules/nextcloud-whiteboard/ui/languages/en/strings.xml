@@ -89,5 +89,6 @@
   <string name="module.nextcloud_whiteboard.share_copy_failed">Could not copy share link.</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">Could not revoke share link.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">This permanently clears every item on the current whiteboard. Continue?</string>
+  <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard must pass its server check before it can be enabled.</string>
 </resources>
 

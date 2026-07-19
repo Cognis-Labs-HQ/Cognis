@@ -29,6 +29,7 @@ export interface ApiDependencies {
     gatewayRegistry?: GatewayRegistry;
     uiRegistry?: UIRegistry;
     log?: BootstrapLog;
+    validateModuleEnable?: (moduleId: string) => Promise<void> | void;
     moduleIntegrityChecker?: () => Promise<
         Array<{
             moduleId: string;
@@ -128,6 +129,7 @@ export function buildServer(deps: ApiDependencies) {
     const moduleRoutes = createModuleRoutes(
         moduleService,
         {
+            beforeEnable: deps.validateModuleEnable,
             onEnabled: async (moduleId) => {
                 enabledModules.add(moduleId);
                 await deps.onModuleStateChanged?.(moduleId, true);
