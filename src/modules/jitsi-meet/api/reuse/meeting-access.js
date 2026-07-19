@@ -105,8 +105,30 @@ export async function canAccessMeeting({
     meeting,
     username,
     listClassroomParticipantHandles,
+    profileStore = null,
+    requesterAccountId = "",
 }) {
     const directParticipants = await store.listParticipants(meeting.id);
+    if (profileStore && requesterAccountId) {
+        const possibleBlockingUsers = Array.from(
+            new Set([meeting.createdBy, ...directParticipants]),
+        ).filter(Boolean);
+        for (const handle of possibleBlockingUsers) {
+            const profile = await profileStore
+                .getProfileByHandle(handle)
+                .catch(() => null);
+            if (
+                profile?.accountId &&
+                profile.accountId !== requesterAccountId &&
+                (await profileStore.isBlocked(
+                    profile.accountId,
+                    requesterAccountId,
+                ))
+            ) {
+                return false;
+            }
+        }
+    }
     if (directParticipants.includes(username)) {
         return true;
     }
@@ -151,6 +173,8 @@ export async function resolveMeetingPayloadOrReject({
         meeting,
         username: requesterUsername,
         listClassroomParticipantHandles,
+        profileStore,
+        requesterAccountId: claims.sub,
     });
     if (!authorized) {
         sendError(

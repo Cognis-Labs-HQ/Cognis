@@ -32,7 +32,7 @@ interface SearchResultGroup {
 type ProfileSearchFn = (
     query: string,
     limit: number,
-    options?: { includeHidden?: boolean },
+    options?: { includeHidden?: boolean; requesterAccountId?: string },
 ) => Promise<
     Array<{
         accountId?: string;
@@ -75,6 +75,7 @@ export function createSearchRoutes(
                 try {
                     const profiles = await searchProfiles(query, 10, {
                         includeHidden: includeHiddenProfiles,
+                        requesterAccountId: claims.sub,
                     });
                     userItems = profiles.map(
                         (profile) =>
@@ -118,6 +119,7 @@ export function createSearchRoutes(
             try {
                 const profiles = await searchProfiles(query, 5, {
                     includeHidden: includeHiddenProfiles,
+                    requesterAccountId: claims.sub,
                 });
                 if (profiles.length > 0) {
                     groups.push({
