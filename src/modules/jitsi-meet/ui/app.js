@@ -11,7 +11,11 @@ import {
     ensureFullAccountSession,
 } from "/static/reuse/auth-session.js";
 import { ensureSessionId } from "./session.js";
-import { buildMeetingJoinUrl, resolveThemeMode } from "./meeting-embed.js";
+import {
+    buildMeetingJoinUrl,
+    resolveJitsiDefaultBackground,
+    resolveThemeMode,
+} from "./meeting-embed.js";
 import {
     buildChatMarkup,
     buildParticipantsMarkup,
@@ -622,6 +626,10 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             if (!state.jitsiApi) return;
             executeJitsiCommandIfSupported(state.jitsiApi, "overwriteConfig", {
                 preferredTheme: nextThemeMode,
+                interfaceConfig: {
+                    DEFAULT_BACKGROUND:
+                        resolveJitsiDefaultBackground(nextThemeMode),
+                },
             });
         };
         const themeObserver = new MutationObserver(syncJitsiTheme);

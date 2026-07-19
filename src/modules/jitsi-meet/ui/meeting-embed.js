@@ -6,6 +6,11 @@ import {
 
 let jitsiExternalApiLoader = null;
 
+const JITSI_THEME_BACKGROUNDS = {
+    dark: "#030a14",
+    light: "#f4f8ff",
+};
+
 function readThemeCookie() {
     const match = document.cookie.match(/(?:^|; )cognis_theme=([^;]+)/);
     return match ? decodeURIComponent(match[1]) : "";
@@ -28,6 +33,10 @@ export function resolveThemeMode(explicitMode) {
     return "light";
 }
 
+export function resolveJitsiDefaultBackground(explicitMode) {
+    return JITSI_THEME_BACKGROUNDS[resolveThemeMode(explicitMode)];
+}
+
 export function resolveRoomName(meeting) {
     if (typeof meeting?.roomSlug === "string" && meeting.roomSlug.trim()) {
         return meeting.roomSlug.trim();
@@ -43,7 +52,12 @@ export function buildMeetingJoinUrl(meetingUrl, profile) {
         hashParams.set("config.requireDisplayName", "false");
         hashParams.set("config.disableDeepLinking", "true");
         hashParams.set("config.subject", MEETING_SUBJECT);
-        hashParams.set("config.preferredTheme", resolveThemeMode());
+        const themeMode = resolveThemeMode();
+        hashParams.set("config.preferredTheme", themeMode);
+        hashParams.set(
+            "interfaceConfig.DEFAULT_BACKGROUND",
+            resolveJitsiDefaultBackground(themeMode),
+        );
         hashParams.set(
             "config.toolbarButtons",
             JSON.stringify(JITSI_TOOLBAR_BUTTONS),
