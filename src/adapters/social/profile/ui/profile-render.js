@@ -229,13 +229,14 @@ export function renderHero({
     `
             : "";
 
-    const bannerMenuRemoveItem = bannerBlobUrl
+    const bannerRemoveButton = bannerBlobUrl
         ? `
-      <div class="profile-banner-menu-sep"></div>
-      <button
-        type="button"
-        class="profile-banner-menu-item profile-banner-menu-remove btn-cancel"
-      >${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}</button>
+        <button
+          class="profile-banner-remove-btn"
+          type="button"
+          aria-label="${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}"
+          title="${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}"
+        >&#215;</button>
     `
         : "";
 
@@ -247,6 +248,7 @@ export function renderHero({
         aria-label="${escapeHtml(i18n.t("ui.app.profile.change_banner"))}"
       >${bannerContent}</button>
       <div class="profile-banner-menu-wrap">
+        ${bannerRemoveButton}
         <button
           class="profile-banner-menu-btn"
           type="button"
@@ -275,7 +277,6 @@ export function renderHero({
             >
             ${escapeHtml(i18n.t("ui.app.profile.banner_height.full"))}
           </label>
-          ${bannerMenuRemoveItem}
         </div>
       </div>
     `

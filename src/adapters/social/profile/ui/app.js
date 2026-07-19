@@ -653,7 +653,7 @@ function bindPageEvents() {
             },
         );
 
-        root.querySelector(".profile-banner-menu-remove")?.addEventListener(
+        root.querySelector(".profile-banner-remove-btn")?.addEventListener(
             "click",
             () => {
                 dropdown.hidden = true;
