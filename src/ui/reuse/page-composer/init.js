@@ -22,6 +22,7 @@
  *   pageContext?: { title: string, subtitle: string },
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
  *   toolbarScrollable?: boolean,
+ *   contentScrolling?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
@@ -69,6 +70,7 @@ export function createPageComposer(
         pageContext,
         toolbar = [],
         toolbarScrollable = false,
+        contentScrolling = true,
         subNavigation = [],
         floatingMenu = [],
         subPageNavigation = false,
@@ -691,6 +693,12 @@ export function createPageComposer(
             contentGrid?.classList.add("content-grid--two-column");
         let closeMobileDrawerIfNeeded = () => {};
 
+        if (!contentScrolling) {
+            root.querySelector(".workspace")?.classList.add(
+                "app-page--document-scroll",
+            );
+        }
+
         if (frameless) {
             root.querySelector(".app-shell")?.classList.add(
                 "app-shell--frameless",
@@ -901,17 +909,6 @@ export function createPageComposer(
 
         render();
 
-        if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
-            activePresenceTracker?.destroy();
-            activePresenceTracker = createPresenceTracker({
-                ...presenceTracker,
-                pointerTracking:
-                    pageManifest?.features?.pointerTracking === true,
-                i18n,
-            });
-            activePresenceTracker.mount(mainWindow);
-        }
-
         if (persistLayoutPreferences) {
             loadLayout()
                 .then((loadedLayout) => {
@@ -935,6 +932,17 @@ export function createPageComposer(
                         error,
                     );
                 });
+        }
+
+        if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
+            activePresenceTracker?.destroy();
+            activePresenceTracker = createPresenceTracker({
+                ...presenceTracker,
+                pointerTracking:
+                    pageManifest?.features?.pointerTracking === true,
+                i18n,
+            });
+            activePresenceTracker.mount(mainWindow);
         }
     }
 
