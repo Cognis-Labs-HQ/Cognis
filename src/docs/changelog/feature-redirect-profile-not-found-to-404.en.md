@@ -11,3 +11,7 @@ When a profile cannot be viewed because visibility rules hide it from the curren
 ## Error surfaces honor stored theme
 
 The error page and runtime error popup now apply the stored theme before rendering so light-theme users see matching error surfaces even when a route fails early.
+
+## Router protects error navigation roots
+
+The app router now resolves the dashboard root before mounting a route, so profile-to-404 navigation works even when it happens before the dashboard shell has initialized the router.

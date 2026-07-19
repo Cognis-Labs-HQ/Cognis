@@ -11,3 +11,7 @@ Saat sebuah profil tidak dapat dilihat karena aturan visibilitas menyembunyikann
 ## Permukaan galat mengikuti tema tersimpan
 
 Halaman galat dan popup galat runtime kini menerapkan tema tersimpan sebelum dirender, sehingga pengguna tema terang melihat permukaan galat yang sesuai bahkan saat rute gagal lebih awal.
+
+## Router melindungi akar navigasi galat
+
+Router aplikasi kini memastikan akar dashboard sebelum memasang rute, sehingga navigasi dari profil ke halaman 404 tetap berfungsi meski terjadi sebelum shell dashboard menginisialisasi router.

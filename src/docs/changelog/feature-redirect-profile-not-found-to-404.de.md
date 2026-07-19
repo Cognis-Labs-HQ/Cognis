@@ -11,3 +11,7 @@ Wenn ein Profil wegen Sichtbarkeitsregeln für den aktuellen Benutzer nicht sich
 ## Fehlerflächen beachten das gespeicherte Thema
 
 Die Fehlerseite und das Laufzeitfehler-Popup wenden jetzt das gespeicherte Thema vor dem Rendern an, sodass Benutzer mit hellem Thema auch bei frühen Routenfehlern passende Fehlerflächen sehen.
+
+## Router schützt Wurzeln bei Fehlernavigation
+
+Der App-Router löst jetzt die Dashboard-Wurzel vor dem Mounten einer Route auf, sodass die Navigation vom Profil zur 404-Seite auch funktioniert, wenn sie vor der Router-Initialisierung durch die Dashboard-Shell erfolgt.
