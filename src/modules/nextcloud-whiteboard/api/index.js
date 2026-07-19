@@ -219,6 +219,27 @@ export function registerApiRoutes(router, ctx) {
     const createNamespaceClient = ctx.getCapability("files:namespace");
 
     if (!dbExecutor || !profileStore) {
+        const unavailablePayload = (res) =>
+            sendError(
+                res,
+                503,
+                "service_unavailable",
+                "Nextcloud Whiteboard dependencies are unavailable.",
+            );
+        router.get(
+            "/api/v1/modules/nextcloud-whiteboard/config",
+            async (_req, res) => {
+                unavailablePayload(res);
+            },
+            { access: { minRole: "admin" }, allowWhenDisabled: true },
+        );
+        router.post(
+            "/api/v1/modules/nextcloud-whiteboard/config",
+            async (_req, res) => {
+                unavailablePayload(res);
+            },
+            { access: { minRole: "admin" }, allowWhenDisabled: true },
+        );
         router.get(
             "/api/v1/modules/nextcloud-whiteboard/ping",
             async (_req, res) => {

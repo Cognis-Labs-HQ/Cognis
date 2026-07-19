@@ -929,3 +929,21 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
     assert.equal(filteredRes.statusCode, 200);
     assert.deepEqual(filteredRes.json().data.presence, []);
 });
+
+test("nextcloud whiteboard config route returns 503 when dependencies are unavailable", async () => {
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability() {
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler("GET", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {},
+        res,
+    );
+
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.json().error.code, "service_unavailable");
+});
