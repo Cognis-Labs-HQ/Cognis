@@ -72,6 +72,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const uiRegistry = new UIRegistry();
     const dbExecutor = new MemoryExecutor();
     const adminToken = issueAccessToken("alice", "admin", 60);
+    const bobToken = issueAccessToken("bob", "user", 60);
     capabilities.contribute("db:executor", dbExecutor as never);
     capabilities.contribute("notify:gateway", {
         listSenders() {
@@ -94,7 +95,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     capabilities.contribute(
         "auth:routeContext",
         createAuthContext(
-            new Map([[adminToken, { sub: "alice", role: "admin" }]]),
+            new Map([
+                [adminToken, { sub: "alice", role: "admin" }],
+                [bobToken, { sub: "bob", role: "user" }],
+            ]),
         ),
     );
     const flowCtx = createCtx();
@@ -247,4 +251,46 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         JSON.parse(resolveResponse.payload).data.resourceType,
         "meeting",
     );
+
+    const restrictedCreateResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            accessControls: {
+                recipients: [{ type: "user", id: "bob" }],
+            },
+        },
+    );
+    assert.equal(restrictedCreateResponse.statusCode, 200);
+    const restrictedToken = encodeURIComponent(
+        restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],
+    );
+
+    const anonymousRestrictedResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET" }),
+        anonymousRestrictedResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
+    );
+    assert.equal(anonymousRestrictedResponse.statusCode, 403);
+    assert.equal(
+        JSON.parse(anonymousRestrictedResponse.payload).error.code,
+        "recipient_restricted",
+    );
+
+    const bobRestrictedResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            headers: { authorization: `Bearer ${bobToken}` },
+        }),
+        bobRestrictedResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
+    );
+    assert.equal(bobRestrictedResponse.statusCode, 200);
 });

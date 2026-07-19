@@ -14,6 +14,7 @@ import {
     renameWhiteboard,
     saveWhiteboardElements,
     spawnWhiteboard,
+    uploadWhiteboardImage,
 } from "./api.js";
 import {
     debounce,
@@ -798,6 +799,9 @@ async function openBoard(board) {
     if (!canvasElement) return;
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
+    canvasInstance.setImageUploader((dataUrl) =>
+        uploadWhiteboardImage(session.roomId, dataUrl),
+    );
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     savedElements = Array.isArray(session.elements) ? session.elements : [];
     if (savedElements.length > 0) {
@@ -847,6 +851,9 @@ function onCanvasRender() {
     if (preflightStatus !== "passed") return;
 
     canvasInstance = createWhiteboardCanvas(canvasElement);
+    canvasInstance.setImageUploader((dataUrl) =>
+        uploadWhiteboardImage(session.roomId, dataUrl),
+    );
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);

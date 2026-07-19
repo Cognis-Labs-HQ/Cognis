@@ -4,7 +4,7 @@ import {
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
 import type { SocialAdapterBootstrapCtx } from "../../../../gateways/social/gateway.js";
-import type { FileStorageGateway } from "../../../../gateways/files/gateway.js";
+import type { ProfileFileClient } from "./profile-file-client.js";
 import type {
     ProfileStore,
     AccountProfile,
@@ -137,7 +137,7 @@ async function canViewFullProfile(
  */
 export function createProfileRoutes(
     profileStore: ProfileStore,
-    fileGateway?: FileStorageGateway,
+    fileGateway?: ProfileFileClient,
     isGatewayEnabled?: () => boolean,
     log?: SocialAdapterLog,
     onProfileChanged?: (input: {
@@ -565,7 +565,7 @@ export function createProfileRoutes(
                 }
             } else {
                 if (profile?.avatarKey)
-                    await fileGateway.delete(profile.avatarKey);
+                    await fileGateway.delete(claims!.sub, profile.avatarKey);
                 const updated = await profileStore.updateProfile(claims!.sub, {
                     avatarKey: null,
                 });
@@ -818,7 +818,7 @@ export function createProfileRoutes(
                 }
             } else {
                 if (profile?.bannerKey)
-                    await fileGateway.delete(profile.bannerKey);
+                    await fileGateway.delete(claims!.sub, profile.bannerKey);
                 await profileStore.updateProfile(claims!.sub, {
                     bannerKey: null,
                 });

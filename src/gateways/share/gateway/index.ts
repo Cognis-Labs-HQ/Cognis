@@ -1,5 +1,11 @@
 import { resolveExternalBaseUrl } from "../../../api/reuse/url-parts.js";
-import { ShareTokenStore, isExpired, type ShareTokenRecord } from "./store.js";
+import {
+    ShareTokenStore,
+    generateSharePassword,
+    isExpired,
+    type ShareAccessControls,
+    type ShareTokenRecord,
+} from "./store.js";
 import {
     GuestProfileStore,
     type GuestProfileRecord,
@@ -16,10 +22,14 @@ export class CoreShareGateway {
         private readonly guestProfileStore: GuestProfileStore,
         private readonly approvalRequestStore: ShareApprovalRequestStore,
         private readonly externalBaseUrl: string = resolveExternalBaseUrl(),
-        private readonly getCapability: <T>(
+        private readonly resolveCapability: <T>(
             name: string,
         ) => T | undefined = () => undefined,
     ) {}
+
+    getCapability<T>(name: string): T | undefined {
+        return this.resolveCapability<T>(name);
+    }
 
     async ensureSchema(): Promise<void> {
         await this.store.ensureSchema();
@@ -58,13 +68,16 @@ export class CoreShareGateway {
             label: record.label,
             metadata: record.metadata,
             grantedCapabilities: record.grantedCapabilities,
+            accessControls: record.accessControls,
+            passwordProtected: Boolean(record.passwordHash),
+            readonlyWatermark: record.accessControls.watermarkReadonly,
             expiresAt: record.expiresAt,
             status: this.isTokenExpired(record) ? "expired" : "active",
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
             shareUrl,
             quickShareActions: await resolveQuickShareActions(
-                this.getCapability,
+                this.resolveCapability,
                 {
                     shareUrl,
                     label: record.label,
@@ -80,10 +93,48 @@ export class CoreShareGateway {
         metadata?: Record<string, string> | null;
         label?: string | null;
         grantedCapabilities?: string[];
+        accessControls?: Partial<ShareAccessControls>;
+        password?: string | null;
+        generatePassword?: boolean;
         expiresAt?: string;
     }): Promise<Record<string, unknown>> {
-        const record = await this.store.issue(input);
-        return await this.serializeRecord(record);
+        const generatedPassword = input.generatePassword
+            ? generateSharePassword()
+            : null;
+        const record = await this.store.issue({
+            ...input,
+            password: input.password ?? generatedPassword,
+        });
+        return {
+            ...(await this.serializeRecord(record)),
+            generatedPassword,
+        };
+    }
+
+    async updateToken(input: {
+        shareId: string;
+        ownerAccountId: string;
+        label?: string | null;
+        grantedCapabilities?: string[];
+        accessControls?: Partial<ShareAccessControls>;
+        password?: string | null;
+        generatePassword?: boolean;
+        clearPassword?: boolean;
+        expiresAt?: string;
+    }): Promise<Record<string, unknown> | null> {
+        const generatedPassword = input.generatePassword
+            ? generateSharePassword()
+            : null;
+        const record = await this.store.updateById({
+            ...input,
+            password: input.password ?? generatedPassword,
+        });
+        return record
+            ? {
+                  ...(await this.serializeRecord(record)),
+                  generatedPassword,
+              }
+            : null;
     }
 
     async listTokens(filter: {
@@ -120,8 +171,11 @@ export class CoreShareGateway {
         return this.store.getById(shareId);
     }
 
-    async resolveToken(tokenValue: string): Promise<ShareTokenRecord | null> {
-        return this.store.resolve(tokenValue);
+    async resolveToken(
+        tokenValue: string,
+        password?: string | null,
+    ): Promise<ShareTokenRecord | null> {
+        return this.store.resolve(tokenValue, password);
     }
 
     async createGuestProfile(input: {

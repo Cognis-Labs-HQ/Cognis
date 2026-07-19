@@ -1,9 +1,21 @@
 {
     "id": "social-messages",
     "name": "Messages",
-    "version": "1.4.7",
+    "version": "1.4.9",
     "gateway": "social",
     "description": "Private messages with chatrooms (DM and group), per-room AES-GCM encryption, and notification dispatch.",
     "publisher": "Cognis Labs HQ",
-    "requires": ["social:profile"]
+    "requires": ["social:profile"],
+    "file_namespaces": [
+        {
+            "id": "chats",
+            "visibility": "private-group"
+        }
+    ],
+    "external_namespaces": [
+        {
+            "id": "profile",
+            "purpose": "Read profile avatars when rendering chat participants."
+        }
+    ]
 }

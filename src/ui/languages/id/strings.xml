@@ -327,6 +327,10 @@
   <string name="ui.app.users.founder_disabled">Status pendiri dihapus.</string>
   <string name="ui.app.users.action_menu_help">Pilih tindakan.</string>
   <string name="ui.app.users.reset_password">Reset kata sandi</string>
+  <string name="ui.app.users.storage_quotas">Kuota penyimpanan</string>
+  <string name="ui.app.users.storage_quota_global">Kuota global (byte)</string>
+  <string name="ui.app.users.storage_quotas_saved">Kuota penyimpanan diperbarui.</string>
+  <string name="ui.app.users.storage_quota_invalid">Kuota penyimpanan harus berupa bilangan bulat positif.</string>
   <string name="ui.app.users.new_password">Kata sandi baru</string>
   <string name="ui.app.users.password_reset_done">Kata sandi diperbarui.</string>
   <string name="ui.app.users.reset_tfa">Reset Autentikasi Dua Faktor</string>

@@ -44,6 +44,14 @@ export async function fetchWhiteboardSession(boardId) {
     );
 }
 
+export async function uploadWhiteboardImage(boardId, dataUrl) {
+    return apiFetchJson("/whiteboards/images", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ id: boardId, dataUrl }),
+    });
+}
+
 export async function saveWhiteboardElements(boardId, elements) {
     return apiFetchJson("/whiteboards/elements", {
         method: "POST",

@@ -4,8 +4,18 @@ export function createClipboardImageHandler({
     commitCreatedElement,
     getImageUploadMaxBytes,
     notifyImageRejected,
+    uploadImage,
 }) {
-    function createImageElementFromDataUrl(dataUrl) {
+    async function createImageElementFromDataUrl(dataUrl) {
+        let renderUrl = dataUrl;
+        if (typeof uploadImage === "function") {
+            try {
+                const uploaded = await uploadImage(dataUrl);
+                renderUrl = uploaded?.url || dataUrl;
+            } catch {
+                renderUrl = dataUrl;
+            }
+        }
         const image = new Image();
         image.addEventListener(
             "load",
@@ -13,7 +23,7 @@ export function createClipboardImageHandler({
                 commitCreatedElement(
                     buildImageElement(
                         [24, 24],
-                        dataUrl,
+                        renderUrl,
                         calculateImageDimensions(image),
                     ),
                 );
@@ -23,7 +33,7 @@ export function createClipboardImageHandler({
         image.addEventListener(
             "error",
             () => {
-                commitCreatedElement(buildImageElement([24, 24], dataUrl));
+                commitCreatedElement(buildImageElement([24, 24], renderUrl));
             },
             { once: true },
         );
@@ -43,7 +53,7 @@ export function createClipboardImageHandler({
         const reader = new FileReader();
         reader.addEventListener("load", () => {
             if (typeof reader.result !== "string") return;
-            createImageElementFromDataUrl(reader.result);
+            void createImageElementFromDataUrl(reader.result);
         });
         reader.readAsDataURL(imageFile);
     };

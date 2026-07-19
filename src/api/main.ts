@@ -335,6 +335,9 @@ const createProfile = capabilities.get<
 >("profile:createProfile");
 if (!adminInitialized && createProfile) {
     await createProfile("admin", "admin", "owner");
+    await capabilities.get<(username: string) => Promise<void>>(
+        "files:quota:provisionUser",
+    )?.("admin");
 }
 
 const preferenceStore =

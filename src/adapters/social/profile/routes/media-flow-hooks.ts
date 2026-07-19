@@ -1,6 +1,6 @@
 import type { AccountProfile, ProfileStore } from "../store-contract.js";
 import type { SocialAdapterBootstrapCtx } from "../../../../gateways/social/gateway.js";
-import type { FileStorageGateway } from "../../../../gateways/files/gateway.js";
+import type { ProfileFileClient } from "./profile-file-client.js";
 
 type ProfileMediaKey = "avatarKey" | "bannerKey";
 
@@ -18,7 +18,7 @@ type FlowRunSnapshot = Awaited<ReturnType<SocialAdapterFlowApi["run"]>>;
 
 export async function replaceProfileMedia(
     profileStore: ProfileStore,
-    fileGateway: FileStorageGateway,
+    fileGateway: ProfileFileClient,
     accountId: string,
     key: ProfileMediaKey,
     content: Uint8Array,
@@ -35,16 +35,16 @@ export async function replaceProfileMedia(
             [key]: stored.key,
         } as Partial<Pick<AccountProfile, ProfileMediaKey>>);
     } catch (error) {
-        await fileGateway.delete(stored.key);
+        await fileGateway.delete(accountId, stored.key);
         throw error;
     }
     if (!updated) {
-        await fileGateway.delete(stored.key);
+        await fileGateway.delete(accountId, stored.key);
         return null;
     }
     if (previousKey && previousKey !== stored.key) {
         try {
-            await fileGateway.delete(previousKey);
+            await fileGateway.delete(accountId, previousKey);
         } catch (error) {
             onPreviousDeleteError?.(error, previousKey);
         }
@@ -66,7 +66,7 @@ export function getFirstStageResult<T>(
 export function registerProfileMediaFlowHooks(input: {
     flow: SocialAdapterFlowApi;
     profileStore: ProfileStore;
-    fileGateway: FileStorageGateway;
+    fileGateway: ProfileFileClient;
     log?: SocialAdapterLog;
     onProfileChanged?: (payload: {
         accountId: string;
@@ -213,7 +213,7 @@ export function registerProfileMediaFlowHooks(input: {
                 }
                 const existingKey = profile[mediaField];
                 if (existingKey) {
-                    await fileGateway.delete(existingKey);
+                    await fileGateway.delete(accountId, existingKey);
                 }
                 const updated = await profileStore.updateProfile(accountId, {
                     [mediaField]: null,
