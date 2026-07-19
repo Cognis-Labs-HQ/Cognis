@@ -1,3 +1,15 @@
+/**
+ * Markdown renderer for user/admin generated rich text.
+ *
+ * Public exports:
+ * - renderMarkdown(markdown, options) — converts supported Markdown syntax to sanitized HTML.
+ *
+ * Example:
+ * ```js
+ * element.innerHTML = renderMarkdown('Visit https://cognis.example');
+ * ```
+ */
+
 function escapeHtml(value) {
     return String(value)
         .replaceAll("&", "&amp;")
@@ -12,27 +24,29 @@ function escapeHtmlAttribute(value) {
 }
 
 function canLinkToHref(href) {
-    return (
-        href.startsWith("http://") ||
-        href.startsWith("https://") ||
-        href.startsWith("mailto:") ||
-        href.startsWith("/") ||
-        href.startsWith("./") ||
-        href.startsWith("../") ||
-        href.startsWith("#")
-    );
+    return href.startsWith("http://") || href.startsWith("https://");
+}
+
+function splitTrailingUrlPunctuation(href) {
+    const match = String(href).match(/^(.+?)([.,!?;:]*)([)\]}]*)$/);
+    if (!match) return { href, suffix: "" };
+    const [, candidateHref, punctuation, closers] = match;
+    return {
+        href: candidateHref,
+        suffix: `${punctuation}${closers}`,
+    };
 }
 
 function renderLinkMarkup(label, href) {
     const safeLabel = escapeHtml(label);
     if (!canLinkToHref(href)) return safeLabel;
     const safeHref = escapeHtmlAttribute(href);
-    const isExternal =
-        href.startsWith("http://") || href.startsWith("https://");
-    if (isExternal) {
-        return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
-    }
-    return `<a href="${safeHref}">${safeLabel}</a>`;
+    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
+}
+
+function renderDetectedUrlMarkup(href) {
+    const { href: trimmedHref, suffix } = splitTrailingUrlPunctuation(href);
+    return `${renderLinkMarkup(trimmedHref, trimmedHref)}${escapeHtml(suffix)}`;
 }
 
 function renderInline(markdown) {
@@ -45,6 +59,11 @@ function renderInline(markdown) {
             return token;
         },
     );
+    rendered = rendered.replace(/https?:\/\/[^\s<>()\[\]{}"']+/gi, (href) => {
+        const token = `@@LINK_${linkTokens.length}@@`;
+        linkTokens.push(renderDetectedUrlMarkup(href));
+        return token;
+    });
     rendered = escapeHtml(rendered);
     rendered = rendered.replace(/`([^`]+)`/g, "<code>$1</code>");
     rendered = rendered.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
@@ -374,7 +393,7 @@ export function renderMarkdown(markdown, options = {}) {
         }
         if (softBreaks && paragraphLines.length > 1) {
             html.push(
-                `<p>${paragraphLines.map((l) => renderInline(l)).join("<br>")}</p>`,
+                `<p>${paragraphLines.map((paragraphLine) => renderInline(paragraphLine)).join("<br>")}</p>`,
             );
         } else {
             html.push(`<p>${renderInline(paragraphLines.join(" "))}</p>`);

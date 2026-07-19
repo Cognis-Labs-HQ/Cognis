@@ -16,8 +16,28 @@ test("renderMarkdown escapes HTML in markdown content", () => {
 });
 
 test("renderMarkdown does not render unsafe link protocols", () => {
-    const html = renderMarkdown("[x](javascript:alert%281%29)");
-    assert.equal(html, "<p>x</p>");
+    const html = renderMarkdown(
+        "[x](javascript:alert%281%29) [m](mailto:admin@example.test) [r](/docs)",
+    );
+    assert.equal(html, "<p>x m r</p>");
+});
+
+test("renderMarkdown detects plain HTTP URLs as hyperlinks", () => {
+    const html = renderMarkdown("Visit https://cognis.example/docs.");
+    assert.equal(
+        html,
+        '<p>Visit <a href="https://cognis.example/docs" target="_blank" rel="noopener noreferrer">https://cognis.example/docs</a>.</p>',
+    );
+});
+
+test("renderMarkdown does not detect non-HTTP URLs as hyperlinks", () => {
+    const html = renderMarkdown(
+        "Email mailto:admin@example.test or open cognis://profile/me",
+    );
+    assert.equal(
+        html,
+        "<p>Email mailto:admin@example.test or open cognis://profile/me</p>",
+    );
 });
 
 test("renderMarkdown detects code language from shebang and highlights code", () => {

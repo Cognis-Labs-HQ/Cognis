@@ -2,6 +2,7 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { showToast } from "/static/reuse/toast.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
@@ -96,7 +97,7 @@ function renderBroadcastBar(broadcast, i18n) {
       <section class="notify-broadcast-bar" role="status" aria-live="polite">
         <div class="notify-broadcast-content">
           <strong class="notify-broadcast-title">${escapeHtml(broadcast.title)}</strong>
-          <span class="notify-broadcast-message">${escapeHtml(broadcast.message)}</span>
+          <div class="notify-broadcast-message">${renderMarkdown(broadcast.message)}</div>
         </div>
         <div class="notify-broadcast-actions">
           <button type="button" class="notify-broadcast-ack btn-animated">${
@@ -167,7 +168,7 @@ async function openBroadcastPopup(broadcast, i18n) {
     try {
         const popupResult = await openPopup({
             title: escapeHtml(broadcast.title),
-            body: escapeHtml(broadcast.message),
+            body: renderMarkdown(broadcast.message),
             actions: popupActions,
         });
         const didAcknowledge = popupResult === "acknowledge";
