@@ -9,8 +9,14 @@ const appSource = await readFile(
 
 test("profile page polls follower and following lists for real-time counts", () => {
     assert.match(appSource, /createAdaptivePoller/);
-    assert.match(appSource, /loadSocialConnectionList\(profileHandle, "followers"\)/);
-    assert.match(appSource, /loadSocialConnectionList\(profileHandle, "following"\)/);
+    assert.match(
+        appSource,
+        /loadSocialConnectionList\(profileHandle, "followers"\)/,
+    );
+    assert.match(
+        appSource,
+        /loadSocialConnectionList\(profileHandle, "following"\)/,
+    );
     assert.match(appSource, /refreshPage\(\)/);
     assert.match(
         appSource,
