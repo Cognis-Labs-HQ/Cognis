@@ -204,6 +204,16 @@ test("changelogs module keeps changelog-only navigation data", () => {
         source.includes('applyDocumentTitle(i18n, "ui.page.title.changelogs")'),
         "changelogs page should apply the dedicated page title",
     );
+    assert.ok(
+        source.includes("changelog-content-panel"),
+        "changelogs page should scope content-list styling to the reader panel",
+    );
+
+    const styles = readFileSync(join(ROOT, "src/ui/styles/docs.css"), "utf8");
+    assert.ok(
+        styles.includes(".changelog-content-panel > ul > li > a"),
+        "changelog content links should render as styled cards instead of a plain list",
+    );
 });
 
 test("docs markdown titles stay within 30 characters", () => {

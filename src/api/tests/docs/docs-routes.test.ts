@@ -115,6 +115,77 @@ test("docs route uses secondary language before falling back to English", async 
     );
 });
 
+test("docs route indexes every changelog markdown stem and serves generated changelog landing page", async () => {
+    const route = createDocsRoutes();
+    let status = 0;
+    let body = "";
+    await route(
+        { method: "GET" } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/docs"),
+    );
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    const changelogEntries = parsed.data.filter((entry: any) =>
+        entry.slug.startsWith("changelog/"),
+    );
+    assert.ok(changelogEntries.length > 2);
+    assert.ok(parsed.data.find((entry: any) => entry.slug === "changelog"));
+
+    status = 0;
+    body = "";
+    await route(
+        { method: "GET" } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/docs/changelog"),
+    );
+    assert.equal(status, 200);
+    const changelogLanding = JSON.parse(body);
+    assert.match(changelogLanding.data.markdown, /^# Changelogs/);
+    assert.match(changelogLanding.data.markdown, /\/changelogs\//);
+});
+
+test("docs route renders changelog feature branch from file slug", async () => {
+    const route = createDocsRoutes();
+    let status = 0;
+    let body = "";
+    const handled = await route(
+        { method: "GET" } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL(
+            "http://localhost/api/v1/docs/changelog/create-changelog-ingestion-system",
+        ),
+    );
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+    const parsed = JSON.parse(body);
+    assert.match(
+        parsed.data.markdown,
+        /\*\*Feature Branch:\*\* create-changelog-ingestion-system/,
+    );
+});
+
 test("docs route returns 404 for unknown slug", async () => {
     const route = createDocsRoutes();
     let status = 0;
