@@ -2,6 +2,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,
+    resolveJitsiDefaultBackground,
     resolveRoomName,
     resolveThemeMode,
 } from "./meeting-embed.js";
@@ -46,6 +47,7 @@ export function createEmbedHandlers({
             state.meeting.meetingPassword ?? "",
         ).trim();
         const themeMode = resolveThemeMode();
+        const defaultBackground = resolveJitsiDefaultBackground(themeMode);
         const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
             roomName,
             parentNode: frame,
@@ -58,6 +60,9 @@ export function createEmbedHandlers({
                 subject: MEETING_SUBJECT,
                 preferredTheme: themeMode,
                 toolbarButtons: JITSI_TOOLBAR_BUTTONS,
+            },
+            interfaceConfigOverwrite: {
+                DEFAULT_BACKGROUND: defaultBackground,
             },
             userInfo: {
                 displayName: state.currentProfile?.displayName ?? "",

@@ -86,9 +86,13 @@
     top: 10px;
     right: 10px;
     z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.profile-banner-menu-btn {
+.profile-banner-menu-btn,
+.profile-banner-remove-btn {
     width: 44px;
     height: 44px;
     border-radius: 999px;
@@ -108,9 +112,23 @@
 }
 
 .profile-hero-banner-wrap:hover .profile-banner-menu-btn,
+.profile-hero-banner-wrap:hover .profile-banner-remove-btn,
 .profile-banner-menu-btn:focus-visible,
+.profile-banner-remove-btn:focus-visible,
 .profile-banner-menu-btn[aria-expanded="true"] {
     opacity: 1;
+}
+
+.profile-banner-remove-btn {
+    color: #fff;
+    font-size: 1.5rem;
+    line-height: 1;
+}
+
+.profile-banner-remove-btn:hover,
+.profile-banner-remove-btn:focus-visible {
+    background: var(--danger, #c0392b);
+    border-color: rgba(255, 255, 255, 0.75);
 }
 
 .profile-banner-menu-dropdown {
@@ -152,10 +170,6 @@
     background: var(--surface-soft);
 }
 
-.profile-banner-menu-remove {
-    color: var(--danger, #c0392b);
-}
-
 .profile-banner-height-label {
     display: flex;
     align-items: center;
@@ -166,12 +180,6 @@
     accent-color: var(--accent-2);
     cursor: pointer;
     flex-shrink: 0;
-}
-
-.profile-banner-menu-sep {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
 }
 
 @media (max-width: 640px) {
