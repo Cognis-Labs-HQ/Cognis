@@ -464,6 +464,7 @@
   <string name="ui.app.profile.follow_hidden_toast">プロフィールの公開範囲が「非表示」に設定されています。他のユーザーをフォローするには、設定で公開範囲を変更してください。</string>
   <string name="ui.app.profile.section.follow_requests">フォローリクエスト</string>
   <string name="ui.app.profile.follow_requests.empty">保留中のフォローリクエストはありません。</string>
+  <string name="ui.app.profile.follow_counts_refresh_failed">フォロワー数を更新できません。</string>
   <string name="ui.app.profile.not_found">プロフィールが見つかりません。</string>
   <string name="ui.app.profile.saved">プロフィールを保存しました。</string>
   <string name="ui.app.profile.save_failed">プロフィールの保存に失敗しました。</string>
