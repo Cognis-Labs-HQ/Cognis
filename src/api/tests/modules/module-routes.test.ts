@@ -134,3 +134,36 @@ test("module routes support github imports", async () => {
     assert.equal(status, 200);
     assert.match(body, /jitsi-meet/);
 });
+
+test("module routes run enable tests before enabling modules", async () => {
+    let enableCalled = false;
+    const route = createModuleRoutes(
+        {
+            list: async () => [],
+            enable: async (moduleId: string) => {
+                enableCalled = true;
+                return { moduleId, enabled: true };
+            },
+            disable: async () => ({ moduleId: "x", enabled: false }),
+        } as any,
+        {
+            beforeEnable: async () => {
+                throw new Error("enable test failed");
+            },
+        },
+    );
+
+    const token = issueAccessToken("admin-user", "admin", 60);
+    await assert.rejects(
+        route(
+            {
+                method: "POST",
+                headers: { authorization: `Bearer ${token}` },
+            } as any,
+            { writeHead() {}, end() {} } as any,
+            new URL("http://localhost/api/v1/modules/jitsi-meet/enable"),
+        ),
+        /enable test failed/,
+    );
+    assert.equal(enableCalled, false);
+});

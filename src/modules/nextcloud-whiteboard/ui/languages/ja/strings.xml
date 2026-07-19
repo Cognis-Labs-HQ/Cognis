@@ -89,5 +89,6 @@
   <string name="module.nextcloud_whiteboard.share_copy_failed">共有リンクをコピーできませんでした。</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">共有リンクを取り消せませんでした。</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">現在のホワイトボード上のすべての項目を完全に削除します。続行しますか？</string>
+  <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
 </resources>
 

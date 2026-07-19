@@ -77,14 +77,14 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.1.10` |
+| API Server | `src/api/` | `0.1.11` |
 
 ## Modules
 
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.9`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.35` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.10` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.36` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

@@ -387,6 +387,19 @@ const server = buildServer({
               await profileStore.updateProfile(accountId, { visibility });
           }
         : undefined,
+    validateModuleEnable: async (moduleId) => {
+        const test = capabilities.get<
+            () => Promise<{ ok?: boolean; message?: string }>
+        >(`module:${moduleId}:enableTest`);
+        if (!test) return;
+        const result = await test();
+        if (result?.ok === false) {
+            throw new Error(
+                result.message ??
+                    `Module ${moduleId} did not pass its enablement test`,
+            );
+        }
+    },
     onModuleStateChanged: capabilities.get<
         (moduleId: string, enabled: boolean) => Promise<void> | void
     >("modules:onStateChanged"),

@@ -7,6 +7,7 @@ import {
 import { readJson } from "../../reuse/read-json.js";
 
 export interface ModuleRouteHooks {
+    beforeEnable?: (moduleId: string) => Promise<void> | void;
     onEnabled?: (moduleId: string) => Promise<void> | void;
     onDisabled?: (moduleId: string) => Promise<void> | void;
     getStatus?: (moduleId: string) => "enabled" | "disabled" | "available";
@@ -124,6 +125,10 @@ export function createModuleRoutes(
         const acknowledged =
             req.headers["x-cognis-external-module-disclaimer"] === "accepted" ||
             url.searchParams.get("acknowledgeExternalDisclaimer") === "true";
+
+        if (action === "enable") {
+            await hooks?.beforeEnable?.(moduleId);
+        }
 
         const result =
             action === "enable"
