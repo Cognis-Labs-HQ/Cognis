@@ -86,12 +86,20 @@ test("profile adapter bootstrap contributes profile capabilities", async () => {
         "profile:setRoleByHandle capability must be contributed",
     );
     assert.ok(
+        capabilities.get("profile:getRole"),
+        "profile:getRole capability must be contributed",
+    );
+    assert.ok(
         capabilities.get("preferences:store"),
         "preferences:store capability must be contributed",
     );
     assert.ok(
         capabilities.get("social:profileStore"),
         "social:profileStore capability must be contributed",
+    );
+    assert.ok(
+        capabilities.get("social:profileLifecycle"),
+        "social:profileLifecycle capability must be contributed",
     );
 });
 

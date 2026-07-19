@@ -135,15 +135,13 @@ export function createPasswordRoutes({
             if (action === "delete") {
                 await accountStore.delete(claims.sub);
             } else {
-                const profileStore = capabilities.get<{
-                    updateProfile(
+                const profileLifecycle = capabilities.get<{
+                    setState(
                         accountId: string,
-                        updates: {
-                            lifecycleState: "deactivated" | "archived";
-                        },
+                        lifecycleState: "active" | "deactivated" | "archived",
                     ): Promise<unknown>;
-                }>("social:profileStore");
-                if (!profileStore) {
+                }>("social:profileLifecycle");
+                if (!profileLifecycle) {
                     res.writeHead(503, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
@@ -155,10 +153,10 @@ export function createPasswordRoutes({
                     );
                     return true;
                 }
-                await profileStore.updateProfile(claims.sub, {
-                    lifecycleState:
-                        action === "archive" ? "archived" : "deactivated",
-                });
+                await profileLifecycle.setState(
+                    claims.sub,
+                    action === "archive" ? "archived" : "deactivated",
+                );
             }
             const revokedTokenCount = revokeAccessTokensForSubject(claims.sub);
             log?.("warn", "Applied account lifecycle action.", {

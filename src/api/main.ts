@@ -360,13 +360,11 @@ const preferenceStore =
 const profileStore = capabilities.get<{
     getProfile: (accountId: string) => Promise<{
         visibility?: string;
-        lifecycleState?: string;
     } | null>;
     updateProfile: (
         accountId: string,
         updates: {
             visibility?: "friends";
-            lifecycleState?: "active" | "deactivated" | "archived";
         },
     ) => Promise<unknown>;
     searchProfiles: (
@@ -382,6 +380,15 @@ const profileStore = capabilities.get<{
         }>
     >;
 }>("social:profileStore");
+const profileLifecycle = capabilities.get<{
+    getState: (
+        accountId: string,
+    ) => Promise<"active" | "deactivated" | "archived">;
+    setState: (
+        accountId: string,
+        lifecycleState: "active" | "deactivated" | "archived",
+    ) => Promise<void>;
+}>("social:profileLifecycle");
 
 const server = buildServer({
     moduleRuntimeGateway: runtime,
@@ -407,17 +414,11 @@ const server = buildServer({
               await profileStore.updateProfile(accountId, { visibility });
           }
         : undefined,
-    getProfileLifecycleState: profileStore
-        ? async (accountId: string) =>
-              (await profileStore.getProfile(accountId))?.lifecycleState
+    getProfileLifecycleState: profileLifecycle
+        ? profileLifecycle.getState
         : undefined,
-    setProfileLifecycleState: profileStore
-        ? async (
-              accountId: string,
-              lifecycleState: "active" | "deactivated" | "archived",
-          ) => {
-              await profileStore.updateProfile(accountId, { lifecycleState });
-          }
+    setProfileLifecycleState: profileLifecycle
+        ? profileLifecycle.setState
         : undefined,
     validateModuleEnable: async (moduleId) => {
         const test = getModuleEnableTest(moduleId, systemCtx, capabilities);

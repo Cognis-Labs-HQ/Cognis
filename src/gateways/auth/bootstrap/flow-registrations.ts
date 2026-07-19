@@ -124,35 +124,37 @@ export async function registerAuthBootstrapHook(
             const capabilities = context.ctx.capabilities;
 
             let role: AccessRole = resolveRole(session.role);
-            const profileStore = capabilities.get<{
-                getProfile(accountId: string): Promise<{
-                    role?: string;
-                    lifecycleState?: "active" | "deactivated" | "archived";
-                } | null>;
-                updateProfile?(
+            const getProfileRole =
+                capabilities.get<
+                    (accountId: string) => Promise<string | undefined>
+                >("profile:getRole");
+            const profileLifecycle = capabilities.get<{
+                getState(
                     accountId: string,
-                    updates: { lifecycleState: "active" },
+                ): Promise<"active" | "deactivated" | "archived">;
+                setState(
+                    accountId: string,
+                    lifecycleState: "active" | "deactivated" | "archived",
                 ): Promise<unknown>;
-            }>("social:profileStore");
-            if (profileStore) {
-                const existingProfile = await profileStore
-                    .getProfile(session.accountId)
-                    .catch(() => null);
-                if (existingProfile?.lifecycleState === "archived") {
-                    return {
-                        sessionResult: { outcome: "account_archived" },
-                    };
-                }
-                if (existingProfile?.lifecycleState === "deactivated") {
-                    await profileStore
-                        .updateProfile?.(session.accountId, {
-                            lifecycleState: "active",
-                        })
-                        .catch(() => undefined);
-                }
-                if (existingProfile?.role === "owner") {
-                    role = "owner";
-                }
+            }>("social:profileLifecycle");
+            const profileRole = getProfileRole
+                ? await getProfileRole(session.accountId).catch(() => undefined)
+                : undefined;
+            const lifecycleState = await profileLifecycle
+                ?.getState(session.accountId)
+                .catch(() => "active");
+            if (lifecycleState === "archived") {
+                return {
+                    sessionResult: { outcome: "account_archived" },
+                };
+            }
+            if (lifecycleState === "deactivated") {
+                await profileLifecycle
+                    ?.setState(session.accountId, "active")
+                    .catch(() => undefined);
+            }
+            if (profileRole === "owner") {
+                role = "owner";
             }
 
             const isFounder = await context.accountStore
