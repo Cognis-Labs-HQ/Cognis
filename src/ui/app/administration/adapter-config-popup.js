@@ -1,3 +1,8 @@
+import {
+    markPopupFieldInvalid,
+    resolveFieldErrorId,
+} from "../../reuse/popup.js";
+
 export function createAdapterConfigPopup({
     i18n,
     escapeHtml,
@@ -122,7 +127,7 @@ export function createAdapterConfigPopup({
                 return fieldLabel(
                     name,
                     label,
-                    `<select name="${escapeHtml(name)}" class="theme-select">${optionsHtml}</select>`,
+                    `<select id="${escapeHtml(name)}" name="${escapeHtml(name)}" class="theme-select">${optionsHtml}</select>`,
                 );
             })
             .join("");
@@ -133,7 +138,7 @@ export function createAdapterConfigPopup({
                   return fieldLabel(
                       "secure",
                       fieldNameToLabel("secure"),
-                      `<select name="secure" class="theme-select">
+                      `<select id="secure" name="secure" class="theme-select">
                 <option value="none"${value === "none" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_none")}</option>
                 <option value="starttls"${value === "starttls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_starttls")}</option>
                 <option value="tls"${value === "tls" ? " selected" : ""}>${i18n.t("ui.app.admin.notif.smtp_secure_tls")}</option>
@@ -155,11 +160,11 @@ export function createAdapterConfigPopup({
 
                 let inputHtml;
                 if (isPassword) {
-                    inputHtml = `<input name="${escapeHtml(name)}" type="password" value="" />`;
+                    inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="password" value="" />`;
                 } else if (isNumber) {
-                    inputHtml = `<input name="${escapeHtml(name)}" type="number" value="${value}" />`;
+                    inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="number" value="${value}" />`;
                 } else {
-                    inputHtml = `<input name="${escapeHtml(name)}" type="text" value="${value}" />`;
+                    inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="text" value="${value}" />`;
                 }
 
                 return fieldLabel(name, fieldNameToLabel(name), inputHtml);
@@ -172,8 +177,8 @@ export function createAdapterConfigPopup({
                 const value = escapeHtml(descriptor?.effectiveValue ?? "");
                 const inputHtml =
                     name === "password"
-                        ? `<input name="${escapeHtml(name)}" type="password" value="" />`
-                        : `<input name="${escapeHtml(name)}" type="text" value="${value}" />`;
+                        ? `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="password" value="" />`
+                        : `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="text" value="${value}" />`;
                 return fieldLabel(name, fieldNameToLabel(name), inputHtml);
             })
             .join("");
@@ -195,7 +200,7 @@ export function createAdapterConfigPopup({
                       return `<div class="provider-option-row${isAuthDisabled ? " provider-auth-toggle-row" : ""}">
           <span class="provider-option-label">${escapeHtml(fieldNameToLabel(name))}</span>
           <label class="switch">
-            <input name="${escapeHtml(name)}" type="checkbox"${checked} />
+            <input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="checkbox"${checked} />
             <span class="slider"></span>
           </label>
         </div>`;
@@ -208,7 +213,7 @@ export function createAdapterConfigPopup({
       <div class="provider-popup-toggle-row">
         <span class="provider-popup-toggle-label">${i18n.t("ui.app.admin.notif.enable_provider")}</span>
         <label class="switch provider-popup-switch">
-          <input type="checkbox" name="enabled" class="provider-enable-toggle" disabled />
+          <input id="enabled" type="checkbox" name="enabled" class="provider-enable-toggle" disabled />
           <span class="slider"></span>
         </label>
       </div>
@@ -328,7 +333,7 @@ export function createAdapterConfigPopup({
 
             let popupFormEl = null;
 
-            const result = await openPopup({
+            await openPopup({
                 title: name,
                 body: renderGenericAdapterForm(
                     descriptors,
@@ -348,6 +353,45 @@ export function createAdapterConfigPopup({
                         variant: "cancel",
                     },
                 ],
+                onAction: async (action, overlay) => {
+                    if (action !== "save") return true;
+                    if (!(popupFormEl instanceof HTMLElement)) return false;
+                    const config = buildConfigPayload(popupFormEl);
+                    const saveResponse = await apiFetch(configUrl, {
+                        method: "PUT",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify(config),
+                    });
+                    const savePayload = await (typeof saveResponse.clone ===
+                    "function"
+                        ? saveResponse
+                              .clone()
+                              .json()
+                              .catch(() => ({}))
+                        : saveResponse.json().catch(() => ({})));
+                    if (!saveResponse.ok) {
+                        const message =
+                            savePayload?.error?.message ??
+                            i18n.t("ui.reuse.save_failed");
+                        if (saveResponse.status === 400) {
+                            const fieldId = resolveFieldErrorId(savePayload);
+                            if (
+                                markPopupFieldInvalid(overlay, fieldId, message)
+                            ) {
+                                return false;
+                            }
+                        }
+                        showToast(i18n.t("ui.reuse.save_failed"), {
+                            variant: "error",
+                        });
+                        return false;
+                    }
+                    await onSaved?.();
+                    showToast(i18n.t("ui.app.admin.settings_saved"), {
+                        variant: "success",
+                    });
+                    return true;
+                },
                 closeProtection: true,
                 onOpen: (overlay) => {
                     popupFormEl = overlay.querySelector(".provider-popup-form");
@@ -488,19 +532,6 @@ export function createAdapterConfigPopup({
                     }
                 },
             });
-
-            if (result === "save" && popupFormEl) {
-                const config = buildConfigPayload(popupFormEl);
-                await apiFetch(configUrl, {
-                    method: "PUT",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify(config),
-                });
-                await onSaved?.();
-                showToast(i18n.t("ui.app.admin.settings_saved"), {
-                    variant: "success",
-                });
-            }
         },
     };
 }

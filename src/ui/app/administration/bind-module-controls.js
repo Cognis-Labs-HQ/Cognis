@@ -115,23 +115,34 @@ export function bindModuleConfigureButtons(
         openPopup,
         showToast,
         escapeHtml,
+        toggleModule,
         reloadModules,
         getComposer,
         getElements,
     },
 ) {
-    root.querySelectorAll("[data-module-config-script-url]").forEach(
-        (button) => {
-            button.addEventListener("click", async (event) => {
+    root.querySelectorAll(".module-row[data-module-config-script-url]").forEach(
+        (row) => {
+            if (!(row instanceof HTMLElement)) return;
+            async function openConfig(event) {
+                const switchLabel = row.querySelector(".switch--inline");
+                if (
+                    switchLabel &&
+                    (event.target === switchLabel ||
+                        switchLabel.contains(event.target))
+                ) {
+                    return;
+                }
                 event.preventDefault();
                 event.stopPropagation();
-                const moduleId = button.getAttribute("data-module-id");
-                const scriptUrl = button.getAttribute(
+                const moduleId = row.getAttribute("data-module");
+                const scriptUrl = row.getAttribute(
                     "data-module-config-script-url",
                 );
                 if (!moduleId || !scriptUrl) return;
 
-                const { i18n } = getState();
+                const { i18n, moduleById } = getState();
+                const moduleRecord = moduleById.get(moduleId);
                 try {
                     const moduleUi = await import(scriptUrl);
                     if (typeof moduleUi.openModuleConfigPopup !== "function") {
@@ -144,6 +155,15 @@ export function bindModuleConfigureButtons(
                         showToast,
                         escapeHtml,
                         moduleId,
+                        moduleRecord,
+                        isEnabled: moduleRecord?.status === "enabled",
+                        setEnabled: async (enabled) => {
+                            await toggleModule(
+                                moduleId,
+                                enabled ? "enable" : "disable",
+                            );
+                            return true;
+                        },
                     });
                     if (didSave) {
                         await reloadModules();
@@ -154,6 +174,12 @@ export function bindModuleConfigureButtons(
                         variant: "error",
                     });
                     console.error(error);
+                }
+            }
+            row.addEventListener("click", openConfig);
+            row.addEventListener("keydown", (event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    openConfig(event);
                 }
             });
         },

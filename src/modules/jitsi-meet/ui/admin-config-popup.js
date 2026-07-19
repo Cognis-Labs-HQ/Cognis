@@ -7,6 +7,8 @@ export async function openModuleConfigPopup({
     openPopup,
     showToast,
     escapeHtml,
+    isEnabled,
+    setEnabled,
 }) {
     const moduleI18n = await createI18n({
         locale: i18n?.locale,
@@ -25,6 +27,11 @@ export async function openModuleConfigPopup({
         loadFailedKey: "module.jitsi_meet.admin.config.load_failed",
         successKey: "module.jitsi_meet.admin.config.save_success",
         failedKey: "module.jitsi_meet.admin.config.save_failed",
+        powerState: {
+            enabled: isEnabled === true,
+            labelKey: "ui.reuse.enable",
+            onChange: setEnabled,
+        },
         fields: [
             {
                 id: "jitsi-instance-url",

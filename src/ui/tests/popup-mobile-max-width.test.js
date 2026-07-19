@@ -155,3 +155,23 @@ test("createAnchoredPopup creates, positions, and tears down anchored popups", (
         globalThis.window = originalWindow;
     }
 });
+
+test("config form popup keeps known 400 field errors open", () => {
+    const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+    assert.match(source, /export function markPopupFieldInvalid\(/);
+    assert.match(source, /form-builder-floating-alert/);
+    assert.match(source, /form-builder-criterion-item--unmet/);
+    assert.match(source, /saveResponse\.status === 400/);
+    assert.match(source, /return false;/);
+    assert.doesNotMatch(source, /setCustomValidity/);
+});
+
+test("adapter config popup uses shared field-level 400 handling", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/adapter-config-popup.js"),
+        "utf8",
+    );
+    assert.match(source, /resolveFieldErrorId/);
+    assert.match(source, /markPopupFieldInvalid/);
+    assert.match(source, /saveResponse\.status === 400/);
+});

@@ -516,6 +516,57 @@ export async function openPopup({
  * Callers provide translated labels, field descriptors, request helpers, and
  * toast callbacks so module and gateway settings can share one popup flow.
  */
+
+export function resolveFieldErrorId(payload) {
+    const error = payload?.error;
+    const fieldId = String(error?.fieldId ?? error?.field ?? "").trim();
+    return fieldId || null;
+}
+
+export function markPopupFieldInvalid(overlay, fieldId, message) {
+    if (!(overlay instanceof HTMLElement) || !fieldId) return false;
+    const field = overlay.querySelector(`#${CSS.escape(fieldId)}`);
+    if (!(field instanceof HTMLElement)) return false;
+    const fieldWrapper = field.closest("label") ?? field.parentElement;
+    if (!(fieldWrapper instanceof HTMLElement)) return false;
+    const errorId = `${fieldId}-form-error`;
+    let alert = fieldWrapper.querySelector(`#${CSS.escape(errorId)}`);
+    if (!(alert instanceof HTMLElement)) {
+        alert = document.createElement("div");
+        alert.id = errorId;
+        alert.className =
+            "form-builder-floating-alert module-settings-popup-field-error";
+        alert.setAttribute("aria-live", "polite");
+        alert.innerHTML =
+            '<ul class="form-builder-criteria-list"><li class="form-builder-criterion-item form-builder-criterion-item--unmet"></li></ul>';
+        fieldWrapper.appendChild(alert);
+    }
+    const messageItem = alert.querySelector(".form-builder-criterion-item");
+    if (messageItem instanceof HTMLElement) {
+        messageItem.textContent = String(message ?? "");
+    }
+    fieldWrapper.classList.add(
+        "form-builder-field",
+        "form-builder-field--invalid",
+    );
+    field.classList.add("form-builder-input--invalid");
+    field.setAttribute("aria-invalid", "true");
+    field.setAttribute("aria-describedby", errorId);
+    field.focus();
+    field.addEventListener(
+        "input",
+        () => {
+            field.removeAttribute("aria-invalid");
+            field.removeAttribute("aria-describedby");
+            field.classList.remove("form-builder-input--invalid");
+            fieldWrapper.classList.remove("form-builder-field--invalid");
+            alert.remove();
+        },
+        { once: true },
+    );
+    return true;
+}
+
 export async function openConfigFormPopup({
     i18n,
     apiFetch,
@@ -529,6 +580,7 @@ export async function openConfigFormPopup({
     loadFailedKey,
     successKey,
     failedKey,
+    powerState,
 }) {
     const loadResponse = await apiFetch(loadUrl);
     if (!loadResponse.ok) {
@@ -539,6 +591,7 @@ export async function openConfigFormPopup({
     const config = loadPayload?.data ?? {};
 
     let popupOverlay = null;
+    let didSave = false;
     const fieldRows = (Array.isArray(fields) ? fields : [])
         .map((field) => {
             const fieldId = String(field.id ?? "").trim();
@@ -555,7 +608,9 @@ export async function openConfigFormPopup({
             const descriptionBlock = description
                 ? `<p class="module-settings-popup-description">${escapeHtml(description)}</p>`
                 : "";
-            const inputType = field.type === "url" ? "url" : "text";
+            const inputType = ["url", "number", "password"].includes(field.type)
+                ? field.type
+                : "text";
             return `
       <label class="module-settings-popup-field">
         <span class="module-settings-popup-label">${escapeHtml(label)}</span>
@@ -568,11 +623,22 @@ export async function openConfigFormPopup({
     const noteBlock = noteKey
         ? `<p class="module-settings-popup-note">${escapeHtml(i18n.t(noteKey))}</p>`
         : "";
+    const powerStateEnabled = powerState?.enabled === true;
+    const powerToggleBlock = powerState
+        ? `<div class="provider-popup-toggle-row module-settings-popup-power-row">
+        <span class="provider-popup-toggle-label">${escapeHtml(i18n.t(powerState.labelKey ?? "ui.reuse.enable"))}</span>
+        <label class="switch provider-popup-switch">
+          <input type="checkbox" class="module-settings-popup-power-toggle"${powerStateEnabled ? " checked" : ""} />
+          <span class="slider"></span>
+        </label>
+      </div>`
+        : "";
 
-    const action = await openPopup({
+    await openPopup({
         title: i18n.t(titleKey),
         body: () => `
       <div class="module-settings-popup-fields">
+        ${powerToggleBlock}
         ${fieldRows}
       </div>
       ${noteBlock}
@@ -589,36 +655,70 @@ export async function openConfigFormPopup({
         onOpen: (overlay) => {
             popupOverlay = overlay;
         },
+        onAction: async (action) => {
+            if (action !== "save") return true;
+            if (!(popupOverlay instanceof HTMLElement)) return false;
+
+            const values = {};
+            for (const field of fields ?? []) {
+                const fieldId = String(field.id ?? "").trim();
+                if (!fieldId) continue;
+                const input = popupOverlay.querySelector(
+                    `#${CSS.escape(fieldId)}`,
+                );
+                const rawValue =
+                    input instanceof HTMLInputElement ? input.value.trim() : "";
+                values[field.configKey] =
+                    typeof field.serialize === "function"
+                        ? field.serialize(rawValue)
+                        : rawValue;
+            }
+
+            const saveResponse = await apiFetch(saveUrl, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(values),
+            });
+            const savePayload = await (typeof saveResponse.clone === "function"
+                ? saveResponse
+                      .clone()
+                      .json()
+                      .catch(() => ({}))
+                : saveResponse.json().catch(() => ({})));
+
+            if (!saveResponse.ok) {
+                const message =
+                    savePayload?.error?.message ?? i18n.t(failedKey);
+                if (saveResponse.status === 400) {
+                    const fieldId = resolveFieldErrorId(savePayload);
+                    if (markPopupFieldInvalid(popupOverlay, fieldId, message)) {
+                        return false;
+                    }
+                }
+                showToast(i18n.t(failedKey), { variant: "error" });
+                return false;
+            }
+
+            if (powerState && typeof powerState.onChange === "function") {
+                const powerToggle = popupOverlay.querySelector(
+                    ".module-settings-popup-power-toggle",
+                );
+                const requestedPower =
+                    powerToggle instanceof HTMLInputElement
+                        ? powerToggle.checked
+                        : powerStateEnabled;
+                if (requestedPower !== powerStateEnabled) {
+                    const powerChanged =
+                        await powerState.onChange(requestedPower);
+                    if (powerChanged === false) return false;
+                }
+            }
+
+            didSave = true;
+            showToast(i18n.t(successKey), { variant: "success" });
+            return true;
+        },
     });
 
-    if (action !== "save" || !(popupOverlay instanceof HTMLElement)) {
-        return false;
-    }
-
-    const values = {};
-    for (const field of fields ?? []) {
-        const fieldId = String(field.id ?? "").trim();
-        if (!fieldId) continue;
-        const input = popupOverlay.querySelector(`#${fieldId}`);
-        const rawValue =
-            input instanceof HTMLInputElement ? input.value.trim() : "";
-        values[field.configKey] =
-            typeof field.serialize === "function"
-                ? field.serialize(rawValue)
-                : rawValue;
-    }
-
-    const saveResponse = await apiFetch(saveUrl, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(values),
-    });
-
-    if (!saveResponse.ok) {
-        showToast(i18n.t(failedKey), { variant: "error" });
-        return false;
-    }
-
-    showToast(i18n.t(successKey), { variant: "success" });
-    return true;
+    return didSave;
 }
