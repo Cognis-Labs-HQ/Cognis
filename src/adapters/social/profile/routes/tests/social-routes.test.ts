@@ -241,6 +241,38 @@ test("social routes - block removes follow and returns 404 for blocked user", as
     }
 });
 
+test("social routes - admin blocked by a user cannot find blocker in social search", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "alice", "admin");
+        await profileStore.updateProfile("alice", { visibility: "community" });
+        await profileStore.updateProfile("admin", { visibility: "community" });
+        await profileStore.block("alice", "admin");
+        const route = createSocialRoutes(profileStore);
+        const adminToken = issueAccessToken("admin", "admin", 60);
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq("GET", adminToken),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/social/users/search?q=ali"),
+        );
+
+        assert.equal(status, 200);
+        assert.deepEqual(JSON.parse(body).data, []);
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("social routes - cannot block yourself", async () => {
     const { dir, executor } = makeTempDb();
     try {

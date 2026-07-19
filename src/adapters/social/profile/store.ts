@@ -248,7 +248,7 @@ export class DbProfileStore implements ProfileCreateStore {
     async searchProfiles(
         query: string,
         limit: number = 10,
-        options: { includeHidden?: boolean } = {},
+        options: { includeHidden?: boolean; requesterAccountId?: string } = {},
     ): Promise<AccountProfile[]> {
         const pattern = query.toLowerCase().replace(/[\\%_]/g, "\\$&") + "%";
         const visibilityFilters = options.includeHidden
@@ -304,7 +304,27 @@ export class DbProfileStore implements ProfileCreateStore {
                   ? 1
                   : 0,
         );
-        return merged.slice(0, limit);
+        const requesterAccountId = String(
+            options.requesterAccountId ?? "",
+        ).trim();
+        if (!requesterAccountId) {
+            return merged.slice(0, limit);
+        }
+
+        const visibleToRequester: AccountProfile[] = [];
+        for (const profile of merged) {
+            if (profile.accountId === requesterAccountId) {
+                visibleToRequester.push(profile);
+                continue;
+            }
+            if (
+                !(await this.isBlocked(profile.accountId, requesterAccountId))
+            ) {
+                visibleToRequester.push(profile);
+            }
+            if (visibleToRequester.length >= limit) break;
+        }
+        return visibleToRequester;
     }
 
     async updateProfile(

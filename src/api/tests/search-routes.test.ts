@@ -16,7 +16,7 @@ test("global search includes hidden profiles for admins", async () => {
     const calls: Array<{
         query: string;
         limit: number;
-        options?: { includeHidden?: boolean };
+        options?: { includeHidden?: boolean; requesterAccountId?: string };
     }> = [];
     const route = createSearchRoutes(async (query, limit, options) => {
         calls.push({ query, limit, options });
@@ -49,7 +49,11 @@ test("global search includes hidden profiles for admins", async () => {
 
     assert.equal(status, 200);
     assert.deepEqual(calls, [
-        { query: "hidden", limit: 10, options: { includeHidden: true } },
+        {
+            query: "hidden",
+            limit: 10,
+            options: { includeHidden: true, requesterAccountId: "admin" },
+        },
     ]);
     const parsed = JSON.parse(body);
     assert.equal(parsed.data.length, 1);
@@ -62,7 +66,7 @@ test("global search excludes hidden profiles for regular users", async () => {
     const calls: Array<{
         query: string;
         limit: number;
-        options?: { includeHidden?: boolean };
+        options?: { includeHidden?: boolean; requesterAccountId?: string };
     }> = [];
     const route = createSearchRoutes(async (query, limit, options) => {
         calls.push({ query, limit, options });
@@ -95,7 +99,11 @@ test("global search excludes hidden profiles for regular users", async () => {
 
     assert.equal(status, 200);
     assert.deepEqual(calls, [
-        { query: "hidden", limit: 10, options: { includeHidden: false } },
+        {
+            query: "hidden",
+            limit: 10,
+            options: { includeHidden: false, requesterAccountId: "alice" },
+        },
     ]);
     const parsed = JSON.parse(body);
     assert.deepEqual(parsed.data, []);

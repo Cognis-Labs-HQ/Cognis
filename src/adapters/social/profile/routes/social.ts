@@ -98,7 +98,10 @@ export function createSocialRoutes(
             const results = await profileStore.searchProfiles(
                 query,
                 SEARCH_RESULTS_LIMIT,
-                { includeHidden: hasAdminBypass(claims.role) },
+                {
+                    includeHidden: hasAdminBypass(claims.role),
+                    requesterAccountId: claims.sub,
+                },
             );
             const filtered = results.filter((p) => p.accountId !== claims.sub);
             res.writeHead(200, { "content-type": "application/json" });
@@ -123,9 +126,10 @@ export function createSocialRoutes(
                 );
                 return true;
             }
-            const blockedBy = hasAdminBypass(claims.role)
-                ? false
-                : await profileStore.isBlocked(target.accountId, claims.sub);
+            const blockedBy = await profileStore.isBlocked(
+                target.accountId,
+                claims.sub,
+            );
             if (blockedBy) {
                 // Treat as not-found from the requester's perspective; the blocker
                 // must never appear to exist (mirrors follow/followers handlers below).
@@ -225,10 +229,7 @@ export function createSocialRoutes(
                 );
                 return true;
             }
-            if (
-                !hasAdminBypass(claims.role) &&
-                (await profileStore.isBlocked(target.accountId, claims.sub))
-            ) {
+            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -382,10 +383,7 @@ export function createSocialRoutes(
                 );
                 return true;
             }
-            if (
-                !hasAdminBypass(claims.role) &&
-                (await profileStore.isBlocked(target.accountId, claims.sub))
-            ) {
+            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -442,10 +440,7 @@ export function createSocialRoutes(
                 );
                 return true;
             }
-            if (
-                !hasAdminBypass(claims.role) &&
-                (await profileStore.isBlocked(target.accountId, claims.sub))
-            ) {
+            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
