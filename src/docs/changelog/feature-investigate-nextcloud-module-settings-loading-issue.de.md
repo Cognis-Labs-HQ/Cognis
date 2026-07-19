@@ -15,3 +15,7 @@ Nextcloud Whiteboard registriert seine Einstellungs-Endpunkte weiterhin, wenn er
 ## Teilaktualisierungen können vor dem Secret gespeichert werden
 
 Nextcloud-Whiteboard-Einstellungen akzeptieren jetzt Aktualisierungen von Server-URL und Upload-Limit auch dann, wenn das API-Schlüsselfeld absichtlich leer bleibt. Das Modul wird weiterhin erst nach Hinterlegung eines gültigen Schlüssels als vollständig konfiguriert gemeldet.
+
+## Feldgenaue Validierung hält Einstellungen geöffnet
+
+Validierungsfehler in Moduleinstellungen benennen jetzt das ungültige Feld. Dadurch kann das gemeinsame Konfigurations-Popup geöffnet bleiben und dieses Eingabefeld markieren, statt gültige Admin-Änderungen zu verwerfen.

@@ -15,3 +15,7 @@ Nextcloud Whiteboard tetap mendaftarkan endpoint pengaturannya saat dependensi r
 ## Pembaruan parsial dapat disimpan sebelum rahasia diisi
 
 Pengaturan Nextcloud Whiteboard kini menerima pembaruan URL server dan batas unggahan meskipun kolom kunci API sengaja dibiarkan kosong, sambil tetap melaporkan modul belum sepenuhnya dikonfigurasi sampai kunci yang valid diberikan.
+
+## Validasi per kolom menjaga pengaturan tetap terbuka
+
+Kesalahan validasi pengaturan modul kini menyebutkan kolom yang tidak valid, sehingga popup konfigurasi bersama tetap terbuka dan menandai input tersebut alih-alih membuang perubahan admin yang valid.

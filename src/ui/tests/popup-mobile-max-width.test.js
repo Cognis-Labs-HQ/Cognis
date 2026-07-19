@@ -155,3 +155,11 @@ test("createAnchoredPopup creates, positions, and tears down anchored popups", (
         globalThis.window = originalWindow;
     }
 });
+
+test("config form popup keeps known 400 field errors open", () => {
+    const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+    assert.match(source, /function markPopupFieldInvalid\(/);
+    assert.match(source, /saveResponse\.status === 400/);
+    assert.match(source, /return false;/);
+    assert.match(source, /CSS\.escape\(fieldId\)/);
+});

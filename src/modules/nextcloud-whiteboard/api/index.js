@@ -424,6 +424,7 @@ export function registerApiRoutes(router, ctx) {
                     400,
                     "bad_request",
                     "A valid Whiteboard server URL is required.",
+                    { fieldId: "nextcloud-whiteboard-server-url" },
                 );
                 return;
             }
@@ -433,6 +434,7 @@ export function registerApiRoutes(router, ctx) {
                     400,
                     "bad_request",
                     "API key must be at least 16 characters for sufficient security.",
+                    { fieldId: "nextcloud-whiteboard-api-key" },
                 );
                 return;
             }

@@ -516,6 +516,34 @@ export async function openPopup({
  * Callers provide translated labels, field descriptors, request helpers, and
  * toast callbacks so module and gateway settings can share one popup flow.
  */
+
+function resolveFieldErrorId(payload) {
+    const error = payload?.error;
+    const fieldId = String(error?.fieldId ?? error?.field ?? "").trim();
+    return fieldId || null;
+}
+
+function markPopupFieldInvalid(overlay, fieldId, message) {
+    if (!(overlay instanceof HTMLElement) || !fieldId) return false;
+    const field = overlay.querySelector(`#${CSS.escape(fieldId)}`);
+    if (!(field instanceof HTMLInputElement)) return false;
+    field.setAttribute("aria-invalid", "true");
+    field.classList.add("module-settings-popup-field-invalid");
+    field.setCustomValidity(String(message ?? ""));
+    field.reportValidity();
+    field.focus();
+    field.addEventListener(
+        "input",
+        () => {
+            field.setCustomValidity("");
+            field.removeAttribute("aria-invalid");
+            field.classList.remove("module-settings-popup-field-invalid");
+        },
+        { once: true },
+    );
+    return true;
+}
+
 export async function openConfigFormPopup({
     i18n,
     apiFetch,
@@ -540,6 +568,7 @@ export async function openConfigFormPopup({
     const config = loadPayload?.data ?? {};
 
     let popupOverlay = null;
+    let didSave = false;
     const fieldRows = (Array.isArray(fields) ? fields : [])
         .map((field) => {
             const fieldId = String(field.id ?? "").trim();
@@ -582,7 +611,7 @@ export async function openConfigFormPopup({
       </div>`
         : "";
 
-    const action = await openPopup({
+    await openPopup({
         title: i18n.t(titleKey),
         body: () => `
       <div class="module-settings-popup-fields">
@@ -603,50 +632,68 @@ export async function openConfigFormPopup({
         onOpen: (overlay) => {
             popupOverlay = overlay;
         },
+        onAction: async (action) => {
+            if (action !== "save") return true;
+            if (!(popupOverlay instanceof HTMLElement)) return false;
+
+            const values = {};
+            for (const field of fields ?? []) {
+                const fieldId = String(field.id ?? "").trim();
+                if (!fieldId) continue;
+                const input = popupOverlay.querySelector(
+                    `#${CSS.escape(fieldId)}`,
+                );
+                const rawValue =
+                    input instanceof HTMLInputElement ? input.value.trim() : "";
+                values[field.configKey] =
+                    typeof field.serialize === "function"
+                        ? field.serialize(rawValue)
+                        : rawValue;
+            }
+
+            const saveResponse = await apiFetch(saveUrl, {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(values),
+            });
+            const savePayload = await saveResponse
+                .clone?.()
+                ?.json?.()
+                .catch(() => ({}));
+
+            if (!saveResponse.ok) {
+                const message =
+                    savePayload?.error?.message ?? i18n.t(failedKey);
+                if (saveResponse.status === 400) {
+                    const fieldId = resolveFieldErrorId(savePayload);
+                    if (markPopupFieldInvalid(popupOverlay, fieldId, message)) {
+                        return false;
+                    }
+                }
+                showToast(i18n.t(failedKey), { variant: "error" });
+                return false;
+            }
+
+            if (powerState && typeof powerState.onChange === "function") {
+                const powerToggle = popupOverlay.querySelector(
+                    ".module-settings-popup-power-toggle",
+                );
+                const requestedPower =
+                    powerToggle instanceof HTMLInputElement
+                        ? powerToggle.checked
+                        : powerStateEnabled;
+                if (requestedPower !== powerStateEnabled) {
+                    const powerChanged =
+                        await powerState.onChange(requestedPower);
+                    if (powerChanged === false) return false;
+                }
+            }
+
+            didSave = true;
+            showToast(i18n.t(successKey), { variant: "success" });
+            return true;
+        },
     });
 
-    if (action !== "save" || !(popupOverlay instanceof HTMLElement)) {
-        return false;
-    }
-
-    const values = {};
-    for (const field of fields ?? []) {
-        const fieldId = String(field.id ?? "").trim();
-        if (!fieldId) continue;
-        const input = popupOverlay.querySelector(`#${fieldId}`);
-        const rawValue =
-            input instanceof HTMLInputElement ? input.value.trim() : "";
-        values[field.configKey] =
-            typeof field.serialize === "function"
-                ? field.serialize(rawValue)
-                : rawValue;
-    }
-
-    const saveResponse = await apiFetch(saveUrl, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(values),
-    });
-
-    if (!saveResponse.ok) {
-        showToast(i18n.t(failedKey), { variant: "error" });
-        return false;
-    }
-
-    if (powerState && typeof powerState.onChange === "function") {
-        const powerToggle = popupOverlay.querySelector(
-            ".module-settings-popup-power-toggle",
-        );
-        const requestedPower =
-            powerToggle instanceof HTMLInputElement
-                ? powerToggle.checked
-                : powerStateEnabled;
-        if (requestedPower !== powerStateEnabled) {
-            const powerChanged = await powerState.onChange(requestedPower);
-            if (powerChanged === false) return false;
-        }
-    }
-
-    showToast(i18n.t(successKey), { variant: "success" });
-    return true;
+    return didSave;
 }
