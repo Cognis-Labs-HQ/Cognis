@@ -13,6 +13,7 @@ interface DocEntry {
     group: string;
     title: string;
     fileStem: string;
+    generatedMarkdown?: string;
 }
 
 async function findDocsDirs(
@@ -100,6 +101,35 @@ function computeGroup(slug: string, isRootDocs: boolean): string {
     return first;
 }
 
+function changelogBranchFromSlug(slug: string): string {
+    return slug.replace(/^changelog\//, "");
+}
+
+function withChangelogBranch(markdown: string, slug: string): string {
+    if (!slug.startsWith("changelog/") || slug === "changelog/index") {
+        return markdown;
+    }
+    const branch = changelogBranchFromSlug(slug);
+    const branchLine = `\n\n**Feature Branch:** ${branch}\n`;
+    if (markdown.match(/^#\s+.+$/m)) {
+        return markdown.replace(/^(#\s+.+)$/m, `$1${branchLine}`);
+    }
+    return `# ${branch}\n${branchLine}\n${markdown}`;
+}
+
+function buildChangelogIndexMarkdown(entries: DocEntry[]): string {
+    const links = entries
+        .filter((entry) => entry.slug.startsWith("changelog/"))
+        .sort((first, second) => first.slug.localeCompare(second.slug))
+        .map((entry) => {
+            const branch = changelogBranchFromSlug(entry.slug);
+            const label = entry.title || branch;
+            return `- [${label}](/changelogs/${branch})`;
+        });
+
+    return ["# Changelogs", "", ...links].join("\n");
+}
+
 async function collectDocIndex(): Promise<Map<string, DocEntry>> {
     const docsDirs = await findDocsDirs(SRC_ROOT);
     const bySlug = new Map<string, DocEntry>();
@@ -130,6 +160,20 @@ async function collectDocIndex(): Promise<Map<string, DocEntry>> {
                 fileStem,
             });
         }
+    }
+
+    const changelogEntries = [...bySlug.values()].filter((entry) =>
+        entry.slug.startsWith("changelog/"),
+    );
+    if (changelogEntries.length > 0) {
+        bySlug.set("changelog", {
+            slug: "changelog",
+            path: "/api/v1/docs/changelog",
+            group: "changelog",
+            title: "Changelogs",
+            fileStem: "",
+            generatedMarkdown: buildChangelogIndexMarkdown(changelogEntries),
+        });
     }
 
     return bySlug;
@@ -177,7 +221,7 @@ export function createDocsRoutes() {
             return true;
         }
 
-        let content: string | undefined;
+        let content: string | undefined = entry.generatedMarkdown;
         for (const lang of langs) {
             try {
                 content = await readFile(
@@ -201,8 +245,10 @@ export function createDocsRoutes() {
             return true;
         }
 
+        const markdown = withChangelogBranch(content, rawSlug);
+
         res.writeHead(200, { "content-type": "application/json" });
-        res.end(JSON.stringify({ data: { slug: rawSlug, markdown: content } }));
+        res.end(JSON.stringify({ data: { slug: rawSlug, markdown } }));
         return true;
     };
 }
