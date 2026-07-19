@@ -108,6 +108,16 @@ export function initGeneralPrefs(root, { i18n, username }) {
         );
     }
 
+    async function submitAccountLifecycleAction(action, password) {
+        const response = await apiFetch("/api/v1/auth/account-lifecycle", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ action, password }),
+        });
+        if (response.status === 401) throw new Error("invalid_credentials");
+        if (!response.ok) throw new Error("account_action_failed");
+    }
+
     async function submitVerificationCode(address, code) {
         const res = await apiFetch(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/verify`,
@@ -265,6 +275,74 @@ export function initGeneralPrefs(root, { i18n, username }) {
         });
     }
 
+    async function openDangerActionPopup(action) {
+        if (!["archive", "deactivate", "delete"].includes(action)) return;
+        const actionLabels = {
+            archive: i18n.t("ui.app.settings.danger_archive"),
+            deactivate: i18n.t("ui.app.settings.danger_deactivate"),
+            delete: i18n.t("ui.app.settings.danger_delete"),
+        };
+        const escapedActionLabel = escapeHtml(actionLabels[action] ?? action);
+        await openPopup({
+            title: i18n
+                .t("ui.app.settings.danger_popup_title")
+                .replace("{action}", escapedActionLabel),
+            body: `
+        <p class="settings-danger-warning">${escapeHtml(i18n.t(`ui.app.settings.danger_${action}_warning`))}</p>
+        <label class="settings-danger-password-label">
+          ${escapeHtml(i18n.t("ui.app.settings.danger_password_label"))}
+          <input id="account-danger-password" type="password" autocomplete="current-password" />
+        </label>
+      `,
+            variant: "danger",
+            actions: [
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+                {
+                    id: "confirm",
+                    label: i18n.t("ui.reuse.confirm"),
+                    variant: "danger",
+                },
+            ],
+            onAction: async (result, overlay) => {
+                if (result !== "confirm") return;
+                const passwordInput = overlay.querySelector(
+                    "#account-danger-password",
+                );
+                const password =
+                    passwordInput instanceof HTMLInputElement
+                        ? passwordInput.value
+                        : "";
+                if (!password) {
+                    showToast(
+                        i18n.t("ui.app.settings.danger_password_required"),
+                        { variant: "warning" },
+                    );
+                    return false;
+                }
+                try {
+                    await submitAccountLifecycleAction(action, password);
+                    showToast(i18n.t("ui.app.settings.danger_completed"), {
+                        variant: "success",
+                    });
+                    window.location.replace("/login");
+                } catch (err) {
+                    const code = err instanceof Error ? err.message : "failed";
+                    showToast(
+                        code === "invalid_credentials"
+                            ? i18n.t("ui.app.settings.danger_invalid_password")
+                            : i18n.t("ui.app.settings.danger_failed"),
+                        { variant: "error" },
+                    );
+                    return false;
+                }
+            },
+        });
+    }
+
     function bindEmailActions() {
         root.addEventListener("click", async (evt) => {
             const target = evt.target;
@@ -334,6 +412,12 @@ export function initGeneralPrefs(root, { i18n, username }) {
                         showStatus(i18n.t("ui.app.settings.emails_add_failed"));
                     }
                 }
+                return;
+            }
+
+            const accountAction = target.dataset.accountAction;
+            if (accountAction) {
+                await openDangerActionPopup(accountAction);
                 return;
             }
 

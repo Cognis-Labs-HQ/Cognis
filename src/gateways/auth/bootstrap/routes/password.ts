@@ -87,6 +87,81 @@ export function createPasswordRoutes({
         }
 
         if (
+            url.pathname === "/api/v1/auth/account-lifecycle" &&
+            req.method === "POST"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const action = String(body.action ?? "");
+            const password = String(body.password ?? "");
+            if (!["archive", "deactivate", "delete"].includes(action)) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "bad_request",
+                            message: "Unsupported account lifecycle action",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const verified = await accountStore.verify(claims.sub, password);
+            if (!verified) {
+                log?.(
+                    "warn",
+                    "Account lifecycle password confirmation failed.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        action,
+                    },
+                );
+                res.writeHead(401, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_credentials",
+                            message: "Incorrect password",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (action === "delete") {
+                await accountStore.delete(claims.sub);
+            } else if (accountStore.setEnabled) {
+                await accountStore.setEnabled(claims.sub, false);
+            } else {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "account_lifecycle_unavailable",
+                            message: "Account lifecycle action unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const revokedTokenCount = revokeAccessTokensForSubject(claims.sub);
+            log?.("warn", "Applied account lifecycle action.", {
+                ...logMeta,
+                accountId: claims.sub,
+                action,
+                revokedTokenCount,
+            });
+            res.writeHead(200, {
+                "content-type": "application/json",
+                "set-cookie":
+                    "cognis_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
+            });
+            res.end(JSON.stringify({ data: { action, completed: true } }));
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/auth/password-change-capability" &&
             req.method === "GET"
         ) {
