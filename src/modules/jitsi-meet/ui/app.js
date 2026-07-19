@@ -618,9 +618,8 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
 
         const syncJitsiTheme = (event) => {
             const nextThemeMode = resolveThemeMode(event?.detail?.theme);
-            if (nextThemeMode === state.jitsiThemeMode && !state.jitsiApi) {
-                return;
-            }
+            const themeChanged = nextThemeMode !== state.jitsiThemeMode;
+            if (!themeChanged && !state.jitsiApi) return;
             state.jitsiThemeMode = nextThemeMode;
             if (!state.jitsiApi) return;
             const defaultBackground = applyJitsiWindowTheme(
@@ -634,6 +633,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                     DEFAULT_BACKGROUND: defaultBackground,
                 },
             });
+            if (themeChanged) void openMeetingEmbed();
         };
         const themeObserver = new MutationObserver(syncJitsiTheme);
         themeObserver.observe(document.body, {
