@@ -30,6 +30,9 @@
             "path": "./src/adapters/file/local"
         },
         {
+            "path": "./src/adapters/file/quota"
+        },
+        {
             "path": "./src/adapters/notify/smtp"
         },
         {

@@ -3,6 +3,10 @@ import {
     hydrateProfileAvatars,
 } from "/static/gateways/social/reuse/profile-avatar.js";
 import { apiFetch } from "/static/reuse/api-client.js";
+import {
+    MESSAGES_FILE_NAMESPACE_ID,
+    buildNamespacedFileUrl,
+} from "./file-namespaces.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -579,11 +583,14 @@ export function createMessagesRoomState({
             const extension = extensionFromType(file.type);
             const key = `chatrooms/${selectedRoomId}-${Date.now()}.${extension}`;
             const buffer = await file.arrayBuffer();
-            const upload = await apiFetch(`/api/v1/files/${key}`, {
-                method: "PUT",
-                headers: { "content-type": file.type || "image/jpeg" },
-                body: buffer,
-            });
+            const upload = await apiFetch(
+                buildNamespacedFileUrl(MESSAGES_FILE_NAMESPACE_ID, key),
+                {
+                    method: "PUT",
+                    headers: { "content-type": file.type || "image/jpeg" },
+                    body: buffer,
+                },
+            );
             if (!upload.ok) return;
             const update = await apiFetch(
                 `/api/v1/social/messages/rooms/${encodeURIComponent(selectedRoomId)}`,

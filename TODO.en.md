@@ -251,3 +251,11 @@
 **Reviewer suggestion:** Remove the `typeof window !== "undefined"` check since this UI module only ever runs in the browser.
 
 **Reason ignored:** This guard predates this PR (present since the share session-flow-hooks file was first introduced) and was not added by this PR's `beforeunload`/AbortSignal fix — only the `addEventListener` call inside it was modified. It is a harmless defensive check consistent with other guards in the same file; removing it is a pure style nitpick unrelated to this PR's share/mailto/expiry/theme bug fixes.
+
+## Files Gateway Namespace Expansion Session
+
+### Namespace-defaults admin panel under Administration
+
+**Deferred scope:** The design plan suggested an admin-only panel (likely under Administration) listing every registered namespace with its default quota, editable by admins, reusing `createPageComposer` contribution patterns.
+
+**Reason deferred:** `src/ui/app/administration/index.js` is already at 990 lines (the repository's own 1000-line file-size ceiling), and adding a full namespace-defaults panel would either push it over that limit or require a larger restructuring (splitting the file into a subdirectory with focused sibling modules) that is out of proportion to this task's core requirement (namespace/ACL/quota enforcement + the one real existing consumer's migration). The backend admin routes (`GET/PUT /api/v1/files/admin/namespace-defaults[...]`, `PUT /api/v1/files/admin/global-default`) are fully implemented and tested; only the UI panel is deferred. The higher-value, directly-tied-to-existing-UI per-user "Storage Quotas" popup (in `src/ui/app/users/index.js`) was implemented instead. A follow-up task should split `administration/index.js` per the file-size convention and add the namespace-defaults panel as a new contributed section.

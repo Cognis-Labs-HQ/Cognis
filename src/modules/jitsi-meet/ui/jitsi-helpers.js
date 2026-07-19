@@ -6,6 +6,7 @@ const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({
     languageBaseUrls: ["/static/modules/jitsi-meet/languages"],
     stylesheetUrls: [],
     reactionHelpersModuleUrl: null,
+    profileFileNamespace: null,
 });
 
 export async function loadMessageUiResources() {
@@ -47,6 +48,10 @@ export async function loadMessageUiResources() {
                     : FALLBACK_MESSAGE_UI_RESOURCES.languageBaseUrls,
             stylesheetUrls,
             reactionHelpersModuleUrl,
+            profileFileNamespace:
+                typeof responseData.profileFileNamespace === "string"
+                    ? responseData.profileFileNamespace
+                    : null,
         };
     } catch {
         console.warn(
@@ -55,6 +60,16 @@ export async function loadMessageUiResources() {
         );
         return FALLBACK_MESSAGE_UI_RESOURCES;
     }
+}
+
+function buildFileUrl(namespaceId, objectKey) {
+    if (!namespaceId || !objectKey) return "";
+    return `${window.location.origin}/api/v1/files/${encodeURIComponent(
+        namespaceId,
+    )}/${String(objectKey)
+        .split("/")
+        .map((part) => encodeURIComponent(part))
+        .join("/")}`;
 }
 
 export function ensureStylesheetLoaded(stylesheetUrl) {
@@ -133,12 +148,11 @@ export async function fetchCurrentProfile() {
     const email = typeof profile.email === "string" ? profile.email.trim() : "";
     const avatarKey =
         typeof profile.avatarKey === "string" ? profile.avatarKey.trim() : "";
-    const avatarUrl = avatarKey
-        ? `${window.location.origin}/api/v1/files/${avatarKey
-              .split("/")
-              .map((part) => encodeURIComponent(part))
-              .join("/")}`
-        : "";
+    const messageUiResources = await loadMessageUiResources();
+    const avatarUrl = buildFileUrl(
+        messageUiResources.profileFileNamespace,
+        avatarKey,
+    );
     return {
         handle,
         displayName: displayName || handle || "Cognis User",
@@ -176,12 +190,11 @@ async function fetchShareGuestProfile() {
     const displayName = String(profile.displayName ?? "Guest").trim();
     const avatarKey =
         typeof profile.avatarKey === "string" ? profile.avatarKey.trim() : "";
-    const avatarUrl = avatarKey
-        ? `${window.location.origin}/api/v1/files/${avatarKey
-              .split("/")
-              .map((part) => encodeURIComponent(part))
-              .join("/")}`
-        : "";
+    const messageUiResources = await loadMessageUiResources();
+    const avatarUrl = buildFileUrl(
+        messageUiResources.profileFileNamespace,
+        avatarKey,
+    );
     return {
         handle: "",
         displayName: displayName || "Guest",

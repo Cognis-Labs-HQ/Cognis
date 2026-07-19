@@ -133,6 +133,23 @@ export async function bootstrapSocialAdapter(
         component: "social-messages-adapter",
     });
 
+    // Foundational namespace registration for chatroom attachments/avatars.
+    // Group-scoped ACL wiring (granting all room members read access to a
+    // room's uploaded avatar) is deferred to when full attachment support is
+    // built; until then, uploaded room avatars are visible only to their
+    // uploader.
+    ctx.capabilities.get<
+        (definition: {
+            id: string;
+            ownerComponent: string;
+            acl: { visibility: string };
+        }) => void
+    >("files:registerNamespace")?.({
+        id: "chats",
+        ownerComponent: "social-messages",
+        acl: { visibility: "private-group" },
+    });
+
     const dispatch =
         ctx.capabilities.get<
             (e: {
