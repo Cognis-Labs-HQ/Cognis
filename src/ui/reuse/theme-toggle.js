@@ -3,7 +3,7 @@
  *
  * - persistTheme(mode)      — writes theme to localStorage + cookie.
  * - getStoredTheme()        — reads stored theme (localStorage → cookie fallback), returns 'dark' | 'light'.
- * - applyTheme(mode)        — updates data-theme on <body> and the theme-toggle button.
+ * - applyTheme(mode)        — updates data-theme on <body>, notifies listeners, and updates the theme-toggle button.
  * - bindThemeToggle(opts)   — applies the initial theme and wires the #theme-toggle click handler.
  *
  * Usage:
@@ -51,6 +51,12 @@ export function applyTheme(mode) {
         toggle.dataset.mode = normalized;
         toggle.textContent = normalized === "dark" ? "🌙" : "☀️";
     }
+
+    window.dispatchEvent(
+        new CustomEvent("cognis:themechange", {
+            detail: { theme: normalized },
+        }),
+    );
 }
 
 export function bindThemeToggle(options = {}) {

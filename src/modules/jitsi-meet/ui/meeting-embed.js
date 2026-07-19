@@ -6,21 +6,23 @@ import {
 
 let jitsiExternalApiLoader = null;
 
+const JITSI_THEME_BACKGROUNDS = {
+    dark: "#030a14",
+    light: "#f4f8ff",
+};
+
 function readThemeCookie() {
     const match = document.cookie.match(/(?:^|; )cognis_theme=([^;]+)/);
     return match ? decodeURIComponent(match[1]) : "";
 }
 
-export function resolveThemeMode() {
-    const storedMode = String(localStorage.getItem("cognis_theme") ?? "")
-        .trim()
-        .toLowerCase();
-    if (storedMode === "light" || storedMode === "dark") return storedMode;
-
+export function resolveThemeMode(explicitMode) {
     for (const candidate of [
+        explicitMode,
         document.querySelector(".app-shell")?.getAttribute("data-theme"),
         document.body.getAttribute("data-theme"),
         document.documentElement.getAttribute("data-theme"),
+        localStorage.getItem("cognis_theme"),
         readThemeCookie(),
     ]) {
         const mode = String(candidate ?? "")
@@ -29,6 +31,10 @@ export function resolveThemeMode() {
         if (mode === "light" || mode === "dark") return mode;
     }
     return "light";
+}
+
+export function resolveJitsiDefaultBackground(explicitMode) {
+    return JITSI_THEME_BACKGROUNDS[resolveThemeMode(explicitMode)];
 }
 
 export function resolveRoomName(meeting) {
@@ -46,7 +52,12 @@ export function buildMeetingJoinUrl(meetingUrl, profile) {
         hashParams.set("config.requireDisplayName", "false");
         hashParams.set("config.disableDeepLinking", "true");
         hashParams.set("config.subject", MEETING_SUBJECT);
-        hashParams.set("config.preferredTheme", resolveThemeMode());
+        const themeMode = resolveThemeMode();
+        hashParams.set("config.preferredTheme", themeMode);
+        hashParams.set(
+            "interfaceConfig.DEFAULT_BACKGROUND",
+            resolveJitsiDefaultBackground(themeMode),
+        );
         hashParams.set(
             "config.toolbarButtons",
             JSON.stringify(JITSI_TOOLBAR_BUTTONS),
