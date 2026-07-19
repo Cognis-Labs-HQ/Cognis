@@ -15,6 +15,7 @@
  */
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { readPreferredLanguages } from "../../reuse/i18n.js";
 import { openPopup } from "../../reuse/popup.js";
 import { navigateTo } from "../../reuse/app-router.js";
@@ -43,7 +44,7 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
                       .slice(0, MAX_VISIBLE_RELEASE_NOTE_BULLETS)
                       .map(
                           (changeHeading) =>
-                              `<li>${escapeHtml(changeHeading)}</li>`,
+                              `<li>${renderMarkdown(changeHeading)}</li>`,
                       )
                       .join("")
                 : "";

@@ -1,5 +1,6 @@
 import { ACCESS_ROLES, getRoleLabel } from "/static/reuse/access-role.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import {
     isTrustedHttpUrl,
@@ -139,7 +140,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 return `
           <tr class="notif-broadcast-row${broadcast.requireAcknowledgement ? " notif-broadcast-row--expandable" : ""}" data-broadcast-id="${escapeHtml(broadcast.id)}"${expandableAttributes}>
             <td>${escapeHtml(broadcast.title ?? "")}</td>
-            <td>${escapeHtml(broadcast.message ?? "")}</td>
+            <td class="notif-broadcast-message-cell">${renderMarkdown(broadcast.message ?? "")}</td>
             <td>${escapeHtml(roleText)}</td>
             <td>${escapeHtml(renderScheduleText(broadcast))}</td>
             <td>${escapeHtml(broadcast.displayMode === "popup" ? i18n.t("gateway.notify.admin.broadcast_mode_popup") : i18n.t("gateway.notify.admin.broadcast_mode_bar"))}</td>
