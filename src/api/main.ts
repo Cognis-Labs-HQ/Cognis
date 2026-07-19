@@ -157,6 +157,20 @@ function bootstrapLog(
 ) {
     writeConsoleLog(level, message, meta);
 }
+
+type ModuleEnableTest = () => Promise<{ ok?: boolean; message?: string }>;
+
+function getModuleEnableTest(
+    moduleId: string,
+    systemCtx: Ctx,
+    capabilities: CapabilityStore,
+): ModuleEnableTest | undefined {
+    const capabilityKey = `module:${moduleId}:enableTest`;
+    return (
+        systemCtx.getCapability<ModuleEnableTest>(capabilityKey) ??
+        capabilities.get<ModuleEnableTest>(capabilityKey)
+    );
+}
 bootstrapLog("info", "Starting Cognis API bootstrap.", { host, port });
 
 const cliTokenPath =
@@ -388,9 +402,7 @@ const server = buildServer({
           }
         : undefined,
     validateModuleEnable: async (moduleId) => {
-        const test = capabilities.get<
-            () => Promise<{ ok?: boolean; message?: string }>
-        >(`module:${moduleId}:enableTest`);
+        const test = getModuleEnableTest(moduleId, systemCtx, capabilities);
         if (!test) return;
         const result = await test();
         if (result?.ok === false) {
