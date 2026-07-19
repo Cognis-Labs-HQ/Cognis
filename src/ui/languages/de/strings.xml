@@ -464,6 +464,7 @@
   <string name="ui.app.profile.follow_hidden_toast">Dein Profil ist auf „Versteckt" gesetzt. Ändere deine Sichtbarkeit in den Einstellungen, um anderen zu folgen.</string>
   <string name="ui.app.profile.section.follow_requests">Folgeanfragen</string>
   <string name="ui.app.profile.follow_requests.empty">Keine ausstehenden Folgeanfragen.</string>
+  <string name="ui.app.profile.follow_counts_refresh_failed">Follower-Zahlen konnten nicht aktualisiert werden.</string>
   <string name="ui.app.profile.not_found">Profil nicht gefunden.</string>
   <string name="ui.app.profile.saved">Profil gespeichert.</string>
   <string name="ui.app.profile.save_failed">Profil konnte nicht gespeichert werden.</string>
