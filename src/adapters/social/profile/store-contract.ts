@@ -57,6 +57,13 @@ export interface ProfileCreateStore {
     setRoleByHandle(handle: string, role: AccountRole): Promise<void>;
 }
 
+export interface ProfileSearchOptions {
+    includeHidden?: boolean;
+    requesterAccountId?: string;
+    followingAccountId?: string;
+    candidateHandles?: string[];
+}
+
 export interface ProfileStore extends ProfileCreateStore {
     getProfile(accountId: string): Promise<AccountProfile | null>;
     getProfileByHandle(handle: string): Promise<AccountProfile | null>;
@@ -75,6 +82,13 @@ export interface ProfileStore extends ProfileCreateStore {
             >
         >,
     ): Promise<AccountProfile | null>;
+    searchProfiles(
+        query: string,
+        limit?: number,
+        options?: ProfileSearchOptions,
+    ): Promise<AccountProfile[]>;
+    getFollowers(accountId: string): Promise<AccountProfile[]>;
+    getFollowing(accountId: string): Promise<AccountProfile[]>;
     getFollowerCount(accountId: string): Promise<number>;
     getFollowingCount(accountId: string): Promise<number>;
     getPostsByAccount(accountId: string): Promise<Post[]>;
@@ -174,6 +188,106 @@ export class VolatileProfileStore implements ProfileStore {
         Object.assign(profile, updates);
         profile.updatedAt = new Date().toISOString();
         return profile;
+    }
+
+    async searchProfiles(
+        query: string,
+        limit: number = 10,
+        options: ProfileSearchOptions = {},
+    ): Promise<AccountProfile[]> {
+        const normalizedQuery = String(query ?? "")
+            .trim()
+            .toLowerCase();
+        const requesterAccountId = String(
+            options.requesterAccountId ?? "",
+        ).trim();
+        const followingAccountId = String(
+            options.followingAccountId ?? "",
+        ).trim();
+        const candidateHandles = Array.isArray(options.candidateHandles)
+            ? new Set(
+                  options.candidateHandles
+                      .map((handle) =>
+                          String(handle ?? "")
+                              .trim()
+                              .toLowerCase(),
+                      )
+                      .filter(Boolean),
+              )
+            : null;
+        const allowedFollowedIds = followingAccountId
+            ? new Set(
+                  (await this.getFollowing(followingAccountId)).map(
+                      (profile) => profile.accountId,
+                  ),
+              )
+            : null;
+        const results: AccountProfile[] = [];
+        const sortedProfiles = Array.from(this.profiles.values()).sort(
+            (profileA, profileB) =>
+                profileA.handle < profileB.handle
+                    ? -1
+                    : profileA.handle > profileB.handle
+                      ? 1
+                      : 0,
+        );
+        for (const profile of sortedProfiles) {
+            const handle = profile.handle.toLowerCase();
+            const displayName = String(profile.displayName ?? "")
+                .trim()
+                .toLowerCase();
+            if (candidateHandles && !candidateHandles.has(handle)) continue;
+            if (
+                allowedFollowedIds &&
+                !allowedFollowedIds.has(profile.accountId)
+            ) {
+                continue;
+            }
+            if (!options.includeHidden && profile.visibility === "hidden")
+                continue;
+            if (
+                normalizedQuery &&
+                !handle.startsWith(normalizedQuery) &&
+                !displayName.startsWith(normalizedQuery)
+            ) {
+                continue;
+            }
+            if (
+                requesterAccountId &&
+                profile.accountId !== requesterAccountId
+            ) {
+                if (
+                    await this.isBlocked(profile.accountId, requesterAccountId)
+                ) {
+                    continue;
+                }
+            }
+            results.push(profile);
+            if (results.length >= limit) break;
+        }
+        return results;
+    }
+
+    async getFollowers(accountId: string): Promise<AccountProfile[]> {
+        const profiles: AccountProfile[] = [];
+        for (const key of this.follows) {
+            const [followerId, followingId] = key.split(":");
+            if (followingId !== accountId) continue;
+            const profile = this.profiles.get(followerId);
+            if (profile) profiles.push(profile);
+        }
+        return profiles;
+    }
+
+    async getFollowing(accountId: string): Promise<AccountProfile[]> {
+        const profiles: AccountProfile[] = [];
+        for (const key of this.follows) {
+            const [followerId, followingId] = key.split(":");
+            if (followerId !== accountId) continue;
+            const profile = this.profiles.get(followingId);
+            if (profile) profiles.push(profile);
+        }
+        return profiles;
     }
 
     async getFollowerCount(accountId: string): Promise<number> {

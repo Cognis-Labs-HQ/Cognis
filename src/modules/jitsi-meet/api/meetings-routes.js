@@ -281,23 +281,30 @@ export function registerMeetingRoutes({
                           .getProfileByHandle(startedByUsername)
                           .catch(() => null)
                     : null;
-                const activeParticipants = await Promise.all(
-                    (Array.isArray(activeMeeting.activeUsernames)
-                        ? activeMeeting.activeUsernames
-                        : []
-                    ).map(async (username) => {
-                        const profile = await profileStore
-                            .getProfileByHandle(username)
-                            .catch(() => null);
-                        return {
-                            username,
-                            handle: profile?.handle ?? username,
-                            displayName:
-                                profile?.displayName ??
-                                profile?.handle ??
-                                username,
-                            avatarKey: profile?.avatarKey ?? null,
-                        };
+                const activeParticipantHandles = Array.isArray(
+                    activeMeeting.activeUsernames,
+                )
+                    ? activeMeeting.activeUsernames
+                    : [];
+                const activeParticipantProfiles =
+                    activeParticipantHandles.length > 0
+                        ? await profileStore.searchProfiles(
+                              "",
+                              activeParticipantHandles.length,
+                              {
+                                  includeHidden: false,
+                                  requesterAccountId: claims.sub,
+                                  followingAccountId: claims.sub,
+                                  candidateHandles: activeParticipantHandles,
+                              },
+                          )
+                        : [];
+                const activeParticipants = activeParticipantProfiles.map(
+                    (profile) => ({
+                        username: profile.handle,
+                        handle: profile.handle,
+                        displayName: profile.displayName ?? profile.handle,
+                        avatarKey: profile.avatarKey ?? null,
                     }),
                 );
                 visibleMeetings.push({
