@@ -531,6 +531,7 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
         /await loadActiveMeetings\(\{ resolveRequested: true \}\)/,
     );
     assert.match(embedSource, /function readThemeCookie\(\)/);
+    assert.match(embedSource, /explicitMode/);
     assert.match(embedSource, /document\.querySelector\("\.app-shell"\)/);
     assert.match(source, /async function switchAwayFromActiveMeeting\(\)/);
     assert.match(source, /await switchAwayFromActiveMeeting\(\)/);
@@ -543,7 +544,7 @@ test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => 
         resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
         "utf8",
     );
-    assert.match(appSource, /const syncJitsiTheme = \(\) =>/);
+    assert.match(appSource, /const syncJitsiTheme = \(event\) =>/);
     assert.doesNotMatch(appSource, /function syncMobileChatPaneWidth\(\)/);
     assert.doesNotMatch(
         appSource,
@@ -554,6 +555,7 @@ test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => 
         /executeJitsiCommandIfSupported\(state\.jitsiApi, "overwriteConfig", \{[\s\S]*preferredTheme: nextThemeMode/,
     );
     assert.match(appSource, /new MutationObserver\(syncJitsiTheme\)/);
+    assert.match(appSource, /"cognis:themechange", syncJitsiTheme/);
     assert.match(
         cssSource,
         /grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/,

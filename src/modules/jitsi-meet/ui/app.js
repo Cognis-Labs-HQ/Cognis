@@ -615,8 +615,8 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             );
         }
 
-        const syncJitsiTheme = () => {
-            const nextThemeMode = resolveThemeMode();
+        const syncJitsiTheme = (event) => {
+            const nextThemeMode = resolveThemeMode(event?.detail?.theme);
             if (nextThemeMode === state.jitsiThemeMode) return;
             state.jitsiThemeMode = nextThemeMode;
             if (!state.jitsiApi) return;
@@ -642,6 +642,9 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         }
         signal?.addEventListener("abort", () => themeObserver.disconnect(), {
             once: true,
+        });
+        window.addEventListener("cognis:themechange", syncJitsiTheme, {
+            signal: bindSignal,
         });
         window.addEventListener("storage", syncJitsiTheme, {
             signal: bindSignal,

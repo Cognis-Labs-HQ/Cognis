@@ -11,16 +11,13 @@ function readThemeCookie() {
     return match ? decodeURIComponent(match[1]) : "";
 }
 
-export function resolveThemeMode() {
-    const storedMode = String(localStorage.getItem("cognis_theme") ?? "")
-        .trim()
-        .toLowerCase();
-    if (storedMode === "light" || storedMode === "dark") return storedMode;
-
+export function resolveThemeMode(explicitMode) {
     for (const candidate of [
+        explicitMode,
         document.querySelector(".app-shell")?.getAttribute("data-theme"),
         document.body.getAttribute("data-theme"),
         document.documentElement.getAttribute("data-theme"),
+        localStorage.getItem("cognis_theme"),
         readThemeCookie(),
     ]) {
         const mode = String(candidate ?? "")

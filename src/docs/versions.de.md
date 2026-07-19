@@ -57,7 +57,7 @@ Jedes Gateway, jeder Adapter und jedes Modul trägt eine `package.json` mit eine
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytik             | `src/modules/analytics/`            | `2.0.1`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.4`  |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.29` |
 | Cognis Japanisch     | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis Englisch      | `src/modules/study/languages/en/`   | `1.2.2`  |
