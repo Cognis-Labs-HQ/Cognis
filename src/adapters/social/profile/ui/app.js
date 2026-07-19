@@ -7,6 +7,7 @@ import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 import {
     loadOwnProfile,
     loadFollowers,
@@ -675,7 +676,7 @@ export async function mount(rootEl, { signal } = {}) {
     } else {
         const result = await loadUserProfile(urlHandle);
         if (result?.notFound) {
-            root.innerHTML = `<p class="profile-not-found-message">${escapeHtml(i18n.t("ui.app.profile.not_found"))}</p>`;
+            await navigateTo("/error?code=404");
             return;
         }
         profile = result;

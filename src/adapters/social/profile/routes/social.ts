@@ -58,8 +58,13 @@ async function canFollowProfile(
     target: AccountProfile,
     profileStore: DbProfileStore,
 ): Promise<boolean> {
+    if (
+        !requester ||
+        visibilityRank(requester.visibility) < visibilityRank("private")
+    ) {
+        return false;
+    }
     if (hasAdminBypass(requesterRole)) return true;
-    if (!requester || requester.visibility === "hidden") return false;
     if (target.visibility === "hidden") return false;
     if (target.visibility === "private") {
         return profileStore.isFollowing(target.accountId, requesterId);

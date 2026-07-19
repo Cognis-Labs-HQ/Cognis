@@ -120,6 +120,37 @@ test("social routes - cannot follow hidden user", async () => {
     }
 });
 
+test("social routes - hidden requester cannot follow visible user", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("bob", { visibility: "community" });
+        const route = createSocialRoutes(profileStore);
+        const aliceToken = issueAccessToken("alice", "user", 60);
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq("POST", aliceToken),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
+        );
+
+        assert.equal(status, 403);
+        assert.match(body, /This user cannot be followed/);
+        assert.ok(!(await profileStore.isFollowing("alice", "bob")));
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("social routes - cannot follow yourself", async () => {
     const { dir, executor } = makeTempDb();
     try {
