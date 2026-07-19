@@ -180,7 +180,8 @@ export async function mount(root, { signal } = {}) {
             id: "changelog-reader",
             label: i18n.t("ui.layout.footer.changelogs"),
             gridSize: { default: [4, 8], min: [2, 4], max: "full" },
-            render: () => `<article id="doc" class="content-panel"></article>`,
+            render: () =>
+                `<article id="doc" class="content-panel changelog-content-panel"></article>`,
         },
     ];
 
