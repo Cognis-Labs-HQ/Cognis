@@ -633,8 +633,14 @@ function bindPageEvents() {
             (bannerHeightRadio) => {
                 bannerHeightRadio.addEventListener("change", async () => {
                     const nextBannerHeight = bannerHeightRadio.value;
-                    if (!nextBannerHeight || nextBannerHeight === bannerHeight)
-                        return;
+                    if (!nextBannerHeight) return;
+                    bannerHeightRadio
+                        .closest(".profile-banner-menu-dropdown")
+                        ?.querySelectorAll(".profile-banner-height-radio")
+                        .forEach((radio) => {
+                            radio.checked = radio.value === nextBannerHeight;
+                        });
+                    if (nextBannerHeight === bannerHeight) return;
                     bannerHeight = nextBannerHeight;
                     dropdown.hidden = true;
                     menuButton.setAttribute("aria-expanded", "false");
