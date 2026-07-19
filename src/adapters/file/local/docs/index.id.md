@@ -13,6 +13,15 @@ Adapter ini berbasis namespace: setiap operasi mengambil `namespaceId` terlebih 
 - Membuat nama file berbasis UUID untuk file yang disimpan melalui `store()`.
 - Membatasi file yang disimpan ke kunci `{namespaceId}/{actorId}/{uuid}.{ext}`.
 
+
+- Menyajikan file dari `$MEDIA_LOCATION/uploads` di filesystem lokal.
+
+Tidak bertanggung jawab untuk: menyajikan file melalui HTTP (rute gateway files yang melakukannya), atau menegakkan ACL dan kuota (gateway files `NamespaceFileService` memeriksanya sebelum memanggil adapter).
+
+### Isolasi namespace dan key
+
+`store(namespaceId, actorId, content, contentType)` menghasilkan `uuid` dan menulis ke `{namespaceId}/{actorId}/{uuid}.{ext}`; `put(namespaceId, key, content, contentType)` menulis ke `${storageRoot}/${namespaceId}/${key}` dan membuat direktori perantara. Helper privat `namespaceRoot(namespaceId)` menentukan root per namespace yang digunakan setiap metode.
+
 ## Arsitektur
 
 ### Pemetaan MIME ke Ekstensi

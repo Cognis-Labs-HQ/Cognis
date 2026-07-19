@@ -13,6 +13,15 @@
 - `store()` で保存されるファイルにUUIDベースのファイル名を生成する。
 - 保存されたファイルを `{namespaceId}/{actorId}/{uuid}.{ext}` キーにスコープする。
 
+
+- ローカルファイルシステム上の `$MEDIA_LOCATION/uploads` からファイルを提供する。
+
+責務外: HTTPでのファイル配信（Filesゲートウェイのルートが担当）、ACLやクォータの強制（Filesゲートウェイの `NamespaceFileService` がアダプター呼び出し前に検査）。
+
+### 名前空間とキーの分離
+
+`store(namespaceId, actorId, content, contentType)` は `uuid` を生成して `{namespaceId}/{actorId}/{uuid}.{ext}` に書き込みます。`put(namespaceId, key, content, contentType)` は `${storageRoot}/${namespaceId}/${key}` に書き込み、中間ディレクトリを作成します。プライベートな `namespaceRoot(namespaceId)` ヘルパーが各メソッドで使う名前空間ごとのルートを解決します。
+
 ## アーキテクチャ
 
 ### MIMEから拡張子へのマッピング

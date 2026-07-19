@@ -1,57 +1,86 @@
-# コンポーネントバージョン
+# Component Versions
 
-## 概要
+## Overview
 
-このドキュメントはCognisコードベース内のすべてのゲートウェイ、アダプター、モジュールの現在のバージョンを追跡します。Changelogインデックスと迅速なリファレンスとして機能します。
+This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
 
-すべてのゲートウェイ、アダプター、モジュールは `version` フィールドを持つ `package.json` を持ちます。コンポーネントを変更する際は、Semantic Versioningに従って `package.json` のバージョンを増分する必要があります。Changelogエントリーは `src/docs/changelog/` 配下のPRごとのファイルとして管理されます。
+Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
 
-## アダプター
+## Responsibilities
 
-| コンポーネント             | パス                                | バージョン |
-| -------------------------- | ----------------------------------- | ---------- |
-| SMTP通知                   | `src/adapters/notify/smtp/`         | `0.2.4`    |
-| 内部通知                   | `src/adapters/notify/internal/`     | `0.5.2`    |
-| ローカルファイルストレージ | `src/adapters/file/local/`          | `0.1.0`    |
-| ローカル認証               | `src/adapters/auth/local/`          | `0.2.5`    |
-| LDAP 認証                  | `src/adapters/auth/ldap/`           | `0.1.4`    |
-| OIDC認証                   | `src/adapters/auth/oidc/`           | `0.1.1`    |
-| SAML認証                   | `src/adapters/auth/saml/`           | `0.1.1`    |
-| PostgreSQLデータベース     | `src/adapters/db/postgres/`         | `0.1.0`    |
-| MariaDBデータベース        | `src/adapters/db/mariadb/`          | `0.1.0`    |
-| 登録招待                   | `src/adapters/registration/invite/` | `0.1.1`    |
-| 登録トークン               | `src/adapters/registration/token/`  | `0.1.1`    |
-| 公開登録                   | `src/adapters/registration/public/` | `0.1.0`    |
-| プロフィール (ソーシャル)  | `src/adapters/social/profile/`      | `1.0.11`   |
-| メッセージ (ソーシャル)    | `src/adapters/social/messages/`     | `1.4.4`    |
+- Record the current version of every versioned component in the codebase.
+- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
+- Make it straightforward to detect version drift between deployed components and the current codebase.
 
-## ゲートウェイ
+Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
 
-| コンポーネント             | パス                         | バージョン |
-| -------------------------- | ---------------------------- | ---------- |
-| データベース (db)          | `src/gateways/db/`           | `1.1.3`    |
-| 認証 (auth)                | `src/gateways/auth/`         | `1.4.9`    |
-| Share                      | `src/gateways/share/`        | `1.2.6`    |
-| 二要素 (tfa)               | `src/gateways/tfa/`          | `1.1.5`    |
-| 通知 (notify)              | `src/gateways/notify/`       | `1.4.11`   |
-| ソーシャル                 | `src/gateways/social/`       | `1.2.6`    |
-| ファイルストレージ (files) | `src/gateways/files/`        | `1.1.0`    |
-| 登録                       | `src/gateways/registration/` | `1.1.3`    |
-| ログ記録                   | `src/gateways/logging/`      | `1.4.0`    |
-| カレンダー                 | `src/gateways/calendar/`     | `1.2.5`    |
+## Versioning rule
+
+Increment using [Semantic Versioning](https://semver.org/):
+
+- **Patch** (`0.1.x`): bug fixes, non-breaking internal changes.
+- **Minor** (`0.x.0`): new backwards-compatible features or API additions.
+- **Major** (`x.0.0`): breaking changes to the component's public API or schema.
+
+## Adapters
+
+| Component             | Path                                | Version |
+| --------------------- | ----------------------------------- | ------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.4` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.2` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.4` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.1` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.1` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.4` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.1` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.1` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.1` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.1` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.2` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.2` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.9` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
+| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
+
+## Gateways
+
+| Component             | Path                         | Version  |
+| --------------------- | ---------------------------- | -------- |
+| Database (db)         | `src/gateways/db/`           | `1.2.2`  |
+| Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
+| Share                 | `src/gateways/share/`        | `1.3.1`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
+| Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
+| Social                | `src/gateways/social/`       | `1.2.7`  |
+| File Storage (files)  | `src/gateways/files/`        | `2.1.1`  |
+| Registration          | `src/gateways/registration/` | `1.1.10` |
+| Logging               | `src/gateways/logging/`      | `1.5.2`  |
+| Study                 | `src/gateways/study/`        | `1.5.7`  |
+| Calendar              | `src/gateways/calendar/`     | `1.2.5`  |
+
+## Core contracts
+
+| Component    | Path        | Version |
+| ------------ | ----------- | ------- |
+| Core Package | `src/core/` | `0.3.0` |
 
 ## API
 
-| コンポーネント | パス       | バージョン |
-| -------------- | ---------- | ---------- |
-| APIサーバー    | `src/api/` | `0.1.3`    |
+| Component  | Path       | Version |
+| ---------- | ---------- | ------- |
+| API Server | `src/api/` | `0.1.9` |
 
-## モジュール
+## Modules
 
-| コンポーネント       | パス                                | バージョン |
-| -------------------- | ----------------------------------- | ---------- |
-| 分析                 | `src/modules/analytics/`            | `2.0.1`    |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.3`    |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.29`   |
-| Cognis 日本語        | `src/modules/study/languages/ja/`   | `1.2.4`    |
-| Cognis 英語          | `src/modules/study/languages/en/`   | `1.2.2`    |
+| Component            | Path                                | Version  |
+| -------------------- | ----------------------------------- | -------- |
+| Analytics            | `src/modules/analytics/`            | `2.0.1`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.5`  |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.30` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

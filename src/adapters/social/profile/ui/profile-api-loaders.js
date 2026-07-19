@@ -1,4 +1,5 @@
 import { apiFetch } from "/static/reuse/api-client.js";
+import { PROFILE_FILE_NAMESPACE_ID, buildNamespacedFileUrl } from "./file-namespaces.js";
 
 const DEFAULT_BANNER_LAYOUT = {
     height: "half",
@@ -95,7 +96,7 @@ export async function loadUserPosts(handle) {
 export async function loadImageAsBlob(fileKey) {
     if (!fileKey) return null;
     try {
-        const response = await apiFetch(`/api/v1/files/profile/${fileKey}`);
+        const response = await apiFetch(buildNamespacedFileUrl(PROFILE_FILE_NAMESPACE_ID, fileKey));
         if (!response.ok) return null;
         return URL.createObjectURL(await response.blob());
     } catch {

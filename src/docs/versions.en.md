@@ -28,7 +28,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ----------------------------------- | ------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.4` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.1` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.2` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.5` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.4` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.1` |
@@ -38,11 +38,12 @@ Increment using [Semantic Versioning](https://semver.org/):
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.1` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.1` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.1` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.1` |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.2` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.1` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.0` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.1` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.8` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.2` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.9` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
@@ -52,7 +53,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
-| Share                 | `src/gateways/share/`        | `1.3.0`  |
+| Share                 | `src/gateways/share/`        | `1.3.1`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -79,7 +80,7 @@ Increment using [Semantic Versioning](https://semver.org/):
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.4`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.5`  |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.30` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

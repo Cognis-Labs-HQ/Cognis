@@ -13,6 +13,15 @@ Der Adapter ist namensraum-basiert: Jede Operation nimmt zuerst eine `namespaceI
 - UUID-basierte Dateinamen für Dateien generieren, die über `store()` gespeichert werden.
 - Gespeicherte Dateien im Bereich `{namespaceId}/{actorId}/{uuid}.{ext}` ablegen.
 
+
+- Dateien von `$MEDIA_LOCATION/uploads` im lokalen Dateisystem bereitstellen.
+
+Nicht verantwortlich für: HTTP-Auslieferung von Dateien (das erledigen die Routen des Files-Gateways) sowie ACL- oder Quota-Erzwingung (der `NamespaceFileService` des Files-Gateways prüft dies vor jedem Adapteraufruf).
+
+### Namespace- und Schlüssel-Isolation
+
+`store(namespaceId, actorId, content, contentType)` generiert eine `uuid` und schreibt nach `{namespaceId}/{actorId}/{uuid}.{ext}`; `put(namespaceId, key, content, contentType)` schreibt nach `${storageRoot}/${namespaceId}/${key}` und legt Zwischenverzeichnisse an. Ein privater `namespaceRoot(namespaceId)`-Helper löst das pro Namespace genutzte Stammverzeichnis für alle Methoden auf.
+
 ## Architektur
 
 ### MIME-zu-Extension-Zuordnung
