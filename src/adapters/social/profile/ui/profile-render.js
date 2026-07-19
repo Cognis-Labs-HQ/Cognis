@@ -16,6 +16,7 @@ const PROFILE_ROLE_ICON_PATHS = {
     admin: "/static/assets/reuse/wrench.svg",
 };
 const PROFILE_ROLE_ICON_ROLES = new Set(["owner", "admin", "teacher"]);
+let bannerHeightRadioGroupCounter = 0;
 
 function renderRoleIconMarkup(normalizedRole, iconClassName) {
     if (normalizedRole === "teacher") return "&#128218;";
@@ -207,7 +208,7 @@ export function renderHero({
     const bannerContent = bannerBlobUrl
         ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(bannerImageObjectPosition)};" alt="" />`
         : '<div class="profile-hero-banner-placeholder"></div>';
-    const bannerHeightRadioName = `banner-height-${profile?.handle || "profile"}`;
+    const bannerHeightRadioName = `banner-height-${profile?.handle || "profile"}-${bannerHeightRadioGroupCounter++}`;
 
     const details = [
         profile?.location
