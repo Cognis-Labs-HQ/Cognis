@@ -1,8 +1,4 @@
-import {
-    pbkdf2Sync,
-    randomBytes,
-    timingSafeEqual,
-} from "node:crypto";
+import { pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
@@ -164,7 +160,10 @@ function verifySharePassword(password: string, storedHash: string): boolean {
             expected.length || SHARE_PASSWORD_KDF_KEYLEN,
             SHARE_PASSWORD_KDF_DIGEST,
         );
-        return expected.length === actual.length && timingSafeEqual(expected, actual);
+        return (
+            expected.length === actual.length &&
+            timingSafeEqual(expected, actual)
+        );
     }
     return false;
 }

@@ -169,6 +169,9 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    ctx.capabilities.contribute("social:profile:fileResources", {
+        namespaceId: "profile",
+    });
     ctx.log?.("info", "Profile preference store schema ready.", {
         component: "social-profile-adapter",
     });
