@@ -303,7 +303,7 @@ function renderUsersTable() {
                       isOwner || protectPrivilegedFromViewer
                           ? ""
                           : `
-                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" ? escapeHtml(i18n.t("ui.app.users.reactivate")) : user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>
+                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" || !user.enabled ? escapeHtml(i18n.t("ui.reuse.enable")) : escapeHtml(i18n.t("ui.reuse.disable"))}</button>
                               <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(deleteUserLabel)}" title="${escapeHtml(deleteUserLabel)}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>🗑</button>
                               <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>
                           `;
@@ -389,23 +389,6 @@ async function runUserMenuAction(action, username) {
 
     if (action === "storage-quotas") {
         await promptStorageQuotas(username);
-        return;
-    }
-
-    if (action === "reactivate") {
-        const response = await apiFetch(
-            `/api/v1/users/${encodeURIComponent(username)}/dearchive`,
-            { method: "POST" },
-        );
-        showToast(
-            response.ok
-                ? i18n.t("ui.app.users.reactivate_done")
-                : i18n.t("ui.reuse.save_failed"),
-            { variant: response.ok ? "success" : "error" },
-        );
-        if (!response.ok) return;
-        await refreshData();
-        composer.refresh(elements);
         return;
     }
 
@@ -542,15 +525,6 @@ function bindUsersInteractions() {
                     id: "storage-quotas",
                     label: i18n.t("ui.app.users.storage_quotas"),
                 },
-                ...(user?.lifecycleState === "archived" ||
-                user?.lifecycleState === "deactivated"
-                    ? [
-                          {
-                              id: "reactivate",
-                              label: i18n.t("ui.app.users.reactivate"),
-                          },
-                      ]
-                    : []),
                 ...(user?.hasTfaConfigured === true
                     ? [
                           {

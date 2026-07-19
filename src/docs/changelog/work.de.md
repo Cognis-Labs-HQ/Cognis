@@ -6,7 +6,7 @@ Kontoaktionen im Gefahrenbereich verwenden jetzt einheitlich Schaltflächen im A
 
 ## Klarer Administrationsstatus
 
-Die Benutzerseite zeigt archivierte und deaktivierte Kontostatus jetzt ausdrücklich an und benennt die Wiederherstellungsaktion als Reaktivieren.
+Die Benutzerseite zeigt archivierte und deaktivierte Kontostatus jetzt ausdrücklich an, während der bestehende Umschalter Deaktivieren/Aktivieren Konten archiviert und reaktiviert.
 
 ## Anmeldefehler zum Lebenszyklus
 
@@ -14,4 +14,4 @@ Anmeldeversuche für archivierte und deaktivierte Konten liefern jetzt behandelt
 
 ## Admin-Deaktivierung archiviert Benutzer
 
-Die Deaktivieren-Aktion in der Benutzerverwaltung archiviert das Zielprofil jetzt über den Lebenszyklusablauf und hält die Tokenbereinigung am Verhalten der Selbstarchivierung ausgerichtet.
+Die Aktion Deaktivieren/Aktivieren in der Benutzerverwaltung archiviert oder reaktiviert das Zielprofil jetzt über den Lebenszyklusablauf und hält die Tokenbereinigung am Verhalten der Selbstarchivierung ausgerichtet.

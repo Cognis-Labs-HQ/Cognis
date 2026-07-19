@@ -6,7 +6,7 @@ Tindakan akun di zona berbahaya kini memakai gaya tombol batal yang konsisten, p
 
 ## Status admin lebih jelas
 
-Halaman Pengguna kini menampilkan status akun yang diarsipkan dan dinonaktifkan secara eksplisit serta memberi label tindakan pemulihan sebagai Aktifkan Kembali.
+Halaman Pengguna kini menampilkan status akun yang diarsipkan dan dinonaktifkan secara eksplisit, sementara tombol Nonaktif/Aktif yang ada mengarsipkan dan mengaktifkan kembali akun.
 
 ## Kesalahan login siklus hidup
 
@@ -14,4 +14,4 @@ Percobaan login untuk akun yang diarsipkan dan dinonaktifkan kini mengembalikan 
 
 ## Nonaktif admin mengarsipkan pengguna
 
-Kontrol nonaktif di Admin Pengguna kini mengarsipkan profil target melalui alur siklus hidup dan menjaga pembersihan token tetap selaras dengan perilaku arsip mandiri.
+Kontrol Nonaktif/Aktif di Admin Pengguna kini mengarsipkan atau mengaktifkan kembali profil target melalui alur siklus hidup dan menjaga pembersihan token tetap selaras dengan perilaku arsip mandiri.

@@ -653,8 +653,6 @@
   <string name="ui.app.settings.danger_completed">Account action completed.</string>
   <string name="ui.app.users.deactivated">Deactivated</string>
   <string name="ui.app.users.archived">Archived</string>
-  <string name="ui.app.users.reactivate">Reactivate User</string>
-  <string name="ui.app.users.reactivate_done">User reactivated.</string>
   <string name="ui.app.login.reason.account_archived">Your account is archived. Contact an administrator to restore access.</string>
   <string name="ui.app.login.reason.account_deactivated">Your account is deactivated. Reactivate it to restore access.</string>
 </resources>

@@ -653,8 +653,6 @@
   <string name="ui.app.settings.danger_completed">Tindakan akun selesai.</string>
   <string name="ui.app.users.deactivated">Dinonaktifkan</string>
   <string name="ui.app.users.archived">Diarsipkan</string>
-  <string name="ui.app.users.reactivate">Aktifkan Kembali Pengguna</string>
-  <string name="ui.app.users.reactivate_done">Pengguna diaktifkan kembali.</string>
   <string name="ui.app.login.reason.account_archived">Akun Anda diarsipkan. Hubungi administrator untuk memulihkan akses.</string>
   <string name="ui.app.login.reason.account_deactivated">Akun Anda dinonaktifkan. Aktifkan kembali untuk memulihkan akses.</string>
 </resources>
