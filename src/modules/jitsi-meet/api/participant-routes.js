@@ -1,5 +1,3 @@
-import { listEligibleMeetingParticipantProfiles } from "./reuse/participant-profiles.js";
-
 export function registerMeetingParticipantRoutes({
     router,
     requireAuth,
@@ -42,12 +40,11 @@ export function registerMeetingParticipantRoutes({
             }
             const query = (requestUrl.searchParams.get("q") ?? "").trim();
             const includeHidden = hasMinRole(claims.role, "admin");
-            const candidates = await listEligibleMeetingParticipantProfiles(
-                profileStore,
-                claims.sub,
-                query,
-                { includeHidden, limit: 50 },
-            );
+            const candidates = await profileStore.searchProfiles(query, 50, {
+                includeHidden,
+                requesterAccountId: claims.sub,
+                followingAccountId: claims.sub,
+            });
             const results = candidates.map((profile) => ({
                 handle: profile.handle,
                 displayName: profile.displayName ?? profile.handle,

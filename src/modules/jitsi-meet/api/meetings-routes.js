@@ -1,5 +1,3 @@
-import { listEligibleMeetingParticipantSummaries } from "./reuse/participant-profiles.js";
-
 export function registerMeetingRoutes({
     router,
     store,
@@ -283,14 +281,25 @@ export function registerMeetingRoutes({
                           .getProfileByHandle(startedByUsername)
                           .catch(() => null)
                     : null;
-                const activeParticipants =
-                    await listEligibleMeetingParticipantSummaries(
-                        profileStore,
-                        claims.sub,
-                        Array.isArray(activeMeeting.activeUsernames)
+                const activeParticipantProfiles =
+                    await profileStore.searchProfiles("", 50, {
+                        includeHidden: false,
+                        requesterAccountId: claims.sub,
+                        followingAccountId: claims.sub,
+                        candidateHandles: Array.isArray(
+                            activeMeeting.activeUsernames,
+                        )
                             ? activeMeeting.activeUsernames
                             : [],
-                    );
+                    });
+                const activeParticipants = activeParticipantProfiles.map(
+                    (profile) => ({
+                        username: profile.handle,
+                        handle: profile.handle,
+                        displayName: profile.displayName ?? profile.handle,
+                        avatarKey: profile.avatarKey ?? null,
+                    }),
+                );
                 visibleMeetings.push({
                     id: meeting.id,
                     meetingName: meeting.meetingName,

@@ -14,6 +14,7 @@ export type {
     FileSizeLimit,
     ProfileCreateStore,
     ProfileStore,
+    ProfileSearchOptions,
 } from "./store-contract.js";
 export { visibilityRank } from "./store-contract.js";
 import type {
@@ -24,6 +25,7 @@ import type {
     Post,
     FileSizeLimit,
     ProfileCreateStore,
+    ProfileSearchOptions,
 } from "./store-contract.js";
 
 function rowToPost(row: any): Post {
@@ -248,9 +250,14 @@ export class DbProfileStore implements ProfileCreateStore {
     async searchProfiles(
         query: string,
         limit: number = 10,
-        options: { includeHidden?: boolean; requesterAccountId?: string } = {},
+        options: ProfileSearchOptions = {},
     ): Promise<AccountProfile[]> {
-        const pattern = query.toLowerCase().replace(/[\\%_]/g, "\\$&") + "%";
+        const pattern =
+            String(query ?? "")
+                .trim()
+                .replace(/^@/, "")
+                .toLowerCase()
+                .replace(/[\\%_]/g, "\\$&") + "%";
         const visibilityFilters = options.includeHidden
             ? []
             : [{ column: "visibility", operator: "!=", value: "hidden" }];
@@ -307,21 +314,47 @@ export class DbProfileStore implements ProfileCreateStore {
         const requesterAccountId = String(
             options.requesterAccountId ?? "",
         ).trim();
-        if (!requesterAccountId) {
-            return merged.slice(0, limit);
-        }
+        const followingAccountId = String(
+            options.followingAccountId ?? "",
+        ).trim();
+        const candidateHandles = Array.isArray(options.candidateHandles)
+            ? new Set(
+                  options.candidateHandles
+                      .map((handle) => normalizeHandleKey(handle))
+                      .filter(Boolean),
+              )
+            : null;
+        const followedAccountIds = followingAccountId
+            ? new Set(
+                  (await this.getFollowing(followingAccountId)).map(
+                      (profile) => profile.accountId,
+                  ),
+              )
+            : null;
 
         const visibleToRequester: AccountProfile[] = [];
         for (const profile of merged) {
-            if (profile.accountId === requesterAccountId) {
-                visibleToRequester.push(profile);
+            const handle = normalizeHandleKey(profile.handle);
+            if (candidateHandles && !candidateHandles.has(handle)) {
                 continue;
             }
             if (
-                !(await this.isBlocked(profile.accountId, requesterAccountId))
+                followedAccountIds &&
+                !followedAccountIds.has(profile.accountId)
             ) {
-                visibleToRequester.push(profile);
+                continue;
             }
+            if (
+                requesterAccountId &&
+                profile.accountId !== requesterAccountId
+            ) {
+                if (
+                    await this.isBlocked(profile.accountId, requesterAccountId)
+                ) {
+                    continue;
+                }
+            }
+            visibleToRequester.push(profile);
             if (visibleToRequester.length >= limit) break;
         }
         return visibleToRequester;
