@@ -6,7 +6,6 @@ import {
     resolveRoomName,
     resolveThemeMode,
 } from "./meeting-embed.js";
-import { applyJitsiWindowTheme } from "./jitsi-theme-sync.js";
 import { JITSI_TOOLBAR_BUTTONS, MEETING_SUBJECT } from "./constants.js";
 
 export function createEmbedHandlers({
@@ -72,11 +71,6 @@ export function createEmbedHandlers({
             },
         });
         state.jitsiApi = apiInstance;
-        applyJitsiWindowTheme(apiInstance, themeMode);
-        apiInstance.getIFrame?.()?.addEventListener("load", () => {
-            if (state.jitsiApi !== apiInstance) return;
-            applyJitsiWindowTheme(apiInstance, themeMode);
-        });
         state.jitsiParticipantId = "";
         state.jitsiConferenceJoined = false;
         state.jitsiModerator = false;

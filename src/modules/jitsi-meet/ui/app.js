@@ -12,7 +12,6 @@ import {
 } from "/static/reuse/auth-session.js";
 import { ensureSessionId } from "./session.js";
 import { buildMeetingJoinUrl, resolveThemeMode } from "./meeting-embed.js";
-import { applyJitsiWindowTheme } from "./jitsi-theme-sync.js";
 import {
     buildChatMarkup,
     buildParticipantsMarkup,
@@ -622,17 +621,12 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             if (!themeChanged && !state.jitsiApi) return;
             state.jitsiThemeMode = nextThemeMode;
             if (!state.jitsiApi) return;
-            const defaultBackground = applyJitsiWindowTheme(
-                state.jitsiApi,
-                nextThemeMode,
-            );
             executeJitsiCommandIfSupported(state.jitsiApi, "overwriteConfig", {
                 preferredTheme: nextThemeMode,
-                DEFAULT_BACKGROUND: defaultBackground,
-                interfaceConfig: {
-                    DEFAULT_BACKGROUND: defaultBackground,
-                },
             });
+            // Jitsi only accepts interfaceConfigOverwrite at API creation, so
+            // reload the embed to apply DEFAULT_BACKGROUND to toolbar and
+            // participant surfaces when the Cognis theme changes.
             if (themeChanged) void openMeetingEmbed();
         };
         const themeObserver = new MutationObserver(syncJitsiTheme);

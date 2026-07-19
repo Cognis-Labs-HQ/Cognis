@@ -118,9 +118,6 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
         source,
         /interfaceConfigOverwrite: \{[\s\S]*DEFAULT_BACKGROUND: defaultBackground/,
     );
-    assert.match(source, /import \{ applyJitsiWindowTheme \}/);
-    assert.match(source, /applyJitsiWindowTheme\(apiInstance, themeMode\)/);
-    assert.match(source, /addEventListener\("load", \(\) => \{/);
     assert.match(source, /disableDeepLinking: true,/);
     assert.match(source, /avatarUrl: state\.currentProfile\?\.avatarUrl/);
     assert.match(source, /"avatarUrl",[\s\S]*state\.currentProfile\.avatarUrl/);
@@ -557,20 +554,8 @@ test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => 
         resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),
         "utf8",
     );
-    const themeSyncSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-theme-sync.js"),
-        "utf8",
-    );
-    assert.match(appSource, /import \{ applyJitsiWindowTheme \}/);
-    assert.match(
-        themeSyncSource,
-        /function applyJitsiWindowTheme\(api, themeMode\)/,
-    );
-    assert.match(themeSyncSource, /apiWindow\.interfaceConfig = \{/);
-    assert.match(themeSyncSource, /apiWindow\.config = \{/);
-    assert.match(themeSyncSource, /function buildJitsiThemeCss\(themeMode\)/);
-    assert.match(themeSyncSource, /\.toolbox-content,/);
-    assert.match(themeSyncSource, /\.participant-tile,/);
+    assert.doesNotMatch(appSource, /jitsi-theme-sync/);
+    assert.doesNotMatch(appSource, /applyJitsiWindowTheme/);
     assert.match(appSource, /const syncJitsiTheme = \(event\) =>/);
     assert.doesNotMatch(appSource, /function syncMobileChatPaneWidth\(\)/);
     assert.doesNotMatch(
@@ -579,7 +564,7 @@ test("meetings UI keeps Jitsi theme and active-meeting table responsive", () => 
     );
     assert.match(
         appSource,
-        /executeJitsiCommandIfSupported\(state\.jitsiApi, "overwriteConfig", \{[\s\S]*preferredTheme: nextThemeMode[\s\S]*DEFAULT_BACKGROUND: defaultBackground[\s\S]*interfaceConfig: \{[\s\S]*DEFAULT_BACKGROUND: defaultBackground/,
+        /executeJitsiCommandIfSupported\(state\.jitsiApi, "overwriteConfig", \{[\s\S]*preferredTheme: nextThemeMode,[\s\S]*\}\);[\s\S]*interfaceConfigOverwrite at API creation/,
     );
     assert.match(appSource, /new MutationObserver\(syncJitsiTheme\)/);
     assert.match(appSource, /if \(themeChanged\) void openMeetingEmbed\(\);/);
