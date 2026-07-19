@@ -401,6 +401,8 @@ export function registerMeetingRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
@@ -466,6 +468,8 @@ export function registerMeetingRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
@@ -497,6 +501,8 @@ export function registerMeetingRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
@@ -542,6 +548,8 @@ export function registerMeetingRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
@@ -574,6 +582,8 @@ export function registerMeetingRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
@@ -624,6 +634,8 @@ export function registerMeetingRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
@@ -705,6 +717,8 @@ export function registerMeetingRoutes({
                 claims,
                 res,
                 listClassroomParticipantHandles,
+                profileStore,
+                requesterAccountId: claims.sub,
             });
             if (!resolved) return;
 
