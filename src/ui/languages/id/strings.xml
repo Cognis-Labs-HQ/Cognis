@@ -464,6 +464,7 @@
   <string name="ui.app.profile.follow_hidden_toast">Visibilitas profil Anda diatur ke Tersembunyi. Perbarui visibilitas di Pengaturan untuk mengikuti pengguna lain.</string>
   <string name="ui.app.profile.section.follow_requests">Permintaan Ikut</string>
   <string name="ui.app.profile.follow_requests.empty">Tidak ada permintaan ikut yang tertunda.</string>
+  <string name="ui.app.profile.follow_counts_refresh_failed">Tidak dapat menyegarkan jumlah pengikut.</string>
   <string name="ui.app.profile.not_found">Profil tidak ditemukan.</string>
   <string name="ui.app.profile.saved">Profil disimpan.</string>
   <string name="ui.app.profile.save_failed">Gagal menyimpan profil.</string>
