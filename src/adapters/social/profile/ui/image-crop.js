@@ -736,7 +736,18 @@ export const BANNER_FULL_HEIGHT_ASPECT_RATIO = 3;
 export const BANNER_HALF_HEIGHT_ASPECT_RATIO =
     BANNER_FULL_HEIGHT_ASPECT_RATIO * 2;
 
-export function resolveBannerCropAspectRatio(bannerHeight) {
+export function resolveBannerCropAspectRatio(
+    bannerHeight,
+    visibleFrame = null,
+) {
+    const frameWidth = Number(visibleFrame?.width);
+    const frameHeight = Number(visibleFrame?.height);
+    if (Number.isFinite(frameWidth) && Number.isFinite(frameHeight)) {
+        const safeFrameWidth = Math.max(1, frameWidth);
+        const safeFrameHeight = Math.max(1, frameHeight);
+        return safeFrameWidth / safeFrameHeight;
+    }
+
     return bannerHeight === "full"
         ? BANNER_FULL_HEIGHT_ASPECT_RATIO
         : BANNER_HALF_HEIGHT_ASPECT_RATIO;

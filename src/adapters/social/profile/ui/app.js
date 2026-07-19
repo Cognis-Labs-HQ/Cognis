@@ -472,9 +472,16 @@ function bindPageEvents() {
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
-        () => {
-            pendingBannerAspectRatio =
-                resolveBannerCropAspectRatio(bannerHeight);
+        (event) => {
+            const bannerButton = event.currentTarget;
+            const bannerRect =
+                bannerButton instanceof HTMLElement
+                    ? bannerButton.getBoundingClientRect()
+                    : null;
+            pendingBannerAspectRatio = resolveBannerCropAspectRatio(
+                bannerHeight,
+                bannerRect,
+            );
             bannerFileInput.click();
         },
     );
