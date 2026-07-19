@@ -929,3 +929,166 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
     assert.equal(filteredRes.statusCode, 200);
     assert.deepEqual(filteredRes.json().data.presence, []);
 });
+
+test("nextcloud whiteboard config route returns 503 when dependencies are unavailable", async () => {
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability() {
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler("GET", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {},
+        res,
+    );
+
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.json().error.code, "service_unavailable");
+});
+
+test("nextcloud whiteboard config save preserves existing API key when omitted", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    await store.saveConfig({
+        serverUrl: "https://whiteboard.example.test",
+        apiKey: "existing-secret-at-least-16-chars",
+        imageUploadMaxBytes: 1048576,
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") return { async getProfile() {} };
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler("POST", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("admin", "admin", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        serverUrl: "https://whiteboard2.example.test",
+                        apiKey: "",
+                        imageUploadMaxBytes: 2048,
+                    }),
+                );
+            },
+        },
+        res,
+    );
+
+    assert.equal(res.statusCode, 200);
+    const saved = await store.getConfig();
+    assert.equal(saved.serverUrl, "https://whiteboard2.example.test");
+    assert.equal(saved.apiKey, "existing-secret-at-least-16-chars");
+    assert.equal(saved.imageUploadMaxBytes, 2048);
+});
+
+test("nextcloud whiteboard config save accepts URL updates before an API key is configured", async () => {
+    const db = createMemoryDb();
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") return { async getProfile() {} };
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler("POST", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("admin", "admin", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        serverUrl: "https://whiteboard.example.test",
+                        apiKey: "",
+                        imageUploadMaxBytes: 4096,
+                    }),
+                );
+            },
+        },
+        res,
+    );
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json().data.serverUrl, "https://whiteboard.example.test");
+    assert.equal(res.json().data.apiKeyConfigured, false);
+    assert.equal(res.json().data.imageUploadMaxBytes, 4096);
+});
+
+test("nextcloud whiteboard config validation identifies the invalid field", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    await store.saveConfig({
+        serverUrl: "https://whiteboard.example.test",
+        apiKey: "existing-secret-at-least-16-chars",
+        imageUploadMaxBytes: 1048576,
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") return { async getProfile() {} };
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const urlRes = createJsonResponse();
+    await router.handler("POST", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("admin", "admin", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({ serverUrl: "notaurl", apiKey: "" }),
+                );
+            },
+        },
+        urlRes,
+    );
+    assert.equal(urlRes.statusCode, 400);
+    assert.equal(
+        urlRes.json().error.fieldId,
+        "nextcloud-whiteboard-server-url",
+    );
+
+    const apiKeyRes = createJsonResponse();
+    await router.handler("POST", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {
+            headers: {
+                authorization: `Bearer ${issueAccessToken("admin", "admin", 60)}`,
+            },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        serverUrl: "https://whiteboard.example.test",
+                        apiKey: "short",
+                    }),
+                );
+            },
+        },
+        apiKeyRes,
+    );
+    assert.equal(apiKeyRes.statusCode, 400);
+    assert.equal(
+        apiKeyRes.json().error.fieldId,
+        "nextcloud-whiteboard-api-key",
+    );
+});

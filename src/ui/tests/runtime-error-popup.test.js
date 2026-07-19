@@ -29,6 +29,11 @@ test("runtime error popup renders branded header and supports previous-route fal
     );
     assert.match(
         source,
+        /import\s*\{\s*applyTheme,\s*getStoredTheme\s*\}\s*from\s*["']\.\/theme-toggle\.js["'];/,
+    );
+    assert.match(source, /applyTheme\(getStoredTheme\(\)\);/);
+    assert.match(
+        source,
         /window\.location\.assign\(normalizedPreviousRoutePath\)/,
     );
     assert.match(
@@ -82,6 +87,10 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup(options) {
             openPopupCalls.push(options);
             return Promise.resolve("close");
@@ -150,6 +159,10 @@ test("runtime error popup uses full navigation fallback after reload-origin fail
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup() {
             return Promise.resolve("close");
         },
@@ -233,6 +246,10 @@ test("runtime error popup preserves SPA back navigation when main boilerplate is
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup() {
             return Promise.resolve("close");
         },
@@ -317,6 +334,10 @@ test("runtime error popup keeps users on loaded pages after post-load crashes", 
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup() {
             return Promise.resolve("close");
         },
@@ -426,6 +447,10 @@ test("runtime error popup copy action writes full crash detail text", async () =
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup(options) {
             return Promise.resolve()
                 .then(() => options.onAction("copy"))
@@ -551,6 +576,10 @@ test("runtime error popup copy action adds and removes copied class on success",
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup(options) {
             return Promise.resolve()
                 .then(() => options.onAction("copy", overlay))
@@ -641,6 +670,10 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup(options) {
             return Promise.resolve()
                 .then(() => options.onAction("copy", null))
@@ -726,6 +759,10 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     const context = {
         console,
         Date,
+        applyTheme() {},
+        getStoredTheme() {
+            return "light";
+        },
         openPopup(options) {
             openPopupCalls.push(options);
             return Promise.resolve("close");

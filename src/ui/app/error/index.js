@@ -3,6 +3,7 @@ import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { checkIsAuthenticated } from "../../reuse/auth-session.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { applyTheme, getStoredTheme } from "../../reuse/theme-toggle.js";
 
 const KNOWN_ERROR_CODES = new Set([
     "400",
@@ -75,6 +76,8 @@ function buildErrorElement(i18n, errorCode, isAuthenticated) {
 }
 
 export async function mount(root, { signal } = {}) {
+    applyTheme(getStoredTheme());
+
     const [i18n, isAuthenticated] = await Promise.all([
         createI18n(),
         checkIsAuthenticated(),

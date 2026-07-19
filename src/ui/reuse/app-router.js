@@ -350,6 +350,13 @@ async function resolveRoute(path) {
 
 let _root = null;
 let _currentBase = null;
+
+function resolveRouterRoot() {
+    if (_root) return _root;
+    _root = document.querySelector("#app");
+    return _root;
+}
+
 let _mountController = null;
 let _initialized = false;
 
@@ -409,7 +416,9 @@ async function loadRoute(path) {
         // If another navigation started while loading, bail out.
         if (signal.aborted) return false;
         try {
-            await mod.mount(_root, { signal });
+            const routeRoot = resolveRouterRoot();
+            if (!routeRoot) return false;
+            await mod.mount(routeRoot, { signal });
         } catch (error) {
             if (!signal.aborted) {
                 console.error("[router] mount() error for", path, error);
@@ -479,9 +488,9 @@ export function getCurrentBase() {
 }
 
 export function initRouter(root) {
+    if (root) _root = root;
     if (_initialized) return;
     _initialized = true;
-    _root = root;
     installRuntimeErrorHandlers();
 
     void loadAllRoutes();

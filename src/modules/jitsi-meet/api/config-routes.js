@@ -52,6 +52,7 @@ export function registerMeetingConfigRoutes({
                     400,
                     "bad_request",
                     "A valid http(s) Jitsi instance URL is required.",
+                    { fieldId: "jitsi-instance-url" },
                 );
                 return;
             }

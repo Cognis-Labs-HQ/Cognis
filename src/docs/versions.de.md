@@ -83,8 +83,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
-| Analytik             | `src/modules/analytics/`            | `2.0.1`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.5`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.30` |
-| Cognis Japanisch     | `src/modules/study/languages/ja/`   | `1.2.4`  |
-| Cognis Englisch      | `src/modules/study/languages/en/`   | `1.2.2`  |
+| Analytics            | `src/modules/analytics/`            | `2.0.1`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.8`  |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.35` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |
