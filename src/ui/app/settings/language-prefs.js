@@ -156,11 +156,15 @@ export function initLanguagePrefs(
         return null;
     }
 
-    function resolveDropTarget(targetNode, clientY) {
-        const targetTable = targetNode?.closest(
-            "#available-languages, #preferred-languages",
-        );
-        const targetRow = targetNode?.closest("tr[data-lang-row]");
+    function resolveDropTarget(targetNode, clientX, clientY) {
+        const closestElement = targetNode?.closest
+            ? targetNode
+            : targetNode?.parentElement;
+        const targetTable =
+            closestElement?.closest(
+                "#available-languages, #preferred-languages",
+            ) ?? findTableAt(clientX, clientY);
+        const targetRow = closestElement?.closest("tr[data-lang-row]");
         const targetIsAfter = Boolean(
             targetRow &&
             clientY >
@@ -236,8 +240,6 @@ export function initLanguagePrefs(
                 isAfter ? "drop-target-after" : "drop-target-before",
             );
         } else {
-            // Zone is the table itself — available table is showing the empty placeholder row.
-            // fall through to placeholder highlight (lines below)
             const placeholderRow = zone.querySelector(
                 "tr:not([data-lang-row])",
             );
@@ -248,8 +250,10 @@ export function initLanguagePrefs(
     });
 
     root.addEventListener("drop", (event) => {
+        event.preventDefault();
         const { targetTable, targetRow, targetIsAfter } = resolveDropTarget(
             event.target,
+            event.clientX,
             event.clientY,
         );
         clearDropMarkers();

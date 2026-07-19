@@ -1,4 +1,5 @@
 import { apiFetch } from "/static/reuse/api-client.js";
+import { createAdaptivePoller } from "/static/reuse/adaptive-poller.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -58,6 +59,7 @@ let relationship = null;
 const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
 let pendingBannerAspectRatio = resolveBannerCropAspectRatio(bannerHeight);
 let newPostFormController = null;
+let followerCountPoller = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
 const PROFILE_DISPLAY_NAME_MAX_CHARACTERS = 80;
@@ -143,6 +145,60 @@ function setState(partialState) {
 
 function refreshPage() {
     composer?.refresh(elements);
+}
+
+async function loadSocialConnectionList(profileHandle, connectionKind) {
+    const response = await apiFetch(
+        `/api/v1/social/users/${encodeURIComponent(profileHandle)}/${connectionKind}`,
+    );
+    if (!response.ok) {
+        throw new Error(`Unable to refresh ${connectionKind}`);
+    }
+    return (await response.json()).data ?? [];
+}
+
+function getSocialHandles(users) {
+    return users.map((user) => user?.handle ?? "").join("\n");
+}
+
+async function refreshFollowerCounts() {
+    const profileHandle = profile?.handle;
+    if (!profileHandle) return false;
+    const [latestFollowers, latestFollowing] = await Promise.all([
+        loadSocialConnectionList(profileHandle, "followers"),
+        loadSocialConnectionList(profileHandle, "following"),
+    ]);
+    const followersChanged =
+        getSocialHandles(latestFollowers) !== getSocialHandles(followers);
+    const followingChanged =
+        getSocialHandles(latestFollowing) !== getSocialHandles(following);
+    if (!followersChanged && !followingChanged) return false;
+    followers = latestFollowers;
+    following = latestFollowing;
+    refreshPage();
+    return true;
+}
+
+function stopFollowerCountPoller() {
+    followerCountPoller?.stop();
+    followerCountPoller = null;
+}
+
+function startFollowerCountPoller(signal) {
+    stopFollowerCountPoller();
+    followerCountPoller = createAdaptivePoller({
+        task: refreshFollowerCounts,
+        minIntervalMs: 1_000,
+        maxIntervalMs: 10_000,
+        initialIntervalMs: 1_000,
+        onError: () => {
+            showToast(i18n.t("ui.app.profile.follow_counts_refresh_failed"), {
+                variant: "error",
+            });
+        },
+    });
+    signal?.addEventListener("abort", stopFollowerCountPoller, { once: true });
+    followerCountPoller.start();
 }
 
 const avatarFileInput = document.createElement("input");
@@ -652,6 +708,8 @@ export async function mount(rootEl, { signal } = {}) {
     ownAccount = localStorage.getItem("cognis_account") ?? "";
     isOwnProfile = !urlHandle || urlHandle === ownAccount; // empty handle means /profile with no path segment → own profile
 
+    stopFollowerCountPoller();
+
     profile = null;
     followers = [];
     following = [];
@@ -847,6 +905,7 @@ export async function mount(rootEl, { signal } = {}) {
     });
 
     await composer.init();
+    startFollowerCountPoller(signal);
 }
 
 await mountWhenDirect(mount);
