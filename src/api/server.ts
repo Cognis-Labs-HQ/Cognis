@@ -80,7 +80,7 @@ export interface ApiDependencies {
     ) => Promise<string | null | undefined>;
     setProfileLifecycleState?: (
         accountId: string,
-        lifecycleState: "active" | "archived",
+        lifecycleState: "active" | "deactivated" | "archived",
     ) => Promise<void>;
     onModuleStateChanged?: (
         moduleId: string,

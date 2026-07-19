@@ -56,6 +56,7 @@ export async function mount(root) {
             session_expired: "ui.app.login.reason.session_expired",
             account_disabled: "ui.app.login.reason.account_disabled",
             account_archived: "ui.app.login.reason.account_archived",
+            account_deactivated: "ui.app.login.reason.account_deactivated",
             account_deleted: "ui.app.login.reason.account_deleted",
         };
         const reasonKey = keyByReason[loginReason];
@@ -778,9 +779,17 @@ export async function mount(root) {
                                 await handleAuthResult(body.data);
                                 return;
                             }
-                            const errorMsg =
-                                body?.error?.message ||
-                                i18n.t("ui.app.login.error.generic");
+                            const errorKeyByCode = {
+                                account_archived:
+                                    "ui.app.login.reason.account_archived",
+                                account_deactivated:
+                                    "ui.app.login.reason.account_deactivated",
+                            };
+                            const errorKey = errorKeyByCode[body?.error?.code];
+                            const errorMsg = errorKey
+                                ? i18n.t(errorKey)
+                                : body?.error?.message ||
+                                  i18n.t("ui.app.login.error.generic");
                             showToast(errorMsg, { variant: "error" });
                         });
                 },

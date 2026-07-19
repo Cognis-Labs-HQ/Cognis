@@ -304,7 +304,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
                 {
                     id: "confirm",
                     label: i18n.t("ui.reuse.confirm"),
-                    variant: "danger",
+                    variant: "cancel",
                 },
             ],
             onAction: async (result, overlay) => {

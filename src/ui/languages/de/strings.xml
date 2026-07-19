@@ -644,15 +644,17 @@
   <string name="ui.app.settings.danger_delete">Konto löschen</string>
   <string name="ui.app.settings.danger_popup_title">{action} bestätigen</string>
   <string name="ui.app.settings.danger_archive_warning">Die Archivierung meldet dich ab und sperrt den Kontozugriff, bis ein Administrator ihn wiederherstellt.</string>
-  <string name="ui.app.settings.danger_deactivate_warning">Die Deaktivierung meldet dich ab und verhindert weitere Anmeldungen, bis ein Administrator das Konto reaktiviert.</string>
+  <string name="ui.app.settings.danger_deactivate_warning">Die Deaktivierung meldet dich ab und hält das Konto unverfügbar, bis es reaktiviert wird.</string>
   <string name="ui.app.settings.danger_delete_warning">Das Löschen entfernt dein Konto dauerhaft und meldet dich ab. Dies kann nicht rückgängig gemacht werden.</string>
   <string name="ui.app.settings.danger_password_label">Passwort bestätigen</string>
   <string name="ui.app.settings.danger_password_required">Gib dein Passwort ein, um fortzufahren.</string>
   <string name="ui.app.settings.danger_invalid_password">Passwortbestätigung fehlgeschlagen.</string>
   <string name="ui.app.settings.danger_failed">Kontoaktion fehlgeschlagen.</string>
   <string name="ui.app.settings.danger_completed">Kontoaktion abgeschlossen.</string>
+  <string name="ui.app.users.deactivated">Deaktiviert</string>
   <string name="ui.app.users.archived">Archiviert</string>
-  <string name="ui.app.users.dearchive">Benutzer dearchivieren</string>
-  <string name="ui.app.users.dearchive_done">Benutzer wurde dearchiviert.</string>
+  <string name="ui.app.users.reactivate">Benutzer reaktivieren</string>
+  <string name="ui.app.users.reactivate_done">Benutzer wurde reaktiviert.</string>
   <string name="ui.app.login.reason.account_archived">Dein Konto ist archiviert. Kontaktiere einen Administrator, um den Zugriff wiederherzustellen.</string>
+  <string name="ui.app.login.reason.account_deactivated">Dein Konto ist deaktiviert. Reaktiviere es, um den Zugriff wiederherzustellen.</string>
 </resources>

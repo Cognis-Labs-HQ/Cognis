@@ -55,7 +55,7 @@ export function createUserRoutes(
     ) => Promise<string | null | undefined>,
     setProfileLifecycleState?: (
         accountId: string,
-        lifecycleState: "active" | "archived",
+        lifecycleState: "active" | "deactivated" | "archived",
     ) => Promise<void>,
 ) {
     const ctx = resolveRouteContext(routeContext);

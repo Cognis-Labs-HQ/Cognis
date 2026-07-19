@@ -129,10 +129,6 @@ export async function registerAuthBootstrapHook(
                     role?: string;
                     lifecycleState?: "active" | "deactivated" | "archived";
                 } | null>;
-                updateProfile?(
-                    accountId: string,
-                    updates: { lifecycleState: "active" },
-                ): Promise<unknown>;
             }>("social:profileStore");
             if (profileStore) {
                 const existingProfile = await profileStore
@@ -144,11 +140,9 @@ export async function registerAuthBootstrapHook(
                     };
                 }
                 if (existingProfile?.lifecycleState === "deactivated") {
-                    await profileStore
-                        .updateProfile?.(session.accountId, {
-                            lifecycleState: "active",
-                        })
-                        .catch(() => undefined);
+                    return {
+                        sessionResult: { outcome: "account_deactivated" },
+                    };
                 }
                 if (existingProfile?.role === "owner") {
                     role = "owner";

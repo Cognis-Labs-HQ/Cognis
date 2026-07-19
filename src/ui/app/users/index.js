@@ -293,9 +293,11 @@ function renderUsersTable() {
                   const statusLabel =
                       lifecycleState === "archived"
                           ? i18n.t("ui.app.users.archived")
-                          : user.enabled
-                            ? i18n.t("ui.app.users.enabled")
-                            : i18n.t("ui.app.users.disabled");
+                          : lifecycleState === "deactivated"
+                            ? i18n.t("ui.app.users.deactivated")
+                            : user.enabled
+                              ? i18n.t("ui.app.users.enabled")
+                              : i18n.t("ui.app.users.disabled");
                   const deleteUserLabel = i18n.t("ui.app.users.delete_user");
                   const actionsHtml =
                       isOwner || protectPrivilegedFromViewer
@@ -390,14 +392,14 @@ async function runUserMenuAction(action, username) {
         return;
     }
 
-    if (action === "dearchive") {
+    if (action === "reactivate") {
         const response = await apiFetch(
             `/api/v1/users/${encodeURIComponent(username)}/dearchive`,
             { method: "POST" },
         );
         showToast(
             response.ok
-                ? i18n.t("ui.app.users.dearchive_done")
+                ? i18n.t("ui.app.users.reactivate_done")
                 : i18n.t("ui.reuse.save_failed"),
             { variant: response.ok ? "success" : "error" },
         );
@@ -532,11 +534,12 @@ function bindUsersInteractions() {
                     id: "storage-quotas",
                     label: i18n.t("ui.app.users.storage_quotas"),
                 },
-                ...(user?.lifecycleState === "archived"
+                ...(user?.lifecycleState === "archived" ||
+                user?.lifecycleState === "deactivated"
                     ? [
                           {
-                              id: "dearchive",
-                              label: i18n.t("ui.app.users.dearchive"),
+                              id: "reactivate",
+                              label: i18n.t("ui.app.users.reactivate"),
                           },
                       ]
                     : []),

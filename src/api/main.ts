@@ -366,7 +366,7 @@ const profileStore = capabilities.get<{
         accountId: string,
         updates: {
             visibility?: "friends";
-            lifecycleState?: "active" | "archived";
+            lifecycleState?: "active" | "deactivated" | "archived";
         },
     ) => Promise<unknown>;
     searchProfiles: (
@@ -412,7 +412,10 @@ const server = buildServer({
               (await profileStore.getProfile(accountId))?.lifecycleState
         : undefined,
     setProfileLifecycleState: profileStore
-        ? async (accountId: string, lifecycleState: "active" | "archived") => {
+        ? async (
+              accountId: string,
+              lifecycleState: "active" | "deactivated" | "archived",
+          ) => {
               await profileStore.updateProfile(accountId, { lifecycleState });
           }
         : undefined,

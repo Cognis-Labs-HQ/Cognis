@@ -326,9 +326,9 @@ export async function mount(root, { signal } = {}) {
               <h3 id="settings-danger-zone-title">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
               <p>${escapeHtml(i18n.t("ui.app.settings.danger_zone_body"))}</p>
               <div class="settings-danger-actions">
-                <button class="btn-animated" type="button" data-account-action="archive">${escapeHtml(i18n.t("ui.app.settings.danger_archive"))}</button>
-                <button class="btn-animated" type="button" data-account-action="deactivate">${escapeHtml(i18n.t("ui.app.settings.danger_deactivate"))}</button>
-                <button class="btn-danger btn-animated" type="button" data-account-action="delete">${escapeHtml(i18n.t("ui.app.settings.danger_delete"))}</button>
+                <button class="btn-cancel btn-animated" type="button" data-account-action="archive">${escapeHtml(i18n.t("ui.app.settings.danger_archive"))}</button>
+                <button class="btn-cancel btn-animated" type="button" data-account-action="deactivate">${escapeHtml(i18n.t("ui.app.settings.danger_deactivate"))}</button>
+                <button class="btn-cancel btn-animated" type="button" data-account-action="delete">${escapeHtml(i18n.t("ui.app.settings.danger_delete"))}</button>
               </div>
             </section>
           `;
