@@ -10,8 +10,12 @@ The Users page now shows archived and deactivated account states explicitly whil
 
 ## Login lifecycle errors
 
-Archived and deactivated login attempts now return handled lifecycle errors so the login page can show relevant error toasts.
+Archived login attempts now return handled lifecycle errors, while deactivated accounts reactivate when the user logs in again.
 
 ## Admin disable archives users
 
 The Admin Users Disable/Enable control now archives or reactivates the target profile through the lifecycle flow while keeping token cleanup aligned with self-archive behavior.
+
+## Deactivation hibernates accounts
+
+Self-deactivation now hides accounts from interaction while letting users restore access by logging in again, and the danger-zone popup uses neutral cancel styling.

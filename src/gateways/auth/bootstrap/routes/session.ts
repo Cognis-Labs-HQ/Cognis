@@ -270,10 +270,7 @@ export function createSessionRoutes({
             );
             return true;
         }
-        if (
-            outcome === "account_archived" ||
-            outcome === "account_deactivated"
-        ) {
+        if (outcome === "account_archived") {
             const code = outcome;
             log?.(
                 "warn",
@@ -289,9 +286,7 @@ export function createSessionRoutes({
                     error: {
                         code,
                         message:
-                            outcome === "account_archived"
-                                ? "Your account is archived. Contact an administrator to restore access."
-                                : "Your account is deactivated. Reactivate it to restore access.",
+                            "Your account is archived. Contact an administrator to restore access.",
                     },
                 }),
             );

@@ -299,7 +299,7 @@ export function initGeneralPrefs(root, { i18n, username }) {
                 {
                     id: "cancel",
                     label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
+                    variant: "neutral",
                 },
                 {
                     id: "confirm",
