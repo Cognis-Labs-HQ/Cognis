@@ -28,7 +28,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 ## Adapter
 
-| Component             | Path                                | Version |
+| Komponente            | Pfad                                | Version |
 | --------------------- | ----------------------------------- | ------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.5` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
@@ -53,7 +53,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 ## Gateways
 
-| Component             | Path                         | Version  |
+| Komponente            | Pfad                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
@@ -69,19 +69,19 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 ## Kernverträge
 
-| Component    | Path        | Version |
+| Komponente   | Pfad        | Version |
 | ------------ | ----------- | ------- |
 | Core Package | `src/core/` | `0.3.0` |
 
 ## API
 
-| Component  | Path       | Version  |
+| Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
 | API Server | `src/api/` | `0.1.10` |
 
-## Modules
+## Module
 
-| Component            | Path                                | Version  |
+| Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.5`  |

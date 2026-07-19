@@ -28,7 +28,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 ## Adapter
 
-| Component             | Path                                | Version |
+| Komponen              | Jalur                               | Versi   |
 | --------------------- | ----------------------------------- | ------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.5` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
@@ -51,9 +51,9 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
-## Gateway
+## Gerbang
 
-| Component             | Path                         | Version  |
+| Komponen              | Jalur                        | Versi    |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.5.0`  |
@@ -69,19 +69,19 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 ## Kontrak inti
 
-| Component    | Path        | Version |
+| Komponen     | Jalur       | Versi   |
 | ------------ | ----------- | ------- |
 | Core Package | `src/core/` | `0.3.0` |
 
 ## API
 
-| Component  | Path       | Version  |
+| Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
 | API Server | `src/api/` | `0.1.10` |
 
-## Modules
+## Modul
 
-| Component            | Path                                | Version  |
+| Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.1`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.5`  |
