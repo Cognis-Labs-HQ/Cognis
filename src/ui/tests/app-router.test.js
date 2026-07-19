@@ -158,7 +158,7 @@ test("router uses history.pushState for navigation", () => {
     );
 });
 
-test("router guards against re-initialisation", () => {
+test("router guards against re-initialisation while refreshing its root", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
@@ -168,6 +168,23 @@ test("router guards against re-initialisation", () => {
         /_initialized/,
         "app-router.js must guard initRouter against being called twice",
     );
+    assert.match(
+        src,
+        /if \(root\) _root = root;\s*if \(_initialized\) return;/,
+        "app-router.js must keep the router root fresh across shell reuse",
+    );
+});
+
+test("router resolves #app before mounting routes", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+
+    assert.match(src, /function resolveRouterRoot\(\)/);
+    assert.match(src, /_root = document\.querySelector\(["']#app["']\);/);
+    assert.match(src, /const routeRoot = resolveRouterRoot\(\);/);
+    assert.match(src, /await mod\.mount\(routeRoot, \{ signal \}\);/);
 });
 
 test("dashboard-layout initialises the router after shell setup", () => {
