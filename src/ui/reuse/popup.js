@@ -517,27 +517,50 @@ export async function openPopup({
  * toast callbacks so module and gateway settings can share one popup flow.
  */
 
-function resolveFieldErrorId(payload) {
+export function resolveFieldErrorId(payload) {
     const error = payload?.error;
     const fieldId = String(error?.fieldId ?? error?.field ?? "").trim();
     return fieldId || null;
 }
 
-function markPopupFieldInvalid(overlay, fieldId, message) {
+export function markPopupFieldInvalid(overlay, fieldId, message) {
     if (!(overlay instanceof HTMLElement) || !fieldId) return false;
     const field = overlay.querySelector(`#${CSS.escape(fieldId)}`);
-    if (!(field instanceof HTMLInputElement)) return false;
+    if (!(field instanceof HTMLElement)) return false;
+    const fieldWrapper = field.closest("label") ?? field.parentElement;
+    if (!(fieldWrapper instanceof HTMLElement)) return false;
+    const errorId = `${fieldId}-form-error`;
+    let alert = fieldWrapper.querySelector(`#${CSS.escape(errorId)}`);
+    if (!(alert instanceof HTMLElement)) {
+        alert = document.createElement("div");
+        alert.id = errorId;
+        alert.className =
+            "form-builder-floating-alert module-settings-popup-field-error";
+        alert.setAttribute("aria-live", "polite");
+        alert.innerHTML =
+            '<ul class="form-builder-criteria-list"><li class="form-builder-criterion-item form-builder-criterion-item--unmet"></li></ul>';
+        fieldWrapper.appendChild(alert);
+    }
+    const messageItem = alert.querySelector(".form-builder-criterion-item");
+    if (messageItem instanceof HTMLElement) {
+        messageItem.textContent = String(message ?? "");
+    }
+    fieldWrapper.classList.add(
+        "form-builder-field",
+        "form-builder-field--invalid",
+    );
+    field.classList.add("form-builder-input--invalid");
     field.setAttribute("aria-invalid", "true");
-    field.classList.add("module-settings-popup-field-invalid");
-    field.setCustomValidity(String(message ?? ""));
-    field.reportValidity();
+    field.setAttribute("aria-describedby", errorId);
     field.focus();
     field.addEventListener(
         "input",
         () => {
-            field.setCustomValidity("");
             field.removeAttribute("aria-invalid");
-            field.classList.remove("module-settings-popup-field-invalid");
+            field.removeAttribute("aria-describedby");
+            field.classList.remove("form-builder-input--invalid");
+            fieldWrapper.classList.remove("form-builder-field--invalid");
+            alert.remove();
         },
         { once: true },
     );
@@ -656,10 +679,12 @@ export async function openConfigFormPopup({
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(values),
             });
-            const savePayload = await saveResponse
-                .clone?.()
-                ?.json?.()
-                .catch(() => ({}));
+            const savePayload = await (typeof saveResponse.clone === "function"
+                ? saveResponse
+                      .clone()
+                      .json()
+                      .catch(() => ({}))
+                : saveResponse.json().catch(() => ({})));
 
             if (!saveResponse.ok) {
                 const message =
