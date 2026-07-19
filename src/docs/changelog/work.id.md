@@ -11,3 +11,7 @@ Halaman Pengguna kini menampilkan status akun yang diarsipkan dan dinonaktifkan 
 ## Kesalahan login siklus hidup
 
 Percobaan login untuk akun yang diarsipkan dan dinonaktifkan kini mengembalikan kesalahan siklus hidup yang ditangani agar halaman login dapat menampilkan toast kesalahan yang sesuai.
+
+## Nonaktif admin mengarsipkan pengguna
+
+Kontrol nonaktif di Admin Pengguna kini mengarsipkan profil target melalui alur siklus hidup dan menjaga pembersihan token tetap selaras dengan perilaku arsip mandiri.

@@ -433,7 +433,7 @@ export async function registerAuthBootstrapHook(
         async (stageCtx) => {
             const input = (stageCtx.input ?? {}) as {
                 username?: string;
-                action?: "delete" | "disable";
+                action?: "delete" | "disable" | "archive";
             };
             const authorizeResult = (
                 (stageCtx.stageResults["authorize-request"] ?? []) as Array<{
@@ -450,7 +450,7 @@ export async function registerAuthBootstrapHook(
             const username = String(input.username ?? "");
             if (input.action === "delete") {
                 await context.accountStore.delete(username);
-            } else {
+            } else if (input.action === "disable") {
                 await context.accountStore.setEnabled?.(username, false);
             }
             return { persisted: true, username, action: input.action };

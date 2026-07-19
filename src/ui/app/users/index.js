@@ -303,7 +303,7 @@ function renderUsersTable() {
                       isOwner || protectPrivilegedFromViewer
                           ? ""
                           : `
-                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}"${isSelf ? " disabled" : ""}>${user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>
+                              <button class="users-toggle-btn btn-animated" data-username="${escapeHtml(user.username)}" data-enabled="${user.enabled}" data-lifecycle-state="${escapeHtml(lifecycleState)}"${isSelf ? " disabled" : ""}>${lifecycleState === "archived" || lifecycleState === "deactivated" ? escapeHtml(i18n.t("ui.app.users.reactivate")) : user.enabled ? escapeHtml(i18n.t("ui.reuse.disable")) : escapeHtml(i18n.t("ui.reuse.enable"))}</button>
                               <button class="users-delete-btn btn-animated" data-i18n-aria-label="ui.app.users.delete_user" aria-label="${escapeHtml(deleteUserLabel)}" title="${escapeHtml(deleteUserLabel)}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>🗑</button>
                               <button class="users-menu-btn btn-animated" data-i18n-aria-label="ui.app.users.action_menu_help" aria-label="${escapeHtml(i18n.t("ui.app.users.action_menu_help"))}" data-username="${escapeHtml(user.username)}"${isSelf ? " disabled" : ""}>☰</button>
                           `;
@@ -489,8 +489,16 @@ function bindUsersInteractions() {
         btn.addEventListener("click", async () => {
             const username = btn.dataset.username;
             const enabled = btn.dataset.enabled === "true";
+            const lifecycleState = btn.dataset.lifecycleState ?? "active";
             if (!username) return;
-            const action = enabled ? "disable" : "enable";
+            const isInactiveLifecycle =
+                lifecycleState === "archived" ||
+                lifecycleState === "deactivated";
+            const action = isInactiveLifecycle
+                ? "dearchive"
+                : enabled
+                  ? "disable"
+                  : "enable";
             const res = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(username)}/${action}`,
                 {

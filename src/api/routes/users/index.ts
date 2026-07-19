@@ -492,6 +492,18 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            if (!setProfileLifecycleState) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "profile_lifecycle_unavailable",
+                            message: "Profile lifecycle state unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (!ctx.flow.exists("deprovision-user")) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
@@ -511,7 +523,7 @@ export function createUserRoutes(
             );
             const disableResult = await ctx.flow.run("deprovision-user", {
                 username,
-                action: "disable" as const,
+                action: "archive" as const,
                 callerRole: callerClaims?.role ?? "admin",
                 targetRole,
                 targetIsFounder: Boolean(targetInfo?.isFounder),
@@ -533,10 +545,11 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            await setProfileLifecycleState(username, "archived");
             const cleanupResult = (disableResult.stageResults[
                 "cleanup-dependencies"
             ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
-            log?.("warn", "Disabled user account.", {
+            log?.("warn", "Archived user account from admin disable control.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,

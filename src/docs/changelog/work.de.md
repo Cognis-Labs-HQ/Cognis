@@ -11,3 +11,7 @@ Die Benutzerseite zeigt archivierte und deaktivierte Kontostatus jetzt ausdrück
 ## Anmeldefehler zum Lebenszyklus
 
 Anmeldeversuche für archivierte und deaktivierte Konten liefern jetzt behandelte Lebenszyklusfehler, damit die Anmeldeseite passende Fehlermeldungen anzeigen kann.
+
+## Admin-Deaktivierung archiviert Benutzer
+
+Die Deaktivieren-Aktion in der Benutzerverwaltung archiviert das Zielprofil jetzt über den Lebenszyklusablauf und hält die Tokenbereinigung am Verhalten der Selbstarchivierung ausgerichtet.
