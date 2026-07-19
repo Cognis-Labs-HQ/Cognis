@@ -261,7 +261,7 @@ export function renderHero({
               class="profile-banner-height-radio"
               name="banner-height"
               value="half"
-              ${bannerHeight === "half" ? "checked" : ""}
+              ${bannerHeight !== "full" ? "checked" : ""}
             >
             ${escapeHtml(i18n.t("ui.app.profile.banner_height.half"))}
           </label>

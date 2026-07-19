@@ -731,3 +731,13 @@ export function panCropSourceRect({
         ),
     };
 }
+
+export const BANNER_FULL_HEIGHT_ASPECT_RATIO = 3;
+export const BANNER_HALF_HEIGHT_ASPECT_RATIO =
+    BANNER_FULL_HEIGHT_ASPECT_RATIO * 2;
+
+export function resolveBannerCropAspectRatio(bannerHeight) {
+    return bannerHeight === "full"
+        ? BANNER_FULL_HEIGHT_ASPECT_RATIO
+        : BANNER_HALF_HEIGHT_ASPECT_RATIO;
+}

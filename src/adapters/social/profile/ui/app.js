@@ -32,6 +32,7 @@ import {
     renderFollowRequests,
 } from "./profile-render.js";
 import { createProfileImageUploadActions } from "./profile-image-upload.js";
+import { resolveBannerCropAspectRatio } from "./image-crop.js";
 import { createProfilePostActions } from "./profile-post-actions.js";
 
 let root = null;
@@ -45,7 +46,7 @@ let following = [];
 let posts = [];
 let avatarBlobUrl = null;
 let bannerBlobUrl = null;
-let bannerHeight = null;
+let bannerHeight = "half";
 let bannerPanX = 50;
 let bannerPanY = 50;
 let composer = null;
@@ -55,8 +56,7 @@ let canMessageTarget = false;
 let canRequestMessageTarget = false;
 let relationship = null;
 const AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO = 1;
-const BANNER_CROP_WIDTH_TO_HEIGHT_RATIO = 3;
-let pendingBannerAspectRatio = BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
+let pendingBannerAspectRatio = resolveBannerCropAspectRatio(bannerHeight);
 let newPostFormController = null;
 
 const PROFILE_BIO_MAX_CHARACTERS = 200;
@@ -416,16 +416,9 @@ function bindPageEvents() {
     );
     root.querySelector(".profile-hero-banner-btn")?.addEventListener(
         "click",
-        (event) => {
-            const bannerButton = event.currentTarget;
-            const { width, height } = bannerButton.getBoundingClientRect();
+        () => {
             pendingBannerAspectRatio =
-                width > 0 && height > 0
-                    ? Math.min(
-                          BANNER_CROP_WIDTH_TO_HEIGHT_RATIO,
-                          width / height,
-                      )
-                    : BANNER_CROP_WIDTH_TO_HEIGHT_RATIO;
+                resolveBannerCropAspectRatio(bannerHeight);
             bannerFileInput.click();
         },
     );
@@ -664,7 +657,7 @@ export async function mount(rootEl, { signal } = {}) {
     following = [];
     posts = [];
     profileImageActions?.revokeProfileBlobUrls();
-    bannerHeight = null;
+    bannerHeight = "half";
     bannerPanX = 50;
     bannerPanY = 50;
     composer = null;
