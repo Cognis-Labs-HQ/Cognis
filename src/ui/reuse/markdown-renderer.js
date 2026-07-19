@@ -3,12 +3,20 @@
  *
  * Public exports:
  * - renderMarkdown(markdown, options) — converts supported Markdown syntax to sanitized HTML.
+ * - initializeMarkdownCodeCopy() — attaches copy-to-clipboard handling for rendered code.
  *
  * Example:
  * ```js
  * element.innerHTML = renderMarkdown('Visit https://cognis.example');
  * ```
  */
+
+import { copyTextToClipboard } from "./clipboard.js";
+import { createI18n } from "./i18n.js";
+import { showToast } from "./toast.js";
+
+let markdownCodeCopyReady = false;
+let markdownCodeCopyI18n = null;
 
 function escapeHtml(value) {
     return String(value)
@@ -50,8 +58,17 @@ function renderDetectedUrlMarkup(href) {
 }
 
 function renderInline(markdown) {
+    const codeTokens = [];
     const linkTokens = [];
     let rendered = String(markdown ?? "").replace(
+        /`([^`]+)`/g,
+        (match, codeText) => {
+            const token = `@@CODE_${codeTokens.length}@@`;
+            codeTokens.push(renderInlineCodeMarkup(codeText));
+            return token;
+        },
+    );
+    rendered = rendered.replace(
         /\[((?:\\.|[^\]])+)\]\(([^)\s]+)\)/g,
         (match, label, href) => {
             const token = `@@LINK_${linkTokens.length}@@`;
@@ -65,12 +82,15 @@ function renderInline(markdown) {
         return token;
     });
     rendered = escapeHtml(rendered);
-    rendered = rendered.replace(/`([^`]+)`/g, "<code>$1</code>");
     rendered = rendered.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     rendered = rendered.replace(/\*([^*]+)\*/g, "<em>$1</em>");
     rendered = rendered.replace(/~~([^~]+)~~/g, "<del>$1</del>");
     rendered = rendered.replace(/@@LINK_(\d+)@@/g, (match, index) => {
         const token = linkTokens[Number(index)];
+        return token ?? match;
+    });
+    rendered = rendered.replace(/@@CODE_(\d+)@@/g, (match, index) => {
+        const token = codeTokens[Number(index)];
         return token ?? match;
     });
     return rendered;
@@ -202,6 +222,15 @@ function highlightCode(code, language) {
     });
 }
 
+function renderMarkdownCopyButtonMarkup(copyValue) {
+    const safeCopyValue = escapeHtmlAttribute(copyValue);
+    return `<button class="markdown-code-copy popup-action-btn" data-markdown-code-copy="${safeCopyValue}" data-popup-action="copy" type="button" aria-label="Copy"></button>`;
+}
+
+function renderInlineCodeMarkup(codeText) {
+    return `<span class="markdown-code-inline"><code>${escapeHtml(codeText)}</code>${renderMarkdownCopyButtonMarkup(codeText)}</span>`;
+}
+
 function renderCodeBlockMarkup(infoString, codeLines) {
     const normalizedLines = [...codeLines];
     while (
@@ -220,7 +249,7 @@ function renderCodeBlockMarkup(infoString, codeLines) {
     const language = resolveCodeLanguage(infoString, normalizedLines);
     const highlighted = highlightCode(code, language);
     const safeLanguage = escapeHtmlAttribute(language);
-    return `<pre class="markdown-code-block"><code class="markdown-code language-${safeLanguage}" data-language="${safeLanguage}">${highlighted}</code></pre>`;
+    return `<pre class="markdown-code-block"><code class="markdown-code language-${safeLanguage}" data-language="${safeLanguage}">${highlighted}</code>${renderMarkdownCopyButtonMarkup(code)}</pre>`;
 }
 
 function isListItem(line) {
@@ -245,6 +274,54 @@ function lineStartsBlock(line) {
         trimmedLine.startsWith("|")
     );
 }
+
+/**
+ * Attaches delegated copy-to-clipboard behavior for Markdown code controls.
+ *
+ * @returns {void}
+ */
+export function initializeMarkdownCodeCopy() {
+    if (markdownCodeCopyReady) return;
+    if (typeof document === "undefined") return;
+    markdownCodeCopyReady = true;
+    markdownCodeCopyI18n = createI18n().catch(() => ({
+        t(key) {
+            const labels = {
+                "ui.reuse.copy": "Copy",
+                "ui.reuse.markdown_code_copied": "Code copied to clipboard.",
+                "ui.reuse.markdown_code_copy_failed": "Could not copy code.",
+            };
+            return labels[key] ?? key;
+        },
+    }));
+
+    document.addEventListener("click", async (event) => {
+        const copyButton = event.target?.closest?.("[data-markdown-code-copy]");
+        if (!copyButton) return;
+        event.preventDefault();
+        const i18n = await markdownCodeCopyI18n;
+        copyButton.setAttribute("aria-label", i18n.t("ui.reuse.copy"));
+        const copied = await copyTextToClipboard(
+            copyButton.getAttribute("data-markdown-code-copy") ?? "",
+        );
+        if (copied) {
+            copyButton.classList.add("popup-action-btn--copied");
+            setTimeout(() => {
+                copyButton.classList.remove("popup-action-btn--copied");
+            }, 1500);
+        }
+        showToast(
+            i18n.t(
+                copied
+                    ? "ui.reuse.markdown_code_copied"
+                    : "ui.reuse.markdown_code_copy_failed",
+            ),
+            { variant: copied ? "success" : "error" },
+        );
+    });
+}
+
+initializeMarkdownCodeCopy();
 
 /**
  * Renders a Markdown string to a sanitized HTML string.

@@ -228,7 +228,103 @@
         var(--surface-soft, var(--color-surface-elevated)) 88%,
         #0b1120
     );
+    position: relative;
     overflow-x: auto;
+    box-shadow:
+        inset 0 0 0 1px rgba(96, 165, 250, 0.16),
+        0 10px 24px rgba(2, 6, 23, 0.18);
+}
+
+body:not([data-theme="light"]) .markdown-code-block {
+    border-color: rgba(96, 165, 250, 0.4);
+    background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(17, 35, 64, 0.94)),
+        var(--code-bg);
+    box-shadow:
+        inset 0 0 0 1px rgba(45, 212, 191, 0.18),
+        0 14px 32px rgba(2, 6, 23, 0.34);
+}
+
+.markdown-code-inline {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    vertical-align: baseline;
+    border-radius: 0.35rem;
+}
+
+.markdown-code-inline code {
+    padding: 0.08rem 0.32rem;
+    border-radius: 0.35rem;
+    background: var(--inline-code-bg, rgba(2, 6, 23, 0.8));
+    color: var(--text, var(--color-text));
+    font-family:
+        ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+        "Liberation Mono", "Courier New", monospace;
+    font-size: 0.88em;
+}
+
+body:not([data-theme="light"]) .markdown-code-inline code {
+    border: 1px solid rgba(96, 165, 250, 0.32);
+    background: rgba(8, 18, 34, 0.96);
+    box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.12);
+}
+
+.markdown-code-copy {
+    position: absolute;
+    z-index: 2;
+    width: 28px;
+    height: 28px;
+    min-width: 28px;
+    min-height: 28px;
+    padding: 0;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(2px);
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease,
+        color 0.5s ease;
+}
+
+.markdown-code-block > .markdown-code-copy {
+    top: 0.45rem;
+    right: 0.45rem;
+}
+
+.markdown-code-inline > .markdown-code-copy {
+    top: -2rem;
+    right: 0;
+}
+
+.markdown-code-block:hover > .markdown-code-copy,
+.markdown-code-block:focus-within > .markdown-code-copy,
+.markdown-code-inline:hover > .markdown-code-copy,
+.markdown-code-inline:focus-within > .markdown-code-copy {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.markdown-code-copy::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    background: currentColor;
+    -webkit-mask-image: url("/static/assets/reuse/clipboard.svg");
+    mask-image: url("/static/assets/reuse/clipboard.svg");
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-position: center;
+    mask-position: center;
+}
+
+.markdown-code-copy.popup-action-btn--copied::before {
+    -webkit-mask-image: url("/static/assets/reuse/check.svg");
+    mask-image: url("/static/assets/reuse/check.svg");
+    animation: popup-copy-icon-pop 0.25s ease;
 }
 
 .markdown-code {
