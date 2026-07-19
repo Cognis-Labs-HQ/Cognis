@@ -71,6 +71,33 @@ test("page composer includes mobile toolbar drawer behavior", () => {
     );
 });
 
+test("page composer can delegate document scrolling to the page", () => {
+    const source = readPageComposerBundle();
+    const layoutStyles = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/layout.css"),
+        "utf8",
+    );
+    const licensePage = readFileSync(
+        resolve(ROOT, "src/ui/app/license/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /contentScrolling = true/);
+    assert.match(source, /if \(!contentScrolling\) \{/);
+    assert.match(source, /"app-page--document-scroll"/);
+    assert.match(
+        layoutStyles,
+        /\.app-page--document-scroll \.composer-view-grid/,
+    );
+    assert.match(
+        layoutStyles,
+        /\.app-page--document-scroll \.content-grid \.widget-card,/,
+    );
+    assert.match(layoutStyles, /\.app-page--document-scroll \.content-panel/);
+    assert.match(licensePage, /toolbarScrollable: true/);
+    assert.match(licensePage, /contentScrolling: false/);
+});
+
 test("page composer resolves edit toggle from the active page root", () => {
     const source = readPageComposerBundle();
 

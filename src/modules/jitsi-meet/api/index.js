@@ -239,6 +239,45 @@ export function registerApiRoutes(router, ctx) {
         "auth:registerPageScriptOrigins",
     );
     const store = resolveStore(dbExecutor, log);
+    const runEnableTest = async () => {
+        await store.ensureSchema();
+        const config = await store.getConfig();
+        if (!config.instanceUrl) {
+            return {
+                ok: false,
+                code: "config_required",
+                message:
+                    "The Jitsi instance URL must be configured before the module can be enabled.",
+            };
+        }
+        const liveness = await checkHttpLiveness(config.instanceUrl, {
+            timeoutMs: LIVELINESS_TIMEOUT_MS,
+        });
+        return {
+            ok: Boolean(liveness.alive),
+            code: liveness.alive ? "ok" : "liveness_failed",
+            message: liveness.alive
+                ? "Jitsi Meet enablement test passed."
+                : "The configured Jitsi instance did not respond successfully.",
+            data: { ...liveness, instanceUrl: config.instanceUrl },
+        };
+    };
+    ctx.getCapability("system:ctx")?.contributePublicCapability?.(
+        "module:jitsi-meet:enableTest",
+        runEnableTest,
+    );
+    router.post(
+        "/api/v1/modules/jitsi-meet/admin/enable-test",
+        async (_req, res) => {
+            const result = await runEnableTest();
+            if (!result.ok) {
+                sendError(res, 409, result.code, result.message);
+                return;
+            }
+            sendJson(res, 200, { data: result.data });
+        },
+        { access: { minRole: "admin" }, allowWhenDisabled: true },
+    );
     ctx.capabilities?.contribute?.(
         "jitsi-meet:getMeetingById",
         store.getMeetingById.bind(store),

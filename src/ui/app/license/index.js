@@ -157,6 +157,7 @@ export async function mount(root) {
             },
         ],
         toolbarScrollable: true,
+        contentScrolling: false,
     });
     await composer.init();
 

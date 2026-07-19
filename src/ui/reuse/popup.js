@@ -581,6 +581,7 @@ export async function openConfigFormPopup({
     successKey,
     failedKey,
     powerState,
+    enableTest,
 }) {
     const loadResponse = await apiFetch(loadUrl);
     if (!loadResponse.ok) {
@@ -707,6 +708,26 @@ export async function openConfigFormPopup({
                     powerToggle instanceof HTMLInputElement
                         ? powerToggle.checked
                         : powerStateEnabled;
+                if (
+                    requestedPower !== powerStateEnabled &&
+                    requestedPower &&
+                    enableTest?.url
+                ) {
+                    const testResponse = await apiFetch(enableTest.url, {
+                        method: enableTest.method ?? "POST",
+                    });
+                    if (!testResponse.ok) {
+                        const testPayload = await testResponse
+                            .json()
+                            .catch(() => ({}));
+                        showToast(
+                            testPayload?.error?.message ??
+                                i18n.t(enableTest.failedKey ?? failedKey),
+                            { variant: "error" },
+                        );
+                        return false;
+                    }
+                }
                 if (requestedPower !== powerStateEnabled) {
                     const powerChanged =
                         await powerState.onChange(requestedPower);
