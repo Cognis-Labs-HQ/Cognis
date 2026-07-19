@@ -207,6 +207,7 @@ export function renderHero({
     const bannerContent = bannerBlobUrl
         ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(bannerImageObjectPosition)};" alt="" />`
         : '<div class="profile-hero-banner-placeholder"></div>';
+    const bannerHeightRadioName = `banner-height-${profile?.handle || "profile"}`;
 
     const details = [
         profile?.location
@@ -232,7 +233,7 @@ export function renderHero({
     const bannerRemoveButton = bannerBlobUrl
         ? `
         <button
-          class="profile-banner-remove-btn"
+          class="btn-cancel profile-banner-remove-btn"
           type="button"
           aria-label="${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}"
           title="${escapeHtml(i18n.t("ui.app.profile.remove_banner"))}"
@@ -261,7 +262,7 @@ export function renderHero({
             <input
               type="radio"
               class="profile-banner-height-radio"
-              name="banner-height"
+              name="${escapeHtml(bannerHeightRadioName)}"
               value="half"
               ${bannerHeight !== "full" ? "checked" : ""}
             >
@@ -271,7 +272,7 @@ export function renderHero({
             <input
               type="radio"
               class="profile-banner-height-radio"
-              name="banner-height"
+              name="${escapeHtml(bannerHeightRadioName)}"
               value="full"
               ${bannerHeight === "full" ? "checked" : ""}
             >
