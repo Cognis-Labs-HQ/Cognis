@@ -201,6 +201,16 @@ test("meetings page defaults meeting and chat panels to a 70-30 split while keep
     );
 });
 
+test("meeting frame opts out of generic composer DOM parking", () => {
+    const markupSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/markup.js"),
+        "utf8",
+    );
+
+    assert.match(markupSource, /id="jitsi-meeting-frame"/);
+    assert.match(markupSource, /data-composer-preserve="false"/);
+});
+
 test("meetings UI recovers a live session after composer edit rerenders the iframe", () => {
     const source = readJitsiUiBundle();
     assert.match(

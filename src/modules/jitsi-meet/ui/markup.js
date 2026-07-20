@@ -8,7 +8,7 @@ export function buildStageMarkup(i18n) {
         <div id="jitsi-share-button-slot" class="jitsi-share-button-slot"></div>
       </header>
       <div class="jitsi-stage-frame-wrap">
-        <div id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" hidden></div>
+        <div id="jitsi-meeting-frame" class="jitsi-stage-frame" title="${escapeHtml(i18n.t("ui.reuse.meeting"))}" data-composer-preserve="false" hidden></div>
         <div id="jitsi-overlay" class="jitsi-overlay">
           <div id="jitsi-staged-participants" class="jitsi-staged-participants" role="list"></div>
           <h3 class="jitsi-overlay-title">${escapeHtml(i18n.t("module.jitsi_meet.overlay.title"))}</h3>

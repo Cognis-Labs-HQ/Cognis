@@ -2,4 +2,4 @@
 
 ## Mode edit memakai dimensi mode normal
 
-Overlay edit page composer kini mengukur kolomnya dari dimensi bagian konten yang sama dengan mode normal, sementara tinggi baris tetap terikat pada ukuran baris mode normal. Elemen bermedia seperti gambar, embed, konten canvas, dan iframe meeting kini diparkir lalu dilampirkan kembali saat composer dirender ulang, bukan dibuat ulang, sehingga reload yang mengganggu tidak terjadi saat mode edit dinyalakan, elemen dipindahkan, popup muncul, atau notifikasi masuk.
+Overlay edit page composer kini mengukur kolomnya dari dimensi bagian konten yang sama dengan mode normal, sementara tinggi baris tetap terikat pada ukuran baris mode normal. Elemen bermedia seperti gambar, video, audio, konten canvas, dan embed yang secara eksplisit ikut serta diparkir lalu dilampirkan kembali saat composer dirender ulang, bukan dibuat ulang, sementara iframe meeting yang dikelola API dikecualikan agar wrapper pemulihan dan kata sandinya tetap memegang kendali.

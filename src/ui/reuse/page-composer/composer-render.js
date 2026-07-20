@@ -47,7 +47,8 @@ export function createComposerRenderer({
     bindFormDraftPersistence,
 }) {
     const MEDIA_PRESERVE_SELECTOR =
-        "iframe,img,video,audio,canvas,object,embed,[data-composer-preserve]";
+        'img,video,audio,canvas,[data-composer-preserve="true"]';
+    const MEDIA_PRESERVE_OPT_OUT_SELECTOR = '[data-composer-preserve="false"]';
 
     function getPreservedElementNodes() {
         if (!state.preservedElementNodes) {
@@ -69,6 +70,9 @@ export function createComposerRenderer({
     }
 
     function shouldPreserveRenderedHost(host) {
+        if (host?.querySelector?.(MEDIA_PRESERVE_OPT_OUT_SELECTOR)) {
+            return false;
+        }
         return Boolean(host?.querySelector?.(MEDIA_PRESERVE_SELECTOR));
     }
 
@@ -76,6 +80,9 @@ export function createComposerRenderer({
         if (element.preserveDom || element.preserveOnRefresh) return true;
         const template = document.createElement("template");
         template.innerHTML = html;
+        if (template.content.querySelector(MEDIA_PRESERVE_OPT_OUT_SELECTOR)) {
+            return false;
+        }
         return Boolean(template.content.querySelector(MEDIA_PRESERVE_SELECTOR));
     }
 

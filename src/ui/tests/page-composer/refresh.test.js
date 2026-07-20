@@ -59,7 +59,8 @@ test("page composer preserves media element DOM across re-renders", () => {
     assert.match(source, /function renderElementContent\(host, element\)/);
     assert.match(source, /querySelectorAll\("\[data-composer-element\]"\)/);
     assert.match(source, /host\.replaceChildren\(preserved\)/);
-    assert.match(source, /iframe,img,video,audio,canvas,object,embed/);
+    assert.match(source, /img,video,audio,canvas/);
+    assert.match(source, /MEDIA_PRESERVE_OPT_OUT_SELECTOR/);
     assert.match(composerStyles, /\.composer-preserved-element-parking/);
     assert.match(composerStyles, /\.composer-preserved-element-content/);
 });
