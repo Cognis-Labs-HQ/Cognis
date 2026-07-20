@@ -47,7 +47,7 @@ export function createComposerRenderer({
     bindFormDraftPersistence,
 }) {
     const MEDIA_PRESERVE_SELECTOR =
-        'img,video,audio,canvas,[data-composer-preserve="true"]';
+        'iframe,img,video,audio,canvas,object,embed,[data-composer-preserve="true"]';
     const MEDIA_PRESERVE_OPT_OUT_SELECTOR = '[data-composer-preserve="false"]';
 
     function getPreservedElementNodes() {
