@@ -47,6 +47,23 @@ test("page composer invokes element-level onRender callbacks", () => {
     assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
+test("page composer preserves media element DOM across re-renders", () => {
+    const source = readPageComposerBundle();
+    const composerStyles = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/composer.css"),
+        "utf8",
+    );
+
+    assert.match(source, /MEDIA_PRESERVE_SELECTOR/);
+    assert.match(source, /function parkPreservedElementNodes\(\)/);
+    assert.match(source, /function renderElementContent\(host, element\)/);
+    assert.match(source, /querySelectorAll\("\[data-composer-element\]"\)/);
+    assert.match(source, /host\.replaceChildren\(preserved\)/);
+    assert.match(source, /iframe,img,video,audio,canvas,object,embed/);
+    assert.match(composerStyles, /\.composer-preserved-element-parking/);
+    assert.match(composerStyles, /\.composer-preserved-element-content/);
+});
+
 test("page composer includes mobile toolbar drawer behavior", () => {
     const source = readPageComposerBundle();
 

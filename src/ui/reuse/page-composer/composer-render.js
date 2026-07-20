@@ -46,6 +46,86 @@ export function createComposerRenderer({
     loadPersistedFormState,
     bindFormDraftPersistence,
 }) {
+    const MEDIA_PRESERVE_SELECTOR =
+        "iframe,img,video,audio,canvas,object,embed,[data-composer-preserve]";
+
+    function getPreservedElementNodes() {
+        if (!state.preservedElementNodes) {
+            state.preservedElementNodes = new Map();
+        }
+        return state.preservedElementNodes;
+    }
+
+    function getPreservedElementParking() {
+        if (state.preservedElementParking?.isConnected) {
+            return state.preservedElementParking;
+        }
+        const parking = document.createElement("div");
+        parking.className = "composer-preserved-element-parking";
+        parking.setAttribute("aria-hidden", "true");
+        state.root.appendChild(parking);
+        state.preservedElementParking = parking;
+        return parking;
+    }
+
+    function shouldPreserveRenderedHost(host) {
+        return Boolean(host?.querySelector?.(MEDIA_PRESERVE_SELECTOR));
+    }
+
+    function shouldPreserveRenderedHtml(element, html) {
+        if (element.preserveDom || element.preserveOnRefresh) return true;
+        const template = document.createElement("template");
+        template.innerHTML = html;
+        return Boolean(template.content.querySelector(MEDIA_PRESERVE_SELECTOR));
+    }
+
+    function moveHostChildrenToPreservedNode(host) {
+        const preserved = document.createElement("div");
+        preserved.className = "composer-preserved-element-content";
+        while (host.firstChild) {
+            preserved.appendChild(host.firstChild);
+        }
+        return preserved;
+    }
+
+    function parkPreservedElementNodes() {
+        const preservedNodes = getPreservedElementNodes();
+        const parking = getPreservedElementParking();
+        state.contentGrid
+            ?.querySelectorAll("[data-composer-element]")
+            .forEach((host) => {
+                const elementId = host.dataset.composerElement;
+                if (!elementId) return;
+                let preserved = preservedNodes.get(elementId);
+                if (!preserved && shouldPreserveRenderedHost(host)) {
+                    preserved = moveHostChildrenToPreservedNode(host);
+                    preservedNodes.set(elementId, preserved);
+                }
+                if (preserved?.isConnected) {
+                    parking.appendChild(preserved);
+                }
+            });
+    }
+
+    function renderElementContent(host, element) {
+        const preservedNodes = getPreservedElementNodes();
+        let preserved = preservedNodes.get(element.id);
+        if (preserved) {
+            host.replaceChildren(preserved);
+            return;
+        }
+        const html = element.render();
+        if (shouldPreserveRenderedHtml(element, html)) {
+            preserved = document.createElement("div");
+            preserved.className = "composer-preserved-element-content";
+            preserved.innerHTML = html;
+            preservedNodes.set(element.id, preserved);
+            host.replaceChildren(preserved);
+            return;
+        }
+        host.innerHTML = html;
+    }
+
     function repackPlacementsIntoColumns(
         sortedVisible,
         maxCols,
@@ -566,6 +646,7 @@ export function createComposerRenderer({
             loadPersistedFormState(state.preferenceKey),
             captureFormState(state.contentGrid),
         );
+        parkPreservedElementNodes();
         state.contentGrid.innerHTML = "";
 
         const panel = document.createElement("article");
@@ -630,9 +711,11 @@ export function createComposerRenderer({
                     card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
                     card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
                 }
-                card.innerHTML = isMissing
-                    ? renderMissingElementContent(placement.id)
-                    : element.render();
+                if (isMissing) {
+                    card.innerHTML = renderMissingElementContent(placement.id);
+                } else {
+                    renderElementContent(card, element);
+                }
                 section.appendChild(card);
             }
         }
@@ -646,7 +729,12 @@ export function createComposerRenderer({
                     section.appendChild(createMissingCell(placement));
                     continue;
                 }
-                section.appendChild(createCell(element, placement));
+                const cell = createCell(element, placement);
+                const content = cell.querySelector(".composer-cell-content");
+                if (content) {
+                    renderElementContent(content, element);
+                }
+                section.appendChild(cell);
             }
         }
 
