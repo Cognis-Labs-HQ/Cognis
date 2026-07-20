@@ -82,13 +82,29 @@ export function printGlobalHelp(): void {
         "General",
         "System",
         "Gateways",
-        "Modules",
+        "Components",
         "User",
         "API",
         "Extensions",
     ];
 
     for (const sectionName of sectionOrder) {
+        const sectionCommands = grouped.get(sectionName);
+        if (!sectionCommands || sectionCommands.length === 0) continue;
+
+        console.log(`\n  ${sectionName}:`);
+        for (const command of sectionCommands) {
+            console.log(
+                `    ${command.name.padEnd(maxName + 2)}${command.description}`,
+            );
+        }
+        grouped.delete(sectionName);
+    }
+
+    const remainingSections = [...grouped.keys()].sort((left, right) =>
+        left.localeCompare(right),
+    );
+    for (const sectionName of remainingSections) {
         const sectionCommands = grouped.get(sectionName);
         if (!sectionCommands || sectionCommands.length === 0) continue;
 

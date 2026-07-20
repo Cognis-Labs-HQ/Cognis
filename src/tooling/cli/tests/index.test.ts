@@ -10,6 +10,10 @@
  * The tests cover formatted JSON fallback and command-specific rendering for
  * representative built-in commands.
  */
+import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -17,6 +21,23 @@ import {
     formatCommandOutput,
     formatStructured,
 } from "../index.ts";
+import { printGlobalHelp } from "../help.ts";
+import { loadModuleCliPlugins } from "../plugins.ts";
+import { registry } from "../registry.ts";
+
+function captureConsoleLog(run: () => void): string {
+    const originalLog = console.log;
+    const lines: string[] = [];
+    try {
+        console.log = (...args: unknown[]) => {
+            lines.push(args.join(" "));
+        };
+        run();
+    } finally {
+        console.log = originalLog;
+    }
+    return lines.join("\n");
+}
 
 test("formatStructured pretty-prints JSON strings", () => {
     assert.equal(
@@ -291,5 +312,60 @@ test("component:enable fails when API acknowledgement says module is still disab
         );
     } finally {
         globalThis.fetch = originalFetch;
+    }
+});
+
+test("global help includes component commands under the Components section", () => {
+    const output = captureConsoleLog(() => printGlobalHelp());
+
+    assert.match(output, /\n  Components:/);
+    assert.match(output, /component:list\s+List available modules/);
+    assert.match(
+        output,
+        /component:enable\s+Enable a module, gateway, or adapter/,
+    );
+    assert.doesNotMatch(output, /\n  Modules:\n(?:.*\n)*?\s+component:/);
+});
+
+test("loadModuleCliPlugins discovers manifest-declared component CLI commands", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-modules-"));
+    const moduleRoot = path.join(tempRoot, "demo-component");
+    const previousPaths = process.env.COGNIS_MODULE_CLI_PATHS;
+
+    try {
+        await mkdir(path.join(moduleRoot, "tools"), { recursive: true });
+        await writeFile(
+            path.join(moduleRoot, "manifest.json"),
+            JSON.stringify({ entrypoints: { cli: "./tools/commands.js" } }),
+        );
+        await writeFile(
+            path.join(moduleRoot, "tools", "commands.js"),
+            `export function registerCommands({ register }) {
+                register("demo-component:inspect", async () => ({ data: { ok: true } }), {
+                    usage: "cognisctl demo-component:inspect",
+                    description: "Inspect the demo component.",
+                    section: "Demo Component",
+                });
+            }`,
+        );
+
+        process.env.COGNIS_MODULE_CLI_PATHS = tempRoot;
+        await loadModuleCliPlugins({ refresh: true });
+
+        assert.ok(registry.has("demo-component:inspect"));
+        const output = captureConsoleLog(() => printGlobalHelp());
+        assert.match(output, /\n  Demo Component:/);
+        assert.match(
+            output,
+            /demo-component:inspect\s+Inspect the demo component\./,
+        );
+    } finally {
+        registry.delete("demo-component:inspect");
+        if (previousPaths === undefined) {
+            delete process.env.COGNIS_MODULE_CLI_PATHS;
+        } else {
+            process.env.COGNIS_MODULE_CLI_PATHS = previousPaths;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
     }
 });
