@@ -48,6 +48,7 @@ export interface NotificationCategory {
 export interface NotificationSenderInfo {
     senderId: string;
     name: string;
+    version?: string;
     active: boolean;
     supportsTest?: boolean;
     alwaysOn?: boolean;
@@ -98,6 +99,7 @@ export interface NotificationDispatchResult {
 export interface NotificationSender {
     readonly senderId: string;
     readonly senderName?: string;
+    readonly version?: string;
     send(envelope: NotificationEnvelope): Promise<void>;
     sendTracked?(envelope: NotificationEnvelope): Promise<{
         notificationId: string;
@@ -364,6 +366,7 @@ export class CoreNotificationGateway
             return {
                 senderId: sender.senderId,
                 name: sender.senderName ?? sender.senderId,
+                version: sender.version,
                 active:
                     !this.disabledSenders.has(sender.senderId) &&
                     (typeof sender.isConfigured === "function"
@@ -692,7 +695,10 @@ export class CoreNotificationGateway
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
                 const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
+                const pkg = JSON.parse(raw) as {
+                    main?: string;
+                    version?: string;
+                };
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
@@ -721,6 +727,9 @@ export class CoreNotificationGateway
                     const sender = factory(
                         process.env as Record<string, string | undefined>,
                     );
+                    if (sender && pkg.version) {
+                        Object.assign(sender, { version: pkg.version });
+                    }
                     if (sender) {
                         this.registerSender(sender, requires);
                     }

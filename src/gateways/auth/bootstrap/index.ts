@@ -1,4 +1,5 @@
 import path from "node:path";
+import { readFile } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
@@ -148,6 +149,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         const mod = await import(`${localAdapterPath}?t=${Date.now()}`);
         if (typeof mod.createAdapter === "function") {
             const localAdapter = mod.createAdapter(accountStore);
+            const packageRaw = await readFile(
+                path.resolve(localAdapterPath, "..", "package.json"),
+                "utf8",
+            );
+            const packageJson = JSON.parse(packageRaw) as { version?: string };
+            if (packageJson.version) {
+                Object.assign(localAdapter, { version: packageJson.version });
+            }
             authGateway.setLocalAdapter(localAdapter);
             ctx.log?.("info", "Loaded local authentication adapter.", {
                 component: "auth-gateway",

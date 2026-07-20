@@ -35,6 +35,7 @@ interface AdapterListEntry {
     version?: string;
     status?: string;
     enabled?: boolean;
+    active?: boolean;
 }
 
 function encodePath(value: string): string {
@@ -55,7 +56,59 @@ function normalizeAdapterStatus(adapter: AdapterListEntry): string | undefined {
     if (typeof adapter.enabled === "boolean") {
         return adapter.enabled ? "enabled" : "disabled";
     }
+    if (typeof adapter.active === "boolean") {
+        return adapter.active ? "enabled" : "disabled";
+    }
     return adapter.status;
+}
+
+interface AdapterConfigPayload {
+    data?: Record<string, unknown>;
+    schema?: Array<{ key?: string }>;
+}
+
+function getUserConfigKeys(payload: AdapterConfigPayload): Set<string> {
+    return new Set(
+        (payload.schema ?? [])
+            .map((field) => field.key)
+            .filter(
+                (key): key is string =>
+                    typeof key === "string" && key.length > 0,
+            ),
+    );
+}
+
+function filterUserConfigPayload(
+    payload: AdapterConfigPayload,
+): AdapterConfigPayload {
+    const userKeys = getUserConfigKeys(payload);
+    const data = payload.data ?? {};
+    return {
+        ...payload,
+        data: Object.fromEntries(
+            Object.entries(data).filter(([key]) => userKeys.has(key)),
+        ),
+    };
+}
+
+function validateUserConfigUpdate(
+    config: unknown,
+    currentConfig: AdapterConfigPayload,
+): Record<string, unknown> {
+    if (config == null || typeof config !== "object" || Array.isArray(config)) {
+        throw new Error("Expected config JSON to be an object.");
+    }
+    const userKeys = getUserConfigKeys(currentConfig);
+    const configRecord = config as Record<string, unknown>;
+    const unsupportedKeys = Object.keys(configRecord).filter(
+        (key) => !userKeys.has(key),
+    );
+    if (unsupportedKeys.length > 0) {
+        throw new Error(
+            `Config field(s) are not user-configurable: ${unsupportedKeys.join(", ")}`,
+        );
+    }
+    return configRecord;
 }
 
 function parseJsonArgument(value: string | undefined): unknown {
@@ -187,10 +240,13 @@ export function registerComponentCommands(): void {
             if (componentType !== "adapter") {
                 throw new Error('Expected component type "adapter".');
             }
-            return apiGet(
-                apiBaseUrl,
-                adapterRoute(gatewayId, adapterId, "/config"),
-                await getApiToken(),
+            const token = await getApiToken();
+            return filterUserConfigPayload(
+                (await apiGet(
+                    apiBaseUrl,
+                    adapterRoute(gatewayId, adapterId, "/config"),
+                    token,
+                )) as AdapterConfigPayload,
             );
         },
         {
@@ -212,11 +268,20 @@ export function registerComponentCommands(): void {
             if (componentType !== "adapter") {
                 throw new Error('Expected component type "adapter".');
             }
+            const token = await getApiToken();
+            const currentConfig = (await apiGet(
+                apiBaseUrl,
+                adapterRoute(gatewayId, adapterId, "/config"),
+                token,
+            )) as AdapterConfigPayload;
             return apiPut(
                 apiBaseUrl,
                 adapterRoute(gatewayId, adapterId, "/config"),
-                parseJsonArgument(configJson),
-                await getApiToken(),
+                validateUserConfigUpdate(
+                    parseJsonArgument(configJson),
+                    currentConfig,
+                ),
+                token,
             );
         },
         {

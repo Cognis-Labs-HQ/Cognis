@@ -413,6 +413,97 @@ test("component:list aggregates modules, gateways, and adapters", async () => {
     }
 });
 
+test("component:config:get only returns schema-exposed fields", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input) => {
+            const requestUrl = String(input);
+            if (
+                requestUrl.endsWith(
+                    "/api/v1/gateways/auth/adapters/oidc/config",
+                )
+            ) {
+                return new Response(
+                    JSON.stringify({
+                        data: {
+                            clientId: "demo-client",
+                            clientSecret: "hidden",
+                            enabled: true,
+                        },
+                        schema: [{ key: "clientId" }],
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            throw new Error(`Unexpected request: ${requestUrl}`);
+        };
+
+        const payload = await executeRegisteredCommand(
+            "component:config:get",
+            ["adapter", "auth", "oidc"],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, {
+            data: { clientId: "demo-client" },
+            schema: [{ key: "clientId" }],
+        });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("component:config:set rejects fields not exposed by adapter schema", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input) => {
+            const requestUrl = String(input);
+            if (
+                requestUrl.endsWith(
+                    "/api/v1/gateways/auth/adapters/oidc/config",
+                )
+            ) {
+                return new Response(
+                    JSON.stringify({
+                        data: { clientId: "demo-client" },
+                        schema: [{ key: "clientId" }],
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            throw new Error(`Unexpected request: ${requestUrl}`);
+        };
+
+        await assert.rejects(
+            executeRegisteredCommand(
+                "component:config:set",
+                [
+                    "adapter",
+                    "auth",
+                    "oidc",
+                    JSON.stringify({ clientId: "demo-client", enabled: true }),
+                ],
+                {
+                    apiBaseUrl: "http://localhost:3000",
+                    getApiToken: async () => "token",
+                },
+            ),
+            /Config field\(s\) are not user-configurable: enabled/,
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("global help includes component commands under the Components section", () => {
     const output = captureConsoleLog(() => printGlobalHelp());
 
