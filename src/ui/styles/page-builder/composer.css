@@ -1,12 +1,8 @@
 .composer-view-grid {
     display: grid;
-    grid-template-columns: repeat(
-        var(--grid-cols, 1),
-        minmax(0, var(--composer-grid-column-size, 1fr))
-    );
+    grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
     grid-auto-rows: var(--composer-grid-row-size, 90px);
-    gap: var(--composer-grid-gap, 8px);
-    justify-content: start;
+    gap: 8px;
 }
 
 .composer-view-grid .widget-card {
@@ -59,12 +55,6 @@
 .composer-grid-active {
     position: relative;
     display: block;
-}
-
-.content-panel--composer-editing {
-    overflow-x: clip;
-    overflow-y: visible;
-    min-height: 0;
 }
 
 .composer-done-btn {

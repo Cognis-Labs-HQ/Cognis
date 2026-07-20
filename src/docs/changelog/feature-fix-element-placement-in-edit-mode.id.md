@@ -1,5 +1,5 @@
 # Tata letak edit page composer yang stabil
 
-## Mode edit mempertahankan posisi grid
+## Mode edit memakai dimensi mode normal
 
-Kartu page composer kini berbagi ukuran grid selebar ruang yang tersedia dan celah grid yang sama di mode tampilan maupun edit, sementara handle edit tidak lagi mengurangi tinggi kartu yang terlihat. Mode edit juga ikut bertambah bersama dokumen saat baris grid tambahan dibuat, sehingga tidak muncul area overflow vertikal terpisah ketika pengguna memindahkan kartu ke bawah.
+Overlay edit page composer kini mengukur selnya dari dimensi bagian konten yang sama dengan mode normal, bukan mengandalkan unit tetap 90px. Sel edit mempertahankan lebar dan celah grid normal sambil tetap diposisikan absolut untuk kontrol seret dan ubah ukuran, sehingga kartu tidak membesar atau mengecil saat pengeditan tata letak dinyalakan atau dimatikan.

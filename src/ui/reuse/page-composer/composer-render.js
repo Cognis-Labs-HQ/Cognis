@@ -14,7 +14,6 @@
 import {
     buildOccupiedSet,
     checkPlacement,
-    PAGE_COMPOSER_GRID_GAP,
     gridStep,
     halfGrid,
     registerOccupiedPlacement,
@@ -578,10 +577,9 @@ export function createComposerRenderer({
         state.gridSection = section;
 
         if (state.editing) {
-            panel.classList.add("content-panel--composer-editing");
             section.classList.add("composer-grid-active");
+            computeGridDimensions();
             section.style.minHeight = `${state.gridPixelHeight ?? state.gridRows * UNIT}px`;
-            section.style.width = `${state.gridPixelWidth ?? state.gridCols * UNIT}px`;
             section.appendChild(createGridOverlay());
         } else if (!state.frameless) {
             section.classList.add("composer-view-grid");
@@ -613,15 +611,6 @@ export function createComposerRenderer({
                     "--composer-grid-row-size",
                     `${UNIT / scale}px`,
                 );
-                section.style.setProperty(
-                    "--composer-grid-column-size",
-                    `${state.gridTrackSize ?? UNIT / scale}px`,
-                );
-                section.style.setProperty(
-                    "--composer-grid-gap",
-                    `${PAGE_COMPOSER_GRID_GAP}px`,
-                );
-                section.style.width = `${state.gridPixelWidth ?? state.contentGrid.getBoundingClientRect().width}px`;
             }
             for (const placement of visiblePlacements) {
                 const element = state.elements.find(
