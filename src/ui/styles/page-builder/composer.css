@@ -62,7 +62,8 @@
 }
 
 .content-panel--composer-editing {
-    overflow: visible;
+    overflow-x: clip;
+    overflow-y: visible;
     min-height: 0;
 }
 
