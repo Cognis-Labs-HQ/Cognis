@@ -56,6 +56,30 @@ test("renderMarkdown detects code language from shebang and highlights code", ()
     );
 });
 
+test("renderMarkdown adds copy controls to inline code", () => {
+    const html = renderMarkdown("Use `npm test` now");
+    assert.match(
+        html,
+        /<span class="markdown-code-inline"><code>npm test<\/code>/,
+    );
+    assert.match(
+        html,
+        /<button class="markdown-code-copy" data-markdown-code-copy="npm test" type="button" aria-label="Copy">.*<span class="markdown-code-copy-label"><\/span><\/button>/,
+    );
+});
+
+test("renderMarkdown inline code copy value preserves escaped source", () => {
+    const html = renderMarkdown("Use `<tag>` safely");
+    assert.match(html, /<code>&lt;tag&gt;<\/code>/);
+    assert.match(html, /data-markdown-code-copy="&lt;tag&gt;"/);
+});
+
+test("renderMarkdown adds copy controls with raw code block contents", () => {
+    const html = renderMarkdown("```js\nconst x = 1;\n```");
+    assert.match(html, /data-markdown-code-copy="const x = 1;"/);
+    assert.match(html, /<span class="markdown-code-copy-label"><\/span>/);
+});
+
 test("renderMarkdown normalizes paragraph line spacing", () => {
     const html = renderMarkdown(
         "First line\ncontinues here\n\nSecond paragraph",

@@ -64,6 +64,8 @@
   <string name="ui.reuse.remove">Remove</string>
   <string name="ui.reuse.dismiss">Dismiss</string>
   <string name="ui.reuse.copy">Copy</string>
+  <string name="ui.reuse.markdown_code_copied">Code copied to clipboard.</string>
+  <string name="ui.reuse.markdown_code_copy_failed">Could not copy code.</string>
   <string name="ui.reuse.confirm">Confirm</string>
   <string name="ui.reuse.error">Error</string>
   <string name="ui.reuse.coming_soon">Coming Soon</string>

@@ -64,6 +64,8 @@
   <string name="ui.reuse.remove">削除</string>
   <string name="ui.reuse.dismiss">閉じる</string>
   <string name="ui.reuse.copy">コピー</string>
+  <string name="ui.reuse.markdown_code_copied">コードをクリップボードにコピーしました。</string>
+  <string name="ui.reuse.markdown_code_copy_failed">コードをコピーできませんでした。</string>
   <string name="ui.reuse.confirm">確認</string>
   <string name="ui.reuse.error">エラー</string>
   <string name="ui.reuse.coming_soon">近日公開</string>
