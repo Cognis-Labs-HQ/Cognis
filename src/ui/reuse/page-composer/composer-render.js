@@ -14,6 +14,7 @@
 import {
     buildOccupiedSet,
     checkPlacement,
+    PAGE_COMPOSER_GRID_GAP,
     gridStep,
     halfGrid,
     registerOccupiedPlacement,
@@ -614,6 +615,10 @@ export function createComposerRenderer({
                 section.style.setProperty(
                     "--composer-grid-column-size",
                     `${UNIT / scale}px`,
+                );
+                section.style.setProperty(
+                    "--composer-grid-gap",
+                    `${PAGE_COMPOSER_GRID_GAP}px`,
                 );
             }
             for (const placement of visiblePlacements) {

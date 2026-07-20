@@ -1,4 +1,5 @@
 export const PAGE_COMPOSER_GRID_UNIT = 90;
+export const PAGE_COMPOSER_GRID_GAP = 8;
 
 /**
  * Returns the draggable snap increment for an element dimension.
