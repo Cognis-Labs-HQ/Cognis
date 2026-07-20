@@ -3,3 +3,7 @@
 ## モジュールAPIコマンドを追加
 
 これまで直接HTTP呼び出しが必要だったモジュールのバックエンドエンドポイント向けに、Analyticsのアクティビティ表示、Jitsi Meetの管理、Nextcloud Whiteboardの操作を含むCognisctlコマンドを追加しました。
+
+## Health登録のAPI起動を修正
+
+APIブートストラップがサーバーと同じHealthサービスを共有するようにし、コンポーネントがHealth情報を登録しても起動が停止しないようにしました。

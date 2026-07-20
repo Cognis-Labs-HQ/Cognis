@@ -10,6 +10,7 @@ import {
     GatewayService,
     GatewayRegistry,
     CapabilityStore,
+    HealthService,
     type BootstrapLog,
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
@@ -182,6 +183,7 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
+const healthService = new HealthService();
 
 const gatewayService = new GatewayService(gatewayRegistry);
 
@@ -405,6 +407,7 @@ const server = buildServer({
     routeRegistry,
     gatewayRegistry,
     uiRegistry,
+    healthService,
     log,
     createProfile,
     setProfileRole: capabilities.get<

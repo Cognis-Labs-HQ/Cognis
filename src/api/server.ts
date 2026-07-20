@@ -28,6 +28,7 @@ export interface ApiDependencies {
     routeRegistry?: RouteRegistry;
     gatewayRegistry?: GatewayRegistry;
     uiRegistry?: UIRegistry;
+    healthService?: HealthService;
     log?: BootstrapLog;
     validateModuleEnable?: (moduleId: string) => Promise<void> | void;
     moduleIntegrityChecker?: () => Promise<
@@ -120,7 +121,7 @@ export function buildServer(deps: ApiDependencies) {
         );
     }
     const moduleService = new ModuleService(deps.moduleRuntimeGateway);
-    const healthService = new HealthService();
+    const healthService = deps.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
 
     const moduleExtensionRoutes = createModuleExtensionRoutes(
