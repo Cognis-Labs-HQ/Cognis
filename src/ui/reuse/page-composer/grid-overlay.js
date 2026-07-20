@@ -64,10 +64,23 @@ export function createGridOverlayHandlers({
         return Math.floor(pixelToGridCoordinate(pixel) / step) * step;
     }
 
+    function getMeasuredGridWidth() {
+        const measureEl = state.gridSection?.isConnected
+            ? state.gridSection
+            : state.contentGrid;
+        if (!measureEl) return 0;
+        const rect = measureEl.getBoundingClientRect();
+        const styles = window.getComputedStyle(measureEl);
+        const paddingX =
+            Number.parseFloat(styles.paddingLeft || "0") +
+            Number.parseFloat(styles.paddingRight || "0");
+        return Math.max(1, rect.width - paddingX);
+    }
+
     function computeGridDimensions() {
         if (!state.contentGrid) return;
         state.contentGrid.style.width = "";
-        const width = state.contentGrid.getBoundingClientRect().width;
+        const width = getMeasuredGridWidth();
         state.gridCols = Math.max(
             1,
             Math.floor(

@@ -576,6 +576,12 @@ export function createComposerRenderer({
         panel.appendChild(section);
         state.contentGrid.appendChild(panel);
         state.gridSection = section;
+        computeGridDimensions();
+        if (!state.editing && state.persistLayoutPreferences) {
+            applyLayoutForCurrentGridColumns();
+        }
+        initializePlacements();
+        computeGridDimensions();
 
         if (state.editing) {
             panel.classList.add("content-panel--composer-editing");
