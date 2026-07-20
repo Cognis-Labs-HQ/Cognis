@@ -240,28 +240,6 @@ export function createSocialRoutes(
                 );
                 return true;
             }
-            if (!isProfileInteractive(target)) {
-                res.writeHead(409, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "account_not_interactive",
-                            message:
-                                "This account is not accepting interactions",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: { code: "not_found", message: "User not found" },
-                    }),
-                );
-                return true;
-            }
             if (req.method === "POST") {
                 if (!isProfileInteractive(target)) {
                     res.writeHead(409, { "content-type": "application/json" });
@@ -271,6 +249,20 @@ export function createSocialRoutes(
                                 code: "account_not_interactive",
                                 message:
                                     "This account is not accepting interactions",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (
+                    await profileStore.isBlocked(target.accountId, claims.sub)
+                ) {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "User not found",
                             },
                         }),
                     );

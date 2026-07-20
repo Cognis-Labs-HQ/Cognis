@@ -182,7 +182,18 @@ export async function bootstrapSocialAdapter(
             accountId: string,
             lifecycleState: AccountLifecycleState,
         ): Promise<void> => {
-            await profileStore.updateProfile(accountId, { lifecycleState });
+            const existingProfile = await profileStore.getProfile(accountId);
+            if (!existingProfile) {
+                await profileStore.createProfile(accountId, accountId);
+            }
+            const updatedProfile = await profileStore.updateProfile(accountId, {
+                lifecycleState,
+            });
+            if (!updatedProfile) {
+                throw new Error(
+                    `Unable to persist lifecycle state for account ${accountId}`,
+                );
+            }
         },
     });
     ctx.capabilities.contribute("social:profile:fileResources", {

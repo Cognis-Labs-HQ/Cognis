@@ -1,11 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
+import { rmSync } from "node:fs";
 import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
 import { bootstrapSocialAdapter } from "../index.js";
+import { makeTempDb } from "../routes/tests/helpers.js";
 
 function makeInMemoryDb() {
     return {
@@ -28,7 +30,9 @@ function makeAdapterCtx(
     const routeRegistry = overrides.routeRegistry ?? new RouteRegistry();
     const capabilities = overrides.capabilities ?? new CapabilityStore();
     const uiRegistry = overrides.uiRegistry;
-    capabilities.contribute("db:executor", makeInMemoryDb());
+    if (!capabilities.get("db:executor")) {
+        capabilities.contribute("db:executor", makeInMemoryDb());
+    }
     const registeredAdapters: Array<{
         adapterId: string;
         adapterName: string;
@@ -101,6 +105,31 @@ test("profile adapter bootstrap contributes profile capabilities", async () => {
         capabilities.get("social:profileLifecycle"),
         "social:profileLifecycle capability must be contributed",
     );
+});
+
+test("profile lifecycle capability creates a profile row when missing", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const capabilities = new CapabilityStore();
+        capabilities.contribute("db:executor", executor);
+        const { ctx } = makeAdapterCtx({ capabilities });
+        await bootstrapSocialAdapter(ctx);
+
+        const lifecycle = capabilities.get<{
+            getState(accountId: string): Promise<string>;
+            setState(accountId: string, state: string): Promise<void>;
+        }>("social:profileLifecycle");
+
+        assert.ok(lifecycle, "social:profileLifecycle must be available");
+        await lifecycle.setState("admin-created-user", "archived");
+
+        assert.equal(
+            await lifecycle.getState("admin-created-user"),
+            "archived",
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
 });
 
 test("profile adapter bootstrap registers static dir and navbar.js exists on disk", async () => {
