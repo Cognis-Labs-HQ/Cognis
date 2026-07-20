@@ -1,5 +1,5 @@
 import { apiRequest } from "./http.ts";
-import { formatStructured } from "./formatters.ts";
+import { renderStructuredSummary } from "./formatters.ts";
 import { register } from "./registry.ts";
 import { collectWizardFields, type WizardField } from "./wizard.ts";
 
@@ -146,7 +146,7 @@ function registerFeatureCommand(definition: FeatureCommandDefinition): void {
         {
             usage,
             description: definition.description,
-            render: formatStructured,
+            render: renderStructuredSummary,
         },
     );
 }
@@ -398,7 +398,9 @@ const commands: FeatureCommandDefinition[] = [
         name: "calendar:list",
         method: "GET",
         path: "/api/v1/calendar/calendars",
-        description: "List calendars.",
+        queryFields: [{ name: "accountId" }],
+        description:
+            "List calendars for the current user or an admin-selected account.",
     },
     {
         name: "calendar:create",

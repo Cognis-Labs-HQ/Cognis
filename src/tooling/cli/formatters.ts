@@ -80,6 +80,48 @@ export function formatBoolean(value: boolean, yes = "Yes", no = "No"): string {
     return colorize(value ? yes : no, value ? "green" : "yellow");
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+    return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function humanizeKey(key: string): string {
+    return key
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[_-]+/g, " ")
+        .replace(/^./, (firstCharacter) => firstCharacter.toUpperCase());
+}
+
+function formatValue(value: unknown): string {
+    if (value === undefined || value === null || value === "") {
+        return FIELD_EMPTY_PLACEHOLDER;
+    }
+    if (typeof value === "boolean") return formatBoolean(value);
+    if (Array.isArray(value) || isPlainRecord(value)) {
+        return JSON.stringify(value, null, 2);
+    }
+    return String(value);
+}
+
+function collectTableColumns(
+    rows: Array<Record<string, unknown>>,
+): Array<{ key: string; label: string }> {
+    const keys: string[] = [];
+    for (const row of rows) {
+        for (const key of Object.keys(row)) {
+            const value = row[key];
+            if (
+                value === undefined ||
+                Array.isArray(value) ||
+                isPlainRecord(value)
+            ) {
+                continue;
+            }
+            if (!keys.includes(key)) keys.push(key);
+        }
+    }
+    return keys.slice(0, 8).map((key) => ({ key, label: humanizeKey(key) }));
+}
+
 function formatDurationMs(value: unknown): string {
     if (typeof value !== "number" || !Number.isFinite(value)) {
         return String(value);
@@ -98,6 +140,49 @@ export function formatStructured(value: unknown): string {
     if (typeof normalized === "string") return normalized;
     if (normalized === undefined) return "";
     return JSON.stringify(normalized, null, 2);
+}
+
+export function renderStructuredSummary(value: unknown): string {
+    const normalized =
+        typeof value === "string" ? normalizeResponse(value) : value;
+    if (typeof normalized === "string") return normalized;
+    if (!isPlainRecord(normalized)) return formatStructured(normalized);
+
+    const sections: string[] = [];
+    const data = normalized.data;
+    if (Array.isArray(data)) {
+        const rows = data.filter(isPlainRecord);
+        const columns = collectTableColumns(rows);
+        if (rows.length > 0 && columns.length > 0) {
+            sections.push(formatTable(columns, rows));
+        } else {
+            sections.push(formatStructured(data));
+        }
+    } else if (isPlainRecord(data)) {
+        sections.push(
+            Object.entries(data)
+                .map(([key, fieldValue]) =>
+                    formatField(humanizeKey(key), formatValue(fieldValue)),
+                )
+                .join("\n"),
+        );
+    }
+
+    const meta = normalized.meta;
+    if (isPlainRecord(meta) && Object.keys(meta).length > 0) {
+        sections.push(formatHeading("Metadata", "cyan"));
+        sections.push(
+            Object.entries(meta)
+                .map(([key, fieldValue]) =>
+                    formatField(humanizeKey(key), formatValue(fieldValue)),
+                )
+                .join("\n"),
+        );
+    }
+
+    return sections.length > 0
+        ? sections.join("\n\n")
+        : formatStructured(normalized);
 }
 
 function formatTable(

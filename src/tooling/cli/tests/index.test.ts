@@ -540,6 +540,26 @@ test("feature CLI commands register broad operational coverage", () => {
     }
 });
 
+test("renderStructuredSummary turns JSON arrays and metadata into readable output", () => {
+    const output = formatCommandOutput("calendar:list", {
+        data: [
+            {
+                id: "cal-1",
+                ownerAccountId: "alice",
+                name: "Alice Calendar",
+                visibility: "private",
+            },
+        ],
+        meta: { currentAccountId: "alice", requestedByAccountId: "cognis-cli" },
+    });
+
+    assert.match(output, /Id\s+Owner Account Id\s+Name\s+Visibility/);
+    assert.match(output, /cal-1\s+alice\s+Alice Calendar\s+private/);
+    assert.match(output, /Metadata/);
+    assert.match(output, /Current Account Id: alice/);
+    assert.match(output, /Requested By Account Id: cognis-cli/);
+});
+
 test("feature CLI command maps positional args and JSON body to API route", async () => {
     const originalFetch = globalThis.fetch;
     try {
@@ -566,6 +586,45 @@ test("feature CLI command maps positional args and JSON body to API route", asyn
         );
 
         assert.deepEqual(payload, { data: { created: true } });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("calendar:list forwards admin-selected account ID as query JSON", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input, init) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/calendar/calendars?accountId=alice",
+            );
+            assert.equal(init?.method, "GET");
+            return new Response(
+                JSON.stringify({
+                    data: [{ id: "cal-1", ownerAccountId: "alice" }],
+                    meta: { currentAccountId: "alice" },
+                }),
+                {
+                    status: 200,
+                    headers: { "content-type": "application/json" },
+                },
+            );
+        };
+
+        const payload = await executeRegisteredCommand(
+            "calendar:list",
+            [JSON.stringify({ accountId: "alice" })],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, {
+            data: [{ id: "cal-1", ownerAccountId: "alice" }],
+            meta: { currentAccountId: "alice" },
+        });
     } finally {
         globalThis.fetch = originalFetch;
     }
