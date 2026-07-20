@@ -68,7 +68,13 @@ export function createGridOverlayHandlers({
         if (!state.contentGrid) return;
         state.contentGrid.style.width = "";
         const width = state.contentGrid.getBoundingClientRect().width;
-        state.gridCols = Math.max(1, Math.floor(width / UNIT));
+        state.gridCols = Math.max(
+            1,
+            Math.floor(
+                (width + PAGE_COMPOSER_GRID_GAP) /
+                    (UNIT + PAGE_COMPOSER_GRID_GAP),
+            ),
+        );
         const scale = getRenderScale();
         const trackCount = state.gridCols * scale;
         const totalGap = Math.max(0, trackCount - 1) * PAGE_COMPOSER_GRID_GAP;
