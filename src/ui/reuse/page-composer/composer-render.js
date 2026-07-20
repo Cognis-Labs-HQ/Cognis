@@ -621,6 +621,7 @@ export function createComposerRenderer({
                     "--composer-grid-gap",
                     `${PAGE_COMPOSER_GRID_GAP}px`,
                 );
+                section.style.width = `${state.gridPixelWidth ?? state.contentGrid.getBoundingClientRect().width}px`;
             }
             for (const placement of visiblePlacements) {
                 const element = state.elements.find(
