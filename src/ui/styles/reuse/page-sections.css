@@ -312,7 +312,12 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     top: calc(50% + 0.45rem);
     right: -0.9rem;
     z-index: 2;
-    transform: translateY(-50%);
+    transform: translateY(-1px);
+}
+
+.markdown-code-inline > button.markdown-code-copy:hover,
+.markdown-code-inline > button.markdown-code-copy:focus-visible {
+    transform: translateY(-1px);
 }
 
 .markdown-code-block:hover > .markdown-code-copy,
