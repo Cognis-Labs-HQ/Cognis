@@ -1,8 +1,12 @@
 .composer-view-grid {
     display: grid;
-    grid-template-columns: repeat(var(--grid-cols, 1), 1fr);
+    grid-template-columns: repeat(
+        var(--grid-cols, 1),
+        minmax(0, var(--composer-grid-column-size, 1fr))
+    );
     grid-auto-rows: var(--composer-grid-row-size, 90px);
-    gap: 8px;
+    gap: 0;
+    justify-content: start;
 }
 
 .composer-view-grid .widget-card {

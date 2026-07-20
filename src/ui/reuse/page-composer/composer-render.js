@@ -611,6 +611,10 @@ export function createComposerRenderer({
                     "--composer-grid-row-size",
                     `${UNIT / scale}px`,
                 );
+                section.style.setProperty(
+                    "--composer-grid-column-size",
+                    `${UNIT / scale}px`,
+                );
             }
             for (const placement of visiblePlacements) {
                 const element = state.elements.find(
