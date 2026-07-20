@@ -20,13 +20,13 @@
 - `src/tooling/cli/commands/` — コア組み込みコマンド
 - インストール済みモジュールからエクスポートされた `cli/index.js`
 
-| namespace   | サンプルコマンド                                                                              |
-| ----------- | --------------------------------------------------------------------------------------------- |
-| `user:*`    | `user:create`、`user:role`、`user:set-password`、`user:disable`、`user:enable`、`user:delete` |
-| `system:*`  | `system:health`、`system:info`                                                                |
-| `modules:*` | `modules:list`、`modules:enable`、`modules:disable`                                           |
-| `gateway:*` | `gateway:list`                                                                                |
-| `api:*`     | `api:token`（curl 用の一時的な 1 時間管理者緊急トークンを発行）                               |
+| namespace     | サンプルコマンド                                                                              |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| `user:*`      | `user:create`、`user:role`、`user:set-password`、`user:disable`、`user:enable`、`user:delete` |
+| `system:*`    | `system:health`、`system:info`                                                                |
+| `component:*` | `component:list`、`component:enable`、`component:disable`                                     |
+| `gateway:*`   | `gateway:list`                                                                                |
+| `api:*`       | `api:token`（curl 用の一時的な 1 時間管理者緊急トークンを発行）                               |
 
 組み込みの `cognisctl` コマンドは、端末が対応していれば見出し、整列した項目、ANSI カラーを使ったレスポンス対応の端末出力を描画できます。カスタムレンダラーを持たないコマンドは整形済み JSON にフォールバックします。
 

@@ -189,6 +189,14 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+capabilities.contribute(
+    "system:health:contribute",
+    healthService.contribute.bind(healthService),
+);
+systemCtx.contributePublicCapability(
+    "system:health:contribute",
+    healthService.contribute.bind(healthService),
+);
 
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??

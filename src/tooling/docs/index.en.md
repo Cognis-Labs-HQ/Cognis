@@ -62,7 +62,7 @@ Commands are grouped by namespace:
 | `user:*`             | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
 | `user:preferences:*` | `user:preferences:clear`                                                                      |
 | `system:*`           | `system:health`, `system:info`                                                                |
-| `modules:*`          | `modules:list`, `modules:enable`, `modules:disable`, `modules:install`                        |
+| `component:*`        | `component:list`, `component:enable`, `component:disable`, `component:import-github`          |
 | `gateway:*`          | `gateway:list`                                                                                |
 | `api:*`              | `api:token` (mints a temporary 1-hour admin emergency token for curl)                         |
 

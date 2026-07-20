@@ -11,7 +11,7 @@ import {
     printOutput,
 } from "./help.ts";
 import { resolveCliToken } from "./http.ts";
-import { registerModuleCommands } from "./module-commands.ts";
+import { registerComponentCommands } from "./component-commands.ts";
 import { loadModuleCliPlugins } from "./plugins.ts";
 import { registerGeneralCommands } from "./general-commands.ts";
 import { registry } from "./registry.ts";
@@ -23,7 +23,7 @@ import { registerUserCommands } from "./user-commands.ts";
 registerGeneralCommands();
 registerApiCommands();
 registerSystemCommands();
-registerModuleCommands();
+registerComponentCommands();
 registerGatewayCommands();
 registerUserCommands();
 

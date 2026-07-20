@@ -9,7 +9,7 @@ export const registry = new Map<string, CommandSpec>();
 function inferSection(name: string): string {
     if (name.startsWith("user:")) return "User";
     if (name.startsWith("system:")) return "System";
-    if (name.startsWith("modules:")) return "Modules";
+    if (name.startsWith("component:")) return "Components";
     if (name.startsWith("gateway:")) return "Gateways";
     if (name.startsWith("api:")) return "API";
     if (name === "help") return "General";

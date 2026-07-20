@@ -176,9 +176,19 @@ export function renderSystemHealth(payload: unknown): string {
             timestamp?: string;
             startedAt?: string;
             uptimeMs?: number;
+            contributions?: Array<{
+                componentId?: string;
+                componentType?: string;
+                status?: string;
+                message?: string;
+            }>;
         };
     };
     const data = response.data ?? {};
+
+    const contributions = Array.isArray(data.contributions)
+        ? data.contributions
+        : [];
 
     return [
         formatHeading("System Health", "cyan"),
@@ -186,10 +196,36 @@ export function renderSystemHealth(payload: unknown): string {
         formatField("Checked", data.timestamp),
         formatField("Started", data.startedAt),
         formatField("Uptime", formatDurationMs(data.uptimeMs)),
+        ...(contributions.length
+            ? [
+                  "",
+                  formatHeading("Component Contributions", "cyan"),
+                  formatTable(
+                      [
+                          { key: "component", label: "Component" },
+                          { key: "type", label: "Type" },
+                          { key: "status", label: "Status" },
+                          { key: "message", label: "Message" },
+                      ],
+                      contributions.map((contribution) => ({
+                          component:
+                              contribution.componentId ??
+                              FIELD_EMPTY_PLACEHOLDER,
+                          type:
+                              contribution.componentType ??
+                              FIELD_EMPTY_PLACEHOLDER,
+                          status:
+                              contribution.status ?? FIELD_EMPTY_PLACEHOLDER,
+                          message:
+                              contribution.message ?? FIELD_EMPTY_PLACEHOLDER,
+                      })),
+                  ),
+              ]
+            : []),
     ].join("\n");
 }
 
-export function renderModulesList(payload: unknown): string {
+export function renderComponentsList(payload: unknown): string {
     const response = normalizeResponse(payload) as {
         data?: Array<{
             id?: string;
@@ -201,7 +237,7 @@ export function renderModulesList(payload: unknown): string {
     const data = response.data ?? [];
 
     return [
-        formatHeading("Modules", "cyan"),
+        formatHeading("Components", "cyan"),
         formatTable(
             [
                 { key: "id", label: "ID" },
@@ -335,7 +371,10 @@ export function renderGatewayMutation(title: string, payload: unknown): string {
     ]);
 }
 
-export function renderModuleMutation(title: string, payload: unknown): string {
+export function renderComponentMutation(
+    title: string,
+    payload: unknown,
+): string {
     const response = normalizeResponse(payload) as {
         data?: { moduleId?: string; enabled?: boolean };
     };

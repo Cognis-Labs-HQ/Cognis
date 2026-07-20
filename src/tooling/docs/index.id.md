@@ -20,13 +20,13 @@ Direktori `src/tooling/` berisi semua tooling pengembang untuk kodebase Cognis: 
 - `src/tooling/cli/commands/` — perintah inti bawaan
 - Setiap `cli/index.js` yang diekspor oleh modul yang terinstal
 
-| Namespace   | Contoh perintah                                                                               |
-| ----------- | --------------------------------------------------------------------------------------------- |
-| `user:*`    | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
-| `system:*`  | `system:health`, `system:info`                                                                |
-| `modules:*` | `modules:list`, `modules:enable`, `modules:disable`                                           |
-| `gateway:*` | `gateway:list`                                                                                |
-| `api:*`     | `api:token` (menerbitkan token admin darurat sementara 1 jam untuk curl)                      |
+| Namespace     | Contoh perintah                                                                               |
+| ------------- | --------------------------------------------------------------------------------------------- |
+| `user:*`      | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
+| `system:*`    | `system:health`, `system:info`                                                                |
+| `component:*` | `component:list`, `component:enable`, `component:disable`                                     |
+| `gateway:*`   | `gateway:list`                                                                                |
+| `api:*`       | `api:token` (menerbitkan token admin darurat sementara 1 jam untuk curl)                      |
 
 Perintah bawaan `cognisctl` dapat merender keluaran terminal yang memahami respons dengan judul, kolom sejajar, dan warna ANSI saat terminal mendukungnya; perintah tanpa perender khusus akan kembali ke JSON yang diformat.
 

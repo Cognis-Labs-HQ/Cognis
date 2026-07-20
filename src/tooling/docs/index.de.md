@@ -29,7 +29,7 @@ Alles Linting läuft über `npm run lint`, das beide Lint-Skripte in Folge ausf�
 | `user:*`             | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
 | `user:preferences:*` | `user:preferences:clear`                                                                      |
 | `system:*`           | `system:health`, `system:info`                                                                |
-| `modules:*`          | `modules:list`, `modules:enable`, `modules:disable`, `modules:install`                        |
+| `component:*`        | `component:list`, `component:enable`, `component:disable`, `component:import-github`          |
 | `gateway:*`          | `gateway:list`                                                                                |
 | `api:*`              | `api:token` (erstellt ein temporäres 1‑Stunden-Admin-Notfalltoken für curl)                   |
 

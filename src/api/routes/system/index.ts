@@ -119,7 +119,7 @@ export function createSystemRoutes(
         if (isHealthRoute) {
             log?.("debug", "Served health status.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: healthService.status() }));
+            res.end(JSON.stringify({ data: await healthService.status() }));
             return true;
         }
 

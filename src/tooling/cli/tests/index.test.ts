@@ -64,8 +64,8 @@ test("formatCommandOutput renders user:list with effective roles", () => {
     assert.match(output, /alice\s+admin\s+enabled\s+no/);
 });
 
-test("formatCommandOutput renders modules:list as a table", () => {
-    const output = formatCommandOutput("modules:list", {
+test("formatCommandOutput renders component:list as a table", () => {
+    const output = formatCommandOutput("component:list", {
         data: [
             {
                 id: "demo",
@@ -76,7 +76,7 @@ test("formatCommandOutput renders modules:list as a table", () => {
         ],
     });
 
-    assert.match(output, /^Modules/m);
+    assert.match(output, /^Components/m);
     assert.match(output, /ID\s+Version\s+Class\s+Status/);
     assert.match(output, /demo\s+1.2.3\s+extension\s+available/);
 });
@@ -262,7 +262,7 @@ test("user:set-password fails when API reports updated false", async () => {
     }
 });
 
-test("modules:enable fails when API acknowledgement says module is still disabled", async () => {
+test("component:enable fails when API acknowledgement says module is still disabled", async () => {
     const originalFetch = globalThis.fetch;
     try {
         globalThis.fetch = async (input) => {
@@ -283,7 +283,7 @@ test("modules:enable fails when API acknowledgement says module is still disable
         };
 
         await assert.rejects(
-            executeRegisteredCommand("modules:enable", ["demo"], {
+            executeRegisteredCommand("component:enable", ["module", "demo"], {
                 apiBaseUrl: "http://localhost:3000",
                 getApiToken: async () => "token",
             }),
