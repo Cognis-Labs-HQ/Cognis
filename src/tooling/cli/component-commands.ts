@@ -292,32 +292,6 @@ export function registerComponentCommands(): void {
     );
 
     register(
-        "component:test",
-        async ({ args, apiBaseUrl, getApiToken }) => {
-            const [componentType, gatewayId, adapterId, bodyJson] = args;
-            requireArgs(
-                args,
-                ["componentType", "gatewayId", "adapterId"],
-                "cognisctl component:test adapter <gatewayId> <adapterId> [body-json]",
-            );
-            if (componentType !== "adapter") {
-                throw new Error('Expected component type "adapter".');
-            }
-            return apiPost(
-                apiBaseUrl,
-                adapterRoute(gatewayId, adapterId, "/test"),
-                parseJsonArgument(bodyJson),
-                await getApiToken(),
-            );
-        },
-        {
-            usage: "cognisctl component:test adapter <gatewayId> <adapterId> [body-json]",
-            description: "Run an adapter component test endpoint.",
-            render: formatStructured,
-        },
-    );
-
-    register(
         "component:enable",
         async ({ args, apiBaseUrl, getApiToken }) => {
             const [componentType, componentId] = args;

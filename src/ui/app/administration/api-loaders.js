@@ -23,6 +23,13 @@ export async function loadIntegrity() {
     return loadList("/api/v1/modules/integrity");
 }
 
+export async function loadHealth() {
+    const response = await apiFetch("/api/v1/system/health");
+    if (!response.ok) return null;
+    const payload = await response.json();
+    return payload.data ?? null;
+}
+
 export async function toggleModule(moduleId, action) {
     await apiFetch(
         `/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`,

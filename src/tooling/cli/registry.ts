@@ -21,7 +21,7 @@ function inferSection(name: string): string {
     if (name.startsWith("notify:")) return "Notifications";
     if (name.startsWith("tfa:")) return "TFA";
     if (name === "help") return "General";
-    return "Extensions";
+    return "Other";
 }
 
 export function register(

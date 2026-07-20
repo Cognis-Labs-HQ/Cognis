@@ -315,7 +315,7 @@ export function renderComponentsContent(modules, gateways, allAdapters, deps) {
   `;
 }
 
-export function renderIntegrityContent(integrityRows, i18n) {
+function renderIntegrityContent(integrityRows, i18n) {
     if (!integrityRows.length) {
         return `<p>${i18n.t("ui.app.admin.no_integrity")}</p>`;
     }
@@ -346,4 +346,43 @@ export function renderIntegrityContent(integrityRows, i18n) {
     `);
     }
     return sections.join("");
+}
+
+function renderHealthStatusContent(healthStatus, i18n) {
+    if (!healthStatus) return `<p>${i18n.t("ui.app.admin.no_integrity")}</p>`;
+    const contributions = Array.isArray(healthStatus.contributions)
+        ? healthStatus.contributions
+        : [];
+    const contributionItems = contributions
+        .map(
+            (contribution) =>
+                `<li class="integrity-${contribution.status ?? "ok"}">${contribution.componentId ?? "component"}: ${contribution.status ?? "unknown"}${contribution.message ? ` — ${contribution.message}` : ""}</li>`,
+        )
+        .join("");
+    return `
+      <div class="integrity-module">
+        <h3>Core</h3>
+        <ul class="integrity-list">
+          <li class="integrity-${healthStatus.status ?? "unknown"}">system: ${healthStatus.status ?? "unknown"}</li>
+          <li>${i18n.t("ui.app.admin.started")}: ${healthStatus.startedAt ?? "—"}</li>
+        </ul>
+      </div>
+      <div class="integrity-module">
+        <h3>${i18n.t("ui.app.admin.components")}</h3>
+        <ul class="integrity-list">${contributionItems || `<li>${i18n.t("ui.app.admin.none")}</li>`}</ul>
+      </div>
+    `;
+}
+
+export function renderStatusContent(healthStatus, integrityRows, i18n) {
+    return `
+      <div class="components-section">
+        <h3 class="components-section-heading">${i18n.t("ui.reuse.status")}</h3>
+        ${renderHealthStatusContent(healthStatus, i18n)}
+      </div>
+      <div class="components-section">
+        <h3 class="components-section-heading">${i18n.t("ui.reuse.file_integrity")}</h3>
+        ${renderIntegrityContent(integrityRows, i18n)}
+      </div>
+    `;
 }

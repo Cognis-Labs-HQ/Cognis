@@ -285,7 +285,7 @@ export function renderSystemHealth(payload: unknown): string {
         ...(contributions.length
             ? [
                   "",
-                  formatHeading("Component Contributions", "cyan"),
+                  formatHeading("Components", "cyan"),
                   formatTable(
                       [
                           { key: "component", label: "Component" },

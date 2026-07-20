@@ -657,4 +657,5 @@
   <string name="ui.app.users.archived">Diarsipkan</string>
   <string name="ui.app.login.reason.account_archived">Akun Anda diarsipkan. Hubungi administrator untuk memulihkan akses.</string>
   <string name="ui.app.login.reason.account_deactivated">Akun Anda dinonaktifkan. Masuk lagi untuk memulihkan interaksi.</string>
+  <string name="ui.reuse.status">Status</string>
 </resources>

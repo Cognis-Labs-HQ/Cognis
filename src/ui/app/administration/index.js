@@ -31,6 +31,7 @@ import {
     loadGatewaySection,
     loadGateways,
     loadIntegrity,
+    loadHealth,
     loadModules,
     toggleGateway,
     toggleModule,
@@ -38,7 +39,7 @@ import {
 } from "./api-loaders.js";
 import {
     renderComponentsContent,
-    renderIntegrityContent,
+    renderStatusContent,
     buildScrollTargetId,
 } from "./render-components.js";
 import {
@@ -53,6 +54,7 @@ let root = null;
 let i18n = null;
 let modules = [];
 let integrityRows = [];
+let healthStatus = null;
 let gateways = [];
 let allAdapters = [];
 let moduleById = new Map();
@@ -611,15 +613,20 @@ function bindAdapterRows() {
     });
 }
 
-function bindIntegrityRerun() {
-    const rerunButton = root.querySelector("#rerun-integrity");
+function bindStatusRerun() {
+    const rerunButton = root.querySelector("#rerun-status");
     if (!rerunButton) return;
     rerunButton.addEventListener("click", async () => {
         /** @type {HTMLButtonElement} */
         const btn = rerunButton;
         btn.disabled = true;
         btn.textContent = i18n.t("ui.app.admin.checking");
-        integrityRows = await loadIntegrity();
+        const [nextHealthStatus, nextIntegrityRows] = await Promise.all([
+            loadHealth(),
+            loadIntegrity(),
+        ]);
+        healthStatus = nextHealthStatus;
+        integrityRows = nextIntegrityRows;
         composer.refresh(elements);
     });
 }
@@ -752,14 +759,14 @@ export async function mount(rootEl, { signal } = {}) {
 
     setModules([]);
     integrityRows = [];
+    healthStatus = null;
     setGateways([]);
     setAllAdapters([]);
 
-    const [loadedModules, loadedIntegrityRows] = await Promise.all([
-        loadModules(),
-        loadIntegrity(),
-    ]);
+    const [loadedModules, loadedHealthStatus, loadedIntegrityRows] =
+        await Promise.all([loadModules(), loadHealth(), loadIntegrity()]);
     setModules(loadedModules);
+    healthStatus = loadedHealthStatus;
     integrityRows = loadedIntegrityRows;
     await reloadGatewaysAndAdapters();
 
@@ -846,27 +853,27 @@ export async function mount(rootEl, { signal } = {}) {
             },
         },
         {
-            id: "integrity",
-            label: i18n.t("ui.reuse.file_integrity"),
+            id: "status",
+            label: i18n.t("ui.reuse.status"),
             subComposerOptions: {
                 allowCustomization: false,
-                preferenceKey: "administration-integrity-layout",
-                heading: i18n.t("ui.reuse.file_integrity"),
+                preferenceKey: "administration-status-layout",
+                heading: i18n.t("ui.reuse.status"),
                 elements: [
                     {
-                        id: "integrity-content",
-                        label: i18n.t("ui.reuse.file_integrity"),
+                        id: "status-content",
+                        label: i18n.t("ui.reuse.status"),
                         pinned: true,
                         render: () => `
             <div class="integrity-header">
-              <button id="rerun-integrity" class="btn-confirm btn-animated" type="button">${i18n.t("ui.reuse.refresh")}</button>
+              <button id="rerun-status" class="btn-confirm btn-animated" type="button">${i18n.t("ui.reuse.refresh")}</button>
             </div>
-            ${renderIntegrityContent(integrityRows, i18n)}
+            ${renderStatusContent(healthStatus, integrityRows, i18n)}
           `,
                     },
                 ],
                 onRender: () => {
-                    bindIntegrityRerun();
+                    bindStatusRerun();
                 },
             },
         },
@@ -910,7 +917,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     const navItems = [
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
-        `<li><button data-composer-scroll="integrity">${i18n.t("ui.reuse.file_integrity")}</button></li>`,
+        `<li><button data-composer-scroll="status">${i18n.t("ui.reuse.status")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
         ...topLevelGatewaySections.map(
             (sec) =>

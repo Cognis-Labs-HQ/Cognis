@@ -657,4 +657,5 @@
   <string name="ui.app.users.archived">アーカイブ済み</string>
   <string name="ui.app.login.reason.account_archived">アカウントはアーカイブされています。アクセスを復元するには管理者に連絡してください。</string>
   <string name="ui.app.login.reason.account_deactivated">アカウントは無効化されています。やり取りを復元するには再度ログインしてください。</string>
+  <string name="ui.reuse.status">ステータス</string>
 </resources>

@@ -93,7 +93,6 @@ export function printGlobalHelp(): void {
         "Study",
         "Messages",
         "Shares",
-        "Extensions",
     ];
 
     for (const sectionName of sectionOrder) {
