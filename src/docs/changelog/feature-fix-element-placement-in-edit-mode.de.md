@@ -2,4 +2,4 @@
 
 ## Der Bearbeitungsmodus hält die Rasterplatzierung stabil
 
-Karten im Seitenkomponisten verwenden im Ansichtsmodus nun dieselbe feste Rasterspurgröße wie die Zieh- und Größenänderungsüberlagerung im Bearbeitungsmodus, während Bearbeitungsgriffe die sichtbare Kartenhöhe nicht mehr verringern. Dadurch verschieben sich Karten nicht mehr horizontal und schrumpfen nicht mehr vertikal, wenn Benutzer die Layoutbearbeitung öffnen oder schließen.
+Karten im Seitenkomponisten teilen sich im Ansichts- und Bearbeitungsmodus nun dieselbe Rasterbreite und denselben Rasterabstand, während Bearbeitungsgriffe die sichtbare Kartenhöhe nicht mehr verringern. Der Bearbeitungsmodus wächst außerdem mit dem Dokument, wenn zusätzliche Rasterzeilen entstehen, sodass beim Verschieben von Karten nach unten kein verschachtelter vertikaler Überlaufbereich entsteht.

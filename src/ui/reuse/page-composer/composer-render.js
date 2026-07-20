@@ -578,9 +578,10 @@ export function createComposerRenderer({
         state.gridSection = section;
 
         if (state.editing) {
+            panel.classList.add("content-panel--composer-editing");
             section.classList.add("composer-grid-active");
-            section.style.minHeight = `${state.gridRows * UNIT}px`;
-            section.style.width = `${state.gridCols * UNIT}px`;
+            section.style.minHeight = `${state.gridPixelHeight ?? state.gridRows * UNIT}px`;
+            section.style.width = `${state.gridPixelWidth ?? state.gridCols * UNIT}px`;
             section.appendChild(createGridOverlay());
         } else if (!state.frameless) {
             section.classList.add("composer-view-grid");
@@ -614,7 +615,7 @@ export function createComposerRenderer({
                 );
                 section.style.setProperty(
                     "--composer-grid-column-size",
-                    `${UNIT / scale}px`,
+                    `${state.gridTrackSize ?? UNIT / scale}px`,
                 );
                 section.style.setProperty(
                     "--composer-grid-gap",

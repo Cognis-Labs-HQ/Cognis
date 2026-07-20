@@ -2,4 +2,4 @@
 
 ## Mode edit mempertahankan posisi grid
 
-Kartu page composer kini memakai ukuran jalur grid tetap yang sama di mode tampilan seperti overlay seret dan ubah ukuran di mode edit, sementara handle edit tidak lagi mengurangi tinggi kartu yang terlihat. Ini mencegah kartu bergeser secara horizontal atau menyusut secara vertikal saat pengguna masuk atau keluar dari pengeditan tata letak.
+Kartu page composer kini berbagi ukuran grid selebar ruang yang tersedia dan celah grid yang sama di mode tampilan maupun edit, sementara handle edit tidak lagi mengurangi tinggi kartu yang terlihat. Mode edit juga ikut bertambah bersama dokumen saat baris grid tambahan dibuat, sehingga tidak muncul area overflow vertikal terpisah ketika pengguna memindahkan kartu ke bawah.

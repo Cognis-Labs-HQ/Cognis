@@ -61,6 +61,11 @@
     display: block;
 }
 
+.content-panel--composer-editing {
+    overflow: visible;
+    min-height: 0;
+}
+
 .composer-done-btn {
     background: var(--accent-2);
     border: 1px solid transparent;

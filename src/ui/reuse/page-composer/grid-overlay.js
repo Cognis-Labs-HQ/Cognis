@@ -36,7 +36,7 @@ export function createGridOverlayHandlers({
     }
 
     function getTrackSize() {
-        return UNIT / getRenderScale();
+        return state.gridTrackSize ?? UNIT / getRenderScale();
     }
 
     function gridOffset(coordinate) {
@@ -69,6 +69,10 @@ export function createGridOverlayHandlers({
         state.contentGrid.style.width = "";
         const width = state.contentGrid.getBoundingClientRect().width;
         state.gridCols = Math.max(1, Math.floor(width / UNIT));
+        const scale = getRenderScale();
+        const trackCount = state.gridCols * scale;
+        const totalGap = Math.max(0, trackCount - 1) * PAGE_COMPOSER_GRID_GAP;
+        state.gridTrackSize = Math.max(1, (width - totalGap) / trackCount);
         const visiblePlacements = (state.layout?.placements ?? []).filter(
             (p) => !(state.layout?.hidden ?? []).includes(p.id),
         );
@@ -81,16 +85,18 @@ export function createGridOverlayHandlers({
             state.editing ? Math.max(3, maxBottom + 2) : 1,
             maxBottom + extra,
         );
+        state.gridPixelHeight = gridSpanSize(state.gridRows);
+        state.gridPixelWidth = gridSpanSize(state.gridCols);
         state.contentGrid.style.minHeight =
             state.frameless && !state.editing
                 ? ""
-                : `${gridSpanSize(state.gridRows)}px`;
+                : `${state.gridPixelHeight}px`;
         state.contentGrid.style.width = state.editing
-            ? `${gridSpanSize(state.gridCols)}px`
+            ? `${state.gridPixelWidth}px`
             : "";
         if (state.editing && state.gridSection) {
-            state.gridSection.style.minHeight = `${gridSpanSize(state.gridRows)}px`;
-            state.gridSection.style.width = `${gridSpanSize(state.gridCols)}px`;
+            state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
+            state.gridSection.style.width = `${state.gridPixelWidth}px`;
         }
     }
 
@@ -404,7 +410,7 @@ export function createGridOverlayHandlers({
 
                     if (rawRow + placement.h > state.gridRows) {
                         state.gridRows = rawRow + placement.h + 1;
-                        state.gridSection.style.minHeight = `${gridSpanSize(state.gridRows)}px`;
+                        state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
                     }
 
                     currentCol = col;
