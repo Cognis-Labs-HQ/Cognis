@@ -1,46 +1,163 @@
-import { ensureBooleanAcknowledgement, requireArgs } from "./command-utils.ts";
+import {
+    ensureBooleanAcknowledgement,
+    mergePayloadFields,
+    requireArgs,
+} from "./command-utils.ts";
 import {
     formatStructured,
     renderComponentMutation,
     renderComponentsList,
 } from "./formatters.ts";
-import { apiGet, apiPost } from "./http.ts";
+import { ApiRequestError, apiGet, apiPost, apiPut } from "./http.ts";
 import { register } from "./registry.ts";
+
+type ComponentType = "module" | "gateway" | "adapter";
+
+interface ComponentListEntry {
+    id: string;
+    type: ComponentType;
+    version?: string;
+    status?: string;
+    gatewayId?: string;
+}
+
+interface GatewayListEntry {
+    id: string;
+    version?: string;
+    status?: string;
+}
+
+interface AdapterListEntry {
+    id?: string;
+    adapterId?: string;
+    senderId?: string;
+    name?: string;
+    version?: string;
+    status?: string;
+    enabled?: boolean;
+}
+
+function encodePath(value: string): string {
+    return encodeURIComponent(value);
+}
+
+function normalizeAdapterId(adapter: AdapterListEntry): string {
+    return (
+        adapter.adapterId ??
+        adapter.senderId ??
+        adapter.id ??
+        adapter.name ??
+        "adapter"
+    );
+}
+
+function normalizeAdapterStatus(adapter: AdapterListEntry): string | undefined {
+    if (typeof adapter.enabled === "boolean") {
+        return adapter.enabled ? "enabled" : "disabled";
+    }
+    return adapter.status;
+}
+
+function parseJsonArgument(value: string | undefined): unknown {
+    if (!value) return {};
+    return JSON.parse(value) as unknown;
+}
+
+function adapterRoute(
+    gatewayId: string,
+    adapterId: string,
+    suffix: string,
+): string {
+    return `/api/v1/gateways/${encodePath(gatewayId)}/adapters/${encodePath(adapterId)}${suffix}`;
+}
+
+async function loadAdapterComponents(
+    apiBaseUrl: string,
+    token: string,
+    gateway: GatewayListEntry,
+): Promise<ComponentListEntry[]> {
+    let payload: { data?: AdapterListEntry[] };
+
+    try {
+        payload = (await apiGet(
+            apiBaseUrl,
+            `/api/v1/gateways/${encodePath(gateway.id)}/adapters`,
+            token,
+        )) as { data?: AdapterListEntry[] };
+    } catch (error) {
+        if (error instanceof ApiRequestError && error.status === 404) {
+            return [];
+        }
+        throw error;
+    }
+
+    return (payload.data ?? []).map((adapter) => ({
+        id: normalizeAdapterId(adapter),
+        type: "adapter",
+        version: adapter.version,
+        status: normalizeAdapterStatus(adapter),
+        gatewayId: gateway.id,
+    }));
+}
+
+async function loadComponentList(
+    apiBaseUrl: string,
+    token: string,
+): Promise<ComponentListEntry[]> {
+    const [modulePayload, gatewayPayload] = (await Promise.all([
+        apiGet(apiBaseUrl, "/api/v1/modules", token),
+        apiGet(apiBaseUrl, "/api/v1/gateways", token),
+    ])) as [
+        { data?: Array<{ id: string; version?: string; status?: string }> },
+        { data?: GatewayListEntry[] },
+    ];
+    const gateways = gatewayPayload.data ?? [];
+    const adapterComponents = await Promise.all(
+        gateways.map((gateway) =>
+            loadAdapterComponents(apiBaseUrl, token, gateway),
+        ),
+    );
+
+    return [
+        ...(modulePayload.data ?? []).map((moduleEntry) => ({
+            id: moduleEntry.id,
+            type: "module" as const,
+            version: moduleEntry.version,
+            status: moduleEntry.status,
+        })),
+        ...gateways.map((gateway) => ({
+            id: gateway.id,
+            type: "gateway" as const,
+            version: gateway.version,
+            status: gateway.status,
+        })),
+        ...adapterComponents.flat(),
+    ];
+}
 
 export function registerComponentCommands(): void {
     register(
         "component:list",
         async ({ apiBaseUrl, getApiToken }) => {
-            const payload = (await apiGet(
-                apiBaseUrl,
-                "/api/v1/modules",
-                await getApiToken(),
-            )) as {
-                data: Array<{ id: string; version: string; class: string }>;
+            return {
+                data: await loadComponentList(apiBaseUrl, await getApiToken()),
             };
-
-            const data = payload.data.map((moduleEntry) => ({
-                ...moduleEntry,
-                status: moduleEntry.class === "core" ? "enabled" : "available",
-            }));
-
-            return { data };
         },
         {
             usage: "cognisctl component:list",
-            description: "List available modules from the API with status.",
+            description: "List modules, gateways, and adapters with status.",
             render: renderComponentsList,
         },
     );
 
     register(
-        "component:import-github",
+        "component:import",
         async ({ args, apiBaseUrl, getApiToken }) => {
             const [repositoryUrl, versionTag] = args;
             requireArgs(
                 args,
                 ["repositoryUrl", "versionTag"],
-                "cognisctl component:import-github <repositoryUrl> <versionTag>",
+                "cognisctl component:import <repositoryUrl> <versionTag>",
             );
 
             return apiPost(
@@ -51,7 +168,7 @@ export function registerComponentCommands(): void {
             );
         },
         {
-            usage: "cognisctl component:import-github <repositoryUrl> <versionTag>",
+            usage: "cognisctl component:import <repositoryUrl> <versionTag>",
             description:
                 "Import a module release from a GitHub repository tag.",
             render: formatStructured,
@@ -59,18 +176,95 @@ export function registerComponentCommands(): void {
     );
 
     register(
-        "component:enable",
+        "component:config:get",
         async ({ args, apiBaseUrl, getApiToken }) => {
-            const [componentType, moduleId] = args;
+            const [componentType, gatewayId, adapterId] = args;
             requireArgs(
                 args,
-                ["componentType", "moduleId"],
+                ["componentType", "gatewayId", "adapterId"],
+                "cognisctl component:config:get adapter <gatewayId> <adapterId>",
+            );
+            if (componentType !== "adapter") {
+                throw new Error('Expected component type "adapter".');
+            }
+            return apiGet(
+                apiBaseUrl,
+                adapterRoute(gatewayId, adapterId, "/config"),
+                await getApiToken(),
+            );
+        },
+        {
+            usage: "cognisctl component:config:get adapter <gatewayId> <adapterId>",
+            description: "Read an adapter component configuration.",
+            render: formatStructured,
+        },
+    );
+
+    register(
+        "component:config:set",
+        async ({ args, apiBaseUrl, getApiToken }) => {
+            const [componentType, gatewayId, adapterId, configJson] = args;
+            requireArgs(
+                args,
+                ["componentType", "gatewayId", "adapterId", "configJson"],
+                "cognisctl component:config:set adapter <gatewayId> <adapterId> <config-json>",
+            );
+            if (componentType !== "adapter") {
+                throw new Error('Expected component type "adapter".');
+            }
+            return apiPut(
+                apiBaseUrl,
+                adapterRoute(gatewayId, adapterId, "/config"),
+                parseJsonArgument(configJson),
+                await getApiToken(),
+            );
+        },
+        {
+            usage: "cognisctl component:config:set adapter <gatewayId> <adapterId> <config-json>",
+            description: "Update an adapter component configuration.",
+            render: formatStructured,
+        },
+    );
+
+    register(
+        "component:test",
+        async ({ args, apiBaseUrl, getApiToken }) => {
+            const [componentType, gatewayId, adapterId, bodyJson] = args;
+            requireArgs(
+                args,
+                ["componentType", "gatewayId", "adapterId"],
+                "cognisctl component:test adapter <gatewayId> <adapterId> [body-json]",
+            );
+            if (componentType !== "adapter") {
+                throw new Error('Expected component type "adapter".');
+            }
+            return apiPost(
+                apiBaseUrl,
+                adapterRoute(gatewayId, adapterId, "/test"),
+                parseJsonArgument(bodyJson),
+                await getApiToken(),
+            );
+        },
+        {
+            usage: "cognisctl component:test adapter <gatewayId> <adapterId> [body-json]",
+            description: "Run an adapter component test endpoint.",
+            render: formatStructured,
+        },
+    );
+
+    register(
+        "component:enable",
+        async ({ args, apiBaseUrl, getApiToken }) => {
+            const [componentType, componentId] = args;
+            requireArgs(
+                args,
+                ["componentType", "componentId"],
                 "cognisctl component:enable module <moduleId>",
             );
 
             if (componentType === "module") {
                 const acknowledge = args.includes("--ack-external-disclaimer");
-                const route = `/api/v1/modules/${encodeURIComponent(moduleId)}/enable${acknowledge ? "?acknowledgeExternalDisclaimer=true" : ""}`;
+                const route = `/api/v1/modules/${encodePath(componentId)}/enable${acknowledge ? "?acknowledgeExternalDisclaimer=true" : ""}`;
                 const payload = await apiPost(
                     apiBaseUrl,
                     route,
@@ -82,19 +276,26 @@ export function registerComponentCommands(): void {
                     payload,
                     "enabled",
                     true,
-                    `Module "${moduleId}" was not enabled`,
+                    `Module "${componentId}" was not enabled`,
                 );
 
-                return payload;
+                return mergePayloadFields(payload, {
+                    componentId,
+                    componentType,
+                });
             }
 
             if (componentType === "gateway") {
-                return apiPost(
+                const payload = await apiPost(
                     apiBaseUrl,
-                    `/api/v1/gateways/${encodeURIComponent(moduleId)}/enable`,
+                    `/api/v1/gateways/${encodePath(componentId)}/enable`,
                     undefined,
                     await getApiToken(),
                 );
+                return mergePayloadFields(payload, {
+                    componentId,
+                    componentType,
+                });
             }
 
             if (componentType === "adapter") {
@@ -104,12 +305,17 @@ export function registerComponentCommands(): void {
                     ["componentType", "gatewayId", "adapterId"],
                     "cognisctl component:enable adapter <gatewayId> <adapterId>",
                 );
-                return apiPost(
+                const payload = await apiPost(
                     apiBaseUrl,
-                    `/api/v1/gateways/${encodeURIComponent(moduleId)}/adapters/${encodeURIComponent(adapterId)}/enable`,
+                    adapterRoute(componentId, adapterId, "/enable"),
                     undefined,
                     await getApiToken(),
                 );
+                return mergePayloadFields(payload, {
+                    componentId: adapterId,
+                    componentType,
+                    gatewayId: componentId,
+                });
             }
 
             throw new Error(
@@ -128,17 +334,17 @@ export function registerComponentCommands(): void {
     register(
         "component:disable",
         async ({ args, apiBaseUrl, getApiToken }) => {
-            const [componentType, moduleId] = args;
+            const [componentType, componentId] = args;
             requireArgs(
                 args,
-                ["componentType", "moduleId"],
+                ["componentType", "componentId"],
                 "cognisctl component:disable module <moduleId>",
             );
 
             if (componentType === "module") {
                 const payload = await apiPost(
                     apiBaseUrl,
-                    `/api/v1/modules/${encodeURIComponent(moduleId)}/disable`,
+                    `/api/v1/modules/${encodePath(componentId)}/disable`,
                     undefined,
                     await getApiToken(),
                 );
@@ -147,19 +353,26 @@ export function registerComponentCommands(): void {
                     payload,
                     "enabled",
                     false,
-                    `Module "${moduleId}" was not disabled`,
+                    `Module "${componentId}" was not disabled`,
                 );
 
-                return payload;
+                return mergePayloadFields(payload, {
+                    componentId,
+                    componentType,
+                });
             }
 
             if (componentType === "gateway") {
-                return apiPost(
+                const payload = await apiPost(
                     apiBaseUrl,
-                    `/api/v1/gateways/${encodeURIComponent(moduleId)}/disable`,
+                    `/api/v1/gateways/${encodePath(componentId)}/disable`,
                     undefined,
                     await getApiToken(),
                 );
+                return mergePayloadFields(payload, {
+                    componentId,
+                    componentType,
+                });
             }
 
             if (componentType === "adapter") {
@@ -169,12 +382,17 @@ export function registerComponentCommands(): void {
                     ["componentType", "gatewayId", "adapterId"],
                     "cognisctl component:disable adapter <gatewayId> <adapterId>",
                 );
-                return apiPost(
+                const payload = await apiPost(
                     apiBaseUrl,
-                    `/api/v1/gateways/${encodeURIComponent(moduleId)}/adapters/${encodeURIComponent(adapterId)}/disable`,
+                    adapterRoute(componentId, adapterId, "/disable"),
                     undefined,
                     await getApiToken(),
                 );
+                return mergePayloadFields(payload, {
+                    componentId: adapterId,
+                    componentType,
+                    gatewayId: componentId,
+                });
             }
 
             throw new Error(

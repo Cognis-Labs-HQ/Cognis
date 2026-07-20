@@ -1,7 +1,3 @@
-function printJson(payload) {
-    console.log(JSON.stringify(payload, null, 2));
-}
-
 function requireArgs(args, names, usage) {
     const missing = names.filter((_, index) => !args[index]);
     if (missing.length === 0) return;
@@ -14,12 +10,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "nextcloud-whiteboard:ping",
         async ({ apiBaseUrl, getApiToken }) => {
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    "/api/v1/modules/nextcloud-whiteboard/ping",
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/modules/nextcloud-whiteboard/ping",
+                await getApiToken(),
             );
         },
         {
@@ -32,12 +26,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "nextcloud-whiteboard:config:get",
         async ({ apiBaseUrl, getApiToken }) => {
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    "/api/v1/modules/nextcloud-whiteboard/config",
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/modules/nextcloud-whiteboard/config",
+                await getApiToken(),
             );
         },
         {
@@ -55,17 +47,15 @@ export function registerCommands({ register, apiGet, apiPost }) {
             const imageUploadMaxBytes = args[2]
                 ? Number.parseInt(args[2], 10)
                 : undefined;
-            printJson(
-                await apiPost(
-                    apiBaseUrl,
-                    "/api/v1/modules/nextcloud-whiteboard/config",
-                    {
-                        serverUrl: args[0],
-                        apiKey: args[1],
-                        imageUploadMaxBytes,
-                    },
-                    await getApiToken(),
-                ),
+            return apiPost(
+                apiBaseUrl,
+                "/api/v1/modules/nextcloud-whiteboard/config",
+                {
+                    serverUrl: args[0],
+                    apiKey: args[1],
+                    imageUploadMaxBytes,
+                },
+                await getApiToken(),
             );
         },
         {
@@ -77,12 +67,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "nextcloud-whiteboard:whiteboards",
         async ({ apiBaseUrl, getApiToken }) => {
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    "/api/v1/modules/nextcloud-whiteboard/whiteboards",
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/modules/nextcloud-whiteboard/whiteboards",
+                await getApiToken(),
             );
         },
         {

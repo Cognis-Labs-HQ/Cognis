@@ -24,10 +24,10 @@ Beim Start durchsucht `ModuleService` das Verzeichnis `COGNIS_MODULES_ROOT` nach
 
 ### Interne und externe Module
 
-| Typ        | Quelle                                       | Installation                                      | Haftungsausschluss             |
-| ---------- | -------------------------------------------- | ------------------------------------------------- | ------------------------------ |
-| `internal` | Im Repository unter `src/modules/` gebündelt | Vorinstalliert                                    | Keiner                         |
-| `external` | Hochgeladenes `.zip`- oder `.tar.gz`-Archiv  | Über Admin-API oder `component:import-github` CLI | Wird vor Aktivierung angezeigt |
+| Typ        | Quelle                                       | Installation                               | Haftungsausschluss             |
+| ---------- | -------------------------------------------- | ------------------------------------------ | ------------------------------ |
+| `internal` | Im Repository unter `src/modules/` gebündelt | Vorinstalliert                             | Keiner                         |
+| `external` | Hochgeladenes `.zip`- oder `.tar.gz`-Archiv  | Über Admin-API oder `component:import` CLI | Wird vor Aktivierung angezeigt |
 
 Externe Module werden durch Hochladen eines komprimierten Archivs installiert. Das Framework entpackt das Archiv, prüft die `manifest.json` und legt das Modulverzeichnis unter `COGNIS_MODULES_ROOT` ab.
 
@@ -134,7 +134,7 @@ mit Zugriffsrichtlinien für UI-Seiten:
 
 ## GitHub-Import-Lebenszyklus
 
-1. Admin übergibt `repositoryUrl` und `versionTag` über die Administration-UI oder `cognisctl component:import-github`.
+1. Admin übergibt `repositoryUrl` und `versionTag` über die Administration-UI oder `cognisctl component:import`.
 2. Die API-Route `/api/v1/modules/import/github` validiert die Eingaben und delegiert an `ModuleService.importFromGithub`.
 3. Der Service lädt das Tag-Archiv von `codeload.github.com` und übergibt die Bytes an das ModuleRuntimeGateway.
 4. Die Runtime installiert das Archiv als standardkonformes Drop-in-Modulverzeichnis.

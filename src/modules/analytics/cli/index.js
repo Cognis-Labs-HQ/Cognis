@@ -2,12 +2,11 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "analytics:metrics",
         async ({ apiBaseUrl, getApiToken }) => {
-            const payload = await apiGet(
+            return apiGet(
                 apiBaseUrl,
                 "/api/v1/modules/analytics/metrics",
                 await getApiToken(),
             );
-            console.log(JSON.stringify(payload, null, 2));
         },
         {
             usage: "cognisctl analytics:metrics",
@@ -22,12 +21,11 @@ export function registerActivityCommands({ register, apiGet, apiPost }) {
         "analytics:series",
         async ({ args, apiBaseUrl, getApiToken }) => {
             const days = args[0] ? `?days=${encodeURIComponent(args[0])}` : "";
-            const payload = await apiGet(
+            return apiGet(
                 apiBaseUrl,
                 `/api/v1/modules/analytics/series${days}`,
                 await getApiToken(),
             );
-            console.log(JSON.stringify(payload, null, 2));
         },
         {
             usage: "cognisctl analytics:series [days]",
@@ -41,12 +39,11 @@ export function registerActivityCommands({ register, apiGet, apiPost }) {
             const limit = args[0]
                 ? `?limit=${encodeURIComponent(args[0])}`
                 : "";
-            const payload = await apiGet(
+            return apiGet(
                 apiBaseUrl,
                 `/api/v1/modules/analytics/activity-log${limit}`,
                 await getApiToken(),
             );
-            console.log(JSON.stringify(payload, null, 2));
         },
         {
             usage: "cognisctl analytics:activity-log [limit]",
@@ -64,13 +61,12 @@ export function registerActivityCommands({ register, apiGet, apiPost }) {
                 );
             }
             const meta = args[1] ? JSON.parse(args[1]) : null;
-            const payload = await apiPost(
+            return apiPost(
                 apiBaseUrl,
                 "/api/v1/modules/analytics/activity-log",
                 { eventType: args[0], meta },
                 await getApiToken(),
             );
-            console.log(JSON.stringify(payload, null, 2));
         },
         {
             usage: "cognisctl analytics:activity-log:record <event-type> [meta-json]",

@@ -229,9 +229,10 @@ export function renderComponentsList(payload: unknown): string {
     const response = normalizeResponse(payload) as {
         data?: Array<{
             id?: string;
+            type?: string;
             version?: string;
-            class?: string;
             status?: string;
+            gatewayId?: string;
         }>;
     };
     const data = response.data ?? [];
@@ -241,17 +242,19 @@ export function renderComponentsList(payload: unknown): string {
         formatTable(
             [
                 { key: "id", label: "ID" },
+                { key: "type", label: "Type" },
                 { key: "version", label: "Version" },
-                { key: "class", label: "Class" },
                 { key: "status", label: "Status" },
+                { key: "gatewayId", label: "Gateway" },
             ],
-            data.map((moduleEntry) => ({
-                id: moduleEntry.id ?? FIELD_EMPTY_PLACEHOLDER,
-                version: moduleEntry.version ?? FIELD_EMPTY_PLACEHOLDER,
-                class: moduleEntry.class ?? FIELD_EMPTY_PLACEHOLDER,
-                status: moduleEntry.status ?? FIELD_EMPTY_PLACEHOLDER,
+            data.map((component) => ({
+                id: component.id ?? FIELD_EMPTY_PLACEHOLDER,
+                type: component.type ?? FIELD_EMPTY_PLACEHOLDER,
+                version: component.version ?? FIELD_EMPTY_PLACEHOLDER,
+                status: component.status ?? FIELD_EMPTY_PLACEHOLDER,
+                gatewayId: component.gatewayId ?? FIELD_EMPTY_PLACEHOLDER,
             })),
-            { emptyMessage: "No modules found." },
+            { emptyMessage: "No components found." },
         ),
     ].join("\n\n");
 }
@@ -376,14 +379,33 @@ export function renderComponentMutation(
     payload: unknown,
 ): string {
     const response = normalizeResponse(payload) as {
-        data?: { moduleId?: string; enabled?: boolean };
+        componentId?: string;
+        componentType?: string;
+        gatewayId?: string;
+        data?: {
+            moduleId?: string;
+            enabled?: boolean;
+            status?: string;
+            saved?: boolean;
+        };
     };
+    const status =
+        response.data?.status ??
+        (typeof response.data?.enabled === "boolean"
+            ? response.data.enabled
+                ? "enabled"
+                : "disabled"
+            : undefined);
 
     return formatSuccessBlock(title, "green", [
-        formatField("Module", response.data?.moduleId),
         formatField(
-            "Status",
-            formatStatus(response.data?.enabled ? "enabled" : "disabled"),
+            "Component",
+            response.componentId ?? response.data?.moduleId,
         ),
+        formatField("Type", response.componentType),
+        ...(response.gatewayId
+            ? [formatField("Gateway", response.gatewayId)]
+            : []),
+        formatField("Status", formatStatus(status ?? "updated")),
     ]);
 }

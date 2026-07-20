@@ -1,7 +1,3 @@
-function printJson(payload) {
-    console.log(JSON.stringify(payload, null, 2));
-}
-
 function requireArgs(args, names, usage) {
     const missing = names.filter((_, index) => !args[index]);
     if (missing.length === 0) return;
@@ -23,12 +19,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "jitsi-meet:ping",
         async ({ apiBaseUrl, getApiToken }) => {
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    "/api/v1/modules/jitsi-meet/ping",
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/modules/jitsi-meet/ping",
+                await getApiToken(),
             );
         },
         {
@@ -40,12 +34,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "jitsi-meet:config:get",
         async ({ apiBaseUrl, getApiToken }) => {
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    "/api/v1/modules/jitsi-meet/config",
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/modules/jitsi-meet/config",
+                await getApiToken(),
             );
         },
         {
@@ -60,16 +52,14 @@ export function registerCommands({ register, apiGet, apiPost }) {
             const usage =
                 "cognisctl jitsi-meet:config:set <instance-url> [meeting-prefix]";
             requireArgs(args, ["instance-url"], usage);
-            printJson(
-                await apiPost(
-                    apiBaseUrl,
-                    "/api/v1/modules/jitsi-meet/config",
-                    {
-                        instanceUrl: args[0],
-                        meetingPrefix: args[1] ?? "",
-                    },
-                    await getApiToken(),
-                ),
+            return apiPost(
+                apiBaseUrl,
+                "/api/v1/modules/jitsi-meet/config",
+                {
+                    instanceUrl: args[0],
+                    meetingPrefix: args[1] ?? "",
+                },
+                await getApiToken(),
             );
         },
         {
@@ -81,12 +71,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "jitsi-meet:admin:meetings",
         async ({ apiBaseUrl, getApiToken }) => {
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    "/api/v1/modules/jitsi-meet/admin/meetings",
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/modules/jitsi-meet/admin/meetings",
+                await getApiToken(),
             );
         },
         {
@@ -98,12 +86,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
     register(
         "jitsi-meet:admin:meetings:upcoming",
         async ({ apiBaseUrl, getApiToken }) => {
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    "/api/v1/modules/jitsi-meet/admin/meetings/upcoming",
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                "/api/v1/modules/jitsi-meet/admin/meetings/upcoming",
+                await getApiToken(),
             );
         },
         {
@@ -118,12 +104,10 @@ export function registerCommands({ register, apiGet, apiPost }) {
         async ({ args, apiBaseUrl, getApiToken }) => {
             const usage = "cognisctl jitsi-meet:participants <meeting-id>";
             requireArgs(args, ["meeting-id"], usage);
-            printJson(
-                await apiGet(
-                    apiBaseUrl,
-                    `/api/v1/modules/jitsi-meet/participants${queryString({ meetingId: args[0] })}`,
-                    await getApiToken(),
-                ),
+            return apiGet(
+                apiBaseUrl,
+                `/api/v1/modules/jitsi-meet/participants${queryString({ meetingId: args[0] })}`,
+                await getApiToken(),
             );
         },
         {

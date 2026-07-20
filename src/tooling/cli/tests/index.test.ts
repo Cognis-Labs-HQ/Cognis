@@ -90,16 +90,31 @@ test("formatCommandOutput renders component:list as a table", () => {
         data: [
             {
                 id: "demo",
+                type: "module",
                 version: "1.2.3",
-                class: "extension",
                 status: "available",
+            },
+            {
+                id: "auth",
+                type: "gateway",
+                version: "2.0.0",
+                status: "active",
+            },
+            {
+                id: "local",
+                type: "adapter",
+                version: "1.0.0",
+                status: "enabled",
+                gatewayId: "auth",
             },
         ],
     });
 
     assert.match(output, /^Components/m);
-    assert.match(output, /ID\s+Version\s+Class\s+Status/);
-    assert.match(output, /demo\s+1.2.3\s+extension\s+available/);
+    assert.match(output, /ID\s+Type\s+Version\s+Status\s+Gateway/);
+    assert.match(output, /demo\s+module\s+1.2.3\s+available/);
+    assert.match(output, /auth\s+gateway\s+2.0.0\s+active/);
+    assert.match(output, /local\s+adapter\s+1.0.0\s+enabled\s+auth/);
 });
 
 test("user:set-password fails with clear message when user is missing", async () => {
@@ -315,11 +330,97 @@ test("component:enable fails when API acknowledgement says module is still disab
     }
 });
 
+test("component:list aggregates modules, gateways, and adapters", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input) => {
+            const requestUrl = String(input);
+            if (requestUrl.endsWith("/api/v1/modules")) {
+                return new Response(
+                    JSON.stringify({
+                        data: [
+                            {
+                                id: "analytics",
+                                version: "1.0.0",
+                                status: "enabled",
+                            },
+                        ],
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            if (requestUrl.endsWith("/api/v1/gateways")) {
+                return new Response(
+                    JSON.stringify({
+                        data: [
+                            { id: "auth", version: "2.0.0", status: "active" },
+                        ],
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            if (requestUrl.endsWith("/api/v1/gateways/auth/adapters")) {
+                return new Response(
+                    JSON.stringify({
+                        data: [
+                            {
+                                adapterId: "local",
+                                version: "1.2.0",
+                                enabled: true,
+                            },
+                        ],
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            throw new Error(`Unexpected request: ${requestUrl}`);
+        };
+
+        const payload = (await executeRegisteredCommand("component:list", [], {
+            apiBaseUrl: "http://localhost:3000",
+            getApiToken: async () => "token",
+        })) as {
+            data: Array<{ id: string; type: string; gatewayId?: string }>;
+        };
+
+        assert.deepEqual(payload.data, [
+            {
+                id: "analytics",
+                type: "module",
+                version: "1.0.0",
+                status: "enabled",
+            },
+            { id: "auth", type: "gateway", version: "2.0.0", status: "active" },
+            {
+                id: "local",
+                type: "adapter",
+                version: "1.2.0",
+                status: "enabled",
+                gatewayId: "auth",
+            },
+        ]);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("global help includes component commands under the Components section", () => {
     const output = captureConsoleLog(() => printGlobalHelp());
 
     assert.match(output, /\n  Components:/);
-    assert.match(output, /component:list\s+List available modules/);
+    assert.match(
+        output,
+        /component:list\s+List modules, gateways, and adapters/,
+    );
     assert.match(
         output,
         /component:enable\s+Enable a module, gateway, or adapter/,
@@ -330,10 +431,20 @@ test("global help includes component commands under the Components section", () 
 test("loadModuleCliPlugins discovers manifest-declared component CLI commands", async () => {
     const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-modules-"));
     const moduleRoot = path.join(tempRoot, "demo-component");
-    const previousPaths = process.env.COGNIS_MODULE_CLI_PATHS;
+    const gatewayRoot = path.join(tempRoot, "demo-gateway");
+    const adapterRoot = path.join(
+        tempRoot,
+        "demo-gateway-adapters",
+        "demo-adapter",
+    );
+    const previousModulePaths = process.env.COGNIS_MODULE_CLI_PATHS;
+    const previousGatewayPaths = process.env.COGNIS_GATEWAY_CLI_PATHS;
+    const previousAdapterPaths = process.env.COGNIS_ADAPTER_CLI_PATHS;
 
     try {
         await mkdir(path.join(moduleRoot, "tools"), { recursive: true });
+        await mkdir(path.join(gatewayRoot, "cli"), { recursive: true });
+        await mkdir(path.join(adapterRoot, "cli"), { recursive: true });
         await writeFile(
             path.join(moduleRoot, "manifest.json"),
             JSON.stringify({ entrypoints: { cli: "./tools/commands.js" } }),
@@ -348,23 +459,72 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
                 });
             }`,
         );
+        await writeFile(
+            path.join(gatewayRoot, "cli", "index.js"),
+            `export function registerCommands({ register }) {
+                register("demo-gateway:status", async () => ({ data: { status: "ok" } }), {
+                    usage: "cognisctl demo-gateway:status",
+                    description: "Inspect the demo gateway.",
+                    section: "Demo Gateway",
+                });
+            }`,
+        );
+        await writeFile(
+            path.join(adapterRoot, "cli", "index.js"),
+            `export function registerCommands({ register }) {
+                register("demo-adapter:status", async () => ({ data: { status: "ok" } }), {
+                    usage: "cognisctl demo-adapter:status",
+                    description: "Inspect the demo adapter.",
+                    section: "Demo Adapter",
+                });
+            }`,
+        );
 
         process.env.COGNIS_MODULE_CLI_PATHS = tempRoot;
+        process.env.COGNIS_GATEWAY_CLI_PATHS = tempRoot;
+        process.env.COGNIS_ADAPTER_CLI_PATHS = tempRoot;
         await loadModuleCliPlugins({ refresh: true });
 
         assert.ok(registry.has("demo-component:inspect"));
+        assert.ok(registry.has("demo-gateway:status"));
+        assert.ok(registry.has("demo-adapter:status"));
+        assert.equal(
+            formatCommandOutput(
+                "demo-component:inspect",
+                await executeRegisteredCommand("demo-component:inspect", [], {
+                    apiBaseUrl: "http://localhost:3000",
+                    getApiToken: async () => "token",
+                }),
+            ),
+            '{\n  "data": {\n    "ok": true\n  }\n}',
+        );
+
         const output = captureConsoleLog(() => printGlobalHelp());
         assert.match(output, /\n  Demo Component:/);
+        assert.match(output, /\n  Demo Gateway:/);
+        assert.match(output, /\n  Demo Adapter:/);
         assert.match(
             output,
             /demo-component:inspect\s+Inspect the demo component\./,
         );
     } finally {
         registry.delete("demo-component:inspect");
-        if (previousPaths === undefined) {
+        registry.delete("demo-gateway:status");
+        registry.delete("demo-adapter:status");
+        if (previousModulePaths === undefined) {
             delete process.env.COGNIS_MODULE_CLI_PATHS;
         } else {
-            process.env.COGNIS_MODULE_CLI_PATHS = previousPaths;
+            process.env.COGNIS_MODULE_CLI_PATHS = previousModulePaths;
+        }
+        if (previousGatewayPaths === undefined) {
+            delete process.env.COGNIS_GATEWAY_CLI_PATHS;
+        } else {
+            process.env.COGNIS_GATEWAY_CLI_PATHS = previousGatewayPaths;
+        }
+        if (previousAdapterPaths === undefined) {
+            delete process.env.COGNIS_ADAPTER_CLI_PATHS;
+        } else {
+            process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
         await rm(tempRoot, { recursive: true, force: true });
     }

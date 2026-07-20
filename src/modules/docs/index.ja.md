@@ -24,10 +24,10 @@ Cognis モジュールフレームワークにより、サードパーティお�
 
 ### 内部モジュールと外部モジュール
 
-| 種別       | ソース                                                | インストール                                       | 免責事項       |
-| ---------- | ----------------------------------------------------- | -------------------------------------------------- | -------------- |
-| `internal` | `src/modules/` 下のリポジトリにバンドル               | プリインストール                                   | なし           |
-| `external` | アップロードされた `.zip` または `.tar.gz` アーカイブ | 管理 API または `component:import-github` CLI 経由 | 有効化前に表示 |
+| 種別       | ソース                                                | インストール                                | 免責事項       |
+| ---------- | ----------------------------------------------------- | ------------------------------------------- | -------------- |
+| `internal` | `src/modules/` 下のリポジトリにバンドル               | プリインストール                            | なし           |
+| `external` | アップロードされた `.zip` または `.tar.gz` アーカイブ | 管理 API または `component:import` CLI 経由 | 有効化前に表示 |
 
 外部モジュールは圧縮アーカイブをアップロードしてインストールします。フレームワークはアーカイブを展開し、`manifest.json` を検証して、`COGNIS_MODULES_ROOT` 下にモジュールディレクトリを配置します。
 
@@ -134,7 +134,7 @@ export function registerApiRoutes(router) {
 
 ## GitHub 取り込みライフサイクル
 
-1. 管理者が Administration UI または `cognisctl component:import-github` で `repositoryUrl` と `versionTag` を送信します。
+1. 管理者が Administration UI または `cognisctl component:import` で `repositoryUrl` と `versionTag` を送信します。
 2. API ルート `/api/v1/modules/import/github` が入力を検証し、`ModuleService.importFromGithub` に委譲します。
 3. Service が `codeload.github.com` からタグアーカイブを取得し、バイト列を module runtime gateway に渡します。
 4. Runtime が必須ファイル契約に従った drop-in モジュールディレクトリとしてインストールします。
