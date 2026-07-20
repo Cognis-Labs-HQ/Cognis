@@ -3,12 +3,21 @@
  *
  * Public exports:
  * - renderMarkdown(markdown, options) — converts supported Markdown syntax to sanitized HTML.
+ * - initializeMarkdownCodeCopy() — attaches copy-to-clipboard handling for rendered code.
  *
  * Example:
  * ```js
  * element.innerHTML = renderMarkdown('Visit https://cognis.example');
  * ```
  */
+
+import { copyTextToClipboard } from "./clipboard.js";
+import { createI18n } from "./i18n.js";
+import { showToast } from "./toast.js";
+
+let markdownCodeCopyReady = false;
+let markdownCodeCopyI18n = null;
+let markdownCodeCopyLabelObserver = null;
 
 function escapeHtml(value) {
     return String(value)
@@ -50,8 +59,17 @@ function renderDetectedUrlMarkup(href) {
 }
 
 function renderInline(markdown) {
+    const codeTokens = [];
     const linkTokens = [];
     let rendered = String(markdown ?? "").replace(
+        /`([^`]+)`/g,
+        (match, codeText) => {
+            const token = `@@CODE_${codeTokens.length}@@`;
+            codeTokens.push(renderInlineCodeMarkup(codeText));
+            return token;
+        },
+    );
+    rendered = rendered.replace(
         /\[((?:\\.|[^\]])+)\]\(([^)\s]+)\)/g,
         (match, label, href) => {
             const token = `@@LINK_${linkTokens.length}@@`;
@@ -65,12 +83,15 @@ function renderInline(markdown) {
         return token;
     });
     rendered = escapeHtml(rendered);
-    rendered = rendered.replace(/`([^`]+)`/g, "<code>$1</code>");
     rendered = rendered.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
     rendered = rendered.replace(/\*([^*]+)\*/g, "<em>$1</em>");
     rendered = rendered.replace(/~~([^~]+)~~/g, "<del>$1</del>");
     rendered = rendered.replace(/@@LINK_(\d+)@@/g, (match, index) => {
         const token = linkTokens[Number(index)];
+        return token ?? match;
+    });
+    rendered = rendered.replace(/@@CODE_(\d+)@@/g, (match, index) => {
+        const token = codeTokens[Number(index)];
         return token ?? match;
     });
     return rendered;
@@ -202,6 +223,15 @@ function highlightCode(code, language) {
     });
 }
 
+function renderMarkdownCopyButtonMarkup(copyValue) {
+    const safeCopyValue = escapeHtmlAttribute(copyValue);
+    return `<button class="markdown-code-copy" data-markdown-code-copy="${safeCopyValue}" type="button" aria-label="Copy"><span class="markdown-code-copy-icon" aria-hidden="true"></span><span class="markdown-code-copy-label"></span></button>`;
+}
+
+function renderInlineCodeMarkup(codeText) {
+    return `<span class="markdown-code-inline"><code>${escapeHtml(codeText)}</code>${renderMarkdownCopyButtonMarkup(codeText)}</span>`;
+}
+
 function renderCodeBlockMarkup(infoString, codeLines) {
     const normalizedLines = [...codeLines];
     while (
@@ -220,7 +250,7 @@ function renderCodeBlockMarkup(infoString, codeLines) {
     const language = resolveCodeLanguage(infoString, normalizedLines);
     const highlighted = highlightCode(code, language);
     const safeLanguage = escapeHtmlAttribute(language);
-    return `<pre class="markdown-code-block"><code class="markdown-code language-${safeLanguage}" data-language="${safeLanguage}">${highlighted}</code></pre>`;
+    return `<pre class="markdown-code-block"><code class="markdown-code language-${safeLanguage}" data-language="${safeLanguage}">${highlighted}</code>${renderMarkdownCopyButtonMarkup(code)}</pre>`;
 }
 
 function isListItem(line) {
@@ -245,6 +275,92 @@ function lineStartsBlock(line) {
         trimmedLine.startsWith("|")
     );
 }
+
+function updateMarkdownCodeCopyLabels(root, i18n) {
+    const copyButtons = [];
+    if (root.matches?.("[data-markdown-code-copy]")) copyButtons.push(root);
+    root.querySelectorAll?.("[data-markdown-code-copy]").forEach(
+        (copyButton) => {
+            copyButtons.push(copyButton);
+        },
+    );
+    copyButtons.forEach((copyButton) => {
+        const copyLabel = i18n.t("ui.reuse.copy");
+        copyButton.setAttribute("aria-label", copyLabel);
+        const labelElement = copyButton.querySelector(
+            ".markdown-code-copy-label",
+        );
+        if (labelElement) labelElement.textContent = copyLabel;
+    });
+}
+
+function observeMarkdownCodeCopyLabels(i18n) {
+    if (typeof MutationObserver === "undefined") return;
+    if (!document.body || markdownCodeCopyLabelObserver) return;
+    markdownCodeCopyLabelObserver = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                updateMarkdownCodeCopyLabels(node, i18n);
+            });
+        });
+    });
+    markdownCodeCopyLabelObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+    });
+}
+
+/**
+ * Attaches delegated copy-to-clipboard behavior for Markdown code controls.
+ *
+ * @returns {void}
+ */
+export function initializeMarkdownCodeCopy() {
+    if (markdownCodeCopyReady) return;
+    if (typeof document === "undefined") return;
+    markdownCodeCopyReady = true;
+    markdownCodeCopyI18n = createI18n().catch(() => ({
+        t(key) {
+            const labels = {
+                "ui.reuse.copy": "Copy",
+                "ui.reuse.markdown_code_copied": "Code copied to clipboard.",
+                "ui.reuse.markdown_code_copy_failed": "Could not copy code.",
+            };
+            return labels[key] ?? key;
+        },
+    }));
+    markdownCodeCopyI18n.then((i18n) => {
+        updateMarkdownCodeCopyLabels(document, i18n);
+        observeMarkdownCodeCopyLabels(i18n);
+    });
+
+    document.addEventListener("click", async (event) => {
+        const copyButton = event.target?.closest?.("[data-markdown-code-copy]");
+        if (!copyButton) return;
+        event.preventDefault();
+        const i18n = await markdownCodeCopyI18n;
+        copyButton.setAttribute("aria-label", i18n.t("ui.reuse.copy"));
+        const copied = await copyTextToClipboard(
+            copyButton.getAttribute("data-markdown-code-copy") ?? "",
+        );
+        if (copied) {
+            copyButton.classList.add("popup-action-btn--copied");
+            setTimeout(() => {
+                copyButton.classList.remove("popup-action-btn--copied");
+            }, 1500);
+        }
+        showToast(
+            i18n.t(
+                copied
+                    ? "ui.reuse.markdown_code_copied"
+                    : "ui.reuse.markdown_code_copy_failed",
+            ),
+            { variant: copied ? "success" : "error" },
+        );
+    });
+}
+
+initializeMarkdownCodeCopy();
 
 /**
  * Renders a Markdown string to a sanitized HTML string.

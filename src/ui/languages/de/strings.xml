@@ -64,6 +64,8 @@
   <string name="ui.reuse.remove">Entfernen</string>
   <string name="ui.reuse.dismiss">Schließen</string>
   <string name="ui.reuse.copy">Kopieren</string>
+  <string name="ui.reuse.markdown_code_copied">Code in die Zwischenablage kopiert.</string>
+  <string name="ui.reuse.markdown_code_copy_failed">Code konnte nicht kopiert werden.</string>
   <string name="ui.reuse.confirm">Bestätigen</string>
   <string name="ui.reuse.error">Fehler</string>
   <string name="ui.reuse.coming_soon">Demnächst verfügbar</string>

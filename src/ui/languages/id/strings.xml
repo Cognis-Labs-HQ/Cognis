@@ -64,6 +64,8 @@
   <string name="ui.reuse.remove">Hapus</string>
   <string name="ui.reuse.dismiss">Tutup</string>
   <string name="ui.reuse.copy">Salin</string>
+  <string name="ui.reuse.markdown_code_copied">Kode disalin ke clipboard.</string>
+  <string name="ui.reuse.markdown_code_copy_failed">Kode tidak dapat disalin.</string>
   <string name="ui.reuse.confirm">Konfirmasi</string>
   <string name="ui.reuse.error">Kesalahan</string>
   <string name="ui.reuse.coming_soon">Segera Hadir</string>
