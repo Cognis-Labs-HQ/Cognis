@@ -279,10 +279,14 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     border-radius: 6px;
     background: transparent;
     color: var(--text-muted, var(--color-text-muted));
+    box-sizing: border-box;
     cursor: pointer;
-    font: inherit;
+    font-family: var(--app-font), sans-serif;
     font-size: 0.74rem;
+    font-weight: 500;
     line-height: 1;
+    min-height: 18px;
+    white-space: nowrap;
     opacity: 0;
     padding: 3px 4px;
     pointer-events: none;
