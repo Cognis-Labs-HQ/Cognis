@@ -68,17 +68,24 @@ export function createGridOverlayHandlers({
         if (!state.contentGrid) return;
         state.contentGrid.style.width = "";
         const width = state.contentGrid.getBoundingClientRect().width;
-        state.gridCols = Math.max(
-            1,
-            Math.floor(
-                (width + PAGE_COMPOSER_GRID_GAP) /
-                    (UNIT + PAGE_COMPOSER_GRID_GAP),
-            ),
-        );
-        const scale = getRenderScale();
-        const trackCount = state.gridCols * scale;
-        const totalGap = Math.max(0, trackCount - 1) * PAGE_COMPOSER_GRID_GAP;
-        state.gridTrackSize = Math.max(1, (width - totalGap) / trackCount);
+        const lockedMetrics = state.editing ? state.editGridMetrics : null;
+        if (lockedMetrics) {
+            state.gridCols = lockedMetrics.gridCols;
+            state.gridTrackSize = lockedMetrics.gridTrackSize;
+        } else {
+            state.gridCols = Math.max(
+                1,
+                Math.floor(
+                    (width + PAGE_COMPOSER_GRID_GAP) /
+                        (UNIT + PAGE_COMPOSER_GRID_GAP),
+                ),
+            );
+            const scale = getRenderScale();
+            const trackCount = state.gridCols * scale;
+            const totalGap =
+                Math.max(0, trackCount - 1) * PAGE_COMPOSER_GRID_GAP;
+            state.gridTrackSize = Math.max(1, (width - totalGap) / trackCount);
+        }
         const visiblePlacements = (state.layout?.placements ?? []).filter(
             (p) => !(state.layout?.hidden ?? []).includes(p.id),
         );

@@ -535,6 +535,10 @@ export function createPageComposer(
                 "click",
                 () => {
                     syncLayoutToCurrentGridColumns();
+                    composerState.editGridMetrics = {
+                        gridCols: composerState.gridCols,
+                        gridTrackSize: composerState.gridTrackSize,
+                    };
                     layoutSnapshot = JSON.parse(JSON.stringify(layout));
                     editing = true;
                     beginEditMode();
@@ -552,6 +556,7 @@ export function createPageComposer(
                         compactPlacements();
                     }
                     editing = false;
+                    composerState.editGridMetrics = null;
                     endEditMode();
                     await saveLayout();
                     render();
