@@ -1,9 +1,5 @@
-# CLI- und Health-Updates
+# Modul-CLI-Abdeckung
 
-## Komponenten-CLI-Namespace
+## Modul-API-Befehle ergänzt
 
-Die Betriebs-CLI nutzt jetzt den Namespace `component:*` für Modul-Lifecycle-Aktionen und kann Module, Gateways sowie Gateway-Adapter über eine gemeinsame Steuerfläche ansprechen.
-
-## Modulbeiträge zur Health-Prüfung
-
-System-Health-Berichte können jetzt Komponentenbeiträge enthalten, einschließlich Jitsi-Meet-Erreichbarkeitsinformationen für die konfigurierte Instanz.
+Cognisctl-Befehle für Modul-Backend-Endpunkte ergänzt, die bisher direkte HTTP-Aufrufe erforderten, einschließlich Analytics-Aktivitätsansichten, Jitsi-Meet-Administration und Nextcloud-Whiteboard-Vorgängen.

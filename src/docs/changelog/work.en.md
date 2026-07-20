@@ -1,9 +1,5 @@
-# CLI and Health Updates
+# Module CLI Coverage
 
-## Component CLI Namespace
+## Module API commands added
 
-The operational CLI now uses the `component:*` namespace for module lifecycle operations and can target modules, gateways, and gateway adapters from one control surface.
-
-## Module Health Contributions
-
-System health reports can now include component contributions, including Jitsi Meet reachability information for its configured instance.
+Added Cognisctl commands for module backend endpoints that previously required direct HTTP calls, including Analytics activity views, Jitsi Meet administration, and Nextcloud Whiteboard operations.
