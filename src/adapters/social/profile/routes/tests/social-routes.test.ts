@@ -96,6 +96,38 @@ test("social routes - follow and unfollow", async () => {
     }
 });
 
+test("social routes - can unfollow inactive profile", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("alice", { visibility: "community" });
+        await profileStore.updateProfile("bob", { visibility: "community" });
+        await profileStore.follow("alice", "bob");
+        await profileStore.updateProfile("bob", {
+            lifecycleState: "archived",
+        });
+        const route = createSocialRoutes(profileStore);
+        const aliceToken = issueAccessToken("alice", "user", 60);
+        let status = 0;
+
+        await route(
+            makeReq("DELETE", aliceToken),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end() {},
+            } as any,
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
+        );
+
+        assert.equal(status, 200);
+        assert.ok(!(await profileStore.isFollowing("alice", "bob")));
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("social routes - cannot follow hidden user", async () => {
     const { dir, executor } = makeTempDb();
     try {

@@ -639,4 +639,22 @@
   <string name="ui.reuse.pointer_mouse">Mouse</string>
   <string name="ui.reuse.pointer_laser">Laser pointer</string>
   <string name="ui.reuse.pointer_crosshair">Crosshair</string>
+  <string name="ui.app.settings.danger_zone">Danger Zone</string>
+  <string name="ui.app.settings.danger_zone_body">These account actions are disruptive and require password confirmation.</string>
+  <string name="ui.app.settings.danger_archive">Archive Account</string>
+  <string name="ui.app.settings.danger_deactivate">Deactivate Account</string>
+  <string name="ui.app.settings.danger_delete">Delete Account</string>
+  <string name="ui.app.settings.danger_popup_title">Confirm {action}</string>
+  <string name="ui.app.settings.danger_archive_warning">Archiving signs you out and disables account access until an administrator restores it.</string>
+  <string name="ui.app.settings.danger_deactivate_warning">Deactivation prevents interaction with your account until you log in again.</string>
+  <string name="ui.app.settings.danger_delete_warning">Deletion permanently removes your account and signs you out. This cannot be undone.</string>
+  <string name="ui.app.settings.danger_password_label">Confirm your password</string>
+  <string name="ui.app.settings.danger_password_required">Enter your password to continue.</string>
+  <string name="ui.app.settings.danger_invalid_password">Password confirmation failed.</string>
+  <string name="ui.app.settings.danger_failed">Account action failed.</string>
+  <string name="ui.app.settings.danger_completed">Account action completed.</string>
+  <string name="ui.app.users.deactivated">Deactivated</string>
+  <string name="ui.app.users.archived">Archived</string>
+  <string name="ui.app.login.reason.account_archived">Your account is archived. Contact an administrator to restore access.</string>
+  <string name="ui.app.login.reason.account_deactivated">Your account is deactivated. Log in again to restore interaction.</string>
 </resources>

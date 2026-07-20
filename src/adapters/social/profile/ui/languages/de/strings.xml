@@ -4,4 +4,5 @@
   <string name="ui.app.profile.crop_zoom_label">Zoom</string>
   <string name="ui.app.profile.crop_grid_expand">Hilfsraster erweitern</string>
   <string name="ui.app.profile.crop_grid_collapse">Hilfsraster verkleinern</string>
+  <string name="ui.app.profile.archived_banner">Dieses Profil ist archiviert. Interaktionen mit diesem Benutzer sind deaktiviert.</string>
 </resources>

@@ -639,4 +639,22 @@
   <string name="ui.reuse.pointer_mouse">Mouse</string>
   <string name="ui.reuse.pointer_laser">Penunjuk laser</string>
   <string name="ui.reuse.pointer_crosshair">Garis bidik</string>
+  <string name="ui.app.settings.danger_zone">Zona Berbahaya</string>
+  <string name="ui.app.settings.danger_zone_body">Tindakan akun ini berdampak besar dan memerlukan konfirmasi kata sandi.</string>
+  <string name="ui.app.settings.danger_archive">Arsipkan Akun</string>
+  <string name="ui.app.settings.danger_deactivate">Nonaktifkan Akun</string>
+  <string name="ui.app.settings.danger_delete">Hapus Akun</string>
+  <string name="ui.app.settings.danger_popup_title">Konfirmasi {action}</string>
+  <string name="ui.app.settings.danger_archive_warning">Pengarsipan akan mengeluarkan Anda dan menonaktifkan akses akun hingga administrator memulihkannya.</string>
+  <string name="ui.app.settings.danger_deactivate_warning">Penonaktifan mencegah interaksi dengan akun Anda hingga Anda masuk lagi.</string>
+  <string name="ui.app.settings.danger_delete_warning">Penghapusan menghapus akun Anda secara permanen dan mengeluarkan Anda. Tindakan ini tidak dapat dibatalkan.</string>
+  <string name="ui.app.settings.danger_password_label">Konfirmasi kata sandi Anda</string>
+  <string name="ui.app.settings.danger_password_required">Masukkan kata sandi Anda untuk melanjutkan.</string>
+  <string name="ui.app.settings.danger_invalid_password">Konfirmasi kata sandi gagal.</string>
+  <string name="ui.app.settings.danger_failed">Tindakan akun gagal.</string>
+  <string name="ui.app.settings.danger_completed">Tindakan akun selesai.</string>
+  <string name="ui.app.users.deactivated">Dinonaktifkan</string>
+  <string name="ui.app.users.archived">Diarsipkan</string>
+  <string name="ui.app.login.reason.account_archived">Akun Anda diarsipkan. Hubungi administrator untuk memulihkan akses.</string>
+  <string name="ui.app.login.reason.account_deactivated">Akun Anda dinonaktifkan. Masuk lagi untuk memulihkan interaksi.</string>
 </resources>

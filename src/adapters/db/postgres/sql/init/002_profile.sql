@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS account_profiles (
   avatar_key TEXT,
   banner_key TEXT,
   visibility TEXT NOT NULL DEFAULT 'hidden',
+  account_lifecycle_state TEXT NOT NULL DEFAULT 'active',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE

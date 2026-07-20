@@ -290,3 +290,35 @@ body[data-theme="light"] .email-badge-unverified {
     gap: 8px;
     margin: 8px 0;
 }
+.settings-danger-zone {
+    border: 1px solid var(--danger-border, #b91c1c);
+    border-radius: 12px;
+    margin-top: 1.5rem;
+    padding: 1rem;
+}
+
+.settings-danger-zone h3 {
+    color: var(--danger-text, #dc2626);
+    margin-top: 0;
+}
+
+.settings-danger-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.settings-danger-password-label {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.settings-danger-password-label input {
+    min-width: 100%;
+}
+
+.settings-danger-warning {
+    color: var(--danger-text, #dc2626);
+    font-weight: 600;
+}

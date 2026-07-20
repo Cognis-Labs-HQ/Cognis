@@ -450,7 +450,7 @@ export async function openPopup({
                 if (document.activeElement instanceof HTMLTextAreaElement)
                     return;
                 const confirmBtn = overlay.querySelector(
-                    "[data-popup-action].btn-confirm",
+                    '[data-popup-action="confirm"], [data-popup-action="save"], [data-popup-action].btn-confirm',
                 );
                 if (confirmBtn instanceof HTMLButtonElement) {
                     event.preventDefault();

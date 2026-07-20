@@ -124,18 +124,37 @@ export async function registerAuthBootstrapHook(
             const capabilities = context.ctx.capabilities;
 
             let role: AccessRole = resolveRole(session.role);
-            const profileStore = capabilities.get<{
-                getProfile(
+            const getProfileRole =
+                capabilities.get<
+                    (accountId: string) => Promise<string | undefined>
+                >("profile:getRole");
+            const profileLifecycle = capabilities.get<{
+                getState(
                     accountId: string,
-                ): Promise<{ role?: string } | null>;
-            }>("social:profileStore");
-            if (profileStore) {
-                const existingProfile = await profileStore
-                    .getProfile(session.accountId)
-                    .catch(() => null);
-                if (existingProfile?.role === "owner") {
-                    role = "owner";
-                }
+                ): Promise<"active" | "deactivated" | "archived">;
+                setState(
+                    accountId: string,
+                    lifecycleState: "active" | "deactivated" | "archived",
+                ): Promise<unknown>;
+            }>("social:profileLifecycle");
+            const profileRole = getProfileRole
+                ? await getProfileRole(session.accountId).catch(() => undefined)
+                : undefined;
+            const lifecycleState = await profileLifecycle
+                ?.getState(session.accountId)
+                .catch(() => "active");
+            if (lifecycleState === "archived") {
+                return {
+                    sessionResult: { outcome: "account_archived" },
+                };
+            }
+            if (lifecycleState === "deactivated") {
+                await profileLifecycle
+                    ?.setState(session.accountId, "active")
+                    .catch(() => undefined);
+            }
+            if (profileRole === "owner") {
+                role = "owner";
             }
 
             const isFounder = await context.accountStore
@@ -422,7 +441,7 @@ export async function registerAuthBootstrapHook(
         async (stageCtx) => {
             const input = (stageCtx.input ?? {}) as {
                 username?: string;
-                action?: "delete" | "disable";
+                action?: "delete" | "disable" | "archive";
             };
             const authorizeResult = (
                 (stageCtx.stageResults["authorize-request"] ?? []) as Array<{
@@ -439,7 +458,7 @@ export async function registerAuthBootstrapHook(
             const username = String(input.username ?? "");
             if (input.action === "delete") {
                 await context.accountStore.delete(username);
-            } else {
+            } else if (input.action === "disable") {
                 await context.accountStore.setEnabled?.(username, false);
             }
             return { persisted: true, username, action: input.action };
