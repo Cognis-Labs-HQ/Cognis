@@ -5,6 +5,7 @@ export interface WizardField {
     name: string;
     type?: "string" | "number" | "boolean" | "json" | "string[]";
     required?: boolean;
+    description?: string;
 }
 
 function parseWizardValue(
@@ -39,6 +40,10 @@ export async function collectWizardFields(
         for (const field of fields) {
             const requiredLabel = field.required ? " required" : " optional";
             const typeLabel = field.type ? ` ${field.type}` : " string";
+            if (field.description) {
+                output.write(`  ${field.description}
+`);
+            }
             const answer = await terminal.question(
                 `${field.name} (${typeLabel},${requiredLabel}): `,
             );

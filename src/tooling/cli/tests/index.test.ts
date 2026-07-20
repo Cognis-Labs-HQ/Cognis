@@ -24,6 +24,7 @@ import {
 import { printGlobalHelp } from "../help.ts";
 import { loadModuleCliPlugins } from "../plugins.ts";
 import { registry } from "../registry.ts";
+import { ApiRequestError } from "../http.ts";
 
 function captureConsoleLog(run: () => void): string {
     const originalLog = console.log;
@@ -44,6 +45,23 @@ test("formatStructured pretty-prints JSON strings", () => {
         formatStructured('{"data":{"status":"ok"}}'),
         '{\n  "data": {\n    "status": "ok"\n  }\n}',
     );
+});
+
+test("formatStructured pretty-prints object payloads and handles empty output", () => {
+    assert.equal(
+        formatStructured({ data: { status: "ok", count: 2 } }),
+        '{\n  "data": {\n    "status": "ok",\n    "count": 2\n  }\n}',
+    );
+    assert.equal(formatStructured(undefined), "");
+});
+
+test("ApiRequestError formats JSON payloads for readable CLI errors", () => {
+    const error = new ApiRequestError(400, "Bad Request", {
+        error: { code: "invalid", message: "Invalid payload" },
+    });
+
+    assert.match(error.message, /\n  "error": \{/);
+    assert.match(error.message, /\n    "message": "Invalid payload"/);
 });
 
 test("formatCommandOutput renders user:create with labeled fields", () => {
@@ -583,6 +601,52 @@ test("feature CLI command maps optional query JSON to API route", async () => {
         );
 
         assert.deepEqual(payload, { data: [] });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("notify:send accepts structured JSON payloads for direct execution", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input, init) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/notify/send",
+            );
+            assert.equal(init?.method, "POST");
+            assert.equal(
+                init?.body,
+                JSON.stringify({
+                    category: "system",
+                    recipientUsername: "alice",
+                    subject: "Maintenance",
+                    body: "Window starts at 22:00 UTC",
+                }),
+            );
+            return new Response(JSON.stringify({ data: { sent: true } }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            });
+        };
+
+        const payload = await executeRegisteredCommand(
+            "notify:send",
+            [
+                JSON.stringify({
+                    category: "system",
+                    recipientUsername: "alice",
+                    subject: "Maintenance",
+                    body: "Window starts at 22:00 UTC",
+                }),
+            ],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, { data: { sent: true } });
     } finally {
         globalThis.fetch = originalFetch;
     }

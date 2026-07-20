@@ -1,5 +1,10 @@
 import { readFile } from "node:fs/promises";
 
+function formatPayloadForError(payload: unknown): string {
+    if (typeof payload === "string") return payload;
+    return JSON.stringify(payload, null, 2);
+}
+
 export class ApiRequestError extends Error {
     constructor(
         readonly status: number,
@@ -7,7 +12,7 @@ export class ApiRequestError extends Error {
         readonly payload: unknown,
     ) {
         super(
-            `API request failed (${status} ${statusText}): ${typeof payload === "string" ? payload : JSON.stringify(payload)}`,
+            `API request failed (${status} ${statusText}): ${formatPayloadForError(payload)}`,
         );
     }
 }

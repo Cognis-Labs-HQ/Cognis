@@ -23,7 +23,15 @@ function parseJsonObject(value: string | undefined): Record<string, unknown> {
     if (parsed == null || typeof parsed !== "object" || Array.isArray(parsed)) {
         throw new Error("Expected JSON object.");
     }
-    return parsed as Record<string, unknown>;
+    return compactRecord(parsed as Record<string, unknown>);
+}
+
+function compactRecord(
+    record: Record<string, unknown>,
+): Record<string, unknown> {
+    return Object.fromEntries(
+        Object.entries(record).filter(([, value]) => value !== undefined),
+    );
 }
 
 function buildPath(template: string, values: Record<string, unknown>): string {
@@ -80,12 +88,14 @@ async function collectCommandInput(
             payloadValue != null &&
             typeof payloadValue === "object" &&
             !Array.isArray(payloadValue)
-                ? (payloadValue as Record<string, unknown>)
-                : Object.fromEntries(
-                      wizardBodyFields.map((field) => [
-                          field.name,
-                          values[field.name],
-                      ]),
+                ? compactRecord(payloadValue as Record<string, unknown>)
+                : compactRecord(
+                      Object.fromEntries(
+                          wizardBodyFields.map((field) => [
+                              field.name,
+                              values[field.name],
+                          ]),
+                      ),
                   );
         return { pathValues, query, body };
     }
@@ -142,6 +152,31 @@ function registerFeatureCommand(definition: FeatureCommandDefinition): void {
 }
 
 const jsonBody: WizardField = { name: "payload", type: "json" };
+const notifySendFields: WizardField[] = [
+    {
+        name: "category",
+        required: true,
+        description: "Notification category, for example system or security.",
+    },
+    {
+        name: "recipientUsername",
+        required: true,
+        description: "Target username for this notification.",
+    },
+    { name: "recipientEmail", description: "Optional direct recipient email." },
+    { name: "subject", required: true },
+    { name: "body", required: true },
+    {
+        name: "senderName",
+        description: "Optional display name for the sender.",
+    },
+    { name: "actionUrl", description: "Optional in-app action URL." },
+    {
+        name: "metadata",
+        type: "json",
+        description: "Optional JSON object with additional metadata.",
+    },
+];
 
 const commands: FeatureCommandDefinition[] = [
     {
@@ -242,7 +277,7 @@ const commands: FeatureCommandDefinition[] = [
         name: "notify:send",
         method: "POST",
         path: "/api/v1/notify/send",
-        bodyFields: [jsonBody],
+        bodyFields: notifySendFields,
         description: "Send a notification message.",
     },
     {

@@ -96,6 +96,7 @@ export function formatStructured(value: unknown): string {
     const normalized =
         typeof value === "string" ? normalizeResponse(value) : value;
     if (typeof normalized === "string") return normalized;
+    if (normalized === undefined) return "";
     return JSON.stringify(normalized, null, 2);
 }
 
