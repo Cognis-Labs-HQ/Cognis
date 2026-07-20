@@ -309,8 +309,8 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 
 .markdown-code-inline > .markdown-code-copy {
     position: absolute;
-    top: 50%;
-    right: 2px;
+    top: calc(50% + 0.45rem);
+    right: -0.9rem;
     z-index: 2;
     transform: translateY(-50%);
 }
