@@ -10,7 +10,7 @@ import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileLimitRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
-import type { AccountRole } from "./store.js";
+import type { AccountLifecycleState, AccountRole } from "./store.js";
 import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
@@ -169,6 +169,33 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    /**
+     * social:profileLifecycle — profile-owned lifecycle boundary for account
+     * archive/deactivate/reactivate transitions consumed by auth and admin
+     * routes without mutating the profile store directly.
+     */
+    ctx.capabilities.contribute("social:profileLifecycle", {
+        getState: async (accountId: string): Promise<AccountLifecycleState> =>
+            (await profileStore.getProfile(accountId))?.lifecycleState ??
+            "active",
+        setState: async (
+            accountId: string,
+            lifecycleState: AccountLifecycleState,
+        ): Promise<void> => {
+            const existingProfile = await profileStore.getProfile(accountId);
+            if (!existingProfile) {
+                await profileStore.createProfile(accountId, accountId);
+            }
+            const updatedProfile = await profileStore.updateProfile(accountId, {
+                lifecycleState,
+            });
+            if (!updatedProfile) {
+                throw new Error(
+                    `Unable to persist lifecycle state for account ${accountId}`,
+                );
+            }
+        },
+    });
     ctx.capabilities.contribute("social:profile:fileResources", {
         namespaceId: "profile",
     });
@@ -206,6 +233,16 @@ export async function bootstrapSocialAdapter(
         async (handle: string, role: string): Promise<void> => {
             await profileStore.setRoleByHandle(handle, role as AccountRole);
         },
+    );
+
+    /**
+     * profile:getRole — reads profile-owned role metadata without exposing the
+     * profile store to consumers.
+     */
+    ctx.capabilities.contribute(
+        "profile:getRole",
+        async (accountId: string): Promise<AccountRole | undefined> =>
+            (await profileStore.getProfile(accountId))?.role,
     );
 
     const registerNamespace = ctx.capabilities.get<

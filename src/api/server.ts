@@ -75,6 +75,13 @@ export interface ApiDependencies {
         accountId: string,
         visibility: "friends",
     ) => Promise<void>;
+    getProfileLifecycleState?: (
+        accountId: string,
+    ) => Promise<string | null | undefined>;
+    setProfileLifecycleState?: (
+        accountId: string,
+        lifecycleState: "active" | "deactivated" | "archived",
+    ) => Promise<void>;
     onModuleStateChanged?: (
         moduleId: string,
         enabled: boolean,
@@ -174,6 +181,8 @@ export function buildServer(deps: ApiDependencies) {
               deps.getProfileVisibility,
               deps.setProfileVisibility,
               routeContext,
+              deps.getProfileLifecycleState,
+              deps.setProfileLifecycleState,
           )
         : null;
     const gatewayRoutes = deps.gatewayRegistry

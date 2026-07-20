@@ -4,4 +4,5 @@
   <string name="ui.app.profile.crop_zoom_label">Zoom</string>
   <string name="ui.app.profile.crop_grid_expand">Perluas Grid Panduan</string>
   <string name="ui.app.profile.crop_grid_collapse">Perkecil Grid Panduan</string>
+  <string name="ui.app.profile.archived_banner">Profil ini diarsipkan. Interaksi dengan pengguna ini dinonaktifkan.</string>
 </resources>

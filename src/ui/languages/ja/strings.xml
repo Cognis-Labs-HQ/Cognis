@@ -639,4 +639,22 @@
   <string name="ui.reuse.pointer_mouse">マウス</string>
   <string name="ui.reuse.pointer_laser">レーザーポインター</string>
   <string name="ui.reuse.pointer_crosshair">十字カーソル</string>
+  <string name="ui.app.settings.danger_zone">危険ゾーン</string>
+  <string name="ui.app.settings.danger_zone_body">これらのアカウント操作は影響が大きいため、パスワード確認が必要です。</string>
+  <string name="ui.app.settings.danger_archive">アカウントをアーカイブ</string>
+  <string name="ui.app.settings.danger_deactivate">アカウントを無効化</string>
+  <string name="ui.app.settings.danger_delete">アカウントを削除</string>
+  <string name="ui.app.settings.danger_popup_title">{action}を確認</string>
+  <string name="ui.app.settings.danger_archive_warning">アーカイブするとサインアウトされ、管理者が復元するまでアカウントにアクセスできません。</string>
+  <string name="ui.app.settings.danger_deactivate_warning">無効化すると、再度ログインするまでアカウントとのやり取りができなくなります。</string>
+  <string name="ui.app.settings.danger_delete_warning">削除するとアカウントは完全に削除され、サインアウトされます。この操作は元に戻せません。</string>
+  <string name="ui.app.settings.danger_password_label">パスワードを確認</string>
+  <string name="ui.app.settings.danger_password_required">続行するにはパスワードを入力してください。</string>
+  <string name="ui.app.settings.danger_invalid_password">パスワード確認に失敗しました。</string>
+  <string name="ui.app.settings.danger_failed">アカウント操作に失敗しました。</string>
+  <string name="ui.app.settings.danger_completed">アカウント操作が完了しました。</string>
+  <string name="ui.app.users.deactivated">無効化済み</string>
+  <string name="ui.app.users.archived">アーカイブ済み</string>
+  <string name="ui.app.login.reason.account_archived">アカウントはアーカイブされています。アクセスを復元するには管理者に連絡してください。</string>
+  <string name="ui.app.login.reason.account_deactivated">アカウントは無効化されています。やり取りを復元するには再度ログインしてください。</string>
 </resources>

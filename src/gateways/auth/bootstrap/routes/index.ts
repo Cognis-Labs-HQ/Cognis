@@ -101,6 +101,7 @@ export function createAuthGatewayRoutes(
         }),
         createPasswordRoutes({
             authGateway,
+            capabilities,
             accountStore,
             dispatchNotification,
             log,

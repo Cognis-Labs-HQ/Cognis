@@ -131,7 +131,7 @@ function makeRouteContext(accountStore: LocalAccountStore) {
         async (stageCtx) => {
             const input = (stageCtx.input ?? {}) as {
                 username?: string;
-                action?: "delete" | "disable";
+                action?: "delete" | "disable" | "archive";
             };
             const authorizeResult = (
                 (stageCtx.stageResults["authorize-request"] ?? []) as Array<{
@@ -148,7 +148,7 @@ function makeRouteContext(accountStore: LocalAccountStore) {
             const username = String(input.username ?? "");
             if (input.action === "delete") {
                 await accountStore.delete(username);
-            } else {
+            } else if (input.action === "disable") {
                 await accountStore.setEnabled?.(username, false);
             }
             return { persisted: true, username, action: input.action };
@@ -187,10 +187,25 @@ const ownerToken = issueAccessToken("owner", "owner", 60);
 const headers = { authorization: `Bearer ${adminToken}` };
 const ownerHeaders = { authorization: `Bearer ${ownerToken}` };
 
+function createProfileLifecycleTracker() {
+    const states = new Map<string, "active" | "deactivated" | "archived">();
+    return {
+        states,
+        get: async (accountId: string) => states.get(accountId) ?? "active",
+        set: async (
+            accountId: string,
+            lifecycleState: "active" | "deactivated" | "archived",
+        ) => {
+            states.set(accountId, lifecycleState);
+        },
+    };
+}
+
 test("user routes create/list/update lifecycle", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "x", "admin");
     const prefs = new VolatileUserPreferenceStore();
+    const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
         prefs,
@@ -199,6 +214,8 @@ test("user routes create/list/update lifecycle", async () => {
         undefined,
         undefined,
         makeRouteContext(accounts),
+        lifecycle.get,
+        lifecycle.set,
     );
     let body = "";
     let status = 0;
@@ -283,6 +300,7 @@ test("user routes log account disable operations", async () => {
         message: string;
         meta?: Record<string, unknown>;
     }> = [];
+    const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
         prefs,
@@ -293,6 +311,8 @@ test("user routes log account disable operations", async () => {
         undefined,
         undefined,
         makeRouteContext(accounts),
+        lifecycle.get,
+        lifecycle.set,
     );
     let status = 0;
 
@@ -311,7 +331,7 @@ test("user routes log account disable operations", async () => {
     assert.deepEqual(entries, [
         {
             level: "warn",
-            message: "Disabled user account.",
+            message: "Archived user account from admin disable control.",
             meta: {
                 component: "api-users",
                 method: "POST",
@@ -489,6 +509,7 @@ test("disabling a user invalidates existing access tokens for that user", async 
     await accounts.register("admin", "pw", "admin");
     await accounts.register("erin", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
+    const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
         prefs,
@@ -497,6 +518,8 @@ test("disabling a user invalidates existing access tokens for that user", async 
         undefined,
         undefined,
         makeRouteContext(accounts),
+        lifecycle.get,
+        lifecycle.set,
     );
     let status = 0;
 
@@ -515,6 +538,7 @@ test("disabling a user invalidates existing access tokens for that user", async 
     );
 
     assert.equal(status, 200);
+    assert.equal(await lifecycle.get("erin"), "archived");
     assert.equal(verifyAccessToken(erinToken), null);
 });
 
@@ -609,6 +633,7 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await accounts.register("founder", "pw", "admin");
     await accounts.setFounder("founder", true);
     const prefs = new VolatileUserPreferenceStore();
+    const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
         prefs,
@@ -617,6 +642,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
         undefined,
         undefined,
         makeRouteContext(accounts),
+        lifecycle.get,
+        lifecycle.set,
     );
     let status = 0;
 
@@ -713,7 +740,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
         new URL("http://localhost/api/v1/users/bob/disable"),
     );
     assert.equal(status, 200);
-    assert.equal((await accounts.getInfo("bob"))?.enabled, false);
+    assert.equal((await accounts.getInfo("bob"))?.enabled, true);
+    assert.equal(await lifecycle.get("bob"), "archived");
 
     await route(
         { method: "DELETE", headers: ownerHeaders } as any,

@@ -270,6 +270,28 @@ export function createSessionRoutes({
             );
             return true;
         }
+        if (outcome === "account_archived") {
+            const code = outcome;
+            log?.(
+                "warn",
+                "Login denied for inactive account lifecycle state.",
+                {
+                    ...logMeta,
+                    outcome,
+                },
+            );
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code,
+                        message:
+                            "Your account is archived. Contact an administrator to restore access.",
+                    },
+                }),
+            );
+            return true;
+        }
         if (outcome === "success") {
             const token = sessionResult.token ?? "";
             const ttlSeconds = sessionResult.ttlSeconds ?? 0;

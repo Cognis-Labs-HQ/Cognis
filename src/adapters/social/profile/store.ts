@@ -9,6 +9,7 @@ export type {
     AccountRole,
     AccountVisibility,
     PostVisibility,
+    AccountLifecycleState,
     AccountProfile,
     Post,
     FileSizeLimit,
@@ -21,6 +22,7 @@ import type {
     AccountRole,
     AccountVisibility,
     PostVisibility,
+    AccountLifecycleState,
     AccountProfile,
     Post,
     FileSizeLimit,
@@ -51,6 +53,7 @@ const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
     { col: "p.avatar_key", as: "avatar_key" },
     { col: "p.banner_key", as: "banner_key" },
     { col: "p.visibility", as: "visibility" },
+    { col: "p.account_lifecycle_state", as: "account_lifecycle_state" },
     { col: "p.created_at", as: "created_at" },
     { col: "p.updated_at", as: "updated_at" },
 ];
@@ -73,6 +76,12 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
                 type: "text",
                 notNull: true,
                 default: "hidden",
+            },
+            {
+                name: "account_lifecycle_state",
+                type: "text",
+                notNull: true,
+                default: "active",
             },
             {
                 name: "created_at",
@@ -189,7 +198,12 @@ export class DbProfileStore implements ProfileCreateStore {
             await this.db.executeCommand({
                 option: "INSERT",
                 table: "account_profiles",
-                values: { account_id: accountId, handle, role },
+                values: {
+                    account_id: accountId,
+                    handle,
+                    role,
+                    account_lifecycle_state: "active",
+                },
                 conflict: { action: "ignore" },
             });
             if (displayName) {
@@ -260,7 +274,10 @@ export class DbProfileStore implements ProfileCreateStore {
                 .replace(/[\\%_]/g, "\\$&") + "%";
         const visibilityFilters = options.includeHidden
             ? []
-            : [{ column: "visibility", operator: "!=", value: "hidden" }];
+            : [
+                  { column: "visibility", operator: "!=", value: "hidden" },
+                  { column: "account_lifecycle_state", value: "active" },
+              ];
 
         const byHandle = await this.db.executeCommand({
             option: "SELECT",
@@ -372,6 +389,7 @@ export class DbProfileStore implements ProfileCreateStore {
                 | "avatarKey"
                 | "bannerKey"
                 | "displayName"
+                | "lifecycleState"
             >
         >,
     ): Promise<AccountProfile | null> {
@@ -383,6 +401,7 @@ export class DbProfileStore implements ProfileCreateStore {
             avatarKey: "avatar_key",
             bannerKey: "banner_key",
             displayName: "display_name",
+            lifecycleState: "account_lifecycle_state",
         };
 
         const setRecord: Record<string, unknown> = {};

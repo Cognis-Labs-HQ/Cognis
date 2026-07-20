@@ -30,6 +30,10 @@ function hasAdminBypass(role: string | null | undefined): boolean {
     return Boolean(role && hasMinRole(role, "admin"));
 }
 
+function isProfileInteractive(profile: AccountProfile): boolean {
+    return profile.lifecycleState === "active";
+}
+
 function publicProfile(profile: AccountProfile) {
     return {
         accountId: profile.accountId,
@@ -38,6 +42,7 @@ function publicProfile(profile: AccountProfile) {
         displayName: profile.displayName ?? profile.handle,
         avatarKey: profile.avatarKey,
         visibility: profile.visibility,
+        lifecycleState: profile.lifecycleState,
     };
 }
 
@@ -58,8 +63,10 @@ async function canFollowProfile(
     target: AccountProfile,
     profileStore: DbProfileStore,
 ): Promise<boolean> {
+    if (!isProfileInteractive(target)) return false;
     if (
         !requester ||
+        requester.lifecycleState !== "active" ||
         visibilityRank(requester.visibility) < visibilityRank("private")
     ) {
         return false;
@@ -182,8 +189,12 @@ export function createSocialRoutes(
                 target.accountId,
             );
             const hasBypass = hasAdminBypass(claims.role);
+            const targetInteractive = isProfileInteractive(target);
+            const requesterInteractive = requester?.lifecycleState === "active";
             const canSendMessageRequest =
                 !isSelf &&
+                targetInteractive &&
+                requesterInteractive &&
                 (hasBypass ||
                     (!blocked &&
                         requester?.visibility !== "hidden" &&
@@ -229,16 +240,34 @@ export function createSocialRoutes(
                 );
                 return true;
             }
-            if (await profileStore.isBlocked(target.accountId, claims.sub)) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: { code: "not_found", message: "User not found" },
-                    }),
-                );
-                return true;
-            }
             if (req.method === "POST") {
+                if (!isProfileInteractive(target)) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "account_not_interactive",
+                                message:
+                                    "This account is not accepting interactions",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                if (
+                    await profileStore.isBlocked(target.accountId, claims.sub)
+                ) {
+                    res.writeHead(404, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "not_found",
+                                message: "User not found",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 if (claims.sub === target.accountId) {
                     res.writeHead(400, { "content-type": "application/json" });
                     res.end(
@@ -341,6 +370,19 @@ export function createSocialRoutes(
                 return true;
             }
             if (req.method === "POST") {
+                if (!isProfileInteractive(target)) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "account_not_interactive",
+                                message:
+                                    "This account is not accepting interactions",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 if (claims.sub === target.accountId) {
                     res.writeHead(400, { "content-type": "application/json" });
                     res.end(
