@@ -47,7 +47,7 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     assert.equal(authGw.required, true);
 });
 
-test("auth gateway contributes auth:accountStore capability", async () => {
+test("auth gateway contributes account and token lifecycle capabilities", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -64,6 +64,11 @@ test("auth gateway contributes auth:accountStore capability", async () => {
     assert.ok(
         capabilities.get("auth:accountStore"),
         "auth:accountStore should be contributed",
+    );
+    assert.equal(
+        typeof capabilities.get("auth:revokeAccessTokensForSubject"),
+        "function",
+        "auth:revokeAccessTokensForSubject should be contributed for lifecycle cleanup flows",
     );
 });
 
