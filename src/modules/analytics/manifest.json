@@ -1,7 +1,7 @@
 {
     "id": "analytics",
     "name": "Analytics",
-    "version": "2.0.2",
+    "version": "2.0.3",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
@@ -46,7 +46,7 @@
         },
         {
             "path": "cli/index.js",
-            "sha256": "a8fef6e11c67754b7ee96bea983be069771d23a06640bc45c23f749b923019ee"
+            "sha256": "e2f7eed4c031472af96906245be95118f6084df24d3e3517e20875f5ce61d9c0"
         },
         {
             "path": "db/001_analytics.sql",

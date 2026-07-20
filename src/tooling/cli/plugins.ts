@@ -1,7 +1,7 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 
-import { apiGet } from "./http.ts";
+import { apiGet, apiPost } from "./http.ts";
 import { register, registry } from "./registry.ts";
 
 export async function loadModuleCliPlugins(options?: {
@@ -38,7 +38,7 @@ export async function loadModuleCliPlugins(options?: {
             try {
                 const plugin = await import(pluginPath);
                 if (typeof plugin.registerCommands === "function") {
-                    plugin.registerCommands({ register, apiGet });
+                    plugin.registerCommands({ register, apiGet, apiPost });
                 }
             } catch {
                 continue;
