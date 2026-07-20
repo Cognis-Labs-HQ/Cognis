@@ -85,6 +85,14 @@ export function printGlobalHelp(): void {
         "Components",
         "User",
         "API",
+        "TFA",
+        "Notifications",
+        "Email",
+        "Invites",
+        "Calendar",
+        "Study",
+        "Messages",
+        "Shares",
         "Extensions",
     ];
 

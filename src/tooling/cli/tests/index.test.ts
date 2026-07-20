@@ -504,6 +504,90 @@ test("component:config:set rejects fields not exposed by adapter schema", async 
     }
 });
 
+test("feature CLI commands register broad operational coverage", () => {
+    for (const commandName of [
+        "tfa:methods",
+        "email:add",
+        "invite:create",
+        "calendar:event:create",
+        "notify:broadcasts:create",
+        "study:languages",
+        "messages:rooms",
+        "share:token:create",
+    ]) {
+        assert.ok(
+            registry.has(commandName),
+            `${commandName} should be registered`,
+        );
+    }
+});
+
+test("feature CLI command maps positional args and JSON body to API route", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input, init) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/calendar/calendars/cal-1/events",
+            );
+            assert.equal(init?.method, "POST");
+            assert.equal(init?.body, JSON.stringify({ title: "Demo" }));
+            return new Response(JSON.stringify({ data: { created: true } }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            });
+        };
+
+        const payload = await executeRegisteredCommand(
+            "calendar:event:create",
+            ["cal-1", JSON.stringify({ title: "Demo" })],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, { data: { created: true } });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("feature CLI command maps optional query JSON to API route", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input, init) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
+            );
+            assert.equal(init?.method, "GET");
+            return new Response(JSON.stringify({ data: [] }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            });
+        };
+
+        const payload = await executeRegisteredCommand(
+            "share:tokens",
+            [
+                JSON.stringify({
+                    resourceType: "meeting",
+                    resourceId: "meeting-1",
+                }),
+            ],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, { data: [] });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("global help includes component commands under the Components section", () => {
     const output = captureConsoleLog(() => printGlobalHelp());
 

@@ -77,6 +77,14 @@ export async function apiPut(
     return apiRequest(apiBaseUrl, route, { method: "PUT", body, apiToken });
 }
 
+export async function apiDelete(
+    apiBaseUrl: string,
+    route: string,
+    apiToken?: string,
+): Promise<unknown> {
+    return apiRequest(apiBaseUrl, route, { method: "DELETE", apiToken });
+}
+
 export async function resolveCliToken(): Promise<string> {
     const tokenPath =
         process.env.COGNIS_CLI_TOKEN_PATH ?? "/app/config/cli-access.token";

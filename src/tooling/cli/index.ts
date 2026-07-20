@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url";
 
 import { registerApiCommands } from "./api-commands.ts";
 import { registerGatewayCommands } from "./gateway-commands.ts";
+import { registerFeatureCommands } from "./feature-commands.ts";
 import {
     printCommandGroupHelp,
     printCommandHelp,
@@ -26,6 +27,7 @@ registerSystemCommands();
 registerComponentCommands();
 registerGatewayCommands();
 registerUserCommands();
+registerFeatureCommands();
 
 export { formatStructured };
 

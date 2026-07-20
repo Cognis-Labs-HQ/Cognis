@@ -12,6 +12,14 @@ function inferSection(name: string): string {
     if (name.startsWith("component:")) return "Components";
     if (name.startsWith("gateway:")) return "Gateways";
     if (name.startsWith("api:")) return "API";
+    if (name.startsWith("share:")) return "Shares";
+    if (name.startsWith("messages:")) return "Messages";
+    if (name.startsWith("study:")) return "Study";
+    if (name.startsWith("calendar:")) return "Calendar";
+    if (name.startsWith("invite:")) return "Invites";
+    if (name.startsWith("email:")) return "Email";
+    if (name.startsWith("notify:")) return "Notifications";
+    if (name.startsWith("tfa:")) return "TFA";
     if (name === "help") return "General";
     return "Extensions";
 }
