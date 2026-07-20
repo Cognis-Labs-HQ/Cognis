@@ -580,4 +580,45 @@ const commands: FeatureCommandDefinition[] = [
 
 export function registerFeatureCommands(): void {
     for (const command of commands) registerFeatureCommand(command);
+
+    register(
+        "calendar:overview",
+        async ({ apiBaseUrl, getApiToken }) => {
+            const apiToken = await getApiToken();
+            const [calendarPayload, invitationPayload] = await Promise.all([
+                apiRequest(apiBaseUrl, "/api/v1/calendar/calendars", {
+                    method: "GET",
+                    apiToken,
+                }),
+                apiRequest(apiBaseUrl, "/api/v1/calendar/invitations", {
+                    method: "GET",
+                    apiToken,
+                }),
+            ]);
+            const calendars = calendarPayload as { data?: unknown[] };
+            const invitations = invitationPayload as { data?: unknown[] };
+            return {
+                data: [
+                    {
+                        section: "Calendars",
+                        count: calendars.data?.length ?? 0,
+                    },
+                    {
+                        section: "Pending invitations",
+                        count: invitations.data?.length ?? 0,
+                    },
+                ],
+                meta: {
+                    calendars: calendars.data ?? [],
+                    invitations: invitations.data ?? [],
+                },
+            };
+        },
+        {
+            usage: "cognisctl calendar:overview",
+            description:
+                "Summarize calendars and pending calendar invitations.",
+            render: renderStructuredSummary,
+        },
+    );
 }

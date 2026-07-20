@@ -17,7 +17,8 @@ import { loadModuleCliPlugins } from "./plugins.ts";
 import { registerGeneralCommands } from "./general-commands.ts";
 import { registry } from "./registry.ts";
 import { registerSystemCommands } from "./system-commands.ts";
-import { formatStructured } from "./formatters.ts";
+import { formatStructured, renderStructuredSummary } from "./formatters.ts";
+import { collectWizardFields } from "./wizard.ts";
 import type { CommandExecutionOptions } from "./types.ts";
 import { registerUserCommands } from "./user-commands.ts";
 
@@ -37,7 +38,38 @@ export function formatCommandOutput(
 ): string {
     const spec = registry.get(commandName);
     if (spec?.render) return spec.render(payload);
-    return formatStructured(payload);
+    return renderStructuredSummary(payload);
+}
+
+function parseRequiredUsageFields(usage: string): string[] {
+    return Array.from(usage.matchAll(/<([^>]+)>/g)).map((match) => match[1]);
+}
+
+async function resolveCommandArgs(
+    command: string,
+    args: string[],
+): Promise<string[]> {
+    if (args.length > 0) return args;
+    const spec = registry.get(command);
+    if (!spec) return args;
+    const featureSections = new Set([
+        "TFA",
+        "Notifications",
+        "Email",
+        "Invites",
+        "Calendar",
+        "Study",
+        "Messages",
+        "Shares",
+    ]);
+    if (featureSections.has(spec.section)) return args;
+    const fields = parseRequiredUsageFields(spec.usage);
+    if (fields.length === 0) return args;
+    const values = await collectWizardFields(
+        command,
+        fields.map((name) => ({ name, required: true })),
+    );
+    return fields.map((name) => String(values[name] ?? ""));
 }
 
 export async function executeRegisteredCommand(
@@ -50,8 +82,10 @@ export async function executeRegisteredCommand(
         throw new Error(`Unknown command: ${command}`);
     }
 
+    const resolvedArgs = await resolveCommandArgs(command, args);
+
     return spec.handler({
-        args,
+        args: resolvedArgs,
         apiBaseUrl: options.apiBaseUrl,
         getApiToken: options.getApiToken,
     });

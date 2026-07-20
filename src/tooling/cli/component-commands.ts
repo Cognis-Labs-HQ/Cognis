@@ -4,7 +4,7 @@ import {
     requireArgs,
 } from "./command-utils.ts";
 import {
-    formatStructured,
+    renderStructuredSummary,
     renderComponentMutation,
     renderComponentsList,
 } from "./formatters.ts";
@@ -224,7 +224,7 @@ export function registerComponentCommands(): void {
             usage: "cognisctl component:import <repositoryUrl> <versionTag>",
             description:
                 "Import a module release from a GitHub repository tag.",
-            render: formatStructured,
+            render: renderStructuredSummary,
         },
     );
 
@@ -252,7 +252,7 @@ export function registerComponentCommands(): void {
         {
             usage: "cognisctl component:config:get adapter <gatewayId> <adapterId>",
             description: "Read an adapter component configuration.",
-            render: formatStructured,
+            render: renderStructuredSummary,
         },
     );
 
@@ -287,7 +287,7 @@ export function registerComponentCommands(): void {
         {
             usage: "cognisctl component:config:set adapter <gatewayId> <adapterId> <config-json>",
             description: "Update an adapter component configuration.",
-            render: formatStructured,
+            render: renderStructuredSummary,
         },
     );
 
