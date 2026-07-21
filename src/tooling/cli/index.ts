@@ -61,6 +61,11 @@ async function resolveCommandArgs(
         "Study",
         "Messages",
         "Shares",
+        "Search",
+        "Docs",
+        "UI",
+        "Files",
+        "Social",
     ]);
     if (featureSections.has(spec.section)) return args;
     const fields = parseRequiredUsageFields(spec.usage);

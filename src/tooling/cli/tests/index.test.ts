@@ -555,11 +555,46 @@ test("feature CLI commands register broad operational coverage", () => {
         "study:languages",
         "messages:rooms",
         "share:token:create",
+        "search:query",
+        "docs:list",
+        "ui:routes",
+        "files:quota:defaults",
+        "social:posts",
     ]) {
         assert.ok(
             registry.has(commandName),
             `${commandName} should be registered`,
         );
+    }
+});
+
+test("search:query maps wizard-friendly query fields to search API", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input, init) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/search?q=alice&type=users",
+            );
+            assert.equal(init?.method, "GET");
+            return new Response(JSON.stringify({ data: [] }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            });
+        };
+
+        const payload = await executeRegisteredCommand(
+            "search:query",
+            [JSON.stringify({ q: "alice", type: "users" })],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, { data: [] });
+    } finally {
+        globalThis.fetch = originalFetch;
     }
 });
 

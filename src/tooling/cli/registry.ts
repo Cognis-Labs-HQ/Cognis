@@ -13,6 +13,11 @@ function inferSection(name: string): string {
     if (name.startsWith("gateway:")) return "Gateways";
     if (name.startsWith("api:")) return "API";
     if (name.startsWith("share:")) return "Shares";
+    if (name.startsWith("search:")) return "Search";
+    if (name.startsWith("docs:")) return "Docs";
+    if (name.startsWith("ui:")) return "UI";
+    if (name.startsWith("files:")) return "Files";
+    if (name.startsWith("social:")) return "Social";
     if (name.startsWith("messages:")) return "Messages";
     if (name.startsWith("study:")) return "Study";
     if (name.startsWith("calendar:")) return "Calendar";
