@@ -32,8 +32,6 @@
   <string name="module.jitsi_meet.overlay.meeting_closed">このミーティングは終了しました。</string>
   <string name="module.jitsi_meet.overlay.meeting_left">ミーティングから退出しました。</string>
   <string name="module.jitsi_meet.overlay.leave_blocked">このページから移動する前にミーティングを退出してください。</string>
-  <string name="module.jitsi_meet.overlay.refresh_blocked_title">ミーティング中の更新をブロックしました</string>
-  <string name="module.jitsi_meet.overlay.refresh_blocked_body">ページを更新すると進行中のミーティングから切断されます。ミーティングに残るにはこのページに留まり、退出して更新する場合だけ更新を確定してください。</string>
   <string name="module.jitsi_meet.overlay.probe_done">事前チェック完了。</string>
   <string name="module.jitsi_meet.chat.heading">ミーティング チャット</string>
   <string name="module.jitsi_meet.chat.heading_private">{{displayName}} とチャット</string>

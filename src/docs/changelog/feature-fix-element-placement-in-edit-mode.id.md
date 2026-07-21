@@ -6,4 +6,4 @@ Overlay edit page composer kini mengukur kolomnya dari dimensi bagian konten yan
 
 ## Perlindungan penyegaran saat meeting
 
-Meeting aktif kini mencegat pintasan keyboard untuk menyegarkan sebelum alur unload browser dimulai, lalu menampilkan pilihan di aplikasi untuk tetap berada dalam meeting atau sengaja menyegarkan dan keluar. Overlay pemuatan bersama kini menunggu `pagehide`, bukan `beforeunload`, sehingga membatalkan prompt penyegaran browser tidak meninggalkan halaman meeting dalam keadaan memuat.
+Meeting aktif tetap memakai konfirmasi unload browser untuk upaya penyegaran atau navigasi yang sebenarnya, tetapi Cognis tidak lagi mengubah status pemuatan bersama selama `beforeunload`. Overlay pemuatan kini menunggu `pagehide`, sehingga membatalkan prompt penyegaran browser membuat halaman meeting dan sesi tertanam tetap terlihat serta interaktif.

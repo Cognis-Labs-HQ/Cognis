@@ -32,8 +32,6 @@
   <string name="module.jitsi_meet.overlay.meeting_closed">This meeting has been closed.</string>
   <string name="module.jitsi_meet.overlay.meeting_left">You left the meeting.</string>
   <string name="module.jitsi_meet.overlay.leave_blocked">Leave the meeting before navigating away from this page.</string>
-  <string name="module.jitsi_meet.overlay.refresh_blocked_title">Meeting refresh blocked</string>
-  <string name="module.jitsi_meet.overlay.refresh_blocked_body">Refreshing will disconnect the active meeting. Stay on this page to remain in the meeting, or confirm refresh to leave it.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pre-Flight Check Passed.</string>
   <string name="module.jitsi_meet.chat.heading">Meeting Chat</string>
   <string name="module.jitsi_meet.chat.heading_private">Chat with {{displayName}}</string>

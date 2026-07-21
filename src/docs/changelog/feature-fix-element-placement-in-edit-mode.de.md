@@ -6,4 +6,4 @@ Die Bearbeitungsüberlagerung des Seitenkomponisten misst ihre Spalten nun anhan
 
 ## Schutz vor Aktualisierung während Meetings
 
-Aktive Meetings fangen Tastenkürzel zum Aktualisieren jetzt ab, bevor der Browser den Entladeablauf startet, und zeigen eine In-App-Auswahl zum Bleiben im Meeting oder zum bewussten Aktualisieren und Verlassen. Die gemeinsame Ladeüberlagerung wartet nun auf `pagehide` statt `beforeunload`, sodass ein abgebrochener Browser-Aktualisierungsdialog die Meetingseite nicht im Ladezustand zurücklässt.
+Aktive Meetings verwenden weiterhin die Browser-Bestätigung beim tatsächlichen Aktualisieren oder Navigieren, aber Cognis ändert den gemeinsamen Ladezustand nicht mehr während `beforeunload`. Die Ladeüberlagerung wartet nun auf `pagehide`, sodass ein abgebrochener Browser-Aktualisierungsdialog die aktuelle Meetingseite und die eingebettete Sitzung sichtbar und bedienbar lässt.

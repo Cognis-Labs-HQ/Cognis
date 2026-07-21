@@ -3,7 +3,6 @@ import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
-import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { handleProfileAvatarError } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
@@ -131,8 +130,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         alonePromptDismissedMeetingId: "",
         alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
-        allowMeetingPageUnload: false,
-        refreshPromptOpen: false,
     };
 
     const {
@@ -658,64 +655,14 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             signal: bindSignal,
         });
 
-        function isRefreshShortcut(event) {
-            if (event.defaultPrevented) return false;
-            const key = String(event.key ?? "").toLowerCase();
-            return (
-                (key === "f5" && !event.altKey) ||
-                ((event.ctrlKey || event.metaKey) && key === "r")
-            );
-        }
-
-        async function promptMeetingRefresh() {
-            if (state.refreshPromptOpen) return;
-            state.refreshPromptOpen = true;
-            try {
-                const result = await openPopup({
-                    title: i18n.t(
-                        "module.jitsi_meet.overlay.refresh_blocked_title",
-                    ),
-                    body: `<p>${i18n.t("module.jitsi_meet.overlay.refresh_blocked_body")}</p>`,
-                    variant: "warning",
-                    actions: [
-                        {
-                            id: "stay",
-                            label: i18n.t("ui.reuse.stay"),
-                            variant: "cancel",
-                        },
-                        {
-                            id: "refresh",
-                            label: i18n.t("ui.reuse.refresh"),
-                            variant: "confirm",
-                        },
-                    ],
-                });
-                if (result !== "refresh") return;
-                state.allowMeetingPageUnload = true;
-                window.location.reload();
-            } finally {
-                state.refreshPromptOpen = false;
-            }
-        }
-
         window.addEventListener(
             "beforeunload",
             (event) => {
-                if (!isMeetingActive() || state.allowMeetingPageUnload) return;
+                if (!isMeetingActive()) return;
                 event.preventDefault();
                 event.returnValue = "";
             },
             { signal: bindSignal },
-        );
-        window.addEventListener(
-            "keydown",
-            (event) => {
-                if (!isMeetingActive() || !isRefreshShortcut(event)) return;
-                event.preventDefault();
-                event.stopPropagation();
-                void promptMeetingRefresh();
-            },
-            { capture: true, signal: bindSignal },
         );
         window.addEventListener(
             "click",

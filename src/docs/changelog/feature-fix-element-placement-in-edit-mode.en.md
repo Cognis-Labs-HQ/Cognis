@@ -6,4 +6,4 @@ The page composer edit overlay now measures its columns from the same content se
 
 ## Meeting refresh safeguards
 
-Active meetings now intercept keyboard refresh shortcuts before the browser unload flow starts, showing an in-app choice to stay in the meeting or intentionally refresh and leave. The shared page loading overlay now waits for `pagehide` instead of `beforeunload`, so cancelling the browser refresh prompt does not leave the meeting page in a loading state.
+Active meetings continue to use the browser unload confirmation for real refresh/navigation attempts, but Cognis no longer changes the shared loading state during `beforeunload`. The loading overlay now waits for `pagehide`, so cancelling the browser refresh prompt leaves the current meeting page and embedded session visible and interactive.

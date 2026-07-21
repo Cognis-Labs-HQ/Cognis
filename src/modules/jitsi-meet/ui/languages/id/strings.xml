@@ -32,8 +32,6 @@
   <string name="module.jitsi_meet.overlay.meeting_closed">Rapat ini telah ditutup.</string>
   <string name="module.jitsi_meet.overlay.meeting_left">Anda telah meninggalkan rapat.</string>
   <string name="module.jitsi_meet.overlay.leave_blocked">Keluar dari rapat dulu sebelum berpindah dari halaman ini.</string>
-  <string name="module.jitsi_meet.overlay.refresh_blocked_title">Penyegaran meeting diblokir</string>
-  <string name="module.jitsi_meet.overlay.refresh_blocked_body">Menyegarkan halaman akan memutus meeting aktif. Tetap di halaman ini agar tetap berada dalam meeting, atau konfirmasi penyegaran untuk keluar.</string>
   <string name="module.jitsi_meet.overlay.probe_done">Pemeriksaan Pra-Penerbangan Berhasil.</string>
   <string name="module.jitsi_meet.chat.heading">Chat Rapat</string>
   <string name="module.jitsi_meet.chat.heading_private">Chat dengan {{displayName}}</string>
