@@ -37,13 +37,7 @@ export function registerCommands({ register }) {
                 queryFields: [{ name: "resourceType" }, { name: "resourceId" }],
                 description: "List share tokens.",
             },
-            {
-                name: "share:token:create",
-                method: "POST",
-                path: "/api/v1/share/tokens",
-                bodyFields: [jsonBody],
-                description: "Create a share token.",
-            },
+
             {
                 name: "share:resolve",
                 method: "GET",

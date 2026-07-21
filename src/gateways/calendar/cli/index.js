@@ -37,29 +37,7 @@ export function registerCommands({ register, apiGet }) {
                 params: ["username"],
                 description: "List calendars for a user.",
             },
-            {
-                name: "calendar:create",
-                method: "POST",
-                path: "/api/v1/calendar/calendars?accountId=:username",
-                params: ["username"],
-                bodyFields: [jsonBody],
-                description: "Create a calendar for a user.",
-            },
-            {
-                name: "calendar:update",
-                method: "PUT",
-                path: "/api/v1/calendar/calendars/:calendarId",
-                params: ["calendarId"],
-                bodyFields: [jsonBody],
-                description: "Update a calendar.",
-            },
-            {
-                name: "calendar:delete",
-                method: "DELETE",
-                path: "/api/v1/calendar/calendars/:calendarId",
-                params: ["calendarId"],
-                description: "Delete a calendar.",
-            },
+
             {
                 name: "calendar:events",
                 method: "GET",
@@ -67,29 +45,7 @@ export function registerCommands({ register, apiGet }) {
                 params: ["calendarId"],
                 description: "List calendar events.",
             },
-            {
-                name: "calendar:event:create",
-                method: "POST",
-                path: "/api/v1/calendar/calendars/:calendarId/events",
-                params: ["calendarId"],
-                bodyFields: [jsonBody],
-                description: "Create a calendar event.",
-            },
-            {
-                name: "calendar:event:update",
-                method: "PUT",
-                path: "/api/v1/calendar/calendars/:calendarId/events/:eventId",
-                params: ["calendarId", "eventId"],
-                bodyFields: [jsonBody],
-                description: "Update a calendar event.",
-            },
-            {
-                name: "calendar:event:delete",
-                method: "DELETE",
-                path: "/api/v1/calendar/calendars/:calendarId/events/:eventId",
-                params: ["calendarId", "eventId"],
-                description: "Delete a calendar event.",
-            },
+
             {
                 name: "calendar:invitations",
                 method: "GET",
@@ -104,21 +60,7 @@ export function registerCommands({ register, apiGet }) {
                 params: ["calendarId"],
                 description: "List calendar user shares.",
             },
-            {
-                name: "calendar:share:user:add",
-                method: "POST",
-                path: "/api/v1/calendar/calendars/:calendarId/share/users",
-                params: ["calendarId"],
-                bodyFields: [jsonBody],
-                description: "Share a calendar with a user.",
-            },
-            {
-                name: "calendar:share:user:remove",
-                method: "DELETE",
-                path: "/api/v1/calendar/calendars/:calendarId/share/users/:shareId",
-                params: ["calendarId", "shareId"],
-                description: "Remove a calendar user share.",
-            },
+
             {
                 name: "calendar:adapters",
                 method: "GET",

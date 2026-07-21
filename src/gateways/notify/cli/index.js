@@ -69,12 +69,7 @@ export function registerCommands({ register }) {
                 bodyFields: [jsonBody],
                 description: "Create a broadcast notification.",
             },
-            {
-                name: "notify:broadcasts:active",
-                method: "GET",
-                path: "/api/v1/notify/broadcasts/active",
-                description: "List active broadcasts for the current user.",
-            },
+
             {
                 name: "notify:broadcasts:states",
                 method: "GET",
@@ -82,20 +77,7 @@ export function registerCommands({ register }) {
                 params: ["broadcastId"],
                 description: "List broadcast acknowledgement states.",
             },
-            {
-                name: "notify:broadcasts:acknowledge",
-                method: "POST",
-                path: "/api/v1/notify/broadcasts/:broadcastId/acknowledge",
-                params: ["broadcastId"],
-                description: "Acknowledge a broadcast.",
-            },
-            {
-                name: "notify:broadcasts:dismiss",
-                method: "POST",
-                path: "/api/v1/notify/broadcasts/:broadcastId/dismiss",
-                params: ["broadcastId"],
-                description: "Dismiss a broadcast.",
-            },
+
             {
                 name: "email:list",
                 method: "GET",

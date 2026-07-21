@@ -548,11 +548,10 @@ test("component CLI plugins register broad operational coverage", async () => {
         "tfa:methods",
         "email:add",
         "invite:create",
-        "calendar:event:create",
+        "calendar:events",
         "notify:broadcasts:create",
         "study:languages",
-        "messages:rooms",
-        "share:token:create",
+        "share:tokens",
         "search:query",
         "docs:list",
         "ui:routes",
@@ -619,7 +618,7 @@ test("renderStructuredSummary turns JSON arrays and metadata into readable outpu
     assert.match(output, /Requested By Account Id: system:cognis-cli/);
 });
 
-test("feature CLI command maps positional args and JSON body to API route", async () => {
+test("calendar:events maps calendar IDs to inspection routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
         globalThis.fetch = async (input, init) => {
@@ -627,24 +626,23 @@ test("feature CLI command maps positional args and JSON body to API route", asyn
                 String(input),
                 "http://localhost:3000/api/v1/calendar/calendars/cal-1/events",
             );
-            assert.equal(init?.method, "POST");
-            assert.equal(init?.body, JSON.stringify({ title: "Demo" }));
-            return new Response(JSON.stringify({ data: { created: true } }), {
+            assert.equal(init?.method, "GET");
+            return new Response(JSON.stringify({ data: [] }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
             });
         };
 
         const payload = await executeRegisteredCommand(
-            "calendar:event:create",
-            ["cal-1", JSON.stringify({ title: "Demo" })],
+            "calendar:events",
+            ["cal-1"],
             {
                 apiBaseUrl: "http://localhost:3000",
                 getApiToken: async () => "token",
             },
         );
 
-        assert.deepEqual(payload, { data: { created: true } });
+        assert.deepEqual(payload, { data: [] });
     } finally {
         globalThis.fetch = originalFetch;
     }

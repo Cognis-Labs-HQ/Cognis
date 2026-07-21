@@ -34,4 +34,8 @@ Removed redundant `gateway:*` and `component:health` CLI surfaces, kept componen
 
 ## Explicit CLI Targets
 
-The CLI bootstrap token now uses a system subject instead of a normal user identity. TFA and calendar commands that inspect or create user-owned data require an explicit username so `cognisctl` never creates default calendars, TFA records, or other user-scoped state for itself.
+The CLI bootstrap token now uses a system subject instead of a normal user identity. TFA and calendar commands that inspect user-owned data require an explicit username so `cognisctl` never creates default calendars, TFA records, or other user-scoped state for itself.
+
+## Administrative CLI Scope
+
+Calendar, social, message, share, and notification plugin commands now focus on inspection and administrator-oriented maintenance. User-flow mutations such as creating calendar events, changing calendar shares, sending messages, approving message requests, and creating or deleting social posts were removed from `cognisctl`.

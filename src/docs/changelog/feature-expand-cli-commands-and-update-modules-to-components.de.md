@@ -34,4 +34,8 @@ Redundante `gateway:*`- und `component:health`-CLI-Oberflächen wurden entfernt,
 
 ## Explizite CLI-Ziele
 
-Das CLI-Bootstrap-Token verwendet jetzt ein System-Subjekt statt einer normalen Nutzeridentität. TFA- und Kalenderbefehle, die nutzereigene Daten lesen oder erstellen, verlangen einen expliziten Nutzernamen, damit `cognisctl` keine Standardkalender, TFA-Einträge oder andere nutzerbezogene Zustände für sich selbst anlegt.
+Das CLI-Bootstrap-Token verwendet jetzt ein System-Subjekt statt einer normalen Nutzeridentität. TFA- und Kalenderbefehle, die nutzereigene Daten lesen, verlangen einen expliziten Nutzernamen, damit `cognisctl` keine Standardkalender, TFA-Einträge oder andere nutzerbezogene Zustände für sich selbst anlegt.
+
+## Administrativer CLI-Umfang
+
+Kalender-, Social-, Nachrichten-, Freigabe- und Benachrichtigungs-Pluginbefehle konzentrieren sich jetzt auf Inspektion und administrative Wartung. Nutzerfluss-Mutationen wie das Erstellen von Kalenderereignissen, Ändern von Kalenderfreigaben, Senden von Nachrichten, Genehmigen von Nachrichtenanfragen sowie Erstellen oder Löschen von Social-Posts wurden aus `cognisctl` entfernt.

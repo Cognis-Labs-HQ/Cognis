@@ -34,4 +34,8 @@ Permukaan CLI redundan `gateway:*` dan `component:health` dihapus, kesehatan kom
 
 ## Target CLI Eksplisit
 
-Token bootstrap CLI kini memakai subjek sistem, bukan identitas pengguna normal. Perintah TFA dan kalender yang membaca atau membuat data milik pengguna mewajibkan username eksplisit agar `cognisctl` tidak membuat kalender default, catatan TFA, atau status lain yang terikat pengguna untuk dirinya sendiri.
+Token bootstrap CLI kini memakai subjek sistem, bukan identitas pengguna normal. Perintah TFA dan kalender yang membaca data milik pengguna mewajibkan username eksplisit agar `cognisctl` tidak membuat kalender default, catatan TFA, atau status lain yang terikat pengguna untuk dirinya sendiri.
+
+## Cakupan CLI Administratif
+
+Perintah plugin kalender, sosial, pesan, berbagi, dan notifikasi kini berfokus pada inspeksi dan pemeliharaan administratif. Mutasi alur pengguna seperti membuat acara kalender, mengubah berbagi kalender, mengirim pesan, menyetujui permintaan pesan, serta membuat atau menghapus post sosial dihapus dari `cognisctl`.
