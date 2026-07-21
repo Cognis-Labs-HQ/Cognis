@@ -46,6 +46,93 @@ export function createComposerRenderer({
     loadPersistedFormState,
     bindFormDraftPersistence,
 }) {
+    const MEDIA_PRESERVE_SELECTOR =
+        'iframe,img,video,audio,canvas,object,embed,[data-composer-preserve="true"]';
+    const MEDIA_PRESERVE_OPT_OUT_SELECTOR = '[data-composer-preserve="false"]';
+
+    function getPreservedElementNodes() {
+        if (!state.preservedElementNodes) {
+            state.preservedElementNodes = new Map();
+        }
+        return state.preservedElementNodes;
+    }
+
+    function getPreservedElementParking() {
+        if (state.preservedElementParking?.isConnected) {
+            return state.preservedElementParking;
+        }
+        const parking = document.createElement("div");
+        parking.className = "composer-preserved-element-parking";
+        parking.setAttribute("aria-hidden", "true");
+        state.root.appendChild(parking);
+        state.preservedElementParking = parking;
+        return parking;
+    }
+
+    function shouldPreserveRenderedHost(host) {
+        if (host?.querySelector?.(MEDIA_PRESERVE_OPT_OUT_SELECTOR)) {
+            return false;
+        }
+        return Boolean(host?.querySelector?.(MEDIA_PRESERVE_SELECTOR));
+    }
+
+    function shouldPreserveRenderedHtml(element, html) {
+        if (element.preserveDom || element.preserveOnRefresh) return true;
+        const template = document.createElement("template");
+        template.innerHTML = html;
+        if (template.content.querySelector(MEDIA_PRESERVE_OPT_OUT_SELECTOR)) {
+            return false;
+        }
+        return Boolean(template.content.querySelector(MEDIA_PRESERVE_SELECTOR));
+    }
+
+    function moveHostChildrenToPreservedNode(host) {
+        const preserved = document.createElement("div");
+        preserved.className = "composer-preserved-element-content";
+        while (host.firstChild) {
+            preserved.appendChild(host.firstChild);
+        }
+        return preserved;
+    }
+
+    function parkPreservedElementNodes() {
+        const preservedNodes = getPreservedElementNodes();
+        const parking = getPreservedElementParking();
+        state.contentGrid
+            ?.querySelectorAll("[data-composer-element]")
+            .forEach((host) => {
+                const elementId = host.dataset.composerElement;
+                if (!elementId) return;
+                let preserved = preservedNodes.get(elementId);
+                if (!preserved && shouldPreserveRenderedHost(host)) {
+                    preserved = moveHostChildrenToPreservedNode(host);
+                    preservedNodes.set(elementId, preserved);
+                }
+                if (preserved?.isConnected) {
+                    parking.appendChild(preserved);
+                }
+            });
+    }
+
+    function renderElementContent(host, element) {
+        const preservedNodes = getPreservedElementNodes();
+        let preserved = preservedNodes.get(element.id);
+        if (preserved) {
+            host.replaceChildren(preserved);
+            return;
+        }
+        const html = element.render();
+        if (shouldPreserveRenderedHtml(element, html)) {
+            preserved = document.createElement("div");
+            preserved.className = "composer-preserved-element-content";
+            preserved.innerHTML = html;
+            preservedNodes.set(element.id, preserved);
+            host.replaceChildren(preserved);
+            return;
+        }
+        host.innerHTML = html;
+    }
+
     function repackPlacementsIntoColumns(
         sortedVisible,
         maxCols,
@@ -546,6 +633,114 @@ export function createComposerRenderer({
         );
     }
 
+    function getVisibleComposerPlacements() {
+        return state.editing
+            ? state.layout.placements
+                  .filter((p) => !state.layout.hidden.includes(p.id))
+                  .sort((a, b) => a.row - b.row || a.col - b.col)
+            : computeViewPlacements();
+    }
+
+    function getPlacementScale(placements) {
+        const hasFractional =
+            !state.frameless &&
+            placements.some(
+                (p) =>
+                    p.col % 1 !== 0 ||
+                    p.row % 1 !== 0 ||
+                    p.w % 1 !== 0 ||
+                    p.h % 1 !== 0,
+            );
+        return hasFractional ? 2 : 1;
+    }
+
+    function applySectionGridMetrics(section, placements) {
+        if (state.frameless) return 1;
+        const scale = getPlacementScale(placements);
+        section.classList.add("composer-view-grid");
+        section.style.setProperty(
+            "--grid-cols",
+            String(state.gridCols * scale),
+        );
+        section.style.setProperty(
+            "--composer-grid-row-size",
+            `${UNIT / scale}px`,
+        );
+        return scale;
+    }
+
+    function applyCardPlacement(card, placement, scale) {
+        if (state.frameless) return;
+        const scaledCol = placement.col * scale;
+        const scaledRow = placement.row * scale;
+        const scaledWidth = placement.w * scale;
+        const scaledHeight = placement.h * scale;
+        card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
+        card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
+    }
+
+    function renderPlacementCards(section, placements, scale) {
+        const renderedIds = new Set(
+            placements.map((placement) => placement.id),
+        );
+        section
+            .querySelectorAll(
+                ":scope > .widget-card[data-composer-element], :scope > .widget-card--missing[data-composer-element]",
+            )
+            .forEach((card) => {
+                if (!renderedIds.has(card.dataset.composerElement)) {
+                    card.remove();
+                }
+            });
+        for (const placement of placements) {
+            const element = state.elements.find((e) => e.id === placement.id);
+            const isMissing = !element;
+            let card = Array.from(section.children).find(
+                (child) =>
+                    child.dataset?.composerElement === placement.id &&
+                    !child.classList.contains("composer-cell"),
+            );
+            if (!card) {
+                card = document.createElement("section");
+                card.dataset.composerElement = placement.id;
+                section.appendChild(card);
+                if (isMissing) {
+                    card.innerHTML = renderMissingElementContent(placement.id);
+                } else {
+                    renderElementContent(card, element);
+                }
+            }
+            card.className = isMissing
+                ? "widget-card widget-card--missing"
+                : "widget-card";
+            applyCardPlacement(card, placement, scale);
+        }
+    }
+
+    function clearEditChrome(section) {
+        section
+            .querySelectorAll(
+                ":scope > .composer-grid-overlay, :scope > .composer-cell, :scope > .composer-shade, :scope > .composer-dropzone-line",
+            )
+            .forEach((node) => node.remove());
+    }
+
+    function renderEditChrome(section, placements) {
+        section.appendChild(createGridOverlay());
+        for (const placement of placements) {
+            const element = state.elements.find((e) => e.id === placement.id);
+            if (!element) {
+                section.appendChild(createMissingCell(placement));
+                continue;
+            }
+            const cell = createCell(element, placement, {
+                includeContent: false,
+            });
+            cell.setAttribute("aria-label", element.label ?? placement.id);
+            section.appendChild(cell);
+        }
+    }
+
     function renderGridComposer() {
         if (!document.contains(state.contentGrid)) return;
         document.getElementById("composer-elements-panel")?.remove();
@@ -561,100 +756,47 @@ export function createComposerRenderer({
         initializePlacements();
         computeGridDimensions();
 
-        state.contentGrid.classList.remove("composer-grid-active");
+        state.contentGrid.classList.toggle(
+            "composer-grid-active",
+            state.editing,
+        );
         const gridFormSnapshot = mergeFormStateSnapshots(
             loadPersistedFormState(state.preferenceKey),
             captureFormState(state.contentGrid),
         );
-        state.contentGrid.innerHTML = "";
 
-        const panel = document.createElement("article");
-        panel.className = "content-panel";
-        const section = document.createElement("div");
-        section.className = "content-section";
-        panel.appendChild(section);
-        state.contentGrid.appendChild(panel);
+        let panel = state.contentGrid.querySelector(":scope > .content-panel");
+        let section = panel?.querySelector(":scope > .content-section");
+        if (!panel || !section) {
+            parkPreservedElementNodes();
+            state.contentGrid.innerHTML = "";
+            panel = document.createElement("article");
+            panel.className = "content-panel";
+            section = document.createElement("div");
+            section.className = "content-section";
+            panel.appendChild(section);
+            state.contentGrid.appendChild(panel);
+        }
         state.gridSection = section;
 
-        if (state.editing) {
-            section.classList.add("composer-grid-active");
-            section.style.minHeight = `${state.gridRows * UNIT}px`;
-            section.style.width = `${state.gridCols * UNIT}px`;
-            section.appendChild(createGridOverlay());
-        } else if (!state.frameless) {
-            section.classList.add("composer-view-grid");
-        }
+        clearEditChrome(section);
+        section.classList.toggle("composer-grid-active", state.editing);
+        section.classList.toggle("composer-view-grid", !state.frameless);
 
-        const visiblePlacements = state.editing
-            ? state.layout.placements
-                  .filter((p) => !state.layout.hidden.includes(p.id))
-                  .sort((a, b) => a.row - b.row || a.col - b.col)
-            : computeViewPlacements();
-
-        if (!state.editing) {
-            const hasFractional =
-                !state.frameless &&
-                visiblePlacements.some(
-                    (p) =>
-                        p.col % 1 !== 0 ||
-                        p.row % 1 !== 0 ||
-                        p.w % 1 !== 0 ||
-                        p.h % 1 !== 0,
-                );
-            const scale = hasFractional ? 2 : 1;
-            if (!state.frameless) {
-                section.style.setProperty(
-                    "--grid-cols",
-                    String(state.gridCols * scale),
-                );
-                section.style.setProperty(
-                    "--composer-grid-row-size",
-                    `${UNIT / scale}px`,
-                );
-            }
-            for (const placement of visiblePlacements) {
-                const element = state.elements.find(
-                    (e) => e.id === placement.id,
-                );
-                const card = document.createElement("section");
-                const isMissing = !element;
-                card.className = isMissing
-                    ? "widget-card widget-card--missing"
-                    : "widget-card";
-                card.dataset.composerElement = placement.id;
-                if (!state.frameless) {
-                    const scaledCol = placement.col * scale;
-                    const scaledRow = placement.row * scale;
-                    const scaledWidth = placement.w * scale;
-                    const scaledHeight = placement.h * scale;
-                    card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
-                    card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
-                }
-                card.innerHTML = isMissing
-                    ? renderMissingElementContent(placement.id)
-                    : element.render();
-                section.appendChild(card);
-            }
-        }
+        const visiblePlacements = getVisibleComposerPlacements();
+        const scale = applySectionGridMetrics(section, visiblePlacements);
+        renderPlacementCards(section, visiblePlacements, scale);
 
         if (state.editing) {
-            for (const placement of visiblePlacements) {
-                const element = state.elements.find(
-                    (e) => e.id === placement.id,
-                );
-                if (!element) {
-                    section.appendChild(createMissingCell(placement));
-                    continue;
-                }
-                section.appendChild(createCell(element, placement));
-            }
+            computeGridDimensions();
+            section.style.minHeight = `${state.gridPixelHeight ?? state.gridRows * UNIT}px`;
+            renderEditChrome(section, visiblePlacements);
+            createElementsPanel();
+        } else {
+            section.style.minHeight = "";
         }
 
         syncEditToggle();
-
-        if (state.editing) {
-            createElementsPanel();
-        }
 
         restoreFormState(state.contentGrid, gridFormSnapshot);
         bindFormDraftPersistence(state.contentGrid, state.preferenceKey);

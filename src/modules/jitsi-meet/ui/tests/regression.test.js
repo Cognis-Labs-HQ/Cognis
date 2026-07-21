@@ -158,6 +158,8 @@ test("jitsi meetings lock participants and block navigation while meeting is act
         source,
         /window\.addEventListener\(\s*"beforeunload"[\s\S]*event\.returnValue = "";/,
     );
+    assert.doesNotMatch(source, /function isRefreshShortcut\(event\)/);
+    assert.doesNotMatch(source, /window\.addEventListener\(\s*"keydown"/);
     assert.match(
         source,
         /window\.addEventListener\(\s*"click"[\s\S]*module\.jitsi_meet\.overlay\.leave_blocked/,

@@ -224,7 +224,6 @@ function registerPageUnloadListeners() {
         body.dataset.pageReady = "false";
         body.setAttribute("aria-busy", "true");
     };
-    window.addEventListener("beforeunload", markPageAsLoading);
     window.addEventListener("pagehide", markPageAsLoading);
     pageUnloadListenersRegistered = true;
 }

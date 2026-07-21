@@ -75,6 +75,9 @@ test("page-entry registers refresh lifecycle listeners for loading fallback", ()
         resolve(ROOT, "src/ui/reuse/page-entry.js"),
         "utf8",
     );
-    assert.match(source, /window\.addEventListener\(["']beforeunload["']/);
+    assert.doesNotMatch(
+        source,
+        /window\.addEventListener\(["']beforeunload["']/,
+    );
     assert.match(source, /window\.addEventListener\(["']pagehide["']/);
 });

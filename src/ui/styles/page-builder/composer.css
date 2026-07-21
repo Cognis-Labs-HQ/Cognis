@@ -54,7 +54,6 @@
 
 .composer-grid-active {
     position: relative;
-    display: block;
 }
 
 .composer-done-btn {
@@ -395,4 +394,17 @@
 
 .clock-analogue-centre {
     fill: var(--accent);
+}
+
+.composer-preserved-element-parking {
+    position: fixed;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.composer-preserved-element-content {
+    display: contents;
 }
