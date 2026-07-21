@@ -3,7 +3,6 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { registerApiCommands } from "./api-commands.ts";
-import { registerGatewayCommands } from "./gateway-commands.ts";
 import {
     printCommandGroupHelp,
     printCommandHelp,
@@ -25,7 +24,6 @@ registerGeneralCommands();
 registerApiCommands();
 registerSystemCommands();
 registerComponentCommands();
-registerGatewayCommands();
 registerUserCommands();
 
 export { formatStructured };

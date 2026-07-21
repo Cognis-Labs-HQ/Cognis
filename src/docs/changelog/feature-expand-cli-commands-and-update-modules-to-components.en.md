@@ -26,4 +26,8 @@ The CLI now discovers command plugins from modules, gateways, and adapters, incl
 
 ## Component operations
 
-`component:list` now reports modules, gateways, and adapters by component type. The GitHub import command is now `component:import`, and adapter config/test controls are available through `component:config:get`, `component:config:set`, and `component:test`.
+`component:list` now reports modules, gateways, and adapters by component type. The GitHub import command is now `component:import`, and adapter configuration controls are available through `component:config:get` and `component:config:set`.
+
+## Component Health Surface Cleanup
+
+Removed redundant `gateway:*` and `component:health` CLI surfaces, kept component health under `system:health`, narrowed TFA CLI controls to already configured user methods and recovery/enforcement operations, and surfaced component health status in Administration component details.

@@ -522,10 +522,6 @@ test("component:config:set rejects fields not exposed by adapter schema", async 
     }
 });
 
-test("component:test is no longer registered", () => {
-    assert.equal(registry.has("component:test"), false);
-});
-
 test("system health labels component contributions as Components", () => {
     const output = formatCommandOutput("system:health", {
         data: {

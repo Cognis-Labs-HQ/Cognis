@@ -10,7 +10,6 @@ function inferSection(name: string): string {
     if (name.startsWith("user:")) return "User";
     if (name.startsWith("system:")) return "System";
     if (name.startsWith("component:")) return "Components";
-    if (name.startsWith("gateway:")) return "Gateways";
     if (name.startsWith("api:")) return "API";
     if (name.startsWith("share:")) return "Shares";
     if (name.startsWith("search:")) return "Search";

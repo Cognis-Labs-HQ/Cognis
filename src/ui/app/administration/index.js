@@ -822,6 +822,7 @@ export async function mount(rootEl, { signal } = {}) {
                                     escapeHtml,
                                     resolveModuleConfigScriptUrl,
                                     isModuleEnabled,
+                                    healthStatus,
                                 },
                             ),
                     },

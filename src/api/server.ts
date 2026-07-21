@@ -218,6 +218,17 @@ export function buildServer(deps: ApiDependencies) {
             const savedGateways = new Map(
                 savedGatewayStates.map((row) => [row.gatewayId, row.enabled]),
             );
+            for (const manifest of manifests) {
+                healthService.contribute(`module:${manifest.id}`, () => ({
+                    componentId: manifest.id,
+                    componentType: "module",
+                    status: enabledModules.has(manifest.id) ? "ok" : "warning",
+                    message: enabledModules.has(manifest.id)
+                        ? "Module is enabled."
+                        : "Module is disabled.",
+                    checkedAt: new Date().toISOString(),
+                }));
+            }
             if (deps.gatewayRegistry) {
                 for (const entry of deps.gatewayRegistry.list()) {
                     if (entry.required) continue;
@@ -225,6 +236,18 @@ export function buildServer(deps: ApiDependencies) {
                     if (persisted === false) {
                         deps.gatewayRegistry.disable(entry.id);
                     }
+                }
+                for (const entry of deps.gatewayRegistry.list()) {
+                    healthService.contribute(`gateway:${entry.id}`, () => ({
+                        componentId: entry.id,
+                        componentType: "gateway",
+                        status: entry.status === "active" ? "ok" : "warning",
+                        message:
+                            entry.status === "active"
+                                ? "Gateway is active."
+                                : "Gateway is disabled.",
+                        checkedAt: new Date().toISOString(),
+                    }));
                 }
             }
             return moduleExtensionRoutes.refresh();

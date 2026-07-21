@@ -57,14 +57,13 @@ npm run cli      # node --import tsx src/tooling/cli/index.ts
 
 Commands are grouped by namespace:
 
-| Namespace            | Example commands                                                                                                                                |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `user:*`             | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete`                                                   |
-| `user:preferences:*` | `user:preferences:clear`                                                                                                                        |
-| `system:*`           | `system:health`, `system:info`                                                                                                                  |
-| `component:*`        | `component:list`, `component:enable`, `component:disable`, `component:config:get`, `component:config:set`, `component:test`, `component:import` |
-| `gateway:*`          | `gateway:list`                                                                                                                                  |
-| `api:*`              | `api:token` (mints a temporary 1-hour admin emergency token for curl)                                                                           |
+| Namespace            | Example commands                                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `user:*`             | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete`                                 |
+| `user:preferences:*` | `user:preferences:clear`                                                                                                      |
+| `system:*`           | `system:health`, `system:info`                                                                                                |
+| `component:*`        | `component:list`, `component:enable`, `component:disable`, `component:config:get`, `component:config:set`, `component:import` |
+| `api:*`              | `api:token` (mints a temporary 1-hour admin emergency token for curl)                                                         |
 
 All CLI commands that require authentication read the API token from the path specified in `COGNIS_CLI_TOKEN_PATH`.
 

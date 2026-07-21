@@ -26,4 +26,8 @@ Die CLI erkennt Befehls-Plugins jetzt aus Modulen, Gateways und Adaptern, einsch
 
 ## Komponentensteuerung
 
-`component:list` zeigt jetzt Module, Gateways und Adapter nach Komponententyp an. Der GitHub-Importbefehl heißt nun `component:import`, und Adapter-Konfiguration sowie Tests sind über `component:config:get`, `component:config:set` und `component:test` erreichbar.
+`component:list` zeigt jetzt Module, Gateways und Adapter nach Komponententyp an. Der GitHub-Importbefehl heißt nun `component:import`, und Adapter-Konfiguration ist über `component:config:get` und `component:config:set` erreichbar.
+
+## Bereinigung der Komponenten-Gesundheit
+
+Redundante `gateway:*`- und `component:health`-CLI-Oberflächen wurden entfernt, Komponentenstatus bleibt unter `system:health`, TFA-CLI-Steuerungen wurden auf bereits konfigurierte Nutzermethoden sowie Recovery- und Erzwingungsfunktionen begrenzt, und der Komponentenstatus erscheint in den Administrationsdetails.

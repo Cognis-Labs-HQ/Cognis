@@ -25,6 +25,25 @@ function getStatePill(status, i18n) {
     };
 }
 
+function resolveComponentHealth(healthStatus, componentType, componentId) {
+    const contributions = Array.isArray(healthStatus?.contributions)
+        ? healthStatus.contributions
+        : [];
+    return contributions.find(
+        (contribution) =>
+            contribution.componentType === componentType &&
+            contribution.componentId === componentId,
+    );
+}
+
+function renderHealthDetail(componentHealth, i18n, escapeHtml) {
+    const status = componentHealth?.status ?? "unknown";
+    const message = componentHealth?.message
+        ? ` — ${escapeHtml(componentHealth.message)}`
+        : "";
+    return `<span class="integrity-${escapeHtml(status)}">${escapeHtml(status)}${message}</span>`;
+}
+
 function renderDetailRows(pairs) {
     return pairs
         .map(
@@ -52,7 +71,13 @@ function renderDependencyLinks(ids, scrollPrefix, gateways, i18n, escapeHtml) {
         .join(", ");
 }
 
-function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
+function renderDetailsList(
+    moduleRecord,
+    gateways,
+    healthStatus,
+    i18n,
+    escapeHtml,
+) {
     const pairs = [
         [i18n.t("ui.reuse.id"), moduleRecord.id],
         [i18n.t("ui.reuse.version"), moduleRecord.version],
@@ -61,6 +86,14 @@ function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
             moduleRecord.publisher || i18n.t("ui.app.admin.unknown"),
         ],
         [i18n.t("ui.reuse.class"), moduleRecord.class],
+        [
+            i18n.t("ui.reuse.status"),
+            renderHealthDetail(
+                resolveComponentHealth(healthStatus, "module", moduleRecord.id),
+                i18n,
+                escapeHtml,
+            ),
+        ],
         [
             i18n.t("ui.app.admin.capabilities"),
             (moduleRecord.capabilities || []).join(", ") ||
@@ -84,8 +117,13 @@ function renderDetailsList(moduleRecord, gateways, i18n, escapeHtml) {
 }
 
 function renderModulesContent(modules, gateways, deps) {
-    const { i18n, escapeHtml, resolveModuleConfigScriptUrl, isModuleEnabled } =
-        deps;
+    const {
+        i18n,
+        escapeHtml,
+        resolveModuleConfigScriptUrl,
+        isModuleEnabled,
+        healthStatus,
+    } = deps;
     return modules
         .map((moduleRecord) => {
             const pill = getStatePill(moduleRecord.status, i18n);
@@ -110,7 +148,7 @@ function renderModulesContent(modules, gateways, deps) {
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderDetailsList(moduleRecord, gateways, i18n, escapeHtml)}</ul>
+            <ul class="module-details">${renderDetailsList(moduleRecord, gateways, healthStatus, i18n, escapeHtml)}</ul>
           </div>
         </details>
       `;
@@ -118,13 +156,27 @@ function renderModulesContent(modules, gateways, deps) {
         .join("");
 }
 
-function renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml) {
+function renderGatewayDetailsList(
+    gateway,
+    gateways,
+    healthStatus,
+    i18n,
+    escapeHtml,
+) {
     const pairs = [
         [i18n.t("ui.reuse.id"), escapeHtml(gateway.id)],
         [i18n.t("ui.reuse.version"), escapeHtml(gateway.version ?? "")],
         [
             i18n.t("ui.app.admin.publisher"),
             escapeHtml(gateway.publisher || i18n.t("ui.app.admin.unknown")),
+        ],
+        [
+            i18n.t("ui.reuse.status"),
+            renderHealthDetail(
+                resolveComponentHealth(healthStatus, "gateway", gateway.id),
+                i18n,
+                escapeHtml,
+            ),
         ],
         [
             i18n.t("ui.app.admin.gateway.required"),
@@ -166,6 +218,7 @@ function renderInlineAdapters(
     adapterByCompositeKey,
     i18n,
     escapeHtml,
+    healthStatus,
 ) {
     if (!adapters || adapters.length === 0) return "";
     const rows = adapters
@@ -221,6 +274,7 @@ function renderInlineAdapters(
           <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
           <span class="state-pill ${isActive ? "pill-active" : "pill-available"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.available")}</span>
           ${syncedPill}
+          ${renderHealthDetail(resolveComponentHealth(healthStatus, "adapter", `${gatewayId}:${adapterId}`) ?? resolveComponentHealth(healthStatus, "adapter", adapterId), i18n, escapeHtml)}
           <label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
             <input type="checkbox" class="adapter-toggle"
               data-adapter="${escapeHtml(adapterId)}"
@@ -241,7 +295,8 @@ function renderInlineAdapters(
     `;
 }
 
-function renderGatewaysContent(gateways, allAdapters, i18n, escapeHtml) {
+function renderGatewaysContent(gateways, allAdapters, deps) {
+    const { i18n, escapeHtml, healthStatus } = deps;
     if (!gateways.length) {
         return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
     }
@@ -285,8 +340,8 @@ function renderGatewaysContent(gateways, allAdapters, i18n, escapeHtml) {
             <span class="module-chevron">▾</span>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderGatewayDetailsList(gateway, gateways, i18n, escapeHtml)}</ul>
-            ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, gatewayById, adapterByCompositeKey, i18n, escapeHtml)}
+            <ul class="module-details">${renderGatewayDetailsList(gateway, gateways, healthStatus, i18n, escapeHtml)}</ul>
+            ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, gatewayById, adapterByCompositeKey, i18n, escapeHtml, healthStatus)}
           </div>
         </details>
       `;
@@ -309,7 +364,7 @@ export function renderComponentsContent(modules, gateways, allAdapters, deps) {
     <div class="components-section">
       <h3 class="components-section-heading">${i18n.t("ui.app.admin.gateways")}</h3>
       <div class="components-section-body">
-        ${renderGatewaysContent(gateways, allAdapters, deps.i18n, deps.escapeHtml)}
+        ${renderGatewaysContent(gateways, allAdapters, deps)}
       </div>
     </div>
   `;

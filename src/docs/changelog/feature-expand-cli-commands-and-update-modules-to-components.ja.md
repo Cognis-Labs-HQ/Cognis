@@ -26,4 +26,8 @@ CLI は、マニフェストで宣言された CLI エントリポイントを�
 
 ## コンポーネント操作
 
-`component:list` は、モジュール、ゲートウェイ、アダプターをコンポーネント種別で表示するようになりました。GitHub インポートコマンドは `component:import` になり、アダプター設定とテスト操作は `component:config:get`、`component:config:set`、`component:test` から利用できます。
+`component:list` は、モジュール、ゲートウェイ、アダプターをコンポーネント種別で表示するようになりました。GitHub インポートコマンドは `component:import` になり、アダプター設定操作は `component:config:get` と `component:config:set` から利用できます。
+
+## コンポーネントヘルスの整理
+
+冗長な `gateway:*` と `component:health` の CLI サーフェスを削除し、コンポーネントヘルスは `system:health` に集約しました。TFA CLI 操作は設定済みユーザーメソッド、リカバリー、適用ポリシーに限定し、管理画面のコンポーネント詳細にもヘルス状態を表示します。

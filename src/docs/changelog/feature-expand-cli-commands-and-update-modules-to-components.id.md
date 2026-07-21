@@ -26,4 +26,8 @@ CLI sekarang menemukan plugin perintah dari modul, gateway, dan adapter, termasu
 
 ## Operasi komponen
 
-`component:list` sekarang melaporkan modul, gateway, dan adapter berdasarkan tipe komponen. Perintah impor GitHub kini menjadi `component:import`, dan kontrol konfigurasi serta pengujian adapter tersedia melalui `component:config:get`, `component:config:set`, dan `component:test`.
+`component:list` sekarang melaporkan modul, gateway, dan adapter berdasarkan tipe komponen. Perintah impor GitHub kini menjadi `component:import`, dan kontrol konfigurasi adapter tersedia melalui `component:config:get` dan `component:config:set`.
+
+## Perapihan Kesehatan Komponen
+
+Permukaan CLI redundan `gateway:*` dan `component:health` dihapus, kesehatan komponen tetap berada di `system:health`, kontrol CLI TFA dibatasi ke metode pengguna yang sudah dikonfigurasi serta operasi pemulihan dan enforcement, dan status kesehatan komponen ditampilkan di detail Administrasi.

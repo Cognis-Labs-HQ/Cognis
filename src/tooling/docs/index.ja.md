@@ -25,7 +25,6 @@
 | `user:*`      | `user:create`、`user:role`、`user:set-password`、`user:disable`、`user:enable`、`user:delete`                                                   |
 | `system:*`    | `system:health`、`system:info`                                                                                                                  |
 | `component:*` | `component:list`、`component:enable`、`component:disable`、`component:import`、`component:config:get`、`component:config:set`、`component:test` |
-| `gateway:*`   | `gateway:list`                                                                                                                                  |
 | `api:*`       | `api:token`（curl 用の一時的な 1 時間管理者緊急トークンを発行）                                                                                 |
 
 組み込みの `cognisctl` コマンドは、端末が対応していれば見出し、整列した項目、ANSI カラーを使ったレスポンス対応の端末出力を描画できます。カスタムレンダラーを持たないコマンドは整形済み JSON にフォールバックします。

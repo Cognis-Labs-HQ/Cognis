@@ -34,57 +34,31 @@ export function registerCommands({ register }) {
                 name: "tfa:status",
                 method: "GET",
                 path: "/api/v1/tfa/status",
-                description: "View the current user TFA status.",
+                description: "View TFA status for the authenticated user.",
             },
             {
                 name: "tfa:methods",
                 method: "GET",
                 path: "/api/v1/tfa/methods",
-                description: "List available TFA methods.",
+                description:
+                    "Inspect TFA methods configured for the authenticated user.",
             },
-            {
-                name: "tfa:method:details",
-                method: "GET",
-                path: "/api/v1/tfa/methods/:methodId/details",
-                params: ["methodId"],
-                description: "View configured TFA method details.",
-            },
-            {
-                name: "tfa:method:setup:begin",
-                method: "POST",
-                path: "/api/v1/tfa/methods/:methodId/setup/begin",
-                params: ["methodId"],
-                bodyFields: [jsonBody],
-                description: "Begin TFA method setup.",
-            },
-            {
-                name: "tfa:method:setup:verify",
-                method: "POST",
-                path: "/api/v1/tfa/methods/:methodId/setup/verify",
-                params: ["methodId"],
-                bodyFields: [jsonBody],
-                description: "Verify TFA method setup.",
-            },
-            {
-                name: "tfa:method:setup:cancel",
-                method: "POST",
-                path: "/api/v1/tfa/methods/:methodId/setup/cancel",
-                params: ["methodId"],
-                description: "Cancel TFA method setup.",
-            },
+
             {
                 name: "tfa:method:enable",
                 method: "POST",
                 path: "/api/v1/tfa/methods/:methodId/enable",
                 params: ["methodId"],
-                description: "Enable a configured TFA method.",
+                description:
+                    "Enable an already configured TFA method for the authenticated user.",
             },
             {
                 name: "tfa:method:disable",
                 method: "POST",
                 path: "/api/v1/tfa/methods/:methodId/disable",
                 params: ["methodId"],
-                description: "Disable a TFA method.",
+                description:
+                    "Disable a configured TFA method for the authenticated user.",
             },
             {
                 name: "tfa:preferences:set",
@@ -93,13 +67,15 @@ export function registerCommands({ register }) {
                 bodyFields: [
                     { name: "methodIds", type: "string[]", required: true },
                 ],
-                description: "Set preferred TFA method order.",
+                description:
+                    "Set the authenticated user's preferred TFA method order.",
             },
             {
                 name: "tfa:recovery-codes",
                 method: "GET",
                 path: "/api/v1/tfa/recovery-codes",
-                description: "List recovery codes for the current user.",
+                description:
+                    "List recovery-code status for the authenticated user.",
             },
             {
                 name: "tfa:recovery-codes:status",
@@ -111,7 +87,8 @@ export function registerCommands({ register }) {
                 name: "tfa:recovery-codes:rotate",
                 method: "POST",
                 path: "/api/v1/tfa/recovery-codes/rotate",
-                description: "Rotate recovery codes.",
+                description:
+                    "Generate a fresh recovery-code set for the authenticated user.",
             },
             {
                 name: "tfa:enforcement:get",
