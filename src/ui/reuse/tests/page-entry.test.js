@@ -190,7 +190,7 @@ test("mountWhenDirect skips direct mounting during SPA router loads", async () =
     globalThis.__spaRouter = originalRouterFlag;
 });
 
-test("mountWhenDirect refresh listeners mark the page as loading", async () => {
+test("mountWhenDirect pagehide listener marks the page as loading", async () => {
     const originalDocument = global.document;
     const originalWindow = global.window;
     const originalRouterFlag = globalThis.__spaRouter;
@@ -215,8 +215,10 @@ test("mountWhenDirect refresh listeners mark the page as loading", async () => {
 
     try {
         await mountWhenDirect(async () => {});
+        assert.equal(listeners.has("beforeunload"), false);
+        assert.equal(typeof listeners.get("pagehide"), "function");
         body.dataset.pageReady = "true";
-        listeners.get("beforeunload")?.();
+        listeners.get("pagehide")?.();
         assert.equal(body.dataset.pageReady, "false");
         assert.equal(body.attributes["aria-busy"], "true");
     } finally {
