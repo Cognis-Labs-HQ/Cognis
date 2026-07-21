@@ -59,6 +59,15 @@ test("page composer preserves media element DOM across re-renders", () => {
     assert.match(source, /function renderElementContent\(host, element\)/);
     assert.match(source, /querySelectorAll\("\[data-composer-element\]"\)/);
     assert.match(source, /host\.replaceChildren\(preserved\)/);
+    assert.match(
+        source,
+        /function renderPlacementCards\(section, placements, scale\)/,
+    );
+    assert.match(source, /function renderEditChrome\(section, placements\)/);
+    assert.match(
+        source,
+        /createCell\(element, placement, \{\s*includeContent: false,?\s*\}\)/,
+    );
     assert.match(source, /iframe,img,video,audio,canvas,object,embed/);
     assert.match(source, /MEDIA_PRESERVE_OPT_OUT_SELECTOR/);
     assert.match(source, /data-composer-preserve=\"false\"/);

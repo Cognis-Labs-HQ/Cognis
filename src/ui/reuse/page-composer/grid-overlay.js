@@ -351,7 +351,7 @@ export function createGridOverlayHandlers({
         return overlay;
     }
 
-    function createCell(el, placement) {
+    function createCell(el, placement, { includeContent = true } = {}) {
         const cell = document.createElement("div");
         cell.className = "composer-cell";
         cell.dataset.composerElement = el.id;
@@ -581,10 +581,12 @@ export function createGridOverlayHandlers({
             }
         }
 
-        const content = document.createElement("div");
-        content.className = "widget-card composer-cell-content";
-        content.innerHTML = el.render();
-        cell.appendChild(content);
+        if (includeContent) {
+            const content = document.createElement("div");
+            content.className = "widget-card composer-cell-content";
+            content.innerHTML = el.render();
+            cell.appendChild(content);
+        }
 
         if (state.editing) {
             const gridSize = getGridSize(el);

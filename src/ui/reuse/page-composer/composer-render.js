@@ -633,6 +633,114 @@ export function createComposerRenderer({
         );
     }
 
+    function getVisibleComposerPlacements() {
+        return state.editing
+            ? state.layout.placements
+                  .filter((p) => !state.layout.hidden.includes(p.id))
+                  .sort((a, b) => a.row - b.row || a.col - b.col)
+            : computeViewPlacements();
+    }
+
+    function getPlacementScale(placements) {
+        const hasFractional =
+            !state.frameless &&
+            placements.some(
+                (p) =>
+                    p.col % 1 !== 0 ||
+                    p.row % 1 !== 0 ||
+                    p.w % 1 !== 0 ||
+                    p.h % 1 !== 0,
+            );
+        return hasFractional ? 2 : 1;
+    }
+
+    function applySectionGridMetrics(section, placements) {
+        if (state.frameless) return 1;
+        const scale = getPlacementScale(placements);
+        section.classList.add("composer-view-grid");
+        section.style.setProperty(
+            "--grid-cols",
+            String(state.gridCols * scale),
+        );
+        section.style.setProperty(
+            "--composer-grid-row-size",
+            `${UNIT / scale}px`,
+        );
+        return scale;
+    }
+
+    function applyCardPlacement(card, placement, scale) {
+        if (state.frameless) return;
+        const scaledCol = placement.col * scale;
+        const scaledRow = placement.row * scale;
+        const scaledWidth = placement.w * scale;
+        const scaledHeight = placement.h * scale;
+        card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
+        card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
+    }
+
+    function renderPlacementCards(section, placements, scale) {
+        const renderedIds = new Set(
+            placements.map((placement) => placement.id),
+        );
+        section
+            .querySelectorAll(
+                ":scope > .widget-card[data-composer-element], :scope > .widget-card--missing[data-composer-element]",
+            )
+            .forEach((card) => {
+                if (!renderedIds.has(card.dataset.composerElement)) {
+                    card.remove();
+                }
+            });
+        for (const placement of placements) {
+            const element = state.elements.find((e) => e.id === placement.id);
+            const isMissing = !element;
+            let card = Array.from(section.children).find(
+                (child) =>
+                    child.dataset?.composerElement === placement.id &&
+                    !child.classList.contains("composer-cell"),
+            );
+            if (!card) {
+                card = document.createElement("section");
+                card.dataset.composerElement = placement.id;
+                section.appendChild(card);
+                if (isMissing) {
+                    card.innerHTML = renderMissingElementContent(placement.id);
+                } else {
+                    renderElementContent(card, element);
+                }
+            }
+            card.className = isMissing
+                ? "widget-card widget-card--missing"
+                : "widget-card";
+            applyCardPlacement(card, placement, scale);
+        }
+    }
+
+    function clearEditChrome(section) {
+        section
+            .querySelectorAll(
+                ":scope > .composer-grid-overlay, :scope > .composer-cell, :scope > .composer-shade, :scope > .composer-dropzone-line",
+            )
+            .forEach((node) => node.remove());
+    }
+
+    function renderEditChrome(section, placements) {
+        section.appendChild(createGridOverlay());
+        for (const placement of placements) {
+            const element = state.elements.find((e) => e.id === placement.id);
+            if (!element) {
+                section.appendChild(createMissingCell(placement));
+                continue;
+            }
+            const cell = createCell(element, placement, {
+                includeContent: false,
+            });
+            cell.setAttribute("aria-label", element.label ?? placement.id);
+            section.appendChild(cell);
+        }
+    }
+
     function renderGridComposer() {
         if (!document.contains(state.contentGrid)) return;
         document.getElementById("composer-elements-panel")?.remove();
@@ -648,108 +756,47 @@ export function createComposerRenderer({
         initializePlacements();
         computeGridDimensions();
 
-        state.contentGrid.classList.remove("composer-grid-active");
+        state.contentGrid.classList.toggle(
+            "composer-grid-active",
+            state.editing,
+        );
         const gridFormSnapshot = mergeFormStateSnapshots(
             loadPersistedFormState(state.preferenceKey),
             captureFormState(state.contentGrid),
         );
-        parkPreservedElementNodes();
-        state.contentGrid.innerHTML = "";
 
-        const panel = document.createElement("article");
-        panel.className = "content-panel";
-        const section = document.createElement("div");
-        section.className = "content-section";
-        panel.appendChild(section);
-        state.contentGrid.appendChild(panel);
+        let panel = state.contentGrid.querySelector(":scope > .content-panel");
+        let section = panel?.querySelector(":scope > .content-section");
+        if (!panel || !section) {
+            parkPreservedElementNodes();
+            state.contentGrid.innerHTML = "";
+            panel = document.createElement("article");
+            panel.className = "content-panel";
+            section = document.createElement("div");
+            section.className = "content-section";
+            panel.appendChild(section);
+            state.contentGrid.appendChild(panel);
+        }
         state.gridSection = section;
 
+        clearEditChrome(section);
+        section.classList.toggle("composer-grid-active", state.editing);
+        section.classList.toggle("composer-view-grid", !state.frameless);
+
+        const visiblePlacements = getVisibleComposerPlacements();
+        const scale = applySectionGridMetrics(section, visiblePlacements);
+        renderPlacementCards(section, visiblePlacements, scale);
+
         if (state.editing) {
-            section.classList.add("composer-grid-active");
             computeGridDimensions();
             section.style.minHeight = `${state.gridPixelHeight ?? state.gridRows * UNIT}px`;
-            section.appendChild(createGridOverlay());
-        } else if (!state.frameless) {
-            section.classList.add("composer-view-grid");
-        }
-
-        const visiblePlacements = state.editing
-            ? state.layout.placements
-                  .filter((p) => !state.layout.hidden.includes(p.id))
-                  .sort((a, b) => a.row - b.row || a.col - b.col)
-            : computeViewPlacements();
-
-        if (!state.editing) {
-            const hasFractional =
-                !state.frameless &&
-                visiblePlacements.some(
-                    (p) =>
-                        p.col % 1 !== 0 ||
-                        p.row % 1 !== 0 ||
-                        p.w % 1 !== 0 ||
-                        p.h % 1 !== 0,
-                );
-            const scale = hasFractional ? 2 : 1;
-            if (!state.frameless) {
-                section.style.setProperty(
-                    "--grid-cols",
-                    String(state.gridCols * scale),
-                );
-                section.style.setProperty(
-                    "--composer-grid-row-size",
-                    `${UNIT / scale}px`,
-                );
-            }
-            for (const placement of visiblePlacements) {
-                const element = state.elements.find(
-                    (e) => e.id === placement.id,
-                );
-                const card = document.createElement("section");
-                const isMissing = !element;
-                card.className = isMissing
-                    ? "widget-card widget-card--missing"
-                    : "widget-card";
-                card.dataset.composerElement = placement.id;
-                if (!state.frameless) {
-                    const scaledCol = placement.col * scale;
-                    const scaledRow = placement.row * scale;
-                    const scaledWidth = placement.w * scale;
-                    const scaledHeight = placement.h * scale;
-                    card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
-                    card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
-                }
-                if (isMissing) {
-                    card.innerHTML = renderMissingElementContent(placement.id);
-                } else {
-                    renderElementContent(card, element);
-                }
-                section.appendChild(card);
-            }
-        }
-
-        if (state.editing) {
-            for (const placement of visiblePlacements) {
-                const element = state.elements.find(
-                    (e) => e.id === placement.id,
-                );
-                if (!element) {
-                    section.appendChild(createMissingCell(placement));
-                    continue;
-                }
-                const cell = createCell(element, placement);
-                const content = cell.querySelector(".composer-cell-content");
-                if (content) {
-                    renderElementContent(content, element);
-                }
-                section.appendChild(cell);
-            }
+            renderEditChrome(section, visiblePlacements);
+            createElementsPanel();
+        } else {
+            section.style.minHeight = "";
         }
 
         syncEditToggle();
-
-        if (state.editing) {
-            createElementsPanel();
-        }
 
         restoreFormState(state.contentGrid, gridFormSnapshot);
         bindFormDraftPersistence(state.contentGrid, state.preferenceKey);
