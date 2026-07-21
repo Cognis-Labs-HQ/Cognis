@@ -33,17 +33,17 @@ export function registerCommands({ register, apiGet }) {
             {
                 name: "calendar:list",
                 method: "GET",
-                path: "/api/v1/calendar/calendars",
-                queryFields: [{ name: "accountId" }],
-                description:
-                    "List calendars for the current user or an admin-selected account.",
+                path: "/api/v1/calendar/calendars?accountId=:username",
+                params: ["username"],
+                description: "List calendars for a user.",
             },
             {
                 name: "calendar:create",
                 method: "POST",
-                path: "/api/v1/calendar/calendars",
+                path: "/api/v1/calendar/calendars?accountId=:username",
+                params: ["username"],
                 bodyFields: [jsonBody],
-                description: "Create a calendar.",
+                description: "Create a calendar for a user.",
             },
             {
                 name: "calendar:update",
@@ -93,8 +93,9 @@ export function registerCommands({ register, apiGet }) {
             {
                 name: "calendar:invitations",
                 method: "GET",
-                path: "/api/v1/calendar/invitations",
-                description: "List calendar invitations.",
+                path: "/api/v1/calendar/invitations?accountId=:username",
+                params: ["username"],
+                description: "List calendar invitations for a user.",
             },
             {
                 name: "calendar:share:users",
@@ -130,11 +131,24 @@ export function registerCommands({ register, apiGet }) {
 
     register(
         "calendar:overview",
-        async ({ apiBaseUrl, getApiToken }) => {
+        async ({ args, apiBaseUrl, getApiToken }) => {
+            const username = args[0];
+            if (!username) {
+                throw new Error("Missing required argument: username");
+            }
+            const targetQuery = `?accountId=${encodeURIComponent(username)}`;
             const apiToken = await getApiToken();
             const [calendarPayload, invitationPayload] = await Promise.all([
-                apiGet(apiBaseUrl, "/api/v1/calendar/calendars", apiToken),
-                apiGet(apiBaseUrl, "/api/v1/calendar/invitations", apiToken),
+                apiGet(
+                    apiBaseUrl,
+                    `/api/v1/calendar/calendars${targetQuery}`,
+                    apiToken,
+                ),
+                apiGet(
+                    apiBaseUrl,
+                    `/api/v1/calendar/invitations${targetQuery}`,
+                    apiToken,
+                ),
             ]);
             return {
                 data: [
@@ -154,9 +168,9 @@ export function registerCommands({ register, apiGet }) {
             };
         },
         {
-            usage: "cognisctl calendar:overview",
+            usage: "cognisctl calendar:overview <username>",
             description:
-                "Summarize calendars and pending calendar invitations.",
+                "Summarize calendars and pending calendar invitations for a user.",
         },
     );
 }

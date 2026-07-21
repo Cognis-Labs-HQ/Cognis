@@ -31,3 +31,7 @@ Die CLI erkennt Befehls-Plugins jetzt aus Modulen, Gateways und Adaptern, einsch
 ## Bereinigung der Komponenten-Gesundheit
 
 Redundante `gateway:*`- und `component:health`-CLI-Oberflächen wurden entfernt, Komponentenstatus bleibt unter `system:health`, TFA-CLI-Steuerungen wurden auf bereits konfigurierte Nutzermethoden sowie Recovery- und Erzwingungsfunktionen begrenzt, und der Komponentenstatus erscheint in den Administrationsdetails.
+
+## Explizite CLI-Ziele
+
+Das CLI-Bootstrap-Token verwendet jetzt ein System-Subjekt statt einer normalen Nutzeridentität. TFA- und Kalenderbefehle, die nutzereigene Daten lesen oder erstellen, verlangen einen expliziten Nutzernamen, damit `cognisctl` keine Standardkalender, TFA-Einträge oder andere nutzerbezogene Zustände für sich selbst anlegt.

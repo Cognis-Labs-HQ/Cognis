@@ -31,3 +31,7 @@ The CLI now discovers command plugins from modules, gateways, and adapters, incl
 ## Component Health Surface Cleanup
 
 Removed redundant `gateway:*` and `component:health` CLI surfaces, kept component health under `system:health`, narrowed TFA CLI controls to already configured user methods and recovery/enforcement operations, and surfaced component health status in Administration component details.
+
+## Explicit CLI Targets
+
+The CLI bootstrap token now uses a system subject instead of a normal user identity. TFA and calendar commands that inspect or create user-owned data require an explicit username so `cognisctl` never creates default calendars, TFA records, or other user-scoped state for itself.

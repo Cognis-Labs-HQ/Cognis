@@ -33,62 +33,63 @@ export function registerCommands({ register }) {
             {
                 name: "tfa:status",
                 method: "GET",
-                path: "/api/v1/tfa/status",
-                description: "View TFA status for the authenticated user.",
+                path: "/api/v1/tfa/status?accountId=:username",
+                params: ["username"],
+                description: "View TFA status for a user.",
             },
             {
                 name: "tfa:methods",
                 method: "GET",
-                path: "/api/v1/tfa/methods",
-                description:
-                    "Inspect TFA methods configured for the authenticated user.",
+                path: "/api/v1/tfa/methods?accountId=:username",
+                params: ["username"],
+                description: "Inspect TFA methods configured for a user.",
             },
 
             {
                 name: "tfa:method:enable",
                 method: "POST",
-                path: "/api/v1/tfa/methods/:methodId/enable",
-                params: ["methodId"],
+                path: "/api/v1/tfa/methods/:methodId/enable?accountId=:username",
+                params: ["username", "methodId"],
                 description:
-                    "Enable an already configured TFA method for the authenticated user.",
+                    "Enable an already configured TFA method for a user.",
             },
             {
                 name: "tfa:method:disable",
                 method: "POST",
-                path: "/api/v1/tfa/methods/:methodId/disable",
-                params: ["methodId"],
-                description:
-                    "Disable a configured TFA method for the authenticated user.",
+                path: "/api/v1/tfa/methods/:methodId/disable?accountId=:username",
+                params: ["username", "methodId"],
+                description: "Disable a configured TFA method for a user.",
             },
             {
                 name: "tfa:preferences:set",
                 method: "PUT",
-                path: "/api/v1/tfa/methods/preferences",
+                path: "/api/v1/tfa/methods/preferences?accountId=:username",
+                params: ["username"],
                 bodyFields: [
                     { name: "methodIds", type: "string[]", required: true },
                 ],
-                description:
-                    "Set the authenticated user's preferred TFA method order.",
+                description: "Set a user's preferred TFA method order.",
             },
             {
                 name: "tfa:recovery-codes",
                 method: "GET",
-                path: "/api/v1/tfa/recovery-codes",
-                description:
-                    "List recovery-code status for the authenticated user.",
+                path: "/api/v1/tfa/recovery-codes?accountId=:username",
+                params: ["username"],
+                description: "List recovery-code status for a user.",
             },
             {
                 name: "tfa:recovery-codes:status",
                 method: "GET",
-                path: "/api/v1/tfa/recovery-codes/status",
-                description: "View recovery-code status.",
+                path: "/api/v1/tfa/recovery-codes/status?accountId=:username",
+                params: ["username"],
+                description: "View recovery-code availability for a user.",
             },
             {
                 name: "tfa:recovery-codes:rotate",
                 method: "POST",
-                path: "/api/v1/tfa/recovery-codes/rotate",
-                description:
-                    "Generate a fresh recovery-code set for the authenticated user.",
+                path: "/api/v1/tfa/recovery-codes/rotate?accountId=:username",
+                params: ["username"],
+                description: "Generate a fresh recovery-code set for a user.",
             },
             {
                 name: "tfa:enforcement:get",

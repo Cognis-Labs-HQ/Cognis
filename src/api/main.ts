@@ -237,7 +237,7 @@ if (!routeContext) {
     );
 }
 
-const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
+const cliAccessToken = issueAccessToken("system:cognis-cli", "owner", null);
 try {
     await mkdir(path.dirname(cliTokenPath), { recursive: true });
     await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });

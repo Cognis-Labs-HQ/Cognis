@@ -2,9 +2,21 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import {
     readJson,
     requireAuth,
+    hasMinRole,
     type GatewayBootstrapContext,
 } from "../../shared.js";
 import { CoreTfaGateway } from "../gateway.js";
+
+function resolveTargetAccountId(
+    claims: { sub: string; role: string },
+    url: URL,
+): string | null {
+    const requestedAccountId = String(
+        url.searchParams.get("accountId") ?? "",
+    ).trim();
+    if (!requestedAccountId) return claims.sub;
+    return hasMinRole(claims.role, "admin") ? requestedAccountId : null;
+}
 
 export function createTfaRoutes(
     gateway: CoreTfaGateway,
@@ -276,10 +288,17 @@ export function createTfaRoutes(
         if (url.pathname === "/api/v1/tfa/status" && req.method === "GET") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const status = await gateway.getUserStatus(claims.sub);
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            const status = await gateway.getUserStatus(targetAccountId);
             log?.("debug", "Read TFA status.", {
                 ...logMeta,
                 accountId: claims.sub,
+                targetAccountId,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: status }));
@@ -289,7 +308,13 @@ export function createTfaRoutes(
         if (url.pathname === "/api/v1/tfa/methods" && req.method === "GET") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const status = await gateway.getUserStatus(claims.sub);
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            const status = await gateway.getUserStatus(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -459,7 +484,13 @@ export function createTfaRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(disableMatch[1]);
-            await gateway.disableMethod(claims.sub, methodId);
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            await gateway.disableMethod(targetAccountId, methodId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
             return true;
@@ -472,7 +503,16 @@ export function createTfaRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(enableMatch[1]);
-            const enabled = await gateway.enableMethod(claims.sub, methodId);
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            const enabled = await gateway.enableMethod(
+                targetAccountId,
+                methodId,
+            );
             if (!enabled) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -533,7 +573,16 @@ export function createTfaRoutes(
                       .map((methodId: string) => methodId.trim())
                       .filter(Boolean)
                 : [];
-            await gateway.setPreferredMethods(claims.sub, preferredMethodIds);
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            await gateway.setPreferredMethods(
+                targetAccountId,
+                preferredMethodIds,
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
             return true;
@@ -545,9 +594,14 @@ export function createTfaRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const recoveryStatus = await gateway.getRecoveryCodesStatus(
-                claims.sub,
-            );
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            const recoveryStatus =
+                await gateway.getRecoveryCodesStatus(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: recoveryStatus }));
             return true;
@@ -559,7 +613,13 @@ export function createTfaRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const codes = await gateway.generateRecoveryCodes(claims.sub);
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            const codes = await gateway.generateRecoveryCodes(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { recoveryCodes: codes } }));
             return true;
@@ -571,7 +631,13 @@ export function createTfaRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const available = await gateway.hasRecoveryCodes(claims.sub);
+            const targetAccountId = resolveTargetAccountId(claims, url);
+            if (!targetAccountId) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return true;
+            }
+            const available = await gateway.hasRecoveryCodes(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { available } }));
             return true;

@@ -606,14 +606,17 @@ test("renderStructuredSummary turns JSON arrays and metadata into readable outpu
                 visibility: "private",
             },
         ],
-        meta: { currentAccountId: "alice", requestedByAccountId: "cognis-cli" },
+        meta: {
+            currentAccountId: "alice",
+            requestedByAccountId: "system:cognis-cli",
+        },
     });
 
     assert.match(output, /Id\s+Owner Account Id\s+Name\s+Visibility/);
     assert.match(output, /cal-1\s+alice\s+Alice Calendar\s+private/);
     assert.match(output, /Metadata/);
     assert.match(output, /Current Account Id: alice/);
-    assert.match(output, /Requested By Account Id: cognis-cli/);
+    assert.match(output, /Requested By Account Id: system:cognis-cli/);
 });
 
 test("feature CLI command maps positional args and JSON body to API route", async () => {
@@ -647,7 +650,40 @@ test("feature CLI command maps positional args and JSON body to API route", asyn
     }
 });
 
-test("calendar:list forwards admin-selected account ID as query JSON", async () => {
+test("tfa CLI commands require a target username", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input, init) => {
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/tfa/methods?accountId=alice",
+            );
+            assert.equal(init?.method, "GET");
+            return new Response(
+                JSON.stringify({ data: { enabledMethods: [] } }),
+                {
+                    status: 200,
+                    headers: { "content-type": "application/json" },
+                },
+            );
+        };
+
+        const payload = await executeRegisteredCommand(
+            "tfa:methods",
+            ["alice"],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, { data: { enabledMethods: [] } });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("calendar:list requires a target username and forwards account ID", async () => {
     const originalFetch = globalThis.fetch;
     try {
         globalThis.fetch = async (input, init) => {
@@ -670,7 +706,7 @@ test("calendar:list forwards admin-selected account ID as query JSON", async () 
 
         const payload = await executeRegisteredCommand(
             "calendar:list",
-            [JSON.stringify({ accountId: "alice" })],
+            ["alice"],
             {
                 apiBaseUrl: "http://localhost:3000",
                 getApiToken: async () => "token",
