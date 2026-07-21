@@ -5,5 +5,8 @@
     "required": false,
     "requires": ["db", "auth", "notify"],
     "description": "Registration workflows via pluggable invite/public adapters.",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "entrypoints": {
+        "cli": "./cli/index.js"
+    }
 }

@@ -4,5 +4,8 @@
     "version": "2.1.2",
     "required": true,
     "description": "Provides namespaced, ACL- and quota-enforced file storage for uploads and application logging.",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "entrypoints": {
+        "cli": "./cli/index.js"
+    }
 }

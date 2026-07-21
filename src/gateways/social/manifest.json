@@ -6,5 +6,8 @@
     "requires": ["db", "files"],
     "description": "Thin gateway for social features. Concrete capabilities (profiles, posts, social graph, messaging) are provided by adapters under src/adapters/social/.",
     "publisher": "Cognis Labs HQ",
-    "hasAdapters": true
+    "hasAdapters": true,
+    "entrypoints": {
+        "cli": "./cli/index.js"
+    }
 }

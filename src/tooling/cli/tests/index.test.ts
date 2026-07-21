@@ -545,7 +545,9 @@ test("system health labels component contributions as Components", () => {
     assert.doesNotMatch(output, /Component Contributions/);
 });
 
-test("feature CLI commands register broad operational coverage", () => {
+test("component CLI plugins register broad operational coverage", async () => {
+    await loadModuleCliPlugins();
+
     for (const commandName of [
         "tfa:methods",
         "email:add",
