@@ -3,11 +3,11 @@
  * Export: createGridOverlayHandlers(deps). @param {object} deps @returns {object}
  */
 import {
+    PAGE_COMPOSER_GRID_GAP,
     buildOccupiedSet,
     checkPlacement,
     gridStep,
     halfGrid,
-    snapGridFloor,
     snapGridRound,
 } from "./grid-math.js";
 
@@ -21,11 +21,85 @@ export function createGridOverlayHandlers({
     saveLayout,
     endEditMode,
 }) {
+    function getEditGridWidth() {
+        const section = state.gridSection?.isConnected
+            ? state.gridSection
+            : null;
+        if (!section) return state.gridCols * UNIT;
+        const rect = section.getBoundingClientRect();
+        const styles = window.getComputedStyle(section);
+        const paddingX =
+            Number.parseFloat(styles.paddingLeft || "0") +
+            Number.parseFloat(styles.paddingRight || "0");
+        return Math.max(1, rect.width - paddingX);
+    }
+
+    function getEditColumnSize() {
+        return state.gridTrackSize ?? UNIT;
+    }
+
+    function getEditRowSize() {
+        return UNIT;
+    }
+
+    function gridColumnOffset(coordinate) {
+        return coordinate * (getEditColumnSize() + PAGE_COMPOSER_GRID_GAP);
+    }
+
+    function gridRowOffset(coordinate) {
+        return coordinate * (getEditRowSize() + PAGE_COMPOSER_GRID_GAP);
+    }
+
+    function gridColumnSpanSize(span) {
+        return (
+            span * getEditColumnSize() +
+            Math.max(0, span - 1) * PAGE_COMPOSER_GRID_GAP
+        );
+    }
+
+    function gridRowSpanSize(span) {
+        return (
+            span * getEditRowSize() +
+            Math.max(0, span - 1) * PAGE_COMPOSER_GRID_GAP
+        );
+    }
+
+    function pixelToGridColumn(pixel) {
+        return pixel / (getEditColumnSize() + PAGE_COMPOSER_GRID_GAP);
+    }
+
+    function pixelToGridRow(pixel) {
+        return pixel / (getEditRowSize() + PAGE_COMPOSER_GRID_GAP);
+    }
+
+    function snapPixelColumnFloor(pixel, dim) {
+        const step = gridStep(dim);
+        return Math.floor(pixelToGridColumn(pixel) / step) * step;
+    }
+
+    function snapPixelRowFloor(pixel, dim) {
+        const step = gridStep(dim);
+        return Math.floor(pixelToGridRow(pixel) / step) * step;
+    }
+
     function computeGridDimensions() {
         if (!state.contentGrid) return;
         state.contentGrid.style.width = "";
         const width = state.contentGrid.getBoundingClientRect().width;
-        state.gridCols = Math.max(1, Math.floor(width / UNIT));
+        if (!state.editing) {
+            state.gridCols = Math.max(1, Math.floor(width / UNIT));
+        }
+        if (state.editing) {
+            const editWidth = getEditGridWidth();
+            const totalGap =
+                Math.max(0, state.gridCols - 1) * PAGE_COMPOSER_GRID_GAP;
+            state.gridTrackSize = Math.max(
+                1,
+                (editWidth - totalGap) / state.gridCols,
+            );
+        } else {
+            state.gridTrackSize = UNIT;
+        }
         const visiblePlacements = (state.layout?.placements ?? []).filter(
             (p) => !(state.layout?.hidden ?? []).includes(p.id),
         );
@@ -38,16 +112,16 @@ export function createGridOverlayHandlers({
             state.editing ? Math.max(3, maxBottom + 2) : 1,
             maxBottom + extra,
         );
+        state.gridPixelHeight = gridRowSpanSize(state.gridRows);
+        state.gridPixelWidth = gridColumnSpanSize(state.gridCols);
         state.contentGrid.style.minHeight =
             state.frameless && !state.editing
                 ? ""
-                : `${state.gridRows * UNIT}px`;
-        state.contentGrid.style.width = state.editing
-            ? `${state.gridCols * UNIT}px`
-            : "";
+                : `${state.gridPixelHeight}px`;
+        state.contentGrid.style.width = state.editing ? "" : "";
         if (state.editing && state.gridSection) {
-            state.gridSection.style.minHeight = `${state.gridRows * UNIT}px`;
-            state.gridSection.style.width = `${state.gridCols * UNIT}px`;
+            state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
+            state.gridSection.style.width = "";
         }
     }
 
@@ -121,20 +195,22 @@ export function createGridOverlayHandlers({
             line.classList.add("composer-dropzone-line--v");
             const lineX =
                 tgtCol >= srcCol
-                    ? (candidate.col + candidate.w) * UNIT
-                    : candidate.col * UNIT;
+                    ? gridColumnOffset(candidate.col) +
+                      gridColumnSpanSize(candidate.w)
+                    : gridColumnOffset(candidate.col);
             line.style.left = `${lineX}px`;
-            line.style.top = `${candidate.row * UNIT}px`;
-            line.style.height = `${candidate.h * UNIT}px`;
+            line.style.top = `${gridRowOffset(candidate.row)}px`;
+            line.style.height = `${gridRowSpanSize(candidate.h)}px`;
         } else {
             line.classList.add("composer-dropzone-line--h");
             const lineY =
                 tgtRow >= srcRow
-                    ? (candidate.row + candidate.h) * UNIT
-                    : candidate.row * UNIT;
+                    ? gridRowOffset(candidate.row) +
+                      gridRowSpanSize(candidate.h)
+                    : gridRowOffset(candidate.row);
             line.style.top = `${lineY}px`;
-            line.style.left = `${candidate.col * UNIT}px`;
-            line.style.width = `${candidate.w * UNIT}px`;
+            line.style.left = `${gridColumnOffset(candidate.col)}px`;
+            line.style.width = `${gridColumnSpanSize(candidate.w)}px`;
         }
         return line;
     }
@@ -221,10 +297,10 @@ export function createGridOverlayHandlers({
         cell.className =
             "composer-cell composer-cell--missing composer-cell--editable";
         cell.dataset.composerElement = placement.id;
-        cell.style.left = `${placement.col * UNIT}px`;
-        cell.style.top = `${placement.row * UNIT}px`;
-        cell.style.width = `${placement.w * UNIT}px`;
-        cell.style.height = `${placement.h * UNIT}px`;
+        cell.style.left = `${gridColumnOffset(placement.col)}px`;
+        cell.style.top = `${gridRowOffset(placement.row)}px`;
+        cell.style.width = `${gridColumnSpanSize(placement.w)}px`;
+        cell.style.height = `${gridRowSpanSize(placement.h)}px`;
 
         const closeBtn = document.createElement("button");
         closeBtn.className = "composer-close-btn";
@@ -254,12 +330,10 @@ export function createGridOverlayHandlers({
         overlay.className = "composer-grid-overlay";
         overlay.style.left = "0";
         overlay.style.top = "0";
-        overlay.style.width = `${state.gridCols * UNIT}px`;
-        overlay.style.height = `${state.gridRows * UNIT}px`;
+        overlay.style.width = `${state.gridPixelWidth}px`;
+        overlay.style.height = `${state.gridPixelHeight}px`;
         const cStep = gridStep(state.gridCols);
         const rStep = gridStep(state.gridRows);
-        const cellW = UNIT * cStep;
-        const cellH = UNIT * rStep;
         for (let r = 0; r < state.gridRows; r += rStep) {
             for (let c = 0; c < state.gridCols; c += cStep) {
                 const cell = document.createElement("div");
@@ -267,24 +341,24 @@ export function createGridOverlayHandlers({
                     cStep < 1 || rStep < 1
                         ? "composer-grid-cell composer-grid-cell--half"
                         : "composer-grid-cell";
-                cell.style.left = `${c * UNIT}px`;
-                cell.style.top = `${r * UNIT}px`;
-                cell.style.width = `${cellW}px`;
-                cell.style.height = `${cellH}px`;
+                cell.style.left = `${gridColumnOffset(c)}px`;
+                cell.style.top = `${gridRowOffset(r)}px`;
+                cell.style.width = `${gridColumnSpanSize(cStep)}px`;
+                cell.style.height = `${gridRowSpanSize(rStep)}px`;
                 overlay.appendChild(cell);
             }
         }
         return overlay;
     }
 
-    function createCell(el, placement) {
+    function createCell(el, placement, { includeContent = true } = {}) {
         const cell = document.createElement("div");
         cell.className = "composer-cell";
         cell.dataset.composerElement = el.id;
-        cell.style.left = `${placement.col * UNIT}px`;
-        cell.style.top = `${placement.row * UNIT}px`;
-        cell.style.width = `${placement.w * UNIT}px`;
-        cell.style.height = `${placement.h * UNIT}px`;
+        cell.style.left = `${gridColumnOffset(placement.col)}px`;
+        cell.style.top = `${gridRowOffset(placement.row)}px`;
+        cell.style.width = `${gridColumnSpanSize(placement.w)}px`;
+        cell.style.height = `${gridRowSpanSize(placement.h)}px`;
 
         if (state.editing) {
             cell.classList.add("composer-cell--editable");
@@ -297,10 +371,10 @@ export function createGridOverlayHandlers({
 
                 const shade = document.createElement("div");
                 shade.className = "composer-shade";
-                shade.style.left = `${placement.col * UNIT}px`;
-                shade.style.top = `${placement.row * UNIT}px`;
-                shade.style.width = `${placement.w * UNIT}px`;
-                shade.style.height = `${placement.h * UNIT}px`;
+                shade.style.left = `${gridColumnOffset(placement.col)}px`;
+                shade.style.top = `${gridRowOffset(placement.row)}px`;
+                shade.style.width = `${gridColumnSpanSize(placement.w)}px`;
+                shade.style.height = `${gridRowSpanSize(placement.h)}px`;
                 state.gridSection.appendChild(shade);
 
                 cell.classList.add("composer-cell--dragging");
@@ -348,7 +422,7 @@ export function createGridOverlayHandlers({
                         Math.min(
                             state.gridCols - placement.w,
                             snapGridRound(
-                                x / UNIT - placement.w / 2,
+                                pixelToGridColumn(x) - placement.w / 2,
                                 state.gridCols,
                             ),
                         ),
@@ -356,20 +430,20 @@ export function createGridOverlayHandlers({
                     const rawRow = Math.max(
                         0,
                         snapGridRound(
-                            y / UNIT - placement.h / 2,
+                            pixelToGridRow(y) - placement.h / 2,
                             state.gridRows,
                         ),
                     );
 
                     if (rawRow + placement.h > state.gridRows) {
                         state.gridRows = rawRow + placement.h + 1;
-                        state.gridSection.style.minHeight = `${state.gridRows * UNIT}px`;
+                        state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
                     }
 
                     currentCol = col;
                     currentRow = rawRow;
-                    shade.style.left = `${col * UNIT}px`;
-                    shade.style.top = `${rawRow * UNIT}px`;
+                    shade.style.left = `${gridColumnOffset(col)}px`;
+                    shade.style.top = `${gridRowOffset(rawRow)}px`;
 
                     if (
                         !canPlace(col, rawRow, placement.w, placement.h, el.id)
@@ -507,10 +581,12 @@ export function createGridOverlayHandlers({
             }
         }
 
-        const content = document.createElement("div");
-        content.className = "widget-card composer-cell-content";
-        content.innerHTML = el.render();
-        cell.appendChild(content);
+        if (includeContent) {
+            const content = document.createElement("div");
+            content.className = "widget-card composer-cell-content";
+            content.innerHTML = el.render();
+            cell.appendChild(content);
+        }
 
         if (state.editing) {
             const gridSize = getGridSize(el);
@@ -555,10 +631,10 @@ export function createGridOverlayHandlers({
 
             const shade = document.createElement("div");
             shade.className = "composer-shade";
-            shade.style.left = `${placement.col * UNIT}px`;
-            shade.style.top = `${placement.row * UNIT}px`;
-            shade.style.width = `${placement.w * UNIT}px`;
-            shade.style.height = `${placement.h * UNIT}px`;
+            shade.style.left = `${gridColumnOffset(placement.col)}px`;
+            shade.style.top = `${gridRowOffset(placement.row)}px`;
+            shade.style.width = `${gridColumnSpanSize(placement.w)}px`;
+            shade.style.height = `${gridRowSpanSize(placement.h)}px`;
             state.gridSection.appendChild(shade);
 
             const cell = handle.closest(".composer-cell");
@@ -578,7 +654,7 @@ export function createGridOverlayHandlers({
                 const y = e.clientY - gridRect.top;
                 if (direction === "e" || direction === "se") {
                     const rawW = snapGridRound(
-                        (x - placement.col * UNIT) / UNIT,
+                        pixelToGridColumn(x) - placement.col,
                         state.gridCols,
                     );
                     const maxW = gridSize.max
@@ -592,7 +668,7 @@ export function createGridOverlayHandlers({
                 }
                 if (direction === "s" || direction === "se") {
                     const rawH = snapGridRound(
-                        (y - placement.row * UNIT) / UNIT,
+                        pixelToGridRow(y) - placement.row,
                         state.gridRows,
                     );
                     currentH = clampValue(
@@ -601,8 +677,8 @@ export function createGridOverlayHandlers({
                         gridSize.max ? gridSize.max[1] : null,
                     );
                 }
-                shade.style.width = `${currentW * UNIT}px`;
-                shade.style.height = `${currentH * UNIT}px`;
+                shade.style.width = `${gridColumnSpanSize(currentW)}px`;
+                shade.style.height = `${gridRowSpanSize(currentH)}px`;
                 shade.classList.toggle(
                     "composer-shade--invalid",
                     !canPlace(
@@ -721,26 +797,26 @@ export function createGridOverlayHandlers({
                     if (!shade) {
                         shade = document.createElement("div");
                         shade.className = "composer-shade";
-                        shade.style.width = `${w * UNIT}px`;
-                        shade.style.height = `${h * UNIT}px`;
+                        shade.style.width = `${gridColumnSpanSize(w)}px`;
+                        shade.style.height = `${gridRowSpanSize(h)}px`;
                         state.gridSection.appendChild(shade);
                     }
                     const col = Math.max(
                         0,
                         Math.min(
                             state.gridCols - w,
-                            snapGridFloor(x, state.gridCols),
+                            snapPixelColumnFloor(x, state.gridCols),
                         ),
                     );
                     const rawRow = Math.max(
                         0,
-                        snapGridFloor(y, state.gridRows),
+                        snapPixelRowFloor(y, state.gridRows),
                     );
                     const row = applyGravity(col, rawRow, w, h, null);
                     currentCol = col;
                     currentRow = row;
-                    shade.style.left = `${col * UNIT}px`;
-                    shade.style.top = `${row * UNIT}px`;
+                    shade.style.left = `${gridColumnOffset(col)}px`;
+                    shade.style.top = `${gridRowOffset(row)}px`;
                     shade.classList.toggle(
                         "composer-shade--invalid",
                         !canPlace(col, row, w, h, null),
