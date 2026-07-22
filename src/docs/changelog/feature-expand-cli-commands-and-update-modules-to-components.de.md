@@ -26,7 +26,7 @@ Die CLI erkennt Befehls-Plugins jetzt aus Modulen, Gateways und Adaptern, einsch
 
 ## Komponentensteuerung
 
-`component:list` zeigt jetzt Module, Gateways und Adapter nach Komponententyp an. Der GitHub-Importbefehl heißt nun `component:import`, und Adapter-Konfiguration ist über `component:config:get` und `component:config:set` erreichbar.
+`component:list` zeigt jetzt Module, Gateways und Adapter nach Komponententyp an. Der GitHub-Importbefehl heißt nun `component:import`, und Modul-, Gateway- und Adapter-Konfiguration ist über `component:config:get` und `component:config:set` erreichbar.
 
 ## Bereinigung der Komponenten-Gesundheit
 
@@ -43,3 +43,7 @@ Kalender-, Social-, Nachrichten-, Freigabe- und Benachrichtigungs-Pluginbefehle 
 ## CLI-Ausgabeformatierung
 
 API-Fehler werden jetzt über einen gemeinsamen lesbaren Formatter ausgegeben, der Status, Code, Nachricht und Details aus Standard-Fehlerantworten hervorhebt. Dynamisch entdeckte Pluginbefehle, einschließlich Dateien, Analytics und Jitsi Meet, verwenden standardmäßig strukturierte Zusammenfassungen und Tabellen statt Roh-JSON.
+
+## Einheitliche Komponenten-Konfiguration
+
+Die Jitsi-Meet-Meetingprüfung nutzt jetzt `jitsi-meet:meetings`, und modulspezifische Konfigurationsbefehle wurden in `component:config:get` und `component:config:set` zusammengeführt, damit Module, Gateways mit Konfigurationsendpunkten und Adapter eine gemeinsame Konfigurationsoberfläche verwenden.

@@ -62,12 +62,19 @@ function normalizeAdapterStatus(adapter: AdapterListEntry): string | undefined {
     return adapter.status;
 }
 
-interface AdapterConfigPayload {
+interface ComponentConfigPayload {
     data?: Record<string, unknown>;
     schema?: Array<{ key?: string }>;
 }
 
-function getUserConfigKeys(payload: AdapterConfigPayload): Set<string> {
+interface ConfigTarget {
+    route: string;
+    configJson?: string;
+    schemaRequired: boolean;
+    writeMethod: "POST" | "PUT";
+}
+
+function getUserConfigKeys(payload: ComponentConfigPayload): Set<string> {
     return new Set(
         (payload.schema ?? [])
             .map((field) => field.key)
@@ -79,9 +86,13 @@ function getUserConfigKeys(payload: AdapterConfigPayload): Set<string> {
 }
 
 function filterUserConfigPayload(
-    payload: AdapterConfigPayload,
-): AdapterConfigPayload {
+    payload: ComponentConfigPayload,
+    schemaRequired: boolean,
+): ComponentConfigPayload {
     const userKeys = getUserConfigKeys(payload);
+    if (!schemaRequired && userKeys.size === 0) {
+        return payload;
+    }
     const data = payload.data ?? {};
     return {
         ...payload,
@@ -93,13 +104,17 @@ function filterUserConfigPayload(
 
 function validateUserConfigUpdate(
     config: unknown,
-    currentConfig: AdapterConfigPayload,
+    currentConfig: ComponentConfigPayload,
+    schemaRequired: boolean,
 ): Record<string, unknown> {
     if (config == null || typeof config !== "object" || Array.isArray(config)) {
         throw new Error("Expected config JSON to be an object.");
     }
     const userKeys = getUserConfigKeys(currentConfig);
     const configRecord = config as Record<string, unknown>;
+    if (!schemaRequired && userKeys.size === 0) {
+        return configRecord;
+    }
     const unsupportedKeys = Object.keys(configRecord).filter(
         (key) => !userKeys.has(key),
     );
@@ -122,6 +137,76 @@ function adapterRoute(
     suffix: string,
 ): string {
     return `/api/v1/gateways/${encodePath(gatewayId)}/adapters/${encodePath(adapterId)}${suffix}`;
+}
+
+function moduleRoute(moduleId: string, suffix: string): string {
+    return `/api/v1/modules/${encodePath(moduleId)}${suffix}`;
+}
+
+function gatewayRoute(gatewayId: string, suffix: string): string {
+    return `/api/v1/gateways/${encodePath(gatewayId)}${suffix}`;
+}
+
+function resolveConfigTarget(
+    args: string[],
+    expectsConfigJson: boolean,
+): ConfigTarget {
+    const [componentType, firstId, secondId, adapterConfigJson] = args;
+    const usage = expectsConfigJson
+        ? "cognisctl component:config:set <module|gateway|adapter> <componentId> [adapterId] <config-json>"
+        : "cognisctl component:config:get <module|gateway|adapter> <componentId> [adapterId]";
+
+    if (componentType === "module") {
+        requireArgs(
+            args,
+            expectsConfigJson
+                ? ["componentType", "moduleId", "configJson"]
+                : ["componentType", "moduleId"],
+            usage,
+        );
+        return {
+            route: moduleRoute(firstId, "/config"),
+            configJson: expectsConfigJson ? secondId : undefined,
+            schemaRequired: false,
+            writeMethod: "POST",
+        };
+    }
+
+    if (componentType === "gateway") {
+        requireArgs(
+            args,
+            expectsConfigJson
+                ? ["componentType", "gatewayId", "configJson"]
+                : ["componentType", "gatewayId"],
+            usage,
+        );
+        return {
+            route: gatewayRoute(firstId, "/config"),
+            configJson: expectsConfigJson ? secondId : undefined,
+            schemaRequired: false,
+            writeMethod: "PUT",
+        };
+    }
+
+    if (componentType === "adapter") {
+        requireArgs(
+            args,
+            expectsConfigJson
+                ? ["componentType", "gatewayId", "adapterId", "configJson"]
+                : ["componentType", "gatewayId", "adapterId"],
+            usage,
+        );
+        return {
+            route: adapterRoute(firstId, secondId, "/config"),
+            configJson: expectsConfigJson ? adapterConfigJson : undefined,
+            schemaRequired: true,
+            writeMethod: "PUT",
+        };
+    }
+
+    throw new Error(
+        'Expected component type "module", "gateway", or "adapter".',
+    );
 }
 
 async function loadAdapterComponents(
@@ -231,27 +316,20 @@ export function registerComponentCommands(): void {
     register(
         "component:config:get",
         async ({ args, apiBaseUrl, getApiToken }) => {
-            const [componentType, gatewayId, adapterId] = args;
-            requireArgs(
-                args,
-                ["componentType", "gatewayId", "adapterId"],
-                "cognisctl component:config:get adapter <gatewayId> <adapterId>",
-            );
-            if (componentType !== "adapter") {
-                throw new Error('Expected component type "adapter".');
-            }
+            const target = resolveConfigTarget(args, false);
             const token = await getApiToken();
             return filterUserConfigPayload(
                 (await apiGet(
                     apiBaseUrl,
-                    adapterRoute(gatewayId, adapterId, "/config"),
+                    target.route,
                     token,
-                )) as AdapterConfigPayload,
+                )) as ComponentConfigPayload,
+                target.schemaRequired,
             );
         },
         {
-            usage: "cognisctl component:config:get adapter <gatewayId> <adapterId>",
-            description: "Read an adapter component configuration.",
+            usage: "cognisctl component:config:get <module|gateway|adapter> <componentId> [adapterId]",
+            description: "Read a module, gateway, or adapter configuration.",
             render: renderStructuredSummary,
         },
     );
@@ -259,34 +337,28 @@ export function registerComponentCommands(): void {
     register(
         "component:config:set",
         async ({ args, apiBaseUrl, getApiToken }) => {
-            const [componentType, gatewayId, adapterId, configJson] = args;
-            requireArgs(
-                args,
-                ["componentType", "gatewayId", "adapterId", "configJson"],
-                "cognisctl component:config:set adapter <gatewayId> <adapterId> <config-json>",
-            );
-            if (componentType !== "adapter") {
-                throw new Error('Expected component type "adapter".');
-            }
+            const target = resolveConfigTarget(args, true);
             const token = await getApiToken();
             const currentConfig = (await apiGet(
                 apiBaseUrl,
-                adapterRoute(gatewayId, adapterId, "/config"),
+                target.route,
                 token,
-            )) as AdapterConfigPayload;
-            return apiPut(
-                apiBaseUrl,
-                adapterRoute(gatewayId, adapterId, "/config"),
-                validateUserConfigUpdate(
-                    parseJsonArgument(configJson),
-                    currentConfig,
-                ),
-                token,
+            )) as ComponentConfigPayload;
+            const nextConfig = validateUserConfigUpdate(
+                parseJsonArgument(target.configJson),
+                currentConfig,
+                target.schemaRequired,
             );
+
+            if (target.writeMethod === "POST") {
+                return apiPost(apiBaseUrl, target.route, nextConfig, token);
+            }
+
+            return apiPut(apiBaseUrl, target.route, nextConfig, token);
         },
         {
-            usage: "cognisctl component:config:set adapter <gatewayId> <adapterId> <config-json>",
-            description: "Update an adapter component configuration.",
+            usage: "cognisctl component:config:set <module|gateway|adapter> <componentId> [adapterId] <config-json>",
+            description: "Update a module, gateway, or adapter configuration.",
             render: renderStructuredSummary,
         },
     );

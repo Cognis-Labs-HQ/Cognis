@@ -26,7 +26,7 @@ CLI sekarang menemukan plugin perintah dari modul, gateway, dan adapter, termasu
 
 ## Operasi komponen
 
-`component:list` sekarang melaporkan modul, gateway, dan adapter berdasarkan tipe komponen. Perintah impor GitHub kini menjadi `component:import`, dan kontrol konfigurasi adapter tersedia melalui `component:config:get` dan `component:config:set`.
+`component:list` sekarang melaporkan modul, gateway, dan adapter berdasarkan tipe komponen. Perintah impor GitHub kini menjadi `component:import`, dan kontrol konfigurasi modul, gateway, dan adapter tersedia melalui `component:config:get` dan `component:config:set`.
 
 ## Perapihan Kesehatan Komponen
 
@@ -43,3 +43,7 @@ Perintah plugin kalender, sosial, pesan, berbagi, dan notifikasi kini berfokus p
 ## Pemformatan Output CLI
 
 Error API kini dirender melalui formatter bersama yang mudah dibaca dan menyorot status, kode, pesan, serta detail dari respons error standar. Perintah plugin yang ditemukan secara dinamis, termasuk files, analytics, dan Jitsi Meet, kini memakai ringkasan terstruktur dan tabel sebagai default, bukan JSON mentah.
+
+## Konfigurasi Komponen Terpadu
+
+Inspeksi rapat Jitsi Meet sekarang memakai `jitsi-meet:meetings`, dan perintah konfigurasi khusus modul digabung ke `component:config:get` dan `component:config:set` agar modul, gateway dengan endpoint konfigurasi, dan adapter memakai satu permukaan konfigurasi komponen.

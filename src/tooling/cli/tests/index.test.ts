@@ -533,6 +533,100 @@ test("component:config:set rejects fields not exposed by adapter schema", async 
     }
 });
 
+test("component:config:get supports module configuration routes", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        globalThis.fetch = async (input, init) => {
+            assert.equal(init?.method, "GET");
+            assert.equal(
+                String(input),
+                "http://localhost:3000/api/v1/modules/jitsi-meet/config",
+            );
+            return new Response(
+                JSON.stringify({
+                    data: {
+                        instanceUrl: "https://meet.example",
+                        meetingPrefix: "team",
+                    },
+                }),
+                {
+                    status: 200,
+                    headers: { "content-type": "application/json" },
+                },
+            );
+        };
+
+        const payload = await executeRegisteredCommand(
+            "component:config:get",
+            ["module", "jitsi-meet"],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(payload, {
+            data: {
+                instanceUrl: "https://meet.example",
+                meetingPrefix: "team",
+            },
+        });
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("component:config:set supports module configuration routes", async () => {
+    const originalFetch = globalThis.fetch;
+    try {
+        const requests = [];
+        globalThis.fetch = async (input, init) => {
+            const requestUrl = String(input);
+            requests.push({
+                method: init?.method,
+                requestUrl,
+                body: init?.body,
+            });
+            if (requestUrl.endsWith("/api/v1/modules/jitsi-meet/config")) {
+                return new Response(
+                    JSON.stringify({
+                        data: { instanceUrl: "https://meet.example" },
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            throw new Error(`Unexpected request: ${requestUrl}`);
+        };
+
+        await executeRegisteredCommand(
+            "component:config:set",
+            [
+                "module",
+                "jitsi-meet",
+                JSON.stringify({ instanceUrl: "https://meet.example" }),
+            ],
+            {
+                apiBaseUrl: "http://localhost:3000",
+                getApiToken: async () => "token",
+            },
+        );
+
+        assert.deepEqual(
+            requests.map((request) => request.method),
+            ["GET", "POST"],
+        );
+        assert.equal(
+            requests[1].body,
+            JSON.stringify({ instanceUrl: "https://meet.example" }),
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("system health labels component contributions as Components", () => {
     const output = formatCommandOutput("system:health", {
         data: {
@@ -585,7 +679,7 @@ test("plugin commands use structured summaries by default", async () => {
     assert.match(analyticsOutput, /Total Users: 2/);
     assert.match(analyticsOutput, /Active Users: 1/);
 
-    const jitsiOutput = formatCommandOutput("jitsi-meet:admin:meetings", {
+    const jitsiOutput = formatCommandOutput("jitsi-meet:meetings", {
         data: [{ id: "meet-1", title: "Planning", participantCount: 3 }],
     });
     assert.match(jitsiOutput, /Id\s+Title\s+Participant Count/);

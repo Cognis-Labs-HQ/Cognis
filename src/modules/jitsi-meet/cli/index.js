@@ -15,7 +15,7 @@ function queryString(params) {
     return serialized ? `?${serialized}` : "";
 }
 
-export function registerCommands({ register, apiGet, apiPost }) {
+export function registerCommands({ register, apiGet }) {
     register(
         "jitsi-meet:ping",
         async ({ apiBaseUrl, getApiToken }) => {
@@ -32,44 +32,7 @@ export function registerCommands({ register, apiGet, apiPost }) {
     );
 
     register(
-        "jitsi-meet:config:get",
-        async ({ apiBaseUrl, getApiToken }) => {
-            return apiGet(
-                apiBaseUrl,
-                "/api/v1/modules/jitsi-meet/config",
-                await getApiToken(),
-            );
-        },
-        {
-            usage: "cognisctl jitsi-meet:config:get",
-            description: "Show the Jitsi Meet module configuration.",
-        },
-    );
-
-    register(
-        "jitsi-meet:config:set",
-        async ({ args, apiBaseUrl, getApiToken }) => {
-            const usage =
-                "cognisctl jitsi-meet:config:set <instance-url> [meeting-prefix]";
-            requireArgs(args, ["instance-url"], usage);
-            return apiPost(
-                apiBaseUrl,
-                "/api/v1/modules/jitsi-meet/config",
-                {
-                    instanceUrl: args[0],
-                    meetingPrefix: args[1] ?? "",
-                },
-                await getApiToken(),
-            );
-        },
-        {
-            usage: "cognisctl jitsi-meet:config:set <instance-url> [meeting-prefix]",
-            description: "Update the Jitsi Meet instance URL and room prefix.",
-        },
-    );
-
-    register(
-        "jitsi-meet:admin:meetings",
+        "jitsi-meet:meetings",
         async ({ apiBaseUrl, getApiToken }) => {
             return apiGet(
                 apiBaseUrl,
@@ -78,13 +41,13 @@ export function registerCommands({ register, apiGet, apiPost }) {
             );
         },
         {
-            usage: "cognisctl jitsi-meet:admin:meetings",
-            description: "List active Jitsi Meet meetings for administrators.",
+            usage: "cognisctl jitsi-meet:meetings",
+            description: "List all active Jitsi Meet meetings.",
         },
     );
 
     register(
-        "jitsi-meet:admin:meetings:upcoming",
+        "jitsi-meet:meetings:upcoming",
         async ({ apiBaseUrl, getApiToken }) => {
             return apiGet(
                 apiBaseUrl,
@@ -93,9 +56,8 @@ export function registerCommands({ register, apiGet, apiPost }) {
             );
         },
         {
-            usage: "cognisctl jitsi-meet:admin:meetings:upcoming",
-            description:
-                "List upcoming Jitsi Meet meetings for administrators.",
+            usage: "cognisctl jitsi-meet:meetings:upcoming",
+            description: "List upcoming Jitsi Meet meetings.",
         },
     );
 

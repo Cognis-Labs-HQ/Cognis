@@ -26,7 +26,7 @@ The CLI now discovers command plugins from modules, gateways, and adapters, incl
 
 ## Component operations
 
-`component:list` now reports modules, gateways, and adapters by component type. The GitHub import command is now `component:import`, and adapter configuration controls are available through `component:config:get` and `component:config:set`.
+`component:list` now reports modules, gateways, and adapters by component type. The GitHub import command is now `component:import`, and module, gateway, and adapter configuration controls are available through `component:config:get` and `component:config:set`.
 
 ## Component Health Surface Cleanup
 
@@ -43,3 +43,7 @@ Calendar, social, message, share, and notification plugin commands now focus on 
 ## CLI Output Formatting
 
 API errors now render through a shared pretty formatter that highlights the status, code, message, and details from standard error responses. Dynamically discovered plugin commands, including files, analytics, and Jitsi Meet commands, now default to structured summaries and tables instead of raw JSON.
+
+## Unified Component Config
+
+Jitsi Meet meeting inspection now uses `jitsi-meet:meetings`, and module-specific config commands were folded into `component:config:get` and `component:config:set` so modules, gateways with config endpoints, and adapters share one component configuration surface.

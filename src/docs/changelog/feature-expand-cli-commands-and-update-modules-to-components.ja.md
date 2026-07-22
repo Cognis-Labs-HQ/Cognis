@@ -26,7 +26,7 @@ CLI は、マニフェストで宣言された CLI エントリポイントを�
 
 ## コンポーネント操作
 
-`component:list` は、モジュール、ゲートウェイ、アダプターをコンポーネント種別で表示するようになりました。GitHub インポートコマンドは `component:import` になり、アダプター設定操作は `component:config:get` と `component:config:set` から利用できます。
+`component:list` は、モジュール、ゲートウェイ、アダプターをコンポーネント種別で表示するようになりました。GitHub インポートコマンドは `component:import` になり、モジュール、ゲートウェイ、アダプターの設定操作は `component:config:get` と `component:config:set` から利用できます。
 
 ## コンポーネントヘルスの整理
 
@@ -43,3 +43,7 @@ CLI ブートストラップトークンは通常ユーザー ID ではなくシ
 ## CLI 出力形式
 
 API エラーは、標準エラーレスポンスのステータス、コード、メッセージ、詳細を強調する共通の読みやすいフォーマッターで表示するようになりました。files、analytics、Jitsi Meet を含む動的検出プラグインコマンドは、生 JSON ではなく構造化サマリーと表を既定で使います。
+
+## 統一コンポーネント設定
+
+Jitsi Meet のミーティング確認は `jitsi-meet:meetings` を使用するようになり、モジュール専用の設定コマンドは `component:config:get` と `component:config:set` に統合されました。これにより、モジュール、設定エンドポイントを持つゲートウェイ、アダプターが同じコンポーネント設定面を使います。
