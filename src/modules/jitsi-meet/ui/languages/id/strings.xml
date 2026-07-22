@@ -73,6 +73,7 @@
   <string name="module.jitsi_meet.admin.meetings.active_table_heading">Rapat Aktif</string>
   <string name="module.jitsi_meet.admin.meetings.loading">Memuat rapat aktif...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">Tidak ada rapat aktif.</string>
+  <string name="module.jitsi_meet.admin.meetings.meeting_url">URL Rapat</string>
   <string name="module.jitsi_meet.admin.meetings.participants">Peserta</string>
   <string name="module.jitsi_meet.admin.meetings.active_sessions">Sesi Aktif</string>
   <string name="module.jitsi_meet.admin.meetings.active_users">Pengguna Aktif</string>

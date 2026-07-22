@@ -73,6 +73,7 @@
   <string name="module.jitsi_meet.admin.meetings.active_table_heading">Active Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.loading">Loading Active Meetings...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">No active meetings.</string>
+  <string name="module.jitsi_meet.admin.meetings.meeting_url">Meeting URL</string>
   <string name="module.jitsi_meet.admin.meetings.participants">Participants</string>
   <string name="module.jitsi_meet.admin.meetings.active_sessions">Active Sessions</string>
   <string name="module.jitsi_meet.admin.meetings.active_users">Active Users</string>

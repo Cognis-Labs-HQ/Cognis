@@ -6,4 +6,8 @@ Die Ansicht Administration → Meetings zeigt jetzt ausdrückliche Zwischenüber
 
 ## Ausgewogene Details für bevorstehende Meetings
 
-Zeilen für bevorstehende Meetings verwenden jetzt gleich breite Spalten, zeigen im Feld „Erstellt von“ den Anzeigenamen der erstellenden Person mit Erstellungsdatum und benennen die letzte Spalte als Termindatum, damit sie den geplanten Beginn des Meetings wiedergibt.
+Zeilen für bevorstehende Meetings halten die ID-Spalte jetzt kompakt, während die übrigen Detailspalten ausgewogen bleiben. Im Feld „Erstellt von“ zeigen sie den Anzeigenamen der erstellenden Person mit Erstellungsdatum und benennen die letzte Spalte als Termindatum, damit sie den geplanten Beginn des Meetings wiedergibt.
+
+## Anzeige der Meeting-URL-Spalte
+
+Die Meeting-Spalten heißen jetzt Meeting-URL und zeigen die tatsächliche URL an, während die ID-Spalte kompakt bleibt und nur die nötige Breite verwendet.

@@ -73,6 +73,7 @@
   <string name="module.jitsi_meet.admin.meetings.active_table_heading">アクティブなミーティング</string>
   <string name="module.jitsi_meet.admin.meetings.loading">アクティブなミーティングを読み込み中...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">アクティブなミーティングはありません。</string>
+  <string name="module.jitsi_meet.admin.meetings.meeting_url">ミーティング URL</string>
   <string name="module.jitsi_meet.admin.meetings.participants">参加者</string>
   <string name="module.jitsi_meet.admin.meetings.active_sessions">アクティブ セッション</string>
   <string name="module.jitsi_meet.admin.meetings.active_users">アクティブ ユーザー</string>
