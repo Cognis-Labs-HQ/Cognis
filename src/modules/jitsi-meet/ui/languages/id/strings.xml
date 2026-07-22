@@ -83,7 +83,7 @@
   <string name="module.jitsi_meet.admin.meetings.upcoming_loading">Memuat rapat terjadwal...</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">Tidak ada rapat terjadwal.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Dibuat Oleh</string>
-  <string name="module.jitsi_meet.admin.meetings.created_at">Dibuat</string>
+  <string name="module.jitsi_meet.admin.meetings.schedule_date">Tanggal Jadwal</string>
   <string name="module.jitsi_meet.share.button">Bagikan</string>
   <string name="module.jitsi_meet.share.popup_title">Bagikan Rapat</string>
   <string name="module.jitsi_meet.share.generate_link">Buat Tautan</string>

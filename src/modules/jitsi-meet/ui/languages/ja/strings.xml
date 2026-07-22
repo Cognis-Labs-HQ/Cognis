@@ -83,7 +83,7 @@
   <string name="module.jitsi_meet.admin.meetings.upcoming_loading">予定されたミーティングを読み込み中...</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">予定されたミーティングはありません。</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">作成者</string>
-  <string name="module.jitsi_meet.admin.meetings.created_at">作成日時</string>
+  <string name="module.jitsi_meet.admin.meetings.schedule_date">予定日時</string>
   <string name="module.jitsi_meet.share.button">共有</string>
   <string name="module.jitsi_meet.share.popup_title">ミーティングを共有</string>
   <string name="module.jitsi_meet.share.generate_link">リンクを作成</string>

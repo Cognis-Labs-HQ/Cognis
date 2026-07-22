@@ -88,12 +88,22 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
         }
         return rows
             .map((row) => {
+                const createdByLabel =
+                    row.createdByDisplayName ?? row.createdBy ?? "";
+                const createdAtLabel = formatDateTime(
+                    row.createdAt,
+                    i18n.t("ui.reuse.unknown"),
+                );
+                const scheduledAtLabel = formatDateTime(
+                    row.scheduledAt ?? row.createdAt,
+                    i18n.t("ui.reuse.unknown"),
+                );
                 return `<tr>
           <td><code>${escapeHtml(row.id ?? "")}</code></td>
           <td><a href="${escapeHtml(row.meetingUrl ?? "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.meetingName ?? "Cognis Classroom")}</a></td>
           <td>${escapeHtml(String(row.participantCount ?? 0))}</td>
-          <td>${escapeHtml(row.createdBy ?? "")}</td>
-          <td>${escapeHtml(formatDateTime(row.createdAt, i18n.t("ui.reuse.unknown")))}</td>
+          <td>${escapeHtml(createdByLabel)}<br><small>${escapeHtml(createdAtLabel)}</small></td>
+          <td>${escapeHtml(scheduledAtLabel)}</td>
         </tr>`;
             })
             .join("");
@@ -217,13 +227,20 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
             <h3 class="components-section-heading">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.upcoming_table_heading"))}</h3>
             <div class="users-table-wrap" id="jitsi-admin-upcoming-meetings-root">
               <table class="users-table">
+                <colgroup>
+                  <col style="width: 20%" />
+                  <col style="width: 20%" />
+                  <col style="width: 20%" />
+                  <col style="width: 20%" />
+                  <col style="width: 20%" />
+                </colgroup>
                 <thead>
                   <tr>
                      <th>${escapeHtml(i18n.t("ui.reuse.id"))}</th>
                      <th>${escapeHtml(i18n.t("ui.reuse.meeting"))}</th>
                      <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.participants"))}</th>
                      <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.created_by"))}</th>
-                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.created_at"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.schedule_date"))}</th>
                    </tr>
                  </thead>
                 <tbody>

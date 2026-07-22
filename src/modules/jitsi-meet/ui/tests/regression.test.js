@@ -248,6 +248,7 @@ test("meetings mini chat supports participant private-chat switching and return-
         resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),
         "utf8",
     );
+
     assert.match(markupSource, /id="jitsi-chat-participant-strip"/);
     assert.match(markupSource, /id="jitsi-chat-return-btn"/);
     assert.match(markupSource, /<header class="jitsi-chat-header">/);
@@ -528,6 +529,19 @@ test("administration meetings section labels active and upcoming tables", () => 
         resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),
         "utf8",
     );
+
+    const adminRoutesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/admin-meetings-routes.js"),
+        "utf8",
+    );
+    const lifecycleRoutesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/meeting-lifecycle-routes.js"),
+        "utf8",
+    );
+    const calendarApiSource = readFileSync(
+        resolve(ROOT, "src/gateways/calendar/ui/calendar-api.js"),
+        "utf8",
+    );
     assert.match(
         source,
         /module\.jitsi_meet\.admin\.meetings\.active_table_heading/,
@@ -536,8 +550,16 @@ test("administration meetings section labels active and upcoming tables", () => 
         source,
         /module\.jitsi_meet\.admin\.meetings\.upcoming_table_heading/,
     );
+    assert.match(source, /createdByDisplayName/);
+    assert.match(source, /row\.scheduledAt \?\? row\.createdAt/);
+    assert.match(source, /<col style="width: 20%" \/>/);
+    assert.match(source, /admin\.meetings\.schedule_date/);
     assert.match(stringsSource, /Active Meetings/);
     assert.match(stringsSource, /Upcoming Meetings/);
+    assert.match(stringsSource, /Schedule Date/);
+    assert.match(adminRoutesSource, /createdByDisplayName/);
+    assert.match(lifecycleRoutesSource, /scheduledAt: body\.scheduledAt/);
+    assert.match(calendarApiSource, /scheduledAt/);
 });
 
 test("meetings UI renders active meetings panel and deep-link join support", () => {

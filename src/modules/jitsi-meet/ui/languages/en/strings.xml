@@ -83,7 +83,7 @@
   <string name="module.jitsi_meet.admin.meetings.upcoming_loading">Loading Scheduled Meetings...</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">No scheduled meetings.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Created By</string>
-  <string name="module.jitsi_meet.admin.meetings.created_at">Created</string>
+  <string name="module.jitsi_meet.admin.meetings.schedule_date">Schedule Date</string>
   <string name="module.jitsi_meet.share.button">Share</string>
   <string name="module.jitsi_meet.share.popup_title">Share Meeting</string>
   <string name="module.jitsi_meet.share.generate_link">Generate Link</string>
