@@ -670,6 +670,29 @@ test("component CLI plugins register broad operational coverage", async () => {
     }
 });
 
+test("SMTP adapter owns email CLI commands", async () => {
+    await loadModuleCliPlugins({ refresh: true });
+
+    assert.ok(
+        registry.has("notify:send"),
+        "notify gateway commands should load",
+    );
+    assert.equal(
+        registry.get("notify:send")?.section,
+        "Notify",
+        "notify commands should use metadata-free prefix sections",
+    );
+    assert.ok(
+        registry.has("email:add"),
+        "SMTP adapter email command should load",
+    );
+    assert.equal(
+        registry.get("email:add")?.section,
+        "SMTP Adapter",
+        "email commands should be contributed by the SMTP adapter",
+    );
+});
+
 test("plugin commands use structured summaries by default", async () => {
     await loadModuleCliPlugins();
 

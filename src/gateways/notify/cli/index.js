@@ -77,43 +77,6 @@ export function registerCommands({ register }) {
                 params: ["broadcastId"],
                 description: "List broadcast acknowledgement states.",
             },
-
-            {
-                name: "email:list",
-                method: "GET",
-                path: "/api/v1/notify/users/:username/emails",
-                params: ["username"],
-                description: "List user email addresses.",
-            },
-            {
-                name: "email:add",
-                method: "POST",
-                path: "/api/v1/notify/users/:username/emails",
-                params: ["username"],
-                bodyFields: [{ name: "email", required: true }],
-                description: "Add a user email address.",
-            },
-            {
-                name: "email:remove",
-                method: "DELETE",
-                path: "/api/v1/notify/users/:username/emails/:email",
-                params: ["username", "email"],
-                description: "Remove a user email address.",
-            },
-            {
-                name: "email:primary",
-                method: "PUT",
-                path: "/api/v1/notify/users/:username/emails/:email/primary",
-                params: ["username", "email"],
-                description: "Set a primary user email address.",
-            },
-            {
-                name: "email:verify:send",
-                method: "POST",
-                path: "/api/v1/notify/users/:username/emails/:email/verify",
-                params: ["username", "email"],
-                description: "Send an email verification message.",
-            },
         ],
         register,
     );

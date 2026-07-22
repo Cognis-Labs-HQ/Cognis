@@ -284,6 +284,7 @@ export function registerComponentCommands(): void {
         {
             usage: "cognisctl component:list",
             description: "List modules, gateways, and adapters with status.",
+            section: "Components",
             render: renderComponentsList,
         },
     );
@@ -309,6 +310,7 @@ export function registerComponentCommands(): void {
             usage: "cognisctl component:import <repositoryUrl> <versionTag>",
             description:
                 "Import a module release from a GitHub repository tag.",
+            section: "Components",
             render: renderStructuredSummary,
         },
     );
@@ -330,6 +332,7 @@ export function registerComponentCommands(): void {
         {
             usage: "cognisctl component:config:get <module|gateway|adapter> <componentId> [adapterId]",
             description: "Read a module, gateway, or adapter configuration.",
+            section: "Components",
             render: renderStructuredSummary,
         },
     );
@@ -359,6 +362,7 @@ export function registerComponentCommands(): void {
         {
             usage: "cognisctl component:config:set <module|gateway|adapter> <componentId> [adapterId] <config-json>",
             description: "Update a module, gateway, or adapter configuration.",
+            section: "Components",
             render: renderStructuredSummary,
         },
     );
@@ -437,6 +441,7 @@ export function registerComponentCommands(): void {
             usage: "cognisctl component:enable <module|gateway|adapter> <id> [adapterId]",
             description:
                 "Enable a module, gateway, or adapter component by ID.",
+            section: "Components",
             render: (payload) =>
                 renderComponentMutation("Component Enabled", payload),
         },
@@ -514,6 +519,7 @@ export function registerComponentCommands(): void {
             usage: "cognisctl component:disable <module|gateway|adapter> <id> [adapterId]",
             description:
                 "Disable a module, gateway, or adapter component by ID.",
+            section: "Components",
             render: (payload) =>
                 renderComponentMutation("Component Disabled", payload),
         },

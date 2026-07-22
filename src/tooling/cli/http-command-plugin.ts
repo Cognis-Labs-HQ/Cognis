@@ -8,6 +8,7 @@ interface FeatureCommandDefinition {
     method: "GET" | "POST" | "PUT" | "DELETE";
     path: string;
     description: string;
+    section?: string;
     params?: string[];
     bodyFields?: WizardField[];
     queryFields?: WizardField[];
@@ -153,6 +154,7 @@ export function registerHttpCommand(
         {
             usage,
             description: definition.description,
+            section: definition.section,
             render: renderStructuredSummary,
         },
     );

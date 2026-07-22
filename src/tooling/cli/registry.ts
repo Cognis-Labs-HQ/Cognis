@@ -6,26 +6,18 @@ import type {
 
 export const registry = new Map<string, CommandSpec>();
 
-function inferSection(name: string): string {
-    if (name.startsWith("user:")) return "User";
-    if (name.startsWith("system:")) return "System";
-    if (name.startsWith("component:")) return "Components";
-    if (name.startsWith("api:")) return "API";
-    if (name.startsWith("share:")) return "Shares";
-    if (name.startsWith("search:")) return "Search";
-    if (name.startsWith("docs:")) return "Docs";
-    if (name.startsWith("ui:")) return "UI";
-    if (name.startsWith("files:")) return "Files";
-    if (name.startsWith("social:")) return "Social";
-    if (name.startsWith("messages:")) return "Messages";
-    if (name.startsWith("study:")) return "Study";
-    if (name.startsWith("calendar:")) return "Calendar";
-    if (name.startsWith("invite:")) return "Invites";
-    if (name.startsWith("email:")) return "Email";
-    if (name.startsWith("notify:")) return "Notifications";
-    if (name.startsWith("tfa:")) return "TFA";
+function formatCommandPrefix(prefix: string): string {
+    return prefix
+        .split(/[-_]/g)
+        .filter(Boolean)
+        .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+        .join(" ");
+}
+
+function defaultSection(name: string): string {
     if (name === "help") return "General";
-    return "Other";
+    const [prefix] = name.split(":", 1);
+    return prefix ? formatCommandPrefix(prefix) : "Other";
 }
 
 export function register(
@@ -38,7 +30,7 @@ export function register(
         handler,
         usage: options?.usage ?? `cognisctl ${name}`,
         description: options?.description ?? "No description provided.",
-        section: options?.section ?? inferSection(name),
+        section: options?.section ?? defaultSection(name),
         render: options?.render,
     });
 }
