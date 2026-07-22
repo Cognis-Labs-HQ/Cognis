@@ -39,3 +39,7 @@ Das CLI-Bootstrap-Token verwendet jetzt ein System-Subjekt statt einer normalen 
 ## Administrativer CLI-Umfang
 
 Kalender-, Social-, Nachrichten-, Freigabe- und Benachrichtigungs-Pluginbefehle konzentrieren sich jetzt auf Inspektion und administrative Wartung. Nutzerfluss-Mutationen wie das Erstellen von Kalenderereignissen, Ändern von Kalenderfreigaben, Senden von Nachrichten, Genehmigen von Nachrichtenanfragen sowie Erstellen oder Löschen von Social-Posts wurden aus `cognisctl` entfernt.
+
+## CLI-Ausgabeformatierung
+
+API-Fehler werden jetzt über einen gemeinsamen lesbaren Formatter ausgegeben, der Status, Code, Nachricht und Details aus Standard-Fehlerantworten hervorhebt. Dynamisch entdeckte Pluginbefehle, einschließlich Dateien, Analytics und Jitsi Meet, verwenden standardmäßig strukturierte Zusammenfassungen und Tabellen statt Roh-JSON.

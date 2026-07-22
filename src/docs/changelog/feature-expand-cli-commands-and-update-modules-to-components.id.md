@@ -39,3 +39,7 @@ Token bootstrap CLI kini memakai subjek sistem, bukan identitas pengguna normal.
 ## Cakupan CLI Administratif
 
 Perintah plugin kalender, sosial, pesan, berbagi, dan notifikasi kini berfokus pada inspeksi dan pemeliharaan administratif. Mutasi alur pengguna seperti membuat acara kalender, mengubah berbagi kalender, mengirim pesan, menyetujui permintaan pesan, serta membuat atau menghapus post sosial dihapus dari `cognisctl`.
+
+## Pemformatan Output CLI
+
+Error API kini dirender melalui formatter bersama yang mudah dibaca dan menyorot status, kode, pesan, serta detail dari respons error standar. Perintah plugin yang ditemukan secara dinamis, termasuk files, analytics, dan Jitsi Meet, kini memakai ringkasan terstruktur dan tabel sebagai default, bukan JSON mentah.

@@ -1,7 +1,7 @@
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
-import { formatStructured } from "./formatters.ts";
+import { renderStructuredSummary } from "./formatters.ts";
 import { apiGet, apiPost, apiPut } from "./http.ts";
 import { register, registry } from "./registry.ts";
 import type { CommandHandler, RegisterCommandOptions } from "./types.ts";
@@ -120,7 +120,7 @@ function registerPluginCommand(
     pluginCommandNames.add(name);
     register(name, handler, {
         ...options,
-        render: options?.render ?? formatStructured,
+        render: options?.render ?? renderStructuredSummary,
     });
 }
 

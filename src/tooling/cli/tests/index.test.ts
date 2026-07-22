@@ -22,6 +22,7 @@ import {
     formatStructured,
 } from "../index.ts";
 import { printGlobalHelp } from "../help.ts";
+import { renderApiErrorPayload } from "../formatters.ts";
 import { loadModuleCliPlugins } from "../plugins.ts";
 import { registry } from "../registry.ts";
 import { ApiRequestError } from "../http.ts";
@@ -62,6 +63,16 @@ test("ApiRequestError formats JSON payloads for readable CLI errors", () => {
 
     assert.match(error.message, /\n  "error": \{/);
     assert.match(error.message, /\n    "message": "Invalid payload"/);
+
+    const rendered = renderApiErrorPayload({
+        status: error.status,
+        statusText: error.statusText,
+        payload: error.payload,
+    });
+    assert.match(rendered, /^API Error/m);
+    assert.match(rendered, /Status: 400 Bad Request/);
+    assert.match(rendered, /Code: invalid/);
+    assert.match(rendered, /Message: Invalid payload/);
 });
 
 test("formatCommandOutput renders user:create with labeled fields", () => {
@@ -565,6 +576,28 @@ test("component CLI plugins register broad operational coverage", async () => {
     }
 });
 
+test("plugin commands use structured summaries by default", async () => {
+    await loadModuleCliPlugins();
+
+    const analyticsOutput = formatCommandOutput("analytics:metrics", {
+        data: { totalUsers: 2, activeUsers: 1 },
+    });
+    assert.match(analyticsOutput, /Total Users: 2/);
+    assert.match(analyticsOutput, /Active Users: 1/);
+
+    const jitsiOutput = formatCommandOutput("jitsi-meet:admin:meetings", {
+        data: [{ id: "meet-1", title: "Planning", participantCount: 3 }],
+    });
+    assert.match(jitsiOutput, /Id\s+Title\s+Participant Count/);
+    assert.match(jitsiOutput, /meet-1\s+Planning\s+3/);
+
+    const filesOutput = formatCommandOutput("files:quota:defaults", {
+        data: [{ namespaceId: "avatars", quotaBytes: 1024 }],
+    });
+    assert.match(filesOutput, /Namespace Id\s+Quota Bytes/);
+    assert.match(filesOutput, /avatars\s+1024/);
+});
+
 test("search:query maps wizard-friendly query fields to search API", async () => {
     const originalFetch = globalThis.fetch;
     try {
@@ -884,7 +917,7 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
                     getApiToken: async () => "token",
                 }),
             ),
-            '{\n  "data": {\n    "ok": true\n  }\n}',
+            "Ok: Yes",
         );
 
         const output = captureConsoleLog(() => printGlobalHelp());

@@ -232,6 +232,39 @@ function formatSuccessBlock(
     return [formatHeading(title, color), ...fields].join("\n");
 }
 
+export function renderApiErrorPayload(input: {
+    status?: number;
+    statusText?: string;
+    payload?: unknown;
+}): string {
+    const sections = [formatHeading("API Error", "red")];
+    if (input.status !== undefined) {
+        sections.push(
+            formatField(
+                "Status",
+                `${input.status}${input.statusText ? ` ${input.statusText}` : ""}`,
+            ),
+        );
+    }
+
+    const payload = input.payload;
+    const response = isPlainRecord(payload) ? payload : null;
+    const error = isPlainRecord(response?.error) ? response.error : null;
+    if (error) {
+        sections.push(formatField("Code", formatValue(error.code)));
+        sections.push(formatField("Message", formatValue(error.message)));
+        if (error.details !== undefined) {
+            sections.push(formatField("Details", formatValue(error.details)));
+        }
+        return sections.join("\n");
+    }
+
+    if (payload !== undefined && payload !== "") {
+        sections.push(formatField("Response", formatValue(payload)));
+    }
+    return sections.join("\n");
+}
+
 export function renderApiToken(payload: unknown): string {
     const response = normalizeResponse(payload) as {
         data?: {

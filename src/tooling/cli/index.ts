@@ -9,13 +9,17 @@ import {
     printGlobalHelp,
     printOutput,
 } from "./help.ts";
-import { resolveCliToken } from "./http.ts";
+import { ApiRequestError, resolveCliToken } from "./http.ts";
 import { registerComponentCommands } from "./component-commands.ts";
 import { loadModuleCliPlugins } from "./plugins.ts";
 import { registerGeneralCommands } from "./general-commands.ts";
 import { registry } from "./registry.ts";
 import { registerSystemCommands } from "./system-commands.ts";
-import { formatStructured, renderStructuredSummary } from "./formatters.ts";
+import {
+    formatStructured,
+    renderApiErrorPayload,
+    renderStructuredSummary,
+} from "./formatters.ts";
 import { collectWizardFields } from "./wizard.ts";
 import type { CommandExecutionOptions } from "./types.ts";
 import { registerUserCommands } from "./user-commands.ts";
@@ -149,7 +153,17 @@ const isDirectExecution =
 
 if (isDirectExecution) {
     main().catch((error) => {
-        console.error(error instanceof Error ? error.message : error);
+        if (error instanceof ApiRequestError) {
+            console.error(
+                renderApiErrorPayload({
+                    status: error.status,
+                    statusText: error.statusText,
+                    payload: error.payload,
+                }),
+            );
+        } else {
+            console.error(error instanceof Error ? error.message : error);
+        }
         process.exit(1);
     });
 }

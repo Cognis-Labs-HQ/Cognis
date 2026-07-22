@@ -39,3 +39,7 @@ The CLI bootstrap token now uses a system subject instead of a normal user ident
 ## Administrative CLI Scope
 
 Calendar, social, message, share, and notification plugin commands now focus on inspection and administrator-oriented maintenance. User-flow mutations such as creating calendar events, changing calendar shares, sending messages, approving message requests, and creating or deleting social posts were removed from `cognisctl`.
+
+## CLI Output Formatting
+
+API errors now render through a shared pretty formatter that highlights the status, code, message, and details from standard error responses. Dynamically discovered plugin commands, including files, analytics, and Jitsi Meet commands, now default to structured summaries and tables instead of raw JSON.
