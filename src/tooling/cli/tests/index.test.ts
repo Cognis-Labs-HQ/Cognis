@@ -680,10 +680,20 @@ test("plugin commands use structured summaries by default", async () => {
     assert.match(analyticsOutput, /Active Users: 1/);
 
     const jitsiOutput = formatCommandOutput("jitsi-meet:meetings", {
-        data: [{ id: "meet-1", title: "Planning", participantCount: 3 }],
+        data: [
+            {
+                id: "meet-1",
+                title: "Planning",
+                invitedParticipantCount: 3,
+                activeParticipantCount: 2,
+            },
+        ],
     });
-    assert.match(jitsiOutput, /Id\s+Title\s+Participant Count/);
-    assert.match(jitsiOutput, /meet-1\s+Planning\s+3/);
+    assert.match(
+        jitsiOutput,
+        /Id\s+Title\s+Invited Participant Count\s+Active Participant Count/,
+    );
+    assert.match(jitsiOutput, /meet-1\s+Planning\s+3\s+2/);
 
     const filesOutput = formatCommandOutput("files:quota:defaults", {
         data: [{ namespaceId: "avatars", quotaBytes: 1024 }],

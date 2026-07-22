@@ -47,3 +47,7 @@ API errors now render through a shared pretty formatter that highlights the stat
 ## Unified Component Config
 
 Jitsi Meet meeting inspection now uses `jitsi-meet:meetings`, and module-specific config commands were folded into `component:config:get` and `component:config:set` so modules, gateways with config endpoints, and adapters share one component configuration surface.
+
+## Whiteboard and Meeting Inspection
+
+`nextcloud-whiteboard:whiteboards` now queries the administrator-wide whiteboard listing instead of requiring a profile-backed user context, and active Jitsi Meet summaries now show invited participant counts separately from active participant counts.

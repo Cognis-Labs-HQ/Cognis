@@ -629,6 +629,10 @@ export class JitsiMeetStore {
                     createdBy: meeting.createdBy,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
+                    invitedParticipantCount: participants.length,
+                    activeParticipantCount: new Set(
+                        activePresence.map((entry) => entry.username),
+                    ).size,
                     activeSessionCount: activePresence.length,
                     activeUsernames: Array.from(
                         new Set(activePresence.map((entry) => entry.username)),
@@ -731,6 +735,10 @@ export class JitsiMeetStore {
                     createdBy: meeting.createdBy,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
+                    invitedParticipantCount: participants.length,
+                    activeParticipantCount: new Set(
+                        activePresence.map((entry) => entry.username),
+                    ).size,
                 };
             }),
         );

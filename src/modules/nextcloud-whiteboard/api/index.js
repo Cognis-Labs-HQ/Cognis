@@ -460,6 +460,14 @@ export function registerApiRoutes(router, ctx) {
         "/api/v1/modules/nextcloud-whiteboard/whiteboards",
         async (req, res) => {
             await store.ensureSchema();
+            const requestUrl = new URL(req.url, "http://localhost");
+            if (requestUrl.searchParams.get("scope") === "all") {
+                const claims = requireAuth(req, res, "admin");
+                if (!claims) return;
+                const data = await store.listWhiteboards();
+                sendJson(res, 200, { data });
+                return;
+            }
             const claims = requireAuth(req, res, "user");
             if (!claims) return;
             const username = await resolveRequesterUsername(

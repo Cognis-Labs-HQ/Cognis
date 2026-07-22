@@ -47,3 +47,7 @@ Error API kini dirender melalui formatter bersama yang mudah dibaca dan menyorot
 ## Konfigurasi Komponen Terpadu
 
 Inspeksi rapat Jitsi Meet sekarang memakai `jitsi-meet:meetings`, dan perintah konfigurasi khusus modul digabung ke `component:config:get` dan `component:config:set` agar modul, gateway dengan endpoint konfigurasi, dan adapter memakai satu permukaan konfigurasi komponen.
+
+## Inspeksi Whiteboard dan Rapat
+
+`nextcloud-whiteboard:whiteboards` sekarang memakai daftar whiteboard tingkat administrator, bukan konteks pengguna yang membutuhkan profil, dan ringkasan Jitsi Meet aktif kini menampilkan jumlah peserta yang diundang secara terpisah dari peserta aktif.

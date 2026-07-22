@@ -125,6 +125,48 @@ function createJsonResponse() {
     };
 }
 
+test("nextcloud whiteboard admin listing does not require a profile handle", async () => {
+    const db = createMemoryDb();
+    const store = new NextcloudWhiteboardStore({ db });
+    await store.ensureSchema();
+    const board = await store.createWhiteboard({
+        title: "Operations",
+        createdBy: "alice",
+        participants: ["bob"],
+    });
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") {
+                return {
+                    async getProfile() {
+                        return null;
+                    },
+                };
+            }
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+
+    const req = {
+        url: "/api/v1/modules/nextcloud-whiteboard/whiteboards?scope=all",
+        headers: {
+            authorization: `Bearer ${issueAccessToken("system:cognis-cli", "admin", 60)}`,
+        },
+    };
+    const res = createJsonResponse();
+
+    await router.handler(
+        "GET",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards",
+    )(req, res);
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.json().data, [board]);
+});
+
 test("nextcloud whiteboard session route works without share capabilities", async () => {
     const db = createMemoryDb();
     const store = new NextcloudWhiteboardStore({ db });

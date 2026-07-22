@@ -47,3 +47,7 @@ API-Fehler werden jetzt über einen gemeinsamen lesbaren Formatter ausgegeben, d
 ## Einheitliche Komponenten-Konfiguration
 
 Die Jitsi-Meet-Meetingprüfung nutzt jetzt `jitsi-meet:meetings`, und modulspezifische Konfigurationsbefehle wurden in `component:config:get` und `component:config:set` zusammengeführt, damit Module, Gateways mit Konfigurationsendpunkten und Adapter eine gemeinsame Konfigurationsoberfläche verwenden.
+
+## Whiteboard- und Meeting-Prüfung
+
+`nextcloud-whiteboard:whiteboards` nutzt jetzt die administratorweite Whiteboard-Liste statt eines profilgebundenen Benutzerkontexts, und aktive Jitsi-Meet-Zusammenfassungen zeigen eingeladene Teilnehmer getrennt von aktiven Teilnehmern.

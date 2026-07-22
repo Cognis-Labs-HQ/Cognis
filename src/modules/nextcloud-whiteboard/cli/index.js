@@ -20,13 +20,13 @@ export function registerCommands({ register, apiGet }) {
         async ({ apiBaseUrl, getApiToken }) => {
             return apiGet(
                 apiBaseUrl,
-                "/api/v1/modules/nextcloud-whiteboard/whiteboards",
+                "/api/v1/modules/nextcloud-whiteboard/whiteboards?scope=all",
                 await getApiToken(),
             );
         },
         {
             usage: "cognisctl nextcloud-whiteboard:whiteboards",
-            description: "List whiteboards visible to the current account.",
+            description: "List all Nextcloud Whiteboards for administrators.",
         },
     );
 }
