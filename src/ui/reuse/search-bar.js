@@ -4,11 +4,13 @@
  * Public exports:
  *   openSearchPopup(options) — opens the shared centred search popup.
  *   createSearchBar(options) — returns a navbar search toggle button wrapper.
+ *   registerSearchCategory(categoryId, provider) — registers dynamic grouped results.
  *
  * @module reuse/search-bar
  */
 
 const DEBOUNCE_MS = 280;
+const REGISTERED_SEARCH_CATEGORIES = new Map();
 
 /**
  * Converts a singular category token into a basic plural form for placeholder
@@ -54,22 +56,187 @@ function resolvePopupPlaceholder(rawPlaceholder, category) {
     return "Search for something...";
 }
 
-function filterLocalGroups(localGroups, query) {
-    if (!localGroups?.length || !query) return [];
-    const lowerQuery = query.toLowerCase();
-    return localGroups
+function normalizeSearchOptions(options = {}) {
+    return {
+        wholeWord: Boolean(options.wholeWord),
+        regex: Boolean(options.regex),
+        caseSensitive: Boolean(options.caseSensitive),
+    };
+}
+
+function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function createSearchMatcher(query, options = {}) {
+    const normalizedOptions = normalizeSearchOptions(options);
+    if (!query) return () => false;
+
+    if (normalizedOptions.regex) {
+        try {
+            const flags = normalizedOptions.caseSensitive ? "" : "i";
+            const expression = normalizedOptions.wholeWord
+                ? `\\b(?:${query})\\b`
+                : query;
+            const regex = new RegExp(expression, flags);
+            return (value) => regex.test(String(value ?? ""));
+        } catch {
+            return () => false;
+        }
+    }
+
+    const resolvedQuery = normalizedOptions.caseSensitive
+        ? query
+        : query.toLowerCase();
+    const expression = normalizedOptions.wholeWord
+        ? new RegExp(`\\b${escapeRegex(resolvedQuery)}\\b`)
+        : null;
+
+    return (value) => {
+        const resolvedValue = normalizedOptions.caseSensitive
+            ? String(value ?? "")
+            : String(value ?? "").toLowerCase();
+        return expression
+            ? expression.test(resolvedValue)
+            : resolvedValue.includes(resolvedQuery);
+    };
+}
+
+function normalizeSearchItem(item, category) {
+    if (!item || typeof item !== "object") return null;
+    const id = String(item.id ?? item.url ?? item.label ?? "").trim();
+    const label = String(item.label ?? item.title ?? id).trim();
+    if (!id || !label) return null;
+    return {
+        ...item,
+        id,
+        label,
+        category: item.category ?? category,
+    };
+}
+
+function normalizeSearchGroup(group) {
+    if (!group || typeof group !== "object") return null;
+    const category = String(group.category ?? "").trim();
+    if (!category) return null;
+    const items = (group.items ?? [])
+        .map((item) => normalizeSearchItem(item, category))
+        .filter(Boolean);
+    return { category, items };
+}
+
+function isVisibleSearchElement(element) {
+    const rect = element.getBoundingClientRect?.();
+    return Boolean(rect && rect.width > 0 && rect.height > 0);
+}
+
+function resolveVisibleContentCategory(element) {
+    const registeredCategory = element.getAttribute("data-search-category");
+    if (registeredCategory) return registeredCategory;
+    if (element.matches("[data-message-id]")) return "Messages";
+    if (element.matches("[data-chat-id]")) return "Chats";
+    if (element.matches("article, [role='article']")) return "Posts";
+    return "Visible Content";
+}
+
+function collectVisibleContentSearchGroups() {
+    const candidates = document.querySelectorAll(
+        "[data-search-category], [data-message-id], [data-chat-id], article, [role='article']",
+    );
+    const groups = new Map();
+    for (const candidate of candidates) {
+        if (!isVisibleSearchElement(candidate)) continue;
+        const category = resolveVisibleContentCategory(candidate);
+        const text = String(candidate.innerText ?? "")
+            .replace(/\s+/g, " ")
+            .trim();
+        if (!text) continue;
+        const id =
+            candidate.getAttribute("data-search-id") ||
+            candidate.getAttribute("data-message-id") ||
+            candidate.getAttribute("data-chat-id") ||
+            candidate.id ||
+            `${category}:${groups.size}`;
+        const label =
+            candidate.getAttribute("data-search-label") || text.slice(0, 80);
+        const item = normalizeSearchItem(
+            {
+                id,
+                label,
+                url: candidate.id
+                    ? `${window.location.pathname}${window.location.search}#${candidate.id}`
+                    : `${window.location.pathname}${window.location.search}${window.location.hash}`,
+                searchText: text,
+            },
+            category,
+        );
+        if (!item) continue;
+        if (!groups.has(category)) groups.set(category, []);
+        groups.get(category).push(item);
+    }
+    return Array.from(groups, ([category, items]) => ({ category, items }));
+}
+
+function collectVisiblePageSearchGroups() {
+    const title = document.title?.trim() || window.location.pathname;
+    const main = document.querySelector("main") ?? document.body;
+    const text = String(main?.innerText ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+    const pageItem = normalizeSearchItem(
+        {
+            id: `page:${window.location.pathname}`,
+            label: title,
+            url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            searchText: `${title} ${text}`,
+        },
+        "Pages",
+    );
+    return pageItem ? [{ category: "Pages", items: [pageItem] }] : [];
+}
+
+function getRegisteredSearchGroups() {
+    const groups = [];
+    for (const [categoryId, provider] of REGISTERED_SEARCH_CATEGORIES) {
+        try {
+            const result = provider();
+            const providedGroups = Array.isArray(result) ? result : [result];
+            for (const group of providedGroups) {
+                const normalizedGroup = normalizeSearchGroup(group);
+                if (normalizedGroup) groups.push(normalizedGroup);
+            }
+        } catch (error) {
+            console.warn("[search-bar]:category-provider-failed", {
+                categoryId,
+                error,
+            });
+        }
+    }
+    return groups;
+}
+
+function getSearchableText(item) {
+    return [item.label, item.id, item.meta, item.searchText]
+        .filter(Boolean)
+        .join(" ");
+}
+
+function filterLocalGroups(localGroups, query, options = {}) {
+    if (!query) return [];
+    const matcher = createSearchMatcher(query, options);
+    return [...(localGroups ?? []), ...getRegisteredSearchGroups()]
+        .map(normalizeSearchGroup)
+        .filter(Boolean)
         .map((group) => ({
             category: group.category,
-            items: (group.items ?? []).filter(
-                (item) =>
-                    item.label?.toLowerCase().includes(lowerQuery) ||
-                    item.id?.toLowerCase().includes(lowerQuery),
+            items: group.items.filter((item) =>
+                matcher(getSearchableText(item)),
             ),
         }))
         .filter((group) => group.items.length > 0);
 }
 
-function buildSearchUrl(endpoint, query, typeFilter) {
+function buildSearchUrl(endpoint, query, typeFilter, searchOptions = {}) {
     const resolvedTypeFilter =
         typeof typeFilter === "string" && typeFilter.trim()
             ? typeFilter.trim()
@@ -78,7 +245,16 @@ function buildSearchUrl(endpoint, query, typeFilter) {
     const typeFilterParam = resolvedTypeFilter
         ? `&type=${encodeURIComponent(resolvedTypeFilter)}`
         : "";
-    return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParam}`;
+    const options = normalizeSearchOptions(searchOptions);
+    const optionParams = [
+        options.wholeWord ? "wholeWord=1" : "",
+        options.regex ? "regex=1" : "",
+        options.caseSensitive ? "caseSensitive=1" : "",
+    ]
+        .filter(Boolean)
+        .join("&");
+    const optionSuffix = optionParams ? `&${optionParams}` : "";
+    return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParam}${optionSuffix}`;
 }
 
 function renderGroupedResults(
@@ -216,19 +392,24 @@ async function runSearch({
     onSelect,
     closeOverlay,
     multiSelectState,
+    searchOptions,
 }) {
     if (!query) {
         resultsContainer.innerHTML = "";
         return;
     }
 
-    const matchedLocalGroups = filterLocalGroups(localGroups, query);
+    const matchedLocalGroups = filterLocalGroups(
+        localGroups,
+        query,
+        searchOptions,
+    );
 
     try {
         const token = localStorage.getItem("cognis_access_token");
         const headers = token ? { authorization: `Bearer ${token}` } : {};
         const response = await fetch(
-            buildSearchUrl(endpoint, query, typeFilter),
+            buildSearchUrl(endpoint, query, typeFilter, searchOptions),
             {
                 credentials: "same-origin",
                 headers,
@@ -296,6 +477,27 @@ async function runSearch({
     }
 }
 
+/**
+ * Registers a dynamic grouped result provider for the global search popup.
+ *
+ * @param {string} categoryId
+ * @param {() => object|object[]} provider
+ * @returns {() => void}
+ */
+export function registerSearchCategory(categoryId, provider) {
+    const resolvedCategoryId = String(categoryId ?? "").trim();
+    if (!resolvedCategoryId || typeof provider !== "function") {
+        return () => {};
+    }
+    REGISTERED_SEARCH_CATEGORIES.set(resolvedCategoryId, provider);
+    return () => {
+        REGISTERED_SEARCH_CATEGORIES.delete(resolvedCategoryId);
+    };
+}
+
+registerSearchCategory("visible-page", collectVisiblePageSearchGroups);
+registerSearchCategory("visible-content", collectVisibleContentSearchGroups);
+
 export function openSearchPopup({
     endpoint,
     onSelect,
@@ -309,6 +511,7 @@ export function openSearchPopup({
     typeFilter = "",
     localGroups = [],
     multiSelect = false,
+    showOptions = true,
 }) {
     const existingOverlay = document.querySelector(".search-popup-overlay");
     if (existingOverlay) {
@@ -317,6 +520,7 @@ export function openSearchPopup({
 
     let debounceTimer = null;
     let currentQuery = "";
+    const searchOptions = normalizeSearchOptions();
     const eventController = new AbortController();
 
     const overlay = document.createElement("div");
@@ -339,6 +543,38 @@ export function openSearchPopup({
     resultsContainer.className = "search-popup-results";
 
     popup.appendChild(input);
+
+    if (showOptions) {
+        const optionsBar = document.createElement("div");
+        optionsBar.className = "search-popup-options";
+        const optionConfigs = [
+            ["wholeWord", "Whole word"],
+            ["regex", "Regex"],
+            ["caseSensitive", "Case-sensitive"],
+        ];
+        for (const [optionName, label] of optionConfigs) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "search-popup-option";
+            button.textContent = label;
+            button.setAttribute("aria-pressed", "false");
+            button.addEventListener("click", () => {
+                searchOptions[optionName] = !searchOptions[optionName];
+                button.classList.toggle(
+                    "search-popup-option--active",
+                    searchOptions[optionName],
+                );
+                button.setAttribute(
+                    "aria-pressed",
+                    String(searchOptions[optionName]),
+                );
+                runCurrentSearch();
+            });
+            optionsBar.appendChild(button);
+        }
+        popup.appendChild(optionsBar);
+    }
+
     popup.appendChild(resultsContainer);
 
     let multiSelectState = null;
@@ -411,12 +647,9 @@ export function openSearchPopup({
         }
     };
 
-    input.addEventListener("input", () => {
-        const query = input.value.trim();
-        if (query === currentQuery) return;
-        currentQuery = query;
+    const runCurrentSearch = () => {
         clearTimeout(debounceTimer);
-        if (!query) {
+        if (!currentQuery) {
             resultsContainer.innerHTML = "";
             return;
         }
@@ -424,7 +657,7 @@ export function openSearchPopup({
             () =>
                 runSearch({
                     endpoint,
-                    query,
+                    query: currentQuery,
                     resultsContainer,
                     typeFilter,
                     localGroups,
@@ -432,9 +665,17 @@ export function openSearchPopup({
                     onSelect,
                     closeOverlay,
                     multiSelectState,
+                    searchOptions,
                 }),
             DEBOUNCE_MS,
         );
+    };
+
+    input.addEventListener("input", () => {
+        const query = input.value.trim();
+        if (query === currentQuery) return;
+        currentQuery = query;
+        runCurrentSearch();
     });
 
     overlay.addEventListener(

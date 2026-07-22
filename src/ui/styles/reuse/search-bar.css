@@ -189,3 +189,30 @@
 .search-popup-confirm-btn {
     font-size: 0.875rem;
 }
+
+.search-popup-options {
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    padding: 0.55rem 0.75rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+}
+
+.search-popup-option {
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface-2);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.6rem;
+}
+
+.search-popup-option:hover,
+.search-popup-option:focus-visible,
+.search-popup-option--active {
+    border-color: var(--accent, #3b82f6);
+    color: var(--accent, #3b82f6);
+    outline: none;
+}

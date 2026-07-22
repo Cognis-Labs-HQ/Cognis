@@ -27,3 +27,21 @@ test("global search modules result points to Administration components", () => {
     );
     assert.doesNotMatch(source, /url: "\/modules"/);
 });
+
+test("global search exposes registered categories and match controls", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-bar.js"),
+        "utf8",
+    );
+    assert.match(source, /export function registerSearchCategory/);
+    assert.match(source, /registerSearchCategory\("visible-page"/);
+    assert.match(source, /registerSearchCategory\("visible-content"/);
+    assert.match(source, /data-message-id/);
+    assert.match(source, /data-chat-id/);
+    assert.match(source, /"Whole word"/);
+    assert.match(source, /"Regex"/);
+    assert.match(source, /"Case-sensitive"/);
+    assert.match(source, /wholeWord=1/);
+    assert.match(source, /regex=1/);
+    assert.match(source, /caseSensitive=1/);
+});
