@@ -70,7 +70,7 @@
   <string name="module.jitsi_meet.admin.config.save_failed">Gagal menyimpan konfigurasi Jitsi Meet.</string>
   <string name="module.jitsi_meet.admin.meetings.heading">Rapat</string>
   <string name="module.jitsi_meet.admin.meetings.table_label">Aktivitas Rapat Realtime</string>
-  <string name="module.jitsi_meet.admin.meetings.active_table_heading">Tabel Rapat Aktif</string>
+  <string name="module.jitsi_meet.admin.meetings.active_table_heading">Rapat Aktif</string>
   <string name="module.jitsi_meet.admin.meetings.loading">Memuat rapat aktif...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">Tidak ada rapat aktif.</string>
   <string name="module.jitsi_meet.admin.meetings.participants">Peserta</string>
@@ -79,7 +79,7 @@
   <string name="module.jitsi_meet.admin.meetings.auth_required">Auth Diperlukan</string>
   <string name="module.jitsi_meet.admin.meetings.last_active">Terakhir Aktif</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_table_label">Rapat Terjadwal</string>
-  <string name="module.jitsi_meet.admin.meetings.upcoming_table_heading">Tabel Rapat Mendatang</string>
+  <string name="module.jitsi_meet.admin.meetings.upcoming_table_heading">Rapat Mendatang</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_loading">Memuat rapat terjadwal...</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">Tidak ada rapat terjadwal.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Dibuat Oleh</string>

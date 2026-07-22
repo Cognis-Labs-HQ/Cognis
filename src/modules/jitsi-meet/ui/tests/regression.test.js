@@ -536,8 +536,8 @@ test("administration meetings section labels active and upcoming tables", () => 
         source,
         /module\.jitsi_meet\.admin\.meetings\.upcoming_table_heading/,
     );
-    assert.match(stringsSource, /Active Meeting Table/);
-    assert.match(stringsSource, /Upcoming Meeting Table/);
+    assert.match(stringsSource, /Active Meetings/);
+    assert.match(stringsSource, /Upcoming Meetings/);
 });
 
 test("meetings UI renders active meetings panel and deep-link join support", () => {

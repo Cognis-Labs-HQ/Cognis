@@ -70,7 +70,7 @@
   <string name="module.jitsi_meet.admin.config.save_failed">Jitsi-Meet-Konfiguration konnte nicht gespeichert werden.</string>
   <string name="module.jitsi_meet.admin.meetings.heading">Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.table_label">Meeting-Aktivität in Echtzeit</string>
-  <string name="module.jitsi_meet.admin.meetings.active_table_heading">Tabelle aktiver Meetings</string>
+  <string name="module.jitsi_meet.admin.meetings.active_table_heading">Aktive Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.loading">Aktive Meetings werden geladen...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">Keine aktiven Meetings.</string>
   <string name="module.jitsi_meet.admin.meetings.participants">Teilnehmer</string>
@@ -79,7 +79,7 @@
   <string name="module.jitsi_meet.admin.meetings.auth_required">Auth Erforderlich</string>
   <string name="module.jitsi_meet.admin.meetings.last_active">Zuletzt Aktiv</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_table_label">Geplante Meetings</string>
-  <string name="module.jitsi_meet.admin.meetings.upcoming_table_heading">Tabelle bevorstehender Meetings</string>
+  <string name="module.jitsi_meet.admin.meetings.upcoming_table_heading">Bevorstehende Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_loading">Geplante Meetings werden geladen...</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">Keine geplanten Meetings.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Erstellt von</string>

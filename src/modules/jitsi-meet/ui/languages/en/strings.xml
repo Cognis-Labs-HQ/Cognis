@@ -70,7 +70,7 @@
   <string name="module.jitsi_meet.admin.config.save_failed">Failed to save Jitsi Meet configuration.</string>
   <string name="module.jitsi_meet.admin.meetings.heading">Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.table_label">Realtime Meeting Activity</string>
-  <string name="module.jitsi_meet.admin.meetings.active_table_heading">Active Meeting Table</string>
+  <string name="module.jitsi_meet.admin.meetings.active_table_heading">Active Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.loading">Loading Active Meetings...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">No active meetings.</string>
   <string name="module.jitsi_meet.admin.meetings.participants">Participants</string>
@@ -79,7 +79,7 @@
   <string name="module.jitsi_meet.admin.meetings.auth_required">Auth Required</string>
   <string name="module.jitsi_meet.admin.meetings.last_active">Last Active</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_table_label">Scheduled Meetings</string>
-  <string name="module.jitsi_meet.admin.meetings.upcoming_table_heading">Upcoming Meeting Table</string>
+  <string name="module.jitsi_meet.admin.meetings.upcoming_table_heading">Upcoming Meetings</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_loading">Loading Scheduled Meetings...</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">No scheduled meetings.</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">Created By</string>
