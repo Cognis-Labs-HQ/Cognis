@@ -326,7 +326,7 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(markupSource, /id="jitsi-leave-alone-btn"/);
     assert.match(markupSource, /id="jitsi-remain-alone-btn"/);
-    assert.match(constantsSource, /ALONE_PROMPT_GRACE_PERIOD_MS = 60_000/);
+    assert.match(constantsSource, /ALONE_PROMPT_GRACE_PERIOD_MS = 180_000/);
     assert.match(source, /function deferAloneParticipantPrompt\(/);
     assert.match(
         source,
@@ -517,6 +517,27 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
         uiResourcesSource,
         /\/api\/v1\/modules\/jitsi-meet\/ui-resources/,
     );
+});
+
+test("administration meetings section labels active and upcoming tables", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/admin-meetings-section.js"),
+        "utf8",
+    );
+    const stringsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /module\.jitsi_meet\.admin\.meetings\.active_table_heading/,
+    );
+    assert.match(
+        source,
+        /module\.jitsi_meet\.admin\.meetings\.upcoming_table_heading/,
+    );
+    assert.match(stringsSource, /Active Meeting Table/);
+    assert.match(stringsSource, /Upcoming Meeting Table/);
 });
 
 test("meetings UI renders active meetings panel and deep-link join support", () => {

@@ -70,6 +70,7 @@
   <string name="module.jitsi_meet.admin.config.save_failed">Jitsi Meet 設定の保存に失敗しました。</string>
   <string name="module.jitsi_meet.admin.meetings.heading">ミーティング</string>
   <string name="module.jitsi_meet.admin.meetings.table_label">リアルタイム ミーティング状況</string>
+  <string name="module.jitsi_meet.admin.meetings.active_table_heading">アクティブなミーティング表</string>
   <string name="module.jitsi_meet.admin.meetings.loading">アクティブなミーティングを読み込み中...</string>
   <string name="module.jitsi_meet.admin.meetings.empty">アクティブなミーティングはありません。</string>
   <string name="module.jitsi_meet.admin.meetings.participants">参加者</string>
@@ -78,6 +79,7 @@
   <string name="module.jitsi_meet.admin.meetings.auth_required">認証必要</string>
   <string name="module.jitsi_meet.admin.meetings.last_active">最終アクティブ</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_table_label">予定されたミーティング</string>
+  <string name="module.jitsi_meet.admin.meetings.upcoming_table_heading">今後のミーティング表</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_loading">予定されたミーティングを読み込み中...</string>
   <string name="module.jitsi_meet.admin.meetings.upcoming_empty">予定されたミーティングはありません。</string>
   <string name="module.jitsi_meet.admin.meetings.created_by">作成者</string>

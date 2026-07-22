@@ -188,6 +188,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                     ),
                     pinned: true,
                     render: () => `
+            <h3 class="components-section-heading">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.active_table_heading"))}</h3>
             <div class="users-table-wrap" id="jitsi-admin-meetings-root">
               <table class="users-table">
                 <thead>
@@ -213,6 +214,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                     ),
                     pinned: true,
                     render: () => `
+            <h3 class="components-section-heading">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.upcoming_table_heading"))}</h3>
             <div class="users-table-wrap" id="jitsi-admin-upcoming-meetings-root">
               <table class="users-table">
                 <thead>
