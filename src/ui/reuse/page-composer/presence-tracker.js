@@ -202,9 +202,12 @@ export function createPresenceTracker({
                 Date.now() - Date.parse(entry.lastSeenAt || 0) <=
                     ACTIVE_WINDOW_MS,
         }));
-        const nextMarkupSignature = createPresenceMarkupSignature(activeEntries);
+        const nextMarkupSignature =
+            createPresenceMarkupSignature(activeEntries);
         if (nextMarkupSignature !== lastPresenceMarkupSignature) {
-            container.innerHTML = activeEntries.map(renderPresenceEntry).join("");
+            container.innerHTML = activeEntries
+                .map(renderPresenceEntry)
+                .join("");
             lastPresenceMarkupSignature = nextMarkupSignature;
             if (typeof hydratePresenceEntries === "function")
                 void hydratePresenceEntries(container);

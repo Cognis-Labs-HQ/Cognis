@@ -14,10 +14,8 @@ import {
     createWhiteboardEnableTest,
     registerWhiteboardEnableTestRoute,
 } from "./enable-test.js";
-
 const LIVENESS_TIMEOUT_MS = 5000;
 const PRESENCE_ACTIVE_WINDOW_MS = 15_000;
-
 const MODULE_ID = "nextcloud-whiteboard";
 const PAGE_RESOURCE_ORIGIN_OWNER_ID = "module:nextcloud-whiteboard";
 const WHITEBOARD_STYLESHEETS = [
@@ -26,7 +24,6 @@ const WHITEBOARD_STYLESHEETS = [
     "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
 ];
 const storeByExecutor = new WeakMap();
-
 function resolveStore(dbExecutor, log) {
     const existingStore = storeByExecutor.get(dbExecutor);
     if (existingStore) return existingStore;
@@ -34,7 +31,6 @@ function resolveStore(dbExecutor, log) {
     storeByExecutor.set(dbExecutor, store);
     return store;
 }
-
 async function resolveRequesterUsername(profileStore, accountId) {
     const profile = await profileStore.getProfile(accountId);
     const username = normalizeHandleKey(profile?.handle ?? "");
@@ -45,7 +41,6 @@ async function resolveRequesterUsername(profileStore, accountId) {
     }
     return username;
 }
-
 async function resolveParticipantHandles(
     profileStore,
     requestedHandles,
@@ -64,11 +59,14 @@ async function resolveParticipantHandles(
     }
     return usernames;
 }
-
-function buildCognisWhiteboardUrl(whiteboardId) {
-    return `/whiteboard?id=${encodeURIComponent(whiteboardId)}`;
+function buildCognisWhiteboardUrl(
+    whiteboardId,
+    { instantCanvas = false } = {},
+) {
+    const params = new URLSearchParams({ id: whiteboardId });
+    if (instantCanvas) params.set("instantCanvas", "1");
+    return `/whiteboard?${params.toString()}`;
 }
-
 async function resolveWhiteboardUserAccess({
     claims,
     profileStore,
@@ -124,7 +122,6 @@ async function resolveWhiteboardUserAccess({
                   "You are not listed as an allowed whiteboard participant.",
           };
 }
-
 function registerConfiguredOrigin(registerScriptOrigins, config) {
     if (typeof registerScriptOrigins === "function") {
         registerScriptOrigins(PAGE_RESOURCE_ORIGIN_OWNER_ID, [
@@ -132,7 +129,6 @@ function registerConfiguredOrigin(registerScriptOrigins, config) {
         ]);
     }
 }
-
 async function registerStoredOrigin({ store, registerScriptOrigins, log }) {
     try {
         await store.ensureSchema();
@@ -152,7 +148,6 @@ async function registerStoredOrigin({ store, registerScriptOrigins, log }) {
         );
     }
 }
-
 export function registerUi(ctx) {
     const moduleUiRoot = path.join(ctx.moduleRoot, "ui");
     ctx.registerStaticDir("", moduleUiRoot);
@@ -168,7 +163,6 @@ export function registerUi(ctx) {
         stylesheets: WHITEBOARD_STYLESHEETS,
         access: { minRole: "user" },
     });
-
     ctx.registerSpaRoute({
         id: "module-nextcloud-whiteboard-canvas",
         pattern: "^/whiteboard$",
@@ -185,7 +179,6 @@ export function registerUi(ctx) {
         stringsBaseUrl: "/static/modules/nextcloud-whiteboard/languages",
     });
 }
-
 export function registerApiRoutes(router, ctx) {
     const dbExecutor = ctx.getCapability("db:executor");
     const profileStore = ctx.getCapability("social:profileStore");
@@ -297,7 +290,9 @@ export function registerApiRoutes(router, ctx) {
                 participants: options.participants,
                 externalPath: options.externalPath,
             });
-            const launchUrl = buildCognisWhiteboardUrl(whiteboard.id);
+            const launchUrl = buildCognisWhiteboardUrl(whiteboard.id, {
+                instantCanvas: options.instantCanvas === true,
+            });
             log?.("info", "Nextcloud Whiteboard window spawned.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "spawn_whiteboard_window",
@@ -377,7 +372,11 @@ export function registerApiRoutes(router, ctx) {
             const liveness = await checkHttpLiveness(config.serverUrl, {
                 timeoutMs: LIVENESS_TIMEOUT_MS,
             });
-            const websocketAuthToken = store.mintSessionToken(config, { id: `cognis-preflight-${claims.sub}` }, { id: claims.sub, name: claims.sub, readOnly: true });
+            const websocketAuthToken = store.mintSessionToken(
+                config,
+                { id: `cognis-preflight-${claims.sub}` },
+                { id: claims.sub, name: claims.sub, readOnly: true },
+            );
             log?.("info", "Nextcloud Whiteboard preflight check completed.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "preflight",

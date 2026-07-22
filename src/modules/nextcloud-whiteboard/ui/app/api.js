@@ -1,6 +1,13 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 
 const API_BASE = "/api/v1/modules/nextcloud-whiteboard";
+const BOARD_NUMBER_MAX = 1000000;
+
+export function createRandomWhiteboardTitle() {
+    const values = new Uint32Array(1);
+    window.crypto.getRandomValues(values);
+    return `Board #${String(values[0] % BOARD_NUMBER_MAX).padStart(6, "0")}`;
+}
 
 export async function apiFetchJson(path, options = {}) {
     const response = await apiFetch(`${API_BASE}${path}`, options);
