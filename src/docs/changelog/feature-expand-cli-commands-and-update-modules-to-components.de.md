@@ -51,3 +51,7 @@ Die Jitsi-Meet-Meetingprüfung nutzt jetzt `jitsi-meet:meetings`, und modulspezi
 ## Whiteboard- und Meeting-Prüfung
 
 `nextcloud-whiteboard:whiteboards` nutzt jetzt die administratorweite Whiteboard-Liste statt eines profilgebundenen Benutzerkontexts, und aktive Jitsi-Meet-Zusammenfassungen zeigen eingeladene Teilnehmer getrennt von aktiven Teilnehmern.
+
+## CLI-Filter für deaktivierte Komponenten
+
+Komponenten-CLI-Plugins prüfen nun die Komponentenverfügbarkeit vor der Registrierung, sodass deaktivierte Module, Gateways und Adapter nicht in Hilfe oder Befehlsauflösung erscheinen, wenn die API sie als deaktiviert meldet. Der redundante Befehl `social:users:search` wurde entfernt.

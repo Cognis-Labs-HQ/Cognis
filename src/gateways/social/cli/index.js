@@ -38,13 +38,6 @@ export function registerCommands({ register }) {
                 description: "Show another user's public social profile.",
             },
             {
-                name: "social:users:search",
-                method: "GET",
-                path: "/api/v1/social/users/search",
-                queryFields: [{ name: "q", required: true }],
-                description: "Search social profiles.",
-            },
-            {
                 name: "social:posts",
                 method: "GET",
                 path: "/api/v1/social/users/:username/posts",

@@ -100,12 +100,23 @@ export async function executeRegisteredCommand(
 }
 
 async function main(): Promise<void> {
-    await loadModuleCliPlugins({ refresh: true });
-
     const packageJson = await import("./package.json", {
         with: { type: "json" },
     });
     const argv = process.argv.slice(2);
+    const apiBaseUrl = process.env.COGNIS_API_URL ?? "http://localhost:3000";
+    let apiTokenPromise: Promise<string> | null = null;
+    const getApiToken = async (): Promise<string> => {
+        if (!apiTokenPromise) apiTokenPromise = resolveCliToken();
+        return apiTokenPromise;
+    };
+
+    await loadModuleCliPlugins({
+        refresh: true,
+        filterDisabled: true,
+        apiBaseUrl,
+        getApiToken,
+    });
 
     if (argv.length === 0 || argv[0] === "-h" || argv[0] === "--help") {
         printGlobalHelp();
@@ -122,13 +133,6 @@ async function main(): Promise<void> {
         printCommandHelp(command);
         return;
     }
-
-    const apiBaseUrl = process.env.COGNIS_API_URL ?? "http://localhost:3000";
-    let apiTokenPromise: Promise<string> | null = null;
-    const getApiToken = async (): Promise<string> => {
-        if (!apiTokenPromise) apiTokenPromise = resolveCliToken();
-        return apiTokenPromise;
-    };
 
     if (!registry.has(command)) {
         if (printCommandGroupHelp(command)) return;

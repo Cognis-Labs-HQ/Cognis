@@ -51,3 +51,7 @@ Jitsi Meet meeting inspection now uses `jitsi-meet:meetings`, and module-specifi
 ## Whiteboard and Meeting Inspection
 
 `nextcloud-whiteboard:whiteboards` now queries the administrator-wide whiteboard listing instead of requiring a profile-backed user context, and active Jitsi Meet summaries now show invited participant counts separately from active participant counts.
+
+## Disabled Component CLI Filtering
+
+Component CLI plugins now consult component availability before registering commands, so disabled modules, gateways, and adapters do not appear in help or command lookup when the API reports them disabled. The redundant `social:users:search` command was removed.

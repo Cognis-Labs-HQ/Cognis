@@ -12,6 +12,22 @@ interface ComponentManifest {
     };
 }
 
+type ComponentOwner =
+    | { type: "module"; id: string }
+    | { type: "gateway"; id: string }
+    | { type: "adapter"; id: string; gatewayId: string };
+
+interface DiscoveredComponent {
+    root: string;
+    owner: ComponentOwner;
+}
+
+interface ComponentAvailability {
+    modules: Set<string>;
+    gateways: Set<string>;
+    adapters: Set<string>;
+}
+
 const pluginCommandNames = new Set<string>();
 
 function uniquePaths(paths: string[]): string[] {
@@ -91,7 +107,7 @@ async function listChildDirectories(root: string): Promise<string[]> {
     }
 }
 
-async function discoverComponentRoots(): Promise<string[]> {
+async function discoverComponents(): Promise<DiscoveredComponent[]> {
     const moduleRoots = await Promise.all(
         configuredModuleRoots().map((root) => listChildDirectories(root)),
     );
@@ -105,11 +121,147 @@ async function discoverComponentRoots(): Promise<string[]> {
         adapterGatewayRoots.flat().map((root) => listChildDirectories(root)),
     );
 
-    return uniquePaths([
-        ...moduleRoots.flat(),
-        ...gatewayRoots.flat(),
-        ...adapterRoots.flat(),
-    ]);
+    const components: DiscoveredComponent[] = [];
+    for (const root of uniquePaths(moduleRoots.flat())) {
+        components.push({
+            root,
+            owner: { type: "module", id: path.basename(root) },
+        });
+    }
+    for (const root of uniquePaths(gatewayRoots.flat())) {
+        components.push({
+            root,
+            owner: { type: "gateway", id: path.basename(root) },
+        });
+    }
+    for (const root of uniquePaths(adapterRoots.flat())) {
+        components.push({
+            root,
+            owner: {
+                type: "adapter",
+                id: path.basename(root),
+                gatewayId: path.basename(path.dirname(root)),
+            },
+        });
+    }
+
+    return components;
+}
+
+function adapterKey(gatewayId: string, adapterId: string): string {
+    return `${gatewayId}:${adapterId}`;
+}
+
+function isEnabledStatus(entry: {
+    status?: unknown;
+    enabled?: unknown;
+    active?: unknown;
+}): boolean {
+    if (typeof entry.enabled === "boolean") return entry.enabled;
+    if (typeof entry.active === "boolean") return entry.active;
+    return String(entry.status ?? "active") !== "disabled";
+}
+
+async function loadComponentAvailability(
+    apiBaseUrl: string | undefined,
+    getApiToken: (() => Promise<string>) | undefined,
+): Promise<ComponentAvailability | null> {
+    if (!apiBaseUrl || !getApiToken) return null;
+    try {
+        const token = await getApiToken();
+        const [modulePayload, gatewayPayload] = (await Promise.all([
+            apiGet(apiBaseUrl, "/api/v1/modules", token),
+            apiGet(apiBaseUrl, "/api/v1/gateways", token),
+        ])) as [
+            {
+                data?: Array<{
+                    id: string;
+                    status?: unknown;
+                    enabled?: unknown;
+                    active?: unknown;
+                }>;
+            },
+            {
+                data?: Array<{
+                    id: string;
+                    status?: unknown;
+                    enabled?: unknown;
+                    active?: unknown;
+                }>;
+            },
+        ];
+        const gateways = gatewayPayload.data ?? [];
+        const adapterPayloads = await Promise.all(
+            gateways
+                .filter((gateway) => isEnabledStatus(gateway))
+                .map(async (gateway) => {
+                    try {
+                        const payload = (await apiGet(
+                            apiBaseUrl,
+                            `/api/v1/gateways/${encodeURIComponent(gateway.id)}/adapters`,
+                            token,
+                        )) as {
+                            data?: Array<{
+                                id?: string;
+                                adapterId?: string;
+                                senderId?: string;
+                                name?: string;
+                                status?: unknown;
+                                enabled?: unknown;
+                                active?: unknown;
+                            }>;
+                        };
+                        return {
+                            gatewayId: gateway.id,
+                            adapters: payload.data ?? [],
+                        };
+                    } catch {
+                        return { gatewayId: gateway.id, adapters: [] };
+                    }
+                }),
+        );
+
+        return {
+            modules: new Set(
+                (modulePayload.data ?? [])
+                    .filter((entry) => isEnabledStatus(entry))
+                    .map((entry) => entry.id),
+            ),
+            gateways: new Set(
+                gateways
+                    .filter((entry) => isEnabledStatus(entry))
+                    .map((entry) => entry.id),
+            ),
+            adapters: new Set(
+                adapterPayloads.flatMap(({ gatewayId, adapters }) =>
+                    adapters
+                        .filter((adapter) => isEnabledStatus(adapter))
+                        .map((adapter) =>
+                            adapterKey(
+                                gatewayId,
+                                adapter.adapterId ??
+                                    adapter.senderId ??
+                                    adapter.id ??
+                                    adapter.name ??
+                                    "adapter",
+                            ),
+                        ),
+                ),
+            ),
+        };
+    } catch {
+        return null;
+    }
+}
+
+function isComponentEnabled(
+    owner: ComponentOwner,
+    availability: ComponentAvailability | null,
+): boolean {
+    if (!availability) return true;
+    if (owner.type === "module") return availability.modules.has(owner.id);
+    if (owner.type === "gateway") return availability.gateways.has(owner.id);
+    return availability.adapters.has(adapterKey(owner.gatewayId, owner.id));
 }
 
 function registerPluginCommand(
@@ -126,6 +278,9 @@ function registerPluginCommand(
 
 export async function loadModuleCliPlugins(options?: {
     refresh?: boolean;
+    filterDisabled?: boolean;
+    apiBaseUrl?: string;
+    getApiToken?: () => Promise<string>;
 }): Promise<void> {
     if (options?.refresh) {
         for (const name of pluginCommandNames) {
@@ -134,8 +289,16 @@ export async function loadModuleCliPlugins(options?: {
         pluginCommandNames.clear();
     }
 
-    for (const componentRoot of await discoverComponentRoots()) {
-        const pluginPath = await resolveCliEntrypoint(componentRoot);
+    const availability = options?.filterDisabled
+        ? await loadComponentAvailability(
+              options.apiBaseUrl,
+              options.getApiToken,
+          )
+        : null;
+
+    for (const component of await discoverComponents()) {
+        if (!isComponentEnabled(component.owner, availability)) continue;
+        const pluginPath = await resolveCliEntrypoint(component.root);
         if (!pluginPath || !(await pathExists(pluginPath))) continue;
 
         const plugin = await import(pluginPath);

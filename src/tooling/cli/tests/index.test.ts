@@ -953,6 +953,102 @@ test("global help includes component commands under the Components section", () 
     assert.doesNotMatch(output, /\n  Modules:\n(?:.*\n)*?\s+component:/);
 });
 
+test("loadModuleCliPlugins filters commands for disabled components", async () => {
+    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-filter-"));
+    const enabledRoot = path.join(tempRoot, "enabled-module");
+    const disabledRoot = path.join(tempRoot, "disabled-module");
+    const previousModulePaths = process.env.COGNIS_MODULE_CLI_PATHS;
+    const previousGatewayPaths = process.env.COGNIS_GATEWAY_CLI_PATHS;
+    const previousAdapterPaths = process.env.COGNIS_ADAPTER_CLI_PATHS;
+    const originalFetch = globalThis.fetch;
+
+    try {
+        for (const moduleRoot of [enabledRoot, disabledRoot]) {
+            await mkdir(path.join(moduleRoot, "cli"), { recursive: true });
+            await writeFile(
+                path.join(moduleRoot, "manifest.json"),
+                JSON.stringify({ entrypoints: { cli: "./cli/index.js" } }),
+            );
+        }
+        await writeFile(
+            path.join(enabledRoot, "cli", "index.js"),
+            `export function registerCommands({ register }) {
+                register("enabled-module:inspect", async () => ({ data: { ok: true } }), {
+                    usage: "cognisctl enabled-module:inspect",
+                    description: "Inspect enabled module.",
+                });
+            }`,
+        );
+        await writeFile(
+            path.join(disabledRoot, "cli", "index.js"),
+            `export function registerCommands({ register }) {
+                register("disabled-module:inspect", async () => ({ data: { ok: true } }), {
+                    usage: "cognisctl disabled-module:inspect",
+                    description: "Inspect disabled module.",
+                });
+            }`,
+        );
+
+        process.env.COGNIS_MODULE_CLI_PATHS = tempRoot;
+        process.env.COGNIS_GATEWAY_CLI_PATHS = path.join(tempRoot, "gateways");
+        process.env.COGNIS_ADAPTER_CLI_PATHS = path.join(tempRoot, "adapters");
+        globalThis.fetch = async (input) => {
+            const requestUrl = String(input);
+            if (requestUrl.endsWith("/api/v1/modules")) {
+                return new Response(
+                    JSON.stringify({
+                        data: [
+                            { id: "enabled-module", status: "enabled" },
+                            { id: "disabled-module", status: "disabled" },
+                        ],
+                    }),
+                    {
+                        status: 200,
+                        headers: { "content-type": "application/json" },
+                    },
+                );
+            }
+            if (requestUrl.endsWith("/api/v1/gateways")) {
+                return new Response(JSON.stringify({ data: [] }), {
+                    status: 200,
+                    headers: { "content-type": "application/json" },
+                });
+            }
+            throw new Error(`Unexpected request: ${requestUrl}`);
+        };
+
+        await loadModuleCliPlugins({
+            refresh: true,
+            filterDisabled: true,
+            apiBaseUrl: "http://localhost:3000",
+            getApiToken: async () => "token",
+        });
+
+        assert.ok(registry.has("enabled-module:inspect"));
+        assert.equal(registry.has("disabled-module:inspect"), false);
+    } finally {
+        registry.delete("enabled-module:inspect");
+        registry.delete("disabled-module:inspect");
+        globalThis.fetch = originalFetch;
+        if (previousModulePaths === undefined) {
+            delete process.env.COGNIS_MODULE_CLI_PATHS;
+        } else {
+            process.env.COGNIS_MODULE_CLI_PATHS = previousModulePaths;
+        }
+        if (previousGatewayPaths === undefined) {
+            delete process.env.COGNIS_GATEWAY_CLI_PATHS;
+        } else {
+            process.env.COGNIS_GATEWAY_CLI_PATHS = previousGatewayPaths;
+        }
+        if (previousAdapterPaths === undefined) {
+            delete process.env.COGNIS_ADAPTER_CLI_PATHS;
+        } else {
+            process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
+        }
+        await rm(tempRoot, { recursive: true, force: true });
+    }
+});
+
 test("loadModuleCliPlugins discovers manifest-declared component CLI commands", async () => {
     const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-modules-"));
     const moduleRoot = path.join(tempRoot, "demo-component");

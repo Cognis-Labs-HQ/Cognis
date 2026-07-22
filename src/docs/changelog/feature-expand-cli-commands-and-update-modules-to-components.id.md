@@ -51,3 +51,7 @@ Inspeksi rapat Jitsi Meet sekarang memakai `jitsi-meet:meetings`, dan perintah k
 ## Inspeksi Whiteboard dan Rapat
 
 `nextcloud-whiteboard:whiteboards` sekarang memakai daftar whiteboard tingkat administrator, bukan konteks pengguna yang membutuhkan profil, dan ringkasan Jitsi Meet aktif kini menampilkan jumlah peserta yang diundang secara terpisah dari peserta aktif.
+
+## Filter CLI Komponen Nonaktif
+
+Plugin CLI komponen sekarang memeriksa ketersediaan komponen sebelum mendaftarkan perintah, sehingga modul, gateway, dan adapter yang dinonaktifkan tidak muncul di bantuan atau pencarian perintah saat API melaporkannya nonaktif. Perintah redundan `social:users:search` telah dihapus.
