@@ -46,8 +46,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.3` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.2` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.1` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.7` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.9` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.8` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.10` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
@@ -84,7 +84,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.14` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.39` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.15` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.42` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

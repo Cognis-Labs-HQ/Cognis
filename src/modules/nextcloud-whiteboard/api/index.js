@@ -358,7 +358,6 @@ export function registerApiRoutes(router, ctx) {
         },
         { access: { minRole: "user" } },
     );
-
     router.post(
         "/api/v1/modules/nextcloud-whiteboard/whiteboards/preflight",
         async (req, res) => {
@@ -378,6 +377,7 @@ export function registerApiRoutes(router, ctx) {
             const liveness = await checkHttpLiveness(config.serverUrl, {
                 timeoutMs: LIVENESS_TIMEOUT_MS,
             });
+            const websocketAuthToken = store.mintSessionToken(config, { id: `cognis-preflight-${claims.sub}` }, { id: claims.sub, name: claims.sub, readOnly: true });
             log?.("info", "Nextcloud Whiteboard preflight check completed.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "preflight",
@@ -388,12 +388,12 @@ export function registerApiRoutes(router, ctx) {
                 data: {
                     alive: liveness.alive,
                     serverUrl: config.serverUrl,
+                    websocketAuthToken,
                 },
             });
         },
         { access: { minRole: "user" } },
     );
-
     router.get(
         "/api/v1/modules/nextcloud-whiteboard/config",
         async (_req, res) => {

@@ -28,6 +28,8 @@ import {
     applyRemotePresenceSelections,
     getPointerOffset,
     getSelectionPayload,
+    hydratePresenceAvatars,
+    renderWhiteboardPresenceEntry,
 } from "./presence.js";
 
 const EMIT_DEBOUNCE_MS = 80;
@@ -324,6 +326,9 @@ function connectSocket(io, session, canvas) {
 }
 
 async function createAndOpenBoard() {
+    const passed = await runPreflightCheck();
+    if (!passed) return;
+
     let spawnResult;
     try {
         spawnResult = await spawnBoard({
@@ -360,6 +365,7 @@ function bindCanvasToolbar(canvas) {
     ]);
     let selectedElement = null;
     let activeTool = "select";
+    let keepToolActive = false;
 
     function activateTool(tool) {
         activeTool = tool;
@@ -409,6 +415,16 @@ function bindCanvasToolbar(canvas) {
 
     canvas.onToolChange?.((tool) => activateTool(tool));
     canvas.onHistoryChange?.(updateHistoryControls);
+
+    const lockButton = document.getElementById("whiteboard-tool-lock");
+    lockButton?.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        keepToolActive = !keepToolActive;
+        lockButton.classList.toggle("active", keepToolActive);
+        lockButton.setAttribute("aria-pressed", String(keepToolActive));
+        canvas.setKeepToolActive?.(keepToolActive);
+    });
 
     document
         .getElementById("whiteboard-new")
@@ -703,6 +719,18 @@ async function renameActiveBoard() {
     titleEl.addEventListener("keydown", onKeydown);
 }
 
+async function verifyWebsocketAuth(result) {
+    if (!result?.serverUrl || !result?.websocketAuthToken) return false;
+    const io = await loadSocketIo(result.serverUrl);
+    return new Promise((resolve) => {
+        const socket = io(result.serverUrl, { auth: { token: result.websocketAuthToken }, transports: ["websocket"], reconnection: false, timeout: 5000 });
+        const finish = (passed) => { socket.disconnect(); resolve(passed); };
+        const timer = window.setTimeout(() => finish(false), 5500);
+        socket.on("connect", () => { window.clearTimeout(timer); finish(true); });
+        socket.on("connect_error", () => { window.clearTimeout(timer); finish(false); });
+    });
+}
+
 async function runPreflightCheck() {
     if (preflightStatus === "running") return false;
     preflightStatus = "running";
@@ -735,6 +763,19 @@ async function runPreflightCheck() {
         preflightStatus = "failed";
         const message = translateModuleString(
             "module.nextcloud_whiteboard.preflight_unreachable",
+        );
+        setOverlayVisible(true, message);
+        showToast(message, { variant: "error" });
+        return false;
+    }
+
+    const websocketAuthorized = await verifyWebsocketAuth(result).catch(
+        () => false,
+    );
+    if (!websocketAuthorized) {
+        preflightStatus = "failed";
+        const message = translateModuleString(
+            "module.nextcloud_whiteboard.preflight_websocket_failed",
         );
         setOverlayVisible(true, message);
         showToast(message, { variant: "error" });
@@ -812,10 +853,8 @@ async function openBoard(board) {
     socketInstance = connectSocket(io, session, canvasInstance);
     composer?.refreshPresence?.();
     bindCanvasToolbar(canvasInstance);
-
     setOverlayVisible(false);
 }
-
 function renderCanvasElement() {
     return renderWhiteboardCanvasElement({
         activeBoard,
@@ -829,7 +868,6 @@ function renderCanvasElement() {
         translate: translateModuleString,
     });
 }
-
 function onCanvasRender() {
     document
         .getElementById("whiteboard-start-new")
@@ -849,10 +887,9 @@ function onCanvasRender() {
     if (!canvasElement || canvasInstance || !activeBoard || !activeSession)
         return;
     if (preflightStatus !== "passed") return;
-
     canvasInstance = createWhiteboardCanvas(canvasElement);
     canvasInstance.setImageUploader((dataUrl) =>
-        uploadWhiteboardImage(session.roomId, dataUrl),
+        uploadWhiteboardImage(activeSession.roomId, dataUrl),
     );
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     if (savedElements.length > 0) {
@@ -930,6 +967,8 @@ export async function mount(root, { signal, shareContext } = {}) {
                     entries,
                     sessionId,
                 }),
+            renderPresenceEntry: renderWhiteboardPresenceEntry,
+            hydratePresenceEntries: hydratePresenceAvatars,
         },
         pageManifest: {
             features: {

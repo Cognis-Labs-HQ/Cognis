@@ -19,7 +19,7 @@ export function renderCanvasElement({
     const boardList = boards
         .map(
             (board) =>
-                `<button type="button" class="whiteboard-overlay-board" data-board-id="${escapeHtml(board.id)}">${escapeHtml(board.title)}</button>`,
+                `<button type="button" class="whiteboard-overlay-board" data-board-id="${escapeHtml(board.id)}"><span class="whiteboard-overlay-board-title">${escapeHtml(board.title)}</span><span class="whiteboard-overlay-board-updated">${escapeHtml(new Date(board.updatedAt).toLocaleString())}</span></button>`,
         )
         .join("");
     const toolButton = (tool, labelKey, icon) =>
@@ -42,6 +42,7 @@ export function renderCanvasElement({
           ${toolButton("line", "module.nextcloud_whiteboard.tool_line", "−")}
           ${toolButton("text", "module.nextcloud_whiteboard.tool_text", "T")}
           ${toolButton("eraser", "module.nextcloud_whiteboard.tool_eraser", "⌫")}
+          <button type="button" id="whiteboard-tool-lock" class="whiteboard-tool" aria-pressed="false" title="${escapeHtml(translate("module.nextcloud_whiteboard.tool_lock"))}" aria-label="${escapeHtml(translate("module.nextcloud_whiteboard.tool_lock"))}">🔒</button>
         </div>
         <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
           <button type="button" id="whiteboard-undo" class="whiteboard-tool" title="${escapeHtml(translate("module.nextcloud_whiteboard.undo"))}" aria-label="${escapeHtml(translate("module.nextcloud_whiteboard.undo"))}">↶</button>

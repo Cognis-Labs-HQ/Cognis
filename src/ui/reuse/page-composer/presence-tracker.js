@@ -61,7 +61,7 @@ function createFallbackSessionId() {
     ).join("")}`;
 }
 
-function renderPresenceEntry(entry) {
+function defaultRenderPresenceEntry(entry) {
     const displayName = normalizePresenceName(
         entry.displayName || entry.handle,
     );
@@ -89,6 +89,8 @@ export function createPresenceTracker({
     getPointerOffset = null,
     pointerOverlayRoot = null,
     onPresenceUpdate = null,
+    renderPresenceEntry = defaultRenderPresenceEntry,
+    hydratePresenceEntries = null,
     i18n = null,
 } = {}) {
     const sessionId = createSessionId(storageKey);
@@ -154,6 +156,7 @@ export function createPresenceTracker({
                     entry.lastSeenAt,
                     entry.active,
                     entry.pointer?.updatedAt,
+                    entry.avatarKey ?? "",
                     JSON.stringify(entry.selection ?? null),
                 ].join(":"),
             )
@@ -184,6 +187,8 @@ export function createPresenceTracker({
                     ACTIVE_WINDOW_MS,
         }));
         container.innerHTML = activeEntries.map(renderPresenceEntry).join("");
+        if (typeof hydratePresenceEntries === "function")
+            void hydratePresenceEntries(container);
         pointerTracker?.render(activeEntries, sessionId);
         onPresenceUpdate?.(activeEntries, sessionId);
         const nextSignature = createPresenceSignature(activeEntries);

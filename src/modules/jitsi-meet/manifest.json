@@ -1,10 +1,14 @@
 {
     "id": "jitsi-meet",
     "name": "Jitsi Meet",
-    "version": "1.2.12",
+    "version": "1.2.15",
     "class": "extension",
     "coreApiVersion": "v1",
-    "capabilities": ["meeting:video", "meeting:chat", "meeting:moderation"],
+    "capabilities": [
+        "meeting:video",
+        "meeting:chat",
+        "meeting:moderation"
+    ],
     "entrypoints": {
         "bootstrap": "./bootstrap.js",
         "api": "./api/index.js",
@@ -28,5 +32,9 @@
             "chat:write"
         ]
     },
-    "requires": ["social"]
+    "requires": [
+        "social",
+        "social:profile",
+        "share"
+    ]
 }

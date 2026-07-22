@@ -48,6 +48,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let viewportOffsetX = 0;
     let viewportOffsetY = 0;
     let remoteSelections = new Map();
+    let keepToolActive = false;
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -341,7 +342,7 @@ export function createWhiteboardCanvas(canvasElement) {
         }
         canvasElement.style.cursor =
             tool === "select"
-                ? "grab"
+                ? "pointer"
                 : tool === "eraser"
                   ? "cell"
                   : "crosshair";
@@ -419,7 +420,7 @@ export function createWhiteboardCanvas(canvasElement) {
     function commitCreatedElement(element) {
         commitElements([...elements, element]);
         selectOnlyElement(element.id);
-        setActiveTool("select");
+        if (!keepToolActive) setActiveTool("select");
     }
 
     function onPointerDown(event) {
@@ -541,8 +542,9 @@ export function createWhiteboardCanvas(canvasElement) {
         if (!isDrawing) {
             if (activeTool === "select") {
                 const anchorIndex = findAnchorAt(selectedElement(), x, y);
+                const hoveredElement = findElementAt(x, y);
                 canvasElement.style.cursor =
-                    anchorIndex >= 0 ? "pointer" : "grab";
+                    anchorIndex >= 0 || hoveredElement ? "grab" : "pointer";
             }
             return;
         }
@@ -662,7 +664,7 @@ export function createWhiteboardCanvas(canvasElement) {
             panState = null;
             canvasElement.style.cursor =
                 activeTool === "select"
-                    ? "grab"
+                    ? "pointer"
                     : activeTool === "eraser"
                       ? "cell"
                       : "crosshair";
@@ -820,6 +822,9 @@ export function createWhiteboardCanvas(canvasElement) {
         },
         setImageUploader(uploader) {
             imageUploader = typeof uploader === "function" ? uploader : null;
+        },
+        setKeepToolActive(keepActive) {
+            keepToolActive = Boolean(keepActive);
         },
         getElements() {
             return [...elements];
