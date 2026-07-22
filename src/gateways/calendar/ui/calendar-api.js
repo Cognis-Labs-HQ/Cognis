@@ -83,7 +83,7 @@ async function respondToEvent(
     );
 }
 
-async function createJitsiMeeting(attendees) {
+async function createJitsiMeeting(attendees, { scheduledAt = null } = {}) {
     const response = await apiFetch(
         "/api/v1/modules/jitsi-meet/meetings/create",
         {
@@ -91,7 +91,7 @@ async function createJitsiMeeting(attendees) {
             headers: {
                 "content-type": "application/json",
             },
-            body: JSON.stringify({ participants: attendees }),
+            body: JSON.stringify({ participants: attendees, scheduledAt }),
         },
     );
     if (!response.ok) throw new Error("meeting_create_failed");

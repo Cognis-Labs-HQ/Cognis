@@ -164,12 +164,18 @@ test("jitsi store meeting creation uses the modern column set", async () => {
         classroomId: null,
         createdBy: "alice",
         chatRoomId: null,
+        scheduledAt: "2026-08-01T09:30:00.000Z",
     });
 
     assert.equal(mockDb.insertedMeetingRows.length, 1);
     assert.ok(mockDb.insertedMeetingRows[0].participant_key);
     assert.ok(mockDb.insertedMeetingRows[0].meeting_url);
     assert.ok(mockDb.insertedMeetingRows[0].room_slug);
+    assert.equal(
+        mockDb.insertedMeetingRows[0].scheduled_at,
+        "2026-08-01T09:30:00.000Z",
+    );
+    assert.equal(createdMeeting?.scheduledAt, "2026-08-01T09:30:00.000Z");
     assert.match(
         String(mockDb.insertedMeetingRows[0].room_slug),
         /^classroom-[a-f0-9]{8}$/,

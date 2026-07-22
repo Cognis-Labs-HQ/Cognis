@@ -102,6 +102,7 @@ export class JitsiMeetStore {
                 { name: "chat_room_id", type: "text" },
                 { name: "classroom_id", type: "text" },
                 { name: "created_by", type: "text", notNull: true },
+                { name: "scheduled_at", type: "timestamp" },
                 {
                     name: "created_at",
                     type: "timestamp",
@@ -266,6 +267,9 @@ export class JitsiMeetStore {
             chatRoomId: row.chat_room_id ? String(row.chat_room_id) : null,
             classroomId: row.classroom_id ? String(row.classroom_id) : null,
             createdBy: row.created_by ? String(row.created_by) : "",
+            scheduledAt:
+                readDbTimestampValue(row.scheduled_at) ??
+                readDbTimestampValue(row.created_at),
             createdAt: readDbTimestampValue(row.created_at),
             updatedAt: readDbTimestampValue(row.updated_at),
         };
@@ -318,6 +322,7 @@ export class JitsiMeetStore {
         classroomId,
         createdBy,
         chatRoomId,
+        scheduledAt,
     }) {
         const normalizedInstanceUrl = normalizeHttpUrl(instanceUrl);
         if (!normalizedInstanceUrl) {
@@ -351,6 +356,11 @@ export class JitsiMeetStore {
             normalizedClassroomId,
         );
         const createdAt = new Date().toISOString();
+        const normalizedScheduledAt = Number.isFinite(
+            Date.parse(String(scheduledAt ?? "")),
+        )
+            ? new Date(scheduledAt).toISOString()
+            : createdAt;
 
         await this.db.transaction(async (executor) => {
             const meetingValues = {
@@ -363,6 +373,7 @@ export class JitsiMeetStore {
                 chat_room_id: chatRoomId ?? null,
                 classroom_id: normalizedClassroomId,
                 created_by: createdBy,
+                scheduled_at: normalizedScheduledAt,
                 created_at: createdAt,
                 updated_at: createdAt,
             };
@@ -609,6 +620,9 @@ export class JitsiMeetStore {
                         ? String(row.classroom_id)
                         : null,
                     createdBy: String(row.created_by),
+                    scheduledAt:
+                        readDbTimestampValue(row.scheduled_at) ??
+                        readDbTimestampValue(row.created_at),
                     createdAt: readDbTimestampValue(row.created_at),
                     updatedAt: readDbTimestampValue(row.updated_at),
                 };
@@ -627,6 +641,7 @@ export class JitsiMeetStore {
                     meetingName: meeting.meetingName,
                     classroomId: meeting.classroomId,
                     createdBy: meeting.createdBy,
+                    scheduledAt: meeting.scheduledAt,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
                     invitedParticipantCount: participants.length,
@@ -693,6 +708,7 @@ export class JitsiMeetStore {
                 endedBy: state.endedBy,
                 endedAt: state.endedAt,
             },
+            scheduledAt: meeting.scheduledAt ?? meeting.createdAt,
             instanceUrl: extractUrlOrigin(meeting.meetingUrl),
             roomSlug: extractUrlPathSlug(meeting.meetingUrl),
             ...extra,
@@ -703,7 +719,7 @@ export class JitsiMeetStore {
         const meetingsResult = await this.db.executeCommand({
             option: "SELECT",
             table: "jitsi_meetings",
-            orderBy: [{ column: "created_at", direction: "DESC" }],
+            orderBy: [{ column: "scheduled_at", direction: "ASC" }],
             limit: 100,
         });
         const rows = meetingsResult.rows ?? [];
@@ -717,6 +733,9 @@ export class JitsiMeetStore {
                     meetingUrl: String(row.meeting_url),
                     meetingName: String(row.meeting_name ?? "Cognis Classroom"),
                     createdBy: String(row.created_by),
+                    scheduledAt:
+                        readDbTimestampValue(row.scheduled_at) ??
+                        readDbTimestampValue(row.created_at),
                     createdAt: readDbTimestampValue(row.created_at),
                 };
                 const [presence, participants, state] = await Promise.all([
@@ -733,6 +752,7 @@ export class JitsiMeetStore {
                     meetingUrl: meeting.meetingUrl,
                     meetingName: meeting.meetingName,
                     createdBy: meeting.createdBy,
+                    scheduledAt: meeting.scheduledAt,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
                     invitedParticipantCount: participants.length,
@@ -742,7 +762,13 @@ export class JitsiMeetStore {
                 };
             }),
         );
-        return mappedMeetings.filter(Boolean);
+        return mappedMeetings
+            .filter(Boolean)
+            .sort((left, right) =>
+                String(left.scheduledAt ?? "").localeCompare(
+                    String(right.scheduledAt ?? ""),
+                ),
+            );
     }
 
     /**

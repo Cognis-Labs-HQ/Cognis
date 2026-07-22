@@ -485,5 +485,11 @@ export function registerApiRoutes(router, ctx) {
             }),
     });
 
-    registerAdminMeetingRoutes({ router, store, requireAuth, sendJson });
+    registerAdminMeetingRoutes({
+        router,
+        store,
+        requireAuth,
+        sendJson,
+        profileStore,
+    });
 }
