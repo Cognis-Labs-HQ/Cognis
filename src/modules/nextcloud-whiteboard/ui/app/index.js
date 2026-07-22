@@ -332,9 +332,7 @@ async function createAndOpenBoard() {
     let spawnResult;
     try {
         spawnResult = await spawnBoard({
-            title: translateModuleString(
-                "module.nextcloud_whiteboard.new_board_title",
-            ),
+            title: `Board #${Math.floor(Math.random() * 1000000).toString().padStart(6, "0")}`,
         });
     } catch (error) {
         reportClientError(error, "module.nextcloud_whiteboard.spawn_failed");

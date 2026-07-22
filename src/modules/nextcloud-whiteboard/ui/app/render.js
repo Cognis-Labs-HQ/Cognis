@@ -31,6 +31,7 @@ export function renderCanvasElement({
         <div class="whiteboard-toolbar-group">
           <button type="button" id="whiteboard-new" class="whiteboard-tool whiteboard-new-tool" title="${escapeHtml(translate("module.nextcloud_whiteboard.new_board"))}" aria-label="${escapeHtml(translate("module.nextcloud_whiteboard.new_board"))}">＋ <span>New</span></button>
           <button type="button" id="whiteboard-history" class="whiteboard-tool" title="${escapeHtml(translate("module.nextcloud_whiteboard.history_title"))}" aria-label="${escapeHtml(translate("module.nextcloud_whiteboard.history_title"))}">↺</button>
+          <button type="button" id="whiteboard-tool-lock" class="whiteboard-tool" aria-pressed="false" title="${escapeHtml(translate("module.nextcloud_whiteboard.tool_lock"))}" aria-label="${escapeHtml(translate("module.nextcloud_whiteboard.tool_lock"))}" ${hasActiveBoard ? "" : "hidden"}>🔒</button>
         </div>
         <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
           ${toolButton("select", "module.nextcloud_whiteboard.tool_select", "🖱")}
@@ -42,7 +43,6 @@ export function renderCanvasElement({
           ${toolButton("line", "module.nextcloud_whiteboard.tool_line", "−")}
           ${toolButton("text", "module.nextcloud_whiteboard.tool_text", "T")}
           ${toolButton("eraser", "module.nextcloud_whiteboard.tool_eraser", "⌫")}
-          <button type="button" id="whiteboard-tool-lock" class="whiteboard-tool" aria-pressed="false" title="${escapeHtml(translate("module.nextcloud_whiteboard.tool_lock"))}" aria-label="${escapeHtml(translate("module.nextcloud_whiteboard.tool_lock"))}">🔒</button>
         </div>
         <div class="whiteboard-toolbar-group" ${hasActiveBoard ? "" : "hidden"}>
           <button type="button" id="whiteboard-undo" class="whiteboard-tool" title="${escapeHtml(translate("module.nextcloud_whiteboard.undo"))}" aria-label="${escapeHtml(translate("module.nextcloud_whiteboard.undo"))}">↶</button>
