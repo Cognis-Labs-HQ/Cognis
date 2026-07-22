@@ -307,6 +307,21 @@ export class NextcloudWhiteboardStore {
         return this.mapBoard(result.rows?.[0]);
     }
 
+    async listWhiteboards() {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "nextcloud_whiteboards",
+            orderBy: [{ column: "updated_at", direction: "DESC" }],
+            limit: 200,
+        });
+        const boards = (result.rows ?? [])
+            .map((row) => this.mapBoard(row))
+            .filter(Boolean);
+        return boards.sort((left, right) =>
+            right.updatedAt.localeCompare(left.updatedAt),
+        );
+    }
+
     async listAccessibleWhiteboards(username) {
         const normalizedUsername = normalizeHandleKey(username);
         const access = await this.db.executeCommand({

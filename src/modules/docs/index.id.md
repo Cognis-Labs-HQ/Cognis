@@ -24,10 +24,10 @@ Saat startup, `ModuleService` memindai `COGNIS_MODULES_ROOT` untuk direktori yan
 
 ### Modul internal vs eksternal
 
-| Tipe       | Sumber                                            | Instalasi                                    | Penafian                       |
-| ---------- | ------------------------------------------------- | -------------------------------------------- | ------------------------------ |
-| `internal` | Dibundel dalam repositori di bawah `src/modules/` | Pra-instal                                   | Tidak ada                      |
-| `external` | Arsip `.zip` atau `.tar.gz` yang diunggah         | Melalui API admin atau CLI `modules:install` | Ditampilkan sebelum diaktifkan |
+| Tipe       | Sumber                                            | Instalasi                                     | Penafian                       |
+| ---------- | ------------------------------------------------- | --------------------------------------------- | ------------------------------ |
+| `internal` | Dibundel dalam repositori di bawah `src/modules/` | Pra-instal                                    | Tidak ada                      |
+| `external` | Arsip `.zip` atau `.tar.gz` yang diunggah         | Melalui API admin atau CLI `component:import` | Ditampilkan sebelum diaktifkan |
 
 Modul eksternal diinstal dengan mengunggah arsip terkompresi. Kerangka kerja mengekstrak arsip, memverifikasi `manifest.json`-nya, dan menempatkan direktori modul di bawah `COGNIS_MODULES_ROOT`.
 
@@ -134,7 +134,7 @@ kebijakan akses untuk halaman UI:
 
 ## Siklus Impor GitHub
 
-1. Admin mengirim `repositoryUrl` dan `versionTag` lewat UI Administration atau `cognisctl modules:import-github`.
+1. Admin mengirim `repositoryUrl` dan `versionTag` lewat UI Administration atau `cognisctl component:import`.
 2. Rute API `/api/v1/modules/import/github` memvalidasi input lalu meneruskan ke `ModuleService.importFromGithub`.
 3. Service mengunduh arsip tag dari `codeload.github.com` dan meneruskan byte ke module runtime gateway.
 4. Runtime memasang arsip sebagai direktori modul drop-in yang mengikuti kontrak file wajib.

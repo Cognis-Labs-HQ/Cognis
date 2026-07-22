@@ -86,6 +86,7 @@ export interface LanguageModuleBootstrapCtx {
 export interface StudyAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
+    readonly version?: string;
     readonly requires?: string[];
     /**
      * Returns adapter-specific config fields only. The gateway reserves the
@@ -106,6 +107,7 @@ export interface StudyAdapter {
 export interface StudyAdapterInfo {
     id: string;
     name: string;
+    version?: string;
     active: boolean;
     requires?: string[];
 }
@@ -277,6 +279,7 @@ export class CoreStudyGateway {
         return Array.from(this.registeredAdapters.values()).map((adapter) => ({
             id: adapter.adapterId,
             name: adapter.adapterName,
+            version: adapter.version,
             active:
                 !this.disabledAdapters.has(adapter.adapterId) &&
                 (typeof adapter.isConfigured === "function"
@@ -361,7 +364,10 @@ export class CoreStudyGateway {
                 const pkgPath = path.join(adaptersRoot, entry, "package.json");
                 try {
                     const raw = await readFile(pkgPath, "utf8");
-                    const pkg = JSON.parse(raw) as { main?: string };
+                    const pkg = JSON.parse(raw) as {
+                        main?: string;
+                        version?: string;
+                    };
                     if (!pkg.main) return;
                     const entryPath = path.resolve(
                         adaptersRoot,
@@ -373,6 +379,9 @@ export class CoreStudyGateway {
                         const factory =
                             mod.createStudyAdapter as () => StudyAdapter | null;
                         const adapter = factory();
+                        if (adapter && pkg.version) {
+                            Object.assign(adapter, { version: pkg.version });
+                        }
                         if (adapter) this.registerAdapter(adapter);
                     }
                 } catch {

@@ -166,7 +166,7 @@ export async function discoverAdapters(
         const pkgPath = path.join(adaptersRoot, entry, "package.json");
         try {
             const raw = await readFile(pkgPath, "utf8");
-            const pkg = JSON.parse(raw) as { main?: string };
+            const pkg = JSON.parse(raw) as { main?: string; version?: string };
             if (!pkg.main) continue;
 
             let requires: string[] | undefined;
@@ -191,6 +191,9 @@ export async function discoverAdapters(
                 const factory =
                     mod.createCalendarAdapter as () => CalendarAdapter | null;
                 const adapter = factory();
+                if (adapter && pkg.version) {
+                    Object.assign(adapter, { version: pkg.version });
+                }
                 if (adapter) gateway.registerAdapter(adapter, requires);
             }
         } catch {

@@ -13,6 +13,7 @@ import type { AdapterConfigStore } from "./adapter-config-store.js";
 export interface SocialAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
+    readonly version?: string;
     readonly requires?: string[];
     getConfig?(): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
@@ -22,6 +23,7 @@ export interface SocialAdapter {
 export interface SocialAdapterInfo {
     id: string;
     name: string;
+    version?: string;
     active: boolean;
     requires?: string[];
 }
@@ -99,6 +101,7 @@ export class CoreSocialGateway {
             return {
                 id: adapter.adapterId,
                 name: adapter.adapterName,
+                version: adapter.version,
                 active:
                     !this.disabledAdapters.has(adapter.adapterId) &&
                     (typeof adapter.isConfigured === "function"
@@ -198,7 +201,10 @@ export class CoreSocialGateway {
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
                 const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
+                const pkg = JSON.parse(raw) as {
+                    main?: string;
+                    version?: string;
+                };
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
@@ -223,6 +229,9 @@ export class CoreSocialGateway {
                     const factory =
                         mod.createSocialAdapter as () => SocialAdapter | null;
                     const adapter = factory();
+                    if (adapter && pkg.version) {
+                        Object.assign(adapter, { version: pkg.version });
+                    }
                     if (adapter) this.registerAdapter(adapter, requires);
                 }
             } catch {

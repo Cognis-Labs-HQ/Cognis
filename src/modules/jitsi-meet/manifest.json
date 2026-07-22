@@ -8,7 +8,8 @@
     "entrypoints": {
         "bootstrap": "./bootstrap.js",
         "api": "./api/index.js",
-        "ui": "./ui/index.html"
+        "ui": "./ui/index.html",
+        "cli": "./cli/index.js"
     },
     "publisher": "Cognis Labs HQ",
     "ui": {

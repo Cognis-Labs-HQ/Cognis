@@ -57,14 +57,13 @@ npm run cli      # node --import tsx src/tooling/cli/index.ts
 
 Commands are grouped by namespace:
 
-| Namespace            | Example commands                                                                              |
-| -------------------- | --------------------------------------------------------------------------------------------- |
-| `user:*`             | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete` |
-| `user:preferences:*` | `user:preferences:clear`                                                                      |
-| `system:*`           | `system:health`, `system:info`                                                                |
-| `modules:*`          | `modules:list`, `modules:enable`, `modules:disable`, `modules:install`                        |
-| `gateway:*`          | `gateway:list`                                                                                |
-| `api:*`              | `api:token` (mints a temporary 1-hour admin emergency token for curl)                         |
+| Namespace            | Example commands                                                                                                              |
+| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `user:*`             | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete`                                 |
+| `user:preferences:*` | `user:preferences:clear`                                                                                                      |
+| `system:*`           | `system:health`, `system:info`                                                                                                |
+| `component:*`        | `component:list`, `component:enable`, `component:disable`, `component:config:get`, `component:config:set`, `component:import` |
+| `api:*`              | `api:token` (mints a temporary 1-hour admin emergency token for curl)                                                         |
 
 All CLI commands that require authentication read the API token from the path specified in `COGNIS_CLI_TOKEN_PATH`.
 
@@ -76,7 +75,9 @@ Built-in `cognisctl` commands can render response-aware terminal output with hea
 
 ## Configuration
 
-| Variable                | Default       | Description                                                                            |
-| ----------------------- | ------------- | -------------------------------------------------------------------------------------- |
-| `COGNIS_CLI_TOKEN_PATH` | —             | Path to a file containing the API token used by `cognisctl` for authenticated commands |
-| `COGNIS_MODULES_ROOT`   | `src/modules` | Used by the CLI to discover module-contributed subcommands                             |
+| Variable                   | Default       | Description                                                                            |
+| -------------------------- | ------------- | -------------------------------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH`    | —             | Path to a file containing the API token used by `cognisctl` for authenticated commands |
+| `COGNIS_MODULES_ROOT`      | `src/modules` | Used by the CLI to discover module-contributed subcommands                             |
+| `COGNIS_GATEWAY_CLI_PATHS` | —             | Optional path list for gateway-contributed CLI commands                                |
+| `COGNIS_ADAPTER_CLI_PATHS` | —             | Optional path list for adapter-contributed CLI commands                                |

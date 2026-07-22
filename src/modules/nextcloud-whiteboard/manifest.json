@@ -1,7 +1,7 @@
 {
     "id": "nextcloud-whiteboard",
     "name": "Nextcloud Whiteboard",
-    "version": "2.1.36",
+    "version": "2.1.38",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": [
@@ -13,7 +13,8 @@
     "entrypoints": {
         "bootstrap": "./bootstrap.js",
         "api": "./api/index.js",
-        "ui": "./ui/index.html"
+        "ui": "./ui/index.html",
+        "cli": "./cli/index.js"
     },
     "publisher": "Cognis Labs HQ",
     "ui": {

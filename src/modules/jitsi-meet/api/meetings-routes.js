@@ -315,6 +315,10 @@ export function registerMeetingRoutes({
                     chatRoomId: meeting.chatRoomId,
                     createdAt: meeting.createdAt,
                     participantCount: participants.length,
+                    invitedParticipantCount: participants.length,
+                    activeParticipantCount: Number(
+                        activeMeeting.activeParticipantCount,
+                    ),
                     activeSessionCount: Number(
                         activeMeeting.activeSessionCount,
                     ),

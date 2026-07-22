@@ -266,6 +266,20 @@ export function registerApiRoutes(router, ctx) {
         "module:jitsi-meet:enableTest",
         runEnableTest,
     );
+    const contributeHealth = ctx.getCapability("system:health:contribute");
+    if (typeof contributeHealth === "function") {
+        contributeHealth("module:jitsi-meet", async () => {
+            const result = await runEnableTest();
+            return {
+                componentId: "jitsi-meet",
+                componentType: "module",
+                status: result.ok ? "ok" : "warning",
+                message: result.message,
+                checkedAt: new Date().toISOString(),
+                data: result.data,
+            };
+        });
+    }
     router.post(
         "/api/v1/modules/jitsi-meet/admin/enable-test",
         async (_req, res) => {

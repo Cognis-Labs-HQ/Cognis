@@ -27,6 +27,7 @@ export interface TfaMethodSetupView {
 export interface TfaMethodAdapter {
     readonly id: string;
     readonly name: string;
+    readonly version?: string;
     readonly defaultEnabled?: boolean;
     beginSetup(input: {
         accountId: string;
@@ -83,6 +84,7 @@ export type TfaAdapterFactory = (
 export interface TfaAdapterInfo {
     id: string;
     name: string;
+    version?: string;
     enabled: boolean;
     locked?: boolean;
     syncedTo?: {
@@ -199,6 +201,7 @@ export class CoreTfaGateway {
         return Array.from(this.adapters.values()).map((adapter) => ({
             id: adapter.id,
             name: adapter.name,
+            version: adapter.version,
             enabled: this.isAdapterEnabled(adapter.id),
             ...(this.adapterEnabledStateProviders.has(adapter.id)
                 ? { locked: true }
@@ -886,7 +889,10 @@ export class CoreTfaGateway {
             );
             try {
                 const packageRaw = await readFile(packagePath, "utf8");
-                const packageJson = JSON.parse(packageRaw) as { main?: string };
+                const packageJson = JSON.parse(packageRaw) as {
+                    main?: string;
+                    version?: string;
+                };
                 if (!packageJson.main) continue;
                 const entryPath = path.resolve(
                     tfaAdaptersRoot,
@@ -899,6 +905,9 @@ export class CoreTfaGateway {
                 const adapter = factory(
                     this.options.adapterFactoryContext ?? {},
                 );
+                if (packageJson.version) {
+                    Object.assign(adapter, { version: packageJson.version });
+                }
                 this.registerAdapter(adapter);
             } catch {
                 // Skip broken adapters

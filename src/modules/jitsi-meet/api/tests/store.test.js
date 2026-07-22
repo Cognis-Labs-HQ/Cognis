@@ -2,9 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { JitsiMeetStore } from "../store.js";
 
-function createMockJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
+function createMockJitsiDb({
+    meetingRows = [],
+    participantRows = [],
+    presenceRows = [],
+    stateRows = [],
+} = {}) {
     const storedMeetingRows = [...meetingRows];
     const storedParticipantRows = [...participantRows];
+    const storedPresenceRows = [...presenceRows];
+    const storedStateRows = [...stateRows];
     const insertedMeetingRows = [];
 
     return {
@@ -26,6 +33,14 @@ function createMockJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
                 );
                 Object.assign(meetingRow ?? {}, command.set);
                 return { rows: [] };
+            }
+
+            if (
+                command.option === "SELECT" &&
+                command.table === "jitsi_meetings" &&
+                !command.where
+            ) {
+                return { rows: storedMeetingRows };
             }
 
             if (
@@ -77,6 +92,34 @@ function createMockJitsiDb({ meetingRows = [], participantRows = [] } = {}) {
                         .map((participantRow) => ({
                             username: participantRow.username,
                         })),
+                };
+            }
+
+            if (
+                command.option === "SELECT" &&
+                command.table === "jitsi_meeting_presence"
+            ) {
+                const meetingId = command.where?.find(
+                    (whereEntry) => whereEntry.column === "meeting_id",
+                )?.value;
+                return {
+                    rows: storedPresenceRows.filter(
+                        (presenceRow) => presenceRow.meeting_id === meetingId,
+                    ),
+                };
+            }
+
+            if (
+                command.option === "SELECT" &&
+                command.table === "jitsi_meeting_state"
+            ) {
+                const meetingId = command.where?.find(
+                    (whereEntry) => whereEntry.column === "meeting_id",
+                )?.value;
+                return {
+                    rows: storedStateRows.filter(
+                        (stateRow) => stateRow.meeting_id === meetingId,
+                    ),
                 };
             }
 
@@ -245,4 +288,58 @@ test("jitsi store config change invalidates existing meeting rows", async () => 
             "jitsi_meetings",
         ],
     );
+});
+
+test("jitsi active meeting summaries report invited and active participants separately", async () => {
+    const now = new Date().toISOString();
+    const mockDb = createMockJitsiDb({
+        meetingRows: [
+            {
+                id: "meeting-1",
+                meeting_url: "https://meet.example.test/team-room",
+                meeting_name: "Team Room",
+                classroom_id: null,
+                created_by: "alice",
+                created_at: now,
+                updated_at: now,
+            },
+        ],
+        participantRows: [
+            { meeting_id: "meeting-1", username: "alice" },
+            { meeting_id: "meeting-1", username: "bob" },
+            { meeting_id: "meeting-1", username: "carol" },
+        ],
+        presenceRows: [
+            {
+                meeting_id: "meeting-1",
+                username: "alice",
+                session_id: "session-1",
+                active: 1,
+                last_seen_at: now,
+            },
+            {
+                meeting_id: "meeting-1",
+                username: "alice",
+                session_id: "session-2",
+                active: 1,
+                last_seen_at: now,
+            },
+            {
+                meeting_id: "meeting-1",
+                username: "bob",
+                session_id: "session-3",
+                active: 1,
+                last_seen_at: now,
+            },
+        ],
+        stateRows: [{ meeting_id: "meeting-1" }],
+    });
+    const store = new JitsiMeetStore({ db: mockDb });
+
+    const meetings = await store.listActiveMeetings();
+
+    assert.equal(meetings[0].participantCount, 3);
+    assert.equal(meetings[0].invitedParticipantCount, 3);
+    assert.equal(meetings[0].activeParticipantCount, 2);
+    assert.equal(meetings[0].activeSessionCount, 3);
 });

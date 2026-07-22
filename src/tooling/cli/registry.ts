@@ -6,14 +6,18 @@ import type {
 
 export const registry = new Map<string, CommandSpec>();
 
-function inferSection(name: string): string {
-    if (name.startsWith("user:")) return "User";
-    if (name.startsWith("system:")) return "System";
-    if (name.startsWith("modules:")) return "Modules";
-    if (name.startsWith("gateway:")) return "Gateways";
-    if (name.startsWith("api:")) return "API";
+function formatCommandPrefix(prefix: string): string {
+    return prefix
+        .split(/[-_]/g)
+        .filter(Boolean)
+        .map((part) => `${part.charAt(0).toUpperCase()}${part.slice(1)}`)
+        .join(" ");
+}
+
+function defaultSection(name: string): string {
     if (name === "help") return "General";
-    return "Extensions";
+    const [prefix] = name.split(":", 1);
+    return prefix ? formatCommandPrefix(prefix) : "Other";
 }
 
 export function register(
@@ -26,7 +30,7 @@ export function register(
         handler,
         usage: options?.usage ?? `cognisctl ${name}`,
         description: options?.description ?? "No description provided.",
-        section: options?.section ?? inferSection(name),
+        section: options?.section ?? defaultSection(name),
         render: options?.render,
     });
 }

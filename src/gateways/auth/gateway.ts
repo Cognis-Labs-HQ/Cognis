@@ -17,6 +17,7 @@ export interface AuthConfigField {
 export interface AuthProviderAdapter {
     readonly id: string;
     readonly name: string;
+    readonly version?: string;
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;
@@ -39,6 +40,7 @@ export interface AuthProviderAdapter {
 export interface AdapterInfo {
     id: string;
     name: string;
+    version?: string;
     enabled: boolean;
     locked?: boolean;
     config: Record<string, unknown>;
@@ -264,6 +266,7 @@ export class CoreAuthGateway {
             return {
                 id: adapter.id,
                 name: adapter.name,
+                version: adapter.version,
                 enabled: this.enabledAdapters.has(adapter.id),
                 locked: adapter.id === "local" || undefined,
                 config: {},
@@ -364,7 +367,10 @@ export class CoreAuthGateway {
             const pkgPath = path.join(authAdaptersRoot, entry, "package.json");
             try {
                 const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
+                const pkg = JSON.parse(raw) as {
+                    main?: string;
+                    version?: string;
+                };
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
@@ -391,6 +397,9 @@ export class CoreAuthGateway {
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
                 if (typeof mod.createAdapter === "function") {
                     const adapter = mod.createAdapter() as AuthProviderAdapter;
+                    if (pkg.version) {
+                        Object.assign(adapter, { version: pkg.version });
+                    }
                     if (adapter.id !== "local") {
                         this.registerAdapter(adapter, requires);
                     }

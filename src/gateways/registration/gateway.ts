@@ -57,6 +57,7 @@ export interface RegistrationPublicAdapter {
 export interface RegistrationGatewayAdapter {
     id: string;
     name: string;
+    version?: string;
     defaultEnabled?: boolean;
     invite?: RegistrationInviteAdapter;
     public?: RegistrationPublicAdapter;
@@ -65,6 +66,7 @@ export interface RegistrationGatewayAdapter {
 export interface RegistrationAdapterInfo {
     id: string;
     name: string;
+    version?: string;
     enabled: boolean;
 }
 
@@ -120,7 +122,10 @@ export class CoreRegistrationGateway {
             const pkgPath = path.join(adaptersRoot, entry, "package.json");
             try {
                 const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
+                const pkg = JSON.parse(raw) as {
+                    main?: string;
+                    version?: string;
+                };
                 if (!pkg.main) continue;
                 const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
@@ -129,6 +134,9 @@ export class CoreRegistrationGateway {
                     deps,
                 ) as RegistrationGatewayAdapter | null;
                 if (!adapter || !adapter.id || !adapter.name) continue;
+                if (pkg.version) {
+                    Object.assign(adapter, { version: pkg.version });
+                }
                 this.registerAdapter(adapter);
             } catch {
                 // Adapter load failures are non-fatal.
@@ -160,6 +168,7 @@ export class CoreRegistrationGateway {
         return Array.from(this.adapters.values()).map((adapter) => ({
             id: adapter.id,
             name: adapter.name,
+            version: adapter.version,
             enabled: this.enabledAdapters.has(adapter.id),
         }));
     }

@@ -24,10 +24,10 @@ At startup, `ModuleService` scans `COGNIS_MODULES_ROOT` for directories containi
 
 ### Internal vs external modules
 
-| Type       | Source                                         | Installation                           | Disclaimer                |
-| ---------- | ---------------------------------------------- | -------------------------------------- | ------------------------- |
-| `internal` | Bundled in the repository under `src/modules/` | Pre-installed                          | None                      |
-| `external` | Uploaded `.zip` or `.tar.gz` archive           | Via admin API or `modules:install` CLI | Displayed before enabling |
+| Type       | Source                                         | Installation                            | Disclaimer                |
+| ---------- | ---------------------------------------------- | --------------------------------------- | ------------------------- |
+| `internal` | Bundled in the repository under `src/modules/` | Pre-installed                           | None                      |
+| `external` | Uploaded `.zip` or `.tar.gz` archive           | Via admin API or `component:import` CLI | Displayed before enabling |
 
 External modules are installed by uploading a compressed archive. The framework extracts the archive, verifies its `manifest.json`, and places the module directory under `COGNIS_MODULES_ROOT`.
 
@@ -134,7 +134,7 @@ policy metadata for UI pages:
 
 ## GitHub Import Lifecycle
 
-1. Admin submits `repositoryUrl` and `versionTag` via Administration UI or `cognisctl modules:import-github`.
+1. Admin submits `repositoryUrl` and `versionTag` via Administration UI or `cognisctl component:import`.
 2. API route `/api/v1/modules/import/github` validates inputs and delegates to `ModuleService.importFromGithub`.
 3. Service downloads the GitHub tag archive from `codeload.github.com` and forwards bytes to the module runtime gateway.
 4. Runtime installs the archive as a standard drop-in module directory that follows the required file contract below.

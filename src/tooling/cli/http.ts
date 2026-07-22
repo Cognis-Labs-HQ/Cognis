@@ -1,5 +1,10 @@
 import { readFile } from "node:fs/promises";
 
+function formatPayloadForError(payload: unknown): string {
+    if (typeof payload === "string") return payload;
+    return JSON.stringify(payload, null, 2);
+}
+
 export class ApiRequestError extends Error {
     constructor(
         readonly status: number,
@@ -7,7 +12,7 @@ export class ApiRequestError extends Error {
         readonly payload: unknown,
     ) {
         super(
-            `API request failed (${status} ${statusText}): ${typeof payload === "string" ? payload : JSON.stringify(payload)}`,
+            `API request failed (${status} ${statusText}): ${formatPayloadForError(payload)}`,
         );
     }
 }
@@ -66,6 +71,23 @@ export async function apiPost(
     apiToken?: string,
 ): Promise<unknown> {
     return apiRequest(apiBaseUrl, route, { method: "POST", body, apiToken });
+}
+
+export async function apiPut(
+    apiBaseUrl: string,
+    route: string,
+    body?: unknown,
+    apiToken?: string,
+): Promise<unknown> {
+    return apiRequest(apiBaseUrl, route, { method: "PUT", body, apiToken });
+}
+
+export async function apiDelete(
+    apiBaseUrl: string,
+    route: string,
+    apiToken?: string,
+): Promise<unknown> {
+    return apiRequest(apiBaseUrl, route, { method: "DELETE", apiToken });
 }
 
 export async function resolveCliToken(): Promise<string> {

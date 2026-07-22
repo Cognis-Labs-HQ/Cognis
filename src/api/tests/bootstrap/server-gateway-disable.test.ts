@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { GatewayRegistry, type ModuleRuntimeGateway } from "@cognis/core";
+import {
+    GatewayRegistry,
+    HealthService,
+    type ModuleRuntimeGateway,
+} from "@cognis/core";
 import { buildServer } from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
@@ -113,6 +117,57 @@ test("buildServer serves static UI assets before registered catch-all routes", a
             "text/javascript; charset=utf-8",
         );
         assert.match(body, /export function escapeHtml/);
+    } finally {
+        await close(server);
+    }
+});
+
+test("buildServer serves system health from the injected health service", async () => {
+    const healthService = new HealthService();
+    healthService.contribute("test-gateway", () => ({
+        componentId: "test-gateway",
+        componentType: "gateway",
+        status: "warning",
+        message: "Injected health contribution",
+        checkedAt: "2026-07-20T05:02:58.073Z",
+    }));
+
+    const server = buildServer({
+        moduleRuntimeGateway: {
+            listManifests: async () => [],
+        } as unknown as ModuleRuntimeGateway,
+        healthService,
+        routeContext: createDefaultRouteContext(),
+    });
+
+    try {
+        const port = await listen(server);
+        const response = await fetch(
+            `http://127.0.0.1:${port}/api/v1/system/health`,
+        );
+        const payload = (await response.json()) as {
+            data: {
+                status: string;
+                contributions: Array<{
+                    componentId: string;
+                    componentType: string;
+                    status: string;
+                    message?: string;
+                }>;
+            };
+        };
+
+        assert.equal(response.status, 200);
+        assert.equal(payload.data.status, "warning");
+        assert.deepEqual(payload.data.contributions, [
+            {
+                componentId: "test-gateway",
+                componentType: "gateway",
+                status: "warning",
+                message: "Injected health contribution",
+                checkedAt: "2026-07-20T05:02:58.073Z",
+            },
+        ]);
     } finally {
         await close(server);
     }

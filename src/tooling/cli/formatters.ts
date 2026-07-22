@@ -80,6 +80,48 @@ export function formatBoolean(value: boolean, yes = "Yes", no = "No"): string {
     return colorize(value ? yes : no, value ? "green" : "yellow");
 }
 
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+    return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function humanizeKey(key: string): string {
+    return key
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[_-]+/g, " ")
+        .replace(/^./, (firstCharacter) => firstCharacter.toUpperCase());
+}
+
+function formatValue(value: unknown): string {
+    if (value === undefined || value === null || value === "") {
+        return FIELD_EMPTY_PLACEHOLDER;
+    }
+    if (typeof value === "boolean") return formatBoolean(value);
+    if (Array.isArray(value) || isPlainRecord(value)) {
+        return JSON.stringify(value, null, 2);
+    }
+    return String(value);
+}
+
+function collectTableColumns(
+    rows: Array<Record<string, unknown>>,
+): Array<{ key: string; label: string }> {
+    const keys: string[] = [];
+    for (const row of rows) {
+        for (const key of Object.keys(row)) {
+            const value = row[key];
+            if (
+                value === undefined ||
+                Array.isArray(value) ||
+                isPlainRecord(value)
+            ) {
+                continue;
+            }
+            if (!keys.includes(key)) keys.push(key);
+        }
+    }
+    return keys.slice(0, 8).map((key) => ({ key, label: humanizeKey(key) }));
+}
+
 function formatDurationMs(value: unknown): string {
     if (typeof value !== "number" || !Number.isFinite(value)) {
         return String(value);
@@ -96,7 +138,51 @@ export function formatStructured(value: unknown): string {
     const normalized =
         typeof value === "string" ? normalizeResponse(value) : value;
     if (typeof normalized === "string") return normalized;
+    if (normalized === undefined) return "";
     return JSON.stringify(normalized, null, 2);
+}
+
+export function renderStructuredSummary(value: unknown): string {
+    const normalized =
+        typeof value === "string" ? normalizeResponse(value) : value;
+    if (typeof normalized === "string") return normalized;
+    if (!isPlainRecord(normalized)) return formatStructured(normalized);
+
+    const sections: string[] = [];
+    const data = normalized.data;
+    if (Array.isArray(data)) {
+        const rows = data.filter(isPlainRecord);
+        const columns = collectTableColumns(rows);
+        if (rows.length > 0 && columns.length > 0) {
+            sections.push(formatTable(columns, rows));
+        } else {
+            sections.push(formatStructured(data));
+        }
+    } else if (isPlainRecord(data)) {
+        sections.push(
+            Object.entries(data)
+                .map(([key, fieldValue]) =>
+                    formatField(humanizeKey(key), formatValue(fieldValue)),
+                )
+                .join("\n"),
+        );
+    }
+
+    const meta = normalized.meta;
+    if (isPlainRecord(meta) && Object.keys(meta).length > 0) {
+        sections.push(formatHeading("Metadata", "cyan"));
+        sections.push(
+            Object.entries(meta)
+                .map(([key, fieldValue]) =>
+                    formatField(humanizeKey(key), formatValue(fieldValue)),
+                )
+                .join("\n"),
+        );
+    }
+
+    return sections.length > 0
+        ? sections.join("\n\n")
+        : formatStructured(normalized);
 }
 
 function formatTable(
@@ -146,6 +232,39 @@ function formatSuccessBlock(
     return [formatHeading(title, color), ...fields].join("\n");
 }
 
+export function renderApiErrorPayload(input: {
+    status?: number;
+    statusText?: string;
+    payload?: unknown;
+}): string {
+    const sections = [formatHeading("API Error", "red")];
+    if (input.status !== undefined) {
+        sections.push(
+            formatField(
+                "Status",
+                `${input.status}${input.statusText ? ` ${input.statusText}` : ""}`,
+            ),
+        );
+    }
+
+    const payload = input.payload;
+    const response = isPlainRecord(payload) ? payload : null;
+    const error = isPlainRecord(response?.error) ? response.error : null;
+    if (error) {
+        sections.push(formatField("Code", formatValue(error.code)));
+        sections.push(formatField("Message", formatValue(error.message)));
+        if (error.details !== undefined) {
+            sections.push(formatField("Details", formatValue(error.details)));
+        }
+        return sections.join("\n");
+    }
+
+    if (payload !== undefined && payload !== "") {
+        sections.push(formatField("Response", formatValue(payload)));
+    }
+    return sections.join("\n");
+}
+
 export function renderApiToken(payload: unknown): string {
     const response = normalizeResponse(payload) as {
         data?: {
@@ -176,9 +295,19 @@ export function renderSystemHealth(payload: unknown): string {
             timestamp?: string;
             startedAt?: string;
             uptimeMs?: number;
+            contributions?: Array<{
+                componentId?: string;
+                componentType?: string;
+                status?: string;
+                message?: string;
+            }>;
         };
     };
     const data = response.data ?? {};
+
+    const contributions = Array.isArray(data.contributions)
+        ? data.contributions
+        : [];
 
     return [
         formatHeading("System Health", "cyan"),
@@ -186,36 +315,65 @@ export function renderSystemHealth(payload: unknown): string {
         formatField("Checked", data.timestamp),
         formatField("Started", data.startedAt),
         formatField("Uptime", formatDurationMs(data.uptimeMs)),
+        ...(contributions.length
+            ? [
+                  "",
+                  formatHeading("Components", "cyan"),
+                  formatTable(
+                      [
+                          { key: "component", label: "Component" },
+                          { key: "type", label: "Type" },
+                          { key: "status", label: "Status" },
+                          { key: "message", label: "Message" },
+                      ],
+                      contributions.map((contribution) => ({
+                          component:
+                              contribution.componentId ??
+                              FIELD_EMPTY_PLACEHOLDER,
+                          type:
+                              contribution.componentType ??
+                              FIELD_EMPTY_PLACEHOLDER,
+                          status:
+                              contribution.status ?? FIELD_EMPTY_PLACEHOLDER,
+                          message:
+                              contribution.message ?? FIELD_EMPTY_PLACEHOLDER,
+                      })),
+                  ),
+              ]
+            : []),
     ].join("\n");
 }
 
-export function renderModulesList(payload: unknown): string {
+export function renderComponentsList(payload: unknown): string {
     const response = normalizeResponse(payload) as {
         data?: Array<{
             id?: string;
+            type?: string;
             version?: string;
-            class?: string;
             status?: string;
+            gatewayId?: string;
         }>;
     };
     const data = response.data ?? [];
 
     return [
-        formatHeading("Modules", "cyan"),
+        formatHeading("Components", "cyan"),
         formatTable(
             [
                 { key: "id", label: "ID" },
+                { key: "type", label: "Type" },
                 { key: "version", label: "Version" },
-                { key: "class", label: "Class" },
                 { key: "status", label: "Status" },
+                { key: "gatewayId", label: "Gateway" },
             ],
-            data.map((moduleEntry) => ({
-                id: moduleEntry.id ?? FIELD_EMPTY_PLACEHOLDER,
-                version: moduleEntry.version ?? FIELD_EMPTY_PLACEHOLDER,
-                class: moduleEntry.class ?? FIELD_EMPTY_PLACEHOLDER,
-                status: moduleEntry.status ?? FIELD_EMPTY_PLACEHOLDER,
+            data.map((component) => ({
+                id: component.id ?? FIELD_EMPTY_PLACEHOLDER,
+                type: component.type ?? FIELD_EMPTY_PLACEHOLDER,
+                version: component.version ?? FIELD_EMPTY_PLACEHOLDER,
+                status: component.status ?? FIELD_EMPTY_PLACEHOLDER,
+                gatewayId: component.gatewayId ?? FIELD_EMPTY_PLACEHOLDER,
             })),
-            { emptyMessage: "No modules found." },
+            { emptyMessage: "No components found." },
         ),
     ].join("\n\n");
 }
@@ -335,16 +493,38 @@ export function renderGatewayMutation(title: string, payload: unknown): string {
     ]);
 }
 
-export function renderModuleMutation(title: string, payload: unknown): string {
+export function renderComponentMutation(
+    title: string,
+    payload: unknown,
+): string {
     const response = normalizeResponse(payload) as {
-        data?: { moduleId?: string; enabled?: boolean };
+        componentId?: string;
+        componentType?: string;
+        gatewayId?: string;
+        data?: {
+            moduleId?: string;
+            enabled?: boolean;
+            status?: string;
+            saved?: boolean;
+        };
     };
+    const status =
+        response.data?.status ??
+        (typeof response.data?.enabled === "boolean"
+            ? response.data.enabled
+                ? "enabled"
+                : "disabled"
+            : undefined);
 
     return formatSuccessBlock(title, "green", [
-        formatField("Module", response.data?.moduleId),
         formatField(
-            "Status",
-            formatStatus(response.data?.enabled ? "enabled" : "disabled"),
+            "Component",
+            response.componentId ?? response.data?.moduleId,
         ),
+        formatField("Type", response.componentType),
+        ...(response.gatewayId
+            ? [formatField("Gateway", response.gatewayId)]
+            : []),
+        formatField("Status", formatStatus(status ?? "updated")),
     ]);
 }

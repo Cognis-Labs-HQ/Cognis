@@ -4,5 +4,8 @@
     "version": "1.1.5",
     "required": false,
     "requires": ["db", "auth"],
-    "hasAdapters": true
+    "hasAdapters": true,
+    "entrypoints": {
+        "cli": "./cli/index.js"
+    }
 }

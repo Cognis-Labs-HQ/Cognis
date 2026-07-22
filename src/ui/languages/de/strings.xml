@@ -657,4 +657,5 @@
   <string name="ui.app.users.archived">Archiviert</string>
   <string name="ui.app.login.reason.account_archived">Dein Konto ist archiviert. Kontaktiere einen Administrator, um den Zugriff wiederherzustellen.</string>
   <string name="ui.app.login.reason.account_deactivated">Dein Konto ist deaktiviert. Melde dich erneut an, um Interaktionen wiederherzustellen.</string>
+  <string name="ui.reuse.status">Status</string>
 </resources>

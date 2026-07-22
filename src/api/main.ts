@@ -10,6 +10,7 @@ import {
     GatewayService,
     GatewayRegistry,
     CapabilityStore,
+    HealthService,
     type BootstrapLog,
 } from "@cognis/core";
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
@@ -182,6 +183,7 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
+const healthService = new HealthService();
 
 const gatewayService = new GatewayService(gatewayRegistry);
 
@@ -189,6 +191,14 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+capabilities.contribute(
+    "system:health:contribute",
+    healthService.contribute.bind(healthService),
+);
+systemCtx.contributePublicCapability(
+    "system:health:contribute",
+    healthService.contribute.bind(healthService),
+);
 
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??
@@ -227,7 +237,7 @@ if (!routeContext) {
     );
 }
 
-const cliAccessToken = issueAccessToken("cognis-cli", "owner", null);
+const cliAccessToken = issueAccessToken("system:cognis-cli", "owner", null);
 try {
     await mkdir(path.dirname(cliTokenPath), { recursive: true });
     await writeFile(cliTokenPath, `${cliAccessToken}\n`, { mode: 0o600 });
@@ -397,6 +407,7 @@ const server = buildServer({
     routeRegistry,
     gatewayRegistry,
     uiRegistry,
+    healthService,
     log,
     createProfile,
     setProfileRole: capabilities.get<

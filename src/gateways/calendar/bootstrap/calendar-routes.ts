@@ -104,14 +104,27 @@ export function createCalendarCoreRoutes({
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            gateway.ensureDefaultCalendar(claims.sub);
+            const requestedAccountId = String(
+                url.searchParams.get("accountId") ?? "",
+            ).trim();
+            if (requestedAccountId && !hasMinRole(claims.role, "admin")) {
+                sendCalendarError(
+                    res,
+                    "forbidden",
+                    "Only administrators can list another account's calendars.",
+                    403,
+                );
+                return true;
+            }
+            const targetAccountId = requestedAccountId || claims.sub;
+            gateway.ensureDefaultCalendar(targetAccountId);
             const jitsiAvailable = await resolveJitsiAvailability(
                 resolveMeetingsProviderAvailability,
                 log,
             );
             const validatedCalendars = await validateSharedCalendars(
-                gateway.listCalendars(claims.sub),
-                claims.sub,
+                gateway.listCalendars(targetAccountId),
+                targetAccountId,
                 shareRegistry,
                 gateway,
                 log,
@@ -120,7 +133,8 @@ export function createCalendarCoreRoutes({
                 data: validatedCalendars,
                 meta: {
                     canInviteExternal: hasMinRole(claims.role, "admin"),
-                    currentAccountId: claims.sub,
+                    currentAccountId: targetAccountId,
+                    requestedByAccountId: claims.sub,
                     jitsiAvailable,
                 },
             });
@@ -133,8 +147,21 @@ export function createCalendarCoreRoutes({
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
+            const requestedAccountId = String(
+                url.searchParams.get("accountId") ?? "",
+            ).trim();
+            if (requestedAccountId && !hasMinRole(claims.role, "admin")) {
+                sendCalendarError(
+                    res,
+                    "forbidden",
+                    "Only administrators can list another account's invitations.",
+                    403,
+                );
+                return true;
+            }
+            const targetAccountId = requestedAccountId || claims.sub;
             sendJson(res, 200, {
-                data: gateway.listInvitedPendingEvents(claims.sub),
+                data: gateway.listInvitedPendingEvents(targetAccountId),
             });
             return true;
         }
@@ -161,9 +188,22 @@ export function createCalendarCoreRoutes({
                 );
                 return true;
             }
+            const requestedAccountId = String(
+                url.searchParams.get("accountId") ?? "",
+            ).trim();
+            if (requestedAccountId && !hasMinRole(claims.role, "admin")) {
+                sendCalendarError(
+                    res,
+                    "forbidden",
+                    "Only administrators can create calendars for another account.",
+                    403,
+                );
+                return true;
+            }
+            const targetAccountId = requestedAccountId || claims.sub;
             try {
                 const created = gateway.createCalendar({
-                    ownerAccountId: claims.sub,
+                    ownerAccountId: targetAccountId,
                     name,
                     visibility: normalizeVisibility(body?.visibility),
                     color: normalizeCalendarColor(body?.color),
