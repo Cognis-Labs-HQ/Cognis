@@ -90,5 +90,7 @@
   <string name="module.nextcloud_whiteboard.share_delete_failed">共有リンクを取り消せませんでした。</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">現在のホワイトボード上のすべての項目を完全に削除します。続行しますか？</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
+  <string name="module.nextcloud_whiteboard.preflight_websocket_failed">ホワイトボードサーバーが WebSocket 認証を拒否しました。API キー設定を確認してください。</string>
+  <string name="module.nextcloud_whiteboard.tool_lock">オブジェクト作成後も現在の描画ツールを維持</string>
 </resources>
 

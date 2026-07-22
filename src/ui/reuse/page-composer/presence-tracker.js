@@ -61,6 +61,13 @@ function createFallbackSessionId() {
     ).join("")}`;
 }
 
+function buildProfileAvatarUrl(avatarKey) {
+    return `/api/v1/files/profile/${String(avatarKey)
+        .split("/")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/")}`;
+}
+
 function renderPresenceEntry(entry) {
     const displayName = normalizePresenceName(
         entry.displayName || entry.handle,
@@ -74,7 +81,10 @@ function renderPresenceEntry(entry) {
         .join(" ");
     const label =
         entry.guest || !handle ? displayName : `${displayName} (@${handle})`;
-    const inner = `<span class="${classes}" style="--initials-bg: ${escapeHtml(color)};" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${escapeHtml(initials)}</span>`;
+    const avatarKey = String(entry.avatarKey || "").trim();
+    const inner = avatarKey
+        ? `<span class="${classes}" style="--initials-bg: ${escapeHtml(color)};" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"><img class="page-presence__avatar-img" src="${escapeHtml(buildProfileAvatarUrl(avatarKey))}" alt="" loading="lazy" onerror="this.remove()" />${escapeHtml(initials)}</span>`
+        : `<span class="${classes}" style="--initials-bg: ${escapeHtml(color)};" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}">${escapeHtml(initials)}</span>`;
     if (entry.guest || !handle) return inner;
     return `<a class="page-presence__profile" href="/profile/${encodeURIComponent(handle)}" aria-label="${escapeHtml(label)}">${inner}</a>`;
 }
@@ -154,6 +164,7 @@ export function createPresenceTracker({
                     entry.lastSeenAt,
                     entry.active,
                     entry.pointer?.updatedAt,
+                    entry.avatarKey ?? "",
                     JSON.stringify(entry.selection ?? null),
                 ].join(":"),
             )

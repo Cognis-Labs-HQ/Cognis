@@ -90,5 +90,7 @@
   <string name="module.nextcloud_whiteboard.share_delete_failed">Could not revoke share link.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">This permanently clears every item on the current whiteboard. Continue?</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard must pass its server check before it can be enabled.</string>
+  <string name="module.nextcloud_whiteboard.preflight_websocket_failed">The whiteboard server rejected websocket authentication. Check the API key configuration.</string>
+  <string name="module.nextcloud_whiteboard.tool_lock">Keep the current drawing tool active after creating an object</string>
 </resources>
 

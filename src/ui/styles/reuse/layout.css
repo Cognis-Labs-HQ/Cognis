@@ -845,6 +845,8 @@ button.dropdown-item {
     border-radius: 999px;
     color: #fff;
     display: inline-flex;
+    overflow: hidden;
+    position: relative;
     font-size: 0.78rem;
     font-weight: 700;
     height: 2rem;
@@ -853,6 +855,15 @@ button.dropdown-item {
     min-width: 2rem;
     padding: 0 0.35rem;
     box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+}
+
+.page-presence__avatar-img {
+    inset: 0;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
 }
 
 .page-presence__avatar.is-active {
