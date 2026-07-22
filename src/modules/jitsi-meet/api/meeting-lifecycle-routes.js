@@ -93,6 +93,7 @@ export function registerMeetingLifecycleRoutes({
                 classroomId: normalizedInput.classroomId,
                 createdBy: requesterUsername,
                 chatRoomId: chatRoom?.roomId ?? null,
+                scheduledAt: body.scheduledAt,
             });
 
             const participants = await store.listParticipants(meeting.id);
