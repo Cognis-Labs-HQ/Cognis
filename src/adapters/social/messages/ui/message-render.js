@@ -8,6 +8,7 @@ import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { formatDate, formatTime } from "/static/reuse/timestamp.js";
+import { registerSearchIndex } from "/static/reuse/search-bar.js";
 import { getQuickReactionEmojis } from "./emoji-helpers.js";
 import {
     decryptMessageOrReturnPlaintext,
@@ -30,6 +31,94 @@ const readReceiptHoverPopup = createAnchoredPopup({
     className: "messages-read-receipt-popup",
 });
 const threadRenderSignatures = new Map();
+
+let searchableRooms = [];
+let searchRoomKeyResolver = null;
+let searchI18n = null;
+const searchableRoomMessages = new Map();
+
+function roomSearchLabel(room) {
+    return (
+        room.displayName ||
+        room.name ||
+        room.title ||
+        room.participantDisplayName ||
+        room.participantHandle ||
+        room.id
+    );
+}
+
+async function collectRoomMessageSearchItems(room) {
+    const roomId = String(room?.id ?? "").trim();
+    if (!roomId) return [];
+    const roomLabel = roomSearchLabel(room);
+    let records = searchableRoomMessages.get(roomId) ?? [];
+    if (!records.length) {
+        const params = new URLSearchParams({ limit: "50" });
+        const response = await apiFetch(
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
+        );
+        if (!response.ok) return [];
+        const payload = await response.json();
+        const roomKey = searchRoomKeyResolver
+            ? await searchRoomKeyResolver(roomId)
+            : null;
+        records = await Promise.all(
+            (payload?.data ?? []).map(async (messageRecord) => ({
+                ...messageRecord,
+                text: roomKey
+                    ? await decryptMessageOrReturnPlaintext(
+                          roomKey,
+                          messageRecord,
+                      )
+                    : messageRecord.text || messageRecord.content || "",
+            })),
+        );
+        searchableRoomMessages.set(roomId, records);
+    }
+    return records
+        .filter(
+            (messageRecord) =>
+                !formatRoomEventText(messageRecord, searchI18n) &&
+                String(messageRecord.text ?? "").trim(),
+        )
+        .map((messageRecord) => {
+            const sender =
+                messageRecord.senderDisplayName ||
+                messageRecord.senderHandle ||
+                messageRecord.senderId ||
+                roomLabel;
+            const timeLabel = formatDate(messageRecord.createdAt, "");
+            return {
+                id: `message:${messageRecord.id}`,
+                label: sender,
+                description: [roomLabel, timeLabel].filter(Boolean).join(" — "),
+                url: `/messages/${encodeURIComponent(roomId)}#message-${encodeURIComponent(messageRecord.id)}`,
+                resultClass: "message",
+                searchText: [
+                    roomLabel,
+                    sender,
+                    messageRecord.senderHandle,
+                    messageRecord.text,
+                    timeLabel,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+                visible: true,
+            };
+        });
+}
+
+async function collectMessageSearchGroups() {
+    const items = (
+        await Promise.all(
+            (searchableRooms ?? []).map(collectRoomMessageSearchItems),
+        )
+    ).flat();
+    return items.length ? [{ category: "Messages", items }] : [];
+}
+
+registerSearchIndex("messages", collectMessageSearchGroups);
 
 function buildLastReadMap(decodedMessages) {
     const latestByAccount = new Map();
@@ -660,6 +749,7 @@ export async function renderThread(
             return { ...messageRecord, text };
         }),
     );
+    searchableRoomMessages.set(roomId, decoded);
     let previousDateLabel = "";
     const readersAtMessage = buildLastReadMap(decoded);
     const isSpeechBubbles = resolveMessageStyle() === "speech_bubbles";
@@ -725,7 +815,7 @@ export async function renderThread(
                     : "";
             const innerMetaRow = isSpeechBubbles ? "" : metadataRow;
             const outerMetaRow = isSpeechBubbles ? metadataRow : "";
-            return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}" data-search-label="${escapeHtml(displayName)}" data-search-text="${escapeHtml(messageSearchText)}">
+            return `${showDateDivider}<div id="message-${escapeHtml(encodeURIComponent(messageRecord.id))}" class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}" data-search-label="${escapeHtml(displayName)}" data-search-description="${escapeHtml(formatDate(messageRecord.createdAt, ""))}" data-search-text="${escapeHtml([messageSearchText, formatDate(messageRecord.createdAt, "")].filter(Boolean).join(" "))}">
         ${isOwn ? "" : formatMessageAvatar(messageRecord)}
         <div class="messages-message-wrap">
           ${bubbleAvatarMarkup}
@@ -782,10 +872,13 @@ export async function renderThread(
 }
 
 export async function loadRooms(i18n, { getRoomKey }) {
+    searchRoomKeyResolver = getRoomKey;
+    searchI18n = i18n;
     const response = await apiFetch("/api/v1/social/messages/rooms");
     if (!response.ok) return [];
     const payload = await response.json();
     const rooms = payload?.data ?? [];
+    searchableRooms = rooms;
     return Promise.all(
         rooms.map(async (room) => {
             const lastMessage = room.lastMessage ?? null;

@@ -348,6 +348,7 @@ function collectVisibleNavigationSearchGroups() {
         ".topnav a[href], .page-subnav a[href]",
     );
     for (const link of navigationLinks) {
+        if (link.closest(".study-page-subnav")) continue;
         if (!isVisibleSearchElement(link)) continue;
         const label = String(link.innerText ?? link.textContent ?? "")
             .replace(/\s+/g, " ")
@@ -559,16 +560,18 @@ async function filterLocalGroups(localGroups, query, options = {}) {
     if (!query) return [];
     const resolveMatch = createSearchMatchResolver(query, options);
     const registeredGroups = await getRegisteredSearchGroups(query, options);
-    return [...(localGroups ?? []), ...registeredGroups]
-        .map(normalizeSearchGroup)
-        .filter(Boolean)
-        .map((group) => ({
-            category: group.category,
-            items: group.items
-                .map((item) => attachSearchMatch(item, resolveMatch))
-                .filter(Boolean),
-        }))
-        .filter((group) => group.items.length > 0);
+    return filterVisibleSearchGroups(
+        [...(localGroups ?? []), ...registeredGroups]
+            .map(normalizeSearchGroup)
+            .filter(Boolean)
+            .map((group) => ({
+                category: group.category,
+                items: group.items
+                    .map((item) => attachSearchMatch(item, resolveMatch))
+                    .filter(Boolean),
+            }))
+            .filter((group) => group.items.length > 0),
+    );
 }
 
 function buildSearchUrl(endpoint, query, typeFilter, searchOptions = {}) {
@@ -626,6 +629,74 @@ function filterNavigableGroups(groups) {
         .map((group) => ({
             ...group,
             items: (group.items ?? []).filter(hasSelectableTarget),
+        }))
+        .filter((group) => group.items.length > 0);
+}
+
+function escapeSearchSelectorToken(value) {
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+        return CSS.escape(value);
+    }
+    return String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function isInternalSearchUrlAccessible(url) {
+    const rawUrl = String(url ?? "").trim();
+    if (!rawUrl) return true;
+    try {
+        const resolvedUrl = new URL(rawUrl, window.location.origin);
+        if (resolvedUrl.origin !== window.location.origin) return false;
+        if (
+            resolvedUrl.protocol !== "http:" &&
+            resolvedUrl.protocol !== "https:"
+        ) {
+            return false;
+        }
+        if (
+            resolvedUrl.pathname === window.location.pathname &&
+            resolvedUrl.hash
+        ) {
+            const targetId = decodeURIComponent(resolvedUrl.hash.slice(1));
+            const target =
+                document.getElementById(targetId) ||
+                document.querySelector(
+                    `[data-search-id="${escapeSearchSelectorToken(targetId)}"], [data-search-anchor="${escapeSearchSelectorToken(targetId)}"]`,
+                );
+            return target ? isVisibleSearchElement(target) : true;
+        }
+        return (
+            rawUrl.startsWith("/") ||
+            resolvedUrl.origin === window.location.origin
+        );
+    } catch {
+        return false;
+    }
+}
+
+function isSearchResultVisibleToUser(item) {
+    if (
+        item?.visible === false ||
+        item?.isVisible === false ||
+        item?.hidden === true ||
+        item?.private === true
+    ) {
+        return false;
+    }
+    const itemId = String(item?.id ?? "").trim();
+    const target = itemId
+        ? document.querySelector(
+              `[data-search-id="${escapeSearchSelectorToken(itemId)}"], [data-search-anchor="${escapeSearchSelectorToken(itemId)}"], [data-message-id="${escapeSearchSelectorToken(itemId)}"], [data-post-id="${escapeSearchSelectorToken(itemId)}"]`,
+          )
+        : null;
+    if (target && !isVisibleSearchElement(target)) return false;
+    return isInternalSearchUrlAccessible(item?.url);
+}
+
+function filterVisibleSearchGroups(groups) {
+    return (groups ?? [])
+        .map((group) => ({
+            ...group,
+            items: (group.items ?? []).filter(isSearchResultVisibleToUser),
         }))
         .filter((group) => group.items.length > 0);
 }
@@ -1109,19 +1180,17 @@ async function runSearch({
         const apiGroups = isGrouped
             ? responseData.map(normalizeSearchGroup).filter(Boolean)
             : [];
-        const matchedApiGroups = filterApiGroupMatches(
-            apiGroups,
-            query,
-            searchOptions,
+        const matchedApiGroups = filterVisibleSearchGroups(
+            filterApiGroupMatches(apiGroups, query, searchOptions),
         );
         const navigableApiGroups = isMultiSelect
             ? matchedApiGroups
             : filterNavigableGroups(matchedApiGroups);
         const flatItems = isGrouped
             ? []
-            : filterApiFlatMatches(responseData, query, searchOptions).filter(
-                  (item) => isMultiSelect || hasSelectableTarget(item),
-              );
+            : filterApiFlatMatches(responseData, query, searchOptions)
+                  .filter(isSearchResultVisibleToUser)
+                  .filter((item) => isMultiSelect || hasSelectableTarget(item));
         const mergedGroups = mergeSearchGroups([
             ...navigableApiGroups,
             ...navigableLocalGroups,

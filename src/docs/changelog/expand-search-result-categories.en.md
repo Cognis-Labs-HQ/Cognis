@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Search results respect visible access
+
+Search providers are now filtered before display so hidden or inaccessible result targets do not expose titles, snippets, timestamps, or other detail text. Posts, messages, and notifications also contribute visible, timestamped context while Study sub-pages avoid duplicate Navigation results.
+
 ## On-page finding replaces visible content results
 
 The old Visible Content result category is now an On this page search filter. When enabled, the popup keeps the page clear, hides grouped results, highlights every text match on the page, and exposes a current/total counter with Enter and arrow-button navigation.

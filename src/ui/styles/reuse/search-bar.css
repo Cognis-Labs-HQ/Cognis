@@ -368,3 +368,26 @@
     background: var(--accent, #3b82f6);
     color: var(--surface, #ffffff);
 }
+
+.search-popup-overlay,
+.search-popup-overlay * {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.search-popup-overlay ::-webkit-scrollbar {
+    height: 10px;
+    width: 10px;
+}
+
+.search-popup-overlay ::-webkit-scrollbar-track {
+    background: var(--scrollbar-track);
+}
+
+.search-popup-overlay ::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 999px;
+}
+
+.search-popup-overlay ::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-thumb-hover);
+}

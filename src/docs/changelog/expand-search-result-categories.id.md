@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Hasil pencarian menghormati akses yang terlihat
+
+Penyedia pencarian kini difilter sebelum ditampilkan agar target hasil yang tersembunyi atau tidak dapat diakses tidak membocorkan judul, cuplikan, timestamp, atau detail lain. Post, pesan, dan notifikasi juga menyertakan konteks terlihat bertimestamp, sementara subhalaman Study menghindari duplikasi hasil Navigation.
+
 ## Pencarian di halaman menggantikan hasil konten terlihat
 
 Kategori hasil Visible Content yang lama kini menjadi filter pencarian On this page. Saat diaktifkan, popup membuat halaman tetap jelas, menyembunyikan hasil berkelompok, menyorot semua kecocokan teks di halaman, dan menampilkan penghitung posisi/jumlah dengan navigasi Enter serta tombol panah.

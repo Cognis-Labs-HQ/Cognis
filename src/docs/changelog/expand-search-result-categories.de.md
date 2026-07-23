@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Suchergebnisse respektieren sichtbaren Zugriff
+
+Suchanbieter werden jetzt vor der Anzeige gefiltert, damit verborgene oder nicht erreichbare Ergebnisziele keine Titel, Ausschnitte, Zeitstempel oder andere Detailtexte preisgeben. Beiträge, Nachrichten und Benachrichtigungen liefern außerdem sichtbaren Kontext mit Zeitangaben, während Study-Unterseiten doppelte Navigationsergebnisse vermeiden.
+
 ## Seitensuche ersetzt sichtbare Inhaltsergebnisse
 
 Die bisherige Ergebnis-Kategorie „Visible Content“ ist jetzt der Suchfilter „On this page“. Wenn er aktiviert ist, bleibt die Seite unverdeckt, gruppierte Ergebnisse werden ausgeblendet, alle Texttreffer auf der Seite werden hervorgehoben und ein Zähler für aktuellen/gesamte Treffer mit Navigation per Eingabetaste und Pfeiltasten wird angezeigt.

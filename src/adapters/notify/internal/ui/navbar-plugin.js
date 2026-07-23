@@ -169,19 +169,27 @@ let seenIds = null;
 let relativeTimeNodes = [];
 
 function collectNotificationSearchGroups() {
-    const items = currentNotifications.map((notification) => ({
-        id: `notification:${notification.id}`,
-        label: notification.subject,
-        description: notification.senderName ?? "",
-        url: notification.actionUrl || window.location.pathname,
-        searchText: [
-            notification.subject,
-            notification.senderName,
-            notification.body,
-        ]
-            .filter(Boolean)
-            .join(" "),
-    }));
+    const items = currentNotifications.map((notification) => {
+        const timeLabel = formatRelativeTime(notification.createdAt);
+        return {
+            id: `notification:${notification.id}`,
+            label: notification.subject,
+            description: [notification.senderName, timeLabel]
+                .filter(Boolean)
+                .join(" — "),
+            url: notification.actionUrl || window.location.pathname,
+            searchText: [
+                notification.subject,
+                notification.senderName,
+                notification.body,
+                timeLabel,
+            ]
+                .filter(Boolean)
+                .join(" "),
+            resultClass: "notification",
+            visible: true,
+        };
+    });
     return items.length ? [{ category: "Notifications", items }] : [];
 }
 

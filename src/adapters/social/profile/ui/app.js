@@ -9,6 +9,8 @@ import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { registerSearchIndex } from "/static/reuse/search-bar.js";
+import { formatDate } from "/static/reuse/timestamp.js";
 import {
     loadOwnProfile,
     loadFollowers,
@@ -65,6 +67,27 @@ const PROFILE_BIO_MAX_CHARACTERS = 200;
 const PROFILE_DISPLAY_NAME_MAX_CHARACTERS = 80;
 const PROFILE_LOCATION_MAX_CHARACTERS = 120;
 const PROFILE_WEBSITE_MAX_CHARACTERS = 2048;
+
+function collectProfilePostSearchGroups() {
+    const items = (posts ?? []).map((post) => {
+        const author = profile?.displayName || profile?.handle || urlHandle;
+        const timeLabel = formatDate(post.createdAt, "");
+        return {
+            id: `post:${post.id}`,
+            label: post.title || author || "Post",
+            description: [author, timeLabel].filter(Boolean).join(" — "),
+            url: `${window.location.pathname}${window.location.search}#post-${encodeURIComponent(post.id)}`,
+            resultClass: "text",
+            searchText: [post.title, post.content, author, timeLabel]
+                .filter(Boolean)
+                .join(" "),
+            visible: true,
+        };
+    });
+    return items.length ? [{ category: "Posts", items }] : [];
+}
+
+registerSearchIndex("profile-posts", collectProfilePostSearchGroups);
 
 let profileImageActions = null;
 let postActions = null;

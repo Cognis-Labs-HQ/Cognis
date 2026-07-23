@@ -49,6 +49,9 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
+    assert.match(source, /filterVisibleSearchGroups/);
+    assert.match(source, /isSearchResultVisibleToUser/);
+    assert.match(source, /isInternalSearchUrlAccessible/);
     assert.match(source, /hasSelectableTarget/);
     assert.match(source, /normalizeResultClass/);
     assert.match(source, /dataset\.searchResultClass/);
@@ -112,6 +115,11 @@ test("search popup displays result categories below parameters", () => {
     assert.match(source, /\.search-popup-overlay--finder/);
     assert.match(source, /\.search-popup-page-find-controls/);
     assert.match(source, /\.search-page-find-highlight--current/);
+    assert.match(
+        source,
+        /scrollbar-color: var\(--scrollbar-thumb\) var\(--scrollbar-track\)/,
+    );
+    assert.match(source, /::-webkit-scrollbar-thumb/);
 });
 
 test("settings search exposes archive action by name and description", () => {
@@ -328,4 +336,47 @@ test("global search intercepts browser find shortcut", () => {
     );
     assert.match(searchSource, /focusOpenSearchInput\(\)/);
     assert.match(searchSource, /activeSearchToggleButton\?\.click\(\)/);
+});
+
+test("profile messages notifications and study indexes are privacy scoped", () => {
+    const profileSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/ui/app.js"),
+        "utf8",
+    );
+    const profileRenderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/ui/profile-render.js"),
+        "utf8",
+    );
+    const messagesSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+        "utf8",
+    );
+    const notificationsSource = readFileSync(
+        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+        "utf8",
+    );
+    const searchSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-bar.js"),
+        "utf8",
+    );
+
+    assert.match(profileSource, /registerSearchIndex\("profile-posts"/);
+    assert.match(profileSource, /collectProfilePostSearchGroups/);
+    assert.match(
+        profileRenderSource,
+        /id="post-\$\{escapeHtml\(encodeURIComponent\(post\.id\)\)\}"/,
+    );
+    assert.match(messagesSource, /registerSearchIndex\("messages"/);
+    assert.match(messagesSource, /collectMessageSearchGroups/);
+    assert.match(messagesSource, /collectRoomMessageSearchItems/);
+    assert.match(
+        messagesSource,
+        /id="message-\$\{escapeHtml\(encodeURIComponent\(messageRecord\.id\)\)\}"/,
+    );
+    assert.match(
+        notificationsSource,
+        /formatRelativeTime\(notification\.createdAt\)/,
+    );
+    assert.match(notificationsSource, /resultClass: "notification"/);
+    assert.match(searchSource, /link\.closest\("\.study-page-subnav"\)/);
 });
