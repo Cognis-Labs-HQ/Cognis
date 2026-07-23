@@ -168,6 +168,23 @@ registerSearchIndex("notifications", collectNotificationSearchGroups);
 let seenIds = null;
 let relativeTimeNodes = [];
 
+function collectNotificationSearchGroups() {
+    const items = currentNotifications.map((notification) => ({
+        id: `notification:${notification.id}`,
+        label: notification.subject,
+        description: notification.senderName ?? "",
+        url: notification.actionUrl || window.location.pathname,
+        searchText: [
+            notification.subject,
+            notification.senderName,
+            notification.body,
+        ]
+            .filter(Boolean)
+            .join(" "),
+    }));
+    return items.length ? [{ category: "Notifications", items }] : [];
+}
+
 function tickRelativeTimes() {
     for (const node of relativeTimeNodes) {
         const timestamp = Number(node.dataset.relativeTime);

@@ -44,6 +44,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
+    assert.match(source, /const isMultiSelect = Boolean\(multiSelectState\)/);
     assert.match(source, /data-message-id/);
     assert.match(source, /data-chat-id/);
     assert.match(source, /data-search-description/);
@@ -147,5 +148,7 @@ test("visible search indexes meetings calendar notifications and posts", () => {
         notificationSource,
         /dataset\.searchCategory = "Notifications"/,
     );
+    assert.match(notificationSource, /registerSearchIndex\("notifications"/);
+    assert.match(notificationSource, /function collectNotificationSearchGroups/);
     assert.match(profileSource, /data-search-category="Posts"/);
 });

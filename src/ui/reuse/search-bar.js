@@ -656,7 +656,8 @@ async function runSearch({
         query,
         searchOptions,
     );
-    const navigableLocalGroups = multiSelect
+    const isMultiSelect = Boolean(multiSelectState);
+    const navigableLocalGroups = isMultiSelect
         ? matchedLocalGroups
         : filterNavigableGroups(matchedLocalGroups);
 
@@ -693,13 +694,13 @@ async function runSearch({
         const apiGroups = isGrouped
             ? responseData.map(normalizeSearchGroup).filter(Boolean)
             : [];
-        const navigableApiGroups = multiSelect
+        const navigableApiGroups = isMultiSelect
             ? apiGroups
             : filterNavigableGroups(apiGroups);
         const flatItems = isGrouped
             ? []
             : responseData.filter(
-                  (item) => multiSelect || String(item?.url ?? "").trim(),
+                  (item) => isMultiSelect || String(item?.url ?? "").trim(),
               );
         const mergedGroups = mergeSearchGroups([
             ...navigableApiGroups,
