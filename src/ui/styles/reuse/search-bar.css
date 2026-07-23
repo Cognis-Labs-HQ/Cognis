@@ -95,9 +95,18 @@
     border: 1px solid var(--border);
     border-radius: 999px;
     color: var(--text-muted);
+    cursor: pointer;
     font-size: 0.72rem;
     font-weight: 600;
     padding: 0.2rem 0.5rem;
+}
+
+.search-popup-result-category-pill:hover,
+.search-popup-result-category-pill:focus-visible,
+.search-popup-result-category-pill--active {
+    border-color: var(--accent, #3b82f6);
+    color: var(--accent, #3b82f6);
+    outline: none;
 }
 
 .search-popup-results {

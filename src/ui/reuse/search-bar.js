@@ -336,9 +336,14 @@ function appendRegisteredSearchContribution(groups, categoryId, contribution) {
     }
 }
 
-async function resolveSearchProviderContribution(categoryId, provider, groups) {
+async function resolveSearchProviderContribution(
+    categoryId,
+    provider,
+    groups,
+    providerContext = {},
+) {
     try {
-        const result = await provider();
+        const result = await provider(providerContext);
         const contributions = Array.isArray(result) ? result : [result];
         for (const contribution of contributions) {
             appendRegisteredSearchContribution(
@@ -389,7 +394,10 @@ async function getRegisteredSearchGroups(query = "", searchOptions = {}) {
             typeof registration === "function"
                 ? registration
                 : registration?.provider;
-        await resolveSearchProviderContribution(categoryId, provider, groups);
+        await resolveSearchProviderContribution(categoryId, provider, groups, {
+            query,
+            searchOptions: normalizeSearchOptions(searchOptions),
+        });
     }
     return groups;
 }
@@ -568,22 +576,68 @@ function selectSearchResult(item, onSelect, closeOverlay) {
         });
 }
 
-function renderResultCategorySummary(categoriesContainer, groups) {
+function resolveResultCategories(groups) {
+    return Array.from(
+        new Set(
+            (groups ?? [])
+                .filter((group) => group.items?.length > 0)
+                .map((group) => String(group.category ?? "").trim())
+                .filter(Boolean),
+        ),
+    );
+}
+
+function getCategoryFilterState(categoriesContainer) {
+    if (!categoriesContainer) return null;
+    if (!categoriesContainer.__selectedSearchCategories) {
+        categoriesContainer.__selectedSearchCategories = new Set();
+    }
+    return categoriesContainer.__selectedSearchCategories;
+}
+
+function filterGroupsBySelectedCategories(groups, selectedCategories) {
+    if (!selectedCategories || selectedCategories.size === 0) return groups;
+    return (groups ?? []).filter((group) =>
+        selectedCategories.has(String(group.category ?? "").trim()),
+    );
+}
+
+function renderResultCategorySummary(
+    categoriesContainer,
+    groups,
+    onCategoryFilterChange,
+) {
     if (!categoriesContainer) return;
     categoriesContainer.innerHTML = "";
-    const categories = (groups ?? [])
-        .filter((group) => group.items?.length > 0)
-        .map((group) => String(group.category ?? "").trim())
-        .filter(Boolean);
-    if (new Set(categories).size < 2) {
+    const categories = resolveResultCategories(groups);
+    const selectedCategories = getCategoryFilterState(categoriesContainer);
+    for (const selectedCategory of Array.from(selectedCategories)) {
+        if (!categories.includes(selectedCategory)) {
+            selectedCategories.delete(selectedCategory);
+        }
+    }
+    if (categories.length < 2) {
         categoriesContainer.hidden = true;
         return;
     }
     categoriesContainer.hidden = false;
     for (const category of categories) {
-        const categoryPill = document.createElement("span");
-        categoryPill.className = "search-popup-result-category-pill";
+        const categoryPill = document.createElement("button");
+        const isSelected = selectedCategories.has(category);
+        categoryPill.type = "button";
+        categoryPill.className = `search-popup-result-category-pill${
+            isSelected ? " search-popup-result-category-pill--active" : ""
+        }`;
         categoryPill.textContent = category;
+        categoryPill.setAttribute("aria-pressed", String(isSelected));
+        categoryPill.addEventListener("click", () => {
+            if (selectedCategories.has(category)) {
+                selectedCategories.delete(category);
+            } else {
+                selectedCategories.add(category);
+            }
+            onCategoryFilterChange?.();
+        });
         categoriesContainer.appendChild(categoryPill);
     }
 }
@@ -595,9 +649,25 @@ function renderGroupedResults(
     closeOverlay,
     categoriesContainer = null,
 ) {
-    renderResultCategorySummary(categoriesContainer, groups);
+    const renderFilteredGroups = () =>
+        renderGroupedResults(
+            resultsContainer,
+            groups,
+            onSelect,
+            closeOverlay,
+            categoriesContainer,
+        );
+    renderResultCategorySummary(
+        categoriesContainer,
+        groups,
+        renderFilteredGroups,
+    );
+    const visibleGroups = filterGroupsBySelectedCategories(
+        groups,
+        getCategoryFilterState(categoriesContainer),
+    );
     resultsContainer.innerHTML = "";
-    for (const group of groups) {
+    for (const group of visibleGroups) {
         if (!group.items?.length) continue;
         const heading = document.createElement("h3");
         heading.className = "search-popup-category";
@@ -637,6 +707,7 @@ function renderSearchPendingMessage(
     if (categoriesContainer) {
         categoriesContainer.innerHTML = "";
         categoriesContainer.hidden = true;
+        getCategoryFilterState(categoriesContainer)?.clear();
     }
     resultsContainer.innerHTML = "";
     const message = document.createElement("p");
@@ -657,6 +728,7 @@ function renderFlatResults(
     if (categoriesContainer) {
         categoriesContainer.innerHTML = "";
         categoriesContainer.hidden = true;
+        getCategoryFilterState(categoriesContainer)?.clear();
     }
     resultsContainer.innerHTML = "";
     if (!items.length) {
@@ -880,10 +952,16 @@ export function registerSearchCategory(categoryId, provider, options = {}) {
             "search",
             stageId,
             { id: `search:${resolvedCategoryId}` },
-            () =>
+            (stageContext) =>
                 REGISTERED_SEARCH_CATEGORIES.get(
                     resolvedCategoryId,
-                )?.provider?.(),
+                )?.provider?.({
+                    query: stageContext?.input?.query ?? "",
+                    searchOptions: normalizeSearchOptions(
+                        stageContext?.input?.searchOptions,
+                    ),
+                    stageId,
+                }),
         );
     }
     return () => {

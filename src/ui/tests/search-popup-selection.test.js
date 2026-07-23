@@ -39,6 +39,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /stageId: "visible-indexes"/);
     assert.match(source, /registerSearchCategory\("visible-content"/);
     assert.match(source, /uiCtx\.runFlow\("search"/);
+    assert.match(source, /providerContext/);
+    assert.match(source, /stageContext\?\.input\?\.query/);
     assert.match(source, /data-search-exclude/);
     assert.match(source, /collectBrowserPreferenceSearchGroups/);
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
@@ -47,6 +49,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /hasSelectableTarget/);
     assert.match(source, /filterApiFlatMatches/);
     assert.match(source, /renderResultCategorySummary/);
+    assert.match(source, /filterGroupsBySelectedCategories/);
+    assert.match(source, /__selectedSearchCategories/);
     assert.match(source, /search-popup-result-categories/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(
@@ -81,6 +85,7 @@ test("search popup displays result categories below parameters", () => {
     );
     assert.match(source, /\.search-popup-result-categories/);
     assert.match(source, /\.search-popup-result-category-pill/);
+    assert.match(source, /\.search-popup-result-category-pill--active/);
 });
 
 test("settings search exposes archive action by name and description", () => {
