@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Pages and post results are easier to find
+
+Navigation entries now appear in Pages, Study subpages include their parent path such as Study / Japanese / Hiragana, Docs and Changelog pages are restored to page indexing, visible post cards are indexed directly, and on-page find highlights use stronger green contrast in both light and dark themes.
+
 ## Search results respect visible access
 
 Search providers are now filtered before display so hidden or inaccessible result targets do not expose titles, snippets, timestamps, or other detail text. Posts, messages, and notifications also contribute visible, timestamped context while Study sub-pages avoid duplicate Navigation results.

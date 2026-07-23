@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Halaman dan post lebih mudah ditemukan
+
+Entri Navigation kini muncul di Pages, subhalaman Study menyertakan jalur induk seperti Study / Japanese / Hiragana, halaman Docs dan Changelog kembali masuk indeks halaman, kartu post yang terlihat diindeks langsung, dan sorotan pencarian di halaman memakai kontras hijau yang lebih kuat di tema terang maupun gelap.
+
 ## Hasil pencarian menghormati akses yang terlihat
 
 Penyedia pencarian kini difilter sebelum ditampilkan agar target hasil yang tersembunyi atau tidak dapat diakses tidak membocorkan judul, cuplikan, timestamp, atau detail lain. Post, pesan, dan notifikasi juga menyertakan konteks terlihat bertimestamp, sementara subhalaman Study menghindari duplikasi hasil Navigation.

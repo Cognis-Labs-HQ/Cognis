@@ -372,7 +372,42 @@ function collectVisibleNavigationSearchGroups() {
             searchText: [parentLabel, label].filter(Boolean).join(" "),
         });
     }
-    return items.length ? [{ category: "Navigation", items }] : [];
+    return items.length ? [{ category: "Pages", items }] : [];
+}
+
+function collectVisiblePostSearchGroups() {
+    const items = [];
+    const postCards = document.querySelectorAll("[data-post-id]");
+    for (const postCard of postCards) {
+        if (!isVisibleSearchElement(postCard)) continue;
+        const postId = String(
+            postCard.getAttribute("data-post-id") ?? "",
+        ).trim();
+        const label =
+            postCard.getAttribute("data-search-label") ||
+            String(
+                postCard.querySelector(".profile-post-title")?.textContent ??
+                    "Post",
+            ).trim();
+        const description =
+            postCard.getAttribute("data-search-description") ||
+            String(postCard.querySelector("time")?.textContent ?? "").trim();
+        const searchText =
+            postCard.getAttribute("data-search-text") ||
+            resolveSearchableElementText(postCard);
+        const targetId = postCard.id || `post-${encodeURIComponent(postId)}`;
+        if (!postId || !label || !searchText) continue;
+        items.push({
+            id: `post:${postId}`,
+            label,
+            description,
+            url: `${window.location.pathname}${window.location.search}#${targetId}`,
+            resultClass: "text",
+            searchText,
+            visible: true,
+        });
+    }
+    return items.length ? [{ category: "Posts", items }] : [];
 }
 
 function collectVisibleContentSearchGroups() {
@@ -1296,6 +1331,9 @@ export function registerSearchIndex(categoryId, provider, options = {}) {
 }
 
 registerSearchCategory("visible-page", collectVisiblePageSearchGroups, {
+    stageId: "visible-indexes",
+});
+registerSearchCategory("visible-posts", collectVisiblePostSearchGroups, {
     stageId: "visible-indexes",
 });
 registerSearchCategory(

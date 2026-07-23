@@ -380,3 +380,31 @@ test("profile messages notifications and study indexes are privacy scoped", () =
     assert.match(notificationsSource, /resultClass: "notification"/);
     assert.match(searchSource, /link\.closest\("\.study-page-subnav"\)/);
 });
+
+test("docs changelogs and study subpages are indexed as pages", () => {
+    const docsSource = readFileSync(
+        resolve(ROOT, "src/ui/app/docs/index.js"),
+        "utf8",
+    );
+    const studySource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        "utf8",
+    );
+    const styleSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+
+    assert.match(docsSource, /category: "Pages"/);
+    assert.match(docsSource, /ui\.layout\.footer\.changelogs/);
+    assert.match(studySource, /category: "Pages"/);
+    assert.match(
+        studySource,
+        /languageName,[\s\S]*label,[\s\S]*\]\.join\(" \/ "\)/,
+    );
+    assert.match(styleSource, /#86efac/);
+    assert.match(
+        styleSource,
+        /data-theme="dark"\] \.search-page-find-highlight/,
+    );
+});

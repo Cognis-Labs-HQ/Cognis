@@ -81,7 +81,7 @@ function createDocsSearchProvider(i18n, docs, activeDocContent) {
             const searchItem = {
                 id: `docs:${item.slug}`,
                 label: title,
-                description: groupLabel(i18n, item.group || "platform"),
+                description: `${isChangelogDoc(item) ? i18n.t("ui.layout.footer.changelogs") : i18n.t("ui.reuse.docs")} / ${groupLabel(i18n, item.group || "platform")}`,
                 resultClass: "page",
                 url: isChangelogDoc(item)
                     ? changelogSlugToRoutePath(item.slug)
@@ -103,9 +103,7 @@ function createDocsSearchProvider(i18n, docs, activeDocContent) {
             }
         }
         return [
-            docsItems.length
-                ? { category: i18n.t("ui.reuse.docs"), items: docsItems }
-                : null,
+            docsItems.length ? { category: "Pages", items: docsItems } : null,
             changelogItems.length
                 ? {
                       category: i18n.t("ui.layout.footer.changelogs"),

@@ -391,3 +391,24 @@
 .search-popup-overlay ::-webkit-scrollbar-thumb:hover {
     background: var(--scrollbar-thumb-hover);
 }
+
+.search-page-find-highlight {
+    background: color-mix(in srgb, #16a34a 42%, transparent);
+}
+
+.search-page-find-highlight--current {
+    background: #86efac;
+    color: #052e16;
+}
+
+:root[data-theme="dark"] .search-page-find-highlight,
+[data-theme="dark"] .search-page-find-highlight {
+    background: color-mix(in srgb, #34d399 55%, transparent);
+    color: #ecfdf5;
+}
+
+:root[data-theme="dark"] .search-page-find-highlight--current,
+[data-theme="dark"] .search-page-find-highlight--current {
+    background: #22c55e;
+    color: #02130a;
+}

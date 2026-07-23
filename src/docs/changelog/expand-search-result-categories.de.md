@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Seiten und Beiträge sind leichter zu finden
+
+Navigationseinträge erscheinen jetzt unter Pages, Study-Unterseiten enthalten ihren übergeordneten Pfad wie Study / Japanese / Hiragana, Docs- und Changelog-Seiten sind wieder in der Seitenindexierung enthalten, sichtbare Beitragskarten werden direkt indexiert, und die Treffer der Seitensuche nutzen in hellen und dunklen Designs stärkere grüne Kontraste.
+
 ## Suchergebnisse respektieren sichtbaren Zugriff
 
 Suchanbieter werden jetzt vor der Anzeige gefiltert, damit verborgene oder nicht erreichbare Ergebnisziele keine Titel, Ausschnitte, Zeitstempel oder andere Detailtexte preisgeben. Beiträge, Nachrichten und Benachrichtigungen liefern außerdem sichtbaren Kontext mit Zeitangaben, während Study-Unterseiten doppelte Navigationsergebnisse vermeiden.

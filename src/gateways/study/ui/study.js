@@ -504,7 +504,9 @@ async function mountHub(
             const languageName = language.name || languageCode;
             items.push({
                 id: `study-language:${languageCode}`,
-                label: languageName,
+                label: [i18n.t("gateway.study.page_title"), languageName].join(
+                    " / ",
+                ),
                 description: i18n.t("gateway.study.page_title"),
                 url: buildHubUrl(languageCode),
                 resultClass: "page",
@@ -523,8 +525,15 @@ async function mountHub(
                 if (!pageUrl || !label) continue;
                 items.push({
                     id: `study-module:${languageCode}:${component?.id ?? label}`,
-                    label,
-                    description: languageName,
+                    label: [
+                        i18n.t("gateway.study.page_title"),
+                        languageName,
+                        label,
+                    ].join(" / "),
+                    description: [
+                        i18n.t("gateway.study.page_title"),
+                        languageName,
+                    ].join(" / "),
                     url: pageUrl,
                     resultClass: "page",
                     searchText: [
@@ -540,7 +549,10 @@ async function mountHub(
         }
         items.push({
             id: "study-settings",
-            label: i18n.t("gateway.study.language_settings"),
+            label: [
+                i18n.t("gateway.study.page_title"),
+                i18n.t("gateway.study.language_settings"),
+            ].join(" / "),
             description: i18n.t("gateway.study.page_title"),
             url: buildSettingsUrl(),
             resultClass: "setting",
@@ -549,9 +561,7 @@ async function mountHub(
                 i18n.t("gateway.study.language_settings"),
             ].join(" "),
         });
-        return items.length
-            ? [{ category: i18n.t("gateway.study.page_title"), items }]
-            : [];
+        return items.length ? [{ category: "Pages", items }] : [];
     }
 
     registerSearchIndex("study-contents", collectStudySearchGroups);
