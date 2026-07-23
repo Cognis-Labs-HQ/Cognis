@@ -238,6 +238,14 @@ test("visible search indexes meetings calendar notifications and posts", () => {
         resolve(ROOT, "src/adapters/social/profile/ui/profile-render.js"),
         "utf8",
     );
+    const profileNavbarSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/ui/navbar.js"),
+        "utf8",
+    );
+    const profileSearchSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/ui/search/index.js"),
+        "utf8",
+    );
     assert.match(meetingSource, /dataset\.searchCategory = "Meetings"/);
     assert.match(
         readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
@@ -283,6 +291,10 @@ test("visible search indexes meetings calendar notifications and posts", () => {
         /function collectNotificationSearchGroups/,
     );
     assert.match(profileSource, /data-search-category="Posts"/);
+    assert.match(profileNavbarSource, /registerSearchIndexing\(\)/);
+    assert.match(profileSearchSource, /registerSearchIndex\("global-posts"/);
+    assert.match(profileSearchSource, /\/api\/v1\/social\/posts\/visible/);
+    assert.match(profileSearchSource, /createUserContentSearchItem/);
 });
 
 test("study content and sub-navigation participate in global search", () => {
@@ -346,7 +358,6 @@ test("global search intercepts browser find shortcut", () => {
         resolve(ROOT, "src/ui/reuse/search-bar.js"),
         "utf8",
     );
-
     assert.match(searchSource, /function bindSearchShortcut/);
     assert.match(searchSource, /event\.preventDefault\(\)/);
     assert.match(
@@ -378,7 +389,14 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         resolve(ROOT, "src/ui/reuse/search-bar.js"),
         "utf8",
     );
+    const postRoutesSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/routes/posts.ts"),
+        "utf8",
+    );
 
+    assert.match(postRoutesSource, /\/api\/v1\/social\/posts\/visible/);
+    assert.match(postRoutesSource, /profileStore\.getAllPosts\(\)/);
+    assert.match(postRoutesSource, /canViewPost/);
     assert.match(profileSource, /registerSearchIndex\("profile-posts"/);
     assert.match(profileSource, /collectProfilePostSearchGroups/);
     assert.match(
@@ -399,6 +417,8 @@ test("profile messages notifications and study indexes are privacy scoped", () =
     assert.match(notificationsSource, /resultClass: "notification"/);
     assert.match(searchSource, /link\.closest\("\.study-page-subnav"\)/);
     assert.match(searchSource, /category: "Pages"/);
+    assert.match(searchSource, /registeredLanguages/);
+    assert.match(searchSource, /id: "global-study-page"/);
 });
 
 test("docs changelogs and study subpages are indexed as pages", () => {
@@ -462,4 +482,5 @@ test("global pages and messages indexes register from shared surfaces", () => {
     assert.match(messagesIndexSource, /createUserContentSearchItem/);
     assert.match(messagesIndexSource, /\/api\/v1\/social\/messages\/rooms/);
     assert.match(messagesIndexSource, /decryptSearchMessage/);
+    assert.match(messagesIndexSource, /error\?\.name !== "OperationError"/);
 });

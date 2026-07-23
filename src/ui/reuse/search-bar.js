@@ -553,26 +553,26 @@ function collectGlobalDocsSearchGroups() {
 }
 
 async function loadGlobalStudySearchGroups() {
-    const [languagesPayload, prefsPayload] = await Promise.all([
-        searchFetchJson("/api/v1/study/registered-languages"),
-        searchFetchJson("/api/v1/study/preferences"),
-    ]);
-    const learningLanguages = Array.isArray(
-        prefsPayload?.data?.learningLanguages,
-    )
-        ? prefsPayload.data.learningLanguages
-        : [];
-    const languageByCode = new Map(
-        (Array.isArray(languagesPayload?.data)
-            ? languagesPayload.data
-            : []
-        ).map((language) => [String(language?.code ?? ""), language]),
+    const languagesPayload = await searchFetchJson(
+        "/api/v1/study/registered-languages",
     );
-    const items = [];
-    for (const languageCode of learningLanguages) {
-        const language = languageByCode.get(languageCode) ?? {
-            name: languageCode,
-        };
+    const registeredLanguages = Array.isArray(languagesPayload?.data)
+        ? languagesPayload.data
+        : [];
+    const items = [
+        {
+            id: "global-study-page",
+            label: "Study",
+            description: "Pages",
+            url: "/study",
+            resultClass: "page",
+            searchText: "Study",
+            visible: true,
+        },
+    ];
+    for (const language of registeredLanguages) {
+        const languageCode = String(language?.code ?? "").trim();
+        if (!languageCode) continue;
         const languageName = String(language?.name || languageCode);
         const modulesPayload = await searchFetchJson(
             `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,

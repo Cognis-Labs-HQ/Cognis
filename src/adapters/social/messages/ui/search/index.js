@@ -42,10 +42,12 @@ async function decryptSearchMessage(roomKey, messageRecord) {
         );
         return messagesSearchDecoder.decode(decrypted).trim();
     } catch (error) {
-        console.warn("[messages-search]:decrypt-failed", {
-            messageId: messageRecord.id,
-            error,
-        });
+        if (error?.name !== "OperationError") {
+            console.warn("[messages-search]:decrypt-failed", {
+                messageId: messageRecord.id,
+                error,
+            });
+        }
         return "";
     }
 }

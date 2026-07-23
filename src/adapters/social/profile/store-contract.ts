@@ -95,6 +95,7 @@ export interface ProfileStore extends ProfileCreateStore {
     getFollowerCount(accountId: string): Promise<number>;
     getFollowingCount(accountId: string): Promise<number>;
     getPostsByAccount(accountId: string): Promise<Post[]>;
+    getAllPosts(): Promise<Post[]>;
     getFileSizeLimit(category: string): Promise<number>;
     isBlocked(blockerId: string, blockedId: string): Promise<boolean>;
     isFollowing(followerId: string, followingId: string): Promise<boolean>;
@@ -318,6 +319,14 @@ export class VolatileProfileStore implements ProfileStore {
 
     async getPostsByAccount(accountId: string): Promise<Post[]> {
         return this.posts.get(accountId) ?? [];
+    }
+
+    async getAllPosts(): Promise<Post[]> {
+        return Array.from(this.posts.values())
+            .flat()
+            .sort((postA, postB) =>
+                postB.createdAt.localeCompare(postA.createdAt),
+            );
     }
 
     async getFileSizeLimit(category: string): Promise<number> {

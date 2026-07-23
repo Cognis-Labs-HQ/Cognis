@@ -154,6 +154,48 @@ export function createPostRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/social/posts/visible" &&
+            req.method === "GET"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const query = String(url.searchParams.get("q") ?? "")
+                .trim()
+                .toLowerCase();
+            const allPosts = await profileStore.getAllPosts();
+            const visible: Array<Post & { author: AccountProfile }> = [];
+            for (const post of allPosts) {
+                const author = await profileStore.getProfile(post.accountId);
+                if (!author) continue;
+                if (
+                    !(await canViewPost(
+                        claims.sub,
+                        claims.role,
+                        post,
+                        author,
+                        profileStore,
+                    ))
+                ) {
+                    continue;
+                }
+                const haystack = [
+                    post.title,
+                    post.content,
+                    author.handle,
+                    author.displayName,
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+                if (query && !haystack.includes(query)) continue;
+                visible.push({ ...post, author });
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: visible }));
+            return true;
+        }
+
         const deleteMatch = url.pathname.match(
             /^\/api\/v1\/social\/posts\/([^/]+)$/,
         );

@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Search finds study pages and visible posts
+
+Study now adds the gateway page plus every registered English and Japanese language sub-page into the Pages category, and social profile search dynamically indexes every post the signed-in user is allowed to view.
+
 ## Search architecture is component-scoped
 
 Search indexing now exposes a ctx-backed search capability with per-component avenues, and message search moved into a component-owned index module that uses the standardized user-content result shape.

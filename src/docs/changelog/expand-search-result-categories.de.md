@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Suche findet Study-Seiten und sichtbare Beiträge
+
+Study fügt jetzt die Gateway-Seite sowie jede registrierte englische und japanische Sprach-Unterseite zur Kategorie Pages hinzu, und die Social-Profile-Suche indiziert dynamisch jeden Beitrag, den der angemeldete Benutzer sehen darf.
+
 ## Sucharchitektur ist komponentenbezogen
 
 Die Suchindizierung stellt jetzt eine ctx-gestützte Suchfähigkeit mit komponentenspezifischen Wegen bereit, und die Nachrichtensuche wurde in ein komponenteneigenes Indexmodul verschoben, das die standardisierte Ergebnisform für Benutzerinhalte nutzt.

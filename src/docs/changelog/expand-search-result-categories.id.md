@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Pencarian menemukan halaman Study dan posting yang terlihat
+
+Study kini menambahkan halaman gateway serta setiap subhalaman bahasa Inggris dan Jepang yang terdaftar ke kategori Pages, dan pencarian profil sosial mengindeks secara dinamis setiap posting yang boleh dilihat pengguna yang masuk.
+
 ## Arsitektur pencarian kini berbasis komponen
 
 Pengindeksan pencarian kini menyediakan kapabilitas pencarian berbasis ctx dengan jalur per komponen, dan pencarian pesan dipindahkan ke modul indeks milik komponen yang memakai bentuk hasil standar untuk konten pengguna.
