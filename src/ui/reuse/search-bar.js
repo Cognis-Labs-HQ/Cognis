@@ -196,6 +196,36 @@ function resolveVisibleContentLabel(element, text) {
     return text.slice(0, 80);
 }
 
+function resolveSearchableElementText(element) {
+    const explicitText = element.getAttribute("data-search-text");
+    if (explicitText) return explicitText;
+    const clone = element.cloneNode(true);
+    clone
+        .querySelectorAll("[data-search-exclude]")
+        .forEach((excludedElement) => excludedElement.remove());
+    return String(clone.innerText ?? clone.textContent ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function collectBrowserPreferenceSearchGroups() {
+    const items = [];
+    for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index);
+        if (!key || !key.startsWith("cognis_")) continue;
+        const value = localStorage.getItem(key);
+        if (!value) continue;
+        items.push({
+            id: `browser-preference:${key}`,
+            label: key.replace(/^cognis_/, ""),
+            description: "Browser preference",
+            url: "/settings",
+            searchText: `${key} ${value}`,
+        });
+    }
+    return items.length ? [{ category: "Settings", items }] : [];
+}
+
 function collectVisibleContentSearchGroups() {
     const candidates = document.querySelectorAll(
         "[data-search-category], [data-message-id], [data-chat-id]",
@@ -204,9 +234,7 @@ function collectVisibleContentSearchGroups() {
     for (const candidate of candidates) {
         if (!isVisibleSearchElement(candidate)) continue;
         const category = resolveVisibleContentCategory(candidate);
-        const text = String(candidate.innerText ?? "")
-            .replace(/\s+/g, " ")
-            .trim();
+        const text = resolveSearchableElementText(candidate);
         if (!text) continue;
         const id =
             candidate.getAttribute("data-search-id") ||
@@ -295,7 +323,9 @@ async function getRegisteredSearchGroups(query = "", searchOptions = {}) {
             const groups = [];
             for (const stageValues of Object.values(flowResult.stageResults)) {
                 for (const result of stageValues) {
-                    const contributions = Array.isArray(result) ? result : [result];
+                    const contributions = Array.isArray(result)
+                        ? result
+                        : [result];
                     for (const contribution of contributions) {
                         appendRegisteredSearchContribution(
                             groups,
@@ -700,6 +730,13 @@ registerSearchCategory("visible-page", collectVisiblePageSearchGroups, {
 registerSearchCategory("visible-content", collectVisibleContentSearchGroups, {
     stageId: "visible-indexes",
 });
+registerSearchIndex(
+    "browser-preferences",
+    collectBrowserPreferenceSearchGroups,
+    {
+        stageId: "settings-index",
+    },
+);
 
 export function openSearchPopup({
     endpoint,

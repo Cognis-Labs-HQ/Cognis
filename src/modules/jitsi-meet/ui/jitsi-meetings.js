@@ -55,6 +55,15 @@ export function createMeetingHandlers({
                     button.classList.add("jitsi-active-meeting-item-selected");
                 }
                 button.dataset.meetingId = meetingId;
+                button.dataset.searchCategory = "Meetings";
+                button.dataset.searchLabel = fallbackLabel;
+                button.dataset.searchText = [
+                    fallbackLabel,
+                    startedByDisplayName,
+                    meeting?.meetingUrl,
+                ]
+                    .filter(Boolean)
+                    .join(" ");
                 button.setAttribute("role", "gridcell");
                 button.innerHTML = `
           <span class="jitsi-active-meeting-avatar" style="--initials-bg: ${escapeHtml(badgeColor)}">${escapeHtml(badgeInitials)}</span>

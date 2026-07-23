@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { registerSearchIndex } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -146,6 +147,26 @@ export async function mount(root, { signal } = {}) {
             .sort((left, right) => left.startAt.localeCompare(right.startAt));
     }
 
+    function collectCalendarSearchGroups() {
+        const items = allCalendarEvents().map((event) => ({
+            id: `calendar-event:${event.calendarId}:${event.id}`,
+            label: event.title,
+            description: event.calendarName || "",
+            url: `/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}`,
+            searchText: [
+                event.title,
+                event.calendarName,
+                event.location,
+                event.description,
+                event.startAt,
+                event.endAt,
+            ]
+                .filter(Boolean)
+                .join(" "),
+        }));
+        return items.length ? [{ category: "Calendar Events", items }] : [];
+    }
+
     function allUpcomingEvents() {
         return calendarUi.collectUpcomingEvents(
             eventsByCalendar,
@@ -164,6 +185,8 @@ export async function mount(root, { signal } = {}) {
             pendingInvitations,
         );
     }
+
+    registerSearchIndex("calendar-events", collectCalendarSearchGroups);
 
     function formatMonthYearLabel(date) {
         return new Date(date).toLocaleDateString(undefined, {

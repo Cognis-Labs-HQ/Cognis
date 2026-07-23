@@ -595,7 +595,7 @@ function renderPostsList({ posts, isOwnProfile, i18n }) {
       ${posts
           .map(
               (post) => `
-        <li class="profile-post-card" data-post-id="${escapeHtml(post.id)}">
+        <li class="profile-post-card" data-post-id="${escapeHtml(post.id)}" data-search-category="Posts" data-search-label="${escapeHtml(post.title || i18n.t("ui.reuse.posts"))}" data-search-text="${escapeHtml([post.title, post.content].filter(Boolean).join(" "))}">
           <div class="profile-post-header">
             ${post.title ? `<strong class="profile-post-title">${escapeHtml(post.title)}</strong>` : ""}
             ${post.visibility ? `<span class="visibility-badge ${visibilityClass(post.visibility)}">${escapeHtml(i18n.t(`ui.app.profile.post_visibility.${post.visibility}`) || post.visibility)}</span>` : ""}

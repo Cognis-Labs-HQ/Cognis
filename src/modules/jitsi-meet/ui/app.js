@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { registerSearchIndex } from "/static/reuse/search-bar.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -131,6 +132,49 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
     };
+
+    function collectMeetingSearchGroups() {
+        const meetings = [
+            ...(Array.isArray(state.activeMeetings)
+                ? state.activeMeetings
+                : []),
+            ...(state.meeting?.id ? [state.meeting] : []),
+        ];
+        const seenIds = new Set();
+        const items = [];
+        for (const meeting of meetings) {
+            const meetingId = normalizeMeetingId(meeting?.id);
+            if (!meetingId || seenIds.has(meetingId)) continue;
+            seenIds.add(meetingId);
+            const title = String(
+                meeting?.meetingName ?? i18n.t("ui.reuse.meeting"),
+            ).trim();
+            const owner = String(
+                meeting?.startedBy?.displayName ??
+                    meeting?.startedBy?.username ??
+                    meeting?.createdBy ??
+                    "",
+            ).trim();
+            items.push({
+                id: `meeting:${meetingId}`,
+                label: title,
+                description: owner,
+                url: `/meetings?meetingId=${encodeURIComponent(meetingId)}`,
+                searchText: [
+                    title,
+                    owner,
+                    meeting?.meetingUrl,
+                    meeting?.scheduledAt,
+                    meeting?.createdAt,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+            });
+        }
+        return items.length ? [{ category: "Meetings", items }] : [];
+    }
+
+    registerSearchIndex("jitsi-meetings", collectMeetingSearchGroups);
 
     const {
         clearTimers,

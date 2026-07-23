@@ -46,7 +46,7 @@ import {
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
 
-function collectSettingsSearchGroups(root, sections, loadedPrefs) {
+function collectSettingsSearchGroups(root, sections, loadedPrefs, i18n) {
     const items = [];
     for (const section of sections ?? []) {
         const label = String(
@@ -70,8 +70,8 @@ function collectSettingsSearchGroups(root, sections, loadedPrefs) {
     if (visibleText) {
         items.push({
             id: "settings-visible-content",
-            label: "Settings content",
-            description: "Visible settings labels, actions, and help text",
+            label: i18n.t("ui.reuse.settings"),
+            description: "",
             url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
             searchText: visibleText,
         });
@@ -80,8 +80,8 @@ function collectSettingsSearchGroups(root, sections, loadedPrefs) {
     if (loadedPrefs && typeof loadedPrefs === "object") {
         items.push({
             id: "settings-user-preferences",
-            label: "User preferences",
-            description: "Stored settings and preference values",
+            label: i18n.t("ui.app.settings.preferences"),
+            description: "",
             url: "/settings",
             searchText: JSON.stringify(loadedPrefs),
         });
@@ -619,6 +619,7 @@ export async function mount(root, { signal } = {}) {
                 root,
                 settingsSearchSections,
                 loadedPrefs,
+                i18n,
             ),
         { stageId: "settings-index" },
     );

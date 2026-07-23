@@ -716,17 +716,20 @@ export async function renderThread(
                 : `${senderDisplaySpan}${senderHandleSpan}`;
             const bubbleAvatarMarkup = formatMessageBubbleAvatar(messageRecord);
             const reactionRows = renderReactionRows(messageRecord, i18n, isOwn);
+            const messageSearchText = [displayName, handle, messageRecord.text]
+                .filter(Boolean)
+                .join(" ");
             const metadataRow =
                 timeLabel || statusBlock
                     ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`
                     : "";
             const innerMetaRow = isSpeechBubbles ? "" : metadataRow;
             const outerMetaRow = isSpeechBubbles ? metadataRow : "";
-            return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}">
+            return `${showDateDivider}<div class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}" data-search-label="${escapeHtml(displayName)}" data-search-text="${escapeHtml(messageSearchText)}">
         ${isOwn ? "" : formatMessageAvatar(messageRecord)}
         <div class="messages-message-wrap">
           ${bubbleAvatarMarkup}
-          ${reactionRows.pickerRow}
+          <span data-search-exclude="true">${reactionRows.pickerRow}</span>
           <div class="messages-message${ownClass}">
             ${senderLabel}
             <div class="messages-message-content">
@@ -735,7 +738,7 @@ export async function renderThread(
             </div>
           </div>
           ${outerMetaRow}
-          ${reactionRows.activeRow}
+          <span data-search-exclude="true">${reactionRows.activeRow}</span>
         </div>
       </div>`;
         })

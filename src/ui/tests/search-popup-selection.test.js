@@ -39,6 +39,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /stageId: "visible-indexes"/);
     assert.match(source, /registerSearchCategory\("visible-content"/);
     assert.match(source, /uiCtx\.runFlow\("search"/);
+    assert.match(source, /data-search-exclude/);
+    assert.match(source, /collectBrowserPreferenceSearchGroups/);
     assert.match(source, /data-message-id/);
     assert.match(source, /data-chat-id/);
     assert.match(source, /data-search-description/);
@@ -77,4 +79,66 @@ test("whiteboard search indexes board filenames and stored canvas contents", () 
     assert.match(source, /collectWhiteboardSearchGroups/);
     assert.match(source, /externalPath/);
     assert.match(source, /JSON\.stringify\(savedElements/);
+});
+
+test("visible search indexes messages without quick reactions and chat names", () => {
+    const messageSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+        "utf8",
+    );
+    const roomSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+        "utf8",
+    );
+    assert.match(messageSource, /data-search-text/);
+    assert.match(
+        messageSource,
+        /data-search-exclude="true">\$\{reactionRows\.pickerRow\}/,
+    );
+    assert.match(
+        messageSource,
+        /data-search-exclude="true">\$\{reactionRows\.activeRow\}/,
+    );
+    assert.match(roomSource, /data-chat-id/);
+    assert.match(
+        roomSource,
+        /data-search-label="\$\{escapeHtml\(titleSource\)\}"/,
+    );
+});
+
+test("visible search indexes meetings calendar notifications and posts", () => {
+    const meetingSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
+        "utf8",
+    );
+    const calendarSource = readFileSync(
+        resolve(ROOT, "src/gateways/calendar/ui/calendar-ui-helpers.js"),
+        "utf8",
+    );
+    const notificationSource = readFileSync(
+        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+        "utf8",
+    );
+    const profileSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/ui/profile-render.js"),
+        "utf8",
+    );
+    assert.match(meetingSource, /dataset\.searchCategory = "Meetings"/);
+    assert.match(
+        readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
+        /registerSearchIndex\("jitsi-meetings"/,
+    );
+    assert.match(calendarSource, /data-search-category="Calendar Events"/);
+    assert.match(
+        readFileSync(
+            resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
+            "utf8",
+        ),
+        /registerSearchIndex\("calendar-events"/,
+    );
+    assert.match(
+        notificationSource,
+        /dataset\.searchCategory = "Notifications"/,
+    );
+    assert.match(profileSource, /data-search-category="Posts"/);
 });

@@ -254,7 +254,7 @@ export function renderRoomList({
                     ? `<span class="messages-room-archived-hint">${escapeHtml(i18n.t("module.social.messages.archived_locked"))}</span>`
                     : "";
                 return `
-          <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}" data-room-id="${escapeHtml(room.id)}">
+          <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}" data-chat-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
             ${avatar}
             <span class="messages-room-meta">
               <span class="messages-room-title">${escapeHtml(titleSource)}</span>
