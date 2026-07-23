@@ -155,14 +155,18 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                     meeting?.createdBy ??
                     "",
             ).trim();
+            const timeLabel = String(
+                meeting?.scheduledAt ?? meeting?.createdAt ?? "",
+            ).trim();
             items.push({
                 id: `meeting:${meetingId}`,
                 label: title,
-                description: owner,
+                description: [timeLabel, owner].filter(Boolean).join(" · "),
                 url: `/meetings?meetingId=${encodeURIComponent(meetingId)}`,
                 searchText: [
                     title,
                     owner,
+                    timeLabel,
                     meeting?.meetingUrl,
                     meeting?.scheduledAt,
                     meeting?.createdAt,

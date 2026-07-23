@@ -233,6 +233,37 @@ function collectBrowserPreferenceSearchGroups() {
     return items.length ? [{ category: "Settings", items }] : [];
 }
 
+function collectVisibleNavigationSearchGroups() {
+    const items = [];
+    const navigationLinks = document.querySelectorAll(
+        ".topnav a[href], .page-subnav a[href]",
+    );
+    for (const link of navigationLinks) {
+        if (!isVisibleSearchElement(link)) continue;
+        const label = String(link.innerText ?? link.textContent ?? "")
+            .replace(/\s+/g, " ")
+            .trim();
+        const url = String(link.getAttribute("href") ?? "").trim();
+        if (!label || !url || url === "#") continue;
+        const parentLabel = String(
+            link.closest(".page-subnav")
+                ? (document.querySelector(".page-context")?.textContent ??
+                      document.title)
+                : "",
+        )
+            .replace(/\s+/g, " ")
+            .trim();
+        items.push({
+            id: `navigation:${url}`,
+            label,
+            description: parentLabel,
+            url,
+            searchText: [parentLabel, label].filter(Boolean).join(" "),
+        });
+    }
+    return items.length ? [{ category: "Navigation", items }] : [];
+}
+
 function collectVisibleContentSearchGroups() {
     const candidates = document.querySelectorAll(
         "[data-search-category], [data-message-id], [data-chat-id]",
@@ -797,6 +828,13 @@ registerSearchCategory("visible-page", collectVisiblePageSearchGroups, {
 registerSearchCategory("visible-content", collectVisibleContentSearchGroups, {
     stageId: "visible-indexes",
 });
+registerSearchCategory(
+    "visible-navigation",
+    collectVisibleNavigationSearchGroups,
+    {
+        stageId: "visible-indexes",
+    },
+);
 registerSearchIndex(
     "browser-preferences",
     collectBrowserPreferenceSearchGroups,

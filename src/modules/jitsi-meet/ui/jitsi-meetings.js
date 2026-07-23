@@ -57,9 +57,16 @@ export function createMeetingHandlers({
                 button.dataset.meetingId = meetingId;
                 button.dataset.searchCategory = "Meetings";
                 button.dataset.searchLabel = fallbackLabel;
+                button.dataset.searchDescription = [
+                    meeting?.scheduledAt ?? meeting?.createdAt,
+                    startedByDisplayName,
+                ]
+                    .filter(Boolean)
+                    .join(" · ");
                 button.dataset.searchText = [
                     fallbackLabel,
                     startedByDisplayName,
+                    meeting?.scheduledAt ?? meeting?.createdAt,
                     meeting?.meetingUrl,
                 ]
                     .filter(Boolean)

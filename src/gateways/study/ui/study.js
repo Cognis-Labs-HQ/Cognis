@@ -14,6 +14,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { registerSearchIndex } from "/static/reuse/search-bar.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -318,7 +319,7 @@ async function mountHub(
                     window.location.pathname === pageUrl ? " active" : "";
                 return `
                     <li>
-                        <a class="study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}">
+                        <a class="study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}" data-search-label="${escapeHtml(String(component.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                             ${escapeHtml(String(component.label ?? pageUrl))}
                         </a>
                     </li>
@@ -329,7 +330,7 @@ async function mountHub(
             isAdminScope() && !hasLibraryModule
                 ? `
                 <li>
-                    <a class="study-subnav-module-link${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}">
+                    <a class="study-subnav-module-link${window.location.pathname === "/study/library" ? " active" : ""}" href="${escapeHtml(buildLibraryUrl(selectedLanguageCode))}" data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(i18n.t("gateway.study.library_label"))}
                     </a>
                 </li>
@@ -344,7 +345,7 @@ async function mountHub(
                     languageCode === selectedLanguageCode ? " active" : "";
                 return `
                     <li>
-                        <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(href)}">
+                        <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(href)}" data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                             ${escapeHtml(language.flag)}
                             <span>${escapeHtml(language.name)}</span>
                         </a>
@@ -367,6 +368,9 @@ async function mountHub(
                 <a
                     class="study-subnav-settings-link${settingsActiveClass}"
                     href="${escapeHtml(settingsUrl)}"
+                    data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}"
+                    data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
+                    data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
                     aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
                     title="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
                 >
@@ -387,7 +391,7 @@ async function mountHub(
                         : modules
                               .map(
                                   (component) => `
-                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link">
+                                    <a href="${escapeHtml(component.pageUrl)}" class="study-hub-module-link" data-search-category="${escapeHtml(i18n.t("gateway.study.page_title"))}" data-search-label="${escapeHtml(component.label)}" data-search-description="${escapeHtml(language.name)}" data-search-text="${escapeHtml([i18n.t("gateway.study.page_title"), language.name, component.label].filter(Boolean).join(" "))}">
                                         ${escapeHtml(component.label)}
                                     </a>
                                 `,
@@ -492,6 +496,62 @@ async function mountHub(
             </div>
         `;
     }
+
+    function collectStudySearchGroups() {
+        const items = [];
+        for (const languageCode of learningLanguages) {
+            const language = getLanguage(languageCode);
+            const languageName = language.name || languageCode;
+            items.push({
+                id: `study-language:${languageCode}`,
+                label: languageName,
+                description: i18n.t("gateway.study.page_title"),
+                url: buildHubUrl(languageCode),
+                searchText: [
+                    i18n.t("gateway.study.page_title"),
+                    languageName,
+                    languageCode,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+            });
+            for (const component of languageModulesMap.get(languageCode) ??
+                []) {
+                const pageUrl = String(component?.pageUrl ?? "").trim();
+                const label = String(component?.label ?? pageUrl).trim();
+                if (!pageUrl || !label) continue;
+                items.push({
+                    id: `study-module:${languageCode}:${component?.id ?? label}`,
+                    label,
+                    description: languageName,
+                    url: pageUrl,
+                    searchText: [
+                        i18n.t("gateway.study.page_title"),
+                        languageName,
+                        label,
+                        component?.id,
+                    ]
+                        .filter(Boolean)
+                        .join(" "),
+                });
+            }
+        }
+        items.push({
+            id: "study-settings",
+            label: i18n.t("gateway.study.language_settings"),
+            description: i18n.t("gateway.study.page_title"),
+            url: buildSettingsUrl(),
+            searchText: [
+                i18n.t("gateway.study.page_title"),
+                i18n.t("gateway.study.language_settings"),
+            ].join(" "),
+        });
+        return items.length
+            ? [{ category: i18n.t("gateway.study.page_title"), items }]
+            : [];
+    }
+
+    registerSearchIndex("study-contents", collectStudySearchGroups);
 
     const viewElement = isSettingsPath
         ? {

@@ -44,6 +44,11 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
+    assert.match(source, /collectVisibleNavigationSearchGroups/);
+    assert.match(
+        source,
+        /registerSearchCategory\(\s*["\']visible-navigation["\']/,
+    );
     assert.match(source, /const isMultiSelect = Boolean\(multiSelectState\)/);
     assert.match(source, /data-message-id/);
     assert.match(source, /data-chat-id/);
@@ -137,18 +142,41 @@ test("visible search indexes meetings calendar notifications and posts", () => {
         /registerSearchIndex\("jitsi-meetings"/,
     );
     assert.match(calendarSource, /data-search-category="Calendar Events"/);
+    assert.match(calendarSource, /data-search-description/);
     assert.match(
         readFileSync(
             resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
             "utf8",
         ),
-        /registerSearchIndex\("calendar-events"/,
+        /formatDateTime[\s\S]*registerSearchIndex\(\s*["\']calendar-events["\']/,
     );
     assert.match(
         notificationSource,
         /dataset\.searchCategory = "Notifications"/,
     );
     assert.match(notificationSource, /registerSearchIndex\("notifications"/);
-    assert.match(notificationSource, /function collectNotificationSearchGroups/);
+    assert.match(
+        notificationSource,
+        /function collectNotificationSearchGroups/,
+    );
     assert.match(profileSource, /data-search-category="Posts"/);
+});
+
+test("study content and sub-navigation participate in global search", () => {
+    const studySource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/study.js"),
+        "utf8",
+    );
+    const subNavigationSource = readFileSync(
+        resolve(
+            ROOT,
+            "src/modules/study/languages/reuse/study-sub-navigation.js",
+        ),
+        "utf8",
+    );
+    assert.match(studySource, /registerSearchIndex\("study-contents"/);
+    assert.match(studySource, /collectStudySearchGroups/);
+    assert.match(studySource, /data-search-category/);
+    assert.match(subNavigationSource, /data-search-category/);
+    assert.match(subNavigationSource, /data-search-description/);
 });

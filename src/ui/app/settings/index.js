@@ -75,6 +75,23 @@ function collectPreferenceSearchItems(value, labelPrefix = "") {
     });
 }
 
+function collectSettingsElementSearchItems(section) {
+    const sectionLabel = String(section?.label ?? section?.id ?? "").trim();
+    return (section?.subComposerOptions?.elements ?? [])
+        .map((element) => {
+            const label = String(element?.label ?? element?.id ?? "").trim();
+            if (!label) return null;
+            return {
+                id: `settings-element:${section?.id ?? sectionLabel}:${element?.id ?? label}`,
+                label,
+                description: sectionLabel,
+                url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
+                searchText: [sectionLabel, label].filter(Boolean).join(" "),
+            };
+        })
+        .filter(Boolean);
+}
+
 function collectSettingsSearchGroups(sections, loadedPrefs) {
     const items = [];
     for (const section of sections ?? []) {
@@ -92,6 +109,7 @@ function collectSettingsSearchGroups(sections, loadedPrefs) {
                 .filter(Boolean)
                 .join(" "),
         });
+        items.push(...collectSettingsElementSearchItems(section));
     }
 
     if (loadedPrefs && typeof loadedPrefs === "object") {
