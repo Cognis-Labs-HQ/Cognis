@@ -81,6 +81,7 @@ function createDocsSearchProvider(i18n, docs, activeDocContent) {
                     id: `docs:${item.slug}`,
                     label: title,
                     description: groupLabel(i18n, item.group || "platform"),
+                    resultClass: "page",
                     url: isChangelogDoc(item)
                         ? changelogSlugToRoutePath(item.slug)
                         : `/docs/${item.slug}`,

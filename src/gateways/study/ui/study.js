@@ -507,6 +507,7 @@ async function mountHub(
                 label: languageName,
                 description: i18n.t("gateway.study.page_title"),
                 url: buildHubUrl(languageCode),
+                resultClass: "page",
                 searchText: [
                     i18n.t("gateway.study.page_title"),
                     languageName,
@@ -525,6 +526,7 @@ async function mountHub(
                     label,
                     description: languageName,
                     url: pageUrl,
+                    resultClass: "page",
                     searchText: [
                         i18n.t("gateway.study.page_title"),
                         languageName,
@@ -541,6 +543,7 @@ async function mountHub(
             label: i18n.t("gateway.study.language_settings"),
             description: i18n.t("gateway.study.page_title"),
             url: buildSettingsUrl(),
+            resultClass: "setting",
             searchText: [
                 i18n.t("gateway.study.page_title"),
                 i18n.t("gateway.study.language_settings"),

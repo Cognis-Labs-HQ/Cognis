@@ -37,7 +37,7 @@ import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
-    htmlToSearchSegments,
+    htmlToSearchEntries,
     renderSearchDataAttributes,
 } from "../../reuse/search-index.js";
 import {
@@ -57,6 +57,7 @@ function accountOperationSearchAttrs(i18n, labelKey, descriptionKey) {
         "data-search-category": i18n.t("ui.reuse.operations"),
         "data-search-label": label,
         "data-search-description": description,
+        "data-search-result-class": "operation",
         "data-search-text": [
             i18n.t("ui.reuse.settings"),
             i18n.t("ui.app.settings.danger_zone"),
@@ -101,16 +102,17 @@ function collectPreferenceSearchItems(value, labelPrefix = "") {
                 id: `settings-preference:${label}`,
                 label,
                 url: "/settings",
+                resultClass: "preference",
                 searchText: [label, entry].filter(Boolean).join(" "),
             },
         ];
     });
 }
 
-function renderSettingsElementSegments(element) {
+function renderSettingsElementEntries(element) {
     if (typeof element?.render !== "function") return [];
     try {
-        return htmlToSearchSegments(element.render());
+        return htmlToSearchEntries(element.render());
     } catch {
         return [];
     }
@@ -127,6 +129,7 @@ function createSettingsElementSearchItem(
         label,
         description: sectionLabel,
         url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
+        resultClass: "setting",
         searchText: [sectionLabel, section?.heading, label]
             .filter(Boolean)
             .join(" "),
@@ -139,12 +142,13 @@ function collectSettingsElementContentSearchItems(
     sectionLabel,
     label,
 ) {
-    return renderSettingsElementSegments(element).map((segment, index) => ({
+    return renderSettingsElementEntries(element).map((entry, index) => ({
         id: `settings-element-content:${section?.id ?? sectionLabel}:${element?.id ?? label}:${index}`,
-        label: segment.slice(0, 96),
+        label: entry.text.slice(0, 96),
         description: [sectionLabel, label].filter(Boolean).join(" — "),
+        resultClass: entry.resultClass,
         url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
-        searchText: [sectionLabel, section?.heading, label, segment]
+        searchText: [sectionLabel, section?.heading, label, entry.text]
             .filter(Boolean)
             .join(" "),
     }));
@@ -184,6 +188,7 @@ function collectSettingsSearchGroups(sections, loadedPrefs) {
             label,
             description: String(section?.heading ?? ""),
             showDescription: false,
+            resultClass: "heading",
             url: `/settings#${encodeURIComponent(section.id ?? label)}`,
             searchText: [label, section?.heading, section?.preferenceKey]
                 .filter(Boolean)

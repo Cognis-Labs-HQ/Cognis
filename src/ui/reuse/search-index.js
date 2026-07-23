@@ -4,6 +4,7 @@
  *
  * Public exports:
  *   htmlToSearchText(value) — converts rendered HTML into normalized text.
+ *   htmlToSearchEntries(value) — extracts typed block-level search entries.
  *   htmlToSearchSegments(value) — extracts block-level text search results.
  *   renderSearchDataAttributes(attributes) — renders escaped HTML attributes.
  *
@@ -38,6 +39,43 @@ export function htmlToSearchText(value) {
         .trim();
 }
 
+function resultClassForTag(tagName) {
+    if (/^h[1-6]$/i.test(tagName)) return "heading";
+    if (/^(button|summary|option)$/i.test(tagName)) return "operation";
+    if (/^(label|td|th)$/i.test(tagName)) return "field";
+    return "text";
+}
+
+/**
+ * Extracts block-level search entries from rendered HTML with coarse result
+ * classes so pages can surface headings, text, fields, and operations as
+ * separate result types.
+ *
+ * @param {unknown} value
+ * @returns {{ text: string, resultClass: string }[]}
+ */
+export function htmlToSearchEntries(value) {
+    const html = String(value ?? "");
+    const entries = [];
+    const seen = new Set();
+    const blockPattern =
+        /<(h[1-6]|p|label|button|summary|option|li|td|th)[^>]*>([\s\S]*?)<\/\1>/gi;
+    for (const match of html.matchAll(blockPattern)) {
+        const text = htmlToSearchText(match[2]);
+        const resultClass = resultClassForTag(match[1]);
+        const key = `${resultClass}:${text}`;
+        if (text && !seen.has(key)) {
+            seen.add(key);
+            entries.push({ text, resultClass });
+        }
+    }
+    if (entries.length === 0) {
+        const text = htmlToSearchText(html);
+        if (text) entries.push({ text, resultClass: "text" });
+    }
+    return entries;
+}
+
 /**
  * Extracts block-level text segments from rendered HTML so descriptions and
  * controls can become individual search results instead of hidden body text.
@@ -46,19 +84,7 @@ export function htmlToSearchText(value) {
  * @returns {string[]}
  */
 export function htmlToSearchSegments(value) {
-    const html = String(value ?? "");
-    const segments = [];
-    const blockPattern =
-        /<(h[1-6]|p|label|button|summary|option|li|td|th)[^>]*>([\s\S]*?)<\/\1>/gi;
-    for (const match of html.matchAll(blockPattern)) {
-        const text = htmlToSearchText(match[2]);
-        if (text) segments.push(text);
-    }
-    if (segments.length === 0) {
-        const text = htmlToSearchText(html);
-        if (text) segments.push(text);
-    }
-    return Array.from(new Set(segments));
+    return htmlToSearchEntries(value).map((entry) => entry.text);
 }
 
 /**

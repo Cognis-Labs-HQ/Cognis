@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Hasil menyertakan kelas
+
+Halaman dan komponen kini menandai hasil pencarian sebagai halaman, judul, teks, pengaturan, operasi, preferensi, dan acara sehingga tampilan dan filter dapat membedakan jenis konten yang cocok.
+
 ## Deskripsi tampil sebagai hasil
 
 Deskripsi pengaturan dan detail preferensi tersimpan kini diindeks sebagai hasil tersendiri, bukan ditambahkan sebagai cuplikan di bawah pengaturan induk.

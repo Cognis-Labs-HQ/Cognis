@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Ergebnisse enthalten Klassen
+
+Seiten und Komponenten kennzeichnen Suchergebnisse nun als Seiten, Überschriften, Text, Einstellungen, Aktionen, Präferenzen und Ereignisse, damit Darstellung und Filterung erkennen können, welche Art von Inhalt getroffen wurde.
+
 ## Beschreibungen erscheinen als Ergebnisse
 
 Beschreibungen in den Einstellungen und gespeicherte Einstellungsdetails werden als eigene Ergebnisse indexiert, statt als Ausschnitte unter übergeordneten Einstellungen angehängt zu werden.

@@ -152,6 +152,15 @@ function createHighlightedSnippet(value, match) {
     return `${prefix}${escapeHtml(before)}<mark>${escapeHtml(highlighted)}</mark>${escapeHtml(after)}${suffix}`;
 }
 
+function normalizeResultClass(value) {
+    const resultClass = String(value ?? "text")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+    return resultClass || "text";
+}
+
 function normalizeSearchItem(item, category) {
     if (!item || typeof item !== "object") return null;
     const url = String(item.url ?? "").trim();
@@ -168,6 +177,9 @@ function normalizeSearchItem(item, category) {
         label,
         url,
         description: item.description ?? item.meta ?? "",
+        resultClass: normalizeResultClass(
+            item.resultClass ?? item.searchResultClass ?? item.type ?? "text",
+        ),
         category: item.category ?? category,
     };
 }
@@ -266,6 +278,7 @@ function collectStructuredPreferenceItems(
             id: `browser-preference:${key}`,
             label: labelPrefix,
             description: label,
+            resultClass: "preference",
             url: "/settings",
             searchText: [labelPrefix, value].filter(Boolean).join(" "),
         },
@@ -320,6 +333,7 @@ function collectVisibleNavigationSearchGroups() {
             label,
             description: parentLabel,
             url,
+            resultClass: "page",
             searchText: [parentLabel, label].filter(Boolean).join(" "),
         });
     }
@@ -328,7 +342,19 @@ function collectVisibleNavigationSearchGroups() {
 
 function collectVisibleContentSearchGroups() {
     const candidates = document.querySelectorAll(
-        "[data-search-category], [data-message-id], [data-chat-id]",
+        [
+            "[data-search-category]",
+            "[data-search-label]",
+            "[data-search-text]",
+            "[data-message-id]",
+            "[data-chat-id]",
+            "main h1",
+            "main h2",
+            "main h3",
+            "main h4",
+            "main h5",
+            "main h6",
+        ].join(", "),
     );
     const groups = new Map();
     for (const candidate of candidates) {
@@ -353,6 +379,11 @@ function collectVisibleContentSearchGroups() {
                 url: candidate.id
                     ? `${window.location.pathname}${window.location.search}#${candidate.id}`
                     : `${window.location.pathname}${window.location.search}${window.location.hash}`,
+                resultClass:
+                    candidate.getAttribute("data-search-result-class") ||
+                    (candidate.matches("h1, h2, h3, h4, h5, h6")
+                        ? "heading"
+                        : "text"),
                 searchText: text,
             },
             category,
@@ -371,6 +402,7 @@ function collectVisiblePageSearchGroups() {
             id: `page:${window.location.pathname}`,
             label: title,
             url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            resultClass: "page",
             searchText: title,
         },
         "Pages",
@@ -737,7 +769,8 @@ function renderGroupedResults(
 
         for (const item of group.items) {
             const listItem = document.createElement("li");
-            listItem.className = "search-popup-result";
+            listItem.className = `search-popup-result search-popup-result--${item.resultClass}`;
+            listItem.dataset.searchResultClass = item.resultClass;
             listItem.setAttribute("role", "button");
             listItem.tabIndex = 0;
             renderResultContent(listItem, item);
@@ -820,7 +853,8 @@ function renderFlatResults(
         const isSelected = multiSelectState?.selected.has(uniqueItemKey);
 
         if (multiSelectState) {
-            listItem.className = `search-popup-result search-popup-result--selectable${isSelected ? " search-popup-result--checked" : ""}`;
+            listItem.className = `search-popup-result search-popup-result--selectable search-popup-result--${item.resultClass}${isSelected ? " search-popup-result--checked" : ""}`;
+            listItem.dataset.searchResultClass = item.resultClass;
             const checkbox = document.createElement("input");
             checkbox.type = "checkbox";
             checkbox.className = "search-popup-result-checkbox";
@@ -847,7 +881,8 @@ function renderFlatResults(
                 }
             });
         } else {
-            listItem.className = "search-popup-result";
+            listItem.className = `search-popup-result search-popup-result--${item.resultClass}`;
+            listItem.dataset.searchResultClass = item.resultClass;
             listItem.setAttribute("role", "button");
             listItem.tabIndex = 0;
             renderResultContent(listItem, item);

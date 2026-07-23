@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Results include classes
+
+Pages and components now tag search results as pages, headings, text, settings, operations, preferences, and events so result rendering and filtering can distinguish what kind of content matched.
+
 ## Descriptions appear as results
 
 Settings descriptions and stored preference details are indexed as their own results instead of being appended as snippets under parent settings.

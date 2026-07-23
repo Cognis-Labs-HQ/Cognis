@@ -169,6 +169,7 @@ export async function mount(root, { signal } = {}) {
                     .filter(Boolean)
                     .join(" · "),
                 url: `/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}`,
+                resultClass: "event",
                 searchText: [
                     event.title,
                     timeLabel,

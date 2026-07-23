@@ -49,6 +49,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
     assert.match(source, /hasSelectableTarget/);
+    assert.match(source, /normalizeResultClass/);
+    assert.match(source, /dataset\.searchResultClass/);
     assert.match(source, /filterApiFlatMatches/);
     assert.match(source, /renderResultCategorySummary/);
     assert.match(source, /filterGroupsBySelectedCategories/);
@@ -63,6 +65,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /data-message-id/);
     assert.match(source, /data-chat-id/);
     assert.match(source, /data-search-description/);
+    assert.match(source, /data-search-result-class/);
     assert.doesNotMatch(source, /article, \[role='article'\]/);
     assert.match(source, /"Whole word"/);
     assert.match(source, /"Regex"/);
@@ -86,6 +89,7 @@ test("search index helpers centralize HTML text and data attributes", () => {
         "utf8",
     );
     assert.match(source, /export function htmlToSearchText/);
+    assert.match(source, /export function htmlToSearchEntries/);
     assert.match(source, /export function htmlToSearchSegments/);
     assert.match(source, /export function renderSearchDataAttributes/);
 });
@@ -121,7 +125,7 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /formatPreferenceLabel/);
     assert.match(source, /collectPreferenceSearchItems/);
     assert.match(source, /collectSettingsElementContentSearchItems/);
-    assert.match(source, /htmlToSearchSegments/);
+    assert.match(source, /htmlToSearchEntries/);
     assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
 });
 
@@ -133,6 +137,7 @@ test("docs search indexes navigation titles and document contents", () => {
     assert.match(source, /registerSearchIndex\(\s*["\']docs["\']/);
     assert.match(source, /createDocsSearchProvider/);
     assert.match(source, /htmlToSearchText/);
+    assert.match(source, /resultClass: "page"/);
     assert.match(source, /search-index\.js/);
     assert.match(source, /loadMarkdownDocumentHtml/);
     assert.match(source, /changelogSlugToRoutePath/);
@@ -146,6 +151,8 @@ test("whiteboard search indexes board filenames and stored canvas contents", () 
     assert.match(source, /registerSearchIndex\("nextcloud-whiteboard"/);
     assert.match(source, /collectWhiteboardSearchGroups/);
     assert.match(source, /externalPath/);
+    assert.match(source, /resultClass: "page"/);
+    assert.match(source, /resultClass: "text"/);
     assert.match(source, /JSON\.stringify\(savedElements/);
 });
 
@@ -196,8 +203,19 @@ test("visible search indexes meetings calendar notifications and posts", () => {
         readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
         /registerSearchIndex\("jitsi-meetings"/,
     );
+    assert.match(
+        readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
+        /resultClass: "page"/,
+    );
     assert.match(calendarSource, /data-search-category="Calendar Events"/);
     assert.match(calendarSource, /data-search-description/);
+    assert.match(
+        readFileSync(
+            resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
+            "utf8",
+        ),
+        /resultClass: "event"/,
+    );
     assert.match(
         readFileSync(
             resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
@@ -231,6 +249,8 @@ test("study content and sub-navigation participate in global search", () => {
     );
     assert.match(studySource, /registerSearchIndex\("study-contents"/);
     assert.match(studySource, /collectStudySearchGroups/);
+    assert.match(studySource, /resultClass: "page"/);
+    assert.match(studySource, /resultClass: "setting"/);
     assert.match(studySource, /data-search-category/);
     assert.match(subNavigationSource, /data-search-category/);
     assert.match(subNavigationSource, /data-search-description/);

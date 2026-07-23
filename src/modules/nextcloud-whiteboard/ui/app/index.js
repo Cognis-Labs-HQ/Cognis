@@ -69,6 +69,7 @@ function collectWhiteboardSearchGroups() {
                 "module.nextcloud_whiteboard.canvas_window",
             ),
             url: `/whiteboard?id=${encodeURIComponent(board.id ?? "")}`,
+            resultClass: "page",
             searchText: [
                 title,
                 board?.externalPath,
@@ -93,6 +94,7 @@ function collectWhiteboardSearchGroups() {
                 "module.nextcloud_whiteboard.canvas_window",
             ),
             url: `/whiteboard?id=${encodeURIComponent(activeBoard.id)}`,
+            resultClass: "text",
             searchText: elementText,
         });
     }

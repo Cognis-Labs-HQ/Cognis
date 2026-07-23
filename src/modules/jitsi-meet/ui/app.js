@@ -163,6 +163,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 label: title,
                 description: [timeLabel, owner].filter(Boolean).join(" · "),
                 url: `/meetings?meetingId=${encodeURIComponent(meetingId)}`,
+                resultClass: "page",
                 searchText: [
                     title,
                     owner,
