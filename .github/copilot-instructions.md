@@ -428,6 +428,7 @@ Comprehensive logging is required for every new feature and behaviour change.
 - Do not delete or discard existing code without a clear and explicit reason. Prefer refactoring, deprecating, or commenting out with an explanation over silent removal.
 - Do not change public API contracts (route signatures, exported types, CLI command names) without flagging the breaking change.
 - Do not introduce new third-party dependencies without discussion.
+- Do not use `Math.random()` for generated user-facing identifiers, names, tokens, or keys; use Web Crypto or Node Crypto as appropriate.
 - Do not perform speculative or cosmetic changes outside the files directly relevant to the task.
 - Do not add AI process notes, agent reasoning, or session context to any product-facing documentation.
 - Do not use inline result messages or browser alerts for user feedback. All transient user-facing feedback (success confirmations, warnings, errors, info notices) must be delivered via `showToast` from `src/ui/reuse/toast.js`. Never write feedback text directly into a DOM element's `textContent` or `innerHTML`, and never call `alert()`, `confirm()`, or `prompt()`. Reserve `openPopup` exclusively for interactions that require a deliberate user decision (e.g. confirming a destructive action, filling in a form) — not for displaying a result.

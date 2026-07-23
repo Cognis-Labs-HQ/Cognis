@@ -18,9 +18,11 @@ export function bootstrapModule(ctx) {
         return moduleApi.spawnWhiteboardWindow(options);
     };
 
-    const getEmbedUrl = (whiteboardId) => {
+    const getEmbedUrl = (whiteboardId, options = {}) => {
         if (!whiteboardId) return null;
-        return `/whiteboard?id=${encodeURIComponent(whiteboardId)}`;
+        const params = new URLSearchParams({ id: whiteboardId });
+        if (options.instantCanvas === true) params.set("instantCanvas", "1");
+        return `/whiteboard?${params.toString()}`;
     };
 
     const fetchBoardData = async (whiteboardId) => {

@@ -25,6 +25,7 @@ const WHITEBOARD_STYLESHEETS = [
     "/static/styles/reuse/page-sections.css",
     "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
 ];
+
 const storeByExecutor = new WeakMap();
 
 function resolveStore(dbExecutor, log) {
@@ -65,8 +66,13 @@ async function resolveParticipantHandles(
     return usernames;
 }
 
-function buildCognisWhiteboardUrl(whiteboardId) {
-    return `/whiteboard?id=${encodeURIComponent(whiteboardId)}`;
+function buildCognisWhiteboardUrl(
+    whiteboardId,
+    { instantCanvas = false } = {},
+) {
+    const params = new URLSearchParams({ id: whiteboardId });
+    if (instantCanvas) params.set("instantCanvas", "1");
+    return `/whiteboard?${params.toString()}`;
 }
 
 async function resolveWhiteboardUserAccess({
@@ -160,6 +166,7 @@ export function registerUi(ctx) {
         scriptUrl: "/static/modules/nextcloud-whiteboard/navbar.js",
         access: { minRole: "user" },
     });
+
     ctx.registerSpaRoute({
         id: "module-nextcloud-whiteboard",
         pattern: "^/whiteboards$",
@@ -210,6 +217,7 @@ export function registerApiRoutes(router, ctx) {
                 "service_unavailable",
                 "Nextcloud Whiteboard dependencies are unavailable.",
             );
+
         router.get(
             "/api/v1/modules/nextcloud-whiteboard/config",
             async (_req, res) => {
@@ -217,6 +225,7 @@ export function registerApiRoutes(router, ctx) {
             },
             { access: { minRole: "admin" }, allowWhenDisabled: true },
         );
+
         router.post(
             "/api/v1/modules/nextcloud-whiteboard/config",
             async (_req, res) => {
@@ -224,6 +233,7 @@ export function registerApiRoutes(router, ctx) {
             },
             { access: { minRole: "admin" }, allowWhenDisabled: true },
         );
+
         router.get(
             "/api/v1/modules/nextcloud-whiteboard/ping",
             async (_req, res) => {
@@ -297,7 +307,9 @@ export function registerApiRoutes(router, ctx) {
                 participants: options.participants,
                 externalPath: options.externalPath,
             });
-            const launchUrl = buildCognisWhiteboardUrl(whiteboard.id);
+            const launchUrl = buildCognisWhiteboardUrl(whiteboard.id, {
+                instantCanvas: options.instantCanvas === true,
+            });
             log?.("info", "Nextcloud Whiteboard window spawned.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "spawn_whiteboard_window",
@@ -378,6 +390,11 @@ export function registerApiRoutes(router, ctx) {
             const liveness = await checkHttpLiveness(config.serverUrl, {
                 timeoutMs: LIVENESS_TIMEOUT_MS,
             });
+            const websocketAuthToken = store.mintSessionToken(
+                config,
+                { id: `cognis-preflight-${claims.sub}` },
+                { id: claims.sub, name: claims.sub, readOnly: true },
+            );
             log?.("info", "Nextcloud Whiteboard preflight check completed.", {
                 component: "nextcloud-whiteboard-module",
                 operation: "preflight",
@@ -388,6 +405,7 @@ export function registerApiRoutes(router, ctx) {
                 data: {
                     alive: liveness.alive,
                     serverUrl: config.serverUrl,
+                    websocketAuthToken,
                 },
             });
         },

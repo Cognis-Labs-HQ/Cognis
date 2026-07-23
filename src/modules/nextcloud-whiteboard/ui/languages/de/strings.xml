@@ -45,7 +45,7 @@
   <string name="module.nextcloud_whiteboard.refresh_failed">Das Whiteboard wurde erstellt, aber die Liste konnte nicht aktualisiert werden.</string>
   <string name="module.nextcloud_whiteboard.spawn_failed">Das Whiteboard konnte nicht geöffnet werden.</string>
   <string name="module.nextcloud_whiteboard.new_board">Neues Whiteboard</string>
-  <string name="module.nextcloud_whiteboard.new_board_title">Unbenanntes Whiteboard</string>
+  <string name="module.nextcloud_whiteboard.new_board_title">Board #123456</string>
   <string name="module.nextcloud_whiteboard.history_title">Whiteboard-Verlauf</string>
   <string name="module.nextcloud_whiteboard.connection_failed">Keine Verbindung zum Whiteboard-Server unter {server_url}. Bitten Sie einen Administrator, die WebSocket-URL und CSP-Konfiguration zu prüfen.</string>
   <string name="module.nextcloud_whiteboard.created_success">Whiteboard erstellt.</string>
@@ -90,5 +90,7 @@
   <string name="module.nextcloud_whiteboard.share_delete_failed">Freigabelink konnte nicht widerrufen werden.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Dadurch werden alle Elemente auf dem aktuellen Whiteboard dauerhaft gelöscht. Fortfahren?</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard muss die Serverprüfung bestehen, bevor es aktiviert werden kann.</string>
+  <string name="module.nextcloud_whiteboard.preflight_websocket_failed">Der Whiteboard-Server hat die WebSocket-Authentifizierung abgelehnt. Prüfe die API-Schlüssel-Konfiguration.</string>
+  <string name="module.nextcloud_whiteboard.tool_lock">Aktuelles Zeichenwerkzeug nach dem Erstellen eines Objekts aktiv lassen</string>
 </resources>
 
