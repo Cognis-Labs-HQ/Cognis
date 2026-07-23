@@ -154,8 +154,12 @@ function createHighlightedSnippet(value, match) {
 function normalizeSearchItem(item, category) {
     if (!item || typeof item !== "object") return null;
     const url = String(item.url ?? "").trim();
-    const id = String(item.id ?? url ?? item.label ?? "").trim();
-    const label = String(item.label ?? item.title ?? id).trim();
+    const id = String(
+        item.id ?? item.handle ?? item.accountId ?? url ?? item.label ?? "",
+    ).trim();
+    const label = String(
+        item.label ?? item.title ?? item.displayName ?? item.handle ?? id,
+    ).trim();
     if (!id || !label) return null;
     return {
         ...item,
@@ -396,9 +400,7 @@ function attachSearchMatch(item, resolveMatch) {
         ...(item.description && item.showDescription !== false
             ? [["description", item.description]]
             : []),
-        ...(item.showMatchSnippet === true
-            ? [["searchText", item.searchText]]
-            : []),
+        ...(item.searchText ? [["searchText", item.searchText]] : []),
     ];
     for (const [fieldName, value] of fields) {
         const match = resolveMatch(value);
@@ -412,7 +414,7 @@ function attachSearchMatch(item, resolveMatch) {
                     ? createHighlightedSnippet(value, match)
                     : "",
             matchSnippet:
-                fieldName === "searchText"
+                fieldName === "searchText" || item.showMatchSnippet === true
                     ? createHighlightedSnippet(value, match)
                     : "",
         };
@@ -477,15 +479,53 @@ function mergeSearchGroups(groups) {
     }));
 }
 
+function hasSelectableTarget(item) {
+    return Boolean(
+        String(item?.url ?? "").trim() ||
+            String(item?.handle ?? "").trim() ||
+            String(item?.id ?? "").trim() ||
+            String(item?.accountId ?? "").trim(),
+    );
+}
+
 function filterNavigableGroups(groups) {
     return (groups ?? [])
         .map((group) => ({
             ...group,
-            items: (group.items ?? []).filter((item) =>
-                String(item?.url ?? "").trim(),
-            ),
+            items: (group.items ?? []).filter(hasSelectableTarget),
         }))
         .filter((group) => group.items.length > 0);
+}
+
+function shouldClientFilterApiResults(searchOptions = {}) {
+    const options = normalizeSearchOptions(searchOptions);
+    return options.wholeWord || options.regex || options.caseSensitive;
+}
+
+function filterApiGroupMatches(groups, query, searchOptions = {}) {
+    if (!shouldClientFilterApiResults(searchOptions)) return groups;
+    const resolveMatch = createSearchMatchResolver(query, searchOptions);
+    return (groups ?? [])
+        .map((group) => ({
+            ...group,
+            items: (group.items ?? [])
+                .map((item) => attachSearchMatch(item, resolveMatch))
+                .filter(Boolean),
+        }))
+        .filter((group) => group.items.length > 0);
+}
+
+function filterApiFlatMatches(items, query, searchOptions = {}) {
+    if (!shouldClientFilterApiResults(searchOptions)) return items;
+    const resolveMatch = createSearchMatchResolver(query, searchOptions);
+    return (items ?? [])
+        .map((item) =>
+            attachSearchMatch(
+                normalizeSearchItem(item, item?.category ?? "Search") ?? item,
+                resolveMatch,
+            ),
+        )
+        .filter(Boolean);
 }
 
 function renderResultContent(listItem, item) {
@@ -725,13 +765,18 @@ async function runSearch({
         const apiGroups = isGrouped
             ? responseData.map(normalizeSearchGroup).filter(Boolean)
             : [];
+        const matchedApiGroups = filterApiGroupMatches(
+            apiGroups,
+            query,
+            searchOptions,
+        );
         const navigableApiGroups = isMultiSelect
-            ? apiGroups
-            : filterNavigableGroups(apiGroups);
+            ? matchedApiGroups
+            : filterNavigableGroups(matchedApiGroups);
         const flatItems = isGrouped
             ? []
-            : responseData.filter(
-                  (item) => isMultiSelect || String(item?.url ?? "").trim(),
+            : filterApiFlatMatches(responseData, query, searchOptions).filter(
+                  (item) => isMultiSelect || hasSelectableTarget(item),
               );
         const mergedGroups = mergeSearchGroups([
             ...navigableApiGroups,

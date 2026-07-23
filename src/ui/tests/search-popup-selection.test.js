@@ -44,6 +44,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
+    assert.match(source, /hasSelectableTarget/);
+    assert.match(source, /filterApiFlatMatches/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(
         source,
@@ -60,10 +62,11 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /wholeWord=1/);
     assert.match(source, /regex=1/);
     assert.match(source, /caseSensitive=1/);
-    assert.match(source, /showMatchSnippet === true/);
+    assert.match(source, /item\.searchText \? \[\["searchText", item\.searchText\]\]/);
     assert.match(source, /matchSnippet/);
     assert.match(source, /highlightedLabel/);
     assert.match(source, /selectSearchResult/);
+    assert.match(source, /item\.handle/);
 });
 
 test("settings search exposes archive action by name and description", () => {
@@ -80,7 +83,22 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /stageId: "settings-index"/);
     assert.match(source, /formatPreferenceLabel/);
     assert.match(source, /collectPreferenceSearchItems/);
+    assert.match(source, /renderSettingsElementText/);
+    assert.match(source, /textFromHtml/);
     assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
+});
+
+
+test("docs search indexes navigation titles and document contents", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/docs/index.js"),
+        "utf8",
+    );
+    assert.match(source, /registerSearchIndex\(\s*["\']docs["\']/);
+    assert.match(source, /createDocsSearchProvider/);
+    assert.match(source, /htmlToSearchText/);
+    assert.match(source, /loadMarkdownDocumentHtml/);
+    assert.match(source, /changelogSlugToRoutePath/);
 });
 
 test("whiteboard search indexes board filenames and stored canvas contents", () => {

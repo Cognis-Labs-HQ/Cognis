@@ -8,6 +8,7 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
+import { registerSearchIndex } from "../../reuse/search-bar.js";
 
 // platform is the fallback group for ungrouped root-level docs.
 const GROUP_KEYS = {
@@ -57,6 +58,61 @@ function docTitle(item) {
     );
 }
 
+function htmlToSearchText(value) {
+    return String(value ?? "")
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function createDocsSearchProvider(i18n, docs, activeDocContent) {
+    return async () => {
+        const langs = readPreferredLanguages().join(",");
+        const items = await Promise.all(
+            (docs ?? []).map(async (item) => {
+                const title = docTitle(item);
+                let contentText = activeDocContent.get(item.slug) ?? "";
+                if (!contentText) {
+                    try {
+                        const html = await loadMarkdownDocumentHtml(
+                            `/api/v1/docs/${item.slug}?langs=${encodeURIComponent(langs)}`,
+                        );
+                        contentText = htmlToSearchText(html);
+                        activeDocContent.set(item.slug, contentText);
+                    } catch {
+                        contentText = "";
+                    }
+                }
+                return {
+                    id: `docs:${item.slug}`,
+                    label: title,
+                    description: groupLabel(i18n, item.group || "platform"),
+                    url: isChangelogDoc(item)
+                        ? changelogSlugToRoutePath(item.slug)
+                        : `/docs/${item.slug}`,
+                    searchText: [
+                        title,
+                        item.slug,
+                        item.group,
+                        item.description,
+                        contentText,
+                    ]
+                        .filter(Boolean)
+                        .join(" "),
+                };
+            }),
+        );
+        return [{ category: i18n.t("ui.reuse.docs"), items }];
+    };
+}
 function renderDocNavButton(item) {
     const title = docTitle(item);
     const safeTitle = escapeHtml(title);
@@ -127,6 +183,7 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "ui.page.title.docs");
 
     let activeHtml = null;
+    const docsSearchContent = new Map();
 
     function renderActiveDoc() {
         const docEl = root.querySelector("#doc");
@@ -146,6 +203,7 @@ export async function mount(root, { signal } = {}) {
         // If the page was navigated away from while the fetch was in flight,
         // bail out before touching the DOM or history (fall through to nothing).
         if (signal?.aborted) return;
+        docsSearchContent.set(slug, htmlToSearchText(activeHtml));
         renderActiveDoc();
 
         if (pushHistory) {
@@ -175,6 +233,10 @@ export async function mount(root, { signal } = {}) {
 
     const docs = await loadDocsIndex();
     const navigationDocs = docs.filter((doc) => !isChangelogDoc(doc));
+    registerSearchIndex(
+        "docs",
+        createDocsSearchProvider(i18n, docs, docsSearchContent),
+    );
 
     const elements = [
         {

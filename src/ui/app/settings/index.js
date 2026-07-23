@@ -75,6 +75,29 @@ function collectPreferenceSearchItems(value, labelPrefix = "") {
     });
 }
 
+function textFromHtml(value) {
+    return String(value ?? "")
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&lt;/g, "<")
+        .replace(/&gt;/g, ">")
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function renderSettingsElementText(element) {
+    if (typeof element?.render !== "function") return "";
+    try {
+        return textFromHtml(element.render());
+    } catch {
+        return "";
+    }
+}
 function collectSettingsElementSearchItems(section) {
     const sectionLabel = String(section?.label ?? section?.id ?? "").trim();
     return (section?.subComposerOptions?.elements ?? [])
@@ -86,7 +109,14 @@ function collectSettingsElementSearchItems(section) {
                 label,
                 description: sectionLabel,
                 url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
-                searchText: [sectionLabel, label].filter(Boolean).join(" "),
+                searchText: [
+                    sectionLabel,
+                    section?.heading,
+                    label,
+                    renderSettingsElementText(element),
+                ]
+                    .filter(Boolean)
+                    .join(" "),
             };
         })
         .filter(Boolean);
