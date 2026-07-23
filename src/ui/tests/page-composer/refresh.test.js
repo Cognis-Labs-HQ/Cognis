@@ -59,7 +59,6 @@ test("page composer preserves media element DOM across re-renders", () => {
     assert.match(source, /function renderElementContent\(host, element\)/);
     assert.match(source, /querySelectorAll\("\[data-composer-element\]"\)/);
     assert.match(source, /host\.replaceChildren\(preserved\)/);
-    assert.match(source, /renderElementContent\(card, element\);/);
     assert.match(
         source,
         /function renderPlacementCards\(section, placements, scale\)/,

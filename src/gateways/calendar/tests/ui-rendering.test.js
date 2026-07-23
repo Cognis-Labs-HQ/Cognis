@@ -79,6 +79,8 @@ const SHARE_REMINDER_CSS_SOURCE = readFileSync(
 );
 
 test("calendar view opts out of composer content parking", () => {
+    assert.match(APP_SOURCE, /function refreshCalendarComposer\(\)/);
+    assert.match(APP_SOURCE, /\[data-composer-element=\"calendar-view\"\]/);
     assert.match(
         APP_SOURCE,
         /<section class="calendar-section" data-composer-preserve="false">/,

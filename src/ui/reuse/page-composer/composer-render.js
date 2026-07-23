@@ -704,11 +704,11 @@ export function createComposerRenderer({
                 card = document.createElement("section");
                 card.dataset.composerElement = placement.id;
                 section.appendChild(card);
-            }
-            if (isMissing) {
-                card.innerHTML = renderMissingElementContent(placement.id);
-            } else {
-                renderElementContent(card, element);
+                if (isMissing) {
+                    card.innerHTML = renderMissingElementContent(placement.id);
+                } else {
+                    renderElementContent(card, element);
+                }
             }
             card.className = isMissing
                 ? "widget-card widget-card--missing"

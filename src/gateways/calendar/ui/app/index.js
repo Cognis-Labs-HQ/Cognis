@@ -54,6 +54,17 @@ export async function mount(root, { signal } = {}) {
 
     selectedView = loadSelectedViewPreference();
 
+    function refreshCalendarComposer() {
+        root.querySelectorAll(
+            '[data-composer-element="calendar-view"]',
+        ).forEach((card) => {
+            if (!card.classList.contains("composer-cell")) {
+                card.remove();
+            }
+        });
+        composer?.refresh();
+    }
+
     function ensureSelectedCalendarId() {
         const hasSelectedCalendar =
             selectedCalendarId &&
@@ -258,7 +269,7 @@ export async function mount(root, { signal } = {}) {
         getJitsiAvailable: () => jitsiAvailable,
         reloadState,
         syncRouteSelection,
-        refreshComposer: () => composer?.refresh(),
+        refreshComposer: refreshCalendarComposer,
     });
 
     const {
@@ -327,7 +338,7 @@ export async function mount(root, { signal } = {}) {
                                         return;
                                     }
                                     setSelectedView(nextView);
-                                    composer.refresh();
+                                    refreshCalendarComposer();
                                 },
                                 { signal },
                             );
@@ -370,7 +381,7 @@ export async function mount(root, { signal } = {}) {
                                             1,
                                         );
                                     }
-                                    composer.refresh();
+                                    refreshCalendarComposer();
                                 },
                                 { signal },
                             );
@@ -480,7 +491,7 @@ export async function mount(root, { signal } = {}) {
                                         1,
                                     );
                                     setSelectedView("month");
-                                    composer.refresh();
+                                    refreshCalendarComposer();
                                 },
                                 { signal },
                             );
@@ -500,7 +511,7 @@ export async function mount(root, { signal } = {}) {
                                         ),
                                     );
                                     setSelectedView("week");
-                                    composer.refresh();
+                                    refreshCalendarComposer();
                                 },
                                 { signal },
                             );
@@ -520,7 +531,7 @@ export async function mount(root, { signal } = {}) {
                                         ),
                                     );
                                     setSelectedView("day");
-                                    composer.refresh();
+                                    refreshCalendarComposer();
                                 },
                                 { signal },
                             );
@@ -603,7 +614,7 @@ export async function mount(root, { signal } = {}) {
                             selectedCalendarId = calendarId;
                             selectedEventId = "";
                             syncRouteSelection();
-                            composer.refresh();
+                            refreshCalendarComposer();
                             if (calendar.visibility === "shared") {
                                 showToast(
                                     i18n.t(
@@ -706,7 +717,7 @@ export async function mount(root, { signal } = {}) {
                     i18n.t("gateway.calendar.create_calendar_success"),
                     "success",
                 );
-                composer.refresh();
+                refreshCalendarComposer();
                 return true;
             },
         });
