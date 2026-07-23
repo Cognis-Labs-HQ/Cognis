@@ -1,5 +1,13 @@
 # Hasil Pencarian Lebih Jelas
 
+## Target pencarian disorot
+
+Saat sebuah hasil dibuka, halaman kini menggulir ke elemen terkait dan menyorotnya sebentar. Ctrl+F juga membuka popup pencarian global, bukan pencarian bawaan browser.
+
+## Pencarian pengaturan tetap berfokus pada tindakan
+
+Pencarian pengaturan kini melewati teks paragraf pasif dan hanya mempertahankan heading, subhalaman, field, dan operasi sebagai hasil terpisah agar halaman pengaturan tetap mudah dipindai.
+
 ## Acara kalender diindeks secara global
 
 Acara kalender kini didaftarkan dari kontribusi navigasi kalender, sehingga hasil acara dapat muncul di pencarian global tanpa harus membuka halaman kalender terlebih dahulu.

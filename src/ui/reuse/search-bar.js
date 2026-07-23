@@ -17,6 +17,28 @@ const DEBOUNCE_MS = 280;
 const REGISTERED_SEARCH_CATEGORIES = new Map();
 const REGISTERED_SEARCH_CATEGORY_HOOKS = new Set();
 const MIN_SEARCH_QUERY_LENGTH = 2;
+let activeSearchToggleButton = null;
+let searchShortcutBound = false;
+
+function focusOpenSearchInput() {
+    const input = document.querySelector(".search-popup-input");
+    if (!(input instanceof HTMLInputElement)) return false;
+    input.focus();
+    input.select();
+    return true;
+}
+
+function bindSearchShortcut() {
+    if (searchShortcutBound || typeof document === "undefined") return;
+    searchShortcutBound = true;
+    document.addEventListener("keydown", (event) => {
+        if (!(event.ctrlKey || event.metaKey)) return;
+        if (String(event.key ?? "").toLowerCase() !== "f") return;
+        event.preventDefault();
+        if (focusOpenSearchInput()) return;
+        activeSearchToggleButton?.click();
+    });
+}
 
 /**
  * Converts a singular category token into a basic plural form for placeholder
@@ -387,9 +409,10 @@ function collectVisibleContentSearchGroups() {
                 id,
                 label,
                 description,
-                url: candidate.id
-                    ? `${window.location.pathname}${window.location.search}#${candidate.id}`
-                    : `${window.location.pathname}${window.location.search}${window.location.hash}`,
+                url:
+                    candidate.id || candidate.getAttribute("data-search-id")
+                        ? `${window.location.pathname}${window.location.search}#${candidate.id || candidate.getAttribute("data-search-id")}`
+                        : `${window.location.pathname}${window.location.search}${window.location.hash}`,
                 resultClass:
                     candidate.getAttribute("data-search-result-class") ||
                     (candidate.matches("h1, h2, h3, h4, h5, h6")
@@ -1339,6 +1362,8 @@ export function createSearchBar({
     toggleBtn.setAttribute("aria-label", ariaLabel);
     toggleBtn.innerHTML = "&#128269;";
     wrapper.appendChild(toggleBtn);
+    activeSearchToggleButton = toggleBtn;
+    bindSearchShortcut();
 
     let closePopup = null;
 

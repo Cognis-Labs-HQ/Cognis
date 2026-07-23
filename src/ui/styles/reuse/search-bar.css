@@ -276,3 +276,22 @@
     color: var(--accent, #3b82f6);
     outline: none;
 }
+
+.search-target-highlight {
+    animation: search-target-highlight-pulse 1.8s ease;
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: 4px;
+}
+
+@keyframes search-target-highlight-pulse {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0
+            color-mix(in srgb, var(--accent, #3b82f6) 0%, transparent);
+    }
+
+    35% {
+        box-shadow: 0 0 0 8px
+            color-mix(in srgb, var(--accent, #3b82f6) 24%, transparent);
+    }
+}

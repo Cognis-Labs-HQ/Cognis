@@ -1,5 +1,13 @@
 # Klarere Suchergebnisse
 
+## Suchziele werden hervorgehoben
+
+Beim Öffnen eines Ergebnisses wird nun zum referenzierten Element gescrollt und es kurz hervorgehoben. Strg+F öffnet außerdem das globale Suchfenster statt der Browser-Suche.
+
+## Die Einstellungssuche bleibt handlungsorientiert
+
+Die Einstellungssuche überspringt jetzt passiven Absatztext und behält nur Überschriften, Unterseiten, Felder und Vorgänge als eigene Ergebnisse bei, damit Einstellungsseiten übersichtlich bleiben.
+
 ## Kalenderereignisse werden global indexiert
 
 Kalenderereignisse werden nun über den Kalender-Navigationsbeitrag registriert, sodass Ereignisse in der globalen Suche erscheinen können, ohne dass die Kalenderseite bereits geöffnet sein muss.

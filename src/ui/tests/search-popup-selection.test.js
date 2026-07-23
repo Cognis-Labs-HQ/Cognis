@@ -269,3 +269,54 @@ test("study content and sub-navigation participate in global search", () => {
     assert.match(subNavigationSource, /data-search-category/);
     assert.match(subNavigationSource, /data-search-description/);
 });
+
+test("settings search skips paragraph text entries and search results highlight targets", () => {
+    const settingsSource = readFileSync(
+        resolve(ROOT, "src/ui/app/settings/index.js"),
+        "utf8",
+    );
+    const searchIndexSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-index.js"),
+        "utf8",
+    );
+    const dashboardSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const styleSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+
+    assert.match(
+        settingsSource,
+        /\["heading", "field", "operation"\]\.includes/,
+    );
+    assert.doesNotMatch(
+        settingsSource,
+        /\["heading", "field", "operation", "text"\]/,
+    );
+    assert.match(searchIndexSource, /export function highlightSearchTarget/);
+    assert.match(
+        searchIndexSource,
+        /scrollIntoView\(\{ block: "center", behavior: "smooth" \}\)/,
+    );
+    assert.match(dashboardSource, /highlightSearchTarget\(result\)/);
+    assert.match(styleSource, /\.search-target-highlight/);
+});
+
+test("global search intercepts browser find shortcut", () => {
+    const searchSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-bar.js"),
+        "utf8",
+    );
+
+    assert.match(searchSource, /function bindSearchShortcut/);
+    assert.match(searchSource, /event\.preventDefault\(\)/);
+    assert.match(
+        searchSource,
+        /String\(event\.key \?\? ""\)\.toLowerCase\(\) !== "f"/,
+    );
+    assert.match(searchSource, /focusOpenSearchInput\(\)/);
+    assert.match(searchSource, /activeSearchToggleButton\?\.click\(\)/);
+});

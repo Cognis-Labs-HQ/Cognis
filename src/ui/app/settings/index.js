@@ -50,11 +50,12 @@ import {
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
 
-function accountOperationSearchAttrs(i18n, labelKey, descriptionKey) {
+function accountOperationSearchAttrs(i18n, action, labelKey, descriptionKey) {
     const label = i18n.t(labelKey);
     const description = i18n.t(descriptionKey);
     return renderSearchDataAttributes({
         "data-search-category": i18n.t("ui.reuse.operations"),
+        "data-search-id": `settings-operation-${action}`,
         "data-search-label": label,
         "data-search-description": description,
         "data-search-result-class": "operation",
@@ -74,7 +75,7 @@ function renderAccountOperationButton(i18n, action, labelKey, descriptionKey) {
         class="btn-cancel btn-animated"
         type="button"
         data-account-action="${escapeHtml(action)}"
-        ${accountOperationSearchAttrs(i18n, labelKey, descriptionKey)}
+        ${accountOperationSearchAttrs(i18n, action, labelKey, descriptionKey)}
       >${escapeHtml(label)}</button>
     `;
 }
@@ -122,7 +123,9 @@ function collectPreferenceSearchItems(value, labelPrefix = "") {
 function renderSettingsElementEntries(element) {
     if (typeof element?.render !== "function") return [];
     try {
-        return htmlToSearchEntries(element.render());
+        return htmlToSearchEntries(element.render()).filter((entry) =>
+            ["heading", "field", "operation"].includes(entry.resultClass),
+        );
     } catch {
         return [];
     }
@@ -157,7 +160,7 @@ function collectSettingsElementContentSearchItems(
         label: entry.text.slice(0, 96),
         description: [sectionLabel, label].filter(Boolean).join(" — "),
         resultClass: entry.resultClass,
-        url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
+        url: `/settings#${encodeURIComponent(entry.searchId || section?.id || label)}`,
         searchText: [sectionLabel, section?.heading, label, entry.text]
             .filter(Boolean)
             .join(" "),

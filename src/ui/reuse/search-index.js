@@ -7,6 +7,7 @@
  *   htmlToSearchEntries(value) — extracts typed block-level search entries.
  *   htmlToSearchSegments(value) — extracts block-level text search results.
  *   renderSearchDataAttributes(attributes) — renders escaped HTML attributes.
+ *   highlightSearchTarget(target) — scrolls to and highlights a search target.
  *
  * Example:
  *   const text = htmlToSearchText('<h2>Settings</h2><p>Theme</p>');
@@ -39,6 +40,12 @@ export function htmlToSearchText(value) {
         .trim();
 }
 
+function readSearchAttribute(attributes, name) {
+    const pattern = new RegExp(`${name}=["']([^"']*)["']`, "i");
+    const match = pattern.exec(attributes);
+    return match ? htmlToSearchText(match[1]) : "";
+}
+
 function resultClassForTag(tagName) {
     if (/^h[1-6]$/i.test(tagName)) return "heading";
     if (/^(button|summary|option)$/i.test(tagName)) return "operation";
@@ -59,14 +66,23 @@ export function htmlToSearchEntries(value) {
     const entries = [];
     const seen = new Set();
     const blockPattern =
-        /<(h[1-6]|p|label|button|summary|option|li|td|th)[^>]*>([\s\S]*?)<\/\1>/gi;
+        /<(h[1-6]|p|label|button|summary|option|li|td|th)([^>]*)>([\s\S]*?)<\/\1>/gi;
     for (const match of html.matchAll(blockPattern)) {
-        const text = htmlToSearchText(match[2]);
-        const resultClass = resultClassForTag(match[1]);
-        const key = `${resultClass}:${text}`;
+        const attributes = match[2] ?? "";
+        const text =
+            readSearchAttribute(attributes, "data-search-label") ||
+            readSearchAttribute(attributes, "data-search-text") ||
+            htmlToSearchText(match[3]);
+        const resultClass =
+            readSearchAttribute(attributes, "data-search-result-class") ||
+            resultClassForTag(match[1]);
+        const searchId =
+            readSearchAttribute(attributes, "data-search-id") ||
+            readSearchAttribute(attributes, "data-search-anchor");
+        const key = `${resultClass}:${searchId}:${text}`;
         if (text && !seen.has(key)) {
             seen.add(key);
-            entries.push({ text, resultClass });
+            entries.push({ text, resultClass, searchId });
         }
     }
     if (entries.length === 0) {
@@ -85,6 +101,57 @@ export function htmlToSearchEntries(value) {
  */
 export function htmlToSearchSegments(value) {
     return htmlToSearchEntries(value).map((entry) => entry.text);
+}
+
+function escapeSearchSelector(value) {
+    if (typeof CSS !== "undefined" && typeof CSS.escape === "function") {
+        return CSS.escape(value);
+    }
+    return String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function resolveSearchTargetElement(target) {
+    if (typeof document === "undefined") return null;
+    const fallbackHash =
+        typeof window === "undefined" ? "" : window.location.hash;
+    const rawTarget = String(target ?? fallbackHash ?? "").trim();
+    const hashTarget = rawTarget.includes("#")
+        ? rawTarget.slice(rawTarget.indexOf("#") + 1)
+        : rawTarget.replace(/^#/, "");
+    if (!hashTarget) return null;
+    const decodedTarget = decodeURIComponent(hashTarget);
+    const escapedTarget = escapeSearchSelector(decodedTarget);
+    return (
+        document.getElementById(decodedTarget) ||
+        document.querySelector(
+            `[data-search-id="${escapedTarget}"], [data-search-anchor="${escapedTarget}"]`,
+        )
+    );
+}
+
+/**
+ * Scrolls to and temporarily highlights the element referenced by a search
+ * result URL/hash.
+ *
+ * @param {string|{ url?: string, id?: string }} target
+ * @returns {boolean}
+ */
+export function highlightSearchTarget(target = undefined) {
+    const fallbackHash =
+        typeof window === "undefined" ? "" : window.location.hash;
+    const targetValue =
+        typeof target === "object" && target
+            ? target.url || target.id || fallbackHash
+            : target || fallbackHash;
+    const element = resolveSearchTargetElement(targetValue);
+    if (!element) return false;
+    element.scrollIntoView({ block: "center", behavior: "smooth" });
+    element.classList.add("search-target-highlight");
+    const timer = typeof window === "undefined" ? globalThis : window;
+    timer.setTimeout(() => {
+        element.classList.remove("search-target-highlight");
+    }, 1800);
+    return true;
 }
 
 /**

@@ -1,5 +1,13 @@
 # Search Results Clarity
 
+## Search targets are highlighted
+
+Opening a result now scrolls to the referenced element and briefly highlights it, while Ctrl+F opens the global search popup instead of the browser find box.
+
+## Settings search stays actionable
+
+Settings search now skips passive paragraph text and keeps only headings, subpages, fields, and operations as discrete results so settings pages remain easy to scan.
+
 ## Calendar events are indexed globally
 
 Calendar events are now registered from the calendar navigation contribution, so event results can appear in global search without relying on the calendar page already being open.
