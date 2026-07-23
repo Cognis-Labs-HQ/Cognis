@@ -5,7 +5,7 @@
     "required": false,
     "requires": [
         "auth",
-        "social:profile"
+        "social"
     ],
     "hasAdapters": true,
     "description": "Internal calendar management with pluggable export/import adapters.",

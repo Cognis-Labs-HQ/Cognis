@@ -798,10 +798,15 @@ async function runPreflightCheck() {
 
 function syncBoardUrl(boardId) {
     if (activeShareContext || !boardId) return;
-    const nextUrl = `/whiteboard?id=${encodeURIComponent(boardId)}`;
+    const searchParams = new URLSearchParams({ id: boardId });
+    if (integrationCanvasMode) {
+        searchParams.set("instantCanvas", "1");
+    }
+    const nextSearch = `?${searchParams.toString()}`;
+    const nextUrl = `/whiteboard${nextSearch}`;
     if (
         window.location.pathname !== "/whiteboard" ||
-        window.location.search !== `?id=${encodeURIComponent(boardId)}`
+        window.location.search !== nextSearch
     ) {
         window.history.replaceState(null, "", nextUrl);
     }

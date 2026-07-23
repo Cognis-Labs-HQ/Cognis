@@ -320,6 +320,7 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
     assert.match(appSource, /function canRenameActiveBoard\(\)/);
     assert.match(appSource, /function emitBoardRenamed\(title\)/);
     assert.match(appSource, /function syncBoardUrl\(boardId\)/);
+    assert.match(appSource, /searchParams\.set\("instantCanvas", "1"\)/);
     assert.match(
         appSource,
         /window\.history\.replaceState\(null, "", nextUrl\)/,
