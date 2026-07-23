@@ -266,7 +266,7 @@ export function registerShareFlowHooks(ctx) {
                     meetingId: meeting.id,
                     chatRoomId: meeting.chatRoomId,
                     title: meeting.meetingName,
-                    scheduledAt: meeting.createdAt,
+                    scheduledAt: meeting.scheduledAt ?? meeting.createdAt,
                     duration: null,
                     hostDisplayName:
                         ownerProfile?.displayName ??

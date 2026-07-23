@@ -71,9 +71,10 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                 const users = Array.isArray(row.activeUsernames)
                     ? row.activeUsernames.join(", ")
                     : "";
+                const meetingUrl = String(row.meetingUrl ?? "");
                 return `<tr>
-          <td><code>${escapeHtml(row.id ?? "")}</code></td>
-          <td><a href="${escapeHtml(row.meetingUrl ?? "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.meetingName ?? "Cognis Classroom")}</a></td>
+          <td style="width: 1%; white-space: nowrap"><code>${escapeHtml(row.id ?? "")}</code></td>
+          <td><a href="${escapeHtml(meetingUrl || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(meetingUrl || i18n.t("ui.reuse.unknown"))}</a></td>
           <td>${escapeHtml(String(row.participantCount ?? 0))}</td>
           <td>${escapeHtml(users)}</td>
           <td>${escapeHtml(formatDateTime(row.updatedAt, i18n.t("ui.reuse.unknown")))}</td>
@@ -88,12 +89,23 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
         }
         return rows
             .map((row) => {
+                const createdByLabel =
+                    row.createdByDisplayName ?? row.createdBy ?? "";
+                const createdAtLabel = formatDateTime(
+                    row.createdAt,
+                    i18n.t("ui.reuse.unknown"),
+                );
+                const scheduledAtLabel = formatDateTime(
+                    row.scheduledAt ?? row.createdAt,
+                    i18n.t("ui.reuse.unknown"),
+                );
+                const meetingUrl = String(row.meetingUrl ?? "");
                 return `<tr>
-          <td><code>${escapeHtml(row.id ?? "")}</code></td>
-          <td><a href="${escapeHtml(row.meetingUrl ?? "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(row.meetingName ?? "Cognis Classroom")}</a></td>
+          <td style="width: 1%; white-space: nowrap"><code>${escapeHtml(row.id ?? "")}</code></td>
+          <td><a href="${escapeHtml(meetingUrl || "#")}" target="_blank" rel="noopener noreferrer">${escapeHtml(meetingUrl || i18n.t("ui.reuse.unknown"))}</a></td>
           <td>${escapeHtml(String(row.participantCount ?? 0))}</td>
-          <td>${escapeHtml(row.createdBy ?? "")}</td>
-          <td>${escapeHtml(formatDateTime(row.createdAt, i18n.t("ui.reuse.unknown")))}</td>
+          <td>${escapeHtml(createdByLabel)}<br><small>${escapeHtml(createdAtLabel)}</small></td>
+          <td>${escapeHtml(scheduledAtLabel)}</td>
         </tr>`;
             })
             .join("");
@@ -188,12 +200,20 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                     ),
                     pinned: true,
                     render: () => `
+            <h3 class="components-section-heading">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.active_table_heading"))}</h3>
             <div class="users-table-wrap" id="jitsi-admin-meetings-root">
               <table class="users-table">
+                <colgroup>
+                  <col style="width: 1%" />
+                  <col style="width: 24.75%" />
+                  <col style="width: 24.75%" />
+                  <col style="width: 24.75%" />
+                  <col style="width: 24.75%" />
+                </colgroup>
                 <thead>
                   <tr>
-                     <th>${escapeHtml(i18n.t("ui.reuse.id"))}</th>
-                     <th>${escapeHtml(i18n.t("ui.reuse.meeting"))}</th>
+                     <th style="width: 1%; white-space: nowrap">${escapeHtml(i18n.t("ui.reuse.id"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.meeting_url"))}</th>
                      <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.participants"))}</th>
                      <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.active_users"))}</th>
                      <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.last_active"))}</th>
@@ -213,15 +233,23 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml }) {
                     ),
                     pinned: true,
                     render: () => `
+            <h3 class="components-section-heading">${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.upcoming_table_heading"))}</h3>
             <div class="users-table-wrap" id="jitsi-admin-upcoming-meetings-root">
               <table class="users-table">
+                <colgroup>
+                  <col style="width: 1%" />
+                  <col style="width: 24.75%" />
+                  <col style="width: 24.75%" />
+                  <col style="width: 24.75%" />
+                  <col style="width: 24.75%" />
+                </colgroup>
                 <thead>
                   <tr>
-                     <th>${escapeHtml(i18n.t("ui.reuse.id"))}</th>
-                     <th>${escapeHtml(i18n.t("ui.reuse.meeting"))}</th>
+                     <th style="width: 1%; white-space: nowrap">${escapeHtml(i18n.t("ui.reuse.id"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.meeting_url"))}</th>
                      <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.participants"))}</th>
                      <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.created_by"))}</th>
-                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.created_at"))}</th>
+                     <th>${escapeHtml(i18n.t("module.jitsi_meet.admin.meetings.schedule_date"))}</th>
                    </tr>
                  </thead>
                 <tbody>

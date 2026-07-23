@@ -1,8 +1,11 @@
 {
     "name": "@cognis/adapter-calendar-ics",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "ICS import/export adapter for calendar feeds.",
     "type": "module",
     "main": "index.ts",
-    "private": true
+    "private": true,
+    "dependencies": {
+        "@cognis/gateways": "<=0.1.4"
+    }
 }

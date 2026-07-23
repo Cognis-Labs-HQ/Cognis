@@ -71,7 +71,9 @@ export function createCalendarPopupManager({
         let meetingUrl = null;
         if (createMeeting && getJitsiAvailable()) {
             try {
-                meetingUrl = await calendarUi.createJitsiMeeting(attendees);
+                meetingUrl = await calendarUi.createJitsiMeeting(attendees, {
+                    scheduledAt: startAt,
+                });
             } catch {
                 showToast(
                     i18n.t("gateway.calendar.create_meeting_failed"),
@@ -900,8 +902,12 @@ export function createCalendarPopupManager({
                     let meetingUrl = eventData.event.meetingUrl ?? null;
                     if (!meetingUrl && createMeeting && getJitsiAvailable()) {
                         try {
-                            meetingUrl =
-                                await calendarUi.createJitsiMeeting(attendees);
+                            meetingUrl = await calendarUi.createJitsiMeeting(
+                                attendees,
+                                {
+                                    scheduledAt: values.startAt,
+                                },
+                            );
                         } catch {
                             showToast(
                                 i18n.t(

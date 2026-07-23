@@ -248,6 +248,7 @@ test("meetings mini chat supports participant private-chat switching and return-
         resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),
         "utf8",
     );
+
     assert.match(markupSource, /id="jitsi-chat-participant-strip"/);
     assert.match(markupSource, /id="jitsi-chat-return-btn"/);
     assert.match(markupSource, /<header class="jitsi-chat-header">/);
@@ -326,7 +327,7 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(markupSource, /id="jitsi-leave-alone-btn"/);
     assert.match(markupSource, /id="jitsi-remain-alone-btn"/);
-    assert.match(constantsSource, /ALONE_PROMPT_GRACE_PERIOD_MS = 60_000/);
+    assert.match(constantsSource, /ALONE_PROMPT_GRACE_PERIOD_MS = 180_000/);
     assert.match(source, /function deferAloneParticipantPrompt\(/);
     assert.match(
         source,
@@ -517,6 +518,52 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
         uiResourcesSource,
         /\/api\/v1\/modules\/jitsi-meet\/ui-resources/,
     );
+});
+
+test("administration meetings section labels active and upcoming tables", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/admin-meetings-section.js"),
+        "utf8",
+    );
+    const stringsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/languages/en/strings.xml"),
+        "utf8",
+    );
+
+    const adminRoutesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/admin-meetings-routes.js"),
+        "utf8",
+    );
+    const lifecycleRoutesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/meeting-lifecycle-routes.js"),
+        "utf8",
+    );
+    const calendarApiSource = readFileSync(
+        resolve(ROOT, "src/gateways/calendar/ui/calendar-api.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /module\.jitsi_meet\.admin\.meetings\.active_table_heading/,
+    );
+    assert.match(
+        source,
+        /module\.jitsi_meet\.admin\.meetings\.upcoming_table_heading/,
+    );
+    assert.match(source, /createdByDisplayName/);
+    assert.match(source, /row\.scheduledAt \?\? row\.createdAt/);
+    assert.match(source, /<col style="width: 1%" \/>/);
+    assert.match(source, /<col style="width: 24\.75%" \/>/);
+    assert.match(source, /white-space: nowrap/);
+    assert.match(source, /admin\.meetings\.meeting_url/);
+    assert.match(source, /admin\.meetings\.schedule_date/);
+    assert.match(stringsSource, /Active Meetings/);
+    assert.match(stringsSource, /Upcoming Meetings/);
+    assert.match(stringsSource, /Meeting URL/);
+    assert.match(stringsSource, /Schedule Date/);
+    assert.match(adminRoutesSource, /createdByDisplayName/);
+    assert.match(lifecycleRoutesSource, /scheduledAt: body\.scheduledAt/);
+    assert.match(calendarApiSource, /scheduledAt/);
 });
 
 test("meetings UI renders active meetings panel and deep-link join support", () => {

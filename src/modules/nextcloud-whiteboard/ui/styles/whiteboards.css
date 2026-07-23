@@ -267,12 +267,29 @@
 }
 
 .whiteboard-overlay-board {
+    align-items: center;
     background: var(--surface, #ffffff);
     border: 1px solid var(--border, #d8dee9);
     border-radius: 0.75rem;
     cursor: pointer;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
     padding: 0.75rem;
     text-align: start;
+}
+
+.whiteboard-overlay-board-title {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.whiteboard-overlay-board-updated {
+    color: var(--muted, #64748b);
+    flex: none;
+    font-size: 0.85rem;
 }
 
 .whiteboard-board-title[contenteditable="true"] {
