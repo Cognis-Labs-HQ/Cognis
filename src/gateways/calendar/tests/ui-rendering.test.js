@@ -78,6 +78,13 @@ const SHARE_REMINDER_CSS_SOURCE = readFileSync(
     "utf8",
 );
 
+test("calendar view opts out of composer content parking", () => {
+    assert.match(
+        APP_SOURCE,
+        /<section class="calendar-section" data-composer-preserve="false">/,
+    );
+});
+
 test("calendar timed views render positioned event cards instead of row spans", () => {
     assert.match(TIMED_GRID_SOURCE, /buildTimedEventLayout/);
     assert.match(TIMED_GRID_SOURCE, /calendar-timed-event-layer/);
