@@ -52,32 +52,27 @@ let imageUploadMaxBytes = 1048576;
 let syncStatus = "idle";
 let syncStatusMessage = "";
 let integrationCanvasMode = false;
-
 function translateModuleString(key) {
     return i18n?.t(key) ?? key;
 }
-
 function reportClientError(error, fallbackKey) {
     console.error("[nextcloud-whiteboard] client error:", error);
     showToast(error?.message || translateModuleString(fallbackKey), {
         variant: "error",
     });
 }
-
 function sharePageFlag(name, fallback) {
     if (!activeShareContext?.page) return fallback;
     return activeShareContext.page[name] !== undefined
         ? Boolean(activeShareContext.page[name])
         : fallback;
 }
-
 function canManageShares() {
     return (
         !integrationCanvasMode &&
         sharePageFlag("showShareControls", !activeShareContext)
     );
 }
-
 function updateSyncStatusBox() {
     const statusBox = document.getElementById("whiteboard-sync-status");
     if (!statusBox) return;
@@ -86,13 +81,11 @@ function updateSyncStatusBox() {
         syncStatusMessage ||
         translateModuleString("module.nextcloud_whiteboard.status_idle");
 }
-
 function setSyncStatus(status, messageKey) {
     syncStatus = status;
     syncStatusMessage = translateModuleString(messageKey);
     updateSyncStatusBox();
 }
-
 function buildConnectionErrorMessage(error, serverUrl) {
     const rawMessage = String(error?.message ?? "").trim();
     const genericSocketFailure = /^(websocket error|xhr poll error)$/i.test(
@@ -356,7 +349,13 @@ function bindCanvasToolbar(canvas) {
     const toolbar = document.getElementById("whiteboard-toolbar");
     if (!toolbar || toolbar.dataset.bound === "true") return;
     toolbar.dataset.bound = "true";
-
+    toolbar
+        .querySelectorAll(
+            ".whiteboard-toolbar-group[hidden], #whiteboard-tool-lock[hidden]",
+        )
+        .forEach((element) => {
+            element.hidden = false;
+        });
     const strokeTools = new Set([
         "pen",
         "rectangle",
