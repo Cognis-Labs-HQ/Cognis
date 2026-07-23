@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Search architecture is component-scoped
+
+Search indexing now exposes a ctx-backed search capability with per-component avenues, and message search moved into a component-owned index module that uses the standardized user-content result shape.
+
 ## Search popup is easier to dismiss
 
 A floating cancel button now sits at the top-right of the search popup so users can close search directly without relying on Escape or clicking outside.

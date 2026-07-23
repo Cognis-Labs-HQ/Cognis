@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Sucharchitektur ist komponentenbezogen
+
+Die Suchindizierung stellt jetzt eine ctx-gestützte Suchfähigkeit mit komponentenspezifischen Wegen bereit, und die Nachrichtensuche wurde in ein komponenteneigenes Indexmodul verschoben, das die standardisierte Ergebnisform für Benutzerinhalte nutzt.
+
 ## Das Suchfenster lässt sich leichter schließen
 
 Oben rechts im Suchfenster befindet sich jetzt eine schwebende Abbrechen-Schaltfläche, sodass Benutzer die Suche direkt schließen können, ohne Escape zu nutzen oder außerhalb zu klicken.

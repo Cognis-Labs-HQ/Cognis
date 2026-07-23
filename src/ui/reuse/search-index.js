@@ -6,6 +6,7 @@
  *   htmlToSearchText(value) — converts rendered HTML into normalized text.
  *   htmlToSearchEntries(value) — extracts typed block-level search entries.
  *   htmlToSearchSegments(value) — extracts block-level text search results.
+ *   createUserContentSearchItem(options) — normalizes user-owned search content.
  *   renderSearchDataAttributes(attributes) — renders escaped HTML attributes.
  *   highlightSearchTarget(target) — scrolls to and highlights a search target.
  *
@@ -152,6 +153,41 @@ export function highlightSearchTarget(target = undefined) {
         element.classList.remove("search-target-highlight");
     }, 1800);
     return true;
+}
+
+/**
+ * Builds a standard result for user-generated content while keeping ownership,
+ * timestamp, route, and searchable body text in a consistent shape across
+ * gateway and module indexes.
+ *
+ * @param {{ id: string, label: string, url: string, content?: string, author?: string, timestamp?: string, context?: string, resultClass?: string, category?: string }} options
+ * @returns {{ id: string, label: string, description: string, url: string, resultClass: string, category: string, searchText: string, visible: boolean }}
+ */
+export function createUserContentSearchItem(options = {}) {
+    const id = String(options.id ?? "").trim();
+    const label = String(options.label ?? id).trim();
+    const url = String(options.url ?? "").trim();
+    const description = [options.context, options.author, options.timestamp]
+        .filter(Boolean)
+        .join(" — ");
+    return {
+        id,
+        label,
+        description,
+        url,
+        resultClass: String(options.resultClass ?? "text"),
+        category: String(options.category ?? "Content"),
+        searchText: [
+            label,
+            description,
+            options.author,
+            options.content,
+            options.timestamp,
+        ]
+            .filter(Boolean)
+            .join(" "),
+        visible: true,
+    };
 }
 
 /**

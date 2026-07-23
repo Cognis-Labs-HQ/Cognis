@@ -33,6 +33,8 @@ test("global search exposes registered categories and match controls", () => {
         resolve(ROOT, "src/ui/reuse/search-bar.js"),
         "utf8",
     );
+    assert.match(source, /export const search = ensureSearchCapability\(\)/);
+    assert.match(source, /export function registerSearchAvenue/);
     assert.match(source, /export function registerSearchCategory/);
     assert.match(source, /export function registerSearchIndex/);
     assert.match(source, /registerSearchCategory\("visible-page"/);
@@ -41,6 +43,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /providerContext/);
     assert.match(source, /stageContext\?\.input\?\.query/);
+    assert.match(source, /avenuesByComponent/);
+    assert.match(source, /search\.runStage\(stageContext\)/);
     assert.match(source, /REGISTERED_SEARCH_CATEGORY_HOOKS/);
     assert.match(source, /data-search-exclude/);
     assert.match(source, /collectBrowserPreferenceSearchGroups/);
@@ -108,6 +112,7 @@ test("search index helpers centralize HTML text and data attributes", () => {
     assert.match(source, /export function htmlToSearchText/);
     assert.match(source, /export function htmlToSearchEntries/);
     assert.match(source, /export function htmlToSearchSegments/);
+    assert.match(source, /export function createUserContentSearchItem/);
     assert.match(source, /export function renderSearchDataAttributes/);
 });
 
@@ -440,11 +445,21 @@ test("global pages and messages indexes register from shared surfaces", () => {
         layoutSource,
         /category: i18n\.t\("ui\.reuse\.navigation"\)/,
     );
-    assert.match(
-        messagesNavbarSource,
-        /registerSearchIndex\("global-messages"/,
+    const messagesIndexSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/search/index.js"),
+        "utf8",
     );
-    assert.match(messagesNavbarSource, /collectGlobalMessageSearchGroups/);
-    assert.match(messagesNavbarSource, /\/api\/v1\/social\/messages\/rooms/);
-    assert.match(messagesNavbarSource, /decryptSearchMessage/);
+
+    assert.match(messagesNavbarSource, /registerSearchIndexing\(\)/);
+    assert.match(messagesIndexSource, /export const componentSearchId/);
+    assert.match(
+        messagesIndexSource,
+        /export async function buildSearchResults/,
+    );
+    assert.match(messagesIndexSource, /export function registerSearchIndexing/);
+    assert.match(messagesIndexSource, /registerSearchIndex\("global-messages"/);
+    assert.match(messagesIndexSource, /componentId: componentSearchId/);
+    assert.match(messagesIndexSource, /createUserContentSearchItem/);
+    assert.match(messagesIndexSource, /\/api\/v1\/social\/messages\/rooms/);
+    assert.match(messagesIndexSource, /decryptSearchMessage/);
 });

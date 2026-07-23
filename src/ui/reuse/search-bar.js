@@ -4,6 +4,8 @@
  * Public exports:
  *   openSearchPopup(options) — opens the shared centred search popup.
  *   createSearchBar(options) — returns a navbar search toggle button wrapper.
+ *   search — ctx-backed search capability with component avenues.
+ *   registerSearchAvenue(componentId, avenue) — registers one isolated component avenue.
  *   registerSearchCategory(categoryId, provider) — registers dynamic grouped results.
  *   registerSearchIndex(categoryId, provider) — registers component-owned content indexes.
  *
@@ -14,11 +16,122 @@ import { uiCtx } from "./ui-ctx.js";
 import "./flow-registry.js";
 
 const DEBOUNCE_MS = 280;
-const REGISTERED_SEARCH_CATEGORIES = new Map();
 const REGISTERED_SEARCH_CATEGORY_HOOKS = new Set();
 const MIN_SEARCH_QUERY_LENGTH = 2;
 let activeSearchToggleButton = null;
 let searchShortcutBound = false;
+
+function createSearchCapability() {
+    const avenuesByComponent = new Map();
+
+    function normalizeComponentId(componentId) {
+        return String(componentId ?? "").trim();
+    }
+
+    function normalizeAvenue(componentId, avenue = {}) {
+        const normalizedComponentId = normalizeComponentId(componentId);
+        const categoryId = String(
+            avenue.categoryId ?? avenue.category ?? avenue.id ?? componentId,
+        ).trim();
+        const provider = avenue.provider ?? avenue.search ?? avenue.run;
+        if (
+            !normalizedComponentId ||
+            !categoryId ||
+            typeof provider !== "function"
+        ) {
+            return null;
+        }
+        return {
+            ...avenue,
+            id: String(avenue.id ?? categoryId).trim() || categoryId,
+            componentId: normalizedComponentId,
+            categoryId,
+            stageId: String(avenue.stageId ?? "component-indexes").trim(),
+            provider,
+        };
+    }
+
+    function registerAvenue(componentId, avenue) {
+        const normalizedAvenue = normalizeAvenue(componentId, avenue);
+        if (!normalizedAvenue) return () => {};
+        const componentAvenues =
+            avenuesByComponent.get(normalizedAvenue.componentId) ?? [];
+        const nextAvenues = componentAvenues.filter(
+            (existingAvenue) => existingAvenue.id !== normalizedAvenue.id,
+        );
+        nextAvenues.push(normalizedAvenue);
+        avenuesByComponent.set(normalizedAvenue.componentId, nextAvenues);
+        return () => {
+            const currentAvenues =
+                avenuesByComponent.get(normalizedAvenue.componentId) ?? [];
+            const remainingAvenues = currentAvenues.filter(
+                (existingAvenue) => existingAvenue.id !== normalizedAvenue.id,
+            );
+            if (remainingAvenues.length) {
+                avenuesByComponent.set(
+                    normalizedAvenue.componentId,
+                    remainingAvenues,
+                );
+            } else {
+                avenuesByComponent.delete(normalizedAvenue.componentId);
+            }
+        };
+    }
+
+    function getAvenues(stageId = "") {
+        return Array.from(avenuesByComponent.values())
+            .flat()
+            .filter((avenue) => !stageId || avenue.stageId === String(stageId));
+    }
+
+    async function runAvenue(avenue, providerContext) {
+        return avenue.provider({
+            ...providerContext,
+            componentId: avenue.componentId,
+            categoryId: avenue.categoryId,
+            avenueId: avenue.id,
+            stageId: avenue.stageId,
+        });
+    }
+
+    async function runStage(stageContext) {
+        const providerContext = {
+            query: stageContext?.input?.query ?? "",
+            searchOptions: normalizeSearchOptions(
+                stageContext?.input?.searchOptions,
+            ),
+        };
+        const contributions = [];
+        for (const avenue of getAvenues(stageContext?.stageId)) {
+            try {
+                contributions.push(await runAvenue(avenue, providerContext));
+            } catch (error) {
+                console.warn("[search-bar]:avenue-failed", {
+                    componentId: avenue.componentId,
+                    avenueId: avenue.id,
+                    error,
+                });
+            }
+        }
+        return contributions;
+    }
+
+    return {
+        avenuesByComponent,
+        registerAvenue,
+        getAvenues,
+        runAvenue,
+        runStage,
+    };
+}
+
+function ensureSearchCapability() {
+    uiCtx.capabilities ??= {};
+    uiCtx.capabilities.search ??= createSearchCapability();
+    return uiCtx.capabilities.search;
+}
+
+export const search = ensureSearchCapability();
 
 function focusOpenSearchInput() {
     const input = document.querySelector(".search-popup-input");
@@ -725,15 +838,16 @@ async function getRegisteredSearchGroups(query = "", searchOptions = {}) {
     }
 
     const groups = [];
-    for (const [categoryId, registration] of REGISTERED_SEARCH_CATEGORIES) {
-        const provider =
-            typeof registration === "function"
-                ? registration
-                : registration?.provider;
-        await resolveSearchProviderContribution(categoryId, provider, groups, {
-            query,
-            searchOptions: normalizeSearchOptions(searchOptions),
-        });
+    for (const avenue of search.getAvenues()) {
+        await resolveSearchProviderContribution(
+            avenue.categoryId,
+            (providerContext) => search.runAvenue(avenue, providerContext),
+            groups,
+            {
+                query,
+                searchOptions: normalizeSearchOptions(searchOptions),
+            },
+        );
     }
     return groups;
 }
@@ -1449,46 +1563,48 @@ async function runSearch({
 }
 
 /**
- * Registers a dynamic grouped result provider for the global search popup.
+ * Registers one isolated component avenue with the ctx-backed search
+ * capability, then ensures the relevant search-flow stage can execute it.
  *
- * @param {string} categoryId
- * @param {() => object|object[]} provider
+ * @param {string} componentId
+ * @param {{ id?: string, categoryId?: string, category?: string, stageId?: string, provider?: Function, search?: Function, run?: Function }} avenue
  * @returns {() => void}
  */
-export function registerSearchCategory(categoryId, provider, options = {}) {
-    const resolvedCategoryId = String(categoryId ?? "").trim();
-    const stageId = String(options.stageId ?? "component-indexes").trim();
-    if (!resolvedCategoryId || typeof provider !== "function") {
-        return () => {};
-    }
-    const hookKey = `${stageId}:${resolvedCategoryId}`;
-    REGISTERED_SEARCH_CATEGORIES.set(resolvedCategoryId, { provider, stageId });
+export function registerSearchAvenue(componentId, avenue = {}) {
+    const unregister = search.registerAvenue(componentId, avenue);
+    const stageId = String(avenue.stageId ?? "component-indexes").trim();
+    const hookKey = `search-capability:${stageId}`;
     if (
         uiCtx.flowExists("search") &&
         !REGISTERED_SEARCH_CATEGORY_HOOKS.has(hookKey)
     ) {
         REGISTERED_SEARCH_CATEGORY_HOOKS.add(hookKey);
-        uiCtx.extendFlow(
-            "search",
-            stageId,
-            { id: `search:${resolvedCategoryId}` },
-            (stageContext) =>
-                REGISTERED_SEARCH_CATEGORIES.get(
-                    resolvedCategoryId,
-                )?.provider?.({
-                    query: stageContext?.input?.query ?? "",
-                    searchOptions: normalizeSearchOptions(
-                        stageContext?.input?.searchOptions,
-                    ),
-                    stageId,
-                }),
+        uiCtx.extendFlow("search", stageId, { id: hookKey }, (stageContext) =>
+            search.runStage(stageContext),
         );
     }
-    return () => {
-        REGISTERED_SEARCH_CATEGORIES.delete(resolvedCategoryId);
-        // Flow hooks are append-only in uiCtx; removing the category disables
-        // the fallback registry and makes the hook return no contribution.
-    };
+    return unregister;
+}
+
+/**
+ * Registers a dynamic grouped result provider for the global search popup.
+ *
+ * @param {string} categoryId
+ * @param {() => object|object[]} provider
+ * @param {{ stageId?: string, componentId?: string }} options
+ * @returns {() => void}
+ */
+export function registerSearchCategory(categoryId, provider, options = {}) {
+    const resolvedCategoryId = String(categoryId ?? "").trim();
+    if (!resolvedCategoryId || typeof provider !== "function") {
+        return () => {};
+    }
+    return registerSearchAvenue(options.componentId ?? resolvedCategoryId, {
+        id: resolvedCategoryId,
+        categoryId: resolvedCategoryId,
+        provider,
+        stageId: options.stageId ?? "component-indexes",
+    });
 }
 
 /**

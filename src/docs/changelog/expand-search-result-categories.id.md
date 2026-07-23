@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Arsitektur pencarian kini berbasis komponen
+
+Pengindeksan pencarian kini menyediakan kapabilitas pencarian berbasis ctx dengan jalur per komponen, dan pencarian pesan dipindahkan ke modul indeks milik komponen yang memakai bentuk hasil standar untuk konten pengguna.
+
 ## Popup pencarian lebih mudah ditutup
 
 Tombol batal mengambang kini berada di kanan atas popup pencarian sehingga pengguna dapat menutup pencarian langsung tanpa bergantung pada Escape atau klik di luar popup.
