@@ -4,11 +4,14 @@
  * Public exports:
  *   openSearchPopup(options) — opens the shared centred search popup.
  *   createSearchBar(options) — returns a navbar search toggle button wrapper.
+ *   registerSearchCategory(categoryId, provider) — registers dynamic grouped results.
+ *   registerSearchIndex(categoryId, provider) — registers component-owned content indexes.
  *
  * @module reuse/search-bar
  */
 
 const DEBOUNCE_MS = 280;
+const REGISTERED_SEARCH_CATEGORIES = new Map();
 
 /**
  * Converts a singular category token into a basic plural form for placeholder
@@ -54,22 +57,279 @@ function resolvePopupPlaceholder(rawPlaceholder, category) {
     return "Search for something...";
 }
 
-function filterLocalGroups(localGroups, query) {
-    if (!localGroups?.length || !query) return [];
-    const lowerQuery = query.toLowerCase();
-    return localGroups
+function normalizeSearchOptions(options = {}) {
+    return {
+        wholeWord: Boolean(options.wholeWord),
+        regex: Boolean(options.regex),
+        caseSensitive: Boolean(options.caseSensitive),
+    };
+}
+
+function escapeRegex(value) {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function createSearchMatchResolver(query, options = {}) {
+    const normalizedOptions = normalizeSearchOptions(options);
+    if (!query) return () => null;
+
+    if (normalizedOptions.regex) {
+        try {
+            const flags = normalizedOptions.caseSensitive ? "" : "i";
+            const expression = normalizedOptions.wholeWord
+                ? `\\b(?:${query})\\b`
+                : query;
+            const regex = new RegExp(expression, flags);
+            return (value) => {
+                const match = regex.exec(String(value ?? ""));
+                return match
+                    ? {
+                          index: match.index,
+                          length: match[0].length,
+                          text: match[0],
+                      }
+                    : null;
+            };
+        } catch {
+            return () => null;
+        }
+    }
+
+    const resolvedQuery = normalizedOptions.caseSensitive
+        ? query
+        : query.toLowerCase();
+    const expression = normalizedOptions.wholeWord
+        ? new RegExp(`\\b${escapeRegex(resolvedQuery)}\\b`)
+        : null;
+
+    return (value) => {
+        const originalValue = String(value ?? "");
+        const resolvedValue = normalizedOptions.caseSensitive
+            ? originalValue
+            : originalValue.toLowerCase();
+        const match = expression
+            ? expression.exec(resolvedValue)
+            : { index: resolvedValue.indexOf(resolvedQuery) };
+        if (!match || match.index < 0) return null;
+        return {
+            index: match.index,
+            length: resolvedQuery.length,
+            text: originalValue.slice(
+                match.index,
+                match.index + resolvedQuery.length,
+            ),
+        };
+    };
+}
+
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
+function createHighlightedSnippet(value, match) {
+    const text = String(value ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+    if (!text || !match) return "";
+    const contextSize = 44;
+    const start = Math.max(0, match.index - contextSize);
+    const end = Math.min(text.length, match.index + match.length + contextSize);
+    const prefix = start > 0 ? "…" : "";
+    const suffix = end < text.length ? "…" : "";
+    const before = text.slice(start, match.index);
+    const highlighted = text.slice(match.index, match.index + match.length);
+    const after = text.slice(match.index + match.length, end);
+    return `${prefix}${escapeHtml(before)}<mark>${escapeHtml(highlighted)}</mark>${escapeHtml(after)}${suffix}`;
+}
+
+function normalizeSearchItem(item, category) {
+    if (!item || typeof item !== "object") return null;
+    const id = String(item.id ?? item.url ?? item.label ?? "").trim();
+    const label = String(item.label ?? item.title ?? id).trim();
+    if (!id || !label) return null;
+    return {
+        ...item,
+        id,
+        label,
+        description: item.description ?? item.meta ?? "",
+        category: item.category ?? category,
+    };
+}
+
+function normalizeSearchGroup(group) {
+    if (!group || typeof group !== "object") return null;
+    const category = String(group.category ?? "").trim();
+    if (!category) return null;
+    const items = (group.items ?? [])
+        .map((item) => normalizeSearchItem(item, category))
+        .filter(Boolean);
+    return { category, items };
+}
+
+function isVisibleSearchElement(element) {
+    const rect = element.getBoundingClientRect?.();
+    return Boolean(rect && rect.width > 0 && rect.height > 0);
+}
+
+function resolveVisibleContentCategory(element) {
+    const registeredCategory = element.getAttribute("data-search-category");
+    if (registeredCategory) return registeredCategory;
+    if (element.matches("[data-message-id]")) return "Messages";
+    if (element.matches("[data-chat-id]")) return "Chats";
+    return "Visible Content";
+}
+
+function resolveVisibleContentLabel(element, text) {
+    const explicitLabel = element.getAttribute("data-search-label");
+    if (explicitLabel) return explicitLabel;
+    const heading = element.querySelector("h1, h2, h3, h4, h5, h6");
+    const headingText = String(heading?.innerText ?? "").trim();
+    if (headingText) return headingText;
+    return text.slice(0, 80);
+}
+
+function collectVisibleContentSearchGroups() {
+    const candidates = document.querySelectorAll(
+        "[data-search-category], [data-message-id], [data-chat-id]",
+    );
+    const groups = new Map();
+    for (const candidate of candidates) {
+        if (!isVisibleSearchElement(candidate)) continue;
+        const category = resolveVisibleContentCategory(candidate);
+        const text = String(candidate.innerText ?? "")
+            .replace(/\s+/g, " ")
+            .trim();
+        if (!text) continue;
+        const id =
+            candidate.getAttribute("data-search-id") ||
+            candidate.getAttribute("data-message-id") ||
+            candidate.getAttribute("data-chat-id") ||
+            candidate.id ||
+            `${category}:${groups.size}`;
+        const label = resolveVisibleContentLabel(candidate, text);
+        const description =
+            candidate.getAttribute("data-search-description") || "";
+        const item = normalizeSearchItem(
+            {
+                id,
+                label,
+                description,
+                url: candidate.id
+                    ? `${window.location.pathname}${window.location.search}#${candidate.id}`
+                    : `${window.location.pathname}${window.location.search}${window.location.hash}`,
+                searchText: text,
+            },
+            category,
+        );
+        if (!item) continue;
+        if (!groups.has(category)) groups.set(category, []);
+        groups.get(category).push(item);
+    }
+    return Array.from(groups, ([category, items]) => ({ category, items }));
+}
+
+function collectVisiblePageSearchGroups() {
+    const title = document.title?.trim() || window.location.pathname;
+    const pageItem = normalizeSearchItem(
+        {
+            id: `page:${window.location.pathname}`,
+            label: title,
+            url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            searchText: title,
+        },
+        "Pages",
+    );
+    return pageItem ? [{ category: "Pages", items: [pageItem] }] : [];
+}
+
+function appendRegisteredSearchContribution(groups, categoryId, contribution) {
+    const normalizedGroup = normalizeSearchGroup(contribution);
+    if (normalizedGroup) {
+        groups.push(normalizedGroup);
+        return;
+    }
+
+    const normalizedItem = normalizeSearchItem(contribution, categoryId);
+    if (normalizedItem) {
+        groups.push({
+            category: normalizedItem.category ?? categoryId,
+            items: [normalizedItem],
+        });
+    }
+}
+
+function getRegisteredSearchGroups() {
+    const groups = [];
+    for (const [categoryId, provider] of REGISTERED_SEARCH_CATEGORIES) {
+        try {
+            const result = provider();
+            const contributions = Array.isArray(result) ? result : [result];
+            for (const contribution of contributions) {
+                appendRegisteredSearchContribution(
+                    groups,
+                    categoryId,
+                    contribution,
+                );
+            }
+        } catch (error) {
+            console.warn("[search-bar]:category-provider-failed", {
+                categoryId,
+                error,
+            });
+        }
+    }
+    return groups;
+}
+
+function attachSearchMatch(item, resolveMatch) {
+    const fields = [
+        ["label", item.label],
+        ["description", item.description],
+        ["searchText", item.searchText],
+        ["meta", item.meta],
+        ["id", item.id],
+    ];
+    for (const [fieldName, value] of fields) {
+        const match = resolveMatch(value);
+        if (!match) continue;
+        return {
+            ...item,
+            matchField: fieldName,
+            matchText: match.text,
+            highlightedLabel:
+                fieldName === "label"
+                    ? createHighlightedSnippet(value, match)
+                    : "",
+            matchSnippet:
+                fieldName === "searchText" || fieldName === "description"
+                    ? createHighlightedSnippet(value, match)
+                    : "",
+        };
+    }
+    return null;
+}
+
+function filterLocalGroups(localGroups, query, options = {}) {
+    if (!query) return [];
+    const resolveMatch = createSearchMatchResolver(query, options);
+    return [...(localGroups ?? []), ...getRegisteredSearchGroups()]
+        .map(normalizeSearchGroup)
+        .filter(Boolean)
         .map((group) => ({
             category: group.category,
-            items: (group.items ?? []).filter(
-                (item) =>
-                    item.label?.toLowerCase().includes(lowerQuery) ||
-                    item.id?.toLowerCase().includes(lowerQuery),
-            ),
+            items: group.items
+                .map((item) => attachSearchMatch(item, resolveMatch))
+                .filter(Boolean),
         }))
         .filter((group) => group.items.length > 0);
 }
 
-function buildSearchUrl(endpoint, query, typeFilter) {
+function buildSearchUrl(endpoint, query, typeFilter, searchOptions = {}) {
     const resolvedTypeFilter =
         typeof typeFilter === "string" && typeFilter.trim()
             ? typeFilter.trim()
@@ -78,7 +338,53 @@ function buildSearchUrl(endpoint, query, typeFilter) {
     const typeFilterParam = resolvedTypeFilter
         ? `&type=${encodeURIComponent(resolvedTypeFilter)}`
         : "";
-    return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParam}`;
+    const options = normalizeSearchOptions(searchOptions);
+    const optionParams = [
+        options.wholeWord ? "wholeWord=1" : "",
+        options.regex ? "regex=1" : "",
+        options.caseSensitive ? "caseSensitive=1" : "",
+    ]
+        .filter(Boolean)
+        .join("&");
+    const optionSuffix = optionParams ? `&${optionParams}` : "";
+    return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParam}${optionSuffix}`;
+}
+
+function renderResultContent(listItem, item) {
+    const label = document.createElement("span");
+    label.className = "search-popup-result-label";
+    if (item.highlightedLabel) {
+        label.innerHTML = item.highlightedLabel;
+    } else {
+        label.textContent =
+            item.label || item.displayName || item.accountId || item.id || "";
+    }
+    listItem.appendChild(label);
+
+    const description = item.description || item.meta || "";
+    if (description) {
+        const descriptionElement = document.createElement("span");
+        descriptionElement.className = "search-popup-result-description";
+        descriptionElement.textContent = description;
+        listItem.appendChild(descriptionElement);
+    }
+
+    if (item.matchSnippet) {
+        const snippet = document.createElement("span");
+        snippet.className = "search-popup-result-snippet";
+        snippet.innerHTML = item.matchSnippet;
+        listItem.appendChild(snippet);
+    }
+}
+
+function selectSearchResult(item, onSelect, closeOverlay) {
+    Promise.resolve(onSelect(item))
+        .catch((error) => {
+            console.warn("[search-bar]:result-selection-failed", { error });
+        })
+        .finally(() => {
+            requestAnimationFrame(() => closeOverlay());
+        });
 }
 
 function renderGroupedResults(
@@ -101,11 +407,18 @@ function renderGroupedResults(
         for (const item of group.items) {
             const listItem = document.createElement("li");
             listItem.className = "search-popup-result";
-            listItem.textContent = item.label || item.id;
-            listItem.addEventListener("mousedown", (event) => {
+            listItem.setAttribute("role", "button");
+            listItem.tabIndex = 0;
+            renderResultContent(listItem, item);
+            listItem.addEventListener("click", (event) => {
                 event.preventDefault();
-                closeOverlay();
-                onSelect(item);
+                selectSearchResult(item, onSelect, closeOverlay);
+            });
+            listItem.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    selectSearchResult(item, onSelect, closeOverlay);
+                }
             });
             list.appendChild(listItem);
         }
@@ -162,19 +475,14 @@ function renderFlatResults(
             checkbox.dataset.key = uniqueItemKey;
             checkbox.setAttribute("aria-hidden", "true");
             checkbox.tabIndex = -1;
-            const label = document.createElement("span");
-            label.className = "search-popup-result-label";
-            label.textContent =
-                item.label ||
-                item.displayName ||
-                item.accountId ||
-                item.id ||
-                "";
             listItem.setAttribute("role", "checkbox");
             listItem.setAttribute("aria-checked", String(Boolean(isSelected)));
             listItem.tabIndex = 0;
             listItem.appendChild(checkbox);
-            listItem.appendChild(label);
+            const content = document.createElement("span");
+            content.className = "search-popup-result-content";
+            renderResultContent(content, item);
+            listItem.appendChild(content);
             listItem.addEventListener("click", (event) => {
                 event.preventDefault();
                 toggleMultiSelectItem(uniqueItemKey, item);
@@ -187,16 +495,18 @@ function renderFlatResults(
             });
         } else {
             listItem.className = "search-popup-result";
-            listItem.textContent =
-                item.label ||
-                item.displayName ||
-                item.accountId ||
-                item.id ||
-                "";
-            listItem.addEventListener("mousedown", (event) => {
+            listItem.setAttribute("role", "button");
+            listItem.tabIndex = 0;
+            renderResultContent(listItem, item);
+            listItem.addEventListener("click", (event) => {
                 event.preventDefault();
-                closeOverlay();
-                onSelect(item);
+                selectSearchResult(item, onSelect, closeOverlay);
+            });
+            listItem.addEventListener("keydown", (event) => {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    selectSearchResult(item, onSelect, closeOverlay);
+                }
             });
         }
 
@@ -216,19 +526,24 @@ async function runSearch({
     onSelect,
     closeOverlay,
     multiSelectState,
+    searchOptions,
 }) {
     if (!query) {
         resultsContainer.innerHTML = "";
         return;
     }
 
-    const matchedLocalGroups = filterLocalGroups(localGroups, query);
+    const matchedLocalGroups = filterLocalGroups(
+        localGroups,
+        query,
+        searchOptions,
+    );
 
     try {
         const token = localStorage.getItem("cognis_access_token");
         const headers = token ? { authorization: `Bearer ${token}` } : {};
         const response = await fetch(
-            buildSearchUrl(endpoint, query, typeFilter),
+            buildSearchUrl(endpoint, query, typeFilter, searchOptions),
             {
                 credentials: "same-origin",
                 headers,
@@ -296,6 +611,38 @@ async function runSearch({
     }
 }
 
+/**
+ * Registers a dynamic grouped result provider for the global search popup.
+ *
+ * @param {string} categoryId
+ * @param {() => object|object[]} provider
+ * @returns {() => void}
+ */
+export function registerSearchCategory(categoryId, provider) {
+    const resolvedCategoryId = String(categoryId ?? "").trim();
+    if (!resolvedCategoryId || typeof provider !== "function") {
+        return () => {};
+    }
+    REGISTERED_SEARCH_CATEGORIES.set(resolvedCategoryId, provider);
+    return () => {
+        REGISTERED_SEARCH_CATEGORIES.delete(resolvedCategoryId);
+    };
+}
+
+/**
+ * Registers a component-owned content index with the global search popup.
+ *
+ * @param {string} categoryId
+ * @param {() => object|object[]} provider
+ * @returns {() => void}
+ */
+export function registerSearchIndex(categoryId, provider) {
+    return registerSearchCategory(categoryId, provider);
+}
+
+registerSearchCategory("visible-page", collectVisiblePageSearchGroups);
+registerSearchCategory("visible-content", collectVisibleContentSearchGroups);
+
 export function openSearchPopup({
     endpoint,
     onSelect,
@@ -309,6 +656,7 @@ export function openSearchPopup({
     typeFilter = "",
     localGroups = [],
     multiSelect = false,
+    showOptions = true,
 }) {
     const existingOverlay = document.querySelector(".search-popup-overlay");
     if (existingOverlay) {
@@ -317,6 +665,7 @@ export function openSearchPopup({
 
     let debounceTimer = null;
     let currentQuery = "";
+    const searchOptions = normalizeSearchOptions();
     const eventController = new AbortController();
 
     const overlay = document.createElement("div");
@@ -339,6 +688,38 @@ export function openSearchPopup({
     resultsContainer.className = "search-popup-results";
 
     popup.appendChild(input);
+
+    if (showOptions) {
+        const optionsBar = document.createElement("div");
+        optionsBar.className = "search-popup-options";
+        const optionConfigs = [
+            ["wholeWord", "Whole word"],
+            ["regex", "Regex"],
+            ["caseSensitive", "Case-sensitive"],
+        ];
+        for (const [optionName, label] of optionConfigs) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "search-popup-option";
+            button.textContent = label;
+            button.setAttribute("aria-pressed", "false");
+            button.addEventListener("click", () => {
+                searchOptions[optionName] = !searchOptions[optionName];
+                button.classList.toggle(
+                    "search-popup-option--active",
+                    searchOptions[optionName],
+                );
+                button.setAttribute(
+                    "aria-pressed",
+                    String(searchOptions[optionName]),
+                );
+                runCurrentSearch();
+            });
+            optionsBar.appendChild(button);
+        }
+        popup.appendChild(optionsBar);
+    }
+
     popup.appendChild(resultsContainer);
 
     let multiSelectState = null;
@@ -411,12 +792,9 @@ export function openSearchPopup({
         }
     };
 
-    input.addEventListener("input", () => {
-        const query = input.value.trim();
-        if (query === currentQuery) return;
-        currentQuery = query;
+    const runCurrentSearch = () => {
         clearTimeout(debounceTimer);
-        if (!query) {
+        if (!currentQuery) {
             resultsContainer.innerHTML = "";
             return;
         }
@@ -424,7 +802,7 @@ export function openSearchPopup({
             () =>
                 runSearch({
                     endpoint,
-                    query,
+                    query: currentQuery,
                     resultsContainer,
                     typeFilter,
                     localGroups,
@@ -432,9 +810,17 @@ export function openSearchPopup({
                     onSelect,
                     closeOverlay,
                     multiSelectState,
+                    searchOptions,
                 }),
             DEBOUNCE_MS,
         );
+    };
+
+    input.addEventListener("input", () => {
+        const query = input.value.trim();
+        if (query === currentQuery) return;
+        currentQuery = query;
+        runCurrentSearch();
     });
 
     overlay.addEventListener(
