@@ -85,7 +85,6 @@ test("flow-registry.js declares load-page with the required stages", () => {
     assert.match(src, /mount-page/, "load-page must include mount-page stage");
 });
 
-
 test("flow-registry.js declares search with component and settings index stages", () => {
     const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(src, /registerFlow\(["']search["']/);

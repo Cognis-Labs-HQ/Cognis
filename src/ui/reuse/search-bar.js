@@ -15,6 +15,7 @@ import "./flow-registry.js";
 
 const DEBOUNCE_MS = 280;
 const REGISTERED_SEARCH_CATEGORIES = new Map();
+const MIN_SEARCH_QUERY_LENGTH = 2;
 
 /**
  * Converts a singular category token into a basic plural form for placeholder
@@ -152,13 +153,15 @@ function createHighlightedSnippet(value, match) {
 
 function normalizeSearchItem(item, category) {
     if (!item || typeof item !== "object") return null;
-    const id = String(item.id ?? item.url ?? item.label ?? "").trim();
+    const url = String(item.url ?? "").trim();
+    const id = String(item.id ?? url ?? item.label ?? "").trim();
     const label = String(item.label ?? item.title ?? id).trim();
     if (!id || !label) return null;
     return {
         ...item,
         id,
         label,
+        url,
         description: item.description ?? item.meta ?? "",
         category: item.category ?? category,
     };
@@ -208,19 +211,23 @@ function resolveSearchableElementText(element) {
         .trim();
 }
 
+const BROWSER_PREFERENCE_LABELS = new Map([
+    ["cognis_ui_preferences", "UI Preferences"],
+    ["cognis_theme", "Theme"],
+    ["cognis_language_priority", "Language Priority"],
+    ["cognis_language_priority_mode", "Language Priority Mode"],
+]);
+
 function collectBrowserPreferenceSearchGroups() {
     const items = [];
-    for (let index = 0; index < localStorage.length; index += 1) {
-        const key = localStorage.key(index);
-        if (!key || !key.startsWith("cognis_")) continue;
+    for (const [key, label] of BROWSER_PREFERENCE_LABELS) {
         const value = localStorage.getItem(key);
         if (!value) continue;
         items.push({
             id: `browser-preference:${key}`,
-            label: key.replace(/^cognis_/, ""),
-            description: "Browser preference",
+            label,
             url: "/settings",
-            searchText: `${key} ${value}`,
+            searchText: `${label} ${value}`,
         });
     }
     return items.length ? [{ category: "Settings", items }] : [];
@@ -355,10 +362,12 @@ async function getRegisteredSearchGroups(query = "", searchOptions = {}) {
 function attachSearchMatch(item, resolveMatch) {
     const fields = [
         ["label", item.label],
-        ["description", item.description],
-        ["searchText", item.searchText],
-        ["meta", item.meta],
-        ["id", item.id],
+        ...(item.description && item.showDescription !== false
+            ? [["description", item.description]]
+            : []),
+        ...(item.showMatchSnippet === true
+            ? [["searchText", item.searchText]]
+            : []),
     ];
     for (const [fieldName, value] of fields) {
         const match = resolveMatch(value);
@@ -372,7 +381,7 @@ function attachSearchMatch(item, resolveMatch) {
                     ? createHighlightedSnippet(value, match)
                     : "",
             matchSnippet:
-                fieldName === "searchText" || fieldName === "description"
+                fieldName === "searchText"
                     ? createHighlightedSnippet(value, match)
                     : "",
         };
@@ -417,6 +426,37 @@ function buildSearchUrl(endpoint, query, typeFilter, searchOptions = {}) {
     return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParam}${optionSuffix}`;
 }
 
+function mergeSearchGroups(groups) {
+    const groupedItems = new Map();
+    const seenItems = new Set();
+    for (const group of groups ?? []) {
+        const category = String(group?.category ?? "").trim();
+        if (!category || !Array.isArray(group.items)) continue;
+        if (!groupedItems.has(category)) groupedItems.set(category, []);
+        for (const item of group.items) {
+            const itemKey = `${category}:${item.url ?? ""}:${item.id ?? ""}`;
+            if (seenItems.has(itemKey)) continue;
+            seenItems.add(itemKey);
+            groupedItems.get(category).push(item);
+        }
+    }
+    return Array.from(groupedItems, ([category, items]) => ({
+        category,
+        items,
+    }));
+}
+
+function filterNavigableGroups(groups) {
+    return (groups ?? [])
+        .map((group) => ({
+            ...group,
+            items: (group.items ?? []).filter((item) =>
+                String(item?.url ?? "").trim(),
+            ),
+        }))
+        .filter((group) => group.items.length > 0);
+}
+
 function renderResultContent(listItem, item) {
     const label = document.createElement("span");
     label.className = "search-popup-result-label";
@@ -428,7 +468,10 @@ function renderResultContent(listItem, item) {
     }
     listItem.appendChild(label);
 
-    const description = item.description || item.meta || "";
+    const description =
+        item.showDescription === false
+            ? ""
+            : item.description || item.meta || "";
     if (description) {
         const descriptionElement = document.createElement("span");
         descriptionElement.className = "search-popup-result-description";
@@ -492,6 +535,14 @@ function renderGroupedResults(
 
         resultsContainer.appendChild(list);
     }
+}
+
+function renderSearchPendingMessage(resultsContainer) {
+    resultsContainer.innerHTML = "";
+    const message = document.createElement("p");
+    message.className = "search-popup-no-results";
+    message.textContent = `Type at least ${MIN_SEARCH_QUERY_LENGTH} characters to search.`;
+    resultsContainer.appendChild(message);
 }
 
 function renderFlatResults(
@@ -595,8 +646,8 @@ async function runSearch({
     multiSelectState,
     searchOptions,
 }) {
-    if (!query) {
-        resultsContainer.innerHTML = "";
+    if (query.length < MIN_SEARCH_QUERY_LENGTH) {
+        renderSearchPendingMessage(resultsContainer);
         return;
     }
 
@@ -605,6 +656,9 @@ async function runSearch({
         query,
         searchOptions,
     );
+    const navigableLocalGroups = multiSelect
+        ? matchedLocalGroups
+        : filterNavigableGroups(matchedLocalGroups);
 
     try {
         const token = localStorage.getItem("cognis_access_token");
@@ -618,10 +672,10 @@ async function runSearch({
         );
 
         if (!response.ok) {
-            if (matchedLocalGroups.length > 0) {
+            if (navigableLocalGroups.length > 0) {
                 renderGroupedResults(
                     resultsContainer,
-                    matchedLocalGroups,
+                    navigableLocalGroups,
                     onSelect,
                     closeOverlay,
                 );
@@ -636,9 +690,21 @@ async function runSearch({
             responseData.length > 0 &&
             typeof responseData[0] === "object" &&
             "category" in responseData[0];
-        const apiGroups = isGrouped ? responseData : [];
-        const flatItems = isGrouped ? [] : responseData;
-        const mergedGroups = [...apiGroups, ...matchedLocalGroups];
+        const apiGroups = isGrouped
+            ? responseData.map(normalizeSearchGroup).filter(Boolean)
+            : [];
+        const navigableApiGroups = multiSelect
+            ? apiGroups
+            : filterNavigableGroups(apiGroups);
+        const flatItems = isGrouped
+            ? []
+            : responseData.filter(
+                  (item) => multiSelect || String(item?.url ?? "").trim(),
+              );
+        const mergedGroups = mergeSearchGroups([
+            ...navigableApiGroups,
+            ...navigableLocalGroups,
+        ]);
 
         if (mergedGroups.length > 0) {
             renderGroupedResults(
@@ -656,7 +722,7 @@ async function runSearch({
                 closeOverlay,
                 multiSelectState,
             );
-        } else if (matchedLocalGroups.length === 0) {
+        } else if (navigableLocalGroups.length === 0) {
             renderFlatResults(
                 resultsContainer,
                 [],
@@ -667,10 +733,10 @@ async function runSearch({
             );
         }
     } catch {
-        if (matchedLocalGroups.length > 0) {
+        if (navigableLocalGroups.length > 0) {
             renderGroupedResults(
                 resultsContainer,
-                matchedLocalGroups,
+                navigableLocalGroups,
                 onSelect,
                 closeOverlay,
             );
@@ -871,6 +937,7 @@ export function openSearchPopup({
 
     overlay.appendChild(popup);
     document.body.appendChild(overlay);
+    renderSearchPendingMessage(resultsContainer);
 
     const closeOverlay = () => {
         clearTimeout(debounceTimer);
@@ -889,8 +956,8 @@ export function openSearchPopup({
 
     const runCurrentSearch = () => {
         clearTimeout(debounceTimer);
-        if (!currentQuery) {
-            resultsContainer.innerHTML = "";
+        if (currentQuery.length < MIN_SEARCH_QUERY_LENGTH) {
+            renderSearchPendingMessage(resultsContainer);
             return;
         }
         debounceTimer = setTimeout(

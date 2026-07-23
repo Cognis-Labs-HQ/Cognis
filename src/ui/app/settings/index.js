@@ -46,7 +46,36 @@ import {
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
 
-function collectSettingsSearchGroups(root, sections, loadedPrefs, i18n) {
+function formatPreferenceLabel(key) {
+    return String(key ?? "")
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[-_]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function collectPreferenceSearchItems(value, labelPrefix = "") {
+    if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+    return Object.entries(value).flatMap(([key, entry]) => {
+        const label = [labelPrefix, formatPreferenceLabel(key)]
+            .filter(Boolean)
+            .join(" — ");
+        if (entry && typeof entry === "object" && !Array.isArray(entry)) {
+            return collectPreferenceSearchItems(entry, label);
+        }
+        return [
+            {
+                id: `settings-preference:${label}`,
+                label,
+                url: "/settings",
+                searchText: [label, entry].filter(Boolean).join(" "),
+            },
+        ];
+    });
+}
+
+function collectSettingsSearchGroups(sections, loadedPrefs) {
     const items = [];
     for (const section of sections ?? []) {
         const label = String(
@@ -57,6 +86,7 @@ function collectSettingsSearchGroups(root, sections, loadedPrefs, i18n) {
             id: `settings-section:${section.id ?? label}`,
             label,
             description: String(section?.heading ?? ""),
+            showDescription: false,
             url: `/settings#${encodeURIComponent(section.id ?? label)}`,
             searchText: [label, section?.heading, section?.preferenceKey]
                 .filter(Boolean)
@@ -64,27 +94,8 @@ function collectSettingsSearchGroups(root, sections, loadedPrefs, i18n) {
         });
     }
 
-    const visibleText = String(root?.innerText ?? "")
-        .replace(/\s+/g, " ")
-        .trim();
-    if (visibleText) {
-        items.push({
-            id: "settings-visible-content",
-            label: i18n.t("ui.reuse.settings"),
-            description: "",
-            url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
-            searchText: visibleText,
-        });
-    }
-
     if (loadedPrefs && typeof loadedPrefs === "object") {
-        items.push({
-            id: "settings-user-preferences",
-            label: i18n.t("ui.app.settings.preferences"),
-            description: "",
-            url: "/settings",
-            searchText: JSON.stringify(loadedPrefs),
-        });
+        items.push(...collectPreferenceSearchItems(loadedPrefs));
     }
 
     return [{ category: "Settings", items }];
@@ -614,13 +625,7 @@ export async function mount(root, { signal } = {}) {
     settingsSearchSections = elements;
     registerSearchIndex(
         "settings-index",
-        () =>
-            collectSettingsSearchGroups(
-                root,
-                settingsSearchSections,
-                loadedPrefs,
-                i18n,
-            ),
+        () => collectSettingsSearchGroups(settingsSearchSections, loadedPrefs),
         { stageId: "settings-index" },
     );
 

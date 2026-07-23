@@ -41,6 +41,9 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /data-search-exclude/);
     assert.match(source, /collectBrowserPreferenceSearchGroups/);
+    assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
+    assert.match(source, /mergeSearchGroups/);
+    assert.match(source, /filterNavigableGroups/);
     assert.match(source, /data-message-id/);
     assert.match(source, /data-chat-id/);
     assert.match(source, /data-search-description/);
@@ -51,6 +54,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /wholeWord=1/);
     assert.match(source, /regex=1/);
     assert.match(source, /caseSensitive=1/);
+    assert.match(source, /showMatchSnippet === true/);
     assert.match(source, /matchSnippet/);
     assert.match(source, /highlightedLabel/);
     assert.match(source, /selectSearchResult/);
@@ -68,6 +72,9 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /registerSearchIndex/);
     assert.match(source, /collectSettingsSearchGroups/);
     assert.match(source, /stageId: "settings-index"/);
+    assert.match(source, /formatPreferenceLabel/);
+    assert.match(source, /collectPreferenceSearchItems/);
+    assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
 });
 
 test("whiteboard search indexes board filenames and stored canvas contents", () => {
