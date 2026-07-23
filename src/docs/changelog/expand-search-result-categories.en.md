@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Calendar events are indexed globally
+
+Calendar events are now registered from the calendar navigation contribution, so event results can appear in global search without relying on the calendar page already being open.
+
 ## Results include classes
 
 Pages and components now tag search results as pages, headings, text, settings, operations, preferences, and events so result rendering and filtering can distinguish what kind of content matched.

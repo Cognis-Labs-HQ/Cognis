@@ -245,6 +245,15 @@ function tryParsePreferenceValue(value) {
     }
 }
 
+function shouldIndexBrowserPreferenceKey(key) {
+    const normalizedKey = String(key ?? "").toLowerCase();
+    return !(
+        normalizedKey.includes("changelogseenslug") ||
+        normalizedKey.includes("changelog_seen_slug") ||
+        normalizedKey.includes("seen-slug")
+    );
+}
+
 function collectStructuredPreferenceItems(
     key,
     label,
@@ -252,16 +261,18 @@ function collectStructuredPreferenceItems(
     labelPrefix = label,
 ) {
     if (value && typeof value === "object" && !Array.isArray(value)) {
-        return Object.entries(value).flatMap(([entryKey, entryValue]) =>
-            collectStructuredPreferenceItems(
-                `${key}:${entryKey}`,
-                label,
-                entryValue,
-                [labelPrefix, formatSearchPreferenceLabel(entryKey)]
-                    .filter(Boolean)
-                    .join(" — "),
-            ),
-        );
+        return Object.entries(value)
+            .filter(([entryKey]) => shouldIndexBrowserPreferenceKey(entryKey))
+            .flatMap(([entryKey, entryValue]) =>
+                collectStructuredPreferenceItems(
+                    `${key}:${entryKey}`,
+                    label,
+                    entryValue,
+                    [labelPrefix, formatSearchPreferenceLabel(entryKey)]
+                        .filter(Boolean)
+                        .join(" — "),
+                ),
+            );
     }
     if (Array.isArray(value)) {
         return value.flatMap((entryValue, index) =>

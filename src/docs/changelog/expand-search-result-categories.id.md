@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Acara kalender diindeks secara global
+
+Acara kalender kini didaftarkan dari kontribusi navigasi kalender, sehingga hasil acara dapat muncul di pencarian global tanpa harus membuka halaman kalender terlebih dahulu.
+
 ## Hasil menyertakan kelas
 
 Halaman dan komponen kini menandai hasil pencarian sebagai halaman, judul, teks, pengaturan, operasi, preferensi, dan acara sehingga tampilan dan filter dapat membedakan jenis konten yang cocok.

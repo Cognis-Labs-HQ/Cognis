@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Kalenderereignisse werden global indexiert
+
+Kalenderereignisse werden nun über den Kalender-Navigationsbeitrag registriert, sodass Ereignisse in der globalen Suche erscheinen können, ohne dass die Kalenderseite bereits geöffnet sein muss.
+
 ## Ergebnisse enthalten Klassen
 
 Seiten und Komponenten kennzeichnen Suchergebnisse nun als Seiten, Überschriften, Text, Einstellungen, Aktionen, Präferenzen und Ereignisse, damit Darstellung und Filterung erkennen können, welche Art von Inhalt getroffen wurde.

@@ -62,42 +62,57 @@ function docTitle(item) {
 function createDocsSearchProvider(i18n, docs, activeDocContent) {
     return async () => {
         const langs = readPreferredLanguages().join(",");
-        const items = await Promise.all(
-            (docs ?? []).map(async (item) => {
-                const title = docTitle(item);
-                let contentText = activeDocContent.get(item.slug) ?? "";
-                if (!contentText) {
-                    try {
-                        const html = await loadMarkdownDocumentHtml(
-                            `/api/v1/docs/${item.slug}?langs=${encodeURIComponent(langs)}`,
-                        );
-                        contentText = htmlToSearchText(html);
-                        activeDocContent.set(item.slug, contentText);
-                    } catch {
-                        contentText = "";
-                    }
+        const docsItems = [];
+        const changelogItems = [];
+        for (const item of docs ?? []) {
+            const title = docTitle(item);
+            let contentText = activeDocContent.get(item.slug) ?? "";
+            if (!contentText) {
+                try {
+                    const html = await loadMarkdownDocumentHtml(
+                        `/api/v1/docs/${item.slug}?langs=${encodeURIComponent(langs)}`,
+                    );
+                    contentText = htmlToSearchText(html);
+                    activeDocContent.set(item.slug, contentText);
+                } catch {
+                    contentText = "";
                 }
-                return {
-                    id: `docs:${item.slug}`,
-                    label: title,
-                    description: groupLabel(i18n, item.group || "platform"),
-                    resultClass: "page",
-                    url: isChangelogDoc(item)
-                        ? changelogSlugToRoutePath(item.slug)
-                        : `/docs/${item.slug}`,
-                    searchText: [
-                        title,
-                        item.slug,
-                        item.group,
-                        item.description,
-                        contentText,
-                    ]
-                        .filter(Boolean)
-                        .join(" "),
-                };
-            }),
-        );
-        return [{ category: i18n.t("ui.reuse.docs"), items }];
+            }
+            const searchItem = {
+                id: `docs:${item.slug}`,
+                label: title,
+                description: groupLabel(i18n, item.group || "platform"),
+                resultClass: "page",
+                url: isChangelogDoc(item)
+                    ? changelogSlugToRoutePath(item.slug)
+                    : `/docs/${item.slug}`,
+                searchText: [
+                    title,
+                    item.slug,
+                    item.group,
+                    item.description,
+                    contentText,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+            };
+            if (isChangelogDoc(item)) {
+                changelogItems.push(searchItem);
+            } else {
+                docsItems.push(searchItem);
+            }
+        }
+        return [
+            docsItems.length
+                ? { category: i18n.t("ui.reuse.docs"), items: docsItems }
+                : null,
+            changelogItems.length
+                ? {
+                      category: i18n.t("ui.layout.footer.changelogs"),
+                      items: changelogItems,
+                  }
+                : null,
+        ].filter(Boolean);
     };
 }
 function renderDocNavButton(item) {

@@ -88,9 +88,19 @@ function formatPreferenceLabel(key) {
         .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
+function shouldIndexSettingsPreference(key) {
+    const normalizedKey = String(key ?? "").toLowerCase();
+    return !(
+        normalizedKey.includes("changelogseenslug") ||
+        normalizedKey.includes("changelog_seen_slug") ||
+        normalizedKey.includes("seen-slug")
+    );
+}
+
 function collectPreferenceSearchItems(value, labelPrefix = "") {
     if (!value || typeof value !== "object" || Array.isArray(value)) return [];
     return Object.entries(value).flatMap(([key, entry]) => {
+        if (!shouldIndexSettingsPreference(key)) return [];
         const label = [labelPrefix, formatPreferenceLabel(key)]
             .filter(Boolean)
             .join(" — ");

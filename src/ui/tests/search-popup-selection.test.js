@@ -45,6 +45,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /data-search-exclude/);
     assert.match(source, /collectBrowserPreferenceSearchGroups/);
     assert.match(source, /collectStructuredPreferenceItems/);
+    assert.match(source, /shouldIndexBrowserPreferenceKey/);
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
@@ -124,6 +125,7 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /stageId: "settings-index"/);
     assert.match(source, /formatPreferenceLabel/);
     assert.match(source, /collectPreferenceSearchItems/);
+    assert.match(source, /shouldIndexSettingsPreference/);
     assert.match(source, /collectSettingsElementContentSearchItems/);
     assert.match(source, /htmlToSearchEntries/);
     assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
@@ -141,6 +143,8 @@ test("docs search indexes navigation titles and document contents", () => {
     assert.match(source, /search-index\.js/);
     assert.match(source, /loadMarkdownDocumentHtml/);
     assert.match(source, /changelogSlugToRoutePath/);
+    assert.match(source, /ui\.layout\.footer\.changelogs/);
+    assert.match(source, /changelogItems/);
 });
 
 test("whiteboard search indexes board filenames and stored canvas contents", () => {
@@ -207,8 +211,18 @@ test("visible search indexes meetings calendar notifications and posts", () => {
         readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
         /resultClass: "page"/,
     );
+    const calendarNavbarSource = readFileSync(
+        resolve(ROOT, "src/gateways/calendar/ui/navbar.js"),
+        "utf8",
+    );
     assert.match(calendarSource, /data-search-category="Calendar Events"/);
     assert.match(calendarSource, /data-search-description/);
+    assert.match(
+        calendarNavbarSource,
+        /registerSearchIndex\("calendar-events"/,
+    );
+    assert.match(calendarNavbarSource, /fetchCalendarState/);
+    assert.match(calendarNavbarSource, /fetchEvents/);
     assert.match(
         readFileSync(
             resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
