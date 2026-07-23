@@ -124,6 +124,8 @@ export function bindAllDayComposerControls({ overlay, signal }) {
             !Number.isNaN(parsedStart.getTime()) &&
             parsedEnd.getTime() > parsedStart.getTime() &&
             isMidnightDate(parsedEnd);
+        startInput.value = "";
+        endInput.value = "";
         startInput.type = "date";
         endInput.type = "date";
         startInput.value = startDateValue;

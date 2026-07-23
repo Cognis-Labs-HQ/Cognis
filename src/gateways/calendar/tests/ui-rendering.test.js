@@ -78,6 +78,15 @@ const SHARE_REMINDER_CSS_SOURCE = readFileSync(
     "utf8",
 );
 
+test("calendar view opts out of composer content parking", () => {
+    assert.match(APP_SOURCE, /function refreshCalendarComposer\(\)/);
+    assert.match(APP_SOURCE, /\[data-composer-element=\"calendar-view\"\]/);
+    assert.match(
+        APP_SOURCE,
+        /<section class="calendar-section" data-composer-preserve="false">/,
+    );
+});
+
 test("calendar timed views render positioned event cards instead of row spans", () => {
     assert.match(TIMED_GRID_SOURCE, /buildTimedEventLayout/);
     assert.match(TIMED_GRID_SOURCE, /calendar-timed-event-layer/);
@@ -473,7 +482,14 @@ test("calendar all-day toggle morphs datetime inputs to date inputs", () => {
         POPUP_MANAGER_ALL_DAY_SOURCE,
         /insertAdjacentElement\("afterend", allDayToggleRow\)/,
     );
-    assert.match(POPUP_MANAGER_ALL_DAY_SOURCE, /startInput\.type = "date"/);
+    assert.match(
+        POPUP_MANAGER_ALL_DAY_SOURCE,
+        /startInput\.value = "";[\s\S]*startInput\.type = "date"/,
+    );
+    assert.match(
+        POPUP_MANAGER_ALL_DAY_SOURCE,
+        /endInput\.value = "";[\s\S]*endInput\.type = "date"/,
+    );
     assert.match(
         POPUP_MANAGER_ALL_DAY_SOURCE,
         /startInput\.type = "datetime-local"/,
