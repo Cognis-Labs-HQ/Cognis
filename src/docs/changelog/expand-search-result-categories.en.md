@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Shared indexes cover pages and messages
+
+Docs, Changelog, Study, Study subpages, user-menu pages, and message contents now register from shared surfaces so they are searchable without first opening each app. Navigation-category leftovers were merged into Pages, and dark-mode on-page highlights now use a paler green combination.
+
 ## Focused search results are clearer
 
 Search results now gain a stronger hover and keyboard-focus background in both light and dark themes, making the focused row easier to track while moving through results.

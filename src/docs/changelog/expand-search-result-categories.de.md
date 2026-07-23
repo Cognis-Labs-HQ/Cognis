@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Gemeinsame Indizes erfassen Seiten und Nachrichten
+
+Docs, Changelog, Study, Study-Unterseiten, Seiten aus dem Benutzermenü und Nachrichteninhalte werden jetzt über gemeinsame Oberflächen registriert, damit sie durchsuchbar sind, ohne jede App vorher zu öffnen. Verbleibende Navigation-Kategorien wurden in Pages zusammengeführt, und die Seitensuche nutzt im dunklen Design nun eine blassere grüne Kombination.
+
 ## Fokussierte Suchergebnisse sind klarer
 
 Suchergebnisse erhalten jetzt in hellen und dunklen Designs eine stärkere Hintergrundfarbe beim Hover und Tastaturfokus, damit die fokussierte Zeile beim Durchgehen der Ergebnisse leichter erkennbar bleibt.

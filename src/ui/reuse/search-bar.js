@@ -342,6 +342,181 @@ function collectBrowserPreferenceSearchGroups() {
     return items.length ? [{ category: "Settings", items }] : [];
 }
 
+const GLOBAL_DOCS_SEARCH_CONTENT = new Map();
+let GLOBAL_DOCS_INDEX_PROMISE = null;
+let GLOBAL_STUDY_INDEX_PROMISE = null;
+
+function searchFetchJson(path) {
+    const token = localStorage.getItem("cognis_access_token");
+    const headers = token ? { authorization: `Bearer ${token}` } : {};
+    return fetch(path, { credentials: "same-origin", headers }).then(
+        (response) => (response.ok ? response.json() : null),
+    );
+}
+
+function markdownHtmlToSearchText(html) {
+    const template = document.createElement("template");
+    template.innerHTML = String(html ?? "");
+    template.content
+        .querySelectorAll("script, style")
+        .forEach((node) => node.remove());
+    return String(template.content.textContent ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function docSearchTitle(item) {
+    return String(item?.title ?? item?.slug ?? "")
+        .split("/")
+        .pop()
+        .split("-")
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(" ");
+}
+
+function isSearchChangelogDoc(item) {
+    return String(item?.slug ?? "").startsWith("changelog/");
+}
+
+function changelogSearchRoute(slug) {
+    return `/changelogs/${String(slug).replace(/^changelog\//, "")}`;
+}
+
+async function loadGlobalDocsSearchGroups() {
+    const payload = await searchFetchJson("/api/v1/docs");
+    const docs = Array.isArray(payload?.data) ? payload.data : [];
+    const langs = String(
+        localStorage.getItem("cognis_language_priority") ?? "",
+    );
+    const docsItems = [];
+    const changelogItems = [];
+    for (const item of docs) {
+        const slug = String(item?.slug ?? "").trim();
+        if (!slug) continue;
+        const title = docSearchTitle(item);
+        let bodyText = GLOBAL_DOCS_SEARCH_CONTENT.get(slug) ?? "";
+        if (!bodyText) {
+            try {
+                const htmlResponse = await fetch(
+                    `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
+                    { credentials: "same-origin" },
+                );
+                bodyText = htmlResponse.ok
+                    ? markdownHtmlToSearchText(await htmlResponse.text())
+                    : "";
+                GLOBAL_DOCS_SEARCH_CONTENT.set(slug, bodyText);
+            } catch {
+                bodyText = "";
+            }
+        }
+        const changelog = isSearchChangelogDoc(item);
+        const searchItem = {
+            id: `global-docs:${slug}`,
+            label: title,
+            description: `${changelog ? "Changelogs" : "Docs"} / ${item.group || "platform"}`,
+            url: changelog ? changelogSearchRoute(slug) : `/docs/${slug}`,
+            resultClass: "page",
+            searchText: [title, slug, item.group, item.description, bodyText]
+                .filter(Boolean)
+                .join(" "),
+            visible: true,
+        };
+        if (changelog) changelogItems.push(searchItem);
+        else docsItems.push(searchItem);
+    }
+    return [
+        docsItems.length ? { category: "Pages", items: docsItems } : null,
+        changelogItems.length
+            ? { category: "Changelogs", items: changelogItems }
+            : null,
+    ].filter(Boolean);
+}
+
+function collectGlobalDocsSearchGroups() {
+    GLOBAL_DOCS_INDEX_PROMISE ??= loadGlobalDocsSearchGroups().finally(() => {
+        GLOBAL_DOCS_INDEX_PROMISE = null;
+    });
+    return GLOBAL_DOCS_INDEX_PROMISE;
+}
+
+async function loadGlobalStudySearchGroups() {
+    const [languagesPayload, prefsPayload] = await Promise.all([
+        searchFetchJson("/api/v1/study/registered-languages"),
+        searchFetchJson("/api/v1/study/preferences"),
+    ]);
+    const learningLanguages = Array.isArray(
+        prefsPayload?.data?.learningLanguages,
+    )
+        ? prefsPayload.data.learningLanguages
+        : [];
+    const languageByCode = new Map(
+        (Array.isArray(languagesPayload?.data)
+            ? languagesPayload.data
+            : []
+        ).map((language) => [String(language?.code ?? ""), language]),
+    );
+    const items = [];
+    for (const languageCode of learningLanguages) {
+        const language = languageByCode.get(languageCode) ?? {
+            name: languageCode,
+        };
+        const languageName = String(language?.name || languageCode);
+        const modulesPayload = await searchFetchJson(
+            `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
+        );
+        const modules = Array.isArray(modulesPayload?.data)
+            ? modulesPayload.data
+            : [];
+        const firstModuleUrl = modules
+            .map((component) => String(component?.pageUrl ?? ""))
+            .find(Boolean);
+        items.push({
+            id: `global-study-language:${languageCode}`,
+            label: ["Study", languageName].join(" / "),
+            description: "Study",
+            url: firstModuleUrl || "/study",
+            resultClass: "page",
+            searchText: ["Study", languageName, languageCode].join(" "),
+            visible: true,
+        });
+        for (const component of modules) {
+            const pageUrl = String(component?.pageUrl ?? "").trim();
+            const label = String(
+                component?.label ?? component?.id ?? pageUrl,
+            ).trim();
+            if (!pageUrl || !label) continue;
+            items.push({
+                id: `global-study-module:${languageCode}:${component?.id ?? label}`,
+                label: ["Study", languageName, label].join(" / "),
+                description: ["Study", languageName].join(" / "),
+                url: pageUrl,
+                resultClass: "page",
+                searchText: ["Study", languageName, label, component?.id]
+                    .filter(Boolean)
+                    .join(" "),
+                visible: true,
+            });
+        }
+    }
+    items.push({
+        id: "global-study-settings",
+        label: "Study / Language Settings",
+        description: "Study",
+        url: "/study/settings",
+        resultClass: "setting",
+        searchText: "Study Language Settings",
+        visible: true,
+    });
+    return items.length ? [{ category: "Pages", items }] : [];
+}
+
+function collectGlobalStudySearchGroups() {
+    GLOBAL_STUDY_INDEX_PROMISE ??= loadGlobalStudySearchGroups().finally(() => {
+        GLOBAL_STUDY_INDEX_PROMISE = null;
+    });
+    return GLOBAL_STUDY_INDEX_PROMISE;
+}
+
 function collectVisibleNavigationSearchGroups() {
     const items = [];
     const navigationLinks = document.querySelectorAll(
@@ -1343,6 +1518,12 @@ registerSearchCategory(
         stageId: "visible-indexes",
     },
 );
+registerSearchIndex("global-docs", collectGlobalDocsSearchGroups, {
+    stageId: "component-indexes",
+});
+registerSearchIndex("global-study", collectGlobalStudySearchGroups, {
+    stageId: "component-indexes",
+});
 registerSearchIndex(
     "browser-preferences",
     collectBrowserPreferenceSearchGroups,

@@ -678,7 +678,7 @@ function initSearchBar(i18n) {
     injectSearchBarStyles();
 
     const navigationSearchGroup = {
-        category: i18n.t("ui.reuse.navigation"),
+        category: "Pages",
         items: [
             {
                 id: "page-dashboard",
@@ -694,6 +694,11 @@ function initSearchBar(i18n) {
                 id: "page-settings",
                 label: i18n.t("ui.reuse.settings"),
                 url: "/settings",
+            },
+            {
+                id: "page-profile",
+                label: i18n.t("ui.reuse.profile"),
+                url: "/profile",
             },
             {
                 id: "page-docs",

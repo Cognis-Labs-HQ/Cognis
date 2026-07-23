@@ -403,14 +403,14 @@
 
 :root[data-theme="dark"] .search-page-find-highlight,
 [data-theme="dark"] .search-page-find-highlight {
-    background: color-mix(in srgb, #34d399 55%, transparent);
-    color: #ecfdf5;
+    background: color-mix(in srgb, #bbf7d0 42%, transparent);
+    color: #f0fdf4;
 }
 
 :root[data-theme="dark"] .search-page-find-highlight--current,
 [data-theme="dark"] .search-page-find-highlight--current {
-    background: #22c55e;
-    color: #02130a;
+    background: #bbf7d0;
+    color: #052e16;
 }
 
 .search-popup-result:hover,

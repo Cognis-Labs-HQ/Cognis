@@ -220,7 +220,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             const activeClass = pageUrl === currentPath ? " active" : "";
             return `
                 <li>
-                    <a class="study-subnav-link study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="study-subnav-link study-subnav-module-link${activeClass}" href="${escapeHtml(pageUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(String(component?.label ?? pageUrl))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(String(component?.label ?? pageUrl))}
                     </a>
                 </li>
@@ -231,7 +231,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         isAdminScope() && !hasLibraryModule
             ? `
             <li>
-                <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(adminLibraryUrl)}" data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                <a class="study-subnav-link study-subnav-module-link${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(adminLibraryUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
@@ -251,7 +251,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 model.languagePageUrlsByCode?.get(languageCode) || "/study";
             return `
                 <li>
-                    <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(languageHubUrl)}" data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
+                    <a class="study-subnav-language-option${activeClass}" href="${escapeHtml(languageHubUrl)}" data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}">
                         ${escapeHtml(language.flag)}
                         <span>${escapeHtml(language.name)}</span>
                     </a>
@@ -275,7 +275,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             <a
                 class="study-subnav-settings-link${settingsActiveClass}"
                 href="${escapeHtml(settingsUrl)}"
-                data-search-category="${escapeHtml(i18n.t("ui.reuse.navigation"))}"
+                data-search-category="Pages"
                 data-search-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"
                 data-search-description="${escapeHtml(i18n.t("gateway.study.page_title"))}"
                 aria-label="${escapeHtml(i18n.t("gateway.study.language_settings"))}"

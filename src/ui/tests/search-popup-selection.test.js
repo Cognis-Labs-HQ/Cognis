@@ -61,6 +61,10 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /__selectedSearchCategories/);
     assert.match(source, /search-popup-result-categories/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
+    assert.match(source, /collectGlobalDocsSearchGroups/);
+    assert.match(source, /collectGlobalStudySearchGroups/);
+    assert.match(source, /registerSearchIndex\("global-docs"/);
+    assert.match(source, /registerSearchIndex\("global-study"/);
     assert.match(
         source,
         /registerSearchCategory\(\s*["\']visible-navigation["\']/,
@@ -75,6 +79,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /"Regex"/);
     assert.match(source, /"Case-sensitive"/);
     assert.match(source, /"On this page"/);
+    assert.doesNotMatch(source, /category:\s*"Navigation"/);
     assert.match(source, /searchOptions\.onThisPage/);
     assert.match(source, /renderPageFindHighlights/);
     assert.match(source, /search-popup-page-find-counter/);
@@ -117,6 +122,7 @@ test("search popup displays result categories below parameters", () => {
         /\.search-popup-result:hover,\n\.search-popup-result:focus-visible/,
     );
     assert.match(source, /data-theme="dark"\] \.search-popup-result:hover/);
+    assert.match(source, /#bbf7d0/);
     assert.match(source, /\.search-popup-overlay--finder/);
     assert.match(source, /\.search-popup-page-find-controls/);
     assert.match(source, /\.search-page-find-highlight--current/);
@@ -384,6 +390,7 @@ test("profile messages notifications and study indexes are privacy scoped", () =
     );
     assert.match(notificationsSource, /resultClass: "notification"/);
     assert.match(searchSource, /link\.closest\("\.study-page-subnav"\)/);
+    assert.match(searchSource, /category: "Pages"/);
 });
 
 test("docs changelogs and study subpages are indexed as pages", () => {
@@ -412,4 +419,29 @@ test("docs changelogs and study subpages are indexed as pages", () => {
         styleSource,
         /data-theme="dark"\] \.search-page-find-highlight/,
     );
+});
+
+test("global pages and messages indexes register from shared surfaces", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const messagesNavbarSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/navbar.js"),
+        "utf8",
+    );
+
+    assert.match(layoutSource, /category: "Pages"/);
+    assert.match(layoutSource, /id: "page-profile"/);
+    assert.doesNotMatch(
+        layoutSource,
+        /category: i18n\.t\("ui\.reuse\.navigation"\)/,
+    );
+    assert.match(
+        messagesNavbarSource,
+        /registerSearchIndex\("global-messages"/,
+    );
+    assert.match(messagesNavbarSource, /collectGlobalMessageSearchGroups/);
+    assert.match(messagesNavbarSource, /\/api\/v1\/social\/messages\/rooms/);
+    assert.match(messagesNavbarSource, /decryptSearchMessage/);
 });

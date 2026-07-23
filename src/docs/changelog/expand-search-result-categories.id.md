@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Indeks bersama mencakup halaman dan pesan
+
+Docs, Changelog, Study, subhalaman Study, halaman dari menu pengguna, dan konten pesan kini didaftarkan dari permukaan bersama sehingga dapat dicari tanpa membuka setiap aplikasi terlebih dahulu. Sisa kategori Navigation digabungkan ke Pages, dan sorotan pencarian di halaman pada mode gelap kini memakai kombinasi hijau yang lebih pucat.
+
 ## Hasil pencarian yang difokuskan lebih jelas
 
 Hasil pencarian kini memiliki latar hover dan fokus keyboard yang lebih kuat pada tema terang maupun gelap, sehingga baris yang sedang difokuskan lebih mudah diikuti saat menelusuri hasil.
