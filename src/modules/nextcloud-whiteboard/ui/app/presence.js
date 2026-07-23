@@ -1,4 +1,8 @@
 import { pickInitialsColor } from "/static/reuse/avatar-utils.js";
+import {
+    buildProfileAvatarMarkup,
+    hydrateProfileAvatars,
+} from "/static/gateways/social/reuse/profile-avatar.js";
 
 export function getPointerOffset(canvasInstance) {
     return canvasInstance?.getViewportOffset?.() ?? { x: 0, y: 0 };
@@ -31,4 +35,28 @@ export function applyRemotePresenceSelections({
         }))
         .filter((selection) => selection.elementIds.length > 0);
     canvasInstance?.setRemoteSelections?.(selections);
+}
+
+export function renderWhiteboardPresenceEntry(entry) {
+    const displayName =
+        String(entry.displayName || entry.handle || "Guest")
+            .replace(/^#+/, "")
+            .trim() || "Guest";
+    const handle = String(entry.handle || "").replace(/^[@#]+/, "");
+    const active = Boolean(entry.active);
+    const label =
+        entry.guest || !handle ? displayName : `${displayName} (@${handle})`;
+    return buildProfileAvatarMarkup({
+        avatarKey: String(entry.avatarKey || "").trim(),
+        label,
+        colorSeed: handle || displayName,
+        avatarClass: "page-presence__profile",
+        imageClass: `page-presence__avatar-img${active ? " is-active" : ""}`,
+        fallbackClass: `page-presence__avatar${active ? " is-active" : ""}`,
+        profileHandle: entry.guest || !handle ? null : handle,
+    });
+}
+
+export function hydratePresenceAvatars(container) {
+    return hydrateProfileAvatars(container);
 }

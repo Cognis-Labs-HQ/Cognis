@@ -61,7 +61,7 @@ function createFallbackSessionId() {
     ).join("")}`;
 }
 
-function renderPresenceEntry(entry) {
+function defaultRenderPresenceEntry(entry) {
     const displayName = normalizePresenceName(
         entry.displayName || entry.handle,
     );
@@ -89,6 +89,8 @@ export function createPresenceTracker({
     getPointerOffset = null,
     pointerOverlayRoot = null,
     onPresenceUpdate = null,
+    renderPresenceEntry = defaultRenderPresenceEntry,
+    hydratePresenceEntries = null,
     i18n = null,
 } = {}) {
     const sessionId = createSessionId(storageKey);
@@ -102,6 +104,7 @@ export function createPresenceTracker({
     let pointerTracker = null;
     let lastActivityAt = Date.now();
     let lastPresenceSignature = "";
+    let lastPresenceMarkupSignature = "";
 
     function noteActivity() {
         lastActivityAt = Date.now();
@@ -154,7 +157,23 @@ export function createPresenceTracker({
                     entry.lastSeenAt,
                     entry.active,
                     entry.pointer?.updatedAt,
+                    entry.avatarKey ?? "",
                     JSON.stringify(entry.selection ?? null),
+                ].join(":"),
+            )
+            .join("|");
+    }
+
+    function createPresenceMarkupSignature(entries) {
+        return entries
+            .map((entry) =>
+                [
+                    entry.sessionId,
+                    entry.displayName ?? "",
+                    entry.handle ?? "",
+                    entry.guest ? "guest" : "user",
+                    entry.active,
+                    entry.avatarKey ?? "",
                 ].join(":"),
             )
             .join("|");
@@ -183,7 +202,16 @@ export function createPresenceTracker({
                 Date.now() - Date.parse(entry.lastSeenAt || 0) <=
                     ACTIVE_WINDOW_MS,
         }));
-        container.innerHTML = activeEntries.map(renderPresenceEntry).join("");
+        const nextMarkupSignature =
+            createPresenceMarkupSignature(activeEntries);
+        if (nextMarkupSignature !== lastPresenceMarkupSignature) {
+            container.innerHTML = activeEntries
+                .map(renderPresenceEntry)
+                .join("");
+            lastPresenceMarkupSignature = nextMarkupSignature;
+            if (typeof hydratePresenceEntries === "function")
+                void hydratePresenceEntries(container);
+        }
         pointerTracker?.render(activeEntries, sessionId);
         onPresenceUpdate?.(activeEntries, sessionId);
         const nextSignature = createPresenceSignature(activeEntries);

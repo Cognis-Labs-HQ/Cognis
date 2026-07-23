@@ -45,7 +45,7 @@
   <string name="module.nextcloud_whiteboard.refresh_failed">Whiteboard created, but the list could not refresh.</string>
   <string name="module.nextcloud_whiteboard.spawn_failed">Could not open the whiteboard.</string>
   <string name="module.nextcloud_whiteboard.new_board">New whiteboard</string>
-  <string name="module.nextcloud_whiteboard.new_board_title">Untitled Whiteboard</string>
+  <string name="module.nextcloud_whiteboard.new_board_title">Board #123456</string>
   <string name="module.nextcloud_whiteboard.history_title">Whiteboard history</string>
   <string name="module.nextcloud_whiteboard.connection_failed">Could not connect to the whiteboard server at {server_url}. Ask an administrator to confirm the WebSocket URL and CSP configuration.</string>
   <string name="module.nextcloud_whiteboard.created_success">Whiteboard created.</string>
@@ -90,5 +90,7 @@
   <string name="module.nextcloud_whiteboard.share_delete_failed">Could not revoke share link.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">This permanently clears every item on the current whiteboard. Continue?</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard must pass its server check before it can be enabled.</string>
+  <string name="module.nextcloud_whiteboard.preflight_websocket_failed">The whiteboard server rejected websocket authentication. Check the API key configuration.</string>
+  <string name="module.nextcloud_whiteboard.tool_lock">Keep the current drawing tool active after creating an object</string>
 </resources>
 

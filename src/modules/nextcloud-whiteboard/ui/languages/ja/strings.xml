@@ -45,7 +45,7 @@
   <string name="module.nextcloud_whiteboard.refresh_failed">ホワイトボードは作成されましたが、一覧を更新できませんでした。</string>
   <string name="module.nextcloud_whiteboard.spawn_failed">ホワイトボードを開けませんでした。</string>
   <string name="module.nextcloud_whiteboard.new_board">新しいホワイトボード</string>
-  <string name="module.nextcloud_whiteboard.new_board_title">無題のホワイトボード</string>
+  <string name="module.nextcloud_whiteboard.new_board_title">Board #123456</string>
   <string name="module.nextcloud_whiteboard.history_title">ホワイトボード履歴</string>
   <string name="module.nextcloud_whiteboard.connection_failed">{server_url} のホワイトボードサーバーに接続できません。WebSocket URL と CSP 設定を管理者に確認してください。</string>
   <string name="module.nextcloud_whiteboard.created_success">ホワイトボードを作成しました。</string>
@@ -90,5 +90,7 @@
   <string name="module.nextcloud_whiteboard.share_delete_failed">共有リンクを取り消せませんでした。</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">現在のホワイトボード上のすべての項目を完全に削除します。続行しますか？</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
+  <string name="module.nextcloud_whiteboard.preflight_websocket_failed">ホワイトボードサーバーが WebSocket 認証を拒否しました。API キー設定を確認してください。</string>
+  <string name="module.nextcloud_whiteboard.tool_lock">オブジェクト作成後も現在の描画ツールを維持</string>
 </resources>
 

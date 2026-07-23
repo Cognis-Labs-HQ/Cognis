@@ -159,6 +159,8 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     );
     assert.match(realtimeSource, /function throttleLatest\(callback, delay\)/);
     assert.match(source, /function updateHistoryControls\(\)/);
+    assert.match(source, /whiteboard-toolbar-group\[hidden\]/);
+    assert.match(source, /insertAdjacentHTML\(\s*"afterend"/);
     assert.match(
         source,
         /canvas\.onHistoryChange\?\.\(updateHistoryControls\)/,
@@ -318,6 +320,7 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
     assert.match(appSource, /function canRenameActiveBoard\(\)/);
     assert.match(appSource, /function emitBoardRenamed\(title\)/);
     assert.match(appSource, /function syncBoardUrl\(boardId\)/);
+    assert.match(appSource, /searchParams\.set\("instantCanvas", "1"\)/);
     assert.match(
         appSource,
         /window\.history\.replaceState\(null, "", nextUrl\)/,

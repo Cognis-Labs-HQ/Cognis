@@ -39,7 +39,7 @@
  *              Defaults to 'info'.
  *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral' }>.
  *              When omitted, a single green 'Done' (confirm) button is rendered.
- *              The × header close button always uses the cancel (danger) style.
+ *   closeButtonVariant — Optional variant for the × header close button.
  *   maxWidth — CSS max-width value (e.g. '40%', '600px') applied to the dialog
  *              window. Defaults to the CSS-defined value (480px).
  *
@@ -79,6 +79,7 @@
  *   closeProtection?: boolean,
  *   timeoutMs?: number,
  *   timeoutActionId?: string | null,
+ *   closeButtonVariant?: 'cancel' | 'neutral',
  * }} options
  * @returns {Promise<string|null>}
  */
@@ -302,6 +303,7 @@ export async function openPopup({
     closeProtection = false,
     timeoutMs = 0,
     timeoutActionId = null,
+    closeButtonVariant = "cancel",
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
@@ -386,6 +388,11 @@ export async function openPopup({
                 ? actions
                 : [{ id: "close", label: "Done", variant: "confirm" }];
 
+        const closeButtonClass =
+            closeButtonVariant === "neutral"
+                ? "popup-close-btn btn-neutral btn-animated"
+                : "popup-close-btn btn-cancel btn-animated";
+
         const actionButtons = effectiveActions
             .map((action) => {
                 const btnVariant = action.variant ?? "neutral";
@@ -403,7 +410,7 @@ export async function openPopup({
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
           <h2 class="popup-title" id="popup-title">${escapeHtml(title ?? "")}</h2>
-          <button class="popup-close-btn btn-cancel btn-animated" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
+          <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}
