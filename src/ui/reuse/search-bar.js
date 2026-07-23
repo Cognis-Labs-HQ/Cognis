@@ -482,9 +482,9 @@ function mergeSearchGroups(groups) {
 function hasSelectableTarget(item) {
     return Boolean(
         String(item?.url ?? "").trim() ||
-            String(item?.handle ?? "").trim() ||
-            String(item?.id ?? "").trim() ||
-            String(item?.accountId ?? "").trim(),
+        String(item?.handle ?? "").trim() ||
+        String(item?.id ?? "").trim() ||
+        String(item?.accountId ?? "").trim(),
     );
 }
 
@@ -568,12 +568,34 @@ function selectSearchResult(item, onSelect, closeOverlay) {
         });
 }
 
+function renderResultCategorySummary(categoriesContainer, groups) {
+    if (!categoriesContainer) return;
+    categoriesContainer.innerHTML = "";
+    const categories = (groups ?? [])
+        .filter((group) => group.items?.length > 0)
+        .map((group) => String(group.category ?? "").trim())
+        .filter(Boolean);
+    if (new Set(categories).size < 2) {
+        categoriesContainer.hidden = true;
+        return;
+    }
+    categoriesContainer.hidden = false;
+    for (const category of categories) {
+        const categoryPill = document.createElement("span");
+        categoryPill.className = "search-popup-result-category-pill";
+        categoryPill.textContent = category;
+        categoriesContainer.appendChild(categoryPill);
+    }
+}
+
 function renderGroupedResults(
     resultsContainer,
     groups,
     onSelect,
     closeOverlay,
+    categoriesContainer = null,
 ) {
+    renderResultCategorySummary(categoriesContainer, groups);
     resultsContainer.innerHTML = "";
     for (const group of groups) {
         if (!group.items?.length) continue;
@@ -608,7 +630,14 @@ function renderGroupedResults(
     }
 }
 
-function renderSearchPendingMessage(resultsContainer) {
+function renderSearchPendingMessage(
+    resultsContainer,
+    categoriesContainer = null,
+) {
+    if (categoriesContainer) {
+        categoriesContainer.innerHTML = "";
+        categoriesContainer.hidden = true;
+    }
     resultsContainer.innerHTML = "";
     const message = document.createElement("p");
     message.className = "search-popup-no-results";
@@ -623,7 +652,12 @@ function renderFlatResults(
     onSelect,
     closeOverlay,
     multiSelectState,
+    categoriesContainer = null,
 ) {
+    if (categoriesContainer) {
+        categoriesContainer.innerHTML = "";
+        categoriesContainer.hidden = true;
+    }
     resultsContainer.innerHTML = "";
     if (!items.length) {
         const empty = document.createElement("p");
@@ -709,6 +743,7 @@ async function runSearch({
     endpoint,
     query,
     resultsContainer,
+    categoriesContainer,
     typeFilter,
     localGroups,
     noResultsText,
@@ -718,7 +753,7 @@ async function runSearch({
     searchOptions,
 }) {
     if (query.length < MIN_SEARCH_QUERY_LENGTH) {
-        renderSearchPendingMessage(resultsContainer);
+        renderSearchPendingMessage(resultsContainer, categoriesContainer);
         return;
     }
 
@@ -750,6 +785,7 @@ async function runSearch({
                     navigableLocalGroups,
                     onSelect,
                     closeOverlay,
+                    categoriesContainer,
                 );
             }
             return;
@@ -789,6 +825,7 @@ async function runSearch({
                 mergedGroups,
                 onSelect,
                 closeOverlay,
+                categoriesContainer,
             );
         } else if (flatItems.length > 0) {
             renderFlatResults(
@@ -798,6 +835,7 @@ async function runSearch({
                 onSelect,
                 closeOverlay,
                 multiSelectState,
+                categoriesContainer,
             );
         } else if (navigableLocalGroups.length === 0) {
             renderFlatResults(
@@ -807,6 +845,7 @@ async function runSearch({
                 onSelect,
                 closeOverlay,
                 multiSelectState,
+                categoriesContainer,
             );
         }
     } catch {
@@ -816,6 +855,7 @@ async function runSearch({
                 navigableLocalGroups,
                 onSelect,
                 closeOverlay,
+                categoriesContainer,
             );
         }
     }
@@ -929,6 +969,10 @@ export function openSearchPopup({
     input.setAttribute("aria-label", ariaLabel);
     input.setAttribute("autocomplete", "off");
 
+    const categoriesContainer = document.createElement("div");
+    categoriesContainer.className = "search-popup-result-categories";
+    categoriesContainer.hidden = true;
+
     const resultsContainer = document.createElement("div");
     resultsContainer.className = "search-popup-results";
 
@@ -965,6 +1009,7 @@ export function openSearchPopup({
         popup.appendChild(optionsBar);
     }
 
+    popup.appendChild(categoriesContainer);
     popup.appendChild(resultsContainer);
 
     let multiSelectState = null;
@@ -1021,7 +1066,7 @@ export function openSearchPopup({
 
     overlay.appendChild(popup);
     document.body.appendChild(overlay);
-    renderSearchPendingMessage(resultsContainer);
+    renderSearchPendingMessage(resultsContainer, categoriesContainer);
 
     const closeOverlay = () => {
         clearTimeout(debounceTimer);
@@ -1041,7 +1086,7 @@ export function openSearchPopup({
     const runCurrentSearch = () => {
         clearTimeout(debounceTimer);
         if (currentQuery.length < MIN_SEARCH_QUERY_LENGTH) {
-            renderSearchPendingMessage(resultsContainer);
+            renderSearchPendingMessage(resultsContainer, categoriesContainer);
             return;
         }
         debounceTimer = setTimeout(
@@ -1050,6 +1095,7 @@ export function openSearchPopup({
                     endpoint,
                     query: currentQuery,
                     resultsContainer,
+                    categoriesContainer,
                     typeFilter,
                     localGroups,
                     noResultsText,

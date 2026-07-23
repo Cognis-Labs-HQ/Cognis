@@ -46,6 +46,40 @@ import {
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
 
+function renderSearchAttributes(attributes) {
+    return Object.entries(attributes)
+        .map(([name, value]) => `${name}="${escapeHtml(String(value ?? ""))}"`)
+        .join(" ");
+}
+
+function accountOperationSearchAttrs(i18n, labelKey, descriptionKey) {
+    const label = i18n.t(labelKey);
+    const description = i18n.t(descriptionKey);
+    return renderSearchAttributes({
+        "data-search-category": i18n.t("ui.reuse.operations"),
+        "data-search-label": label,
+        "data-search-description": description,
+        "data-search-text": [
+            i18n.t("ui.reuse.settings"),
+            i18n.t("ui.app.settings.danger_zone"),
+            label,
+            description,
+        ].join(" "),
+    });
+}
+
+function renderAccountOperationButton(i18n, action, labelKey, descriptionKey) {
+    const label = i18n.t(labelKey);
+    return `
+      <button
+        class="btn-cancel btn-animated"
+        type="button"
+        data-account-action="${escapeHtml(action)}"
+        ${accountOperationSearchAttrs(i18n, labelKey, descriptionKey)}
+      >${escapeHtml(label)}</button>
+    `;
+}
+
 function formatPreferenceLabel(key) {
     return String(key ?? "")
         .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -98,6 +132,7 @@ function renderSettingsElementText(element) {
         return "";
     }
 }
+
 function collectSettingsElementSearchItems(section) {
     const sectionLabel = String(section?.label ?? section?.id ?? "").trim();
     return (section?.subComposerOptions?.elements ?? [])
@@ -431,9 +466,9 @@ export async function mount(root, { signal } = {}) {
               <h3 id="settings-danger-zone-title">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
               <p>${escapeHtml(i18n.t("ui.app.settings.danger_zone_body"))}</p>
               <div class="settings-danger-actions">
-                <button class="btn-cancel btn-animated" type="button" data-account-action="archive" data-search-category="Settings" data-search-label="${escapeHtml(i18n.t("ui.app.settings.danger_archive"))}" data-search-description="${escapeHtml(i18n.t("ui.app.settings.danger_archive_warning"))}">${escapeHtml(i18n.t("ui.app.settings.danger_archive"))}</button>
-                <button class="btn-cancel btn-animated" type="button" data-account-action="deactivate">${escapeHtml(i18n.t("ui.app.settings.danger_deactivate"))}</button>
-                <button class="btn-cancel btn-animated" type="button" data-account-action="delete">${escapeHtml(i18n.t("ui.app.settings.danger_delete"))}</button>
+                ${renderAccountOperationButton(i18n, "archive", "ui.app.settings.danger_archive", "ui.app.settings.danger_archive_warning")}
+                ${renderAccountOperationButton(i18n, "deactivate", "ui.app.settings.danger_deactivate", "ui.app.settings.danger_deactivate_warning")}
+                ${renderAccountOperationButton(i18n, "delete", "ui.app.settings.danger_delete", "ui.app.settings.danger_delete_warning")}
               </div>
             </section>
           `;

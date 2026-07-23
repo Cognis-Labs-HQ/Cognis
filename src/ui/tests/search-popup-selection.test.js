@@ -46,6 +46,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /filterNavigableGroups/);
     assert.match(source, /hasSelectableTarget/);
     assert.match(source, /filterApiFlatMatches/);
+    assert.match(source, /renderResultCategorySummary/);
+    assert.match(source, /search-popup-result-categories/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(
         source,
@@ -62,11 +64,23 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /wholeWord=1/);
     assert.match(source, /regex=1/);
     assert.match(source, /caseSensitive=1/);
-    assert.match(source, /item\.searchText \? \[\["searchText", item\.searchText\]\]/);
+    assert.match(
+        source,
+        /item\.searchText \? \[\["searchText", item\.searchText\]\]/,
+    );
     assert.match(source, /matchSnippet/);
     assert.match(source, /highlightedLabel/);
     assert.match(source, /selectSearchResult/);
     assert.match(source, /item\.handle/);
+});
+
+test("search popup displays result categories below parameters", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
+        "utf8",
+    );
+    assert.match(source, /\.search-popup-result-categories/);
+    assert.match(source, /\.search-popup-result-category-pill/);
 });
 
 test("settings search exposes archive action by name and description", () => {
@@ -74,8 +88,14 @@ test("settings search exposes archive action by name and description", () => {
         resolve(ROOT, "src/ui/app/settings/index.js"),
         "utf8",
     );
-    assert.match(source, /data-search-category="Settings"/);
+    assert.match(
+        source,
+        /"data-search-category": i18n\.t\("ui\.reuse\.operations"\)/,
+    );
+    assert.match(source, /renderAccountOperationButton/);
     assert.match(source, /ui\.app\.settings\.danger_archive/);
+    assert.match(source, /ui\.app\.settings\.danger_deactivate/);
+    assert.match(source, /ui\.app\.settings\.danger_delete/);
     assert.match(source, /data-search-description/);
     assert.match(source, /ui\.app\.settings\.danger_archive_warning/);
     assert.match(source, /registerSearchIndex/);
@@ -87,7 +107,6 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /textFromHtml/);
     assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
 });
-
 
 test("docs search indexes navigation titles and document contents", () => {
     const source = readFileSync(

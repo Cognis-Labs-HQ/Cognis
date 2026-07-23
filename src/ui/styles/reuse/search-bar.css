@@ -76,6 +76,30 @@
     color: var(--text-muted);
 }
 
+.search-popup-result-categories {
+    align-items: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    padding: 0.45rem 0.75rem;
+}
+
+.search-popup-result-categories[hidden] {
+    display: none;
+}
+
+.search-popup-result-category-pill {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+}
+
 .search-popup-results {
     overflow-y: auto;
     padding: 0.5rem 0;
