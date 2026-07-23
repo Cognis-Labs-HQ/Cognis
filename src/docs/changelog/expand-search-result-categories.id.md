@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Study memiliki indeks pencariannya
+
+Study kini mendaftarkan jalur pencarian Pages miliknya sendiri dari navbar gateway Study, sementara modul bahasa terdaftar berkontribusi melalui daftar modul Study alih-alih utilitas pencarian umum memiliki pengindeksan khusus Study.
+
 ## Pencarian menemukan halaman Study dan posting yang terlihat
 
 Study kini menambahkan halaman gateway serta setiap subhalaman bahasa Inggris dan Jepang yang terdaftar ke kategori Pages, dan pencarian profil sosial mengindeks secara dinamis setiap posting yang boleh dilihat pengguna yang masuk.

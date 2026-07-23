@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Study owns its search index
+
+Study now registers its own Pages search avenue from the Study gateway navbar, while registered language modules contribute through Study's module list instead of the generic search utility owning Study-specific indexing.
+
 ## Search finds study pages and visible posts
 
 Study now adds the gateway page plus every registered English and Japanese language sub-page into the Pages category, and social profile search dynamically indexes every post the signed-in user is allowed to view.

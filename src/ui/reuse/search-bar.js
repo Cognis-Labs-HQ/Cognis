@@ -457,7 +457,6 @@ function collectBrowserPreferenceSearchGroups() {
 
 const GLOBAL_DOCS_SEARCH_CONTENT = new Map();
 let GLOBAL_DOCS_INDEX_PROMISE = null;
-let GLOBAL_STUDY_INDEX_PROMISE = null;
 
 function searchFetchJson(path) {
     const token = localStorage.getItem("cognis_access_token");
@@ -550,84 +549,6 @@ function collectGlobalDocsSearchGroups() {
         GLOBAL_DOCS_INDEX_PROMISE = null;
     });
     return GLOBAL_DOCS_INDEX_PROMISE;
-}
-
-async function loadGlobalStudySearchGroups() {
-    const languagesPayload = await searchFetchJson(
-        "/api/v1/study/registered-languages",
-    );
-    const registeredLanguages = Array.isArray(languagesPayload?.data)
-        ? languagesPayload.data
-        : [];
-    const items = [
-        {
-            id: "global-study-page",
-            label: "Study",
-            description: "Pages",
-            url: "/study",
-            resultClass: "page",
-            searchText: "Study",
-            visible: true,
-        },
-    ];
-    for (const language of registeredLanguages) {
-        const languageCode = String(language?.code ?? "").trim();
-        if (!languageCode) continue;
-        const languageName = String(language?.name || languageCode);
-        const modulesPayload = await searchFetchJson(
-            `/api/v1/study/languages/${encodeURIComponent(languageCode)}/modules`,
-        );
-        const modules = Array.isArray(modulesPayload?.data)
-            ? modulesPayload.data
-            : [];
-        const firstModuleUrl = modules
-            .map((component) => String(component?.pageUrl ?? ""))
-            .find(Boolean);
-        items.push({
-            id: `global-study-language:${languageCode}`,
-            label: ["Study", languageName].join(" / "),
-            description: "Study",
-            url: firstModuleUrl || "/study",
-            resultClass: "page",
-            searchText: ["Study", languageName, languageCode].join(" "),
-            visible: true,
-        });
-        for (const component of modules) {
-            const pageUrl = String(component?.pageUrl ?? "").trim();
-            const label = String(
-                component?.label ?? component?.id ?? pageUrl,
-            ).trim();
-            if (!pageUrl || !label) continue;
-            items.push({
-                id: `global-study-module:${languageCode}:${component?.id ?? label}`,
-                label: ["Study", languageName, label].join(" / "),
-                description: ["Study", languageName].join(" / "),
-                url: pageUrl,
-                resultClass: "page",
-                searchText: ["Study", languageName, label, component?.id]
-                    .filter(Boolean)
-                    .join(" "),
-                visible: true,
-            });
-        }
-    }
-    items.push({
-        id: "global-study-settings",
-        label: "Study / Language Settings",
-        description: "Study",
-        url: "/study/settings",
-        resultClass: "setting",
-        searchText: "Study Language Settings",
-        visible: true,
-    });
-    return items.length ? [{ category: "Pages", items }] : [];
-}
-
-function collectGlobalStudySearchGroups() {
-    GLOBAL_STUDY_INDEX_PROMISE ??= loadGlobalStudySearchGroups().finally(() => {
-        GLOBAL_STUDY_INDEX_PROMISE = null;
-    });
-    return GLOBAL_STUDY_INDEX_PROMISE;
 }
 
 function collectVisibleNavigationSearchGroups() {
@@ -1635,9 +1556,6 @@ registerSearchCategory(
     },
 );
 registerSearchIndex("global-docs", collectGlobalDocsSearchGroups, {
-    stageId: "component-indexes",
-});
-registerSearchIndex("global-study", collectGlobalStudySearchGroups, {
     stageId: "component-indexes",
 });
 registerSearchIndex(

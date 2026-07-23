@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Study besitzt seinen Suchindex
+
+Study registriert seinen eigenen Pages-Suchweg jetzt über die Study-Gateway-Navigation, während registrierte Sprachmodule über Studys Modulliste beitragen, statt dass die allgemeine Suchlogik Study-spezifische Indizierung besitzt.
+
 ## Suche findet Study-Seiten und sichtbare Beiträge
 
 Study fügt jetzt die Gateway-Seite sowie jede registrierte englische und japanische Sprach-Unterseite zur Kategorie Pages hinzu, und die Social-Profile-Suche indiziert dynamisch jeden Beitrag, den der angemeldete Benutzer sehen darf.

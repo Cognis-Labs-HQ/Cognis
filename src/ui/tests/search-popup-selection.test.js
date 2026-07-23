@@ -68,9 +68,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /Close search/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(source, /collectGlobalDocsSearchGroups/);
-    assert.match(source, /collectGlobalStudySearchGroups/);
+    assert.match(source, /registerSearchAvenue/);
     assert.match(source, /registerSearchIndex\("global-docs"/);
-    assert.match(source, /registerSearchIndex\("global-study"/);
     assert.match(
         source,
         /registerSearchCategory\(\s*["\']visible-navigation["\']/,
@@ -309,6 +308,14 @@ test("study content and sub-navigation participate in global search", () => {
         ),
         "utf8",
     );
+    const studyNavbarSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/navbar.js"),
+        "utf8",
+    );
+    const studySearchSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/search/index.js"),
+        "utf8",
+    );
     assert.match(studySource, /registerSearchIndex\("study-contents"/);
     assert.match(studySource, /collectStudySearchGroups/);
     assert.match(studySource, /resultClass: "page"/);
@@ -316,6 +323,11 @@ test("study content and sub-navigation participate in global search", () => {
     assert.match(studySource, /data-search-category/);
     assert.match(subNavigationSource, /data-search-category/);
     assert.match(subNavigationSource, /data-search-description/);
+    assert.match(studyNavbarSource, /registerSearchIndexing\(\)/);
+    assert.match(studySearchSource, /export const componentSearchId = "study"/);
+    assert.match(studySearchSource, /registeredLanguages/);
+    assert.match(studySearchSource, /registerSearchIndex\("study"/);
+    assert.match(studySearchSource, /componentId: componentSearchId/);
 });
 
 test("settings search skips paragraph text entries and search results highlight targets", () => {
@@ -389,6 +401,10 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         resolve(ROOT, "src/ui/reuse/search-bar.js"),
         "utf8",
     );
+    const studySearchSource = readFileSync(
+        resolve(ROOT, "src/gateways/study/ui/search/index.js"),
+        "utf8",
+    );
     const postRoutesSource = readFileSync(
         resolve(ROOT, "src/adapters/social/profile/routes/posts.ts"),
         "utf8",
@@ -417,8 +433,8 @@ test("profile messages notifications and study indexes are privacy scoped", () =
     assert.match(notificationsSource, /resultClass: "notification"/);
     assert.match(searchSource, /link\.closest\("\.study-page-subnav"\)/);
     assert.match(searchSource, /category: "Pages"/);
-    assert.match(searchSource, /registeredLanguages/);
-    assert.match(searchSource, /id: "global-study-page"/);
+    assert.match(studySearchSource, /registeredLanguages/);
+    assert.match(studySearchSource, /id: "study-page"/);
 });
 
 test("docs changelogs and study subpages are indexed as pages", () => {
