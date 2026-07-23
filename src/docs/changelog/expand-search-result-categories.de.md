@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Das Suchfenster lässt sich leichter schließen
+
+Oben rechts im Suchfenster befindet sich jetzt eine schwebende Abbrechen-Schaltfläche, sodass Benutzer die Suche direkt schließen können, ohne Escape zu nutzen oder außerhalb zu klicken.
+
 ## Gemeinsame Indizes erfassen Seiten und Nachrichten
 
 Docs, Changelog, Study, Study-Unterseiten, Seiten aus dem Benutzermenü und Nachrichteninhalte werden jetzt über gemeinsame Oberflächen registriert, damit sie durchsuchbar sind, ohne jede App vorher zu öffnen. Verbleibende Navigation-Kategorien wurden in Pages zusammengeführt, und die Seitensuche nutzt im dunklen Design nun eine blassere grüne Kombination.

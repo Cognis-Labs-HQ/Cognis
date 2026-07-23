@@ -60,6 +60,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /filterGroupsBySelectedCategories/);
     assert.match(source, /__selectedSearchCategories/);
     assert.match(source, /search-popup-result-categories/);
+    assert.match(source, /search-popup-close btn-cancel/);
+    assert.match(source, /Close search/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(source, /collectGlobalDocsSearchGroups/);
     assert.match(source, /collectGlobalStudySearchGroups/);
@@ -115,6 +117,7 @@ test("search popup displays result categories below parameters", () => {
         "utf8",
     );
     assert.match(source, /\.search-popup-result-categories/);
+    assert.match(source, /\.search-popup-close/);
     assert.match(source, /\.search-popup-result-category-pill/);
     assert.match(source, /\.search-popup-result-category-pill--active/);
     assert.match(

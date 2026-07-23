@@ -55,6 +55,7 @@
     box-shadow: var(--shadow);
     width: min(560px, 90vw);
     max-height: 62vh;
+    position: relative;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -441,4 +442,19 @@
         var(--accent, #60a5fa) 28%,
         var(--surface-2)
     );
+}
+
+.search-popup-close {
+    position: absolute;
+    right: 0.65rem;
+    top: 0.55rem;
+    z-index: 1;
+    border-radius: 999px;
+    min-height: 1.8rem;
+    min-width: 1.8rem;
+    padding: 0.1rem 0.45rem;
+}
+
+.search-popup-input-wrap .search-popup-input {
+    padding-right: 3rem;
 }

@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Popup pencarian lebih mudah ditutup
+
+Tombol batal mengambang kini berada di kanan atas popup pencarian sehingga pengguna dapat menutup pencarian langsung tanpa bergantung pada Escape atau klik di luar popup.
+
 ## Indeks bersama mencakup halaman dan pesan
 
 Docs, Changelog, Study, subhalaman Study, halaman dari menu pengguna, dan konten pesan kini didaftarkan dari permukaan bersama sehingga dapat dicari tanpa membuka setiap aplikasi terlebih dahulu. Sisa kategori Navigation digabungkan ke Pages, dan sorotan pencarian di halaman pada mode gelap kini memakai kombinasi hijau yang lebih pucat.

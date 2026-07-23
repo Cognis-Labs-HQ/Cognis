@@ -1566,6 +1566,12 @@ export function openSearchPopup({
     const popup = document.createElement("div");
     popup.className = "search-popup";
 
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "search-popup-close btn-cancel";
+    closeButton.setAttribute("aria-label", "Close search");
+    closeButton.textContent = "×";
+
     const input = document.createElement("input");
     input.type = "search";
     input.className = "search-popup-input";
@@ -1579,6 +1585,8 @@ export function openSearchPopup({
 
     const resultsContainer = document.createElement("div");
     resultsContainer.className = "search-popup-results";
+
+    popup.appendChild(closeButton);
 
     const inputWrap = document.createElement("div");
     inputWrap.className = "search-popup-input-wrap";
@@ -1774,6 +1782,10 @@ export function openSearchPopup({
             DEBOUNCE_MS,
         );
     };
+
+    closeButton.addEventListener("click", () => {
+        closeOverlay();
+    });
 
     previousFindButton.addEventListener("click", () => {
         movePageFindMatch(pageFindState, pageFindCounter, -1);

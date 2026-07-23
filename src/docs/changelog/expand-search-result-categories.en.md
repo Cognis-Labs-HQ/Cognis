@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Search popup is easier to dismiss
+
+A floating cancel button now sits at the top-right of the search popup so users can close search directly without relying on Escape or clicking outside.
+
 ## Shared indexes cover pages and messages
 
 Docs, Changelog, Study, Study subpages, user-menu pages, and message contents now register from shared surfaces so they are searchable without first opening each app. Navigation-category leftovers were merged into Pages, and dark-mode on-page highlights now use a paler green combination.
