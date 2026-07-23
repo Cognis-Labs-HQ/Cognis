@@ -36,7 +36,9 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /export function registerSearchCategory/);
     assert.match(source, /export function registerSearchIndex/);
     assert.match(source, /registerSearchCategory\("visible-page"/);
+    assert.match(source, /stageId: "visible-indexes"/);
     assert.match(source, /registerSearchCategory\("visible-content"/);
+    assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /data-message-id/);
     assert.match(source, /data-chat-id/);
     assert.match(source, /data-search-description/);
@@ -61,4 +63,18 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /ui\.app\.settings\.danger_archive/);
     assert.match(source, /data-search-description/);
     assert.match(source, /ui\.app\.settings\.danger_archive_warning/);
+    assert.match(source, /registerSearchIndex/);
+    assert.match(source, /collectSettingsSearchGroups/);
+    assert.match(source, /stageId: "settings-index"/);
+});
+
+test("whiteboard search indexes board filenames and stored canvas contents", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/nextcloud-whiteboard/ui/app/index.js"),
+        "utf8",
+    );
+    assert.match(source, /registerSearchIndex\("nextcloud-whiteboard"/);
+    assert.match(source, /collectWhiteboardSearchGroups/);
+    assert.match(source, /externalPath/);
+    assert.match(source, /JSON\.stringify\(savedElements/);
 });

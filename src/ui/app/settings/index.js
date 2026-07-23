@@ -30,6 +30,7 @@ import {
     applyTimezoneToLocalStorage,
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
+import { registerSearchIndex } from "../../reuse/search-bar.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { showToast } from "../../reuse/toast.js";
@@ -44,6 +45,50 @@ import {
     getSettingsShellOptions,
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
+
+function collectSettingsSearchGroups(root, sections, loadedPrefs) {
+    const items = [];
+    for (const section of sections ?? []) {
+        const label = String(
+            section?.label ?? section?.heading ?? section?.id ?? "",
+        ).trim();
+        if (!label) continue;
+        items.push({
+            id: `settings-section:${section.id ?? label}`,
+            label,
+            description: String(section?.heading ?? ""),
+            url: `/settings#${encodeURIComponent(section.id ?? label)}`,
+            searchText: [label, section?.heading, section?.preferenceKey]
+                .filter(Boolean)
+                .join(" "),
+        });
+    }
+
+    const visibleText = String(root?.innerText ?? "")
+        .replace(/\s+/g, " ")
+        .trim();
+    if (visibleText) {
+        items.push({
+            id: "settings-visible-content",
+            label: "Settings content",
+            description: "Visible settings labels, actions, and help text",
+            url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            searchText: visibleText,
+        });
+    }
+
+    if (loadedPrefs && typeof loadedPrefs === "object") {
+        items.push({
+            id: "settings-user-preferences",
+            label: "User preferences",
+            description: "Stored settings and preference values",
+            url: "/settings",
+            searchText: JSON.stringify(loadedPrefs),
+        });
+    }
+
+    return [{ category: "Settings", items }];
+}
 
 async function loadPrefs() {
     const account = localStorage.getItem("cognis_account");
@@ -170,6 +215,7 @@ export async function mount(root, { signal } = {}) {
     );
     applyTimeFormatToLocalStorage(loadedPrefs?.timeFormat ?? "auto");
     const sectionDescriptors = await loadSettingsSections();
+    let settingsSearchSections = [];
 
     let savedMode = getStoredTheme();
 
@@ -564,6 +610,18 @@ export async function mount(root, { signal } = {}) {
     ];
 
     const shellOptions = getSettingsShellOptions();
+
+    settingsSearchSections = elements;
+    registerSearchIndex(
+        "settings-index",
+        () =>
+            collectSettingsSearchGroups(
+                root,
+                settingsSearchSections,
+                loadedPrefs,
+            ),
+        { stageId: "settings-index" },
+    );
 
     const composer = createPageComposer(root, {
         allowCustomization: false,

@@ -1,6 +1,7 @@
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
+import { registerSearchIndex } from "/static/reuse/search-bar.js";
 import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
@@ -55,6 +56,49 @@ let imageUploadMaxBytes = 1048576;
 let syncStatus = "idle";
 let syncStatusMessage = "";
 let integrationCanvasMode = false;
+
+function collectWhiteboardSearchGroups() {
+    const items = [];
+    for (const board of boards ?? []) {
+        const title = String(board?.title ?? board?.id ?? "").trim();
+        if (!title) continue;
+        items.push({
+            id: `whiteboard:${board.id ?? title}`,
+            label: title,
+            description: translateModuleString(
+                "module.nextcloud_whiteboard.canvas_window",
+            ),
+            url: `/whiteboard?id=${encodeURIComponent(board.id ?? "")}`,
+            searchText: [
+                title,
+                board?.externalPath,
+                board?.createdBy,
+                board?.updatedAt,
+            ]
+                .filter(Boolean)
+                .join(" "),
+        });
+    }
+
+    const elementText = JSON.stringify(savedElements ?? []);
+    if (activeBoard?.id && elementText && elementText !== "[]") {
+        items.push({
+            id: `whiteboard:${activeBoard.id}:contents`,
+            label:
+                activeBoard.title ||
+                translateModuleString(
+                    "module.nextcloud_whiteboard.canvas_window",
+                ),
+            description: translateModuleString(
+                "module.nextcloud_whiteboard.canvas_window",
+            ),
+            url: `/whiteboard?id=${encodeURIComponent(activeBoard.id)}`,
+            searchText: elementText,
+        });
+    }
+
+    return [{ category: "Whiteboards", items }];
+}
 
 function translateModuleString(key) {
     return i18n?.t(key) ?? key;
@@ -937,6 +981,8 @@ function buildElements() {
 }
 
 export async function mount(root, { signal, shareContext } = {}) {
+    registerSearchIndex("nextcloud-whiteboard", collectWhiteboardSearchGroups);
+
     i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/modules/nextcloud-whiteboard/languages",

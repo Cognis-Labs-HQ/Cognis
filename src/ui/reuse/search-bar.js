@@ -10,6 +10,9 @@
  * @module reuse/search-bar
  */
 
+import { uiCtx } from "./ui-ctx.js";
+import "./flow-registry.js";
+
 const DEBOUNCE_MS = 280;
 const REGISTERED_SEARCH_CATEGORIES = new Map();
 
@@ -263,25 +266,58 @@ function appendRegisteredSearchContribution(groups, categoryId, contribution) {
     }
 }
 
-function getRegisteredSearchGroups() {
-    const groups = [];
-    for (const [categoryId, provider] of REGISTERED_SEARCH_CATEGORIES) {
-        try {
-            const result = provider();
-            const contributions = Array.isArray(result) ? result : [result];
-            for (const contribution of contributions) {
-                appendRegisteredSearchContribution(
-                    groups,
-                    categoryId,
-                    contribution,
-                );
-            }
-        } catch (error) {
-            console.warn("[search-bar]:category-provider-failed", {
+async function resolveSearchProviderContribution(categoryId, provider, groups) {
+    try {
+        const result = await provider();
+        const contributions = Array.isArray(result) ? result : [result];
+        for (const contribution of contributions) {
+            appendRegisteredSearchContribution(
+                groups,
                 categoryId,
-                error,
-            });
+                contribution,
+            );
         }
+    } catch (error) {
+        console.warn("[search-bar]:category-provider-failed", {
+            categoryId,
+            error,
+        });
+    }
+}
+
+async function getRegisteredSearchGroups(query = "", searchOptions = {}) {
+    if (uiCtx.flowExists("search")) {
+        try {
+            const flowResult = await uiCtx.runFlow("search", {
+                query,
+                searchOptions: normalizeSearchOptions(searchOptions),
+            });
+            const groups = [];
+            for (const stageValues of Object.values(flowResult.stageResults)) {
+                for (const result of stageValues) {
+                    const contributions = Array.isArray(result) ? result : [result];
+                    for (const contribution of contributions) {
+                        appendRegisteredSearchContribution(
+                            groups,
+                            contribution?.category ?? "Search",
+                            contribution,
+                        );
+                    }
+                }
+            }
+            return groups;
+        } catch (error) {
+            console.warn("[search-bar]:search-flow-failed", { error });
+        }
+    }
+
+    const groups = [];
+    for (const [categoryId, registration] of REGISTERED_SEARCH_CATEGORIES) {
+        const provider =
+            typeof registration === "function"
+                ? registration
+                : registration?.provider;
+        await resolveSearchProviderContribution(categoryId, provider, groups);
     }
     return groups;
 }
@@ -314,10 +350,11 @@ function attachSearchMatch(item, resolveMatch) {
     return null;
 }
 
-function filterLocalGroups(localGroups, query, options = {}) {
+async function filterLocalGroups(localGroups, query, options = {}) {
     if (!query) return [];
     const resolveMatch = createSearchMatchResolver(query, options);
-    return [...(localGroups ?? []), ...getRegisteredSearchGroups()]
+    const registeredGroups = await getRegisteredSearchGroups(query, options);
+    return [...(localGroups ?? []), ...registeredGroups]
         .map(normalizeSearchGroup)
         .filter(Boolean)
         .map((group) => ({
@@ -533,7 +570,7 @@ async function runSearch({
         return;
     }
 
-    const matchedLocalGroups = filterLocalGroups(
+    const matchedLocalGroups = await filterLocalGroups(
         localGroups,
         query,
         searchOptions,
@@ -618,14 +655,28 @@ async function runSearch({
  * @param {() => object|object[]} provider
  * @returns {() => void}
  */
-export function registerSearchCategory(categoryId, provider) {
+export function registerSearchCategory(categoryId, provider, options = {}) {
     const resolvedCategoryId = String(categoryId ?? "").trim();
+    const stageId = String(options.stageId ?? "component-indexes").trim();
     if (!resolvedCategoryId || typeof provider !== "function") {
         return () => {};
     }
-    REGISTERED_SEARCH_CATEGORIES.set(resolvedCategoryId, provider);
+    REGISTERED_SEARCH_CATEGORIES.set(resolvedCategoryId, { provider, stageId });
+    if (uiCtx.flowExists("search")) {
+        uiCtx.extendFlow(
+            "search",
+            stageId,
+            { id: `search:${resolvedCategoryId}` },
+            () =>
+                REGISTERED_SEARCH_CATEGORIES.get(
+                    resolvedCategoryId,
+                )?.provider?.(),
+        );
+    }
     return () => {
         REGISTERED_SEARCH_CATEGORIES.delete(resolvedCategoryId);
+        // Flow hooks are append-only in uiCtx; removing the category disables
+        // the fallback registry and makes the hook return no contribution.
     };
 }
 
@@ -636,12 +687,19 @@ export function registerSearchCategory(categoryId, provider) {
  * @param {() => object|object[]} provider
  * @returns {() => void}
  */
-export function registerSearchIndex(categoryId, provider) {
-    return registerSearchCategory(categoryId, provider);
+export function registerSearchIndex(categoryId, provider, options = {}) {
+    return registerSearchCategory(categoryId, provider, {
+        stageId: "component-indexes",
+        ...options,
+    });
 }
 
-registerSearchCategory("visible-page", collectVisiblePageSearchGroups);
-registerSearchCategory("visible-content", collectVisibleContentSearchGroups);
+registerSearchCategory("visible-page", collectVisiblePageSearchGroups, {
+    stageId: "visible-indexes",
+});
+registerSearchCategory("visible-content", collectVisibleContentSearchGroups, {
+    stageId: "visible-indexes",
+});
 
 export function openSearchPopup({
     endpoint,
