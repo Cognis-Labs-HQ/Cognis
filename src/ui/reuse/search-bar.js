@@ -89,6 +89,7 @@ function normalizeSearchOptions(options = {}) {
         wholeWord: Boolean(options.wholeWord),
         regex: Boolean(options.regex),
         caseSensitive: Boolean(options.caseSensitive),
+        onThisPage: Boolean(options.onThisPage),
     };
 }
 
@@ -825,6 +826,114 @@ function renderGroupedResults(
     }
 }
 
+const FINDER_HIGHLIGHT_CLASS = "search-page-find-highlight";
+const FINDER_CURRENT_CLASS = "search-page-find-highlight--current";
+
+function clearPageFindHighlights(state) {
+    for (const highlight of state.highlights ?? []) {
+        const parent = highlight.parentNode;
+        if (!parent) continue;
+        parent.replaceChild(
+            document.createTextNode(highlight.textContent ?? ""),
+            highlight,
+        );
+        parent.normalize();
+    }
+    state.highlights = [];
+    state.currentIndex = -1;
+}
+
+function collectTextMatches(text, query, searchOptions) {
+    const resolver = createSearchMatchResolver(query, searchOptions);
+    const matches = [];
+    let offset = 0;
+    while (offset < text.length) {
+        const match = resolver(text.slice(offset));
+        if (!match || match.index < 0 || match.length <= 0) break;
+        const index = offset + match.index;
+        matches.push({ index, length: match.length });
+        offset = index + match.length;
+    }
+    return matches;
+}
+
+function isFindableTextNode(node) {
+    const parent = node.parentElement;
+    if (!parent || !node.nodeValue?.trim()) return false;
+    return !parent.closest(
+        ".search-popup-overlay, script, style, textarea, input, select, option",
+    );
+}
+
+function renderPageFindHighlights(query, searchOptions, state) {
+    clearPageFindHighlights(state);
+    if (query.length < MIN_SEARCH_QUERY_LENGTH) return;
+    const walker = document.createTreeWalker(
+        document.body,
+        NodeFilter.SHOW_TEXT,
+        {
+            acceptNode: (node) =>
+                isFindableTextNode(node)
+                    ? NodeFilter.FILTER_ACCEPT
+                    : NodeFilter.FILTER_REJECT,
+        },
+    );
+    const textNodes = [];
+    while (walker.nextNode()) textNodes.push(walker.currentNode);
+    for (const node of textNodes) {
+        const text = node.nodeValue ?? "";
+        const matches = collectTextMatches(text, query, searchOptions);
+        if (!matches.length) continue;
+        const fragment = document.createDocumentFragment();
+        let cursor = 0;
+        for (const match of matches) {
+            if (match.index > cursor) {
+                fragment.appendChild(
+                    document.createTextNode(text.slice(cursor, match.index)),
+                );
+            }
+            const highlight = document.createElement("mark");
+            highlight.className = FINDER_HIGHLIGHT_CLASS;
+            highlight.textContent = text.slice(
+                match.index,
+                match.index + match.length,
+            );
+            fragment.appendChild(highlight);
+            state.highlights.push(highlight);
+            cursor = match.index + match.length;
+        }
+        if (cursor < text.length)
+            fragment.appendChild(document.createTextNode(text.slice(cursor)));
+        node.parentNode?.replaceChild(fragment, node);
+    }
+}
+
+function setCurrentPageFindMatch(state, index) {
+    for (const highlight of state.highlights) {
+        highlight.classList.remove(FINDER_CURRENT_CLASS);
+    }
+    if (!state.highlights.length) {
+        state.currentIndex = -1;
+        return;
+    }
+    state.currentIndex =
+        (index + state.highlights.length) % state.highlights.length;
+    const current = state.highlights[state.currentIndex];
+    current.classList.add(FINDER_CURRENT_CLASS);
+    current.scrollIntoView({ block: "center", behavior: "smooth" });
+}
+
+function updatePageFindCounter(counter, state) {
+    const total = state.highlights.length;
+    counter.textContent = total ? `${state.currentIndex + 1}/${total}` : "0/0";
+}
+
+function movePageFindMatch(state, counter, direction) {
+    if (!state.highlights.length) return;
+    setCurrentPageFindMatch(state, state.currentIndex + direction);
+    updatePageFindCounter(counter, state);
+}
+
 function renderSearchPendingMessage(
     resultsContainer,
     categoriesContainer = null,
@@ -1120,9 +1229,6 @@ export function registerSearchIndex(categoryId, provider, options = {}) {
 registerSearchCategory("visible-page", collectVisiblePageSearchGroups, {
     stageId: "visible-indexes",
 });
-registerSearchCategory("visible-content", collectVisibleContentSearchGroups, {
-    stageId: "visible-indexes",
-});
 registerSearchCategory(
     "visible-navigation",
     collectVisibleNavigationSearchGroups,
@@ -1186,7 +1292,33 @@ export function openSearchPopup({
     const resultsContainer = document.createElement("div");
     resultsContainer.className = "search-popup-results";
 
-    popup.appendChild(input);
+    const inputWrap = document.createElement("div");
+    inputWrap.className = "search-popup-input-wrap";
+    inputWrap.appendChild(input);
+
+    const pageFindControls = document.createElement("div");
+    pageFindControls.className = "search-popup-page-find-controls";
+    pageFindControls.hidden = true;
+    const pageFindCounter = document.createElement("span");
+    pageFindCounter.className = "search-popup-page-find-counter";
+    pageFindCounter.textContent = "0/0";
+    const previousFindButton = document.createElement("button");
+    previousFindButton.type = "button";
+    previousFindButton.className = "search-popup-page-find-nav";
+    previousFindButton.setAttribute("aria-label", "Previous match");
+    previousFindButton.textContent = "↑";
+    const nextFindButton = document.createElement("button");
+    nextFindButton.type = "button";
+    nextFindButton.className = "search-popup-page-find-nav";
+    nextFindButton.setAttribute("aria-label", "Next match");
+    nextFindButton.textContent = "↓";
+    pageFindControls.append(
+        pageFindCounter,
+        previousFindButton,
+        nextFindButton,
+    );
+    inputWrap.appendChild(pageFindControls);
+    popup.appendChild(inputWrap);
 
     if (showOptions) {
         const optionsBar = document.createElement("div");
@@ -1195,6 +1327,7 @@ export function openSearchPopup({
             ["wholeWord", "Whole word"],
             ["regex", "Regex"],
             ["caseSensitive", "Case-sensitive"],
+            ["onThisPage", "On this page"],
         ];
         for (const [optionName, label] of optionConfigs) {
             const button = document.createElement("button");
@@ -1212,6 +1345,7 @@ export function openSearchPopup({
                     "aria-pressed",
                     String(searchOptions[optionName]),
                 );
+                updateFinderMode();
                 runCurrentSearch();
             });
             optionsBar.appendChild(button);
@@ -1274,12 +1408,28 @@ export function openSearchPopup({
         });
     }
 
+    const pageFindState = { highlights: [], currentIndex: -1 };
+
+    const updateFinderMode = () => {
+        const finderEnabled = Boolean(searchOptions.onThisPage);
+        overlay.classList.toggle("search-popup-overlay--finder", finderEnabled);
+        popup.classList.toggle("search-popup--finder", finderEnabled);
+        resultsContainer.hidden = finderEnabled;
+        categoriesContainer.hidden = true;
+        pageFindControls.hidden = !finderEnabled;
+        if (!finderEnabled) {
+            clearPageFindHighlights(pageFindState);
+            pageFindCounter.textContent = "0/0";
+        }
+    };
+
     overlay.appendChild(popup);
     document.body.appendChild(overlay);
     renderSearchPendingMessage(resultsContainer, categoriesContainer);
 
     const closeOverlay = () => {
         clearTimeout(debounceTimer);
+        clearPageFindHighlights(pageFindState);
         eventController.abort();
         overlay.remove();
         onClose?.();
@@ -1290,11 +1440,30 @@ export function openSearchPopup({
     const onKeyDown = (event) => {
         if (event.key === "Escape") {
             closeOverlay();
+            return;
+        }
+        if (searchOptions.onThisPage && event.key === "Enter") {
+            event.preventDefault();
+            movePageFindMatch(
+                pageFindState,
+                pageFindCounter,
+                event.shiftKey ? -1 : 1,
+            );
         }
     };
 
     const runCurrentSearch = () => {
         clearTimeout(debounceTimer);
+        if (searchOptions.onThisPage) {
+            renderPageFindHighlights(
+                currentQuery,
+                searchOptions,
+                pageFindState,
+            );
+            setCurrentPageFindMatch(pageFindState, 0);
+            updatePageFindCounter(pageFindCounter, pageFindState);
+            return;
+        }
         if (currentQuery.length < MIN_SEARCH_QUERY_LENGTH) {
             renderSearchPendingMessage(resultsContainer, categoriesContainer);
             return;
@@ -1317,6 +1486,16 @@ export function openSearchPopup({
             DEBOUNCE_MS,
         );
     };
+
+    previousFindButton.addEventListener("click", () => {
+        movePageFindMatch(pageFindState, pageFindCounter, -1);
+        input.focus();
+    });
+
+    nextFindButton.addEventListener("click", () => {
+        movePageFindMatch(pageFindState, pageFindCounter, 1);
+        input.focus();
+    });
 
     input.addEventListener("input", () => {
         const query = input.value.trim();

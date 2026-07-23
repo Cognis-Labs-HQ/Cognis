@@ -37,7 +37,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /export function registerSearchIndex/);
     assert.match(source, /registerSearchCategory\("visible-page"/);
     assert.match(source, /stageId: "visible-indexes"/);
-    assert.match(source, /registerSearchCategory\("visible-content"/);
+    assert.doesNotMatch(source, /registerSearchCategory\("visible-content"/);
     assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /providerContext/);
     assert.match(source, /stageContext\?\.input\?\.query/);
@@ -71,6 +71,12 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /"Whole word"/);
     assert.match(source, /"Regex"/);
     assert.match(source, /"Case-sensitive"/);
+    assert.match(source, /"On this page"/);
+    assert.match(source, /searchOptions\.onThisPage/);
+    assert.match(source, /renderPageFindHighlights/);
+    assert.match(source, /search-popup-page-find-counter/);
+    assert.match(source, /movePageFindMatch/);
+    assert.match(source, /search-popup-overlay--finder/);
     assert.match(source, /wholeWord=1/);
     assert.match(source, /regex=1/);
     assert.match(source, /caseSensitive=1/);
@@ -103,6 +109,9 @@ test("search popup displays result categories below parameters", () => {
     assert.match(source, /\.search-popup-result-categories/);
     assert.match(source, /\.search-popup-result-category-pill/);
     assert.match(source, /\.search-popup-result-category-pill--active/);
+    assert.match(source, /\.search-popup-overlay--finder/);
+    assert.match(source, /\.search-popup-page-find-controls/);
+    assert.match(source, /\.search-page-find-highlight--current/);
 });
 
 test("settings search exposes archive action by name and description", () => {

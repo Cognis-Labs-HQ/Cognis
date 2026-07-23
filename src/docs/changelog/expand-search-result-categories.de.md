@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Seitensuche ersetzt sichtbare Inhaltsergebnisse
+
+Die bisherige Ergebnis-Kategorie „Visible Content“ ist jetzt der Suchfilter „On this page“. Wenn er aktiviert ist, bleibt die Seite unverdeckt, gruppierte Ergebnisse werden ausgeblendet, alle Texttreffer auf der Seite werden hervorgehoben und ein Zähler für aktuellen/gesamte Treffer mit Navigation per Eingabetaste und Pfeiltasten wird angezeigt.
+
 ## Suchziele werden hervorgehoben
 
 Beim Öffnen eines Ergebnisses wird nun zum referenzierten Element gescrollt und es kurz hervorgehoben. Strg+F öffnet außerdem das globale Suchfenster statt der Browser-Suche.

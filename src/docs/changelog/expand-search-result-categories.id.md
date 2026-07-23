@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Pencarian di halaman menggantikan hasil konten terlihat
+
+Kategori hasil Visible Content yang lama kini menjadi filter pencarian On this page. Saat diaktifkan, popup membuat halaman tetap jelas, menyembunyikan hasil berkelompok, menyorot semua kecocokan teks di halaman, dan menampilkan penghitung posisi/jumlah dengan navigasi Enter serta tombol panah.
+
 ## Target pencarian disorot
 
 Saat sebuah hasil dibuka, halaman kini menggulir ke elemen terkait dan menyorotnya sebentar. Ctrl+F juga membuka popup pencarian global, bukan pencarian bawaan browser.

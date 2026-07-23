@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## On-page finding replaces visible content results
+
+The old Visible Content result category is now an On this page search filter. When enabled, the popup keeps the page clear, hides grouped results, highlights every text match on the page, and exposes a current/total counter with Enter and arrow-button navigation.
+
 ## Search targets are highlighted
 
 Opening a result now scrolls to the referenced element and briefly highlights it, while Ctrl+F opens the global search popup instead of the browser find box.
