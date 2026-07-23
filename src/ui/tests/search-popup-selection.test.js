@@ -41,6 +41,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /providerContext/);
     assert.match(source, /stageContext\?\.input\?\.query/);
+    assert.match(source, /REGISTERED_SEARCH_CATEGORY_HOOKS/);
     assert.match(source, /data-search-exclude/);
     assert.match(source, /collectBrowserPreferenceSearchGroups/);
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
@@ -78,6 +79,15 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /item\.handle/);
 });
 
+test("search index helpers centralize HTML text and data attributes", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-index.js"),
+        "utf8",
+    );
+    assert.match(source, /export function htmlToSearchText/);
+    assert.match(source, /export function renderSearchDataAttributes/);
+});
+
 test("search popup displays result categories below parameters", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
@@ -109,7 +119,7 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /formatPreferenceLabel/);
     assert.match(source, /collectPreferenceSearchItems/);
     assert.match(source, /renderSettingsElementText/);
-    assert.match(source, /textFromHtml/);
+    assert.match(source, /htmlToSearchText/);
     assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
 });
 
@@ -121,6 +131,7 @@ test("docs search indexes navigation titles and document contents", () => {
     assert.match(source, /registerSearchIndex\(\s*["\']docs["\']/);
     assert.match(source, /createDocsSearchProvider/);
     assert.match(source, /htmlToSearchText/);
+    assert.match(source, /search-index\.js/);
     assert.match(source, /loadMarkdownDocumentHtml/);
     assert.match(source, /changelogSlugToRoutePath/);
 });

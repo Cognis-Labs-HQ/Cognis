@@ -15,6 +15,7 @@ import "./flow-registry.js";
 
 const DEBOUNCE_MS = 280;
 const REGISTERED_SEARCH_CATEGORIES = new Map();
+const REGISTERED_SEARCH_CATEGORY_HOOKS = new Set();
 const MIN_SEARCH_QUERY_LENGTH = 2;
 
 /**
@@ -946,8 +947,13 @@ export function registerSearchCategory(categoryId, provider, options = {}) {
     if (!resolvedCategoryId || typeof provider !== "function") {
         return () => {};
     }
+    const hookKey = `${stageId}:${resolvedCategoryId}`;
     REGISTERED_SEARCH_CATEGORIES.set(resolvedCategoryId, { provider, stageId });
-    if (uiCtx.flowExists("search")) {
+    if (
+        uiCtx.flowExists("search") &&
+        !REGISTERED_SEARCH_CATEGORY_HOOKS.has(hookKey)
+    ) {
+        REGISTERED_SEARCH_CATEGORY_HOOKS.add(hookKey);
         uiCtx.extendFlow(
             "search",
             stageId,

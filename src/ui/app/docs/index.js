@@ -9,6 +9,7 @@ import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import { registerSearchIndex } from "../../reuse/search-bar.js";
+import { htmlToSearchText } from "../../reuse/search-index.js";
 
 // platform is the fallback group for ungrouped root-level docs.
 const GROUP_KEYS = {
@@ -56,21 +57,6 @@ function docTitle(item) {
             .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
             .join(" ")
     );
-}
-
-function htmlToSearchText(value) {
-    return String(value ?? "")
-        .replace(/<script[\s\S]*?<\/script>/gi, " ")
-        .replace(/<style[\s\S]*?<\/style>/gi, " ")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/\s+/g, " ")
-        .trim();
 }
 
 function createDocsSearchProvider(i18n, docs, activeDocContent) {

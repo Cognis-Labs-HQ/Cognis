@@ -37,6 +37,10 @@ import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
+    htmlToSearchText,
+    renderSearchDataAttributes,
+} from "../../reuse/search-index.js";
+import {
     isValidMessageStyle,
     normalizeMessageStyle,
 } from "../../reuse/message-style-options.js";
@@ -46,16 +50,10 @@ import {
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
 
-function renderSearchAttributes(attributes) {
-    return Object.entries(attributes)
-        .map(([name, value]) => `${name}="${escapeHtml(String(value ?? ""))}"`)
-        .join(" ");
-}
-
 function accountOperationSearchAttrs(i18n, labelKey, descriptionKey) {
     const label = i18n.t(labelKey);
     const description = i18n.t(descriptionKey);
-    return renderSearchAttributes({
+    return renderSearchDataAttributes({
         "data-search-category": i18n.t("ui.reuse.operations"),
         "data-search-label": label,
         "data-search-description": description,
@@ -109,25 +107,10 @@ function collectPreferenceSearchItems(value, labelPrefix = "") {
     });
 }
 
-function textFromHtml(value) {
-    return String(value ?? "")
-        .replace(/<script[\s\S]*?<\/script>/gi, " ")
-        .replace(/<style[\s\S]*?<\/style>/gi, " ")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&amp;/g, "&")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/\s+/g, " ")
-        .trim();
-}
-
 function renderSettingsElementText(element) {
     if (typeof element?.render !== "function") return "";
     try {
-        return textFromHtml(element.render());
+        return htmlToSearchText(element.render());
     } catch {
         return "";
     }
