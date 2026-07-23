@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Deskripsi tampil sebagai hasil
+
+Deskripsi pengaturan dan detail preferensi tersimpan kini diindeks sebagai hasil tersendiri, bukan ditambahkan sebagai cuplikan di bawah pengaturan induk.
+
 ## Filter kategori mempersempit hasil
 
 Daftar kategori kini berfungsi sebagai filter multi-pilih sehingga pengguna dapat memfokuskan pencarian luas pada kategori hasil yang dibutuhkan.

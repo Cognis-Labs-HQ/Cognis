@@ -216,6 +216,62 @@ function resolveSearchableElementText(element) {
         .trim();
 }
 
+function formatSearchPreferenceLabel(key) {
+    return String(key ?? "")
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/[-_]+/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function tryParsePreferenceValue(value) {
+    try {
+        return JSON.parse(value);
+    } catch {
+        return value;
+    }
+}
+
+function collectStructuredPreferenceItems(
+    key,
+    label,
+    value,
+    labelPrefix = label,
+) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+        return Object.entries(value).flatMap(([entryKey, entryValue]) =>
+            collectStructuredPreferenceItems(
+                `${key}:${entryKey}`,
+                label,
+                entryValue,
+                [labelPrefix, formatSearchPreferenceLabel(entryKey)]
+                    .filter(Boolean)
+                    .join(" — "),
+            ),
+        );
+    }
+    if (Array.isArray(value)) {
+        return value.flatMap((entryValue, index) =>
+            collectStructuredPreferenceItems(
+                `${key}:${index}`,
+                label,
+                entryValue,
+                `${labelPrefix} — ${index + 1}`,
+            ),
+        );
+    }
+    return [
+        {
+            id: `browser-preference:${key}`,
+            label: labelPrefix,
+            description: label,
+            url: "/settings",
+            searchText: [labelPrefix, value].filter(Boolean).join(" "),
+        },
+    ];
+}
+
 const BROWSER_PREFERENCE_LABELS = new Map([
     ["cognis_ui_preferences", "UI Preferences"],
     ["cognis_theme", "Theme"],
@@ -228,12 +284,13 @@ function collectBrowserPreferenceSearchGroups() {
     for (const [key, label] of BROWSER_PREFERENCE_LABELS) {
         const value = localStorage.getItem(key);
         if (!value) continue;
-        items.push({
-            id: `browser-preference:${key}`,
-            label,
-            url: "/settings",
-            searchText: `${label} ${value}`,
-        });
+        items.push(
+            ...collectStructuredPreferenceItems(
+                key,
+                label,
+                tryParsePreferenceValue(value),
+            ),
+        );
     }
     return items.length ? [{ category: "Settings", items }] : [];
 }

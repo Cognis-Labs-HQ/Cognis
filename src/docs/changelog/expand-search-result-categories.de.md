@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Beschreibungen erscheinen als Ergebnisse
+
+Beschreibungen in den Einstellungen und gespeicherte Einstellungsdetails werden als eigene Ergebnisse indexiert, statt als Ausschnitte unter übergeordneten Einstellungen angehängt zu werden.
+
 ## Kategorie-Filter grenzen Ergebnisse ein
 
 Die Kategorieliste funktioniert nun als Mehrfachauswahl-Filter, damit breite Suchanfragen auf die benötigten Ergebnis-Kategorien eingegrenzt werden können.

@@ -37,7 +37,7 @@ import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
-    htmlToSearchText,
+    htmlToSearchSegments,
     renderSearchDataAttributes,
 } from "../../reuse/search-index.js";
 import {
@@ -107,37 +107,69 @@ function collectPreferenceSearchItems(value, labelPrefix = "") {
     });
 }
 
-function renderSettingsElementText(element) {
-    if (typeof element?.render !== "function") return "";
+function renderSettingsElementSegments(element) {
+    if (typeof element?.render !== "function") return [];
     try {
-        return htmlToSearchText(element.render());
+        return htmlToSearchSegments(element.render());
     } catch {
-        return "";
+        return [];
     }
+}
+
+function createSettingsElementSearchItem(
+    section,
+    element,
+    sectionLabel,
+    label,
+) {
+    return {
+        id: `settings-element:${section?.id ?? sectionLabel}:${element?.id ?? label}`,
+        label,
+        description: sectionLabel,
+        url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
+        searchText: [sectionLabel, section?.heading, label]
+            .filter(Boolean)
+            .join(" "),
+    };
+}
+
+function collectSettingsElementContentSearchItems(
+    section,
+    element,
+    sectionLabel,
+    label,
+) {
+    return renderSettingsElementSegments(element).map((segment, index) => ({
+        id: `settings-element-content:${section?.id ?? sectionLabel}:${element?.id ?? label}:${index}`,
+        label: segment.slice(0, 96),
+        description: [sectionLabel, label].filter(Boolean).join(" — "),
+        url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
+        searchText: [sectionLabel, section?.heading, label, segment]
+            .filter(Boolean)
+            .join(" "),
+    }));
 }
 
 function collectSettingsElementSearchItems(section) {
     const sectionLabel = String(section?.label ?? section?.id ?? "").trim();
-    return (section?.subComposerOptions?.elements ?? [])
-        .map((element) => {
-            const label = String(element?.label ?? element?.id ?? "").trim();
-            if (!label) return null;
-            return {
-                id: `settings-element:${section?.id ?? sectionLabel}:${element?.id ?? label}`,
+    return (section?.subComposerOptions?.elements ?? []).flatMap((element) => {
+        const label = String(element?.label ?? element?.id ?? "").trim();
+        if (!label) return [];
+        return [
+            createSettingsElementSearchItem(
+                section,
+                element,
+                sectionLabel,
                 label,
-                description: sectionLabel,
-                url: `/settings#${encodeURIComponent(section?.id ?? label)}`,
-                searchText: [
-                    sectionLabel,
-                    section?.heading,
-                    label,
-                    renderSettingsElementText(element),
-                ]
-                    .filter(Boolean)
-                    .join(" "),
-            };
-        })
-        .filter(Boolean);
+            ),
+            ...collectSettingsElementContentSearchItems(
+                section,
+                element,
+                sectionLabel,
+                label,
+            ),
+        ];
+    });
 }
 
 function collectSettingsSearchGroups(sections, loadedPrefs) {

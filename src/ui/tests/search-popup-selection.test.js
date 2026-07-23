@@ -44,6 +44,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /REGISTERED_SEARCH_CATEGORY_HOOKS/);
     assert.match(source, /data-search-exclude/);
     assert.match(source, /collectBrowserPreferenceSearchGroups/);
+    assert.match(source, /collectStructuredPreferenceItems/);
     assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
@@ -85,6 +86,7 @@ test("search index helpers centralize HTML text and data attributes", () => {
         "utf8",
     );
     assert.match(source, /export function htmlToSearchText/);
+    assert.match(source, /export function htmlToSearchSegments/);
     assert.match(source, /export function renderSearchDataAttributes/);
 });
 
@@ -118,8 +120,8 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /stageId: "settings-index"/);
     assert.match(source, /formatPreferenceLabel/);
     assert.match(source, /collectPreferenceSearchItems/);
-    assert.match(source, /renderSettingsElementText/);
-    assert.match(source, /htmlToSearchText/);
+    assert.match(source, /collectSettingsElementContentSearchItems/);
+    assert.match(source, /htmlToSearchSegments/);
     assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
 });
 

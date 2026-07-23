@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Descriptions appear as results
+
+Settings descriptions and stored preference details are indexed as their own results instead of being appended as snippets under parent settings.
+
 ## Category filters narrow results
 
 The category list now works as a multi-select filter so users can focus broad searches on the result categories they need.
