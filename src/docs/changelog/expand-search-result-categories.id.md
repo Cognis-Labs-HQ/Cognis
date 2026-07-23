@@ -1,5 +1,9 @@
 # Hasil Pencarian Lebih Jelas
 
+## Hasil pencarian yang difokuskan lebih jelas
+
+Hasil pencarian kini memiliki latar hover dan fokus keyboard yang lebih kuat pada tema terang maupun gelap, sehingga baris yang sedang difokuskan lebih mudah diikuti saat menelusuri hasil.
+
 ## Halaman dan post lebih mudah ditemukan
 
 Entri Navigation kini muncul di Pages, subhalaman Study menyertakan jalur induk seperti Study / Japanese / Hiragana, halaman Docs dan Changelog kembali masuk indeks halaman, kartu post yang terlihat diindeks langsung, dan sorotan pencarian di halaman memakai kontras hijau yang lebih kuat di tema terang maupun gelap.

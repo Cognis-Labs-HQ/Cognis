@@ -112,6 +112,11 @@ test("search popup displays result categories below parameters", () => {
     assert.match(source, /\.search-popup-result-categories/);
     assert.match(source, /\.search-popup-result-category-pill/);
     assert.match(source, /\.search-popup-result-category-pill--active/);
+    assert.match(
+        source,
+        /\.search-popup-result:hover,\n\.search-popup-result:focus-visible/,
+    );
+    assert.match(source, /data-theme="dark"\] \.search-popup-result:hover/);
     assert.match(source, /\.search-popup-overlay--finder/);
     assert.match(source, /\.search-popup-page-find-controls/);
     assert.match(source, /\.search-page-find-highlight--current/);

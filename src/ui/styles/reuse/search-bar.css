@@ -412,3 +412,33 @@
     background: #22c55e;
     color: #02130a;
 }
+
+.search-popup-result:hover,
+.search-popup-result:focus-visible {
+    background: color-mix(in srgb, var(--accent, #3b82f6) 14%, var(--surface));
+    box-shadow: inset 3px 0 0 var(--accent, #3b82f6);
+    outline: none;
+}
+
+:root[data-theme="dark"] .search-popup-result:hover,
+:root[data-theme="dark"] .search-popup-result:focus-visible,
+[data-theme="dark"] .search-popup-result:hover,
+[data-theme="dark"] .search-popup-result:focus-visible {
+    background: color-mix(
+        in srgb,
+        var(--accent, #60a5fa) 28%,
+        var(--surface-2)
+    );
+    box-shadow: inset 3px 0 0 var(--accent, #60a5fa);
+}
+
+:root[data-theme="dark"] .search-popup-result--selectable:hover,
+:root[data-theme="dark"] .search-popup-result--selectable:focus-visible,
+[data-theme="dark"] .search-popup-result--selectable:hover,
+[data-theme="dark"] .search-popup-result--selectable:focus-visible {
+    background: color-mix(
+        in srgb,
+        var(--accent, #60a5fa) 28%,
+        var(--surface-2)
+    );
+}

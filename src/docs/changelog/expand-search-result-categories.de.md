@@ -1,5 +1,9 @@
 # Klarere Suchergebnisse
 
+## Fokussierte Suchergebnisse sind klarer
+
+Suchergebnisse erhalten jetzt in hellen und dunklen Designs eine stärkere Hintergrundfarbe beim Hover und Tastaturfokus, damit die fokussierte Zeile beim Durchgehen der Ergebnisse leichter erkennbar bleibt.
+
 ## Seiten und Beiträge sind leichter zu finden
 
 Navigationseinträge erscheinen jetzt unter Pages, Study-Unterseiten enthalten ihren übergeordneten Pfad wie Study / Japanese / Hiragana, Docs- und Changelog-Seiten sind wieder in der Seitenindexierung enthalten, sichtbare Beitragskarten werden direkt indexiert, und die Treffer der Seitensuche nutzen in hellen und dunklen Designs stärkere grüne Kontraste.

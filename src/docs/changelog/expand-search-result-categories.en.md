@@ -1,5 +1,9 @@
 # Search Results Clarity
 
+## Focused search results are clearer
+
+Search results now gain a stronger hover and keyboard-focus background in both light and dark themes, making the focused row easier to track while moving through results.
+
 ## Pages and post results are easier to find
 
 Navigation entries now appear in Pages, Study subpages include their parent path such as Study / Japanese / Hiragana, Docs and Changelog pages are restored to page indexing, visible post cards are indexed directly, and on-page find highlights use stronger green contrast in both light and dark themes.
