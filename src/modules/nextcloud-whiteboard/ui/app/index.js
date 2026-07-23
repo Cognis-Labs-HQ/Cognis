@@ -98,11 +98,9 @@ function buildConnectionErrorMessage(error, serverUrl) {
     }
     return `${translateModuleString("module.nextcloud_whiteboard.connect_error")}: ${rawMessage}`;
 }
-
 async function loadBoards() {
     boards = await fetchWhiteboardList();
 }
-
 async function renameBoard(boardId, title) {
     return renameWhiteboard(
         boardId,
@@ -111,11 +109,9 @@ async function renameBoard(boardId, title) {
             "module.nextcloud_whiteboard.rename_failed",
     );
 }
-
 async function spawnBoard({ title, participants = [] } = {}) {
     return spawnWhiteboard({ title, participants });
 }
-
 function setOverlayVisible(visible, message = "") {
     const overlay = document.getElementById("whiteboard-canvas-overlay");
     if (!overlay) return;
@@ -123,7 +119,6 @@ function setOverlayVisible(visible, message = "") {
     const messageEl = overlay.querySelector(".whiteboard-overlay-message");
     if (messageEl) messageEl.textContent = message;
 }
-
 function teardownCanvas() {
     if (socketInstance) {
         try {
@@ -149,7 +144,6 @@ function teardownCanvas() {
     }
     activeSession = null;
 }
-
 function canRenameActiveBoard() {
     return Boolean(
         !integrationCanvasMode && activeSession?.canRename && activeBoard?.id,
@@ -349,10 +343,15 @@ function bindCanvasToolbar(canvas) {
     const toolbar = document.getElementById("whiteboard-toolbar");
     if (!toolbar || toolbar.dataset.bound === "true") return;
     toolbar.dataset.bound = "true";
+    if (!document.getElementById("whiteboard-tool-lock")) {
+        const historyButton = document.getElementById("whiteboard-history");
+        historyButton?.insertAdjacentHTML(
+            "afterend",
+            `<button type="button" id="whiteboard-tool-lock" class="whiteboard-tool" aria-pressed="false" title="${escapeHtml(translateModuleString("module.nextcloud_whiteboard.tool_lock"))}" aria-label="${escapeHtml(translateModuleString("module.nextcloud_whiteboard.tool_lock"))}">🔒</button>`,
+        );
+    }
     toolbar
-        .querySelectorAll(
-            ".whiteboard-toolbar-group[hidden], #whiteboard-tool-lock[hidden]",
-        )
+        .querySelectorAll(".whiteboard-toolbar-group[hidden]")
         .forEach((element) => {
             element.hidden = false;
         });

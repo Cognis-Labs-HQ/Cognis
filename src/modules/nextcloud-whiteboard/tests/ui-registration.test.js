@@ -159,10 +159,8 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     );
     assert.match(realtimeSource, /function throttleLatest\(callback, delay\)/);
     assert.match(source, /function updateHistoryControls\(\)/);
-    assert.match(
-        source,
-        /whiteboard-toolbar-group\[hidden\], #whiteboard-tool-lock\[hidden\]/,
-    );
+    assert.match(source, /whiteboard-toolbar-group\[hidden\]/);
+    assert.match(source, /insertAdjacentHTML\(\s*"afterend"/);
     assert.match(
         source,
         /canvas\.onHistoryChange\?\.\(updateHistoryControls\)/,
