@@ -27,6 +27,7 @@ const WHITEBOARD_STYLESHEETS = [
 ];
 
 const storeByExecutor = new WeakMap();
+
 function resolveStore(dbExecutor, log) {
     const existingStore = storeByExecutor.get(dbExecutor);
     if (existingStore) return existingStore;
@@ -157,6 +158,7 @@ async function registerStoredOrigin({ store, registerScriptOrigins, log }) {
         );
     }
 }
+
 export function registerUi(ctx) {
     const moduleUiRoot = path.join(ctx.moduleRoot, "ui");
     ctx.registerStaticDir("", moduleUiRoot);
@@ -164,6 +166,7 @@ export function registerUi(ctx) {
         scriptUrl: "/static/modules/nextcloud-whiteboard/navbar.js",
         access: { minRole: "user" },
     });
+
     ctx.registerSpaRoute({
         id: "module-nextcloud-whiteboard",
         pattern: "^/whiteboards$",
@@ -172,6 +175,7 @@ export function registerUi(ctx) {
         stylesheets: WHITEBOARD_STYLESHEETS,
         access: { minRole: "user" },
     });
+
     ctx.registerSpaRoute({
         id: "module-nextcloud-whiteboard-canvas",
         pattern: "^/whiteboard$",
@@ -188,6 +192,7 @@ export function registerUi(ctx) {
         stringsBaseUrl: "/static/modules/nextcloud-whiteboard/languages",
     });
 }
+
 export function registerApiRoutes(router, ctx) {
     const dbExecutor = ctx.getCapability("db:executor");
     const profileStore = ctx.getCapability("social:profileStore");
@@ -212,6 +217,7 @@ export function registerApiRoutes(router, ctx) {
                 "service_unavailable",
                 "Nextcloud Whiteboard dependencies are unavailable.",
             );
+
         router.get(
             "/api/v1/modules/nextcloud-whiteboard/config",
             async (_req, res) => {
@@ -219,6 +225,7 @@ export function registerApiRoutes(router, ctx) {
             },
             { access: { minRole: "admin" }, allowWhenDisabled: true },
         );
+
         router.post(
             "/api/v1/modules/nextcloud-whiteboard/config",
             async (_req, res) => {
@@ -226,6 +233,7 @@ export function registerApiRoutes(router, ctx) {
             },
             { access: { minRole: "admin" }, allowWhenDisabled: true },
         );
+
         router.get(
             "/api/v1/modules/nextcloud-whiteboard/ping",
             async (_req, res) => {
@@ -362,6 +370,7 @@ export function registerApiRoutes(router, ctx) {
         },
         { access: { minRole: "user" } },
     );
+
     router.post(
         "/api/v1/modules/nextcloud-whiteboard/whiteboards/preflight",
         async (req, res) => {
@@ -402,6 +411,7 @@ export function registerApiRoutes(router, ctx) {
         },
         { access: { minRole: "user" } },
     );
+
     router.get(
         "/api/v1/modules/nextcloud-whiteboard/config",
         async (_req, res) => {

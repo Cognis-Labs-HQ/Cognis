@@ -410,6 +410,7 @@ function bindCanvasToolbar(canvas) {
             }
         }
     }
+
     const undoButton = document.getElementById("whiteboard-undo");
     const redoButton = document.getElementById("whiteboard-redo");
 
@@ -467,6 +468,7 @@ function bindCanvasToolbar(canvas) {
             .getElementById("whiteboard-board-title")
             ?.addEventListener("dblclick", () => void renameActiveBoard());
     }
+
     const colorInput = document.getElementById("whiteboard-color");
     const themeStrokeColor = () =>
         getComputedStyle(document.body).getPropertyValue("--text").trim() ||
@@ -478,6 +480,7 @@ function bindCanvasToolbar(canvas) {
     colorInput?.addEventListener("input", () => {
         canvas.setStrokeColor(colorInput.value);
     });
+
     const strokeSelect = document.getElementById("whiteboard-stroke-width");
     strokeSelect?.addEventListener("change", () => {
         canvas.setStrokeWidth(strokeSelect.value);
@@ -949,6 +952,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             ),
         );
     }
+
     const initialBoardId =
         activeShareContext?.payload?.whiteboardId ??
         new URLSearchParams(window.location.search).get("id");
