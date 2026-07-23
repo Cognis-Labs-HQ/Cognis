@@ -32,13 +32,16 @@ import {
     hydratePresenceAvatars,
     renderWhiteboardPresenceEntry,
 } from "./presence.js";
+
 const EMIT_DEBOUNCE_MS = 80;
 const RECONNECT_MAX_DELAY_MS = 30000;
 const SYNC_MESSAGE_SCENE_INIT = "SCENE_INIT";
 const SYNC_MESSAGE_SCENE_UPDATE = "SCENE_UPDATE";
 const SYNC_MESSAGE_BOARD_RENAMED = "BOARD_RENAMED";
+
 let i18n = null;
 let composer = null;
+
 let boards = [];
 let activeBoard = null;
 let activeSession = null;
@@ -52,27 +55,32 @@ let imageUploadMaxBytes = 1048576;
 let syncStatus = "idle";
 let syncStatusMessage = "";
 let integrationCanvasMode = false;
+
 function translateModuleString(key) {
     return i18n?.t(key) ?? key;
 }
+
 function reportClientError(error, fallbackKey) {
     console.error("[nextcloud-whiteboard] client error:", error);
     showToast(error?.message || translateModuleString(fallbackKey), {
         variant: "error",
     });
 }
+
 function sharePageFlag(name, fallback) {
     if (!activeShareContext?.page) return fallback;
     return activeShareContext.page[name] !== undefined
         ? Boolean(activeShareContext.page[name])
         : fallback;
 }
+
 function canManageShares() {
     return (
         !integrationCanvasMode &&
         sharePageFlag("showShareControls", !activeShareContext)
     );
 }
+
 function updateSyncStatusBox() {
     const statusBox = document.getElementById("whiteboard-sync-status");
     if (!statusBox) return;
@@ -81,11 +89,13 @@ function updateSyncStatusBox() {
         syncStatusMessage ||
         translateModuleString("module.nextcloud_whiteboard.status_idle");
 }
+
 function setSyncStatus(status, messageKey) {
     syncStatus = status;
     syncStatusMessage = translateModuleString(messageKey);
     updateSyncStatusBox();
 }
+
 function buildConnectionErrorMessage(error, serverUrl) {
     const rawMessage = String(error?.message ?? "").trim();
     const genericSocketFailure = /^(websocket error|xhr poll error)$/i.test(
@@ -98,9 +108,11 @@ function buildConnectionErrorMessage(error, serverUrl) {
     }
     return `${translateModuleString("module.nextcloud_whiteboard.connect_error")}: ${rawMessage}`;
 }
+
 async function loadBoards() {
     boards = await fetchWhiteboardList();
 }
+
 async function renameBoard(boardId, title) {
     return renameWhiteboard(
         boardId,
@@ -109,9 +121,11 @@ async function renameBoard(boardId, title) {
             "module.nextcloud_whiteboard.rename_failed",
     );
 }
+
 async function spawnBoard({ title, participants = [] } = {}) {
     return spawnWhiteboard({ title, participants });
 }
+
 function setOverlayVisible(visible, message = "") {
     const overlay = document.getElementById("whiteboard-canvas-overlay");
     if (!overlay) return;
@@ -119,6 +133,7 @@ function setOverlayVisible(visible, message = "") {
     const messageEl = overlay.querySelector(".whiteboard-overlay-message");
     if (messageEl) messageEl.textContent = message;
 }
+
 function teardownCanvas() {
     if (socketInstance) {
         try {
@@ -144,6 +159,7 @@ function teardownCanvas() {
     }
     activeSession = null;
 }
+
 function canRenameActiveBoard() {
     return Boolean(
         !integrationCanvasMode && activeSession?.canRename && activeBoard?.id,
@@ -846,6 +862,7 @@ async function openBoard(board) {
     bindCanvasToolbar(canvasInstance);
     setOverlayVisible(false);
 }
+
 function renderCanvasElement() {
     return renderWhiteboardCanvasElement({
         activeBoard,
@@ -860,6 +877,7 @@ function renderCanvasElement() {
         integrationCanvasMode,
     });
 }
+
 function onCanvasRender() {
     document
         .getElementById("whiteboard-start-new")

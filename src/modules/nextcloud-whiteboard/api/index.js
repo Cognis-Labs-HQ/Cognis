@@ -14,8 +14,10 @@ import {
     createWhiteboardEnableTest,
     registerWhiteboardEnableTestRoute,
 } from "./enable-test.js";
+
 const LIVENESS_TIMEOUT_MS = 5000;
 const PRESENCE_ACTIVE_WINDOW_MS = 15_000;
+
 const MODULE_ID = "nextcloud-whiteboard";
 const PAGE_RESOURCE_ORIGIN_OWNER_ID = "module:nextcloud-whiteboard";
 const WHITEBOARD_STYLESHEETS = [
@@ -23,6 +25,7 @@ const WHITEBOARD_STYLESHEETS = [
     "/static/styles/reuse/page-sections.css",
     "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
 ];
+
 const storeByExecutor = new WeakMap();
 function resolveStore(dbExecutor, log) {
     const existingStore = storeByExecutor.get(dbExecutor);
@@ -31,6 +34,7 @@ function resolveStore(dbExecutor, log) {
     storeByExecutor.set(dbExecutor, store);
     return store;
 }
+
 async function resolveRequesterUsername(profileStore, accountId) {
     const profile = await profileStore.getProfile(accountId);
     const username = normalizeHandleKey(profile?.handle ?? "");
@@ -41,6 +45,7 @@ async function resolveRequesterUsername(profileStore, accountId) {
     }
     return username;
 }
+
 async function resolveParticipantHandles(
     profileStore,
     requestedHandles,
@@ -59,6 +64,7 @@ async function resolveParticipantHandles(
     }
     return usernames;
 }
+
 function buildCognisWhiteboardUrl(
     whiteboardId,
     { instantCanvas = false } = {},
@@ -67,6 +73,7 @@ function buildCognisWhiteboardUrl(
     if (instantCanvas) params.set("instantCanvas", "1");
     return `/whiteboard?${params.toString()}`;
 }
+
 async function resolveWhiteboardUserAccess({
     claims,
     profileStore,
@@ -122,6 +129,7 @@ async function resolveWhiteboardUserAccess({
                   "You are not listed as an allowed whiteboard participant.",
           };
 }
+
 function registerConfiguredOrigin(registerScriptOrigins, config) {
     if (typeof registerScriptOrigins === "function") {
         registerScriptOrigins(PAGE_RESOURCE_ORIGIN_OWNER_ID, [
@@ -129,6 +137,7 @@ function registerConfiguredOrigin(registerScriptOrigins, config) {
         ]);
     }
 }
+
 async function registerStoredOrigin({ store, registerScriptOrigins, log }) {
     try {
         await store.ensureSchema();
