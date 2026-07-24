@@ -62,6 +62,10 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /filterApiFlatMatches/);
     assert.match(source, /renderResultCategorySummary/);
     assert.match(source, /filterGroupsBySelectedCategories/);
+    assert.match(source, /normalizeSearchUrlKey/);
+    assert.match(source, /category === "Pages" \? ""/);
+    assert.match(source, /currentSearchPageUrl/);
+    assert.match(source, /window\.location\.pathname === "\/whiteboard"/);
     assert.match(source, /__selectedSearchCategories/);
     assert.match(source, /search-popup-result-categories/);
     assert.match(source, /search-popup-close btn-cancel/);
@@ -168,6 +172,7 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /formatPreferenceLabel/);
     assert.match(source, /collectPreferenceSearchItems/);
     assert.match(source, /shouldIndexSettingsPreference/);
+    assert.match(source, /message_style/);
     assert.match(source, /collectSettingsElementContentSearchItems/);
     assert.match(source, /dedupeSettingsSearchItems/);
     assert.match(source, /entry\.text\.toLowerCase\(\) !== normalizedLabel/);

@@ -94,7 +94,9 @@ function shouldIndexSettingsPreference(key) {
     return !(
         normalizedKey.includes("changelogseenslug") ||
         normalizedKey.includes("changelog_seen_slug") ||
-        normalizedKey.includes("seen-slug")
+        normalizedKey.includes("seen-slug") ||
+        normalizedKey.includes("messagestyle") ||
+        normalizedKey.includes("message_style")
     );
 }
 

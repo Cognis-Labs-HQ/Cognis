@@ -389,7 +389,9 @@ function shouldIndexBrowserPreferenceKey(key) {
     return !(
         normalizedKey.includes("changelogseenslug") ||
         normalizedKey.includes("changelog_seen_slug") ||
-        normalizedKey.includes("seen-slug")
+        normalizedKey.includes("seen-slug") ||
+        normalizedKey.includes("messagestyle") ||
+        normalizedKey.includes("message_style")
     );
 }
 
@@ -729,13 +731,18 @@ function collectVisibleContentSearchGroups() {
     return Array.from(groups, ([category, items]) => ({ category, items }));
 }
 
+function currentSearchPageUrl() {
+    if (window.location.pathname === "/whiteboard") return "/whiteboards";
+    return `${window.location.pathname}${window.location.search}${window.location.hash}`;
+}
+
 function collectVisiblePageSearchGroups() {
     const title = document.title?.trim() || window.location.pathname;
     const pageItem = normalizeSearchItem(
         {
             id: `page:${window.location.pathname}`,
             label: title,
-            url: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+            url: currentSearchPageUrl(),
             resultClass: "page",
             searchText: title,
         },
@@ -957,6 +964,17 @@ function buildSearchUrl(endpoint, query, typeFilter, searchOptions = {}) {
     return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParam}${optionSuffix}`;
 }
 
+function normalizeSearchUrlKey(url) {
+    const rawUrl = String(url ?? "").trim();
+    if (!rawUrl) return "";
+    try {
+        const resolvedUrl = new URL(rawUrl, window.location.origin);
+        return `${resolvedUrl.pathname}${resolvedUrl.search}${resolvedUrl.hash}`;
+    } catch {
+        return rawUrl;
+    }
+}
+
 function mergeSearchGroups(groups) {
     const groupedItems = new Map();
     const seenItems = new Set();
@@ -965,7 +983,15 @@ function mergeSearchGroups(groups) {
         if (!category || !Array.isArray(group.items)) continue;
         if (!groupedItems.has(category)) groupedItems.set(category, []);
         for (const item of group.items) {
-            const itemKey = `${category}:${item.url ?? ""}:${item.id ?? ""}`;
+            const urlKey = normalizeSearchUrlKey(item.url);
+            const labelKey = String(item.label ?? "")
+                .trim()
+                .toLowerCase();
+            const itemKey = [
+                category,
+                urlKey,
+                category === "Pages" ? "" : (item.id ?? labelKey),
+            ].join(":");
             if (seenItems.has(itemKey)) continue;
             seenItems.add(itemKey);
             groupedItems.get(category).push(item);
