@@ -498,5 +498,7 @@ test("global pages and messages indexes register from shared surfaces", () => {
     assert.match(messagesIndexSource, /createUserContentSearchItem/);
     assert.match(messagesIndexSource, /\/api\/v1\/social\/messages\/rooms/);
     assert.match(messagesIndexSource, /decryptSearchMessage/);
+    assert.match(messagesIndexSource, /MESSAGE_SEARCH_PAGE_SIZE/);
+    assert.match(messagesIndexSource, /params\.set\("before", before\)/);
     assert.match(messagesIndexSource, /error\?\.name !== "OperationError"/);
 });

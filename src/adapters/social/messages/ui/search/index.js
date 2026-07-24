@@ -9,6 +9,7 @@ export const componentSearchId = "social-messages";
 const messagesSearchDecoder = new TextDecoder();
 const messagesSearchRoomKeys = new Map();
 const messagesSearchRoomMessages = new Map();
+const MESSAGE_SEARCH_PAGE_SIZE = 100;
 
 async function getSearchRoomKey(roomId) {
     if (messagesSearchRoomKeys.has(roomId)) {
@@ -69,20 +70,33 @@ async function collectSearchRoomMessages(room) {
     if (messagesSearchRoomMessages.has(roomId)) {
         return messagesSearchRoomMessages.get(roomId);
     }
-    const response = await apiFetch(
-        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
-    );
-    if (!response.ok) return [];
-    const payload = await response.json().catch(() => null);
+    const records = [];
+    let before = "";
+    while (true) {
+        const params = new URLSearchParams({
+            limit: String(MESSAGE_SEARCH_PAGE_SIZE),
+        });
+        if (before) params.set("before", before);
+        const response = await apiFetch(
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
+        );
+        if (!response.ok) return [];
+        const payload = await response.json().catch(() => null);
+        const pageRecords = Array.isArray(payload?.data) ? payload.data : [];
+        records.push(...pageRecords);
+        if (pageRecords.length < MESSAGE_SEARCH_PAGE_SIZE) break;
+        before = String(pageRecords.at(-1)?.createdAt ?? "");
+        if (!before) break;
+    }
     const roomKey = await getSearchRoomKey(roomId);
-    const records = await Promise.all(
-        (payload?.data ?? []).map(async (messageRecord) => ({
+    const decodedRecords = await Promise.all(
+        records.map(async (messageRecord) => ({
             ...messageRecord,
             text: await decryptSearchMessage(roomKey, messageRecord),
         })),
     );
-    messagesSearchRoomMessages.set(roomId, records);
-    return records;
+    messagesSearchRoomMessages.set(roomId, decodedRecords);
+    return decodedRecords;
 }
 
 export async function buildSearchResults({ query = "" } = {}) {

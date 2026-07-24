@@ -38,9 +38,7 @@ export function htmlToSearchText(value) {
             .replace(/\s+/g, " ")
             .trim();
     }
-    return html
-        .replace(/\s+/g, " ")
-        .trim();
+    return html.replace(/\s+/g, " ").trim();
 }
 
 function readSearchAttribute(attributes, name) {

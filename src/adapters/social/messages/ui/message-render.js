@@ -36,6 +36,7 @@ let searchableRooms = [];
 let searchRoomKeyResolver = null;
 let searchI18n = null;
 const searchableRoomMessages = new Map();
+const MESSAGE_SEARCH_PAGE_SIZE = 100;
 
 function roomSearchLabel(room) {
     return (
@@ -54,17 +55,30 @@ async function collectRoomMessageSearchItems(room) {
     const roomLabel = roomSearchLabel(room);
     let records = searchableRoomMessages.get(roomId) ?? [];
     if (!records.length) {
-        const params = new URLSearchParams({ limit: "50" });
-        const response = await apiFetch(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
-        );
-        if (!response.ok) return [];
-        const payload = await response.json();
+        let before = "";
+        while (true) {
+            const params = new URLSearchParams({
+                limit: String(MESSAGE_SEARCH_PAGE_SIZE),
+            });
+            if (before) params.set("before", before);
+            const response = await apiFetch(
+                `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
+            );
+            if (!response.ok) return [];
+            const payload = await response.json();
+            const pageRecords = Array.isArray(payload?.data)
+                ? payload.data
+                : [];
+            records.push(...pageRecords);
+            if (pageRecords.length < MESSAGE_SEARCH_PAGE_SIZE) break;
+            before = String(pageRecords.at(-1)?.createdAt ?? "");
+            if (!before) break;
+        }
         const roomKey = searchRoomKeyResolver
             ? await searchRoomKeyResolver(roomId)
             : null;
         records = await Promise.all(
-            (payload?.data ?? []).map(async (messageRecord) => ({
+            records.map(async (messageRecord) => ({
                 ...messageRecord,
                 text: roomKey
                     ? await decryptMessageOrReturnPlaintext(

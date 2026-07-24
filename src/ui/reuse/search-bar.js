@@ -528,9 +528,17 @@ async function loadGlobalDocsSearchGroups() {
                     id: `global-docs:${slug}`,
                     label: title,
                     description: `${changelog ? "Changelogs" : "Docs"} / ${item.group || "platform"}`,
-                    url: changelog ? changelogSearchRoute(slug) : `/docs/${slug}`,
+                    url: changelog
+                        ? changelogSearchRoute(slug)
+                        : `/docs/${slug}`,
                     resultClass: "page",
-                    searchText: [title, slug, item.group, item.description, bodyText]
+                    searchText: [
+                        title,
+                        slug,
+                        item.group,
+                        item.description,
+                        bodyText,
+                    ]
                         .filter(Boolean)
                         .join(" "),
                     visible: true,
@@ -560,7 +568,12 @@ function collectGlobalDocsSearchGroups() {
 function collectVisibleNavigationSearchGroups() {
     const items = [];
     const navigationLinks = document.querySelectorAll(
-        '.topnav a[href], .page-subnav a[href], .study-subnav a[href], [data-search-category="Pages"][href]',
+        [
+            ".topnav a[href]",
+            ".page-subnav a[href]",
+            ".study-subnav a[href]",
+            '[data-search-category="Pages"][href]',
+        ].join(", "),
     );
     for (const link of navigationLinks) {
         if (!isVisibleSearchElement(link)) continue;
@@ -806,12 +819,11 @@ function attachSearchMatch(item, resolveMatch) {
     return null;
 }
 
-async function filterLocalGroups(localGroups, query, options = {}) {
+function filterSearchGroupsForQuery(groups, query, options = {}) {
     if (!query) return [];
     const resolveMatch = createSearchMatchResolver(query, options);
-    const registeredGroups = await getRegisteredSearchGroups(query, options);
     return filterVisibleSearchGroups(
-        [...(localGroups ?? []), ...registeredGroups]
+        (groups ?? [])
             .map(normalizeSearchGroup)
             .filter(Boolean)
             .map((group) => ({
@@ -822,6 +834,70 @@ async function filterLocalGroups(localGroups, query, options = {}) {
             }))
             .filter((group) => group.items.length > 0),
     );
+}
+
+async function filterLocalGroups(localGroups, query, options = {}) {
+    const registeredGroups = await getRegisteredSearchGroups(query, options);
+    return filterSearchGroupsForQuery(
+        [...(localGroups ?? []), ...registeredGroups],
+        query,
+        options,
+    );
+}
+
+function stageRank(stageId) {
+    const stageOrder = [
+        "visible-indexes",
+        "component-indexes",
+        "settings-index",
+    ];
+    const index = stageOrder.indexOf(String(stageId ?? ""));
+    return index < 0 ? stageOrder.length : index;
+}
+
+async function filterLocalGroupsIncrementally(
+    localGroups,
+    query,
+    options = {},
+    onGroups = () => {},
+) {
+    const baseGroups = filterSearchGroupsForQuery(localGroups, query, options);
+    if (baseGroups.length) onGroups(baseGroups);
+    const providerContext = {
+        query,
+        searchOptions: normalizeSearchOptions(options),
+    };
+    const sortedAvenues = [...search.getAvenues()].sort(
+        (left, right) =>
+            stageRank(left.stageId) - stageRank(right.stageId) ||
+            left.categoryId.localeCompare(right.categoryId),
+    );
+    const avenueTasks = sortedAvenues.map(async (avenue) => {
+        try {
+            const result = await search.runAvenue(avenue, providerContext);
+            const groups = [];
+            const contributions = Array.isArray(result) ? result : [result];
+            for (const contribution of contributions) {
+                appendRegisteredSearchContribution(
+                    groups,
+                    avenue.categoryId,
+                    contribution,
+                );
+            }
+            const filteredGroups = filterSearchGroupsForQuery(
+                groups,
+                query,
+                options,
+            );
+            if (filteredGroups.length) onGroups(filteredGroups);
+        } catch (error) {
+            console.warn("[search-bar]:category-provider-failed", {
+                categoryId: avenue.categoryId,
+                error,
+            });
+        }
+    });
+    await Promise.allSettled(avenueTasks);
 }
 
 function buildSearchUrl(endpoint, query, typeFilter, searchOptions = {}) {
@@ -1438,12 +1514,20 @@ async function runSearch({
         }
     };
 
-    filterLocalGroups(localGroups, query, searchOptions)
-        .then((matchedLocalGroups) => {
-            navigableLocalGroups = isMultiSelect
-                ? matchedLocalGroups
-                : filterNavigableGroups(matchedLocalGroups);
-        })
+    filterLocalGroupsIncrementally(
+        localGroups,
+        query,
+        searchOptions,
+        (matchedLocalGroups) => {
+            navigableLocalGroups = mergeSearchGroups([
+                ...navigableLocalGroups,
+                ...(isMultiSelect
+                    ? matchedLocalGroups
+                    : filterNavigableGroups(matchedLocalGroups)),
+            ]);
+            renderAvailableResults();
+        },
+    )
         .catch(() => {
             navigableLocalGroups = [];
         })
