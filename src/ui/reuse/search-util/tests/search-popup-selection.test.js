@@ -44,6 +44,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /registerSearchCategory\("visible-page"/);
     assert.match(source, /stageId: "visible-indexes"/);
     assert.doesNotMatch(source, /registerSearchCategory\("visible-content"/);
+    assert.match(source, /import \{ uiCtx \} from "\.\.\/ui-ctx\.js"/);
     assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /providerContext/);
     assert.match(capabilitySource, /stageContext\?\.input\?\.query/);

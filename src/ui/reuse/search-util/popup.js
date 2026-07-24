@@ -12,6 +12,7 @@
  * @module reuse/search-bar
  */
 
+import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 
 export { search } from "./capability.js";
