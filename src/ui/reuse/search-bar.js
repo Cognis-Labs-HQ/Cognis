@@ -1751,8 +1751,6 @@ export function openSearchPopup({
     const resultsContainer = document.createElement("div");
     resultsContainer.className = "search-popup-results";
 
-    popup.appendChild(closeButton);
-
     const inputWrap = document.createElement("div");
     inputWrap.className = "search-popup-input-wrap";
     inputWrap.appendChild(input);
@@ -1779,6 +1777,7 @@ export function openSearchPopup({
         nextFindButton,
     );
     inputWrap.appendChild(pageFindControls);
+    inputWrap.appendChild(closeButton);
     popup.appendChild(inputWrap);
 
     if (showOptions) {

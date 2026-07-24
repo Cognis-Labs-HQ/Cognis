@@ -49,6 +49,16 @@ function roomSearchLabel(room) {
     );
 }
 
+function isOpaqueRoomLabel(label) {
+    return /^[a-f0-9-]{20,}$/i.test(String(label ?? ""));
+}
+
+function messageSearchContext(roomLabel, sender) {
+    const normalizedRoomLabel = String(roomLabel ?? "").trim();
+    if (!normalizedRoomLabel || normalizedRoomLabel === sender) return "";
+    return isOpaqueRoomLabel(normalizedRoomLabel) ? "" : normalizedRoomLabel;
+}
+
 async function collectRoomMessageSearchItems(room) {
     const roomId = String(room?.id ?? "").trim();
     if (!roomId) return [];
@@ -106,11 +116,16 @@ async function collectRoomMessageSearchItems(room) {
             return {
                 id: `message:${messageRecord.id}`,
                 label: sender,
-                description: [roomLabel, timeLabel].filter(Boolean).join(" — "),
+                description: [
+                    messageSearchContext(roomLabel, sender),
+                    timeLabel,
+                ]
+                    .filter(Boolean)
+                    .join(" — "),
                 url: `/messages/${encodeURIComponent(roomId)}#message-${encodeURIComponent(messageRecord.id)}`,
                 resultClass: "message",
                 searchText: [
-                    roomLabel,
+                    messageSearchContext(roomLabel, sender),
                     sender,
                     messageRecord.senderHandle,
                     messageRecord.text,

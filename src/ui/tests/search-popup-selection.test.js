@@ -124,6 +124,11 @@ test("search popup displays result categories below parameters", () => {
     );
     assert.match(source, /\.search-popup-result-categories/);
     assert.match(source, /\.search-popup-close/);
+    assert.match(source, /\.search-popup-input-wrap \.search-popup-close/);
+    assert.doesNotMatch(
+        source,
+        /\.search-popup-close\s*\{[^}]*position: absolute/,
+    );
     assert.match(source, /\.search-popup-result-category-pill/);
     assert.match(source, /\.search-popup-result-category-pill--active/);
     assert.match(
@@ -164,6 +169,8 @@ test("settings search exposes archive action by name and description", () => {
     assert.match(source, /collectPreferenceSearchItems/);
     assert.match(source, /shouldIndexSettingsPreference/);
     assert.match(source, /collectSettingsElementContentSearchItems/);
+    assert.match(source, /dedupeSettingsSearchItems/);
+    assert.match(source, /entry\.text\.toLowerCase\(\) !== normalizedLabel/);
     assert.match(source, /htmlToSearchEntries/);
     assert.doesNotMatch(source, /searchText: JSON\.stringify\(loadedPrefs/);
 });
@@ -500,6 +507,8 @@ test("global pages and messages indexes register from shared surfaces", () => {
     assert.match(messagesIndexSource, /createUserContentSearchItem/);
     assert.match(messagesIndexSource, /\/api\/v1\/social\/messages\/rooms/);
     assert.match(messagesIndexSource, /decryptSearchMessage/);
+    assert.match(messagesIndexSource, /messageSearchContext/);
+    assert.match(messagesIndexSource, /isOpaqueRoomLabel/);
     assert.match(messagesIndexSource, /MESSAGE_SEARCH_PAGE_SIZE/);
     assert.match(messagesIndexSource, /params\.set\("before", before\)/);
     assert.match(messagesIndexSource, /content: messageRecord\.text/);

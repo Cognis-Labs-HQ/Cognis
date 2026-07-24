@@ -155,16 +155,35 @@ function collectSettingsElementContentSearchItems(
     sectionLabel,
     label,
 ) {
-    return renderSettingsElementEntries(element).map((entry, index) => ({
-        id: `settings-element-content:${section?.id ?? sectionLabel}:${element?.id ?? label}:${index}`,
-        label: entry.text.slice(0, 96),
-        description: [sectionLabel, label].filter(Boolean).join(" — "),
-        resultClass: entry.resultClass,
-        url: `/settings#${encodeURIComponent(entry.searchId || section?.id || label)}`,
-        searchText: [sectionLabel, section?.heading, label, entry.text]
-            .filter(Boolean)
-            .join(" "),
-    }));
+    const normalizedLabel = label.toLowerCase();
+    return renderSettingsElementEntries(element)
+        .filter((entry) => entry.text.toLowerCase() !== normalizedLabel)
+        .map((entry, index) => ({
+            id: `settings-element-content:${section?.id ?? sectionLabel}:${element?.id ?? label}:${index}`,
+            label: entry.text.slice(0, 96),
+            description: [sectionLabel, label].filter(Boolean).join(" — "),
+            resultClass: entry.resultClass,
+            url: `/settings#${encodeURIComponent(entry.searchId || section?.id || label)}`,
+            searchText: [sectionLabel, section?.heading, label, entry.text]
+                .filter(Boolean)
+                .join(" "),
+        }));
+}
+
+function dedupeSettingsSearchItems(items) {
+    const seenItems = new Set();
+    return (items ?? []).filter((item) => {
+        const key = [item.label, item.description, item.url]
+            .map((value) =>
+                String(value ?? "")
+                    .trim()
+                    .toLowerCase(),
+            )
+            .join(":");
+        if (seenItems.has(key)) return false;
+        seenItems.add(key);
+        return true;
+    });
 }
 
 function collectSettingsElementSearchItems(section) {
@@ -214,7 +233,7 @@ function collectSettingsSearchGroups(sections, loadedPrefs) {
         items.push(...collectPreferenceSearchItems(loadedPrefs));
     }
 
-    return [{ category: "Settings", items }];
+    return [{ category: "Settings", items: dedupeSettingsSearchItems(items) }];
 }
 
 async function loadPrefs() {
