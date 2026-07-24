@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
 test("search popup checked indicator stays centered in selectable rows", () => {
     const source = readFileSync(
@@ -30,10 +30,14 @@ test("global search modules result points to Administration components", () => {
 
 test("global search exposes registered categories and match controls", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-bar.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
         "utf8",
     );
-    assert.match(source, /export const search = ensureSearchCapability\(\)/);
+    const capabilitySource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/capability.js"),
+        "utf8",
+    );
+    assert.match(capabilitySource, /export const search = ensureSearchCapability\(\)/);
     assert.match(source, /export function registerSearchAvenue/);
     assert.match(source, /export function registerSearchCategory/);
     assert.match(source, /export function registerSearchIndex/);
@@ -42,8 +46,8 @@ test("global search exposes registered categories and match controls", () => {
     assert.doesNotMatch(source, /registerSearchCategory\("visible-content"/);
     assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /providerContext/);
-    assert.match(source, /stageContext\?\.input\?\.query/);
-    assert.match(source, /avenuesByComponent/);
+    assert.match(capabilitySource, /stageContext\?\.input\?\.query/);
+    assert.match(capabilitySource, /avenuesByComponent/);
     assert.match(source, /search\.runStage\(stageContext\)/);
     assert.match(source, /REGISTERED_SEARCH_CATEGORY_HOOKS/);
     assert.match(source, /data-search-exclude/);
@@ -119,7 +123,7 @@ test("global search exposes registered categories and match controls", () => {
 
 test("search index helpers centralize HTML text and data attributes", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-index.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/indexing.js"),
         "utf8",
     );
     assert.match(source, /export function htmlToSearchText/);
@@ -381,7 +385,7 @@ test("settings search skips paragraph text entries and search results highlight 
         "utf8",
     );
     const searchIndexSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-index.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/indexing.js"),
         "utf8",
     );
     const dashboardSource = readFileSync(
@@ -412,7 +416,7 @@ test("settings search skips paragraph text entries and search results highlight 
 
 test("global search intercepts browser find shortcut", () => {
     const searchSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-bar.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
         "utf8",
     );
     assert.match(searchSource, /function bindSearchShortcut/);
@@ -443,7 +447,7 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         "utf8",
     );
     const searchSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-bar.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
         "utf8",
     );
     const studySearchSource = readFileSync(
