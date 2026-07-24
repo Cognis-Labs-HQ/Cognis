@@ -133,9 +133,7 @@ export async function buildSearchResults({ query = "" } = {}) {
                             url: `/messages/${encodeURIComponent(roomId)}#message-${encodeURIComponent(messageRecord.id)}`,
                             resultClass: "message",
                             category: "Messages",
-                            content: [messageRecord.text, query]
-                                .filter(Boolean)
-                                .join(" "),
+                            content: messageRecord.text,
                         });
                     });
             }),

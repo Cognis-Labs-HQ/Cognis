@@ -458,6 +458,42 @@ function collectBrowserPreferenceSearchGroups() {
     return items.length ? [{ category: "Settings", items }] : [];
 }
 
+async function collectGlobalSettingsSearchGroups() {
+    const payload = await searchFetchJson("/api/v1/ui/settings-sections");
+    const sections = Array.isArray(payload?.data) ? payload.data : [];
+    const items = [
+        {
+            id: "settings-page",
+            label: "Settings",
+            description: "Settings",
+            url: "/settings",
+            resultClass: "page",
+            searchText: "Settings User Settings Preferences",
+            visible: true,
+        },
+    ];
+    for (const section of sections) {
+        const label = String(
+            section?.label ?? section?.heading ?? section?.id ?? "",
+        ).trim();
+        if (!label) continue;
+        const heading = String(section?.heading ?? label).trim();
+        const sectionId = String(section?.id ?? label).trim();
+        items.push({
+            id: `settings-section:${sectionId}`,
+            label,
+            description: heading === label ? "Settings" : heading,
+            url: `/settings#${encodeURIComponent(sectionId)}`,
+            resultClass: "heading",
+            searchText: ["Settings", label, heading, sectionId]
+                .filter(Boolean)
+                .join(" "),
+            visible: true,
+        });
+    }
+    return [{ category: "Settings", items }];
+}
+
 const GLOBAL_DOCS_SEARCH_CONTENT = new Map();
 let GLOBAL_DOCS_INDEX_PROMISE = null;
 
@@ -551,7 +587,7 @@ async function loadGlobalDocsSearchGroups() {
         else docsItems.push(indexedDoc.item);
     }
     return [
-        docsItems.length ? { category: "Pages", items: docsItems } : null,
+        docsItems.length ? { category: "Docs", items: docsItems } : null,
         changelogItems.length
             ? { category: "Changelogs", items: changelogItems }
             : null,
@@ -1649,6 +1685,9 @@ registerSearchCategory(
 );
 registerSearchIndex("global-docs", collectGlobalDocsSearchGroups, {
     stageId: "component-indexes",
+});
+registerSearchIndex("global-settings", collectGlobalSettingsSearchGroups, {
+    stageId: "settings-index",
 });
 registerSearchIndex(
     "browser-preferences",

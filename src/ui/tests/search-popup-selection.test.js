@@ -68,8 +68,10 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /Close search/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(source, /collectGlobalDocsSearchGroups/);
+    assert.match(source, /collectGlobalSettingsSearchGroups/);
     assert.match(source, /registerSearchAvenue/);
     assert.match(source, /registerSearchIndex\("global-docs"/);
+    assert.match(source, /registerSearchIndex\("global-settings"/);
     assert.match(
         source,
         /registerSearchCategory\(\s*["\']visible-navigation["\']/,
@@ -451,7 +453,7 @@ test("docs changelogs and study subpages are indexed as pages", () => {
         "utf8",
     );
 
-    assert.match(docsSource, /category: "Pages"/);
+    assert.match(docsSource, /category: i18n\.t\("ui\.reuse\.docs"\)/);
     assert.match(docsSource, /ui\.layout\.footer\.changelogs/);
     assert.match(studySource, /category: "Pages"/);
     assert.match(
@@ -500,5 +502,10 @@ test("global pages and messages indexes register from shared surfaces", () => {
     assert.match(messagesIndexSource, /decryptSearchMessage/);
     assert.match(messagesIndexSource, /MESSAGE_SEARCH_PAGE_SIZE/);
     assert.match(messagesIndexSource, /params\.set\("before", before\)/);
+    assert.match(messagesIndexSource, /content: messageRecord\.text/);
+    assert.doesNotMatch(
+        messagesIndexSource,
+        /content: \[messageRecord\.text, query\]/,
+    );
     assert.match(messagesIndexSource, /error\?\.name !== "OperationError"/);
 });

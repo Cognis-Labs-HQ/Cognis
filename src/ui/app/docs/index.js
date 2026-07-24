@@ -103,7 +103,9 @@ function createDocsSearchProvider(i18n, docs, activeDocContent) {
             }
         }
         return [
-            docsItems.length ? { category: "Pages", items: docsItems } : null,
+            docsItems.length
+                ? { category: i18n.t("ui.reuse.docs"), items: docsItems }
+                : null,
             changelogItems.length
                 ? {
                       category: i18n.t("ui.layout.footer.changelogs"),
