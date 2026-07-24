@@ -80,3 +80,7 @@ Global search now shows matched result categories below the search controls when
 ## Settings operations are discoverable
 
 Account operations such as archiving, deactivating, and deleting an account are now indexed as operations so they can be found from the global search popup.
+
+## Search utility conventions documented
+
+Shared search code now lives only under `src/ui/reuse/search-util/`. Component-owned integrations should use a dedicated `ui/search/index.js`, export `createSearchIndex` for content providers, and call the shared `registerSearchIndex` helper. The utility owns matching, ranking, highlighting, filtering, rendering, and stale async result handling, while component providers keep expensive fetches asynchronous.

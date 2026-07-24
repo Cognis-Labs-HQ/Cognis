@@ -8,7 +8,7 @@ import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { formatDate, formatTime } from "/static/reuse/timestamp.js";
-import { registerSearchIndex } from "/static/reuse/search-bar.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { getQuickReactionEmojis } from "./emoji-helpers.js";
 import {
     decryptMessageOrReturnPlaintext,

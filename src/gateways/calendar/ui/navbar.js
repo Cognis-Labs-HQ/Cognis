@@ -1,5 +1,5 @@
 import { createI18n } from "/static/reuse/i18n.js";
-import { registerSearchIndex } from "/static/reuse/search-bar.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { fetchCalendarState, fetchEvents } from "./calendar-api.js";
 

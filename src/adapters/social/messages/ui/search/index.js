@@ -1,6 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
-import { registerSearchIndex } from "/static/reuse/search-bar.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 
 export const componentSearchId = "social-messages";

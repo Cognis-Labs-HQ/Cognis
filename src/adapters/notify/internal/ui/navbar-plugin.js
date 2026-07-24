@@ -17,7 +17,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { registerSearchIndex } from "/static/reuse/search-bar.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";

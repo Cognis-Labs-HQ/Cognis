@@ -14,7 +14,7 @@
  *   const text = htmlToSearchText('<h2>Settings</h2><p>Theme</p>');
  *   const attrs = renderSearchDataAttributes({ 'data-search-text': text });
  *
- * @module reuse/search-index
+ * @module reuse/search-util/indexing
  */
 
 import { escapeHtml } from "../escape-html.js";

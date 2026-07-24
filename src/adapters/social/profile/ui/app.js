@@ -9,7 +9,7 @@ import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { registerSearchIndex } from "/static/reuse/search-bar.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import {
     loadOwnProfile,

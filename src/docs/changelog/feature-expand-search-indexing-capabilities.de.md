@@ -80,3 +80,7 @@ Die globale Suche zeigt passende Ergebnis-Kategorien nun unter den Suchoptionen 
 ## Einstellungen-Aktionen sind auffindbar
 
 Kontoaktionen wie Archivieren, Deaktivieren und Löschen werden nun als Aktionen indexiert, damit sie über das globale Suchfenster gefunden werden können.
+
+## Konventionen für die Suchfunktion dokumentiert
+
+Gemeinsamer Suchcode liegt jetzt ausschließlich unter `src/ui/reuse/search-util/`. Komponenteneigene Integrationen sollen eine dedizierte Datei `ui/search/index.js` nutzen, `createSearchIndex` für Inhalts-Provider exportieren und den gemeinsamen Helper `registerSearchIndex` aufrufen. Die Suchfunktion übernimmt Abgleich, Ranking, Hervorhebung, Filterung, Darstellung und das Verwerfen veralteter asynchroner Ergebnisse, während Komponenten teure Abrufe asynchron im Provider halten.

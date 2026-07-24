@@ -8,8 +8,8 @@ import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
-import { registerSearchIndex } from "../../reuse/search-bar.js";
-import { htmlToSearchText } from "../../reuse/search-index.js";
+import { registerSearchIndex } from "../../reuse/search-util/popup.js";
+import { htmlToSearchText } from "../../reuse/search-util/indexing.js";
 
 // platform is the fallback group for ungrouped root-level docs.
 const GROUP_KEYS = {

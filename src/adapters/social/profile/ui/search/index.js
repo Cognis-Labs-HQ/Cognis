@@ -1,6 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
-import { createUserContentSearchItem } from "/static/reuse/search-index.js";
-import { registerSearchIndex } from "/static/reuse/search-bar.js";
+import { createUserContentSearchItem } from "/static/reuse/search-util/indexing.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 
 export const componentSearchId = "social-profile";

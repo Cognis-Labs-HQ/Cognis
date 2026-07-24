@@ -30,7 +30,7 @@ test("global search modules result points to Administration components", () => {
 
 test("global search exposes registered categories and match controls", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/engine.js"),
         "utf8",
     );
     const capabilitySource = readFileSync(
@@ -209,7 +209,7 @@ test("docs search indexes navigation titles and document contents", () => {
     assert.match(source, /createDocsSearchProvider/);
     assert.match(source, /htmlToSearchText/);
     assert.match(source, /resultClass: "page"/);
-    assert.match(source, /search-index\.js/);
+    assert.match(source, /search-util\/indexing\.js/);
     assert.match(source, /loadMarkdownDocumentHtml/);
     assert.match(source, /changelogSlugToRoutePath/);
     assert.match(source, /ui\.layout\.footer\.changelogs/);
@@ -417,7 +417,7 @@ test("settings search skips paragraph text entries and search results highlight 
 
 test("global search intercepts browser find shortcut", () => {
     const searchSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/engine.js"),
         "utf8",
     );
     assert.match(searchSource, /function bindSearchShortcut/);
@@ -448,7 +448,7 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         "utf8",
     );
     const searchSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/engine.js"),
         "utf8",
     );
     const studySearchSource = readFileSync(

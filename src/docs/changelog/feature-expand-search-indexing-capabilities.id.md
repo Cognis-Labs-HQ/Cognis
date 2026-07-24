@@ -80,3 +80,7 @@ Pencarian global kini menampilkan kategori hasil yang cocok di bawah kontrol pen
 ## Operasi pengaturan dapat ditemukan
 
 Operasi akun seperti mengarsipkan, menonaktifkan, dan menghapus akun kini diindeks sebagai operasi agar dapat ditemukan dari popup pencarian global.
+
+## Konvensi utilitas pencarian didokumentasikan
+
+Kode pencarian bersama kini hanya berada di `src/ui/reuse/search-util/`. Integrasi milik komponen sebaiknya memakai file khusus `ui/search/index.js`, mengekspor `createSearchIndex` untuk provider konten, dan memanggil helper bersama `registerSearchIndex`. Utilitas menangani pencocokan, peringkat, sorotan, filter, rendering, serta pengabaian hasil async usang, sementara provider komponen menjaga fetch mahal tetap asinkron.

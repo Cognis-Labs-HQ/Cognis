@@ -23,8 +23,8 @@ import {
     registerServiceWorker,
 } from "../reuse/pwa.js";
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
-import { createSearchBar } from "../reuse/search-bar.js";
-import { highlightSearchTarget } from "../reuse/search-index.js";
+import { createSearchBar } from "../reuse/search-util/popup.js";
+import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 
 capturePwaInstallPrompt();

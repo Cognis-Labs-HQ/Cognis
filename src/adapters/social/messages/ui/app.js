@@ -24,7 +24,7 @@ import {
     createPageComposer,
 } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
-import { openSearchPopup } from "/static/reuse/search-bar.js";
+import { openSearchPopup } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     fetchEmojiUsage,

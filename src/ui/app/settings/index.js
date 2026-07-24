@@ -30,7 +30,7 @@ import {
     applyTimezoneToLocalStorage,
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
-import { registerSearchIndex } from "../../reuse/search-bar.js";
+import { registerSearchIndex } from "../../reuse/search-util/popup.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { showToast } from "../../reuse/toast.js";
@@ -39,7 +39,7 @@ import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
     htmlToSearchEntries,
     renderSearchDataAttributes,
-} from "../../reuse/search-index.js";
+} from "../../reuse/search-util/indexing.js";
 import {
     isValidMessageStyle,
     normalizeMessageStyle,
