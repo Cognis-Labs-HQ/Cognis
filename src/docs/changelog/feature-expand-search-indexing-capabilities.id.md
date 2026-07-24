@@ -11,6 +11,7 @@ Popup pencarian kini menyertakan kontrol untuk pencocokan kata utuh, ekspresi re
 ## Hasil Lebih Jelas
 
 Hasil pencarian kini mengutamakan nama dan deskripsi konten, menyorot kecocokan persis, serta menampilkan cuplikan teks di sekitarnya saat teks konten cocok.
+
 # Hasil Pencarian Lebih Jelas
 
 ## Study memiliki indeks pencariannya

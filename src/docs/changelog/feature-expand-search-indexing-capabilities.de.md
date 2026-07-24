@@ -11,6 +11,7 @@ Such-Popups enthalten jetzt Steuerungen für Ganzwortsuche, reguläre Ausdrücke
 ## Klarere Ergebnisse
 
 Suchergebnisse bevorzugen jetzt Inhaltsnamen und Beschreibungen, heben genaue Treffer hervor und zeigen Textausschnitte mit Umgebung, wenn Inhaltstext gefunden wird.
+
 # Klarere Suchergebnisse
 
 ## Study besitzt seinen Suchindex

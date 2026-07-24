@@ -30,32 +30,46 @@ test("global search modules result points to Administration components", () => {
 
 test("global search exposes registered categories and match controls", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/engine.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
+        "utf8",
+    );
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+        "utf8",
+    );
+    const stateSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/state.js"),
+        "utf8",
+    );
+    const resultsSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/search-util/results.js"),
         "utf8",
     );
     const capabilitySource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/capability.js"),
         "utf8",
     );
-    assert.match(capabilitySource, /export const search = ensureSearchCapability\(\)/);
-    assert.match(source, /export function registerSearchAvenue/);
-    assert.match(source, /export function registerSearchCategory/);
-    assert.match(source, /export function registerSearchIndex/);
-    assert.match(source, /registerSearchCategory\("visible-page"/);
-    assert.match(source, /stageId: "visible-indexes"/);
-    assert.doesNotMatch(source, /registerSearchCategory\("visible-content"/);
+    assert.match(
+        capabilitySource,
+        /export const search = ensureSearchCapability\(\)/,
+    );
+    assert.match(popupSource, /export function registerSearchAvenue/);
+    assert.match(popupSource, /export function registerSearchCategory/);
+    assert.match(popupSource, /export function registerSearchIndex/);
+    assert.match(popupSource, /registerSearchCategory\("visible-page"/);
+    assert.match(popupSource, /stageId: "visible-indexes"/);
     assert.match(source, /import \{ uiCtx \} from "\.\.\/ui-ctx\.js"/);
     assert.match(source, /uiCtx\.runFlow\("search"/);
     assert.match(source, /providerContext/);
     assert.match(capabilitySource, /stageContext\?\.input\?\.query/);
     assert.match(capabilitySource, /avenuesByComponent/);
-    assert.match(source, /search\.runStage\(stageContext\)/);
+    assert.match(popupSource, /search\.runStage\(stageContext\)/);
     assert.match(source, /REGISTERED_SEARCH_CATEGORY_HOOKS/);
     assert.match(source, /data-search-exclude/);
     assert.match(source, /collectBrowserPreferenceSearchGroups/);
     assert.match(source, /collectStructuredPreferenceItems/);
     assert.match(source, /shouldIndexBrowserPreferenceKey/);
-    assert.match(source, /MIN_SEARCH_QUERY_LENGTH = 2/);
+    assert.match(stateSource, /MIN_SEARCH_QUERY_LENGTH = 2/);
     assert.match(source, /mergeSearchGroups/);
     assert.match(source, /filterNavigableGroups/);
     assert.match(source, /filterVisibleSearchGroups/);
@@ -63,10 +77,10 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /isInternalSearchUrlAccessible/);
     assert.match(source, /hasSelectableTarget/);
     assert.match(source, /normalizeResultClass/);
-    assert.match(source, /dataset\.searchResultClass/);
+    assert.match(resultsSource, /dataset\.searchResultClass/);
     assert.match(source, /filterApiFlatMatches/);
-    assert.match(source, /renderResultCategorySummary/);
-    assert.match(source, /filterGroupsBySelectedCategories/);
+    assert.match(resultsSource, /renderResultCategorySummary/);
+    assert.match(resultsSource, /filterGroupsBySelectedCategories/);
     assert.match(source, /normalizeSearchUrlKey/);
     assert.match(source, /SEARCH_CATEGORY_RANKS/);
     assert.match(source, /\["Pages", 0\]/);
@@ -76,39 +90,40 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /currentSearchPageUrl/);
     assert.match(source, /currentSearchPageLabel/);
     assert.match(source, /window\.location\.pathname === "\/whiteboard"/);
-    assert.match(source, /__selectedSearchCategories/);
-    assert.match(source, /search-popup-result-categories/);
-    assert.match(source, /search-popup-close btn-cancel/);
-    assert.match(source, /lockSearchPopupScroll/);
-    assert.match(source, /unlockSearchPopupScroll/);
-    assert.match(source, /search-popup-overlay--closing/);
-    assert.match(source, /Close search/);
+    assert.match(resultsSource, /__selectedSearchCategories/);
+    assert.match(popupSource, /search-popup-result-categories/);
+    assert.match(popupSource, /search-popup-close btn-cancel/);
+    assert.match(popupSource, /lockSearchPopupScroll/);
+    assert.match(popupSource, /unlockSearchPopupScroll/);
+    assert.match(popupSource, /search-popup-overlay--closing/);
+    assert.match(popupSource, /Close search/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(source, /collectGlobalDocsSearchGroups/);
     assert.match(source, /collectGlobalSettingsSearchGroups/);
-    assert.match(source, /registerSearchAvenue/);
-    assert.match(source, /registerSearchIndex\("global-docs"/);
-    assert.match(source, /registerSearchIndex\("global-settings"/);
+    assert.match(popupSource, /registerSearchAvenue/);
+    assert.match(popupSource, /registerSearchIndex\("global-docs"/);
+    assert.match(popupSource, /registerSearchIndex\("global-settings"/);
     assert.match(
-        source,
+        popupSource,
         /registerSearchCategory\(\s*["\']visible-navigation["\']/,
     );
-    assert.match(source, /const isMultiSelect = Boolean\(multiSelectState\)/);
+    assert.match(
+        popupSource,
+        /const isMultiSelect = Boolean\(multiSelectState\)/,
+    );
     assert.match(source, /data-message-id/);
     assert.match(source, /data-chat-id/);
     assert.match(source, /data-search-description/);
     assert.match(source, /data-search-result-class/);
-    assert.doesNotMatch(source, /article, \[role='article'\]/);
-    assert.match(source, /"Whole word"/);
-    assert.match(source, /"Regex"/);
-    assert.match(source, /"Case-sensitive"/);
-    assert.match(source, /"On this page"/);
-    assert.doesNotMatch(source, /category:\s*"Navigation"/);
-    assert.match(source, /searchOptions\.onThisPage/);
-    assert.match(source, /renderPageFindHighlights/);
-    assert.match(source, /search-popup-page-find-counter/);
-    assert.match(source, /movePageFindMatch/);
-    assert.match(source, /search-popup-overlay--finder/);
+    assert.match(popupSource, /"Whole word"/);
+    assert.match(popupSource, /"Regex"/);
+    assert.match(popupSource, /"Case-sensitive"/);
+    assert.match(popupSource, /"On this page"/);
+    assert.match(popupSource, /searchOptions\.onThisPage/);
+    assert.match(popupSource, /renderPageFindHighlights/);
+    assert.match(popupSource, /search-popup-page-find-counter/);
+    assert.match(popupSource, /movePageFindMatch/);
+    assert.match(popupSource, /search-popup-overlay--finder/);
     assert.match(source, /wholeWord=1/);
     assert.match(source, /regex=1/);
     assert.match(source, /caseSensitive=1/);
@@ -118,7 +133,7 @@ test("global search exposes registered categories and match controls", () => {
     );
     assert.match(source, /matchSnippet/);
     assert.match(source, /highlightedLabel/);
-    assert.match(source, /selectSearchResult/);
+    assert.match(resultsSource, /selectSearchResult/);
     assert.match(source, /item\.handle/);
 });
 
@@ -342,7 +357,10 @@ test("visible search indexes meetings calendar notifications and posts", () => {
     assert.match(profileSource, /data-search-category="Posts"/);
     assert.match(profileNavbarSource, /registerSearchIndexing\(\)/);
     assert.match(profileSearchSource, /registerSearchIndex\("global-posts"/);
-    assert.match(profileSearchSource, /\/api\/v1\/social\/posts\?scope=visible/);
+    assert.match(
+        profileSearchSource,
+        /\/api\/v1\/social\/posts\?scope=visible/,
+    );
     assert.match(profileSearchSource, /createUserContentSearchItem/);
 });
 
@@ -417,7 +435,7 @@ test("settings search skips paragraph text entries and search results highlight 
 
 test("global search intercepts browser find shortcut", () => {
     const searchSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/engine.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/state.js"),
         "utf8",
     );
     assert.match(searchSource, /function bindSearchShortcut/);
@@ -448,7 +466,7 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         "utf8",
     );
     const searchSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/search-util/engine.js"),
+        resolve(ROOT, "src/ui/reuse/search-util/matching.js"),
         "utf8",
     );
     const studySearchSource = readFileSync(

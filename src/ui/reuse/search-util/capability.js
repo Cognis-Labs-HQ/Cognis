@@ -130,4 +130,3 @@ function ensureSearchCapability() {
 }
 
 export const search = ensureSearchCapability();
-

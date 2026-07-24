@@ -11,6 +11,7 @@ Search popups now include controls for whole-word matching, regular expressions,
 ## Clearer Results
 
 Search results now favor content names and descriptions, highlight exact matches, and show surrounding text snippets when content text is matched.
+
 # Search Results Clarity
 
 ## Study owns its search index
