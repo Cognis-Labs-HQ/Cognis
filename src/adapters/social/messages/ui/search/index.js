@@ -73,6 +73,26 @@ function messageSearchContext(roomLabel, sender) {
     return isOpaqueRoomLabel(normalizedRoomLabel) ? "" : normalizedRoomLabel;
 }
 
+function createChatSearchItem(room) {
+    const roomId = String(room?.id ?? "").trim();
+    if (!roomId) return null;
+    const roomLabel = searchRoomLabel(room);
+    if (!String(roomLabel ?? "").trim() || isOpaqueRoomLabel(roomLabel)) {
+        return null;
+    }
+    return {
+        id: `chat:${roomId}`,
+        label: roomLabel,
+        description: "Chat",
+        url: `/messages/${encodeURIComponent(roomId)}`,
+        resultClass: "chat",
+        category: "Chats",
+        searchText: roomLabel,
+        showMatchSnippet: false,
+        visible: true,
+    };
+}
+
 async function collectSearchRoomMessages(room) {
     const roomId = String(room?.id ?? "").trim();
     if (!roomId) return [];
@@ -113,7 +133,8 @@ export async function buildSearchResults({ query = "" } = {}) {
     if (!response.ok) return [];
     const payload = await response.json().catch(() => null);
     const rooms = Array.isArray(payload?.data) ? payload.data : [];
-    const items = (
+    const chatItems = rooms.map(createChatSearchItem).filter(Boolean);
+    const messageItems = (
         await Promise.all(
             rooms.map(async (room) => {
                 const roomId = String(room?.id ?? "").trim();
@@ -143,7 +164,7 @@ export async function buildSearchResults({ query = "" } = {}) {
                             url: `/messages/${encodeURIComponent(roomId)}#message-${encodeURIComponent(messageRecord.id)}`,
                             resultClass: "message",
                             category: "Messages",
-                            searchText: [sender, context, messageRecord.text]
+                            searchText: [sender, messageRecord.text]
                                 .filter(Boolean)
                                 .join(" "),
                             visible: true,
@@ -152,7 +173,12 @@ export async function buildSearchResults({ query = "" } = {}) {
             }),
         )
     ).flat();
-    return items.length ? [{ category: "Messages", items }] : [];
+    return [
+        chatItems.length ? { category: "Chats", items: chatItems } : null,
+        messageItems.length
+            ? { category: "Messages", items: messageItems }
+            : null,
+    ].filter(Boolean);
 }
 
 export function registerSearchIndexing() {

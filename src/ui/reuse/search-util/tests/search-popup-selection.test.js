@@ -614,12 +614,17 @@ test("global pages and messages indexes register from shared surfaces", () => {
     assert.match(messagesIndexSource, /\/api\/v1\/social\/messages\/rooms/);
     assert.match(messagesIndexSource, /decryptSearchMessage/);
     assert.match(messagesIndexSource, /messageSearchContext/);
+    assert.match(messagesIndexSource, /function createChatSearchItem/);
+    assert.match(messagesIndexSource, /category: "Chats"/);
+    assert.match(messagesIndexSource, /resultClass: "chat"/);
+    assert.match(messagesIndexSource, /category: "Messages"/);
+    assert.match(messagesIndexSource, /resultClass: "message"/);
     assert.match(messagesIndexSource, /isOpaqueRoomLabel/);
     assert.match(messagesIndexSource, /MESSAGE_SEARCH_PAGE_SIZE/);
     assert.match(messagesIndexSource, /params\.set\("before", before\)/);
     assert.match(
         messagesIndexSource,
-        /searchText: \[sender, context, messageRecord\.text\]/,
+        /searchText: \[sender, messageRecord\.text\]/,
     );
     assert.doesNotMatch(messagesIndexSource, /createUserContentSearchItem/);
     assert.doesNotMatch(
@@ -627,4 +632,8 @@ test("global pages and messages indexes register from shared surfaces", () => {
         /content: \[messageRecord\.text, query\]/,
     );
     assert.match(messagesIndexSource, /error\?\.name !== "OperationError"/);
+    assert.doesNotMatch(
+        messagesIndexSource,
+        /searchText: \[sender, context, messageRecord\.text\]/,
+    );
 });
