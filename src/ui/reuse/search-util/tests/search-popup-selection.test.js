@@ -448,6 +448,53 @@ test("global search intercepts browser find shortcut", () => {
     assert.match(searchSource, /activeSearchToggleButton\?\.click\(\)/);
 });
 
+test("createSearchBar stores shortcut button through search state", async () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = {
+        createElement(tagName) {
+            return {
+                tagName: String(tagName).toUpperCase(),
+                children: [],
+                className: "",
+                dataset: {},
+                innerHTML: "",
+                type: "",
+                addEventListener() {},
+                appendChild(child) {
+                    this.children.push(child);
+                },
+                setAttribute(name, value) {
+                    this[name] = value;
+                },
+            };
+        },
+        addEventListener() {},
+        querySelector() {
+            return null;
+        },
+    };
+
+    try {
+        const popupSource = readFileSync(
+            resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
+            "utf8",
+        );
+        assert.match(popupSource, /setActiveSearchToggleButton\(toggleBtn\)/);
+        assert.doesNotMatch(popupSource, /activeSearchToggleButton\s*=/);
+
+        const { createSearchBar } = await import(
+            "../popup.js?create-search-bar-state-test"
+        );
+        const searchBar = createSearchBar({
+            endpoint: "/api/v1/search",
+            onSelect() {},
+        });
+        assert.equal(searchBar.className, "search-bar-wrap");
+    } finally {
+        globalThis.document = previousDocument;
+    }
+});
+
 test("profile messages notifications and study indexes are privacy scoped", () => {
     const profileSource = readFileSync(
         resolve(ROOT, "src/adapters/social/profile/ui/app.js"),
