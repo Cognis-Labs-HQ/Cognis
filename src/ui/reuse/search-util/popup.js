@@ -607,7 +607,7 @@ export function createSearchBar({
     toggleBtn.setAttribute("aria-label", ariaLabel);
     toggleBtn.innerHTML = "&#128269;";
     wrapper.appendChild(toggleBtn);
-    activeSearchToggleButton = toggleBtn;
+    setActiveSearchToggleButton(toggleBtn);
     bindSearchShortcut();
 
     let closePopup = null;

@@ -246,6 +246,7 @@ test("post routes - list visible posts across authors for search", async () => {
         await profileStore.createProfile("bob", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
         await profileStore.updateProfile("bob", { visibility: "community" });
+        await profileStore.block("bob", "alice");
         const route = createPostRoutes(profileStore);
         const aliceToken = issueAccessToken("alice", "user", 60);
         const bobToken = issueAccessToken("bob", "user", 60);
@@ -310,10 +311,10 @@ test("post routes - list visible posts across authors for search", async () => {
         );
         assert.equal(status, 200);
         const visiblePosts = JSON.parse(body).data;
-        assert.equal(visiblePosts.length, 2);
+        assert.equal(visiblePosts.length, 1);
         assert.deepEqual(
             visiblePosts.map((post: any) => post.author.handle).sort(),
-            ["alice", "bob"],
+            ["alice"],
         );
     } finally {
         rmSync(dir, { recursive: true, force: true });

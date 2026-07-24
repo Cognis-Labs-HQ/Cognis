@@ -163,6 +163,9 @@ export function createPostRoutes(
             for (const post of allPosts) {
                 const author = await profileStore.getProfile(post.accountId);
                 if (!author) continue;
+                if (await profileStore.isBlocked(author.accountId, claims.sub)) {
+                    continue;
+                }
                 if (
                     !(await canViewPost(
                         claims.sub,
