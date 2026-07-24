@@ -196,12 +196,24 @@ test("whiteboard search indexes board filenames and stored canvas contents", () 
         resolve(ROOT, "src/modules/nextcloud-whiteboard/ui/app/index.js"),
         "utf8",
     );
+    const navbarSource = readFileSync(
+        resolve(ROOT, "src/modules/nextcloud-whiteboard/ui/navbar.js"),
+        "utf8",
+    );
     assert.match(source, /registerSearchIndex\("nextcloud-whiteboard"/);
     assert.match(source, /collectWhiteboardSearchGroups/);
     assert.match(source, /externalPath/);
     assert.match(source, /resultClass: "page"/);
     assert.match(source, /resultClass: "text"/);
     assert.match(source, /JSON\.stringify\(savedElements/);
+    assert.match(
+        navbarSource,
+        /registerSearchIndex\(\s*"nextcloud-whiteboard-navbar"/,
+    );
+    assert.match(navbarSource, /collectWhiteboardNavbarSearchGroups/);
+    assert.match(navbarSource, /category: "Pages"/);
+    assert.match(navbarSource, /category: "Whiteboards"/);
+    assert.match(navbarSource, /fetchVisibleWhiteboards/);
 });
 
 test("visible search indexes messages without quick reactions and chat names", () => {
