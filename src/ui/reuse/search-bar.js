@@ -859,7 +859,8 @@ function attachSearchMatch(item, resolveMatch) {
                     ? createHighlightedSnippet(value, match)
                     : "",
             matchSnippet:
-                fieldName === "searchText" || item.showMatchSnippet === true
+                item.showMatchSnippet !== false &&
+                (fieldName === "searchText" || item.showMatchSnippet === true)
                     ? createHighlightedSnippet(value, match)
                     : "",
         };
@@ -980,13 +981,27 @@ function normalizeSearchUrlKey(url) {
     }
 }
 
+const SEARCH_CATEGORY_RANKS = new Map([
+    ["Pages", 0],
+    ["Docs", 90],
+    ["Changelogs", 100],
+]);
+
+function getSearchCategoryRank(category) {
+    return SEARCH_CATEGORY_RANKS.get(category) ?? 50;
+}
+
 function mergeSearchGroups(groups) {
     const groupedItems = new Map();
+    const categoryOrder = new Map();
     const seenItems = new Set();
     for (const group of groups ?? []) {
         const category = String(group?.category ?? "").trim();
         if (!category || !Array.isArray(group.items)) continue;
-        if (!groupedItems.has(category)) groupedItems.set(category, []);
+        if (!groupedItems.has(category)) {
+            groupedItems.set(category, []);
+            categoryOrder.set(category, categoryOrder.size);
+        }
         for (const item of group.items) {
             const urlKey = normalizeSearchUrlKey(item.url);
             const labelKey = String(item.label ?? "")
@@ -1005,7 +1020,15 @@ function mergeSearchGroups(groups) {
     return Array.from(groupedItems, ([category, items]) => ({
         category,
         items,
-    }));
+    })).sort((left, right) => {
+        const rankDifference =
+            getSearchCategoryRank(left.category) -
+            getSearchCategoryRank(right.category);
+        if (rankDifference !== 0) return rankDifference;
+        return (
+            categoryOrder.get(left.category) - categoryOrder.get(right.category)
+        );
+    });
 }
 
 function hasSelectableTarget(item) {

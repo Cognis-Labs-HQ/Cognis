@@ -65,9 +65,8 @@ function collectWhiteboardSearchGroups() {
         items.push({
             id: `whiteboard:${board.id ?? title}`,
             label: title,
-            description: translateModuleString(
-                "module.nextcloud_whiteboard.canvas_window",
-            ),
+            showDescription: false,
+            showMatchSnippet: false,
             url: `/whiteboard?id=${encodeURIComponent(board.id ?? "")}`,
             resultClass: "page",
             searchText: [
@@ -90,9 +89,8 @@ function collectWhiteboardSearchGroups() {
                 translateModuleString(
                     "module.nextcloud_whiteboard.canvas_window",
                 ),
-            description: translateModuleString(
-                "module.nextcloud_whiteboard.canvas_window",
-            ),
+            showDescription: false,
+            showMatchSnippet: false,
             url: `/whiteboard?id=${encodeURIComponent(activeBoard.id)}`,
             resultClass: "text",
             searchText: elementText,

@@ -17,7 +17,8 @@ function whiteboardFileSearchItem(board) {
     return {
         id: `whiteboard:${boardId}`,
         label: title,
-        description: "Whiteboard file",
+        showDescription: false,
+        showMatchSnippet: false,
         url: `/whiteboard?id=${encodeURIComponent(boardId)}`,
         resultClass: "page",
         searchText: [

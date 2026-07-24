@@ -63,6 +63,10 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /renderResultCategorySummary/);
     assert.match(source, /filterGroupsBySelectedCategories/);
     assert.match(source, /normalizeSearchUrlKey/);
+    assert.match(source, /SEARCH_CATEGORY_RANKS/);
+    assert.match(source, /\["Pages", 0\]/);
+    assert.match(source, /\["Docs", 90\]/);
+    assert.match(source, /\["Changelogs", 100\]/);
     assert.match(source, /category === "Pages" \? ""/);
     assert.match(source, /currentSearchPageUrl/);
     assert.match(source, /currentSearchPageLabel/);
@@ -221,6 +225,8 @@ test("whiteboard search indexes board filenames and stored canvas contents", () 
     assert.match(source, /externalPath/);
     assert.match(source, /resultClass: "page"/);
     assert.match(source, /resultClass: "text"/);
+    assert.match(source, /showDescription: false/);
+    assert.match(source, /showMatchSnippet: false/);
     assert.match(source, /JSON\.stringify\(savedElements/);
     assert.match(
         navbarSource,
@@ -229,6 +235,8 @@ test("whiteboard search indexes board filenames and stored canvas contents", () 
     assert.match(navbarSource, /collectWhiteboardNavbarSearchGroups/);
     assert.match(navbarSource, /category: "Pages"/);
     assert.match(navbarSource, /category: "Whiteboards"/);
+    assert.match(navbarSource, /showDescription: false/);
+    assert.match(navbarSource, /showMatchSnippet: false/);
     assert.match(navbarSource, /fetchVisibleWhiteboards/);
 });
 
