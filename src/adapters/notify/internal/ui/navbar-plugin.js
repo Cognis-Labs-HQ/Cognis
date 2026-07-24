@@ -164,9 +164,10 @@ let markAllBtn = null;
 let clearAllBtn = null;
 let mobileBackdropEl = null;
 let currentNotifications = [];
-registerSearchIndex("notifications", collectNotificationSearchGroups);
 let seenIds = null;
 let relativeTimeNodes = [];
+
+registerSearchIndex("notifications", collectNotificationSearchGroups);
 
 function collectNotificationSearchGroups() {
     const items = currentNotifications.map((notification) => {

@@ -148,18 +148,13 @@ export function createPostRoutes(
         if (url.pathname === "/api/v1/social/posts" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const posts = await profileStore.getPostsByAccount(claims.sub);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: posts }));
-            return true;
-        }
-
-        if (
-            url.pathname === "/api/v1/social/posts/visible" &&
-            req.method === "GET"
-        ) {
-            const claims = ctx.requireAuth(req, res, "user");
-            if (!claims) return true;
+            const scope = String(url.searchParams.get("scope") ?? "").trim();
+            if (scope !== "visible") {
+                const posts = await profileStore.getPostsByAccount(claims.sub);
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: posts }));
+                return true;
+            }
             const query = String(url.searchParams.get("q") ?? "")
                 .trim()
                 .toLowerCase();

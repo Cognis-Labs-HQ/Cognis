@@ -2009,6 +2009,7 @@ export function openSearchPopup({
             return;
         }
         if (currentQuery.length < MIN_SEARCH_QUERY_LENGTH) {
+            latestSearchRunId += 1;
             renderSearchPendingMessage(resultsContainer, categoriesContainer);
             return;
         }

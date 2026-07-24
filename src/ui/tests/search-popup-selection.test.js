@@ -337,7 +337,7 @@ test("visible search indexes meetings calendar notifications and posts", () => {
     assert.match(profileSource, /data-search-category="Posts"/);
     assert.match(profileNavbarSource, /registerSearchIndexing\(\)/);
     assert.match(profileSearchSource, /registerSearchIndex\("global-posts"/);
-    assert.match(profileSearchSource, /\/api\/v1\/social\/posts\/visible/);
+    assert.match(profileSearchSource, /\/api\/v1\/social\/posts\?scope=visible/);
     assert.match(profileSearchSource, /createUserContentSearchItem/);
 });
 
@@ -455,7 +455,7 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         "utf8",
     );
 
-    assert.match(postRoutesSource, /\/api\/v1\/social\/posts\/visible/);
+    assert.match(postRoutesSource, /url\.searchParams\.get\("scope"\)/);
     assert.match(postRoutesSource, /profileStore\.getAllPosts\(\)/);
     assert.match(postRoutesSource, /canViewPost/);
     assert.match(profileSource, /registerSearchIndex\("profile-posts"/);

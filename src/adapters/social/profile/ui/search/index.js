@@ -25,7 +25,7 @@ function postUrl(post) {
 
 export async function buildSearchResults({ query = "" } = {}) {
     const response = await apiFetch(
-        `/api/v1/social/posts/visible?q=${encodeURIComponent(query)}`,
+        `/api/v1/social/posts?scope=visible&q=${encodeURIComponent(query)}`,
     );
     if (!response.ok) return [];
     const payload = await response.json().catch(() => null);
