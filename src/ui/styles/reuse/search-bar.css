@@ -37,6 +37,12 @@
     padding: max(110px, 12vh) 16px 16px;
     z-index: 2100;
     animation: search-overlay-in 0.15s ease;
+    opacity: 1;
+    transition: opacity 0.14s ease;
+}
+
+.search-popup-overlay--closing {
+    opacity: 0;
 }
 
 @keyframes search-overlay-in {

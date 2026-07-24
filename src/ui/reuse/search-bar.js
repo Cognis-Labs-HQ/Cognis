@@ -736,8 +736,13 @@ function currentSearchPageUrl() {
     return `${window.location.pathname}${window.location.search}${window.location.hash}`;
 }
 
+function currentSearchPageLabel() {
+    if (window.location.pathname === "/whiteboard") return "Whiteboards";
+    return document.title?.trim() || window.location.pathname;
+}
+
 function collectVisiblePageSearchGroups() {
-    const title = document.title?.trim() || window.location.pathname;
+    const title = currentSearchPageLabel();
     const pageItem = normalizeSearchItem(
         {
             id: `page:${window.location.pathname}`,
@@ -1723,6 +1728,23 @@ registerSearchIndex(
     },
 );
 
+let searchPopupScrollLocked = false;
+let previousSearchPopupBodyOverflow = "";
+
+function lockSearchPopupScroll() {
+    if (searchPopupScrollLocked) return;
+    previousSearchPopupBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    searchPopupScrollLocked = true;
+}
+
+function unlockSearchPopupScroll() {
+    if (!searchPopupScrollLocked) return;
+    document.body.style.overflow = previousSearchPopupBodyOverflow;
+    previousSearchPopupBodyOverflow = "";
+    searchPopupScrollLocked = false;
+}
+
 export function openSearchPopup({
     endpoint,
     onSelect,
@@ -1898,6 +1920,11 @@ export function openSearchPopup({
 
     const updateFinderMode = () => {
         const finderEnabled = Boolean(searchOptions.onThisPage);
+        if (finderEnabled) {
+            unlockSearchPopupScroll();
+        } else {
+            lockSearchPopupScroll();
+        }
         overlay.classList.toggle("search-popup-overlay--finder", finderEnabled);
         popup.classList.toggle("search-popup--finder", finderEnabled);
         resultsContainer.hidden = finderEnabled;
@@ -1911,14 +1938,22 @@ export function openSearchPopup({
 
     overlay.appendChild(popup);
     document.body.appendChild(overlay);
+    lockSearchPopupScroll();
     renderSearchPendingMessage(resultsContainer, categoriesContainer);
 
+    let closeStarted = false;
     const closeOverlay = () => {
+        if (closeStarted) return;
+        closeStarted = true;
         clearTimeout(debounceTimer);
         clearPageFindHighlights(pageFindState);
         eventController.abort();
-        overlay.remove();
-        onClose?.();
+        unlockSearchPopupScroll();
+        overlay.classList.add("search-popup-overlay--closing");
+        window.setTimeout(() => {
+            overlay.remove();
+            onClose?.();
+        }, 140);
     };
 
     overlay.__closeSearchPopup = closeOverlay;

@@ -65,10 +65,14 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(source, /normalizeSearchUrlKey/);
     assert.match(source, /category === "Pages" \? ""/);
     assert.match(source, /currentSearchPageUrl/);
+    assert.match(source, /currentSearchPageLabel/);
     assert.match(source, /window\.location\.pathname === "\/whiteboard"/);
     assert.match(source, /__selectedSearchCategories/);
     assert.match(source, /search-popup-result-categories/);
     assert.match(source, /search-popup-close btn-cancel/);
+    assert.match(source, /lockSearchPopupScroll/);
+    assert.match(source, /unlockSearchPopupScroll/);
+    assert.match(source, /search-popup-overlay--closing/);
     assert.match(source, /Close search/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
     assert.match(source, /collectGlobalDocsSearchGroups/);
@@ -126,13 +130,20 @@ test("search popup displays result categories below parameters", () => {
         resolve(ROOT, "src/ui/styles/reuse/search-bar.css"),
         "utf8",
     );
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/styles/popup.css"),
+        "utf8",
+    );
     assert.match(source, /\.search-popup-result-categories/);
     assert.match(source, /\.search-popup-close/);
+    assert.match(source, /\.search-popup-overlay--closing/);
+    assert.match(source, /transition: opacity 0\.14s ease/);
     assert.match(source, /\.search-popup-input-wrap \.search-popup-close/);
     assert.doesNotMatch(
         source,
         /\.search-popup-close\s*\{[^}]*position: absolute/,
     );
+    assert.match(popupSource, /transition: opacity 0\.14s ease/);
     assert.match(source, /\.search-popup-result-category-pill/);
     assert.match(source, /\.search-popup-result-category-pill--active/);
     assert.match(
@@ -521,14 +532,18 @@ test("global pages and messages indexes register from shared surfaces", () => {
     assert.match(messagesIndexSource, /export function registerSearchIndexing/);
     assert.match(messagesIndexSource, /registerSearchIndex\("global-messages"/);
     assert.match(messagesIndexSource, /componentId: componentSearchId/);
-    assert.match(messagesIndexSource, /createUserContentSearchItem/);
+    assert.doesNotMatch(messagesIndexSource, /createUserContentSearchItem/);
     assert.match(messagesIndexSource, /\/api\/v1\/social\/messages\/rooms/);
     assert.match(messagesIndexSource, /decryptSearchMessage/);
     assert.match(messagesIndexSource, /messageSearchContext/);
     assert.match(messagesIndexSource, /isOpaqueRoomLabel/);
     assert.match(messagesIndexSource, /MESSAGE_SEARCH_PAGE_SIZE/);
     assert.match(messagesIndexSource, /params\.set\("before", before\)/);
-    assert.match(messagesIndexSource, /content: messageRecord\.text/);
+    assert.match(
+        messagesIndexSource,
+        /searchText: \[sender, context, messageRecord\.text\]/,
+    );
+    assert.doesNotMatch(messagesIndexSource, /createUserContentSearchItem/);
     assert.doesNotMatch(
         messagesIndexSource,
         /content: \[messageRecord\.text, query\]/,

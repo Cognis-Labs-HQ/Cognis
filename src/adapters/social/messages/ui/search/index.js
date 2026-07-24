@@ -1,7 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
 import { registerSearchIndex } from "/static/reuse/search-bar.js";
-import { createUserContentSearchItem } from "/static/reuse/search-index.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 
 export const componentSearchId = "social-messages";
@@ -134,16 +133,21 @@ export async function buildSearchResults({ query = "" } = {}) {
                             messageRecord.createdAt,
                             "",
                         );
-                        return createUserContentSearchItem({
+                        const context = messageSearchContext(roomLabel, sender);
+                        return {
                             id: `message:${messageRecord.id}`,
                             label: sender,
-                            context: messageSearchContext(roomLabel, sender),
-                            timestamp: timeLabel,
+                            description: [context, timeLabel]
+                                .filter(Boolean)
+                                .join(" — "),
                             url: `/messages/${encodeURIComponent(roomId)}#message-${encodeURIComponent(messageRecord.id)}`,
                             resultClass: "message",
                             category: "Messages",
-                            content: messageRecord.text,
-                        });
+                            searchText: [sender, context, messageRecord.text]
+                                .filter(Boolean)
+                                .join(" "),
+                            visible: true,
+                        };
                     });
             }),
         )

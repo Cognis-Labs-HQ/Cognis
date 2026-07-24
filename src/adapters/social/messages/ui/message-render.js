@@ -129,7 +129,6 @@ async function collectRoomMessageSearchItems(room) {
                     sender,
                     messageRecord.senderHandle,
                     messageRecord.text,
-                    timeLabel,
                 ]
                     .filter(Boolean)
                     .join(" "),
