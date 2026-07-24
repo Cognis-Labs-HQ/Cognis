@@ -101,19 +101,22 @@ function createSearchCapability() {
                 stageContext?.input?.searchOptions,
             ),
         };
-        const contributions = [];
-        for (const avenue of getAvenues(stageContext?.stageId)) {
-            try {
-                contributions.push(await runAvenue(avenue, providerContext));
-            } catch (error) {
-                console.warn("[search-bar]:avenue-failed", {
-                    componentId: avenue.componentId,
-                    avenueId: avenue.id,
-                    error,
-                });
-            }
-        }
-        return contributions;
+        const results = await Promise.allSettled(
+            getAvenues(stageContext?.stageId).map((avenue) =>
+                runAvenue(avenue, providerContext).catch((error) => {
+                    console.warn("[search-bar]:avenue-failed", {
+                        componentId: avenue.componentId,
+                        avenueId: avenue.id,
+                        error,
+                    });
+                    return null;
+                }),
+            ),
+        );
+        return results
+            .filter((result) => result.status === "fulfilled")
+            .map((result) => result.value)
+            .filter(Boolean);
     }
 
     return {
@@ -502,39 +505,42 @@ async function loadGlobalDocsSearchGroups() {
     );
     const docsItems = [];
     const changelogItems = [];
-    for (const item of docs) {
-        const slug = String(item?.slug ?? "").trim();
-        if (!slug) continue;
-        const title = docSearchTitle(item);
-        let bodyText = GLOBAL_DOCS_SEARCH_CONTENT.get(slug) ?? "";
-        if (!bodyText) {
-            try {
+    const indexedDocs = await Promise.all(
+        docs.map(async (item) => {
+            const slug = String(item?.slug ?? "").trim();
+            if (!slug) return null;
+            const title = docSearchTitle(item);
+            let bodyText = GLOBAL_DOCS_SEARCH_CONTENT.get(slug) ?? "";
+            if (!bodyText) {
                 const htmlResponse = await fetch(
                     `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
                     { credentials: "same-origin" },
-                );
-                bodyText = htmlResponse.ok
+                ).catch(() => null);
+                bodyText = htmlResponse?.ok
                     ? markdownHtmlToSearchText(await htmlResponse.text())
                     : "";
                 GLOBAL_DOCS_SEARCH_CONTENT.set(slug, bodyText);
-            } catch {
-                bodyText = "";
             }
-        }
-        const changelog = isSearchChangelogDoc(item);
-        const searchItem = {
-            id: `global-docs:${slug}`,
-            label: title,
-            description: `${changelog ? "Changelogs" : "Docs"} / ${item.group || "platform"}`,
-            url: changelog ? changelogSearchRoute(slug) : `/docs/${slug}`,
-            resultClass: "page",
-            searchText: [title, slug, item.group, item.description, bodyText]
-                .filter(Boolean)
-                .join(" "),
-            visible: true,
-        };
-        if (changelog) changelogItems.push(searchItem);
-        else docsItems.push(searchItem);
+            const changelog = isSearchChangelogDoc(item);
+            return {
+                changelog,
+                item: {
+                    id: `global-docs:${slug}`,
+                    label: title,
+                    description: `${changelog ? "Changelogs" : "Docs"} / ${item.group || "platform"}`,
+                    url: changelog ? changelogSearchRoute(slug) : `/docs/${slug}`,
+                    resultClass: "page",
+                    searchText: [title, slug, item.group, item.description, bodyText]
+                        .filter(Boolean)
+                        .join(" "),
+                    visible: true,
+                },
+            };
+        }),
+    );
+    for (const indexedDoc of indexedDocs.filter(Boolean)) {
+        if (indexedDoc.changelog) changelogItems.push(indexedDoc.item);
+        else docsItems.push(indexedDoc.item);
     }
     return [
         docsItems.length ? { category: "Pages", items: docsItems } : null,
@@ -554,10 +560,9 @@ function collectGlobalDocsSearchGroups() {
 function collectVisibleNavigationSearchGroups() {
     const items = [];
     const navigationLinks = document.querySelectorAll(
-        ".topnav a[href], .page-subnav a[href]",
+        '.topnav a[href], .page-subnav a[href], .study-subnav a[href], [data-search-category="Pages"][href]',
     );
     for (const link of navigationLinks) {
-        if (link.closest(".study-page-subnav")) continue;
         if (!isVisibleSearchElement(link)) continue;
         const label = String(link.innerText ?? link.textContent ?? "")
             .replace(/\s+/g, " ")
@@ -1363,6 +1368,8 @@ function renderFlatResults(
     resultsContainer.appendChild(list);
 }
 
+let latestSearchRunId = 0;
+
 async function runSearch({
     endpoint,
     query,
@@ -1381,66 +1388,21 @@ async function runSearch({
         return;
     }
 
-    const matchedLocalGroups = await filterLocalGroups(
-        localGroups,
-        query,
-        searchOptions,
-    );
+    const searchRunId = ++latestSearchRunId;
     const isMultiSelect = Boolean(multiSelectState);
-    const navigableLocalGroups = isMultiSelect
-        ? matchedLocalGroups
-        : filterNavigableGroups(matchedLocalGroups);
+    let localComplete = false;
+    let apiComplete = false;
+    let navigableLocalGroups = [];
+    let navigableApiGroups = [];
+    let flatItems = [];
 
-    try {
-        const token = localStorage.getItem("cognis_access_token");
-        const headers = token ? { authorization: `Bearer ${token}` } : {};
-        const response = await fetch(
-            buildSearchUrl(endpoint, query, typeFilter, searchOptions),
-            {
-                credentials: "same-origin",
-                headers,
-            },
-        );
-
-        if (!response.ok) {
-            if (navigableLocalGroups.length > 0) {
-                renderGroupedResults(
-                    resultsContainer,
-                    navigableLocalGroups,
-                    onSelect,
-                    closeOverlay,
-                    categoriesContainer,
-                );
-            }
-            return;
-        }
-
-        const payload = await response.json();
-        const responseData = payload?.data ?? [];
-        const isGrouped =
-            Array.isArray(responseData) &&
-            responseData.length > 0 &&
-            typeof responseData[0] === "object" &&
-            "category" in responseData[0];
-        const apiGroups = isGrouped
-            ? responseData.map(normalizeSearchGroup).filter(Boolean)
-            : [];
-        const matchedApiGroups = filterVisibleSearchGroups(
-            filterApiGroupMatches(apiGroups, query, searchOptions),
-        );
-        const navigableApiGroups = isMultiSelect
-            ? matchedApiGroups
-            : filterNavigableGroups(matchedApiGroups);
-        const flatItems = isGrouped
-            ? []
-            : filterApiFlatMatches(responseData, query, searchOptions)
-                  .filter(isSearchResultVisibleToUser)
-                  .filter((item) => isMultiSelect || hasSelectableTarget(item));
+    const isCurrentRun = () => searchRunId === latestSearchRunId;
+    const renderAvailableResults = () => {
+        if (!isCurrentRun()) return;
         const mergedGroups = mergeSearchGroups([
             ...navigableApiGroups,
             ...navigableLocalGroups,
         ]);
-
         if (mergedGroups.length > 0) {
             renderGroupedResults(
                 resultsContainer,
@@ -1449,7 +1411,9 @@ async function runSearch({
                 closeOverlay,
                 categoriesContainer,
             );
-        } else if (flatItems.length > 0) {
+            return;
+        }
+        if (flatItems.length > 0) {
             renderFlatResults(
                 resultsContainer,
                 flatItems,
@@ -1459,7 +1423,9 @@ async function runSearch({
                 multiSelectState,
                 categoriesContainer,
             );
-        } else if (navigableLocalGroups.length === 0) {
+            return;
+        }
+        if (localComplete && apiComplete) {
             renderFlatResults(
                 resultsContainer,
                 [],
@@ -1470,17 +1436,59 @@ async function runSearch({
                 categoriesContainer,
             );
         }
-    } catch {
-        if (navigableLocalGroups.length > 0) {
-            renderGroupedResults(
-                resultsContainer,
-                navigableLocalGroups,
-                onSelect,
-                closeOverlay,
-                categoriesContainer,
+    };
+
+    filterLocalGroups(localGroups, query, searchOptions)
+        .then((matchedLocalGroups) => {
+            navigableLocalGroups = isMultiSelect
+                ? matchedLocalGroups
+                : filterNavigableGroups(matchedLocalGroups);
+        })
+        .catch(() => {
+            navigableLocalGroups = [];
+        })
+        .finally(() => {
+            localComplete = true;
+            renderAvailableResults();
+        });
+
+    const token = localStorage.getItem("cognis_access_token");
+    const headers = token ? { authorization: `Bearer ${token}` } : {};
+    fetch(buildSearchUrl(endpoint, query, typeFilter, searchOptions), {
+        credentials: "same-origin",
+        headers,
+    })
+        .then(async (response) => {
+            if (!response.ok) return;
+            const payload = await response.json();
+            const responseData = payload?.data ?? [];
+            const isGrouped =
+                Array.isArray(responseData) &&
+                responseData.length > 0 &&
+                typeof responseData[0] === "object" &&
+                "category" in responseData[0];
+            const apiGroups = isGrouped
+                ? responseData.map(normalizeSearchGroup).filter(Boolean)
+                : [];
+            const matchedApiGroups = filterVisibleSearchGroups(
+                filterApiGroupMatches(apiGroups, query, searchOptions),
             );
-        }
-    }
+            navigableApiGroups = isMultiSelect
+                ? matchedApiGroups
+                : filterNavigableGroups(matchedApiGroups);
+            flatItems = isGrouped
+                ? []
+                : filterApiFlatMatches(responseData, query, searchOptions)
+                      .filter(isSearchResultVisibleToUser)
+                      .filter(
+                          (item) => isMultiSelect || hasSelectableTarget(item),
+                      );
+        })
+        .catch(() => {})
+        .finally(() => {
+            apiComplete = true;
+            renderAvailableResults();
+        });
 }
 
 /**

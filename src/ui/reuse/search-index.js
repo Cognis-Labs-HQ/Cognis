@@ -27,16 +27,18 @@ import { escapeHtml } from "./escape-html.js";
  * @returns {string}
  */
 export function htmlToSearchText(value) {
-    return String(value ?? "")
-        .replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi, " ")
-        .replace(/<style\b[\s\S]*?<\/style\b[^>]*>/gi, " ")
-        .replace(/<[^>]+>/g, " ")
-        .replace(/&nbsp;/g, " ")
-        .replace(/&lt;/g, "<")
-        .replace(/&gt;/g, ">")
-        .replace(/&quot;/g, '"')
-        .replace(/&#39;/g, "'")
-        .replace(/&amp;/g, "&")
+    const html = String(value ?? "");
+    if (typeof document !== "undefined") {
+        const template = document.createElement("template");
+        template.innerHTML = html;
+        template.content
+            .querySelectorAll("script, style")
+            .forEach((node) => node.remove());
+        return String(template.content.textContent ?? "")
+            .replace(/\s+/g, " ")
+            .trim();
+    }
+    return html
         .replace(/\s+/g, " ")
         .trim();
 }
