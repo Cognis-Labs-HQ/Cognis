@@ -1,4 +1,5 @@
 import { apiFetch } from "/static/reuse/api-client.js";
+import { registerSearchIndexing } from "./search/index.js";
 
 const messagesLink = document.querySelector("[data-messages-link]");
 
@@ -19,3 +20,5 @@ async function syncMessagesLink() {
 syncMessagesLink();
 window.addEventListener("focus", syncMessagesLink);
 window.addEventListener("cognis:navbar-refresh", syncMessagesLink);
+
+registerSearchIndexing();

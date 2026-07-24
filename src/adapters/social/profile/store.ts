@@ -616,6 +616,15 @@ export class DbProfileStore implements ProfileCreateStore {
         return (result.rows ?? []).map(rowToPost);
     }
 
+    async getAllPosts(): Promise<Post[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "posts",
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? []).map(rowToPost);
+    }
+
     async getPostById(postId: string): Promise<Post | null> {
         const result = await this.db.executeCommand({
             option: "SELECT",

@@ -21,6 +21,11 @@
  * `load-page` (owner: ui)
  *   Drives a direct (non-SPA) page load: auth enforcement then mount.
  *   Stages: authenticate → mount-page
+ *
+ * `search` (owner: ui)
+ *   Collects local search indexes from visible content, component-owned
+ *   indexes, and the settings index before matching happens in the popup.
+ *   Stages: visible-indexes → component-indexes → settings-index
  */
 
 import { uiCtx } from "./ui-ctx.js";
@@ -40,3 +45,9 @@ uiCtx.registerFlow("navigate-to", [
 ]);
 
 uiCtx.registerFlow("load-page", ["authenticate", "mount-page"]);
+
+uiCtx.registerFlow("search", [
+    "visible-indexes",
+    "component-indexes",
+    "settings-index",
+]);

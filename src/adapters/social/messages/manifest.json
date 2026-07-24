@@ -1,13 +1,11 @@
 {
     "id": "social-messages",
     "name": "Messages",
-    "version": "1.4.11",
+    "version": "1.4.12",
     "gateway": "social",
     "description": "Private messages with chatrooms (DM and group), per-room AES-GCM encryption, and notification dispatch.",
     "publisher": "Cognis Labs HQ",
-    "requires": [
-        "social:profile"
-    ],
+    "requires": ["social:profile"],
     "file_namespaces": [
         {
             "id": "chats",

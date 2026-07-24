@@ -17,6 +17,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
@@ -166,6 +167,33 @@ let currentNotifications = [];
 let seenIds = null;
 let relativeTimeNodes = [];
 
+registerSearchIndex("notifications", collectNotificationSearchGroups);
+
+function collectNotificationSearchGroups() {
+    const items = currentNotifications.map((notification) => {
+        const timeLabel = formatRelativeTime(notification.createdAt);
+        return {
+            id: `notification:${notification.id}`,
+            label: notification.subject,
+            description: [notification.senderName, timeLabel]
+                .filter(Boolean)
+                .join(" — "),
+            url: notification.actionUrl || window.location.pathname,
+            searchText: [
+                notification.subject,
+                notification.senderName,
+                notification.body,
+                timeLabel,
+            ]
+                .filter(Boolean)
+                .join(" "),
+            resultClass: "notification",
+            visible: true,
+        };
+    });
+    return items.length ? [{ category: "Notifications", items }] : [];
+}
+
 function tickRelativeTimes() {
     for (const node of relativeTimeNodes) {
         const timestamp = Number(node.dataset.relativeTime);
@@ -207,6 +235,11 @@ function renderNotificationItem(notif, i18n) {
         (notif.read ? "notification-item--read" : "notification-item--unread") +
         (notif.actionUrl ? " notification-item--linked" : "");
     listItem.dataset.id = notif.id;
+    listItem.dataset.searchCategory = "Notifications";
+    listItem.dataset.searchLabel = notif.subject;
+    listItem.dataset.searchText = [notif.subject, notif.senderName, notif.body]
+        .filter(Boolean)
+        .join(" ");
 
     listItem.innerHTML =
         '<span class="notification-item-dot" aria-hidden="true"></span>' +
@@ -219,7 +252,7 @@ function renderNotificationItem(notif, i18n) {
         (notif.actionUrl
             ? '<span class="notification-item-link-arrow" aria-hidden="true">&#8250;</span>'
             : "") +
-        `<button class="notification-dismiss" type="button" aria-label="${i18n.t("ui.reuse.remove")}">&#215;</button>`;
+        `<button class="notification-dismiss" data-search-exclude="true" type="button" aria-label="${i18n.t("ui.reuse.remove")}">&#215;</button>`;
 
     listItem.addEventListener("click", async (e) => {
         if (e.target.closest(".notification-dismiss")) return;

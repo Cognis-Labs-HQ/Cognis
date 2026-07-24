@@ -148,9 +148,49 @@ export function createPostRoutes(
         if (url.pathname === "/api/v1/social/posts" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const posts = await profileStore.getPostsByAccount(claims.sub);
+            const scope = String(url.searchParams.get("scope") ?? "").trim();
+            if (scope !== "visible") {
+                const posts = await profileStore.getPostsByAccount(claims.sub);
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: posts }));
+                return true;
+            }
+            const query = String(url.searchParams.get("q") ?? "")
+                .trim()
+                .toLowerCase();
+            const allPosts = await profileStore.getAllPosts();
+            const visible: Array<Post & { author: AccountProfile }> = [];
+            for (const post of allPosts) {
+                const author = await profileStore.getProfile(post.accountId);
+                if (!author) continue;
+                if (await profileStore.isBlocked(author.accountId, claims.sub)) {
+                    continue;
+                }
+                if (
+                    !(await canViewPost(
+                        claims.sub,
+                        claims.role,
+                        post,
+                        author,
+                        profileStore,
+                    ))
+                ) {
+                    continue;
+                }
+                const haystack = [
+                    post.title,
+                    post.content,
+                    author.handle,
+                    author.displayName,
+                ]
+                    .filter(Boolean)
+                    .join(" ")
+                    .toLowerCase();
+                if (query && !haystack.includes(query)) continue;
+                visible.push({ ...post, author });
+            }
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: posts }));
+            res.end(JSON.stringify({ data: visible }));
             return true;
         }
 

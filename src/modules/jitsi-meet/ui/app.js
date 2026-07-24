@@ -1,8 +1,9 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
-import { openSearchPopup } from "/static/reuse/search-bar.js";
+import { openSearchPopup } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { handleProfileAvatarError } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
@@ -131,6 +132,54 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
     };
+
+    function collectMeetingSearchGroups() {
+        const meetings = [
+            ...(Array.isArray(state.activeMeetings)
+                ? state.activeMeetings
+                : []),
+            ...(state.meeting?.id ? [state.meeting] : []),
+        ];
+        const seenIds = new Set();
+        const items = [];
+        for (const meeting of meetings) {
+            const meetingId = normalizeMeetingId(meeting?.id);
+            if (!meetingId || seenIds.has(meetingId)) continue;
+            seenIds.add(meetingId);
+            const title = String(
+                meeting?.meetingName ?? i18n.t("ui.reuse.meeting"),
+            ).trim();
+            const owner = String(
+                meeting?.startedBy?.displayName ??
+                    meeting?.startedBy?.username ??
+                    meeting?.createdBy ??
+                    "",
+            ).trim();
+            const timeLabel = String(
+                meeting?.scheduledAt ?? meeting?.createdAt ?? "",
+            ).trim();
+            items.push({
+                id: `meeting:${meetingId}`,
+                label: title,
+                description: [timeLabel, owner].filter(Boolean).join(" · "),
+                url: `/meetings?meetingId=${encodeURIComponent(meetingId)}`,
+                resultClass: "page",
+                searchText: [
+                    title,
+                    owner,
+                    timeLabel,
+                    meeting?.meetingUrl,
+                    meeting?.scheduledAt,
+                    meeting?.createdAt,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+            });
+        }
+        return items.length ? [{ category: "Meetings", items }] : [];
+    }
+
+    registerSearchIndex("jitsi-meetings", collectMeetingSearchGroups);
 
     const {
         clearTimers,

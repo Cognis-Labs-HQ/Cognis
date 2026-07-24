@@ -1,5 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { createI18n } from "/static/reuse/i18n.js";
+import { registerSearchIndexing } from "./search/index.js";
 
 const i18n = await createI18n({
     componentStringBaseUrls: ["/static/gateways/study/languages"],
@@ -48,3 +49,5 @@ function insertStudyButton(studyBtn) {
 const languagesAvailable = await hasRegisteredLanguages();
 const studyBtn = createStudyNavButton(languagesAvailable, i18n);
 insertStudyButton(studyBtn);
+
+registerSearchIndexing();

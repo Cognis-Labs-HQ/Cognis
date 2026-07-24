@@ -23,7 +23,8 @@ import {
     registerServiceWorker,
 } from "../reuse/pwa.js";
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
-import { createSearchBar } from "../reuse/search-bar.js";
+import { createSearchBar } from "../reuse/search-util/popup.js";
+import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 
 capturePwaInstallPrompt();
@@ -677,7 +678,7 @@ function initSearchBar(i18n) {
     injectSearchBarStyles();
 
     const navigationSearchGroup = {
-        category: i18n.t("ui.reuse.navigation"),
+        category: "Pages",
         items: [
             {
                 id: "page-dashboard",
@@ -693,6 +694,11 @@ function initSearchBar(i18n) {
                 id: "page-settings",
                 label: i18n.t("ui.reuse.settings"),
                 url: "/settings",
+            },
+            {
+                id: "page-profile",
+                label: i18n.t("ui.reuse.profile"),
+                url: "/profile",
             },
             {
                 id: "page-docs",
@@ -772,12 +778,15 @@ function initSearchBar(i18n) {
         ariaLabel: i18n.t("ui.layout.search.aria"),
         noResultsText: i18n.t("ui.layout.search.no_results"),
         localGroups: [navigationSearchGroup, settingsLocalSearchGroup],
-        onSelect: (result) => {
+        onSelect: async (result) => {
             if (result?.handle) {
-                navigateTo(`/profile/${encodeURIComponent(result.handle)}`);
+                await navigateTo(
+                    `/profile/${encodeURIComponent(result.handle)}`,
+                );
             } else if (result?.url) {
-                navigateTo(result.url);
+                await navigateTo(result.url);
             }
+            requestAnimationFrame(() => highlightSearchTarget(result));
         },
     });
     wrap.appendChild(bar);

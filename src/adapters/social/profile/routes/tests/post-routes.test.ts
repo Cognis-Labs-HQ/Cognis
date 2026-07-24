@@ -233,6 +233,94 @@ test("post routes - create and list own posts", async () => {
     }
 });
 
+test("post routes - list visible posts across authors for search", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const accountStore = new DbLocalAccountStore(executor);
+        await accountStore.ensureSchema();
+        const profileStore = new DbProfileStore(executor);
+        await profileStore.ensureSchema();
+        await accountStore.register("alice", "pw");
+        await accountStore.register("bob", "pw");
+        await profileStore.createProfile("alice", "alice");
+        await profileStore.createProfile("bob", "bob");
+        await profileStore.updateProfile("alice", { visibility: "community" });
+        await profileStore.updateProfile("bob", { visibility: "community" });
+        await profileStore.block("bob", "alice");
+        const route = createPostRoutes(profileStore);
+        const aliceToken = issueAccessToken("alice", "user", 60);
+        const bobToken = issueAccessToken("bob", "user", 60);
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq(
+                "POST",
+                bobToken,
+                JSON.stringify({
+                    title: "Visible Bob Post",
+                    content: "shared searchable post",
+                    visibility: "community",
+                }),
+            ),
+            {
+                writeHead(code: number) {
+                    status = code;
+                },
+                end(payload: string) {
+                    body = payload;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/social/posts"),
+        );
+        assert.equal(status, 201);
+
+        await route(
+            makeReq(
+                "POST",
+                aliceToken,
+                JSON.stringify({
+                    title: "Private Alice Note",
+                    content: "shared searchable private note",
+                    visibility: "only_me",
+                }),
+            ),
+            {
+                writeHead(code: number) {
+                    status = code;
+                },
+                end(payload: string) {
+                    body = payload;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/social/posts"),
+        );
+        assert.equal(status, 201);
+
+        await route(
+            makeReq("GET", aliceToken),
+            {
+                writeHead(code: number) {
+                    status = code;
+                },
+                end(payload: string) {
+                    body = payload;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/social/posts?scope=visible&q=shared"),
+        );
+        assert.equal(status, 200);
+        const visiblePosts = JSON.parse(body).data;
+        assert.equal(visiblePosts.length, 1);
+        assert.deepEqual(
+            visiblePosts.map((post: any) => post.author.handle).sort(),
+            ["alice"],
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("post routes - delete own post", async () => {
     const { dir, executor } = makeTempDb();
     try {
