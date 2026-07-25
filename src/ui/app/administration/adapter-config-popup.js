@@ -52,6 +52,7 @@ export function createAdapterConfigPopup({
         function fieldLabel(name, labelText, inputHtml) {
             const descriptor = descriptors[name];
             const isRequired = requiredSet.has(name);
+            const requiredMarker = `<span class="provider-required-flag" data-provider-required="${escapeHtml(name)}" aria-hidden="true"${isRequired ? "" : " hidden"}>*</span>`;
             const isEmpty = !descriptor?.effectiveValue;
             const hasConflict = descriptor?.envConflict === true;
             const requiredClass =
@@ -63,7 +64,7 @@ export function createAdapterConfigPopup({
             const conflictWarning = hasConflict
                 ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
                 : "";
-            return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${escapeHtml(labelText)}${inputHtml}${conflictWarning}</label>`;
+            return `<label class="provider-popup-field${requiredClass}"${labelTitle}><span class="provider-field-title">${escapeHtml(labelText)}${requiredMarker}</span>${inputHtml}${conflictWarning}</label>`;
         }
 
         const fieldKeys = Object.keys(descriptors).filter(
@@ -333,6 +334,87 @@ export function createAdapterConfigPopup({
 
             let popupFormEl = null;
 
+            function currentRequiredFields() {
+                const authDisabledInput = popupFormEl?.querySelector(
+                    '[name="authDisabled"]',
+                );
+                const isAuthDisabled =
+                    authDisabledInput instanceof HTMLInputElement &&
+                    authDisabledInput.checked;
+                const currentFields = new Set(
+                    requiredFields.filter(
+                        (field) =>
+                            !isAuthDisabled ||
+                            (field !== "user" && field !== "password"),
+                    ),
+                );
+                if (!isAuthDisabled) {
+                    for (const authField of ["user", "password"]) {
+                        if (authField in descriptors) {
+                            currentFields.add(authField);
+                        }
+                    }
+                }
+                return [...currentFields];
+            }
+
+            function getRequiredInput(field) {
+                const input = popupFormEl?.querySelector(
+                    `[name="${CSS.escape(field)}"]`,
+                );
+                return input instanceof HTMLInputElement ? input : null;
+            }
+
+            function requiredAllFilled() {
+                return currentRequiredFields().every((field) => {
+                    const input = getRequiredInput(field);
+                    return input !== null && input.value.trim() !== "";
+                });
+            }
+
+            function updateRequiredHighlights() {
+                const requiredTooltip = i18n.t(
+                    "ui.app.admin.notif.required_field",
+                );
+                const currentRequiredSet = new Set(currentRequiredFields());
+                const validationFieldSet = new Set(requiredFields);
+                for (const authField of ["user", "password"]) {
+                    if (authField in descriptors) {
+                        validationFieldSet.add(authField);
+                    }
+                }
+                for (const field of validationFieldSet) {
+                    const input = getRequiredInput(field);
+                    if (input === null) continue;
+                    const label = input.closest("label");
+                    const isRequired = currentRequiredSet.has(field);
+                    const isEmpty = input.value.trim() === "";
+                    const isMissing = isRequired && isEmpty;
+                    input.toggleAttribute("required", isRequired);
+                    const requiredMarker = label?.querySelector(
+                        `[data-provider-required="${CSS.escape(field)}"]`,
+                    );
+                    if (requiredMarker instanceof HTMLElement) {
+                        requiredMarker.hidden = !isRequired;
+                    }
+                    if (label) {
+                        label.classList.toggle(
+                            "provider-field-required",
+                            isMissing,
+                        );
+                        label.classList.toggle(
+                            "provider-field-missing",
+                            isMissing,
+                        );
+                        if (isMissing) {
+                            label.setAttribute("title", requiredTooltip);
+                        } else {
+                            label.removeAttribute("title");
+                        }
+                    }
+                }
+            }
+
             await openPopup({
                 title: name,
                 body: renderGenericAdapterForm(
@@ -356,6 +438,21 @@ export function createAdapterConfigPopup({
                 onAction: async (action, overlay) => {
                     if (action !== "save") return true;
                     if (!(popupFormEl instanceof HTMLElement)) return false;
+                    updateRequiredHighlights();
+                    const missingRequiredField = currentRequiredFields().find(
+                        (field) => {
+                            const input = getRequiredInput(field);
+                            return input === null || input.value.trim() === "";
+                        },
+                    );
+                    if (missingRequiredField) {
+                        markPopupFieldInvalid(
+                            overlay,
+                            missingRequiredField,
+                            i18n.t("ui.app.admin.notif.required_field"),
+                        );
+                        return false;
+                    }
                     const config = buildConfigPayload(popupFormEl);
                     const saveResponse = await apiFetch(configUrl, {
                         method: "PUT",
@@ -402,50 +499,6 @@ export function createAdapterConfigPopup({
                     );
                     if (!toggle) return;
 
-                    function requiredAllFilled() {
-                        return requiredFields.every((field) => {
-                            const input = popupFormEl.querySelector(
-                                `[name="${CSS.escape(field)}"]`,
-                            );
-                            return (
-                                input instanceof HTMLInputElement &&
-                                input.value.trim() !== ""
-                            );
-                        });
-                    }
-
-                    function updateRequiredHighlights() {
-                        const requiredTooltip = i18n.t(
-                            "ui.app.admin.notif.required_field",
-                        );
-                        for (const field of requiredFields) {
-                            const input = popupFormEl.querySelector(
-                                `[name="${CSS.escape(field)}"]`,
-                            );
-                            if (!(input instanceof HTMLInputElement)) continue;
-                            const label = input.closest("label");
-                            const isEmpty = input.value.trim() === "";
-                            if (label) {
-                                label.classList.toggle(
-                                    "provider-field-required",
-                                    isEmpty,
-                                );
-                                label.classList.toggle(
-                                    "provider-field-missing",
-                                    isEmpty,
-                                );
-                                if (isEmpty) {
-                                    label.setAttribute(
-                                        "title",
-                                        requiredTooltip,
-                                    );
-                                } else {
-                                    label.removeAttribute("title");
-                                }
-                            }
-                        }
-                    }
-
                     function syncToggle() {
                         const areAllRequiredFieldsFilled = requiredAllFilled();
                         toggle.disabled = !areAllRequiredFieldsFilled;
@@ -461,6 +514,9 @@ export function createAdapterConfigPopup({
                         toggle.disabled = false;
                         toggle.checked = isEnabledByConfig;
                     }
+
+                    updateRequiredHighlights();
+                    syncToggle();
 
                     popupFormEl.addEventListener("input", () => {
                         updateRequiredHighlights();
@@ -482,6 +538,8 @@ export function createAdapterConfigPopup({
                         authDisabledCheckbox.addEventListener("change", () => {
                             authFieldsEl.style.display =
                                 authDisabledCheckbox.checked ? "none" : "";
+                            updateRequiredHighlights();
+                            syncToggle();
                         });
                     }
 

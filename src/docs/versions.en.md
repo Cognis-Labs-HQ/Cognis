@@ -30,14 +30,14 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.6`  |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.7`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.7`  |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.3`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.7`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.6`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.3`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.3`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.3`  |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.4`  |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.6`  |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.4`  |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.4`  |
