@@ -124,11 +124,10 @@ test("users delete action removes the confirmed deletion from local table data",
         deleteAction,
         /users = users\.filter\(\(user\) => user\.username !== username\)/,
     );
-    assert.match(
-        deleteAction,
-        /buildElements\(\);\s*composer\.refresh\(elements\)/,
-    );
+    assert.match(deleteAction, /root\.querySelectorAll\("\.users-row"\)/);
+    assert.match(deleteAction, /deletedUserRow\?\.remove\(\)/);
     assert.doesNotMatch(deleteAction, /await refreshData\(\)/);
+    assert.doesNotMatch(deleteAction, /composer\.refresh\(elements\)/);
 });
 
 test("users tfa reset action has standalone branch", () => {

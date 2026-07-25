@@ -428,8 +428,11 @@ async function runUserMenuAction(action, username) {
         // The users endpoint can briefly return its pre-delete state, which would
         // put the deleted row straight back into the table.
         users = users.filter((user) => user.username !== username);
+        const deletedUserRow = Array.from(
+            root.querySelectorAll(".users-row"),
+        ).find((userRow) => userRow.dataset.username === username);
+        deletedUserRow?.remove();
         buildElements();
-        composer.refresh(elements);
         return;
     }
 
