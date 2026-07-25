@@ -554,16 +554,24 @@ export function createProfileRoutes(
                     return true;
                 }
                 if (!persistResult?.persisted) {
-                    res.writeHead(500, { "content-type": "application/json" });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "remove_failed",
-                                message: "Failed to remove avatar.",
-                            },
-                        }),
+                    log?.(
+                        "warn",
+                        "Avatar removal flow did not persist the change; falling back to direct persistence.",
+                        {
+                            ...logMeta,
+                            reason:
+                                persistResult?.reason ??
+                                "missing_persist_result",
+                        },
                     );
-                    return true;
+                    if (profile?.avatarKey)
+                        await fileGateway.delete(
+                            claims!.sub,
+                            profile.avatarKey,
+                        );
+                    await profileStore.updateProfile(claims!.sub, {
+                        avatarKey: null,
+                    });
                 }
             } else {
                 if (profile?.avatarKey)
@@ -807,16 +815,24 @@ export function createProfileRoutes(
                     return true;
                 }
                 if (!persistResult?.persisted) {
-                    res.writeHead(500, { "content-type": "application/json" });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "remove_failed",
-                                message: "Failed to remove banner.",
-                            },
-                        }),
+                    log?.(
+                        "warn",
+                        "Banner removal flow did not persist the change; falling back to direct persistence.",
+                        {
+                            ...logMeta,
+                            reason:
+                                persistResult?.reason ??
+                                "missing_persist_result",
+                        },
                     );
-                    return true;
+                    if (profile?.bannerKey)
+                        await fileGateway.delete(
+                            claims!.sub,
+                            profile.bannerKey,
+                        );
+                    await profileStore.updateProfile(claims!.sub, {
+                        bannerKey: null,
+                    });
                 }
             } else {
                 if (profile?.bannerKey)

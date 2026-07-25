@@ -170,6 +170,14 @@ function refreshPage() {
     composer?.refresh(elements);
 }
 
+function refreshProfileHero() {
+    const heroElement = elements.find((element) => element.id === "hero");
+    const heroHost = root.querySelector('[data-composer-element="hero"]');
+    if (!heroElement || !(heroHost instanceof HTMLElement)) return;
+    heroHost.innerHTML = heroElement.render();
+    bindProfileHeroEvents();
+}
+
 async function loadSocialConnectionList(profileHandle, connectionKind) {
     const response = await apiFetch(
         `/api/v1/social/users/${encodeURIComponent(profileHandle)}/${connectionKind}`,
@@ -471,7 +479,7 @@ function bindFollowButtonHover(button) {
     });
 }
 
-function bindPageEvents() {
+function bindProfileHeroEvents() {
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
         "click",
         openEditPopup,
@@ -518,6 +526,92 @@ function bindPageEvents() {
         "click",
         () => profileImageActions?.doRemoveAvatar(),
     );
+
+    if (bannerMenuCloseHandler) {
+        document.removeEventListener("click", bannerMenuCloseHandler, true);
+        bannerMenuCloseHandler = null;
+    }
+
+    const menuButton = root.querySelector(".profile-banner-menu-btn");
+    const dropdown = root.querySelector(".profile-banner-menu-dropdown");
+
+    if (menuButton && dropdown) {
+        bannerMenuCloseHandler = (event) => {
+            const menuWrap = root.querySelector(".profile-banner-menu-wrap");
+            if (!menuWrap?.contains(event.target)) {
+                dropdown.hidden = true;
+                menuButton.setAttribute("aria-expanded", "false");
+            }
+        };
+
+        menuButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const opening = dropdown.hidden;
+            dropdown.hidden = !opening;
+            menuButton.setAttribute("aria-expanded", String(opening));
+            if (opening) {
+                document.addEventListener(
+                    "click",
+                    bannerMenuCloseHandler,
+                    true,
+                );
+            } else {
+                document.removeEventListener(
+                    "click",
+                    bannerMenuCloseHandler,
+                    true,
+                );
+            }
+        });
+
+        root.querySelectorAll(".profile-banner-height-radio").forEach(
+            (bannerHeightRadio) => {
+                bannerHeightRadio.addEventListener("change", async () => {
+                    const nextBannerHeight = bannerHeightRadio.value;
+                    if (!nextBannerHeight) return;
+                    bannerHeightRadio
+                        .closest(".profile-banner-menu-dropdown")
+                        ?.querySelectorAll(".profile-banner-height-radio")
+                        .forEach((radio) => {
+                            radio.checked = radio.value === nextBannerHeight;
+                        });
+                    if (nextBannerHeight === bannerHeight) return;
+                    bannerHeight = nextBannerHeight;
+                    dropdown.hidden = true;
+                    menuButton.setAttribute("aria-expanded", "false");
+                    document.removeEventListener(
+                        "click",
+                        bannerMenuCloseHandler,
+                        true,
+                    );
+                    await saveBannerLayoutPreference({
+                        height: bannerHeight,
+                        panX: bannerPanX,
+                        panY: bannerPanY,
+                    });
+                    composer.refresh(elements);
+                });
+            },
+        );
+
+        root.querySelector(".profile-banner-remove-btn")?.addEventListener(
+            "click",
+            () => {
+                dropdown.hidden = true;
+                menuButton.setAttribute("aria-expanded", "false");
+                document.removeEventListener(
+                    "click",
+                    bannerMenuCloseHandler,
+                    true,
+                );
+                profileImageActions?.doRemoveBanner();
+            },
+        );
+    }
+}
+
+function bindPageEvents() {
+    bindProfileHeroEvents();
     const postFormElement = root.querySelector("#new-post-form");
     if (postFormElement instanceof HTMLFormElement) {
         const profileVis = profile?.visibility ?? "hidden";
@@ -614,88 +708,6 @@ function bindPageEvents() {
             );
         },
     );
-
-    if (bannerMenuCloseHandler) {
-        document.removeEventListener("click", bannerMenuCloseHandler, true);
-        bannerMenuCloseHandler = null;
-    }
-
-    const menuButton = root.querySelector(".profile-banner-menu-btn");
-    const dropdown = root.querySelector(".profile-banner-menu-dropdown");
-
-    if (menuButton && dropdown) {
-        bannerMenuCloseHandler = (event) => {
-            const menuWrap = root.querySelector(".profile-banner-menu-wrap");
-            if (!menuWrap?.contains(event.target)) {
-                dropdown.hidden = true;
-                menuButton.setAttribute("aria-expanded", "false");
-            }
-        };
-
-        menuButton.addEventListener("click", (event) => {
-            event.stopPropagation();
-            const opening = dropdown.hidden;
-            dropdown.hidden = !opening;
-            menuButton.setAttribute("aria-expanded", String(opening));
-            if (opening) {
-                document.addEventListener(
-                    "click",
-                    bannerMenuCloseHandler,
-                    true,
-                );
-            } else {
-                document.removeEventListener(
-                    "click",
-                    bannerMenuCloseHandler,
-                    true,
-                );
-            }
-        });
-
-        root.querySelectorAll(".profile-banner-height-radio").forEach(
-            (bannerHeightRadio) => {
-                bannerHeightRadio.addEventListener("change", async () => {
-                    const nextBannerHeight = bannerHeightRadio.value;
-                    if (!nextBannerHeight) return;
-                    bannerHeightRadio
-                        .closest(".profile-banner-menu-dropdown")
-                        ?.querySelectorAll(".profile-banner-height-radio")
-                        .forEach((radio) => {
-                            radio.checked = radio.value === nextBannerHeight;
-                        });
-                    if (nextBannerHeight === bannerHeight) return;
-                    bannerHeight = nextBannerHeight;
-                    dropdown.hidden = true;
-                    menuButton.setAttribute("aria-expanded", "false");
-                    document.removeEventListener(
-                        "click",
-                        bannerMenuCloseHandler,
-                        true,
-                    );
-                    await saveBannerLayoutPreference({
-                        height: bannerHeight,
-                        panX: bannerPanX,
-                        panY: bannerPanY,
-                    });
-                    composer.refresh(elements);
-                });
-            },
-        );
-
-        root.querySelector(".profile-banner-remove-btn")?.addEventListener(
-            "click",
-            () => {
-                dropdown.hidden = true;
-                menuButton.setAttribute("aria-expanded", "false");
-                document.removeEventListener(
-                    "click",
-                    bannerMenuCloseHandler,
-                    true,
-                );
-                profileImageActions?.doRemoveBanner();
-            },
-        );
-    }
 }
 
 export async function mount(rootEl, { signal } = {}) {
@@ -723,7 +735,7 @@ export async function mount(rootEl, { signal } = {}) {
         setState,
         loadOwnProfile,
         saveBannerLayoutPreference,
-        refreshPage,
+        refreshPage: refreshProfileHero,
         updateNavbarAvatar,
         i18n,
         openPopup,

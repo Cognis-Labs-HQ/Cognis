@@ -58,6 +58,22 @@ test("popup styles constrain dialog height and apply themed scrollbars", () => {
     assert.match(source, /\/static\/assets\/reuse\/clipboard\.svg/);
 });
 
+test("release changelog popup checkbox follows the active color scheme", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/styles/popup.css"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /\.popup-summary-checkbox-row input\[type="checkbox"\]\s*\{[\s\S]*color-scheme:\s*dark;/,
+    );
+    assert.match(
+        source,
+        /body\[data-theme="light"\][\s\S]*\.popup-summary-checkbox-row[\s\S]*input\[type="checkbox"\]\s*\{[\s\S]*color-scheme:\s*light;/,
+    );
+});
+
 test("router stores previous route in history state during SPA navigation", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
