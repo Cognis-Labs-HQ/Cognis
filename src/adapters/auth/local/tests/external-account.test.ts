@@ -88,18 +88,17 @@ test("external account info qualifies account columns when joining identities", 
     const info = await store.getInfo("firehawk");
 
     assert.equal(info?.provider, "ldap");
-    assert.equal(commands[0]?.alias, "a");
     assert.deepEqual(commands[0]?.where, [
-        { column: "a.id", value: "firehawk" },
+        { column: "accounts.id", value: "firehawk" },
     ]);
     assert.deepEqual(commands[0]?.columns, [
-        { col: "a.id", as: "id" },
-        { col: "a.created_at", as: "created_at" },
-        { col: "a.last_login", as: "last_login" },
-        { col: "a.enabled", as: "enabled" },
-        { col: "a.is_admin", as: "is_admin" },
-        { col: "a.is_founder", as: "is_founder" },
-        { col: "a.role", as: "role" },
-        { col: "i.provider", as: "provider" },
+        { col: "accounts.id", as: "id" },
+        { col: "accounts.created_at", as: "created_at" },
+        { col: "accounts.last_login", as: "last_login" },
+        { col: "accounts.enabled", as: "enabled" },
+        { col: "accounts.is_admin", as: "is_admin" },
+        { col: "accounts.is_founder", as: "is_founder" },
+        { col: "accounts.role", as: "role" },
+        { col: "auth_identities.provider", as: "provider" },
     ]);
 });

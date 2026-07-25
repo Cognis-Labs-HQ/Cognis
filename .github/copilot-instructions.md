@@ -315,6 +315,8 @@ Tests outside `src/core` must assume any gateway, adapter, or module outside the
 
 ### Variable naming
 
+Prefer fully qualified database table names instead of aliases. When an alias is necessary, it must preserve the complete, descriptive table name; never shorten table names to initials, abbreviations, or single-letter aliases such as `a`, `i`, or `c`.
+
 Variable and binding names must be descriptive. Single-letter names are only acceptable in the roles listed below; all other one- or two-letter identifiers are forbidden in `const`, `let`, and `var` declarations and in `for-of` / `for-in` bindings:
 
 **Acceptable single-letter names:**

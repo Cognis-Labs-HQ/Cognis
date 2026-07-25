@@ -226,30 +226,38 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const credResult = await this.db.executeCommand({
             option: "SELECT",
             table: "local_auth_credentials",
-            alias: "c",
             columns: [
-                "c.username",
-                "c.password_hash",
-                { col: "a.is_admin", as: "is_admin" },
-                { col: "a.role", as: "role" },
-                { col: "a.enabled", as: "enabled" },
-                { col: "p.role", as: "profile_role" },
+                "local_auth_credentials.username",
+                "local_auth_credentials.password_hash",
+                { col: "accounts.is_admin", as: "is_admin" },
+                { col: "accounts.role", as: "role" },
+                { col: "accounts.enabled", as: "enabled" },
+                { col: "account_profiles.role", as: "profile_role" },
             ],
             joins: [
                 {
                     type: "INNER",
                     table: "accounts",
-                    alias: "a",
-                    on: { leftColumn: "c.account_id", rightColumn: "a.id" },
+                    on: {
+                        leftColumn: "local_auth_credentials.account_id",
+                        rightColumn: "accounts.id",
+                    },
                 },
                 {
                     type: "LEFT",
                     table: "account_profiles",
-                    alias: "p",
-                    on: { leftColumn: "a.id", rightColumn: "p.account_id" },
+                    on: {
+                        leftColumn: "accounts.id",
+                        rightColumn: "account_profiles.account_id",
+                    },
                 },
             ],
-            where: [{ column: "c.username", value: lowercaseUsername }],
+            where: [
+                {
+                    column: "local_auth_credentials.username",
+                    value: lowercaseUsername,
+                },
+            ],
         });
         const account = credResult.rows?.[0];
         if (!account) return null;
@@ -286,31 +294,34 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "accounts",
-            alias: "a",
             columns: [
-                { col: "a.id", as: "username" },
-                { col: "a.is_admin", as: "is_admin" },
-                { col: "a.role", as: "role" },
-                { col: "a.enabled", as: "enabled" },
-                { col: "a.is_founder", as: "is_founder" },
-                { col: "p.role", as: "profile_role" },
-                { col: "i.provider", as: "provider" },
+                { col: "accounts.id", as: "username" },
+                { col: "accounts.is_admin", as: "is_admin" },
+                { col: "accounts.role", as: "role" },
+                { col: "accounts.enabled", as: "enabled" },
+                { col: "accounts.is_founder", as: "is_founder" },
+                { col: "account_profiles.role", as: "profile_role" },
+                { col: "auth_identities.provider", as: "provider" },
             ],
             joins: [
                 {
                     type: "LEFT",
                     table: "auth_identities",
-                    alias: "i",
-                    on: { leftColumn: "a.id", rightColumn: "i.account_id" },
+                    on: {
+                        leftColumn: "accounts.id",
+                        rightColumn: "auth_identities.account_id",
+                    },
                 },
                 {
                     type: "LEFT",
                     table: "account_profiles",
-                    alias: "p",
-                    on: { leftColumn: "a.id", rightColumn: "p.account_id" },
+                    on: {
+                        leftColumn: "accounts.id",
+                        rightColumn: "account_profiles.account_id",
+                    },
                 },
             ],
-            orderBy: [{ column: "a.id", direction: "ASC" }],
+            orderBy: [{ column: "accounts.id", direction: "ASC" }],
         });
         return (result.rows ?? []).map((row) => ({
             username: String(row.username),
@@ -637,29 +648,27 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "accounts",
-            alias: "a",
             columns: [
-                { col: "a.id", as: "id" },
-                { col: "a.created_at", as: "created_at" },
-                { col: "a.last_login", as: "last_login" },
-                { col: "a.enabled", as: "enabled" },
-                { col: "a.is_admin", as: "is_admin" },
-                { col: "a.is_founder", as: "is_founder" },
-                { col: "a.role", as: "role" },
-                { col: "i.provider", as: "provider" },
+                { col: "accounts.id", as: "id" },
+                { col: "accounts.created_at", as: "created_at" },
+                { col: "accounts.last_login", as: "last_login" },
+                { col: "accounts.enabled", as: "enabled" },
+                { col: "accounts.is_admin", as: "is_admin" },
+                { col: "accounts.is_founder", as: "is_founder" },
+                { col: "accounts.role", as: "role" },
+                { col: "auth_identities.provider", as: "provider" },
             ],
             joins: [
                 {
                     type: "LEFT",
                     table: "auth_identities",
-                    alias: "i",
                     on: {
-                        leftColumn: "a.id",
-                        rightColumn: "i.account_id",
+                        leftColumn: "accounts.id",
+                        rightColumn: "auth_identities.account_id",
                     },
                 },
             ],
-            where: [{ column: "a.id", value: lowercaseUsername }],
+            where: [{ column: "accounts.id", value: lowercaseUsername }],
             limit: 1,
         });
         const row = result.rows?.[0];
