@@ -659,4 +659,5 @@
   <string name="ui.app.login.reason.account_archived">Your account is archived. Contact an administrator to restore access.</string>
   <string name="ui.app.login.reason.account_deactivated">Your account is deactivated. Log in again to restore interaction.</string>
   <string name="ui.reuse.status">Status</string>
+  <string name="ui.reuse.load_failed">Failed to load configuration. Please try again.</string>
 </resources>

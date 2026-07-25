@@ -271,10 +271,36 @@ export function createAdapterConfigPopup({
     return {
         async openAdapterConfig(name, { configUrl, testUrl, onSaved } = {}) {
             if (!configUrl) return;
-
             const response = await apiFetch(configUrl);
             if (!response.ok) return;
             const payload = await response.json();
+            const configPopupScriptUrl = String(
+                payload.configPopupScriptUrl ?? "",
+            ).trim();
+            if (configPopupScriptUrl) {
+                const extension = await import(configPopupScriptUrl).catch(
+                    () => null,
+                );
+                if (typeof extension?.openAdapterConfig !== "function") {
+                    showToast(i18n.t("ui.reuse.load_failed"), {
+                        variant: "error",
+                    });
+                    return;
+                }
+                await extension.openAdapterConfig({
+                    configUrl,
+                    configPayload: payload,
+                    onSaved,
+                    i18n,
+                    escapeHtml,
+                    apiFetch,
+                    openPopup,
+                    showToast,
+                    buildConfigPayload,
+                    fieldNameToLabel,
+                });
+                return;
+            }
             const dbData = payload.data ?? {};
             const envData = payload.envValues ?? {};
             const requiredFields = Array.isArray(payload.requiredFields)

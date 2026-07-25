@@ -13,11 +13,36 @@ import type { AuthBootstrapHookContext } from "./index.js";
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
     name: string;
+    forgotPassword: boolean;
+    credential: boolean;
+    adapterId: string;
 }> {
-    return context.authGateway.getEnabledAdapters().map((adapter) => ({
-        id: adapter.id,
-        name: adapter.name,
-    }));
+    return context.authGateway.getEnabledAdapters().flatMap((adapter) => {
+        const methods = adapter.getLoginMethods?.() ?? [
+            { id: adapter.id, name: adapter.name },
+        ];
+        return methods.map((method) => ({
+            ...method,
+            credential:
+                method.credential === true ||
+                adapter.id === "local" ||
+                adapter.id === "ldap",
+            adapterId: adapter.id,
+            forgotPassword:
+                adapter.getLoginUiCapabilities?.().forgotPassword === true,
+        }));
+    });
+}
+
+function getPublicLoginMethods(context: AuthBootstrapHookContext) {
+    return getEnabledLoginMethods(context).map(
+        ({ adapterId: _adapterId, credential, ...method }) => ({
+            ...method,
+            ...(credential && method.id !== "local"
+                ? { credential: true }
+                : {}),
+        }),
+    );
 }
 
 export async function registerAuthBootstrapHook(
@@ -56,7 +81,7 @@ export async function registerAuthBootstrapHook(
             const enabledMethods = getEnabledLoginMethods(context);
             return {
                 defaultProviderId: enabledMethods[0]?.id ?? null,
-                enabledMethods,
+                enabledMethods: getPublicLoginMethods(context),
             };
         },
     );
@@ -77,14 +102,19 @@ export async function registerAuthBootstrapHook(
             )[0];
             const providerId =
                 input.provider ?? resolveResult?.defaultProviderId ?? "local";
+            const method = getEnabledLoginMethods(context).find(
+                (entry) => entry.id === providerId,
+            );
             const adapter =
-                context.authGateway.getEnabledAdapter(providerId) ??
-                context.authGateway.getEnabledAdapter("local");
+                context.authGateway.getEnabledAdapter(
+                    method?.adapterId ?? providerId,
+                ) ?? context.authGateway.getEnabledAdapter("local");
             if (!adapter) {
                 return { success: false, reason: "provider_unavailable" };
             }
             const credentials: Record<string, unknown> = {
                 ...(input.credentials ?? {}),
+                authSourceId: method?.id,
             };
             const session = await adapter.authenticate(credentials);
             if (!session) {
@@ -122,6 +152,38 @@ export async function registerAuthBootstrapHook(
 
             const { session, adapterId } = authResult;
             const capabilities = context.ctx.capabilities;
+
+            if (
+                adapterId !== "local" &&
+                context.accountStore.ensureExternalAccount
+            ) {
+                await context.accountStore.ensureExternalAccount({
+                    accountId: session.accountId,
+                    provider: adapterId ?? session.provider,
+                    externalUserId:
+                        "externalUserId" in session
+                            ? String(session.externalUserId)
+                            : session.accountId,
+                    email:
+                        "email" in session
+                            ? String(session.email ?? "") || undefined
+                            : undefined,
+                    displayName:
+                        "displayName" in session
+                            ? String(session.displayName ?? "") || undefined
+                            : undefined,
+                    role: session.role,
+                });
+            }
+
+            const account = await context.accountStore.getInfo(
+                session.accountId,
+            );
+            if (account && !account.enabled) {
+                return {
+                    sessionResult: { outcome: "invalid_credentials" },
+                };
+            }
 
             let role: AccessRole = resolveRole(session.role);
             const getProfileRole =
@@ -203,11 +265,33 @@ export async function registerAuthBootstrapHook(
                     registrationsEnabled: false,
                     userValidationMode: "none" as const,
                 }));
+            const listedEmails =
+                "emails" in session && Array.isArray(session.emails)
+                    ? session.emails.map(String)
+                    : "email" in session && session.email
+                      ? [String(session.email)]
+                      : [];
+            if (adapterId !== "local" && listedEmails.length > 0) {
+                await capabilities.get<
+                    (
+                        accountId: string,
+                        emails: string[],
+                        options?: { sendPrimaryVerification?: boolean },
+                    ) => Promise<void>
+                >("notify:provisionUserEmails")?.(
+                    session.accountId,
+                    listedEmails,
+                    {
+                        sendPrimaryVerification:
+                            securitySettings.userValidationMode === "smtp",
+                    },
+                );
+            }
             const sharedPayload = {
                 accountId: session.accountId,
                 displayName: displayName ?? session.accountId,
                 provider: session.provider,
-                providerId: adapterId ?? session.provider,
+                providerId: session.provider ?? adapterId,
                 role,
                 isFounder,
                 userValidationMode: securitySettings.userValidationMode,
@@ -219,7 +303,7 @@ export async function registerAuthBootstrapHook(
                 role,
                 ttlSeconds,
                 {
-                    providerId: adapterId ?? session.provider,
+                    providerId: session.provider ?? adapterId,
                 },
             );
             const sessionResult = {
@@ -242,7 +326,7 @@ export async function registerAuthBootstrapHook(
         "resolve-methods",
         { id: "auth-gateway:login-methods" },
         () => ({
-            methods: getEnabledLoginMethods(context),
+            methods: getPublicLoginMethods(context),
         }),
     );
 

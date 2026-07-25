@@ -19,7 +19,7 @@ import { createHash } from "node:crypto";
 import { RouteRegistry } from "./reuse/route-registry.js";
 import { UIRegistry } from "./reuse/ui-registry.js";
 import { setAppLogger, writeConsoleLog } from "./reuse/logger.js";
-import type { LocalAccountStore } from "./reuse/account-store.js";
+import type { LocalAccountStore } from "../gateways/auth/reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";

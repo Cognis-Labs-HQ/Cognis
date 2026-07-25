@@ -70,6 +70,30 @@ test("bootstrap registers notify gateway with GatewayRegistry", async () => {
     assert.equal(gateways[0].name, "Notification Gateway");
 });
 
+test("bootstrap contributes LDAP email provisioning capability", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+    });
+
+    const provision = capabilities.get<
+        (accountId: string, emails: string[]) => Promise<void>
+    >("notify:provisionUserEmails");
+    assert.ok(provision);
+    await assert.doesNotReject(
+        provision("ldap-user", [
+            "primary@example.org",
+            "secondary@example.org",
+        ]),
+    );
+});
+
 test("bootstrap registers routes with RouteRegistry", async () => {
     const { gatewayRegistry, routeRegistry, capabilities, flow } =
         await makeCtx();

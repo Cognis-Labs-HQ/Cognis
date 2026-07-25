@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserRoutes } from "../../routes/users/index.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
-import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
+import { VolatileLocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
 import {
     issueAccessToken,
@@ -16,7 +16,7 @@ import {
     registerCanonicalFlow,
     USER_LIFECYCLE_FLOW_CATALOG,
 } from "@cognis/core";
-import type { LocalAccountStore } from "../../reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 
 function makeRouteContext(accountStore: LocalAccountStore) {
     const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
@@ -1002,4 +1002,67 @@ test("users list includes hasTfaConfigured when tfa capability is present", asyn
     );
     assert.equal(alice.hasTfaConfigured, true);
     assert.equal(bob.hasTfaConfigured, false);
+});
+
+test("users list includes provisioned LDAP accounts and identifies their provider", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", "admin");
+    await accounts.ensureExternalAccount({
+        accountId: "ldap-user",
+        provider: "ldap",
+        externalUserId: "uid=ldap-user,dc=example,dc=org",
+    });
+    let body = "";
+    const route = createUserRoutes(accounts, undefined);
+
+    await route(
+        { method: "GET", headers } as any,
+        {
+            writeHead() {},
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users"),
+    );
+
+    const ldapUser = JSON.parse(body).data.find(
+        (entry: { username: string }) => entry.username === "ldap-user",
+    );
+    assert.equal(ldapUser.provider, "ldap");
+});
+
+test("admin password changes are rejected for LDAP accounts", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", "admin");
+    await accounts.ensureExternalAccount({
+        accountId: "ldap-user",
+        provider: "ldap",
+        externalUserId: "uid=ldap-user,dc=example,dc=org",
+    });
+    let status = 0;
+    let body = "";
+    const route = createUserRoutes(accounts, undefined);
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"password":"new-password"}');
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/users/ldap-user/password"),
+    );
+
+    assert.equal(status, 403);
+    assert.equal(JSON.parse(body).error.code, "external_password_managed");
 });

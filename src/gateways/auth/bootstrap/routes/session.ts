@@ -42,7 +42,12 @@ export function createSessionRoutes({
     log,
 }: SessionRouteDependencies): AuthGatewayRouteHandler {
     async function resolveLoginUiConfig(systemCtx: Ctx): Promise<{
-        methods: Array<{ id: string; name: string }>;
+        methods: Array<{
+            id: string;
+            name: string;
+            forgotPassword?: boolean;
+            credential?: boolean;
+        }>;
         integrations: Array<{
             id: string;
             scriptUrl: string;
@@ -51,15 +56,31 @@ export function createSessionRoutes({
     }> {
         const fallbackMethods = authGateway
             .getEnabledAdapters()
-            .map((adapter) => ({
-                id: adapter.id,
-                name: adapter.name,
-            }));
+            .flatMap((adapter) =>
+                (
+                    adapter.getLoginMethods?.() ?? [
+                        { id: adapter.id, name: adapter.name },
+                    ]
+                ).map((method) => ({
+                    ...method,
+                    forgotPassword:
+                        adapter.getLoginUiCapabilities?.().forgotPassword ===
+                        true,
+                })),
+            );
         if (!systemCtx.flow.exists("construct-login-ui")) {
             return { methods: fallbackMethods, integrations: [] };
         }
         const result = await systemCtx.flow.run("construct-login-ui");
-        const methodById = new Map<string, { id: string; name: string }>();
+        const methodById = new Map<
+            string,
+            {
+                id: string;
+                name: string;
+                forgotPassword?: boolean;
+                credential?: boolean;
+            }
+        >();
         for (const stageResult of [
             ...(result.stageResults["resolve-methods"] ?? []),
             ...(result.stageResults["augment-methods"] ?? []),
@@ -74,7 +95,16 @@ export function createSessionRoutes({
                     (method as { name?: unknown })?.name ?? "",
                 ).trim();
                 if (!id || !name) continue;
-                methodById.set(id, { id, name });
+                methodById.set(id, {
+                    id,
+                    name,
+                    forgotPassword:
+                        (method as { forgotPassword?: unknown })
+                            .forgotPassword === true,
+                    credential:
+                        (method as { credential?: unknown }).credential ===
+                        true,
+                });
             }
         }
         const integrationById = new Map<
@@ -377,10 +407,18 @@ export function createSessionRoutes({
                 : {
                       methods: authGateway
                           .getEnabledAdapters()
-                          .map((adapter) => ({
-                              id: adapter.id,
-                              name: adapter.name,
-                          })),
+                          .flatMap((adapter) =>
+                              (
+                                  adapter.getLoginMethods?.() ?? [
+                                      { id: adapter.id, name: adapter.name },
+                                  ]
+                              ).map((method) => ({
+                                  ...method,
+                                  forgotPassword:
+                                      adapter.getLoginUiCapabilities?.()
+                                          .forgotPassword === true,
+                              })),
+                          ),
                       integrations: [],
                   };
             log?.("debug", "Resolved login UI flow configuration.", {

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createAuthRoutes } from "../routes/index.js";
-import { VolatileLocalAccountStore } from "../../../api/reuse/account-store.js";
+import { VolatileLocalAccountStore } from "../reuse/account-store.js";
 import type { AuthContext, AuthGateway } from "@cognis/core";
 import { issueAccessToken, lookupAccessToken } from "../access-tokens.js";
 

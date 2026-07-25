@@ -1,7 +1,7 @@
 import path from "node:path";
 import { type GatewayBootstrapContext } from "../../shared.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
-import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
+import type { LocalAccountStore } from "../../auth/reuse/account-store.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
     parseSecuritySettings,

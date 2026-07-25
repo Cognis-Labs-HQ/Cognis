@@ -13,7 +13,7 @@
  *   });
  *
  * @param {HTMLButtonElement} button
- * @param {{ items: Array<{ id: string, label: string, variant?: 'default'|'danger' }> }} options
+ * @param {{ items: Array<{ id: string, label: string, variant?: 'default'|'danger', disabled?: boolean, title?: string }> }} options
  * @returns {Promise<string|null>}
  */
 let stylesheetReady = null;
@@ -103,7 +103,7 @@ export async function openHamburgerMenu(button, { items }) {
         menu.innerHTML = menuItems
             .map(
                 (item) =>
-                    `<button type="button" class="hamburger-menu-item ${item.variant === "danger" ? "hamburger-menu-item--danger" : ""}" data-action-id="${String(item.id)}" role="menuitem">${String(item.label)}</button>`,
+                    `<button type="button" class="hamburger-menu-item ${item.variant === "danger" ? "hamburger-menu-item--danger" : ""}" data-action-id="${String(item.id)}" role="menuitem"${item.disabled ? " disabled" : ""}${item.title ? ` title="${String(item.title)}"` : ""}>${String(item.label)}</button>`,
             )
             .join("");
         document.body.appendChild(menu);

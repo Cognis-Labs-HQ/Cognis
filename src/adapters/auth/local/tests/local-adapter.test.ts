@@ -65,6 +65,13 @@ test("local adapter supports password reset", async () => {
     assert.equal(newLogin?.accountId, "delta");
 });
 
+test("local adapter contributes forgot-password login UI", () => {
+    const adapter = createAdapter(new VolatileLocalAccountStore());
+    assert.deepEqual(adapter.getLoginUiCapabilities?.(), {
+        forgotPassword: true,
+    });
+});
+
 test("local adapter rejects password reset with incorrect current password", async () => {
     const store = new VolatileLocalAccountStore();
     await store.register("echo", "start-pass");

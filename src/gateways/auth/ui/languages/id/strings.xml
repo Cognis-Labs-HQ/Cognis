@@ -3,6 +3,7 @@
   <string name="gateway.auth.security.section_title">Keamanan</string>
   <string name="gateway.auth.security.load_failed">Tidak dapat memuat kemampuan ubah kata sandi.</string>
   <string name="gateway.auth.security.unsupported_default">Ubah kata sandi tidak didukung untuk penyedia ini.</string>
+  <string name="gateway.auth.security.external_password_notice">Pengguna eksternal tidak dapat mengubah kata sandi mereka di Cognis. Hubungi administrator penyedia identitas Anda untuk mengubah kata sandi.</string>
   <string name="gateway.auth.security.reset_title">Ubah Kata Sandi</string>
   <string name="gateway.auth.security.reset_action">Ubah Kata Sandi</string>
   <string name="gateway.auth.security.popup_title">Ubah Kata Sandi</string>

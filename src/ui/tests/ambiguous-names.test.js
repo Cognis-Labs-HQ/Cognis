@@ -5,6 +5,7 @@ import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const SOURCE_ROOT = join(ROOT, "src");
 
 function walk(dir) {
     const out = [];
@@ -51,6 +52,10 @@ const FOR_OF_IN_RE =
 // Matches a plain variable declaration.
 // Captures the variable name at group 2 (1–2 letters).
 const DECL_RE = /^\s*(const|let|var)\s+([a-zA-Z]{1,2})\s*=/;
+
+// Matches abbreviated table aliases in structured db.executeCommand syntax.
+// Captures the alias at group 1 when it is only one or two characters long.
+const SQL_ALIAS_RE = /\balias\s*:\s*["']([a-zA-Z0-9_]{1,2})["']/;
 
 test("no ambiguous short variable names in source files", () => {
     const hits = [];
@@ -125,9 +130,21 @@ test("no ambiguous short variable names in source files", () => {
         }
     }
 
+    for (const file of walk(SOURCE_ROOT)) {
+        if (!file.endsWith(".js") && !file.endsWith(".ts")) continue;
+        const lines = readFileSync(file, "utf8").split("\n");
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+            const sqlAliasMatch = SQL_ALIAS_RE.exec(lines[lineIndex]);
+            if (!sqlAliasMatch) continue;
+            hits.push(
+                `${file}:${lineIndex + 1}: ambiguous SQL table alias '${sqlAliasMatch[1]}'`,
+            );
+        }
+    }
+
     assert.equal(
         hits.length,
         0,
-        `Ambiguous single-letter variable names found:\n${hits.join("\n")}`,
+        `Ambiguous short names found:\n${hits.join("\n")}`,
     );
 });

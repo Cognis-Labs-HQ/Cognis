@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readJson, type GatewayBootstrapContext } from "../../shared.js";
-import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
+import type { LocalAccountStore } from "../../auth/reuse/account-store.js";
 import { matchesTrustedDomain } from "../../../api/reuse/security-settings.js";
 import {
     resolveRouteContext,
