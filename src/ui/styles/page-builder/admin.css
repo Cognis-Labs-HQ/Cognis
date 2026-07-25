@@ -97,7 +97,8 @@
 }
 
 .module-row-controls {
-    display: flex;
+    display: grid;
+    grid-template-columns: 100px 10px 52px 32px;
     align-items: center;
     justify-content: flex-end;
     gap: 12px;
@@ -146,9 +147,6 @@
 }
 
 .adapter-inline-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
     padding: 10px 12px;
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -157,6 +155,11 @@
     transition:
         border-color 0.15s ease,
         background 0.15s ease;
+}
+
+.adapter-inline-row summary.adapter-inline-summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 0;
 }
 
 .adapter-inline-row:hover {
@@ -179,20 +182,26 @@
 
 .adapter-inline-controls {
     flex: 0 0 auto;
+    grid-template-columns: minmax(0, auto) 100px 10px 52px 32px;
 }
 
-.adapter-inline-version {
-    color: var(--muted);
-    font-size: 0.85em;
-    font-weight: 500;
-    margin-left: 6px;
+.adapter-sync-slot {
+    min-width: 0;
+}
+
+.adapter-inline-meta {
+    padding: 16px 0 2px;
+}
+
+.adapter-config-button {
+    margin-top: 14px;
 }
 
 .adapter-toggle {
     display: none;
 }
 
-.module-row[open] .module-chevron {
+.module-row[open] > summary .module-chevron {
     transform: rotate(180deg);
 }
 
@@ -218,22 +227,28 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 20%, transparent);
+    box-sizing: border-box;
 }
 
 .component-health-light--ok {
-    color: #22c55e;
-    background: currentColor;
+    background-color: #22c55e;
+    box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.24);
 }
 
 .component-health-light--warning {
-    color: #f59e0b;
-    background: currentColor;
+    background-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.24);
 }
 
 .component-health-light--error {
-    color: #ef4444;
-    background: currentColor;
+    background-color: #ef4444;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.24);
+}
+
+.component-health-light-spacer {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
 }
 
 .module-meta {
@@ -374,6 +389,7 @@ body[data-theme="light"] .slider::before {
     font-weight: 700;
     letter-spacing: 0.02em;
     min-height: 28px;
+    min-width: 100px;
     align-self: center;
 }
 
@@ -408,7 +424,7 @@ body[data-theme="light"] .slider::before {
 @media (max-width: 640px) {
     .module-row summary,
     .module-row-summary {
-        grid-template-columns: minmax(0, 1fr) max-content 52px auto;
+        grid-template-columns: minmax(0, 1fr) auto;
         gap: 10px;
     }
 

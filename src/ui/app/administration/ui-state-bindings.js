@@ -31,8 +31,12 @@ function saveExpandedState(root) {
     root.querySelectorAll("details.module-row[open]").forEach((element) => {
         const gatewayId = element.dataset.gateway;
         const moduleId = element.dataset.module;
+        const adapterId = element.dataset.adapterId;
+        const adapterGatewayId = element.dataset.gatewayId;
         if (gatewayId) openIds.push(`gateway:${gatewayId}`);
         else if (moduleId) openIds.push(`module:${moduleId}`);
+        else if (adapterId && adapterGatewayId)
+            openIds.push(`adapter:${adapterGatewayId}:${adapterId}`);
     });
     try {
         sessionStorage.setItem(EXPANDED_STATE_KEY, JSON.stringify(openIds));
@@ -52,11 +56,15 @@ export function restoreExpandedState(root) {
     root.querySelectorAll("details.module-row").forEach((element) => {
         const gatewayId = element.dataset.gateway;
         const moduleId = element.dataset.module;
+        const adapterId = element.dataset.adapterId;
+        const adapterGatewayId = element.dataset.gatewayId;
         const key = gatewayId
             ? `gateway:${gatewayId}`
             : moduleId
               ? `module:${moduleId}`
-              : null;
+              : adapterId && adapterGatewayId
+                ? `adapter:${adapterGatewayId}:${adapterId}`
+                : null;
         if (key && openSet.has(key)) {
             element.setAttribute("open", "");
         }

@@ -6,14 +6,6 @@ function isAdapterEnabled(adapter) {
     return Boolean(adapter.active ?? adapter.enabled);
 }
 
-function renderAdapterNameWithVersion(adapter, adapterId, escapeHtml) {
-    const name = escapeHtml(adapter.name ?? adapterId),
-        version = String(adapter.version ?? "").trim();
-    return version
-        ? `${name} <span class="adapter-inline-version">v${escapeHtml(version)}</span>`
-        : name;
-}
-
 function getStatePill(status, i18n) {
     if (status === "active" || status === "enabled") {
         return {
@@ -45,7 +37,9 @@ function resolveComponentHealth(healthStatus, componentType, componentId) {
 }
 
 function renderHealthLight(componentHealth, isActive, escapeHtml) {
-    if (!isActive || !componentHealth) return "";
+    if (!isActive || !componentHealth) {
+        return '<span class="component-health-light-spacer" aria-hidden="true"></span>';
+    }
     const status = ["ok", "warning", "error"].includes(componentHealth.status)
         ? componentHealth.status
         : "warning";
@@ -53,6 +47,20 @@ function renderHealthLight(componentHealth, isActive, escapeHtml) {
         ? ` title="${escapeHtml(componentHealth.message)}"`
         : "";
     return `<span class="component-health-light component-health-light--${status}" role="img" aria-label="${escapeHtml(status)}"${title}></span>`;
+}
+
+function renderAdapterDetailsList(adapter, adapterId, i18n, escapeHtml) {
+    return renderDetailRows([
+        [i18n.t("ui.reuse.id"), escapeHtml(adapterId)],
+        [
+            i18n.t("ui.reuse.version"),
+            escapeHtml(adapter.version ?? i18n.t("ui.app.admin.unknown")),
+        ],
+        [
+            i18n.t("ui.app.admin.publisher"),
+            escapeHtml(adapter.publisher || i18n.t("ui.app.admin.unknown")),
+        ],
+    ]);
 }
 
 function renderDetailRows(pairs) {
@@ -272,24 +280,31 @@ function renderInlineAdapters(
                       )}">${syncedPillLabel}</a>`
                     : "";
             return `
-        <div class="adapter-inline-row" role="button" tabindex="0"
+        <details class="module-row adapter-inline-row"
           data-adapter-id="${escapeHtml(adapterId)}"
           data-gateway-id="${escapeHtml(gatewayId)}">
-          <span class="adapter-inline-name"><strong>${renderAdapterNameWithVersion(adapter, adapterId, escapeHtml)}</strong></span>
-          <div class="module-row-controls adapter-inline-controls">
-            <span class="state-pill ${isActive ? "pill-active" : "pill-available"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.available")}</span>
-            ${renderHealthLight(resolveComponentHealth(healthStatus, "adapter", `${gatewayId}:${adapterId}`) ?? resolveComponentHealth(healthStatus, "adapter", adapterId), isActive, escapeHtml)}
-            ${syncedPill}
-            <label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
-              <input type="checkbox" class="adapter-toggle"
-                data-adapter="${escapeHtml(adapterId)}"
-                data-gateway="${escapeHtml(gatewayId)}"
-                ${isActive ? "checked" : ""}
-                ${isGatewayDisabled || isLocked ? "disabled" : ""} />
-              <span class="slider"></span>
-            </label>
+          <summary class="adapter-inline-summary">
+            <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
+            <div class="module-row-controls adapter-inline-controls">
+              <span class="adapter-sync-slot">${syncedPill}</span>
+              <span class="state-pill ${isActive ? "pill-active" : "pill-disabled"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.disabled")}</span>
+              ${renderHealthLight(resolveComponentHealth(healthStatus, "adapter", `${gatewayId}:${adapterId}`) ?? resolveComponentHealth(healthStatus, "adapter", adapterId) ?? (isActive ? { status: "ok" } : null), isActive, escapeHtml)}
+              <label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
+                <input type="checkbox" class="adapter-toggle"
+                  data-adapter="${escapeHtml(adapterId)}"
+                  data-gateway="${escapeHtml(gatewayId)}"
+                  ${isActive ? "checked" : ""}
+                  ${isGatewayDisabled || isLocked ? "disabled" : ""} />
+                <span class="slider"></span>
+              </label>
+              <span class="module-chevron" role="button" tabindex="0" data-details-toggle aria-label="${escapeHtml(i18n.t("ui.reuse.details"))}">▾</span>
+            </div>
+          </summary>
+          <div class="module-meta adapter-inline-meta">
+            <ul class="module-details">${renderAdapterDetailsList(adapter, adapterId, i18n, escapeHtml)}</ul>
+            <button class="btn-confirm adapter-config-button" type="button" data-adapter-config>${escapeHtml(i18n.t("ui.reuse.configure"))}</button>
           </div>
-        </div>
+        </details>
       `;
         })
         .join("");

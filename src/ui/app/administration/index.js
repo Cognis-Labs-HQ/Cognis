@@ -599,15 +599,13 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        if (adapter.locked) return;
+        const configButton = row.querySelector("[data-adapter-config]");
+        if (adapter.locked || !(configButton instanceof HTMLButtonElement))
+            return;
 
         async function handleOpen(e) {
-            const switchLabel = row.querySelector(".switch--inline");
-            if (
-                switchLabel &&
-                (e.target === switchLabel || switchLabel.contains(e.target))
-            )
-                return;
+            e.preventDefault();
+            e.stopPropagation();
             await openAdapterConfig(
                 gatewayId,
                 adapterId,
@@ -616,13 +614,7 @@ function bindAdapterRows() {
             );
         }
 
-        row.addEventListener("click", handleOpen);
-        row.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                handleOpen(e);
-            }
-        });
+        configButton.addEventListener("click", handleOpen);
     });
 }
 

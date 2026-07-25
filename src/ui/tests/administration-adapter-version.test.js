@@ -16,7 +16,7 @@ const escapeHtml = (value) =>
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;");
 
-test("administration adapter rows show adapter version next to the name", () => {
+test("administration adapters expose version and configuration in details", () => {
     const html = renderComponentsContent(
         [],
         [
@@ -38,25 +38,16 @@ test("administration adapter rows show adapter version next to the name", () => 
                 active: true,
             },
         ],
-        {
-            i18n,
-            escapeHtml,
-            healthStatus: {
-                contributions: [
-                    {
-                        componentType: "adapter",
-                        componentId: "notify:smtp",
-                        status: "ok",
-                    },
-                ],
-            },
-        },
+        { i18n, escapeHtml, healthStatus: { contributions: [] } },
     );
 
     assert.match(
         html,
-        /<span class="adapter-inline-name"><strong>SMTP <span class="adapter-inline-version">v0\.2\.6<\/span><\/strong><\/span>/,
+        /<details class="module-row adapter-inline-row"[^]*<summary class="adapter-inline-summary">/,
     );
+    assert.doesNotMatch(html, /adapter-inline-version/);
+    assert.match(html, /module-detail-value">0\.2\.6<\/span>/);
+    assert.match(html, /data-adapter-config/);
     assert.match(html, /module-row-controls adapter-inline-controls/);
     assert.match(
         html,
@@ -64,7 +55,7 @@ test("administration adapter rows show adapter version next to the name", () => 
     );
 });
 
-test("active component health uses lights and disabled adapters omit status", () => {
+test("active components use health lights and disabled adapters reserve the slot", () => {
     const i18n = { t: (key) => key };
     const html = renderComponentsContent(
         [{ id: "active-module", name: "Active module", status: "enabled" }],
@@ -104,6 +95,8 @@ test("active component health uses lights and disabled adapters omit status", ()
         /module-row-title[^]*module-row-controls[^]*state-pill[^]*component-health-light--ok[^]*switch switch--inline[^]*module-chevron/,
     );
     assert.doesNotMatch(html, /component-health-light--error/);
+    assert.match(html, /state-pill pill-disabled/);
+    assert.match(html, /component-health-light-spacer/);
     assert.doesNotMatch(html, />unknown</);
 });
 
@@ -118,19 +111,19 @@ test("health lights have a rendered box and explicit status colors", () => {
     );
     assert.match(
         styles,
-        /\.component-health-light--ok\s*{[^}]*background: currentColor;/,
+        /\.component-health-light--ok\s*{[^}]*background-color: #22c55e;/,
     );
     assert.match(
         styles,
-        /\.component-health-light--warning\s*{[^}]*background: currentColor;/,
+        /\.component-health-light--warning\s*{[^}]*background-color: #f59e0b;/,
     );
     assert.match(
         styles,
-        /\.component-health-light--error\s*{[^}]*background: currentColor;/,
+        /\.component-health-light--error\s*{[^}]*background-color: #ef4444;/,
     );
     assert.match(
         styles,
-        /\.module-row-controls\s*{[^}]*align-items: center;[^}]*justify-content: flex-end;/,
+        /\.module-row-controls\s*{[^}]*grid-template-columns: 100px 10px 52px 32px;[^}]*align-items: center;[^}]*justify-content: flex-end;/,
     );
     assert.match(
         styles,
@@ -146,4 +139,5 @@ test("component detail arrows use an independent details hitbox", () => {
     assert.match(source, /querySelectorAll\("\[data-details-toggle\]"\)/);
     assert.match(source, /event\.stopPropagation\(\)/);
     assert.match(source, /details\.open = !details\.open/);
+    assert.match(source, /adapter:\$\{adapterGatewayId\}:\$\{adapterId\}/);
 });
