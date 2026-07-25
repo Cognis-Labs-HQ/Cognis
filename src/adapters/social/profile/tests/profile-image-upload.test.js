@@ -23,6 +23,13 @@ test("profile hero images opt out of DOM preservation so uploads render immediat
         PROFILE_RENDER_SOURCE,
         /class="profile-hero-banner-img" data-composer-preserve="false"/,
     );
+    assert.equal(
+        PROFILE_RENDER_SOURCE.match(
+            /class="\$\{heroClass\}[^\n]+data-composer-preserve="false"/g,
+        )?.length,
+        2,
+        "both banner-height variants must opt out before an image exists",
+    );
 });
 
 test("resolveBannerCropAspectRatio defaults banner uploads to half-height view", () => {

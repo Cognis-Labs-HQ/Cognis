@@ -2,4 +2,4 @@
 
 ## Show Uploads Immediately
 
-New profile pictures and banners now appear on the profile page as soon as an upload finishes, without requiring a page refresh.
+New profile pictures and banners now replace their placeholders as soon as an upload finishes, without requiring a page refresh.

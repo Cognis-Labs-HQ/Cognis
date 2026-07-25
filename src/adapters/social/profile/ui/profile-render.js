@@ -410,7 +410,7 @@ export function renderHero({
     if (bannerHeight === "full") {
         return `
       ${archivedBanner}
-      <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
+      <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}" data-composer-preserve="false">
         <div class="profile-hero-banner-wrap">
           ${bannerWrap}
         </div>
@@ -433,7 +433,7 @@ export function renderHero({
 
     return `
     ${archivedBanner}
-    <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
+    <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}" data-composer-preserve="false">
       <div class="profile-hero-banner-wrap">
         ${bannerWrap}
       </div>
