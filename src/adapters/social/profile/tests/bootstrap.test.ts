@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
-import { rmSync } from "node:fs";
+import { readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
@@ -152,6 +152,18 @@ test("profile adapter bootstrap registers static dir and navbar.js exists on dis
     await assert.doesNotReject(
         access(navbarPath),
         `navbar.js must exist in the registered static dir: ${navbarPath}`,
+    );
+
+    const navbarSource = readFileSync(navbarPath, "utf8");
+    assert.match(
+        navbarSource,
+        /from ["']\/static\/adapters\/social\/profile\/profile-avatar\.js["']/,
+        "navbar avatar import must use the registered adapter static path",
+    );
+    assert.doesNotMatch(
+        navbarSource,
+        /\/static\/gateways\/social\/profile-avatar\.js/,
+        "navbar must not use the nonexistent legacy gateway static path",
     );
 });
 
