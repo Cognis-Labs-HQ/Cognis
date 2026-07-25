@@ -731,7 +731,6 @@ export async function mount(rootEl, { signal } = {}) {
     users = [];
     registrationGatewayActive = false;
     smtpAdapterActive = false;
-    userQuotas = new Map();
 
     await refreshData();
 
