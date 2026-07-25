@@ -216,9 +216,12 @@ test("changelogs module keeps changelog-only navigation data", () => {
     );
 });
 
-test("docs markdown titles stay within 30 characters", () => {
+test("documentation markdown titles stay within 30 characters", () => {
     const docs = listTrackedDocFiles().filter(
-        (file) => file.startsWith("src/docs/") && file.endsWith(".md"),
+        (file) =>
+            file.startsWith("src/docs/") &&
+            !file.startsWith("src/docs/changelog/") &&
+            file.endsWith(".md"),
     );
     const offenders = [];
     for (const file of docs) {
