@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-auth-saml",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.1",
+        "@cognis/core": "<=0.3.2",
         "@cognis/gateways": "<=0.1.4"
     }
 }
