@@ -43,19 +43,22 @@ function rowToPost(row: any): Post {
 }
 
 const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
-    { col: "p.account_id", as: "account_id" },
-    { col: "p.handle", as: "handle" },
-    { col: "p.display_name", as: "display_name" },
-    { col: "p.role", as: "role" },
-    { col: "p.bio", as: "bio" },
-    { col: "p.location", as: "location" },
-    { col: "p.website", as: "website" },
-    { col: "p.avatar_key", as: "avatar_key" },
-    { col: "p.banner_key", as: "banner_key" },
-    { col: "p.visibility", as: "visibility" },
-    { col: "p.account_lifecycle_state", as: "account_lifecycle_state" },
-    { col: "p.created_at", as: "created_at" },
-    { col: "p.updated_at", as: "updated_at" },
+    { col: "account_profiles.account_id", as: "account_id" },
+    { col: "account_profiles.handle", as: "handle" },
+    { col: "account_profiles.display_name", as: "display_name" },
+    { col: "account_profiles.role", as: "role" },
+    { col: "account_profiles.bio", as: "bio" },
+    { col: "account_profiles.location", as: "location" },
+    { col: "account_profiles.website", as: "website" },
+    { col: "account_profiles.avatar_key", as: "avatar_key" },
+    { col: "account_profiles.banner_key", as: "banner_key" },
+    { col: "account_profiles.visibility", as: "visibility" },
+    {
+        col: "account_profiles.account_lifecycle_state",
+        as: "account_lifecycle_state",
+    },
+    { col: "account_profiles.created_at", as: "created_at" },
+    { col: "account_profiles.updated_at", as: "updated_at" },
 ];
 
 const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
@@ -485,21 +488,25 @@ export class DbProfileStore implements ProfileCreateStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_follows",
-            alias: "f",
+            alias: "account_follows",
             columns: JOINED_PROFILE_COLUMNS,
             joins: [
                 {
                     type: "INNER",
                     table: "account_profiles",
-                    alias: "p",
+                    alias: "account_profiles",
                     on: {
-                        leftColumn: "p.account_id",
-                        rightColumn: "f.follower_id",
+                        leftColumn: "account_profiles.account_id",
+                        rightColumn: "account_follows.follower_id",
                     },
                 },
             ],
-            where: [{ column: "f.following_id", value: accountId }],
-            orderBy: [{ column: "f.created_at", direction: "DESC" }],
+            where: [
+                { column: "account_follows.following_id", value: accountId },
+            ],
+            orderBy: [
+                { column: "account_follows.created_at", direction: "DESC" },
+            ],
         });
         return (result.rows ?? []).map(rowToProfile);
     }
@@ -508,21 +515,25 @@ export class DbProfileStore implements ProfileCreateStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_follows",
-            alias: "f",
+            alias: "account_follows",
             columns: JOINED_PROFILE_COLUMNS,
             joins: [
                 {
                     type: "INNER",
                     table: "account_profiles",
-                    alias: "p",
+                    alias: "account_profiles",
                     on: {
-                        leftColumn: "p.account_id",
-                        rightColumn: "f.following_id",
+                        leftColumn: "account_profiles.account_id",
+                        rightColumn: "account_follows.following_id",
                     },
                 },
             ],
-            where: [{ column: "f.follower_id", value: accountId }],
-            orderBy: [{ column: "f.created_at", direction: "DESC" }],
+            where: [
+                { column: "account_follows.follower_id", value: accountId },
+            ],
+            orderBy: [
+                { column: "account_follows.created_at", direction: "DESC" },
+            ],
         });
         return (result.rows ?? []).map(rowToProfile);
     }

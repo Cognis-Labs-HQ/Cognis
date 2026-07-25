@@ -8,7 +8,7 @@ import {
     type GatewayRegistry,
 } from "@cognis/core";
 import type { UIRegistry } from "../../reuse/ui-registry.js";
-import type { LocalAccountStore } from "../../reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import {
     resolveRouteContext,
     type RouteContext,

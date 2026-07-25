@@ -19,6 +19,7 @@ export interface LocalAuthAdapter extends AuthProviderAdapter {
 class LocalAuthAdapterImpl implements LocalAuthAdapter {
     readonly id = "local";
     readonly name = "Local";
+    readonly version = "0.3.2";
     readonly store: LocalAccountStore;
 
     constructor(store: LocalAccountStore) {
@@ -44,6 +45,10 @@ class LocalAuthAdapterImpl implements LocalAuthAdapter {
 
     getPasswordResetSupport(): { supported: boolean } {
         return { supported: true };
+    }
+
+    getLoginUiCapabilities(): { forgotPassword: boolean } {
+        return { forgotPassword: true };
     }
 
     async resetPassword(

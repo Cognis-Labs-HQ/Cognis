@@ -149,7 +149,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.4.11",
+        version: "1.5.0",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,
@@ -220,7 +220,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "login",
             "establish-session",
             { id: "notify-gateway:smtp-enforcement", order: 50 },
-            (stageCtx) => {
+            async (stageCtx) => {
                 const sessionResult = stageCtx.data["sessionResult"] as
                     | Record<string, unknown>
                     | undefined;
@@ -231,10 +231,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 const isFounder = sessionResult.isFounder === true;
                 const isInitialAdmin =
                     (role === "admin" || role === "owner") && isFounder;
+                const hasVerifiedEmail = sessionResult.accountId
+                    ? (
+                          await notifStore.getUserEmails(
+                              String(sessionResult.accountId),
+                          )
+                      ).some(
+                          (email) =>
+                              email.primary === true && email.verified === true,
+                      )
+                    : false;
                 const requiresUserValidation =
                     isGatewayEnabled() &&
                     sessionResult.userValidationMode === "smtp" &&
-                    !isInitialAdmin
+                    !isInitialAdmin &&
+                    !hasVerifiedEmail
                         ? gateway.canSendVerificationEmail()
                         : false;
                 const nextSessionResult = {
@@ -432,6 +443,64 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:upsertVerifiedPrimaryEmail",
         async (accountId: string, email: string) =>
             notifStore.upsertVerifiedPrimaryEmail(accountId, email),
+    );
+    ctx.capabilities.contribute(
+        "notify:provisionUserEmails",
+        async (
+            accountId: string,
+            listedEmails: string[],
+            options?: { sendPrimaryVerification?: boolean },
+        ) => {
+            const emails = Array.from(
+                new Set(
+                    listedEmails
+                        .map((email) => email.trim().toLowerCase())
+                        .filter(Boolean),
+                ),
+            );
+            const acceptedEmails: string[] = [];
+            for (const email of emails) {
+                if (
+                    await notifStore.isEmailRegisteredByOtherUser(
+                        email,
+                        accountId,
+                    )
+                ) {
+                    continue;
+                }
+                await notifStore.addUserEmail(accountId, email);
+                acceptedEmails.push(email);
+            }
+            const primaryEmail = acceptedEmails[0];
+            if (!primaryEmail) return;
+            await notifStore.setPrimaryEmail(accountId, primaryEmail);
+            const provisionedEmails = await notifStore.getUserEmails(accountId);
+            const primaryIsVerified = provisionedEmails.some(
+                (entry) =>
+                    entry.email === primaryEmail && entry.verified === true,
+            );
+            if (
+                options?.sendPrimaryVerification === true &&
+                !primaryIsVerified &&
+                gateway.canSendVerificationEmail()
+            ) {
+                const key = `${accountId}:${primaryEmail}`;
+                const code = tfaService.issueOrGet(
+                    key,
+                    15 * 60 * 1000,
+                    getTfaSmtpCodeLength(),
+                );
+                const watchToken = verifyTokenService.issueOrGet(key);
+                const verifyUrl = externalHost
+                    ? `${externalHost}/verify-email?token=${watchToken}`
+                    : undefined;
+                await gateway.sendVerificationEmail(
+                    primaryEmail,
+                    code,
+                    verifyUrl,
+                );
+            }
+        },
     );
     /**
      * notify:hasVerifiedEmail — indicates whether an account currently has a

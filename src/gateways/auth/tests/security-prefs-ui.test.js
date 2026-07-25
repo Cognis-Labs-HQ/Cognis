@@ -14,12 +14,15 @@ const PASSWORD_CHANGE_SOURCE = readFileSync(
     "utf8",
 );
 
-test("auth security preferences only render password reset controls", () => {
+test("auth security preferences disable password reset for external users", () => {
     assert.match(SOURCE, /settings-auth-password-reset/);
     assert.match(SOURCE, /settings-reset-password-btn/);
     assert.doesNotMatch(SOURCE, /settings-auth-recovery-codes/);
     assert.doesNotMatch(SOURCE, /available-tfa-methods/);
     assert.doesNotMatch(SOURCE, /preferred-tfa-methods/);
+    assert.match(SOURCE, /unsupported = capability\.supported !== true/);
+    assert.match(SOURCE, /unsupported \? " disabled"/);
+    assert.match(SOURCE, /external_password_notice/);
 });
 
 test("password change popup revalidates confirm password reactively", () => {

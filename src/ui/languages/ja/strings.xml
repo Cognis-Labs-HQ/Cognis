@@ -661,4 +661,5 @@
   <string name="ui.app.login.reason.account_deactivated">アカウントは無効化されています。やり取りを復元するには再度ログインしてください。</string>
   <string name="ui.reuse.status">ステータス</string>
   <string name="ui.reuse.details">詳細</string>
+  <string name="ui.reuse.load_failed">設定を読み込めませんでした。もう一度お試しください。</string>
 </resources>

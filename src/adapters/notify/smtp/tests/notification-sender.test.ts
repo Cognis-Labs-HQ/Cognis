@@ -225,8 +225,16 @@ test("createNotificationSender.getEnvValues returns undefined fields when env is
     assert.equal(envValues["secure"], undefined);
 });
 
-test("SmtpNotificationSender.getRequiredFields returns host and from", () => {
+test("SmtpNotificationSender.getRequiredFields requires auth fields by default", () => {
     const sender = createNotificationSender({});
+    const required = sender.getRequiredFields();
+    assert.deepEqual(required, ["host", "from", "user", "password"]);
+});
+
+test("SmtpNotificationSender.getRequiredFields omits auth fields when authentication is disabled", () => {
+    const sender = createNotificationSender({
+        COGNIS_SMTP_AUTH_DISABLED: "true",
+    });
     const required = sender.getRequiredFields();
     assert.deepEqual(required, ["host", "from"]);
 });

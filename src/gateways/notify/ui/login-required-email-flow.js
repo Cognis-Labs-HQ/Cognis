@@ -150,6 +150,18 @@ export function createRequiredEmailEnforcementClient() {
                         entry.primary === true && entry.verified === true,
                 );
                 if (hasVerifiedPrimary) return;
+                const pendingPrimary = emails.find(
+                    (entry) =>
+                        entry.primary === true && entry.verified !== true,
+                );
+                if (pendingPrimary?.email) {
+                    await verifyRequiredEmailLoop({
+                        accountId,
+                        emailAddress: pendingPrimary.email,
+                        i18n,
+                    });
+                    continue;
+                }
                 const emailAddress = await promptRequiredEmailAddress(i18n);
                 if (!emailAddress) {
                     throw new Error("required_email_cancelled");

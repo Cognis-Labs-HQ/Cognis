@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog } from "@cognis/core";
-import type { LocalAccountStore } from "../../reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
 import {
@@ -448,6 +448,20 @@ export function createUserRoutes(
         }
 
         if (req.method === "POST" && action === "password") {
+            const targetInfo = await getTargetInfo();
+            if (targetInfo?.provider && targetInfo.provider !== "local") {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "external_password_managed",
+                            message:
+                                "External users cannot have their passwords changed in Cognis",
+                        },
+                    }),
+                );
+                return true;
+            }
             const body = await readJson(req);
             await accountStore.setPassword(
                 username,

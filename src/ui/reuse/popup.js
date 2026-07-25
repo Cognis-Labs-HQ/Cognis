@@ -304,6 +304,8 @@ export async function openPopup({
     timeoutMs = 0,
     timeoutActionId = null,
     closeButtonVariant = "cancel",
+    pages,
+    initialPageId,
 } = {}) {
     await ensureStylesheet();
     return new Promise((resolve) => {
@@ -313,6 +315,7 @@ export async function openPopup({
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute("aria-labelledby", "popup-title");
         let closeProtectionTracker = null;
+        let manuallyDirty = false;
 
         function escapeHtml(value) {
             return String(value)
@@ -329,8 +332,9 @@ export async function openPopup({
         async function dismiss(actionId) {
             closeProtectionTracker?.sync();
             const hasUnsavedChanges =
-                closeProtectionTracker?.isAnyDirty() ??
-                hasUnsavedFormChanges(overlay);
+                manuallyDirty ||
+                (closeProtectionTracker?.isAnyDirty() ??
+                    hasUnsavedFormChanges(overlay));
             if (actionId === null && closeProtection && hasUnsavedChanges) {
                 const i18n = await getI18n();
                 const confirmed = await openPopup({
@@ -381,12 +385,29 @@ export async function openPopup({
             resolve(actionId ?? null);
         }
 
-        const resolvedBody = typeof body === "function" ? body() : (body ?? "");
+        const popupPages =
+            Array.isArray(pages) && pages.length > 0 ? pages : null;
+        let currentPage = popupPages
+            ? (popupPages.find((page) => page.id === initialPageId) ??
+              popupPages[0])
+            : null;
 
-        const effectiveActions =
-            Array.isArray(actions) && actions.length > 0
-                ? actions
-                : [{ id: "close", label: "Done", variant: "confirm" }];
+        function resolvePageValue(pageValue, fallbackValue) {
+            const value = pageValue ?? fallbackValue;
+            return typeof value === "function" ? value() : (value ?? "");
+        }
+
+        const resolvedBody = popupPages
+            ? resolvePageValue(currentPage?.body, body)
+            : typeof body === "function"
+              ? body()
+              : (body ?? "");
+
+        const effectiveActions = popupPages
+            ? (currentPage?.actions ?? actions ?? [])
+            : Array.isArray(actions) && actions.length > 0
+              ? actions
+              : [{ id: "close", label: "Done", variant: "confirm" }];
 
         const closeButtonClass =
             closeButtonVariant === "neutral"
@@ -409,7 +430,7 @@ export async function openPopup({
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
         <div class="popup-header">
-          <h2 class="popup-title" id="popup-title">${escapeHtml(title ?? "")}</h2>
+          <h2 class="popup-title" id="popup-title">${escapeHtml(currentPage?.title ?? title ?? "")}</h2>
           <button class="${closeButtonClass}" data-popup-action="close" type="button" aria-label="Close">&#x2715;</button>
         </div>
         <div class="popup-body">${resolvedBody}</div>
@@ -425,24 +446,80 @@ export async function openPopup({
             if (event.target === overlay) await dismiss(null);
         });
 
-        overlay.querySelectorAll("[data-popup-action]").forEach((btn) => {
-            btn.addEventListener("click", async () => {
-                const actionId = btn.dataset.popupAction;
-                const resolvedActionId = actionId === "close" ? null : actionId;
-                if (typeof onAction === "function") {
-                    try {
-                        const shouldDismiss = await onAction(
-                            resolvedActionId,
-                            overlay,
-                        );
-                        if (shouldDismiss === false) return;
-                    } catch {
-                        return;
-                    }
-                }
-                await dismiss(resolvedActionId);
+        function renderPopupPage(pageId) {
+            if (!popupPages) return false;
+            const nextPage = popupPages.find((page) => page.id === pageId);
+            if (!nextPage) return false;
+            currentPage = nextPage;
+            const titleEl = overlay.querySelector(".popup-title");
+            const bodyEl = overlay.querySelector(".popup-body");
+            const footerEl = overlay.querySelector(".popup-footer");
+            if (titleEl)
+                titleEl.textContent = String(currentPage.title ?? title ?? "");
+            if (bodyEl)
+                bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
+            if (closeProtection) {
+                closeProtectionTracker?.destroy();
+                closeProtectionTracker = createFormDirtyTracker(overlay, {
+                    quiet: true,
+                });
+            }
+            const pageActions = currentPage.actions ?? actions ?? [];
+            if (footerEl) {
+                footerEl.innerHTML = pageActions
+                    .map((action) => {
+                        const btnVariant = action.variant ?? "neutral";
+                        const btnClass =
+                            btnVariant === "confirm"
+                                ? "btn-confirm btn-animated popup-action-btn"
+                                : btnVariant === "cancel"
+                                  ? "btn-cancel btn-animated popup-action-btn"
+                                  : "popup-action-btn popup-action-btn--neutral btn-animated";
+                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button">${escapeHtml(action.label)}</button>`;
+                    })
+                    .join("");
+                bindActionButtons(footerEl);
+            }
+            onOpen?.(overlay, () => dismiss(null), {
+                setPage: renderPopupPage,
+                pageId: currentPage.id,
+                markDirty: () => {
+                    manuallyDirty = true;
+                },
             });
-        });
+            return true;
+        }
+
+        function bindActionButtons(root) {
+            root.querySelectorAll("[data-popup-action]").forEach((btn) => {
+                btn.addEventListener("click", async () => {
+                    const actionId = btn.dataset.popupAction;
+                    const resolvedActionId =
+                        actionId === "close" ? null : actionId;
+                    if (typeof onAction === "function") {
+                        try {
+                            const shouldDismiss = await onAction(
+                                resolvedActionId,
+                                overlay,
+                                {
+                                    setPage: renderPopupPage,
+                                    pageId: currentPage?.id,
+                                    requestClose: () => dismiss(null),
+                                    markDirty: () => {
+                                        manuallyDirty = true;
+                                    },
+                                },
+                            );
+                            if (shouldDismiss === false) return;
+                        } catch {
+                            return;
+                        }
+                    }
+                    await dismiss(resolvedActionId);
+                });
+            });
+        }
+        bindActionButtons(overlay);
 
         function onKeyDown(event) {
             const overlays = document.querySelectorAll(".popup-overlay");
@@ -471,7 +548,13 @@ export async function openPopup({
         lockPageScroll();
 
         if (typeof onOpen === "function") {
-            onOpen(overlay, () => dismiss(null));
+            onOpen(overlay, () => dismiss(null), {
+                setPage: renderPopupPage,
+                pageId: currentPage?.id,
+                markDirty: () => {
+                    manuallyDirty = true;
+                },
+            });
         }
         if (closeProtection) {
             closeProtectionTracker = createFormDirtyTracker(overlay, {

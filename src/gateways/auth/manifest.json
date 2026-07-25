@@ -1,7 +1,7 @@
 {
     "id": "auth",
     "name": "Authentication Gateway",
-    "version": "1.5.1",
+    "version": "1.7.5",
     "required": true,
     "requires": ["db"]
 }

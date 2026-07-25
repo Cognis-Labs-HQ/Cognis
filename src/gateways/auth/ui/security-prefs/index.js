@@ -5,11 +5,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
 import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
-import { resolveLocalizedMessage } from "/static/gateways/auth/reuse/resolve-localized-message.js";
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
-    let lastUnsupportedToastKey = null;
     const settingsRoot = root ?? document;
     let subsectionInstances = null;
 
@@ -35,21 +33,12 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         if (!capability) {
             return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
         }
-        const disabled = capability?.supported === true ? "" : " disabled";
-        const reasonText = resolveLocalizedMessage(
-            i18n,
-            capability?.reason,
-            "gateway.auth.security.unsupported_default",
-        );
-        const reason =
-            capability?.supported === true
-                ? ""
-                : `<p>${escapeHtml(reasonText)}</p>`;
+        const unsupported = capability.supported !== true;
         return `
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
-        ${reason}
-        <button class="btn-animated" type="button" id="settings-reset-password-btn"${disabled}>${i18n.t("gateway.auth.security.reset_action")}</button>
+        <button class="btn-animated" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
+        ${unsupported ? `<p>${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
       </div>
     `;
     }
@@ -142,27 +131,6 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         async onRender() {
             await loadCapability();
             rerender();
-            const unsupportedToastKey =
-                capability?.supported === false
-                    ? `${capability.adapterId || "unknown"}:${capability.reason || ""}`
-                    : null;
-            if (
-                capability?.supported === false &&
-                unsupportedToastKey &&
-                unsupportedToastKey !== lastUnsupportedToastKey
-            ) {
-                lastUnsupportedToastKey = unsupportedToastKey;
-                showToast(
-                    resolveLocalizedMessage(
-                        i18n,
-                        capability.reason,
-                        "gateway.auth.security.unsupported_default",
-                    ),
-                    {
-                        variant: "warning",
-                    },
-                );
-            }
             await renderSubsections();
         },
         isDirty: () =>

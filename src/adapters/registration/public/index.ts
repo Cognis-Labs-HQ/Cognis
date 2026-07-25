@@ -1,4 +1,4 @@
-import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import type { RegistrationGatewayAdapter } from "../../../gateways/registration/gateway.js";
 
 export function createAdapter(deps: {
