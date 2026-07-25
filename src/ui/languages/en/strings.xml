@@ -332,7 +332,7 @@
   <string name="ui.app.users.action_menu_help">Select an action.</string>
   <string name="ui.app.users.reset_password">Reset password</string>
   <string name="ui.app.users.storage_quotas">Storage quotas</string>
-  <string name="ui.app.users.storage_quota_global">Global quota (bytes)</string>
+  <string name="ui.app.users.storage_quota_global">Global quota</string>
   <string name="ui.app.users.storage_quotas_saved">Storage quotas updated.</string>
   <string name="ui.app.users.storage_quota_invalid">Storage quotas must be positive whole numbers.</string>
   <string name="ui.app.users.new_password">New password</string>

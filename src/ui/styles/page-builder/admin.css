@@ -532,3 +532,27 @@ body[data-theme="light"] .slider::before {
         flex-wrap: wrap;
     }
 }
+.users-quota-list {
+    display: grid;
+    gap: 6px;
+    min-width: 280px;
+}
+.users-quota-control {
+    display: grid;
+    grid-template-columns: minmax(70px, 1fr) minmax(80px, 1fr) minmax(
+            76px,
+            auto
+        );
+    gap: 6px;
+    align-items: center;
+}
+.users-quota-input,
+.users-quota-unit-select {
+    padding: 4px 8px;
+    border: 1px solid var(--border, #ccc);
+    border-radius: 6px;
+    background: var(--input-bg, #fff);
+    color: var(--text, #111);
+    font: inherit;
+    font-size: 0.85rem;
+}
