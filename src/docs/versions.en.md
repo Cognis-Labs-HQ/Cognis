@@ -34,7 +34,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.7`  |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.3`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.2`  |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.3.3`  |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.4.0`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.3`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.3`  |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.4`  |
@@ -56,10 +56,10 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.6.1`  |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.0`  |
 | Share                 | `src/gateways/share/`        | `1.3.3`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
-| Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
+| Notification (notify) | `src/gateways/notify/`       | `1.5.0`  |
 | Social                | `src/gateways/social/`       | `1.2.8`  |
 | File Storage (files)  | `src/gateways/files/`        | `2.1.2`  |
 | Registration          | `src/gateways/registration/` | `1.1.10` |

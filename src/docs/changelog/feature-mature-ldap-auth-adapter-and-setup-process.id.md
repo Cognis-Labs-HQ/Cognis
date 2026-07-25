@@ -31,3 +31,7 @@ Setiap proses Uji dan Temukan kini mengganti sampel sebelumnya sebelum membangun
 ## Batas penemuan yang diterapkan dan skema identitas
 
 Penemuan kini menolak setiap entri direktori yang DN-nya berada di luar basis pencarian pengguna atau grup yang dikonfigurasi. Hal ini mencegah rekaman kontainer pengguna masuk ke pemetaan grup meskipun server memberikan hasil yang tidak terduga. Bootstrap autentikasi juga membuat tabel identitas eksternal sebelum login LDAP menyimpan identitas.
+
+## Penyediaan email LDAP dan validasi langsung
+
+Login LDAP kini membaca semua alamat email yang tercantum saat terikat sebagai pengguna yang sedang masuk, lalu menyediakannya di Cognis tanpa membuat kredensial lokal. Alamat pertama menjadi alamat utama. Jika validasi email diwajibkan, pesan verifikasi langsung dikirim dan alur login berlanjut langsung ke verifikasi kode.

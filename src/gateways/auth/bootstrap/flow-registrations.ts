@@ -229,6 +229,28 @@ export async function registerAuthBootstrapHook(
                     registrationsEnabled: false,
                     userValidationMode: "none" as const,
                 }));
+            const listedEmails =
+                "emails" in session && Array.isArray(session.emails)
+                    ? session.emails.map(String)
+                    : "email" in session && session.email
+                      ? [String(session.email)]
+                      : [];
+            if (adapterId !== "local" && listedEmails.length > 0) {
+                await capabilities.get<
+                    (
+                        accountId: string,
+                        emails: string[],
+                        options?: { sendPrimaryVerification?: boolean },
+                    ) => Promise<void>
+                >("notify:provisionUserEmails")?.(
+                    session.accountId,
+                    listedEmails,
+                    {
+                        sendPrimaryVerification:
+                            securitySettings.userValidationMode === "smtp",
+                    },
+                );
+            }
             const sharedPayload = {
                 accountId: session.accountId,
                 displayName: displayName ?? session.accountId,

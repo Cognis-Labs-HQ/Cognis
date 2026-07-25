@@ -113,10 +113,14 @@ async function findUser(
 
 function mapUser(entry: LdapEntry, options: LdapRuntimeOptions) {
     const memberOf = values(entry, options.memberOfAttribute);
+    const emails = values(entry, "mail")
+        .map((email) => email.trim().toLowerCase())
+        .filter(Boolean);
     return {
         id: first(entry, options.userAttribute) ?? entry.dn,
         dn: entry.dn,
-        email: first(entry, "mail"),
+        email: emails[0],
+        emails,
         displayName: first(entry, "displayName", "cn"),
         memberOf,
         groups: memberOf.map((dn) => firstRdnValue(dn)),
@@ -219,12 +223,38 @@ export class StandardLdapClient implements LdapClient {
             (client) => findUser(client, options, username),
         );
         if (!entry) return null;
+        let userBoundEntry: LdapEntry;
         try {
-            await withBoundClient(
+            userBoundEntry = await withBoundClient(
                 options,
                 entry.dn,
                 password,
-                async () => true,
+                async (client) => {
+                    const result = await client.search(entry.dn, {
+                        scope: "base",
+                        filter: "(objectClass=*)",
+                        attributes: [
+                            options.userAttribute,
+                            "mail",
+                            "displayName",
+                            "cn",
+                            options.memberOfAttribute,
+                        ],
+                        sizeLimit: 1,
+                        timeLimit: 10,
+                    });
+                    const userVisibleEntry = result.searchEntries[0] as
+                        | LdapEntry
+                        | undefined;
+                    return {
+                        ...entry,
+                        ...(userVisibleEntry ?? {}),
+                        dn: entry.dn,
+                        mail: userVisibleEntry
+                            ? values(userVisibleEntry, "mail")
+                            : [],
+                    };
+                },
             );
         } catch {
             return null;
@@ -235,7 +265,7 @@ export class StandardLdapClient implements LdapClient {
             options.bindPassword,
             (client) => resolveGroups(client, entry, options),
         );
-        const user = mapUser(entry, options);
+        const user = mapUser(userBoundEntry, options);
         return { ...user, groups };
     }
 

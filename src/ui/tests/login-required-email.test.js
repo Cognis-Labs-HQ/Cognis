@@ -116,6 +116,10 @@ test("notify required-email helper checks verified primary email", () => {
         "utf8",
     );
     assert.match(source, /entry\.primary === true && entry\.verified === true/);
+    assert.match(
+        source,
+        /pendingPrimary[\s\S]*entry\.primary === true && entry\.verified !== true[\s\S]*verifyRequiredEmailLoop/,
+    );
 });
 
 test("in-page callout renders footer content inside the content container", () => {

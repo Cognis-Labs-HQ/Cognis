@@ -31,3 +31,7 @@ Jeder Durchlauf von „Testen und erkennen“ ersetzt nun die vorherige Stichpro
 ## Erzwungene Erkennungsgrenzen und Identitätsschema
 
 Die Erkennung verwirft nun jeden Verzeichniseintrag, dessen DN außerhalb der konfigurierten Benutzer- oder Gruppensuchbasis liegt. Dadurch gelangen Datensätze aus Benutzercontainern selbst bei unerwarteten Serverantworten nicht in die Gruppenzuordnung. Der Authentifizierungsstart legt außerdem die Tabelle für externe Identitäten an, bevor LDAP-Anmeldungen Identitäten speichern.
+
+## LDAP-E-Mail-Bereitstellung und sofortige Bestätigung
+
+Bei der LDAP-Anmeldung werden nun während der Bindung als anmeldender Benutzer alle aufgeführten E-Mail-Adressen gelesen und ohne lokale Zugangsdaten in Cognis bereitgestellt. Die erste Adresse wird zur primären Adresse. Wenn eine E-Mail-Bestätigung erforderlich ist, wird die Bestätigungsnachricht sofort gesendet und der Anmeldeablauf wechselt direkt zur Codebestätigung.

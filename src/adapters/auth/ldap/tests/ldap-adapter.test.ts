@@ -71,6 +71,36 @@ test("ldap adapter returns null when no client set", async () => {
     assert.equal(ctx, null);
 });
 
+test("ldap adapter forwards every user-bound email for provisioning", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        setClient(client: {
+            authenticate: () => Promise<{
+                id: string;
+                email: string;
+                emails: string[];
+            }>;
+        }): void;
+    };
+    adapter.setClient({
+        authenticate: async () => ({
+            id: "alice",
+            email: "alice@example.org",
+            emails: ["alice@example.org", "a.smith@example.org"],
+        }),
+    });
+
+    const context = (await adapter.authenticate({
+        username: "alice",
+        password: "secret",
+    })) as { email?: string; emails?: string[] } | null;
+
+    assert.equal(context?.email, "alice@example.org");
+    assert.deepEqual(context?.emails, [
+        "alice@example.org",
+        "a.smith@example.org",
+    ]);
+});
+
 test("ldap adapter config schema has required fields", () => {
     const adapter = createAdapter();
     const schema = adapter.getConfigSchema();

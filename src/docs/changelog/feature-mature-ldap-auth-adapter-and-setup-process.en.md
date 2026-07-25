@@ -31,3 +31,7 @@ Every Test and Discover run now replaces the prior sample before rebuilding role
 ## Enforced discovery boundaries and identity schema
 
 Discovery now rejects any directory entry whose DN falls outside the configured user or group search base, preventing user-container records from reaching group mappings even when a server returns unexpected results. Auth bootstrap also creates the external identity table before LDAP logins persist identities.
+
+## LDAP email provisioning and immediate validation
+
+LDAP login now reads every listed mail address while bound as the authenticating user and provisions them into Cognis without creating local credentials. The first address becomes primary; when email validation is required, its verification message is sent immediately and the login flow proceeds directly to code verification.
