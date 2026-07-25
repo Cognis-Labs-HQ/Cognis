@@ -122,13 +122,17 @@ export function createProfileImageUploadActions({
             });
             return false;
         }
+        const responseData = (await response.json()).data ?? {};
 
         const currentState = getState();
         if (kind === "avatar") {
             if (currentState.avatarBlobUrl) {
                 URL.revokeObjectURL(currentState.avatarBlobUrl);
             }
-            setState({ avatarBlobUrl: URL.createObjectURL(uploadBlob) });
+            setState({
+                avatarBlobUrl: URL.createObjectURL(uploadBlob),
+                profile: responseData.profile ?? currentState.profile,
+            });
         } else {
             if (currentState.bannerBlobUrl) {
                 URL.revokeObjectURL(currentState.bannerBlobUrl);
@@ -148,7 +152,14 @@ export function createProfileImageUploadActions({
                 bannerBlobUrl: URL.createObjectURL(uploadBlob),
                 bannerPanX: nextBannerPanX,
                 bannerPanY: nextBannerPanY,
+                profile: responseData.profile ?? currentState.profile,
             });
+        }
+
+        // Render the local blob before any follow-up request so a slow or
+        // failed preference/profile refresh cannot hide a successful upload.
+        refreshPage();
+        if (kind === "banner") {
             await saveBannerLayoutPreference({
                 height: currentState.bannerHeight === "full" ? "full" : "half",
                 panX: nextBannerPanX,
@@ -156,8 +167,6 @@ export function createProfileImageUploadActions({
             });
         }
 
-        setState({ profile: await loadOwnProfile() });
-        refreshPage();
         if (kind === "avatar") {
             updateNavbarAvatar().catch(() => {});
         }

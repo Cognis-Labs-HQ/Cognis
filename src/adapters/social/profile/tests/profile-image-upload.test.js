@@ -13,6 +13,13 @@ const PROFILE_RENDER_SOURCE = readFileSync(
     resolve(dirname(fileURLToPath(import.meta.url)), "../ui/profile-render.js"),
     "utf8",
 );
+const PROFILE_UPLOAD_SOURCE = readFileSync(
+    resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "../ui/profile-image-upload.js",
+    ),
+    "utf8",
+);
 
 test("profile hero images opt out of DOM preservation so uploads render immediately", () => {
     assert.match(
@@ -29,6 +36,21 @@ test("profile hero images opt out of DOM preservation so uploads render immediat
         )?.length,
         2,
         "both banner-height variants must opt out before an image exists",
+    );
+});
+
+test("successful uploads refresh local blob state before follow-up requests", () => {
+    const refreshIndex = PROFILE_UPLOAD_SOURCE.indexOf("refreshPage();");
+    const preferenceIndex = PROFILE_UPLOAD_SOURCE.indexOf(
+        "await saveBannerLayoutPreference",
+    );
+
+    assert.notEqual(refreshIndex, -1);
+    assert.notEqual(preferenceIndex, -1);
+    assert.ok(refreshIndex < preferenceIndex);
+    assert.doesNotMatch(
+        PROFILE_UPLOAD_SOURCE,
+        /setState\(\{ profile: await loadOwnProfile\(\) \}\);/,
     );
 });
 
