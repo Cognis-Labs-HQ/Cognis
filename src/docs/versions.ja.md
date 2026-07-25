@@ -30,7 +30,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント        | パス                                | バージョン |
 | --------------------- | ----------------------------------- | ---------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.5`    |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.7`    |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.6`    |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.3`    |
 | Local Auth            | `src/adapters/auth/local/`          | `0.2.6`    |
