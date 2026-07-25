@@ -38,14 +38,30 @@ test("administration adapter rows show adapter version next to the name", () => 
                 active: true,
             },
         ],
-        { i18n, escapeHtml, healthStatus: null },
+        {
+            i18n,
+            escapeHtml,
+            healthStatus: {
+                contributions: [
+                    {
+                        componentType: "adapter",
+                        componentId: "notify:smtp",
+                        status: "ok",
+                    },
+                ],
+            },
+        },
     );
 
     assert.match(
         html,
         /<span class="adapter-inline-name"><strong>SMTP <span class="adapter-inline-version">v0\.2\.6<\/span><\/strong><\/span>/,
     );
-    assert.match(html, /module-row-heading adapter-inline-heading/);
+    assert.match(html, /module-row-controls adapter-inline-controls/);
+    assert.match(
+        html,
+        /adapter-inline-controls[^]*state-pill[^]*component-health-light--ok[^]*switch switch--inline/,
+    );
 });
 
 test("active component health uses lights and disabled adapters omit status", () => {
@@ -85,7 +101,7 @@ test("active component health uses lights and disabled adapters omit status", ()
     assert.match(html, /component-health-light--ok/);
     assert.match(
         html,
-        /module-row-heading[^]*module-row-title[^]*state-pill[^]*component-health-light--ok/,
+        /module-row-title[^]*module-row-controls[^]*state-pill[^]*component-health-light--ok[^]*switch switch--inline[^]*module-chevron/,
     );
     assert.doesNotMatch(html, /component-health-light--error/);
     assert.doesNotMatch(html, />unknown</);
@@ -111,6 +127,14 @@ test("health lights have a rendered box and explicit status colors", () => {
     assert.match(
         styles,
         /\.component-health-light--error\s*{[^}]*background: currentColor;/,
+    );
+    assert.match(
+        styles,
+        /\.module-row-controls\s*{[^}]*align-items: center;[^}]*justify-content: flex-end;/,
+    );
+    assert.match(
+        styles,
+        /\.switch--inline\s*{[^}]*align-items: center;[^}]*align-self: center;/,
     );
 });
 

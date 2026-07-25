@@ -89,16 +89,17 @@
 .module-row-summary {
     list-style: none;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 52px auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 12px;
     align-items: center;
     cursor: pointer;
     padding: 16px;
 }
 
-.module-row-heading {
+.module-row-controls {
     display: flex;
     align-items: center;
+    justify-content: flex-end;
     gap: 12px;
     min-width: 0;
 }
@@ -169,18 +170,15 @@
 }
 
 .adapter-inline-name {
+    flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.adapter-inline-heading {
-    flex: 1;
-}
-
-.adapter-inline-heading .adapter-inline-name {
-    flex: 1;
+.adapter-inline-controls {
+    flex: 0 0 auto;
 }
 
 .adapter-inline-version {
