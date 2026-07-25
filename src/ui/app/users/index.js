@@ -257,7 +257,7 @@ function renderUsersTable() {
             : "";
     return `
     ${inviteButtonHtml}
-    <div class="users-table-wrap">
+    <div class="users-table-wrap" data-composer-preserve="false">
       <table class="users-table">
         <thead>
           <tr>
@@ -411,11 +411,28 @@ async function runUserMenuAction(action, username) {
             ],
         });
         if (confirmAction !== "confirm") return;
-        await apiFetch(`/api/v1/users/${encodeURIComponent(username)}`, {
-            method: "DELETE",
-        });
-        await refreshData();
-        composer.refresh(elements);
+        const response = await apiFetch(
+            `/api/v1/users/${encodeURIComponent(username)}`,
+            {
+                method: "DELETE",
+            },
+        );
+        if (!response.ok) {
+            showToast(i18n.t("ui.reuse.save_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+
+        // Update from the confirmed mutation instead of immediately reloading.
+        // The users endpoint can briefly return its pre-delete state, which would
+        // put the deleted row straight back into the table.
+        users = users.filter((user) => user.username !== username);
+        const deletedUserRow = Array.from(
+            root.querySelectorAll(".users-row"),
+        ).find((userRow) => userRow.dataset.username === username);
+        deletedUserRow?.remove();
+        buildElements();
         return;
     }
 
