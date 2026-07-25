@@ -133,14 +133,6 @@ export function createComposerRenderer({
         host.innerHTML = html;
     }
 
-    function refreshElementContent(host, element) {
-        // A preserved element may host a stateful iframe such as Jitsi Meet.
-        // Do not even reattach its parked wrapper during an ordinary refresh;
-        // moving that live DOM can reset or destabilize the embedded app.
-        if (getPreservedElementNodes().has(element.id)) return;
-        renderElementContent(host, element);
-    }
-
     function repackPlacementsIntoColumns(
         sortedVisible,
         maxCols,
@@ -717,8 +709,6 @@ export function createComposerRenderer({
                 } else {
                     renderElementContent(card, element);
                 }
-            } else if (!isMissing) {
-                refreshElementContent(card, element);
             }
             card.className = isMissing
                 ? "widget-card widget-card--missing"

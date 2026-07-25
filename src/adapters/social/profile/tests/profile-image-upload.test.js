@@ -20,6 +20,10 @@ const PROFILE_UPLOAD_SOURCE = readFileSync(
     ),
     "utf8",
 );
+const PROFILE_APP_SOURCE = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../ui/app.js"),
+    "utf8",
+);
 
 test("profile hero images opt out of DOM preservation so uploads render immediately", () => {
     assert.match(
@@ -62,6 +66,17 @@ test("successful uploads do not fail on optional follow-up data", () => {
     assert.match(
         PROFILE_UPLOAD_SOURCE,
         /try \{\s*await saveBannerLayoutPreference\([\s\S]+?\);\s*\} catch \{/,
+    );
+});
+
+test("profile media refreshes only the profile hero composer card", () => {
+    assert.match(
+        PROFILE_APP_SOURCE,
+        /function refreshProfileHero\(\) \{[\s\S]*?\[data-composer-element="hero"\][\s\S]*?heroHost\.innerHTML = heroElement\.render\(\);[\s\S]*?bindProfileHeroEvents\(\);/,
+    );
+    assert.match(
+        PROFILE_APP_SOURCE,
+        /createProfileImageUploadActions\(\{[\s\S]*?refreshPage: refreshProfileHero,/,
     );
 });
 
