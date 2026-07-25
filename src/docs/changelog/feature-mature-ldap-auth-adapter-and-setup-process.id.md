@@ -43,3 +43,15 @@ Gateway autentikasi kini menyediakan antarmuka penyiapan LDAP melalui registri a
 ## Penemuan ekstensi penyiapan secara eksplisit
 
 Administrasi kini hanya memuat antarmuka penyiapan khusus jika adapter mengumumkannya. Adapter standar seperti SMTP menggunakan formulir generik tanpa menghasilkan permintaan skrip yang gagal.
+
+## Beberapa sumber LDAP bernama
+
+Administrator dapat mengelola dan mengurutkan ulang beberapa server LDAP bernama. Sumber dapat tampil secara terpisah pada halaman Masuk atau sebagai satu pilihan LDAP terpadu yang mencoba server sesuai urutan konfigurasi.
+
+## Verifikasi kredensial pengguna wajib
+
+Penyiapan LDAP kini diakhiri dengan bind wajib menggunakan kredensial pengguna direktori nyata. Identitas, grup, dan peran Cognis yang dihasilkan ditampilkan sebelum server dapat disimpan, dan pembatasan grup pengguna yang dipetakan diterapkan.
+
+## Penempatan sumber masuk responsif
+
+Pemilih sumber Lokal dan LDAP berada tepat di antara judul Masuk dan kolom Nama pengguna. Tombol sumber menyesuaikan diri dengan lebar yang tersedia, sedangkan sumber tambahan tersedia melalui pemilih luapan yang dapat digulir.

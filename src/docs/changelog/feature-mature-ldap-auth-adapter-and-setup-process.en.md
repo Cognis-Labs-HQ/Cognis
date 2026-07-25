@@ -43,3 +43,15 @@ The authentication gateway now publishes LDAP's setup interface through the adap
 ## Explicit setup extension discovery
 
 Administration now loads a custom setup interface only when an adapter announces one. Standard adapters such as SMTP use the generic form without generating failed script requests.
+
+## Multiple named LDAP sources
+
+Administrators can manage and reorder multiple named LDAP servers. Sources can appear separately on the Login page or as one unified LDAP option that tries servers in the configured order.
+
+## Required user credential verification
+
+LDAP setup now ends with a required bind using a real directory user's credentials. The resulting identity, groups, and Cognis role are shown before the server can be saved, and mapped user-group restrictions are enforced.
+
+## Responsive login source placement
+
+The Local and LDAP source selector sits directly between the Login title and Username field. Source buttons adapt to the available width, with additional sources available from a scrollable overflow selector.

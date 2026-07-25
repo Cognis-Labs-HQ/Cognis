@@ -43,3 +43,15 @@ Das Authentifizierungs-Gateway stellt die LDAP-Einrichtungsoberfläche nun über
 ## Explizite Erkennung von Einrichtungserweiterungen
 
 Die Administration lädt eine eigene Einrichtungsoberfläche nur noch, wenn ein Adapter sie ankündigt. Standardadapter wie SMTP verwenden das allgemeine Formular, ohne fehlgeschlagene Skriptanfragen zu erzeugen.
+
+## Mehrere benannte LDAP-Quellen
+
+Administratoren können mehrere benannte LDAP-Server verwalten und neu anordnen. Die Quellen können einzeln auf der Anmeldeseite erscheinen oder als eine vereinigte LDAP-Option die Server in der festgelegten Reihenfolge prüfen.
+
+## Erforderliche Prüfung von Benutzerzugangsdaten
+
+Die LDAP-Einrichtung endet nun mit einer erforderlichen Bindung über die Zugangsdaten eines echten Verzeichnisbenutzers. Vor dem Speichern werden Identität, Gruppen und Cognis-Rolle angezeigt; Einschränkungen durch zugeordnete Benutzergruppen werden durchgesetzt.
+
+## Flexible Platzierung der Anmeldequelle
+
+Die Auswahl für lokale und LDAP-Anmeldequellen steht direkt zwischen dem Anmeldetitel und dem Benutzernamen. Die Schaltflächen passen sich an die verfügbare Breite an; weitere Quellen sind über eine scrollbare Überlaufauswahl erreichbar.
