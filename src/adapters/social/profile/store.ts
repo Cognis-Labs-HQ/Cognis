@@ -205,6 +205,12 @@ export class DbProfileStore implements ProfileCreateStore {
                     account_id: accountId,
                     handle,
                     role,
+                    visibility:
+                        role === "teacher" ||
+                        role === "admin" ||
+                        role === "owner"
+                            ? "friends"
+                            : "hidden",
                     account_lifecycle_state: "active",
                 },
                 conflict: { action: "ignore" },
@@ -430,10 +436,17 @@ export class DbProfileStore implements ProfileCreateStore {
     }
 
     async setRoleByHandle(handle: string, role: AccountRole): Promise<void> {
+        const set: Record<string, unknown> = {
+            role,
+            updated_at: new Date().toISOString(),
+        };
+        if (role === "teacher" || role === "admin" || role === "owner") {
+            set.visibility = "friends";
+        }
         await this.db.executeCommand({
             option: "UPDATE",
             table: "account_profiles",
-            set: { role, updated_at: new Date().toISOString() },
+            set,
             where: [{ column: "handle", value: handle }],
         });
     }
