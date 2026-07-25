@@ -90,6 +90,22 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
+    const systemCtx =
+        capabilities.get<ReturnType<typeof createCtx>>(CTX_CAPABILITY)!;
+    systemCtx.flow.extend(
+        "construct-login-ui",
+        "resolve-methods",
+        { id: "test:named-ldap-login-methods" },
+        () => ({
+            methods: [
+                {
+                    id: "ldap:Faculty",
+                    name: "Faculty",
+                    credential: true,
+                },
+            ],
+        }),
+    );
 
     const handlers = routeRegistry.getHandlers();
     const req = {
@@ -111,10 +127,26 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
     assert.ok(handled);
     assert.equal(res.status, 200);
     const body = JSON.parse(res.payload) as {
-        data: { methods: unknown[]; integrations: unknown[] };
+        data: {
+            methods: Array<{
+                id: string;
+                name: string;
+                credential?: boolean;
+            }>;
+            integrations: unknown[];
+        };
     };
     assert.ok(Array.isArray(body.data.methods));
     assert.ok(Array.isArray(body.data.integrations));
+    assert.deepEqual(
+        body.data.methods.find((method) => method.id === "ldap:Faculty"),
+        {
+            id: "ldap:Faculty",
+            name: "Faculty",
+            forgotPassword: false,
+            credential: true,
+        },
+    );
 });
 
 test("GET /api/v1/auth/registration-config returns open-registration state", async () => {

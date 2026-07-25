@@ -55,3 +55,7 @@ LDAP setup now ends with a required bind using a real directory user's credentia
 ## Responsive login source placement
 
 The Local and LDAP source selector sits directly between the Login title and Username field. Source buttons adapt to the available width, with additional sources available from a scrollable overflow selector.
+
+## Login source metadata preserved
+
+The public login configuration now preserves credential-source metadata for every named LDAP server, ensuring Local and all configured LDAP sources actually render together in the selector row.

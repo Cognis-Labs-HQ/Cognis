@@ -55,3 +55,7 @@ Penyiapan LDAP kini diakhiri dengan bind wajib menggunakan kredensial pengguna d
 ## Penempatan sumber masuk responsif
 
 Pemilih sumber Lokal dan LDAP berada tepat di antara judul Masuk dan kolom Nama pengguna. Tombol sumber menyesuaikan diri dengan lebar yang tersedia, sedangkan sumber tambahan tersedia melalui pemilih luapan yang dapat digulir.
+
+## Metadata sumber masuk dipertahankan
+
+Konfigurasi masuk publik kini mempertahankan metadata sumber kredensial untuk setiap server LDAP bernama. Dengan demikian, Lokal dan semua sumber LDAP yang dikonfigurasi benar-benar tampil bersama pada baris pemilih.

@@ -56,7 +56,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                         | バージョン |
 | --------------------- | ---------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`    |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.3`    |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.4`    |
 | Share                 | `src/gateways/share/`        | `1.3.2`    |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`    |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11`   |

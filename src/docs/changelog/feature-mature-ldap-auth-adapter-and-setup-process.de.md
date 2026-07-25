@@ -55,3 +55,7 @@ Die LDAP-Einrichtung endet nun mit einer erforderlichen Bindung über die Zugang
 ## Flexible Platzierung der Anmeldequelle
 
 Die Auswahl für lokale und LDAP-Anmeldequellen steht direkt zwischen dem Anmeldetitel und dem Benutzernamen. Die Schaltflächen passen sich an die verfügbare Breite an; weitere Quellen sind über eine scrollbare Überlaufauswahl erreichbar.
+
+## Metadaten der Anmeldequellen bleiben erhalten
+
+Die öffentliche Anmeldekonfiguration behält nun die Metadaten der Zugangsdatenquellen für jeden benannten LDAP-Server bei. Dadurch werden „Lokal“ und alle konfigurierten LDAP-Quellen tatsächlich gemeinsam in der Auswahlzeile angezeigt.

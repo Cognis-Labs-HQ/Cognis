@@ -46,6 +46,7 @@ export function createSessionRoutes({
             id: string;
             name: string;
             forgotPassword?: boolean;
+            credential?: boolean;
         }>;
         integrations: Array<{
             id: string;
@@ -55,19 +56,30 @@ export function createSessionRoutes({
     }> {
         const fallbackMethods = authGateway
             .getEnabledAdapters()
-            .map((adapter) => ({
-                id: adapter.id,
-                name: adapter.name,
-                forgotPassword:
-                    adapter.getLoginUiCapabilities?.().forgotPassword === true,
-            }));
+            .flatMap((adapter) =>
+                (
+                    adapter.getLoginMethods?.() ?? [
+                        { id: adapter.id, name: adapter.name },
+                    ]
+                ).map((method) => ({
+                    ...method,
+                    forgotPassword:
+                        adapter.getLoginUiCapabilities?.().forgotPassword ===
+                        true,
+                })),
+            );
         if (!systemCtx.flow.exists("construct-login-ui")) {
             return { methods: fallbackMethods, integrations: [] };
         }
         const result = await systemCtx.flow.run("construct-login-ui");
         const methodById = new Map<
             string,
-            { id: string; name: string; forgotPassword?: boolean }
+            {
+                id: string;
+                name: string;
+                forgotPassword?: boolean;
+                credential?: boolean;
+            }
         >();
         for (const stageResult of [
             ...(result.stageResults["resolve-methods"] ?? []),
@@ -89,6 +101,9 @@ export function createSessionRoutes({
                     forgotPassword:
                         (method as { forgotPassword?: unknown })
                             .forgotPassword === true,
+                    credential:
+                        (method as { credential?: unknown }).credential ===
+                        true,
                 });
             }
         }
@@ -392,13 +407,18 @@ export function createSessionRoutes({
                 : {
                       methods: authGateway
                           .getEnabledAdapters()
-                          .map((adapter) => ({
-                              id: adapter.id,
-                              name: adapter.name,
-                              forgotPassword:
-                                  adapter.getLoginUiCapabilities?.()
-                                      .forgotPassword === true,
-                          })),
+                          .flatMap((adapter) =>
+                              (
+                                  adapter.getLoginMethods?.() ?? [
+                                      { id: adapter.id, name: adapter.name },
+                                  ]
+                              ).map((method) => ({
+                                  ...method,
+                                  forgotPassword:
+                                      adapter.getLoginUiCapabilities?.()
+                                          .forgotPassword === true,
+                              })),
+                          ),
                       integrations: [],
                   };
             log?.("debug", "Resolved login UI flow configuration.", {
