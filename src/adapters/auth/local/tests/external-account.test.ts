@@ -102,3 +102,32 @@ test("external account info qualifies account columns when joining identities", 
         { col: "auth_identities.provider", as: "provider" },
     ]);
 });
+
+test("external accounts support administrative actions other than password reset", async () => {
+    const commands: Array<Record<string, unknown>> = [];
+    const executor = {
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            return { rows: [{ is_founder: true }] };
+        },
+        async transaction(operation: (transaction: unknown) => Promise<void>) {
+            await operation(this);
+        },
+    };
+    const store = new DbLocalAccountStore(executor as never);
+
+    await store.setRole("firehawk", "teacher");
+    await store.setEnabled("firehawk", false);
+    await store.setFounder("firehawk", true);
+    assert.equal(await store.isFounder("firehawk"), true);
+    await store.updateLastLogin("firehawk");
+    await store.delete("firehawk");
+
+    const accountCommands = commands.filter(
+        (command) => command.table === "accounts",
+    );
+    assert.equal(accountCommands.length, 6);
+    for (const command of accountCommands) {
+        assert.deepEqual(command.where, [{ column: "id", value: "firehawk" }]);
+    }
+});

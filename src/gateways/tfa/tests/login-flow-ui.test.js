@@ -9,6 +9,10 @@ const SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/tfa/ui/login-flow.js"),
     "utf8",
 );
+const STYLES = readFileSync(
+    resolve(ROOT, "src/gateways/tfa/ui/login.css"),
+    "utf8",
+);
 
 test("tfa login resend action toggles disabled state while cooldown is active", () => {
     assert.match(
@@ -62,4 +66,8 @@ test("tfa login warns when resend action element exists with an unexpected type"
 
 test("tfa login always shows the configured method selector", () => {
     assert.match(SOURCE, /tabsEl\.hidden = false;/);
+    assert.match(
+        STYLES,
+        /#login-tfa-method-nav\s*\{\s*background:\s*transparent;/,
+    );
 });

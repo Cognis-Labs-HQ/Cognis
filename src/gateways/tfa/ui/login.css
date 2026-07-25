@@ -1,3 +1,7 @@
+#login-tfa-method-nav {
+    background: transparent;
+}
+
 #login-tfa-method-nav a {
     color: var(--text);
     text-decoration: none;

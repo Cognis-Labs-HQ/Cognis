@@ -340,15 +340,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
         role: "user" | "teacher" | "moderator" | "admin",
     ) {
         const lowercaseUsername = normalizeUsername(username);
-        const lookupResult = await this.db.executeCommand({
-            option: "SELECT",
-            table: "local_auth_credentials",
-            columns: ["account_id"],
-            where: [{ column: "username", value: lowercaseUsername }],
-            limit: 1,
-        });
-        const accountId = lookupResult.rows?.[0]?.account_id;
-        if (!accountId) return;
         await this.db.executeCommand({
             option: "UPDATE",
             table: "accounts",
@@ -357,9 +348,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 role,
                 updated_at: new Date().toISOString(),
             },
-            where: [{ column: "id", value: accountId }],
+            where: [{ column: "id", value: lowercaseUsername }],
         });
-        this.writeLog("info", "Updated local account role.", {
+        this.writeLog("info", "Updated account role.", {
             component: "auth-local-store",
             accountId: lowercaseUsername,
             role,
@@ -494,15 +485,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async setFounder(username: string, isFounder: boolean) {
         const lowercaseUsername = normalizeUsername(username);
-        const lookupResult = await this.db.executeCommand({
-            option: "SELECT",
-            table: "local_auth_credentials",
-            columns: ["account_id"],
-            where: [{ column: "username", value: lowercaseUsername }],
-            limit: 1,
-        });
-        const accountId = lookupResult.rows?.[0]?.account_id;
-        if (!accountId) return;
         await this.db.executeCommand({
             option: "UPDATE",
             table: "accounts",
@@ -510,9 +492,9 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 is_founder: isFounder,
                 updated_at: new Date().toISOString(),
             },
-            where: [{ column: "id", value: accountId }],
+            where: [{ column: "id", value: lowercaseUsername }],
         });
-        this.writeLog("info", "Updated local account founder status.", {
+        this.writeLog("info", "Updated account founder status.", {
             component: "auth-local-store",
             accountId: lowercaseUsername,
             isFounder,
@@ -521,20 +503,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async isFounder(username: string): Promise<boolean> {
         const lowercaseUsername = normalizeUsername(username);
-        const lookupResult = await this.db.executeCommand({
-            option: "SELECT",
-            table: "local_auth_credentials",
-            columns: ["account_id"],
-            where: [{ column: "username", value: lowercaseUsername }],
-            limit: 1,
-        });
-        const accountId = lookupResult.rows?.[0]?.account_id;
-        if (!accountId) return false;
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "accounts",
             columns: ["is_founder"],
-            where: [{ column: "id", value: accountId }],
+            where: [{ column: "id", value: lowercaseUsername }],
             limit: 1,
         });
         return Boolean(result.rows?.[0]?.is_founder);
@@ -567,22 +540,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async setEnabled(username: string, enabled: boolean) {
         const lowercaseUsername = normalizeUsername(username);
-        const lookupResult = await this.db.executeCommand({
-            option: "SELECT",
-            table: "local_auth_credentials",
-            columns: ["account_id"],
-            where: [{ column: "username", value: lowercaseUsername }],
-            limit: 1,
-        });
-        const accountId = lookupResult.rows?.[0]?.account_id;
-        if (!accountId) return;
         await this.db.executeCommand({
             option: "UPDATE",
             table: "accounts",
             set: { enabled, updated_at: new Date().toISOString() },
-            where: [{ column: "id", value: accountId }],
+            where: [{ column: "id", value: lowercaseUsername }],
         });
-        this.writeLog("info", "Updated local account enabled state.", {
+        this.writeLog("info", "Updated account enabled state.", {
             component: "auth-local-store",
             accountId: lowercaseUsername,
             enabled,
@@ -591,31 +555,22 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async delete(username: string) {
         const lowercaseUsername = normalizeUsername(username);
-        const lookupResult = await this.db.executeCommand({
-            option: "SELECT",
-            table: "local_auth_credentials",
-            columns: ["account_id"],
-            where: [{ column: "username", value: lowercaseUsername }],
-            limit: 1,
-        });
-        const accountId = lookupResult.rows?.[0]?.account_id;
-        if (!accountId) return;
         try {
             await this.db.transaction(async (txDb) => {
                 await txDb.executeCommand({
                     option: "DELETE",
                     table: "local_auth_credentials",
-                    where: [{ column: "username", value: lowercaseUsername }],
+                    where: [{ column: "account_id", value: lowercaseUsername }],
                 });
                 await txDb.executeCommand({
                     option: "DELETE",
                     table: "local_auth_password_history",
-                    where: [{ column: "account_id", value: accountId }],
+                    where: [{ column: "account_id", value: lowercaseUsername }],
                 });
                 await txDb.executeCommand({
                     option: "DELETE",
                     table: "accounts",
-                    where: [{ column: "id", value: accountId }],
+                    where: [{ column: "id", value: lowercaseUsername }],
                 });
             });
         } catch (error) {
@@ -688,15 +643,6 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async updateLastLogin(username: string): Promise<void> {
         const lowercaseUsername = normalizeUsername(username);
-        const lookupResult = await this.db.executeCommand({
-            option: "SELECT",
-            table: "local_auth_credentials",
-            columns: ["account_id"],
-            where: [{ column: "username", value: lowercaseUsername }],
-            limit: 1,
-        });
-        const accountId = lookupResult.rows?.[0]?.account_id;
-        if (!accountId) return;
         await this.db.executeCommand({
             option: "UPDATE",
             table: "accounts",
@@ -704,15 +650,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 last_login: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
             },
-            where: [{ column: "id", value: accountId }],
+            where: [{ column: "id", value: lowercaseUsername }],
         });
-        this.writeLog(
-            "debug",
-            "Updated last-login timestamp for local account.",
-            {
-                component: "auth-local-store",
-                accountId: lowercaseUsername,
-            },
-        );
+        this.writeLog("debug", "Updated last-login timestamp for account.", {
+            component: "auth-local-store",
+            accountId: lowercaseUsername,
+        });
     }
 }
