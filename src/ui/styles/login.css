@@ -195,7 +195,7 @@ p.auth-intro {
     display: none;
 }
 
-.auth-form .auth-provider-btn {
+.auth-provider-toggle .auth-provider-btn {
     flex: 1 1 6rem;
     min-width: 0;
     margin-top: 0;
@@ -209,7 +209,7 @@ p.auth-intro {
     border-radius: 6px;
 }
 
-.auth-form .auth-provider-overflow-btn {
+.auth-provider-toggle .auth-provider-overflow-btn {
     flex: 0 0 3rem;
 }
 
@@ -225,14 +225,14 @@ p.auth-intro {
     width: 100%;
 }
 
-.auth-form .auth-provider-btn--active {
+.auth-provider-toggle .auth-provider-btn--active {
     background: #d6e7ff;
     border-color: #f1f7ff;
     color: #10244b;
     box-shadow: 0 2px 8px rgba(89, 133, 255, 0.35);
 }
 
-.auth-form .auth-provider-btn:not(.auth-provider-btn--active):hover {
+.auth-provider-toggle .auth-provider-btn:not(.auth-provider-btn--active):hover {
     background: rgba(89, 133, 255, 0.14);
     color: #f1f7ff;
 }

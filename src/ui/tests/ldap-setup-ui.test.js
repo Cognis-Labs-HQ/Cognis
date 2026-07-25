@@ -87,12 +87,19 @@ test("adapter configuration loads only explicitly announced popup extensions", (
 });
 
 test("login source selector precedes credential fields", () => {
+    const titleIndex = loginSource.indexOf('class="auth-heading"');
     const selectorIndex = loginSource.indexOf('id="auth-provider-toggle"');
     const credentialsIndex = loginSource.indexOf(
         'id="login-credential-fields"',
     );
     assert.ok(selectorIndex >= 0);
+    assert.ok(titleIndex >= 0);
+    assert.ok(titleIndex < selectorIndex);
     assert.ok(selectorIndex < credentialsIndex);
+    assert.match(
+        loginSource,
+        /<h2 class="auth-heading"[^>]*>[^`]*<\/h2>\s*<div id="auth-provider-toggle"/,
+    );
     assert.match(
         loginSource,
         /setAttribute\("aria-pressed", String\(active\)\)/,

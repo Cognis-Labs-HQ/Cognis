@@ -761,9 +761,9 @@ export async function mount(root) {
         const formPanelHtml = `
       ${mobileBrandlineHtml}
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+      <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
       <form id="login-form" class="stack auth-form" method="POST">
         <input type="hidden" id="login-provider" value="local" />
-        <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         <div id="login-credential-fields">${renderCredentialFields()}</div>
         <div id="login-tfa-fields" hidden></div>
         ${signupCalloutHtml}
