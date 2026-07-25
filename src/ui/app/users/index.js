@@ -411,10 +411,24 @@ async function runUserMenuAction(action, username) {
             ],
         });
         if (confirmAction !== "confirm") return;
-        await apiFetch(`/api/v1/users/${encodeURIComponent(username)}`, {
-            method: "DELETE",
-        });
-        await refreshData();
+        const response = await apiFetch(
+            `/api/v1/users/${encodeURIComponent(username)}`,
+            {
+                method: "DELETE",
+            },
+        );
+        if (!response.ok) {
+            showToast(i18n.t("ui.reuse.save_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+
+        // Update from the confirmed mutation instead of immediately reloading.
+        // The users endpoint can briefly return its pre-delete state, which would
+        // put the deleted row straight back into the table.
+        users = users.filter((user) => user.username !== username);
+        buildElements();
         composer.refresh(elements);
         return;
     }

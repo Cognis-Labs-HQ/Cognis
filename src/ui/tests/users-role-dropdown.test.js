@@ -109,6 +109,28 @@ test("users table opts out of DOM preservation so refreshed data is rendered", (
     );
 });
 
+test("users delete action removes the confirmed deletion from local table data", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    const deleteAction = source.match(
+        /if \(action === "delete"\) \{[\s\S]*?\n    \}/,
+    )?.[0];
+    assert.ok(deleteAction);
+    assert.match(deleteAction, /if \(!response\.ok\)/);
+    assert.match(
+        deleteAction,
+        /users = users\.filter\(\(user\) => user\.username !== username\)/,
+    );
+    assert.match(
+        deleteAction,
+        /buildElements\(\);\s*composer\.refresh\(elements\)/,
+    );
+    assert.doesNotMatch(deleteAction, /await refreshData\(\)/);
+});
+
 test("users tfa reset action has standalone branch", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
