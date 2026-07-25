@@ -1,5 +1,9 @@
 # Reliable module administration startup
 
+## Report module readiness from Whiteboard state
+
+The Whiteboard readiness endpoint now reflects its database and configuration state without repeating the module lifecycle's profile dependency check. An active profile adapter is no longer incorrectly reported as missing because of initialization order.
+
 ## Register collaboration routes before profile initialization
 
 Nextcloud Whiteboard now registers its board listing and preflight routes even when the profile service initializes later. Requests resolve the current profile capability, preventing transient route-not-found responses during startup.

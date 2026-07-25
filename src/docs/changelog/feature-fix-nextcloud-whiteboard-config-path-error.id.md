@@ -1,5 +1,9 @@
 # Startup administrasi modul yang andal
 
+## Melaporkan kesiapan modul dari status Whiteboard
+
+Endpoint kesiapan Whiteboard kini mencerminkan status basis data dan konfigurasi tanpa mengulangi pemeriksaan dependensi profil dari siklus hidup modul. Adapter profil yang aktif tidak lagi keliru dilaporkan tidak tersedia akibat urutan inisialisasi.
+
 ## Mendaftarkan rute kolaborasi sebelum inisialisasi profil
 
 Nextcloud Whiteboard kini mendaftarkan rute daftar papan dan pemeriksaan awal meskipun layanan profil diinisialisasi belakangan. Permintaan menggunakan kapabilitas profil terkini sehingga mencegah respons rute tidak ditemukan sementara selama startup.

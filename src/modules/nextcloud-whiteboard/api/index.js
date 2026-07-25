@@ -37,18 +37,21 @@ function resolveStore(dbExecutor, log) {
 }
 
 function createProfileStoreCapability(ctx) {
-    return new Proxy(
-        {},
-        {
-            get(_target, property) {
-                const profileStore = ctx.getCapability("social:profileStore");
-                const member = profileStore?.[property];
-                return typeof member === "function"
-                    ? member.bind(profileStore)
-                    : member;
-            },
+    const requireProfileStore = () => {
+        const profileStore = ctx.getCapability("social:profileStore");
+        if (!profileStore) {
+            throw new Error("Profile store capability is unavailable.");
+        }
+        return profileStore;
+    };
+    return {
+        getProfile(...args) {
+            return requireProfileStore().getProfile(...args);
         },
-    );
+        getProfileByHandle(...args) {
+            return requireProfileStore().getProfileByHandle(...args);
+        },
+    };
 }
 
 async function resolveRequesterUsername(profileStore, accountId) {
@@ -435,15 +438,6 @@ export function registerApiRoutes(router, ctx) {
     router.get(
         "/api/v1/modules/nextcloud-whiteboard/ping",
         async (_req, res) => {
-            if (!ctx.getCapability("social:profileStore")) {
-                sendJson(res, 200, {
-                    data: {
-                        ready: false,
-                        reason: "required_capabilities_missing",
-                    },
-                });
-                return;
-            }
             await store.ensureSchema();
             const config = await store.getConfig();
             sendJson(res, 200, {

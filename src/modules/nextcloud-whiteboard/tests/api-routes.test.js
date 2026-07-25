@@ -1027,6 +1027,14 @@ test("nextcloud whiteboard routes resolve a profile store registered later", asy
         "POST",
         "/api/v1/modules/nextcloud-whiteboard/whiteboards/preflight",
     );
+    const readinessResponse = createJsonResponse();
+    await router.handler("GET", "/api/v1/modules/nextcloud-whiteboard/ping")(
+        {},
+        readinessResponse,
+    );
+    assert.equal(readinessResponse.statusCode, 200);
+    assert.equal(readinessResponse.json().data.ready, true);
+    assert.equal(readinessResponse.json().data.configComplete, false);
     profileStore = {
         async getProfile(accountId) {
             return { handle: accountId };
