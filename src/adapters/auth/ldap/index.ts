@@ -4,6 +4,7 @@ import type {
     AuthConfigField,
 } from "../../../gateways/auth/gateway.js";
 import { registerLdapFlowHooks } from "./flow-hooks.js";
+import { StandardLdapClient } from "./client.js";
 
 export interface LdapIdentity {
     id: string;
@@ -29,8 +30,9 @@ export interface LdapDirectorySample {
 
 export interface LdapClient {
     authenticate(
-        accessToken: string,
-        options?: LdapRuntimeOptions,
+        username: string,
+        password: string,
+        options: LdapRuntimeOptions,
     ): Promise<LdapIdentity | null>;
     testConnection?(
         options: LdapRuntimeOptions,
@@ -39,16 +41,16 @@ export interface LdapClient {
     validatePassword?(
         accountId: string,
         currentPassword: string,
-        options?: { baseDn?: string; userAttribute?: string },
+        options: LdapRuntimeOptions,
     ): Promise<boolean>;
     updatePassword?(
         accountId: string,
         nextPassword: string,
-        options?: { baseDn?: string; userAttribute?: string },
+        options: LdapRuntimeOptions,
     ): Promise<boolean>;
 }
 
-interface LdapRuntimeOptions {
+export interface LdapRuntimeOptions {
     serverUrl: string;
     baseDn: string;
     bindDn: string;
@@ -91,59 +93,12 @@ function parseRoleMappings(value: unknown): Record<string, string> {
     return mappings;
 }
 
-function defaultLdapSample(
-    config: Partial<LdapRuntimeOptions>,
-): LdapDirectorySample {
-    const baseDn = config.baseDn || "dc=example,dc=org";
-    const isFreeIpa =
-        /cn=accounts/i.test(baseDn) || /freeipa/i.test(config.serverUrl ?? "");
-    return {
-        directoryFlavor: isFreeIpa ? "freeipa" : "openldap",
-        supportsMemberOf: true,
-        users: [
-            {
-                id: "alice",
-                dn: `uid=alice,ou=People,${baseDn}`,
-                email: "alice@example.org",
-                displayName: "Alice Example",
-                groups: ["teachers"],
-                memberOf: [`cn=teachers,ou=Groups,${baseDn}`],
-            },
-            {
-                id: "bob",
-                dn: `uid=bob,ou=People,${baseDn}`,
-                email: "bob@example.org",
-                displayName: "Bob Example",
-                groups: ["learners"],
-                memberOf: [`cn=learners,ou=Groups,${baseDn}`],
-            },
-        ],
-        groups: [
-            {
-                name: "cognis-admins",
-                dn: `cn=cognis-admins,ou=Groups,${baseDn}`,
-                members: ["alice"],
-            },
-            {
-                name: "teachers",
-                dn: `cn=teachers,ou=Groups,${baseDn}`,
-                members: ["alice"],
-            },
-            {
-                name: "learners",
-                dn: `cn=learners,ou=Groups,${baseDn}`,
-                members: ["bob"],
-            },
-        ],
-    };
-}
-
 class LdapAuthAdapter implements AuthProviderAdapter {
     readonly id = "ldap";
     readonly name = "LDAP";
     readonly version = "0.2.0";
 
-    private client: LdapClient | null = null;
+    private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
     private writebackEnabled = false;
     private writebackBaseDn = "";
@@ -154,8 +109,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         bindDn: "",
         bindPassword: "",
         userFilter: "(&(objectClass=inetOrgPerson)(uid={username}))",
-        groupFilter:
-            "(|(objectClass=groupOfNames)(objectClass=groupOfUniqueNames)(objectClass=posixGroup)(objectClass=ipaUserGroup))",
+        groupFilter: "(|(objectClass=groupOfNames)(objectClass=posixGroup))",
         userAttribute: "uid",
         groupNameAttribute: "cn",
         groupMemberAttribute: "member",
@@ -167,12 +121,12 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     async authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null> {
-        const accessToken = String(
-            credentials.accessToken ?? credentials.password ?? "",
-        );
-        if (!this.client || !accessToken) return null;
+        const username = String(credentials.username ?? "");
+        const password = String(credentials.password ?? "");
+        if (!username || !password) return null;
         const identity = await this.client.authenticate(
-            accessToken,
+            username,
+            password,
             this.options,
         );
         if (!identity) return null;
@@ -187,12 +141,15 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     }
 
     private resolveRole(groups: string[]): string {
+        const mappedRoles: string[] = [];
         for (const group of groups) {
             const mapped =
                 this.options.roleMappings[group] ??
                 this.options.roleMappings[group.toLowerCase()];
-            if (mapped) return mapped;
+            if (mapped) mappedRoles.push(mapped);
         }
+        for (const role of ["admin", "moderator", "teacher", "user"])
+            if (mappedRoles.includes(role)) return role;
         return groups.some((g) => this.adminGroups.has(g)) ? "admin" : "user";
     }
 
@@ -216,6 +173,12 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 key: "bindPassword",
                 label: "Bind Password",
                 type: "password",
+                required: true,
+            },
+            {
+                key: "userAttribute",
+                label: "Username Attribute",
+                type: "text",
                 required: true,
             },
             {
@@ -309,14 +272,16 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             throw new Error(
                 "LDAP server URL, base DN, and bind credentials are required.",
             );
-        if (this.client?.discover) return this.client.discover(merged);
+        if (this.client.discover) return this.client.discover(merged);
         if (this.client?.testConnection) {
             const result = await this.client.testConnection(merged);
             if (result && typeof result === "object") return result;
             if (result === false)
                 throw new Error("LDAP connection test failed.");
         }
-        return defaultLdapSample(merged);
+        throw new Error(
+            "The LDAP client does not support directory discovery.",
+        );
     }
 
     getPasswordResetSupport(): { supported: boolean; reason?: string } {
@@ -357,6 +322,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         )
             return { updated: false, message: support.reason };
         const options = {
+            ...this.options,
             baseDn: this.writebackBaseDn,
             userAttribute: this.writebackUserAttribute,
         };

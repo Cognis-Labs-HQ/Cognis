@@ -319,3 +319,30 @@
     display: grid;
     gap: 0.9rem;
 }
+
+.ldap-role-table-wrap {
+    overflow-x: auto;
+}
+
+.ldap-role-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ldap-role-table th,
+.ldap-role-table td {
+    padding: 0.45rem;
+    text-align: left;
+}
+
+.ldap-role-table .theme-select {
+    width: 100%;
+}
+
+.ldap-writeback-options {
+    display: none;
+}
+
+.ldap-writeback-toggle:has(input:checked) + .ldap-writeback-options {
+    display: block;
+}

@@ -15,8 +15,54 @@ test("ldap adapter config schema has required fields", () => {
     assert.ok(keys.includes("host"));
     assert.ok(keys.includes("bindDn"));
     assert.ok(keys.includes("baseDn"));
+    assert.ok(keys.includes("userAttribute"));
     assert.ok(keys.includes("writebackEnabled"));
     assert.ok(keys.includes("writebackBaseDn"));
+});
+
+test("ldap test configuration returns only client-discovered directory entries", async () => {
+    const adapter = createAdapter() as {
+        setClient(client: {
+            authenticate: () => Promise<null>;
+            discover: (options: Record<string, unknown>) => Promise<{
+                users: never[];
+                groups: Array<{ name: string; dn: string }>;
+                supportsMemberOf: boolean;
+                directoryFlavor: "freeipa";
+            }>;
+        }): void;
+        testConfiguration(config: Record<string, unknown>): Promise<{
+            groups: Array<{ name: string }>;
+        }>;
+    };
+    adapter.setClient({
+        authenticate: async () => null,
+        discover: async (options) => {
+            assert.equal(options.userAttribute, "employeeNumber");
+            return {
+                users: [],
+                groups: [
+                    {
+                        name: "real-directory-admins",
+                        dn: "cn=real-directory-admins,cn=groups,dc=example,dc=org",
+                    },
+                ],
+                supportsMemberOf: true,
+                directoryFlavor: "freeipa",
+            };
+        },
+    });
+    const result = await adapter.testConfiguration({
+        serverUrl: "ldaps://ldap.example.org",
+        baseDn: "dc=example,dc=org",
+        bindDn: "uid=service,dc=example,dc=org",
+        bindPassword: "secret",
+        userAttribute: "employeeNumber",
+    });
+    assert.deepEqual(
+        result.groups.map(({ name }) => name),
+        ["real-directory-admins"],
+    );
 });
 
 test("ldap adapter password reset is blocked when current-password validation is unavailable", async () => {
