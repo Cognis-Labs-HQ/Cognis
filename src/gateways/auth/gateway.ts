@@ -35,6 +35,9 @@ export interface AuthProviderAdapter {
         currentPasswordOrNextPassword: string,
         nextPassword?: string,
     ): Promise<{ updated: boolean; message?: string }>;
+    testConfiguration?(
+        config: Record<string, unknown>,
+    ): Promise<Record<string, unknown>>;
 }
 
 export interface AdapterInfo {

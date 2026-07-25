@@ -127,6 +127,47 @@ export function createAdapterAdminRoutes(
             }
         }
 
+        const testMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/test$`),
+        );
+        if (testMatch && req.method === "POST") {
+            if (!requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(testMatch[1]);
+            const adapter = authGateway.getAdapter(adapterId);
+            if (!adapter || typeof adapter.testConfiguration !== "function") {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "not_found",
+                            message: "Adapter test is not available",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const body = (await readJson(req)) as Record<string, unknown>;
+            try {
+                const data = await adapter.testConfiguration(body);
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data }));
+            } catch (error) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "ldap_test_failed",
+                            message:
+                                error instanceof Error
+                                    ? error.message
+                                    : "LDAP test failed",
+                        },
+                    }),
+                );
+            }
+            return true;
+        }
+
         const enableMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );

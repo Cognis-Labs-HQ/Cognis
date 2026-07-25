@@ -267,9 +267,163 @@ export function createAdapterConfigPopup({
         return config;
     }
 
+    function renderLdapConnectionForm(values = {}) {
+        return `<div class="provider-popup-form ldap-setup-popup">
+          <p class="module-settings-popup-note">Connect to OpenLDAP or FreeIPA first. Cognis will inspect sample users and groups before asking for filters.</p>
+          ${["serverUrl", "baseDn", "bindDn", "bindPassword"].map((name) => `<label class="provider-popup-field">${escapeHtml(fieldNameToLabel(name))}<input id="${name}" name="${name}" type="${name === "bindPassword" ? "password" : "text"}" value="${escapeHtml(values[name] ?? "")}" /></label>`).join("")}
+        </div>`;
+    }
+
+    function renderLdapFilterForm(config, sample) {
+        const users = Array.isArray(sample?.users) ? sample.users : [];
+        const groups = Array.isArray(sample?.groups) ? sample.groups : [];
+        const groupOptions = groups
+            .map(
+                (group) =>
+                    `<option value="${escapeHtml(group.name)}">${escapeHtml(group.name)}${group.dn ? ` — ${escapeHtml(group.dn)}` : ""}</option>`,
+            )
+            .join("");
+        const userChips = users
+            .slice(0, 8)
+            .map(
+                (user) =>
+                    `<span class="provider-field-env-warning">${escapeHtml(user.displayName || user.id)}${user.groups?.length ? ` (${escapeHtml(user.groups.join(", "))})` : ""}</span>`,
+            )
+            .join(" ");
+        return `<div class="provider-popup-form ldap-setup-popup">
+          <p class="module-settings-popup-note">Found ${users.length} users and ${groups.length} groups (${escapeHtml(sample?.directoryFlavor ?? "LDAP")}). Use these samples to build filters and role mappings.</p>
+          <div>${userChips}</div>
+          <label class="provider-popup-field">User filter<input name="userFilter" value="${escapeHtml(config.userFilter ?? "(&(objectClass=inetOrgPerson)(uid={username}))")}" /></label>
+          <label class="provider-popup-field">Group filter<input name="groupFilter" value="${escapeHtml(config.groupFilter ?? "(|(objectClass=groupOfNames)(objectClass=groupOfUniqueNames)(objectClass=posixGroup)(objectClass=ipaUserGroup))")}" /></label>
+          <div class="provider-option-row"><span class="provider-option-label">Use nested memberOf (${escapeHtml(config.memberOfAttribute ?? "memberOf")})</span><label class="switch"><input name="nestedMemberOf" type="checkbox"${config.nestedMemberOf !== false ? " checked" : ""} /><span class="slider"></span></label></div>
+          <label class="provider-popup-field">Map selected LDAP group to Cognis role<select name="roleGroup" class="theme-select">${groupOptions}</select><select name="roleName" class="theme-select"><option>user</option><option>teacher</option><option>moderator</option><option>admin</option></select></label>
+          <label class="provider-popup-field">Role mappings<input name="roleMappings" value="${escapeHtml(config.roleMappings ?? "cognis-admins:admin")}" placeholder="teachers:teacher, cognis-admins:admin" /></label>
+          <div class="provider-option-row"><span class="provider-option-label">Enable LDAP password writeback</span><label class="switch"><input name="writebackEnabled" type="checkbox"${config.writebackEnabled === true || config.writebackEnabled === "true" ? " checked" : ""} /><span class="slider"></span></label></div>
+          <label class="provider-popup-field">Writeback base DN<input name="writebackBaseDn" value="${escapeHtml(config.writebackBaseDn ?? config.baseDn ?? "")}" /></label>
+        </div>`;
+    }
+
+    async function openLdapConfig(configUrl, onSaved) {
+        const response = await apiFetch(configUrl);
+        if (!response.ok) return;
+        const payload = await response.json();
+        const dbData = payload.data ?? {};
+        let connectionValues = { ...dbData };
+        let sample = null;
+        let pageApi = null;
+        await openPopup({
+            title: "LDAP setup",
+            maxWidth: "760px",
+            pages: [
+                {
+                    id: "connect",
+                    title: "LDAP setup: connection",
+                    body: () => renderLdapConnectionForm(connectionValues),
+                    actions: [
+                        {
+                            id: "test",
+                            label: "Test and discover",
+                            variant: "confirm",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
+                },
+                {
+                    id: "filters",
+                    title: "LDAP setup: filters and roles",
+                    body: () => renderLdapFilterForm(connectionValues, sample),
+                    actions: [
+                        { id: "back", label: "Back", variant: "neutral" },
+                        {
+                            id: "save",
+                            label: i18n.t("ui.app.admin.notif.save_settings"),
+                            variant: "confirm",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
+                },
+            ],
+            onOpen: (overlay, _dismiss, api) => {
+                pageApi = api;
+            },
+            onAction: async (action, overlay, api) => {
+                if (action === "back") {
+                    api.setPage("connect");
+                    return false;
+                }
+                const form = overlay.querySelector(".provider-popup-form");
+                if (!(form instanceof HTMLElement)) return false;
+                const values = buildConfigPayload(form);
+                if (action === "test") {
+                    connectionValues = { ...connectionValues, ...values };
+                    const testResponse = await apiFetch(
+                        configUrl.replace(/\/config$/, "/test"),
+                        {
+                            method: "POST",
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify(connectionValues),
+                        },
+                    );
+                    const testPayload = await testResponse
+                        .json()
+                        .catch(() => ({}));
+                    if (!testResponse.ok) {
+                        showToast(
+                            testPayload?.error?.message ?? "LDAP test failed",
+                            { variant: "error" },
+                        );
+                        return false;
+                    }
+                    sample = testPayload.data;
+                    api.setPage("filters");
+                    return false;
+                }
+                if (action !== "save") return true;
+                connectionValues = { ...connectionValues, ...values };
+                const roleGroup = values.roleGroup;
+                const roleName = values.roleName;
+                if (roleGroup && roleName)
+                    connectionValues.roleMappings =
+                        `${connectionValues.roleMappings || ""},${roleGroup}:${roleName}`.replace(
+                            /^,/,
+                            "",
+                        );
+                const saveResponse = await apiFetch(configUrl, {
+                    method: "PUT",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify(connectionValues),
+                });
+                if (!saveResponse.ok) {
+                    showToast(i18n.t("ui.reuse.save_failed"), {
+                        variant: "error",
+                    });
+                    return false;
+                }
+                await onSaved?.();
+                showToast(i18n.t("ui.app.admin.settings_saved"), {
+                    variant: "success",
+                });
+                return true;
+            },
+            closeProtection: true,
+        });
+    }
+
     return {
         async openAdapterConfig(name, { configUrl, testUrl, onSaved } = {}) {
             if (!configUrl) return;
+            if (name === "LDAP" || /adapters\/ldap\/config$/.test(configUrl)) {
+                await openLdapConfig(configUrl, onSaved);
+                return;
+            }
 
             const response = await apiFetch(configUrl);
             if (!response.ok) return;

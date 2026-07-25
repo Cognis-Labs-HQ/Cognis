@@ -314,3 +314,8 @@
     white-space: pre-wrap;
     word-break: break-word;
 }
+
+.ldap-setup-popup {
+    display: grid;
+    gap: 0.9rem;
+}
