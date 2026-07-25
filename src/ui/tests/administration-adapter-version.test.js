@@ -45,6 +45,7 @@ test("administration adapter rows show adapter version next to the name", () => 
         html,
         /<span class="adapter-inline-name"><strong>SMTP <span class="adapter-inline-version">v0\.2\.6<\/span><\/strong><\/span>/,
     );
+    assert.match(html, /module-row-heading adapter-inline-heading/);
 });
 
 test("active component health uses lights and disabled adapters omit status", () => {
@@ -82,8 +83,35 @@ test("active component health uses lights and disabled adapters omit status", ()
         },
     );
     assert.match(html, /component-health-light--ok/);
+    assert.match(
+        html,
+        /module-row-heading[^]*module-row-title[^]*state-pill[^]*component-health-light--ok/,
+    );
     assert.doesNotMatch(html, /component-health-light--error/);
     assert.doesNotMatch(html, />unknown</);
+});
+
+test("health lights have a rendered box and explicit status colors", () => {
+    const styles = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/admin.css"),
+        "utf8",
+    );
+    assert.match(
+        styles,
+        /\.component-health-light\s*{[^}]*display: inline-block;[^}]*flex: 0 0 10px;/,
+    );
+    assert.match(
+        styles,
+        /\.component-health-light--ok\s*{[^}]*background: currentColor;/,
+    );
+    assert.match(
+        styles,
+        /\.component-health-light--warning\s*{[^}]*background: currentColor;/,
+    );
+    assert.match(
+        styles,
+        /\.component-health-light--error\s*{[^}]*background: currentColor;/,
+    );
 });
 
 test("component detail arrows use an independent details hitbox", () => {
