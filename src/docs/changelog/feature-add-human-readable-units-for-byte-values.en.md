@@ -2,4 +2,4 @@
 
 ## Human-readable quota editing
 
-Administrators can now edit user storage quotas directly in the users table with numeric values and binary unit selectors instead of opening the action menu.
+Administrators can edit user storage quotas with numeric values and binary unit selectors in a popup opened from each user’s hamburger menu.

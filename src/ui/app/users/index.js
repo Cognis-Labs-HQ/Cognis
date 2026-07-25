@@ -23,7 +23,6 @@ let registrationGatewayActive = false;
 let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
-let userQuotas = new Map();
 
 const QUOTA_UNITS = [
     { id: "B", multiplier: 1 },
@@ -188,7 +187,7 @@ function quotaUnitOptions(selectedUnit) {
     ).join("");
 }
 
-function renderQuotaControl(username, namespaceId, quotaBytes) {
+function renderQuotaControl(namespaceId, quotaBytes) {
     const quota = splitQuotaBytes(quotaBytes);
     return `
         <div class="users-quota-control">
@@ -198,34 +197,14 @@ function renderQuotaControl(username, namespaceId, quotaBytes) {
             type="number"
             min="1"
             step="0.01"
-            data-username="${escapeHtml(username)}"
             data-namespace-id="${escapeHtml(namespaceId)}"
             value="${escapeHtml(String(quota.value))}"
           />
           <select
             class="users-quota-unit-select theme-select"
-            data-username="${escapeHtml(username)}"
             data-namespace-id="${escapeHtml(namespaceId)}"
           >${quotaUnitOptions(quota.unit)}</select>
         </div>`;
-}
-
-function renderQuotaCell(user) {
-    const quotas = userQuotas.get(user.username);
-    if (!quotas) return "";
-    return `
-      <div class="users-quota-list">
-        ${quotas.namespaces
-            .map((entry) =>
-                renderQuotaControl(
-                    user.username,
-                    entry.namespaceId,
-                    entry.quotaBytes,
-                ),
-            )
-            .join("")}
-        ${renderQuotaControl(user.username, "global", quotas.globalQuota)}
-      </div>`;
 }
 
 function parseQuotaBytes(input, select) {
@@ -236,7 +215,7 @@ function parseQuotaBytes(input, select) {
 }
 
 async function saveStorageQuota(username, namespaceId, quotaBytes) {
-    const response = await apiFetch(
+    return apiFetch(
         `/api/v1/files/admin/users/${encodeURIComponent(username)}/quotas/${encodeURIComponent(namespaceId)}`,
         {
             method: "PUT",
@@ -244,11 +223,78 @@ async function saveStorageQuota(username, namespaceId, quotaBytes) {
             body: JSON.stringify({ quotaBytes }),
         },
     );
+}
+
+async function promptStorageQuotas(username) {
+    const { namespaces, globalQuota } = await fetchUserQuotas(username);
+    let controls = [];
+    const result = await openPopup({
+        title: i18n.t("ui.app.users.storage_quotas"),
+        body: () => `
+          <div class="users-quota-list">
+            ${namespaces
+                .map((entry) =>
+                    renderQuotaControl(entry.namespaceId, entry.quotaBytes),
+                )
+                .join("")}
+            ${renderQuotaControl("global", globalQuota)}
+          </div>`,
+        actions: [
+            {
+                id: "confirm",
+                label: i18n.t("ui.reuse.confirm"),
+                variant: "confirm",
+            },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
+        ],
+        closeProtection: true,
+        onOpen: (overlay) => {
+            controls = Array.from(
+                overlay.querySelectorAll(".users-quota-control"),
+            );
+        },
+    });
+    if (result !== "confirm") return;
+
+    const quotas = controls.map((control) => {
+        const input = control.querySelector(".users-quota-input");
+        const select = control.querySelector(".users-quota-unit-select");
+        return {
+            namespaceId: input?.dataset.namespaceId,
+            quotaBytes:
+                input instanceof HTMLInputElement &&
+                select instanceof HTMLSelectElement
+                    ? parseQuotaBytes(input, select)
+                    : null,
+        };
+    });
+    if (
+        quotas.some(
+            ({ namespaceId, quotaBytes }) =>
+                !namespaceId || quotaBytes === null,
+        )
+    ) {
+        showToast(i18n.t("ui.app.users.storage_quota_invalid"), {
+            variant: "error",
+        });
+        return;
+    }
+
+    const responses = await Promise.all(
+        quotas.map(({ namespaceId, quotaBytes }) =>
+            saveStorageQuota(username, namespaceId, quotaBytes),
+        ),
+    );
+    const saved = responses.every((response) => response.ok);
     showToast(
-        response.ok
+        saved
             ? i18n.t("ui.app.users.storage_quotas_saved")
             : i18n.t("ui.reuse.save_failed"),
-        { variant: response.ok ? "success" : "error" },
+        { variant: saved ? "success" : "error" },
     );
 }
 
@@ -258,13 +304,6 @@ async function refreshData() {
         loadRegistrationGatewayState(),
         isSmtpAdapterActive(apiFetch),
     ]);
-    const quotaEntries = await Promise.all(
-        users.map(async (user) => [
-            user.username,
-            await fetchUserQuotas(user.username),
-        ]),
-    );
-    userQuotas = new Map(quotaEntries);
     buildElements();
 }
 
@@ -288,7 +327,6 @@ function renderUsersTable() {
             <th>${escapeHtml(i18n.t("ui.app.users.username"))}</th>
             <th>${escapeHtml(i18n.t("ui.app.users.role"))}</th>
             <th>${escapeHtml(i18n.t("ui.app.users.status"))}</th>
-            <th>${escapeHtml(i18n.t("ui.app.users.storage_quotas"))}</th>
             <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
           </tr>
         </thead>
@@ -337,7 +375,6 @@ function renderUsersTable() {
                 <td>${escapeHtml(user.username)}</td>
                 <td>${roleCellHtml}</td>
                 <td>${escapeHtml(statusLabel)}</td>
-                <td>${renderQuotaCell(user)}</td>
                 <td class="users-actions-cell">${actionsHtml}</td>
               </tr>
             `;
@@ -410,6 +447,11 @@ async function runUserMenuAction(action, username) {
                 : i18n.t("ui.reuse.save_failed"),
             { variant: resetResponse.ok ? "success" : "error" },
         );
+        return;
+    }
+
+    if (action === "storage-quotas") {
+        await promptStorageQuotas(username);
         return;
     }
 
@@ -565,6 +607,10 @@ function bindUsersInteractions() {
                             ? "External users' passwords are managed by their authentication provider."
                             : undefined,
                 },
+                {
+                    id: "storage-quotas",
+                    label: i18n.t("ui.app.users.storage_quotas"),
+                },
                 ...(user?.hasTfaConfigured === true
                     ? [
                           {
@@ -593,35 +639,6 @@ function bindUsersInteractions() {
             const username = btn.dataset.username;
             if (!username) return;
             await runUserMenuAction("delete", username);
-        });
-    });
-
-    root.querySelectorAll(
-        ".users-quota-input, .users-quota-unit-select",
-    ).forEach((control) => {
-        control.addEventListener("change", async () => {
-            const username = control.dataset.username;
-            const namespaceId = control.dataset.namespaceId;
-            if (!username || !namespaceId) return;
-            const row = control.closest(".users-quota-control");
-            const input = row?.querySelector(".users-quota-input");
-            const select = row?.querySelector(".users-quota-unit-select");
-            if (
-                !(input instanceof HTMLInputElement) ||
-                !(select instanceof HTMLSelectElement)
-            ) {
-                return;
-            }
-            const quotaBytes = parseQuotaBytes(input, select);
-            if (quotaBytes === null) {
-                showToast(i18n.t("ui.app.users.storage_quota_invalid"), {
-                    variant: "error",
-                });
-                return;
-            }
-            await saveStorageQuota(username, namespaceId, quotaBytes);
-            await refreshData();
-            composer.refresh(elements);
         });
     });
 

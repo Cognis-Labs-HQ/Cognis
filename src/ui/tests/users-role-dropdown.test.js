@@ -178,18 +178,20 @@ test("users resend verification action is hidden when smtp adapter is disabled",
     assert.match(source, /const emails = smtpAdapterActive\s*\?[\s\S]*: \[\];/);
 });
 
-test("users storage quotas render inline with unit selectors", () => {
+test("users storage quotas open from the hamburger menu with unit selectors", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
         "utf8",
     );
 
-    assert.match(
-        source,
-        /<th>\$\{escapeHtml\(i18n\.t\("ui\.app\.users\.storage_quotas"\)\)\}<\/th>/,
-    );
+    assert.match(source, /async function promptStorageQuotas\(username\)/);
+    assert.match(source, /await promptStorageQuotas\(username\)/);
     assert.match(source, /class="users-quota-input"/);
     assert.match(source, /class="users-quota-unit-select theme-select"/);
     assert.match(source, /const QUOTA_UNITS = \[/);
-    assert.doesNotMatch(source, /id: "storage-quotas"/);
+    assert.match(source, /id: "storage-quotas"/);
+    assert.doesNotMatch(
+        source,
+        /<th>\$\{escapeHtml\(i18n\.t\("ui\.app\.users\.storage_quotas"\)\)\}<\/th>/,
+    );
 });
