@@ -101,6 +101,34 @@ test("ldap adapter forwards every user-bound email for provisioning", async () =
     ]);
 });
 
+test("ldap adapter forwards display names and reconstructs legacy host URLs", async () => {
+    let configuredUrl = "";
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        setClient(client: {
+            authenticate: (
+                username: string,
+                password: string,
+                options: LdapRuntimeOptions,
+            ) => Promise<{ id: string; displayName: string }>;
+        }): void;
+    };
+    adapter.configure({ host: "ldap.example.org", port: 636 });
+    adapter.setClient({
+        authenticate: async (_username, _password, options) => {
+            configuredUrl = options.serverUrl;
+            return { id: "alice", displayName: "Alice Smith" };
+        },
+    });
+
+    const context = (await adapter.authenticate({
+        username: "alice",
+        password: "secret",
+    })) as { displayName?: string } | null;
+
+    assert.equal(configuredUrl, "ldaps://ldap.example.org:636");
+    assert.equal(context?.displayName, "Alice Smith");
+});
+
 test("ldap adapter config schema has required fields", () => {
     const adapter = createAdapter();
     const schema = adapter.getConfigSchema();

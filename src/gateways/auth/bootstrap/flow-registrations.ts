@@ -149,6 +149,15 @@ export async function registerAuthBootstrapHook(
                 });
             }
 
+            const account = await context.accountStore.getInfo(
+                session.accountId,
+            );
+            if (account && !account.enabled) {
+                return {
+                    sessionResult: { outcome: "invalid_credentials" },
+                };
+            }
+
             let role: AccessRole = resolveRole(session.role);
             const getProfileRole =
                 capabilities.get<

@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog } from "@cognis/core";
-import type { LocalAccountStore } from "../../reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
 import {

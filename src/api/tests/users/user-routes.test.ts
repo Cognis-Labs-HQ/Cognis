@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserRoutes } from "../../routes/users/index.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
-import { VolatileLocalAccountStore } from "../../reuse/account-store.js";
+import { VolatileLocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
 import {
     issueAccessToken,
@@ -16,7 +16,7 @@ import {
     registerCanonicalFlow,
     USER_LIFECYCLE_FLOW_CATALOG,
 } from "@cognis/core";
-import type { LocalAccountStore } from "../../reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 
 function makeRouteContext(accountStore: LocalAccountStore) {
     const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);

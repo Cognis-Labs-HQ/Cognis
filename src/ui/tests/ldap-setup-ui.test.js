@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
 const adminPopupSource = readFileSync(
-    new URL("../app/administration/adapter-config-popup.js", import.meta.url),
+    new URL("../../adapters/auth/ldap/ui/config-popup.js", import.meta.url),
     "utf8",
 );
 const loginSource = readFileSync(

@@ -88,7 +88,7 @@ export function renderTfaMethodTabs(
         }
         tabsEl.appendChild(tabLink);
     });
-    tabsEl.hidden = false;
+    tabsEl.hidden = normalizedMethods.length <= 1;
 }
 
 export function switchToTfaPrompt(

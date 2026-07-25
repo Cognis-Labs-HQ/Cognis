@@ -456,6 +456,12 @@ export async function openPopup({
                 titleEl.textContent = String(currentPage.title ?? title ?? "");
             if (bodyEl)
                 bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
+            if (closeProtection) {
+                closeProtectionTracker?.destroy();
+                closeProtectionTracker = createFormDirtyTracker(overlay, {
+                    quiet: true,
+                });
+            }
             const pageActions = currentPage.actions ?? actions ?? [];
             if (footerEl) {
                 footerEl.innerHTML = pageActions

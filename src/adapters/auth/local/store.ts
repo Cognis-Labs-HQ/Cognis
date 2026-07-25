@@ -11,11 +11,11 @@
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
 import type { AuthContext, BootstrapLog } from "@cognis/core";
-import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import {
     normalizeUsername,
     validateUsername,
-} from "../../../api/reuse/account-store.js";
+} from "../../../gateways/auth/reuse/account-store.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 const scryptAsync = promisify(scrypt);

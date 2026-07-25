@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext, AuthGateway, FlowApi } from "@cognis/core";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
-import type { LocalAccountStore } from "./reuse/local-account-store.js";
+import type { LocalAccountStore } from "./reuse/account-store.js";
 
 export type { AuthContext, AuthGateway };
 

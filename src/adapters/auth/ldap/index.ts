@@ -54,6 +54,7 @@ export interface LdapClient {
 
 export interface LdapRuntimeOptions {
     serverUrl: string;
+    port?: number;
     baseDn: string;
     userDn?: string;
     groupDn?: string;
@@ -143,6 +144,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             externalUserId: identity.dn ?? identity.id,
             email: identity.email,
             emails: identity.emails,
+            displayName: identity.displayName,
             role,
         } as AuthContext & { emails?: string[] };
     }
@@ -260,9 +262,14 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 ),
             ),
         } as LdapRuntimeOptions;
-        this.options.serverUrl = String(
+        const configuredUrl = String(
             config.serverUrl ?? config.host ?? this.options.serverUrl ?? "",
         ).trim();
+        const legacyPort = Number(config.port ?? this.options.port);
+        this.options.serverUrl =
+            configuredUrl && !configuredUrl.includes("://")
+                ? `${legacyPort === 636 ? "ldaps" : "ldap"}://${configuredUrl}${Number.isFinite(legacyPort) ? `:${legacyPort}` : ""}`
+                : configuredUrl;
         this.options.roleMappings = parseRoleMappings(
             config.roleMappings ?? this.options.roleMappings,
         );

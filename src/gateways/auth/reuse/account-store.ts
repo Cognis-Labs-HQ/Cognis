@@ -1,32 +1,7 @@
 /**
- * LocalAccountStore interface and volatile test double.
- *
- * Why this lives in src/api/reuse/ rather than in the auth adapter:
- *   The Auth gateway registers route factories (auth routes, user management
- *   routes) that live under src/api/routes/. Those route factories accept a
- *   LocalAccountStore parameter so they stay free of any concrete adapter
- *   import. Placing this interface in the API-layer reuse directory is the
- *   narrowest location that satisfies both the route factories and the adapter
- *   without creating a circular dependency.
- *
- *   The concrete DB-backed implementation (DbLocalAccountStore) lives in
- *   src/adapters/auth/local/store.ts and is only imported by the Auth gateway
- *   bootstrap, which is the sole point of wiring.
- *
- * Exports:
- *   LocalAccountStore         — abstract interface for route factories.
- *   VolatileLocalAccountStore — in-memory test double (no persistence).
- *
- * Adding a new account-store backend?
- *   Implement LocalAccountStore in your adapter directory and wire it in
- *   src/gateways/auth/bootstrap.ts. Do not modify this file.
- *
- * @example
- *   import type { LocalAccountStore } from '../../reuse/account-store.js';
- *   export function createUserRoutes(accountStore: LocalAccountStore) { ... }
- *
- * @param register - Create a new account.
- * @param verify   - Verify credentials and return an auth context on success.
+ * Account-store contract and volatile test implementation owned by the Auth
+ * gateway. Concrete adapters implement this boundary; API routes receive it
+ * through gateway bootstrap wiring and do not depend on adapter internals.
  */
 
 import { pbkdf2Sync } from "node:crypto";
