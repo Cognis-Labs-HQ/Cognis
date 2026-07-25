@@ -60,6 +60,14 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         savePreferredTfaMethods(apiFetch, methodIds);
     const rotateCodes = () => rotateRecoveryCodes(apiFetch);
 
+    async function activateMethod(method) {
+        if (!method?.id) return false;
+        if (method?.configuredAt) {
+            return enableMethod(method.id);
+        }
+        return runTfaSetupFlow(method.id);
+    }
+
     function resolveTranslatedMessage(key) {
         if (typeof key !== "string" || !key.trim()) {
             return null;
@@ -607,11 +615,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 row.onclick = async () => {
                     const methodId = row.getAttribute("data-tfa-method-row");
                     if (!methodId) return;
-                    const enabled = await enableMethod(methodId);
-                    if (!enabled) {
-                        const setupCompleted = await runTfaSetupFlow(methodId);
-                        if (!setupCompleted) return;
-                    }
+                    const method = getAllUniqueMethods().find(
+                        (entry) => entry.id === methodId,
+                    );
+                    const activated = await activateMethod(method);
+                    if (!activated) return;
                     tfaStatus = await fetchTfaStatus();
                     savedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
                         (method) => method.id,
@@ -776,17 +784,16 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             }
             for (const id of [...workingPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
-                    const enabled = await enableMethod(id);
-                    if (!enabled) {
-                        const setupCompleted = await runTfaSetupFlow(id);
-                        if (!setupCompleted) {
-                            const preferredIndex =
-                                workingPreferredIds.indexOf(id);
-                            if (preferredIndex >= 0) {
-                                workingPreferredIds.splice(preferredIndex, 1);
-                            }
-                            continue;
+                    const method = (currentStatus.availableMethods ?? []).find(
+                        (entry) => entry.id === id,
+                    );
+                    const activated = await activateMethod(method);
+                    if (!activated) {
+                        const preferredIndex = workingPreferredIds.indexOf(id);
+                        if (preferredIndex >= 0) {
+                            workingPreferredIds.splice(preferredIndex, 1);
                         }
+                        continue;
                     }
                 }
             }

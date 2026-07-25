@@ -95,12 +95,17 @@ test("configured method popup uses non-secret prompt when no QR data exists", ()
     assert.match(SOURCE, /qrImage\.src \|\| manualSecret/);
 });
 
-test("tfa save removes canceled setup methods from preferred targets", () => {
+test("tfa activation only enables methods that were previously configured", () => {
+    assert.match(SOURCE, /if \(method\?\.configuredAt\)/);
+    assert.match(SOURCE, /return enableMethod\(method\.id\);/);
+    assert.match(SOURCE, /return runTfaSetupFlow\(method\.id\);/);
+});
+
+test("tfa save removes failed activation methods from preferred targets", () => {
     assert.match(SOURCE, /for \(const id of \[\.\.\.workingPreferredIds\]\)/);
-    assert.match(SOURCE, /const enabled = await enableMethod\(id\);/);
     assert.match(
         SOURCE,
-        /if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(id\);/,
+        /const activated = await activateMethod\(method\);\s*if \(!activated\)/,
     );
     assert.match(
         SOURCE,
@@ -110,11 +115,11 @@ test("tfa save removes canceled setup methods from preferred targets", () => {
     assert.doesNotMatch(SOURCE, /tfa_method_setup_incomplete/);
 });
 
-test("available TFA rows try enabling before opening setup flow", () => {
-    assert.match(SOURCE, /const enabled = await enableMethod\(methodId\);/);
+test("available TFA rows use configuration-aware activation", () => {
+    assert.match(SOURCE, /const method = getAllUniqueMethods\(\)\.find/);
     assert.match(
         SOURCE,
-        /if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(methodId\);/,
+        /const activated = await activateMethod\(method\);\s*if \(!activated\) return;/,
     );
 });
 
