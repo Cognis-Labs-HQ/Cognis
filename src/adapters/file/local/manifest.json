@@ -2,5 +2,6 @@
     "id": "local",
     "name": "Local File Storage",
     "version": "0.1.2",
+    "publisher": "Cognis Labs HQ",
     "locked": true
 }

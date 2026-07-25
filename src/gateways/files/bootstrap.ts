@@ -14,6 +14,10 @@ import { DbFileObjectStore } from "./reuse/file-object-store.js";
 import { NamespaceFileService } from "./reuse/namespace-file-service.js";
 import type { FileQuotaStore } from "./reuse/quota-store-contract.js";
 import { createFileRoutes, createQuotaAdminRoutes } from "./routes/index.js";
+import {
+    createLockedAdapterAdminRoutes,
+    loadAdapterAdminCatalog,
+} from "../reuse/adapter-admin-catalog.js";
 
 async function loadLocalFileGateway(
     fileStorePath: string,
@@ -183,15 +187,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createFileRoutes(service, routeContext),
         "files",
     );
+    const adapterCatalog = await loadAdapterAdminCatalog(
+        ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters"),
+        "file",
+    );
+    ctx.routeRegistry.register(
+        createLockedAdapterAdminRoutes("files", adapterCatalog, routeContext),
+        "files",
+    );
 
     ctx.routeRegistry.registerPrefix("/api/v1/files", "files");
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",
-        version: "2.0.0",
+        version: "2.1.3",
         required: true,
         description:
             "Provides namespaced, ACL- and quota-enforced file storage for uploads, plus local file logging helpers.",
         publisher: "Cognis Labs HQ",
+        hasAdapters: true,
     });
 }

@@ -1,12 +1,9 @@
 {
     "id": "calendar",
     "name": "Calendar Gateway",
-    "version": "1.2.7",
+    "version": "1.2.8",
     "required": false,
-    "requires": [
-        "auth",
-        "social"
-    ],
+    "requires": ["auth", "social"],
     "hasAdapters": true,
     "description": "Internal calendar management with pluggable export/import adapters.",
     "publisher": "Cognis Labs HQ",

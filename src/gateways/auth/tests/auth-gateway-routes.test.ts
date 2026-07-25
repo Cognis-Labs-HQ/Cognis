@@ -267,8 +267,14 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
 
     assert.ok(handled);
     assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload) as { data: unknown[] };
+    const body = JSON.parse(res.payload) as {
+        data: Array<{ id: string; publisher?: string }>;
+    };
     assert.ok(Array.isArray(body.data));
+    assert.equal(
+        body.data.find((adapter) => adapter.id === "local")?.publisher,
+        "Cognis Labs HQ",
+    );
 });
 
 test("login endpoint returns 503 when no auth providers are available", async () => {

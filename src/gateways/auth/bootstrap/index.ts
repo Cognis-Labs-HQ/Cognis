@@ -166,6 +166,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (packageJson.version) {
                 Object.assign(localAdapter, { version: packageJson.version });
             }
+            const manifestRaw = await readFile(
+                path.resolve(localAdapterPath, "..", "manifest.json"),
+                "utf8",
+            );
+            const manifest = JSON.parse(manifestRaw) as {
+                publisher?: string;
+            };
+            if (manifest.publisher) {
+                Object.assign(localAdapter, { publisher: manifest.publisher });
+            }
             authGateway.setLocalAdapter(localAdapter);
             ctx.log?.("info", "Loaded local authentication adapter.", {
                 component: "auth-gateway",

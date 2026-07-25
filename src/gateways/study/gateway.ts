@@ -87,6 +87,7 @@ export interface StudyAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
     readonly version?: string;
+    readonly publisher?: string;
     readonly requires?: string[];
     /**
      * Returns adapter-specific config fields only. The gateway reserves the
@@ -108,6 +109,7 @@ export interface StudyAdapterInfo {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     active: boolean;
     requires?: string[];
 }
@@ -279,7 +281,8 @@ export class CoreStudyGateway {
         return Array.from(this.registeredAdapters.values()).map((adapter) => ({
             id: adapter.adapterId,
             name: adapter.adapterName,
-            version: adapter.version,
+            ...(adapter.version ? { version: adapter.version } : {}),
+            ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
             active:
                 !this.disabledAdapters.has(adapter.adapterId) &&
                 (typeof adapter.isConfigured === "function"
@@ -369,6 +372,13 @@ export class CoreStudyGateway {
                         version?: string;
                     };
                     if (!pkg.main) return;
+                    const manifestRaw = await readFile(
+                        path.join(adaptersRoot, entry, "manifest.json"),
+                        "utf8",
+                    );
+                    const manifest = JSON.parse(manifestRaw) as {
+                        publisher?: string;
+                    };
                     const entryPath = path.resolve(
                         adaptersRoot,
                         entry,
@@ -381,6 +391,11 @@ export class CoreStudyGateway {
                         const adapter = factory();
                         if (adapter && pkg.version) {
                             Object.assign(adapter, { version: pkg.version });
+                        }
+                        if (adapter && manifest.publisher) {
+                            Object.assign(adapter, {
+                                publisher: manifest.publisher,
+                            });
                         }
                         if (adapter) this.registerAdapter(adapter);
                     }

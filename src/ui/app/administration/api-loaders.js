@@ -31,10 +31,23 @@ export async function loadHealth() {
 }
 
 export async function toggleModule(moduleId, action) {
-    await apiFetch(
+    return apiFetch(
         `/api/v1/modules/${encodeURIComponent(moduleId)}/${action}`,
         { method: "POST" },
     );
+}
+
+export async function adapterRequiresSetup(configUrl) {
+    const response = await apiFetch(configUrl);
+    if (!response.ok) return false;
+    const payload = await response.json();
+    const requiredFields = Array.isArray(payload.requiredFields)
+        ? payload.requiredFields
+        : [];
+    return requiredFields.some((field) => {
+        const value = payload.data?.[field]?.effectiveValue;
+        return value === undefined || value === null || value === "";
+    });
 }
 
 export async function importGithubModule(repositoryUrl, versionTag) {
