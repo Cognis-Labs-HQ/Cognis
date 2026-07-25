@@ -176,6 +176,44 @@ test("profile routes - PATCH updates bio and visibility", async () => {
     assert.equal(parsed.data.visibility, "community");
 });
 
+for (const visibility of ["hidden", "private"] as const) {
+    test(`profile routes - admin cannot set profile visibility to ${visibility}`, async () => {
+        const profileStore = new VolatileProfileStore();
+        await profileStore.createProfile("admin", "admin", "admin");
+        await profileStore.updateProfile("admin", { visibility: "community" });
+        const token = issueAccessToken("admin", "admin", 60);
+        const route = createProfileRoutes(profileStore, fakeFileGateway());
+        let status = 0;
+        let body = "";
+
+        await route(
+            makeReq("PATCH", token, JSON.stringify({ visibility })),
+            {
+                writeHead(c: number) {
+                    status = c;
+                },
+                end(p: string) {
+                    body = p;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/social/profile"),
+        );
+
+        assert.equal(status, 409);
+        assert.deepEqual(JSON.parse(body), {
+            error: {
+                code: "admin_visibility_incompatible",
+                message:
+                    "Admin accounts must use friends or community visibility",
+            },
+        });
+        assert.equal(
+            (await profileStore.getProfile("admin"))?.visibility,
+            "community",
+        );
+    });
+}
+
 test("profile routes log profile updates", async () => {
     const profileStore = new VolatileProfileStore();
     await profileStore.createProfile("bob", "bob");
