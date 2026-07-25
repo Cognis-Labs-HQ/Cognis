@@ -54,6 +54,17 @@ test("successful uploads refresh local blob state before follow-up requests", ()
     );
 });
 
+test("successful uploads do not fail on optional follow-up data", () => {
+    assert.match(
+        PROFILE_UPLOAD_SOURCE,
+        /try \{\s*responseData = \(await response\.json\(\)\)\?\.data \?\? \{\};\s*\} catch \{/,
+    );
+    assert.match(
+        PROFILE_UPLOAD_SOURCE,
+        /try \{\s*await saveBannerLayoutPreference\([\s\S]+?\);\s*\} catch \{/,
+    );
+});
+
 test("resolveBannerCropAspectRatio defaults banner uploads to half-height view", () => {
     assert.equal(
         resolveBannerCropAspectRatio(null),

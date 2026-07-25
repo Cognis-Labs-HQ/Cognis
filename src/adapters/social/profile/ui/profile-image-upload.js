@@ -122,7 +122,16 @@ export function createProfileImageUploadActions({
             });
             return false;
         }
-        const responseData = (await response.json()).data ?? {};
+        // The media write is complete once the server returns a successful
+        // status. Treat the response payload as optional so an empty or
+        // otherwise unreadable success response cannot turn that completed
+        // upload into an error toast in the file-input handler.
+        let responseData = {};
+        try {
+            responseData = (await response.json())?.data ?? {};
+        } catch {
+            // Keep the local preview when the optional response body is absent.
+        }
 
         const currentState = getState();
         if (kind === "avatar") {
@@ -160,11 +169,17 @@ export function createProfileImageUploadActions({
         // failed preference/profile refresh cannot hide a successful upload.
         refreshPage();
         if (kind === "banner") {
-            await saveBannerLayoutPreference({
-                height: currentState.bannerHeight === "full" ? "full" : "half",
-                panX: nextBannerPanX,
-                panY: nextBannerPanY,
-            });
+            try {
+                await saveBannerLayoutPreference({
+                    height:
+                        currentState.bannerHeight === "full" ? "full" : "half",
+                    panX: nextBannerPanX,
+                    panY: nextBannerPanY,
+                });
+            } catch {
+                // The banner upload already succeeded. Preference persistence
+                // must not make the caller report the upload itself as failed.
+            }
         }
 
         if (kind === "avatar") {
