@@ -564,6 +564,7 @@
   <string name="ui.app.admin.security.saved">Pengaturan keamanan disimpan.</string>
   <string name="ui.app.admin.security.save_failed">Gagal menyimpan pengaturan keamanan.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Alamat email ini berasal dari domain yang tidak ada dalam daftar domain tepercaya. Hubungi administrator Anda untuk memperbarui pengaturan keamanan.</string>
+  <string name="ui.app.settings.emails_primary_required">Tidak ada alamat email yang dikonfigurasi.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Verifikasi email tidak tersedia. Hubungi administrator Anda.</string>
   <string name="ui.app.settings.study.title">Studi</string>
   <string name="ui.app.settings.study.no_languages">Tidak ada bahasa yang tersedia.</string>

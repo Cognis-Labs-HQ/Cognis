@@ -564,6 +564,7 @@
   <string name="ui.app.admin.security.saved">セキュリティ設定を保存しました。</string>
   <string name="ui.app.admin.security.save_failed">セキュリティ設定の保存に失敗しました。</string>
   <string name="ui.app.settings.emails_domain_blocked_body">このメールアドレスは、信頼済みドメインリストに登録されていないドメインのものです。管理者にセキュリティ設定の更新を依頼してください。</string>
+  <string name="ui.app.settings.emails_primary_required">メールアドレスが設定されていません。</string>
   <string name="ui.app.settings.emails_verify_unavailable">メール認証は利用できません。管理者にお問い合わせください。</string>
   <string name="ui.app.settings.study.title">学習</string>
   <string name="ui.app.settings.study.no_languages">利用できる言語はありません。</string>

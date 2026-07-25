@@ -564,6 +564,7 @@
   <string name="ui.app.admin.security.saved">Security settings saved.</string>
   <string name="ui.app.admin.security.save_failed">Failed to save security settings.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">This email address belongs to a domain that is not in the trusted domains list. Contact your administrator to update the security settings.</string>
+  <string name="ui.app.settings.emails_primary_required">No email address configured.</string>
   <string name="ui.app.settings.emails_verify_unavailable">Email verification is not available. Contact your administrator.</string>
   <string name="ui.app.settings.study.title">Study</string>
   <string name="ui.app.settings.study.no_languages">No languages are available.</string>

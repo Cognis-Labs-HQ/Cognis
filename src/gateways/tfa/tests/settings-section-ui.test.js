@@ -58,7 +58,7 @@ test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
     );
     assert.match(
         SOURCE,
-        /primary_email_required:\s*"ui\.app\.settings\.emails_verify_unavailable"/,
+        /primary_email_required:\s*"ui\.app\.settings\.emails_primary_required"/,
     );
     assert.match(
         SOURCE,
@@ -88,10 +88,10 @@ test("configured method popup uses non-secret prompt when no QR data exists", ()
 
 test("tfa save removes canceled setup methods from preferred targets", () => {
     assert.match(SOURCE, /for \(const id of \[\.\.\.workingPreferredIds\]\)/);
-    assert.match(SOURCE, /const enabled = await enableMethod\(id\);/);
+    assert.match(SOURCE, /const configured = isTfaMethodConfigured\(id\);/);
     assert.match(
         SOURCE,
-        /if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(id\);/,
+        /const enabled = configured \? await enableMethod\(id\) : false;\s*if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(id\);/,
     );
     assert.match(
         SOURCE,
@@ -101,11 +101,15 @@ test("tfa save removes canceled setup methods from preferred targets", () => {
     assert.doesNotMatch(SOURCE, /tfa_method_setup_incomplete/);
 });
 
-test("available TFA rows try enabling before opening setup flow", () => {
-    assert.match(SOURCE, /const enabled = await enableMethod\(methodId\);/);
+test("available TFA rows skip enable calls for unconfigured methods", () => {
+    assert.match(SOURCE, /function isTfaMethodConfigured\(methodId\)/);
     assert.match(
         SOURCE,
-        /if \(!enabled\) {\s*const setupCompleted = await runTfaSetupFlow\(methodId\);/,
+        /const configured = isTfaMethodConfigured\(methodId\);/,
+    );
+    assert.match(
+        SOURCE,
+        /const enabled = configured\s*\? await enableMethod\(methodId\)\s*: false;/,
     );
 });
 

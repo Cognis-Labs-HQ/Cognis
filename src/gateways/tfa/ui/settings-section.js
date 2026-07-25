@@ -80,7 +80,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
             smtp_capability_missing:
                 "ui.app.settings.emails_verify_unavailable",
-            primary_email_required: "ui.app.settings.emails_verify_unavailable",
+            primary_email_required: "ui.app.settings.emails_primary_required",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",
@@ -158,6 +158,15 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             seen.add(method.id);
             return true;
         });
+    }
+
+    function isTfaMethodConfigured(methodId) {
+        return getAllUniqueMethods().some(
+            (method) =>
+                method.id === methodId &&
+                (method.enabled === true ||
+                    typeof method.configuredAt === "string"),
+        );
     }
 
     function resolveTfaLists() {
@@ -605,7 +614,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 row.onclick = async () => {
                     const methodId = row.getAttribute("data-tfa-method-row");
                     if (!methodId) return;
-                    const enabled = await enableMethod(methodId);
+                    const configured = isTfaMethodConfigured(methodId);
+                    const enabled = configured
+                        ? await enableMethod(methodId)
+                        : false;
                     if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(methodId);
                         if (!setupCompleted) return;
@@ -767,7 +779,8 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             );
             for (const id of [...workingPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
-                    const enabled = await enableMethod(id);
+                    const configured = isTfaMethodConfigured(id);
+                    const enabled = configured ? await enableMethod(id) : false;
                     if (!enabled) {
                         const setupCompleted = await runTfaSetupFlow(id);
                         if (!setupCompleted) {

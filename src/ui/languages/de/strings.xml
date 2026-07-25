@@ -564,6 +564,7 @@
   <string name="ui.app.admin.security.saved">Sicherheitseinstellungen gespeichert.</string>
   <string name="ui.app.admin.security.save_failed">Fehler beim Speichern der Sicherheitseinstellungen.</string>
   <string name="ui.app.settings.emails_domain_blocked_body">Diese E-Mail-Adresse gehört zu einer Domain, die nicht in der Liste der vertrauenswürdigen Domains steht. Bitten Sie Ihren Administrator, die Sicherheitseinstellungen zu aktualisieren.</string>
+  <string name="ui.app.settings.emails_primary_required">Keine E-Mail-Adresse konfiguriert.</string>
   <string name="ui.app.settings.emails_verify_unavailable">E-Mail-Verifizierung ist nicht verfügbar. Bitte wenden Sie sich an Ihren Administrator.</string>
   <string name="ui.app.settings.study.title">Lernen</string>
   <string name="ui.app.settings.study.no_languages">Es sind keine Sprachen verfügbar.</string>
