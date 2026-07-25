@@ -112,6 +112,12 @@ export function visibilityRank(v: AccountVisibility): number {
     return VISIBILITY_RANK[v] ?? 0;
 }
 
+function defaultVisibilityForRole(role: AccountRole): AccountVisibility {
+    return role === "teacher" || role === "admin" || role === "owner"
+        ? "friends"
+        : "hidden";
+}
+
 /**
  * In-memory implementation of ProfileStore for use in tests.
  * No persistence — state resets on every instantiation.
@@ -146,7 +152,7 @@ export class VolatileProfileStore implements ProfileStore {
             website: null,
             avatarKey: null,
             bannerKey: null,
-            visibility: "hidden",
+            visibility: defaultVisibilityForRole(role),
             lifecycleState: "active",
             createdAt: now,
             updatedAt: now,
@@ -160,7 +166,12 @@ export class VolatileProfileStore implements ProfileStore {
         const accountId = this.byHandle.get(handle);
         if (!accountId) return;
         const profile = this.profiles.get(accountId);
-        if (profile) profile.role = role;
+        if (profile) {
+            profile.role = role;
+            if (role === "teacher" || role === "admin" || role === "owner") {
+                profile.visibility = "friends";
+            }
+        }
     }
 
     async getProfile(accountId: string): Promise<AccountProfile | null> {

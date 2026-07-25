@@ -2,6 +2,37 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import { DbProfileStore } from "../store.js";
+import { VolatileProfileStore } from "../store-contract.js";
+
+for (const role of ["teacher", "admin", "owner"] as const) {
+    test(`${role} profiles default to friends visibility`, async () => {
+        const stores = [
+            new VolatileProfileStore(),
+            new DbProfileStore(new InMemoryTestExecutor()),
+        ];
+
+        for (const store of stores) {
+            if (store instanceof DbProfileStore) await store.ensureSchema();
+            const profile = await store.createProfile(role, role, role);
+            assert.equal(profile?.visibility, "friends");
+        }
+    });
+
+    test(`${role} role updates set profile visibility to friends`, async () => {
+        const stores = [
+            new VolatileProfileStore(),
+            new DbProfileStore(new InMemoryTestExecutor()),
+        ];
+
+        for (const store of stores) {
+            if (store instanceof DbProfileStore) await store.ensureSchema();
+            await store.createProfile(role, role, "user");
+            await store.setRoleByHandle(role, role);
+            assert.equal((await store.getProfile(role))?.role, role);
+            assert.equal((await store.getProfile(role))?.visibility, "friends");
+        }
+    });
+}
 
 test("profile store resolves handles case-insensitively", async () => {
     const databaseExecutor = new InMemoryTestExecutor();
