@@ -47,6 +47,15 @@ test("page composer invokes element-level onRender callbacks", () => {
     assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
+test("page composer refresh re-renders cards whose placement is unchanged", () => {
+    const source = readPageComposerBundle();
+
+    assert.match(
+        source,
+        /if \(!card\) \{[\s\S]*?section\.appendChild\(card\);\s*\}\s*if \(isMissing\) \{[\s\S]*?\} else \{\s*(?:\/\/[\s\S]*?\n\s*)*renderElementContent\(card, element\);\s*\}/m,
+    );
+});
+
 test("page composer preserves media element DOM across re-renders", () => {
     const source = readPageComposerBundle();
     const composerStyles = readFileSync(
