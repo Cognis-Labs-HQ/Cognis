@@ -232,8 +232,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 const isInitialAdmin =
                     (role === "admin" || role === "owner") && isFounder;
                 const hasVerifiedEmail = sessionResult.accountId
-                    ? await notifStore.hasVerifiedEmail(
-                          String(sessionResult.accountId),
+                    ? (
+                          await notifStore.getUserEmails(
+                              String(sessionResult.accountId),
+                          )
+                      ).some(
+                          (email) =>
+                              email.primary === true && email.verified === true,
                       )
                     : false;
                 const requiresUserValidation =

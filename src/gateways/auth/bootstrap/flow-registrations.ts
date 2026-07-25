@@ -291,7 +291,7 @@ export async function registerAuthBootstrapHook(
                 accountId: session.accountId,
                 displayName: displayName ?? session.accountId,
                 provider: session.provider,
-                providerId: adapterId ?? session.provider,
+                providerId: session.provider ?? adapterId,
                 role,
                 isFounder,
                 userValidationMode: securitySettings.userValidationMode,
@@ -303,7 +303,7 @@ export async function registerAuthBootstrapHook(
                 role,
                 ttlSeconds,
                 {
-                    providerId: adapterId ?? session.provider,
+                    providerId: session.provider ?? adapterId,
                 },
             );
             const sessionResult = {

@@ -176,6 +176,71 @@ test("LDAP sources are exposed separately or unified and tried in saved order", 
     assert.deepEqual(attempts, ["Faculty", "Students"]);
 });
 
+test("separate LDAP sources namespace accounts while unified sources share them", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        setClient(client: {
+            authenticate: () => Promise<{ id: string; dn: string }>;
+        }): void;
+    };
+    const servers = [
+        { identifier: "Faculty", serverUrl: "ldap://faculty" },
+        { identifier: "Students", serverUrl: "ldap://students" },
+    ];
+    adapter.setClient({
+        authenticate: async () => ({ id: "alice", dn: "uid=alice,dc=example" }),
+    });
+    adapter.configure({ unify: false, servers });
+    const separate = await adapter.authenticate({
+        username: "alice",
+        password: "valid",
+        authSourceId: "ldap:Students",
+    });
+    assert.equal(separate?.accountId, "ldap:Students:alice");
+    assert.equal(
+        separate?.externalUserId,
+        "ldap:Students:uid=alice,dc=example",
+    );
+
+    adapter.configure({ unify: true, servers });
+    const unified = await adapter.authenticate({
+        username: "alice",
+        password: "valid",
+    });
+    assert.equal(unified?.accountId, "alice");
+});
+
+test("unified LDAP authentication continues after a source error", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        setClient(client: {
+            authenticate: (
+                _u: string,
+                _p: string,
+                options: LdapRuntimeOptions,
+            ) => Promise<{ id: string } | null>;
+        }): void;
+    };
+    adapter.configure({
+        unify: true,
+        servers: [
+            { identifier: "Offline", serverUrl: "ldap://offline" },
+            { identifier: "Online", serverUrl: "ldap://online" },
+        ],
+    });
+    adapter.setClient({
+        authenticate: async (_u, _p, options) => {
+            if (options.identifier === "Offline")
+                throw new Error("unavailable");
+            return { id: "alice" };
+        },
+    });
+    const result = await adapter.authenticate({
+        username: "alice",
+        password: "valid",
+    });
+    assert.equal(result?.accountId, "alice");
+    assert.equal(result?.provider, "ldap:Online");
+});
+
 test("ldap adapter forwards display names and reconstructs legacy host URLs", async () => {
     let configuredUrl = "";
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
@@ -387,4 +452,69 @@ test("ldap adapter password reset is blocked when current-password validation is
         "next-pass",
     );
     assert.equal(result.updated, false);
+});
+
+test("LDAP password writeback uses the source persisted in the provider", async () => {
+    const adapter = createAdapter() as {
+        configure(config: Record<string, unknown>): void;
+        setClient(client: {
+            authenticate: () => Promise<null>;
+            validatePassword: (
+                accountId: string,
+                password: string,
+                options: LdapRuntimeOptions,
+            ) => Promise<boolean>;
+            updatePassword: (
+                accountId: string,
+                password: string,
+                options: LdapRuntimeOptions,
+            ) => Promise<boolean>;
+        }): void;
+        resetPassword(
+            accountId: string,
+            currentPassword: string,
+            nextPassword: string,
+            providerId: string,
+        ): Promise<{ updated: boolean }>;
+    };
+    adapter.configure({
+        unify: true,
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldap://faculty",
+                writebackEnabled: true,
+                writebackBaseDn: "ou=Faculty,dc=example",
+            },
+            {
+                identifier: "Students",
+                serverUrl: "ldap://students",
+                writebackEnabled: true,
+                writebackBaseDn: "ou=Students,dc=example",
+            },
+        ],
+    });
+    adapter.setClient({
+        authenticate: async () => null,
+        validatePassword: async (accountId, _password, options) => {
+            assert.equal(accountId, "alice");
+            assert.equal(options.serverUrl, "ldap://students");
+            return true;
+        },
+        updatePassword: async (_accountId, _password, options) => {
+            assert.equal(options.baseDn, "ou=Students,dc=example");
+            return true;
+        },
+    });
+    assert.equal(
+        (
+            await adapter.resetPassword(
+                "alice",
+                "current-pass",
+                "next-pass",
+                "ldap:Students",
+            )
+        ).updated,
+        true,
+    );
 });

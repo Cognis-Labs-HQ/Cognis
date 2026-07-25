@@ -41,6 +41,7 @@ export interface AuthProviderAdapter {
         accountId: string,
         currentPasswordOrNextPassword: string,
         nextPassword?: string,
+        providerId?: string,
     ): Promise<{ updated: boolean; message?: string }>;
     testConfiguration?(
         config: Record<string, unknown>,
@@ -425,7 +426,9 @@ export class CoreAuthGateway {
         supported: boolean;
         reason?: string;
     } {
-        const adapter = this.adapters.get(adapterId);
+        const adapter =
+            this.adapters.get(adapterId) ??
+            this.adapters.get(adapterId.split(":", 1)[0]);
         if (!adapter) {
             return {
                 adapterId,
@@ -464,7 +467,9 @@ export class CoreAuthGateway {
         currentPassword: string,
         nextPassword: string,
     ): Promise<void> {
-        const adapter = this.adapters.get(adapterId);
+        const adapter =
+            this.adapters.get(adapterId) ??
+            this.adapters.get(adapterId.split(":", 1)[0]);
         if (!adapter) {
             throw new Error("password_reset_unsupported");
         }
@@ -481,6 +486,7 @@ export class CoreAuthGateway {
                       accountId,
                       currentPassword,
                       nextPassword,
+                      adapterId,
                   )
                 : await adapter.resetPassword(accountId, nextPassword);
         if (result.updated !== true) {

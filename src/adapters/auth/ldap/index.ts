@@ -80,6 +80,9 @@ export interface LdapRuntimeOptions {
     memberOfAttribute: string;
     nestedMemberOf: boolean;
     roleMappings: Record<string, string>;
+    writebackEnabled?: boolean;
+    writebackBaseDn?: string;
+    writebackUserAttribute?: string;
 }
 
 interface LdapConfiguration {
@@ -166,18 +169,36 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                   )
                 : servers;
         for (const server of candidates) {
-            const identity = await this.client.authenticate(
-                username,
-                password,
-                server,
-            );
+            let identity: LdapIdentity | null;
+            try {
+                identity = await this.client.authenticate(
+                    username,
+                    password,
+                    server,
+                );
+            } catch {
+                // A unified source is a failover list. A broken earlier server
+                // must not prevent a later copy of the directory from working.
+                if (this.configuration.unify) continue;
+                return null;
+            }
             if (!identity) continue;
             const role = this.resolveRole(identity.groups ?? [], server);
             if (!role) return null;
+            const source = String(server.identifier ?? "").trim();
+            const sourceProvider = source
+                ? `ldap:${encodeURIComponent(source)}`
+                : "ldap";
+            const accountId =
+                !this.configuration.unify && source
+                    ? `${sourceProvider}:${identity.id}`
+                    : identity.id;
             return {
-                accountId: identity.id,
-                provider: "ldap",
-                externalUserId: identity.dn ?? identity.id,
+                accountId,
+                provider: sourceProvider,
+                externalUserId: source
+                    ? `${sourceProvider}:${identity.dn ?? identity.id}`
+                    : (identity.dn ?? identity.id),
                 email: identity.email,
                 emails: identity.emails,
                 displayName: identity.displayName,
@@ -434,12 +455,18 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     }
 
     getPasswordResetSupport(): { supported: boolean; reason?: string } {
-        if (!this.writebackEnabled)
+        const configuredServers = this.configuration.servers.filter(
+            (server) => server.writebackEnabled === true,
+        );
+        if (!this.writebackEnabled && !configuredServers.length)
             return {
                 supported: false,
                 reason: "gateway.auth.security.ldap.writeback_disabled",
             };
-        if (!this.writebackBaseDn)
+        if (
+            !this.writebackBaseDn &&
+            !configuredServers.some((server) => server.writebackBaseDn)
+        )
             return {
                 supported: false,
                 reason: "gateway.auth.security.ldap.writeback_base_dn_missing",
@@ -461,8 +488,27 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         accountId: string,
         currentPassword: string,
         nextPassword?: string,
+        providerId?: string,
     ): Promise<{ updated: boolean; message?: string }> {
+        const sourceMatch = /^ldap:([^:]+):/.exec(accountId);
+        const providerSource = /^ldap:(.+)$/.exec(providerId ?? "");
+        const source = decodeURIComponent(
+            sourceMatch?.[1] ?? providerSource?.[1] ?? "",
+        );
+        const selectedOptions = source
+            ? (this.configuration.servers.find(
+                  (server) => server.identifier === source,
+              ) ?? this.options)
+            : this.options;
+        const directoryAccountId = sourceMatch
+            ? accountId.slice(sourceMatch[0].length)
+            : accountId;
         const support = this.getPasswordResetSupport();
+        if (source && selectedOptions.writebackEnabled !== true)
+            return {
+                updated: false,
+                message: "gateway.auth.security.ldap.writeback_disabled",
+            };
         if (
             !support.supported ||
             !nextPassword ||
@@ -471,13 +517,15 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         )
             return { updated: false, message: support.reason };
         const options = {
-            ...this.options,
-            baseDn: this.writebackBaseDn,
-            userAttribute: this.writebackUserAttribute,
+            ...selectedOptions,
+            baseDn: selectedOptions.writebackBaseDn || this.writebackBaseDn,
+            userAttribute:
+                selectedOptions.writebackUserAttribute ||
+                this.writebackUserAttribute,
         };
         if (
             !(await this.client.validatePassword(
-                accountId,
+                directoryAccountId,
                 currentPassword,
                 options,
             ))
@@ -489,7 +537,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             };
         return {
             updated: await this.client.updatePassword(
-                accountId,
+                directoryAccountId,
                 nextPassword,
                 options,
             ),
