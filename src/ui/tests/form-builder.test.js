@@ -21,6 +21,23 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /aria-hidden="true"/);
 });
 
+test("adapter config form updates required title markers when requirements change", () => {
+    const source = read("src/ui/app/administration/adapter-config-popup.js");
+    const styles = read("src/ui/styles/reuse/page-sections.css");
+
+    assert.match(source, /data-provider-required=/);
+    assert.match(source, /requiredMarker\.hidden = !isRequired/);
+    assert.match(source, /input\.toggleAttribute\("required", isRequired\)/);
+    assert.match(
+        source,
+        /popupFormEl\.addEventListener\("input", \(\) => \{[\s\S]*updateRequiredHighlights\(\)/m,
+    );
+    assert.match(
+        styles,
+        /\.provider-required-flag[\s\S]*color: var\(--color-danger-outline-text\)/m,
+    );
+});
+
 test("register page uses form builder instead of hardcoded maxlength for username", () => {
     const source = read("src/gateways/auth/ui/register.js");
     assert.match(

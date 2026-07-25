@@ -727,7 +727,11 @@ export class SmtpNotificationSender implements NotificationSender {
     }
 
     getRequiredFields(): string[] {
-        return ["host", "from"];
+        const requiredFields = ["host", "from"];
+        if (!this.config.authDisabled) {
+            requiredFields.push("user", "password");
+        }
+        return requiredFields;
     }
 
     isConfigured(): boolean {
