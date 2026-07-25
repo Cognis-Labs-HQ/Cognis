@@ -56,16 +56,16 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.5`  |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.6`  |
 | Share                 | `src/gateways/share/`        | `1.3.3`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.6`  |
-| Notification (notify) | `src/gateways/notify/`       | `1.5.0`  |
-| Social                | `src/gateways/social/`       | `1.2.8`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.7`  |
+| Notification (notify) | `src/gateways/notify/`       | `1.5.1`  |
+| Social                | `src/gateways/social/`       | `1.2.9`  |
 | File Storage (files)  | `src/gateways/files/`        | `2.1.2`  |
-| Registration          | `src/gateways/registration/` | `1.1.10` |
+| Registration          | `src/gateways/registration/` | `1.1.11` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
-| Study                 | `src/gateways/study/`        | `1.5.7`  |
-| Calendar              | `src/gateways/calendar/`     | `1.2.7`  |
+| Study                 | `src/gateways/study/`        | `1.5.8`  |
+| Calendar              | `src/gateways/calendar/`     | `1.2.8`  |
 
 ## Core contracts
 

@@ -7,3 +7,7 @@ Die Adaptersteuerung in der Administration zeigt die jeweilige Adapterversion nu
 ## Klarer Komponentenstatus und eindeutige Bedienung
 
 Aktive Komponenten zeigen nun eine grüne, orangefarbene oder rote Statusleuchte neben der Aktiv-Pille. Der Status wird nach dem Aktivieren neu abgefragt, ein Hinweis erklärt notwendige Ersteinrichtungen und der Detailpfeil besitzt stets einen eigenen Bereich zum Aufklappen.
+
+## Zuverlässige Herausgeberangaben für Adapter
+
+Die Administration erhält jetzt Herausgebermetadaten von jedem Adapter-Gateway, einschließlich der Authentifizierungsadapter, sodass die Adapterdetails den angegebenen Herausgeber statt eines unbekannten Werts anzeigen.

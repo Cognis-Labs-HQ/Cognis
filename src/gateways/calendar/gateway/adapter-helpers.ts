@@ -170,6 +170,7 @@ export async function discoverAdapters(
             if (!pkg.main) continue;
 
             let requires: string[] | undefined;
+            let publisher: string | undefined;
             try {
                 const manifestRaw = await readFile(
                     path.join(adaptersRoot, entry, "manifest.json"),
@@ -177,7 +178,9 @@ export async function discoverAdapters(
                 );
                 const manifest = JSON.parse(manifestRaw) as {
                     requires?: string[];
+                    publisher?: string;
                 };
+                publisher = manifest.publisher;
                 if (Array.isArray(manifest.requires)) {
                     requires = manifest.requires;
                 }
@@ -193,6 +196,9 @@ export async function discoverAdapters(
                 const adapter = factory();
                 if (adapter && pkg.version) {
                     Object.assign(adapter, { version: pkg.version });
+                }
+                if (adapter && publisher) {
+                    Object.assign(adapter, { publisher });
                 }
                 if (adapter) gateway.registerAdapter(adapter, requires);
             }

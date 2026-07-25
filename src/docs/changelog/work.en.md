@@ -7,3 +7,7 @@ Administration adapter controls now display each adapter version alongside the a
 ## Clear component health and interactions
 
 Active components now show green, orange, or red health lights beside their Active pill. Health is refreshed after enablement, setup-required components explain why direct activation is blocked, and component detail arrows always use a dedicated expansion hitbox.
+
+## Reliable adapter publisher details
+
+Administration now receives publisher metadata from every adapter gateway, including authentication adapters, so adapter details show the declared publisher instead of an unknown value.
