@@ -426,9 +426,9 @@ export function createUserRoutes(
             const revokedCount = ctx.revokeAccessTokensForSubject(username);
             await accountStore.setRole(username, role as any);
             await setProfileRole?.(username, role);
-            if (role === "teacher") {
+            if (role === "teacher" || role === "admin" || role === "owner") {
                 await setProfileVisibility?.(username, "friends");
-                log?.("warn", "Updated teacher visibility default.", {
+                log?.("warn", "Updated privileged role visibility default.", {
                     ...logMeta,
                     accountId: adminClaims.sub,
                     targetAccountId: username,

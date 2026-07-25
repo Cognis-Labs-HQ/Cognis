@@ -288,17 +288,21 @@ export function createProfileRoutes(
                     );
                     return true;
                 }
+                const roleRequiresDiscoverableProfile =
+                    claims?.role === "teacher" ||
+                    claims?.role === "admin" ||
+                    claims?.role === "owner";
                 if (
-                    claims?.role === "teacher" &&
+                    roleRequiresDiscoverableProfile &&
                     (visibility === "hidden" || visibility === "private")
                 ) {
+                    const role = claims!.role;
                     res.writeHead(409, { "content-type": "application/json" });
                     res.end(
                         JSON.stringify({
                             error: {
-                                code: "teacher_visibility_incompatible",
-                                message:
-                                    "Teacher accounts must use friends or community visibility",
+                                code: `${role}_visibility_incompatible`,
+                                message: `${role[0].toUpperCase() + role.slice(1)} accounts must use friends or community visibility`,
                             },
                         }),
                     );

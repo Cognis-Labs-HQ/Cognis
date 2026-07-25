@@ -250,7 +250,11 @@ async function openEditPopup() {
     const currentWebsite = profile?.website ?? "";
     const currentVisibility = profile?.visibility ?? "hidden";
     const currentDisplayName = profile?.displayName ?? "";
-    const profileIsTeacher = profile?.role === "teacher";
+    const profileRequiresDiscoverableVisibility = [
+        "teacher",
+        "admin",
+        "owner",
+    ].includes(profile?.role);
     const profileEditFormBuilder = createFormBuilder(
         { i18n, escapeHtml },
         {
@@ -307,8 +311,8 @@ async function openEditPopup() {
                     },
                     options: ["hidden", "private", "friends", "community"].map(
                         (visibilityOption) => {
-                            const isRestrictedForTeacher =
-                                profileIsTeacher &&
+                            const isRestrictedForProfileRole =
+                                profileRequiresDiscoverableVisibility &&
                                 (visibilityOption === "hidden" ||
                                     visibilityOption === "private");
                             return {
@@ -316,7 +320,7 @@ async function openEditPopup() {
                                 label: i18n.t(
                                     `ui.app.profile.visibility.${visibilityOption}`,
                                 ),
-                                disabled: isRestrictedForTeacher,
+                                disabled: isRestrictedForProfileRole,
                             };
                         },
                     ),

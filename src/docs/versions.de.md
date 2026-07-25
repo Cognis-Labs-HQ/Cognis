@@ -48,8 +48,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.3` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.2` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.1` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.15` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.17` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.16` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.18` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
@@ -79,7 +79,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.1.10` |
+| API Server | `src/api/` | `0.1.14` |
 
 ## Module
 
