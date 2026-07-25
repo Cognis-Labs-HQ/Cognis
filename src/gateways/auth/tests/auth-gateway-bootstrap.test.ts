@@ -218,6 +218,27 @@ test("auth gateway bootstrap registers correct static dir", async () => {
     );
 });
 
+test("auth gateway registers adapter-owned UI directories", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const dbExecutor = createDbExecutor();
+
+    await bootstrap({
+        adaptersRoot: new URL("../../../adapters", import.meta.url).pathname,
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+
+    const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
+    assert.ok(ldapUiDirectory);
+    await assert.doesNotReject(access(`${ldapUiDirectory}/config-popup.js`));
+});
+
 test("auth gateway bootstrap registers security section without redundant authentication admin section", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

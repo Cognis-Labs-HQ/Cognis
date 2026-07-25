@@ -1,4 +1,5 @@
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
@@ -181,6 +182,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
     await authGateway.discoverAdapters(authAdaptersRoot);
+    for (const adapter of authGateway.listAdapters()) {
+        const adapterUiDirectory = path.join(
+            authAdaptersRoot,
+            adapter.id,
+            "ui",
+        );
+        if (existsSync(adapterUiDirectory)) {
+            ctx.uiRegistry?.registerAdapterStaticDir(
+                "auth",
+                adapter.id,
+                adapterUiDirectory,
+            );
+        }
+    }
     await authGateway.loadPersistedConfigs();
     ctx.log?.("info", "Authentication adapters discovered and configured.", {
         component: "auth-gateway",

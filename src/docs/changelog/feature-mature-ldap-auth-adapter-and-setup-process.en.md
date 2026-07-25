@@ -35,3 +35,7 @@ Discovery now rejects any directory entry whose DN falls outside the configured 
 ## LDAP email provisioning and immediate validation
 
 LDAP login now reads every listed mail address while bound as the authenticating user and provisions them into Cognis without creating local credentials. The first address becomes primary; when email validation is required, its verification message is sent immediately and the login flow proceeds directly to code verification.
+
+## Reliable adapter-owned setup loading
+
+The authentication gateway now publishes LDAP's setup interface through the adapter asset registry, so opening LDAP configuration no longer fails with a missing script.

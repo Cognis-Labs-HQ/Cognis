@@ -276,7 +276,7 @@ export function createAdapterConfigPopup({
             );
             if (adapterRoute) {
                 const [, gatewayId, adapterId] = adapterRoute;
-                const extensionUrl = `/static/adapters/${encodeURIComponent(gatewayId)}/${encodeURIComponent(adapterId)}/ui/config-popup.js`;
+                const extensionUrl = `/static/adapters/${encodeURIComponent(gatewayId)}/${encodeURIComponent(adapterId)}/config-popup.js`;
                 const extension = await import(extensionUrl).catch(() => null);
                 if (typeof extension?.openAdapterConfig === "function") {
                     await extension.openAdapterConfig({

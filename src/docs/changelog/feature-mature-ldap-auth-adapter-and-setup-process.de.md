@@ -35,3 +35,7 @@ Die Erkennung verwirft nun jeden Verzeichniseintrag, dessen DN außerhalb der ko
 ## LDAP-E-Mail-Bereitstellung und sofortige Bestätigung
 
 Bei der LDAP-Anmeldung werden nun während der Bindung als anmeldender Benutzer alle aufgeführten E-Mail-Adressen gelesen und ohne lokale Zugangsdaten in Cognis bereitgestellt. Die erste Adresse wird zur primären Adresse. Wenn eine E-Mail-Bestätigung erforderlich ist, wird die Bestätigungsnachricht sofort gesendet und der Anmeldeablauf wechselt direkt zur Codebestätigung.
+
+## Zuverlässiges Laden der adaptereigenen Einrichtung
+
+Das Authentifizierungs-Gateway stellt die LDAP-Einrichtungsoberfläche nun über die Adapter-Asset-Registrierung bereit. Dadurch schlägt das Öffnen der LDAP-Konfiguration nicht mehr wegen eines fehlenden Skripts fehl.

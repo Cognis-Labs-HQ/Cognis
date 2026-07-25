@@ -35,3 +35,7 @@ Penemuan kini menolak setiap entri direktori yang DN-nya berada di luar basis pe
 ## Penyediaan email LDAP dan validasi langsung
 
 Login LDAP kini membaca semua alamat email yang tercantum saat terikat sebagai pengguna yang sedang masuk, lalu menyediakannya di Cognis tanpa membuat kredensial lokal. Alamat pertama menjadi alamat utama. Jika validasi email diwajibkan, pesan verifikasi langsung dikirim dan alur login berlanjut langsung ke verifikasi kode.
+
+## Pemuatan penyiapan milik adapter yang andal
+
+Gateway autentikasi kini menyediakan antarmuka penyiapan LDAP melalui registri aset adapter, sehingga konfigurasi LDAP tidak lagi gagal dibuka karena skrip yang hilang.
