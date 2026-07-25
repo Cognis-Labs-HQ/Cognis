@@ -491,6 +491,62 @@ test("source tree avoids generic helper directory names", () => {
     );
 });
 
+test("internal dependency ceilings include local workspace versions", () => {
+    const packagePaths = [
+        resolve(ROOT, "package.json"),
+        ...walk(resolve(ROOT, "src")),
+    ].filter((filePath) => filePath.endsWith("package.json"));
+    const packages = packagePaths.map((filePath) => ({
+        filePath,
+        manifest: JSON.parse(readFileSync(filePath, "utf8")),
+    }));
+    const localVersions = new Map(
+        packages
+            .filter(({ manifest }) => manifest.name && manifest.version)
+            .map(({ manifest }) => [manifest.name, manifest.version]),
+    );
+    const violations = [];
+    const isVersionIncluded = (versionRange, localVersion) => {
+        if (!versionRange.startsWith("<=")) return false;
+        const ceilingParts = versionRange.slice(2).split(".").map(Number);
+        const localParts = localVersion.split(".").map(Number);
+        for (let i = 0; i < 3; i += 1) {
+            if (localParts[i] < ceilingParts[i]) return true;
+            if (localParts[i] > ceilingParts[i]) return false;
+        }
+        return true;
+    };
+
+    for (const { filePath, manifest } of packages) {
+        for (const dependencyGroup of [
+            manifest.dependencies,
+            manifest.devDependencies,
+            manifest.optionalDependencies,
+        ]) {
+            for (const [dependencyName, versionRange] of Object.entries(
+                dependencyGroup ?? {},
+            )) {
+                const localVersion = localVersions.get(dependencyName);
+                if (
+                    !localVersion ||
+                    isVersionIncluded(versionRange, localVersion)
+                ) {
+                    continue;
+                }
+                violations.push(
+                    `${normalizePath(relative(ROOT, filePath))}: ${dependencyName} ${versionRange} excludes local ${localVersion}`,
+                );
+            }
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        `Internal dependency ceilings must match tested workspace versions:\n${violations.join("\n")}`,
+    );
+});
+
 test("html files keep scripts in external JS/TS files", () => {
     const violations = [];
     const scriptBlockRe = /<script\b([^>]*)>([\s\S]*?)<\/script(?:\s[^>]*)?>/gi;
