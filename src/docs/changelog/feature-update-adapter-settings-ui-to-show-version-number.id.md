@@ -15,3 +15,7 @@ Administrasi kini menerima metadata penerbit dari setiap gateway adaptor, termas
 ## Kepengarangan komponen yang lengkap
 
 Semua adaptor dan gateway yang ditemukan kini menyatakan penerbitnya, termasuk Autentikasi Lokal dan Email SMTP, sehingga detail komponen selalu mencantumkan pembuatnya.
+
+## Daftar adaptor gateway yang lengkap
+
+Administrasi kini mencantumkan adaptor Penyimpanan File, Database, dan Pencatatan, termasuk metadata versi dan penerbitnya.

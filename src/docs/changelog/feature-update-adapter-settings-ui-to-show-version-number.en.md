@@ -15,3 +15,7 @@ Administration now receives publisher metadata from every adapter gateway, inclu
 ## Complete component authorship
 
 All discovered adapters and gateways now declare their publisher, including Local Authentication and SMTP Email, so component details consistently identify their author.
+
+## Complete gateway adapter lists
+
+Administration now lists the File Storage, Database, and Logging adapters, including their version and publisher metadata.

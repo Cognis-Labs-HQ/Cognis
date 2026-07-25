@@ -15,3 +15,7 @@ Die Administration erhält jetzt Herausgebermetadaten von jedem Adapter-Gateway,
 ## Vollständige Komponentenurheberschaft
 
 Alle erkannten Adapter und Gateways geben jetzt ihren Herausgeber an, einschließlich der lokalen Authentifizierung und SMTP-E-Mail, sodass die Komponentendetails den Urheber durchgehend ausweisen.
+
+## Vollständige Gateway-Adapterlisten
+
+Die Administration listet jetzt die Adapter für Dateispeicher, Datenbank und Protokollierung einschließlich ihrer Versions- und Herausgebermetadaten auf.
