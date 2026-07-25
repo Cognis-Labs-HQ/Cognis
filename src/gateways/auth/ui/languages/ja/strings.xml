@@ -3,6 +3,7 @@
   <string name="gateway.auth.security.section_title">セキュリティ</string>
   <string name="gateway.auth.security.load_failed">パスワード変更機能を読み込めませんでした。</string>
   <string name="gateway.auth.security.unsupported_default">このプロバイダーではパスワード変更はサポートされていません。</string>
+  <string name="gateway.auth.security.external_password_notice">外部ユーザーのパスワードは Cognis では変更できません。パスワードを変更するには、ID プロバイダーの管理者にお問い合わせください。</string>
   <string name="gateway.auth.security.reset_title">パスワード変更</string>
   <string name="gateway.auth.security.reset_action">パスワードを変更</string>
   <string name="gateway.auth.security.popup_title">パスワードを変更</string>

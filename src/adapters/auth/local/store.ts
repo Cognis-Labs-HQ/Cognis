@@ -285,22 +285,23 @@ export class DbLocalAccountStore implements LocalAccountStore {
     async list() {
         const result = await this.db.executeCommand({
             option: "SELECT",
-            table: "local_auth_credentials",
-            alias: "c",
+            table: "accounts",
+            alias: "a",
             columns: [
-                "c.username",
+                { col: "a.id", as: "username" },
                 { col: "a.is_admin", as: "is_admin" },
                 { col: "a.role", as: "role" },
                 { col: "a.enabled", as: "enabled" },
                 { col: "a.is_founder", as: "is_founder" },
                 { col: "p.role", as: "profile_role" },
+                { col: "i.provider", as: "provider" },
             ],
             joins: [
                 {
-                    type: "INNER",
-                    table: "accounts",
-                    alias: "a",
-                    on: { leftColumn: "c.account_id", rightColumn: "a.id" },
+                    type: "LEFT",
+                    table: "auth_identities",
+                    alias: "i",
+                    on: { leftColumn: "a.id", rightColumn: "i.account_id" },
                 },
                 {
                     type: "LEFT",
@@ -309,7 +310,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     on: { leftColumn: "a.id", rightColumn: "p.account_id" },
                 },
             ],
-            orderBy: [{ column: "c.username", direction: "ASC" }],
+            orderBy: [{ column: "a.id", direction: "ASC" }],
         });
         return (result.rows ?? []).map((row) => ({
             username: String(row.username),
@@ -319,6 +320,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 (row.role as string | undefined) ??
                 (row.profile_role as string | undefined) ??
                 (Boolean(row.is_admin) ? "admin" : "user"),
+            provider: row.provider ? String(row.provider) : "local",
         }));
     }
 
@@ -643,6 +645,18 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 "is_admin",
                 "is_founder",
                 "role",
+                { col: "i.provider", as: "provider" },
+            ],
+            joins: [
+                {
+                    type: "LEFT",
+                    table: "auth_identities",
+                    alias: "i",
+                    on: {
+                        leftColumn: "accounts.id",
+                        rightColumn: "i.account_id",
+                    },
+                },
             ],
             where: [{ column: "id", value: lowercaseUsername }],
             limit: 1,
@@ -658,6 +672,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             role:
                 (row.role as string | undefined) ??
                 (Boolean(row.is_admin) ? "admin" : "user"),
+            provider: row.provider ? String(row.provider) : "local",
         };
     }
 

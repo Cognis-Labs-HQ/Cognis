@@ -520,6 +520,11 @@ function bindUsersInteractions() {
                 {
                     id: "password",
                     label: i18n.t("ui.app.users.reset_password"),
+                    disabled: user?.provider === "ldap",
+                    title:
+                        user?.provider === "ldap"
+                            ? "LDAP users' passwords are managed externally."
+                            : undefined,
                 },
                 {
                     id: "storage-quotas",

@@ -59,6 +59,7 @@ export interface LocalAccountStore {
             enabled: boolean;
             isFounder: boolean;
             role?: string;
+            provider?: string;
         }>
     >;
     setRole(
@@ -75,6 +76,7 @@ export interface LocalAccountStore {
         enabled: boolean;
         isFounder: boolean;
         role?: string;
+        provider?: string;
     } | null>;
     updateLastLogin(username: string): Promise<void>;
     setFounder(username: string, isFounder: boolean): Promise<void>;
@@ -91,6 +93,7 @@ interface StoredAccount {
     lastLogin: string | null;
     displayName: string | null;
     role: "user" | "teacher" | "moderator" | "admin";
+    provider: string;
 }
 
 function hashPassword(input: string): string {
@@ -131,6 +134,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
 
     async ensureExternalAccount(identity: {
         accountId: string;
+        provider: string;
         displayName?: string;
         role?: string;
     }): Promise<void> {
@@ -148,6 +152,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
                 identity.role === "admin"
                     ? identity.role
                     : "user",
+            provider: identity.provider,
         });
     }
 
@@ -169,6 +174,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             lastLogin: null,
             displayName: displayName?.trim() || username,
             role,
+            provider: "local",
         });
         return {
             username,
@@ -192,9 +198,9 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
         }
         return {
             accountId: lowercaseUsername,
-            provider: "local",
             externalUserId: lowercaseUsername,
             role: account.role,
+            provider: account.provider,
         };
     }
 
@@ -208,6 +214,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             enabled: account.enabled,
             isFounder: account.isFounder,
             role: account.role,
+            provider: account.provider,
         }));
     }
 
@@ -291,6 +298,7 @@ export class VolatileLocalAccountStore implements LocalAccountStore {
             enabled: account.enabled,
             isFounder: account.isFounder,
             role: account.role,
+            provider: account.provider,
         };
     }
 

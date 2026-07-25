@@ -33,11 +33,12 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         if (!capability) {
             return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
         }
-        if (capability.supported !== true) return "";
+        const unsupported = capability.supported !== true;
         return `
       <div class="settings-auth-password-reset">
         <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
-        <button class="btn-animated" type="button" id="settings-reset-password-btn">${i18n.t("gateway.auth.security.reset_action")}</button>
+        <button class="btn-animated" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
+        ${unsupported ? `<p>${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
       </div>
     `;
     }
