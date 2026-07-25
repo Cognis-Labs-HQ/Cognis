@@ -637,14 +637,15 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "accounts",
+            alias: "a",
             columns: [
-                "id",
-                "created_at",
-                "last_login",
-                "enabled",
-                "is_admin",
-                "is_founder",
-                "role",
+                { col: "a.id", as: "id" },
+                { col: "a.created_at", as: "created_at" },
+                { col: "a.last_login", as: "last_login" },
+                { col: "a.enabled", as: "enabled" },
+                { col: "a.is_admin", as: "is_admin" },
+                { col: "a.is_founder", as: "is_founder" },
+                { col: "a.role", as: "role" },
                 { col: "i.provider", as: "provider" },
             ],
             joins: [
@@ -653,12 +654,12 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     table: "auth_identities",
                     alias: "i",
                     on: {
-                        leftColumn: "accounts.id",
+                        leftColumn: "a.id",
                         rightColumn: "i.account_id",
                     },
                 },
             ],
-            where: [{ column: "id", value: lowercaseUsername }],
+            where: [{ column: "a.id", value: lowercaseUsername }],
             limit: 1,
         });
         const row = result.rows?.[0];
