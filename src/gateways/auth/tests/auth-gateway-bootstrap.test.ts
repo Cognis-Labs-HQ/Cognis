@@ -114,7 +114,7 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     const loginUiResult = await flowCtx.runFlow("construct-login-ui");
     assert.deepEqual(loginUiResult.stageResults["resolve-methods"], [
         {
-            methods: [{ id: "local", name: "Local" }],
+            methods: [{ id: "local", name: "Local", forgotPassword: true }],
         },
     ]);
 
@@ -122,7 +122,9 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     assert.deepEqual(loginResult.stageResults["resolve-provider"], [
         {
             defaultProviderId: "local",
-            enabledMethods: [{ id: "local", name: "Local" }],
+            enabledMethods: [
+                { id: "local", name: "Local", forgotPassword: true },
+            ],
         },
     ]);
 
@@ -216,6 +218,27 @@ test("auth gateway bootstrap registers correct static dir", async () => {
     );
 });
 
+test("auth gateway registers adapter-owned UI directories", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const uiRegistry = new UIRegistry();
+    const dbExecutor = createDbExecutor();
+
+    await bootstrap({
+        adaptersRoot: new URL("../../../adapters", import.meta.url).pathname,
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        uiRegistry,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+
+    const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
+    assert.ok(ldapUiDirectory);
+    await assert.doesNotReject(access(`${ldapUiDirectory}/config-popup.js`));
+});
+
 test("auth gateway bootstrap registers security section without redundant authentication admin section", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
@@ -305,6 +328,22 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
     );
 });
 
+test("CoreAuthGateway lists adapter publisher metadata", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const gateway = new CoreAuthGateway(makeInMemoryDb());
+
+    gateway.registerAdapter({
+        id: "oidc",
+        name: "OIDC",
+        publisher: "Cognis Labs HQ",
+        authenticate: async () => null,
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+
+    assert.equal(gateway.listAdapters()[0]?.publisher, "Cognis Labs HQ");
+});
+
 test("CoreAuthGateway.resetPasswordForAccount supports legacy 2-arg adapter contracts", async () => {
     const { CoreAuthGateway } = await import("../gateway.js");
 
@@ -343,6 +382,94 @@ test("CoreAuthGateway.resetPasswordForAccount supports legacy 2-arg adapter cont
     assert.deepEqual(calls, [
         { accountId: "legacy-user", nextPassword: "next-pass" },
     ]);
+});
+
+test("CoreAuthGateway redacts configured passwords and preserves them on blank updates", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const persisted = {
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://faculty.example.org",
+                bindPassword: "stored-secret",
+            },
+        ],
+    };
+    let savedConfig = "";
+    const db = {
+        ensureTable: async () => undefined,
+        executeCommand: async (command: Record<string, unknown>) => {
+            if (command.option === "SELECT") {
+                return { rows: [{ config_json: JSON.stringify(persisted) }] };
+            }
+            const values = command.values as Record<string, unknown>;
+            savedConfig = String(values.config_json);
+            return { rows: [] };
+        },
+    };
+    const gateway = new CoreAuthGateway(db as never);
+    gateway.registerAdapter({
+        id: "ldap-test",
+        name: "LDAP Test",
+        authenticate: async () => null,
+        getConfigSchema: () => [
+            {
+                key: "bindPassword",
+                label: "Bind password",
+                type: "password",
+                required: true,
+            },
+        ],
+        configure: () => undefined,
+    });
+
+    assert.deepEqual(gateway.redactAdapterConfig("ldap-test", persisted), {
+        data: {
+            servers: [
+                {
+                    identifier: "Faculty",
+                    serverUrl: "ldaps://faculty.example.org",
+                },
+            ],
+        },
+        configuredSecretFields: ["servers.0.bindPassword"],
+    });
+
+    await gateway.saveAdapterConfig("ldap-test", {
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://faculty.example.org",
+                bindPassword: "",
+            },
+        ],
+    });
+    assert.equal(
+        (
+            JSON.parse(savedConfig) as {
+                servers: Array<{ bindPassword: string }>;
+            }
+        ).servers[0].bindPassword,
+        "stored-secret",
+    );
+
+    await gateway.saveAdapterConfig("ldap-test", {
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://faculty.example.org",
+                bindPassword: "replacement-secret",
+            },
+        ],
+    });
+    assert.equal(
+        (
+            JSON.parse(savedConfig) as {
+                servers: Array<{ bindPassword: string }>;
+            }
+        ).servers[0].bindPassword,
+        "replacement-secret",
+    );
 });
 
 test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {

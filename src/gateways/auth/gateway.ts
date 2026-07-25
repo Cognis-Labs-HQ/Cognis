@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext, AuthGateway, FlowApi } from "@cognis/core";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
-import type { LocalAccountStore } from "./reuse/local-account-store.js";
+import type { LocalAccountStore } from "./reuse/account-store.js";
 
 export type { AuthContext, AuthGateway };
 
@@ -18,12 +18,20 @@ export interface AuthProviderAdapter {
     readonly id: string;
     readonly name: string;
     readonly version?: string;
+    readonly publisher?: string;
+    readonly configPopupScriptUrl?: string;
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;
     getConfigSchema(): AuthConfigField[];
     configure(config: Record<string, unknown>): void;
     getPasswordResetSupport?(): { supported: boolean; reason?: string };
+    getLoginUiCapabilities?(): { forgotPassword?: boolean };
+    getLoginMethods?(): Array<{
+        id: string;
+        name: string;
+        credential?: boolean;
+    }>;
     registerFlowHooks?(
         flow: FlowApi,
         options?: {
@@ -34,18 +42,121 @@ export interface AuthProviderAdapter {
         accountId: string,
         currentPasswordOrNextPassword: string,
         nextPassword?: string,
+        providerId?: string,
     ): Promise<{ updated: boolean; message?: string }>;
+    testConfiguration?(
+        config: Record<string, unknown>,
+    ): Promise<Record<string, unknown>>;
 }
 
 export interface AdapterInfo {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     enabled: boolean;
     locked?: boolean;
     config: Record<string, unknown>;
     schema: AuthConfigField[];
     requires?: string[];
+}
+
+function mergeConfiguredSecrets(
+    current: unknown,
+    next: unknown,
+    secretKeys: Set<string>,
+): unknown {
+    if (Array.isArray(next)) {
+        const currentItems = Array.isArray(current) ? current : [];
+        return next.map((nextItem, index) => {
+            const identifier =
+                nextItem && typeof nextItem === "object"
+                    ? String(
+                          (nextItem as Record<string, unknown>).identifier ??
+                              "",
+                      )
+                    : "";
+            const currentItem = identifier
+                ? currentItems.find(
+                      (item) =>
+                          item &&
+                          typeof item === "object" &&
+                          String(
+                              (item as Record<string, unknown>).identifier ??
+                                  "",
+                          ) === identifier,
+                  )
+                : currentItems[index];
+            return mergeConfiguredSecrets(currentItem, nextItem, secretKeys);
+        });
+    }
+    if (!next || typeof next !== "object") return next;
+    const currentRecord =
+        current && typeof current === "object" && !Array.isArray(current)
+            ? (current as Record<string, unknown>)
+            : {};
+    const nextRecord = next as Record<string, unknown>;
+    const merged: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(nextRecord)) {
+        if (
+            secretKeys.has(key) &&
+            (value === "" || value == null) &&
+            currentRecord[key] != null &&
+            currentRecord[key] !== ""
+        ) {
+            merged[key] = currentRecord[key];
+        } else {
+            merged[key] = mergeConfiguredSecrets(
+                currentRecord[key],
+                value,
+                secretKeys,
+            );
+        }
+    }
+    for (const key of secretKeys) {
+        if (!(key in nextRecord) && currentRecord[key] != null) {
+            merged[key] = currentRecord[key];
+        }
+    }
+    return merged;
+}
+
+function redactConfiguredSecrets(
+    value: unknown,
+    secretKeys: Set<string>,
+    path = "",
+): { value: unknown; configuredPaths: string[] } {
+    if (Array.isArray(value)) {
+        const configuredPaths: string[] = [];
+        const redacted = value.map((item, index) => {
+            const result = redactConfiguredSecrets(
+                item,
+                secretKeys,
+                path ? `${path}.${index}` : String(index),
+            );
+            configuredPaths.push(...result.configuredPaths);
+            return result.value;
+        });
+        return { value: redacted, configuredPaths };
+    }
+    if (!value || typeof value !== "object") {
+        return { value, configuredPaths: [] };
+    }
+    const redacted: Record<string, unknown> = {};
+    const configuredPaths: string[] = [];
+    for (const [key, entry] of Object.entries(
+        value as Record<string, unknown>,
+    )) {
+        const entryPath = path ? `${path}.${key}` : key;
+        if (secretKeys.has(key)) {
+            if (entry != null && entry !== "") configuredPaths.push(entryPath);
+            continue;
+        }
+        const result = redactConfiguredSecrets(entry, secretKeys, entryPath);
+        redacted[key] = result.value;
+        configuredPaths.push(...result.configuredPaths);
+    }
+    return { value: redacted, configuredPaths };
 }
 
 export class CoreAuthGateway {
@@ -151,7 +262,19 @@ export class CoreAuthGateway {
     ): Promise<void> {
         const adapter = this.adapters.get(adapterId);
         if (!adapter) return;
-        const { enabled: enabledValue, ...adapterConfig } = config;
+        const { enabled: enabledValue, ...submittedAdapterConfig } = config;
+        const secretKeys = new Set(
+            adapter
+                .getConfigSchema()
+                .filter((field) => field.type === "password")
+                .map((field) => field.key),
+        );
+        const existingConfig = await this.getPersistedConfig(adapterId);
+        const adapterConfig = mergeConfiguredSecrets(
+            existingConfig,
+            submittedAdapterConfig,
+            secretKeys,
+        ) as Record<string, unknown>;
         if (
             enabledValue === false ||
             enabledValue === "false" ||
@@ -187,6 +310,23 @@ export class CoreAuthGateway {
                 },
             },
         });
+    }
+
+    redactAdapterConfig(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): { data: Record<string, unknown>; configuredSecretFields: string[] } {
+        const adapter = this.adapters.get(adapterId);
+        const secretKeys = new Set(
+            (adapter?.getConfigSchema() ?? [])
+                .filter((field) => field.type === "password")
+                .map((field) => field.key),
+        );
+        const result = redactConfiguredSecrets(config, secretKeys);
+        return {
+            data: result.value as Record<string, unknown>,
+            configuredSecretFields: result.configuredPaths,
+        };
     }
 
     async enableAdapter(adapterId: string): Promise<void> {
@@ -266,7 +406,8 @@ export class CoreAuthGateway {
             return {
                 id: adapter.id,
                 name: adapter.name,
-                version: adapter.version,
+                ...(adapter.version ? { version: adapter.version } : {}),
+                ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
                 enabled: this.enabledAdapters.has(adapter.id),
                 locked: adapter.id === "local" || undefined,
                 config: {},
@@ -288,7 +429,9 @@ export class CoreAuthGateway {
         supported: boolean;
         reason?: string;
     } {
-        const adapter = this.adapters.get(adapterId);
+        const adapter =
+            this.adapters.get(adapterId) ??
+            this.adapters.get(adapterId.split(":", 1)[0]);
         if (!adapter) {
             return {
                 adapterId,
@@ -327,7 +470,9 @@ export class CoreAuthGateway {
         currentPassword: string,
         nextPassword: string,
     ): Promise<void> {
-        const adapter = this.adapters.get(adapterId);
+        const adapter =
+            this.adapters.get(adapterId) ??
+            this.adapters.get(adapterId.split(":", 1)[0]);
         if (!adapter) {
             throw new Error("password_reset_unsupported");
         }
@@ -344,6 +489,7 @@ export class CoreAuthGateway {
                       accountId,
                       currentPassword,
                       nextPassword,
+                      adapterId,
                   )
                 : await adapter.resetPassword(accountId, nextPassword);
         if (result.updated !== true) {
@@ -374,6 +520,7 @@ export class CoreAuthGateway {
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
+                let publisher: string | undefined;
                 try {
                     const manifestRaw = await readFile(
                         path.join(authAdaptersRoot, entry, "manifest.json"),
@@ -381,7 +528,9 @@ export class CoreAuthGateway {
                     );
                     const manifest = JSON.parse(manifestRaw) as {
                         requires?: string[];
+                        publisher?: string;
                     };
+                    publisher = manifest.publisher;
                     if (Array.isArray(manifest.requires)) {
                         requires = manifest.requires;
                     }
@@ -400,6 +549,7 @@ export class CoreAuthGateway {
                     if (pkg.version) {
                         Object.assign(adapter, { version: pkg.version });
                     }
+                    if (publisher) Object.assign(adapter, { publisher });
                     if (adapter.id !== "local") {
                         this.registerAdapter(adapter, requires);
                     }

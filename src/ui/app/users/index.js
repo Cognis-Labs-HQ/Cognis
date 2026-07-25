@@ -541,6 +541,12 @@ function bindUsersInteractions() {
                 {
                     id: "password",
                     label: i18n.t("ui.app.users.reset_password"),
+                    disabled:
+                        Boolean(user?.provider) && user.provider !== "local",
+                    title:
+                        user?.provider && user.provider !== "local"
+                            ? "External users' passwords are managed by their authentication provider."
+                            : undefined,
                 },
                 ...(user?.hasTfaConfigured === true
                     ? [

@@ -4,14 +4,14 @@
  * This file has two responsibilities:
  *
  * 1. Re-export the LocalAccountStore interface and its volatile test
- *    double from src/api/reuse/account-store.ts so that any code inside
+ *    double from src/gateways/auth/reuse/account-store.ts so that any code inside
  *    this adapter can import them with a short local path.
  *
  * 2. Provide LocalAuthGateway — a thin AuthGateway implementation that
  *    delegates credential checks to a LocalAccountStore.
  *
  * Cross-boundary note:
- *   src/api/reuse/account-store.ts is the canonical home for
+ *   src/gateways/auth/reuse/account-store.ts is the canonical home for
  *   LocalAccountStore because the interface is consumed by API-layer route
  *   factories (auth routes, user routes) that cannot import directly from an
  *   adapter. This re-export is purely for convenience within this adapter
@@ -24,9 +24,9 @@
  */
 import { randomBytes } from "node:crypto";
 import type { AuthContext, AuthGateway } from "@cognis/core";
-export type { LocalAccountStore } from "../../../api/reuse/account-store.js";
-export { VolatileLocalAccountStore } from "../../../api/reuse/account-store.js";
-import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
+export type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
+export { VolatileLocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
+import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 
 export class LocalAuthGateway implements AuthGateway {
     constructor(private readonly store: LocalAccountStore) {}

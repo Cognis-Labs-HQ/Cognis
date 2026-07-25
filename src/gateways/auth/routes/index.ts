@@ -7,8 +7,8 @@ import {
 } from "../access-tokens.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { AuthGateway } from "@cognis/core";
-import type { LocalAccountStore } from "../../../api/reuse/account-store.js";
-import { validateUsername } from "../../../api/reuse/account-store.js";
+import type { LocalAccountStore } from "../reuse/account-store.js";
+import { validateUsername } from "../reuse/account-store.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { getAuthClaims } from "../guard.js";
 

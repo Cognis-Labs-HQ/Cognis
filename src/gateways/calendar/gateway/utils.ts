@@ -103,6 +103,7 @@ export interface CalendarAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
     readonly version?: string;
+    readonly publisher?: string;
     readonly requires?: string[];
     getConfig?(): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
@@ -113,6 +114,7 @@ export interface CalendarAdapterInfo {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     active: boolean;
     requires?: string[];
 }

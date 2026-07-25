@@ -1,5 +1,5 @@
 import { issueAccessToken } from "../../access-tokens.js";
-import { validateUsername } from "../../../../api/reuse/account-store.js";
+import { validateUsername } from "../../reuse/account-store.js";
 import type { AuthAccountStore } from "../index.js";
 import type {
     CapabilityStore,

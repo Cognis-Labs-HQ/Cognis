@@ -1,4 +1,5 @@
 import path from "node:path";
+import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
@@ -29,6 +30,14 @@ export interface AuthAccountStore {
     isFounder(username: string): Promise<boolean>;
     verify(username: string, password: string): Promise<boolean>;
     getDisplayName(username: string): Promise<string | null>;
+    ensureExternalAccount?(identity: {
+        accountId: string;
+        provider: string;
+        externalUserId: string;
+        email?: string;
+        displayName?: string;
+        role?: string;
+    }): Promise<void>;
     getInfo(username: string): Promise<{
         username: string;
         enabled: boolean;
@@ -157,6 +166,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (packageJson.version) {
                 Object.assign(localAdapter, { version: packageJson.version });
             }
+            const manifestRaw = await readFile(
+                path.resolve(localAdapterPath, "..", "manifest.json"),
+                "utf8",
+            );
+            const manifest = JSON.parse(manifestRaw) as {
+                publisher?: string;
+            };
+            if (manifest.publisher) {
+                Object.assign(localAdapter, { publisher: manifest.publisher });
+            }
             authGateway.setLocalAdapter(localAdapter);
             ctx.log?.("info", "Loaded local authentication adapter.", {
                 component: "auth-gateway",
@@ -173,6 +192,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
     await authGateway.discoverAdapters(authAdaptersRoot);
+    for (const adapter of authGateway.listAdapters()) {
+        const adapterUiDirectory = path.join(
+            authAdaptersRoot,
+            adapter.id,
+            "ui",
+        );
+        if (existsSync(adapterUiDirectory)) {
+            ctx.uiRegistry?.registerAdapterStaticDir(
+                "auth",
+                adapter.id,
+                adapterUiDirectory,
+            );
+        }
+    }
     await authGateway.loadPersistedConfigs();
     ctx.log?.("info", "Authentication adapters discovered and configured.", {
         component: "auth-gateway",
@@ -246,7 +279,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.5.1",
+        version: "1.7.2",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

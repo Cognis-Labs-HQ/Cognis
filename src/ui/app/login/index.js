@@ -4,6 +4,7 @@ import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
+import { openPopup } from "../../reuse/popup.js";
 import {
     loadAuthTypingSamples,
     runTypingShowcase,
@@ -141,6 +142,13 @@ export async function mount(root) {
         return requiredEmailEnforcementClientPromise;
     }
 
+    function hideCredentialProviderSelector() {
+        const providerToggle = document.querySelector("#auth-provider-toggle");
+        if (providerToggle instanceof HTMLElement) {
+            providerToggle.hidden = true;
+        }
+    }
+
     async function loadLoginMethods() {
         try {
             const flowConfig = await loadLoginUiConfig();
@@ -152,12 +160,33 @@ export async function mount(root) {
             );
             const ssoContainer = document.querySelector("#sso-buttons");
 
+            if (toggleContainer) {
+                toggleContainer.replaceChildren();
+                toggleContainer.hidden = true;
+            }
+            ssoContainer?.replaceChildren();
+
             const credentialProviders = methods.filter(
-                (m) => m.id === "local" || m.id === "ldap",
+                (method) => method.id === "local" || method.credential === true,
             );
             const ssoProviders = methods.filter(
-                (m) => m.id !== "local" && m.id !== "ldap",
+                (method) => method.id !== "local" && method.credential !== true,
             );
+
+            const renderProviderActions = (method) => {
+                const actions = document.querySelector(
+                    "#login-provider-actions",
+                );
+                if (!actions) return;
+                actions.replaceChildren();
+                if (method?.forgotPassword !== true) return;
+                const link = document.createElement("a");
+                link.href = "#";
+                link.id = "login-request-link";
+                link.className = "auth-text-action";
+                link.textContent = i18n.t("ui.app.login.login_link.action");
+                actions.appendChild(link);
+            };
 
             if (credentialProviders.length > 1 && toggleContainer) {
                 toggleContainer.hidden = false;
@@ -165,30 +194,140 @@ export async function mount(root) {
                     "aria-label",
                     i18n.t("ui.app.login.provider.toggle.aria"),
                 );
+                const methodButtons = new Map();
+                const selectCredentialProvider = (method) => {
+                    if (providerInput) providerInput.value = method.id;
+                    renderProviderActions(method);
+                    methodButtons.forEach((button, methodId) => {
+                        const active = methodId === method.id;
+                        button.classList.toggle(
+                            "auth-provider-btn--active",
+                            active,
+                        );
+                        button.setAttribute("aria-pressed", String(active));
+                    });
+                };
                 credentialProviders.forEach((method) => {
                     const btn = document.createElement("button");
                     btn.type = "button";
-                    btn.textContent =
-                        i18n.t(`ui.app.login.provider.${method.id}`) ||
-                        method.name;
+                    if (method.id === "local" || method.id === "ldap") {
+                        const methodLabelKey = `ui.app.login.provider.${method.id}`;
+                        const translatedMethodName = i18n.t(methodLabelKey);
+                        btn.textContent =
+                            translatedMethodName &&
+                            translatedMethodName !== methodLabelKey
+                                ? translatedMethodName
+                                : method.name;
+                    } else {
+                        btn.textContent = method.name;
+                    }
                     btn.className = "auth-provider-btn";
+                    btn.setAttribute(
+                        "aria-pressed",
+                        String(method.id === "local"),
+                    );
                     btn.addEventListener("click", () => {
-                        if (providerInput) providerInput.value = method.id;
-                        toggleContainer
-                            .querySelectorAll(".auth-provider-btn")
-                            .forEach((b) => {
-                                b.classList.toggle(
-                                    "auth-provider-btn--active",
-                                    b === btn,
-                                );
-                            });
+                        selectCredentialProvider(method);
                     });
                     if (method.id === "local") {
                         btn.classList.add("auth-provider-btn--active");
                     }
+                    methodButtons.set(method.id, btn);
                     toggleContainer.appendChild(btn);
                 });
+                const overflowButton = document.createElement("button");
+                overflowButton.type = "button";
+                overflowButton.textContent = "…";
+                overflowButton.className =
+                    "auth-provider-btn auth-provider-overflow-btn";
+                overflowButton.setAttribute(
+                    "aria-label",
+                    i18n.t("ui.app.login.provider.toggle.aria"),
+                );
+                overflowButton.hidden = true;
+                overflowButton.addEventListener("click", async () => {
+                    await openPopup({
+                        title: i18n.t("ui.app.login.provider.toggle.aria"),
+                        body: `<div class="auth-provider-overflow-list">${credentialProviders
+                            .map(
+                                (method) =>
+                                    `<button type="button" class="auth-provider-overflow-option" data-login-provider-id="${escapeHtml(method.id)}">${escapeHtml(method.name)}</button>`,
+                            )
+                            .join("")}</div>`,
+                        actions: [
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                        onOpen: (overlay, close) => {
+                            overlay
+                                .querySelectorAll("[data-login-provider-id]")
+                                .forEach((option) =>
+                                    option.addEventListener("click", () => {
+                                        const method = credentialProviders.find(
+                                            (entry) =>
+                                                entry.id ===
+                                                option.dataset.loginProviderId,
+                                        );
+                                        if (method) {
+                                            selectCredentialProvider(method);
+                                            close();
+                                        }
+                                    }),
+                                );
+                        },
+                    });
+                });
+                toggleContainer.appendChild(overflowButton);
+
+                const fitCredentialProviderButtons = () => {
+                    const minimumButtonWidth = 96;
+                    const gap = 10;
+                    const availableSlots = Math.max(
+                        1,
+                        Math.floor(
+                            (toggleContainer.clientWidth + gap) /
+                                (minimumButtonWidth + gap),
+                        ),
+                    );
+                    const needsOverflow =
+                        credentialProviders.length > availableSlots;
+                    const visibleIds = new Set(
+                        credentialProviders
+                            .slice(
+                                0,
+                                needsOverflow
+                                    ? Math.max(1, availableSlots - 1)
+                                    : credentialProviders.length,
+                            )
+                            .map((method) => method.id),
+                    );
+                    const selectedId = providerInput?.value;
+                    if (selectedId && !visibleIds.has(selectedId)) {
+                        const lastVisibleId = [...visibleIds].at(-1);
+                        if (lastVisibleId !== "local")
+                            visibleIds.delete(lastVisibleId);
+                        visibleIds.add(selectedId);
+                    }
+                    methodButtons.forEach((button, methodId) => {
+                        button.hidden = !visibleIds.has(methodId);
+                    });
+                    overflowButton.hidden = !needsOverflow;
+                };
+                fitCredentialProviderButtons();
+                new ResizeObserver(fitCredentialProviderButtons).observe(
+                    toggleContainer,
+                );
             }
+            const initialProvider =
+                credentialProviders.find((method) => method.id === "local") ??
+                credentialProviders[0];
+            if (providerInput && initialProvider) {
+                providerInput.value = initialProvider.id;
+            }
+            renderProviderActions(initialProvider);
 
             if (ssoProviders.length > 0 && ssoContainer) {
                 ssoProviders.forEach((method) => {
@@ -219,6 +358,10 @@ export async function mount(root) {
         );
         localStorage.setItem("cognis_role", data.role || "user");
         localStorage.setItem(
+            "cognis_provider_id",
+            data.providerId || data.provider || "local",
+        );
+        localStorage.setItem(
             "cognis_is_founder",
             data.isFounder ? "true" : "false",
         );
@@ -234,6 +377,7 @@ export async function mount(root) {
         localStorage.removeItem("cognis_account");
         localStorage.removeItem("cognis_display_name");
         localStorage.removeItem("cognis_role");
+        localStorage.removeItem("cognis_provider_id");
         localStorage.removeItem("cognis_is_founder");
         localStorage.removeItem("cognis_login_time");
         localStorage.removeItem("cognis_user_validation_mode");
@@ -272,6 +416,7 @@ export async function mount(root) {
             }
             if (data.tfaRequired === true) {
                 lastTfaPayload = data;
+                hideCredentialProviderSelector();
                 currentTfaLoginAttemptId =
                     tfaLoginClient.switchToTfaPrompt(data);
             } else {
@@ -298,6 +443,36 @@ export async function mount(root) {
         if (!credentialFields) return false;
         credentialFields.innerHTML = html;
         return true;
+    }
+
+    function renderCredentialFields() {
+        return `
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+            <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+          </label>
+          <div id="login-provider-actions"></div>
+        `;
+    }
+
+    function restoreLoginForm() {
+        replaceCredentialFieldsContent(renderCredentialFields());
+        resetPasswordResetMode();
+        lastTfaPayload = null;
+        const heading = document.querySelector(".auth-heading");
+        if (heading) heading.textContent = i18n.t("ui.app.login.title");
+        const loginSubmit = document.querySelector("#login-form-submit");
+        if (loginSubmit) loginSubmit.hidden = false;
+        const signupCallout = document.querySelector("#login-signup-callout");
+        if (signupCallout) signupCallout.hidden = false;
+        const tfaFields = document.querySelector("#login-tfa-fields");
+        if (tfaFields instanceof HTMLElement) tfaFields.hidden = true;
+        loadLoginMethods();
+        document.querySelector("#login-username")?.focus();
     }
 
     function switchToLoginLinkEmailForm() {
@@ -335,7 +510,7 @@ export async function mount(root) {
             }
         };
         backLink?.addEventListener("click", () => {
-            composer.refresh();
+            restoreLoginForm();
         });
     }
 
@@ -355,7 +530,7 @@ export async function mount(root) {
         document
             .querySelector("#login-link-back")
             ?.addEventListener("click", () => {
-                composer.refresh();
+                restoreLoginForm();
             });
     }
 
@@ -449,7 +624,7 @@ export async function mount(root) {
             .querySelector("#login-link-invalid-back")
             ?.addEventListener("click", () => {
                 window.history.replaceState({}, "", "/login");
-                composer.refresh();
+                restoreLoginForm();
             });
     }
 
@@ -516,7 +691,7 @@ export async function mount(root) {
                     variant: "success",
                     permanent: true,
                 });
-                composer.refresh();
+                restoreLoginForm();
                 return;
             }
             showToast(
@@ -534,7 +709,7 @@ export async function mount(root) {
                 .querySelector("#login-link-back")
                 ?.addEventListener("click", () => {
                     window.history.replaceState({}, "", "/login");
-                    composer.refresh();
+                    restoreLoginForm();
                 });
         }
     }
@@ -591,21 +766,11 @@ export async function mount(root) {
         const formPanelHtml = `
       ${mobileBrandlineHtml}
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
+      <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
       <form id="login-form" class="stack auth-form" method="POST">
         <input type="hidden" id="login-provider" value="local" />
-        <div id="login-credential-fields">
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
-            <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
-            <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
-          </label>
-          <a href="#" id="login-request-link" class="auth-text-action">${escapeHtml(i18n.t("ui.app.login.login_link.action"))}</a>
-        </div>
+        <div id="login-credential-fields">${renderCredentialFields()}</div>
         <div id="login-tfa-fields" hidden></div>
-        <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
         <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>
@@ -652,6 +817,7 @@ export async function mount(root) {
                         loadTfaLoginClient()
                             .then((client) => {
                                 if (client) {
+                                    hideCredentialProviderSelector();
                                     currentTfaLoginAttemptId =
                                         client.switchToTfaPrompt(
                                             lastTfaPayload,
@@ -673,8 +839,14 @@ export async function mount(root) {
                     }
                     renderLoginReasonToast();
                     document
-                        .querySelector("#login-request-link")
+                        .querySelector("#login-form")
                         ?.addEventListener("click", (event) => {
+                            if (
+                                !(event.target instanceof Element) ||
+                                !event.target.closest("#login-request-link")
+                            ) {
+                                return;
+                            }
                             event.preventDefault();
                             handleRequestLinkClick().catch(() => {
                                 showToast(
