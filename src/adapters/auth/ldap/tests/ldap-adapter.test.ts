@@ -15,6 +15,8 @@ test("ldap adapter config schema has required fields", () => {
     assert.ok(keys.includes("host"));
     assert.ok(keys.includes("bindDn"));
     assert.ok(keys.includes("baseDn"));
+    assert.ok(keys.includes("userDn"));
+    assert.ok(keys.includes("groupDn"));
     assert.ok(keys.includes("userAttribute"));
     assert.ok(keys.includes("writebackEnabled"));
     assert.ok(keys.includes("writebackBaseDn"));
@@ -39,6 +41,8 @@ test("ldap test configuration returns only client-discovered directory entries",
         authenticate: async () => null,
         discover: async (options) => {
             assert.equal(options.userAttribute, "employeeNumber");
+            assert.equal(options.userDn, "ou=People,dc=example,dc=org");
+            assert.equal(options.groupDn, "ou=Groups,dc=example,dc=org");
             return {
                 users: [],
                 groups: [
@@ -55,6 +59,8 @@ test("ldap test configuration returns only client-discovered directory entries",
     const result = await adapter.testConfiguration({
         serverUrl: "ldaps://ldap.example.org",
         baseDn: "dc=example,dc=org",
+        userDn: "ou=People,dc=example,dc=org",
+        groupDn: "ou=Groups,dc=example,dc=org",
         bindDn: "uid=service,dc=example,dc=org",
         bindPassword: "secret",
         userAttribute: "employeeNumber",

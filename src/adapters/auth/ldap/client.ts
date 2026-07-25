@@ -31,6 +31,13 @@ function userFilter(options: LdapRuntimeOptions, username: string): string {
         : `(&${options.userFilter}(${options.userAttribute}=${Filter.escape(username)}))`;
 }
 
+function searchBase(
+    options: LdapRuntimeOptions,
+    specificDn: "userDn" | "groupDn",
+): string {
+    return String(options[specificDn] ?? "").trim() || options.baseDn;
+}
+
 async function withBoundClient<T>(
     options: LdapRuntimeOptions,
     dn: string,
@@ -56,7 +63,7 @@ async function findUser(
     options: LdapRuntimeOptions,
     username: string,
 ): Promise<LdapEntry | undefined> {
-    const result = await client.search(options.baseDn, {
+    const result = await client.search(searchBase(options, "userDn"), {
         scope: "sub",
         filter: userFilter(options, username),
         attributes: [
@@ -90,7 +97,7 @@ async function resolveGroups(
     entry: LdapEntry,
     options: LdapRuntimeOptions,
 ): Promise<string[]> {
-    const result = await client.search(options.baseDn, {
+    const result = await client.search(searchBase(options, "groupDn"), {
         scope: "sub",
         filter: options.groupFilter,
         attributes: [
@@ -194,7 +201,7 @@ export class StandardLdapClient implements LdapClient {
             options.bindPassword,
             async (client) => {
                 const [userResult, groupResult, rootDse] = await Promise.all([
-                    client.search(options.baseDn, {
+                    client.search(searchBase(options, "userDn"), {
                         scope: "sub",
                         filter: options.userFilter.replaceAll(
                             "{username}",
@@ -211,7 +218,7 @@ export class StandardLdapClient implements LdapClient {
                         sizeLimit: 500,
                         timeLimit: 15,
                     }),
-                    client.search(options.baseDn, {
+                    client.search(searchBase(options, "groupDn"), {
                         scope: "sub",
                         filter: options.groupFilter,
                         attributes: [

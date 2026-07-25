@@ -172,15 +172,21 @@ export async function mount(root) {
                         i18n.t(`ui.app.login.provider.${method.id}`) ||
                         method.name;
                     btn.className = "auth-provider-btn";
+                    btn.setAttribute(
+                        "aria-pressed",
+                        String(method.id === "local"),
+                    );
                     btn.addEventListener("click", () => {
                         if (providerInput) providerInput.value = method.id;
                         toggleContainer
                             .querySelectorAll(".auth-provider-btn")
                             .forEach((b) => {
+                                const active = b === btn;
                                 b.classList.toggle(
                                     "auth-provider-btn--active",
-                                    b === btn,
+                                    active,
                                 );
+                                b.setAttribute("aria-pressed", String(active));
                             });
                     });
                     if (method.id === "local") {
@@ -593,6 +599,7 @@ export async function mount(root) {
       <h2 class="auth-heading">${escapeHtml(i18n.t("ui.app.login.title"))}</h2>
       <form id="login-form" class="stack auth-form" method="POST">
         <input type="hidden" id="login-provider" value="local" />
+        <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         <div id="login-credential-fields">
           <label>
             <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
@@ -605,7 +612,6 @@ export async function mount(root) {
           <a href="#" id="login-request-link" class="auth-text-action">${escapeHtml(i18n.t("ui.app.login.login_link.action"))}</a>
         </div>
         <div id="login-tfa-fields" hidden></div>
-        <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
         ${signupCalloutHtml}
         <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       </form>

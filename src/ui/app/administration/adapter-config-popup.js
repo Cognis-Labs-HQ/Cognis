@@ -271,7 +271,7 @@ export function createAdapterConfigPopup({
     function renderLdapConnectionForm(values = {}) {
         return `<div class="provider-popup-form ldap-setup-popup">
           <p class="module-settings-popup-note">Connect to OpenLDAP or FreeIPA first. Cognis will inspect sample users and groups before asking for filters.</p>
-          ${["serverUrl", "baseDn", "bindDn", "bindPassword", "userAttribute"].map((name) => `<label class="provider-popup-field">${name === "userAttribute" ? "Username attribute" : escapeHtml(fieldNameToLabel(name))}<input id="${name}" name="${name}" type="${name === "bindPassword" ? "password" : "text"}" value="${escapeHtml(values[name] ?? (name === "userAttribute" ? "uid" : ""))}"${name === "userAttribute" ? ' placeholder="uid (OpenLDAP) or uid (FreeIPA)"' : ""} /></label>`).join("")}
+          ${["serverUrl", "baseDn", "userDn", "groupDn", "bindDn", "bindPassword", "userAttribute"].map((name) => `<label class="provider-popup-field">${name === "userAttribute" ? "Username attribute" : escapeHtml(fieldNameToLabel(name))}<input id="${name}" name="${name}" type="${name === "bindPassword" ? "password" : "text"}" value="${escapeHtml(values[name] ?? (name === "userAttribute" ? "uid" : ""))}"${name === "userAttribute" ? ' placeholder="uid (OpenLDAP) or uid (FreeIPA)"' : name === "userDn" || name === "groupDn" ? ` placeholder="Optional; falls back to Base DN"` : ""} /></label>`).join("")}
         </div>`;
     }
 
@@ -291,12 +291,20 @@ export function createAdapterConfigPopup({
 
     function renderLdapFilterForm(config, sample) {
         const users = Array.isArray(sample?.users) ? sample.users : [];
-        const groups = Array.isArray(sample?.groups) ? sample.groups : [];
+        const groups = Array.isArray(sample?.groups)
+            ? [...sample.groups].sort((left, right) =>
+                  String(left.name).localeCompare(
+                      String(right.name),
+                      undefined,
+                      { sensitivity: "base" },
+                  ),
+              )
+            : [];
         const optionForGroups = (selected) =>
             `<option value="">No LDAP group</option>${groups
                 .map(
                     (group) =>
-                        `<option value="${escapeHtml(group.name)}"${group.name === selected ? " selected" : ""}>${escapeHtml(group.name)}${group.dn ? ` — ${escapeHtml(group.dn)}` : ""}</option>`,
+                        `<option value="${escapeHtml(group.name)}"${group.name === selected ? " selected" : ""}>${escapeHtml(group.name)}</option>`,
                 )
                 .join("")}`;
         const mappings = ldapRoleMappings(config.roleMappings);

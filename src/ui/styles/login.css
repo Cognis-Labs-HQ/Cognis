@@ -181,25 +181,36 @@ p.auth-intro {
 
 .auth-provider-toggle {
     display: flex;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 10px;
+    margin-bottom: 6px;
+    padding: 4px;
+    border: 1px solid rgba(137, 170, 255, 0.45);
+    border-radius: 10px;
+    background: rgba(5, 16, 34, 0.55);
 }
 
-.auth-provider-btn {
+.auth-form .auth-provider-btn {
     flex: 1;
-    padding: 8px 12px;
+    margin-top: 0;
+    padding: 9px 12px;
     font-size: 1rem;
     font-weight: 600;
-    border: 1px solid rgba(89, 133, 255, 0.4);
-    background: rgba(255, 255, 255, 0.05);
-    color: #d6e7ff;
+    border: 1px solid transparent;
+    background: transparent;
+    color: rgba(214, 231, 255, 0.72);
     cursor: pointer;
     border-radius: 6px;
 }
 
-.auth-provider-btn--active {
-    background: rgba(37, 80, 190, 0.55);
-    border-color: rgba(89, 133, 255, 0.8);
+.auth-form .auth-provider-btn--active {
+    background: #d6e7ff;
+    border-color: #f1f7ff;
+    color: #10244b;
+    box-shadow: 0 2px 8px rgba(89, 133, 255, 0.35);
+}
+
+.auth-form .auth-provider-btn:not(.auth-provider-btn--active):hover {
+    background: rgba(89, 133, 255, 0.14);
     color: #f1f7ff;
 }
 
@@ -350,6 +361,18 @@ body[data-theme="light"] .cognis-ad-frame {
 body[data-theme="light"] .auth-form button {
     border: 1px solid rgba(37, 99, 235, 0.45);
     background: linear-gradient(145deg, #3b82f6, #2563eb);
+    color: #eff6ff;
+}
+
+body[data-theme="light"] .auth-form .auth-provider-btn {
+    border-color: transparent;
+    background: transparent;
+    color: #475569;
+}
+
+body[data-theme="light"] .auth-form .auth-provider-btn--active {
+    border-color: #1d4ed8;
+    background: #1d4ed8;
     color: #eff6ff;
 }
 

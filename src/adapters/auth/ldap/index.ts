@@ -53,6 +53,8 @@ export interface LdapClient {
 export interface LdapRuntimeOptions {
     serverUrl: string;
     baseDn: string;
+    userDn?: string;
+    groupDn?: string;
     bindDn: string;
     bindPassword: string;
     userFilter: string;
@@ -96,7 +98,7 @@ function parseRoleMappings(value: unknown): Record<string, string> {
 class LdapAuthAdapter implements AuthProviderAdapter {
     readonly id = "ldap";
     readonly name = "LDAP";
-    readonly version = "0.2.0";
+    readonly version = "0.3.0";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -106,6 +108,8 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     private options: LdapRuntimeOptions = {
         serverUrl: "",
         baseDn: "",
+        userDn: "",
+        groupDn: "",
         bindDn: "",
         bindPassword: "",
         userFilter: "(&(objectClass=inetOrgPerson)(uid={username}))",
@@ -168,6 +172,18 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 required: false,
             },
             { key: "baseDn", label: "Base DN", type: "text", required: true },
+            {
+                key: "userDn",
+                label: "User DN",
+                type: "text",
+                required: false,
+            },
+            {
+                key: "groupDn",
+                label: "Group DN",
+                type: "text",
+                required: false,
+            },
             { key: "bindDn", label: "Bind DN", type: "text", required: true },
             {
                 key: "bindPassword",
