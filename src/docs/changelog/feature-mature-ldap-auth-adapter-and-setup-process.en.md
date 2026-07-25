@@ -15,3 +15,7 @@ Optional user and group DNs can narrow LDAP searches while the base DN remains t
 ## Provider-owned account actions and stable LDAP sessions
 
 Each login source now controls its own recovery actions, so the local forgot-password link disappears when LDAP is selected. Password changes are only offered when the signed-in provider supports them, including LDAP when writeback is enabled, and LDAP sessions no longer depend on a matching local account record.
+
+## Persistent external account identities
+
+Successful LDAP sign-ins now create the shared account record and LDAP identity before profile provisioning. This preserves database foreign-key integrity and gives LDAP accounts the same profile and session foundation as local accounts without creating local password credentials.

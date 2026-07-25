@@ -33,6 +33,14 @@ import { pbkdf2Sync } from "node:crypto";
 import type { AuthContext } from "@cognis/core";
 
 export interface LocalAccountStore {
+    ensureExternalAccount?(identity: {
+        accountId: string;
+        provider: string;
+        externalUserId: string;
+        email?: string;
+        displayName?: string;
+        role?: string;
+    }): Promise<void>;
     register(
         username: string,
         password: string,
@@ -120,6 +128,28 @@ export function validateUsername(username: string): string | null {
  */
 export class VolatileLocalAccountStore implements LocalAccountStore {
     private readonly accounts = new Map<string, StoredAccount>();
+
+    async ensureExternalAccount(identity: {
+        accountId: string;
+        displayName?: string;
+        role?: string;
+    }): Promise<void> {
+        if (this.accounts.has(identity.accountId)) return;
+        this.accounts.set(identity.accountId, {
+            passwordHash: "external-account-no-local-password",
+            passwordHistoryHashes: [],
+            isFounder: false,
+            enabled: true,
+            lastLogin: null,
+            displayName: identity.displayName?.trim() || identity.accountId,
+            role:
+                identity.role === "teacher" ||
+                identity.role === "moderator" ||
+                identity.role === "admin"
+                    ? identity.role
+                    : "user",
+        });
+    }
 
     async register(
         username: string,

@@ -83,16 +83,6 @@ uiCtx.extendFlow(
                 };
             }
             if (response.status === 404) {
-                const providerId =
-                    localStorage.getItem("cognis_provider_id") ?? "local";
-                if (providerId !== "local") {
-                    return {
-                        valid: true,
-                        reason: null,
-                        accountId: account,
-                        role: localStorage.getItem("cognis_role") ?? "user",
-                    };
-                }
                 clearStoredSession();
                 return { valid: false, reason: "account_deleted" };
             }

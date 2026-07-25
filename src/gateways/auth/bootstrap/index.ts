@@ -29,6 +29,14 @@ export interface AuthAccountStore {
     isFounder(username: string): Promise<boolean>;
     verify(username: string, password: string): Promise<boolean>;
     getDisplayName(username: string): Promise<string | null>;
+    ensureExternalAccount?(identity: {
+        accountId: string;
+        provider: string;
+        externalUserId: string;
+        email?: string;
+        displayName?: string;
+        role?: string;
+    }): Promise<void>;
     getInfo(username: string): Promise<{
         username: string;
         enabled: boolean;
@@ -246,7 +254,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.5.1",
+        version: "1.6.1",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

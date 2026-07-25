@@ -15,3 +15,7 @@ DN pengguna dan grup opsional dapat mempersempit pencarian LDAP, sedangkan DN da
 ## Tindakan akun milik penyedia dan sesi LDAP yang stabil
 
 Setiap sumber login kini mengendalikan tindakan pemulihannya sendiri, sehingga tautan lupa kata sandi lokal menghilang saat LDAP dipilih. Perubahan kata sandi hanya ditawarkan jika didukung oleh penyedia akun aktif, termasuk LDAP ketika writeback diaktifkan. Sesi LDAP juga tidak lagi bergantung pada rekaman akun lokal yang cocok.
+
+## Identitas akun eksternal yang persisten
+
+Login LDAP yang berhasil kini membuat rekaman akun bersama dan identitas LDAP sebelum menyediakan profil. Urutan ini menjaga integritas foreign key basis data dan memberi akun LDAP landasan profil serta sesi yang sama seperti akun lokal tanpa membuat kredensial kata sandi lokal.

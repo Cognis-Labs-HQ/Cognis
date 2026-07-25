@@ -126,6 +126,29 @@ export async function registerAuthBootstrapHook(
             const { session, adapterId } = authResult;
             const capabilities = context.ctx.capabilities;
 
+            if (
+                adapterId !== "local" &&
+                context.accountStore.ensureExternalAccount
+            ) {
+                await context.accountStore.ensureExternalAccount({
+                    accountId: session.accountId,
+                    provider: adapterId ?? session.provider,
+                    externalUserId:
+                        "externalUserId" in session
+                            ? String(session.externalUserId)
+                            : session.accountId,
+                    email:
+                        "email" in session
+                            ? String(session.email ?? "") || undefined
+                            : undefined,
+                    displayName:
+                        "displayName" in session
+                            ? String(session.displayName ?? "") || undefined
+                            : undefined,
+                    role: session.role,
+                });
+            }
+
             let role: AccessRole = resolveRole(session.role);
             const getProfileRole =
                 capabilities.get<

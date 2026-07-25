@@ -9,6 +9,7 @@ import { StandardLdapClient } from "./client.js";
 export interface LdapIdentity {
     id: string;
     email?: string;
+    displayName?: string;
     groups?: string[];
     dn?: string;
     attributes?: Record<string, unknown>;
@@ -98,7 +99,7 @@ function parseRoleMappings(value: unknown): Record<string, string> {
 class LdapAuthAdapter implements AuthProviderAdapter {
     readonly id = "ldap";
     readonly name = "LDAP";
-    readonly version = "0.3.0";
+    readonly version = "0.3.1";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);

@@ -57,6 +57,59 @@ export class DbLocalAccountStore implements LocalAccountStore {
         this.log?.(level, message, meta);
     }
 
+    async ensureExternalAccount(identity: {
+        accountId: string;
+        provider: string;
+        externalUserId: string;
+        email?: string;
+        displayName?: string;
+        role?: string;
+    }): Promise<void> {
+        const now = new Date().toISOString();
+        const role =
+            identity.role === "teacher" ||
+            identity.role === "moderator" ||
+            identity.role === "admin"
+                ? identity.role
+                : "user";
+        await this.db.transaction(async (txDb) => {
+            await txDb.executeCommand({
+                option: "INSERT",
+                table: "accounts",
+                values: {
+                    id: identity.accountId,
+                    email: identity.email ?? null,
+                    display_name:
+                        identity.displayName?.trim() || identity.accountId,
+                    is_admin: role === "admin",
+                    role,
+                    enabled: true,
+                    created_at: now,
+                    updated_at: now,
+                },
+                conflict: { action: "ignore" },
+            });
+            await txDb.executeCommand({
+                option: "INSERT",
+                table: "auth_identities",
+                values: {
+                    id: `${identity.provider}:${identity.externalUserId}`,
+                    account_id: identity.accountId,
+                    provider: identity.provider,
+                    external_user_id: identity.externalUserId,
+                    created_at: now,
+                    updated_at: now,
+                },
+                conflict: { action: "ignore" },
+            });
+        });
+        this.writeLog("info", "Ensured external account identity.", {
+            component: "auth-local-store",
+            accountId: identity.accountId,
+            provider: identity.provider,
+        });
+    }
+
     async ensureSchema() {
         await this.db.ensureTable({
             name: "local_auth_password_history",
@@ -455,20 +508,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async getDisplayName(username: string): Promise<string | null> {
         const lowercaseUsername = normalizeUsername(username);
-        const lookupResult = await this.db.executeCommand({
-            option: "SELECT",
-            table: "local_auth_credentials",
-            columns: ["account_id"],
-            where: [{ column: "username", value: lowercaseUsername }],
-            limit: 1,
-        });
-        const accountId = lookupResult.rows?.[0]?.account_id;
-        if (!accountId) return lowercaseUsername;
         const result = await this.db.executeCommand({
             option: "SELECT",
             table: "accounts",
             columns: ["display_name"],
-            where: [{ column: "id", value: accountId }],
+            where: [{ column: "id", value: lowercaseUsername }],
             limit: 1,
         });
         const value = result.rows?.[0]?.display_name;
@@ -558,32 +602,23 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const lowercaseUsername = normalizeUsername(username);
         const result = await this.db.executeCommand({
             option: "SELECT",
-            table: "local_auth_credentials",
-            alias: "c",
+            table: "accounts",
             columns: [
-                "c.username",
-                { col: "a.created_at", as: "created_at" },
-                { col: "a.last_login", as: "last_login" },
-                { col: "a.enabled", as: "enabled" },
-                { col: "a.is_admin", as: "is_admin" },
-                { col: "a.is_founder", as: "is_founder" },
-                { col: "a.role", as: "role" },
+                "id",
+                "created_at",
+                "last_login",
+                "enabled",
+                "is_admin",
+                "is_founder",
+                "role",
             ],
-            joins: [
-                {
-                    type: "INNER",
-                    table: "accounts",
-                    alias: "a",
-                    on: { leftColumn: "c.account_id", rightColumn: "a.id" },
-                },
-            ],
-            where: [{ column: "c.username", value: lowercaseUsername }],
+            where: [{ column: "id", value: lowercaseUsername }],
             limit: 1,
         });
         const row = result.rows?.[0];
         if (!row) return null;
         return {
-            username: String(row.username),
+            username: String(row.id),
             createdAt: row.created_at ? String(row.created_at) : null,
             lastLogin: row.last_login ? String(row.last_login) : null,
             enabled: Boolean(row.enabled),
