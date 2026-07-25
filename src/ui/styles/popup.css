@@ -263,6 +263,18 @@
     font-size: 0.88rem;
 }
 
+.popup-summary-checkbox-row input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    accent-color: var(--accent-2);
+    color-scheme: dark;
+}
+
+body[data-theme="light"] .popup-summary-checkbox-row input[type="checkbox"] {
+    color-scheme: light;
+}
+
 .popup-error-report {
     display: grid;
     gap: 12px;
