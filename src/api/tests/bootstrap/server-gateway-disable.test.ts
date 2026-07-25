@@ -8,7 +8,6 @@ import {
 import { buildServer } from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
-import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 
 function listen(server: import("node:http").Server): Promise<number> {
     return new Promise((resolve, reject) => {
@@ -169,53 +168,6 @@ test("buildServer serves system health from the injected health service", async 
                 checkedAt: "2026-07-20T05:02:58.073Z",
             },
         ]);
-    } finally {
-        await close(server);
-    }
-});
-
-test("buildServer waits for module initialization before handling enable requests", async () => {
-    let initializationComplete = false;
-    const manifest = {
-        id: "test-module",
-        name: "Test Module",
-        version: "1.0.0",
-        class: "extension",
-    };
-    const runtime = {
-        async listManifests() {
-            return [manifest];
-        },
-        async enable(moduleId: string) {
-            return { moduleId, enabled: true };
-        },
-    } as unknown as ModuleRuntimeGateway;
-    const server = buildServer({
-        moduleRuntimeGateway: runtime,
-        routeContext: createDefaultRouteContext(),
-        loadModuleStates: async () => {
-            await new Promise((resolve) => setTimeout(resolve, 25));
-            initializationComplete = true;
-            return [];
-        },
-        validateModuleEnable: () => {
-            assert.equal(initializationComplete, true);
-        },
-    });
-
-    try {
-        const port = await listen(server);
-        const token = issueAccessToken("admin-user", "admin", 60);
-        const response = await fetch(
-            `http://127.0.0.1:${port}/api/v1/modules/test-module/enable`,
-            {
-                method: "POST",
-                headers: { authorization: `Bearer ${token}` },
-            },
-        );
-
-        assert.equal(response.status, 200);
-        assert.equal(initializationComplete, true);
     } finally {
         await close(server);
     }

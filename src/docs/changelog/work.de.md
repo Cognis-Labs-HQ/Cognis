@@ -1,5 +1,5 @@
-# Zuverlässiger Start der Modulverwaltung
+# Konfigurationslebenszyklus von Nextcloud Whiteboard
 
-## Modulrouten vor der Annahme von Anfragen abwarten
+## Konfiguration unabhängig von Profildiensten halten
 
-Die API schließt nun die Wiederherstellung des Modulstatus und die Registrierung der Erweiterungsrouten ab, bevor Anfragen verarbeitet werden. Dadurch werden vorübergehende 404-Antworten von Konfigurationsendpunkten und fehlgeschlagene direkte Aktivierungsversuche beim Start verhindert.
+Nextcloud Whiteboard registriert seine Konfigurations- und Aktivierungsendpunkte jetzt, sobald der Datenbankspeicher verfügbar ist. Administratoren können das Modul konfigurieren, auch wenn der separate Profildienst für die Whiteboard-Zusammenarbeit nicht verfügbar ist.

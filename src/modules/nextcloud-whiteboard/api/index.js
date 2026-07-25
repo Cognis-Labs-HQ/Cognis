@@ -209,7 +209,7 @@ export function registerApiRoutes(router, ctx) {
     const registerNamespace = ctx.getCapability("files:registerNamespace");
     const createNamespaceClient = ctx.getCapability("files:namespace");
 
-    if (!dbExecutor || !profileStore) {
+    if (!dbExecutor) {
         const unavailablePayload = (res) =>
             sendError(
                 res,
@@ -248,16 +248,6 @@ export function registerApiRoutes(router, ctx) {
         return;
     }
 
-    registerNamespace?.({
-        id: "whiteboards",
-        ownerComponent: "nextcloud-whiteboard",
-        acl: { visibility: "private-group" },
-    });
-    const whiteboardFiles = createNamespaceClient?.({
-        namespaceId: "whiteboards",
-        callerComponent: "nextcloud-whiteboard",
-    });
-
     const store = resolveStore(dbExecutor, log);
     const runEnableTest = createWhiteboardEnableTest({
         store,
@@ -274,6 +264,94 @@ export function registerApiRoutes(router, ctx) {
         sendError,
         sendJson,
     });
+
+    router.get(
+        "/api/v1/modules/nextcloud-whiteboard/config",
+        async (_req, res) => {
+            await store.ensureSchema();
+            sendJson(res, 200, { data: publicConfig(await store.getConfig()) });
+        },
+        { access: { minRole: "admin" }, allowWhenDisabled: true },
+    );
+
+    router.post(
+        "/api/v1/modules/nextcloud-whiteboard/config",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "admin");
+            if (!claims) return;
+            const body = await readJson(req);
+            const serverUrl = normalizeHttpUrl(body.serverUrl);
+            const existingConfig = await store.getConfig();
+            const apiKey =
+                String(body.apiKey ?? "").trim() || existingConfig.apiKey;
+            const imageUploadMaxBytes = Number(
+                body.imageUploadMaxBytes ?? 1048576,
+            );
+            if (!serverUrl) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "A valid Whiteboard server URL is required.",
+                    { fieldId: "nextcloud-whiteboard-server-url" },
+                );
+                return;
+            }
+            if (apiKey && apiKey.length < 16) {
+                sendError(
+                    res,
+                    400,
+                    "bad_request",
+                    "API key must be at least 16 characters for sufficient security.",
+                    { fieldId: "nextcloud-whiteboard-api-key" },
+                );
+                return;
+            }
+            const saved = await store.saveConfig({
+                serverUrl,
+                apiKey,
+                imageUploadMaxBytes,
+            });
+            registerConfiguredOrigin(registerScriptOrigins, saved);
+            log?.("info", "Nextcloud Whiteboard configuration updated.", {
+                component: "nextcloud-whiteboard-module",
+                operation: "save_config",
+                hasServerUrl: Boolean(saved.serverUrl),
+                hasApiKey: saved.apiKeyConfigured,
+                imageUploadMaxBytes: saved.imageUploadMaxBytes,
+                updatedBy: claims.sub,
+            });
+            sendJson(res, 200, { data: publicConfig(saved) });
+        },
+        { access: { minRole: "admin" }, allowWhenDisabled: true },
+    );
+
+    if (!profileStore) {
+        router.get(
+            "/api/v1/modules/nextcloud-whiteboard/ping",
+            async (_req, res) => {
+                sendJson(res, 200, {
+                    data: {
+                        ready: false,
+                        reason: "required_capabilities_missing",
+                    },
+                });
+            },
+        );
+        return;
+    }
+
+    registerNamespace?.({
+        id: "whiteboards",
+        ownerComponent: "nextcloud-whiteboard",
+        acl: { visibility: "private-group" },
+    });
+    const whiteboardFiles = createNamespaceClient?.({
+        namespaceId: "whiteboards",
+        callerComponent: "nextcloud-whiteboard",
+    });
+
     const ensureShareFlowHooks = () =>
         registerWhiteboardShareFlowHooks({
             ctx: systemCtx ?? ctx,
@@ -410,68 +488,6 @@ export function registerApiRoutes(router, ctx) {
             });
         },
         { access: { minRole: "user" } },
-    );
-
-    router.get(
-        "/api/v1/modules/nextcloud-whiteboard/config",
-        async (_req, res) => {
-            await store.ensureSchema();
-            sendJson(res, 200, { data: publicConfig(await store.getConfig()) });
-        },
-        { access: { minRole: "admin" }, allowWhenDisabled: true },
-    );
-
-    router.post(
-        "/api/v1/modules/nextcloud-whiteboard/config",
-        async (req, res) => {
-            await store.ensureSchema();
-            const claims = requireAuth(req, res, "admin");
-            if (!claims) return;
-            const body = await readJson(req);
-            const serverUrl = normalizeHttpUrl(body.serverUrl);
-            const existingConfig = await store.getConfig();
-            const apiKey =
-                String(body.apiKey ?? "").trim() || existingConfig.apiKey;
-            const imageUploadMaxBytes = Number(
-                body.imageUploadMaxBytes ?? 1048576,
-            );
-            if (!serverUrl) {
-                sendError(
-                    res,
-                    400,
-                    "bad_request",
-                    "A valid Whiteboard server URL is required.",
-                    { fieldId: "nextcloud-whiteboard-server-url" },
-                );
-                return;
-            }
-            if (apiKey && apiKey.length < 16) {
-                sendError(
-                    res,
-                    400,
-                    "bad_request",
-                    "API key must be at least 16 characters for sufficient security.",
-                    { fieldId: "nextcloud-whiteboard-api-key" },
-                );
-                return;
-            }
-            const saved = await store.saveConfig({
-                serverUrl,
-                apiKey,
-                imageUploadMaxBytes,
-            });
-            registerConfiguredOrigin(registerScriptOrigins, saved);
-            log?.("info", "Nextcloud Whiteboard configuration updated.", {
-                component: "nextcloud-whiteboard-module",
-                operation: "save_config",
-                hasServerUrl: Boolean(saved.serverUrl),
-                hasApiKey: saved.apiKeyConfigured,
-                imageUploadMaxBytes: saved.imageUploadMaxBytes,
-                updatedBy: claims.sub,
-            });
-            sendJson(res, 200, { data: publicConfig(saved) });
-        },
-        { access: { minRole: "admin" }, allowWhenDisabled: true },
     );
 
     router.get(

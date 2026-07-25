@@ -1,5 +1,5 @@
-# Reliable module administration startup
+# Nextcloud Whiteboard configuration lifecycle
 
-## Wait for module routes before accepting requests
+## Keep configuration independent from profile services
 
-The API now completes module state restoration and extension-route registration before handling requests, preventing transient 404 responses from configuration endpoints and failed direct enable attempts during startup.
+Nextcloud Whiteboard now registers its configuration and enablement endpoints as soon as database storage is available. Administrators can configure the module even when the separate profile service needed for whiteboard collaboration is unavailable.

@@ -990,6 +990,27 @@ test("nextcloud whiteboard config route returns 503 when dependencies are unavai
     assert.equal(res.json().error.code, "service_unavailable");
 });
 
+test("nextcloud whiteboard config remains available without the profile store", async () => {
+    const db = createMemoryDb();
+    const router = createRouterCapture();
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            return undefined;
+        },
+    });
+
+    const res = createJsonResponse();
+    await router.handler("GET", "/api/v1/modules/nextcloud-whiteboard/config")(
+        {},
+        res,
+    );
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.json().data.serverUrl, "");
+    assert.equal(res.json().data.apiKeyConfigured, false);
+});
+
 test("nextcloud whiteboard config save preserves existing API key when omitted", async () => {
     const db = createMemoryDb();
     const store = new NextcloudWhiteboardStore({ db });

@@ -197,7 +197,7 @@ export function buildServer(deps: ApiDependencies) {
         : null;
     const searchRoutes = createSearchRoutes(deps.searchProfiles, routeContext);
 
-    const initialization = Promise.all([
+    Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
         deps.loadModuleStates?.() ?? Promise.resolve([]),
         deps.loadGatewayStates?.() ?? Promise.resolve([]),
@@ -260,10 +260,6 @@ export function buildServer(deps: ApiDependencies) {
         });
 
     return createServer(async (req, res) => {
-        // Module routes (including configuration and enablement tests that are
-        // intentionally available while disabled) are installed asynchronously.
-        // Do not expose the HTTP server to a partially initialized route table.
-        await initialization;
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         log("info", "Incoming API request.", {

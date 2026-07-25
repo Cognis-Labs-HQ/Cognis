@@ -1,5 +1,5 @@
-# Startup administrasi modul yang andal
+# Siklus konfigurasi Nextcloud Whiteboard
 
-## Tunggu rute modul sebelum menerima permintaan
+## Menjaga konfigurasi tetap independen dari layanan profil
 
-API kini menyelesaikan pemulihan status modul dan pendaftaran rute ekstensi sebelum menangani permintaan, sehingga mencegah respons 404 sementara dari endpoint konfigurasi dan kegagalan aktivasi langsung selama startup.
+Nextcloud Whiteboard kini mendaftarkan endpoint konfigurasi dan pengaktifannya segera setelah penyimpanan basis data tersedia. Administrator dapat mengonfigurasi modul meskipun layanan profil terpisah yang diperlukan untuk kolaborasi whiteboard tidak tersedia.
