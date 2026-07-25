@@ -43,11 +43,11 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.4`  |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.4`  |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.2`  |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.4`  |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.3`  |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.5`  |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.4`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.2`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.10` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.12` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.11` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.13` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.6`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 

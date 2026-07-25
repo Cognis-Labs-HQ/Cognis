@@ -125,17 +125,20 @@ export async function listRoomsForAccount(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "chatrooms",
-        alias: "c",
+        alias: "chatrooms",
         joins: [
             {
                 type: "INNER",
                 table: "chatroom_members",
-                alias: "m",
-                on: { leftColumn: "m.chatroom_id", rightColumn: "c.id" },
+                alias: "chatroom_members",
+                on: {
+                    leftColumn: "chatroom_members.chatroom_id",
+                    rightColumn: "chatrooms.id",
+                },
             },
         ],
-        where: [{ column: "m.account_id", value: accountId }],
-        orderBy: [{ column: "c.updated_at", direction: "DESC" }],
+        where: [{ column: "chatroom_members.account_id", value: accountId }],
+        orderBy: [{ column: "chatrooms.updated_at", direction: "DESC" }],
     });
     return (result.rows ?? []).map((row) => rowToRoom(row));
 }
@@ -148,25 +151,31 @@ export async function findDmBetween(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "chatrooms",
-        alias: "c",
+        alias: "chatrooms",
         joins: [
             {
                 type: "INNER",
                 table: "chatroom_members",
-                alias: "m1",
-                on: { leftColumn: "m1.chatroom_id", rightColumn: "c.id" },
+                alias: "first_chatroom_members",
+                on: {
+                    leftColumn: "first_chatroom_members.chatroom_id",
+                    rightColumn: "chatrooms.id",
+                },
             },
             {
                 type: "INNER",
                 table: "chatroom_members",
-                alias: "m2",
-                on: { leftColumn: "m2.chatroom_id", rightColumn: "c.id" },
+                alias: "second_chatroom_members",
+                on: {
+                    leftColumn: "second_chatroom_members.chatroom_id",
+                    rightColumn: "chatrooms.id",
+                },
             },
         ],
         where: [
-            { column: "m1.account_id", value: accountA },
-            { column: "m2.account_id", value: accountB },
-            { column: "c.kind", value: "dm" },
+            { column: "first_chatroom_members.account_id", value: accountA },
+            { column: "second_chatroom_members.account_id", value: accountB },
+            { column: "chatrooms.kind", value: "dm" },
         ],
         limit: 1,
     });

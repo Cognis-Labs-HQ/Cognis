@@ -119,29 +119,35 @@ export function createAdapter(deps: {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",
             table: "registration_tokens",
-            alias: "t",
+            alias: "registration_tokens",
             columns: [
-                "t.id",
-                "t.inviter_account_id",
-                "t.invitee_email",
-                "t.expires_at",
-                "a.display_name",
+                "registration_tokens.id",
+                "registration_tokens.inviter_account_id",
+                "registration_tokens.invitee_email",
+                "registration_tokens.expires_at",
+                "accounts.display_name",
             ],
             joins: [
                 {
                     type: "INNER",
                     table: "accounts",
-                    alias: "a",
+                    alias: "accounts",
                     on: {
-                        leftColumn: "a.id",
-                        rightColumn: "t.inviter_account_id",
+                        leftColumn: "accounts.id",
+                        rightColumn: "registration_tokens.inviter_account_id",
                     },
                 },
             ],
             where: [
-                { column: "t.token_hash", value: tokenHash },
-                { column: "t.revoked_at", operator: "IS NULL" },
-                { column: "t.redeemed_at", operator: "IS NULL" },
+                { column: "registration_tokens.token_hash", value: tokenHash },
+                {
+                    column: "registration_tokens.revoked_at",
+                    operator: "IS NULL",
+                },
+                {
+                    column: "registration_tokens.redeemed_at",
+                    operator: "IS NULL",
+                },
             ],
         });
         return result.rows?.[0];
@@ -231,7 +237,7 @@ export function createAdapter(deps: {
         const whereConditions = filter?.inviterAccountId
             ? [
                   {
-                      column: "t.inviter_account_id",
+                      column: "registration_tokens.inviter_account_id",
                       value: filter.inviterAccountId,
                   },
               ]
@@ -239,30 +245,32 @@ export function createAdapter(deps: {
         const result = await dbExecutor.executeCommand({
             option: "SELECT",
             table: "registration_tokens",
-            alias: "t",
+            alias: "registration_tokens",
             columns: [
-                "t.id",
-                "t.inviter_account_id",
-                "t.invitee_email",
-                "t.expires_at",
-                "t.created_at",
-                "t.revoked_at",
-                "t.redeemed_at",
-                "a.display_name",
+                "registration_tokens.id",
+                "registration_tokens.inviter_account_id",
+                "registration_tokens.invitee_email",
+                "registration_tokens.expires_at",
+                "registration_tokens.created_at",
+                "registration_tokens.revoked_at",
+                "registration_tokens.redeemed_at",
+                "accounts.display_name",
             ],
             joins: [
                 {
                     type: "INNER",
                     table: "accounts",
-                    alias: "a",
+                    alias: "accounts",
                     on: {
-                        leftColumn: "a.id",
-                        rightColumn: "t.inviter_account_id",
+                        leftColumn: "accounts.id",
+                        rightColumn: "registration_tokens.inviter_account_id",
                     },
                 },
             ],
             where: whereConditions,
-            orderBy: [{ column: "t.created_at", direction: "DESC" }],
+            orderBy: [
+                { column: "registration_tokens.created_at", direction: "DESC" },
+            ],
         });
         return (result.rows ?? [])
             .map((row) => {
