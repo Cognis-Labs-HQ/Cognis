@@ -127,7 +127,7 @@ test("health lights have a rendered box and explicit status colors", () => {
     );
     assert.match(
         styles,
-        /\.switch--inline\s*{[^}]*align-items: center;[^}]*align-self: center;/,
+        /\.switch\.switch--inline\s*{[^}]*align-items: center;[^}]*align-self: center;[^}]*margin-top: 0;/,
     );
 });
 
@@ -147,7 +147,11 @@ test("configured adapter rows use the component click behavior", () => {
         resolve(ROOT, "src/ui/app/administration/index.js"),
         "utf8",
     );
-    assert.match(source, /adapter\.locked \|\| !adapter\.controls\?\.config/);
+    assert.match(
+        source,
+        /Array\.isArray\(adapter\?\.schema\) && adapter\.schema\.length > 0/,
+    );
+    assert.match(source, /adapter\.locked \|\| !adapterHasConfig\(adapter\)/);
     assert.match(source, /e\.target\.closest\?\.\("\[data-details-toggle\]"\)/);
     assert.match(source, /row\.querySelector\("\.switch--inline"\)/);
     assert.match(source, /row\.addEventListener\("click", handleOpen\)/);

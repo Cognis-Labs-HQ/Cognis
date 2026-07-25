@@ -72,6 +72,14 @@ function adapterCompositeKey(gatewayId, adapterId) {
     return `${gatewayId}:${adapterId}`;
 }
 
+function adapterHasConfig(adapter) {
+    return Boolean(
+        (typeof adapter?.controls?.config === "string" &&
+            adapter.controls.config.length > 0) ||
+        (Array.isArray(adapter?.schema) && adapter.schema.length > 0),
+    );
+}
+
 function setModules(nextModules) {
     modules = nextModules;
     moduleById = new Map(
@@ -599,7 +607,7 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        if (adapter.locked || !adapter.controls?.config) return;
+        if (adapter.locked || !adapterHasConfig(adapter)) return;
 
         async function handleOpen(e) {
             if (e.target.closest?.("[data-details-toggle]")) return;
