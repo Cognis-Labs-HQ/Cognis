@@ -91,6 +91,18 @@
     flex-shrink: 0;
 }
 
+.provider-field-title {
+    display: flex;
+    align-items: baseline;
+    gap: 3px;
+}
+
+.provider-required-flag {
+    color: var(--color-danger-outline-text);
+    font-weight: 700;
+    line-height: 1;
+}
+
 .provider-field-missing input,
 .provider-field-missing select {
     border-color: var(--danger);

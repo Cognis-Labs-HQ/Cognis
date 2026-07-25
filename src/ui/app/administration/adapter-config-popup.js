@@ -52,6 +52,7 @@ export function createAdapterConfigPopup({
         function fieldLabel(name, labelText, inputHtml) {
             const descriptor = descriptors[name];
             const isRequired = requiredSet.has(name);
+            const requiredMarker = `<span class="provider-required-flag" data-provider-required="${escapeHtml(name)}" aria-hidden="true"${isRequired ? "" : " hidden"}>*</span>`;
             const isEmpty = !descriptor?.effectiveValue;
             const hasConflict = descriptor?.envConflict === true;
             const requiredClass =
@@ -63,7 +64,7 @@ export function createAdapterConfigPopup({
             const conflictWarning = hasConflict
                 ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
                 : "";
-            return `<label class="provider-popup-field${requiredClass}"${labelTitle}>${escapeHtml(labelText)}${inputHtml}${conflictWarning}</label>`;
+            return `<label class="provider-popup-field${requiredClass}"${labelTitle}><span class="provider-field-title">${escapeHtml(labelText)}${requiredMarker}</span>${inputHtml}${conflictWarning}</label>`;
         }
 
         const fieldKeys = Object.keys(descriptors).filter(
@@ -386,8 +387,16 @@ export function createAdapterConfigPopup({
                     const input = getRequiredInput(field);
                     if (input === null) continue;
                     const label = input.closest("label");
+                    const isRequired = currentRequiredSet.has(field);
                     const isEmpty = input.value.trim() === "";
-                    const isMissing = currentRequiredSet.has(field) && isEmpty;
+                    const isMissing = isRequired && isEmpty;
+                    input.toggleAttribute("required", isRequired);
+                    const requiredMarker = label?.querySelector(
+                        `[data-provider-required="${CSS.escape(field)}"]`,
+                    );
+                    if (requiredMarker instanceof HTMLElement) {
+                        requiredMarker.hidden = !isRequired;
+                    }
                     if (label) {
                         label.classList.toggle(
                             "provider-field-required",
