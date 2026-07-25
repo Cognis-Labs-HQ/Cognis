@@ -131,6 +131,10 @@ test("ldap adapter forwards display names and reconstructs legacy host URLs", as
 
 test("ldap adapter config schema has required fields", () => {
     const adapter = createAdapter();
+    assert.equal(
+        adapter.configPopupScriptUrl,
+        "/static/adapters/auth/ldap/config-popup.js",
+    );
     const schema = adapter.getConfigSchema();
     const keys = schema.map((f) => f.key);
     assert.ok(keys.includes("host"));

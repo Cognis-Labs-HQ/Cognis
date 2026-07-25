@@ -39,3 +39,7 @@ Login LDAP kini membaca semua alamat email yang tercantum saat terikat sebagai p
 ## Pemuatan penyiapan milik adapter yang andal
 
 Gateway autentikasi kini menyediakan antarmuka penyiapan LDAP melalui registri aset adapter, sehingga konfigurasi LDAP tidak lagi gagal dibuka karena skrip yang hilang.
+
+## Penemuan ekstensi penyiapan secara eksplisit
+
+Administrasi kini hanya memuat antarmuka penyiapan khusus jika adapter mengumumkannya. Adapter standar seperti SMTP menggunakan formulir generik tanpa menghasilkan permintaan skrip yang gagal.

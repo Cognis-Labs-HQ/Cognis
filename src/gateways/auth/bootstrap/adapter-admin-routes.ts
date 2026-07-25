@@ -83,6 +83,7 @@ export function createAdapterAdminRoutes(
                         data: storedConfig,
                         schema,
                         requiredFields,
+                        configPopupScriptUrl: adapter.configPopupScriptUrl,
                     }),
                 );
                 return true;

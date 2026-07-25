@@ -1,6 +1,7 @@
 /** Adapter-owned LDAP configuration popup extension. */
 export async function openAdapterConfig({
     configUrl,
+    configPayload,
     onSaved,
     i18n,
     escapeHtml,
@@ -73,10 +74,7 @@ export async function openAdapterConfig({
         </div>`;
     }
 
-    const response = await apiFetch(configUrl);
-    if (!response.ok) return;
-    const payload = await response.json();
-    const dbData = payload.data ?? {};
+    const dbData = configPayload?.data ?? {};
     let connectionValues = { ...dbData };
     let sample = null;
     let discoverySequence = 0;

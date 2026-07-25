@@ -18,6 +18,7 @@ export interface AuthProviderAdapter {
     readonly id: string;
     readonly name: string;
     readonly version?: string;
+    readonly configPopupScriptUrl?: string;
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;

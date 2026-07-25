@@ -271,32 +271,36 @@ export function createAdapterConfigPopup({
     return {
         async openAdapterConfig(name, { configUrl, testUrl, onSaved } = {}) {
             if (!configUrl) return;
-            const adapterRoute = configUrl.match(
-                /\/gateways\/([^/]+)\/adapters\/([^/]+)\/config$/,
-            );
-            if (adapterRoute) {
-                const [, gatewayId, adapterId] = adapterRoute;
-                const extensionUrl = `/static/adapters/${encodeURIComponent(gatewayId)}/${encodeURIComponent(adapterId)}/config-popup.js`;
-                const extension = await import(extensionUrl).catch(() => null);
-                if (typeof extension?.openAdapterConfig === "function") {
-                    await extension.openAdapterConfig({
-                        configUrl,
-                        onSaved,
-                        i18n,
-                        escapeHtml,
-                        apiFetch,
-                        openPopup,
-                        showToast,
-                        buildConfigPayload,
-                        fieldNameToLabel,
-                    });
-                    return;
-                }
-            }
-
             const response = await apiFetch(configUrl);
             if (!response.ok) return;
             const payload = await response.json();
+            const configPopupScriptUrl = String(
+                payload.configPopupScriptUrl ?? "",
+            ).trim();
+            if (configPopupScriptUrl) {
+                const extension = await import(configPopupScriptUrl).catch(
+                    () => null,
+                );
+                if (typeof extension?.openAdapterConfig !== "function") {
+                    showToast(i18n.t("ui.reuse.load_failed"), {
+                        variant: "error",
+                    });
+                    return;
+                }
+                await extension.openAdapterConfig({
+                    configUrl,
+                    configPayload: payload,
+                    onSaved,
+                    i18n,
+                    escapeHtml,
+                    apiFetch,
+                    openPopup,
+                    showToast,
+                    buildConfigPayload,
+                    fieldNameToLabel,
+                });
+                return;
+            }
             const dbData = payload.data ?? {};
             const envData = payload.envValues ?? {};
             const requiredFields = Array.isArray(payload.requiredFields)

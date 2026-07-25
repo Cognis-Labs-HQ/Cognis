@@ -39,3 +39,7 @@ Bei der LDAP-Anmeldung werden nun während der Bindung als anmeldender Benutzer 
 ## Zuverlässiges Laden der adaptereigenen Einrichtung
 
 Das Authentifizierungs-Gateway stellt die LDAP-Einrichtungsoberfläche nun über die Adapter-Asset-Registrierung bereit. Dadurch schlägt das Öffnen der LDAP-Konfiguration nicht mehr wegen eines fehlenden Skripts fehl.
+
+## Explizite Erkennung von Einrichtungserweiterungen
+
+Die Administration lädt eine eigene Einrichtungsoberfläche nur noch, wenn ein Adapter sie ankündigt. Standardadapter wie SMTP verwenden das allgemeine Formular, ohne fehlgeschlagene Skriptanfragen zu erzeugen.

@@ -101,7 +101,9 @@ function parseRoleMappings(value: unknown): Record<string, string> {
 class LdapAuthAdapter implements AuthProviderAdapter {
     readonly id = "ldap";
     readonly name = "LDAP";
-    readonly version = "0.4.0";
+    readonly configPopupScriptUrl =
+        "/static/adapters/auth/ldap/config-popup.js";
+    readonly version = "0.4.2";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);

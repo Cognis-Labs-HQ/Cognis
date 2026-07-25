@@ -2,8 +2,12 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-const adminPopupSource = readFileSync(
+const ldapPopupSource = readFileSync(
     new URL("../../adapters/auth/ldap/ui/config-popup.js", import.meta.url),
+    "utf8",
+);
+const adminPopupSource = readFileSync(
+    new URL("../app/administration/adapter-config-popup.js", import.meta.url),
     "utf8",
 );
 const loginSource = readFileSync(
@@ -13,24 +17,35 @@ const loginSource = readFileSync(
 
 test("LDAP setup collects focused user and group DNs", () => {
     assert.match(
-        adminPopupSource,
+        ldapPopupSource,
         /"baseDn",\s*"userDn",\s*"groupDn",\s*"bindDn"/,
     );
 });
 
 test("LDAP role mapping sorts groups and renders names without DNs", () => {
-    assert.match(adminPopupSource, /\.sort\(\(left, right\) =>/);
+    assert.match(ldapPopupSource, /\.sort\(\(left, right\) =>/);
     assert.match(
-        adminPopupSource,
+        ldapPopupSource,
         /<option value="\$\{escapeHtml\(group\.name\)\}"[^`]*>\$\{escapeHtml\(group\.name\)\}<\/option>/,
     );
 });
 
 test("LDAP test and discovery replaces role mapping results on every run", () => {
-    assert.match(adminPopupSource, /let discoverySequence = 0/);
+    assert.match(ldapPopupSource, /let discoverySequence = 0/);
+    assert.match(
+        ldapPopupSource,
+        /const currentDiscovery = \+\+discoverySequence;[\s\S]*sample = null;[\s\S]*sample = testPayload\.data;[\s\S]*api\.setPage\("filters"\)/,
+    );
+});
+
+test("adapter configuration loads only explicitly announced popup extensions", () => {
     assert.match(
         adminPopupSource,
-        /const currentDiscovery = \+\+discoverySequence;[\s\S]*sample = null;[\s\S]*sample = testPayload\.data;[\s\S]*api\.setPage\("filters"\)/,
+        /payload\.configPopupScriptUrl[\s\S]*import\(configPopupScriptUrl\)/,
+    );
+    assert.doesNotMatch(
+        adminPopupSource,
+        /static\/adapters\/\$\{encodeURIComponent/,
     );
 });
 

@@ -39,3 +39,7 @@ LDAP login now reads every listed mail address while bound as the authenticating
 ## Reliable adapter-owned setup loading
 
 The authentication gateway now publishes LDAP's setup interface through the adapter asset registry, so opening LDAP configuration no longer fails with a missing script.
+
+## Explicit setup extension discovery
+
+Administration now loads a custom setup interface only when an adapter announces one. Standard adapters such as SMTP use the generic form without generating failed script requests.
