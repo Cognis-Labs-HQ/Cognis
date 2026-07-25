@@ -101,6 +101,81 @@ test("ldap adapter forwards every user-bound email for provisioning", async () =
     ]);
 });
 
+test("LDAP user-group mapping rejects authenticated users outside the group", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        setClient(client: {
+            authenticate: () => Promise<{ id: string; groups: string[] }>;
+        }): void;
+    };
+    adapter.configure({
+        serverUrl: "ldaps://directory.example.org",
+        roleMappings: { "approved-users": "user" },
+    });
+    adapter.setClient({
+        authenticate: async () => ({ id: "outsider", groups: ["staff"] }),
+    });
+
+    assert.equal(
+        await adapter.authenticate({ username: "outsider", password: "valid" }),
+        null,
+    );
+});
+
+test("LDAP sources are exposed separately or unified and tried in saved order", async () => {
+    const attempts: string[] = [];
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        getLoginMethods(): Array<{ id: string; name: string }>;
+        setClient(client: {
+            authenticate: (
+                username: string,
+                password: string,
+                options: LdapRuntimeOptions,
+            ) => Promise<{ id: string } | null>;
+        }): void;
+    };
+    const servers = [
+        {
+            identifier: "Faculty",
+            serverUrl: "ldap://faculty",
+            roleMappings: {},
+        },
+        {
+            identifier: "Students",
+            serverUrl: "ldap://students",
+            roleMappings: {},
+        },
+    ];
+    adapter.configure({ unify: false, servers });
+    assert.deepEqual(adapter.getLoginMethods(), [
+        { id: "ldap:Faculty", name: "Faculty", credential: true },
+        { id: "ldap:Students", name: "Students", credential: true },
+    ]);
+    adapter.setClient({
+        authenticate: async (_username, _password, options) => {
+            attempts.push(String(options.identifier));
+            return options.identifier === "Students" ? { id: "alice" } : null;
+        },
+    });
+    assert.ok(
+        await adapter.authenticate({
+            username: "alice",
+            password: "valid",
+            authSourceId: "ldap:Students",
+        }),
+    );
+    assert.deepEqual(attempts, ["Students"]);
+
+    attempts.length = 0;
+    adapter.configure({ unify: true, servers });
+    assert.deepEqual(adapter.getLoginMethods(), [
+        { id: "ldap", name: "LDAP", credential: true },
+    ]);
+    assert.ok(
+        await adapter.authenticate({ username: "alice", password: "valid" }),
+    );
+    assert.deepEqual(attempts, ["Faculty", "Students"]);
+});
+
 test("ldap adapter forwards display names and reconstructs legacy host URLs", async () => {
     let configuredUrl = "";
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {

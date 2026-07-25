@@ -41,6 +41,15 @@ test("LDAP setup composes and validates required connection fields", () => {
     assert.match(popupSource, /requestClose: \(\) => dismiss\(null\)/);
 });
 
+test("LDAP setup manages named, reorderable servers and unified login", () => {
+    assert.match(ldapPopupSource, /name: "identifier"[\s\S]*required: true/);
+    assert.match(ldapPopupSource, /id: "servers"/);
+    assert.match(ldapPopupSource, /ldap-add-server/);
+    assert.match(ldapPopupSource, /draggable="true"/);
+    assert.match(ldapPopupSource, /addEventListener\("drop"/);
+    assert.match(ldapPopupSource, /JSON\.stringify\(\{ unify, servers \}\)/);
+});
+
 test("LDAP role mapping sorts groups and renders names without DNs", () => {
     assert.match(ldapPopupSource, /\.sort\(\(left, right\) =>/);
     assert.match(

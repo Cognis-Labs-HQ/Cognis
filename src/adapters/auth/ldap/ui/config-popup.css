@@ -1,0 +1,32 @@
+.ldap-server-list {
+    display: grid;
+    gap: 0.6rem;
+    margin: 1rem 0;
+    padding: 0;
+}
+
+.ldap-server-row {
+    align-items: center;
+    border: 1px solid var(--border-color, #ccc);
+    border-radius: 0.5rem;
+    display: grid;
+    gap: 0.75rem;
+    grid-template-columns: auto 1fr auto auto;
+    list-style: none;
+    padding: 0.75rem;
+}
+
+.ldap-server-row small {
+    display: block;
+    opacity: 0.75;
+}
+
+.ldap-server-drag {
+    cursor: grab;
+    font-size: 1.25rem;
+}
+
+.ldap-add-server {
+    font-size: 1.5rem;
+    min-width: 2.75rem;
+}

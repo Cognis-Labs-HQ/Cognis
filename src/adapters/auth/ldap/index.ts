@@ -53,6 +53,7 @@ export interface LdapClient {
 }
 
 export interface LdapRuntimeOptions {
+    identifier?: string;
     serverUrl: string;
     port?: number;
     baseDn: string;
@@ -68,6 +69,11 @@ export interface LdapRuntimeOptions {
     memberOfAttribute: string;
     nestedMemberOf: boolean;
     roleMappings: Record<string, string>;
+}
+
+interface LdapConfiguration {
+    unify: boolean;
+    servers: LdapRuntimeOptions[];
 }
 
 function splitList(value: unknown): string[] {
@@ -103,7 +109,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.4.2";
+    readonly version = "0.5.0";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -126,6 +132,10 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         nestedMemberOf: true,
         roleMappings: { "cognis-admins": "admin" },
     };
+    private configuration: LdapConfiguration = {
+        unify: true,
+        servers: [],
+    };
 
     async authenticate(
         credentials: Record<string, unknown>,
@@ -133,35 +143,71 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         const username = String(credentials.username ?? "");
         const password = String(credentials.password ?? "");
         if (!username || !password) return null;
-        const identity = await this.client.authenticate(
-            username,
-            password,
-            this.options,
-        );
-        if (!identity) return null;
-        const role = this.resolveRole(identity.groups ?? []);
-        return {
-            accountId: identity.id,
-            provider: "ldap",
-            externalUserId: identity.dn ?? identity.id,
-            email: identity.email,
-            emails: identity.emails,
-            displayName: identity.displayName,
-            role,
-        } as AuthContext & { emails?: string[] };
+        const requestedSource = String(credentials.authSourceId ?? "");
+        const servers = this.configuration.servers.length
+            ? this.configuration.servers
+            : [this.options];
+        const candidates =
+            !this.configuration.unify && requestedSource.startsWith("ldap:")
+                ? servers.filter(
+                      (server) =>
+                          `ldap:${server.identifier}` === requestedSource,
+                  )
+                : servers;
+        for (const server of candidates) {
+            const identity = await this.client.authenticate(
+                username,
+                password,
+                server,
+            );
+            if (!identity) continue;
+            const role = this.resolveRole(identity.groups ?? [], server);
+            if (!role) return null;
+            return {
+                accountId: identity.id,
+                provider: "ldap",
+                externalUserId: identity.dn ?? identity.id,
+                email: identity.email,
+                emails: identity.emails,
+                displayName: identity.displayName,
+                role,
+            } as AuthContext & { emails?: string[] };
+        }
+        return null;
     }
 
-    private resolveRole(groups: string[]): string {
+    private resolveRole(
+        groups: string[],
+        options: LdapRuntimeOptions = this.options,
+    ): string | null {
         const mappedRoles: string[] = [];
         for (const group of groups) {
             const mapped =
-                this.options.roleMappings[group] ??
-                this.options.roleMappings[group.toLowerCase()];
+                options.roleMappings[group] ??
+                options.roleMappings[group.toLowerCase()];
             if (mapped) mappedRoles.push(mapped);
         }
         for (const role of ["admin", "moderator", "teacher", "user"])
             if (mappedRoles.includes(role)) return role;
-        return groups.some((g) => this.adminGroups.has(g)) ? "admin" : "user";
+        if (groups.some((g) => this.adminGroups.has(g))) return "admin";
+        return Object.values(options.roleMappings).includes("user")
+            ? null
+            : "user";
+    }
+
+    getLoginMethods(): Array<{
+        id: string;
+        name: string;
+        credential: boolean;
+    }> {
+        if (this.configuration.unify || !this.configuration.servers.length) {
+            return [{ id: this.id, name: this.name, credential: true }];
+        }
+        return this.configuration.servers.map((server) => ({
+            id: `ldap:${server.identifier}`,
+            name: String(server.identifier),
+            credential: true,
+        }));
     }
 
     getConfigSchema(): AuthConfigField[] {
@@ -256,7 +302,28 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     }
 
     configure(config: Record<string, unknown>): void {
-        this.options = {
+        if (Array.isArray(config.servers)) {
+            const servers = config.servers
+                .filter(
+                    (server): server is Record<string, unknown> =>
+                        Boolean(server) && typeof server === "object",
+                )
+                .map((server) => this.normalizeOptions(server));
+            this.configuration = {
+                unify: config.unify !== false,
+                servers,
+            };
+            if (servers[0]) this.options = servers[0];
+            return;
+        }
+        this.options = this.normalizeOptions(config);
+        this.configuration = { unify: true, servers: [this.options] };
+    }
+
+    private normalizeOptions(
+        config: Record<string, unknown>,
+    ): LdapRuntimeOptions {
+        const options = {
             ...this.options,
             ...Object.fromEntries(
                 Object.entries(config).filter(
@@ -265,15 +332,15 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             ),
         } as LdapRuntimeOptions;
         const configuredUrl = String(
-            config.serverUrl ?? config.host ?? this.options.serverUrl ?? "",
+            config.serverUrl ?? config.host ?? options.serverUrl ?? "",
         ).trim();
         const legacyPort = Number(config.port ?? this.options.port);
-        this.options.serverUrl =
+        options.serverUrl =
             configuredUrl && !configuredUrl.includes("://")
                 ? `${legacyPort === 636 ? "ldaps" : "ldap"}://${configuredUrl}${Number.isFinite(legacyPort) ? `:${legacyPort}` : ""}`
                 : configuredUrl;
-        this.options.roleMappings = parseRoleMappings(
-            config.roleMappings ?? this.options.roleMappings,
+        options.roleMappings = parseRoleMappings(
+            config.roleMappings ?? options.roleMappings,
         );
         if (typeof config.adminGroups === "string" && config.adminGroups)
             this.adminGroups = new Set(splitList(config.adminGroups));
@@ -285,6 +352,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             String(
                 config.writebackUserAttribute ?? this.writebackUserAttribute,
             ).trim() || "uid";
+        return options;
     }
 
     async testConfiguration(

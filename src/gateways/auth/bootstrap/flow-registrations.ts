@@ -14,13 +14,35 @@ function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
     name: string;
     forgotPassword: boolean;
+    credential: boolean;
+    adapterId: string;
 }> {
-    return context.authGateway.getEnabledAdapters().map((adapter) => ({
-        id: adapter.id,
-        name: adapter.name,
-        forgotPassword:
-            adapter.getLoginUiCapabilities?.().forgotPassword === true,
-    }));
+    return context.authGateway.getEnabledAdapters().flatMap((adapter) => {
+        const methods = adapter.getLoginMethods?.() ?? [
+            { id: adapter.id, name: adapter.name },
+        ];
+        return methods.map((method) => ({
+            ...method,
+            credential:
+                method.credential === true ||
+                adapter.id === "local" ||
+                adapter.id === "ldap",
+            adapterId: adapter.id,
+            forgotPassword:
+                adapter.getLoginUiCapabilities?.().forgotPassword === true,
+        }));
+    });
+}
+
+function getPublicLoginMethods(context: AuthBootstrapHookContext) {
+    return getEnabledLoginMethods(context).map(
+        ({ adapterId: _adapterId, credential, ...method }) => ({
+            ...method,
+            ...(credential && method.id !== "local"
+                ? { credential: true }
+                : {}),
+        }),
+    );
 }
 
 export async function registerAuthBootstrapHook(
@@ -59,7 +81,7 @@ export async function registerAuthBootstrapHook(
             const enabledMethods = getEnabledLoginMethods(context);
             return {
                 defaultProviderId: enabledMethods[0]?.id ?? null,
-                enabledMethods,
+                enabledMethods: getPublicLoginMethods(context),
             };
         },
     );
@@ -80,14 +102,19 @@ export async function registerAuthBootstrapHook(
             )[0];
             const providerId =
                 input.provider ?? resolveResult?.defaultProviderId ?? "local";
+            const method = getEnabledLoginMethods(context).find(
+                (entry) => entry.id === providerId,
+            );
             const adapter =
-                context.authGateway.getEnabledAdapter(providerId) ??
-                context.authGateway.getEnabledAdapter("local");
+                context.authGateway.getEnabledAdapter(
+                    method?.adapterId ?? providerId,
+                ) ?? context.authGateway.getEnabledAdapter("local");
             if (!adapter) {
                 return { success: false, reason: "provider_unavailable" };
             }
             const credentials: Record<string, unknown> = {
                 ...(input.credentials ?? {}),
+                authSourceId: method?.id,
             };
             const session = await adapter.authenticate(credentials);
             if (!session) {
@@ -299,7 +326,7 @@ export async function registerAuthBootstrapHook(
         "resolve-methods",
         { id: "auth-gateway:login-methods" },
         () => ({
-            methods: getEnabledLoginMethods(context),
+            methods: getPublicLoginMethods(context),
         }),
     );
 

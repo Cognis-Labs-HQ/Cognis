@@ -1,5 +1,5 @@
 /** Adapter-owned LDAP configuration popup extension. */
-import { createFormBuilder } from "../../../../ui/reuse/form-builder.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 
 export async function openAdapterConfig({
     configUrl,
@@ -13,10 +13,21 @@ export async function openAdapterConfig({
     buildConfigPayload,
     fieldNameToLabel,
 }) {
+    if (
+        !document.querySelector(
+            'link[href="/static/adapters/auth/ldap/config-popup.css"]',
+        )
+    ) {
+        const stylesheet = document.createElement("link");
+        stylesheet.rel = "stylesheet";
+        stylesheet.href = "/static/adapters/auth/ldap/config-popup.css";
+        document.head.appendChild(stylesheet);
+    }
     let connectionFormController = null;
 
     function renderLdapConnectionForm(values = {}) {
         const labels = {
+            identifier: "Server identifier",
             serverUrl: fieldNameToLabel("serverUrl"),
             baseDn: fieldNameToLabel("baseDn"),
             userDn: fieldNameToLabel("userDn"),
@@ -32,6 +43,12 @@ export async function openAdapterConfig({
                 formClassName: "provider-popup-form ldap-setup-popup",
                 includeSubmitButton: false,
                 fields: [
+                    {
+                        name: "identifier",
+                        labelKey: "identifier",
+                        required: true,
+                        attributes: { placeholder: "Corporate directory" },
+                    },
                     {
                         name: "serverUrl",
                         labelKey: "serverUrl",
@@ -79,6 +96,28 @@ export async function openAdapterConfig({
         return `<div class="ldap-connection-step">
           <p class="module-settings-popup-note">Connect to OpenLDAP or FreeIPA first. Cognis will inspect sample users and groups before asking for filters.</p>
           ${formBuilder.render()}
+        </div>`;
+    }
+
+    function renderServerList(servers, unify) {
+        const rows = servers
+            .map(
+                (
+                    server,
+                    index,
+                ) => `<li class="ldap-server-row" draggable="true" data-server-index="${index}">
+                  <span class="ldap-server-drag" aria-hidden="true">&#x2630;</span>
+                  <span><strong>${escapeHtml(server.identifier)}</strong><small>${escapeHtml(server.serverUrl)}</small></span>
+                  <button type="button" data-edit-server="${index}" class="btn-animated">Edit</button>
+                  <button type="button" data-delete-server="${index}" class="btn-cancel btn-animated">Delete</button>
+                </li>`,
+            )
+            .join("");
+        return `<div class="ldap-setup-popup ldap-server-home">
+          <div class="provider-option-row"><span class="provider-option-label">Unify LDAP sources</span><label class="switch"><input name="unify" type="checkbox"${unify ? " checked" : ""} /><span class="slider"></span></label></div>
+          <p class="module-settings-popup-note">When unified, credentials are tried against each server in the order below. Otherwise, every server is shown separately on the Login page.</p>
+          <ol class="ldap-server-list">${rows || '<li class="module-settings-popup-note">No LDAP servers configured.</li>'}</ol>
+          <button type="button" class="btn-confirm btn-animated ldap-add-server" aria-label="Add LDAP server">+</button>
         </div>`;
     }
 
@@ -139,7 +178,14 @@ export async function openAdapterConfig({
     }
 
     const dbData = configPayload?.data ?? {};
-    let connectionValues = { ...dbData };
+    let servers = Array.isArray(dbData.servers)
+        ? dbData.servers.map((server) => ({ ...server }))
+        : Object.keys(dbData).length
+          ? [{ identifier: "LDAP", ...dbData }]
+          : [];
+    let unify = dbData.unify !== false;
+    let selectedServerIndex = null;
+    let connectionValues = {};
     let sample = null;
     let discoverySequence = 0;
     await openPopup({
@@ -147,10 +193,28 @@ export async function openAdapterConfig({
         maxWidth: "760px",
         pages: [
             {
+                id: "servers",
+                title: "LDAP servers",
+                body: () => renderServerList(servers, unify),
+                actions: [
+                    {
+                        id: "save-home",
+                        label: i18n.t("ui.app.admin.notif.save_settings"),
+                        variant: "confirm",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                ],
+            },
+            {
                 id: "connect",
                 title: "LDAP setup: connection",
                 body: () => renderLdapConnectionForm(connectionValues),
                 actions: [
+                    { id: "back", label: "Back", variant: "neutral" },
                     {
                         id: "test",
                         label: "Test and discover",
@@ -183,10 +247,77 @@ export async function openAdapterConfig({
             },
         ],
         onOpen: (overlay, _close, api) => {
+            if (api.pageId === "servers") {
+                const unifyInput = overlay.querySelector('[name="unify"]');
+                unifyInput?.addEventListener("change", () => {
+                    unify = unifyInput.checked;
+                    api.markDirty();
+                });
+                overlay
+                    .querySelector(".ldap-add-server")
+                    ?.addEventListener("click", () => {
+                        selectedServerIndex = null;
+                        connectionValues = {};
+                        sample = null;
+                        api.setPage("connect");
+                    });
+                overlay
+                    .querySelectorAll("[data-edit-server]")
+                    .forEach((button) =>
+                        button.addEventListener("click", () => {
+                            selectedServerIndex = Number(
+                                button.dataset.editServer,
+                            );
+                            connectionValues = {
+                                ...servers[selectedServerIndex],
+                            };
+                            sample = null;
+                            api.setPage("connect");
+                        }),
+                    );
+                overlay
+                    .querySelectorAll("[data-delete-server]")
+                    .forEach((button) =>
+                        button.addEventListener("click", () => {
+                            servers.splice(
+                                Number(button.dataset.deleteServer),
+                                1,
+                            );
+                            api.markDirty();
+                            api.setPage("servers");
+                        }),
+                    );
+                let draggedIndex = null;
+                overlay
+                    .querySelectorAll("[data-server-index]")
+                    .forEach((row) => {
+                        row.addEventListener("dragstart", () => {
+                            draggedIndex = Number(row.dataset.serverIndex);
+                        });
+                        row.addEventListener("dragover", (event) =>
+                            event.preventDefault(),
+                        );
+                        row.addEventListener("drop", (event) => {
+                            event.preventDefault();
+                            const targetIndex = Number(row.dataset.serverIndex);
+                            if (
+                                draggedIndex === null ||
+                                draggedIndex === targetIndex
+                            )
+                                return;
+                            const [server] = servers.splice(draggedIndex, 1);
+                            servers.splice(targetIndex, 0, server);
+                            api.markDirty();
+                            api.setPage("servers");
+                        });
+                    });
+                return;
+            }
             if (api.pageId !== "connect") return;
             const form = overlay.querySelector("#ldap-connection-form");
             if (form instanceof HTMLFormElement) {
                 const fields = [
+                    "identifier",
                     "serverUrl",
                     "baseDn",
                     "userDn",
@@ -216,8 +347,26 @@ export async function openAdapterConfig({
                 return false;
             }
             if (action === "back") {
-                api.setPage("connect");
+                api.setPage(api.pageId === "filters" ? "connect" : "servers");
                 return false;
+            }
+            if (action === "save-home") {
+                const saveResponse = await apiFetch(configUrl, {
+                    method: "PUT",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ unify, servers }),
+                });
+                if (!saveResponse.ok) {
+                    showToast(i18n.t("ui.reuse.save_failed"), {
+                        variant: "error",
+                    });
+                    return false;
+                }
+                await onSaved?.();
+                showToast(i18n.t("ui.app.admin.settings_saved"), {
+                    variant: "success",
+                });
+                return true;
             }
             const form = overlay.querySelector(".provider-popup-form");
             if (!(form instanceof HTMLElement)) return false;
@@ -248,6 +397,7 @@ export async function openAdapterConfig({
                     return false;
                 }
                 sample = testPayload.data;
+                api.markDirty();
                 api.setPage("filters");
                 return false;
             }
@@ -258,22 +408,24 @@ export async function openAdapterConfig({
                     .map((role) => [values[`roleMapping.${role}`], role])
                     .filter(([group]) => group),
             );
-            const saveResponse = await apiFetch(configUrl, {
-                method: "PUT",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(connectionValues),
-            });
-            if (!saveResponse.ok) {
-                showToast(i18n.t("ui.reuse.save_failed"), {
+            const duplicateIdentifier = servers.some(
+                (server, index) =>
+                    index !== selectedServerIndex &&
+                    String(server.identifier).trim().toLowerCase() ===
+                        String(connectionValues.identifier)
+                            .trim()
+                            .toLowerCase(),
+            );
+            if (duplicateIdentifier) {
+                showToast("LDAP server identifiers must be unique.", {
                     variant: "error",
                 });
                 return false;
             }
-            await onSaved?.();
-            showToast(i18n.t("ui.app.admin.settings_saved"), {
-                variant: "success",
-            });
-            return true;
+            if (selectedServerIndex === null) servers.push(connectionValues);
+            else servers[selectedServerIndex] = connectionValues;
+            api.setPage("servers");
+            return false;
         },
         closeProtection: true,
     });

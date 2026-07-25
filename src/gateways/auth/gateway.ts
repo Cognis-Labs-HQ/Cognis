@@ -26,6 +26,11 @@ export interface AuthProviderAdapter {
     configure(config: Record<string, unknown>): void;
     getPasswordResetSupport?(): { supported: boolean; reason?: string };
     getLoginUiCapabilities?(): { forgotPassword?: boolean };
+    getLoginMethods?(): Array<{
+        id: string;
+        name: string;
+        credential?: boolean;
+    }>;
     registerFlowHooks?(
         flow: FlowApi,
         options?: {

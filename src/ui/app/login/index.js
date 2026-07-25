@@ -166,10 +166,10 @@ export async function mount(root) {
             ssoContainer?.replaceChildren();
 
             const credentialProviders = methods.filter(
-                (m) => m.id === "local" || m.id === "ldap",
+                (method) => method.id === "local" || method.credential === true,
             );
             const ssoProviders = methods.filter(
-                (m) => m.id !== "local" && m.id !== "ldap",
+                (method) => method.id !== "local" && method.credential !== true,
             );
 
             const renderProviderActions = (method) => {
@@ -196,9 +196,12 @@ export async function mount(root) {
                 credentialProviders.forEach((method) => {
                     const btn = document.createElement("button");
                     btn.type = "button";
+                    const methodLabelKey = `ui.app.login.provider.${method.id}`;
+                    const translatedMethodName = i18n.t(methodLabelKey);
                     btn.textContent =
-                        i18n.t(`ui.app.login.provider.${method.id}`) ||
-                        method.name;
+                        translatedMethodName === methodLabelKey
+                            ? method.name
+                            : translatedMethodName;
                     btn.className = "auth-provider-btn";
                     btn.setAttribute(
                         "aria-pressed",

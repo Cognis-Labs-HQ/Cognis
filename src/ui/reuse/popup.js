@@ -315,6 +315,7 @@ export async function openPopup({
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute("aria-labelledby", "popup-title");
         let closeProtectionTracker = null;
+        let manuallyDirty = false;
 
         function escapeHtml(value) {
             return String(value)
@@ -331,8 +332,9 @@ export async function openPopup({
         async function dismiss(actionId) {
             closeProtectionTracker?.sync();
             const hasUnsavedChanges =
-                closeProtectionTracker?.isAnyDirty() ??
-                hasUnsavedFormChanges(overlay);
+                manuallyDirty ||
+                (closeProtectionTracker?.isAnyDirty() ??
+                    hasUnsavedFormChanges(overlay));
             if (actionId === null && closeProtection && hasUnsavedChanges) {
                 const i18n = await getI18n();
                 const confirmed = await openPopup({
@@ -481,6 +483,9 @@ export async function openPopup({
             onOpen?.(overlay, () => dismiss(null), {
                 setPage: renderPopupPage,
                 pageId: currentPage.id,
+                markDirty: () => {
+                    manuallyDirty = true;
+                },
             });
             return true;
         }
@@ -500,6 +505,9 @@ export async function openPopup({
                                     setPage: renderPopupPage,
                                     pageId: currentPage?.id,
                                     requestClose: () => dismiss(null),
+                                    markDirty: () => {
+                                        manuallyDirty = true;
+                                    },
                                 },
                             );
                             if (shouldDismiss === false) return;
@@ -543,6 +551,9 @@ export async function openPopup({
             onOpen(overlay, () => dismiss(null), {
                 setPage: renderPopupPage,
                 pageId: currentPage?.id,
+                markDirty: () => {
+                    manuallyDirty = true;
+                },
             });
         }
         if (closeProtection) {
