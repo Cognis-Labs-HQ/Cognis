@@ -58,4 +58,4 @@ Die Auswahl für lokale und LDAP-Anmeldequellen steht direkt zwischen dem Anmeld
 
 ## Metadaten der Anmeldequellen bleiben erhalten
 
-Die öffentliche Anmeldekonfiguration behält nun die Metadaten der Zugangsdatenquellen für jeden benannten LDAP-Server bei. Dadurch werden „Lokal“ und alle konfigurierten LDAP-Quellen tatsächlich gemeinsam in der Auswahlzeile angezeigt.
+Die öffentliche Anmeldekonfiguration behält nun die Metadaten der Zugangsdatenquellen für jeden benannten LDAP-Server bei. Dadurch werden „Lokal“ und alle konfigurierten LDAP-Quellen tatsächlich gemeinsam in der Auswahlzeile angezeigt. Benannte, nicht vereinigte LDAP-Quellen verwenden die von Administratoren festgelegten Kennungen als Beschriftung ihrer Schaltflächen.

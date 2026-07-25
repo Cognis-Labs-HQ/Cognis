@@ -210,12 +210,17 @@ export async function mount(root) {
                 credentialProviders.forEach((method) => {
                     const btn = document.createElement("button");
                     btn.type = "button";
-                    const methodLabelKey = `ui.app.login.provider.${method.id}`;
-                    const translatedMethodName = i18n.t(methodLabelKey);
-                    btn.textContent =
-                        translatedMethodName === methodLabelKey
-                            ? method.name
-                            : translatedMethodName;
+                    if (method.id === "local" || method.id === "ldap") {
+                        const methodLabelKey = `ui.app.login.provider.${method.id}`;
+                        const translatedMethodName = i18n.t(methodLabelKey);
+                        btn.textContent =
+                            translatedMethodName &&
+                            translatedMethodName !== methodLabelKey
+                                ? translatedMethodName
+                                : method.name;
+                    } else {
+                        btn.textContent = method.name;
+                    }
                     btn.className = "auth-provider-btn";
                     btn.setAttribute(
                         "aria-pressed",

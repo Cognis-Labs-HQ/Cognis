@@ -107,4 +107,8 @@ test("login source selector precedes credential fields", () => {
     assert.match(loginSource, /auth-provider-overflow-btn/);
     assert.match(loginSource, /new ResizeObserver/);
     assert.match(loginSource, /auth-provider-overflow-list/);
+    assert.match(
+        loginSource,
+        /method\.id === "local" \|\| method\.id === "ldap"[\s\S]*else \{\s*btn\.textContent = method\.name;/,
+    );
 });

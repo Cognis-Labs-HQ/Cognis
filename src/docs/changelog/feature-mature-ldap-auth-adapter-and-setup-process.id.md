@@ -58,4 +58,4 @@ Pemilih sumber Lokal dan LDAP berada tepat di antara judul Masuk dan kolom Nama 
 
 ## Metadata sumber masuk dipertahankan
 
-Konfigurasi masuk publik kini mempertahankan metadata sumber kredensial untuk setiap server LDAP bernama. Dengan demikian, Lokal dan semua sumber LDAP yang dikonfigurasi benar-benar tampil bersama pada baris pemilih.
+Konfigurasi masuk publik kini mempertahankan metadata sumber kredensial untuk setiap server LDAP bernama. Dengan demikian, Lokal dan semua sumber LDAP yang dikonfigurasi benar-benar tampil bersama pada baris pemilih. Sumber LDAP bernama yang tidak disatukan menggunakan pengenal yang ditentukan administrator sebagai label tombol.
