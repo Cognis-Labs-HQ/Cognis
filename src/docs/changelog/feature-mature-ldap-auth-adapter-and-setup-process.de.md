@@ -27,3 +27,7 @@ Die Rückkehr von der Passwortwiederherstellung stellt das Zugangsdatenformular 
 ## Genaue, wiederholbare Verzeichniserkennung
 
 Jeder Durchlauf von „Testen und erkennen“ ersetzt nun die vorherige Stichprobe, bevor die Rollenzuordnungen neu aufgebaut werden. Benutzer- und Gruppensuchen verwenden durchgängig ihre jeweiligen DNs und greifen unabhängig auf die Basis-DN zurück. LDAP-Objekte, die keine Gruppen sind, werden aus der Gruppenauswahl ausgeschlossen.
+
+## Erzwungene Erkennungsgrenzen und Identitätsschema
+
+Die Erkennung verwirft nun jeden Verzeichniseintrag, dessen DN außerhalb der konfigurierten Benutzer- oder Gruppensuchbasis liegt. Dadurch gelangen Datensätze aus Benutzercontainern selbst bei unerwarteten Serverantworten nicht in die Gruppenzuordnung. Der Authentifizierungsstart legt außerdem die Tabelle für externe Identitäten an, bevor LDAP-Anmeldungen Identitäten speichern.

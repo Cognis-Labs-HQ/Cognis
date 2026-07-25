@@ -56,6 +56,16 @@ export function isDirectoryGroupEntry(entry: Record<string, unknown>): boolean {
     );
 }
 
+export function isDnWithinBase(dn: string, baseDn: string): boolean {
+    const normalizedDn = dn.trim().toLowerCase();
+    const normalizedBase = baseDn.trim().toLowerCase();
+    return (
+        normalizedBase.length > 0 &&
+        (normalizedDn === normalizedBase ||
+            normalizedDn.endsWith(`,${normalizedBase}`))
+    );
+}
+
 async function withBoundClient<T>(
     options: LdapRuntimeOptions,
     dn: string,
@@ -136,9 +146,16 @@ async function resolveGroups(
         },
     );
     const username = first(entry, options.userAttribute) ?? "";
-    const directDns = new Set(values(entry, options.memberOfAttribute));
-    const groupEntries = result.searchEntries.filter((raw) =>
-        isDirectoryGroupEntry(raw as LdapEntry),
+    const groupBase = resolveDirectorySearchBases(options).groups;
+    const directDns = new Set(
+        values(entry, options.memberOfAttribute).filter((dn) =>
+            isDnWithinBase(dn, groupBase),
+        ),
+    );
+    const groupEntries = result.searchEntries.filter(
+        (raw) =>
+            isDirectoryGroupEntry(raw as LdapEntry) &&
+            isDnWithinBase((raw as LdapEntry).dn, groupBase),
     );
     for (const raw of groupEntries) {
         const group = raw as LdapEntry;
@@ -285,12 +302,22 @@ export class StandardLdapClient implements LdapClient {
                                 options.memberOfAttribute,
                             ).length,
                     ),
-                    users: userResult.searchEntries.map((entry) =>
-                        mapUser(entry as LdapEntry, options),
-                    ),
+                    users: userResult.searchEntries
+                        .filter((entry) =>
+                            isDnWithinBase(
+                                (entry as LdapEntry).dn,
+                                searchBases.users,
+                            ),
+                        )
+                        .map((entry) => mapUser(entry as LdapEntry, options)),
                     groups: groupResult.searchEntries
-                        .filter((raw) =>
-                            isDirectoryGroupEntry(raw as LdapEntry),
+                        .filter(
+                            (raw) =>
+                                isDirectoryGroupEntry(raw as LdapEntry) &&
+                                isDnWithinBase(
+                                    (raw as LdapEntry).dn,
+                                    searchBases.groups,
+                                ),
                         )
                         .map((raw) => {
                             const entry = raw as LdapEntry;

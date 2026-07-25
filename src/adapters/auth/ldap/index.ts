@@ -99,7 +99,7 @@ function parseRoleMappings(value: unknown): Record<string, string> {
 class LdapAuthAdapter implements AuthProviderAdapter {
     readonly id = "ldap";
     readonly name = "LDAP";
-    readonly version = "0.3.2";
+    readonly version = "0.3.3";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);

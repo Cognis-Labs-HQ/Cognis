@@ -112,6 +112,38 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async ensureSchema() {
         await this.db.ensureTable({
+            name: "auth_identities",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "account_id",
+                    type: "text",
+                    notNull: true,
+                    references: {
+                        table: "accounts",
+                        column: "id",
+                        onDelete: "CASCADE",
+                    },
+                },
+                { name: "provider", type: "text", notNull: true },
+                { name: "external_user_id", type: "text", notNull: true },
+                {
+                    name: "created_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+                {
+                    name: "updated_at",
+                    type: "timestamp",
+                    notNull: true,
+                    default: "now",
+                },
+            ],
+            uniqueKeys: [["provider", "external_user_id"]],
+            indexes: [{ columns: ["account_id"] }],
+        });
+        await this.db.ensureTable({
             name: "local_auth_password_history",
             columns: [
                 { name: "account_id", type: "text", notNull: true },

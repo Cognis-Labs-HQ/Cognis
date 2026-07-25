@@ -27,3 +27,7 @@ Returning from password recovery now restores the credential form in place inste
 ## Accurate repeatable directory discovery
 
 Every Test and Discover run now replaces the prior sample before rebuilding role mappings. User and group searches consistently use their dedicated DNs, falling back independently to the base DN, and non-group LDAP objects are excluded from group choices.
+
+## Enforced discovery boundaries and identity schema
+
+Discovery now rejects any directory entry whose DN falls outside the configured user or group search base, preventing user-container records from reaching group mappings even when a server returns unexpected results. Auth bootstrap also creates the external identity table before LDAP logins persist identities.

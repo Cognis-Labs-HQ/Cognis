@@ -27,3 +27,7 @@ Kembali dari pemulihan kata sandi kini memulihkan formulir kredensial secara lan
 ## Penemuan direktori yang akurat dan dapat diulang
 
 Setiap proses Uji dan Temukan kini mengganti sampel sebelumnya sebelum membangun ulang pemetaan peran. Pencarian pengguna dan grup selalu menggunakan DN masing-masing, dengan DN dasar sebagai cadangan secara terpisah, dan objek LDAP yang bukan grup dikeluarkan dari pilihan grup.
+
+## Batas penemuan yang diterapkan dan skema identitas
+
+Penemuan kini menolak setiap entri direktori yang DN-nya berada di luar basis pencarian pengguna atau grup yang dikonfigurasi. Hal ini mencegah rekaman kontainer pengguna masuk ke pemetaan grup meskipun server memberikan hasil yang tidak terduga. Bootstrap autentikasi juga membuat tabel identitas eksternal sebelum login LDAP menyimpan identitas.

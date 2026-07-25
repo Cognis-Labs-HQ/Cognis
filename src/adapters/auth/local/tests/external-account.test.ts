@@ -43,3 +43,24 @@ test("external account persistence creates the account before its identity", asy
         "firehawk",
     );
 });
+
+test("local auth schema provisions external identities", async () => {
+    const tables: Array<Record<string, unknown>> = [];
+    const executor = {
+        async ensureTable(table: Record<string, unknown>) {
+            tables.push(table);
+        },
+    };
+    const store = new DbLocalAccountStore(executor as never);
+
+    await store.ensureSchema();
+
+    assert.deepEqual(
+        tables.map((table) => table.name),
+        ["auth_identities", "local_auth_password_history"],
+    );
+    const identityTable = tables[0];
+    assert.deepEqual(identityTable?.uniqueKeys, [
+        ["provider", "external_user_id"],
+    ]);
+});
