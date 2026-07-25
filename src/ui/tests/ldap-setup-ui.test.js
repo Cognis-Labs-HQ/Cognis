@@ -14,12 +14,31 @@ const loginSource = readFileSync(
     new URL("../app/login/index.js", import.meta.url),
     "utf8",
 );
+const popupSource = readFileSync(
+    new URL("../reuse/popup.js", import.meta.url),
+    "utf8",
+);
 
 test("LDAP setup collects focused user and group DNs", () => {
     assert.match(
         ldapPopupSource,
         /"baseDn",\s*"userDn",\s*"groupDn",\s*"bindDn"/,
     );
+});
+
+test("LDAP setup composes and validates required connection fields", () => {
+    assert.match(ldapPopupSource, /import \{ createFormBuilder \}/);
+    assert.match(ldapPopupSource, /name: "serverUrl"[\s\S]*required: true/);
+    assert.match(
+        ldapPopupSource,
+        /connectionFormController\?\.validateAll\(true\)/,
+    );
+    assert.match(ldapPopupSource, /closeProtection: true/);
+    assert.match(
+        ldapPopupSource,
+        /action === "cancel"[\s\S]*api\.requestClose\(\)/,
+    );
+    assert.match(popupSource, /requestClose: \(\) => dismiss\(null\)/);
 });
 
 test("LDAP role mapping sorts groups and renders names without DNs", () => {

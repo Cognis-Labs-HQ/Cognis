@@ -1,4 +1,6 @@
 /** Adapter-owned LDAP configuration popup extension. */
+import { createFormBuilder } from "../../../../ui/reuse/form-builder.js";
+
 export async function openAdapterConfig({
     configUrl,
     configPayload,
@@ -11,10 +13,72 @@ export async function openAdapterConfig({
     buildConfigPayload,
     fieldNameToLabel,
 }) {
+    let connectionFormController = null;
+
     function renderLdapConnectionForm(values = {}) {
-        return `<div class="provider-popup-form ldap-setup-popup">
+        const labels = {
+            serverUrl: fieldNameToLabel("serverUrl"),
+            baseDn: fieldNameToLabel("baseDn"),
+            userDn: fieldNameToLabel("userDn"),
+            groupDn: fieldNameToLabel("groupDn"),
+            bindDn: fieldNameToLabel("bindDn"),
+            bindPassword: fieldNameToLabel("bindPassword"),
+            userAttribute: "Username attribute",
+        };
+        const formBuilder = createFormBuilder(
+            { i18n: { t: (key) => labels[key] ?? key }, escapeHtml },
+            {
+                formId: "ldap-connection-form",
+                formClassName: "provider-popup-form ldap-setup-popup",
+                includeSubmitButton: false,
+                fields: [
+                    {
+                        name: "serverUrl",
+                        labelKey: "serverUrl",
+                        required: true,
+                    },
+                    { name: "baseDn", labelKey: "baseDn", required: true },
+                    {
+                        name: "userDn",
+                        labelKey: "userDn",
+                        attributes: {
+                            placeholder: "Optional; falls back to Base DN",
+                        },
+                    },
+                    {
+                        name: "groupDn",
+                        labelKey: "groupDn",
+                        attributes: {
+                            placeholder: "Optional; falls back to Base DN",
+                        },
+                    },
+                    { name: "bindDn", labelKey: "bindDn", required: true },
+                    {
+                        name: "bindPassword",
+                        labelKey: "bindPassword",
+                        type: "password",
+                        required: true,
+                    },
+                    {
+                        name: "userAttribute",
+                        labelKey: "userAttribute",
+                        required: true,
+                        attributes: {
+                            placeholder: "uid (OpenLDAP or FreeIPA)",
+                        },
+                    },
+                ].map((field) => ({
+                    ...field,
+                    value:
+                        values[field.name] ??
+                        (field.name === "userAttribute" ? "uid" : ""),
+                })),
+            },
+        );
+        connectionFormController = null;
+        return `<div class="ldap-connection-step">
           <p class="module-settings-popup-note">Connect to OpenLDAP or FreeIPA first. Cognis will inspect sample users and groups before asking for filters.</p>
-          ${["serverUrl", "baseDn", "userDn", "groupDn", "bindDn", "bindPassword", "userAttribute"].map((name) => `<label class="provider-popup-field">${name === "userAttribute" ? "Username attribute" : escapeHtml(fieldNameToLabel(name))}<input id="${name}" name="${name}" type="${name === "bindPassword" ? "password" : "text"}" value="${escapeHtml(values[name] ?? (name === "userAttribute" ? "uid" : ""))}"${name === "userAttribute" ? ' placeholder="uid (OpenLDAP) or uid (FreeIPA)"' : name === "userDn" || name === "groupDn" ? ` placeholder="Optional; falls back to Base DN"` : ""} /></label>`).join("")}
+          ${formBuilder.render()}
         </div>`;
     }
 
@@ -118,7 +182,39 @@ export async function openAdapterConfig({
                 ],
             },
         ],
+        onOpen: (overlay, _close, api) => {
+            if (api.pageId !== "connect") return;
+            const form = overlay.querySelector("#ldap-connection-form");
+            if (form instanceof HTMLFormElement) {
+                const fields = [
+                    "serverUrl",
+                    "baseDn",
+                    "userDn",
+                    "groupDn",
+                    "bindDn",
+                    "bindPassword",
+                    "userAttribute",
+                ];
+                const builder = createFormBuilder(
+                    { i18n: { t: (key) => key }, escapeHtml },
+                    {
+                        formId: "ldap-connection-form",
+                        includeSubmitButton: false,
+                        fields: fields.map((name) => ({
+                            name,
+                            labelKey: name,
+                            required: !["userDn", "groupDn"].includes(name),
+                        })),
+                    },
+                );
+                connectionFormController = builder.attach(form);
+            }
+        },
         onAction: async (action, overlay, api) => {
+            if (action === "cancel") {
+                await api.requestClose();
+                return false;
+            }
             if (action === "back") {
                 api.setPage("connect");
                 return false;
@@ -127,6 +223,10 @@ export async function openAdapterConfig({
             if (!(form instanceof HTMLElement)) return false;
             const values = buildConfigPayload(form);
             if (action === "test") {
+                if (!connectionFormController?.validateAll(true)) {
+                    form.querySelector(".form-builder-input--invalid")?.focus();
+                    return false;
+                }
                 const currentDiscovery = ++discoverySequence;
                 connectionValues = { ...connectionValues, ...values };
                 sample = null;

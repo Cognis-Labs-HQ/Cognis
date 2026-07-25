@@ -499,6 +499,7 @@ export async function openPopup({
                                 {
                                     setPage: renderPopupPage,
                                     pageId: currentPage?.id,
+                                    requestClose: () => dismiss(null),
                                 },
                             );
                             if (shouldDismiss === false) return;
