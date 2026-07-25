@@ -5,6 +5,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const LOGIN_STYLE_SOURCE = readFileSync(
+    resolve(ROOT, "src/ui/styles/login.css"),
+    "utf8",
+);
 
 test("login required-email enforcement resolves helper from flow-provided integration", () => {
     const source = readFileSync(
@@ -52,6 +56,42 @@ test("login UI resets password reset mode on refresh re-render", () => {
     assert.match(
         source,
         /onRender:\s*\(\)\s*=>\s*{[\s\S]*resetPasswordResetMode\(\)/,
+    );
+});
+
+test("login recovery returns through an in-place form restore", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+    assert.match(source, /function restoreLoginForm\(\)/);
+    assert.match(
+        source,
+        /replaceCredentialFieldsContent\(renderCredentialFields\(\)\)/,
+    );
+    assert.match(source, /toggleContainer\.replaceChildren\(\)/);
+    assert.match(
+        source,
+        /backLink\?\.addEventListener\("click", \(\) => \{\s*restoreLoginForm\(\)/,
+    );
+});
+
+test("login hides the credential provider selector before showing TFA", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/login/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /hideCredentialProviderSelector\(\);[\s\S]*tfaLoginClient\.switchToTfaPrompt\(data\)/,
+    );
+    assert.match(
+        source,
+        /if \(client\) \{\s*hideCredentialProviderSelector\(\);\s*currentTfaLoginAttemptId/,
+    );
+    assert.match(
+        LOGIN_STYLE_SOURCE,
+        /\.auth-provider-toggle\[hidden\]\s*\{\s*display:\s*none;/,
     );
 });
 

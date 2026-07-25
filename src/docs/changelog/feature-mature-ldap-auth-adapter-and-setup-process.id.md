@@ -19,3 +19,7 @@ Setiap sumber login kini mengendalikan tindakan pemulihannya sendiri, sehingga t
 ## Identitas akun eksternal yang persisten
 
 Login LDAP yang berhasil kini membuat rekaman akun bersama dan identitas LDAP sebelum menyediakan profil. Urutan ini menjaga integritas foreign key basis data dan memberi akun LDAP landasan profil serta sesi yang sama seperti akun lokal tanpa membuat kredensial kata sandi lokal.
+
+## Peralihan mode login yang andal
+
+Kembali dari pemulihan kata sandi kini memulihkan formulir kredensial secara langsung, bukan menyegarkan konten halaman yang diparkir, sehingga pemilih sumber autentikasi tidak terduplikasi. Pemilih sumber kredensial juga disembunyikan selama tantangan autentikasi dua faktor aktif.

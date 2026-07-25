@@ -141,6 +141,13 @@ export async function mount(root) {
         return requiredEmailEnforcementClientPromise;
     }
 
+    function hideCredentialProviderSelector() {
+        const providerToggle = document.querySelector("#auth-provider-toggle");
+        if (providerToggle instanceof HTMLElement) {
+            providerToggle.hidden = true;
+        }
+    }
+
     async function loadLoginMethods() {
         try {
             const flowConfig = await loadLoginUiConfig();
@@ -151,6 +158,12 @@ export async function mount(root) {
                 "#auth-provider-toggle",
             );
             const ssoContainer = document.querySelector("#sso-buttons");
+
+            if (toggleContainer) {
+                toggleContainer.replaceChildren();
+                toggleContainer.hidden = true;
+            }
+            ssoContainer?.replaceChildren();
 
             const credentialProviders = methods.filter(
                 (m) => m.id === "local" || m.id === "ldap",
@@ -306,6 +319,7 @@ export async function mount(root) {
             }
             if (data.tfaRequired === true) {
                 lastTfaPayload = data;
+                hideCredentialProviderSelector();
                 currentTfaLoginAttemptId =
                     tfaLoginClient.switchToTfaPrompt(data);
             } else {
@@ -332,6 +346,36 @@ export async function mount(root) {
         if (!credentialFields) return false;
         credentialFields.innerHTML = html;
         return true;
+    }
+
+    function renderCredentialFields() {
+        return `
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
+            <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
+          </label>
+          <label>
+            <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
+            <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
+          </label>
+          <div id="login-provider-actions"></div>
+        `;
+    }
+
+    function restoreLoginForm() {
+        replaceCredentialFieldsContent(renderCredentialFields());
+        resetPasswordResetMode();
+        lastTfaPayload = null;
+        const heading = document.querySelector(".auth-heading");
+        if (heading) heading.textContent = i18n.t("ui.app.login.title");
+        const loginSubmit = document.querySelector("#login-form-submit");
+        if (loginSubmit) loginSubmit.hidden = false;
+        const signupCallout = document.querySelector("#login-signup-callout");
+        if (signupCallout) signupCallout.hidden = false;
+        const tfaFields = document.querySelector("#login-tfa-fields");
+        if (tfaFields instanceof HTMLElement) tfaFields.hidden = true;
+        loadLoginMethods();
+        document.querySelector("#login-username")?.focus();
     }
 
     function switchToLoginLinkEmailForm() {
@@ -369,7 +413,7 @@ export async function mount(root) {
             }
         };
         backLink?.addEventListener("click", () => {
-            composer.refresh();
+            restoreLoginForm();
         });
     }
 
@@ -389,7 +433,7 @@ export async function mount(root) {
         document
             .querySelector("#login-link-back")
             ?.addEventListener("click", () => {
-                composer.refresh();
+                restoreLoginForm();
             });
     }
 
@@ -483,7 +527,7 @@ export async function mount(root) {
             .querySelector("#login-link-invalid-back")
             ?.addEventListener("click", () => {
                 window.history.replaceState({}, "", "/login");
-                composer.refresh();
+                restoreLoginForm();
             });
     }
 
@@ -550,7 +594,7 @@ export async function mount(root) {
                     variant: "success",
                     permanent: true,
                 });
-                composer.refresh();
+                restoreLoginForm();
                 return;
             }
             showToast(
@@ -568,7 +612,7 @@ export async function mount(root) {
                 .querySelector("#login-link-back")
                 ?.addEventListener("click", () => {
                     window.history.replaceState({}, "", "/login");
-                    composer.refresh();
+                    restoreLoginForm();
                 });
         }
     }
@@ -628,17 +672,7 @@ export async function mount(root) {
       <form id="login-form" class="stack auth-form" method="POST">
         <input type="hidden" id="login-provider" value="local" />
         <div id="auth-provider-toggle" class="auth-provider-toggle" hidden></div>
-        <div id="login-credential-fields">
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.login.form.username"))}</span>
-            <input id="login-username" autocomplete="username" placeholder="${escapeHtml(i18n.t("ui.app.login.form.username"))}" required />
-          </label>
-          <label>
-            <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
-            <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
-          </label>
-          <div id="login-provider-actions"></div>
-        </div>
+        <div id="login-credential-fields">${renderCredentialFields()}</div>
         <div id="login-tfa-fields" hidden></div>
         ${signupCalloutHtml}
         <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
@@ -686,6 +720,7 @@ export async function mount(root) {
                         loadTfaLoginClient()
                             .then((client) => {
                                 if (client) {
+                                    hideCredentialProviderSelector();
                                     currentTfaLoginAttemptId =
                                         client.switchToTfaPrompt(
                                             lastTfaPayload,

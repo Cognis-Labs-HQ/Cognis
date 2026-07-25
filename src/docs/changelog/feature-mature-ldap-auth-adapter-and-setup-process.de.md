@@ -19,3 +19,7 @@ Jede Anmeldequelle steuert nun ihre eigenen Wiederherstellungsaktionen, sodass d
 ## Dauerhafte externe Kontoidentitäten
 
 Nach einer erfolgreichen LDAP-Anmeldung werden nun zuerst der gemeinsame Kontodatensatz und die LDAP-Identität angelegt, bevor das Profil bereitgestellt wird. Dadurch bleiben die Fremdschlüssel der Datenbank gültig und LDAP-Konten erhalten dieselbe Profil- und Sitzungsgrundlage wie lokale Konten, ohne lokale Passwortzugangsdaten anzulegen.
+
+## Zuverlässige Wechsel zwischen Anmeldemodi
+
+Die Rückkehr von der Passwortwiederherstellung stellt das Zugangsdatenformular nun direkt wieder her, statt geparkte Seiteninhalte zu aktualisieren. Dadurch entstehen keine doppelten Auswahlfelder für Anmeldequellen. Während einer Zwei-Faktor-Abfrage wird die Auswahl der Zugangsdatenquelle zudem ausgeblendet.

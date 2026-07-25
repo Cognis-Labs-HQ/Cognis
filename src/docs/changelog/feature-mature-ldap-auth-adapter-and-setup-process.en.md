@@ -19,3 +19,7 @@ Each login source now controls its own recovery actions, so the local forgot-pas
 ## Persistent external account identities
 
 Successful LDAP sign-ins now create the shared account record and LDAP identity before profile provisioning. This preserves database foreign-key integrity and gives LDAP accounts the same profile and session foundation as local accounts without creating local password credentials.
+
+## Reliable login mode transitions
+
+Returning from password recovery now restores the credential form in place instead of refreshing parked page content, preventing duplicate auth-source selectors. The credential source selector is also hidden while a two-factor challenge is active.

@@ -189,6 +189,10 @@ p.auth-intro {
     background: rgba(5, 16, 34, 0.55);
 }
 
+.auth-provider-toggle[hidden] {
+    display: none;
+}
+
 .auth-form .auth-provider-btn {
     flex: 1;
     margin-top: 0;
