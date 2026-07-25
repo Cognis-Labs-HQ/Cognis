@@ -368,6 +368,94 @@ test("CoreAuthGateway.resetPasswordForAccount supports legacy 2-arg adapter cont
     ]);
 });
 
+test("CoreAuthGateway redacts configured passwords and preserves them on blank updates", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const persisted = {
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://faculty.example.org",
+                bindPassword: "stored-secret",
+            },
+        ],
+    };
+    let savedConfig = "";
+    const db = {
+        ensureTable: async () => undefined,
+        executeCommand: async (command: Record<string, unknown>) => {
+            if (command.option === "SELECT") {
+                return { rows: [{ config_json: JSON.stringify(persisted) }] };
+            }
+            const values = command.values as Record<string, unknown>;
+            savedConfig = String(values.config_json);
+            return { rows: [] };
+        },
+    };
+    const gateway = new CoreAuthGateway(db as never);
+    gateway.registerAdapter({
+        id: "ldap-test",
+        name: "LDAP Test",
+        authenticate: async () => null,
+        getConfigSchema: () => [
+            {
+                key: "bindPassword",
+                label: "Bind password",
+                type: "password",
+                required: true,
+            },
+        ],
+        configure: () => undefined,
+    });
+
+    assert.deepEqual(gateway.redactAdapterConfig("ldap-test", persisted), {
+        data: {
+            servers: [
+                {
+                    identifier: "Faculty",
+                    serverUrl: "ldaps://faculty.example.org",
+                },
+            ],
+        },
+        configuredSecretFields: ["servers.0.bindPassword"],
+    });
+
+    await gateway.saveAdapterConfig("ldap-test", {
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://faculty.example.org",
+                bindPassword: "",
+            },
+        ],
+    });
+    assert.equal(
+        (
+            JSON.parse(savedConfig) as {
+                servers: Array<{ bindPassword: string }>;
+            }
+        ).servers[0].bindPassword,
+        "stored-secret",
+    );
+
+    await gateway.saveAdapterConfig("ldap-test", {
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://faculty.example.org",
+                bindPassword: "replacement-secret",
+            },
+        ],
+    });
+    assert.equal(
+        (
+            JSON.parse(savedConfig) as {
+                servers: Array<{ bindPassword: string }>;
+            }
+        ).servers[0].bindPassword,
+        "replacement-secret",
+    );
+});
+
 test("RouteRegistry.getEntries returns handlers with their associated gatewayId", async () => {
     const registry = new RouteRegistry();
 

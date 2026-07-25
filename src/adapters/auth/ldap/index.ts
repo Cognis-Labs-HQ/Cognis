@@ -120,7 +120,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.5.1";
+    readonly version = "0.5.2";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -369,7 +369,20 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     async testConfiguration(
         config: Record<string, unknown>,
     ): Promise<LdapDirectorySample | LdapCredentialTestResult> {
-        const merged = { ...this.options, ...config } as LdapRuntimeOptions;
+        const configuredServer = this.configuration.servers.find(
+            (server) =>
+                server.identifier &&
+                server.identifier === String(config.identifier ?? ""),
+        );
+        const merged = {
+            ...this.options,
+            ...configuredServer,
+            ...config,
+            bindPassword:
+                String(config.bindPassword ?? "") ||
+                configuredServer?.bindPassword ||
+                this.options.bindPassword,
+        } as LdapRuntimeOptions;
         if (
             !merged.serverUrl ||
             !merged.baseDn ||

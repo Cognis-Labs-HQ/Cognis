@@ -68,6 +68,10 @@ export function createAdapterAdminRoutes(
                 }
                 const storedConfig =
                     await authGateway.getPersistedConfig(adapterId);
+                const redactedConfig = authGateway.redactAdapterConfig(
+                    adapterId,
+                    storedConfig,
+                );
                 const schema = adapter.getConfigSchema();
                 const requiredFields = schema
                     .filter((field) => field.required)
@@ -80,7 +84,9 @@ export function createAdapterAdminRoutes(
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        data: storedConfig,
+                        data: redactedConfig.data,
+                        configuredSecretFields:
+                            redactedConfig.configuredSecretFields,
                         schema,
                         requiredFields,
                         configPopupScriptUrl: adapter.configPopupScriptUrl,

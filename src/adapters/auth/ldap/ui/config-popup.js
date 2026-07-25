@@ -27,6 +27,9 @@ export async function openAdapterConfig({
     let credentialFormController = null;
 
     function renderLdapConnectionForm(values = {}) {
+        const bindPasswordConfigured =
+            configuredSecretFields.includes("bindPassword") ||
+            configuredBindPasswordIdentifiers.has(String(values.identifier));
         const labels = {
             identifier: "Server identifier",
             serverUrl: fieldNameToLabel("serverUrl"),
@@ -75,7 +78,13 @@ export async function openAdapterConfig({
                         name: "bindPassword",
                         labelKey: "bindPassword",
                         type: "password",
-                        required: true,
+                        required: !bindPasswordConfigured,
+                        attributes: bindPasswordConfigured
+                            ? {
+                                  placeholder:
+                                      "Leave blank to keep the saved password",
+                              }
+                            : {},
                     },
                     {
                         name: "userAttribute",
@@ -228,6 +237,24 @@ export async function openAdapterConfig({
     }
 
     const dbData = configPayload?.data ?? {};
+    const configuredSecretFields = Array.isArray(
+        configPayload?.configuredSecretFields,
+    )
+        ? configPayload.configuredSecretFields
+        : [];
+    const configuredBindPasswordIdentifiers = new Set(
+        Array.isArray(dbData.servers)
+            ? dbData.servers
+                  .map((server, index) =>
+                      configuredSecretFields.includes(
+                          `servers.${index}.bindPassword`,
+                      )
+                          ? String(server.identifier ?? "")
+                          : "",
+                  )
+                  .filter(Boolean)
+            : [],
+    );
     let servers = Array.isArray(dbData.servers)
         ? dbData.servers.map((server) => ({ ...server }))
         : Object.keys(dbData).length
@@ -431,7 +458,17 @@ export async function openAdapterConfig({
                         fields: fields.map((name) => ({
                             name,
                             labelKey: name,
-                            required: !["userDn", "groupDn"].includes(name),
+                            required:
+                                !["userDn", "groupDn"].includes(name) &&
+                                !(
+                                    name === "bindPassword" &&
+                                    (configuredSecretFields.includes(
+                                        "bindPassword",
+                                    ) ||
+                                        configuredBindPasswordIdentifiers.has(
+                                            String(connectionValues.identifier),
+                                        ))
+                                ),
                         })),
                     },
                 );

@@ -58,6 +58,104 @@ export interface AdapterInfo {
     requires?: string[];
 }
 
+function mergeConfiguredSecrets(
+    current: unknown,
+    next: unknown,
+    secretKeys: Set<string>,
+): unknown {
+    if (Array.isArray(next)) {
+        const currentItems = Array.isArray(current) ? current : [];
+        return next.map((nextItem, index) => {
+            const identifier =
+                nextItem && typeof nextItem === "object"
+                    ? String(
+                          (nextItem as Record<string, unknown>).identifier ??
+                              "",
+                      )
+                    : "";
+            const currentItem = identifier
+                ? currentItems.find(
+                      (item) =>
+                          item &&
+                          typeof item === "object" &&
+                          String(
+                              (item as Record<string, unknown>).identifier ??
+                                  "",
+                          ) === identifier,
+                  )
+                : currentItems[index];
+            return mergeConfiguredSecrets(currentItem, nextItem, secretKeys);
+        });
+    }
+    if (!next || typeof next !== "object") return next;
+    const currentRecord =
+        current && typeof current === "object" && !Array.isArray(current)
+            ? (current as Record<string, unknown>)
+            : {};
+    const nextRecord = next as Record<string, unknown>;
+    const merged: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(nextRecord)) {
+        if (
+            secretKeys.has(key) &&
+            (value === "" || value == null) &&
+            currentRecord[key] != null &&
+            currentRecord[key] !== ""
+        ) {
+            merged[key] = currentRecord[key];
+        } else {
+            merged[key] = mergeConfiguredSecrets(
+                currentRecord[key],
+                value,
+                secretKeys,
+            );
+        }
+    }
+    for (const key of secretKeys) {
+        if (!(key in nextRecord) && currentRecord[key] != null) {
+            merged[key] = currentRecord[key];
+        }
+    }
+    return merged;
+}
+
+function redactConfiguredSecrets(
+    value: unknown,
+    secretKeys: Set<string>,
+    path = "",
+): { value: unknown; configuredPaths: string[] } {
+    if (Array.isArray(value)) {
+        const configuredPaths: string[] = [];
+        const redacted = value.map((item, index) => {
+            const result = redactConfiguredSecrets(
+                item,
+                secretKeys,
+                path ? `${path}.${index}` : String(index),
+            );
+            configuredPaths.push(...result.configuredPaths);
+            return result.value;
+        });
+        return { value: redacted, configuredPaths };
+    }
+    if (!value || typeof value !== "object") {
+        return { value, configuredPaths: [] };
+    }
+    const redacted: Record<string, unknown> = {};
+    const configuredPaths: string[] = [];
+    for (const [key, entry] of Object.entries(
+        value as Record<string, unknown>,
+    )) {
+        const entryPath = path ? `${path}.${key}` : key;
+        if (secretKeys.has(key)) {
+            if (entry != null && entry !== "") configuredPaths.push(entryPath);
+            continue;
+        }
+        const result = redactConfiguredSecrets(entry, secretKeys, entryPath);
+        redacted[key] = result.value;
+        configuredPaths.push(...result.configuredPaths);
+    }
+    return { value: redacted, configuredPaths };
+}
+
 export class CoreAuthGateway {
     private readonly adapters = new Map<string, AuthProviderAdapter>();
     private readonly enabledAdapters = new Set<string>();
@@ -161,7 +259,19 @@ export class CoreAuthGateway {
     ): Promise<void> {
         const adapter = this.adapters.get(adapterId);
         if (!adapter) return;
-        const { enabled: enabledValue, ...adapterConfig } = config;
+        const { enabled: enabledValue, ...submittedAdapterConfig } = config;
+        const secretKeys = new Set(
+            adapter
+                .getConfigSchema()
+                .filter((field) => field.type === "password")
+                .map((field) => field.key),
+        );
+        const existingConfig = await this.getPersistedConfig(adapterId);
+        const adapterConfig = mergeConfiguredSecrets(
+            existingConfig,
+            submittedAdapterConfig,
+            secretKeys,
+        ) as Record<string, unknown>;
         if (
             enabledValue === false ||
             enabledValue === "false" ||
@@ -197,6 +307,23 @@ export class CoreAuthGateway {
                 },
             },
         });
+    }
+
+    redactAdapterConfig(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): { data: Record<string, unknown>; configuredSecretFields: string[] } {
+        const adapter = this.adapters.get(adapterId);
+        const secretKeys = new Set(
+            (adapter?.getConfigSchema() ?? [])
+                .filter((field) => field.type === "password")
+                .map((field) => field.key),
+        );
+        const result = redactConfiguredSecrets(config, secretKeys);
+        return {
+            data: result.value as Record<string, unknown>,
+            configuredSecretFields: result.configuredPaths,
+        };
     }
 
     async enableAdapter(adapterId: string): Promise<void> {

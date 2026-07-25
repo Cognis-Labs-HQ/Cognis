@@ -59,3 +59,7 @@ The Local and LDAP source selector sits directly between the Login title and Use
 ## Login source metadata preserved
 
 The public login configuration now preserves credential-source metadata for every named LDAP server, ensuring Local and all configured LDAP sources actually render together in the selector row. Named, non-unified LDAP sources use their administrator-defined identifiers as their button labels.
+
+## Protected LDAP bind secrets
+
+Saved LDAP bind passwords are removed from administration API responses. Leaving the password field blank keeps the existing secret, while entering a new value securely replaces it.

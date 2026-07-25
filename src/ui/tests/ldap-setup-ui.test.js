@@ -39,6 +39,8 @@ test("LDAP setup composes and validates required connection fields", () => {
         /action === "cancel"[\s\S]*api\.requestClose\(\)/,
     );
     assert.match(popupSource, /requestClose: \(\) => dismiss\(null\)/);
+    assert.match(ldapPopupSource, /configuredSecretFields/);
+    assert.match(ldapPopupSource, /Leave blank to keep the saved password/);
 });
 
 test("LDAP setup manages named, reorderable servers and unified login", () => {
