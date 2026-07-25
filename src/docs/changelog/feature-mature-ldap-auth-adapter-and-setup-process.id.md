@@ -23,3 +23,7 @@ Login LDAP yang berhasil kini membuat rekaman akun bersama dan identitas LDAP se
 ## Peralihan mode login yang andal
 
 Kembali dari pemulihan kata sandi kini memulihkan formulir kredensial secara langsung, bukan menyegarkan konten halaman yang diparkir, sehingga pemilih sumber autentikasi tidak terduplikasi. Pemilih sumber kredensial juga disembunyikan selama tantangan autentikasi dua faktor aktif.
+
+## Penemuan direktori yang akurat dan dapat diulang
+
+Setiap proses Uji dan Temukan kini mengganti sampel sebelumnya sebelum membangun ulang pemetaan peran. Pencarian pengguna dan grup selalu menggunakan DN masing-masing, dengan DN dasar sebagai cadangan secara terpisah, dan objek LDAP yang bukan grup dikeluarkan dari pilihan grup.

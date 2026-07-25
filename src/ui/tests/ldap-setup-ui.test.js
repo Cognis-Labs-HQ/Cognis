@@ -26,6 +26,14 @@ test("LDAP role mapping sorts groups and renders names without DNs", () => {
     );
 });
 
+test("LDAP test and discovery replaces role mapping results on every run", () => {
+    assert.match(adminPopupSource, /let discoverySequence = 0/);
+    assert.match(
+        adminPopupSource,
+        /const currentDiscovery = \+\+discoverySequence;[\s\S]*sample = null;[\s\S]*sample = testPayload\.data;[\s\S]*api\.setPage\("filters"\)/,
+    );
+});
+
 test("login source selector precedes credential fields", () => {
     const selectorIndex = loginSource.indexOf('id="auth-provider-toggle"');
     const credentialsIndex = loginSource.indexOf(

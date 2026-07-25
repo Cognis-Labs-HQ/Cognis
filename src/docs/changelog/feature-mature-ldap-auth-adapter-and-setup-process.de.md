@@ -23,3 +23,7 @@ Nach einer erfolgreichen LDAP-Anmeldung werden nun zuerst der gemeinsame Kontoda
 ## Zuverlässige Wechsel zwischen Anmeldemodi
 
 Die Rückkehr von der Passwortwiederherstellung stellt das Zugangsdatenformular nun direkt wieder her, statt geparkte Seiteninhalte zu aktualisieren. Dadurch entstehen keine doppelten Auswahlfelder für Anmeldequellen. Während einer Zwei-Faktor-Abfrage wird die Auswahl der Zugangsdatenquelle zudem ausgeblendet.
+
+## Genaue, wiederholbare Verzeichniserkennung
+
+Jeder Durchlauf von „Testen und erkennen“ ersetzt nun die vorherige Stichprobe, bevor die Rollenzuordnungen neu aufgebaut werden. Benutzer- und Gruppensuchen verwenden durchgängig ihre jeweiligen DNs und greifen unabhängig auf die Basis-DN zurück. LDAP-Objekte, die keine Gruppen sind, werden aus der Gruppenauswahl ausgeschlossen.

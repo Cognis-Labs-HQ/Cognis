@@ -338,6 +338,7 @@ export function createAdapterConfigPopup({
         const dbData = payload.data ?? {};
         let connectionValues = { ...dbData };
         let sample = null;
+        let discoverySequence = 0;
         await openPopup({
             title: "LDAP setup",
             maxWidth: "760px",
@@ -387,7 +388,9 @@ export function createAdapterConfigPopup({
                 if (!(form instanceof HTMLElement)) return false;
                 const values = buildConfigPayload(form);
                 if (action === "test") {
+                    const currentDiscovery = ++discoverySequence;
                     connectionValues = { ...connectionValues, ...values };
+                    sample = null;
                     const testResponse = await apiFetch(
                         configUrl.replace(/\/config$/, "/test"),
                         {
@@ -399,6 +402,7 @@ export function createAdapterConfigPopup({
                     const testPayload = await testResponse
                         .json()
                         .catch(() => ({}));
+                    if (currentDiscovery !== discoverySequence) return false;
                     if (!testResponse.ok) {
                         showToast(
                             testPayload?.error?.message ?? "LDAP test failed",

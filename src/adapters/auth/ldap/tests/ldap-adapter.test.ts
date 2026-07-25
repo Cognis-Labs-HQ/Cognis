@@ -1,6 +1,51 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createAdapter } from "../index.js";
+import type { LdapRuntimeOptions } from "../index.js";
+import {
+    isDirectoryGroupEntry,
+    resolveDirectorySearchBases,
+} from "../client.js";
+
+test("LDAP discovery uses focused user and group bases with base DN fallback", () => {
+    const common = {
+        baseDn: "dc=example,dc=org",
+        userDn: "ou=People,dc=example,dc=org",
+        groupDn: "ou=Groups,dc=example,dc=org",
+    } as LdapRuntimeOptions;
+    assert.deepEqual(resolveDirectorySearchBases(common), {
+        users: "ou=People,dc=example,dc=org",
+        groups: "ou=Groups,dc=example,dc=org",
+    });
+    assert.deepEqual(
+        resolveDirectorySearchBases({
+            ...common,
+            userDn: " ",
+            groupDn: "",
+        }),
+        {
+            users: "dc=example,dc=org",
+            groups: "dc=example,dc=org",
+        },
+    );
+});
+
+test("LDAP discovery excludes user objects from group results", () => {
+    assert.equal(
+        isDirectoryGroupEntry({
+            objectClass: ["top", "person", "inetOrgPerson"],
+            cn: "Alice",
+        }),
+        false,
+    );
+    assert.equal(
+        isDirectoryGroupEntry({
+            objectClass: ["top", "groupOfNames"],
+            cn: "Teachers",
+        }),
+        true,
+    );
+});
 
 test("ldap adapter returns null when no client set", async () => {
     const adapter = createAdapter();

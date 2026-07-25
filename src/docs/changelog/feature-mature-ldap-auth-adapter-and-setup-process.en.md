@@ -23,3 +23,7 @@ Successful LDAP sign-ins now create the shared account record and LDAP identity 
 ## Reliable login mode transitions
 
 Returning from password recovery now restores the credential form in place instead of refreshing parked page content, preventing duplicate auth-source selectors. The credential source selector is also hidden while a two-factor challenge is active.
+
+## Accurate repeatable directory discovery
+
+Every Test and Discover run now replaces the prior sample before rebuilding role mappings. User and group searches consistently use their dedicated DNs, falling back independently to the base DN, and non-group LDAP objects are excluded from group choices.

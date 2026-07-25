@@ -31,11 +31,29 @@ function userFilter(options: LdapRuntimeOptions, username: string): string {
         : `(&${options.userFilter}(${options.userAttribute}=${Filter.escape(username)}))`;
 }
 
-function searchBase(
-    options: LdapRuntimeOptions,
-    specificDn: "userDn" | "groupDn",
-): string {
-    return String(options[specificDn] ?? "").trim() || options.baseDn;
+export function resolveDirectorySearchBases(options: LdapRuntimeOptions): {
+    users: string;
+    groups: string;
+} {
+    return {
+        users: String(options.userDn ?? "").trim() || options.baseDn,
+        groups: String(options.groupDn ?? "").trim() || options.baseDn,
+    };
+}
+
+export function isDirectoryGroupEntry(entry: Record<string, unknown>): boolean {
+    const objectClasses = values(entry, "objectClass").map((value) =>
+        value.toLowerCase(),
+    );
+    return objectClasses.some((objectClass) =>
+        [
+            "group",
+            "groupofnames",
+            "groupofuniquenames",
+            "ipausergroup",
+            "posixgroup",
+        ].includes(objectClass),
+    );
 }
 
 async function withBoundClient<T>(
@@ -63,19 +81,22 @@ async function findUser(
     options: LdapRuntimeOptions,
     username: string,
 ): Promise<LdapEntry | undefined> {
-    const result = await client.search(searchBase(options, "userDn"), {
-        scope: "sub",
-        filter: userFilter(options, username),
-        attributes: [
-            options.userAttribute,
-            "mail",
-            "displayName",
-            "cn",
-            options.memberOfAttribute,
-        ],
-        sizeLimit: 2,
-        timeLimit: 10,
-    });
+    const result = await client.search(
+        resolveDirectorySearchBases(options).users,
+        {
+            scope: "sub",
+            filter: userFilter(options, username),
+            attributes: [
+                options.userAttribute,
+                "mail",
+                "displayName",
+                "cn",
+                options.memberOfAttribute,
+            ],
+            sizeLimit: 2,
+            timeLimit: 10,
+        },
+    );
     if (result.searchEntries.length !== 1) return undefined;
     return result.searchEntries[0] as LdapEntry;
 }
@@ -97,22 +118,29 @@ async function resolveGroups(
     entry: LdapEntry,
     options: LdapRuntimeOptions,
 ): Promise<string[]> {
-    const result = await client.search(searchBase(options, "groupDn"), {
-        scope: "sub",
-        filter: options.groupFilter,
-        attributes: [
-            options.groupNameAttribute,
-            options.groupMemberAttribute,
-            "uniqueMember",
-            "memberUid",
-        ],
-        paged: { pageSize: 100, pagePause: false },
-        sizeLimit: 500,
-        timeLimit: 15,
-    });
+    const result = await client.search(
+        resolveDirectorySearchBases(options).groups,
+        {
+            scope: "sub",
+            filter: options.groupFilter,
+            attributes: [
+                options.groupNameAttribute,
+                options.groupMemberAttribute,
+                "uniqueMember",
+                "memberUid",
+                "objectClass",
+            ],
+            paged: { pageSize: 100, pagePause: false },
+            sizeLimit: 500,
+            timeLimit: 15,
+        },
+    );
     const username = first(entry, options.userAttribute) ?? "";
     const directDns = new Set(values(entry, options.memberOfAttribute));
-    for (const raw of result.searchEntries) {
+    const groupEntries = result.searchEntries.filter((raw) =>
+        isDirectoryGroupEntry(raw as LdapEntry),
+    );
+    for (const raw of groupEntries) {
         const group = raw as LdapEntry;
         const members = [
             ...values(group, options.groupMemberAttribute),
@@ -126,7 +154,7 @@ async function resolveGroups(
         let changed = true;
         while (changed) {
             changed = false;
-            for (const raw of result.searchEntries) {
+            for (const raw of groupEntries) {
                 const group = raw as LdapEntry;
                 const members = [
                     ...values(group, options.groupMemberAttribute),
@@ -143,7 +171,7 @@ async function resolveGroups(
         }
     }
     const namesByDn = new Map(
-        result.searchEntries.map((raw) => {
+        groupEntries.map((raw) => {
             const group = raw as LdapEntry;
             return [
                 group.dn,
@@ -200,8 +228,9 @@ export class StandardLdapClient implements LdapClient {
             options.bindDn,
             options.bindPassword,
             async (client) => {
+                const searchBases = resolveDirectorySearchBases(options);
                 const [userResult, groupResult, rootDse] = await Promise.all([
-                    client.search(searchBase(options, "userDn"), {
+                    client.search(searchBases.users, {
                         scope: "sub",
                         filter: options.userFilter.replaceAll(
                             "{username}",
@@ -213,12 +242,13 @@ export class StandardLdapClient implements LdapClient {
                             "displayName",
                             "cn",
                             options.memberOfAttribute,
+                            "objectClass",
                         ],
                         paged: { pageSize: 100, pagePause: false },
                         sizeLimit: 500,
                         timeLimit: 15,
                     }),
-                    client.search(searchBase(options, "groupDn"), {
+                    client.search(searchBases.groups, {
                         scope: "sub",
                         filter: options.groupFilter,
                         attributes: [
@@ -226,6 +256,7 @@ export class StandardLdapClient implements LdapClient {
                             options.groupMemberAttribute,
                             "uniqueMember",
                             "memberUid",
+                            "objectClass",
                         ],
                         paged: { pageSize: 100, pagePause: false },
                         sizeLimit: 500,
@@ -257,20 +288,27 @@ export class StandardLdapClient implements LdapClient {
                     users: userResult.searchEntries.map((entry) =>
                         mapUser(entry as LdapEntry, options),
                     ),
-                    groups: groupResult.searchEntries.map((raw) => {
-                        const entry = raw as LdapEntry;
-                        return {
-                            name:
-                                first(entry, options.groupNameAttribute) ??
-                                firstRdnValue(entry.dn),
-                            dn: entry.dn,
-                            members: [
-                                ...values(entry, options.groupMemberAttribute),
-                                ...values(entry, "uniqueMember"),
-                                ...values(entry, "memberUid"),
-                            ],
-                        };
-                    }),
+                    groups: groupResult.searchEntries
+                        .filter((raw) =>
+                            isDirectoryGroupEntry(raw as LdapEntry),
+                        )
+                        .map((raw) => {
+                            const entry = raw as LdapEntry;
+                            return {
+                                name:
+                                    first(entry, options.groupNameAttribute) ??
+                                    firstRdnValue(entry.dn),
+                                dn: entry.dn,
+                                members: [
+                                    ...values(
+                                        entry,
+                                        options.groupMemberAttribute,
+                                    ),
+                                    ...values(entry, "uniqueMember"),
+                                    ...values(entry, "memberUid"),
+                                ],
+                            };
+                        }),
                 };
             },
         );
