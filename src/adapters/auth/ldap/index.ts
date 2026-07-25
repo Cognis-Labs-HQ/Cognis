@@ -30,6 +30,17 @@ export interface LdapDirectorySample {
     directoryFlavor: "openldap" | "freeipa" | "generic";
 }
 
+export interface LdapCredentialTestResult {
+    credentialTest: {
+        accountId: string;
+        dn?: string;
+        email?: string;
+        displayName?: string;
+        groups: string[];
+        role: string;
+    };
+}
+
 export interface LdapClient {
     authenticate(
         username: string,
@@ -109,7 +120,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.5.0";
+    readonly version = "0.5.1";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -357,7 +368,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
 
     async testConfiguration(
         config: Record<string, unknown>,
-    ): Promise<LdapDirectorySample> {
+    ): Promise<LdapDirectorySample | LdapCredentialTestResult> {
         const merged = { ...this.options, ...config } as LdapRuntimeOptions;
         if (
             !merged.serverUrl ||
@@ -368,6 +379,35 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             throw new Error(
                 "LDAP server URL, base DN, and bind credentials are required.",
             );
+        const testUsername = String(config.testUsername ?? "").trim();
+        const testPassword = String(config.testPassword ?? "");
+        if (testUsername || testPassword) {
+            if (!testUsername || !testPassword)
+                throw new Error(
+                    "LDAP test username and password are required.",
+                );
+            const identity = await this.client.authenticate(
+                testUsername,
+                testPassword,
+                merged,
+            );
+            if (!identity) throw new Error("LDAP user credential test failed.");
+            const role = this.resolveRole(identity.groups ?? [], merged);
+            if (!role)
+                throw new Error(
+                    "The LDAP user is not eligible for a mapped Cognis role.",
+                );
+            return {
+                credentialTest: {
+                    accountId: identity.id,
+                    dn: identity.dn,
+                    email: identity.email,
+                    displayName: identity.displayName,
+                    groups: identity.groups ?? [],
+                    role,
+                },
+            };
+        }
         if (this.client.discover) return this.client.discover(merged);
         if (this.client?.testConnection) {
             const result = await this.client.testConnection(merged);

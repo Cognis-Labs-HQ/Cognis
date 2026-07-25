@@ -4,6 +4,7 @@ import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
+import { openPopup } from "../../reuse/popup.js";
 import {
     loadAuthTypingSamples,
     runTypingShowcase,
@@ -193,6 +194,19 @@ export async function mount(root) {
                     "aria-label",
                     i18n.t("ui.app.login.provider.toggle.aria"),
                 );
+                const methodButtons = new Map();
+                const selectCredentialProvider = (method) => {
+                    if (providerInput) providerInput.value = method.id;
+                    renderProviderActions(method);
+                    methodButtons.forEach((button, methodId) => {
+                        const active = methodId === method.id;
+                        button.classList.toggle(
+                            "auth-provider-btn--active",
+                            active,
+                        );
+                        button.setAttribute("aria-pressed", String(active));
+                    });
+                };
                 credentialProviders.forEach((method) => {
                     const btn = document.createElement("button");
                     btn.type = "button";
@@ -208,24 +222,99 @@ export async function mount(root) {
                         String(method.id === "local"),
                     );
                     btn.addEventListener("click", () => {
-                        if (providerInput) providerInput.value = method.id;
-                        renderProviderActions(method);
-                        toggleContainer
-                            .querySelectorAll(".auth-provider-btn")
-                            .forEach((b) => {
-                                const active = b === btn;
-                                b.classList.toggle(
-                                    "auth-provider-btn--active",
-                                    active,
-                                );
-                                b.setAttribute("aria-pressed", String(active));
-                            });
+                        selectCredentialProvider(method);
                     });
                     if (method.id === "local") {
                         btn.classList.add("auth-provider-btn--active");
                     }
+                    methodButtons.set(method.id, btn);
                     toggleContainer.appendChild(btn);
                 });
+                const overflowButton = document.createElement("button");
+                overflowButton.type = "button";
+                overflowButton.textContent = "…";
+                overflowButton.className =
+                    "auth-provider-btn auth-provider-overflow-btn";
+                overflowButton.setAttribute(
+                    "aria-label",
+                    i18n.t("ui.app.login.provider.toggle.aria"),
+                );
+                overflowButton.hidden = true;
+                overflowButton.addEventListener("click", async () => {
+                    await openPopup({
+                        title: i18n.t("ui.app.login.provider.toggle.aria"),
+                        body: `<div class="auth-provider-overflow-list">${credentialProviders
+                            .map(
+                                (method) =>
+                                    `<button type="button" class="auth-provider-overflow-option" data-login-provider-id="${escapeHtml(method.id)}">${escapeHtml(method.name)}</button>`,
+                            )
+                            .join("")}</div>`,
+                        actions: [
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "cancel",
+                            },
+                        ],
+                        onOpen: (overlay, close) => {
+                            overlay
+                                .querySelectorAll("[data-login-provider-id]")
+                                .forEach((option) =>
+                                    option.addEventListener("click", () => {
+                                        const method = credentialProviders.find(
+                                            (entry) =>
+                                                entry.id ===
+                                                option.dataset.loginProviderId,
+                                        );
+                                        if (method) {
+                                            selectCredentialProvider(method);
+                                            close();
+                                        }
+                                    }),
+                                );
+                        },
+                    });
+                });
+                toggleContainer.appendChild(overflowButton);
+
+                const fitCredentialProviderButtons = () => {
+                    const minimumButtonWidth = 96;
+                    const gap = 10;
+                    const availableSlots = Math.max(
+                        1,
+                        Math.floor(
+                            (toggleContainer.clientWidth + gap) /
+                                (minimumButtonWidth + gap),
+                        ),
+                    );
+                    const needsOverflow =
+                        credentialProviders.length > availableSlots;
+                    const visibleIds = new Set(
+                        credentialProviders
+                            .slice(
+                                0,
+                                needsOverflow
+                                    ? Math.max(1, availableSlots - 1)
+                                    : credentialProviders.length,
+                            )
+                            .map((method) => method.id),
+                    );
+                    const selectedId = providerInput?.value;
+                    if (selectedId && !visibleIds.has(selectedId)) {
+                        const lastVisibleId = [...visibleIds].at(-1);
+                        if (lastVisibleId !== "local")
+                            visibleIds.delete(lastVisibleId);
+                        visibleIds.add(selectedId);
+                    }
+                    methodButtons.forEach((button, methodId) => {
+                        button.hidden = !visibleIds.has(methodId);
+                    });
+                    overflowButton.hidden = !needsOverflow;
+                };
+                fitCredentialProviderButtons();
+                new ResizeObserver(fitCredentialProviderButtons).observe(
+                    toggleContainer,
+                );
             }
             const initialProvider =
                 credentialProviders.find((method) => method.id === "local") ??

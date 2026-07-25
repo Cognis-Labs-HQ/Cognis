@@ -24,6 +24,7 @@ export async function openAdapterConfig({
         document.head.appendChild(stylesheet);
     }
     let connectionFormController = null;
+    let credentialFormController = null;
 
     function renderLdapConnectionForm(values = {}) {
         const labels = {
@@ -177,6 +178,55 @@ export async function openAdapterConfig({
         </div>`;
     }
 
+    function renderCredentialTestForm(result) {
+        const formBuilder = createFormBuilder(
+            {
+                i18n: {
+                    t: (key) =>
+                        ({
+                            testUsername: "LDAP username",
+                            testPassword: "LDAP password",
+                        })[key] ?? key,
+                },
+                escapeHtml,
+            },
+            {
+                formId: "ldap-credential-test-form",
+                formClassName: "provider-popup-form ldap-setup-popup",
+                includeSubmitButton: false,
+                fields: [
+                    {
+                        name: "testUsername",
+                        labelKey: "testUsername",
+                        required: true,
+                    },
+                    {
+                        name: "testPassword",
+                        labelKey: "testPassword",
+                        type: "password",
+                        required: true,
+                    },
+                ],
+            },
+        );
+        credentialFormController = null;
+        const details = result
+            ? `<dl class="ldap-credential-result">
+                <div><dt>User</dt><dd>${escapeHtml(result.displayName ?? result.accountId)}</dd></div>
+                <div><dt>Account ID</dt><dd>${escapeHtml(result.accountId)}</dd></div>
+                ${result.email ? `<div><dt>Email</dt><dd>${escapeHtml(result.email)}</dd></div>` : ""}
+                ${result.dn ? `<div><dt>DN</dt><dd>${escapeHtml(result.dn)}</dd></div>` : ""}
+                <div><dt>Groups</dt><dd>${escapeHtml(result.groups.join(", ") || "None")}</dd></div>
+                <div><dt>Cognis role</dt><dd><strong>${escapeHtml(result.role)}</strong></dd></div>
+              </dl>`
+            : "";
+        return `<div class="ldap-credential-test-step">
+          <p class="module-settings-popup-note">Verify the final configuration with the credentials of any LDAP user. The resolved user and Cognis role will be shown before this server can be saved.</p>
+          ${formBuilder.render()}
+          ${details}
+        </div>`;
+    }
+
     const dbData = configPayload?.data ?? {};
     let servers = Array.isArray(dbData.servers)
         ? dbData.servers.map((server) => ({ ...server }))
@@ -187,6 +237,7 @@ export async function openAdapterConfig({
     let selectedServerIndex = null;
     let connectionValues = {};
     let sample = null;
+    let credentialTestResult = null;
     let discoverySequence = 0;
     await openPopup({
         title: "LDAP setup",
@@ -235,6 +286,29 @@ export async function openAdapterConfig({
                     { id: "back", label: "Back", variant: "neutral" },
                     {
                         id: "save",
+                        label: "Continue",
+                        variant: "confirm",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                ],
+            },
+            {
+                id: "credentials",
+                title: "LDAP setup: verify user",
+                body: () => renderCredentialTestForm(credentialTestResult),
+                actions: [
+                    { id: "back", label: "Back", variant: "neutral" },
+                    {
+                        id: "verify-user",
+                        label: "Test user credentials",
+                        variant: "neutral",
+                    },
+                    {
+                        id: "complete",
                         label: i18n.t("ui.app.admin.notif.save_settings"),
                         variant: "confirm",
                     },
@@ -313,6 +387,29 @@ export async function openAdapterConfig({
                     });
                 return;
             }
+            if (api.pageId === "credentials") {
+                const form = overlay.querySelector(
+                    "#ldap-credential-test-form",
+                );
+                if (form instanceof HTMLFormElement) {
+                    const builder = createFormBuilder(
+                        { i18n: { t: (key) => key }, escapeHtml },
+                        {
+                            formId: "ldap-credential-test-form",
+                            includeSubmitButton: false,
+                            fields: ["testUsername", "testPassword"].map(
+                                (name) => ({
+                                    name,
+                                    labelKey: name,
+                                    required: true,
+                                }),
+                            ),
+                        },
+                    );
+                    credentialFormController = builder.attach(form);
+                }
+                return;
+            }
             if (api.pageId !== "connect") return;
             const form = overlay.querySelector("#ldap-connection-form");
             if (form instanceof HTMLFormElement) {
@@ -347,7 +444,13 @@ export async function openAdapterConfig({
                 return false;
             }
             if (action === "back") {
-                api.setPage(api.pageId === "filters" ? "connect" : "servers");
+                api.setPage(
+                    api.pageId === "credentials"
+                        ? "filters"
+                        : api.pageId === "filters"
+                          ? "connect"
+                          : "servers",
+                );
                 return false;
             }
             if (action === "save-home") {
@@ -371,6 +474,37 @@ export async function openAdapterConfig({
             const form = overlay.querySelector(".provider-popup-form");
             if (!(form instanceof HTMLElement)) return false;
             const values = buildConfigPayload(form);
+            if (action === "verify-user") {
+                if (!credentialFormController?.validateAll(true)) {
+                    form.querySelector(".form-builder-input--invalid")?.focus();
+                    return false;
+                }
+                const testResponse = await apiFetch(
+                    configUrl.replace(/\/config$/, "/test"),
+                    {
+                        method: "POST",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                            ...connectionValues,
+                            ...values,
+                        }),
+                    },
+                );
+                const testPayload = await testResponse.json().catch(() => ({}));
+                if (!testResponse.ok || !testPayload.data?.credentialTest) {
+                    credentialTestResult = null;
+                    showToast(
+                        testPayload?.error?.message ??
+                            "LDAP user credential test failed",
+                        { variant: "error" },
+                    );
+                    return false;
+                }
+                credentialTestResult = testPayload.data.credentialTest;
+                api.markDirty();
+                api.setPage("credentials");
+                return false;
+            }
             if (action === "test") {
                 if (!connectionFormController?.validateAll(true)) {
                     form.querySelector(".form-builder-input--invalid")?.focus();
@@ -401,13 +535,24 @@ export async function openAdapterConfig({
                 api.setPage("filters");
                 return false;
             }
-            if (action !== "save") return true;
-            connectionValues = { ...connectionValues, ...values };
-            connectionValues.roleMappings = Object.fromEntries(
-                ["user", "teacher", "moderator", "admin"]
-                    .map((role) => [values[`roleMapping.${role}`], role])
-                    .filter(([group]) => group),
-            );
+            if (action === "save") {
+                connectionValues = { ...connectionValues, ...values };
+                connectionValues.roleMappings = Object.fromEntries(
+                    ["user", "teacher", "moderator", "admin"]
+                        .map((role) => [values[`roleMapping.${role}`], role])
+                        .filter(([group]) => group),
+                );
+                credentialTestResult = null;
+                api.setPage("credentials");
+                return false;
+            }
+            if (action !== "complete") return true;
+            if (!credentialTestResult) {
+                showToast("Test LDAP user credentials before saving.", {
+                    variant: "error",
+                });
+                return false;
+            }
             const duplicateIdentifier = servers.some(
                 (server, index) =>
                     index !== selectedServerIndex &&

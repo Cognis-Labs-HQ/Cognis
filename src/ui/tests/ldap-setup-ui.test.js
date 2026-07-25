@@ -50,6 +50,15 @@ test("LDAP setup manages named, reorderable servers and unified login", () => {
     assert.match(ldapPopupSource, /JSON\.stringify\(\{ unify, servers \}\)/);
 });
 
+test("LDAP setup requires a successful user bind before completion", () => {
+    assert.match(ldapPopupSource, /id: "credentials"/);
+    assert.match(ldapPopupSource, /id: "verify-user"/);
+    assert.match(ldapPopupSource, /testUsername/);
+    assert.match(ldapPopupSource, /testPassword/);
+    assert.match(ldapPopupSource, /credentialTestResult/);
+    assert.match(ldapPopupSource, /action !== "complete"/);
+});
+
 test("LDAP role mapping sorts groups and renders names without DNs", () => {
     assert.match(ldapPopupSource, /\.sort\(\(left, right\) =>/);
     assert.match(
@@ -88,4 +97,7 @@ test("login source selector precedes credential fields", () => {
         loginSource,
         /setAttribute\("aria-pressed", String\(active\)\)/,
     );
+    assert.match(loginSource, /auth-provider-overflow-btn/);
+    assert.match(loginSource, /new ResizeObserver/);
+    assert.match(loginSource, /auth-provider-overflow-list/);
 });

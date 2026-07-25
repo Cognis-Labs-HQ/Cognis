@@ -187,6 +187,8 @@ p.auth-intro {
     border: 1px solid rgba(137, 170, 255, 0.45);
     border-radius: 10px;
     background: rgba(5, 16, 34, 0.55);
+    min-width: 0;
+    overflow: hidden;
 }
 
 .auth-provider-toggle[hidden] {
@@ -194,7 +196,8 @@ p.auth-intro {
 }
 
 .auth-form .auth-provider-btn {
-    flex: 1;
+    flex: 1 1 6rem;
+    min-width: 0;
     margin-top: 0;
     padding: 9px 12px;
     font-size: 1rem;
@@ -204,6 +207,22 @@ p.auth-intro {
     color: rgba(214, 231, 255, 0.72);
     cursor: pointer;
     border-radius: 6px;
+}
+
+.auth-form .auth-provider-overflow-btn {
+    flex: 0 0 3rem;
+}
+
+.auth-provider-overflow-list {
+    display: grid;
+    gap: 0.5rem;
+    max-height: min(60vh, 24rem);
+    overflow-y: auto;
+}
+
+.auth-provider-overflow-option {
+    text-align: left;
+    width: 100%;
 }
 
 .auth-form .auth-provider-btn--active {

@@ -30,3 +30,23 @@
     font-size: 1.5rem;
     min-width: 2.75rem;
 }
+
+.ldap-credential-result {
+    border-top: 1px solid var(--border-color, #ccc);
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+}
+
+.ldap-credential-result div {
+    display: grid;
+    gap: 0.5rem;
+    grid-template-columns: minmax(7rem, 0.35fr) 1fr;
+}
+
+.ldap-credential-result dd,
+.ldap-credential-result dt {
+    margin: 0;
+    overflow-wrap: anywhere;
+}

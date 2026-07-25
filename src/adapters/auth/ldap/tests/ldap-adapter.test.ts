@@ -271,6 +271,78 @@ test("ldap test configuration returns only client-discovered directory entries",
     );
 });
 
+test("LDAP setup credential test returns user details and mapped role", async () => {
+    const adapter = createAdapter() as {
+        setClient(client: {
+            authenticate: () => Promise<{
+                id: string;
+                dn: string;
+                email: string;
+                displayName: string;
+                groups: string[];
+            }>;
+        }): void;
+        testConfiguration(config: Record<string, unknown>): Promise<{
+            credentialTest: {
+                accountId: string;
+                role: string;
+                groups: string[];
+            };
+        }>;
+    };
+    adapter.setClient({
+        authenticate: async () => ({
+            id: "alice",
+            dn: "uid=alice,ou=people,dc=example,dc=org",
+            email: "alice@example.org",
+            displayName: "Alice Example",
+            groups: ["teachers"],
+        }),
+    });
+    const result = await adapter.testConfiguration({
+        serverUrl: "ldaps://ldap.example.org",
+        baseDn: "dc=example,dc=org",
+        bindDn: "uid=service,dc=example,dc=org",
+        bindPassword: "service-secret",
+        userAttribute: "uid",
+        roleMappings: { teachers: "teacher" },
+        testUsername: "alice",
+        testPassword: "user-secret",
+    });
+    assert.deepEqual(result.credentialTest, {
+        accountId: "alice",
+        dn: "uid=alice,ou=people,dc=example,dc=org",
+        email: "alice@example.org",
+        displayName: "Alice Example",
+        groups: ["teachers"],
+        role: "teacher",
+    });
+});
+
+test("LDAP setup credential test rejects a user outside the mapped user group", async () => {
+    const adapter = createAdapter() as {
+        setClient(client: {
+            authenticate: () => Promise<{ id: string; groups: string[] }>;
+        }): void;
+        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
+    };
+    adapter.setClient({
+        authenticate: async () => ({ id: "outsider", groups: ["staff"] }),
+    });
+    await assert.rejects(
+        adapter.testConfiguration({
+            serverUrl: "ldaps://ldap.example.org",
+            baseDn: "dc=example,dc=org",
+            bindDn: "uid=service,dc=example,dc=org",
+            bindPassword: "service-secret",
+            roleMappings: { approved: "user" },
+            testUsername: "outsider",
+            testPassword: "valid-secret",
+        }),
+        /not eligible/,
+    );
+});
+
 test("ldap adapter password reset is blocked when current-password validation is unavailable", async () => {
     const adapter = createAdapter() as {
         configure(config: Record<string, unknown>): void;
