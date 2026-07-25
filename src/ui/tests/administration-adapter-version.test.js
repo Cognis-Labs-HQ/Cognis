@@ -35,6 +35,7 @@ test("administration adapters expose version metadata in details", () => {
                 id: "smtp",
                 name: "SMTP",
                 version: "0.2.6",
+                publisher: "Cognis & Labs",
                 active: true,
             },
         ],
@@ -47,6 +48,7 @@ test("administration adapters expose version metadata in details", () => {
     );
     assert.doesNotMatch(html, /adapter-inline-version/);
     assert.match(html, /module-detail-value">0\.2\.6<\/span>/);
+    assert.match(html, /module-detail-value">Cognis &amp; Labs<\/span>/);
     assert.doesNotMatch(html, /data-adapter-config/);
     assert.match(html, /module-row-controls adapter-inline-controls/);
     assert.match(
@@ -129,6 +131,7 @@ test("health lights have a rendered box and explicit status colors", () => {
         styles,
         /\.switch\.switch--inline\s*{[^}]*align-items: center;[^}]*align-self: center;[^}]*margin-top: 0;/,
     );
+    assert.match(styles, /\.adapter-inline-row\s*{[^}]*border-radius: 12px;/);
 });
 
 test("component detail arrows use an independent details hitbox", () => {
