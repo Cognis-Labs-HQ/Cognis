@@ -46,8 +46,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.3`    |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.2`    |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.1`    |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.14`   |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.16`   |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.15`   |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.17`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5`    |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`    |
 

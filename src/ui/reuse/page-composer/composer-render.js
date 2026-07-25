@@ -709,6 +709,12 @@ export function createComposerRenderer({
                 } else {
                     renderElementContent(card, element);
                 }
+            } else if (!isMissing) {
+                // Refresh non-preserved element content in place. Preserved
+                // media keeps using its parked node through
+                // renderElementContent, while opt-out elements receive their
+                // latest render output.
+                renderElementContent(card, element);
             }
             card.className = isMissing
                 ? "widget-card widget-card--missing"
