@@ -41,6 +41,15 @@ test("tfa settings drag and drop uses dirty tracker", () => {
     );
 });
 
+test("tfa settings require password confirmation before removing enabled methods", () => {
+    assert.match(SOURCE, /createRepromptGuard\(\{ i18n \}\)/);
+    assert.match(
+        SOURCE,
+        /const removesEnabledMethod = \[\.\.\.currentEnabledIds\]\.some\([\s\S]*?if \(removesEnabledMethod\) \{[\s\S]*?reprompt\.runWithReprompt/,
+    );
+    assert.match(SOURCE, /if \(!confirmed\) return;/);
+});
+
 test("tfa required setup popup is guarded against duplicate concurrent flows", () => {
     assert.match(SOURCE, /let requiredSetupPromptActive = false;/);
     assert.match(

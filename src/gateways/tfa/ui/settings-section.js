@@ -5,6 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 import { createQrImageSource } from "/static/reuse/qr-image-source.js";
+import { createRepromptGuard } from "/static/reuse/reprompt.js";
 import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
@@ -26,6 +27,7 @@ import {
 let requiredSetupPromptActive = false;
 
 export function createSettingsSection({ i18n, root, markDirty }) {
+    const reprompt = createRepromptGuard({ i18n });
     let tfaStatus = null;
     let recoveryCodesStatus = {
         codes: [],
@@ -765,6 +767,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             const currentEnabledIds = new Set(
                 (currentStatus.enabledMethods ?? []).map((method) => method.id),
             );
+            const removesEnabledMethod = [...currentEnabledIds].some(
+                (id) => !workingPreferredIds.includes(id),
+            );
+            if (removesEnabledMethod) {
+                const confirmed = await reprompt.runWithReprompt(() => {});
+                if (!confirmed) return;
+            }
             for (const id of [...workingPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
                     const enabled = await enableMethod(id);
