@@ -1,3 +1,5 @@
+<!-- Keep src/docs/versions.de.md, versions.id.md, and versions.ja.md in sync when updating this file. -->
+
 # Component Versions
 
 ## Overview

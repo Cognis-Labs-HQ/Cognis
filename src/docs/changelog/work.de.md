@@ -1,4 +1,8 @@
-# Konfigurationslebenszyklus von Nextcloud Whiteboard
+# Zuverlässiger Start der Modulverwaltung
+
+## Startbereitschaft auf das zuständige Modul beschränken
+
+Die Startzuverlässigkeit wird innerhalb von Nextcloud Whiteboard gewährleistet, anstatt jede API-Anfrage zu verzögern. Dadurch bleibt der gemeinsame Serverlebenszyklus unverändert, während die betroffenen Verwaltungsrouten unabhängig von Profildiensten verfügbar sind.
 
 ## Konfiguration unabhängig von Profildiensten halten
 

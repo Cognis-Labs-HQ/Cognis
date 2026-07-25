@@ -1,4 +1,8 @@
-# Nextcloud Whiteboard configuration lifecycle
+# Reliable module administration startup
+
+## Scope startup readiness to the owning module
+
+Startup reliability is handled within Nextcloud Whiteboard rather than by delaying every API request. This keeps the shared server lifecycle unchanged while making the affected administration routes available independently of profile services.
 
 ## Keep configuration independent from profile services
 

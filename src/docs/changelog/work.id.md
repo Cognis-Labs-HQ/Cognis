@@ -1,4 +1,8 @@
-# Siklus konfigurasi Nextcloud Whiteboard
+# Startup administrasi modul yang andal
+
+## Membatasi kesiapan startup pada modul pemilik
+
+Keandalan startup ditangani di dalam Nextcloud Whiteboard alih-alih menunda setiap permintaan API. Dengan demikian, siklus hidup server bersama tidak berubah sementara rute administrasi terkait tersedia secara independen dari layanan profil.
 
 ## Menjaga konfigurasi tetap independen dari layanan profil
 

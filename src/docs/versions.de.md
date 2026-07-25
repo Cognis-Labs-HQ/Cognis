@@ -1,3 +1,5 @@
+<!-- Keep all src/docs/versions.*.md language variants in sync when updating this file. -->
+
 # Komponentenversionen
 
 ## Überblick
@@ -85,6 +87,6 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.13` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.38` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.44` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |
