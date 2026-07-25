@@ -1,10 +1,29 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
     BANNER_FULL_HEIGHT_ASPECT_RATIO,
     BANNER_HALF_HEIGHT_ASPECT_RATIO,
     resolveBannerCropAspectRatio,
 } from "../ui/image-crop.js";
+
+const PROFILE_RENDER_SOURCE = readFileSync(
+    resolve(dirname(fileURLToPath(import.meta.url)), "../ui/profile-render.js"),
+    "utf8",
+);
+
+test("profile hero images opt out of DOM preservation so uploads render immediately", () => {
+    assert.match(
+        PROFILE_RENDER_SOURCE,
+        /class="profile-hero-avatar-img" data-composer-preserve="false"/,
+    );
+    assert.match(
+        PROFILE_RENDER_SOURCE,
+        /class="profile-hero-banner-img" data-composer-preserve="false"/,
+    );
+});
 
 test("resolveBannerCropAspectRatio defaults banner uploads to half-height view", () => {
     assert.equal(
