@@ -331,7 +331,7 @@
   <string name="ui.app.users.action_menu_help">Wählen Sie eine Aktion aus.</string>
   <string name="ui.app.users.reset_password">Passwort zurücksetzen</string>
   <string name="ui.app.users.storage_quotas">Speicherkontingente</string>
-  <string name="ui.app.users.storage_quota_global">Globales Kontingent (Bytes)</string>
+  <string name="ui.app.users.storage_quota_global">Globales Kontingent</string>
   <string name="ui.app.users.storage_quotas_saved">Speicherkontingente aktualisiert.</string>
   <string name="ui.app.users.storage_quota_invalid">Speicherkontingente müssen positive ganze Zahlen sein.</string>
   <string name="ui.app.users.new_password">Neues Passwort</string>

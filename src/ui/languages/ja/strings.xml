@@ -331,7 +331,7 @@
   <string name="ui.app.users.action_menu_help">操作を選択してください。</string>
   <string name="ui.app.users.reset_password">パスワードをリセット</string>
   <string name="ui.app.users.storage_quotas">ストレージクォータ</string>
-  <string name="ui.app.users.storage_quota_global">グローバルクォータ（バイト）</string>
+  <string name="ui.app.users.storage_quota_global">グローバルクォータ</string>
   <string name="ui.app.users.storage_quotas_saved">ストレージクォータを更新しました。</string>
   <string name="ui.app.users.storage_quota_invalid">ストレージクォータは正の整数で入力してください。</string>
   <string name="ui.app.users.new_password">新しいパスワード</string>

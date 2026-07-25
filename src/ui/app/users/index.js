@@ -23,6 +23,15 @@ let registrationGatewayActive = false;
 let smtpAdapterActive = false;
 let composer = null;
 let elements = [];
+let userQuotas = new Map();
+
+const QUOTA_UNITS = [
+    { id: "B", multiplier: 1 },
+    { id: "KiB", multiplier: 1024 },
+    { id: "MiB", multiplier: 1024 ** 2 },
+    { id: "GiB", multiplier: 1024 ** 3 },
+    { id: "TiB", multiplier: 1024 ** 4 },
+];
 
 function formatMemberSince(iso) {
     return formatDate(iso, i18n.t("ui.app.dashboard.never"));
@@ -155,84 +164,92 @@ async function fetchUserQuotas(username) {
     return payload?.data ?? { namespaces: [], globalQuota: undefined };
 }
 
-async function promptStorageQuotas(username) {
-    const { namespaces, globalQuota } = await fetchUserQuotas(username);
-    let inputs = null;
-    const result = await openPopup({
-        title: i18n.t("ui.app.users.storage_quotas"),
-        body: () => `
-      <div class="stack">
-        ${namespaces
-            .map(
-                (entry) => `
-          <label class="stack">
-            <span>${escapeHtml(entry.namespaceId)}</span>
-            <input
-              type="number"
-              min="1"
-              data-namespace-id="${escapeHtml(entry.namespaceId)}"
-              value="${escapeHtml(String(entry.quotaBytes))}"
-            />
-          </label>`,
-            )
-            .join("")}
-        <label class="stack">
-          <span>${escapeHtml(i18n.t("ui.app.users.storage_quota_global"))}</span>
+function splitQuotaBytes(quotaBytes) {
+    const safeBytes =
+        Number.isFinite(quotaBytes) && quotaBytes > 0 ? quotaBytes : 0;
+    const unit =
+        [...QUOTA_UNITS]
+            .reverse()
+            .find(
+                (entry) =>
+                    safeBytes >= entry.multiplier &&
+                    safeBytes % entry.multiplier === 0,
+            ) ?? QUOTA_UNITS[0];
+    return {
+        value: safeBytes ? safeBytes / unit.multiplier : "",
+        unit: unit.id,
+    };
+}
+
+function quotaUnitOptions(selectedUnit) {
+    return QUOTA_UNITS.map(
+        (unit) =>
+            `<option value="${unit.id}"${unit.id === selectedUnit ? " selected" : ""}>${unit.id}</option>`,
+    ).join("");
+}
+
+function renderQuotaControl(username, namespaceId, quotaBytes) {
+    const quota = splitQuotaBytes(quotaBytes);
+    return `
+        <div class="users-quota-control">
+          <span>${escapeHtml(namespaceId === "global" ? i18n.t("ui.app.users.storage_quota_global") : namespaceId)}</span>
           <input
+            class="users-quota-input"
             type="number"
             min="1"
-            data-namespace-id="global"
-            value="${escapeHtml(String(globalQuota ?? ""))}"
+            step="0.01"
+            data-username="${escapeHtml(username)}"
+            data-namespace-id="${escapeHtml(namespaceId)}"
+            value="${escapeHtml(String(quota.value))}"
           />
-        </label>
-      </div>
-    `,
-        actions: [
-            {
-                id: "confirm",
-                label: i18n.t("ui.reuse.save"),
-                variant: "confirm",
-            },
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "cancel",
-            },
-        ],
-        closeProtection: true,
-        onOpen: (overlay) => {
-            inputs = Array.from(
-                overlay.querySelectorAll("input[data-namespace-id]"),
-            );
+          <select
+            class="users-quota-unit-select theme-select"
+            data-username="${escapeHtml(username)}"
+            data-namespace-id="${escapeHtml(namespaceId)}"
+          >${quotaUnitOptions(quota.unit)}</select>
+        </div>`;
+}
+
+function renderQuotaCell(user) {
+    const quotas = userQuotas.get(user.username);
+    if (!quotas) return "";
+    return `
+      <div class="users-quota-list">
+        ${quotas.namespaces
+            .map((entry) =>
+                renderQuotaControl(
+                    user.username,
+                    entry.namespaceId,
+                    entry.quotaBytes,
+                ),
+            )
+            .join("")}
+        ${renderQuotaControl(user.username, "global", quotas.globalQuota)}
+      </div>`;
+}
+
+function parseQuotaBytes(input, select) {
+    const unit = QUOTA_UNITS.find((entry) => entry.id === select.value);
+    const value = Number(input.value);
+    const quotaBytes = unit ? value * unit.multiplier : NaN;
+    return Number.isInteger(quotaBytes) && quotaBytes > 0 ? quotaBytes : null;
+}
+
+async function saveStorageQuota(username, namespaceId, quotaBytes) {
+    const response = await apiFetch(
+        `/api/v1/files/admin/users/${encodeURIComponent(username)}/quotas/${encodeURIComponent(namespaceId)}`,
+        {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ quotaBytes }),
         },
-    });
-    if (result !== "confirm" || !inputs) return;
-    const quotasByInput = inputs.map((input) => ({
-        input,
-        quotaBytes: Number(input.value),
-    }));
-    const invalidInput = quotasByInput.find(
-        ({ quotaBytes }) => !Number.isInteger(quotaBytes) || quotaBytes <= 0,
     );
-    if (invalidInput) {
-        showToast(i18n.t("ui.app.users.storage_quota_invalid"), {
-            variant: "error",
-        });
-        return;
-    }
-    for (const { input, quotaBytes } of quotasByInput) {
-        await apiFetch(
-            `/api/v1/files/admin/users/${encodeURIComponent(username)}/quotas/${encodeURIComponent(input.dataset.namespaceId)}`,
-            {
-                method: "PUT",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ quotaBytes }),
-            },
-        );
-    }
-    showToast(i18n.t("ui.app.users.storage_quotas_saved"), {
-        variant: "success",
-    });
+    showToast(
+        response.ok
+            ? i18n.t("ui.app.users.storage_quotas_saved")
+            : i18n.t("ui.reuse.save_failed"),
+        { variant: response.ok ? "success" : "error" },
+    );
 }
 
 async function refreshData() {
@@ -241,6 +258,13 @@ async function refreshData() {
         loadRegistrationGatewayState(),
         isSmtpAdapterActive(apiFetch),
     ]);
+    const quotaEntries = await Promise.all(
+        users.map(async (user) => [
+            user.username,
+            await fetchUserQuotas(user.username),
+        ]),
+    );
+    userQuotas = new Map(quotaEntries);
     buildElements();
 }
 
@@ -264,6 +288,7 @@ function renderUsersTable() {
             <th>${escapeHtml(i18n.t("ui.app.users.username"))}</th>
             <th>${escapeHtml(i18n.t("ui.app.users.role"))}</th>
             <th>${escapeHtml(i18n.t("ui.app.users.status"))}</th>
+            <th>${escapeHtml(i18n.t("ui.app.users.storage_quotas"))}</th>
             <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
           </tr>
         </thead>
@@ -312,6 +337,7 @@ function renderUsersTable() {
                 <td>${escapeHtml(user.username)}</td>
                 <td>${roleCellHtml}</td>
                 <td>${escapeHtml(statusLabel)}</td>
+                <td>${renderQuotaCell(user)}</td>
                 <td class="users-actions-cell">${actionsHtml}</td>
               </tr>
             `;
@@ -387,11 +413,6 @@ async function runUserMenuAction(action, username) {
         return;
     }
 
-    if (action === "storage-quotas") {
-        await promptStorageQuotas(username);
-        return;
-    }
-
     if (action === "delete") {
         const confirmAction = await openPopup({
             title: i18n.t("ui.app.users.delete_user"),
@@ -451,7 +472,7 @@ function bindUsersInteractions() {
             const target = event.target;
             if (
                 target instanceof HTMLElement &&
-                target.closest("button,select")
+                target.closest("button,input,select")
             )
                 return;
             const username = row.dataset.username;
@@ -521,10 +542,6 @@ function bindUsersInteractions() {
                     id: "password",
                     label: i18n.t("ui.app.users.reset_password"),
                 },
-                {
-                    id: "storage-quotas",
-                    label: i18n.t("ui.app.users.storage_quotas"),
-                },
                 ...(user?.hasTfaConfigured === true
                     ? [
                           {
@@ -553,6 +570,35 @@ function bindUsersInteractions() {
             const username = btn.dataset.username;
             if (!username) return;
             await runUserMenuAction("delete", username);
+        });
+    });
+
+    root.querySelectorAll(
+        ".users-quota-input, .users-quota-unit-select",
+    ).forEach((control) => {
+        control.addEventListener("change", async () => {
+            const username = control.dataset.username;
+            const namespaceId = control.dataset.namespaceId;
+            if (!username || !namespaceId) return;
+            const row = control.closest(".users-quota-control");
+            const input = row?.querySelector(".users-quota-input");
+            const select = row?.querySelector(".users-quota-unit-select");
+            if (
+                !(input instanceof HTMLInputElement) ||
+                !(select instanceof HTMLSelectElement)
+            ) {
+                return;
+            }
+            const quotaBytes = parseQuotaBytes(input, select);
+            if (quotaBytes === null) {
+                showToast(i18n.t("ui.app.users.storage_quota_invalid"), {
+                    variant: "error",
+                });
+                return;
+            }
+            await saveStorageQuota(username, namespaceId, quotaBytes);
+            await refreshData();
+            composer.refresh(elements);
         });
     });
 
@@ -645,6 +691,7 @@ export async function mount(rootEl, { signal } = {}) {
     users = [];
     registrationGatewayActive = false;
     smtpAdapterActive = false;
+    userQuotas = new Map();
 
     await refreshData();
 
