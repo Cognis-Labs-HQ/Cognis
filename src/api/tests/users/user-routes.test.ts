@@ -953,6 +953,45 @@ test("teacher role change sets profile visibility to friends", async () => {
     assert.deepEqual(appliedVisibilityUpdates, ["friends"]);
 });
 
+test("admin role change sets profile visibility to friends", async () => {
+    const accounts = new VolatileLocalAccountStore();
+    await accounts.register("admin", "pw", "admin");
+    await accounts.register("alice", "pw", "user");
+    const prefs = new VolatileUserPreferenceStore();
+    let status = 0;
+    const appliedVisibilityUpdates: string[] = [];
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        async () => "hidden",
+        async (_accountId, visibility) => {
+            appliedVisibilityUpdates.push(visibility);
+        },
+    );
+
+    await route(
+        {
+            method: "POST",
+            headers,
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from('{"role":"admin"}');
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/users/alice/role"),
+    );
+
+    assert.equal(status, 200);
+    assert.deepEqual(appliedVisibilityUpdates, ["friends"]);
+});
+
 test("users list includes hasTfaConfigured when tfa capability is present", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", "admin");

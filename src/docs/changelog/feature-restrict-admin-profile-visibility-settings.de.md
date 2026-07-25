@@ -2,4 +2,4 @@
 
 ## Administratoren können ihre Profile nicht mehr verbergen
 
-Administrator- und Eigentümerkonten müssen die Profilsichtbarkeit nun auf Freunde oder Community einstellen. Der Profileditor deaktiviert inkompatible Optionen, und die API weist Versuche zurück, diese Einschränkung zu umgehen.
+Profile von Lehrkräften, Administratoren und Eigentümern verwenden nun standardmäßig die Sichtbarkeit „Freunde“. Wird einem Konto eine dieser Rollen zugewiesen, wird sein Profil ebenfalls auf „Freunde“ gesetzt. Der Profileditor deaktiviert inkompatible Optionen, und die API weist Versuche zurück, diese Einschränkung zu umgehen.
