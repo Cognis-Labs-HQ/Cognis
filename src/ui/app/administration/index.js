@@ -599,11 +599,17 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        const configButton = row.querySelector("[data-adapter-config]");
-        if (adapter.locked || !(configButton instanceof HTMLButtonElement))
-            return;
+        if (adapter.locked || !adapter.controls?.config) return;
 
         async function handleOpen(e) {
+            if (e.target.closest?.("[data-details-toggle]")) return;
+            const switchLabel = row.querySelector(".switch--inline");
+            if (
+                switchLabel &&
+                (e.target === switchLabel || switchLabel.contains(e.target))
+            ) {
+                return;
+            }
             e.preventDefault();
             e.stopPropagation();
             await openAdapterConfig(
@@ -614,7 +620,10 @@ function bindAdapterRows() {
             );
         }
 
-        configButton.addEventListener("click", handleOpen);
+        row.addEventListener("click", handleOpen);
+        row.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") handleOpen(e);
+        });
     });
 }
 

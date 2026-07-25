@@ -16,7 +16,7 @@ const escapeHtml = (value) =>
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;");
 
-test("administration adapters expose version and configuration in details", () => {
+test("administration adapters expose version metadata in details", () => {
     const html = renderComponentsContent(
         [],
         [
@@ -47,7 +47,7 @@ test("administration adapters expose version and configuration in details", () =
     );
     assert.doesNotMatch(html, /adapter-inline-version/);
     assert.match(html, /module-detail-value">0\.2\.6<\/span>/);
-    assert.match(html, /data-adapter-config/);
+    assert.doesNotMatch(html, /data-adapter-config/);
     assert.match(html, /module-row-controls adapter-inline-controls/);
     assert.match(
         html,
@@ -140,4 +140,16 @@ test("component detail arrows use an independent details hitbox", () => {
     assert.match(source, /event\.stopPropagation\(\)/);
     assert.match(source, /details\.open = !details\.open/);
     assert.match(source, /adapter:\$\{adapterGatewayId\}:\$\{adapterId\}/);
+});
+
+test("configured adapter rows use the component click behavior", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/index.js"),
+        "utf8",
+    );
+    assert.match(source, /adapter\.locked \|\| !adapter\.controls\?\.config/);
+    assert.match(source, /e\.target\.closest\?\.\("\[data-details-toggle\]"\)/);
+    assert.match(source, /row\.querySelector\("\.switch--inline"\)/);
+    assert.match(source, /row\.addEventListener\("click", handleOpen\)/);
+    assert.match(source, /row\.addEventListener\("keydown"/);
 });

@@ -302,7 +302,6 @@ function renderInlineAdapters(
           </summary>
           <div class="module-meta adapter-inline-meta">
             <ul class="module-details">${renderAdapterDetailsList(adapter, adapterId, i18n, escapeHtml)}</ul>
-            <button class="btn-confirm adapter-config-button" type="button" data-adapter-config>${escapeHtml(i18n.t("ui.reuse.configure"))}</button>
           </div>
         </details>
       `;
