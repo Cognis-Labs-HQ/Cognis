@@ -37,7 +37,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.1.6`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.3`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.3`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.3`  |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.4`  |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.6`  |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.4`  |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.4`  |
