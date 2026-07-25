@@ -67,7 +67,11 @@ test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
     );
     assert.match(
         SOURCE,
-        /primary_email_required:\s*"ui\.app\.settings\.emails_verify_unavailable"/,
+        /primary_email_required:\s*"ui\.app\.settings\.notif_smtp_no_email_body"/,
+    );
+    assert.match(
+        SOURCE,
+        /primary_email_address_not_verified:\s*"ui\.app\.settings\.notif_smtp_no_email_body"/,
     );
     assert.match(
         SOURCE,
@@ -84,6 +88,14 @@ test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
     assert.match(
         SOURCE,
         /showToast\(resolveTranslatedTfaErrorMessage\(setup\?\.errorMessage\),/,
+    );
+    assert.match(
+        SOURCE,
+        /variant: resolveTfaErrorToastVariant\(setup\?\.errorMessage\)/,
+    );
+    assert.match(
+        SOURCE,
+        /const warningCodes = new Set\(\[\s*"primary_email_required",\s*"primary_email_address_not_verified",/,
     );
 });
 

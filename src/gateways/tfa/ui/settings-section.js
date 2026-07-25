@@ -90,7 +90,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
             smtp_capability_missing:
                 "ui.app.settings.emails_verify_unavailable",
-            primary_email_required: "ui.app.settings.emails_verify_unavailable",
+            primary_email_required: "ui.app.settings.notif_smtp_no_email_body",
+            primary_email_address_not_verified:
+                "ui.app.settings.notif_smtp_no_email_body",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",
@@ -109,6 +111,14 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             resolveTranslatedMessage(normalizedMessage) ||
             i18n.t("gateway.tfa.settings.setup_failed")
         );
+    }
+
+    function resolveTfaErrorToastVariant(message) {
+        const warningCodes = new Set([
+            "primary_email_required",
+            "primary_email_address_not_verified",
+        ]);
+        return warningCodes.has(message) ? "warning" : "error";
     }
 
     function renderManualSecretField(fieldId, manualSecret) {
@@ -268,7 +278,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const setup = await beginSetup(methodId);
         if (!setup?.setupId) {
             showToast(resolveTranslatedTfaErrorMessage(setup?.errorMessage), {
-                variant: "error",
+                variant: resolveTfaErrorToastVariant(setup?.errorMessage),
             });
             return false;
         }
