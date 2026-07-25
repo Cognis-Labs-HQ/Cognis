@@ -402,7 +402,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
         const joinMatches = [
             ...sql.matchAll(
-                /(?:LEFT\s+)?(?:INNER\s+)?JOIN\s+(\w+)\s+(\w+)\s+ON\s+(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)/gi,
+                /(?:LEFT\s+)?(?:INNER\s+)?JOIN\s+(\w+)(?:\s+(?!ON\b)(\w+))?\s+ON\s+(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)/gi,
             ),
         ];
 
@@ -421,7 +421,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
         for (const jm of joinMatches) {
             const joinTable = jm[1];
-            const joinAlias = jm[2];
+            const joinAlias = jm[2] ?? joinTable;
             aliasMap.set(joinAlias, joinTable);
 
             const leftAlias = jm[3];

@@ -5,7 +5,5 @@
     "gateway": "tfa",
     "description": "Email-based TFA adapter that sends one-time login codes through the notification SMTP sender.",
     "publisher": "Cognis Labs HQ",
-    "requires": [
-        "notify:smtp"
-    ]
+    "requires": ["notify:smtp"]
 }

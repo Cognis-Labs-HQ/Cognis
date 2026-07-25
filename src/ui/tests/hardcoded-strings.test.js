@@ -21,6 +21,7 @@ const JS_ROOTS = ["src/ui/app", "src/ui/layouts"];
 // this check, so single-word labels are handled by the template-literal check below.
 function isAllowed(value) {
     const v = value.trim();
+    if (v.startsWith("<") && v.endsWith(">")) return true;
     if (!v) return true;
     if (v.startsWith("ui.")) return true;
     if (/^cognis_|^application\/|^content-type$/.test(v)) return true;

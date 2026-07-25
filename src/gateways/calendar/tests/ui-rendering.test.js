@@ -25,6 +25,14 @@ const POPUP_MANAGER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager.js"),
     "utf8",
 );
+const BIND_VIEW_INTERACTIONS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/app/bind-view-interactions.js"),
+    "utf8",
+);
+const SUBMIT_EVENT_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/app/submit-event.js"),
+    "utf8",
+);
 const POPUP_MANAGER_ALL_DAY_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-all-day.js"),
     "utf8",
@@ -123,7 +131,7 @@ test("calendar slot clicks create events outside event buttons and empty slots o
 });
 
 test("calendar conflict warning requires a second save to create anyway", () => {
-    assert.match(POPUP_MANAGER_SOURCE, /overlap_warning_confirm/);
+    assert.match(SUBMIT_EVENT_SOURCE, /overlap_warning_confirm/);
     assert.match(POPUP_MANAGER_SOURCE, /confirmedConflictCreateKey/);
     assert.match(POPUP_MANAGER_SOURCE, /allowConflict:/);
     assert.match(POPUP_MANAGER_SOURCE, /created === "conflict"/);
@@ -263,7 +271,7 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
     assert.match(POPUP_MANAGER_SOURCE, /respondToEventSelection/);
     assert.match(POPUP_MANAGER_SOURCE, /handlePendingResponseClick/);
     assert.match(
-        POPUP_MANAGER_SOURCE,
+        BIND_VIEW_INTERACTIONS_SOURCE,
         /handlePendingResponseClick\([\s\S]*reloadState/,
     );
     assert.match(POPUP_MANAGER_SOURCE, /popup-manager-pending-response/);

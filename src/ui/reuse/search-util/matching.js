@@ -80,7 +80,6 @@ export function createSearchMatchResolver(query, options = {}) {
             return () => null;
         }
     }
-
     const resolvedQuery = normalizedOptions.caseSensitive
         ? query
         : query.toLowerCase();

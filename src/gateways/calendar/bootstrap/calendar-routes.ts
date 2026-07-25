@@ -33,7 +33,6 @@ import { createReminderScheduler } from "./reminder-scheduler.js";
 import { handleCalendarResponseRoute } from "./respond-route.js";
 import { handleCalendarShareRoutes } from "./share-routes.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
-
 export function createCalendarCoreRoutes({
     gateway,
     shareRegistry,
@@ -90,7 +89,6 @@ export function createCalendarCoreRoutes({
         resolveAccountId,
         log,
     });
-
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -140,7 +138,6 @@ export function createCalendarCoreRoutes({
             });
             return true;
         }
-
         if (
             url.pathname === "/api/v1/calendar/invitations" &&
             req.method === "GET"
@@ -165,7 +162,6 @@ export function createCalendarCoreRoutes({
             });
             return true;
         }
-
         if (
             url.pathname === "/api/v1/calendar/calendars" &&
             req.method === "POST"
@@ -229,7 +225,6 @@ export function createCalendarCoreRoutes({
             }
             return true;
         }
-
         const patchCalendarMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/calendars\/([^/]+)$/,
         );
@@ -318,7 +313,6 @@ export function createCalendarCoreRoutes({
             }
             return true;
         }
-
         const deleteCalendarMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/calendars\/([^/]+)$/,
         );
@@ -398,7 +392,6 @@ export function createCalendarCoreRoutes({
             }
             return true;
         }
-
         if (
             url.pathname.match(/^\/api\/v1\/calendar\/calendars\/[^/]+\/share/)
         ) {
@@ -418,7 +411,6 @@ export function createCalendarCoreRoutes({
             });
             if (handledShareRoute) return true;
         }
-
         const eventsMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events$/,
         );

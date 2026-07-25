@@ -7,13 +7,11 @@ import {
 } from "../notification-sender.js";
 import { SmtpRateLimiter } from "../notification-queue.js";
 import { createNotificationSender } from "../notification-sender-factory.js";
-
 test("createNotificationSender always returns a sender instance", () => {
     const sender = createNotificationSender({});
     assert.ok(sender instanceof SmtpNotificationSender);
     assert.equal(sender.isConfigured(), false);
 });
-
 test("createNotificationSender returns a sender when host is configured", () => {
     const sender = createNotificationSender({
         COGNIS_SMTP_HOST: "mail.example.com",
@@ -21,14 +19,12 @@ test("createNotificationSender returns a sender when host is configured", () => 
     assert.ok(sender instanceof SmtpNotificationSender);
     assert.equal(sender.senderId, "smtp");
 });
-
 test("createNotificationSender applies defaults for port, secure mode, and from address", () => {
     const env = { COGNIS_SMTP_HOST: "smtp.example.com" };
     const sender = createNotificationSender(env);
     assert.ok(sender !== null);
     assert.equal(sender.senderId, "smtp");
 });
-
 test("createNotificationSender accepts explicit port, secure mode, and credentials", () => {
     const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
@@ -42,7 +38,6 @@ test("createNotificationSender accepts explicit port, secure mode, and credentia
     assert.ok(sender instanceof SmtpNotificationSender);
     assert.equal(sender.senderId, "smtp");
 });
-
 test("SmtpNotificationSender.send rejects when recipientEmail is absent", async () => {
     const sender = new SmtpNotificationSender({
         host: "smtp.example.com",
@@ -50,7 +45,6 @@ test("SmtpNotificationSender.send rejects when recipientEmail is absent", async 
         from: "no-reply@example.com",
         secure: "starttls",
     });
-
     await assert.rejects(
         () =>
             sender.send({
@@ -62,7 +56,6 @@ test("SmtpNotificationSender.send rejects when recipientEmail is absent", async 
         /smtp_sender_requires_recipient_email/,
     );
 });
-
 test("SmtpNotificationSender.getConfig returns current configuration without password", () => {
     const sender = new SmtpNotificationSender({
         host: "smtp.example.com",
@@ -79,7 +72,6 @@ test("SmtpNotificationSender.getConfig returns current configuration without pas
     assert.equal(config.user, "user@example.com");
     assert.ok(!Object.prototype.hasOwnProperty.call(config, "pass"));
 });
-
 test("SmtpNotificationSender.setConfig updates host and port", () => {
     const sender = new SmtpNotificationSender({
         host: "old.example.com",
@@ -92,7 +84,6 @@ test("SmtpNotificationSender.setConfig updates host and port", () => {
     assert.equal(config.host, "new.example.com");
     assert.equal(config.port, 465);
 });
-
 test("SmtpNotificationSender exposes configurable verification code length", () => {
     const sender = new SmtpNotificationSender({
         host: "smtp.example.com",
@@ -101,16 +92,12 @@ test("SmtpNotificationSender exposes configurable verification code length", () 
         secure: "starttls",
         codeLength: 8,
     });
-
     assert.equal(sender.getCodeLength(), 8);
     assert.equal(sender.getConfig().codeLength, 8);
-
     sender.setConfig({ codeLength: 12 });
-
     assert.equal(sender.getCodeLength(), 10);
     assert.equal(sender.getConfig().codeLength, 10);
 });
-
 test("SmtpNotificationSender.senderName returns descriptive name", () => {
     const sender = new SmtpNotificationSender({
         host: "smtp.example.com",
@@ -121,7 +108,6 @@ test("SmtpNotificationSender.senderName returns descriptive name", () => {
     assert.equal(typeof sender.senderName, "string");
     assert.ok(sender.senderName.length > 0);
 });
-
 test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", async () => {
     const sender = new SmtpNotificationSender({
         host: "smtp.example.com",
@@ -134,7 +120,6 @@ test("SmtpNotificationSender.sendTestEmail rejects when to address is empty", as
         /smtp_test_email_requires_recipient/,
     );
 });
-
 test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit entry immediately", async () => {
     const now = Date.now();
     const rateLimiter = new SmtpRateLimiter(60_000, () => now);
@@ -150,17 +135,14 @@ test("SmtpNotificationSender.queueVerificationEmail returns a waiting rate-limit
         async () => new Promise(() => {}),
         rateLimiter,
     );
-
     const queued = await sender.queueVerificationEmail(
         "alice@example.com",
         "123456",
     );
-
     assert.equal(queued.status, "waiting_rate_limit");
     assert.equal(queued.recipientEmail, "alice@example.com");
     assert.equal(typeof queued.availableAt, "string");
 });
-
 test("SmtpNotificationSender.queueVerificationEmail retries queue lookup before failing", async () => {
     const sender = new SmtpNotificationSender({
         host: "smtp.example.com",
@@ -188,16 +170,13 @@ test("SmtpNotificationSender.queueVerificationEmail retries queue lookup before 
         }
         return originalGetQueueItemMethod(notificationId);
     };
-
     const queued = await sender.queueVerificationEmail(
         "alice@example.com",
         "123456",
     );
-
     assert.equal(queued.notificationId.length > 0, true);
     assert.ok(lookupCount >= 2);
 });
-
 test("createNotificationSender.getEnvValues returns env snapshot fields", () => {
     const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
@@ -214,7 +193,6 @@ test("createNotificationSender.getEnvValues returns env snapshot fields", () => 
     assert.equal(envValues["user"], "user@example.com");
     assert.equal(envValues["secure"], "tls");
 });
-
 test("createNotificationSender.getEnvValues returns undefined fields when env is empty", () => {
     const sender = createNotificationSender({});
     const envValues = sender.getEnvValues();

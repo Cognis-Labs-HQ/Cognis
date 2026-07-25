@@ -482,9 +482,8 @@ test("createSearchBar stores shortcut button through search state", async () => 
         assert.match(popupSource, /setActiveSearchToggleButton\(toggleBtn\)/);
         assert.doesNotMatch(popupSource, /activeSearchToggleButton\s*=/);
 
-        const { createSearchBar } = await import(
-            "../popup.js?create-search-bar-state-test"
-        );
+        const { createSearchBar } =
+            await import("../popup.js?create-search-bar-state-test");
         const searchBar = createSearchBar({
             endpoint: "/api/v1/search",
             onSelect() {},

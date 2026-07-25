@@ -112,7 +112,7 @@ test("invalid reset token view renders go-back login action", () => {
     assert.match(source, /ui\.app\.login\.login_link\.go_back/);
     assert.match(
         source,
-        /login-link-invalid-back[\s\S]*?window\.history\.replaceState\(\{\},\s*"",\s*"\/login"\);[\s\S]*?composer\.refresh\(\);/m,
+        /login-link-invalid-back[\s\S]*?window\.history\.replaceState\(\{\},\s*"",\s*"\/login"\);[\s\S]*?restoreLoginForm\(\);/m,
     );
 });
 

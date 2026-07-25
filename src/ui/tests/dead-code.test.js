@@ -24,6 +24,7 @@ const USAGE_ROOTS = [
     join(ROOT, "src/ui/reuse"),
     join(ROOT, "src/ui/public"),
     join(ROOT, "src/gateways"),
+    join(ROOT, "src/adapters"),
 ];
 
 function extractDefinedCssClasses() {
@@ -52,6 +53,9 @@ const DYNAMIC_CLASS_NAMES = new Set([
     "integrity-ok",
     "integrity-mismatch",
     "integrity-missing",
+    "component-health-light--ok",
+    "component-health-light--warning",
+    "component-health-light--error",
     "popup-dialog--info",
     "popup-dialog--warning",
     "popup-dialog--danger",

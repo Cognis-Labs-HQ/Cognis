@@ -4,4 +4,4 @@ export {
     handleProfileAvatarError,
     hydrateProfileAvatars,
     isProfileAvatarUnavailable,
-} from "/static/adapters/social/profile/reuse/profile-avatar.js";
+} from "/static/adapters/social/profile/profile-avatar.js";

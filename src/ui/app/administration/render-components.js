@@ -444,7 +444,7 @@ function renderHealthStatusContent(healthStatus, i18n) {
         .join("");
     return `
       <div class="integrity-module">
-        <h3>Core</h3>
+        <h3>${i18n.t("ui.reuse.core")}</h3>
         <ul class="integrity-list">
           <li class="integrity-${healthStatus.status ?? "unknown"}">system: ${healthStatus.status ?? "unknown"}</li>
           <li>${i18n.t("ui.app.admin.started")}: ${healthStatus.startedAt ?? "—"}</li>
