@@ -59,3 +59,7 @@ test("tfa login warns when resend action element exists with an unexpected type"
         /Expected #login-tfa-resend-action to be an anchor element\./,
     );
 });
+
+test("tfa login always shows the configured method selector", () => {
+    assert.match(SOURCE, /tabsEl\.hidden = false;/);
+});
