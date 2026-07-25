@@ -112,6 +112,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     }
                 },
             );
+            // Adapter change listeners only observe updates made after startup.
+            // Reconcile persisted state as well so SMTP setup can send its
+            // verification code immediately after a restart.
+            if (gateway.isAdapterEnabled("smtp")) {
+                await setNotifySenderEnabled("smtp", true);
+            }
         }
         ctx.capabilities.contribute("tfa:smtpCodeLength", () =>
             smtpAdapter.getCodeLength?.(),

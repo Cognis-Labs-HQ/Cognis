@@ -5,6 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 import { createQrImageSource } from "/static/reuse/qr-image-source.js";
+import { createRepromptGuard } from "/static/reuse/reprompt.js";
 import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
@@ -26,6 +27,7 @@ import {
 let requiredSetupPromptActive = false;
 
 export function createSettingsSection({ i18n, root, markDirty }) {
+    const reprompt = createRepromptGuard({ i18n });
     let tfaStatus = null;
     let recoveryCodesStatus = {
         codes: [],
@@ -58,6 +60,14 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         savePreferredTfaMethods(apiFetch, methodIds);
     const rotateCodes = () => rotateRecoveryCodes(apiFetch);
 
+    async function activateMethod(method) {
+        if (!method?.id) return false;
+        if (method?.configuredAt) {
+            return enableMethod(method.id);
+        }
+        return runTfaSetupFlow(method.id);
+    }
+
     function resolveTranslatedMessage(key) {
         if (typeof key !== "string" || !key.trim()) {
             return null;
@@ -80,7 +90,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             smtp_unavailable: "ui.app.settings.emails_verify_unavailable",
             smtp_capability_missing:
                 "ui.app.settings.emails_verify_unavailable",
-            primary_email_required: "ui.app.settings.emails_verify_unavailable",
+            primary_email_required: "ui.app.settings.notif_smtp_no_email_body",
+            primary_email_address_not_verified:
+                "ui.app.settings.notif_smtp_no_email_body",
             setup_not_found: "gateway.tfa.settings.setup_failed",
             setup_expired: "gateway.tfa.settings.setup_failed",
             tfa_method_unavailable: "gateway.tfa.settings.setup_failed",
@@ -99,6 +111,14 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             resolveTranslatedMessage(normalizedMessage) ||
             i18n.t("gateway.tfa.settings.setup_failed")
         );
+    }
+
+    function resolveTfaErrorToastVariant(message) {
+        const warningCodes = new Set([
+            "primary_email_required",
+            "primary_email_address_not_verified",
+        ]);
+        return warningCodes.has(message) ? "warning" : "error";
     }
 
     function renderManualSecretField(fieldId, manualSecret) {
@@ -258,7 +278,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const setup = await beginSetup(methodId);
         if (!setup?.setupId) {
             showToast(resolveTranslatedTfaErrorMessage(setup?.errorMessage), {
-                variant: "error",
+                variant: resolveTfaErrorToastVariant(setup?.errorMessage),
             });
             return false;
         }
@@ -605,11 +625,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 row.onclick = async () => {
                     const methodId = row.getAttribute("data-tfa-method-row");
                     if (!methodId) return;
-                    const enabled = await enableMethod(methodId);
-                    if (!enabled) {
-                        const setupCompleted = await runTfaSetupFlow(methodId);
-                        if (!setupCompleted) return;
-                    }
+                    const method = getAllUniqueMethods().find(
+                        (entry) => entry.id === methodId,
+                    );
+                    const activated = await activateMethod(method);
+                    if (!activated) return;
                     tfaStatus = await fetchTfaStatus();
                     savedPreferredIds = (tfaStatus?.enabledMethods ?? []).map(
                         (method) => method.id,
@@ -765,19 +785,25 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             const currentEnabledIds = new Set(
                 (currentStatus.enabledMethods ?? []).map((method) => method.id),
             );
+            const removesEnabledMethod = [...currentEnabledIds].some(
+                (id) => !workingPreferredIds.includes(id),
+            );
+            if (removesEnabledMethod) {
+                const confirmed = await reprompt.runWithReprompt(() => {});
+                if (!confirmed) return;
+            }
             for (const id of [...workingPreferredIds]) {
                 if (!currentEnabledIds.has(id)) {
-                    const enabled = await enableMethod(id);
-                    if (!enabled) {
-                        const setupCompleted = await runTfaSetupFlow(id);
-                        if (!setupCompleted) {
-                            const preferredIndex =
-                                workingPreferredIds.indexOf(id);
-                            if (preferredIndex >= 0) {
-                                workingPreferredIds.splice(preferredIndex, 1);
-                            }
-                            continue;
+                    const method = (currentStatus.availableMethods ?? []).find(
+                        (entry) => entry.id === id,
+                    );
+                    const activated = await activateMethod(method);
+                    if (!activated) {
+                        const preferredIndex = workingPreferredIds.indexOf(id);
+                        if (preferredIndex >= 0) {
+                            workingPreferredIds.splice(preferredIndex, 1);
                         }
+                        continue;
                     }
                 }
             }
