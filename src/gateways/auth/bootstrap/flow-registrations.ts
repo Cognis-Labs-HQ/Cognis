@@ -13,10 +13,13 @@ import type { AuthBootstrapHookContext } from "./index.js";
 function getEnabledLoginMethods(context: AuthBootstrapHookContext): Array<{
     id: string;
     name: string;
+    forgotPassword: boolean;
 }> {
     return context.authGateway.getEnabledAdapters().map((adapter) => ({
         id: adapter.id,
         name: adapter.name,
+        forgotPassword:
+            adapter.getLoginUiCapabilities?.().forgotPassword === true,
     }));
 }
 

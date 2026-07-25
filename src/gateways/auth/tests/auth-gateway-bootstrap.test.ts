@@ -114,7 +114,7 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     const loginUiResult = await flowCtx.runFlow("construct-login-ui");
     assert.deepEqual(loginUiResult.stageResults["resolve-methods"], [
         {
-            methods: [{ id: "local", name: "Local" }],
+            methods: [{ id: "local", name: "Local", forgotPassword: true }],
         },
     ]);
 
@@ -122,7 +122,9 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     assert.deepEqual(loginResult.stageResults["resolve-provider"], [
         {
             defaultProviderId: "local",
-            enabledMethods: [{ id: "local", name: "Local" }],
+            enabledMethods: [
+                { id: "local", name: "Local", forgotPassword: true },
+            ],
         },
     ]);
 

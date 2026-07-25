@@ -20,6 +20,8 @@ test("auth security preferences only render password reset controls", () => {
     assert.doesNotMatch(SOURCE, /settings-auth-recovery-codes/);
     assert.doesNotMatch(SOURCE, /available-tfa-methods/);
     assert.doesNotMatch(SOURCE, /preferred-tfa-methods/);
+    assert.match(SOURCE, /capability\.supported !== true\) return ""/);
+    assert.doesNotMatch(SOURCE, /settings-reset-password-btn"\$\{disabled\}/);
 });
 
 test("password change popup revalidates confirm password reactively", () => {

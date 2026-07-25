@@ -159,6 +159,21 @@ export async function mount(root) {
                 (m) => m.id !== "local" && m.id !== "ldap",
             );
 
+            const renderProviderActions = (method) => {
+                const actions = document.querySelector(
+                    "#login-provider-actions",
+                );
+                if (!actions) return;
+                actions.replaceChildren();
+                if (method?.forgotPassword !== true) return;
+                const link = document.createElement("a");
+                link.href = "#";
+                link.id = "login-request-link";
+                link.className = "auth-text-action";
+                link.textContent = i18n.t("ui.app.login.login_link.action");
+                actions.appendChild(link);
+            };
+
             if (credentialProviders.length > 1 && toggleContainer) {
                 toggleContainer.hidden = false;
                 toggleContainer.setAttribute(
@@ -178,6 +193,7 @@ export async function mount(root) {
                     );
                     btn.addEventListener("click", () => {
                         if (providerInput) providerInput.value = method.id;
+                        renderProviderActions(method);
                         toggleContainer
                             .querySelectorAll(".auth-provider-btn")
                             .forEach((b) => {
@@ -195,6 +211,13 @@ export async function mount(root) {
                     toggleContainer.appendChild(btn);
                 });
             }
+            const initialProvider =
+                credentialProviders.find((method) => method.id === "local") ??
+                credentialProviders[0];
+            if (providerInput && initialProvider) {
+                providerInput.value = initialProvider.id;
+            }
+            renderProviderActions(initialProvider);
 
             if (ssoProviders.length > 0 && ssoContainer) {
                 ssoProviders.forEach((method) => {
@@ -225,6 +248,10 @@ export async function mount(root) {
         );
         localStorage.setItem("cognis_role", data.role || "user");
         localStorage.setItem(
+            "cognis_provider_id",
+            data.providerId || data.provider || "local",
+        );
+        localStorage.setItem(
             "cognis_is_founder",
             data.isFounder ? "true" : "false",
         );
@@ -240,6 +267,7 @@ export async function mount(root) {
         localStorage.removeItem("cognis_account");
         localStorage.removeItem("cognis_display_name");
         localStorage.removeItem("cognis_role");
+        localStorage.removeItem("cognis_provider_id");
         localStorage.removeItem("cognis_is_founder");
         localStorage.removeItem("cognis_login_time");
         localStorage.removeItem("cognis_user_validation_mode");
@@ -609,7 +637,7 @@ export async function mount(root) {
             <span>${escapeHtml(i18n.t("ui.app.login.form.password"))}</span>
             <input id="login-password" type="password" autocomplete="current-password" placeholder="${escapeHtml(i18n.t("ui.app.login.form.password"))}" required />
           </label>
-          <a href="#" id="login-request-link" class="auth-text-action">${escapeHtml(i18n.t("ui.app.login.login_link.action"))}</a>
+          <div id="login-provider-actions"></div>
         </div>
         <div id="login-tfa-fields" hidden></div>
         ${signupCalloutHtml}
@@ -679,8 +707,14 @@ export async function mount(root) {
                     }
                     renderLoginReasonToast();
                     document
-                        .querySelector("#login-request-link")
+                        .querySelector("#login-form")
                         ?.addEventListener("click", (event) => {
+                            if (
+                                !(event.target instanceof Element) ||
+                                !event.target.closest("#login-request-link")
+                            ) {
+                                return;
+                            }
                             event.preventDefault();
                             handleRequestLinkClick().catch(() => {
                                 showToast(

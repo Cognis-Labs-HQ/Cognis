@@ -11,3 +11,7 @@ Administratoren können jeder Cognis-Rolle eine erkannte LDAP-Gruppe in einer Ta
 ## Gezielte Verzeichnissuchen und klarere Anmeldeauswahl
 
 Optionale Benutzer- und Gruppen-DNs können LDAP-Suchen eingrenzen; die Basis-DN bleibt der Ersatzwert. Gruppenauswahlen sind alphabetisch sortiert und zeigen kurze Namen. Die Auswahl der Anmeldequelle steht nun vor den Zugangsdatenfeldern und kennzeichnet die aktive Quelle deutlich.
+
+## Anbieterabhängige Kontoaktionen und stabile LDAP-Sitzungen
+
+Jede Anmeldequelle steuert nun ihre eigenen Wiederherstellungsaktionen, sodass der Link für vergessene lokale Passwörter bei ausgewähltem LDAP verschwindet. Passwortänderungen werden nur angeboten, wenn der aktive Anbieter sie unterstützt, bei LDAP also mit aktivierter Rückschreibung. LDAP-Sitzungen benötigen außerdem keinen passenden lokalen Kontodatensatz mehr.

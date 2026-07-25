@@ -140,6 +140,12 @@ test("auth session-flow-hooks.js registers a validate-stored-token hook", () => 
     );
 });
 
+test("external-provider sessions do not require a local account record", () => {
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    assert.match(src, /providerId !== ["']local["']/);
+    assert.match(src, /localStorage\.getItem\(["']cognis_provider_id["']\)/);
+});
+
 test("auth session-flow-hooks.js registers an enforce-setup-requirements hook", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(

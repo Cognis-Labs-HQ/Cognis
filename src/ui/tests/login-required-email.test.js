@@ -34,7 +34,10 @@ test("login UI includes password reset token flow and nested signup callout link
     assert.match(source, /passwordResetToken/);
     assert.match(source, /\/api\/v1\/auth\/consume-login-link/);
     assert.match(source, /password:\s*nextPassword/);
-    assert.match(source, /id="login-request-link"/);
+    assert.match(source, /link\.id = "login-request-link"/);
+    assert.match(source, /method\?\.forgotPassword !== true/);
+    assert.match(source, /actions\.replaceChildren\(\)/);
+    assert.doesNotMatch(source, /<a href="#" id="login-request-link"/);
     assert.match(source, /footerHtml:\s*`<a href="\/register"/);
 });
 

@@ -11,3 +11,7 @@ Administrators can map a discovered LDAP group to every Cognis role in a table. 
 ## Focused directory searches and clearer login choices
 
 Optional user and group DNs can narrow LDAP searches while the base DN remains the fallback. Group choices are alphabetized and show concise names, and login source controls now appear before the credential fields with a clearly visible active selection.
+
+## Provider-owned account actions and stable LDAP sessions
+
+Each login source now controls its own recovery actions, so the local forgot-password link disappears when LDAP is selected. Password changes are only offered when the signed-in provider supports them, including LDAP when writeback is enabled, and LDAP sessions no longer depend on a matching local account record.
