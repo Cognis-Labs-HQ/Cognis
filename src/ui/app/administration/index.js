@@ -17,6 +17,7 @@ import {
 import { initSecuritySection } from "./security.js";
 import {
     bindExpandedStateListeners,
+    bindDetailsToggleClicks,
     bindSummarySliderClicks,
     restoreExpandedState,
 } from "./ui-state-bindings.js";
@@ -33,6 +34,7 @@ import {
     loadIntegrity,
     loadHealth,
     loadModules,
+    adapterRequiresSetup,
     toggleGateway,
     toggleModule,
     importGithubModule,
@@ -66,16 +68,6 @@ let securitySection = null;
 let elements = [];
 let adapterConfigPopup = null;
 
-/**
- * Returns the canonical `${gatewayId}:${adapterId}` key used by adapter lookup
- * indexes across administration render, toggle, and follow-up action flows.
- * This format must remain stable because multiple maps and data attributes rely
- * on it matching exactly.
- *
- * @param {string} gatewayId
- * @param {string} adapterId
- * @returns {string}
- */
 function adapterCompositeKey(gatewayId, adapterId) {
     return `${gatewayId}:${adapterId}`;
 }
@@ -121,6 +113,8 @@ async function reloadGatewaysAndAdapters() {
     await reloadGateways();
     await reloadAdapters();
 }
+
+const reloadHealthStatus = async () => (healthStatus = await loadHealth());
 
 /**
  * Resolves an adapter record either from the optional override or by matching
@@ -239,6 +233,7 @@ function getAdministrationControlBindings() {
         importGithubModule,
         reloadModules,
         reloadGateways,
+        reloadHealthStatus,
         getComposer: () => composer,
         getElements: () => elements,
     };
@@ -418,7 +413,7 @@ async function toggleAdapter(
     action,
     adapterOverride = null,
 ) {
-    await apiFetch(
+    return apiFetch(
         resolveAdapterControlUrl(gatewayId, adapterId, action, adapterOverride),
         { method: "POST" },
     );
@@ -440,6 +435,23 @@ function bindAdapterToggles() {
                 const adapter = adapterByCompositeKey.get(
                     adapterCompositeKey(gatewayId, adapterId),
                 );
+                if (
+                    adapter?.controls?.config &&
+                    (await adapterRequiresSetup(
+                        resolveAdapterControlUrl(
+                            gatewayId,
+                            adapterId,
+                            "config",
+                            adapter,
+                        ),
+                    ))
+                ) {
+                    toggle.checked = previouslyChecked;
+                    showToast(i18n.t("ui.app.admin.setup_required"), {
+                        variant: "warning",
+                    });
+                    return;
+                }
                 const requires = adapter?.requires ?? [];
                 const disabledDepNames = [];
                 const disabledGatewayDeps = [];
@@ -517,6 +529,7 @@ function bindAdapterToggles() {
                     "enable",
                     adapter ?? null,
                 );
+                await reloadHealthStatus();
             }
 
             if (action === "disable") {
@@ -686,28 +699,13 @@ function bindDependencyLinks() {
     });
 }
 
-async function openAdapterConfig(
-    gatewayId,
-    adapterId,
-    name,
-    adapterOverride = null,
-) {
+// prettier-ignore
+async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = null) {
     if (!adapterConfigPopup) return;
-
-    const configUrl = resolveAdapterControlUrl(
-        gatewayId,
-        adapterId,
-        "config",
-        adapterOverride,
-    );
-    const testUrl = resolveAdapterControlUrl(
-        gatewayId,
-        adapterId,
-        "test",
-        adapterOverride,
-    );
-
-    await adapterConfigPopup.openAdapterConfig(name, {
+    const configUrl = resolveAdapterControlUrl(gatewayId, adapterId, "config", adapterOverride);
+    const testUrl = resolveAdapterControlUrl(gatewayId, adapterId, "test", adapterOverride);
+    const version = String(adapterOverride?.version ?? "").trim();
+    await adapterConfigPopup.openAdapterConfig(version ? `${name} v${version}` : name, {
         configUrl,
         testUrl,
         onSaved: async () => {
@@ -846,6 +844,7 @@ export async function mount(rootEl, { signal } = {}) {
                     bindAdapterToggles();
                     bindAdapterRows();
                     bindSummarySliderClicks(root);
+                    bindDetailsToggleClicks(root);
                     bindDependencyLinks();
                     restoreExpandedState(root);
                     syncRuntimeToggleControls();

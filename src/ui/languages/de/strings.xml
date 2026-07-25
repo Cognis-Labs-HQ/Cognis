@@ -209,6 +209,7 @@
   <string name="ui.app.admin.toggle_module">Modulzustand umschalten</string>
   <string name="ui.app.admin.toggle_gateway">Gateway-Zustand umschalten</string>
   <string name="ui.app.admin.toggle_adapter">Adapter-Zustand umschalten</string>
+  <string name="ui.app.admin.setup_required">Diese Komponente muss zuerst eingerichtet werden, bevor sie aktiviert werden kann.</string>
   <string name="ui.app.admin.synced_to">Mit {module} synchronisiert</string>
   <string name="ui.app.admin.checking">Prüfe...</string>
   <string name="ui.app.admin.components">Komponenten</string>
@@ -659,4 +660,5 @@
   <string name="ui.app.login.reason.account_archived">Dein Konto ist archiviert. Kontaktiere einen Administrator, um den Zugriff wiederherzustellen.</string>
   <string name="ui.app.login.reason.account_deactivated">Dein Konto ist deaktiviert. Melde dich erneut an, um Interaktionen wiederherzustellen.</string>
   <string name="ui.reuse.status">Status</string>
+  <string name="ui.reuse.details">Details</string>
 </resources>

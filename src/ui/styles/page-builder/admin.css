@@ -89,7 +89,7 @@
 .module-row-summary {
     list-style: none;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) max-content 52px auto;
+    grid-template-columns: minmax(0, 1fr) max-content auto 52px auto;
     gap: 12px;
     align-items: center;
     cursor: pointer;
@@ -169,6 +169,13 @@
     white-space: nowrap;
 }
 
+.adapter-inline-version {
+    color: var(--muted);
+    font-size: 0.85em;
+    font-weight: 500;
+    margin-left: 6px;
+}
+
 .adapter-toggle {
     display: none;
 }
@@ -178,7 +185,41 @@
 }
 
 .module-chevron {
+    display: inline-grid;
+    place-items: center;
+    min-width: 32px;
+    min-height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
     transition: transform 0.2s ease;
+}
+
+.module-chevron:hover,
+.module-chevron:focus-visible {
+    background: var(--surface-soft);
+    outline: 2px solid var(--accent, #3b82f6);
+}
+
+.component-health-light {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 20%, transparent);
+}
+
+.component-health-light--ok {
+    color: #22c55e;
+    background: currentColor;
+}
+
+.component-health-light--warning {
+    color: #f59e0b;
+    background: currentColor;
+}
+
+.component-health-light--error {
+    color: #ef4444;
+    background: currentColor;
 }
 
 .module-meta {

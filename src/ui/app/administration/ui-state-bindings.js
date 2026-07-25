@@ -10,6 +10,22 @@ export function bindSummarySliderClicks(root) {
     );
 }
 
+export function bindDetailsToggleClicks(root) {
+    root.querySelectorAll("[data-details-toggle]").forEach((toggle) => {
+        const details = toggle.closest("details.module-row");
+        if (!(details instanceof HTMLDetailsElement)) return;
+        const activate = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            details.open = !details.open;
+        };
+        toggle.addEventListener("click", activate);
+        toggle.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") activate(event);
+        });
+    });
+}
+
 function saveExpandedState(root) {
     const openIds = [];
     root.querySelectorAll("details.module-row[open]").forEach((element) => {
