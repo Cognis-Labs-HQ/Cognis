@@ -14,6 +14,7 @@ export interface SocialAdapter {
     readonly adapterId: string;
     readonly adapterName: string;
     readonly version?: string;
+    readonly publisher?: string;
     readonly requires?: string[];
     getConfig?(): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
@@ -24,6 +25,7 @@ export interface SocialAdapterInfo {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     active: boolean;
     requires?: string[];
 }
@@ -101,7 +103,8 @@ export class CoreSocialGateway {
             return {
                 id: adapter.adapterId,
                 name: adapter.adapterName,
-                version: adapter.version,
+                ...(adapter.version ? { version: adapter.version } : {}),
+                ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
                 active:
                     !this.disabledAdapters.has(adapter.adapterId) &&
                     (typeof adapter.isConfigured === "function"
@@ -208,6 +211,7 @@ export class CoreSocialGateway {
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
+                let publisher: string | undefined;
                 try {
                     const manifestRaw = await readFile(
                         path.join(adaptersRoot, entry, "manifest.json"),
@@ -215,7 +219,9 @@ export class CoreSocialGateway {
                     );
                     const manifest = JSON.parse(manifestRaw) as {
                         requires?: string[];
+                        publisher?: string;
                     };
+                    publisher = manifest.publisher;
                     if (Array.isArray(manifest.requires)) {
                         requires = manifest.requires;
                     }
@@ -231,6 +237,9 @@ export class CoreSocialGateway {
                     const adapter = factory();
                     if (adapter && pkg.version) {
                         Object.assign(adapter, { version: pkg.version });
+                    }
+                    if (adapter && publisher) {
+                        Object.assign(adapter, { publisher });
                     }
                     if (adapter) this.registerAdapter(adapter, requires);
                 }

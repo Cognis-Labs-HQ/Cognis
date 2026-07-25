@@ -28,7 +28,10 @@ test("social gateway discovers adapters before bootstrap lifecycle wiring", asyn
     await mkdir(adapterDir);
     await writeFile(
         path.join(adapterDir, "manifest.json"),
-        JSON.stringify({ requires: ["social:profile"] }),
+        JSON.stringify({
+            publisher: "Cognis Labs HQ",
+            requires: ["social:profile"],
+        }),
     );
     await writeFile(
         path.join(adapterDir, "package.json"),
@@ -56,6 +59,7 @@ test("social gateway discovers adapters before bootstrap lifecycle wiring", asyn
             id: "messages",
             name: "Messages",
             active: true,
+            publisher: "Cognis Labs HQ",
             requires: ["social:profile"],
         },
     ]);

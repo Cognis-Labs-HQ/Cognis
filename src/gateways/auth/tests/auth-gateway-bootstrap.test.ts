@@ -328,6 +328,22 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
     );
 });
 
+test("CoreAuthGateway lists adapter publisher metadata", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const gateway = new CoreAuthGateway(makeInMemoryDb());
+
+    gateway.registerAdapter({
+        id: "oidc",
+        name: "OIDC",
+        publisher: "Cognis Labs HQ",
+        authenticate: async () => null,
+        getConfigSchema: () => [],
+        configure: () => undefined,
+    });
+
+    assert.equal(gateway.listAdapters()[0]?.publisher, "Cognis Labs HQ");
+});
+
 test("CoreAuthGateway.resetPasswordForAccount supports legacy 2-arg adapter contracts", async () => {
     const { CoreAuthGateway } = await import("../gateway.js");
 

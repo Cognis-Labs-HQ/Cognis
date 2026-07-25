@@ -18,6 +18,7 @@ export interface AuthProviderAdapter {
     readonly id: string;
     readonly name: string;
     readonly version?: string;
+    readonly publisher?: string;
     readonly configPopupScriptUrl?: string;
     authenticate(
         credentials: Record<string, unknown>,
@@ -52,6 +53,7 @@ export interface AdapterInfo {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     enabled: boolean;
     locked?: boolean;
     config: Record<string, unknown>;
@@ -404,7 +406,8 @@ export class CoreAuthGateway {
             return {
                 id: adapter.id,
                 name: adapter.name,
-                version: adapter.version,
+                ...(adapter.version ? { version: adapter.version } : {}),
+                ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
                 enabled: this.enabledAdapters.has(adapter.id),
                 locked: adapter.id === "local" || undefined,
                 config: {},
@@ -517,6 +520,7 @@ export class CoreAuthGateway {
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
+                let publisher: string | undefined;
                 try {
                     const manifestRaw = await readFile(
                         path.join(authAdaptersRoot, entry, "manifest.json"),
@@ -524,7 +528,9 @@ export class CoreAuthGateway {
                     );
                     const manifest = JSON.parse(manifestRaw) as {
                         requires?: string[];
+                        publisher?: string;
                     };
+                    publisher = manifest.publisher;
                     if (Array.isArray(manifest.requires)) {
                         requires = manifest.requires;
                     }
@@ -543,6 +549,7 @@ export class CoreAuthGateway {
                     if (pkg.version) {
                         Object.assign(adapter, { version: pkg.version });
                     }
+                    if (publisher) Object.assign(adapter, { publisher });
                     if (adapter.id !== "local") {
                         this.registerAdapter(adapter, requires);
                     }

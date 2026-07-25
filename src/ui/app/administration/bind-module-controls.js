@@ -7,11 +7,13 @@ export function bindModuleToggles(
     {
         getState,
         openPopup,
+        showToast,
         escapeHtml,
         toggleModule,
         toggleGateway,
         reloadModules,
         reloadGateways,
+        reloadHealthStatus,
         getComposer,
         getElements,
     },
@@ -99,8 +101,16 @@ export function bindModuleToggles(
                     }
                 }
 
-                await toggleModule(moduleId, action);
+                const response = await toggleModule(moduleId, action);
+                if (!response.ok) {
+                    toggle.checked = previousState;
+                    showToast(i18n.t("ui.app.admin.setup_required"), {
+                        variant: "warning",
+                    });
+                    return;
+                }
                 await reloadModules();
+                if (action === "enable") await reloadHealthStatus();
                 refreshAdministrationComposer(getComposer, getElements);
             });
         },
@@ -117,6 +127,7 @@ export function bindModuleConfigureButtons(
         escapeHtml,
         toggleModule,
         reloadModules,
+        reloadHealthStatus,
         getComposer,
         getElements,
     },
@@ -125,6 +136,7 @@ export function bindModuleConfigureButtons(
         (row) => {
             if (!(row instanceof HTMLElement)) return;
             async function openConfig(event) {
+                if (event.target.closest?.("[data-details-toggle]")) return;
                 const switchLabel = row.querySelector(".switch--inline");
                 if (
                     switchLabel &&
@@ -158,11 +170,14 @@ export function bindModuleConfigureButtons(
                         moduleRecord,
                         isEnabled: moduleRecord?.status === "enabled",
                         setEnabled: async (enabled) => {
-                            await toggleModule(
+                            const response = await toggleModule(
                                 moduleId,
                                 enabled ? "enable" : "disable",
                             );
-                            return true;
+                            if (response.ok && enabled) {
+                                await reloadHealthStatus();
+                            }
+                            return response.ok;
                         },
                     });
                     if (didSave) {

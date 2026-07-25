@@ -38,6 +38,10 @@ test("LDAP setup composes and validates required connection fields", () => {
         ldapPopupSource,
         /action === "cancel"[\s\S]*api\.requestClose\(\)/,
     );
+    assert.match(
+        ldapPopupSource,
+        /action === null \|\| action === "cancel"[\s\S]*api\.requestClose\(\)/,
+    );
     assert.match(popupSource, /requestClose: \(\) => dismiss\(null\)/);
     assert.match(ldapPopupSource, /configuredSecretFields/);
     assert.match(ldapPopupSource, /Leave blank to keep the saved password/);

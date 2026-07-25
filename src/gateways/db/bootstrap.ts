@@ -8,6 +8,11 @@ import type {
     StructuredDbCommandResult,
 } from "./reuse/db-command.js";
 import type { DbProviderId } from "./reuse/provider-id.js";
+import type { RouteContext } from "../../api/reuse/route-context.js";
+import {
+    createLockedAdapterAdminRoutes,
+    loadAdapterAdminCatalog,
+} from "../reuse/adapter-admin-catalog.js";
 
 /**
  * Dialect-aware SQL helper contributed as 'db:dialect'.
@@ -87,13 +92,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("db:type", dbType);
     ctx.capabilities.contribute("db:dialect", dialect);
 
+    const adapterCatalog = await loadAdapterAdminCatalog(adaptersRoot, "db");
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
+    ctx.routeRegistry.register(
+        createLockedAdapterAdminRoutes("db", adapterCatalog, routeContext),
+        "db",
+    );
+
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.2.2",
+        version: "1.3.1",
         required: true,
         description:
             "Core relational database layer for persistent application data.",
         publisher: "Cognis Labs HQ",
+        hasAdapters: true,
     });
 }
