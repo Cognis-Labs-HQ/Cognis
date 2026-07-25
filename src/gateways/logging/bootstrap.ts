@@ -7,6 +7,10 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../api/reuse/route-context.js";
+import {
+    createLockedAdapterAdminRoutes,
+    loadAdapterAdminCatalog,
+} from "../reuse/adapter-admin-catalog.js";
 
 type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -382,6 +386,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createLoggingRoutes(filePath, log, routeContext),
         "logging",
     );
+    const adapterCatalog = await loadAdapterAdminCatalog(
+        ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters"),
+        "logging",
+    );
+    ctx.routeRegistry.register(
+        createLockedAdapterAdminRoutes("logging", adapterCatalog, routeContext),
+        "logging",
+    );
 
     const uiDir = path.resolve(
         process.cwd(),
@@ -401,11 +413,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.2",
+        version: "1.5.3",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",
         publisher: "Cognis Labs HQ",
+        hasAdapters: true,
     });
 
     log?.("info", "Logging gateway initialized.", {

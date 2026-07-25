@@ -476,7 +476,7 @@ export async function openAdapterConfig({
             }
         },
         onAction: async (action, overlay, api) => {
-            if (action === "cancel") {
+            if (action === null || action === "cancel") {
                 await api.requestClose();
                 return false;
             }

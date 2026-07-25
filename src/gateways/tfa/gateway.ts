@@ -28,6 +28,7 @@ export interface TfaMethodAdapter {
     readonly id: string;
     readonly name: string;
     readonly version?: string;
+    readonly publisher?: string;
     readonly defaultEnabled?: boolean;
     beginSetup(input: {
         accountId: string;
@@ -85,6 +86,7 @@ export interface TfaAdapterInfo {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     enabled: boolean;
     locked?: boolean;
     syncedTo?: {
@@ -201,7 +203,8 @@ export class CoreTfaGateway {
         return Array.from(this.adapters.values()).map((adapter) => ({
             id: adapter.id,
             name: adapter.name,
-            version: adapter.version,
+            ...(adapter.version ? { version: adapter.version } : {}),
+            ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
             enabled: this.isAdapterEnabled(adapter.id),
             ...(this.adapterEnabledStateProviders.has(adapter.id)
                 ? { locked: true }
@@ -907,6 +910,16 @@ export class CoreTfaGateway {
                 );
                 if (packageJson.version) {
                     Object.assign(adapter, { version: packageJson.version });
+                }
+                const manifestRaw = await readFile(
+                    path.join(tfaAdaptersRoot, entry, "manifest.json"),
+                    "utf8",
+                );
+                const manifest = JSON.parse(manifestRaw) as {
+                    publisher?: string;
+                };
+                if (manifest.publisher) {
+                    Object.assign(adapter, { publisher: manifest.publisher });
                 }
                 this.registerAdapter(adapter);
             } catch {
