@@ -11,3 +11,7 @@ Aktive Komponenten zeigen nun eine grüne, orangefarbene oder rote Statusleuchte
 ## Zuverlässige Herausgeberangaben für Adapter
 
 Die Administration erhält jetzt Herausgebermetadaten von jedem Adapter-Gateway, einschließlich der Authentifizierungsadapter, sodass die Adapterdetails den angegebenen Herausgeber statt eines unbekannten Werts anzeigen.
+
+## Vollständige Komponentenurheberschaft
+
+Alle erkannten Adapter und Gateways geben jetzt ihren Herausgeber an, einschließlich der lokalen Authentifizierung und SMTP-E-Mail, sodass die Komponentendetails den Urheber durchgehend ausweisen.

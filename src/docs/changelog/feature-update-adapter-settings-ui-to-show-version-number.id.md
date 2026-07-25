@@ -11,3 +11,7 @@ Komponen aktif kini menampilkan lampu kesehatan hijau, oranye, atau merah di sam
 ## Detail penerbit adaptor yang andal
 
 Administrasi kini menerima metadata penerbit dari setiap gateway adaptor, termasuk adaptor autentikasi, sehingga detail adaptor menampilkan penerbit yang dinyatakan dan bukan nilai yang tidak diketahui.
+
+## Kepengarangan komponen yang lengkap
+
+Semua adaptor dan gateway yang ditemukan kini menyatakan penerbitnya, termasuk Autentikasi Lokal dan Email SMTP, sehingga detail komponen selalu mencantumkan pembuatnya.
