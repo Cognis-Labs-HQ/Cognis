@@ -133,6 +133,14 @@ export function createComposerRenderer({
         host.innerHTML = html;
     }
 
+    function refreshElementContent(host, element) {
+        // A preserved element may host a stateful iframe such as Jitsi Meet.
+        // Do not even reattach its parked wrapper during an ordinary refresh;
+        // moving that live DOM can reset or destabilize the embedded app.
+        if (getPreservedElementNodes().has(element.id)) return;
+        renderElementContent(host, element);
+    }
+
     function repackPlacementsIntoColumns(
         sortedVisible,
         maxCols,
@@ -710,11 +718,7 @@ export function createComposerRenderer({
                     renderElementContent(card, element);
                 }
             } else if (!isMissing) {
-                // Refresh non-preserved element content in place. Preserved
-                // media keeps using its parked node through
-                // renderElementContent, while opt-out elements receive their
-                // latest render output.
-                renderElementContent(card, element);
+                refreshElementContent(card, element);
             }
             card.className = isMissing
                 ? "widget-card widget-card--missing"

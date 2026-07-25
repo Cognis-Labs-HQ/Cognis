@@ -61,8 +61,9 @@ test("page composer preserves media element DOM across re-renders", () => {
     assert.match(source, /host\.replaceChildren\(preserved\)/);
     assert.match(
         source,
-        /else if \(!isMissing\) \{[\s\S]*?renderElementContent\(card, element\);/,
+        /function refreshElementContent\(host, element\) \{[\s\S]*?getPreservedElementNodes\(\)\.has\(element\.id\)[\s\S]*?renderElementContent\(host, element\);/,
     );
+    assert.match(source, /refreshElementContent\(card, element\);/);
     assert.match(
         source,
         /function renderPlacementCards\(section, placements, scale\)/,
