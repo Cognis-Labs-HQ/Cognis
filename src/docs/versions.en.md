@@ -1,3 +1,5 @@
+<!-- Keep src/docs/versions.de.md, versions.id.md, and versions.ja.md in sync when updating this file. -->
+
 # Component Versions
 
 ## Overview
@@ -46,8 +48,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.5`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.4`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.2`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.11` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.13` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.15` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.17` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.6`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.0.0`  |
@@ -87,6 +89,6 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.17` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.43` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.46` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.5`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.3`  |
