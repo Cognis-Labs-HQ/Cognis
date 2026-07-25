@@ -36,6 +36,21 @@ function resolveStore(dbExecutor, log) {
     return store;
 }
 
+function createProfileStoreCapability(ctx) {
+    return new Proxy(
+        {},
+        {
+            get(_target, property) {
+                const profileStore = ctx.getCapability("social:profileStore");
+                const member = profileStore?.[property];
+                return typeof member === "function"
+                    ? member.bind(profileStore)
+                    : member;
+            },
+        },
+    );
+}
+
 async function resolveRequesterUsername(profileStore, accountId) {
     const profile = await profileStore.getProfile(accountId);
     const username = normalizeHandleKey(profile?.handle ?? "");
@@ -195,7 +210,7 @@ export function registerUi(ctx) {
 
 export function registerApiRoutes(router, ctx) {
     const dbExecutor = ctx.getCapability("db:executor");
-    const profileStore = ctx.getCapability("social:profileStore");
+    const profileStore = createProfileStoreCapability(ctx);
     const log = ctx.getCapability("logging:log");
     const registerScriptOrigins = ctx.getCapability(
         "auth:registerPageScriptOrigins",
@@ -327,21 +342,6 @@ export function registerApiRoutes(router, ctx) {
         { access: { minRole: "admin" }, allowWhenDisabled: true },
     );
 
-    if (!profileStore) {
-        router.get(
-            "/api/v1/modules/nextcloud-whiteboard/ping",
-            async (_req, res) => {
-                sendJson(res, 200, {
-                    data: {
-                        ready: false,
-                        reason: "required_capabilities_missing",
-                    },
-                });
-            },
-        );
-        return;
-    }
-
     registerNamespace?.({
         id: "whiteboards",
         ownerComponent: "nextcloud-whiteboard",
@@ -435,6 +435,15 @@ export function registerApiRoutes(router, ctx) {
     router.get(
         "/api/v1/modules/nextcloud-whiteboard/ping",
         async (_req, res) => {
+            if (!ctx.getCapability("social:profileStore")) {
+                sendJson(res, 200, {
+                    data: {
+                        ready: false,
+                        reason: "required_capabilities_missing",
+                    },
+                });
+                return;
+            }
             await store.ensureSchema();
             const config = await store.getConfig();
             sendJson(res, 200, {

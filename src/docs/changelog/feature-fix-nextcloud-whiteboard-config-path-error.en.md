@@ -1,5 +1,9 @@
 # Reliable module administration startup
 
+## Register collaboration routes before profile initialization
+
+Nextcloud Whiteboard now registers its board listing and preflight routes even when the profile service initializes later. Requests resolve the current profile capability, preventing transient route-not-found responses during startup.
+
 ## Scope startup readiness to the owning module
 
 Startup reliability is handled within Nextcloud Whiteboard rather than by delaying every API request. This keeps the shared server lifecycle unchanged while making the affected administration routes available independently of profile services.

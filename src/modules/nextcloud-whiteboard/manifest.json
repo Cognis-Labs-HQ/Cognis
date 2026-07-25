@@ -1,7 +1,7 @@
 {
     "id": "nextcloud-whiteboard",
     "name": "Nextcloud Whiteboard",
-    "version": "2.1.44",
+    "version": "2.1.45",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": [
@@ -22,8 +22,5 @@
             "scriptUrl": "/static/modules/nextcloud-whiteboard/admin-section.js"
         }
     },
-    "requires": [
-        "social:profile",
-        "share"
-    ]
+    "requires": ["social:profile", "share"]
 }

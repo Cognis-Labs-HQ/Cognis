@@ -1011,6 +1011,46 @@ test("nextcloud whiteboard config remains available without the profile store", 
     assert.equal(res.json().data.apiKeyConfigured, false);
 });
 
+test("nextcloud whiteboard routes resolve a profile store registered later", async () => {
+    const db = createMemoryDb();
+    const router = createRouterCapture();
+    let profileStore;
+    registerApiRoutes(router, {
+        getCapability(key) {
+            if (key === "db:executor") return db;
+            if (key === "social:profileStore") return profileStore;
+            if (key === "logging:log") return () => {};
+            return undefined;
+        },
+    });
+    router.handler(
+        "POST",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards/preflight",
+    );
+    profileStore = {
+        async getProfile(accountId) {
+            return { handle: accountId };
+        },
+    };
+
+    const res = createJsonResponse();
+    await router.handler(
+        "GET",
+        "/api/v1/modules/nextcloud-whiteboard/whiteboards",
+    )(
+        {
+            url: "/api/v1/modules/nextcloud-whiteboard/whiteboards",
+            headers: {
+                authorization: `Bearer ${issueAccessToken("alice", "user", 60)}`,
+            },
+        },
+        res,
+    );
+
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(res.json().data, []);
+});
+
 test("nextcloud whiteboard config save preserves existing API key when omitted", async () => {
     const db = createMemoryDb();
     const store = new NextcloudWhiteboardStore({ db });
