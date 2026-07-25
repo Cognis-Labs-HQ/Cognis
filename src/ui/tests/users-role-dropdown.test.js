@@ -97,6 +97,18 @@ test("users delete action is rendered as inline trash button in actions column",
     );
 });
 
+test("users table opts out of DOM preservation so refreshed data is rendered", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/users/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /class="users-table-wrap" data-composer-preserve="false"/,
+    );
+});
+
 test("users tfa reset action has standalone branch", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/users/index.js"),
