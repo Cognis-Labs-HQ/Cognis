@@ -13,7 +13,7 @@ import { createSystemRoutes } from "./routes/system/index.js";
 import { createDocsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
 import { createModuleExtensionRoutes } from "../modules/routes/module-extensions.js";
-import type { LocalAccountStore } from "../gateways/auth/reuse/account-store.js";
+import type { LocalAccountStore } from "@cognis/core";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import { createUserRoutes } from "./routes/users/index.js";

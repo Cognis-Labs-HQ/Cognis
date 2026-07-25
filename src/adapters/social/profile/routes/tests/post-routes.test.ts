@@ -307,7 +307,9 @@ test("post routes - list visible posts across authors for search", async () => {
                     body = payload;
                 },
             } as any,
-            new URL("http://localhost/api/v1/social/posts?scope=visible&q=shared"),
+            new URL(
+                "http://localhost/api/v1/social/posts?scope=visible&q=shared",
+            ),
         );
         assert.equal(status, 200);
         const visiblePosts = JSON.parse(body).data;

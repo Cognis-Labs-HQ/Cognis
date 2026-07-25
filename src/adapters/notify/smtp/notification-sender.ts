@@ -23,8 +23,7 @@ import {
     buildVerificationEmailMessage,
 } from "./message-builders.js";
 import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "./rate-limit.js";
-import { clampSmtpVerificationCodeLength } from "./reuse/verification-codes.js";
-
+import { clampSmtpVerificationCodeLength } from "@cognis/core";
 export interface SmtpConfig {
     host: string;
     port: number;
@@ -41,16 +40,13 @@ export interface SmtpConfig {
     externalHost?: string;
     codeLength?: number;
 }
-
 export class SmtpTemporaryError extends Error {
     constructor(message: string) {
         super(message);
         this.name = "SmtpTemporaryError";
     }
 }
-
 let cachedEmailTemplate: string | null = null;
-
 async function loadEmailTemplate(): Promise<string> {
     if (cachedEmailTemplate !== null) return cachedEmailTemplate;
     const templatePath = fileURLToPath(
@@ -59,11 +55,9 @@ async function loadEmailTemplate(): Promise<string> {
     cachedEmailTemplate = await readFile(templatePath, "utf8");
     return cachedEmailTemplate;
 }
-
 function escapeHtmlForEmail(text: string): string {
     return encodeBasicHtmlEntities(text);
 }
-
 interface ThemePalette {
     bgOuter: string;
     bgHeader: string;
@@ -80,7 +74,6 @@ interface ThemePalette {
     colorDiamond: string;
     shadowColor: string;
 }
-
 const DARK_PALETTE: ThemePalette = {
     bgOuter: "#0a1628",
     bgHeader: "linear-gradient(135deg,#071421 0%,#0f2d3a 60%,#112b25 100%)",
@@ -97,7 +90,6 @@ const DARK_PALETTE: ThemePalette = {
     colorDiamond: "#2a5068",
     shadowColor: "rgba(0,0,0,0.45)",
 };
-
 const LIGHT_PALETTE: ThemePalette = {
     bgOuter: "#e8eef9",
     bgHeader: "linear-gradient(135deg,#f0f7ff 0%,#e8f3ff 60%,#e8f5f0 100%)",
@@ -114,21 +106,17 @@ const LIGHT_PALETTE: ThemePalette = {
     colorDiamond: "#94a3b8",
     shadowColor: "rgba(15,23,42,0.15)",
 };
-
 const MAX_QP_LINE_LENGTH = 76;
 const MAX_HEADER_LINE_LENGTH = 78;
-
 function normalizeNewlines(value: string): string {
     return value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
-
 function sanitizeHeader(value: string): string {
     return value
         .replace(/[\r\n]/g, " ")
         .replace(/\s+/g, " ")
         .trim();
 }
-
 function sanitizeSmtpPath(value: string): string {
     return extractEmailAddress(value)
         .replace(/[\r\n<>]/g, "")

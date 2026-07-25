@@ -29,7 +29,7 @@
  *     buildProfileAvatarMarkup,
  *     hydrateProfileAvatars,
  *     handleProfileAvatarError,
- *   } from '/static/gateways/social/reuse/profile-avatar.js';
+ *   } from '/static/gateways/social/profile-avatar.js';
  *
  *   // In a render function:
  *   container.innerHTML = buildProfileAvatarMarkup({

@@ -30,28 +30,28 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 ## Adapter
 
-| Komponente            | Pfad                                | Version |
-| --------------------- | ----------------------------------- | ------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.7` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.3` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.2.6` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.2` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.2` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.2` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.4` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.5` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.2` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.2` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.2` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.2` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.3` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.2` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.1` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.16` |
+| Komponente            | Pfad                                | Version  |
+| --------------------- | ----------------------------------- | -------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.8`  |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.6`  |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.3`  |
+| Local Auth            | `src/adapters/auth/local/`          | `0.2.6`  |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.2`  |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.2`  |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.2`  |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.5`  |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.5`  |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.2`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.2`  |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.2`  |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.2`  |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.3`  |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.2`  |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.1`  |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.17` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `1.4.18` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
-| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5`  |
+| Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 
 ## Gateways
 
@@ -67,13 +67,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
-| Calendar              | `src/gateways/calendar/`     | `1.2.5`  |
+| Calendar              | `src/gateways/calendar/`     | `1.2.6`  |
 
 ## Kernverträge
 
 | Komponente   | Pfad        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.3.1` |
+| Core Package | `src/core/` | `0.3.2` |
 
 ## API
 
@@ -87,6 +87,6 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.13` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.46` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.47` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

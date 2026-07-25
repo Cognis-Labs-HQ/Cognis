@@ -51,7 +51,6 @@ import {
     isModuleEnabled,
     shouldQueryGatewayAdapters,
 } from "./toggle-flows.js";
-
 let root = null;
 let i18n = null;
 let modules = [];
@@ -67,11 +66,9 @@ let changesBar = null;
 let securitySection = null;
 let elements = [];
 let adapterConfigPopup = null;
-
 function adapterCompositeKey(gatewayId, adapterId) {
     return `${gatewayId}:${adapterId}`;
 }
-
 function adapterHasConfig(adapter) {
     return Boolean(
         (typeof adapter?.controls?.config === "string" &&
@@ -79,19 +76,16 @@ function adapterHasConfig(adapter) {
         (Array.isArray(adapter?.schema) && adapter.schema.length > 0),
     );
 }
-
 function setModules(nextModules) {
     modules = nextModules;
     moduleById = new Map(
         nextModules.map((moduleRecord) => [moduleRecord.id, moduleRecord]),
     );
 }
-
 function setGateways(nextGateways) {
     gateways = nextGateways;
     gatewayById = new Map(nextGateways.map((gateway) => [gateway.id, gateway]));
 }
-
 function setAllAdapters(nextAdapters) {
     allAdapters = nextAdapters;
     adapterByCompositeKey = new Map(
@@ -104,19 +98,15 @@ function setAllAdapters(nextAdapters) {
         ]),
     );
 }
-
 async function reloadModules() {
     setModules(await loadModules());
 }
-
 async function reloadGateways() {
     setGateways(await loadGateways());
 }
-
 async function reloadAdapters() {
     setAllAdapters(await loadAllAdapters(gateways));
 }
-
 async function reloadGatewaysAndAdapters() {
     await reloadGateways();
     await reloadAdapters();

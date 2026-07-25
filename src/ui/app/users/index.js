@@ -604,7 +604,7 @@ function bindUsersInteractions() {
                         Boolean(user?.provider) && user.provider !== "local",
                     title:
                         user?.provider && user.provider !== "local"
-                            ? "External users' passwords are managed by their authentication provider."
+                            ? i18n.t("ui.app.users.external_password_managed")
                             : undefined,
                 },
                 {

@@ -662,4 +662,6 @@
   <string name="ui.reuse.status">Status</string>
   <string name="ui.reuse.details">Details</string>
   <string name="ui.reuse.load_failed">Die Konfiguration konnte nicht geladen werden. Bitte versuche es erneut.</string>
+  <string name="ui.reuse.core">Kern</string>
+  <string name="ui.app.users.external_password_managed">Passwörter externer Benutzer werden von ihrem Authentifizierungsanbieter verwaltet.</string>
 </resources>

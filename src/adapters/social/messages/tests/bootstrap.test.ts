@@ -73,7 +73,7 @@ test("messages adapter ensures send-message flow before hook registration", () =
 test("messages avatars fall back after failed image loads", () => {
     const appSource = readMessagesUiBundle();
     const sharedSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/profile/ui/reuse/profile-avatar.js"),
+        resolve(ROOT, "src/adapters/social/profile/ui/profile-avatar.js"),
         "utf8",
     );
     const gatewayExportSource = readFileSync(
@@ -81,7 +81,10 @@ test("messages avatars fall back after failed image loads", () => {
         "utf8",
     );
 
-    assert.match(gatewayExportSource, /static\/adapters\/social\/profile\/reuse\/profile-avatar\.js/);
+    assert.match(
+        gatewayExportSource,
+        /static\/adapters\/social\/profile\/profile-avatar\.js/,
+    );
     assert.match(sharedSource, /const unavailableAvatarKeys = new Set\(\)/);
     assert.match(sharedSource, /unavailableAvatarKeys\.add\(avatarKey\)/);
     assert.match(sharedSource, /data-avatar-key=/);

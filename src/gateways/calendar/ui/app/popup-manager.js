@@ -1,3 +1,5 @@
+import { createSubmitEvent } from "./submit-event.js";
+import { bindViewInteractions as bindCalendarViewInteractions } from "./bind-view-interactions.js";
 import { createCalendarEditPopupHandler } from "./popup-manager-calendar-edit.js";
 import {
     bindAllDayComposerControls,
@@ -52,82 +54,17 @@ export function createCalendarPopupManager({
     syncRouteSelection,
     refreshComposer,
 }) {
-    async function submitEvent({
-        calendarId,
-        title,
-        description,
-        startAt,
-        endAt,
-        attendees,
-        inviteEmails,
-        reminderOffsetsMinutes,
-        createMeeting,
-        status,
-        recurrence,
-        allowConflict = false,
-    }) {
-        const targetCalendarId = String(calendarId ?? "").trim();
-        if (!targetCalendarId) return false;
-        let meetingUrl = null;
-        if (createMeeting && getJitsiAvailable()) {
-            try {
-                meetingUrl = await calendarUi.createJitsiMeeting(attendees, {
-                    scheduledAt: startAt,
-                });
-            } catch {
-                showToast(
-                    i18n.t("gateway.calendar.create_meeting_failed"),
-                    "error",
-                );
-                return false;
-            }
-        }
-        const overlaps = findOverlappingEvents(getEventsByCalendar(), {
-            calendarId: targetCalendarId,
-            startAt: new Date(startAt).toISOString(),
-            endAt: new Date(endAt).toISOString(),
-        });
-        if (overlaps.length > 0 && !allowConflict) {
-            showToast(
-                i18n.t("gateway.calendar.overlap_warning_confirm"),
-                "warning",
-            );
-            return "conflict";
-        }
-        const response = await apiFetch(
-            `/api/v1/calendar/calendars/${encodeURIComponent(targetCalendarId)}/events`,
-            {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                },
-                body: JSON.stringify({
-                    title,
-                    description,
-                    startAt: new Date(startAt).toISOString(),
-                    endAt: new Date(endAt).toISOString(),
-                    attendees,
-                    inviteEmails,
-                    reminderOffsetsMinutes,
-                    meetingUrl,
-                    status,
-                    recurrence,
-                }),
-            },
-        );
-        if (!response.ok) {
-            showToast(i18n.t("gateway.calendar.create_event_failed"), "error");
-            return false;
-        }
-        const payload = await response.json().catch(() => ({}));
-        const createdEventId = String(payload?.data?.id ?? "");
-        await reloadState();
-        setSelectedCalendarId(targetCalendarId);
-        syncRouteSelection();
-        showToast(i18n.t("gateway.calendar.create_event_success"), "success");
-        return createdEventId !== "" ? createdEventId : true;
-    }
-
+    const submitEvent = createSubmitEvent({
+        getJitsiAvailable,
+        calendarUi,
+        showToast,
+        i18n,
+        getEventsByCalendar,
+        apiFetch,
+        reloadState,
+        setSelectedCalendarId,
+        syncRouteSelection,
+    });
     async function updateExistingEvent({
         sourceCalendarId,
         sourceEventId,
@@ -181,7 +118,6 @@ export function createCalendarPopupManager({
         showToast(i18n.t("gateway.calendar.update_event_success"), "success");
         return true;
     }
-
     async function openDeleteEventPopup(eventData) {
         const isRecurring = eventData.event.recurrence !== "none";
         await openPopup({
@@ -485,7 +421,6 @@ export function createCalendarPopupManager({
             syncRouteSelection();
         }
     }
-
     async function openEventComposerPopup({
         startAt = "",
         endAt = "",
@@ -545,7 +480,6 @@ export function createCalendarPopupManager({
         let pendingCreatedEventId = null,
             pendingCreatedCalendarId = null;
         const participantKey = buildParticipantEntryKey;
-
         function renderParticipants(overlay) {
             const list = overlay.querySelector(
                 "#calendar-popup-participant-chips",
@@ -562,7 +496,6 @@ export function createCalendarPopupManager({
                 .join("");
             hydrateProfileAvatars(list);
         }
-
         function renderParticipantOptions(overlay) {
             const optionsElement = overlay.querySelector(
                 "#calendar-popup-participant-options",
@@ -576,7 +509,6 @@ export function createCalendarPopupManager({
                 .join("");
             hydrateProfileAvatars(optionsElement);
         }
-
         async function refreshParticipantOptions(overlay) {
             const searchInput = overlay.querySelector(
                 "#calendar-popup-participant-search",
@@ -662,7 +594,6 @@ export function createCalendarPopupManager({
             });
             renderParticipantOptions(overlay);
         }
-
         function selectParticipant(overlay, index) {
             const option = participantOptions[index];
             if (!option) return;
@@ -680,9 +611,7 @@ export function createCalendarPopupManager({
             renderParticipants(overlay);
             renderParticipantOptions(overlay);
         }
-
         const showMeetingToggle = getJitsiAvailable() && !eventData;
-
         await openPopup({
             title: i18n.t(
                 eventData
@@ -980,49 +909,17 @@ export function createCalendarPopupManager({
             );
         }
     }
-
     function bindViewInteractions() {
-        if (root.dataset.calendarInteractionsBound === "true") return;
-        root.dataset.calendarInteractionsBound = "true";
-        root.addEventListener(
-            "click",
-            (event) => {
-                if (!(event.target instanceof Element)) {
-                    return;
-                }
-                if (
-                    handlePendingResponseClick(
-                        event.target,
-                        respondToEventSelection,
-                        reloadState,
-                    )
-                ) {
-                    return;
-                }
-                const eventButton = event.target.closest(
-                    "[data-calendar-event]",
-                );
-                if (eventButton instanceof HTMLElement) {
-                    setSelectedCalendarId(
-                        String(
-                            eventButton.getAttribute("data-calendar-id") ?? "",
-                        ),
-                    );
-                    const eventId = String(
-                        eventButton.getAttribute("data-calendar-event") ?? "",
-                    );
-                    const calendarId = String(
-                        eventButton.getAttribute("data-calendar-id") ?? "",
-                    );
-                    if (calendarId && eventId) {
-                        openEventPopup(calendarId, eventId);
-                    }
-                }
-            },
-            { signal },
-        );
+        bindCalendarViewInteractions({
+            root,
+            signal,
+            handlePendingResponseClick,
+            respondToEventSelection,
+            reloadState,
+            setSelectedCalendarId,
+            openEventPopup,
+        });
     }
-
     const { openCalendarEditPopup } = createCalendarEditPopupHandler({
         i18n,
         apiFetch,
@@ -1033,7 +930,6 @@ export function createCalendarPopupManager({
         reloadState,
         refreshComposer,
     });
-
     return {
         bindViewInteractions,
         openDeleteEventPopup,

@@ -1,9 +1,9 @@
-import { SMTP_VERIFICATION_RATE_LIMIT_MS } from "@cognis/core";
 import {
     DEFAULT_SMTP_VERIFICATION_CODE_LENGTH,
+    SMTP_VERIFICATION_RATE_LIMIT_MS,
     clampSmtpVerificationCodeLength,
     generateSmtpNumericCode,
-} from "../../notify/smtp/reuse/verification-codes.js";
+} from "@cognis/core";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
 const CODE_EXPIRY_MS = 15 * 60 * 1000;

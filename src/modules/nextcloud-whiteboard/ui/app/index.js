@@ -33,16 +33,13 @@ import {
     hydratePresenceAvatars,
     renderWhiteboardPresenceEntry,
 } from "./presence.js";
-
 const EMIT_DEBOUNCE_MS = 80;
 const RECONNECT_MAX_DELAY_MS = 30000;
 const SYNC_MESSAGE_SCENE_INIT = "SCENE_INIT";
 const SYNC_MESSAGE_SCENE_UPDATE = "SCENE_UPDATE";
 const SYNC_MESSAGE_BOARD_RENAMED = "BOARD_RENAMED";
-
 let i18n = null;
 let composer = null;
-
 let boards = [];
 let activeBoard = null;
 let activeSession = null;
@@ -56,7 +53,6 @@ let imageUploadMaxBytes = 1048576;
 let syncStatus = "idle";
 let syncStatusMessage = "";
 let integrationCanvasMode = false;
-
 function collectWhiteboardSearchGroups() {
     const items = [];
     for (const board of boards ?? []) {
@@ -79,7 +75,6 @@ function collectWhiteboardSearchGroups() {
                 .join(" "),
         });
     }
-
     const elementText = JSON.stringify(savedElements ?? []);
     if (activeBoard?.id && elementText && elementText !== "[]") {
         items.push({
@@ -96,35 +91,29 @@ function collectWhiteboardSearchGroups() {
             searchText: elementText,
         });
     }
-
     return [{ category: "Whiteboards", items }];
 }
-
 function translateModuleString(key) {
     return i18n?.t(key) ?? key;
 }
-
 function reportClientError(error, fallbackKey) {
     console.error("[nextcloud-whiteboard] client error:", error);
     showToast(error?.message || translateModuleString(fallbackKey), {
         variant: "error",
     });
 }
-
 function sharePageFlag(name, fallback) {
     if (!activeShareContext?.page) return fallback;
     return activeShareContext.page[name] !== undefined
         ? Boolean(activeShareContext.page[name])
         : fallback;
 }
-
 function canManageShares() {
     return (
         !integrationCanvasMode &&
         sharePageFlag("showShareControls", !activeShareContext)
     );
 }
-
 function updateSyncStatusBox() {
     const statusBox = document.getElementById("whiteboard-sync-status");
     if (!statusBox) return;
@@ -133,13 +122,11 @@ function updateSyncStatusBox() {
         syncStatusMessage ||
         translateModuleString("module.nextcloud_whiteboard.status_idle");
 }
-
 function setSyncStatus(status, messageKey) {
     syncStatus = status;
     syncStatusMessage = translateModuleString(messageKey);
     updateSyncStatusBox();
 }
-
 function buildConnectionErrorMessage(error, serverUrl) {
     const rawMessage = String(error?.message ?? "").trim();
     const genericSocketFailure = /^(websocket error|xhr poll error)$/i.test(
@@ -152,11 +139,9 @@ function buildConnectionErrorMessage(error, serverUrl) {
     }
     return `${translateModuleString("module.nextcloud_whiteboard.connect_error")}: ${rawMessage}`;
 }
-
 async function loadBoards() {
     boards = await fetchWhiteboardList();
 }
-
 async function renameBoard(boardId, title) {
     return renameWhiteboard(
         boardId,
@@ -165,11 +150,9 @@ async function renameBoard(boardId, title) {
             "module.nextcloud_whiteboard.rename_failed",
     );
 }
-
 async function spawnBoard({ title, participants = [] } = {}) {
     return spawnWhiteboard({ title, participants });
 }
-
 function setOverlayVisible(visible, message = "") {
     const overlay = document.getElementById("whiteboard-canvas-overlay");
     if (!overlay) return;
@@ -177,7 +160,6 @@ function setOverlayVisible(visible, message = "") {
     const messageEl = overlay.querySelector(".whiteboard-overlay-message");
     if (messageEl) messageEl.textContent = message;
 }
-
 function teardownCanvas() {
     if (socketInstance) {
         try {
@@ -203,13 +185,11 @@ function teardownCanvas() {
     }
     activeSession = null;
 }
-
 function canRenameActiveBoard() {
     return Boolean(
         !integrationCanvasMode && activeSession?.canRename && activeBoard?.id,
     );
 }
-
 function applyBoardTitle(title) {
     const normalizedTitle = String(title ?? "").trim();
     if (!normalizedTitle) return;
@@ -223,7 +203,6 @@ function applyBoardTitle(title) {
         titleEl.textContent = normalizedTitle;
     }
 }
-
 function emitBoardRenamed(title) {
     if (!socketInstance?.connected || !activeSession?.roomId) return;
     socketInstance.emit(
@@ -233,7 +212,6 @@ function emitBoardRenamed(title) {
         [],
     );
 }
-
 function connectSocket(io, session, canvas) {
     const { serverUrl, roomId, token } = session;
     const socket = io(serverUrl, {
@@ -244,7 +222,6 @@ function connectSocket(io, session, canvas) {
     });
     let joinedRoom = false;
     let isDedicatedSyncer = false;
-
     const persistChanges = debounce(async (elements) => {
         try {
             await saveWhiteboardElements(roomId, elements);
@@ -259,7 +236,6 @@ function connectSocket(io, session, canvas) {
             );
         }
     }, EMIT_DEBOUNCE_MS);
-
     const emitChanges = throttleLatest(
         (elements, type = SYNC_MESSAGE_SCENE_INIT) => {
             if (!socket.connected || !joinedRoom) {
@@ -286,7 +262,6 @@ function connectSocket(io, session, canvas) {
         },
         EMIT_DEBOUNCE_MS,
     );
-
     canvas.onChange((elements, meta) => {
         if (meta?.type === "image_rejected") {
             showToast(
@@ -302,23 +277,19 @@ function connectSocket(io, session, canvas) {
         if (meta?.transient !== true) persistChanges(elements);
         emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
     });
-
     socket.on("connect", () => {
         lastConnectionToast = "";
         joinedRoom = false;
     });
-
     socket.on("init-room", () => {
         socket.emit("join-room", roomId);
     });
-
     socket.on("room-user-change", () => {
         joinedRoom = true;
         setSyncStatus("synced", "module.nextcloud_whiteboard.status_synced");
         if (isDedicatedSyncer)
             emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
     });
-
     socket.on("sync-designate", ({ isSyncer } = {}) => {
         isDedicatedSyncer = Boolean(isSyncer);
         if (joinedRoom && isDedicatedSyncer) {
@@ -330,12 +301,10 @@ function connectSocket(io, session, canvas) {
             );
         }
     });
-
     socket.on("user-joined", () => {
         if (joinedRoom && isDedicatedSyncer)
             emitChanges(canvas.getElements(), SYNC_MESSAGE_SCENE_INIT);
     });
-
     socket.on("connect_error", (error) => {
         const message = buildConnectionErrorMessage(error, serverUrl);
         syncStatus = "error";
@@ -346,7 +315,6 @@ function connectSocket(io, session, canvas) {
             showToast(message, { variant: "error" });
         }
     });
-
     socket.on("client-broadcast", (payload) => {
         try {
             const message = decodeSceneMessage(payload);
@@ -372,14 +340,11 @@ function connectSocket(io, session, canvas) {
             );
         }
     });
-
     return socket;
 }
-
 async function createAndOpenBoard() {
     const passed = await runPreflightCheck();
     if (!passed) return;
-
     let spawnResult;
     try {
         spawnResult = await spawnBoard({
@@ -398,7 +363,6 @@ async function createAndOpenBoard() {
     );
     await openBoard(spawnResult.whiteboard);
 }
-
 function bindCanvasToolbar(canvas) {
     const toolbar = document.getElementById("whiteboard-toolbar");
     if (!toolbar || toolbar.dataset.bound === "true") return;
@@ -426,7 +390,6 @@ function bindCanvasToolbar(canvas) {
     let selectedElement = null;
     let activeTool = "select";
     let keepToolActive = false;
-
     function activateTool(tool) {
         activeTool = tool;
         toolbar.querySelectorAll("[data-tool]").forEach((btn) => {
@@ -434,15 +397,12 @@ function bindCanvasToolbar(canvas) {
         });
         updateStyleControls();
     }
-
     function selectedCanUseStrokeWidth() {
         return Boolean(selectedElement?.strokeWidthApplicable);
     }
-
     function activeToolCanUseStrokeWidth() {
         return strokeTools.has(activeTool);
     }
-
     function updateStyleControls() {
         const strokeSelect = document.getElementById("whiteboard-stroke-width");
         if (strokeSelect) {
@@ -454,15 +414,12 @@ function bindCanvasToolbar(canvas) {
             }
         }
     }
-
     const undoButton = document.getElementById("whiteboard-undo");
     const redoButton = document.getElementById("whiteboard-redo");
-
     function updateHistoryControls() {
         if (undoButton) undoButton.disabled = !canvas.canUndo?.();
         if (redoButton) redoButton.disabled = !canvas.canRedo?.();
     }
-
     toolbar.querySelectorAll("[data-tool]").forEach((button) => {
         button.addEventListener("click", (event) => {
             event.preventDefault();
@@ -472,10 +429,8 @@ function bindCanvasToolbar(canvas) {
             canvas.setTool(tool);
         });
     });
-
     canvas.onToolChange?.((tool) => activateTool(tool));
     canvas.onHistoryChange?.(updateHistoryControls);
-
     const lockButton = document.getElementById("whiteboard-tool-lock");
     lockButton?.addEventListener("click", (event) => {
         event.preventDefault();
@@ -485,7 +440,6 @@ function bindCanvasToolbar(canvas) {
         lockButton.setAttribute("aria-pressed", String(keepToolActive));
         canvas.setKeepToolActive?.(keepToolActive);
     });
-
     document
         .getElementById("whiteboard-new")
         ?.addEventListener("click", () => void createAndOpenBoard());
@@ -512,7 +466,6 @@ function bindCanvasToolbar(canvas) {
             .getElementById("whiteboard-board-title")
             ?.addEventListener("dblclick", () => void renameActiveBoard());
     }
-
     const colorInput = document.getElementById("whiteboard-color");
     const themeStrokeColor = () =>
         getComputedStyle(document.body).getPropertyValue("--text").trim() ||
@@ -524,12 +477,10 @@ function bindCanvasToolbar(canvas) {
     colorInput?.addEventListener("input", () => {
         canvas.setStrokeColor(colorInput.value);
     });
-
     const strokeSelect = document.getElementById("whiteboard-stroke-width");
     strokeSelect?.addEventListener("change", () => {
         canvas.setStrokeWidth(strokeSelect.value);
     });
-
     canvas.onSelectionChange?.((element) => {
         selectedElement = element;
         if (colorInput && element?.strokeColor) {
@@ -542,7 +493,6 @@ function bindCanvasToolbar(canvas) {
         composer?.refreshPresence?.();
     });
     updateStyleControls();
-
     document
         .getElementById("whiteboard-clear")
         ?.addEventListener("click", async (event) => {
@@ -552,7 +502,6 @@ function bindCanvasToolbar(canvas) {
             savedElements = [];
         });
 }
-
 async function bindShareButton(toolbar) {
     const slot = toolbar.querySelector("#whiteboard-share-slot");
     if (!(slot instanceof HTMLElement) || !activeBoard?.id) return;
@@ -577,7 +526,6 @@ async function bindShareButton(toolbar) {
         onClick: () => void openSharePopup(),
     });
 }
-
 async function openSharePopup() {
     if (!activeBoard?.id || !canManageShares()) return;
     try {
@@ -654,7 +602,6 @@ async function openSharePopup() {
         );
     }
 }
-
 async function openHistoryPopup() {
     try {
         await loadBoards();
@@ -691,7 +638,6 @@ async function openHistoryPopup() {
         ],
     });
 }
-
 async function renameActiveBoard() {
     if (!activeBoard || !canRenameActiveBoard()) return;
     const titleEl = document.getElementById("whiteboard-board-title");
@@ -758,7 +704,6 @@ async function renameActiveBoard() {
     titleEl.addEventListener("blur", finish);
     titleEl.addEventListener("keydown", onKeydown);
 }
-
 async function verifyWebsocketAuth(result) {
     if (!result?.serverUrl || !result?.websocketAuthToken) return false;
     const io = await loadSocketIo(result.serverUrl);
@@ -784,7 +729,6 @@ async function verifyWebsocketAuth(result) {
         });
     });
 }
-
 async function runPreflightCheck() {
     if (preflightStatus === "running") return false;
     preflightStatus = "running";
@@ -792,7 +736,6 @@ async function runPreflightCheck() {
         true,
         translateModuleString("module.nextcloud_whiteboard.preflight_checking"),
     );
-
     let result;
     try {
         result = await apiFetchJson("/whiteboards/preflight", {
@@ -812,7 +755,6 @@ async function runPreflightCheck() {
         showToast(message, { variant: "error" });
         return false;
     }
-
     if (!result?.alive) {
         preflightStatus = "failed";
         const message = translateModuleString(
@@ -822,7 +764,6 @@ async function runPreflightCheck() {
         showToast(message, { variant: "error" });
         return false;
     }
-
     const websocketAuthorized = await verifyWebsocketAuth(result).catch(
         () => false,
     );
@@ -835,11 +776,9 @@ async function runPreflightCheck() {
         showToast(message, { variant: "error" });
         return false;
     }
-
     preflightStatus = "passed";
     return true;
 }
-
 function syncBoardUrl(boardId) {
     if (activeShareContext || !boardId) return;
     const searchParams = new URLSearchParams({ id: boardId });
@@ -855,21 +794,17 @@ function syncBoardUrl(boardId) {
         window.history.replaceState(null, "", nextUrl);
     }
 }
-
 async function openBoard(board) {
     activeBoard = board;
     syncBoardUrl(board?.id);
     teardownCanvas();
     composer.refresh(buildElements());
-
     const passed = await runPreflightCheck();
     if (!passed) return;
-
     setOverlayVisible(
         true,
         translateModuleString("module.nextcloud_whiteboard.connecting"),
     );
-
     let session;
     try {
         session = await fetchWhiteboardSession(board.id);
@@ -878,14 +813,11 @@ async function openBoard(board) {
         showToast(error.message, { variant: "error" });
         return;
     }
-
     activeSession = session;
     imageUploadMaxBytes = Number(
         session.imageUploadMaxBytes ?? imageUploadMaxBytes,
     );
-
     applyBoardTitle(session.title);
-
     let io;
     try {
         io = await loadSocketIo(session.serverUrl);
@@ -894,10 +826,8 @@ async function openBoard(board) {
         showToast(error.message, { variant: "error" });
         return;
     }
-
     const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasElement) return;
-
     canvasInstance = createWhiteboardCanvas(canvasElement);
     canvasInstance.setImageUploader((dataUrl) =>
         uploadWhiteboardImage(session.roomId, dataUrl),

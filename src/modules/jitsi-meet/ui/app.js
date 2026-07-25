@@ -32,9 +32,7 @@ import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
 import { createMountUtilities } from "./jitsi-mount-utils.js";
 import { bindShareButton } from "./share-button.js";
-
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
-
 const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
     destroy: () => undefined,
     hideReactionHoverPopup: () => undefined,
@@ -94,7 +92,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         },
         { once: true },
     );
-
     const state = {
         allParticipants: [],
         availableParticipants: [],
@@ -132,7 +129,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
     };
-
     function collectMeetingSearchGroups() {
         const meetings = [
             ...(Array.isArray(state.activeMeetings)
@@ -178,9 +174,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         }
         return items.length ? [{ category: "Meetings", items }] : [];
     }
-
     registerSearchIndex("jitsi-meetings", collectMeetingSearchGroups);
-
     const {
         clearTimers,
         deferAloneParticipantPrompt,
@@ -192,14 +186,12 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         syncShareButtonAvailability,
         updateOverlay,
     } = createMountUtilities({ root, state });
-
     if (signal) {
         root.addEventListener("error", handleProfileAvatarError, {
             capture: true,
             signal,
         });
     }
-
     const callbacks = {};
     const utils = {
         clearTimers,
@@ -251,7 +243,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         preflightHandlers,
         embedHandlers,
     );
-
     const {
         activateMeetingChat,
         activatePrivateChatForParticipant,
@@ -291,9 +282,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             { once: true },
         );
     }
-
     let bindController = null;
-
     function bindInteractiveHandlers() {
         if (bindController) {
             bindController.abort();
@@ -312,7 +301,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         const bindSignal = bindController.signal;
         recoverMeetingSessionAfterComposerRender();
         const container = root;
-
         const findButton = container.querySelector(
             "#jitsi-find-participants-btn",
         );
@@ -331,7 +319,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         const activeMeetingsEl = container.querySelector(
             "#jitsi-active-meetings",
         );
-
         if (findButton instanceof HTMLButtonElement) {
             findButton.addEventListener(
                 "click",
@@ -387,7 +374,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         container.addEventListener(
             "dragstart",
             (event) => {
@@ -407,12 +393,10 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             },
             { signal: bindSignal },
         );
-
         const overlay = container.querySelector("#jitsi-overlay");
         const availablePool = container.querySelector(
             "#jitsi-available-participants",
         );
-
         if (overlay instanceof HTMLElement) {
             overlay.addEventListener(
                 "dragover",
@@ -427,7 +411,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 },
                 { signal: bindSignal },
             );
-
             overlay.addEventListener(
                 "dragleave",
                 (event) => {
@@ -437,7 +420,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 },
                 { signal: bindSignal },
             );
-
             overlay.addEventListener(
                 "drop",
                 (event) => {
@@ -453,7 +435,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (availablePool instanceof HTMLElement) {
             availablePool.addEventListener(
                 "dragover",
@@ -467,7 +448,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 },
                 { signal: bindSignal },
             );
-
             availablePool.addEventListener(
                 "drop",
                 (event) => {
@@ -482,7 +462,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (activeMeetingsEl instanceof HTMLElement) {
             activeMeetingsEl.addEventListener(
                 "click",
@@ -500,7 +479,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (chatParticipantStrip instanceof HTMLElement) {
             chatParticipantStrip.addEventListener(
                 "click",
@@ -516,7 +494,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (chatReturnButton instanceof HTMLButtonElement) {
             chatReturnButton.addEventListener(
                 "click",
@@ -527,7 +504,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (chatThread instanceof HTMLElement) {
             chatThread.addEventListener(
                 "click",
@@ -652,7 +628,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (startButton instanceof HTMLButtonElement) {
             startButton.addEventListener(
                 "click",
@@ -663,7 +638,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         const syncJitsiTheme = (event) => {
             const nextThemeMode = resolveThemeMode(event?.detail?.theme);
             const themeChanged = nextThemeMode !== state.jitsiThemeMode;
@@ -703,7 +677,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         window.addEventListener("storage", syncJitsiTheme, {
             signal: bindSignal,
         });
-
         window.addEventListener(
             "beforeunload",
             (event) => {
@@ -747,7 +720,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             },
             { signal: bindSignal },
         );
-
         if (authButton instanceof HTMLButtonElement) {
             authButton.addEventListener(
                 "click",
@@ -785,14 +757,12 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         const leaveAloneButton = container.querySelector(
             "#jitsi-leave-alone-btn",
         );
         const remainAloneButton = container.querySelector(
             "#jitsi-remain-alone-btn",
         );
-
         if (leaveAloneButton instanceof HTMLButtonElement) {
             leaveAloneButton.addEventListener(
                 "click",
@@ -807,7 +777,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (remainAloneButton instanceof HTMLButtonElement) {
             remainAloneButton.addEventListener(
                 "click",
@@ -827,7 +796,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (reclaimButton instanceof HTMLButtonElement) {
             reclaimButton.addEventListener(
                 "click",
@@ -860,7 +828,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         if (
             chatForm instanceof HTMLFormElement &&
             chatInput instanceof HTMLTextAreaElement
@@ -922,11 +889,9 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                 { signal: bindSignal },
             );
         }
-
         renderParticipants();
         void updateNativeChat();
     }
-
     const elements = [
         // Share-link guests have no account and cannot search for or start
         // meetings with other participants, so the participant-management
@@ -969,7 +934,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             render: () => buildChatMarkup(i18n),
         },
     ];
-
     const [allParticipants, currentProfile] = await Promise.all([
         fetchParticipants(""),
         fetchCurrentProfile(),

@@ -78,7 +78,7 @@ function collectExportedNames(filePath, seen = new Set()) {
     return exported;
 }
 
-const CSS_ROOTS = [join(ROOT, "src/ui/styles")];
+const CSS_ROOTS = [join(ROOT, "src/ui/styles"), join(ROOT, "src/adapters")];
 const USAGE_ROOTS = [
     join(ROOT, "src/ui/app"),
     join(ROOT, "src/ui/layouts"),
@@ -174,6 +174,12 @@ const SELECTOR_HOOK_CLASSES = new Set([
     "stack",
     "teacher-only",
     "user-dropdown-content",
+    "markdown-code-copy-label",
+    "page-pointer__mouse",
+    "module-settings-popup-power-row",
+    "module-settings-popup-power-toggle",
+    "module-settings-popup-field-error",
+    "search-popup--finder",
 ]);
 
 test("no missing CSS definitions (class applied in scripts or templates but not defined in any stylesheet)", () => {

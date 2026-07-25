@@ -662,4 +662,6 @@
   <string name="ui.reuse.status">Status</string>
   <string name="ui.reuse.details">Detail</string>
   <string name="ui.reuse.load_failed">Konfigurasi gagal dimuat. Silakan coba lagi.</string>
+  <string name="ui.reuse.core">Inti</string>
+  <string name="ui.app.users.external_password_managed">Kata sandi pengguna eksternal dikelola oleh penyedia autentikasi mereka.</string>
 </resources>

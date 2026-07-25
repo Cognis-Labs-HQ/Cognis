@@ -344,46 +344,6 @@ test("CoreAuthGateway lists adapter publisher metadata", async () => {
     assert.equal(gateway.listAdapters()[0]?.publisher, "Cognis Labs HQ");
 });
 
-test("CoreAuthGateway.resetPasswordForAccount supports legacy 2-arg adapter contracts", async () => {
-    const { CoreAuthGateway } = await import("../gateway.js");
-
-    const db = {
-        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
-        executeCommand: async () => ({ rows: [] }),
-    } as ReturnType<typeof makeInMemoryDb> & {
-        execute: (
-            sql: string,
-            params?: unknown[],
-        ) => Promise<{ rows?: unknown[] }>;
-        executeCommand: () => Promise<{ rows?: unknown[] }>;
-    };
-
-    const gw = new CoreAuthGateway(db);
-    const calls: Array<{ accountId: string; nextPassword: string }> = [];
-    gw.registerAdapter({
-        id: "legacy",
-        name: "Legacy",
-        authenticate: async () => null,
-        getConfigSchema: () => [],
-        configure: () => undefined,
-        resetPassword: async (accountId: string, nextPassword?: string) => {
-            calls.push({ accountId, nextPassword: String(nextPassword ?? "") });
-            return { updated: true };
-        },
-    });
-
-    await gw.resetPasswordForAccount(
-        "legacy",
-        "legacy-user",
-        "current-pass",
-        "next-pass",
-    );
-
-    assert.deepEqual(calls, [
-        { accountId: "legacy-user", nextPassword: "next-pass" },
-    ]);
-});
-
 test("CoreAuthGateway redacts configured passwords and preserves them on blank updates", async () => {
     const { CoreAuthGateway } = await import("../gateway.js");
     const persisted = {

@@ -304,6 +304,7 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
         clearInterval() {},
         TextDecoder,
         URL,
+        registerSearchIndex() {},
         MutationObserver: class {
             observe() {}
         },
