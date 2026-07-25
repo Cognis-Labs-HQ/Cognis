@@ -124,7 +124,8 @@ export class CoreCalendarGateway {
             return {
                 id: adapter.adapterId,
                 name: adapter.adapterName,
-                version: adapter.version,
+                ...(adapter.version ? { version: adapter.version } : {}),
+                ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
                 active:
                     !this.disabledAdapters.has(adapter.adapterId) &&
                     (typeof adapter.isConfigured === "function"
