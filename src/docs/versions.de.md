@@ -1,3 +1,5 @@
+<!-- Keep all src/docs/versions.*.md language variants in sync when updating this file. -->
+
 # Komponentenversionen
 
 ## Überblick
@@ -46,8 +48,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.3` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.2` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.1` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.5` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.9` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.15` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.17` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.5` |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0` |
 
@@ -58,7 +60,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.7.5`  |
 | Share                 | `src/gateways/share/`        | `1.3.2`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.5`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.9`  |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
 | File Storage (files)  | `src/gateways/files/`        | `2.1.2`  |
@@ -85,6 +87,6 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.2.13` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.38` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.1.46` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.4`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.2`  |

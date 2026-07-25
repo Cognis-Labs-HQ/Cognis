@@ -58,6 +58,7 @@ export interface RegistrationGatewayAdapter {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     defaultEnabled?: boolean;
     invite?: RegistrationInviteAdapter;
     public?: RegistrationPublicAdapter;
@@ -67,6 +68,7 @@ export interface RegistrationAdapterInfo {
     id: string;
     name: string;
     version?: string;
+    publisher?: string;
     enabled: boolean;
 }
 
@@ -137,6 +139,16 @@ export class CoreRegistrationGateway {
                 if (pkg.version) {
                     Object.assign(adapter, { version: pkg.version });
                 }
+                const manifestRaw = await readFile(
+                    path.join(adaptersRoot, entry, "manifest.json"),
+                    "utf8",
+                );
+                const manifest = JSON.parse(manifestRaw) as {
+                    publisher?: string;
+                };
+                if (manifest.publisher) {
+                    Object.assign(adapter, { publisher: manifest.publisher });
+                }
                 this.registerAdapter(adapter);
             } catch {
                 // Adapter load failures are non-fatal.
@@ -168,7 +180,8 @@ export class CoreRegistrationGateway {
         return Array.from(this.adapters.values()).map((adapter) => ({
             id: adapter.id,
             name: adapter.name,
-            version: adapter.version,
+            ...(adapter.version ? { version: adapter.version } : {}),
+            ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
             enabled: this.enabledAdapters.has(adapter.id),
         }));
     }

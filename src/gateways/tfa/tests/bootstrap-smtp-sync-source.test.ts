@@ -12,7 +12,19 @@ test("tfa smtp bootstrap enables notify smtp only when smtp tfa is enabled", () 
     );
 
     assert.match(source, /adapterId === "smtp" && enabled/);
+    assert.match(
+        source,
+        /if \(gateway\.isAdapterEnabled\("smtp"\)\) \{\s*await setNotifySenderEnabled\("smtp", true\);/,
+    );
     assert.doesNotMatch(source, /setNotifySenderEnabled\("smtp", enabled\)/);
     assert.doesNotMatch(source, /setAdapterAvailabilityCheck\(\s*"smtp"/);
     assert.doesNotMatch(source, /notify-smtp:sync-tfa-smtp/);
+});
+
+test("tfa declares notify as a bootstrap dependency", () => {
+    const manifest = JSON.parse(
+        readFileSync(resolve(ROOT, "src/gateways/tfa/manifest.json"), "utf8"),
+    );
+
+    assert.ok(manifest.requires.includes("notify"));
 });

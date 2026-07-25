@@ -1,9 +1,10 @@
 {
     "id": "tfa",
     "name": "Two-Factor Authentication Gateway",
-    "version": "1.1.6",
+    "version": "1.1.9",
+    "publisher": "Cognis Labs HQ",
     "required": false,
-    "requires": ["db", "auth"],
+    "requires": ["db", "auth", "notify"],
     "hasAdapters": true,
     "entrypoints": {
         "cli": "./cli/index.js"

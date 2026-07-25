@@ -49,6 +49,7 @@ export interface NotificationSenderInfo {
     senderId: string;
     name: string;
     version?: string;
+    publisher?: string;
     active: boolean;
     supportsTest?: boolean;
     alwaysOn?: boolean;
@@ -100,6 +101,7 @@ export interface NotificationSender {
     readonly senderId: string;
     readonly senderName?: string;
     readonly version?: string;
+    readonly publisher?: string;
     send(envelope: NotificationEnvelope): Promise<void>;
     sendTracked?(envelope: NotificationEnvelope): Promise<{
         notificationId: string;
@@ -366,7 +368,8 @@ export class CoreNotificationGateway
             return {
                 senderId: sender.senderId,
                 name: sender.senderName ?? sender.senderId,
-                version: sender.version,
+                ...(sender.version ? { version: sender.version } : {}),
+                ...(sender.publisher ? { publisher: sender.publisher } : {}),
                 active:
                     !this.disabledSenders.has(sender.senderId) &&
                     (typeof sender.isConfigured === "function"
@@ -702,6 +705,7 @@ export class CoreNotificationGateway
                 if (!pkg.main) continue;
 
                 let requires: string[] | undefined;
+                let publisher: string | undefined;
                 try {
                     const manifestRaw = await readFile(
                         path.join(adaptersRoot, entry, "manifest.json"),
@@ -709,7 +713,9 @@ export class CoreNotificationGateway
                     );
                     const manifest = JSON.parse(manifestRaw) as {
                         requires?: string[];
+                        publisher?: string;
                     };
+                    publisher = manifest.publisher;
                     if (Array.isArray(manifest.requires)) {
                         requires = manifest.requires;
                     }
@@ -729,6 +735,9 @@ export class CoreNotificationGateway
                     );
                     if (sender && pkg.version) {
                         Object.assign(sender, { version: pkg.version });
+                    }
+                    if (sender && publisher) {
+                        Object.assign(sender, { publisher });
                     }
                     if (sender) {
                         this.registerSender(sender, requires);

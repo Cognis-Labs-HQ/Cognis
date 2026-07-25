@@ -122,13 +122,26 @@ export function createProfileImageUploadActions({
             });
             return false;
         }
+        // The media write is complete once the server returns a successful
+        // status. Treat the response payload as optional so an empty or
+        // otherwise unreadable success response cannot turn that completed
+        // upload into an error toast in the file-input handler.
+        let responseData = {};
+        try {
+            responseData = (await response.json())?.data ?? {};
+        } catch {
+            // Keep the local preview when the optional response body is absent.
+        }
 
         const currentState = getState();
         if (kind === "avatar") {
             if (currentState.avatarBlobUrl) {
                 URL.revokeObjectURL(currentState.avatarBlobUrl);
             }
-            setState({ avatarBlobUrl: URL.createObjectURL(uploadBlob) });
+            setState({
+                avatarBlobUrl: URL.createObjectURL(uploadBlob),
+                profile: responseData.profile ?? currentState.profile,
+            });
         } else {
             if (currentState.bannerBlobUrl) {
                 URL.revokeObjectURL(currentState.bannerBlobUrl);
@@ -148,16 +161,27 @@ export function createProfileImageUploadActions({
                 bannerBlobUrl: URL.createObjectURL(uploadBlob),
                 bannerPanX: nextBannerPanX,
                 bannerPanY: nextBannerPanY,
-            });
-            await saveBannerLayoutPreference({
-                height: currentState.bannerHeight === "full" ? "full" : "half",
-                panX: nextBannerPanX,
-                panY: nextBannerPanY,
+                profile: responseData.profile ?? currentState.profile,
             });
         }
 
-        setState({ profile: await loadOwnProfile() });
+        // Render the local blob before any follow-up request so a slow or
+        // failed preference/profile refresh cannot hide a successful upload.
         refreshPage();
+        if (kind === "banner") {
+            try {
+                await saveBannerLayoutPreference({
+                    height:
+                        currentState.bannerHeight === "full" ? "full" : "half",
+                    panX: nextBannerPanX,
+                    panY: nextBannerPanY,
+                });
+            } catch {
+                // The banner upload already succeeded. Preference persistence
+                // must not make the caller report the upload itself as failed.
+            }
+        }
+
         if (kind === "avatar") {
             updateNavbarAvatar().catch(() => {});
         }

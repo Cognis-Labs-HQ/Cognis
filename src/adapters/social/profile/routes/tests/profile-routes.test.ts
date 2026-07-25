@@ -808,6 +808,51 @@ test("profile routes - banner DELETE clears bannerKey", async () => {
     assert.equal(profile?.bannerKey, null);
 });
 
+test("profile routes - banner DELETE falls back when the removal flow has no persistence result", async () => {
+    const profileStore = new VolatileProfileStore();
+    await setupUser(profileStore, "alice");
+    await profileStore.updateProfile("alice", {
+        bannerKey: "profile/banners/alice.png",
+    });
+    const gateway = fakeFileGateway();
+    const flow = {
+        exists(flowId: string) {
+            return flowId === "remove-profile-media";
+        },
+        async run() {
+            return {
+                flowId: "remove-profile-media",
+                data: {},
+                stageResults: {},
+            };
+        },
+    } as any;
+    const route = createProfileRoutes(
+        profileStore,
+        gateway,
+        undefined,
+        undefined,
+        undefined,
+        createDefaultRouteContext({ flow }),
+    );
+    const token = issueAccessToken("alice", "user", 60);
+    let status = 0;
+    await route(
+        makeReq("DELETE", token),
+        {
+            writeHead(c: number) {
+                status = c;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/social/profile/banner"),
+    );
+
+    assert.equal(status, 200);
+    const profile = await profileStore.getProfile("alice");
+    assert.equal(profile?.bannerKey, null);
+});
+
 test("GET /api/v1/social/profile/ping returns 200 when authenticated", async () => {
     const profileStore = new VolatileProfileStore();
     await setupUser(profileStore, "alice");
