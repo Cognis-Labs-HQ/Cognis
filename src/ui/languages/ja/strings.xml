@@ -165,6 +165,11 @@
   <string name="ui.app.settings.advanced">詳細設定</string>
   <string name="ui.app.settings.preferences">設定情報</string>
   <string name="ui.app.settings.prefs_loading">読み込み中...</string>
+  <string name="ui.app.settings.preferences_warning_title">設定の手動編集</string>
+  <string name="ui.app.settings.preferences_warning_body">設定 JSON を編集すると、値の型が正しくない場合に Cognis が使用不能になったり、設定がリセットされたりする可能性があります。JSON の構造を理解している場合のみ続行してください。</string>
+  <string name="ui.app.settings.preferences_warning_accept">理解して編集を有効にする</string>
+  <string name="ui.app.settings.preferences_invalid_json">設定は有効な JSON オブジェクトである必要があります。</string>
+  <string name="ui.app.settings.preferences_acknowledgement_error">確認への同意を保存できませんでした。編集はロックされたままです。</string>
 
   <string name="ui.app.docs.page_subtitle">開発者ドキュメント。</string>
   <string name="ui.app.docs.group.platform">プラットフォーム</string>
