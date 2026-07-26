@@ -47,7 +47,7 @@ test("page composer invokes element-level onRender callbacks", () => {
     assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
-test("page composer preserves media element DOM across re-renders", () => {
+test("page composer parks media DOM only when explicitly enabled", () => {
     const source = readPageComposerBundle();
     const composerStyles = readFileSync(
         resolve(ROOT, "src/ui/styles/page-builder/composer.css"),
@@ -69,8 +69,9 @@ test("page composer preserves media element DOM across re-renders", () => {
         /createCell\(element, placement, \{\s*includeContent: false,?\s*\}\)/,
     );
     assert.match(source, /iframe,img,video,audio,canvas,object,embed/);
-    assert.match(source, /MEDIA_PRESERVE_OPT_OUT_SELECTOR/);
-    assert.match(source, /data-composer-preserve=\"false\"/);
+    assert.match(source, /enableDomParking = false/);
+    assert.match(source, /state\.enableDomParking/);
+    assert.match(source, /if \(!state\.enableDomParking\) return false/);
     assert.match(composerStyles, /\.composer-preserved-element-parking/);
     assert.match(composerStyles, /\.composer-preserved-element-content/);
 });

@@ -179,7 +179,7 @@ export function renderAvatarBadge(roleValue, i18n) {
 
 function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
     if (avatarBlobUrl) {
-        return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" data-composer-preserve="false" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
+        return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
     }
     const initialsLabel = profile?.displayName || profile?.handle || "";
     const initials = getInitialsText(initialsLabel);
@@ -205,7 +205,7 @@ export function renderHero({
 }) {
     const bannerImageObjectPosition = `${bannerPanX}% ${bannerPanY}%`;
     const bannerContent = bannerBlobUrl
-        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" data-composer-preserve="false" style="object-position: ${escapeHtml(bannerImageObjectPosition)};" alt="" />`
+        ? `<img src="${escapeHtml(bannerBlobUrl)}" class="profile-hero-banner-img" style="object-position: ${escapeHtml(bannerImageObjectPosition)};" alt="" />`
         : '<div class="profile-hero-banner-placeholder"></div>';
     const details = [
         profile?.location
@@ -410,7 +410,7 @@ export function renderHero({
     if (bannerHeight === "full") {
         return `
       ${archivedBanner}
-      <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}" data-composer-preserve="false">
+      <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
         <div class="profile-hero-banner-wrap">
           ${bannerWrap}
         </div>
@@ -433,7 +433,7 @@ export function renderHero({
 
     return `
     ${archivedBanner}
-    <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}" data-composer-preserve="false">
+    <div class="${heroClass}${isBlocked ? " profile-hero--blocked" : ""}">
       <div class="profile-hero-banner-wrap">
         ${bannerWrap}
       </div>

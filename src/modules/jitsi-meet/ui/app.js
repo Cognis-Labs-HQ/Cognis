@@ -954,6 +954,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
 
     const composer = createPageComposer(root, {
         allowCustomization: !inShareView,
+        enableDomParking: true,
         elements,
         preferenceKey: "meetings-layout-v3",
         i18n,
