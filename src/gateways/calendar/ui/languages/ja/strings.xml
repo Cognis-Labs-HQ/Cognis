@@ -148,4 +148,5 @@
   <string name="gateway.calendar.share_link_name_fallback">共有リンク</string>
   <string name="gateway.calendar.share_link_name_placeholder">リンク名（任意）</string>
   <string name="gateway.calendar.share_link_passphrase">パスフレーズ</string>
+  <string name="gateway.calendar.clear_calendar_filter">カレンダーフィルターを解除</string>
 </resources>

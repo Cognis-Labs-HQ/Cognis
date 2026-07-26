@@ -75,6 +75,25 @@ function addDays(value, days) {
     return date;
 }
 
+function isToday(value) {
+    const date = new Date(value);
+    const today = new Date();
+    return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth() &&
+        date.getDate() === today.getDate()
+    );
+}
+
+function isCurrentMonth(value) {
+    const date = new Date(value);
+    const today = new Date();
+    return (
+        date.getFullYear() === today.getFullYear() &&
+        date.getMonth() === today.getMonth()
+    );
+}
+
 function toDateTimeLocalValue(value) {
     const date = new Date(value);
     const year = String(date.getFullYear());
@@ -682,7 +701,7 @@ function renderMonthGrid(events, currentDate, i18n, currentAccountId = null) {
                   '<span class="calendar-month-event-placeholder" aria-hidden="true"></span>',
           ).join("");
           const overflowCount = dayEvents.length - MONTH_EVENT_PREVIEW_LIMIT;
-          return `<td><article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}">
+          return `<td><article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}${isToday(day) ? " calendar-month-day--today" : ""}">
           <header>
             <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">${day.getDate()}</button>
             <button type="button" class="calendar-all-day-create" data-month-create-date="${dayStart.toISOString()}">+</button>
@@ -744,7 +763,7 @@ function renderYearMonthMiniGrid(monthDate, events, i18n) {
                   `--calendar-day-background:${escapeHtml(dayBackground)}`,
               );
           }
-          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="${styleProperties.join(";")}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
+          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}${!isOutsideMonth && isToday(day) ? " calendar-year-day-dot--today" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="${styleProperties.join(";")}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
       }).join("")}
     </div>`);
         if (shouldStopRenderingWeeks(weekEnd, monthStart)) break;
@@ -753,7 +772,7 @@ function renderYearMonthMiniGrid(monthDate, events, i18n) {
         month: "long",
     });
     const openMonthLabel = `${i18n.t("gateway.calendar.open_month_view")} ${monthLabel}`;
-    return `<article class="calendar-year-month">
+    return `<article class="calendar-year-month${isCurrentMonth(monthStart) ? " calendar-year-month--current" : ""}">
     <button type="button" class="calendar-year-month-title" data-year-month-index="${monthStart.getMonth()}" aria-label="${escapeHtml(openMonthLabel)}">${escapeHtml(monthLabel)}</button>
     <div class="calendar-year-mini-grid">
       <div class="calendar-year-mini-header">

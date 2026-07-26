@@ -251,6 +251,31 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
 });
 
+test("calendar upcoming events can be filtered with calendar pills", () => {
+    assert.match(APP_SOURCE, /data-upcoming-calendar-filter/);
+    assert.match(APP_SOURCE, /calendar-filter-slider/);
+    assert.match(APP_SOURCE, /data-upcoming-calendar-filter-clear/);
+    assert.match(APP_SOURCE, /btn-cancel calendar-filter-clear/);
+    assert.match(APP_SOURCE, /upcomingCalendarFilterId/);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-filter-slider\s*\{[\s\S]*overflow-x:\s*auto;/s,
+    );
+});
+
+test("calendar highlights today in month and year views", () => {
+    assert.match(HELPERS_SOURCE, /calendar-month-day--today/);
+    assert.match(HELPERS_SOURCE, /calendar-year-day-dot--today/);
+    assert.match(HELPERS_SOURCE, /calendar-year-month--current/);
+    assert.match(CSS_SOURCE, /\.calendar-month-day--today\s*\{/);
+    assert.match(CSS_SOURCE, /\.calendar-year-day-dot--today\s*\{/);
+    assert.match(CSS_SOURCE, /\.calendar-year-month--current\s*\{/);
+});
+
+test("calendar disables page composer layout editing", () => {
+    assert.match(APP_SOURCE, /allowCustomization:\s*false/);
+});
+
 test("calendar toolbar includes pending quick responses with shared-calendar target exemption", () => {
     assert.match(HELPERS_SOURCE, /collectPendingEvents/);
     assert.match(HELPERS_SOURCE, /const dedupedByRoot = new Map\(\);/);
@@ -394,7 +419,7 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
     );
 });
 
-test("calendar main view and summaries aggregate events across calendars", () => {
+test("calendar main view aggregates events and upcoming events accept the toolbar filter", () => {
     assert.match(
         APP_SOURCE,
         /function allCalendarEvents\(\)\s*\{[\s\S]*Object\.entries\(eventsByCalendar\)[\s\S]*\.sort\(\(left, right\) => left\.startAt\.localeCompare\(right\.startAt\)\);/s,
@@ -405,7 +430,7 @@ test("calendar main view and summaries aggregate events across calendars", () =>
     );
     assert.match(
         APP_SOURCE,
-        /function allUpcomingEvents\(\)\s*\{[\s\S]*collectUpcomingEvents\(\s*eventsByCalendar,\s*calendars,\s*"",\s*currentAccountId,/s,
+        /function allUpcomingEvents\(\)\s*\{[\s\S]*collectUpcomingEvents\(\s*eventsByCalendar,\s*calendars,\s*upcomingCalendarFilterId,\s*currentAccountId,/s,
     );
     assert.match(
         APP_SOURCE,

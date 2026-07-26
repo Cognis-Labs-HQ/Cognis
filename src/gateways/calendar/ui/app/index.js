@@ -22,6 +22,7 @@ export async function mount(root, { signal } = {}) {
     const routeEventId = calendarUi.parseEventSelection();
     let selectedCalendarId = routeCalendarId;
     let selectedEventId = routeEventId;
+    let upcomingCalendarFilterId = "";
     let eventsByCalendar = {};
     let pendingInvitations = [];
     let canInviteExternal = false;
@@ -190,9 +191,27 @@ export async function mount(root, { signal } = {}) {
         return calendarUi.collectUpcomingEvents(
             eventsByCalendar,
             calendars,
-            "",
+            upcomingCalendarFilterId,
             currentAccountId,
         );
+    }
+
+    function renderUpcomingCalendarFilters() {
+        if (!calendars.length) return "";
+        const filterButtons = calendars
+            .map(
+                (
+                    calendar,
+                ) => `<button type="button" class="calendar-filter-pill${upcomingCalendarFilterId === calendar.id ? " calendar-filter-pill--active" : ""}" data-upcoming-calendar-filter="${escapeHtml(calendar.id)}" aria-pressed="${upcomingCalendarFilterId === calendar.id ? "true" : "false"}">
+                  <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(calendarUi.normalizeHexColor(calendar.color))};border-color:${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}"></span>
+                  <span>${escapeHtml(calendar.name)}</span>
+                </button>`,
+            )
+            .join("");
+        const clearButton = upcomingCalendarFilterId
+            ? `<button type="button" class="btn-cancel calendar-filter-clear" data-upcoming-calendar-filter-clear aria-label="${escapeHtml(i18n.t("gateway.calendar.clear_calendar_filter"))}">&times;</button>`
+            : "";
+        return `<div class="calendar-filter-row"><div class="calendar-filter-slider">${filterButtons}</div>${clearButton}</div>`;
     }
 
     function allPendingEvents() {
@@ -311,7 +330,7 @@ export async function mount(root, { signal } = {}) {
     } = popupManager;
 
     composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: false,
         elements: [
             {
                 id: "calendar-view",
@@ -594,6 +613,7 @@ export async function mount(root, { signal } = {}) {
             <header class="calendar-toolbar-heading">
               <h3>${i18n.t("gateway.calendar.upcoming_events")}</h3>
             </header>
+            ${renderUpcomingCalendarFilters()}
             <div id="calendar-toolbar-upcoming">${calendarUi.renderToolbarSummary(allUpcomingEvents(), /* pendingEvents */ [], i18n)}</div>
           </section>
         `,
@@ -607,6 +627,32 @@ export async function mount(root, { signal } = {}) {
         },
         onRender: () => {
             bindViewInteractions();
+            root.querySelectorAll("[data-upcoming-calendar-filter]").forEach(
+                (button) => {
+                    button.addEventListener(
+                        "click",
+                        () => {
+                            upcomingCalendarFilterId = String(
+                                button.getAttribute(
+                                    "data-upcoming-calendar-filter",
+                                ) ?? "",
+                            );
+                            refreshCalendarComposer();
+                        },
+                        { signal },
+                    );
+                },
+            );
+            root.querySelector(
+                "[data-upcoming-calendar-filter-clear]",
+            )?.addEventListener(
+                "click",
+                () => {
+                    upcomingCalendarFilterId = "";
+                    refreshCalendarComposer();
+                },
+                { signal },
+            );
             const createTrigger = root.querySelector(
                 "#calendar-create-trigger",
             );

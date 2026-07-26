@@ -148,4 +148,5 @@
   <string name="gateway.calendar.share_link_name_fallback">Share Link</string>
   <string name="gateway.calendar.share_link_name_placeholder">Link Name (optional)</string>
   <string name="gateway.calendar.share_link_passphrase">Passphrase</string>
+  <string name="gateway.calendar.clear_calendar_filter">Clear Calendar Filter</string>
 </resources>

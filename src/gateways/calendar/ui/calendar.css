@@ -323,6 +323,61 @@
     background: var(--surface, transparent);
 }
 
+.calendar-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.calendar-filter-slider {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    min-width: 0;
+    padding: 0.15rem 0 0.3rem;
+    scrollbar-width: thin;
+}
+
+.calendar-filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex: 0 0 auto;
+    max-width: 12rem;
+    border: 1px solid var(--field-border);
+    border-radius: 999px;
+    background: var(--surface, transparent);
+    color: inherit;
+    padding: 0.3rem 0.65rem;
+}
+
+.calendar-filter-pill span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.calendar-filter-pill--active {
+    border-color: var(--btn-confirm-bg, #1f8ceb);
+    background: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) 20%,
+        var(--surface, transparent)
+    );
+}
+
+.calendar-filter-clear {
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+    min-width: 2rem;
+    padding: 0;
+    border-radius: 999px;
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
 .calendar-month-grid {
     width: 100%;
     border-collapse: separate;
@@ -398,6 +453,15 @@
     opacity: 0.7;
 }
 
+.calendar-month-day--today {
+    border-color: var(--btn-confirm-bg, #1f8ceb);
+    background: color-mix(
+        in srgb,
+        var(--btn-confirm-bg, #1f8ceb) 16%,
+        var(--surface, transparent)
+    );
+}
+
 .calendar-month-day header {
     display: flex;
     align-items: center;
@@ -439,6 +503,11 @@
     display: grid;
     gap: 0.5rem;
     align-content: start;
+}
+
+.calendar-year-month--current {
+    border-color: var(--btn-confirm-bg, #1f8ceb);
+    box-shadow: 0 0 0 1px var(--btn-confirm-bg, #1f8ceb);
 }
 
 .calendar-year-month-title {
@@ -527,6 +596,13 @@
         var(--calendar-day-color, var(--btn-confirm-bg, #1f8ceb)) 65%,
         var(--field-border)
     );
+}
+
+.calendar-view-canvas .calendar-year-day-dot--today {
+    border-color: var(--btn-confirm-bg, #1f8ceb);
+    background: var(--btn-confirm-bg, #1f8ceb);
+    color: #fff;
+    font-weight: 700;
 }
 
 .calendar-view-canvas .calendar-year-day-dot--outside {
