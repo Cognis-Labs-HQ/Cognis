@@ -16,6 +16,7 @@ import {
 } from "./keys.js";
 import {
     addMember,
+    createDm,
     createRoom,
     findDmBetween,
     findGroupByExactMembers,
@@ -24,6 +25,7 @@ import {
     listMembers,
     listRoomsForAccount,
     removeMember,
+    removeMemberAndApplyLifecycle,
     updateRoomAvatar,
     updateRoomTitle,
 } from "./rooms.js";
@@ -74,6 +76,10 @@ export class DbMessagesStore {
         return createRoom(this.db, kind, title, createdBy);
     }
 
+    async createDm(accountA: string, accountB: string): Promise<RoomRow> {
+        return createDm(this.db, accountA, accountB);
+    }
+
     async getRoom(id: string): Promise<RoomRow | null> {
         return getRoom(this.db, id);
     }
@@ -95,6 +101,13 @@ export class DbMessagesStore {
 
     async removeMember(roomId: string, accountId: string): Promise<void> {
         await removeMember(this.db, roomId, accountId);
+    }
+
+    async removeMemberAndApplyLifecycle(
+        roomId: string,
+        accountId: string,
+    ): Promise<"active" | "archived" | "deleted"> {
+        return removeMemberAndApplyLifecycle(this.db, roomId, accountId);
     }
 
     async getMember(

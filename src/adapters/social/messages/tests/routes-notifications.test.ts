@@ -166,7 +166,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
         async findDmBetween() {
             return null;
         },
-        async createRoom() {
+        async createDm() {
             return {
                 id: "room-req-1",
                 kind: "dm",
@@ -259,12 +259,87 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
     assert.equal(statusCode, 202);
     assert.equal(JSON.parse(responseBody).data.requestId, "req-1");
     assert.equal(dispatched.length, 1);
+    assert.equal(dispatched[0].category, "message-requests");
     assert.equal(dispatched[0].subject, "New message request");
     assert.equal(dispatched[0].recipientUsername, "bob");
     assert.deepEqual(dispatched[0].metadata, {
         roomId: "room-req-1",
         requestId: "req-1",
     });
+});
+
+test("POST /messages/rooms does not resend an existing message-request notification", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    const dispatched: Array<Record<string, unknown>> = [];
+    const existingRequest = {
+        id: "req-existing",
+        status: "pending",
+        roomId: "room-existing",
+    };
+    const messagesStore = {
+        async hasApprovedMessageRequestBetween() {
+            return false;
+        },
+        async findDmBetween() {
+            return { id: "room-existing", kind: "dm" };
+        },
+        async setArchived() {},
+        async findPendingMessageRequest() {
+            return existingRequest;
+        },
+    };
+    const profileStore = {
+        async isBlocked() {
+            return false;
+        },
+        async getProfileByHandle(handle: string) {
+            return handle === "bob"
+                ? {
+                      accountId: "bob",
+                      handle: "bob",
+                      visibility: "community",
+                  }
+                : null;
+        },
+        async getProfile(accountId: string) {
+            return {
+                accountId,
+                handle: accountId,
+                visibility: "community",
+            };
+        },
+        async isFollowing() {
+            return false;
+        },
+    };
+    const route = createMessagesRoutes({
+        messagesStore: messagesStore as any,
+        profileStore: profileStore as any,
+        dispatch: async (envelope: Record<string, unknown>) => {
+            dispatched.push(envelope);
+            return { dispatched: ["bob"] };
+        },
+        isAdapterEnabled: () => true,
+    });
+    const req = makeReq("POST", token);
+    req[Symbol.asyncIterator] = async function* () {
+        yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
+    };
+    let responseBody = "";
+
+    await route(
+        req,
+        {
+            writeHead() {},
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/social/messages/rooms"),
+    );
+
+    assert.equal(JSON.parse(responseBody).data.id, "room-existing");
+    assert.deepEqual(dispatched, []);
 });
 
 test("POST /messages/rooms/:id/messages skips notifications when recipient has pending incoming request", async () => {

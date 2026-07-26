@@ -17,6 +17,7 @@ export interface CalendarStore {
     saveResponse(response: CalendarEventResponseRecord): Promise<void>;
     deleteResponse(rootEventId: string, accountId: string): Promise<void>;
     deleteResponsesForRootEvent(rootEventId: string): Promise<void>;
+    deleteAccountActivity(accountId: string): Promise<void>;
 }
 
 function parseJsonStringArray(value: unknown): string[] {
@@ -422,6 +423,88 @@ export class DbCalendarStore implements CalendarStore {
             option: "DELETE",
             table: "calendar_event_responses",
             where: [{ column: "root_event_id", value: rootEventId }],
+        });
+    }
+
+    async deleteAccountActivity(accountId: string): Promise<void> {
+        await this.db.transaction(async (transactionDb) => {
+            const calendars = await transactionDb.executeCommand({
+                option: "SELECT",
+                table: "calendar_calendars",
+                columns: ["id"],
+                where: [{ column: "owner_account_id", value: accountId }],
+            });
+            const ownedCalendarIds = (calendars.rows ?? []).map((row) =>
+                String(row.id),
+            );
+            const eventIds = new Set<string>();
+            for (const calendarId of ownedCalendarIds) {
+                const events = await transactionDb.executeCommand({
+                    option: "SELECT",
+                    table: "calendar_events",
+                    columns: ["id"],
+                    where: [{ column: "calendar_id", value: calendarId }],
+                });
+                for (const row of events.rows ?? [])
+                    eventIds.add(String(row.id));
+            }
+            const createdEvents = await transactionDb.executeCommand({
+                option: "SELECT",
+                table: "calendar_events",
+                columns: ["id"],
+                where: [{ column: "created_by", value: accountId }],
+            });
+            for (const row of createdEvents.rows ?? [])
+                eventIds.add(String(row.id));
+
+            const retainedEvents = await transactionDb.executeCommand({
+                option: "SELECT",
+                table: "calendar_events",
+                columns: ["id", "attendees_json"],
+            });
+            for (const row of retainedEvents.rows ?? []) {
+                const eventId = String(row.id);
+                if (eventIds.has(eventId)) continue;
+                const attendees = parseJsonStringArray(row.attendees_json);
+                const filteredAttendees = attendees.filter(
+                    (attendee) => attendee !== accountId,
+                );
+                if (filteredAttendees.length === attendees.length) continue;
+                await transactionDb.executeCommand({
+                    option: "UPDATE",
+                    table: "calendar_events",
+                    set: {
+                        attendees_json: JSON.stringify(filteredAttendees),
+                        updated_at: new Date().toISOString(),
+                    },
+                    where: [{ column: "id", value: eventId }],
+                });
+            }
+
+            await transactionDb.executeCommand({
+                option: "DELETE",
+                table: "calendar_event_responses",
+                where: [{ column: "account_id", value: accountId }],
+            });
+            for (const eventId of eventIds) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "calendar_event_responses",
+                    where: [{ column: "root_event_id", value: eventId }],
+                });
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "calendar_events",
+                    where: [{ column: "id", value: eventId }],
+                });
+            }
+            for (const calendarId of ownedCalendarIds) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "calendar_calendars",
+                    where: [{ column: "id", value: calendarId }],
+                });
+            }
         });
     }
 }

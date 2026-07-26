@@ -13,6 +13,7 @@ import { DbInternalNotificationStore } from "./db-store.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes/index.js";
+import type { Ctx } from "@cognis/core";
 
 const SENDER_ID = "internal";
 
@@ -124,6 +125,37 @@ export async function bootstrapNotifyAdapter(
             },
         );
     }
+
+    const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    systemCtx?.flow.extend(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "notify-internal:delete-user-notifications" },
+        async (stageCtx) => {
+            const input = (stageCtx.input ?? {}) as {
+                username?: string;
+                action?: string;
+            };
+            const persistResult = (stageCtx.stageResults["persist-state"] ??
+                []) as Array<{ persisted?: boolean }>;
+            if (
+                input.action !== "delete" ||
+                !input.username ||
+                !persistResult[0]?.persisted
+            ) {
+                return { cleaned: false };
+            }
+            const accountId = input.username.trim().toLowerCase();
+            const deletedCount = await activeStore.deleteAll(accountId);
+            ctx.log?.("info", "Deleted user notifications.", {
+                component: "notify-internal",
+                operation: "delete_user_notifications",
+                accountId,
+                deletedCount,
+            });
+            return { cleaned: true, accountId, deletedCount };
+        },
+    );
 
     ctx.registerRoute(
         createInternalNotificationRoutes(activeStore, routeContext),

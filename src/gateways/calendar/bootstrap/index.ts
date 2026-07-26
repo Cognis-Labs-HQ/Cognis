@@ -142,6 +142,35 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const store = new DbCalendarStore(dbExecutor);
             await store.ensureSchema();
             await gateway.attachStore(store);
+            ctx.flow.extend(
+                "deprovision-user",
+                "cleanup-dependencies",
+                { id: "calendar-gateway:delete-user-activity" },
+                async (stageCtx) => {
+                    const input = (stageCtx.input ?? {}) as {
+                        username?: string;
+                        action?: string;
+                    };
+                    const persistResult = (stageCtx.stageResults[
+                        "persist-state"
+                    ] ?? []) as Array<{ persisted?: boolean }>;
+                    if (
+                        input.action !== "delete" ||
+                        !input.username ||
+                        !persistResult[0]?.persisted
+                    ) {
+                        return { cleaned: false };
+                    }
+                    const accountId = input.username.trim().toLowerCase();
+                    await gateway.deleteAccountActivity(accountId);
+                    ctx.log?.("info", "Deleted user calendar activity.", {
+                        component: "calendar-gateway",
+                        operation: "delete_user_activity",
+                        accountId,
+                    });
+                    return { cleaned: true, accountId };
+                },
+            );
         } catch (error) {
             ctx.log?.("error", "Calendar DB store initialization failed.", {
                 component: "calendar-gateway",

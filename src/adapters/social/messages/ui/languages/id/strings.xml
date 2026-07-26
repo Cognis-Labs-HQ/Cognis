@@ -36,6 +36,7 @@
   <string name="module.social.messages.leave_failed">Gagal meninggalkan percakapan.</string>
   <string name="module.social.messages.leave_confirm_title">Tinggalkan Percakapan Ini?</string>
   <string name="module.social.messages.leave_confirm_body">Apakah Anda yakin ingin meninggalkan percakapan ini dengan {name}?</string>
+  <string name="module.social.messages.requests_section">Permintaan Pesan</string>
   <string name="module.social.messages.archived_section">Diarsipkan</string>
   <string name="module.social.messages.archived_locked">Diarsipkan — Mulai percakapan baru untuk mengirim pesan.</string>
   <string name="module.social.messages.archived_cannot_send">Percakapan ini diarsipkan. Mulai percakapan baru untuk mengirim pesan lagi.</string>

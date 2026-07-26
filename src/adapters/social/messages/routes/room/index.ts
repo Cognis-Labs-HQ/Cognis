@@ -782,15 +782,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 subjectHandle: target.handle,
                 subjectDisplayName: target.displayName,
             });
-            await messagesStore.removeMember(roomId, target.accountId);
-            const remainingMembers = await messagesStore.listMembers(roomId);
-            if (isSelfLeave && remainingMembers.length === 1) {
-                await messagesStore.setArchived(
-                    roomId,
-                    remainingMembers[0].accountId,
-                    true,
-                );
-            }
+            await messagesStore.removeMemberAndApplyLifecycle(
+                roomId,
+                target.accountId,
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;
