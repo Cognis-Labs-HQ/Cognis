@@ -71,6 +71,8 @@ export function initReleaseChangelogPrefs(
     return {
         refresh,
         getShowReleaseChangelogs: () => currentShowReleaseChangelogs,
+        isDirty: () =>
+            currentShowReleaseChangelogs !== savedShowReleaseChangelogs,
         commit,
         discard,
     };

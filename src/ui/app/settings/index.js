@@ -30,6 +30,11 @@ import {
     applyTimezoneToLocalStorage,
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
+import { initAdvancedPrefs } from "./advanced-prefs.js";
+import {
+    loadEditorAcknowledgement,
+    saveEditorAcknowledgement,
+} from "./editor-acknowledgement.js";
 import { registerSearchIndex } from "../../reuse/search-util/popup.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -328,6 +333,8 @@ const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
+    const editorAcknowledgementAccepted =
+        await loadEditorAcknowledgement().catch(() => false);
     const storedLanguagePriorityMode = readLanguagePriorityMode();
     const initialLanguagePriorityMode =
         loadedPrefs?.languagePriorityMode === "manual"
@@ -375,6 +382,7 @@ export async function mount(root, { signal } = {}) {
     let changesBar;
     let generalPrefs;
     let datetimePrefs;
+    let advancedPrefs;
     const pendingDirtyStates = new Map();
 
     function markDirty(key, dirty) {
@@ -432,6 +440,7 @@ export async function mount(root, { signal } = {}) {
 
         return {
             getMode: () => currentMode,
+            isDirty: () => currentMode !== savedMode,
             commit: () => {
                 savedMode = currentMode;
             },
@@ -472,6 +481,7 @@ export async function mount(root, { signal } = {}) {
 
         return {
             getMessageStyle: () => currentMessageStyle,
+            isDirty: () => currentMessageStyle !== savedMessageStyle,
             commit: () => {
                 savedMessageStyle = currentMessageStyle;
             },
@@ -740,17 +750,27 @@ export async function mount(root, { signal } = {}) {
                         pinned: true,
                         render: () => `
             <h3>${i18n.t("ui.app.settings.preferences")}</h3>
-            <pre id="prefs-dump" class="prefs-dump">${i18n.t("ui.app.settings.prefs_loading")}</pre>
+            <textarea id="prefs-dump" class="prefs-dump" aria-label="${escapeHtml(i18n.t("ui.app.settings.preferences"))}" spellcheck="false" readonly>${i18n.t("ui.app.settings.prefs_loading")}</textarea>
           `,
                     },
                 ],
                 onRender: () => {
                     const prefsDumpEl = root.querySelector("#prefs-dump");
                     if (prefsDumpEl) {
-                        prefsDumpEl.textContent =
-                            loadedPrefs != null
-                                ? JSON.stringify(loadedPrefs, null, 2)
-                                : "null";
+                        prefsDumpEl.value = JSON.stringify(
+                            loadedPrefs ?? {},
+                            null,
+                            2,
+                        );
+                        advancedPrefs = initAdvancedPrefs(root, {
+                            existingPrefs: loadedPrefs ?? {},
+                            acknowledgementAccepted:
+                                editorAcknowledgementAccepted,
+                            saveAcknowledgement: saveEditorAcknowledgement,
+                            i18n,
+                            onDirtyChange: (dirty) =>
+                                markDirty("advanced", dirty),
+                        });
                     }
                 },
             },
@@ -816,6 +836,13 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
 
+    root.querySelector('[data-composer-scroll="advanced"]')?.addEventListener(
+        "click",
+        () => {
+            setTimeout(() => advancedPrefs?.requestEditingConsent(), 0);
+        },
+    );
+
     const floatingSlot = composer.getFloatingSlot("settings-changes-bar");
 
     changesBar = createUnsavedChangesBar(floatingSlot, {
@@ -826,7 +853,18 @@ export async function mount(root, { signal } = {}) {
                     await section.save();
                 }
             }
-            const prefs = {
+            let prefs;
+            try {
+                prefs = advancedPrefs?.isDirty()
+                    ? advancedPrefs.getPreferences()
+                    : { ...(loadedPrefs ?? {}) };
+            } catch {
+                showToast(i18n.t("ui.app.settings.preferences_invalid_json"), {
+                    variant: "error",
+                });
+                throw new Error("invalid_preferences_json");
+            }
+            const selectedPrefs = {
                 appFont: fontPrefs
                     ? toFontFamilyValue(fontPrefs.getFont())
                     : loadedPrefs?.appFont,
@@ -854,15 +892,39 @@ export async function mount(root, { signal } = {}) {
                 releaseChangelogShow:
                     releaseNotesPrefs?.getShowReleaseChangelogs() ??
                     shouldShowReleaseChangelog(loadedPrefs),
-                releaseChangelogSeenSlugs:
-                    loadedPrefs?.releaseChangelogSeenSlugs ?? [],
-                releaseChangelogLastVersion:
-                    loadedPrefs?.releaseChangelogLastVersion ?? null,
             };
+            if (!advancedPrefs?.isDirty()) {
+                prefs = { ...prefs, ...selectedPrefs };
+            } else {
+                if (fontPrefs?.isDirty()) {
+                    prefs.appFont = selectedPrefs.appFont;
+                    prefs.appFontSize = selectedPrefs.appFontSize;
+                }
+                if (languagePrefs?.isDirty()) {
+                    prefs.languagePriority = selectedPrefs.languagePriority;
+                    prefs.languagePriorityMode =
+                        selectedPrefs.languagePriorityMode;
+                }
+                if (themePrefs?.isDirty()) {
+                    prefs.mode = selectedPrefs.mode;
+                }
+                if (datetimePrefs?.isDirty()) {
+                    prefs.timezone = selectedPrefs.timezone;
+                    prefs.timeFormat = selectedPrefs.timeFormat;
+                }
+                if (messageStylePrefs?.isDirty()) {
+                    prefs.messageStyle = selectedPrefs.messageStyle;
+                }
+                if (releaseNotesPrefs?.isDirty()) {
+                    prefs.releaseChangelogShow =
+                        selectedPrefs.releaseChangelogShow;
+                }
+            }
             await savePrefs(prefs);
-            loadedPrefs = { ...loadedPrefs, ...prefs };
-            persistTheme(mode);
-            applyTheme(mode);
+            loadedPrefs = prefs;
+            const appliedMode = prefs.mode ?? mode;
+            persistTheme(appliedMode);
+            applyTheme(appliedMode);
             setPreferredLanguages(prefs.languagePriority, {
                 mode: prefs.languagePriorityMode,
             });
@@ -879,6 +941,7 @@ export async function mount(root, { signal } = {}) {
             releaseNotesPrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
+            advancedPrefs?.commit(prefs);
             for (const section of contributedSections) {
                 section.commit();
             }
@@ -903,6 +966,7 @@ export async function mount(root, { signal } = {}) {
             messageStylePrefs?.discard();
             releaseNotesPrefs?.discard();
             datetimePrefs?.discard();
+            advancedPrefs?.discard();
             for (const section of contributedSections) {
                 section.discard();
             }
