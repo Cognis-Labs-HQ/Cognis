@@ -1,0 +1,29 @@
+import assert from "node:assert/strict";
+import fs from "node:fs";
+import test from "node:test";
+
+const settingsSource = fs.readFileSync(
+    new URL("../app/settings/index.js", import.meta.url),
+    "utf8",
+);
+const editorSource = fs.readFileSync(
+    new URL("../app/settings/advanced-prefs.js", import.meta.url),
+    "utf8",
+);
+const releasePopupSource = fs.readFileSync(
+    new URL("../layouts/release-changelog/popup.js", import.meta.url),
+    "utf8",
+);
+
+test("advanced preferences require remembered consent and use dirty tracking", () => {
+    assert.match(editorSource, /openPopup\(\{/);
+    assert.match(editorSource, /cognis_preferences_editor_accepted:/);
+    assert.match(editorSource, /createFormDirtyTracker\(editor\.parentElement/);
+    assert.match(settingsSource, /advancedPrefs\.getPreferences\(\)/);
+    assert.match(settingsSource, /preferences_invalid_json/);
+});
+
+test("release acknowledgement state is stored outside editable UI preferences", () => {
+    assert.match(releasePopupSource, /loadReleaseChangelogState\(\)/);
+    assert.match(releasePopupSource, /saveReleaseChangelogState\(\{/);
+});

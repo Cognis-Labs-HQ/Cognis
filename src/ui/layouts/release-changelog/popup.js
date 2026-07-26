@@ -23,6 +23,10 @@ import {
     loadUiPreferences,
     saveUiPreferences,
 } from "../../reuse/ui-preferences.js";
+import {
+    loadReleaseChangelogState,
+    saveReleaseChangelogState,
+} from "./state.js";
 
 const MAX_VISIBLE_RELEASE_NOTES = 5;
 const MAX_VISIBLE_RELEASE_NOTE_BULLETS = 5;
@@ -75,6 +79,7 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
 
     const prefs = (await loadUiPreferences()) ?? {};
     if (prefs.releaseChangelogShow === false) return;
+    const changelogState = await loadReleaseChangelogState();
 
     let changelogPayload;
     try {
@@ -98,13 +103,13 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
     const releaseSlugs = releaseEntries
         .map((entry) => String(entry?.slug ?? "").trim())
         .filter((slug) => slug.length > 0);
-    const seenSlugs = normalizeSeenSlugs(prefs.releaseChangelogSeenSlugs);
+    const seenSlugs = normalizeSeenSlugs(changelogState.seenSlugs);
     const unseenEntries = releaseEntries.filter(
         (entry) => !seenSlugs.includes(String(entry?.slug ?? "").trim()),
     );
     const versionChanged =
         releaseVersion.length > 0 &&
-        releaseVersion !== String(prefs.releaseChangelogLastVersion ?? "");
+        releaseVersion !== String(changelogState.lastVersion ?? "");
     if (!versionChanged && unseenEntries.length === 0) return;
     const entriesToRender =
         unseenEntries.length > 0 ? unseenEntries : releaseEntries;
@@ -141,8 +146,10 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
 
     await saveUiPreferences({
         releaseChangelogShow: !neverShowAgainChecked,
-        releaseChangelogSeenSlugs: releaseSlugs,
-        releaseChangelogLastVersion: releaseVersion || null,
+    });
+    await saveReleaseChangelogState({
+        seenSlugs: releaseSlugs,
+        lastVersion: releaseVersion || null,
     });
 
     if (action === "view_changelogs") {

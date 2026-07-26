@@ -130,6 +130,13 @@
 }
 
 .prefs-dump {
+    box-sizing: border-box;
+    color: inherit;
+    display: block;
+    font-family: monospace;
+    min-height: 22rem;
+    resize: vertical;
+    width: 100%;
     background: rgba(10, 22, 42, 0.9);
     border: 1px solid var(--border);
     border-radius: 8px;
@@ -139,6 +146,11 @@
     white-space: pre-wrap;
     word-break: break-all;
     margin: 0;
+}
+
+.prefs-dump[readonly] {
+    cursor: pointer;
+    opacity: 0.8;
 }
 
 body[data-theme="light"] .prefs-dump {

@@ -165,6 +165,10 @@
   <string name="ui.app.settings.advanced">Erweitert</string>
   <string name="ui.app.settings.preferences">Einstellungen</string>
   <string name="ui.app.settings.prefs_loading">Wird geladen...</string>
+  <string name="ui.app.settings.preferences_warning_title">Manuelle Bearbeitung der Einstellungen</string>
+  <string name="ui.app.settings.preferences_warning_body">Das Bearbeiten der Einstellungs-JSON kann Cognis unbrauchbar machen oder Einstellungen zurücksetzen, wenn Werte den falschen Typ haben. Fahre nur fort, wenn du die JSON-Struktur verstehst.</string>
+  <string name="ui.app.settings.preferences_warning_accept">Ich verstehe, Bearbeitung aktivieren</string>
+  <string name="ui.app.settings.preferences_invalid_json">Die Einstellungen müssen ein gültiges JSON-Objekt sein.</string>
 
   <string name="ui.app.docs.page_subtitle">Entwicklerdokumentation.</string>
   <string name="ui.app.docs.group.platform">Plattform</string>
