@@ -251,11 +251,14 @@ test("calendar timed views auto-scroll to the current timeslot", () => {
     assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
 });
 
-test("calendar upcoming events can be filtered with calendar pills", () => {
+test("calendar upcoming events can be filtered with calendar color dots", () => {
     assert.match(APP_SOURCE, /data-upcoming-calendar-filter/);
     assert.match(APP_SOURCE, /calendar-filter-slider/);
     assert.match(APP_SOURCE, /data-upcoming-calendar-filter-clear/);
     assert.match(APP_SOURCE, /btn-cancel calendar-filter-clear/);
+    assert.match(APP_SOURCE, /calendar-filter-dot/);
+    assert.match(APP_SOURCE, /title="\$\{escapeHtml\(calendar\.name\)\}"/);
+    assert.match(APP_SOURCE, /--calendar-filter-color:/);
     assert.match(APP_SOURCE, /upcomingCalendarFilterId/);
     assert.match(APP_SOURCE, /calendar-toolbar-filters/);
     assert.match(
@@ -268,7 +271,7 @@ test("calendar upcoming events can be filtered with calendar pills", () => {
     );
     assert.match(
         CSS_SOURCE,
-        /\.calendar-filter-pill\s*\{[\s\S]*width:\s*fit-content;/s,
+        /\.calendar-filter-dot\s*\{[\s\S]*background:\s*var\(--calendar-filter-color\);/s,
     );
     assert.match(
         CSS_SOURCE,

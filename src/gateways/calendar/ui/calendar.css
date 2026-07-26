@@ -331,67 +331,49 @@
 
 .calendar-filter-slider {
     display: flex;
-    gap: 0.2rem;
+    align-items: center;
+    gap: 0.35rem;
     overflow-x: auto;
     width: 100%;
     min-width: 0;
-    padding: 0.1rem 0 0.2rem;
+    padding: 0.2rem 0;
     box-sizing: border-box;
     scrollbar-width: thin;
 }
 
 .calendar-filter-row--filtered .calendar-filter-slider {
-    padding-inline-end: 2rem;
+    padding-inline-end: 1.75rem;
 }
 
-.calendar-filter-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+.calendar-filter-dot {
+    display: block;
     flex: 0 0 auto;
-    width: fit-content;
-    min-width: 0;
-    max-width: 10rem;
-    border: 1px solid var(--field-border);
+    width: 0.85rem;
+    height: 0.85rem;
+    min-width: 0.85rem;
+    min-height: 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--calendar-filter-color) 70%, #000);
     border-radius: 999px;
-    background: var(--surface, transparent);
-    color: inherit;
-    padding: 0.15rem 0.4rem;
-    font-size: 0.72rem;
-    line-height: 1.2;
+    background: var(--calendar-filter-color);
+    padding: 0;
 }
 
-.calendar-filter-pill .calendar-select-dot {
-    width: 0.5rem;
-    height: 0.5rem;
-}
-
-.calendar-filter-pill span:last-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.calendar-filter-pill--active {
-    border-color: var(--btn-confirm-bg, #1f8ceb);
-    background: color-mix(
-        in srgb,
-        var(--btn-confirm-bg, #1f8ceb) 20%,
-        var(--surface, transparent)
-    );
+.calendar-filter-dot--active {
+    outline: 2px solid var(--text-color, var(--text));
+    outline-offset: 2px;
 }
 
 .calendar-filter-clear {
     position: absolute;
-    inset-block-start: 0.1rem;
+    inset-block-start: 0;
     inset-inline-end: 0;
     z-index: 1;
-    width: 1.6rem;
-    height: 1.6rem;
-    min-width: 1.6rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    min-width: 1.25rem;
     padding: 0;
     border-radius: 999px;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     line-height: 1;
     box-shadow: 0 0 0 0.25rem var(--surface, transparent);
 }

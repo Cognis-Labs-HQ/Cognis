@@ -2,9 +2,9 @@
 
 ## Bevorstehende Termine filtern
 
-Der Bereich „Bevorstehende Termine“ bietet nun eine horizontale Reihe mit Kalender-Schaltflächen. Die Auswahl filtert die Liste sofort, und die Abbrechen-Schaltfläche hebt den Filter auf.
+Der Bereich „Bevorstehende Termine“ bietet nun eine horizontale Reihe farbiger Kalenderpunkte. Beim Darüberfahren erscheint der Kalendername, die Auswahl filtert die Liste sofort, und die Abbrechen-Schaltfläche hebt den Filter auf.
 
-Die kompakte Schaltflächenliste wird direkt nach dem Erstellen eines Kalenders aktualisiert. Schaltflächen belegen nur die für ihre Namen erforderliche Breite; für die darüberliegende Löschen-Schaltfläche ist Platz reserviert, sodass sie das Seitenmenü nicht mehr verbreitert.
+Die kompakte Punktliste wird direkt nach dem Erstellen eines Kalenders aktualisiert. Für die darüberliegende Löschen-Schaltfläche ist Platz reserviert, sodass sie das Seitenmenü nicht verbreitert.
 
 ## Gegenwart schnell finden
 

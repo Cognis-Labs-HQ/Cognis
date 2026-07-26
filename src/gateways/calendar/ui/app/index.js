@@ -200,12 +200,8 @@ export async function mount(root, { signal } = {}) {
         if (!calendars.length) return "";
         const filterButtons = calendars
             .map(
-                (
-                    calendar,
-                ) => `<button type="button" class="calendar-filter-pill${upcomingCalendarFilterId === calendar.id ? " calendar-filter-pill--active" : ""}" data-upcoming-calendar-filter="${escapeHtml(calendar.id)}" aria-pressed="${upcomingCalendarFilterId === calendar.id ? "true" : "false"}">
-                  <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(calendarUi.normalizeHexColor(calendar.color))};border-color:${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}"></span>
-                  <span>${escapeHtml(calendar.name)}</span>
-                </button>`,
+                (calendar) =>
+                    `<button type="button" class="calendar-filter-dot${upcomingCalendarFilterId === calendar.id ? " calendar-filter-dot--active" : ""}" data-upcoming-calendar-filter="${escapeHtml(calendar.id)}" aria-pressed="${upcomingCalendarFilterId === calendar.id ? "true" : "false"}" aria-label="${escapeHtml(calendar.name)}" title="${escapeHtml(calendar.name)}" style="--calendar-filter-color:${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}"></button>`,
             )
             .join("");
         const clearButton = upcomingCalendarFilterId

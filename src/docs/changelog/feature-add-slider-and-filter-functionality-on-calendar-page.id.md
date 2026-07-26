@@ -2,9 +2,9 @@
 
 ## Filter acara mendatang
 
-Panel Acara Mendatang kini menyediakan deretan pil kalender horizontal. Memilih kalender langsung memfilter daftar, dan tombol batal menghapus filter.
+Panel Acara Mendatang kini menyediakan deretan titik kalender berwarna secara horizontal. Mengarahkan penunjuk ke titik akan menampilkan nama kalender, memilihnya langsung memfilter daftar, dan tombol batal menghapus filter.
 
-Daftar pil yang ringkas langsung diperbarui setelah kalender dibuat. Pil hanya memakai lebar yang dibutuhkan namanya, sedangkan tombol hapus yang ditumpangkan memiliki ruang tersendiri sehingga tidak lagi memperlebar menu samping.
+Daftar titik yang ringkas langsung diperbarui setelah kalender dibuat, sedangkan tombol hapus yang ditumpangkan memiliki ruang tersendiri sehingga tidak memperlebar menu samping.
 
 ## Temukan waktu sekarang
 
