@@ -4,7 +4,7 @@
 
 The Upcoming Events panel now provides a horizontal row of calendar pills. Selecting a calendar immediately filters the list, and the cancel button clears the filter.
 
-The compact pill list refreshes immediately after a calendar is created.
+The compact pill list refreshes immediately after a calendar is created. Pills use only the width their names require, while the overlaid clear button has reserved space and no longer resizes the side menu.
 
 ## Find the present quickly
 

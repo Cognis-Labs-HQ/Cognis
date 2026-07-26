@@ -324,9 +324,8 @@
 }
 
 .calendar-filter-row {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+    position: relative;
+    width: 100%;
     min-width: 0;
 }
 
@@ -334,9 +333,15 @@
     display: flex;
     gap: 0.2rem;
     overflow-x: auto;
+    width: 100%;
     min-width: 0;
     padding: 0.1rem 0 0.2rem;
+    box-sizing: border-box;
     scrollbar-width: thin;
+}
+
+.calendar-filter-row--filtered .calendar-filter-slider {
+    padding-inline-end: 2rem;
 }
 
 .calendar-filter-pill {
@@ -344,6 +349,8 @@
     align-items: center;
     gap: 0.25rem;
     flex: 0 0 auto;
+    width: fit-content;
+    min-width: 0;
     max-width: 10rem;
     border: 1px solid var(--field-border);
     border-radius: 999px;
@@ -375,7 +382,10 @@
 }
 
 .calendar-filter-clear {
-    flex: 0 0 auto;
+    position: absolute;
+    inset-block-start: 0.1rem;
+    inset-inline-end: 0;
+    z-index: 1;
     width: 1.6rem;
     height: 1.6rem;
     min-width: 1.6rem;
@@ -383,6 +393,7 @@
     border-radius: 999px;
     font-size: 0.95rem;
     line-height: 1;
+    box-shadow: 0 0 0 0.25rem var(--surface, transparent);
 }
 
 .calendar-month-grid {

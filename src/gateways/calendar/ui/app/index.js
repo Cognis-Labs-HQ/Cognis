@@ -211,7 +211,7 @@ export async function mount(root, { signal } = {}) {
         const clearButton = upcomingCalendarFilterId
             ? `<button type="button" class="btn-cancel calendar-filter-clear" data-upcoming-calendar-filter-clear aria-label="${escapeHtml(i18n.t("gateway.calendar.clear_calendar_filter"))}">&times;</button>`
             : "";
-        return `<div class="calendar-filter-row"><div class="calendar-filter-slider">${filterButtons}</div>${clearButton}</div>`;
+        return `<div class="calendar-filter-row${upcomingCalendarFilterId ? " calendar-filter-row--filtered" : ""}"><div class="calendar-filter-slider">${filterButtons}</div>${clearButton}</div>`;
     }
 
     function allPendingEvents() {

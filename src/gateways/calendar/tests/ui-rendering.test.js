@@ -266,6 +266,18 @@ test("calendar upcoming events can be filtered with calendar pills", () => {
         CSS_SOURCE,
         /\.calendar-filter-slider\s*\{[\s\S]*overflow-x:\s*auto;/s,
     );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-filter-pill\s*\{[\s\S]*width:\s*fit-content;/s,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-filter-row--filtered \.calendar-filter-slider\s*\{[\s\S]*padding-inline-end:/s,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-filter-clear\s*\{[\s\S]*position:\s*absolute;/s,
+    );
 });
 
 test("calendar highlights today in month and year views", () => {

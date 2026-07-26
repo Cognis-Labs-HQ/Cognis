@@ -4,7 +4,7 @@
 
 Panel Acara Mendatang kini menyediakan deretan pil kalender horizontal. Memilih kalender langsung memfilter daftar, dan tombol batal menghapus filter.
 
-Daftar pil yang ringkas langsung diperbarui setelah kalender dibuat.
+Daftar pil yang ringkas langsung diperbarui setelah kalender dibuat. Pil hanya memakai lebar yang dibutuhkan namanya, sedangkan tombol hapus yang ditumpangkan memiliki ruang tersendiri sehingga tidak lagi memperlebar menu samping.
 
 ## Temukan waktu sekarang
 

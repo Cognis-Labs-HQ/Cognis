@@ -4,7 +4,7 @@
 
 Der Bereich „Bevorstehende Termine“ bietet nun eine horizontale Reihe mit Kalender-Schaltflächen. Die Auswahl filtert die Liste sofort, und die Abbrechen-Schaltfläche hebt den Filter auf.
 
-Die kompakte Schaltflächenliste wird direkt nach dem Erstellen eines Kalenders aktualisiert.
+Die kompakte Schaltflächenliste wird direkt nach dem Erstellen eines Kalenders aktualisiert. Schaltflächen belegen nur die für ihre Namen erforderliche Breite; für die darüberliegende Löschen-Schaltfläche ist Platz reserviert, sodass sie das Seitenmenü nicht mehr verbreitert.
 
 ## Gegenwart schnell finden
 
