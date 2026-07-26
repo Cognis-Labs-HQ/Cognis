@@ -64,6 +64,7 @@ test("jitsi meeting notifications target authenticated account ids", () => {
     );
 
     assert.match(source, /recipientUsername: recipient\.accountId/);
+    assert.match(source, /profileStore\s*\.getProfile\(recipientUsername\)/);
     assert.match(source, /resolve_meeting_notification_recipient/);
 });
 

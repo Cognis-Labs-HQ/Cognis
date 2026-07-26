@@ -393,14 +393,22 @@ export function registerApiRoutes(router, ctx) {
                 .map((username) => normalizeHandleKey(username))
                 .filter(Boolean),
         );
-        const candidateRecipients = Array.from(
-            new Set(
-                (Array.isArray(recipientUsernames) ? recipientUsernames : [])
-                    .map((username) => normalizeHandleKey(username))
-                    .filter(Boolean)
-                    .filter((username) => !excludedRecipients.has(username)),
-            ),
-        );
+        const candidateRecipients = [];
+        const seenRecipients = new Set();
+        for (const candidate of Array.isArray(recipientUsernames)
+            ? recipientUsernames
+            : []) {
+            const normalizedCandidate = normalizeHandleKey(candidate);
+            if (
+                !normalizedCandidate ||
+                excludedRecipients.has(normalizedCandidate) ||
+                seenRecipients.has(normalizedCandidate)
+            ) {
+                continue;
+            }
+            seenRecipients.add(normalizedCandidate);
+            candidateRecipients.push(String(candidate).trim());
+        }
         const organizerProfile = organizerUsername
             ? await profileStore
                   .getProfileByHandle(organizerUsername)
@@ -408,9 +416,14 @@ export function registerApiRoutes(router, ctx) {
             : null;
         const normalizedRecipients = [];
         for (const recipientUsername of candidateRecipients) {
-            const recipientProfile = await profileStore
+            let recipientProfile = await profileStore
                 .getProfileByHandle(recipientUsername)
                 .catch(() => null);
+            if (!recipientProfile?.accountId) {
+                recipientProfile = await profileStore
+                    .getProfile(recipientUsername)
+                    .catch(() => null);
+            }
             if (!recipientProfile?.accountId) {
                 log?.(
                     "error",
@@ -435,7 +448,9 @@ export function registerApiRoutes(router, ctx) {
             }
             normalizedRecipients.push({
                 accountId: recipientProfile.accountId,
-                username: recipientUsername,
+                username:
+                    normalizeHandleKey(recipientProfile.handle) ||
+                    recipientUsername,
             });
         }
         const bodyWithMeetingLink = appendMeetingLinkToBody(
