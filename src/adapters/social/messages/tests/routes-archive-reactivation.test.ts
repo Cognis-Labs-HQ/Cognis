@@ -110,9 +110,6 @@ test("POST /messages/rooms reactivates archived members for existing DMs", async
         async findDmBetween() {
             return { id: "room-existing", kind: "dm", createdBy: "alice" };
         },
-        async listMembers() {
-            return [{ accountId: "alice" }, { accountId: "bob" }];
-        },
         async setArchived(
             roomId: string,
             accountId: string,

@@ -10,4 +10,4 @@ Account deletion now removes the user's calendars and events from both persisten
 
 ## Conversations and notifications are deprovisioned safely
 
-Deleted users now leave their group conversations with a visible leave event instead of silently removing the conversations. Chats automatically archive for a sole remaining member and are permanently deleted when nobody remains. Re-created accounts also reuse an existing one-to-one conversation instead of creating duplicates, and all in-app notifications are purged during deletion.
+Deleted users now leave their group conversations with a visible leave event instead of silently removing the conversations. Chats automatically archive for a sole remaining member and are permanently deleted when nobody remains. A newly created account never regains a one-to-one conversation that belonged to a deleted account, even when it uses the same username. Duplicate active conversations are still prevented by matching only rooms where both current accounts are members, and all in-app notifications are purged during deletion.

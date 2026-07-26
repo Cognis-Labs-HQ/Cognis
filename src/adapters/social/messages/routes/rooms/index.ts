@@ -190,28 +190,6 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                 primaryTarget.accountId,
             );
             if (existing) {
-                const existingMembers = await messagesStore.listMembers(
-                    existing.id,
-                );
-                const existingMemberIds = new Set(
-                    existingMembers.map((member) => member.accountId),
-                );
-                if (!existingMemberIds.has(accountId)) {
-                    await messagesStore.addMember(
-                        existing.id,
-                        accountId,
-                        existing.createdBy === accountId ? "owner" : "member",
-                    );
-                }
-                if (!existingMemberIds.has(primaryTarget.accountId)) {
-                    await messagesStore.addMember(
-                        existing.id,
-                        primaryTarget.accountId,
-                        existing.createdBy === primaryTarget.accountId
-                            ? "owner"
-                            : "member",
-                    );
-                }
                 await Promise.all([
                     messagesStore.setArchived(existing.id, accountId, false),
                     messagesStore.setArchived(

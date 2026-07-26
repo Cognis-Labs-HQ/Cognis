@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToMember, rowToRoom } from "./row-mappers.js";
 import type { ChatroomKind, MemberRole, MemberRow, RoomRow } from "./types.js";
@@ -36,28 +36,8 @@ export async function createDm(
     accountA: string,
     accountB: string,
 ): Promise<RoomRow> {
-    const participantKey = [accountA, accountB].sort().join("\u0000");
-    const id = `dm_${createHash("sha256").update(participantKey).digest("hex")}`;
-    const nowIso = new Date().toISOString();
-    await db.executeCommand({
-        option: "INSERT",
-        table: "chatrooms",
-        values: {
-            id,
-            kind: "dm",
-            title: null,
-            created_by: accountA,
-            created_at: nowIso,
-            updated_at: nowIso,
-        },
-        conflict: { action: "ignore" },
-    });
-    const result = await db.executeCommand({
-        option: "SELECT",
-        table: "chatrooms",
-        where: [{ column: "id", value: id }],
-    });
-    return rowToRoom(result.rows![0]);
+    if (accountA === accountB) throw new Error("dm_participants_must_differ");
+    return createRoom(db, "dm", null, accountA);
 }
 
 export async function getRoom(
@@ -245,11 +225,7 @@ export async function findDmBetween(
             memberIds.length === 2 &&
             memberIds.includes(accountA) &&
             memberIds.includes(accountB);
-        const isReusableOrphan =
-            memberIds.length === 1 &&
-            ((room.createdBy === accountA && memberIds[0] === accountB) ||
-                (room.createdBy === accountB && memberIds[0] === accountA));
-        if (hasExactParticipants || isReusableOrphan) return room;
+        if (hasExactParticipants) return room;
     }
     return null;
 }

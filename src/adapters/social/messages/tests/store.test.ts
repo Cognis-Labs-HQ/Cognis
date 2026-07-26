@@ -176,7 +176,7 @@ test("removing the last member permanently deletes the chat", async () => {
     );
 });
 
-test("DM lookup reuses a participant's orphaned chat", async () => {
+test("DM lookup does not expose an orphaned chat to a recreated account", async () => {
     const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command) {
@@ -217,10 +217,10 @@ test("DM lookup reuses a participant's orphaned chat", async () => {
 
     const room = await store.findDmBetween("alice", "bob");
 
-    assert.equal(room?.id, "existing-dm");
+    assert.equal(room, null);
 });
 
-test("DM creation uses the same room id regardless of participant order", async () => {
+test("new DMs use distinct room ids across account incarnations", async () => {
     const insertedIds: string[] = [];
     const db: DbExecutor = {
         async ensureTable() {},
@@ -251,7 +251,7 @@ test("DM creation uses the same room id regardless of participant order", async 
     await store.createDm("alice", "bob");
     await store.createDm("bob", "alice");
 
-    assert.equal(insertedIds[0], insertedIds[1]);
+    assert.notEqual(insertedIds[0], insertedIds[1]);
 });
 
 test("createMessageRequest persists room id when provided", async () => {
