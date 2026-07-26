@@ -15,3 +15,7 @@ Gelöschte Benutzer verlassen ihre Gruppenunterhaltungen jetzt mit einem sichtba
 ## Nachrichtenanfragen sind klar getrennt
 
 Wiederholte Versuche, dieselbe ausstehende Unterhaltung zu beginnen, senden keine weitere Anfragebenachrichtigung mehr. Der Client verhindert außerdem doppelte Übermittlungen, solange eine Anfrage verarbeitet wird. Anfragebenachrichtigungen verwenden jetzt die eigene Kategorie „Nachrichtenanfragen“, und ausstehende Anfragen erscheinen in der Nachrichten-Seitenleiste unter einer eigenen Überschrift statt zwischen den Unterhaltungen.
+
+## Abgelehnte Anfragen schließen sicher
+
+Beim Ablehnen einer Nachrichtenanfrage wird der Empfänger jetzt aus dem gerade verlassenen Raum weggeleitet, anstatt dessen Verschlüsselungsschlüssel zu laden. Der abgelehnte Raum folgt dem üblichen Chat-Lebenszyklus und wird für den verbleibenden Anfragenden archiviert oder gelöscht, wenn er leer ist.

@@ -50,7 +50,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.5`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.3`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.19` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.24` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.25` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.7`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 

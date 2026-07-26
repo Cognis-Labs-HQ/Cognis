@@ -31,6 +31,18 @@ test("messages sidebar separates pending requests from conversations", () => {
     assert.match(source, /!room\.pendingRequest/);
 });
 
+test("rejecting a request navigates away from the removed room", () => {
+    const source = readMessagesUiBundle();
+    assert.match(
+        source,
+        /await openFallbackAfterRoomRemoval\(roomIdHint \|\| selectedRoomId\)/,
+    );
+    assert.doesNotMatch(
+        source,
+        /if \(roomIdHint\) \{\s*await openRoom\(roomIdHint\)/,
+    );
+});
+
 test("messages member count control opens local member summary without jitsi calls", () => {
     const source = readMessagesUiBundle();
     const memberSummaryPopupSource =

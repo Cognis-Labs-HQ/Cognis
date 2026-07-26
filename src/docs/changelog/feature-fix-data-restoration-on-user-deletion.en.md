@@ -15,3 +15,7 @@ Deleted users now leave their group conversations with a visible leave event ins
 ## Message requests are clearly separated
 
 Repeated attempts to start the same pending conversation no longer send another request notification, and the client blocks duplicate submissions while one is in progress. Request notifications now use their own Message Requests category, and pending requests appear under a dedicated heading in the Messages sidebar instead of being mixed with conversations.
+
+## Declined requests close safely
+
+Declining a message request now moves the recipient away from the room they just left instead of attempting to load its encryption key. The rejected room follows the standard chat lifecycle, archiving for its remaining requester or being deleted when empty.

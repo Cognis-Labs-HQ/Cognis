@@ -136,7 +136,7 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
             };
         },
         async updateMessageRequestStatus() {},
-        async removeMember(roomId: string, accountId: string) {
+        async removeMemberAndApplyLifecycle(roomId: string, accountId: string) {
             removed.push({ roomId, accountId });
         },
         async appendRoomEvent() {},

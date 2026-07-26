@@ -15,3 +15,7 @@ Pengguna yang dihapus kini meninggalkan percakapan grup dengan peristiwa keluar 
 ## Permintaan pesan dipisahkan dengan jelas
 
 Upaya berulang untuk memulai percakapan tertunda yang sama tidak lagi mengirim notifikasi permintaan tambahan, dan klien mencegah pengiriman ganda selama satu permintaan masih diproses. Notifikasi permintaan kini memakai kategori Permintaan Pesan tersendiri, dan permintaan tertunda tampil di bawah judul khusus pada bilah samping Pesan, bukan tercampur dengan percakapan.
+
+## Permintaan yang ditolak ditutup dengan aman
+
+Saat permintaan pesan ditolak, penerima kini diarahkan keluar dari ruang yang baru ditinggalkan dan aplikasi tidak mencoba memuat kunci enkripsinya. Ruang yang ditolak mengikuti siklus hidup percakapan standar, yaitu diarsipkan untuk pemohon yang tersisa atau dihapus bila kosong.
