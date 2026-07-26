@@ -26,16 +26,16 @@ test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /data-share-recipient-remove/);
     assert.match(popupSource, /share-method-tabs/);
     assert.match(popupSource, /methodModule\.buildCreateOptions/);
-    assert.match(popupSource, /methodModule\.getPageDefinition/);
-    assert.match(popupSource, /data-share-field="label"/);
-    assert.match(popupSource, /data-share-field="recipients"/);
-    assert.match(popupSource, /data-share-field="permission"/);
+    assert.match(popupSource, /methodModule\.renderPage/);
+    assert.match(popupSource, /methodPage\.innerHTML/);
     assert.match(popupSource, /state\.visibleLinks/);
-    assert.match(linkPageSource, /fields: \["label", "expiry"\]/);
-    assert.match(
-        userPageSource,
-        /fields: \["recipients", "permission", "expiry"\]/,
-    );
+    assert.match(linkPageSource, /data-share-page="link"/);
+    assert.match(linkPageSource, /share-links-label/);
+    assert.doesNotMatch(linkPageSource, /share-links-user-search/);
+    assert.match(userPageSource, /data-share-page="user"/);
+    assert.match(userPageSource, /share-links-user-search/);
+    assert.match(userPageSource, /share-links-user-permission/);
+    assert.doesNotMatch(userPageSource, /share-links-label/);
 });
 
 test("share popup callbacks use only share gateway recipient and token routes", () => {

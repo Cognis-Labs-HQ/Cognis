@@ -6,19 +6,19 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-test("share links popup keeps form and list rendering separate", () => {
+test("share popup keeps the active adapter page and history rendering separate", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.js"),
         "utf8",
     );
 
-    assert.match(source, /share-links-form-container/);
+    assert.match(source, /share-method-page/);
     assert.match(source, /share-links-list-container/);
     assert.match(
         source,
         /listContainer\.innerHTML = renderRows\(labels, state\.visibleLinks\);/,
     );
-    assert.match(source, /createButton\.disabled = state\.isCreating;/);
+    assert.match(source, /methodModule\.renderPage/);
     assert.match(source, /window\.setInterval\(/);
     assert.doesNotMatch(source, /captureFocusableTarget/);
     assert.doesNotMatch(source, /restoreFocusableTarget/);

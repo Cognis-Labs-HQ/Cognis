@@ -15,3 +15,7 @@ Link sharing displays link label and expiry customization, while User sharing di
 ## Share method pages now load correctly
 
 The Share gateway now registers each discovered adapter's static directory, so the Link and User popup pages load without a 404 response.
+
+## Switching methods now replaces the page
+
+The popup now mounts only the selected adapter's page. Link inputs are not present while sharing with users, and user search and permission controls are not present while creating a link.

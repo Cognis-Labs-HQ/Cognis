@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-share-link",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Share gateway adapter for public links.",
     "type": "module",
     "main": "index.ts",

@@ -15,3 +15,7 @@ Die Linkfreigabe zeigt Einstellungen für Linkbezeichnung und Ablaufzeit, währe
 ## Seiten der Freigabemethoden werden jetzt korrekt geladen
 
 Das Share-Gateway registriert nun das statische Verzeichnis jedes erkannten Adapters, sodass die Popup-Seiten für Link und Benutzer ohne 404-Antwort geladen werden.
+
+## Der Methodenwechsel ersetzt jetzt die Seite
+
+Das Popup bindet nur noch die Seite des ausgewählten Adapters ein. Bei Benutzerfreigaben sind keine Linkfelder vorhanden; beim Erstellen eines Links fehlen Benutzersuche und Berechtigungsfelder vollständig.

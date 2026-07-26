@@ -270,49 +270,7 @@ function renderBody(labels, state) {
         ${state.methods.map((method) => `<button type="button" class="share-method-tab${method.id === state.activeMethodId ? " is-active" : ""}" data-share-method="${escapeHtml(method.id)}" aria-pressed="${method.id === state.activeMethodId ? "true" : "false"}">${escapeHtml(method.name)}</button>`).join("")}
       </nav>
       <p class="share-method-description"></p>
-      <div class="share-links-form-container">
-        <div class="share-links-create-form">
-          <label data-share-field="label">
-            <span>${escapeHtml(labels.label)}</span>
-            <input
-              id="share-links-label"
-              type="text"
-              value="${escapeHtml(state.label)}"
-              placeholder="${escapeHtml(labels.labelPlaceholder)}"
-            />
-          </label>
-          <label data-share-field="expiry">
-            <span>${escapeHtml(labels.expiryLabel)}</span>
-            <input
-              id="share-links-expiry"
-              type="number"
-              min="1"
-              step="1"
-              value="${escapeHtml(state.expiresInHours)}"
-              placeholder="24"
-            />
-          </label>
-          <button
-            id="share-links-create-btn"
-            class="btn-confirm btn-animated"
-            type="button"
-          >${escapeHtml(labels.generateLink)}</button>
-          ${
-              state.userSharingEnabled
-                  ? `<div class="share-links-user-picker" data-share-field="recipients">
-            <label><span>${escapeHtml(labels.users || "Share with users")}</span>
-              <input id="share-links-user-search" type="search" autocomplete="off" placeholder="${escapeHtml(labels.userSearchPlaceholder || "Search users…")}" />
-            </label>
-            <label data-share-field="permission"><span>${escapeHtml(labels.permission || "Permission")}</span>
-              <select id="share-links-user-permission"><option value="read">${escapeHtml(labels.readPermission || "Read")}</option><option value="write">${escapeHtml(labels.writePermission || "Write")}</option></select>
-            </label>
-            <div class="share-links-user-results"></div>
-            <div class="share-links-selected-users">${state.recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`).join("")}</div>
-          </div>`
-                  : ""
-          }
-        </div>
-      </div>
+      <div class="share-method-page"></div>
       <h3 class="share-method-history-heading"></h3>
       <div class="share-links-list-container">
         ${renderRows(labels, state.visibleLinks)}
@@ -339,7 +297,6 @@ export async function openShareLinksPopup({
         label: "",
         expiresInHours: "24",
         recipients: [],
-        userSharingEnabled: typeof searchUsers === "function",
         methods: [],
         methodModules: new Map(),
         activeMethodId: "link",
@@ -433,34 +390,31 @@ export async function openShareLinksPopup({
             },
         ],
         onOpen: (overlay) => {
-            const labelInput = overlay.querySelector("#share-links-label");
-            const expiryInput = overlay.querySelector("#share-links-expiry");
-            const createButton = overlay.querySelector(
-                "#share-links-create-btn",
-            );
-            const listContainer = overlay.querySelector(
-                ".share-links-list-container",
-            );
-            const userSearch = overlay.querySelector(
-                "#share-links-user-search",
-            );
-            const userResults = overlay.querySelector(
-                ".share-links-user-results",
-            );
-            const selectedUsers = overlay.querySelector(
-                ".share-links-selected-users",
-            );
             const methodTabs = overlay.querySelector(".share-method-tabs");
+            const methodPage = overlay.querySelector(".share-method-page");
             const methodDescription = overlay.querySelector(
                 ".share-method-description",
             );
             const historyHeading = overlay.querySelector(
                 ".share-method-history-heading",
             );
-            const permissionSelect = overlay.querySelector(
-                "#share-links-user-permission",
+            const listContainer = overlay.querySelector(
+                ".share-links-list-container",
             );
+            if (
+                !(methodPage instanceof HTMLElement) ||
+                !(listContainer instanceof HTMLElement)
+            ) {
+                return;
+            }
+
+            popupOpen = true;
+            let searchSequence = 0;
+
             const renderSelectedUsers = () => {
+                const selectedUsers = methodPage.querySelector(
+                    ".share-links-selected-users",
+                );
                 if (!(selectedUsers instanceof HTMLElement)) return;
                 selectedUsers.innerHTML = state.recipients
                     .map(
@@ -470,22 +424,13 @@ export async function openShareLinksPopup({
                     .join("");
             };
 
-            if (!(labelInput instanceof HTMLInputElement)) {
-                return;
-            }
-            if (!(expiryInput instanceof HTMLInputElement)) {
-                return;
-            }
-            if (!(createButton instanceof HTMLButtonElement)) {
-                return;
-            }
-            if (!(listContainer instanceof HTMLElement)) {
-                return;
-            }
-
-            popupOpen = true;
-            syncCreateButton(createButton);
-            const syncMethodPage = () => {
+            const renderMethodPage = () => {
+                const activeMethod = state.methods.find(
+                    (method) => method.id === state.activeMethodId,
+                );
+                const methodModule = state.methodModules.get(
+                    state.activeMethodId,
+                );
                 methodTabs
                     ?.querySelectorAll("[data-share-method]")
                     .forEach((button) => {
@@ -498,125 +443,26 @@ export async function openShareLinksPopup({
                             active ? "true" : "false",
                         );
                     });
-                const activeMethod = state.methods.find(
-                    (method) => method.id === state.activeMethodId,
+                methodDescription.textContent = String(
+                    activeMethod?.description ?? "",
                 );
-                const methodModule = state.methodModules.get(
-                    state.activeMethodId,
-                );
-                const definition =
-                    typeof methodModule?.getPageDefinition === "function"
-                        ? methodModule.getPageDefinition()
-                        : {
-                              fields:
-                                  state.activeMethodId === "user"
-                                      ? ["recipients", "permission", "expiry"]
-                                      : ["label", "expiry"],
-                          };
-                overlay
-                    .querySelectorAll("[data-share-field]")
-                    .forEach((field) => {
-                        field.hidden = !definition.fields.includes(
-                            field.getAttribute("data-share-field"),
-                        );
-                    });
-                if (methodDescription instanceof HTMLElement) {
-                    methodDescription.textContent = String(
-                        activeMethod?.description ?? "",
-                    );
-                }
-                if (historyHeading instanceof HTMLElement) {
-                    historyHeading.textContent = String(
-                        activeMethod?.name ?? "",
-                    );
-                }
-                createButton.textContent =
-                    state.activeMethodId === "user"
-                        ? labels.shareWithUsers || labels.users || "Share"
-                        : labels.generateLink;
+                historyHeading.textContent = String(activeMethod?.name ?? "");
+                methodPage.innerHTML =
+                    typeof methodModule?.renderPage === "function"
+                        ? methodModule.renderPage({ labels, state, escapeHtml })
+                        : `<p class="share-links-empty">${escapeHtml(labels.methodUnavailable || labels.createFailed)}</p>`;
+                renderSelectedUsers();
                 filterLinksForActiveMethod();
                 renderLinksList(listContainer);
             };
-            methodTabs?.addEventListener("click", (event) => {
-                const button = event.target.closest("[data-share-method]");
-                if (!(button instanceof HTMLElement)) return;
-                state.activeMethodId = String(
-                    button.dataset.shareMethod || "link",
+
+            const createCurrentShare = async () => {
+                if (state.isCreating) return;
+                const createButton = methodPage.querySelector(
+                    "#share-links-create-btn",
                 );
-                syncMethodPage();
-            });
-            syncMethodPage();
-
-            labelInput.addEventListener("input", (event) => {
-                state.label = String(event.target?.value ?? "");
-            });
-            expiryInput.addEventListener("input", (event) => {
-                state.expiresInHours = String(event.target?.value ?? "");
-            });
-            permissionSelect?.addEventListener("change", (event) => {
-                state.permission =
-                    event.target?.value === "write" ? "write" : "read";
-            });
-            let searchSequence = 0;
-            if (
-                userSearch instanceof HTMLInputElement &&
-                userResults instanceof HTMLElement
-            ) {
-                userSearch.addEventListener("input", async () => {
-                    const sequence = ++searchSequence;
-                    const users = await searchUsers(userSearch.value).catch(
-                        () => [],
-                    );
-                    if (sequence !== searchSequence) return;
-                    userResults.innerHTML = users
-                        .filter(
-                            (user) =>
-                                !state.recipients.some(
-                                    (entry) => entry.id === user.id,
-                                ),
-                        )
-                        .map(
-                            (user) =>
-                                `<button type="button" class="share-links-user-result" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}">${escapeHtml(user.label || user.handle || user.id)}${user.handle ? ` <small>@${escapeHtml(user.handle)}</small>` : ""}</button>`,
-                        )
-                        .join("");
-                });
-                userResults.addEventListener("click", (event) => {
-                    const button = event.target.closest("[data-share-user-id]");
-                    if (!(button instanceof HTMLElement)) return;
-                    state.recipients.push({
-                        type: "user",
-                        id: button.dataset.shareUserId,
-                        label: button.dataset.shareUserLabel,
-                        permissions:
-                            state.permission === "write"
-                                ? ["read", "write"]
-                                : ["read"],
-                    });
-                    userSearch.value = "";
-                    userResults.innerHTML = "";
-                    renderSelectedUsers();
-                });
-                selectedUsers?.addEventListener("click", (event) => {
-                    const button = event.target.closest(
-                        "[data-selected-recipient-remove]",
-                    );
-                    if (!(button instanceof HTMLElement)) return;
-                    state.recipients = state.recipients.filter(
-                        (entry) =>
-                            entry.id !== button.dataset.selectedRecipientRemove,
-                    );
-                    renderSelectedUsers();
-                });
-            }
-
-            createButton.addEventListener("click", async () => {
-                if (state.isCreating) {
-                    return;
-                }
                 state.isCreating = true;
                 syncCreateButton(createButton);
-
                 let shareUrl = null;
                 try {
                     const createInput = {
@@ -646,26 +492,18 @@ export async function openShareLinksPopup({
                         state.activeMethodId === "link"
                             ? (result?.shareUrl ?? null)
                             : null;
+                    state.label = "";
+                    state.recipients = [];
+                    await refreshLinks();
+                    if (popupOpen) renderMethodPage();
                 } catch {
                     showToast(labels.createFailed, { variant: "error" });
+                } finally {
                     state.isCreating = false;
-                    syncCreateButton(createButton);
-                    return;
+                    syncCreateButton(
+                        methodPage.querySelector("#share-links-create-btn"),
+                    );
                 }
-
-                state.isCreating = false;
-                syncCreateButton(createButton);
-                // Clear the custom label after a successful create so the
-                // next link starts from a blank label instead of reusing it.
-                state.label = "";
-                state.recipients = [];
-                renderSelectedUsers();
-                labelInput.value = "";
-                await refreshLinks();
-                if (popupOpen) {
-                    renderLinksList(listContainer);
-                }
-
                 if (shareUrl) {
                     copyTextToClipboard(String(shareUrl)).then((copied) => {
                         showToast(
@@ -674,31 +512,123 @@ export async function openShareLinksPopup({
                         );
                     });
                 }
+            };
+
+            methodTabs?.addEventListener("click", (event) => {
+                const button = event.target.closest("[data-share-method]");
+                if (!(button instanceof HTMLElement)) return;
+                state.activeMethodId = String(
+                    button.dataset.shareMethod || "link",
+                );
+                renderMethodPage();
+            });
+
+            methodPage.addEventListener("input", (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLInputElement)) return;
+                if (target.id === "share-links-label") {
+                    state.label = target.value;
+                    return;
+                }
+                if (target.id === "share-links-expiry") {
+                    state.expiresInHours = target.value;
+                    return;
+                }
+                if (target.id !== "share-links-user-search") return;
+                const sequence = ++searchSequence;
+                void searchUsers(target.value)
+                    .catch(() => [])
+                    .then((users) => {
+                        if (sequence !== searchSequence || !target.isConnected)
+                            return;
+                        const results = methodPage.querySelector(
+                            ".share-links-user-results",
+                        );
+                        if (!(results instanceof HTMLElement)) return;
+                        results.innerHTML = users
+                            .filter(
+                                (user) =>
+                                    !state.recipients.some(
+                                        (entry) => entry.id === user.id,
+                                    ),
+                            )
+                            .map(
+                                (user) =>
+                                    `<button type="button" class="share-links-user-result" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}">${escapeHtml(user.label || user.handle || user.id)}${user.handle ? ` <small>@${escapeHtml(user.handle)}</small>` : ""}</button>`,
+                            )
+                            .join("");
+                    });
+            });
+
+            methodPage.addEventListener("change", (event) => {
+                const target = event.target;
+                if (
+                    target instanceof HTMLSelectElement &&
+                    target.id === "share-links-user-permission"
+                ) {
+                    state.permission =
+                        target.value === "write" ? "write" : "read";
+                }
+            });
+
+            methodPage.addEventListener("click", (event) => {
+                const target = event.target;
+                if (!(target instanceof HTMLElement)) return;
+                if (target.closest("#share-links-create-btn")) {
+                    void createCurrentShare();
+                    return;
+                }
+                const userButton = target.closest("[data-share-user-id]");
+                if (userButton instanceof HTMLElement) {
+                    state.recipients.push({
+                        type: "user",
+                        id: userButton.dataset.shareUserId,
+                        label: userButton.dataset.shareUserLabel,
+                        permissions:
+                            state.permission === "write"
+                                ? ["read", "write"]
+                                : ["read"],
+                    });
+                    const search = methodPage.querySelector(
+                        "#share-links-user-search",
+                    );
+                    if (search instanceof HTMLInputElement) search.value = "";
+                    const results = methodPage.querySelector(
+                        ".share-links-user-results",
+                    );
+                    if (results instanceof HTMLElement) results.innerHTML = "";
+                    renderSelectedUsers();
+                    return;
+                }
+                const removeButton = target.closest(
+                    "[data-selected-recipient-remove]",
+                );
+                if (removeButton instanceof HTMLElement) {
+                    state.recipients = state.recipients.filter(
+                        (entry) =>
+                            entry.id !==
+                            removeButton.dataset.selectedRecipientRemove,
+                    );
+                    renderSelectedUsers();
+                }
             });
 
             listContainer.addEventListener("click", (event) => {
-                if (!(event.target instanceof HTMLElement)) {
-                    return;
-                }
-
+                if (!(event.target instanceof HTMLElement)) return;
                 const copyButton = event.target.closest("[data-share-copy]");
                 if (copyButton instanceof HTMLElement) {
-                    event.preventDefault();
                     const shareUrl = String(
                         copyButton.getAttribute("data-share-copy") ?? "",
                     );
-                    if (!shareUrl) {
-                        return;
-                    }
-                    copyTextToClipboard(shareUrl).then((copied) => {
+                    if (!shareUrl) return;
+                    void copyTextToClipboard(shareUrl).then((copied) =>
                         showToast(
                             copied ? labels.copySuccess : labels.copyFailed,
                             { variant: copied ? "success" : "error" },
-                        );
-                    });
+                        ),
+                    );
                     return;
                 }
-
                 const recipientRemove = event.target.closest(
                     "[data-share-recipient-remove]",
                 );
@@ -721,85 +651,65 @@ export async function openShareLinksPopup({
                     void updateLink({
                         shareId: recipientRemove.dataset.shareId,
                         accessControls: { ...link.accessControls, recipients },
-                    })
-                        .then(async () => {
-                            await refreshLinks();
-                            if (popupOpen) renderLinksList(listContainer);
-                        })
-                        .catch(() =>
-                            showToast(labels.deleteFailed, {
-                                variant: "error",
-                            }),
-                        );
+                    }).then(async () => {
+                        await refreshLinks();
+                        if (popupOpen) renderLinksList(listContainer);
+                    });
                     return;
                 }
-
                 const deleteButton = event.target.closest(
                     "[data-share-delete]",
                 );
-                if (!(deleteButton instanceof HTMLElement)) {
-                    return;
-                }
+                if (!(deleteButton instanceof HTMLElement)) return;
                 const shareId = String(
                     deleteButton.getAttribute("data-share-delete") ?? "",
                 );
-                if (!shareId) {
-                    return;
-                }
+                if (!shareId) return;
                 void deleteLink({ shareId })
                     .then(async () => {
                         await refreshLinks();
-                        if (popupOpen) {
-                            renderLinksList(listContainer);
-                        }
+                        if (popupOpen) renderLinksList(listContainer);
                     })
-                    .catch(() => {
-                        showToast(labels.deleteFailed, { variant: "error" });
-                    });
+                    .catch(() =>
+                        showToast(labels.deleteFailed, { variant: "error" }),
+                    );
             });
+
             listContainer.addEventListener("change", (event) => {
-                const permission = event.target.closest(
-                    "[data-share-recipient-permission]",
-                );
+                const target = event.target;
                 if (
-                    !(permission instanceof HTMLSelectElement) ||
+                    !(target instanceof HTMLSelectElement) ||
                     typeof updateLink !== "function"
-                ) {
+                )
                     return;
-                }
                 const link = state.links.find(
-                    (entry) => String(entry.id) === permission.dataset.shareId,
+                    (entry) => String(entry.id) === target.dataset.shareId,
                 );
                 const recipients = (link?.accessControls?.recipients || []).map(
                     (entry) =>
-                        entry.id === permission.dataset.shareRecipientPermission
+                        entry.id === target.dataset.shareRecipientPermission
                             ? {
                                   ...entry,
                                   permissions:
-                                      permission.value === "write"
+                                      target.value === "write"
                                           ? ["read", "write"]
                                           : ["read"],
                               }
                             : entry,
                 );
                 void updateLink({
-                    shareId: permission.dataset.shareId,
+                    shareId: target.dataset.shareId,
                     accessControls: { ...link.accessControls, recipients },
-                })
-                    .then(async () => {
-                        await refreshLinks();
-                        if (popupOpen) renderLinksList(listContainer);
-                    })
-                    .catch(() =>
-                        showToast(labels.createFailed, { variant: "error" }),
-                    );
+                }).then(async () => {
+                    await refreshLinks();
+                    if (popupOpen) renderLinksList(listContainer);
+                });
             });
 
+            renderMethodPage();
             refreshTimer = window.setInterval(() => {
                 void refreshLinks().then(() => {
-                    if (popupOpen) {
-                        renderLinksList(listContainer);
-                    }
+                    if (popupOpen) renderLinksList(listContainer);
                 });
             }, SHARE_LINKS_REFRESH_INTERVAL_MS);
         },

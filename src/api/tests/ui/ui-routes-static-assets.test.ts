@@ -136,7 +136,7 @@ test("GET /static/adapters/share/:method/page.js serves Share adapter pages", as
             recorder.headers["content-type"],
             "text/javascript; charset=utf-8",
         );
-        assert.match(recorder.body, /getPageDefinition/);
+        assert.match(recorder.body, /renderPage/);
     }
 });
 

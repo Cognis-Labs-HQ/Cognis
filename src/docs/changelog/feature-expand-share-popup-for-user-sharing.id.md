@@ -15,3 +15,7 @@ Berbagi Tautan menampilkan penyesuaian label dan masa berlaku, sedangkan berbagi
 ## Halaman metode berbagi kini dimuat dengan benar
 
 Gateway Share kini mendaftarkan direktori statis setiap adapter yang ditemukan, sehingga halaman popup Tautan dan Pengguna dimuat tanpa respons 404.
+
+## Mengganti metode kini mengganti halaman
+
+Popup kini hanya memasang halaman adapter yang dipilih. Masukan tautan tidak ada saat berbagi dengan pengguna, sedangkan pencarian pengguna dan kontrol izin tidak ada saat membuat tautan.
