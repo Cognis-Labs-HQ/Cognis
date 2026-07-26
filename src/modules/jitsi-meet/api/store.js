@@ -340,8 +340,24 @@ export class JitsiMeetStore {
             normalizedClassroomId,
         );
         if (existing) {
+            const normalizedChatRoomId = chatRoomId ?? null;
+            if (
+                normalizedChatRoomId &&
+                existing.chatRoomId !== normalizedChatRoomId
+            ) {
+                await this.db.executeCommand({
+                    option: "UPDATE",
+                    table: "jitsi_meetings",
+                    set: {
+                        chat_room_id: normalizedChatRoomId,
+                        updated_at: new Date().toISOString(),
+                    },
+                    where: [{ column: "id", value: existing.id }],
+                });
+            }
             return {
                 ...(existing ?? {}),
+                chatRoomId: normalizedChatRoomId ?? existing.chatRoomId,
                 reused: true,
             };
         }

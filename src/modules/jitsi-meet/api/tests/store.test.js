@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { JitsiMeetStore } from "../store.js";
 
 function createMockJitsiDb({
@@ -206,6 +207,57 @@ test("jitsi store meeting creation falls back to a readable default slug", async
     assert.match(
         String(mockDb.insertedMeetingRows[0].room_slug),
         /^cognis-classroom-[a-f0-9]{8}$/,
+    );
+});
+
+test("jitsi store reconnects a reused meeting to its resolved chat room", async () => {
+    const participantKey = createHash("sha256")
+        .update(
+            JSON.stringify({
+                classroomId: null,
+                participants: ["alice", "bob"],
+            }),
+        )
+        .digest("hex");
+    const mockDb = createMockJitsiDb({
+        meetingRows: [
+            {
+                id: "meeting-1",
+                participant_key: participantKey,
+                meeting_url: "https://meet.example.com/classroom-existing",
+                meeting_password: "secret",
+                meeting_name: "Cognis Classroom",
+                room_slug: "classroom-existing",
+                chat_room_id: "deleted-room",
+                classroom_id: null,
+                created_by: "alice",
+                scheduled_at: "2026-08-01T09:30:00.000Z",
+                created_at: "2026-08-01T09:30:00.000Z",
+                updated_at: "2026-08-01T09:30:00.000Z",
+            },
+        ],
+        participantRows: [
+            { meeting_id: "meeting-1", username: "alice" },
+            { meeting_id: "meeting-1", username: "bob" },
+        ],
+    });
+    const store = new JitsiMeetStore({ db: mockDb });
+
+    const meeting = await store.createMeeting({
+        instanceUrl: "https://meet.example.com",
+        meetingPrefix: "classroom",
+        usernames: ["alice", "bob"],
+        classroomId: null,
+        createdBy: "alice",
+        chatRoomId: "resolved-room",
+    });
+
+    assert.equal(meeting?.reused, true);
+    assert.equal(meeting?.chatRoomId, "resolved-room");
+    assert.equal(mockDb.insertedMeetingRows.length, 0);
+    assert.equal(
+        (await store.getMeetingById("meeting-1"))?.chatRoomId,
+        "resolved-room",
     );
 });
 
