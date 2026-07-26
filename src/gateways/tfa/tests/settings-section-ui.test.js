@@ -99,6 +99,17 @@ test("tfa setup maps smtp setup failures to user-facing toast messages", () => {
     );
 });
 
+test("tfa setup success toast relies on the success variant icon", () => {
+    assert.match(
+        SOURCE,
+        /showToast\(\s*i18n\.t\("gateway\.tfa\.settings\.setup_success"\),\s*\{\s*variant: "success",/,
+    );
+    assert.doesNotMatch(
+        SOURCE,
+        /`\\u2713 \$\{i18n\.t\("gateway\.tfa\.settings\.setup_success"\)\}`/,
+    );
+});
+
 test("configured method popup uses non-secret prompt when no QR data exists", () => {
     assert.match(
         SOURCE,
