@@ -122,9 +122,14 @@ export class CoreCalendarGateway {
             this.eventsByCalendar.delete(calendarId);
         }
         for (const [calendarId, events] of this.eventsByCalendar) {
-            const retainedEvents = events.filter(
-                (event) => event.createdBy !== accountId,
-            );
+            const retainedEvents = events
+                .filter((event) => event.createdBy !== accountId)
+                .map((event) => ({
+                    ...event,
+                    attendees: event.attendees.filter(
+                        (attendee) => attendee !== accountId,
+                    ),
+                }));
             if (retainedEvents.length > 0) {
                 this.eventsByCalendar.set(calendarId, retainedEvents);
             } else {

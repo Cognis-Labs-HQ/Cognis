@@ -212,9 +212,42 @@ export async function findDmBetween(
     const result = await db.executeCommand({
         option: "SELECT",
         table: "chatrooms",
-        where: [{ column: "kind", value: "dm" }],
-        orderBy: [{ column: "updated_at", direction: "DESC" }],
-        limit: 250,
+        alias: "chatrooms",
+        columns: [
+            { col: "chatrooms.id", as: "id" },
+            { col: "chatrooms.kind", as: "kind" },
+            { col: "chatrooms.title", as: "title" },
+            { col: "chatrooms.avatar_key", as: "avatar_key" },
+            { col: "chatrooms.created_by", as: "created_by" },
+            { col: "chatrooms.created_at", as: "created_at" },
+            { col: "chatrooms.updated_at", as: "updated_at" },
+        ],
+        joins: [
+            {
+                type: "INNER",
+                table: "chatroom_members",
+                alias: "member_a",
+                on: {
+                    leftColumn: "member_a.chatroom_id",
+                    rightColumn: "chatrooms.id",
+                },
+            },
+            {
+                type: "INNER",
+                table: "chatroom_members",
+                alias: "member_b",
+                on: {
+                    leftColumn: "member_b.chatroom_id",
+                    rightColumn: "chatrooms.id",
+                },
+            },
+        ],
+        where: [
+            { column: "chatrooms.kind", value: "dm" },
+            { column: "member_a.account_id", value: accountA },
+            { column: "member_b.account_id", value: accountB },
+        ],
+        orderBy: [{ column: "chatrooms.updated_at", direction: "DESC" }],
     });
     for (const row of result.rows ?? []) {
         const room = rowToRoom(row);

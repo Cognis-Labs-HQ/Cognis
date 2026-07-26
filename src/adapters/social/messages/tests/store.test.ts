@@ -177,10 +177,12 @@ test("removing the last member permanently deletes the chat", async () => {
 });
 
 test("DM lookup does not expose an orphaned chat to a recreated account", async () => {
+    const selectCommands: StructuredDbSelectCommand[] = [];
     const db: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command) {
             if (command.option !== "SELECT") return { rows: [] };
+            selectCommands.push(command);
             if (command.table === "chatrooms") {
                 return {
                     rows: [
@@ -218,6 +220,11 @@ test("DM lookup does not expose an orphaned chat to a recreated account", async 
     const room = await store.findDmBetween("alice", "bob");
 
     assert.equal(room, null);
+    assert.equal(selectCommands[0].limit, undefined);
+    assert.deepEqual(
+        selectCommands[0].where?.slice(1).map((clause) => clause.value),
+        ["alice", "bob"],
+    );
 });
 
 test("new DMs use distinct room ids across account incarnations", async () => {

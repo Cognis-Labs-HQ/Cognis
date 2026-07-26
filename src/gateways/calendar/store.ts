@@ -457,6 +457,30 @@ export class DbCalendarStore implements CalendarStore {
             for (const row of createdEvents.rows ?? [])
                 eventIds.add(String(row.id));
 
+            const retainedEvents = await transactionDb.executeCommand({
+                option: "SELECT",
+                table: "calendar_events",
+                columns: ["id", "attendees_json"],
+            });
+            for (const row of retainedEvents.rows ?? []) {
+                const eventId = String(row.id);
+                if (eventIds.has(eventId)) continue;
+                const attendees = parseJsonStringArray(row.attendees_json);
+                const filteredAttendees = attendees.filter(
+                    (attendee) => attendee !== accountId,
+                );
+                if (filteredAttendees.length === attendees.length) continue;
+                await transactionDb.executeCommand({
+                    option: "UPDATE",
+                    table: "calendar_events",
+                    set: {
+                        attendees_json: JSON.stringify(filteredAttendees),
+                        updated_at: new Date().toISOString(),
+                    },
+                    where: [{ column: "id", value: eventId }],
+                });
+            }
+
             await transactionDb.executeCommand({
                 option: "DELETE",
                 table: "calendar_event_responses",

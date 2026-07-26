@@ -495,6 +495,32 @@ test("calendar gateway deletes account calendars and events from memory and stor
     assert.deepEqual(gateway.listEvents(calendar.id), []);
 });
 
+test("calendar gateway removes a deleted attendee from retained events", async () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Alice",
+        color: "#1f8ceb",
+        isDefault: true,
+    });
+    const event = gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Private event",
+        startAt: "2026-07-26T09:00:00.000Z",
+        endAt: "2026-07-26T10:00:00.000Z",
+        attendees: ["bob", "carol"],
+    });
+
+    await gateway.deleteAccountActivity("bob");
+
+    assert.deepEqual(gateway.getEvent(calendar.id, event.id)?.attendees, [
+        "carol",
+        "alice",
+    ]);
+    assert.equal(gateway.getEventResponse(event.id, "bob"), null);
+});
+
 test("calendar gateway removeDeclinedAttendee removes attendee from event", () => {
     const gateway = new CoreCalendarGateway();
     const calendar = gateway.createCalendar({

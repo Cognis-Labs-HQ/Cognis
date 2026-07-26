@@ -194,6 +194,11 @@ export async function bootstrapSocialAdapter(
                         where: [{ column: "account_id", value: accountId }],
                     });
                 }
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "user_preferences",
+                    where: [{ column: "account_id", value: accountId }],
+                });
             });
             ctx.log?.("info", "Deleted user profile and social activity.", {
                 component: "social-profile-adapter",
