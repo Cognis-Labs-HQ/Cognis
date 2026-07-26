@@ -142,6 +142,80 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const store = new DbCalendarStore(dbExecutor);
             await store.ensureSchema();
             await gateway.attachStore(store);
+            ctx.flow.extend(
+                "deprovision-user",
+                "cleanup-dependencies",
+                { id: "calendar-gateway:delete-user-activity" },
+                async (stageCtx) => {
+                    const input = (stageCtx.input ?? {}) as {
+                        username?: string;
+                        action?: string;
+                    };
+                    const persistResult = (stageCtx.stageResults[
+                        "persist-state"
+                    ] ?? []) as Array<{ persisted?: boolean }>;
+                    if (
+                        input.action !== "delete" ||
+                        !input.username ||
+                        !persistResult[0]?.persisted
+                    ) {
+                        return { cleaned: false };
+                    }
+                    const accountId = input.username.trim().toLowerCase();
+                    await dbExecutor.transaction(async (transactionDb) => {
+                        await transactionDb.executeCommand({
+                            option: "DELETE",
+                            table: "calendar_event_responses",
+                            where: [{ column: "account_id", value: accountId }],
+                        });
+                        const calendarResult =
+                            await transactionDb.executeCommand({
+                                option: "SELECT",
+                                table: "calendar_calendars",
+                                columns: ["id"],
+                                where: [
+                                    {
+                                        column: "owner_account_id",
+                                        value: accountId,
+                                    },
+                                ],
+                            });
+                        for (const calendarRow of calendarResult.rows ?? []) {
+                            await transactionDb.executeCommand({
+                                option: "DELETE",
+                                table: "calendar_events",
+                                where: [
+                                    {
+                                        column: "calendar_id",
+                                        value: String(calendarRow.id),
+                                    },
+                                ],
+                            });
+                        }
+                        await transactionDb.executeCommand({
+                            option: "DELETE",
+                            table: "calendar_events",
+                            where: [{ column: "created_by", value: accountId }],
+                        });
+                        await transactionDb.executeCommand({
+                            option: "DELETE",
+                            table: "calendar_calendars",
+                            where: [
+                                {
+                                    column: "owner_account_id",
+                                    value: accountId,
+                                },
+                            ],
+                        });
+                    });
+                    ctx.log?.("info", "Deleted user calendar activity.", {
+                        component: "calendar-gateway",
+                        operation: "delete_user_activity",
+                        accountId,
+                    });
+                    return { cleaned: true, accountId };
+                },
+            );
         } catch (error) {
             ctx.log?.("error", "Calendar DB store initialization failed.", {
                 component: "calendar-gateway",

@@ -129,6 +129,54 @@ export async function bootstrapSocialAdapter(
 
     const messagesStore = new DbMessagesStore(dbExecutor);
     await messagesStore.ensureSchema();
+    ctx.flow.extend(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "social-messages:delete-user-activity" },
+        async (stageCtx) => {
+            const input = (stageCtx.input ?? {}) as {
+                username?: string;
+                action?: string;
+            };
+            const persistResult = (stageCtx.stageResults["persist-state"] ??
+                []) as Array<{ persisted?: boolean }>;
+            if (
+                input.action !== "delete" ||
+                !input.username ||
+                !persistResult[0]?.persisted
+            ) {
+                return { cleaned: false };
+            }
+            const accountId = input.username.trim().toLowerCase();
+            await dbExecutor.transaction(async (transactionDb) => {
+                for (const table of [
+                    "chatroom_typing",
+                    "chat_message_reactions",
+                    "chat_emoji_usage",
+                    "chatroom_members",
+                ]) {
+                    await transactionDb.executeCommand({
+                        option: "DELETE",
+                        table,
+                        where: [{ column: "account_id", value: accountId }],
+                    });
+                }
+                for (const column of ["from_account_id", "to_account_id"]) {
+                    await transactionDb.executeCommand({
+                        option: "DELETE",
+                        table: "chat_message_requests",
+                        where: [{ column, value: accountId }],
+                    });
+                }
+            });
+            ctx.log?.("info", "Deleted user messaging activity.", {
+                component: "social-messages-adapter",
+                operation: "delete_user_activity",
+                accountId,
+            });
+            return { cleaned: true, accountId };
+        },
+    );
     ctx.log?.("info", "Messages adapter: schema ready.", {
         component: "social-messages-adapter",
     });

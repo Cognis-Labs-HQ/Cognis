@@ -153,6 +153,60 @@ export async function bootstrapSocialAdapter(
 
     const profileStore = new DbProfileStore(dbExecutor);
     await profileStore.ensureSchema();
+    ctx.flow.extend(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "social-profile:delete-user-activity" },
+        async (stageCtx) => {
+            const input = (stageCtx.input ?? {}) as {
+                username?: string;
+                action?: string;
+            };
+            const persistResult = (stageCtx.stageResults["persist-state"] ??
+                []) as Array<{ persisted?: boolean }>;
+            if (
+                input.action !== "delete" ||
+                !input.username ||
+                !persistResult[0]?.persisted
+            ) {
+                return { cleaned: false };
+            }
+            const accountId = input.username.trim().toLowerCase();
+            await dbExecutor.transaction(async (transactionDb) => {
+                for (const column of ["follower_id", "following_id"]) {
+                    await transactionDb.executeCommand({
+                        option: "DELETE",
+                        table: "account_follows",
+                        where: [{ column, value: accountId }],
+                    });
+                }
+                for (const column of ["blocker_id", "blocked_id"]) {
+                    await transactionDb.executeCommand({
+                        option: "DELETE",
+                        table: "account_blocks",
+                        where: [{ column, value: accountId }],
+                    });
+                }
+                for (const table of [
+                    "posts",
+                    "file_size_limits",
+                    "account_profiles",
+                ]) {
+                    await transactionDb.executeCommand({
+                        option: "DELETE",
+                        table,
+                        where: [{ column: "account_id", value: accountId }],
+                    });
+                }
+            });
+            ctx.log?.("info", "Deleted user profile and social activity.", {
+                component: "social-profile-adapter",
+                operation: "delete_user_activity",
+                accountId,
+            });
+            return { cleaned: true, accountId };
+        },
+    );
     ctx.log?.("info", "Profile store schema ready.", {
         component: "social-profile-adapter",
     });
