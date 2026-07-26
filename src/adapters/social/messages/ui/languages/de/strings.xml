@@ -36,6 +36,7 @@
   <string name="module.social.messages.leave_failed">Konversation konnte nicht verlassen werden.</string>
   <string name="module.social.messages.leave_confirm_title">Diese Konversation Verlassen?</string>
   <string name="module.social.messages.leave_confirm_body">Möchten Sie diese Konversation mit {name} wirklich verlassen?</string>
+  <string name="module.social.messages.requests_section">Nachrichtenanfragen</string>
   <string name="module.social.messages.archived_section">Archiviert</string>
   <string name="module.social.messages.archived_locked">Archiviert — Starten Sie eine neue Konversation, um wieder zu schreiben.</string>
   <string name="module.social.messages.archived_cannot_send">Diese Konversation ist archiviert. Starten Sie eine neue Konversation, um erneut zu schreiben.</string>

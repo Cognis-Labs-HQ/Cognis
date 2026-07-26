@@ -138,6 +138,7 @@ export function registerUi(ctx) {
 
 export function registerApiRoutes(router, ctx) {
     const dbExecutor = ctx.getCapability("db:executor");
+    const systemCtx = ctx.getCapability("system:ctx");
     const profileStore = ctx.getCapability("social:profileStore");
     const messagesUiResources = resolveMessagesUiResources(ctx);
     const resolveGroupChat = ctx.getCapability(
@@ -233,6 +234,67 @@ export function registerApiRoutes(router, ctx) {
         }
         return;
     }
+
+    systemCtx?.flow?.extend?.(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "jitsi-meet:delete-user-activity" },
+        async (stageCtx) => {
+            const input = stageCtx.input ?? {};
+            const persistResult = stageCtx.stageResults["persist-state"] ?? [];
+            if (
+                input.action !== "delete" ||
+                !input.username ||
+                !persistResult[0]?.persisted
+            ) {
+                return { cleaned: false };
+            }
+            const accountId = normalizeHandleKey(input.username);
+            await dbExecutor.transaction(async (transactionDb) => {
+                for (const table of [
+                    "jitsi_meeting_presence",
+                    "jitsi_meeting_participants",
+                ]) {
+                    await transactionDb.executeCommand({
+                        option: "DELETE",
+                        table,
+                        where: [{ column: "username", value: accountId }],
+                    });
+                }
+                const meetingResult = await transactionDb.executeCommand({
+                    option: "SELECT",
+                    table: "jitsi_meetings",
+                    columns: ["id"],
+                    where: [{ column: "created_by", value: accountId }],
+                });
+                for (const meetingRow of meetingResult.rows ?? []) {
+                    const meetingId = String(meetingRow.id);
+                    for (const table of [
+                        "jitsi_meeting_presence",
+                        "jitsi_meeting_participants",
+                        "jitsi_meeting_state",
+                    ]) {
+                        await transactionDb.executeCommand({
+                            option: "DELETE",
+                            table,
+                            where: [{ column: "meeting_id", value: meetingId }],
+                        });
+                    }
+                }
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "jitsi_meetings",
+                    where: [{ column: "created_by", value: accountId }],
+                });
+            });
+            ctx.log?.("info", "Deleted user meeting activity.", {
+                component: "jitsi-meet-module",
+                operation: "delete_user_activity",
+                accountId,
+            });
+            return { cleaned: true, accountId };
+        },
+    );
 
     const log = ctx.getCapability("logging:log");
     const registerScriptOrigins = ctx.getCapability(

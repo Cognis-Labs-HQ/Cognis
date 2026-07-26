@@ -31,6 +31,15 @@ export async function createRoom(
     return rowToRoom(result.rows![0]);
 }
 
+export async function createDm(
+    db: DbExecutor,
+    accountA: string,
+    accountB: string,
+): Promise<RoomRow> {
+    if (accountA === accountB) throw new Error("dm_participants_must_differ");
+    return createRoom(db, "dm", null, accountA);
+}
+
 export async function getRoom(
     db: DbExecutor,
     id: string,
@@ -87,6 +96,58 @@ export async function removeMember(
             { column: "account_id", value: accountId },
         ],
     });
+}
+
+export async function removeMemberAndApplyLifecycle(
+    db: DbExecutor,
+    roomId: string,
+    accountId: string,
+): Promise<"active" | "archived" | "deleted"> {
+    await removeMember(db, roomId, accountId);
+    const remainingMembers = await listMembers(db, roomId);
+    if (remainingMembers.length === 1) {
+        await db.executeCommand({
+            option: "UPDATE",
+            table: "chatroom_members",
+            set: { archived: 1 },
+            where: [
+                { column: "chatroom_id", value: roomId },
+                {
+                    column: "account_id",
+                    value: remainingMembers[0].accountId,
+                },
+            ],
+        });
+        return "archived";
+    }
+    if (remainingMembers.length > 1) return "active";
+
+    await db.transaction(async (transactionDb) => {
+        for (const table of [
+            "chatroom_typing",
+            "chat_message_reactions",
+            "chat_messages",
+            "chatroom_keys",
+            "chatroom_members",
+        ]) {
+            await transactionDb.executeCommand({
+                option: "DELETE",
+                table,
+                where: [{ column: "chatroom_id", value: roomId }],
+            });
+        }
+        await transactionDb.executeCommand({
+            option: "DELETE",
+            table: "chat_message_requests",
+            where: [{ column: "room_id", value: roomId }],
+        });
+        await transactionDb.executeCommand({
+            option: "DELETE",
+            table: "chatrooms",
+            where: [{ column: "id", value: roomId }],
+        });
+    });
+    return "deleted";
 }
 
 export async function getMember(
@@ -152,34 +213,54 @@ export async function findDmBetween(
         option: "SELECT",
         table: "chatrooms",
         alias: "chatrooms",
+        columns: [
+            { col: "chatrooms.id", as: "id" },
+            { col: "chatrooms.kind", as: "kind" },
+            { col: "chatrooms.title", as: "title" },
+            { col: "chatrooms.avatar_key", as: "avatar_key" },
+            { col: "chatrooms.created_by", as: "created_by" },
+            { col: "chatrooms.created_at", as: "created_at" },
+            { col: "chatrooms.updated_at", as: "updated_at" },
+        ],
         joins: [
             {
                 type: "INNER",
                 table: "chatroom_members",
-                alias: "first_chatroom_members",
+                alias: "member_a",
                 on: {
-                    leftColumn: "first_chatroom_members.chatroom_id",
+                    leftColumn: "member_a.chatroom_id",
                     rightColumn: "chatrooms.id",
                 },
             },
             {
                 type: "INNER",
                 table: "chatroom_members",
-                alias: "second_chatroom_members",
+                alias: "member_b",
                 on: {
-                    leftColumn: "second_chatroom_members.chatroom_id",
+                    leftColumn: "member_b.chatroom_id",
                     rightColumn: "chatrooms.id",
                 },
             },
         ],
         where: [
-            { column: "first_chatroom_members.account_id", value: accountA },
-            { column: "second_chatroom_members.account_id", value: accountB },
             { column: "chatrooms.kind", value: "dm" },
+            { column: "member_a.account_id", value: accountA },
+            { column: "member_b.account_id", value: accountB },
         ],
-        limit: 1,
+        orderBy: [{ column: "chatrooms.updated_at", direction: "DESC" }],
     });
-    return result.rows?.[0] ? rowToRoom(result.rows[0]) : null;
+    for (const row of result.rows ?? []) {
+        const room = rowToRoom(row);
+        const memberIds = (await listMembers(db, room.id)).map(
+            (member) => member.accountId,
+        );
+        const hasExactParticipants =
+            memberIds.length === 2 &&
+            memberIds.includes(accountA) &&
+            memberIds.includes(accountB);
+        if (hasExactParticipants) return room;
+    }
+    return null;
 }
 
 export async function updateRoomTitle(

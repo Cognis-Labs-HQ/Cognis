@@ -36,6 +36,7 @@
   <string name="module.social.messages.leave_failed">会話から退出できませんでした。</string>
   <string name="module.social.messages.leave_confirm_title">この会話から退出しますか？</string>
   <string name="module.social.messages.leave_confirm_body">{name}さんとのこの会話から本当に退出しますか？</string>
+  <string name="module.social.messages.requests_section">メッセージリクエスト</string>
   <string name="module.social.messages.archived_section">アーカイブ済み</string>
   <string name="module.social.messages.archived_locked">アーカイブ済み — 送信するには新しい会話を開始してください。</string>
   <string name="module.social.messages.archived_cannot_send">この会話はアーカイブされています。もう一度送信するには新しい会話を開始してください。</string>

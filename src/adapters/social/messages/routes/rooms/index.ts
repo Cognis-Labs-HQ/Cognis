@@ -217,10 +217,9 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                     primaryTarget.accountId,
                 );
                 if (!room) {
-                    room = await messagesStore.createRoom(
-                        "dm",
-                        null,
+                    room = await messagesStore.createDm(
                         accountId,
+                        primaryTarget.accountId,
                     );
                     await messagesStore.addMember(room.id, accountId, "owner");
                     await messagesStore.addMember(
@@ -259,18 +258,19 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                         "cancelled",
                     );
                 }
+                const existingRequest =
+                    pending && pending.roomId === room.id ? pending : null;
                 const request =
-                    pending && pending.roomId === room.id
-                        ? pending
-                        : await messagesStore.createMessageRequest({
-                              fromAccountId: accountId,
-                              toAccountId: primaryTarget.accountId,
-                              roomId: room.id,
-                          });
-                if (dispatch) {
+                    existingRequest ??
+                    (await messagesStore.createMessageRequest({
+                        fromAccountId: accountId,
+                        toAccountId: primaryTarget.accountId,
+                        roomId: room.id,
+                    }));
+                if (dispatch && !existingRequest) {
                     const sender = await profileStore.getProfile(accountId);
                     await dispatch({
-                        category: "messages",
+                        category: "message-requests",
                         recipientUsername: primaryTarget.handle,
                         subject: "New message request",
                         body: "New message request",
@@ -297,11 +297,17 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             }
         }
 
-        const room = await messagesStore.createRoom(
-            isDm ? "dm" : "group",
-            typeof body.title === "string" ? body.title : null,
-            accountId,
-        );
+        const room =
+            isDm && primaryTarget
+                ? await messagesStore.createDm(
+                      accountId,
+                      primaryTarget.accountId,
+                  )
+                : await messagesStore.createRoom(
+                      "group",
+                      typeof body.title === "string" ? body.title : null,
+                      accountId,
+                  );
         await messagesStore.addMember(room.id, accountId, "owner");
         for (const target of targets) {
             await messagesStore.addMember(room.id, target.accountId, "member");

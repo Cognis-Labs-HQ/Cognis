@@ -266,11 +266,19 @@ export function renderRoomList({
         `;
             })
             .join("");
-    const activeRooms = rooms.filter((room) => !room.isArchived);
+    const requestRooms = rooms.filter(
+        (room) => !room.isArchived && Boolean(room.pendingRequest),
+    );
+    const activeRooms = rooms.filter(
+        (room) => !room.isArchived && !room.pendingRequest,
+    );
     const archivedRooms = rooms.filter((room) => room.isArchived);
     const activeHtml = renderRoomItems(activeRooms);
+    const requestsHtml = requestRooms.length
+        ? `<li class="messages-room-section-label">${escapeHtml(i18n.t("module.social.messages.requests_section"))}</li>${renderRoomItems(requestRooms)}`
+        : "";
     const archivedHtml = archivedRooms.length
         ? `<li class="messages-room-section-label">${escapeHtml(i18n.t("module.social.messages.archived_section"))}</li>${renderRoomItems(archivedRooms)}`
         : "";
-    return `${activeHtml}${archivedHtml}`;
+    return `${requestsHtml}${activeHtml}${archivedHtml}`;
 }

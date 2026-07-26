@@ -136,7 +136,7 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
             };
         },
         async updateMessageRequestStatus() {},
-        async removeMember(roomId: string, accountId: string) {
+        async removeMemberAndApplyLifecycle(roomId: string, accountId: string) {
             removed.push({ roomId, accountId });
         },
         async appendRoomEvent() {},
@@ -192,7 +192,7 @@ test("admin can create DM with hidden recipient without a message request", asyn
         async hasApprovedMessageRequestBetween() {
             return false;
         },
-        async createRoom() {
+        async createDm() {
             return { id: "room-admin-hidden", kind: "dm" };
         },
         async addMember(roomId: string, accountId: string) {
