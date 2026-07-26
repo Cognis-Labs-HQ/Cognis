@@ -6,7 +6,7 @@
     "main": "index.ts",
     "dependencies": {
         "@cognis/core": "<=0.3.2",
-        "@cognis/gateways": "<=0.1.4"
+        "@cognis/gateways": "<=0.1.5"
     },
     "entrypoints": {
         "cli": "./cli/index.js"
