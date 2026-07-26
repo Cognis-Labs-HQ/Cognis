@@ -10,36 +10,28 @@
  *   const state = await loadReleaseChangelogState();
  *   await saveReleaseChangelogState({ seenSlugs: state.seenSlugs });
  *
- * @returns {Promise<{ seenSlugs: string[], lastVersion: string|null }|null>}
+ * @returns {Promise<{ seenSlugs: string[], lastVersion: string|null }>}
  */
 import { apiFetch } from "../../reuse/api-client.js";
 
 const PREFERENCE_KEY = "release-changelog-state";
 
-export function resolveReleaseChangelogState(state, legacyPrefs = {}) {
-    const source = state ?? {
-        seenSlugs: legacyPrefs.releaseChangelogSeenSlugs,
-        lastVersion: legacyPrefs.releaseChangelogLastVersion,
-    };
-    return {
-        seenSlugs: Array.isArray(source?.seenSlugs) ? source.seenSlugs : [],
-        lastVersion:
-            typeof source?.lastVersion === "string" ? source.lastVersion : null,
-    };
-}
-
 export async function loadReleaseChangelogState() {
     const account = localStorage.getItem("cognis_account");
-    if (!account) return null;
+    if (!account) return { seenSlugs: [], lastVersion: null };
     const response = await apiFetch(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/${PREFERENCE_KEY}`,
     );
-    if (!response.ok) return null;
+    if (!response.ok) return { seenSlugs: [], lastVersion: null };
     const payload = await response.json();
     const rawState = payload?.data?.layoutJson;
-    if (!rawState) return null;
+    if (!rawState) return { seenSlugs: [], lastVersion: null };
     const state = JSON.parse(rawState);
-    return resolveReleaseChangelogState(state);
+    return {
+        seenSlugs: Array.isArray(state?.seenSlugs) ? state.seenSlugs : [],
+        lastVersion:
+            typeof state?.lastVersion === "string" ? state.lastVersion : null,
+    };
 }
 
 export async function saveReleaseChangelogState(state) {
