@@ -4,6 +4,6 @@
 
 Rapat yang digunakan kembali kini menyimpan ruang obrolan yang baru ditentukan sehingga peserta tidak lagi meminta ruang yang telah dihapus dan menerima respons tidak ditemukan.
 
-## Peserta dan undangan dimuat untuk semua undangan
+## Peserta LDAP dapat bergabung
 
-Pengguna yang terlihat oleh komunitas kini muncul dalam pencarian peserta rapat tanpa mengharuskan pengguna yang melihat untuk mengikuti mereka. Undangan rapat dikirimkan ke akun terautentikasi milik penerima, dan pengguna yang diundang dapat memuat detail peserta aktif.
+Pencarian peserta rapat tetap mensyaratkan hubungan mengikuti dan mengecualikan pengguna saat ini. Undangan dikirimkan ke akun terautentikasi penerima, dan peserta yang disediakan melalui LDAP tetap diizinkan melalui identitas akun stabil ketika nama pengguna yang terlihat berubah.

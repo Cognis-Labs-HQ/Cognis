@@ -4,6 +4,6 @@
 
 Reused meetings now save the newly resolved chat room so participants no longer request a deleted room and receive a not-found response.
 
-## Participants and invitations load for every invitee
+## LDAP participants can join invitations
 
-Community-visible users now appear in meeting participant searches without requiring a one-way follow from the viewer. Meeting invitations are delivered to the invitee’s authenticated account, and active participant details load for invited users.
+Meeting participant search retains its follow requirement and excludes the current user. Invitations are delivered to the invitee’s authenticated account, and LDAP-provided participants remain authorized through their stable account identity when their visible handle changes.

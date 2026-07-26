@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { registerMeetingParticipantRoutes } from "../participant-routes.js";
 
-test("meeting participant search returns community profiles without a follow relationship", async () => {
+test("meeting participant search preserves follow filtering and omits the current user", async () => {
     const routes = [];
     const searchCalls = [];
     const router = {
@@ -17,6 +17,13 @@ test("meeting participant search returns community profiles without a follow rel
             async searchProfiles(query, limit, options) {
                 searchCalls.push({ query, limit, options });
                 return [
+                    {
+                        accountId: "bob-account",
+                        handle: "bob",
+                        displayName: "Bob User",
+                        avatarKey: "bob.png",
+                        visibility: "community",
+                    },
                     {
                         accountId: "alice-account",
                         handle: "alice",
@@ -54,6 +61,7 @@ test("meeting participant search returns community profiles without a follow rel
             options: {
                 includeHidden: false,
                 requesterAccountId: "bob-account",
+                followingAccountId: "bob-account",
             },
         },
     ]);

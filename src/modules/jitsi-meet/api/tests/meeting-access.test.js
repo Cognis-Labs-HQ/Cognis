@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveMeetingPayloadOrReject } from "../reuse/meeting-access.js";
+import {
+    canAccessMeeting,
+    resolveMeetingPayloadOrReject,
+} from "../reuse/meeting-access.js";
 import { registerMeetingRoutes } from "../meetings-routes.js";
 import { JitsiMeetStore } from "../store.js";
 
@@ -118,4 +121,32 @@ test("jitsi meetings active endpoint reports profile_required instead of throwin
             message: "A visible profile handle is required to use Meetings.",
         },
     ]);
+});
+
+test("LDAP participants retain meeting access when their profile handle changes", async () => {
+    const allowed = await canAccessMeeting({
+        store: {
+            async listParticipants() {
+                return ["alice", "ldap:students:student-42"];
+            },
+        },
+        meeting: {
+            id: "meeting-1",
+            createdBy: "alice",
+            classroomId: null,
+        },
+        username: "ldap-student-after-rename",
+        requesterAccountId: "ldap:Students:student-42",
+        profileStore: {
+            async getProfileByHandle() {
+                return null;
+            },
+            async isBlocked() {
+                return false;
+            },
+        },
+        listClassroomParticipantHandles: async () => [],
+    });
+
+    assert.equal(allowed, true);
 });
