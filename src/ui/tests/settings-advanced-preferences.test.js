@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
 import { resolveReleaseChangelogStatus } from "../layouts/release-changelog/status.js";
+import { resolveReleaseChangelogState } from "../layouts/release-changelog/state.js";
 
 const settingsSource = fs.readFileSync(
     new URL("../app/settings/index.js", import.meta.url),
@@ -30,6 +31,15 @@ test("advanced preferences require remembered consent and use dirty tracking", (
     assert.match(settingsSource, /preferences_invalid_json/);
 });
 
+test("dirty form controls are merged when advanced preferences are edited", () => {
+    assert.match(settingsSource, /if \(fontPrefs\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(languagePrefs\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(themePrefs\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(datetimePrefs\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(messageStylePrefs\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(releaseNotesPrefs\?\.isDirty\(\)\)/);
+});
+
 test("release acknowledgement state is stored outside editable UI preferences", () => {
     assert.match(releasePopupSource, /loadReleaseChangelogState\(\)/);
     assert.match(releasePopupSource, /saveReleaseChangelogState\(\{/);
@@ -41,4 +51,14 @@ test("release changelogs remain safe when editable preferences contain no seen s
 
     assert.deepEqual(status.unseenEntries, releaseEntries);
     assert.equal(status.versionChanged, true);
+});
+
+test("release acknowledgement falls back to legacy UI preferences", () => {
+    assert.deepEqual(
+        resolveReleaseChangelogState(null, {
+            releaseChangelogSeenSlugs: ["already-seen"],
+            releaseChangelogLastVersion: "1.2.3",
+        }),
+        { seenSlugs: ["already-seen"], lastVersion: "1.2.3" },
+    );
 });

@@ -440,6 +440,7 @@ export async function mount(root, { signal } = {}) {
 
         return {
             getMode: () => currentMode,
+            isDirty: () => currentMode !== savedMode,
             commit: () => {
                 savedMode = currentMode;
             },
@@ -480,6 +481,7 @@ export async function mount(root, { signal } = {}) {
 
         return {
             getMessageStyle: () => currentMessageStyle,
+            isDirty: () => currentMessageStyle !== savedMessageStyle,
             commit: () => {
                 savedMessageStyle = currentMessageStyle;
             },
@@ -893,6 +895,30 @@ export async function mount(root, { signal } = {}) {
             };
             if (!advancedPrefs?.isDirty()) {
                 prefs = { ...prefs, ...selectedPrefs };
+            } else {
+                if (fontPrefs?.isDirty()) {
+                    prefs.appFont = selectedPrefs.appFont;
+                    prefs.appFontSize = selectedPrefs.appFontSize;
+                }
+                if (languagePrefs?.isDirty()) {
+                    prefs.languagePriority = selectedPrefs.languagePriority;
+                    prefs.languagePriorityMode =
+                        selectedPrefs.languagePriorityMode;
+                }
+                if (themePrefs?.isDirty()) {
+                    prefs.mode = selectedPrefs.mode;
+                }
+                if (datetimePrefs?.isDirty()) {
+                    prefs.timezone = selectedPrefs.timezone;
+                    prefs.timeFormat = selectedPrefs.timeFormat;
+                }
+                if (messageStylePrefs?.isDirty()) {
+                    prefs.messageStyle = selectedPrefs.messageStyle;
+                }
+                if (releaseNotesPrefs?.isDirty()) {
+                    prefs.releaseChangelogShow =
+                        selectedPrefs.releaseChangelogShow;
+                }
             }
             await savePrefs(prefs);
             loadedPrefs = prefs;

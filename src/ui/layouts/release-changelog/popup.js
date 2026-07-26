@@ -25,6 +25,7 @@ import {
 } from "../../reuse/ui-preferences.js";
 import {
     loadReleaseChangelogState,
+    resolveReleaseChangelogState,
     saveReleaseChangelogState,
 } from "./state.js";
 import { resolveReleaseChangelogStatus } from "./status.js";
@@ -73,7 +74,10 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
 
     const prefs = (await loadUiPreferences()) ?? {};
     if (prefs.releaseChangelogShow === false) return;
-    const changelogState = await loadReleaseChangelogState();
+    const changelogState = resolveReleaseChangelogState(
+        await loadReleaseChangelogState(),
+        prefs,
+    );
 
     let changelogPayload;
     try {
