@@ -19,3 +19,7 @@ Gateway Share kini mendaftarkan direktori statis setiap adapter yang ditemukan, 
 ## Mengganti metode kini mengganti halaman
 
 Popup kini hanya memasang halaman adapter yang dipilih. Masukan tautan tidak ada saat berbagi dengan pengguna, sedangkan pencarian pengguna dan kontrol izin tidak ada saat membuat tautan.
+
+## Berbagi mendukung waktu kedaluwarsa, mode akses, dan kata sandi
+
+Halaman Tautan dan Pengguna kini memakai pemilih tanggal/waktu kedaluwarsa opsional serta perlindungan kata sandi opsional. Komponen juga dapat mendeklarasikan mode akses Tautan, sehingga Kalender membedakan tautan hanya-baca dan baca/tulis serta hanya memberikan kemampuan yang sesuai.

@@ -126,6 +126,9 @@
   <string name="gateway.calendar.share_user_invite_default_tooltip">Shared users are invited to all events in this calendar by default.</string>
   <string name="gateway.calendar.share_link_permission_read">Read-only</string>
   <string name="gateway.calendar.share_link_permission_write">Read &amp; Write</string>
+  <string name="gateway.calendar.share_expiry_datetime_optional">Expires (optional)</string>
+  <string name="gateway.calendar.share_password_optional">Password protection (optional)</string>
+  <string name="gateway.calendar.share_password_placeholder">Leave blank for no password</string>
   <string name="gateway.calendar.share_link_expiry_1h">Expires in 1 hour</string>
   <string name="gateway.calendar.share_link_expiry_24h">Expires in 24 hours</string>
   <string name="gateway.calendar.share_link_expiry_7d">Expires in 7 days</string>

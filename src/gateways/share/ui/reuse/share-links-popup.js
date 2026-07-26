@@ -279,6 +279,10 @@ function renderBody(labels, state) {
   `;
 }
 
+function renderPasswordProtectionField(labels, state) {
+    return `<label><span>${escapeHtml(labels.password || "Password")}</span><input id="share-links-password" type="password" value="${escapeHtml(state.password)}" autocomplete="new-password" placeholder="${escapeHtml(labels.passwordPlaceholder || labels.optional || "Optional")}" /></label>`;
+}
+
 export async function openShareLinksPopup({
     title,
     labels,
@@ -288,6 +292,7 @@ export async function openShareLinksPopup({
     updateLink,
     searchUsers,
     fetchMethods,
+    linkAccessOptions = [],
 }) {
     await ensureStylesheet();
 
@@ -295,13 +300,18 @@ export async function openShareLinksPopup({
         isCreating: false,
         links: [],
         label: "",
-        expiresInHours: "24",
+        expiresAt: "",
+        password: "",
         recipients: [],
         methods: [],
         methodModules: new Map(),
         activeMethodId: "link",
         visibleLinks: [],
         permission: "read",
+        linkAccessOptions: Array.isArray(linkAccessOptions)
+            ? linkAccessOptions
+            : [],
+        linkAccessId: String(linkAccessOptions?.[0]?.id ?? ""),
     };
 
     try {
@@ -449,7 +459,17 @@ export async function openShareLinksPopup({
                 historyHeading.textContent = String(activeMethod?.name ?? "");
                 methodPage.innerHTML =
                     typeof methodModule?.renderPage === "function"
-                        ? methodModule.renderPage({ labels, state, escapeHtml })
+                        ? methodModule.renderPage({
+                              labels,
+                              state,
+                              escapeHtml,
+                              gatewayFields: {
+                                  password: renderPasswordProtectionField(
+                                      labels,
+                                      state,
+                                  ),
+                              },
+                          })
                         : `<p class="share-links-empty">${escapeHtml(labels.methodUnavailable || labels.createFailed)}</p>`;
                 renderSelectedUsers();
                 filterLinksForActiveMethod();
@@ -467,13 +487,33 @@ export async function openShareLinksPopup({
                 try {
                     const createInput = {
                         label: state.label,
-                        expiresInHours: state.expiresInHours,
+                        expiresAt: state.expiresAt
+                            ? new Date(state.expiresAt).toISOString()
+                            : "",
+                        password: state.password,
                         recipients:
                             state.activeMethodId === "user"
                                 ? state.recipients
                                 : [],
                         shareMethod: state.activeMethodId,
                     };
+                    const selectedAccess = state.linkAccessOptions.find(
+                        (option) => option.id === state.linkAccessId,
+                    );
+                    if (state.activeMethodId === "link" && selectedAccess) {
+                        createInput.grantedCapabilities =
+                            selectedAccess.grantedCapabilities;
+                        createInput.accessControls = {
+                            permissions: selectedAccess.permissions,
+                        };
+                    } else if (state.activeMethodId === "user") {
+                        createInput.accessControls = {
+                            permissions:
+                                state.permission === "write"
+                                    ? ["read", "write"]
+                                    : ["read"],
+                        };
+                    }
                     if (
                         state.activeMethodId === "user" &&
                         state.recipients.length === 0
@@ -493,6 +533,7 @@ export async function openShareLinksPopup({
                             ? (result?.shareUrl ?? null)
                             : null;
                     state.label = "";
+                    state.password = "";
                     state.recipients = [];
                     await refreshLinks();
                     if (popupOpen) renderMethodPage();
@@ -531,7 +572,11 @@ export async function openShareLinksPopup({
                     return;
                 }
                 if (target.id === "share-links-expiry") {
-                    state.expiresInHours = target.value;
+                    state.expiresAt = target.value;
+                    return;
+                }
+                if (target.id === "share-links-password") {
+                    state.password = target.value;
                     return;
                 }
                 if (target.id !== "share-links-user-search") return;
@@ -568,6 +613,11 @@ export async function openShareLinksPopup({
                 ) {
                     state.permission =
                         target.value === "write" ? "write" : "read";
+                } else if (
+                    target instanceof HTMLSelectElement &&
+                    target.id === "share-links-access-mode"
+                ) {
+                    state.linkAccessId = target.value;
                 }
             });
 

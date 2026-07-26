@@ -27,3 +27,7 @@ Share records now carry gateway-owned access controls: read/write permissions, t
 ## Share Method Adapters
 
 The popup discovers sharing methods from Share gateway adapters and displays them as a method row. Link and User each own their input preparation and popup-page behavior, while history is filtered to the selected method.
+
+## Expiry and Protection
+
+Both built-in methods accept an optional exact expiry date and time; leaving it unset creates a non-expiring share. Password hashing and verification remain owned by the Share gateway. Resource components may provide Link access modes with method-specific permissions and granted capabilities.

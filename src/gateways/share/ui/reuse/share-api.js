@@ -54,9 +54,13 @@ export function buildShareTokenCallbacks({
         },
         createLink: async ({
             label,
+            expiresAt = "",
             expiresInHours,
             recipients = [],
             shareMethod = "link",
+            password = "",
+            accessControls = {},
+            grantedCapabilities: requestedCapabilities,
         }) => {
             const response = await apiFetch(SHARE_API, {
                 method: "POST",
@@ -65,11 +69,16 @@ export function buildShareTokenCallbacks({
                     resourceType,
                     resourceId,
                     label,
-                    expiresAt: resolveShareExpiry(expiresInHours),
-                    grantedCapabilities,
-                    accessControls: { recipients },
+                    expiresAt:
+                        String(expiresAt ?? "").trim() ||
+                        resolveShareExpiry(expiresInHours),
+                    grantedCapabilities: Array.isArray(requestedCapabilities)
+                        ? requestedCapabilities
+                        : grantedCapabilities,
+                    accessControls: { ...accessControls, recipients },
                     recipients,
                     shareMethod,
+                    password: String(password ?? ""),
                 }),
             });
             if (!response.ok) throw new Error("create_failed");

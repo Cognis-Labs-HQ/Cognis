@@ -93,7 +93,9 @@
   <string name="module.jitsi_meet.share.share_options_label">Bagikan:</string>
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Label Opsional</string>
-  <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa Dalam (Jam)</string>
+  <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa (opsional)</string>
+  <string name="module.jitsi_meet.share.password_optional">Perlindungan kata sandi (opsional)</string>
+  <string name="module.jitsi_meet.share.password_placeholder">Biarkan kosong tanpa kata sandi</string>
   <string name="module.jitsi_meet.share.status_active">Aktif</string>
   <string name="module.jitsi_meet.share.status_expired">Kedaluwarsa</string>
   <string name="module.jitsi_meet.share.expires_at_label">Kedaluwarsa Pada</string>

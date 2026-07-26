@@ -23,7 +23,9 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
             labelPlaceholder: i18n.t(
                 "gateway.calendar.share_link_name_placeholder",
             ),
-            expiryLabel: i18n.t("gateway.calendar.share_link_expiry_24h"),
+            expiryLabel: i18n.t(
+                "gateway.calendar.share_expiry_datetime_optional",
+            ),
             generateLink: i18n.t("gateway.calendar.share_link_generate"),
             done: i18n.t("ui.reuse.done"),
             createFailed: i18n.t("gateway.calendar.share_link_failed"),
@@ -48,7 +50,26 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
             writePermission: i18n.t(
                 "gateway.calendar.share_link_permission_write",
             ),
+            accessMode: i18n.t("gateway.calendar.share_link_permission"),
+            password: i18n.t("gateway.calendar.share_password_optional"),
+            passwordPlaceholder: i18n.t(
+                "gateway.calendar.share_password_placeholder",
+            ),
         },
+        linkAccessOptions: [
+            {
+                id: "read",
+                label: i18n.t("gateway.calendar.share_link_permission_read"),
+                permissions: ["read"],
+                grantedCapabilities: ["calendar:read"],
+            },
+            {
+                id: "write",
+                label: i18n.t("gateway.calendar.share_link_permission_write"),
+                permissions: ["read", "write"],
+                grantedCapabilities: ["calendar:read", "calendar:write"],
+            },
+        ],
     });
 }
 

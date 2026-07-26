@@ -564,6 +564,12 @@ async function openSharePopup() {
                 expiryLabel: translateModuleString(
                     "module.nextcloud_whiteboard.share_expiry_label",
                 ),
+                password: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_optional",
+                ),
+                passwordPlaceholder: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_placeholder",
+                ),
                 statusActive: translateModuleString(
                     "module.nextcloud_whiteboard.share_status_active",
                 ),

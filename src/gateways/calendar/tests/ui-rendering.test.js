@@ -302,6 +302,11 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /resourceType: "calendar"/,
     );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /linkAccessOptions: \[/);
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /grantedCapabilities: \["calendar:read"\]/,
+    );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /calendar-open-share-popup/,

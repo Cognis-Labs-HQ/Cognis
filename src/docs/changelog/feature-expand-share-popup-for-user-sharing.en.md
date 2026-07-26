@@ -19,3 +19,7 @@ The Share gateway now registers each discovered adapter's static directory, so t
 ## Switching methods now replaces the page
 
 The popup now mounts only the selected adapter's page. Link inputs are not present while sharing with users, and user search and permission controls are not present while creating a link.
+
+## Shares support exact expiry, access modes, and passwords
+
+Link and User pages now use an optional date/time expiry selector and optional password protection. Components can also declare Link access modes, allowing Calendar to distinguish read-only links from read/write links and grant only the corresponding capabilities.

@@ -27,3 +27,7 @@ Freigabedatensätze enthalten jetzt vom Gateway verwaltete Zugriffskontrollen: L
 ## Adapter für Freigabemethoden
 
 Das Popup erkennt Freigabemethoden über Adapter des Share-Gateways und zeigt sie in einer Methodenleiste. Link und Benutzer verwalten jeweils ihre Eingabeaufbereitung und Popup-Seite; der Verlauf wird nach der ausgewählten Methode gefiltert.
+
+## Ablauf und Schutz
+
+Beide integrierten Methoden akzeptieren optional ein genaues Ablaufdatum mit Uhrzeit; ohne Angabe läuft die Freigabe nicht ab. Hashing und Prüfung von Passwörtern verbleiben im Share-Gateway. Ressourcenkomponenten können Link-Zugriffsarten mit passenden Berechtigungen und Fähigkeiten bereitstellen.

@@ -19,3 +19,7 @@ Das Share-Gateway registriert nun das statische Verzeichnis jedes erkannten Adap
 ## Der Methodenwechsel ersetzt jetzt die Seite
 
 Das Popup bindet nur noch die Seite des ausgewählten Adapters ein. Bei Benutzerfreigaben sind keine Linkfelder vorhanden; beim Erstellen eines Links fehlen Benutzersuche und Berechtigungsfelder vollständig.
+
+## Freigaben unterstützen genaue Ablaufzeiten, Zugriffsarten und Passwörter
+
+Link- und Benutzerseiten verwenden nun eine optionale Datum-/Uhrzeitauswahl für den Ablauf sowie optionalen Passwortschutz. Komponenten können außerdem Link-Zugriffsarten festlegen, sodass der Kalender schreibgeschützte von beschreibbaren Links unterscheidet und nur die passenden Fähigkeiten gewährt.

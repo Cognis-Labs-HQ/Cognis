@@ -27,3 +27,7 @@ Catatan berbagi kini membawa kontrol akses milik gateway: izin baca/tulis, pener
 ## Adapter metode berbagi
 
 Popup menemukan metode berbagi dari adapter gateway Share dan menampilkannya dalam baris metode. Tautan dan Pengguna masing-masing memiliki penyiapan masukan serta halaman popup, sedangkan riwayat difilter berdasarkan metode terpilih.
+
+## Kedaluwarsa dan perlindungan
+
+Kedua metode bawaan menerima tanggal dan waktu kedaluwarsa yang opsional; jika tidak diisi, berbagi tidak kedaluwarsa. Hash dan verifikasi kata sandi tetap dimiliki gateway Share. Komponen sumber daya dapat menyediakan mode akses Tautan beserta izin dan kemampuan yang sesuai.
