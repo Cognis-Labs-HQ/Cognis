@@ -24,6 +24,13 @@ test("messages new-conversation search uses messaging lookup endpoint", () => {
     );
 });
 
+test("messages sidebar separates pending requests from conversations", () => {
+    const source = readMessagesUiBundle();
+    assert.match(source, /const requestRooms = rooms\.filter/);
+    assert.match(source, /module\.social\.messages\.requests_section/);
+    assert.match(source, /!room\.pendingRequest/);
+});
+
 test("messages member count control opens local member summary without jitsi calls", () => {
     const source = readMessagesUiBundle();
     const memberSummaryPopupSource =

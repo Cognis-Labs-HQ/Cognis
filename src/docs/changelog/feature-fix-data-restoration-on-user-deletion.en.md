@@ -11,3 +11,7 @@ Account deletion now removes the user's calendars and events from both persisten
 ## Conversations and notifications are deprovisioned safely
 
 Deleted users now leave their group conversations with a visible leave event instead of silently removing the conversations. Chats automatically archive for a sole remaining member and are permanently deleted when nobody remains. A newly created account never regains a one-to-one conversation that belonged to a deleted account, even when it uses the same username. Duplicate active conversations are still prevented by matching only rooms where both current accounts are members, and all in-app notifications are purged during deletion.
+
+## Message requests are clearly separated
+
+Repeated attempts to start the same pending conversation no longer send another request notification, and the client blocks duplicate submissions while one is in progress. Request notifications now use their own Message Requests category, and pending requests appear under a dedicated heading in the Messages sidebar instead of being mixed with conversations.

@@ -258,18 +258,19 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                         "cancelled",
                     );
                 }
+                const existingRequest =
+                    pending && pending.roomId === room.id ? pending : null;
                 const request =
-                    pending && pending.roomId === room.id
-                        ? pending
-                        : await messagesStore.createMessageRequest({
-                              fromAccountId: accountId,
-                              toAccountId: primaryTarget.accountId,
-                              roomId: room.id,
-                          });
-                if (dispatch) {
+                    existingRequest ??
+                    (await messagesStore.createMessageRequest({
+                        fromAccountId: accountId,
+                        toAccountId: primaryTarget.accountId,
+                        roomId: room.id,
+                    }));
+                if (dispatch && !existingRequest) {
                     const sender = await profileStore.getProfile(accountId);
                     await dispatch({
-                        category: "messages",
+                        category: "message-requests",
                         recipientUsername: primaryTarget.handle,
                         subject: "New message request",
                         body: "New message request",

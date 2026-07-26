@@ -231,6 +231,7 @@ export async function bootstrapSocialAdapter(
     >("notify:registerCategory");
     if (registerCategory) {
         registerCategory("messages", "Private Messages");
+        registerCategory("message-requests", "Message Requests");
     }
 
     /**

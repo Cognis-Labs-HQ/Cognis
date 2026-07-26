@@ -11,3 +11,7 @@ Beim Löschen eines Kontos werden die Kalender und Termine des Benutzers jetzt s
 ## Unterhaltungen und Benachrichtigungen werden sicher bereinigt
 
 Gelöschte Benutzer verlassen ihre Gruppenunterhaltungen jetzt mit einem sichtbaren Austrittsereignis, anstatt die Unterhaltungen stillschweigend zu entfernen. Chats werden für ein einziges verbleibendes Mitglied automatisch archiviert und dauerhaft gelöscht, wenn niemand mehr übrig ist. Ein neu erstelltes Konto erhält niemals erneut Zugriff auf eine Einzelunterhaltung des gelöschten Kontos, selbst wenn es denselben Benutzernamen verwendet. Doppelte aktive Unterhaltungen werden weiterhin verhindert, indem nur Räume abgeglichen werden, in denen beide aktuellen Konten Mitglieder sind. Alle internen Benachrichtigungen werden beim Löschen entfernt.
+
+## Nachrichtenanfragen sind klar getrennt
+
+Wiederholte Versuche, dieselbe ausstehende Unterhaltung zu beginnen, senden keine weitere Anfragebenachrichtigung mehr. Der Client verhindert außerdem doppelte Übermittlungen, solange eine Anfrage verarbeitet wird. Anfragebenachrichtigungen verwenden jetzt die eigene Kategorie „Nachrichtenanfragen“, und ausstehende Anfragen erscheinen in der Nachrichten-Seitenleiste unter einer eigenen Überschrift statt zwischen den Unterhaltungen.

@@ -727,35 +727,60 @@ export function createMessagesRoomState({
         startLiveRefreshPolling();
     }
 
+    const pendingConversationHandles = new Set();
+
     async function createConversationFromHandle(handle) {
-        const createResponse = await apiFetch("/api/v1/social/messages/rooms", {
-            method: "POST",
-            body: JSON.stringify({ handles: [handle] }),
-        });
-        if (!createResponse.ok) {
-            const errorPayload = await createResponse.json().catch(() => null);
-            const code = errorPayload?.error?.code;
-            const toastKey =
-                code === "forbidden"
-                    ? "module.social.messages.start_failed_forbidden"
-                    : "module.social.messages.start_failed";
-            showToast(i18n.t(toastKey), { variant: "error" });
+        const normalizedHandle = String(handle ?? "")
+            .trim()
+            .toLowerCase();
+        if (
+            !normalizedHandle ||
+            pendingConversationHandles.has(normalizedHandle)
+        ) {
             return;
         }
-        const createPayload = await createResponse.json();
-        const newRoomId = createPayload?.data?.id;
-        if (createPayload?.data?.requiresApproval) {
-            showToast(i18n.t("module.social.messages.request_sent"), {
-                variant: "info",
-            });
+        pendingConversationHandles.add(normalizedHandle);
+        try {
+            const createResponse = await apiFetch(
+                "/api/v1/social/messages/rooms",
+                {
+                    method: "POST",
+                    body: JSON.stringify({ handles: [handle] }),
+                },
+            );
+            if (!createResponse.ok) {
+                const errorPayload = await createResponse
+                    .json()
+                    .catch(() => null);
+                const code = errorPayload?.error?.code;
+                const toastKey =
+                    code === "forbidden"
+                        ? "module.social.messages.start_failed_forbidden"
+                        : "module.social.messages.start_failed";
+                showToast(i18n.t(toastKey), { variant: "error" });
+                return;
+            }
+            const createPayload = await createResponse.json();
+            const newRoomId = createPayload?.data?.id;
+            if (createPayload?.data?.requiresApproval) {
+                showToast(i18n.t("module.social.messages.request_sent"), {
+                    variant: "info",
+                });
+                await reloadRoomsList();
+                return;
+            }
+            if (!newRoomId) return;
+            selectedRoomId = newRoomId;
+            history.pushState(
+                {},
+                "",
+                `/messages/${encodeURIComponent(newRoomId)}`,
+            );
+            await openRoom(newRoomId);
             await reloadRoomsList();
-            return;
+        } finally {
+            pendingConversationHandles.delete(normalizedHandle);
         }
-        if (!newRoomId) return;
-        selectedRoomId = newRoomId;
-        history.pushState({}, "", `/messages/${encodeURIComponent(newRoomId)}`);
-        await openRoom(newRoomId);
-        await reloadRoomsList();
     }
 
     function cleanup() {
