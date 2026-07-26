@@ -43,7 +43,6 @@ export function registerMeetingParticipantRoutes({
             const candidates = await profileStore.searchProfiles(query, 50, {
                 includeHidden,
                 requesterAccountId: claims.sub,
-                followingAccountId: claims.sub,
             });
             const results = candidates.map((profile) => ({
                 handle: profile.handle,

@@ -294,7 +294,6 @@ export function registerMeetingRoutes({
                               {
                                   includeHidden: false,
                                   requesterAccountId: claims.sub,
-                                  followingAccountId: claims.sub,
                                   candidateHandles: activeParticipantHandles,
                               },
                           )

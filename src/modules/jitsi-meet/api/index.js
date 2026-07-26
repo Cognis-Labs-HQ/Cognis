@@ -408,31 +408,45 @@ export function registerApiRoutes(router, ctx) {
             : null;
         const normalizedRecipients = [];
         for (const recipientUsername of candidateRecipients) {
+            const recipientProfile = await profileStore
+                .getProfileByHandle(recipientUsername)
+                .catch(() => null);
+            if (!recipientProfile?.accountId) {
+                log?.(
+                    "error",
+                    "Failed to resolve meeting notification recipient.",
+                    {
+                        component: "jitsi-meet-module",
+                        operation: "resolve_meeting_notification_recipient",
+                        recipientUsername,
+                    },
+                );
+                continue;
+            }
             if (organizerProfile?.accountId) {
-                const recipientProfile = await profileStore
-                    .getProfileByHandle(recipientUsername)
-                    .catch(() => null);
                 if (
-                    recipientProfile?.accountId &&
-                    (await profileStore.isBlocked(
+                    await profileStore.isBlocked(
                         organizerProfile.accountId,
                         recipientProfile.accountId,
-                    ))
+                    )
                 ) {
                     continue;
                 }
             }
-            normalizedRecipients.push(recipientUsername);
+            normalizedRecipients.push({
+                accountId: recipientProfile.accountId,
+                username: recipientUsername,
+            });
         }
         const bodyWithMeetingLink = appendMeetingLinkToBody(
             body,
             notificationMeetingId,
         );
-        for (const recipientUsername of normalizedRecipients) {
+        for (const recipient of normalizedRecipients) {
             try {
                 await dispatchNotification({
                     category: "meetings",
-                    recipientUsername,
+                    recipientUsername: recipient.accountId,
                     subject,
                     body: bodyWithMeetingLink,
                     senderName,
@@ -443,7 +457,8 @@ export function registerApiRoutes(router, ctx) {
                 log?.("error", "Failed to dispatch meeting notification.", {
                     component: "jitsi-meet-module",
                     operation: "dispatch_meeting_notification",
-                    recipientUsername,
+                    recipientUsername: recipient.username,
+                    recipientAccountId: recipient.accountId,
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
