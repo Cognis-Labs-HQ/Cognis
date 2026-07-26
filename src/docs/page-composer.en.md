@@ -91,6 +91,10 @@ slot.hidden = false;
 
 `onRender` is called after every content render, including the initial render during `init()` and subsequent re-renders driven by `ResizeObserver`. Use it to bind events to content elements that are recreated on each render. Do not attach listeners to toolbar or floating-menu DOM in `onRender` — those nodes are persistent and must be wired once after `init()`.
 
+### DOM parking
+
+DOM parking is disabled by default. Set `enableDomParking: true` on the page composer only when media DOM must survive composer re-renders. When enabled, cards containing iframes or other media are parked and restored as intact DOM; this is intended for stateful embeds such as Jitsi Meet. Ordinary pages should rely on fresh rendering and transient form-state restoration so updated content is not hidden by a stale parked tree.
+
 ### Persistence
 
 Layouts are stored via `PUT /api/v1/users/:username/preferences` under the key supplied as `preferenceKey`. The stored value is `{ placements: [{id, col, row, w, h}], hidden: [] }`.

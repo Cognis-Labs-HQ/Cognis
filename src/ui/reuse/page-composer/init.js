@@ -23,6 +23,7 @@
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
  *   toolbarScrollable?: boolean,
  *   contentScrolling?: boolean,
+ *   enableDomParking?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean,
@@ -71,6 +72,7 @@ export function createPageComposer(
         toolbar = [],
         toolbarScrollable = false,
         contentScrolling = true,
+        enableDomParking = false,
         subNavigation = [],
         floatingMenu = [],
         subPageNavigation = false,
@@ -382,6 +384,7 @@ export function createPageComposer(
         set gridSection(value) {
             gridSection = value;
         },
+        enableDomParking,
     };
 
     let renderer;

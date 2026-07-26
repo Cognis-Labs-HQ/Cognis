@@ -8,11 +8,14 @@ export function createProfilePostActions({
     getState,
     setState,
     refreshPage,
+    refreshProfileHero = refreshPage,
     i18n,
     loadOwnPosts,
     loadFollowers,
     loadFollowing,
 }) {
+    const pendingFollowHandles = new Set();
+
     async function doCreatePost() {
         const { root, newPostFormController } = getState();
         const submitButton = root?.querySelector(
@@ -86,7 +89,7 @@ export function createProfilePostActions({
     }
 
     async function doFollowUser(handle) {
-        if (!handle) return;
+        if (!handle || pendingFollowHandles.has(handle)) return;
         const { relationship, profile } = getState();
         const isFollowingTarget = Boolean(relationship?.following);
         if (isFollowingTarget) {
@@ -110,44 +113,72 @@ export function createProfilePostActions({
             if (result !== "confirm") return;
         }
 
-        const response = await apiFetch(
-            `/api/v1/social/users/${encodeURIComponent(handle)}/follow`,
-            { method: isFollowingTarget ? "DELETE" : "POST" },
+        pendingFollowHandles.add(handle);
+        const followButton = getState().root?.querySelector(
+            ".profile-hero-follow-btn",
         );
-        if (response.ok) {
-            const nextRelationship = {
-                ...(relationship ?? {}),
-                following: !isFollowingTarget,
-            };
-            const [nextFollowers, nextFollowing] = await Promise.all([
-                loadFollowers(profile?.handle),
-                loadFollowing(profile?.handle),
-            ]);
-            setState({
-                relationship: nextRelationship,
-                followers: nextFollowers,
-                following: nextFollowing,
-            });
-            refreshPage();
-            showToast(
-                i18n.t(
-                    isFollowingTarget
-                        ? "ui.app.profile.unfollowed_toast"
-                        : "ui.app.profile.followed_toast",
-                ),
-                { variant: "success" },
-            );
-            return;
+        if (followButton instanceof HTMLButtonElement) {
+            followButton.disabled = true;
+            followButton.setAttribute("aria-busy", "true");
         }
-        if (response.status === 403) {
-            showToast(i18n.t("ui.app.profile.follow_hidden_toast"), {
+        try {
+            const response = await apiFetch(
+                `/api/v1/social/users/${encodeURIComponent(handle)}/follow`,
+                { method: isFollowingTarget ? "DELETE" : "POST" },
+            );
+
+            if (response.ok) {
+                setState({
+                    relationship: {
+                        ...(relationship ?? {}),
+                        following: !isFollowingTarget,
+                    },
+                });
+                // Paint the interaction result immediately. Connection-list
+                // refreshes are independent network requests and should not
+                // hold the follow button's visual state hostage.
+                refreshProfileHero();
+                showToast(
+                    i18n.t(
+                        isFollowingTarget
+                            ? "ui.app.profile.unfollowed_toast"
+                            : "ui.app.profile.followed_toast",
+                    ),
+                    { variant: "success" },
+                );
+
+                const [followersResult, followingResult] =
+                    await Promise.allSettled([
+                        loadFollowers(profile?.handle),
+                        loadFollowing(profile?.handle),
+                    ]);
+                setState({
+                    ...(followersResult.status === "fulfilled"
+                        ? { followers: followersResult.value }
+                        : {}),
+                    ...(followingResult.status === "fulfilled"
+                        ? { following: followingResult.value }
+                        : {}),
+                });
+                refreshPage();
+                return;
+            }
+            if (response.status === 403) {
+                showToast(i18n.t("ui.app.profile.follow_hidden_toast"), {
+                    variant: "error",
+                });
+                return;
+            }
+            showToast(i18n.t("ui.app.profile.follow_unavailable_toast"), {
                 variant: "error",
             });
-            return;
+        } finally {
+            pendingFollowHandles.delete(handle);
+            if (followButton instanceof HTMLButtonElement) {
+                followButton.disabled = false;
+                followButton.removeAttribute("aria-busy");
+            }
         }
-        showToast(i18n.t("ui.app.profile.follow_unavailable_toast"), {
-            variant: "error",
-        });
     }
 
     async function doBlockUser() {

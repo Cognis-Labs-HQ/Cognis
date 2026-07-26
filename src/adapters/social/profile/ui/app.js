@@ -748,6 +748,7 @@ export async function mount(rootEl, { signal } = {}) {
         getState,
         setState,
         refreshPage,
+        refreshProfileHero,
         i18n,
         loadOwnPosts,
         loadFollowers,
@@ -818,9 +819,14 @@ export async function mount(rootEl, { signal } = {}) {
 
     if (isAborted()) return;
 
-    avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
-    bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
-    const bannerLayout = await loadBannerLayoutPreference(profile?.accountId);
+    const [nextAvatarBlobUrl, nextBannerBlobUrl, bannerLayout] =
+        await Promise.all([
+            loadImageAsBlob(profile?.avatarKey),
+            loadImageAsBlob(profile?.bannerKey),
+            loadBannerLayoutPreference(profile?.accountId),
+        ]);
+    avatarBlobUrl = nextAvatarBlobUrl;
+    bannerBlobUrl = nextBannerBlobUrl;
     bannerHeight = bannerLayout.height;
     bannerPanX = bannerLayout.panX;
     bannerPanY = bannerLayout.panY;

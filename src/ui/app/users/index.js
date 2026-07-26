@@ -320,7 +320,7 @@ function renderUsersTable() {
             : "";
     return `
     ${inviteButtonHtml}
-    <div class="users-table-wrap" data-composer-preserve="false">
+    <div class="users-table-wrap">
       <table class="users-table">
         <thead>
           <tr>

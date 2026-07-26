@@ -655,3 +655,11 @@ test("jitsi API exposes user active meetings endpoint", () => {
         /if \(state\.authRequired && !state\.authCompletedAt\) continue;/,
     );
 });
+
+test("jitsi opts into composer DOM parking for its stateful iframe", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(source, /enableDomParking: true/);
+});

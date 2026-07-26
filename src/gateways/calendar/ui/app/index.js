@@ -328,7 +328,7 @@ export async function mount(root, { signal } = {}) {
                             ? escapeHtml(formatYearLabel(activeDate))
                             : `${escapeHtml(formatMonthYearLabel(activeDate))}${escapeHtml(weekLabel)}`;
                     return `
-          <section class="calendar-section" data-composer-preserve="false">
+          <section class="calendar-section">
             <header class="calendar-view-header">
               <div class="calendar-view-nav">
                 <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>

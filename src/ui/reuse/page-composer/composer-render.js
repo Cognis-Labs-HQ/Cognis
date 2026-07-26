@@ -47,7 +47,6 @@ export function createComposerRenderer({
 }) {
     const MEDIA_PRESERVE_SELECTOR =
         'iframe,img,video,audio,canvas,object,embed,[data-composer-preserve="true"]';
-    const MEDIA_PRESERVE_OPT_OUT_SELECTOR = '[data-composer-preserve="false"]';
     function getPreservedElementNodes() {
         if (!state.preservedElementNodes) {
             state.preservedElementNodes = new Map();
@@ -66,18 +65,16 @@ export function createComposerRenderer({
         return parking;
     }
     function shouldPreserveRenderedHost(host) {
-        if (host?.querySelector?.(MEDIA_PRESERVE_OPT_OUT_SELECTOR)) {
-            return false;
-        }
-        return Boolean(host?.querySelector?.(MEDIA_PRESERVE_SELECTOR));
+        return (
+            state.enableDomParking &&
+            Boolean(host?.querySelector?.(MEDIA_PRESERVE_SELECTOR))
+        );
     }
     function shouldPreserveRenderedHtml(element, html) {
+        if (!state.enableDomParking) return false;
         if (element.preserveDom || element.preserveOnRefresh) return true;
         const template = document.createElement("template");
         template.innerHTML = html;
-        if (template.content.querySelector(MEDIA_PRESERVE_OPT_OUT_SELECTOR)) {
-            return false;
-        }
         return Boolean(template.content.querySelector(MEDIA_PRESERVE_SELECTOR));
     }
     function moveHostChildrenToPreservedNode(host) {
@@ -89,6 +86,7 @@ export function createComposerRenderer({
         return preserved;
     }
     function parkPreservedElementNodes() {
+        if (!state.enableDomParking) return;
         const preservedNodes = getPreservedElementNodes();
         const parking = getPreservedElementParking();
         state.contentGrid

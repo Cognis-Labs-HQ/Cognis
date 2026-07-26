@@ -43,6 +43,10 @@ Unit grid adalah 90 px lebar dan tinggi. `gridSize.max: 'full'` merentangkan ele
 
 Saat `subPageNavigation: true`, hanya satu elemen yang terlihat pada satu waktu. Tombol toolbar dengan `[data-composer-scroll]` berfungsi sebagai pemilih bagian.
 
+### Parkir DOM
+
+Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada page composer hanya ketika DOM media harus bertahan selama perenderan ulang composer. Saat aktif, kartu yang berisi iframe atau media lain diparkir dan dipulihkan sebagai DOM yang tetap utuh; fitur ini ditujukan untuk sematan berstatus seperti Jitsi Meet. Halaman biasa sebaiknya mengandalkan perenderan baru dan pemulihan status formulir sementara agar konten yang diperbarui tidak tertutup oleh pohon terparkir yang usang.
+
 ### Persistensi
 
 Layout tetap disimpan melalui API preferensi menggunakan `preferenceKey`. Selain itu, draf formulir kini disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif. Penyimpanan draf formulir yang persisten bersifat opt-in: hanya field yang leluhur terdekatnya memiliki atribut `data-composer-include-form-memory="true"` yang ditulis ke localStorage. Field tanpa leluhur opt-in tetap diambil dalam snapshot sementara di memori agar bertahan selama render ulang responsif dalam sesi yang sama, namun tidak pernah ditulis ke penyimpanan persisten. Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) selalu dikecualikan dari penyimpanan draf persisten terlepas dari status opt-in.

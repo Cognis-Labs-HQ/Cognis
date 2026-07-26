@@ -25,24 +25,6 @@ const PROFILE_APP_SOURCE = readFileSync(
     "utf8",
 );
 
-test("profile hero images opt out of DOM preservation so uploads render immediately", () => {
-    assert.match(
-        PROFILE_RENDER_SOURCE,
-        /class="profile-hero-avatar-img" data-composer-preserve="false"/,
-    );
-    assert.match(
-        PROFILE_RENDER_SOURCE,
-        /class="profile-hero-banner-img" data-composer-preserve="false"/,
-    );
-    assert.equal(
-        PROFILE_RENDER_SOURCE.match(
-            /class="\$\{heroClass\}[^\n]+data-composer-preserve="false"/g,
-        )?.length,
-        2,
-        "both banner-height variants must opt out before an image exists",
-    );
-});
-
 test("successful uploads refresh local blob state before follow-up requests", () => {
     const refreshIndex = PROFILE_UPLOAD_SOURCE.indexOf("refreshPage();");
     const preferenceIndex = PROFILE_UPLOAD_SOURCE.indexOf(
