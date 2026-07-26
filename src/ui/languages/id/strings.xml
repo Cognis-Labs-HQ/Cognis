@@ -169,6 +169,7 @@
   <string name="ui.app.settings.preferences_warning_body">Menyunting JSON preferensi dapat membuat Cognis tidak dapat digunakan atau mengatur ulang pengaturan jika jenis nilainya salah. Lanjutkan hanya jika Anda memahami struktur JSON.</string>
   <string name="ui.app.settings.preferences_warning_accept">Saya Mengerti, Aktifkan Penyuntingan</string>
   <string name="ui.app.settings.preferences_invalid_json">Preferensi harus berupa objek JSON yang valid.</string>
+  <string name="ui.app.settings.preferences_acknowledgement_error">Persetujuan Anda tidak dapat disimpan. Penyuntingan tetap terkunci.</string>
 
   <string name="ui.app.docs.page_subtitle">Dokumentasi pengembang.</string>
   <string name="ui.app.docs.group.platform">Platform</string>

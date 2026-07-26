@@ -31,6 +31,10 @@ import {
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
 import { initAdvancedPrefs } from "./advanced-prefs.js";
+import {
+    loadEditorAcknowledgement,
+    saveEditorAcknowledgement,
+} from "./editor-acknowledgement.js";
 import { registerSearchIndex } from "../../reuse/search-util/popup.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -329,6 +333,8 @@ const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
     let loadedPrefs = await loadPrefs().catch(() => null);
+    const editorAcknowledgementAccepted =
+        await loadEditorAcknowledgement().catch(() => false);
     const storedLanguagePriorityMode = readLanguagePriorityMode();
     const initialLanguagePriorityMode =
         loadedPrefs?.languagePriorityMode === "manual"
@@ -756,6 +762,9 @@ export async function mount(root, { signal } = {}) {
                         );
                         advancedPrefs = initAdvancedPrefs(root, {
                             existingPrefs: loadedPrefs ?? {},
+                            acknowledgementAccepted:
+                                editorAcknowledgementAccepted,
+                            saveAcknowledgement: saveEditorAcknowledgement,
                             i18n,
                             onDirtyChange: (dirty) =>
                                 markDirty("advanced", dirty),

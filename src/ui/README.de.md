@@ -81,4 +81,4 @@ Jeder commitete Code in `src/ui/app` und `src/ui/layouts` muss beide Prüfungen 
 
 ## Erweiterte Einstellungsbearbeitung
 
-Unter Erweitert → Einstellungen kann nach einer einmaligen Sicherheitsbestätigung das vollständige Dokument der UI-Einstellungen als JSON bearbeitet werden. Gültige Änderungen werden über das normale Einstellungssystem gespeichert und angewendet. Bestätigungen von Versionshinweisen werden getrennt gespeichert, damit sie dieses Dokument nicht unübersichtlich machen.
+Unter Erweitert → Einstellungen kann nach einer einmaligen, im serverseitigen Benutzerprofil gespeicherten Sicherheitsbestätigung das vollständige Dokument der UI-Einstellungen als JSON bearbeitet werden. Gültige Änderungen werden über das normale Einstellungssystem gespeichert und angewendet. Bestätigungen von Versionshinweisen werden getrennt gespeichert, damit sie dieses Dokument nicht unübersichtlich machen.

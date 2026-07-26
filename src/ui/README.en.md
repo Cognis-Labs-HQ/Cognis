@@ -81,4 +81,4 @@ All committed code in `src/ui/app` and `src/ui/layouts` must pass both checks.
 
 ## Advanced preference editing
 
-The Advanced → Preferences panel exposes the complete UI preference document as JSON after a one-time safety confirmation. Valid edits are saved and applied through the normal preference system. Release acknowledgement bookkeeping is stored separately so it does not clutter this document.
+The Advanced → Preferences panel exposes the complete UI preference document as JSON after a one-time safety confirmation stored in the user's server-backed profile. Valid edits are saved and applied through the normal preference system. Release acknowledgement bookkeeping is stored separately so it does not clutter this document.

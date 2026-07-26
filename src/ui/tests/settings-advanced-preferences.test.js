@@ -10,6 +10,10 @@ const editorSource = fs.readFileSync(
     new URL("../app/settings/advanced-prefs.js", import.meta.url),
     "utf8",
 );
+const acknowledgementSource = fs.readFileSync(
+    new URL("../app/settings/editor-acknowledgement.js", import.meta.url),
+    "utf8",
+);
 const releasePopupSource = fs.readFileSync(
     new URL("../layouts/release-changelog/popup.js", import.meta.url),
     "utf8",
@@ -17,7 +21,9 @@ const releasePopupSource = fs.readFileSync(
 
 test("advanced preferences require remembered consent and use dirty tracking", () => {
     assert.match(editorSource, /openPopup\(\{/);
-    assert.match(editorSource, /cognis_preferences_editor_accepted:/);
+    assert.match(settingsSource, /loadEditorAcknowledgement\(\)/);
+    assert.match(editorSource, /await saveAcknowledgement\?\.\(\)/);
+    assert.match(acknowledgementSource, /preferences-editor-acknowledgement/);
     assert.match(editorSource, /createFormDirtyTracker\(editor\.parentElement/);
     assert.match(settingsSource, /advancedPrefs\.getPreferences\(\)/);
     assert.match(settingsSource, /preferences_invalid_json/);

@@ -81,4 +81,4 @@ Semua kode yang dikomit di `src/ui/app` dan `src/ui/layouts` harus lulus kedua p
 
 ## Penyuntingan preferensi lanjutan
 
-Panel Lanjutan → Preferensi menampilkan dokumen preferensi antarmuka lengkap sebagai JSON setelah konfirmasi keamanan satu kali. Perubahan yang valid disimpan dan diterapkan melalui sistem preferensi biasa. Data pengakuan catatan rilis disimpan secara terpisah agar tidak memenuhi dokumen ini.
+Panel Lanjutan → Preferensi menampilkan dokumen preferensi antarmuka lengkap sebagai JSON setelah konfirmasi keamanan satu kali yang disimpan di profil pengguna pada server. Perubahan yang valid disimpan dan diterapkan melalui sistem preferensi biasa. Data pengakuan catatan rilis disimpan secara terpisah agar tidak memenuhi dokumen ini.

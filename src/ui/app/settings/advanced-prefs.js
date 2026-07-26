@@ -10,21 +10,23 @@
  *   const preferences = editor.getPreferences();
  *
  * @param {Element} root
- * @param {{ existingPrefs?: object|null, i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
+ * @param {{ existingPrefs?: object|null, acknowledgementAccepted?: boolean, saveAcknowledgement?: () => Promise<void>, i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ requestEditingConsent: () => Promise<void>, getPreferences: () => object, isDirty: () => boolean, commit: (preferences: object) => void, discard: () => void, destroy: () => void }}
  */
 import { openPopup } from "../../reuse/popup.js";
 import { createFormDirtyTracker } from "../../reuse/unsaved-changes.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-
-function consentStorageKey() {
-    const account = localStorage.getItem("cognis_account") ?? "anonymous";
-    return `cognis_preferences_editor_accepted:${account}`;
-}
+import { showToast } from "../../reuse/toast.js";
 
 export function initAdvancedPrefs(
     root,
-    { existingPrefs, i18n, onDirtyChange },
+    {
+        existingPrefs,
+        acknowledgementAccepted = false,
+        saveAcknowledgement,
+        i18n,
+        onDirtyChange,
+    },
 ) {
     const editor = root.querySelector("#prefs-dump");
     if (!(editor instanceof HTMLTextAreaElement)) {
@@ -41,8 +43,7 @@ export function initAdvancedPrefs(
     let committedPreferences = existingPrefs ?? {};
     let dirtyTracker;
     let warningOpen = false;
-    const hasConsent = localStorage.getItem(consentStorageKey()) === "true";
-    editor.readOnly = !hasConsent;
+    editor.readOnly = !acknowledgementAccepted;
 
     function resetTracker() {
         dirtyTracker?.destroy();
@@ -73,7 +74,15 @@ export function initAdvancedPrefs(
         });
         warningOpen = false;
         if (action !== "accept") return;
-        localStorage.setItem(consentStorageKey(), "true");
+        try {
+            await saveAcknowledgement?.();
+        } catch {
+            showToast(
+                i18n.t("ui.app.settings.preferences_acknowledgement_error"),
+                { variant: "error" },
+            );
+            return;
+        }
         editor.readOnly = false;
         editor.focus();
     }

@@ -169,6 +169,7 @@
   <string name="ui.app.settings.preferences_warning_body">Editing preferences JSON can make Cognis unusable or reset settings when values have the wrong type. Continue only if you understand the JSON structure.</string>
   <string name="ui.app.settings.preferences_warning_accept">I Understand, Enable Editing</string>
   <string name="ui.app.settings.preferences_invalid_json">Preferences must be a valid JSON object.</string>
+  <string name="ui.app.settings.preferences_acknowledgement_error">Could not remember your acknowledgement. Editing remains locked.</string>
 
   <string name="ui.app.docs.page_subtitle">Developer documentation.</string>
   <string name="ui.app.docs.group.platform">Platform</string>
