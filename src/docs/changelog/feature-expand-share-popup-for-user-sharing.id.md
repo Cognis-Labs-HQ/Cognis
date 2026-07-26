@@ -11,3 +11,7 @@ Popup menampilkan metode yang didukung pada baris atas dan membuka halaman khusu
 ## Setiap metode berbagi menampilkan kontrolnya sendiri
 
 Berbagi Tautan menampilkan penyesuaian label dan masa berlaku, sedangkan berbagi Pengguna menampilkan pencarian penerima, izin baca/tulis, dan masa berlaku. Mengganti metode juga mengganti riwayat yang terlihat dengan berbagi dari jenis tersebut.
+
+## Halaman metode berbagi kini dimuat dengan benar
+
+Gateway Share kini mendaftarkan direktori statis setiap adapter yang ditemukan, sehingga halaman popup Tautan dan Pengguna dimuat tanpa respons 404.

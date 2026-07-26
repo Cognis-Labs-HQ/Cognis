@@ -109,6 +109,37 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
     assert.match(recorder.body, /registerAvatarProvider/);
 });
 
+test("GET /static/adapters/share/:method/page.js serves Share adapter pages", async () => {
+    const uiRegistry = new UIRegistry();
+    for (const adapterId of ["link", "user"]) {
+        uiRegistry.registerAdapterStaticDir(
+            "share",
+            adapterId,
+            path.resolve(process.cwd(), "src", "adapters", "share", adapterId),
+        );
+    }
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    for (const adapterId of ["link", "user"]) {
+        const recorder = createResponseRecorder();
+        const handled = await route(
+            { headers: {} } as any,
+            recorder.res as any,
+            new URL(
+                `http://localhost/static/adapters/share/${adapterId}/page.js`,
+            ),
+        );
+
+        assert.ok(handled);
+        assert.equal(recorder.status, 200);
+        assert.equal(
+            recorder.headers["content-type"],
+            "text/javascript; charset=utf-8",
+        );
+        assert.match(recorder.body, /getPageDefinition/);
+    }
+});
+
 test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gateway-owned popup module", async () => {
     const uiRegistry = new UIRegistry();
     const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");

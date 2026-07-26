@@ -193,6 +193,18 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         uiRegistry.getStaticDir("share")?.endsWith("src/gateways/share"),
         true,
     );
+    assert.equal(
+        uiRegistry
+            .getAdapterStaticDir("share", "link")
+            ?.endsWith("src/adapters/share/link"),
+        true,
+    );
+    assert.equal(
+        uiRegistry
+            .getAdapterStaticDir("share", "user")
+            ?.endsWith("src/adapters/share/user"),
+        true,
+    );
 
     const response = new ResponseRecorder();
     await dispatchRoute(

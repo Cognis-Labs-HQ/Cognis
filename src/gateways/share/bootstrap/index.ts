@@ -119,6 +119,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "share");
     uiHooks.registerStaticDir("share", GATEWAY_ROOT);
+    for (const adapter of gateway.listAdapters()) {
+        uiHooks.registerAdapterStaticDir(
+            adapter.id,
+            path.join(SHARE_ADAPTERS_ROOT, adapter.id),
+        );
+    }
     uiHooks.registerNavbarPlugin(
         "/static/gateways/share/ui/approval-poller.js",
     );
@@ -127,7 +133,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.5.1",
+        version: "1.5.2",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,

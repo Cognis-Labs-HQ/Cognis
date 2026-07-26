@@ -11,3 +11,7 @@ The popup presents supported methods in a top row and opens a separate, method-o
 ## Each share method now shows its own controls
 
 Link sharing displays link label and expiry customization, while User sharing displays recipient search, read/write permission, and expiry controls. Switching methods also replaces the visible history with shares of that type.
+
+## Share method pages now load correctly
+
+The Share gateway now registers each discovered adapter's static directory, so the Link and User popup pages load without a 404 response.

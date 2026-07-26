@@ -11,3 +11,7 @@ Das Popup zeigt unterstützte Methoden in einer oberen Leiste und öffnet für L
 ## Jede Freigabemethode zeigt eigene Steuerelemente
 
 Die Linkfreigabe zeigt Einstellungen für Linkbezeichnung und Ablaufzeit, während die Benutzerfreigabe Empfängersuche, Lese-/Schreibberechtigung und Ablaufzeit anbietet. Beim Methodenwechsel wird außerdem nur der Verlauf dieses Freigabetyps angezeigt.
+
+## Seiten der Freigabemethoden werden jetzt korrekt geladen
+
+Das Share-Gateway registriert nun das statische Verzeichnis jedes erkannten Adapters, sodass die Popup-Seiten für Link und Benutzer ohne 404-Antwort geladen werden.
