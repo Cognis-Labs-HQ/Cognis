@@ -268,6 +268,7 @@ export async function mount(root, { signal } = {}) {
             },
         ],
         toolbarScrollable: true,
+        contentScrolling: false,
     });
     await composer.init();
 
