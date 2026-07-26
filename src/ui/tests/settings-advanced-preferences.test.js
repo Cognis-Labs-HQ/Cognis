@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import test from "node:test";
+import { resolveReleaseChangelogStatus } from "../layouts/release-changelog/status.js";
 
 const settingsSource = fs.readFileSync(
     new URL("../app/settings/index.js", import.meta.url),
@@ -32,4 +33,12 @@ test("advanced preferences require remembered consent and use dirty tracking", (
 test("release acknowledgement state is stored outside editable UI preferences", () => {
     assert.match(releasePopupSource, /loadReleaseChangelogState\(\)/);
     assert.match(releasePopupSource, /saveReleaseChangelogState\(\{/);
+});
+
+test("release changelogs remain safe when editable preferences contain no seen slugs", () => {
+    const releaseEntries = [{ slug: "first-release" }];
+    const status = resolveReleaseChangelogStatus(releaseEntries, "1.0.0", null);
+
+    assert.deepEqual(status.unseenEntries, releaseEntries);
+    assert.equal(status.versionChanged, true);
 });
