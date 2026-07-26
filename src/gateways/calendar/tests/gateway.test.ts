@@ -446,11 +446,53 @@ test("calendar gateway preserves shared visibility when loading calendars from s
         saveResponse: async () => {},
         deleteResponse: async () => {},
         deleteResponsesForRootEvent: async () => {},
+        deleteAccountActivity: async () => {},
     };
     const gateway = new CoreCalendarGateway();
     await gateway.attachStore(mockStore);
     const loaded = gateway.getCalendar(sharedCalendar.id);
     assert.equal(loaded?.visibility, "shared");
+});
+
+test("calendar gateway deletes account calendars and events from memory and storage", async () => {
+    const deletedAccounts: string[] = [];
+    const mockStore: CalendarStore = {
+        ensureSchema: async () => {},
+        listCalendars: async () => [],
+        saveCalendar: async () => {},
+        deleteCalendar: async () => {},
+        listEvents: async () => [],
+        saveEvent: async () => {},
+        deleteEvent: async () => {},
+        listResponses: async () => [],
+        saveResponse: async () => {},
+        deleteResponse: async () => {},
+        deleteResponsesForRootEvent: async () => {},
+        deleteAccountActivity: async (accountId) => {
+            deletedAccounts.push(accountId);
+        },
+    };
+    const gateway = new CoreCalendarGateway();
+    await gateway.attachStore(mockStore);
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Alice",
+        color: "#1f8ceb",
+        isDefault: true,
+    });
+    gateway.addEvent({
+        ownerAccountId: "alice",
+        calendarId: calendar.id,
+        title: "Private event",
+        startAt: "2026-07-26T09:00:00.000Z",
+        endAt: "2026-07-26T10:00:00.000Z",
+    });
+
+    await gateway.deleteAccountActivity("alice");
+
+    assert.deepEqual(deletedAccounts, ["alice"]);
+    assert.equal(gateway.getCalendar(calendar.id), null);
+    assert.deepEqual(gateway.listEvents(calendar.id), []);
 });
 
 test("calendar gateway removeDeclinedAttendee removes attendee from event", () => {

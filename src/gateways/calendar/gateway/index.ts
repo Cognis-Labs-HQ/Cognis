@@ -110,6 +110,41 @@ export class CoreCalendarGateway {
         throw error;
     }
 
+    async deleteAccountActivity(accountId: string): Promise<void> {
+        await this.flushStore();
+        await this.store?.deleteAccountActivity(accountId);
+        const ownedCalendarIds = new Set(
+            this.calendarIdsByOwner.get(accountId) ?? [],
+        );
+        this.calendarIdsByOwner.delete(accountId);
+        for (const calendarId of ownedCalendarIds) {
+            this.calendarsById.delete(calendarId);
+            this.eventsByCalendar.delete(calendarId);
+        }
+        for (const [calendarId, events] of this.eventsByCalendar) {
+            const retainedEvents = events.filter(
+                (event) => event.createdBy !== accountId,
+            );
+            if (retainedEvents.length > 0) {
+                this.eventsByCalendar.set(calendarId, retainedEvents);
+            } else {
+                this.eventsByCalendar.delete(calendarId);
+            }
+        }
+        const retainedEventIds = new Set(
+            Array.from(this.eventsByCalendar.values())
+                .flat()
+                .flatMap((event) => [event.id, event.sourceEventId])
+                .filter((eventId): eventId is string => Boolean(eventId)),
+        );
+        for (const [rootEventId, responses] of this.responsesByRootEvent) {
+            responses.delete(accountId);
+            if (responses.size === 0 || !retainedEventIds.has(rootEventId)) {
+                this.responsesByRootEvent.delete(rootEventId);
+            }
+        }
+    }
+
     registerAdapter(adapter: CalendarAdapter, requires?: string[]): void {
         this.registeredAdapters.set(adapter.adapterId, adapter);
         const effectiveRequires = requires ?? adapter.requires;

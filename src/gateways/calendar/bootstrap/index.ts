@@ -162,52 +162,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         return { cleaned: false };
                     }
                     const accountId = input.username.trim().toLowerCase();
-                    await dbExecutor.transaction(async (transactionDb) => {
-                        await transactionDb.executeCommand({
-                            option: "DELETE",
-                            table: "calendar_event_responses",
-                            where: [{ column: "account_id", value: accountId }],
-                        });
-                        const calendarResult =
-                            await transactionDb.executeCommand({
-                                option: "SELECT",
-                                table: "calendar_calendars",
-                                columns: ["id"],
-                                where: [
-                                    {
-                                        column: "owner_account_id",
-                                        value: accountId,
-                                    },
-                                ],
-                            });
-                        for (const calendarRow of calendarResult.rows ?? []) {
-                            await transactionDb.executeCommand({
-                                option: "DELETE",
-                                table: "calendar_events",
-                                where: [
-                                    {
-                                        column: "calendar_id",
-                                        value: String(calendarRow.id),
-                                    },
-                                ],
-                            });
-                        }
-                        await transactionDb.executeCommand({
-                            option: "DELETE",
-                            table: "calendar_events",
-                            where: [{ column: "created_by", value: accountId }],
-                        });
-                        await transactionDb.executeCommand({
-                            option: "DELETE",
-                            table: "calendar_calendars",
-                            where: [
-                                {
-                                    column: "owner_account_id",
-                                    value: accountId,
-                                },
-                            ],
-                        });
-                    });
+                    await gateway.deleteAccountActivity(accountId);
                     ctx.log?.("info", "Deleted user calendar activity.", {
                         component: "calendar-gateway",
                         operation: "delete_user_activity",

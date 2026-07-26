@@ -49,8 +49,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.6`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.5`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.3`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.18` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.20` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.19` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.21` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.7`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.0.0`  |
@@ -70,7 +70,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/` | `1.1.12` |
 | Logging               | `src/gateways/logging/`      | `1.5.3`  |
 | Study                 | `src/gateways/study/`        | `1.5.8`  |
-| Calendar              | `src/gateways/calendar/`     | `1.2.10` |
+| Calendar              | `src/gateways/calendar/`     | `1.2.11` |
 
 ## Core contracts
 

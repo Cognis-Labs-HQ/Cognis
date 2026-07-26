@@ -187,11 +187,7 @@ export async function bootstrapSocialAdapter(
                         where: [{ column, value: accountId }],
                     });
                 }
-                for (const table of [
-                    "posts",
-                    "file_size_limits",
-                    "account_profiles",
-                ]) {
+                for (const table of ["posts", "account_profiles"]) {
                     await transactionDb.executeCommand({
                         option: "DELETE",
                         table,
