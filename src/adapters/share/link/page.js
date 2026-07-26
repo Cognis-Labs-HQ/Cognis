@@ -9,3 +9,10 @@ export function acceptsShare(share) {
 export function buildCreateOptions(input) {
     return { ...input, recipients: [] };
 }
+
+export function getPageDefinition() {
+    return {
+        fields: ["label", "expiry"],
+        historyKind: "link",
+    };
+}

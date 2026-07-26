@@ -9,3 +9,10 @@ export function acceptsShare(share) {
 export function buildCreateOptions(input) {
     return { ...input, recipients: input.recipients || [] };
 }
+
+export function getPageDefinition() {
+    return {
+        fields: ["recipients", "permission", "expiry"],
+        historyKind: "user",
+    };
+}

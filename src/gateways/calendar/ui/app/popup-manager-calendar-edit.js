@@ -41,6 +41,13 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
             removeUser: i18n.t(
                 "gateway.calendar.share_user_delete_confirm_title",
             ),
+            permission: i18n.t("gateway.calendar.share_link_permission"),
+            readPermission: i18n.t(
+                "gateway.calendar.share_link_permission_read",
+            ),
+            writePermission: i18n.t(
+                "gateway.calendar.share_link_permission_write",
+            ),
         },
     });
 }

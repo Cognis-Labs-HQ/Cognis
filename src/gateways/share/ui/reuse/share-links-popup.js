@@ -243,7 +243,7 @@ function renderRows(labels, links) {
                   }
                 </div>
                 ${renderShareStatus(link, labels)}
-                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
+                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<select data-share-recipient-permission="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.permission || "Permission")}"><option value="read"${recipient.permissions?.includes("write") ? "" : " selected"}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${recipient.permissions?.includes("write") ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select><button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
               </div>
               ${
                   isUserShare
@@ -269,9 +269,10 @@ function renderBody(labels, state) {
       <nav class="share-method-tabs" aria-label="${escapeHtml(labels.methods || "Share methods")}">
         ${state.methods.map((method) => `<button type="button" class="share-method-tab${method.id === state.activeMethodId ? " is-active" : ""}" data-share-method="${escapeHtml(method.id)}" aria-pressed="${method.id === state.activeMethodId ? "true" : "false"}">${escapeHtml(method.name)}</button>`).join("")}
       </nav>
+      <p class="share-method-description"></p>
       <div class="share-links-form-container">
         <div class="share-links-create-form">
-          <label>
+          <label data-share-field="label">
             <span>${escapeHtml(labels.label)}</span>
             <input
               id="share-links-label"
@@ -280,7 +281,7 @@ function renderBody(labels, state) {
               placeholder="${escapeHtml(labels.labelPlaceholder)}"
             />
           </label>
-          <label>
+          <label data-share-field="expiry">
             <span>${escapeHtml(labels.expiryLabel)}</span>
             <input
               id="share-links-expiry"
@@ -298,17 +299,21 @@ function renderBody(labels, state) {
           >${escapeHtml(labels.generateLink)}</button>
           ${
               state.userSharingEnabled
-                  ? `<div class="share-links-user-picker">
+                  ? `<div class="share-links-user-picker" data-share-field="recipients">
             <label><span>${escapeHtml(labels.users || "Share with users")}</span>
               <input id="share-links-user-search" type="search" autocomplete="off" placeholder="${escapeHtml(labels.userSearchPlaceholder || "Search users…")}" />
             </label>
+            <label data-share-field="permission"><span>${escapeHtml(labels.permission || "Permission")}</span>
+              <select id="share-links-user-permission"><option value="read">${escapeHtml(labels.readPermission || "Read")}</option><option value="write">${escapeHtml(labels.writePermission || "Write")}</option></select>
+            </label>
             <div class="share-links-user-results"></div>
-            <div class="share-links-selected-users">${state.recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`).join("")}</div>
+            <div class="share-links-selected-users">${state.recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`).join("")}</div>
           </div>`
                   : ""
           }
         </div>
       </div>
+      <h3 class="share-method-history-heading"></h3>
       <div class="share-links-list-container">
         ${renderRows(labels, state.visibleLinks)}
       </div>
@@ -339,6 +344,7 @@ export async function openShareLinksPopup({
         methodModules: new Map(),
         activeMethodId: "link",
         visibleLinks: [],
+        permission: "read",
     };
 
     try {
@@ -445,15 +451,21 @@ export async function openShareLinksPopup({
                 ".share-links-selected-users",
             );
             const methodTabs = overlay.querySelector(".share-method-tabs");
-            const userPicker = overlay.querySelector(
-                ".share-links-user-picker",
+            const methodDescription = overlay.querySelector(
+                ".share-method-description",
+            );
+            const historyHeading = overlay.querySelector(
+                ".share-method-history-heading",
+            );
+            const permissionSelect = overlay.querySelector(
+                "#share-links-user-permission",
             );
             const renderSelectedUsers = () => {
                 if (!(selectedUsers instanceof HTMLElement)) return;
                 selectedUsers.innerHTML = state.recipients
                     .map(
                         (recipient) =>
-                            `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
+                            `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
                     )
                     .join("");
             };
@@ -486,8 +498,37 @@ export async function openShareLinksPopup({
                             active ? "true" : "false",
                         );
                     });
-                if (userPicker instanceof HTMLElement) {
-                    userPicker.hidden = state.activeMethodId !== "user";
+                const activeMethod = state.methods.find(
+                    (method) => method.id === state.activeMethodId,
+                );
+                const methodModule = state.methodModules.get(
+                    state.activeMethodId,
+                );
+                const definition =
+                    typeof methodModule?.getPageDefinition === "function"
+                        ? methodModule.getPageDefinition()
+                        : {
+                              fields:
+                                  state.activeMethodId === "user"
+                                      ? ["recipients", "permission", "expiry"]
+                                      : ["label", "expiry"],
+                          };
+                overlay
+                    .querySelectorAll("[data-share-field]")
+                    .forEach((field) => {
+                        field.hidden = !definition.fields.includes(
+                            field.getAttribute("data-share-field"),
+                        );
+                    });
+                if (methodDescription instanceof HTMLElement) {
+                    methodDescription.textContent = String(
+                        activeMethod?.description ?? "",
+                    );
+                }
+                if (historyHeading instanceof HTMLElement) {
+                    historyHeading.textContent = String(
+                        activeMethod?.name ?? "",
+                    );
                 }
                 createButton.textContent =
                     state.activeMethodId === "user"
@@ -511,6 +552,10 @@ export async function openShareLinksPopup({
             });
             expiryInput.addEventListener("input", (event) => {
                 state.expiresInHours = String(event.target?.value ?? "");
+            });
+            permissionSelect?.addEventListener("change", (event) => {
+                state.permission =
+                    event.target?.value === "write" ? "write" : "read";
             });
             let searchSequence = 0;
             if (
@@ -543,7 +588,10 @@ export async function openShareLinksPopup({
                         type: "user",
                         id: button.dataset.shareUserId,
                         label: button.dataset.shareUserLabel,
-                        permissions: ["read"],
+                        permissions:
+                            state.permission === "write"
+                                ? ["read", "write"]
+                                : ["read"],
                     });
                     userSearch.value = "";
                     userResults.innerHTML = "";
@@ -708,6 +756,43 @@ export async function openShareLinksPopup({
                     .catch(() => {
                         showToast(labels.deleteFailed, { variant: "error" });
                     });
+            });
+            listContainer.addEventListener("change", (event) => {
+                const permission = event.target.closest(
+                    "[data-share-recipient-permission]",
+                );
+                if (
+                    !(permission instanceof HTMLSelectElement) ||
+                    typeof updateLink !== "function"
+                ) {
+                    return;
+                }
+                const link = state.links.find(
+                    (entry) => String(entry.id) === permission.dataset.shareId,
+                );
+                const recipients = (link?.accessControls?.recipients || []).map(
+                    (entry) =>
+                        entry.id === permission.dataset.shareRecipientPermission
+                            ? {
+                                  ...entry,
+                                  permissions:
+                                      permission.value === "write"
+                                          ? ["read", "write"]
+                                          : ["read"],
+                              }
+                            : entry,
+                );
+                void updateLink({
+                    shareId: permission.dataset.shareId,
+                    accessControls: { ...link.accessControls, recipients },
+                })
+                    .then(async () => {
+                        await refreshLinks();
+                        if (popupOpen) renderLinksList(listContainer);
+                    })
+                    .catch(() =>
+                        showToast(labels.createFailed, { variant: "error" }),
+                    );
             });
 
             refreshTimer = window.setInterval(() => {

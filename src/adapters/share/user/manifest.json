@@ -1,7 +1,7 @@
 {
     "id": "user",
     "name": "User",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "gateway": "share",
     "description": "Shares resources directly with Cognis users.",
     "publisher": "Cognis Labs HQ"
