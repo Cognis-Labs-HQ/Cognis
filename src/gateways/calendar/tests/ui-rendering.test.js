@@ -257,6 +257,11 @@ test("calendar upcoming events can be filtered with calendar pills", () => {
     assert.match(APP_SOURCE, /data-upcoming-calendar-filter-clear/);
     assert.match(APP_SOURCE, /btn-cancel calendar-filter-clear/);
     assert.match(APP_SOURCE, /upcomingCalendarFilterId/);
+    assert.match(APP_SOURCE, /calendar-toolbar-filters/);
+    assert.match(
+        APP_SOURCE,
+        /toolbarFilters\.innerHTML = renderUpcomingCalendarFilters\(\)/,
+    );
     assert.match(
         CSS_SOURCE,
         /\.calendar-filter-slider\s*\{[\s\S]*overflow-x:\s*auto;/s,
@@ -270,6 +275,12 @@ test("calendar highlights today in month and year views", () => {
     assert.match(CSS_SOURCE, /\.calendar-month-day--today\s*\{/);
     assert.match(CSS_SOURCE, /\.calendar-year-day-dot--today\s*\{/);
     assert.match(CSS_SOURCE, /\.calendar-year-month--current\s*\{/);
+    assert.match(HELPERS_SOURCE, /gateway\.calendar\.today/);
+    assert.match(HELPERS_SOURCE, /buildDayTooltip/);
+    assert.match(
+        HELPERS_SOURCE,
+        /dayEvents\.map\(\(event\) => String\(event\.title/,
+    );
 });
 
 test("calendar disables page composer layout editing", () => {

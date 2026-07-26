@@ -94,6 +94,15 @@ function isCurrentMonth(value) {
     );
 }
 
+function buildDayTooltip(dayEvents, currentDay, i18n) {
+    return [
+        currentDay ? i18n.t("gateway.calendar.today") : "",
+        ...dayEvents.map((event) => String(event.title ?? "").trim()),
+    ]
+        .filter(Boolean)
+        .join("\n");
+}
+
 function toDateTimeLocalValue(value) {
     const date = new Date(value);
     const year = String(date.getFullYear());
@@ -703,7 +712,7 @@ function renderMonthGrid(events, currentDate, i18n, currentAccountId = null) {
           const overflowCount = dayEvents.length - MONTH_EVENT_PREVIEW_LIMIT;
           return `<td><article class="calendar-month-day${day.getMonth() === monthStart.getMonth() ? "" : " calendar-month-day--outside"}${isToday(day) ? " calendar-month-day--today" : ""}">
           <header>
-            <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}">${day.getDate()}</button>
+            <button type="button" class="calendar-day-jump" data-day-dot-date="${dayStart.toISOString()}"${isToday(day) ? ` title="${escapeHtml(i18n.t("gateway.calendar.today"))}"` : ""}>${day.getDate()}</button>
             <button type="button" class="calendar-all-day-create" data-month-create-date="${dayStart.toISOString()}">+</button>
           </header>
           <div class="calendar-month-event-preview">${previewMarkup}${placeholders}${overflowCount > 0 ? `<div class="calendar-month-event-overflow">…</div>` : ""}</div>
@@ -747,6 +756,8 @@ function renderYearMonthMiniGrid(monthDate, events, i18n) {
           const dayStart = startOfDay(day);
           const dayEnd = addDays(dayStart, 1);
           const dayEvents = listEventsInWindow(events, dayStart, dayEnd);
+          const currentDay = !isOutsideMonth && isToday(day);
+          const dayTooltip = buildDayTooltip(dayEvents, currentDay, i18n);
           const dayPalette = collectDayPaletteColors(dayEvents);
           const styleProperties = [
               `--calendar-density:${Math.min(dayEvents.length, 4)}`,
@@ -763,7 +774,7 @@ function renderYearMonthMiniGrid(monthDate, events, i18n) {
                   `--calendar-day-background:${escapeHtml(dayBackground)}`,
               );
           }
-          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}${!isOutsideMonth && isToday(day) ? " calendar-year-day-dot--today" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="${styleProperties.join(";")}" aria-label="${escapeHtml(dayLabel)}">${day.getDate()}</button>`;
+          return `<button type="button" class="calendar-year-day-dot${isOutsideMonth ? " calendar-year-day-dot--outside" : ""}${dayEvents.length > 0 ? " calendar-year-day-dot--active" : ""}${currentDay ? " calendar-year-day-dot--today" : ""}" data-day-dot-date="${dayStart.toISOString()}" style="${styleProperties.join(";")}" aria-label="${escapeHtml(dayLabel)}"${dayTooltip ? ` title="${escapeHtml(dayTooltip)}"` : ""}>${day.getDate()}</button>`;
       }).join("")}
     </div>`);
         if (shouldStopRenderingWeeks(weekEnd, monthStart)) break;

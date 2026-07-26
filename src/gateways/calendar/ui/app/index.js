@@ -613,7 +613,7 @@ export async function mount(root, { signal } = {}) {
             <header class="calendar-toolbar-heading">
               <h3>${i18n.t("gateway.calendar.upcoming_events")}</h3>
             </header>
-            ${renderUpcomingCalendarFilters()}
+            <div id="calendar-toolbar-filters">${renderUpcomingCalendarFilters()}</div>
             <div id="calendar-toolbar-upcoming">${calendarUi.renderToolbarSummary(allUpcomingEvents(), /* pendingEvents */ [], i18n)}</div>
           </section>
         `,
@@ -627,6 +627,12 @@ export async function mount(root, { signal } = {}) {
         },
         onRender: () => {
             bindViewInteractions();
+            const toolbarFilters = root.querySelector(
+                "#calendar-toolbar-filters",
+            );
+            if (toolbarFilters) {
+                toolbarFilters.innerHTML = renderUpcomingCalendarFilters();
+            }
             root.querySelectorAll("[data-upcoming-calendar-filter]").forEach(
                 (button) => {
                     button.addEventListener(
