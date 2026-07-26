@@ -186,6 +186,86 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("calendar:resolveShareLink", (token: string) =>
         shareRegistry.resolveShareLink(token),
     );
+    if (ctx.flow.exists("mint-share-token")) {
+        ctx.flow.extend(
+            "mint-share-token",
+            "validate-resource",
+            { id: "calendar-gateway:validate-share-resource" },
+            (stageCtx) => {
+                const flowInput = (stageCtx.input ?? {}) as {
+                    resourceType?: string;
+                    resourceId?: string;
+                    ownerAccountId?: string;
+                };
+                if (flowInput.resourceType !== "calendar") {
+                    return {
+                        valid: false,
+                        reason: "unsupported_resource_type",
+                    };
+                }
+                const calendar = gateway.getOwnedCalendar(
+                    String(flowInput.ownerAccountId ?? ""),
+                    String(flowInput.resourceId ?? ""),
+                );
+                return calendar
+                    ? {
+                          valid: true,
+                          resourceType: "calendar",
+                          resourceId: calendar.id,
+                          ownerAccountId: String(
+                              flowInput.ownerAccountId ?? "",
+                          ),
+                      }
+                    : { valid: false, reason: "resource_not_found" };
+            },
+        );
+        ctx.flow.extend(
+            "mint-share-token",
+            "authorize-minter",
+            { id: "calendar-gateway:authorize-share-minter" },
+            (stageCtx) => {
+                const result = (
+                    stageCtx.stageResults["validate-resource"] ?? []
+                ).find(
+                    (entry) =>
+                        (entry as { valid?: boolean; resourceType?: string })
+                            .valid === true &&
+                        (entry as { resourceType?: string }).resourceType ===
+                            "calendar",
+                ) as { ownerAccountId?: string } | undefined;
+                return result
+                    ? {
+                          authorized: true,
+                          ownerAccountId: result.ownerAccountId,
+                      }
+                    : { authorized: false, reason: "invalid_resource" };
+            },
+        );
+    }
+    if (ctx.flow.exists("revoke-share-token")) {
+        ctx.flow.extend(
+            "revoke-share-token",
+            "authorize-revocation",
+            { id: "calendar-gateway:authorize-share-revocation" },
+            (stageCtx) => {
+                const flowInput = (stageCtx.input ?? {}) as {
+                    claims?: { sub?: string };
+                    resourceType?: string;
+                    resourceId?: string;
+                };
+                const ownerAccountId = String(flowInput.claims?.sub ?? "");
+                return flowInput.resourceType === "calendar" &&
+                    Boolean(
+                        gateway.getOwnedCalendar(
+                            ownerAccountId,
+                            String(flowInput.resourceId ?? ""),
+                        ),
+                    )
+                    ? { authorized: true, ownerAccountId }
+                    : { authorized: false, reason: "forbidden" };
+            },
+        );
+    }
 
     await gateway.discoverAdapters(adaptersRoot);
 

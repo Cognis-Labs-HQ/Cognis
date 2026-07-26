@@ -297,96 +297,26 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
         CSS_SOURCE,
         /\.calendar-response-calendar-picker select\s*\{/s,
     );
-    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-generate/);
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /openShareLinksPopup/);
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /void loadExistingShareLinks\(\);/,
+        /buildShareTokenCallbacks/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-user-search/,
+        /resourceType: "calendar"/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-user-options/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-user-chips/,
+        /calendar-open-share-popup/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /gateway\.calendar\.share_users_heading/,
     );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /gateway\.calendar\.share_links_heading/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /<div id="calendar-share-results" class="calendar-share-results" hidden><\/div>/,
-    );
-    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-name/);
-    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-expiry/);
     assert.doesNotMatch(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /gateway\.calendar\.share_link_regenerate/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-entry-summary/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-share-delete/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-user-share-permission/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-user-share-expiry/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /class="calendar-user-share-entry-remove btn-no-animation btn-cancel" data-calendar-user-share-delete=/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /if \(target === permissionSelect\) \{[\s\S]*update\.permission = permission;/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /if \(target === expirySelect\) \{[\s\S]*update\.expiresInHours = expiresInHours;/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /showToast\(i18n\.t\("gateway\.calendar\.share_user_updated"\), "success"\);/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /class="btn-no-animation calendar-share-copy-btn" data-calendar-share-copy/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-share-copy-kind/,
-    );
-    assert.doesNotMatch(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /btn-cancel btn-no-animation" data-calendar-share-copy/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /href="#" class="btn-no-animation btn-cancel" data-calendar-share-delete=/,
-    );
-    assert.match(
-        SHARE_REMINDER_CSS_SOURCE,
-        /\.calendar-user-share-entry\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\);/s,
-    );
-    assert.match(
-        SHARE_REMINDER_CSS_SOURCE,
-        /\.calendar-user-share-entry-remove\s*\{[\s\S]*position:\s*absolute;/s,
+        /\/api\/v1\/calendar\/calendars\/.*\/share/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,

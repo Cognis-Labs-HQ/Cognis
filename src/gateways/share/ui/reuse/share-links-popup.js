@@ -67,6 +67,11 @@
  *     statusExpired: string,
  *     expiresAtLabel: string,
  *     expiredAtLabel: string,
+ *     users?: string,
+ *     userSearchPlaceholder?: string,
+ *     removeUser?: string,
+ *     readPermission?: string,
+ *     writePermission?: string,
  *   },
  *   fetchLinks: () => Promise<Array<{
  *     id: string,
@@ -81,6 +86,8 @@
  *     quickShareActions?: Array<{ id: string, label: string, href: string }>,
  *   } | null>,
  *   deleteLink: (opts: { shareId: string }) => Promise<void>,
+ *   updateLink?: (opts: { shareId: string, accessControls: object }) => Promise<object|null>,
+ *   searchUsers?: (query: string) => Promise<Array<{id: string, label: string, handle?: string}>>,
  * }} options
  * @returns {Promise<void>}
  */
@@ -183,6 +190,11 @@ function renderRows(labels, links) {
               const shareId = String(link?.id ?? "");
               const shareLabel =
                   String(link?.label ?? "").trim() || labels.untitled;
+              const recipients = Array.isArray(link?.accessControls?.recipients)
+                  ? link.accessControls.recipients.filter(
+                        (entry) => entry?.type === "user",
+                    )
+                  : [];
               return `
             <article class="share-links-row">
               <button
@@ -204,6 +216,7 @@ function renderRows(labels, links) {
                   >🔗</button>
                 </div>
                 ${renderShareStatus(link, labels)}
+                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
               </div>
               <div class="share-links-row-share">
                 <span class="share-links-row-share-label">${escapeHtml(labels.shareOptions)}</span>
@@ -249,6 +262,17 @@ function renderBody(labels, state) {
             class="btn-confirm btn-animated"
             type="button"
           >${escapeHtml(labels.generateLink)}</button>
+          ${
+              state.userSharingEnabled
+                  ? `<div class="share-links-user-picker">
+            <label><span>${escapeHtml(labels.users || "Share with users")}</span>
+              <input id="share-links-user-search" type="search" autocomplete="off" placeholder="${escapeHtml(labels.userSearchPlaceholder || "Search users…")}" />
+            </label>
+            <div class="share-links-user-results"></div>
+            <div class="share-links-selected-users">${state.recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`).join("")}</div>
+          </div>`
+                  : ""
+          }
         </div>
       </div>
       <div class="share-links-list-container">
@@ -264,6 +288,8 @@ export async function openShareLinksPopup({
     fetchLinks,
     createLink,
     deleteLink,
+    updateLink,
+    searchUsers,
 }) {
     await ensureStylesheet();
 
@@ -272,6 +298,8 @@ export async function openShareLinksPopup({
         links: [],
         label: "",
         expiresInHours: "24",
+        recipients: [],
+        userSharingEnabled: typeof searchUsers === "function",
     };
 
     async function refreshLinks({ preserveOnError = true } = {}) {
@@ -322,6 +350,24 @@ export async function openShareLinksPopup({
             const listContainer = overlay.querySelector(
                 ".share-links-list-container",
             );
+            const userSearch = overlay.querySelector(
+                "#share-links-user-search",
+            );
+            const userResults = overlay.querySelector(
+                ".share-links-user-results",
+            );
+            const selectedUsers = overlay.querySelector(
+                ".share-links-selected-users",
+            );
+            const renderSelectedUsers = () => {
+                if (!(selectedUsers instanceof HTMLElement)) return;
+                selectedUsers.innerHTML = state.recipients
+                    .map(
+                        (recipient) =>
+                            `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
+                    )
+                    .join("");
+            };
 
             if (!(labelInput instanceof HTMLInputElement)) {
                 return;
@@ -345,6 +391,55 @@ export async function openShareLinksPopup({
             expiryInput.addEventListener("input", (event) => {
                 state.expiresInHours = String(event.target?.value ?? "");
             });
+            let searchSequence = 0;
+            if (
+                userSearch instanceof HTMLInputElement &&
+                userResults instanceof HTMLElement
+            ) {
+                userSearch.addEventListener("input", async () => {
+                    const sequence = ++searchSequence;
+                    const users = await searchUsers(userSearch.value).catch(
+                        () => [],
+                    );
+                    if (sequence !== searchSequence) return;
+                    userResults.innerHTML = users
+                        .filter(
+                            (user) =>
+                                !state.recipients.some(
+                                    (entry) => entry.id === user.id,
+                                ),
+                        )
+                        .map(
+                            (user) =>
+                                `<button type="button" class="share-links-user-result" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}">${escapeHtml(user.label || user.handle || user.id)}${user.handle ? ` <small>@${escapeHtml(user.handle)}</small>` : ""}</button>`,
+                        )
+                        .join("");
+                });
+                userResults.addEventListener("click", (event) => {
+                    const button = event.target.closest("[data-share-user-id]");
+                    if (!(button instanceof HTMLElement)) return;
+                    state.recipients.push({
+                        type: "user",
+                        id: button.dataset.shareUserId,
+                        label: button.dataset.shareUserLabel,
+                        permissions: ["read"],
+                    });
+                    userSearch.value = "";
+                    userResults.innerHTML = "";
+                    renderSelectedUsers();
+                });
+                selectedUsers?.addEventListener("click", (event) => {
+                    const button = event.target.closest(
+                        "[data-selected-recipient-remove]",
+                    );
+                    if (!(button instanceof HTMLElement)) return;
+                    state.recipients = state.recipients.filter(
+                        (entry) =>
+                            entry.id !== button.dataset.selectedRecipientRemove,
+                    );
+                    renderSelectedUsers();
+                });
+            }
 
             createButton.addEventListener("click", async () => {
                 if (state.isCreating) {
@@ -358,6 +453,7 @@ export async function openShareLinksPopup({
                     const result = await createLink({
                         label: state.label,
                         expiresInHours: state.expiresInHours,
+                        recipients: state.recipients,
                     });
                     shareUrl = result?.shareUrl ?? null;
                 } catch {
@@ -372,6 +468,8 @@ export async function openShareLinksPopup({
                 // Clear the custom label after a successful create so the
                 // next link starts from a blank label instead of reusing it.
                 state.label = "";
+                state.recipients = [];
+                renderSelectedUsers();
                 labelInput.value = "";
                 await refreshLinks();
                 if (popupOpen) {
@@ -408,6 +506,41 @@ export async function openShareLinksPopup({
                             { variant: copied ? "success" : "error" },
                         );
                     });
+                    return;
+                }
+
+                const recipientRemove = event.target.closest(
+                    "[data-share-recipient-remove]",
+                );
+                if (
+                    recipientRemove instanceof HTMLElement &&
+                    typeof updateLink === "function"
+                ) {
+                    const link = state.links.find(
+                        (entry) =>
+                            String(entry.id) ===
+                            recipientRemove.dataset.shareId,
+                    );
+                    const recipients = (
+                        link?.accessControls?.recipients || []
+                    ).filter(
+                        (entry) =>
+                            entry.id !==
+                            recipientRemove.dataset.shareRecipientRemove,
+                    );
+                    void updateLink({
+                        shareId: recipientRemove.dataset.shareId,
+                        accessControls: { ...link.accessControls, recipients },
+                    })
+                        .then(async () => {
+                            await refreshLinks();
+                            if (popupOpen) renderLinksList(listContainer);
+                        })
+                        .catch(() =>
+                            showToast(labels.deleteFailed, {
+                                variant: "error",
+                            }),
+                        );
                     return;
                 }
 
