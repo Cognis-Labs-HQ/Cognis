@@ -86,10 +86,6 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
                 "rejected",
             );
             if (request.roomId) {
-                await messagesStore.removeMember(
-                    request.roomId,
-                    request.toAccountId,
-                );
                 const recipientProfile = await profileStore.getProfile(
                     request.toAccountId,
                 );
@@ -101,6 +97,10 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
                     subjectHandle: recipientProfile?.handle ?? null,
                     subjectDisplayName: recipientProfile?.displayName ?? null,
                 });
+                await messagesStore.removeMemberAndApplyLifecycle(
+                    request.roomId,
+                    request.toAccountId,
+                );
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { status: "rejected" } }));

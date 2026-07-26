@@ -317,13 +317,7 @@ export function createMessagesRoomState({
             }
             return;
         }
-        if (roomIdHint) {
-            await openRoom(roomIdHint);
-            return;
-        }
-        if (selectedRoomId) {
-            await openRoom(selectedRoomId);
-        }
+        await openFallbackAfterRoomRemoval(roomIdHint || selectedRoomId);
     }
 
     function bindPendingRequestBannerEvents() {
@@ -660,6 +654,34 @@ export function createMessagesRoomState({
         renderRoomsListIntoDom();
     }
 
+    async function openFallbackAfterRoomRemoval(removedRoomId) {
+        const fallbackRoom = rooms.find(
+            (room) => String(room.id) !== String(removedRoomId),
+        );
+        if (!fallbackRoom) {
+            selectedRoomId = null;
+            history.replaceState({}, "", "/messages");
+            for (const elementId of [
+                "messages-thread-header-slot",
+                "messages-request-banner-slot",
+                "messages-typing-status",
+                "messages-thread-list",
+            ]) {
+                const element = document.getElementById(elementId);
+                if (element) element.innerHTML = "";
+            }
+            syncComposerAvailability(null);
+            return;
+        }
+        selectedRoomId = fallbackRoom.id;
+        history.replaceState(
+            {},
+            "",
+            `/messages/${encodeURIComponent(fallbackRoom.id)}`,
+        );
+        await openRoom(fallbackRoom.id);
+    }
+
     async function leaveSelectedRoom(handle) {
         if (!selectedRoomId || !handle) return;
         const leaveResult = await openPopup({
@@ -692,70 +714,66 @@ export function createMessagesRoomState({
             return;
         }
         await reloadRoomsList();
-        if (!rooms.length) {
-            selectedRoomId = null;
-            history.replaceState({}, "", "/messages");
-            const headerSlot = document.getElementById(
-                "messages-thread-header-slot",
-            );
-            const bannerSlot = document.getElementById(
-                "messages-request-banner-slot",
-            );
-            const typingStatus = document.getElementById(
-                "messages-typing-status",
-            );
-            const threadList = document.getElementById("messages-thread-list");
-            if (headerSlot) headerSlot.innerHTML = "";
-            if (bannerSlot) bannerSlot.innerHTML = "";
-            if (typingStatus) typingStatus.textContent = "";
-            if (threadList) threadList.innerHTML = "";
-            syncComposerAvailability(null);
-            return;
-        }
-        const fallbackRoomId =
-            rooms.find((room) => String(room.id) !== String(roomIdToLeave))
-                ?.id ?? rooms[0].id;
-        selectedRoomId = fallbackRoomId;
-        history.replaceState(
-            {},
-            "",
-            `/messages/${encodeURIComponent(fallbackRoomId)}`,
-        );
-        await openRoom(fallbackRoomId);
+        await openFallbackAfterRoomRemoval(roomIdToLeave);
         await refreshTypingIndicator();
         startTypingPolling();
         startLiveRefreshPolling();
     }
 
+    const pendingConversationHandles = new Set();
+
     async function createConversationFromHandle(handle) {
-        const createResponse = await apiFetch("/api/v1/social/messages/rooms", {
-            method: "POST",
-            body: JSON.stringify({ handles: [handle] }),
-        });
-        if (!createResponse.ok) {
-            const errorPayload = await createResponse.json().catch(() => null);
-            const code = errorPayload?.error?.code;
-            const toastKey =
-                code === "forbidden"
-                    ? "module.social.messages.start_failed_forbidden"
-                    : "module.social.messages.start_failed";
-            showToast(i18n.t(toastKey), { variant: "error" });
+        const normalizedHandle = String(handle ?? "")
+            .trim()
+            .toLowerCase();
+        if (
+            !normalizedHandle ||
+            pendingConversationHandles.has(normalizedHandle)
+        ) {
             return;
         }
-        const createPayload = await createResponse.json();
-        const newRoomId = createPayload?.data?.id;
-        if (createPayload?.data?.requiresApproval) {
-            showToast(i18n.t("module.social.messages.request_sent"), {
-                variant: "info",
-            });
+        pendingConversationHandles.add(normalizedHandle);
+        try {
+            const createResponse = await apiFetch(
+                "/api/v1/social/messages/rooms",
+                {
+                    method: "POST",
+                    body: JSON.stringify({ handles: [handle] }),
+                },
+            );
+            if (!createResponse.ok) {
+                const errorPayload = await createResponse
+                    .json()
+                    .catch(() => null);
+                const code = errorPayload?.error?.code;
+                const toastKey =
+                    code === "forbidden"
+                        ? "module.social.messages.start_failed_forbidden"
+                        : "module.social.messages.start_failed";
+                showToast(i18n.t(toastKey), { variant: "error" });
+                return;
+            }
+            const createPayload = await createResponse.json();
+            const newRoomId = createPayload?.data?.id;
+            if (createPayload?.data?.requiresApproval) {
+                showToast(i18n.t("module.social.messages.request_sent"), {
+                    variant: "info",
+                });
+                await reloadRoomsList();
+                return;
+            }
+            if (!newRoomId) return;
+            selectedRoomId = newRoomId;
+            history.pushState(
+                {},
+                "",
+                `/messages/${encodeURIComponent(newRoomId)}`,
+            );
+            await openRoom(newRoomId);
             await reloadRoomsList();
-            return;
+        } finally {
+            pendingConversationHandles.delete(normalizedHandle);
         }
-        if (!newRoomId) return;
-        selectedRoomId = newRoomId;
-        history.pushState({}, "", `/messages/${encodeURIComponent(newRoomId)}`);
-        await openRoom(newRoomId);
-        await reloadRoomsList();
     }
 
     function cleanup() {
