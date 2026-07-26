@@ -109,6 +109,10 @@ export async function canAccessMeeting({
     requesterAccountId = "",
 }) {
     const directParticipants = await store.listParticipants(meeting.id);
+    const normalizedRequesterAccountId = normalizeHandleKey(requesterAccountId);
+    let requesterMatchesParticipantAccount = directParticipants.includes(
+        normalizedRequesterAccountId,
+    );
     if (profileStore && requesterAccountId) {
         const possibleBlockingUsers = Array.from(
             new Set([meeting.createdBy, ...directParticipants]),
@@ -127,9 +131,18 @@ export async function canAccessMeeting({
             ) {
                 return false;
             }
+            if (
+                directParticipants.includes(handle) &&
+                profile?.accountId === requesterAccountId
+            ) {
+                requesterMatchesParticipantAccount = true;
+            }
         }
     }
-    if (directParticipants.includes(username)) {
+    if (
+        directParticipants.includes(username) ||
+        requesterMatchesParticipantAccount
+    ) {
         return true;
     }
     if (!meeting.classroomId) {

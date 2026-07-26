@@ -266,6 +266,8 @@ export function registerMeetingRoutes({
                     meeting,
                     username: requesterUsername,
                     listClassroomParticipantHandles,
+                    profileStore,
+                    requesterAccountId: claims.sub,
                 });
                 if (!authorized) continue;
                 const [participants, state] = await Promise.all([

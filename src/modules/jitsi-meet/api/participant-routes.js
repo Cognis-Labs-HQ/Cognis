@@ -45,11 +45,13 @@ export function registerMeetingParticipantRoutes({
                 requesterAccountId: claims.sub,
                 followingAccountId: claims.sub,
             });
-            const results = candidates.map((profile) => ({
-                handle: profile.handle,
-                displayName: profile.displayName ?? profile.handle,
-                avatarKey: profile.avatarKey ?? null,
-            }));
+            const results = candidates
+                .filter((profile) => profile.accountId !== claims.sub)
+                .map((profile) => ({
+                    handle: profile.handle,
+                    displayName: profile.displayName ?? profile.handle,
+                    avatarKey: profile.avatarKey ?? null,
+                }));
             sendJson(res, 200, { data: results });
         },
         { access: { minRole: "user" } },

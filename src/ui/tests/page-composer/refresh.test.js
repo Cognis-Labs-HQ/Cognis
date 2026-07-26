@@ -110,6 +110,14 @@ test("page composer can delegate document scrolling to the page", () => {
         resolve(ROOT, "src/ui/app/license/index.js"),
         "utf8",
     );
+    const docsPage = readFileSync(
+        resolve(ROOT, "src/ui/app/docs/index.js"),
+        "utf8",
+    );
+    const changelogsPage = readFileSync(
+        resolve(ROOT, "src/ui/app/changelogs/index.js"),
+        "utf8",
+    );
 
     assert.match(source, /contentScrolling = true/);
     assert.match(source, /if \(!contentScrolling\) \{/);
@@ -125,6 +133,8 @@ test("page composer can delegate document scrolling to the page", () => {
     assert.match(layoutStyles, /\.app-page--document-scroll \.content-panel/);
     assert.match(licensePage, /toolbarScrollable: true/);
     assert.match(licensePage, /contentScrolling: false/);
+    assert.match(docsPage, /contentScrolling: false/);
+    assert.match(changelogsPage, /contentScrolling: false/);
 });
 
 test("page composer resolves edit toggle from the active page root", () => {

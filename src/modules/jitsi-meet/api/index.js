@@ -393,14 +393,22 @@ export function registerApiRoutes(router, ctx) {
                 .map((username) => normalizeHandleKey(username))
                 .filter(Boolean),
         );
-        const candidateRecipients = Array.from(
-            new Set(
-                (Array.isArray(recipientUsernames) ? recipientUsernames : [])
-                    .map((username) => normalizeHandleKey(username))
-                    .filter(Boolean)
-                    .filter((username) => !excludedRecipients.has(username)),
-            ),
-        );
+        const candidateRecipients = [];
+        const seenRecipients = new Set();
+        for (const candidate of Array.isArray(recipientUsernames)
+            ? recipientUsernames
+            : []) {
+            const normalizedCandidate = normalizeHandleKey(candidate);
+            if (
+                !normalizedCandidate ||
+                excludedRecipients.has(normalizedCandidate) ||
+                seenRecipients.has(normalizedCandidate)
+            ) {
+                continue;
+            }
+            seenRecipients.add(normalizedCandidate);
+            candidateRecipients.push(String(candidate).trim());
+        }
         const organizerProfile = organizerUsername
             ? await profileStore
                   .getProfileByHandle(organizerUsername)
@@ -408,31 +416,52 @@ export function registerApiRoutes(router, ctx) {
             : null;
         const normalizedRecipients = [];
         for (const recipientUsername of candidateRecipients) {
-            if (organizerProfile?.accountId) {
-                const recipientProfile = await profileStore
-                    .getProfileByHandle(recipientUsername)
+            let recipientProfile = await profileStore
+                .getProfileByHandle(recipientUsername)
+                .catch(() => null);
+            if (!recipientProfile?.accountId) {
+                recipientProfile = await profileStore
+                    .getProfile(recipientUsername)
                     .catch(() => null);
+            }
+            if (!recipientProfile?.accountId) {
+                log?.(
+                    "error",
+                    "Failed to resolve meeting notification recipient.",
+                    {
+                        component: "jitsi-meet-module",
+                        operation: "resolve_meeting_notification_recipient",
+                        recipientUsername,
+                    },
+                );
+                continue;
+            }
+            if (organizerProfile?.accountId) {
                 if (
-                    recipientProfile?.accountId &&
-                    (await profileStore.isBlocked(
+                    await profileStore.isBlocked(
                         organizerProfile.accountId,
                         recipientProfile.accountId,
-                    ))
+                    )
                 ) {
                     continue;
                 }
             }
-            normalizedRecipients.push(recipientUsername);
+            normalizedRecipients.push({
+                accountId: recipientProfile.accountId,
+                username:
+                    normalizeHandleKey(recipientProfile.handle) ||
+                    recipientUsername,
+            });
         }
         const bodyWithMeetingLink = appendMeetingLinkToBody(
             body,
             notificationMeetingId,
         );
-        for (const recipientUsername of normalizedRecipients) {
+        for (const recipient of normalizedRecipients) {
             try {
                 await dispatchNotification({
                     category: "meetings",
-                    recipientUsername,
+                    recipientUsername: recipient.accountId,
                     subject,
                     body: bodyWithMeetingLink,
                     senderName,
@@ -443,7 +472,8 @@ export function registerApiRoutes(router, ctx) {
                 log?.("error", "Failed to dispatch meeting notification.", {
                     component: "jitsi-meet-module",
                     operation: "dispatch_meeting_notification",
-                    recipientUsername,
+                    recipientUsername: recipient.username,
+                    recipientAccountId: recipient.accountId,
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
