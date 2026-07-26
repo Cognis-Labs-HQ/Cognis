@@ -425,7 +425,12 @@ export function initGeneralPrefs(root, { i18n, username }) {
                 const input = root.querySelector("#email-add-input");
                 if (!(input instanceof HTMLInputElement)) return;
                 const address = input.value.trim().toLowerCase();
-                if (!address) return;
+                if (!address) {
+                    showToast(i18n.t("ui.reuse.email_required"), {
+                        variant: "warning",
+                    });
+                    return;
+                }
                 const allowed = await checkDomainAndNotify(address);
                 if (!allowed) return;
                 try {
