@@ -297,11 +297,7 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
         CSS_SOURCE,
         /\.calendar-response-calendar-picker select\s*\{/s,
     );
-    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /openShareLinksPopup/);
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /buildShareTokenCallbacks/,
-    );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /openSharePopup/);
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /resourceType: "calendar"/,

@@ -3,6 +3,28 @@
     gap: 1rem;
 }
 
+.share-method-tabs {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+}
+
+.share-method-tab {
+    flex: 1 0 auto;
+    padding: 0.65rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    background: var(--surface-2);
+    color: inherit;
+    cursor: pointer;
+}
+
+.share-method-tab.is-active {
+    border-color: var(--accent, currentColor);
+    background: var(--surface-3, var(--surface-2));
+    font-weight: 700;
+}
+
 .share-links-form-container {
     display: contents;
 }

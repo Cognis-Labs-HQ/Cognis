@@ -79,6 +79,34 @@ export async function registerShareBootstrapHooks(input: {
     const APPROVAL_POLL_INTERVAL_MS = 1_000;
 
     input.ctx.flow.extend(
+        "prepare-share-method",
+        "prepare-method",
+        { id: "share-gateway:prepare-method" },
+        (stageCtx) => {
+            const flowInput = (stageCtx.input ?? {}) as {
+                shareMethod?: string;
+                recipients?: unknown;
+                accessControls?: Record<string, unknown>;
+            };
+            try {
+                return {
+                    prepared: true,
+                    ...input.gateway.prepareAdapterShare(
+                        String(flowInput.shareMethod ?? ""),
+                        flowInput,
+                    ),
+                };
+            } catch (error) {
+                return {
+                    prepared: false,
+                    reason:
+                        error instanceof Error ? error.message : String(error),
+                };
+            }
+        },
+    );
+
+    input.ctx.flow.extend(
         "mint-share-token",
         "request-approval",
         { id: "share-gateway:request-approval" },

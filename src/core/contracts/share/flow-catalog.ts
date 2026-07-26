@@ -2,6 +2,19 @@ import { createFlowContract } from "../flow-contract.js";
 
 export const SHARE_FLOW_CATALOG = Object.freeze([
     createFlowContract({
+        id: "prepare-share-method",
+        owner: "share",
+        description:
+            "Delegates method-specific share input normalization to a Share gateway adapter.",
+        stages: [
+            {
+                id: "prepare-method",
+                description:
+                    "Validate and normalize the selected adapter's implementation-specific share input.",
+            },
+        ],
+    }),
+    createFlowContract({
         id: "mint-share-token",
         owner: "share",
         description:

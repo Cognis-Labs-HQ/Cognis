@@ -5,12 +5,12 @@ import {
     renderReminderField,
 } from "./popup-manager-reminders.js";
 async function openCalendarSharePopup({ calendarId, i18n }) {
-    const [{ openShareLinksPopup }, { buildShareTokenCallbacks }] =
-        await Promise.all([
-            import("/static/gateways/share/ui/reuse/share-links-popup.js"),
-            import("/static/gateways/share/ui/reuse/share-api.js"),
-        ]);
-    await openShareLinksPopup({
+    const { openSharePopup } =
+        await import("/static/gateways/share/ui/reuse/share-links-popup.js");
+    await openSharePopup({
+        resourceType: "calendar",
+        resourceId: calendarId,
+        grantedCapabilities: ["calendar:read", "calendar:write"],
         title: i18n.t("gateway.calendar.share_calendar"),
         labels: {
             empty: i18n.t("gateway.calendar.share_links_details"),
@@ -42,11 +42,6 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
                 "gateway.calendar.share_user_delete_confirm_title",
             ),
         },
-        ...buildShareTokenCallbacks({
-            resourceType: "calendar",
-            resourceId: calendarId,
-            grantedCapabilities: ["calendar:read", "calendar:write"],
-        }),
     });
 }
 

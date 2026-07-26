@@ -15,8 +15,25 @@ import {
     type ShareApprovalRequestRecord,
 } from "./approval-request-store.js";
 import { resolveQuickShareActions } from "./quick-share-actions.js";
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
+
+export interface ShareMethodAdapter {
+    id: string;
+    name: string;
+    description: string;
+    pageModuleUrl: string;
+    order?: number;
+    version?: string;
+    publisher?: string;
+    prepare(input: {
+        recipients?: unknown;
+        accessControls?: Record<string, unknown>;
+    }): { accessControls: Record<string, unknown> };
+}
 
 export class CoreShareGateway {
+    private readonly adapters = new Map<string, ShareMethodAdapter>();
     constructor(
         private readonly store: ShareTokenStore,
         private readonly guestProfileStore: GuestProfileStore,
@@ -29,6 +46,61 @@ export class CoreShareGateway {
 
     getCapability<T>(name: string): T | undefined {
         return this.resolveCapability<T>(name);
+    }
+
+    async discoverAdapters(adaptersRoot: string): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(adaptersRoot);
+        } catch {
+            return;
+        }
+        for (const entry of entries.sort()) {
+            try {
+                const packageRoot = path.join(adaptersRoot, entry);
+                const pkg = JSON.parse(
+                    await readFile(
+                        path.join(packageRoot, "package.json"),
+                        "utf8",
+                    ),
+                ) as { main?: string; version?: string };
+                if (!pkg.main) continue;
+                const module = await import(
+                    path.resolve(packageRoot, pkg.main)
+                );
+                if (typeof module.createShareAdapter !== "function") continue;
+                const adapter =
+                    module.createShareAdapter() as ShareMethodAdapter;
+                if (!adapter?.id || !adapter.name || !adapter.pageModuleUrl)
+                    continue;
+                this.adapters.set(adapter.id, {
+                    ...adapter,
+                    version: pkg.version,
+                });
+            } catch {
+                // One unavailable sharing method must not disable the gateway.
+            }
+        }
+    }
+
+    listAdapters(): ShareMethodAdapter[] {
+        return Array.from(this.adapters.values()).sort(
+            (left, right) =>
+                (left.order ?? 100) - (right.order ?? 100) ||
+                left.name.localeCompare(right.name),
+        );
+    }
+
+    prepareAdapterShare(
+        adapterId: string,
+        input: {
+            recipients?: unknown;
+            accessControls?: Record<string, unknown>;
+        },
+    ): { accessControls: Record<string, unknown> } {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) throw new Error("share_method_not_found");
+        return adapter.prepare(input);
     }
 
     async ensureSchema(): Promise<void> {

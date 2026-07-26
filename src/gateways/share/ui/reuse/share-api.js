@@ -20,6 +20,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 
 const SHARE_API = "/api/v1/share/tokens";
+const SHARE_METHODS_API = "/api/v1/share/methods";
 
 export function resolveShareExpiry(expiresInHours) {
     const hours = Number(expiresInHours);
@@ -38,6 +39,12 @@ export function buildShareTokenCallbacks({
     grantedCapabilities,
 } = {}) {
     return {
+        fetchMethods: async () => {
+            const response = await apiFetch(SHARE_METHODS_API);
+            if (!response.ok) throw new Error("methods_failed");
+            const payload = await response.json().catch(() => ({ data: [] }));
+            return Array.isArray(payload?.data) ? payload.data : [];
+        },
         fetchLinks: async () => {
             const response = await apiFetch(
                 `${SHARE_API}?resourceType=${encodeURIComponent(resourceType)}&resourceId=${encodeURIComponent(resourceId)}`,
@@ -45,7 +52,12 @@ export function buildShareTokenCallbacks({
             const payload = await response.json().catch(() => ({ data: [] }));
             return Array.isArray(payload?.data) ? payload.data : [];
         },
-        createLink: async ({ label, expiresInHours, recipients = [] }) => {
+        createLink: async ({
+            label,
+            expiresInHours,
+            recipients = [],
+            shareMethod = "link",
+        }) => {
             const response = await apiFetch(SHARE_API, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -56,6 +68,8 @@ export function buildShareTokenCallbacks({
                     expiresAt: resolveShareExpiry(expiresInHours),
                     grantedCapabilities,
                     accessControls: { recipients },
+                    recipients,
+                    shareMethod,
                 }),
             });
             if (!response.ok) throw new Error("create_failed");

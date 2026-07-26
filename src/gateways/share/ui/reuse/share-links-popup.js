@@ -72,6 +72,10 @@
  *     removeUser?: string,
  *     readPermission?: string,
  *     writePermission?: string,
+ *     methods?: string,
+ *     linkMethod?: string,
+ *     userMethod?: string,
+ *     shareWithUsers?: string,
  *   },
  *   fetchLinks: () => Promise<Array<{
  *     id: string,
@@ -88,6 +92,7 @@
  *   deleteLink: (opts: { shareId: string }) => Promise<void>,
  *   updateLink?: (opts: { shareId: string, accessControls: object }) => Promise<object|null>,
  *   searchUsers?: (query: string) => Promise<Array<{id: string, label: string, handle?: string}>>,
+ *   fetchMethods?: () => Promise<Array<{id: string, name: string, pageModuleUrl?: string}>>,
  * }} options
  * @returns {Promise<void>}
  */
@@ -97,11 +102,28 @@ import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
+import { buildShareTokenCallbacks } from "./share-api.js";
 
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
 
 let stylesheetReady = null;
+
+export function openSharePopup({
+    resourceType,
+    resourceId,
+    grantedCapabilities = [],
+    ...popupOptions
+}) {
+    return openShareLinksPopup({
+        ...popupOptions,
+        ...buildShareTokenCallbacks({
+            resourceType,
+            resourceId,
+            grantedCapabilities,
+        }),
+    });
+}
 
 function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
@@ -195,6 +217,7 @@ function renderRows(labels, links) {
                         (entry) => entry?.type === "user",
                     )
                   : [];
+              const isUserShare = recipients.length > 0;
               return `
             <article class="share-links-row">
               <button
@@ -207,23 +230,31 @@ function renderRows(labels, links) {
               <div class="share-links-row-main">
                 <div class="share-links-row-header">
                   <p class="share-links-row-label">${escapeHtml(shareLabel)}</p>
-                  <button
+                  ${
+                      isUserShare
+                          ? ""
+                          : `<button
                     type="button"
                     class="share-links-row-copy"
                     data-share-copy="${escapeHtml(shareUrl)}"
                     title="${escapeHtml(shareUrl)}"
                     aria-label="${escapeHtml(labels.copyLink)}: ${escapeHtml(shareUrl)}"
-                  >🔗</button>
+                  >🔗</button>`
+                  }
                 </div>
                 ${renderShareStatus(link, labels)}
                 ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
               </div>
-              <div class="share-links-row-share">
+              ${
+                  isUserShare
+                      ? ""
+                      : `<div class="share-links-row-share">
                 <span class="share-links-row-share-label">${escapeHtml(labels.shareOptions)}</span>
                 <div class="share-links-row-actions">
                   ${renderQuickShareActions(link, labels)}
                 </div>
-              </div>
+              </div>`
+              }
             </article>
           `;
           })
@@ -235,6 +266,9 @@ function renderRows(labels, links) {
 function renderBody(labels, state) {
     return `
     <section class="share-links-popup">
+      <nav class="share-method-tabs" aria-label="${escapeHtml(labels.methods || "Share methods")}">
+        ${state.methods.map((method) => `<button type="button" class="share-method-tab${method.id === state.activeMethodId ? " is-active" : ""}" data-share-method="${escapeHtml(method.id)}" aria-pressed="${method.id === state.activeMethodId ? "true" : "false"}">${escapeHtml(method.name)}</button>`).join("")}
+      </nav>
       <div class="share-links-form-container">
         <div class="share-links-create-form">
           <label>
@@ -276,7 +310,7 @@ function renderBody(labels, state) {
         </div>
       </div>
       <div class="share-links-list-container">
-        ${renderRows(labels, state.links)}
+        ${renderRows(labels, state.visibleLinks)}
       </div>
     </section>
   `;
@@ -290,6 +324,7 @@ export async function openShareLinksPopup({
     deleteLink,
     updateLink,
     searchUsers,
+    fetchMethods,
 }) {
     await ensureStylesheet();
 
@@ -300,11 +335,61 @@ export async function openShareLinksPopup({
         expiresInHours: "24",
         recipients: [],
         userSharingEnabled: typeof searchUsers === "function",
+        methods: [],
+        methodModules: new Map(),
+        activeMethodId: "link",
+        visibleLinks: [],
     };
+
+    try {
+        state.methods =
+            typeof fetchMethods === "function" ? await fetchMethods() : [];
+    } catch {
+        state.methods = [];
+    }
+    if (state.methods.length === 0) {
+        state.methods = [
+            { id: "link", name: labels.linkMethod || "Link" },
+            { id: "user", name: labels.userMethod || "User" },
+        ];
+    }
+    for (const method of state.methods) {
+        if (!method?.pageModuleUrl) continue;
+        try {
+            state.methodModules.set(
+                method.id,
+                await import(method.pageModuleUrl),
+            );
+        } catch {
+            // A broken adapter page is isolated from the remaining methods.
+        }
+    }
+    if (!state.methods.some((method) => method.id === state.activeMethodId)) {
+        state.activeMethodId = state.methods[0]?.id || "link";
+    }
+
+    function filterLinksForActiveMethod() {
+        const methodModule = state.methodModules.get(state.activeMethodId);
+        if (typeof methodModule?.acceptsShare === "function") {
+            state.visibleLinks = state.links.filter((link) =>
+                methodModule.acceptsShare(link),
+            );
+            return;
+        }
+        state.visibleLinks = state.links.filter((link) => {
+            const hasUsers =
+                Array.isArray(link?.accessControls?.recipients) &&
+                link.accessControls.recipients.some(
+                    (entry) => entry?.type === "user",
+                );
+            return state.activeMethodId === "user" ? hasUsers : !hasUsers;
+        });
+    }
 
     async function refreshLinks({ preserveOnError = true } = {}) {
         try {
             state.links = await fetchLinks();
+            filterLinksForActiveMethod();
         } catch {
             if (!preserveOnError) {
                 state.links = [];
@@ -316,7 +401,7 @@ export async function openShareLinksPopup({
         if (!(listContainer instanceof HTMLElement)) {
             return;
         }
-        listContainer.innerHTML = renderRows(labels, state.links);
+        listContainer.innerHTML = renderRows(labels, state.visibleLinks);
     }
 
     function syncCreateButton(createButton) {
@@ -359,6 +444,10 @@ export async function openShareLinksPopup({
             const selectedUsers = overlay.querySelector(
                 ".share-links-selected-users",
             );
+            const methodTabs = overlay.querySelector(".share-method-tabs");
+            const userPicker = overlay.querySelector(
+                ".share-links-user-picker",
+            );
             const renderSelectedUsers = () => {
                 if (!(selectedUsers instanceof HTMLElement)) return;
                 selectedUsers.innerHTML = state.recipients
@@ -384,6 +473,38 @@ export async function openShareLinksPopup({
 
             popupOpen = true;
             syncCreateButton(createButton);
+            const syncMethodPage = () => {
+                methodTabs
+                    ?.querySelectorAll("[data-share-method]")
+                    .forEach((button) => {
+                        const active =
+                            button.getAttribute("data-share-method") ===
+                            state.activeMethodId;
+                        button.classList.toggle("is-active", active);
+                        button.setAttribute(
+                            "aria-pressed",
+                            active ? "true" : "false",
+                        );
+                    });
+                if (userPicker instanceof HTMLElement) {
+                    userPicker.hidden = state.activeMethodId !== "user";
+                }
+                createButton.textContent =
+                    state.activeMethodId === "user"
+                        ? labels.shareWithUsers || labels.users || "Share"
+                        : labels.generateLink;
+                filterLinksForActiveMethod();
+                renderLinksList(listContainer);
+            };
+            methodTabs?.addEventListener("click", (event) => {
+                const button = event.target.closest("[data-share-method]");
+                if (!(button instanceof HTMLElement)) return;
+                state.activeMethodId = String(
+                    button.dataset.shareMethod || "link",
+                );
+                syncMethodPage();
+            });
+            syncMethodPage();
 
             labelInput.addEventListener("input", (event) => {
                 state.label = String(event.target?.value ?? "");
@@ -450,12 +571,33 @@ export async function openShareLinksPopup({
 
                 let shareUrl = null;
                 try {
-                    const result = await createLink({
+                    const createInput = {
                         label: state.label,
                         expiresInHours: state.expiresInHours,
-                        recipients: state.recipients,
-                    });
-                    shareUrl = result?.shareUrl ?? null;
+                        recipients:
+                            state.activeMethodId === "user"
+                                ? state.recipients
+                                : [],
+                        shareMethod: state.activeMethodId,
+                    };
+                    if (
+                        state.activeMethodId === "user" &&
+                        state.recipients.length === 0
+                    ) {
+                        throw new Error("recipient_required");
+                    }
+                    const methodModule = state.methodModules.get(
+                        state.activeMethodId,
+                    );
+                    const result = await createLink(
+                        typeof methodModule?.buildCreateOptions === "function"
+                            ? methodModule.buildCreateOptions(createInput)
+                            : createInput,
+                    );
+                    shareUrl =
+                        state.activeMethodId === "link"
+                            ? (result?.shareUrl ?? null)
+                            : null;
                 } catch {
                     showToast(labels.createFailed, { variant: "error" });
                     state.isCreating = false;

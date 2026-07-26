@@ -24,6 +24,7 @@ const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
 );
+const SHARE_ADAPTERS_ROOT = path.resolve(GATEWAY_ROOT, "../../adapters/share");
 
 const GUEST_PROFILE_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
 
@@ -46,6 +47,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get.bind(ctx.capabilities),
     );
     await gateway.ensureSchema();
+    await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT);
 
     ctx.capabilities.contribute(
         "share:mintToken",
@@ -125,10 +127,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.3.0",
+        version: "1.5.0",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
-        hasAdapters: false,
+        hasAdapters: true,
     });
 
     const cleanupTimer = setInterval(() => {

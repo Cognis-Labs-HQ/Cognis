@@ -16,7 +16,7 @@ test("share links popup keeps form and list rendering separate", () => {
     assert.match(source, /share-links-list-container/);
     assert.match(
         source,
-        /listContainer\.innerHTML = renderRows\(labels, state\.links\);/,
+        /listContainer\.innerHTML = renderRows\(labels, state\.visibleLinks\);/,
     );
     assert.match(source, /createButton\.disabled = state\.isCreating;/);
     assert.match(source, /window\.setInterval\(/);

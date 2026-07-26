@@ -93,6 +93,13 @@ export function createShareRoutes(input: {
             return true;
         }
 
+        if (req.method === "GET" && url.pathname === "/api/v1/share/methods") {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            sendJson(res, 200, { data: input.gateway.listAdapters() });
+            return true;
+        }
+
         if (req.method === "POST" && url.pathname === "/api/v1/share/tokens") {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
@@ -105,6 +112,8 @@ export function createShareRoutes(input: {
                 password?: unknown;
                 generatePassword?: unknown;
                 expiresAt?: unknown;
+                shareMethod?: unknown;
+                recipients?: unknown;
             };
             const resourceType = String(body.resourceType ?? "").trim();
             const resourceId = String(body.resourceId ?? "").trim();
@@ -117,6 +126,38 @@ export function createShareRoutes(input: {
                 );
                 return true;
             }
+            const requestedAccessControls =
+                body.accessControls && typeof body.accessControls === "object"
+                    ? (body.accessControls as Record<string, unknown>)
+                    : {};
+            const legacyRecipients = Array.isArray(
+                requestedAccessControls.recipients,
+            )
+                ? requestedAccessControls.recipients
+                : [];
+            const shareMethod = String(
+                body.shareMethod ??
+                    (legacyRecipients.length > 0 ? "user" : "link"),
+            ).trim();
+            const methodResult = await input.flow.run("prepare-share-method", {
+                shareMethod,
+                recipients: body.recipients ?? legacyRecipients,
+                accessControls: requestedAccessControls,
+            });
+            const prepared = getFirstStageResult<{
+                prepared?: boolean;
+                reason?: string;
+                accessControls?: Record<string, unknown>;
+            }>(methodResult.stageResults, "prepare-method");
+            if (!prepared?.prepared) {
+                sendError(
+                    res,
+                    400,
+                    "invalid_share_method",
+                    prepared?.reason ?? "Share method input is invalid.",
+                );
+                return true;
+            }
             const flowResult = await input.flow.run("mint-share-token", {
                 claims,
                 ownerAccountId: claims.sub,
@@ -126,11 +167,7 @@ export function createShareRoutes(input: {
                 grantedCapabilities: Array.isArray(body.grantedCapabilities)
                     ? body.grantedCapabilities
                     : [],
-                accessControls:
-                    body.accessControls &&
-                    typeof body.accessControls === "object"
-                        ? body.accessControls
-                        : {},
+                accessControls: prepared.accessControls ?? {},
                 password:
                     typeof body.password === "string" ? body.password : null,
                 generatePassword: body.generatePassword === true,

@@ -1,0 +1,8 @@
+{
+    "id": "link",
+    "name": "Link",
+    "version": "1.0.0",
+    "gateway": "share",
+    "description": "Creates public share links.",
+    "publisher": "Cognis Labs HQ"
+}

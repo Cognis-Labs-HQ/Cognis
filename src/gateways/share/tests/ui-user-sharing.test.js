@@ -14,8 +14,10 @@ const apiSource = await readFile(
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
     assert.match(popupSource, /data-share-user-id/);
-    assert.match(popupSource, /recipients: state\.recipients/);
+    assert.match(popupSource, /state\.activeMethodId === "user"/);
     assert.match(popupSource, /data-share-recipient-remove/);
+    assert.match(popupSource, /share-method-tabs/);
+    assert.match(popupSource, /methodModule\.buildCreateOptions/);
 });
 
 test("share popup callbacks use only share gateway recipient and token routes", () => {
