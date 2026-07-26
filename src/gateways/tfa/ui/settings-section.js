@@ -362,12 +362,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                         );
                         return false;
                     }
-                    showToast(
-                        `\u2713 ${i18n.t("gateway.tfa.settings.setup_success")}`,
-                        {
-                            variant: "success",
-                        },
-                    );
+                    showToast(i18n.t("gateway.tfa.settings.setup_success"), {
+                        variant: "success",
+                    });
                     return true;
                 },
             });
