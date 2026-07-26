@@ -190,6 +190,28 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                 primaryTarget.accountId,
             );
             if (existing) {
+                const existingMembers = await messagesStore.listMembers(
+                    existing.id,
+                );
+                const existingMemberIds = new Set(
+                    existingMembers.map((member) => member.accountId),
+                );
+                if (!existingMemberIds.has(accountId)) {
+                    await messagesStore.addMember(
+                        existing.id,
+                        accountId,
+                        existing.createdBy === accountId ? "owner" : "member",
+                    );
+                }
+                if (!existingMemberIds.has(primaryTarget.accountId)) {
+                    await messagesStore.addMember(
+                        existing.id,
+                        primaryTarget.accountId,
+                        existing.createdBy === primaryTarget.accountId
+                            ? "owner"
+                            : "member",
+                    );
+                }
                 await Promise.all([
                     messagesStore.setArchived(existing.id, accountId, false),
                     messagesStore.setArchived(
@@ -217,10 +239,9 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                     primaryTarget.accountId,
                 );
                 if (!room) {
-                    room = await messagesStore.createRoom(
-                        "dm",
-                        null,
+                    room = await messagesStore.createDm(
                         accountId,
+                        primaryTarget.accountId,
                     );
                     await messagesStore.addMember(room.id, accountId, "owner");
                     await messagesStore.addMember(
@@ -297,11 +318,17 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             }
         }
 
-        const room = await messagesStore.createRoom(
-            isDm ? "dm" : "group",
-            typeof body.title === "string" ? body.title : null,
-            accountId,
-        );
+        const room =
+            isDm && primaryTarget
+                ? await messagesStore.createDm(
+                      accountId,
+                      primaryTarget.accountId,
+                  )
+                : await messagesStore.createRoom(
+                      "group",
+                      typeof body.title === "string" ? body.title : null,
+                      accountId,
+                  );
         await messagesStore.addMember(room.id, accountId, "owner");
         for (const target of targets) {
             await messagesStore.addMember(room.id, target.accountId, "member");

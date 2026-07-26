@@ -7,3 +7,7 @@ Beim Löschen eines Benutzers werden jetzt Mitgliedschaften und Anwesenheiten in
 ## Kalenderbereinigung wird zuverlässig abgeschlossen
 
 Beim Löschen eines Kontos werden die Kalender und Termine des Benutzers jetzt sowohl aus dem dauerhaften Speicher als auch aus dem aktiven Kalenderdienst entfernt. Außerdem wird die globale Dateigrößenkonfiguration nicht mehr fälschlicherweise als benutzereigene Einstellung gelöscht. Dadurch wird eine erfolgreiche Kontolöschung nicht mehr als fehlerhafte Anfrage gemeldet.
+
+## Unterhaltungen und Benachrichtigungen werden sicher bereinigt
+
+Gelöschte Benutzer verlassen ihre Gruppenunterhaltungen jetzt mit einem sichtbaren Austrittsereignis, anstatt die Unterhaltungen stillschweigend zu entfernen. Chats werden für ein einziges verbleibendes Mitglied automatisch archiviert und dauerhaft gelöscht, wenn niemand mehr übrig ist. Neu erstellte Konten verwenden außerdem eine bestehende Einzelunterhaltung erneut, statt Duplikate anzulegen, und alle internen Benachrichtigungen werden beim Löschen entfernt.

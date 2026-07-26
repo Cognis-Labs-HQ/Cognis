@@ -166,7 +166,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
         async findDmBetween() {
             return null;
         },
-        async createRoom() {
+        async createDm() {
             return {
                 id: "room-req-1",
                 kind: "dm",

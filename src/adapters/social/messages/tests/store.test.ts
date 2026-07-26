@@ -114,6 +114,146 @@ test("messages setArchived uses executeCommand with integer archived value", asy
     assert.equal(updateCmd.set.archived, 1);
 });
 
+test("removing a member archives a chat for its sole remaining member", async () => {
+    const commandCalls: Array<StructuredDbCommand> = [];
+    const db: DbExecutor = {
+        async ensureTable() {},
+        async executeCommand(command) {
+            commandCalls.push(command);
+            if (
+                command.option === "SELECT" &&
+                command.table === "chatroom_members"
+            ) {
+                return {
+                    rows: [
+                        {
+                            chatroom_id: "room-1",
+                            account_id: "bob",
+                            role: "member",
+                            joined_at: new Date().toISOString(),
+                            muted: 0,
+                            archived: 0,
+                        },
+                    ],
+                };
+            }
+            return { rows: [] };
+        },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            return callback(db);
+        },
+    };
+    const store = new DbMessagesStore(db);
+
+    const lifecycle = await store.removeMemberAndApplyLifecycle(
+        "room-1",
+        "alice",
+    );
+
+    assert.equal(lifecycle, "archived");
+    const archive = commandCalls.find(
+        (command) =>
+            command.option === "UPDATE" && command.table === "chatroom_members",
+    );
+    assert.ok(archive && archive.set.archived === 1);
+});
+
+test("removing the last member permanently deletes the chat", async () => {
+    const { db, commandCalls } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    const lifecycle = await store.removeMemberAndApplyLifecycle(
+        "room-empty",
+        "alice",
+    );
+
+    assert.equal(lifecycle, "deleted");
+    assert.ok(
+        commandCalls.some(
+            (command) =>
+                command.option === "DELETE" && command.table === "chatrooms",
+        ),
+    );
+});
+
+test("DM lookup reuses a participant's orphaned chat", async () => {
+    const db: DbExecutor = {
+        async ensureTable() {},
+        async executeCommand(command) {
+            if (command.option !== "SELECT") return { rows: [] };
+            if (command.table === "chatrooms") {
+                return {
+                    rows: [
+                        {
+                            id: "existing-dm",
+                            kind: "dm",
+                            title: null,
+                            avatar_key: null,
+                            created_by: "alice",
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString(),
+                        },
+                    ],
+                };
+            }
+            return {
+                rows: [
+                    {
+                        chatroom_id: "existing-dm",
+                        account_id: "bob",
+                        role: "member",
+                        joined_at: new Date().toISOString(),
+                        muted: 0,
+                        archived: 1,
+                    },
+                ],
+            };
+        },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            return callback(db);
+        },
+    };
+    const store = new DbMessagesStore(db);
+
+    const room = await store.findDmBetween("alice", "bob");
+
+    assert.equal(room?.id, "existing-dm");
+});
+
+test("DM creation uses the same room id regardless of participant order", async () => {
+    const insertedIds: string[] = [];
+    const db: DbExecutor = {
+        async ensureTable() {},
+        async executeCommand(command) {
+            if (command.option === "INSERT") {
+                insertedIds.push(String(command.values.id));
+                return { rows: [] };
+            }
+            return {
+                rows: [
+                    {
+                        id: insertedIds.at(-1),
+                        kind: "dm",
+                        title: null,
+                        created_by: "alice",
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString(),
+                    },
+                ],
+            };
+        },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            return callback(db);
+        },
+    };
+    const store = new DbMessagesStore(db);
+
+    await store.createDm("alice", "bob");
+    await store.createDm("bob", "alice");
+
+    assert.equal(insertedIds[0], insertedIds[1]);
+});
+
 test("createMessageRequest persists room id when provided", async () => {
     const { db, commandCalls } = createRecordingExecutor();
     const store = new DbMessagesStore(db);

@@ -148,12 +148,27 @@ export async function bootstrapSocialAdapter(
                 return { cleaned: false };
             }
             const accountId = input.username.trim().toLowerCase();
+            const rooms = await messagesStore.listRoomsForAccount(accountId);
+            for (const room of rooms) {
+                if (room.kind === "group") {
+                    await messagesStore.appendRoomEvent({
+                        roomId: room.id,
+                        actorId: accountId,
+                        eventType: "member_left",
+                        subjectAccountId: accountId,
+                        subjectHandle: input.username,
+                    });
+                }
+                await messagesStore.removeMemberAndApplyLifecycle(
+                    room.id,
+                    accountId,
+                );
+            }
             await dbExecutor.transaction(async (transactionDb) => {
                 for (const table of [
                     "chatroom_typing",
                     "chat_message_reactions",
                     "chat_emoji_usage",
-                    "chatroom_members",
                 ]) {
                     await transactionDb.executeCommand({
                         option: "DELETE",
