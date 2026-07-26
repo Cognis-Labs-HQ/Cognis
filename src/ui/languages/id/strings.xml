@@ -480,6 +480,7 @@
   <string name="ui.app.profile.upload_failed">Unggahan gagal. Silakan coba lagi.</string>
   <string name="ui.app.profile.post_failed">Gagal menerbitkan postingan.</string>
   <string name="ui.reuse.notifications">Notifikasi</string>
+  <string name="ui.reuse.email_required">Masukkan alamat email Anda.</string>
   <string name="ui.app.settings.general">Umum</string>
   <string name="ui.app.settings.emails">Alamat Email</string>
   <string name="ui.app.settings.emails_add">Tambah email</string>
