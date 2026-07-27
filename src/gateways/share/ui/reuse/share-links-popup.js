@@ -251,8 +251,7 @@ function renderRows(labels, links) {
                 </div>
                 ${renderShareStatus(link, labels)}
                 ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><select data-share-recipient-permission="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.permission || "Permission")}"><option value="read"${recipient.permissions?.includes("write") ? "" : " selected"}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${recipient.permissions?.includes("write") ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select><button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
-                ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(variant.label)}${variant.access ? ` (${escapeHtml(variant.access === "write" ? labels.writePermission : labels.readPermission)})` : ""}</button>`).join("")}</div>` : ""}
-                ${!isUserShare && link.emailSupported ? `<button type="button" class="btn-neutral share-links-email-action" data-share-email="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.mail)}" title="${escapeHtml(labels.mail)}"><span class="share-links-row-mail-icon" aria-hidden="true"></span></button>` : ""}
+                ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(variant.label)}</button>`).join("")}</div>` : ""}
               </div>
               ${
                   isUserShare
@@ -260,6 +259,7 @@ function renderRows(labels, links) {
                       : `<div class="share-links-row-share">
                 <span class="share-links-row-share-label">${escapeHtml(labels.shareOptions)}</span>
                 <div class="share-links-row-actions">
+                  ${link.emailSupported ? `<button type="button" class="btn-neutral share-links-email-action" data-share-email="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.mail)}" title="${escapeHtml(labels.mail)}"><span class="share-links-row-mail-icon" aria-hidden="true"></span></button>` : ""}
                   ${renderQuickShareActions(link, labels)}
                 </div>
               </div>`
@@ -585,6 +585,19 @@ export async function openShareLinksPopup({
                 }
             };
 
+            const clearEditMode = () => {
+                state.editingShareId = "";
+                state.label = "";
+                state.expiresAt = "";
+                state.password = "";
+                state.recipients = [];
+                state.permission = "read";
+                state.linkAccessId = String(
+                    state.linkAccessOptions?.[0]?.id ?? "",
+                );
+                renderMethodPage();
+            };
+
             methodTabs?.addEventListener("click", (event) => {
                 const button = event.target.closest("[data-share-method]");
                 if (!(button instanceof HTMLElement)) return;
@@ -655,6 +668,10 @@ export async function openShareLinksPopup({
             methodPage.addEventListener("click", (event) => {
                 const target = event.target;
                 if (!(target instanceof HTMLElement)) return;
+                if (target.closest("[data-share-cancel-edit]")) {
+                    clearEditMode();
+                    return;
+                }
                 const activeModule = state.methodModules.get(
                     state.activeMethodId,
                 );
@@ -723,6 +740,24 @@ export async function openShareLinksPopup({
             listContainer.addEventListener("click", (event) => {
                 if (!(event.target instanceof HTMLElement)) return;
                 const emailButton = event.target.closest("[data-share-email]");
+                if (emailButton instanceof HTMLElement) {
+                    const selectedShare = state.links.find(
+                        (link) =>
+                            String(link.id) === emailButton.dataset.shareEmail,
+                    );
+                    const linkModule = state.methodModules.get("link");
+                    if (
+                        selectedShare &&
+                        typeof linkModule?.openEmailPopup === "function"
+                    ) {
+                        void linkModule.openEmailPopup({
+                            share: selectedShare,
+                            labels,
+                            escapeHtml,
+                        });
+                    }
+                    return;
+                }
                 const editRow = event.target.closest("[data-share-edit]");
                 if (
                     editRow instanceof HTMLElement &&
@@ -775,11 +810,6 @@ export async function openShareLinksPopup({
                             state.linkAccessId = matchingAccess.id;
                         }
                         renderMethodPage();
-                        if (emailButton) {
-                            methodPage
-                                .querySelector("#share-email-input")
-                                ?.focus();
-                        }
                     }
                     return;
                 }

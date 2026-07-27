@@ -30,6 +30,6 @@ export function renderPage({ labels, state, escapeHtml, gatewayFields }) {
       <label><span>${escapeHtml(labels.permission || "Permission")}</span><select id="share-links-user-permission"><option value="read"${state.permission === "read" ? " selected" : ""}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${state.permission === "write" ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select></label>
       <label><span>${escapeHtml(labels.expiryLabel)}</span><input id="share-links-expiry" type="datetime-local" value="${escapeHtml(state.expiresAt)}" /></label>
       ${gatewayFields.password}
-      <button id="share-links-create-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(state.editingShareId ? labels.updateUserShare || "Update User Share" : `${labels.shareWithPrefix || "Share with"} ${state.recipients.length} ${labels.usersCountLabel || "users"}`)}</button>
+      <div class="share-links-form-actions"><button id="share-links-create-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(state.editingShareId ? labels.updateUserShare || "Update User Share" : `${labels.shareWithPrefix || "Share with"} ${state.recipients.length} ${labels.usersCountLabel || "users"}`)}</button>${state.editingShareId ? `<button type="button" class="btn-cancel" data-share-cancel-edit aria-label="${escapeHtml(labels.cancel)}">×</button>` : ""}</div>
     </div>`;
 }

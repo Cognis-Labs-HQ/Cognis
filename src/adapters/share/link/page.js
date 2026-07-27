@@ -1,5 +1,7 @@
 /** Link sharing method page behavior. */
 import { apiFetch } from "/static/reuse/api-client.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { showToast } from "/static/reuse/toast.js";
 
 let emailRecipients = [];
 
@@ -38,21 +40,7 @@ export function getEmptyLabel(labels) {
     return labels.empty;
 }
 
-export async function afterCreate({ result }) {
-    if (!result?.id || emailRecipients.length === 0) return;
-    const response = await apiFetch(
-        `/api/v1/share/tokens/${encodeURIComponent(result.id)}/email`,
-        {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ recipients: emailRecipients }),
-        },
-    );
-    if (!response.ok) throw new Error("share_email_failed");
-    emailRecipients = [];
-}
-
-export function handleKeydown({ event, page, escapeHtml }) {
+function handleEmailKeydown({ event, page, escapeHtml }) {
     const input = event.target;
     if (
         !(input instanceof HTMLInputElement) ||
@@ -71,7 +59,7 @@ export function handleKeydown({ event, page, escapeHtml }) {
     return true;
 }
 
-export function handleClick({ target, page, escapeHtml }) {
+function handleEmailClick({ target, page, escapeHtml }) {
     const remove = target.closest("[data-share-email-remove]");
     if (!(remove instanceof HTMLElement)) return false;
     emailRecipients = emailRecipients.filter(
@@ -80,6 +68,56 @@ export function handleClick({ target, page, escapeHtml }) {
     page.querySelector(".share-email-tags").innerHTML =
         renderEmailTags(escapeHtml);
     return true;
+}
+
+export async function openEmailPopup({ share, labels, escapeHtml }) {
+    emailRecipients = [];
+    await openPopup({
+        title: labels.mail,
+        body: () =>
+            `<div class="share-email-popup"><label><span>${escapeHtml(labels.emailRecipients)}</span><input id="share-email-input" type="email" autocomplete="email" placeholder="${escapeHtml(labels.emailRecipientsPlaceholder)}" /></label><div class="share-email-tags"></div></div>`,
+        actions: [
+            {
+                id: "send",
+                label: labels.mail,
+                variant: "confirm",
+            },
+            {
+                id: "cancel",
+                label: labels.cancel,
+                variant: "cancel",
+            },
+        ],
+        onOpen: (overlay) => {
+            overlay.addEventListener("keydown", (event) => {
+                handleEmailKeydown({ event, page: overlay, escapeHtml });
+            });
+            overlay.addEventListener("click", (event) => {
+                if (!(event.target instanceof HTMLElement)) return;
+                handleEmailClick({
+                    target: event.target,
+                    page: overlay,
+                    escapeHtml,
+                });
+            });
+        },
+        onAction: async (actionId) => {
+            if (actionId !== "send") return true;
+            if (emailRecipients.length === 0) return false;
+            const response = await apiFetch(
+                `/api/v1/share/tokens/${encodeURIComponent(share.id)}/email`,
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ recipients: emailRecipients }),
+                },
+            );
+            showToast(response.ok ? labels.emailSent : labels.emailFailed, {
+                variant: response.ok ? "success" : "error",
+            });
+            return response.ok;
+        },
+    });
 }
 
 export function renderPage({ labels, state, escapeHtml, gatewayFields }) {
@@ -95,8 +133,6 @@ export function renderPage({ labels, state, escapeHtml, gatewayFields }) {
       ${accessControl}
       <label><span>${escapeHtml(labels.expiryLabel)}</span><input id="share-links-expiry" type="datetime-local" value="${escapeHtml(state.expiresAt)}" /></label>
       ${gatewayFields.password}
-      <label><span>${escapeHtml(labels.emailRecipients || "Email recipients")}</span><input id="share-email-input" type="email" autocomplete="email" placeholder="${escapeHtml(labels.emailRecipientsPlaceholder || "Type an email and press Enter")}" /></label>
-      <div class="share-email-tags">${renderEmailTags(escapeHtml)}</div>
-      <button id="share-links-create-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(state.editingShareId ? labels.updateLinkShare || "Update Link Share" : labels.createLinkShare || "Create Link Share")}</button>
+      <div class="share-links-form-actions"><button id="share-links-create-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(state.editingShareId ? labels.updateLinkShare || "Update Link Share" : labels.createLinkShare || "Create Link Share")}</button>${state.editingShareId ? `<button type="button" class="btn-cancel" data-share-cancel-edit aria-label="${escapeHtml(labels.cancel)}">×</button>` : ""}</div>
     </div>`;
 }

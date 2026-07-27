@@ -287,3 +287,14 @@
     color: inherit;
     cursor: pointer;
 }
+
+.share-links-form-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.share-email-popup {
+    display: grid;
+    gap: 0.75rem;
+}

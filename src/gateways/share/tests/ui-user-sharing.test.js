@@ -84,6 +84,11 @@ test("share history supports email delivery and in-place update mode", () => {
     assert.match(linkPageSource, /Update Link Share/);
     assert.match(userPageSource, /state\.recipients\.length/);
     assert.match(userPageSource, /Update User Share/);
+    assert.match(linkPageSource, /openEmailPopup/);
+    assert.match(linkPageSource, /await openPopup/);
+    assert.match(popupSource, /data-share-cancel-edit/);
+    assert.match(popupSource, /clearEditMode/);
+    assert.doesNotMatch(popupSource, /variant\.access === "write"/);
 });
 
 test("selected users retain lookup-card placement without visible handles", () => {
