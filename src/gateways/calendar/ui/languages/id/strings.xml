@@ -151,4 +151,7 @@
   <string name="gateway.calendar.share_link_name_fallback">Tautan Berbagi</string>
   <string name="gateway.calendar.share_link_name_placeholder">Nama Tautan (opsional)</string>
   <string name="gateway.calendar.share_link_passphrase">Frasa Sandi</string>
+  <string name="gateway.calendar.share_link_web">Web</string>
+  <string name="gateway.calendar.share_link_ics">ICS</string>
+  <string name="gateway.calendar.share_link_caldav">CalDAV</string>
 </resources>

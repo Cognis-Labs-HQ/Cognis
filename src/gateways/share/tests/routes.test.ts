@@ -92,6 +92,23 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 `${String(input.label ?? "")}\n${input.shareUrl}`,
             )}`) as never,
     );
+    capabilities.contribute("share:resolveVariants", ((input: {
+        token: string;
+        shareUrl: string;
+    }) => [
+        {
+            id: "web",
+            label: "Web",
+            url: input.shareUrl,
+            contentType: "text/html",
+        },
+        {
+            id: "feed",
+            label: "Feed",
+            url: `/feeds/${encodeURIComponent(input.token)}`,
+            contentType: "text/calendar",
+        },
+    ]) as never);
     capabilities.contribute(
         "auth:routeContext",
         createAuthContext(
@@ -234,6 +251,8 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(createResponse.body.data.resourceType, "meeting");
     assert.equal(createResponse.body.data.quickShareActions.length, 1);
     assert.equal(createResponse.body.data.quickShareActions[0].id, "smtp");
+    assert.equal(createResponse.body.data.variants.length, 2);
+    assert.match(createResponse.body.data.variants[1].url, /^\/feeds\//);
     assert.match(
         createResponse.body.data.quickShareActions[0].href,
         /^mailto:/,

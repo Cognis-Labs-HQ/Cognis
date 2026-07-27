@@ -55,6 +55,9 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
             passwordPlaceholder: i18n.t(
                 "gateway.calendar.share_password_placeholder",
             ),
+            webVariant: i18n.t("gateway.calendar.share_link_web"),
+            icsVariant: i18n.t("gateway.calendar.share_link_ics"),
+            caldavVariant: i18n.t("gateway.calendar.share_link_caldav"),
         },
         linkAccessOptions: [
             {
@@ -137,6 +140,7 @@ export function createCalendarEditPopupHandler({
                     overlay
                         .querySelector("#calendar-open-share-popup")
                         ?.addEventListener("click", () => {
+                            closePopup();
                             void openCalendarSharePopup({
                                 calendarId: calendar.id,
                                 i18n,

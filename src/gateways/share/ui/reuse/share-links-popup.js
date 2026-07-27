@@ -98,6 +98,10 @@
  */
 
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import {
+    buildProfileAvatarMarkup,
+    hydrateProfileAvatars,
+} from "/static/gateways/social/reuse/profile-avatar.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
@@ -218,6 +222,9 @@ function renderRows(labels, links) {
                     )
                   : [];
               const isUserShare = recipients.length > 0;
+              const variants = Array.isArray(link?.variants)
+                  ? link.variants
+                  : [];
               return `
             <article class="share-links-row">
               <button
@@ -243,7 +250,8 @@ function renderRows(labels, links) {
                   }
                 </div>
                 ${renderShareStatus(link, labels)}
-                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<select data-share-recipient-permission="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.permission || "Permission")}"><option value="read"${recipient.permissions?.includes("write") ? "" : " selected"}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${recipient.permissions?.includes("write") ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select><button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
+                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><select data-share-recipient-permission="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.permission || "Permission")}"><option value="read"${recipient.permissions?.includes("write") ? "" : " selected"}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${recipient.permissions?.includes("write") ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select><button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
+                ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(labels[`${variant.id}Variant`] || variant.label)}</button>`).join("")}</div>` : ""}
               </div>
               ${
                   isUserShare
@@ -375,6 +383,7 @@ export async function openShareLinksPopup({
             return;
         }
         listContainer.innerHTML = renderRows(labels, state.visibleLinks);
+        hydrateProfileAvatars(listContainer);
     }
 
     function syncCreateButton(createButton) {
@@ -419,6 +428,7 @@ export async function openShareLinksPopup({
             }
 
             popupOpen = true;
+            hydrateProfileAvatars(overlay);
             let searchSequence = 0;
 
             const renderSelectedUsers = () => {
@@ -599,9 +609,10 @@ export async function openShareLinksPopup({
                             )
                             .map(
                                 (user) =>
-                                    `<button type="button" class="share-links-user-result" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}">${escapeHtml(user.label || user.handle || user.id)}${user.handle ? ` <small>@${escapeHtml(user.handle)}</small>` : ""}</button>`,
+                                    `<div class="share-links-user-result" role="button" tabindex="0" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}" data-share-user-handle="${escapeHtml(user.handle || "")}" data-share-user-avatar-key="${escapeHtml(user.avatarKey || "")}">${buildProfileAvatarMarkup({ avatarKey: user.avatarKey || null, label: user.label || user.handle || user.id, colorSeed: user.handle || user.id, profileHandle: user.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(user.label || user.handle || user.id)}${user.handle ? ` <small>@${escapeHtml(user.handle)}</small>` : ""}</span></div>`,
                             )
                             .join("");
+                        hydrateProfileAvatars(results);
                     });
             });
 
@@ -630,10 +641,13 @@ export async function openShareLinksPopup({
                 }
                 const userButton = target.closest("[data-share-user-id]");
                 if (userButton instanceof HTMLElement) {
+                    if (target.closest('a[href^="/profile/"]')) return;
                     state.recipients.push({
                         type: "user",
                         id: userButton.dataset.shareUserId,
                         label: userButton.dataset.shareUserLabel,
+                        handle: userButton.dataset.shareUserHandle,
+                        avatarKey: userButton.dataset.shareUserAvatarKey,
                         permissions:
                             state.permission === "write"
                                 ? ["read", "write"]

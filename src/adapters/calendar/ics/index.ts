@@ -4,8 +4,8 @@ import type {
 } from "../../../gateways/calendar/gateway/index.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
-    passphrasesMatch,
     readSharePassphrase,
+    resolveGatewayCalendarShare,
 } from "../../../gateways/calendar/reuse/share-auth.js";
 import {
     resolveRouteContext,
@@ -24,7 +24,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
-    const resolveShareLink = ctx.capabilities.get<
+    const resolveCalendarLink = ctx.capabilities.get<
         (token: string) => Promise<{
             calendarId: string;
             passphrase: string | null;
@@ -111,42 +111,35 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             (req.method === "GET" || isMetadataProbeMethod(req.method))
         ) {
             const token = decodeURIComponent(shareMatch[1]);
-            const shareLink = resolveShareLink
-                ? await resolveShareLink(token)
-                : null;
-            if (!shareLink) {
-                res.writeHead(404, { "content-type": "application/json" });
+            const receivedPassphrase = readSharePassphrase(req, url);
+            const shareLink = await resolveGatewayCalendarShare(
+                ctx.capabilities,
+                token,
+                receivedPassphrase,
+                resolveCalendarLink,
+            );
+            if (!shareLink?.calendarId) {
+                const unauthorized = shareLink?.unauthorized === true;
+                res.writeHead(unauthorized ? 401 : 404, {
+                    "content-type": "application/json",
+                    ...(unauthorized
+                        ? {
+                              "www-authenticate":
+                                  'Basic realm="Calendar Share"',
+                          }
+                        : {}),
+                });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "not_found",
-                            message: "Calendar export not found.",
+                            code: unauthorized ? "unauthorized" : "not_found",
+                            message: unauthorized
+                                ? "Valid calendar share token required."
+                                : "Calendar export not found.",
                         },
                     }),
                 );
                 return true;
-            }
-            if (shareLink.passphrase) {
-                const receivedPassphrase = readSharePassphrase(req, url);
-                if (
-                    !receivedPassphrase ||
-                    !passphrasesMatch(shareLink.passphrase, receivedPassphrase)
-                ) {
-                    res.writeHead(401, {
-                        "content-type": "application/json",
-                        "www-authenticate": 'Basic realm="Calendar Share"',
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "unauthorized",
-                                message:
-                                    "Valid calendar share passphrase required.",
-                            },
-                        }),
-                    );
-                    return true;
-                }
             }
             const calendar = ctx.gateway.getCalendar(shareLink.calendarId);
             if (!calendar) {

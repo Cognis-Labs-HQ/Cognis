@@ -13,6 +13,8 @@ export interface ShareRecipient {
     type: ShareRecipientType;
     id: string;
     label?: string | null;
+    handle?: string | null;
+    avatarKey?: string | null;
     permissions: SharePermission[];
 }
 
@@ -85,6 +87,8 @@ function normalizeRecipients(value: unknown): ShareRecipient[] {
                 type,
                 id,
                 label: normalizeOptionalString(candidate.label),
+                handle: normalizeOptionalString(candidate.handle),
+                avatarKey: normalizeOptionalString(candidate.avatarKey),
                 permissions: normalizePermissions(candidate.permissions),
             },
         ];

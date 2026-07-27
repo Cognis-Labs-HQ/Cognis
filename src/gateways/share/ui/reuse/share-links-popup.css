@@ -192,6 +192,9 @@
 }
 
 .share-links-user-result {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
     padding: 0.6rem 0.75rem;
     border: 1px solid var(--border);
     border-radius: 0.6rem;
@@ -199,6 +202,40 @@
     color: inherit;
     text-align: left;
     cursor: pointer;
+}
+
+.share-links-user-avatar,
+.share-links-user-avatar-image,
+.share-links-user-avatar-fallback {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+}
+
+.share-links-user-avatar {
+    display: inline-flex;
+    flex: none;
+    text-decoration: none;
+}
+
+.share-links-user-avatar-image {
+    object-fit: cover;
+}
+
+.share-links-user-avatar-fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--initials-bg);
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.share-links-variants {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
 .share-links-selected-users,

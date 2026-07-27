@@ -198,6 +198,46 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("calendar:resolveShareLink", (token: string) =>
         shareRegistry.resolveShareLink(token),
     );
+    ctx.capabilities.contribute(
+        "share:resolveVariants",
+        (variantInput: {
+            resourceType: string;
+            token: string;
+            shareUrl: string;
+        }) => {
+            if (variantInput.resourceType !== "calendar") {
+                return [
+                    {
+                        id: "web",
+                        label: "Web",
+                        url: variantInput.shareUrl,
+                        contentType: "text/html",
+                    },
+                ];
+            }
+            const encodedToken = encodeURIComponent(variantInput.token);
+            return [
+                {
+                    id: "web",
+                    label: "Web",
+                    url: variantInput.shareUrl,
+                    contentType: "text/html",
+                },
+                {
+                    id: "ics",
+                    label: "ICS",
+                    url: `/api/v1/calendar/ics/share/${encodedToken}`,
+                    contentType: "text/calendar",
+                },
+                {
+                    id: "caldav",
+                    label: "CalDAV",
+                    url: `/api/v1/calendar/caldav/share/${encodedToken}`,
+                    contentType: "text/calendar",
+                },
+            ];
+        },
+    );
     if (ctx.flow.exists("mint-share-token")) {
         ctx.flow.extend(
             "mint-share-token",
@@ -325,6 +365,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             (stageCtx) => {
                 const flowInput = (stageCtx.input ?? {}) as {
                     claims?: { sub?: string };
+                    shareId?: string;
                     resourceType?: string;
                     resourceId?: string;
                 };
@@ -336,7 +377,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                             String(flowInput.resourceId ?? ""),
                         ),
                     )
-                    ? { authorized: true, ownerAccountId }
+                    ? {
+                          authorized: true,
+                          ownerAccountId,
+                          shareId: flowInput.shareId,
+                          resourceType: flowInput.resourceType,
+                          resourceId: flowInput.resourceId,
+                      }
                     : { authorized: false, reason: "forbidden" };
             },
         );

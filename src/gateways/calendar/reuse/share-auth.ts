@@ -44,3 +44,42 @@ export function passphrasesMatch(
         timingSafeEqual(expectedBuffer, receivedBuffer)
     );
 }
+
+export async function resolveGatewayCalendarShare(
+    capabilities: {
+        get<T>(name: string): T | undefined;
+    },
+    token: string,
+    password: string,
+    resolveCalendarLink?: (tokenValue: string) => Promise<{
+        calendarId: string;
+        passphrase: string | null;
+    } | null>,
+): Promise<{ calendarId?: string; unauthorized?: boolean } | null> {
+    const resolveToken = capabilities.get<
+        (
+            tokenValue: string,
+            sharePassword?: string | null,
+        ) => Promise<{
+            resourceType?: unknown;
+            resourceId?: unknown;
+        } | null>
+    >("share:resolveToken");
+    const share = resolveToken
+        ? await resolveToken(token, password || null)
+        : null;
+    if (share?.resourceType === "calendar") {
+        const calendarId = String(share.resourceId ?? "").trim();
+        return calendarId ? { calendarId } : null;
+    }
+    const calendarLink = resolveCalendarLink
+        ? await resolveCalendarLink(token)
+        : null;
+    if (!calendarLink) return resolveToken ? { unauthorized: true } : null;
+    if (
+        calendarLink.passphrase &&
+        !passphrasesMatch(calendarLink.passphrase, password)
+    )
+        return { unauthorized: true };
+    return { calendarId: calendarLink.calendarId };
+}

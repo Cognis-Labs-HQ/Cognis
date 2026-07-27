@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readSharePassphrase } from "../reuse/share-auth.js";
+import {
+    readSharePassphrase,
+    resolveGatewayCalendarShare,
+} from "../reuse/share-auth.js";
 
 test("readSharePassphrase prefers explicit header over query", () => {
     const passphrase = readSharePassphrase(
@@ -33,4 +36,31 @@ test("readSharePassphrase accepts a query passphrase without auth headers", () =
         new URL("http://localhost/calendar.ics?passphrase=query-secret"),
     );
     assert.equal(passphrase, "query-secret");
+});
+
+test("resolveGatewayCalendarShare resolves a central token with its supplied password", async () => {
+    const observedPasswords: Array<string | null | undefined> = [];
+    const capabilities = {
+        get<T>(name: string): T | undefined {
+            if (name !== "share:resolveToken") return undefined;
+            return (async (_token: string, password?: string | null) => {
+                observedPasswords.push(password);
+                return password === "client-secret"
+                    ? {
+                          resourceType: "calendar",
+                          resourceId: "calendar-1",
+                      }
+                    : null;
+            }) as T;
+        },
+    };
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(
+            capabilities,
+            "shared-token",
+            "client-secret",
+        ),
+        { calendarId: "calendar-1" },
+    );
+    assert.deepEqual(observedPasswords, ["client-secret"]);
 });

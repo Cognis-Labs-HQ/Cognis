@@ -32,6 +32,13 @@ export interface ShareMethodAdapter {
     }): { accessControls: Record<string, unknown> };
 }
 
+export interface ShareVariant {
+    id: string;
+    label: string;
+    url: string;
+    contentType?: string;
+}
+
 export class CoreShareGateway {
     private readonly adapters = new Map<string, ShareMethodAdapter>();
     constructor(
@@ -132,6 +139,26 @@ export class CoreShareGateway {
         record: ShareTokenRecord,
     ): Promise<Record<string, unknown>> {
         const shareUrl = this.buildShareUrl(record.tokenValue);
+        const resolveVariants = this.resolveCapability<
+            (input: {
+                resourceType: string;
+                resourceId: string;
+                token: string;
+                shareUrl: string;
+            }) => Promise<ShareVariant[]> | ShareVariant[]
+        >("share:resolveVariants");
+        const resolvedVariants = resolveVariants
+            ? await resolveVariants({
+                  resourceType: record.resourceType,
+                  resourceId: record.resourceId,
+                  token: record.tokenValue,
+                  shareUrl,
+              })
+            : [];
+        const variants = resolvedVariants.map((variant) => ({
+            ...variant,
+            url: this.buildAbsoluteUrl(variant.url),
+        }));
         return {
             id: record.id,
             ownerAccountId: record.ownerAccountId,
@@ -148,6 +175,7 @@ export class CoreShareGateway {
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
             shareUrl,
+            variants,
             quickShareActions: await resolveQuickShareActions(
                 this.resolveCapability,
                 {
