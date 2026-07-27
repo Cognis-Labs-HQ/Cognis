@@ -53,6 +53,38 @@ function getFirstStageResult<T>(
     return results?.[0] ?? null;
 }
 
+function readSharePassword(req: IncomingMessage, url: URL): string | null {
+    for (const headerName of [
+        "x-cognis-share-password",
+        "x-cognis-calendar-passphrase",
+    ]) {
+        const value = req.headers[headerName];
+        const password = String(
+            Array.isArray(value) ? value[0] : (value ?? ""),
+        );
+        if (password) return password;
+    }
+    const authorization = String(
+        Array.isArray(req.headers.authorization)
+            ? req.headers.authorization[0]
+            : (req.headers.authorization ?? ""),
+    );
+    if (authorization.startsWith("Basic ")) {
+        const decoded = Buffer.from(
+            authorization.slice("Basic ".length),
+            "base64",
+        ).toString("utf8");
+        const separator = decoded.indexOf(":");
+        const password = separator >= 0 ? decoded.slice(separator + 1) : "";
+        if (password) return password;
+    }
+    const queryPassword =
+        url.searchParams.get("password") ??
+        url.searchParams.get("passphrase") ??
+        "";
+    return queryPassword || null;
+}
+
 export function createShareRoutes(input: {
     gateway: CoreShareGateway;
     routeContext?: RouteContext;
@@ -281,6 +313,7 @@ export function createShareRoutes(input: {
                 req.method === "POST"
                     ? ((await readJson(req)) as { password?: unknown })
                     : {};
+            const transportPassword = readSharePassword(req, url);
             const requesterClaims = routeContext.getAuthClaims(req);
             // Share guests resolving another share link (e.g. following a
             // link while already viewing a shared resource) are not "real"
@@ -294,7 +327,9 @@ export function createShareRoutes(input: {
             const flowResult = await input.flow.run("resolve-share-token", {
                 token,
                 password:
-                    typeof body.password === "string" ? body.password : null,
+                    typeof body.password === "string"
+                        ? body.password
+                        : transportPassword,
                 requesterClaims: directAccessClaims,
             });
             const resolved = getFirstStageResult<{

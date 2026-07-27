@@ -12,17 +12,19 @@ export function readSharePassphrase(
     const authorizationHeader = Array.isArray(req.headers?.authorization)
         ? String(req.headers?.authorization[0] ?? "")
         : String(req.headers?.authorization ?? "");
-    if (!authorizationHeader.startsWith("Basic ")) return "";
-    try {
-        const decoded = Buffer.from(
-            authorizationHeader.slice("Basic ".length),
-            "base64",
-        ).toString("utf8");
-        return decoded.includes(":")
-            ? decoded.split(":").slice(1).join(":")
-            : "";
-    } catch {
-        // fall through to query fallback
+    if (authorizationHeader.startsWith("Basic ")) {
+        try {
+            const decoded = Buffer.from(
+                authorizationHeader.slice("Basic ".length),
+                "base64",
+            ).toString("utf8");
+            const password = decoded.includes(":")
+                ? decoded.split(":").slice(1).join(":")
+                : "";
+            if (password) return password;
+        } catch {
+            // fall through to query fallback
+        }
     }
     const queryPassphrase = String(
         url.searchParams.get("passphrase") ?? "",

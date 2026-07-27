@@ -26,3 +26,11 @@ test("readSharePassphrase prefers basic auth over query", () => {
     );
     assert.equal(passphrase, "basic-secret");
 });
+
+test("readSharePassphrase accepts a query passphrase without auth headers", () => {
+    const passphrase = readSharePassphrase(
+        { headers: {} },
+        new URL("http://localhost/calendar.ics?passphrase=query-secret"),
+    );
+    assert.equal(passphrase, "query-secret");
+});

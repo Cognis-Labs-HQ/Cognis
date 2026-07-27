@@ -2,7 +2,11 @@ import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Ctx } from "@cognis/core";
+import {
+    registerCanonicalFlow,
+    SHARE_FLOW_CATALOG,
+    type Ctx,
+} from "@cognis/core";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -38,6 +42,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    // Calendar currently bootstraps before Share. Registering the shared flow
+    // contracts here makes the facilitator hooks below independent of gateway
+    // discovery order; Share's later registration is intentionally idempotent.
+    if (systemCtx) {
+        for (const flow of SHARE_FLOW_CATALOG) {
+            registerCanonicalFlow(systemCtx, flow);
+        }
+    }
     const resolveMeetingsProviderAvailability = systemCtx?.getCapability<
         (providerId: string) => Promise<boolean> | boolean
     >("meetings:isProviderAvailable");
@@ -239,6 +251,69 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                           ownerAccountId: result.ownerAccountId,
                       }
                     : { authorized: false, reason: "invalid_resource" };
+            },
+        );
+    }
+    if (ctx.flow.exists("resolve-share-token")) {
+        ctx.flow.extend(
+            "resolve-share-token",
+            "resolve-resource",
+            { id: "calendar-gateway:resolve-shared-calendar" },
+            (stageCtx) => {
+                const tokenRecord = (
+                    stageCtx.stageResults["validate-token"] ?? []
+                ).find(
+                    (entry) =>
+                        (entry as { valid?: boolean }).valid === true &&
+                        (entry as { tokenRecord?: { resourceType?: string } })
+                            .tokenRecord?.resourceType === "calendar",
+                ) as
+                    | {
+                          tokenRecord?: {
+                              resourceType?: string;
+                              resourceId?: string;
+                          };
+                      }
+                    | undefined;
+                const calendarId = String(
+                    tokenRecord?.tokenRecord?.resourceId ?? "",
+                );
+                const calendar = gateway.getCalendar(calendarId);
+                return calendar
+                    ? {
+                          resolved: true,
+                          resourceType: "calendar",
+                          resourceId: calendarId,
+                          payload: {
+                              calendar,
+                              events: gateway.listEvents(calendarId),
+                              ics: gateway.exportCalendarAsIcs(calendarId),
+                          },
+                      }
+                    : { resolved: false, reason: "resource_not_found" };
+            },
+        );
+        ctx.flow.extend(
+            "resolve-share-token",
+            "check-access",
+            { id: "calendar-gateway:allow-resolved-share" },
+            (stageCtx) => {
+                const resolved = (
+                    stageCtx.stageResults["resolve-resource"] ?? []
+                ).some(
+                    (entry) =>
+                        (
+                            entry as {
+                                resolved?: boolean;
+                                resourceType?: string;
+                            }
+                        ).resolved === true &&
+                        (entry as { resourceType?: string }).resourceType ===
+                            "calendar",
+                );
+                return resolved
+                    ? { allowed: true, directAccess: false }
+                    : { allowed: false, reason: "resource_unavailable" };
             },
         );
     }

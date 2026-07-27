@@ -264,6 +264,35 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         "meeting",
     );
 
+    const protectedCreateResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            password: "mail-client-secret",
+        },
+    );
+    const protectedToken = encodeURIComponent(
+        protectedCreateResponse.body.data.shareUrl.split("/share/")[1],
+    );
+    const basicPassword = Buffer.from(
+        "calendar:mail-client-secret",
+        "utf8",
+    ).toString("base64");
+    const basicResolveResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            headers: { authorization: `Basic ${basicPassword}` },
+        }),
+        basicResolveResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${protectedToken}`),
+    );
+    assert.equal(basicResolveResponse.statusCode, 200);
+
     const restrictedCreateResponse = await dispatchJson(
         "POST",
         adminToken,
