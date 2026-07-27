@@ -96,7 +96,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");
             respondCalendarPayload(
                 req.method,
                 res,
@@ -122,6 +122,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 token,
                 receivedPassphrase,
                 resolveCalendarLink,
+                routeContext.getAuthClaims(req)?.sub,
             );
             if (!shareLink?.calendarId) {
                 const unauthorized = shareLink?.unauthorized === true;
@@ -159,7 +160,10 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            const ics = ctx.gateway.exportCalendarAsIcs(
+                calendar.id,
+                shareLink.writable ? "write" : "read",
+            );
             respondCalendarPayload(
                 req.method,
                 res,

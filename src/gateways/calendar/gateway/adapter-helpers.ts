@@ -20,6 +20,7 @@ import {
 export function exportCalendarAsIcs(
     gateway: CoreCalendarGateway,
     calendarId: string,
+    accessMode?: "read" | "write",
 ): string {
     const calendar = gateway.getCalendar(calendarId);
     if (!calendar) {
@@ -31,6 +32,12 @@ export function exportCalendarAsIcs(
         "VERSION:2.0",
         "PRODID:-//Cognis//Calendar Gateway//EN",
         `X-WR-CALNAME:${escapeIcsText(calendar.name)}`,
+        ...(accessMode
+            ? [
+                  `X-CALENDARSERVER-ACCESS:${accessMode === "write" ? "READ-WRITE" : "READ"}`,
+                  `X-CALENDARSERVER-READ-ONLY:${accessMode === "read" ? "TRUE" : "FALSE"}`,
+              ]
+            : []),
         ...events.flatMap((event) => {
             const attendeeLines = [...event.attendees, ...event.inviteEmails]
                 .map((attendee) => attendee.trim())

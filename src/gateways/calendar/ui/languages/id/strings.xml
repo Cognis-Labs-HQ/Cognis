@@ -136,7 +136,6 @@
   <string name="gateway.calendar.share_expiry_datetime_optional">Kedaluwarsa (opsional)</string>
   <string name="gateway.calendar.share_password_optional">Perlindungan Kata Sandi</string>
   <string name="gateway.calendar.share_password_placeholder">Masukkan kata sandi berbagi</string>
-  <string name="gateway.calendar.share_password_required">Kata sandi wajib untuk kalender privat.</string>
   <string name="gateway.calendar.share_link_expiry_1h">Kedaluwarsa dalam 1 jam</string>
   <string name="gateway.calendar.share_link_expiry_24h">Kedaluwarsa dalam 24 jam</string>
   <string name="gateway.calendar.share_link_expiry_7d">Kedaluwarsa dalam 7 hari</string>

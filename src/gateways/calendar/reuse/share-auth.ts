@@ -55,6 +55,7 @@ export async function resolveGatewayCalendarShare(
         calendarId: string;
         passphrase: string | null;
     } | null>,
+    requesterAccountId?: string | null,
 ): Promise<{
     calendarId?: string;
     unauthorized?: boolean;
@@ -68,12 +69,34 @@ export async function resolveGatewayCalendarShare(
             resourceType?: unknown;
             resourceId?: unknown;
             grantedCapabilities?: unknown;
+            ownerAccountId?: unknown;
+            accessControls?: { recipients?: unknown };
         } | null>
     >("share:resolveToken");
     const share = resolveToken
         ? await resolveToken(token, password || null)
         : null;
     if (share?.resourceType === "calendar") {
+        const recipients = share.accessControls?.recipients;
+        if (Array.isArray(recipients) && recipients.length > 0) {
+            const requesterId = String(requesterAccountId ?? "").trim();
+            const recipientAllowed = recipients.some(
+                (recipient) =>
+                    recipient &&
+                    typeof recipient === "object" &&
+                    String((recipient as { type?: unknown }).type ?? "") ===
+                        "user" &&
+                    String((recipient as { id?: unknown }).id ?? "") ===
+                        requesterId,
+            );
+            if (
+                !requesterId ||
+                (!recipientAllowed &&
+                    requesterId !== String(share.ownerAccountId ?? ""))
+            ) {
+                return { unauthorized: true };
+            }
+        }
         const calendarId = String(share.resourceId ?? "").trim();
         return calendarId
             ? {
@@ -87,7 +110,7 @@ export async function resolveGatewayCalendarShare(
     const calendarLink = resolveCalendarLink
         ? await resolveCalendarLink(token)
         : null;
-    if (!calendarLink) return resolveToken ? { unauthorized: true } : null;
+    if (!calendarLink) return null;
     if (
         calendarLink.passphrase &&
         !passphrasesMatch(calendarLink.passphrase, password)

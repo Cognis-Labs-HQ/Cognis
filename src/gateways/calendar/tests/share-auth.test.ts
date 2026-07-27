@@ -68,3 +68,40 @@ test("resolveGatewayCalendarShare resolves a central token with its supplied pas
     );
     assert.deepEqual(observedPasswords, ["client-secret"]);
 });
+
+test("resolveGatewayCalendarShare authorizes user-share recipients", async () => {
+    const capabilities = {
+        get<T>(name: string): T | undefined {
+            if (name !== "share:resolveToken") return undefined;
+            return (async () => ({
+                resourceType: "calendar",
+                resourceId: "calendar-1",
+                ownerAccountId: "owner",
+                grantedCapabilities: ["calendar:read", "calendar:write"],
+                accessControls: {
+                    recipients: [{ type: "user", id: "recipient" }],
+                },
+            })) as T;
+        },
+    };
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(
+            capabilities,
+            "shared-token",
+            "",
+            undefined,
+            "recipient",
+        ),
+        { calendarId: "calendar-1", writable: true },
+    );
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(
+            capabilities,
+            "shared-token",
+            "",
+            undefined,
+            "stranger",
+        ),
+        { unauthorized: true },
+    );
+});

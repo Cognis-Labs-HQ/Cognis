@@ -101,7 +101,10 @@ export function createCalendarCoreRoutes({
         );
         if (
             sharedEventsMatch &&
-            (req.method === "GET" || req.method === "POST")
+            (req.method === "GET" ||
+                req.method === "POST" ||
+                req.method === "PATCH" ||
+                req.method === "DELETE")
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
@@ -115,7 +118,7 @@ export function createCalendarCoreRoutes({
                 }) => Promise<{ shareGuest: boolean; authorized: boolean }>
             >("share:resolveGuestAccess");
             const requiredCapability =
-                req.method === "POST" ? "calendar:write" : "calendar:read";
+                req.method === "GET" ? "calendar:read" : "calendar:write";
             const guestAccess = resolveGuestAccess
                 ? await resolveGuestAccess({
                       claims,
@@ -139,6 +142,54 @@ export function createCalendarCoreRoutes({
             }
             const body = (await readJson(req)) as Record<string, unknown>;
             try {
+                if (req.method === "PATCH") {
+                    const eventId = String(body.eventId ?? "").trim();
+                    const event = gateway.updateSharedEvent({
+                        calendarId,
+                        eventId,
+                        title:
+                            typeof body.title === "string"
+                                ? body.title
+                                : undefined,
+                        description:
+                            typeof body.description === "string"
+                                ? body.description
+                                : undefined,
+                        startAt:
+                            typeof body.startAt === "string"
+                                ? body.startAt
+                                : undefined,
+                        endAt:
+                            typeof body.endAt === "string"
+                                ? body.endAt
+                                : undefined,
+                    });
+                    await gateway.flushStore();
+                    log?.("info", "Shared calendar event updated.", {
+                        component: "calendar-gateway",
+                        operation: "update_shared_event",
+                        calendarId,
+                        eventId: event.id,
+                    });
+                    sendJson(res, 200, { data: event });
+                    return true;
+                }
+                if (req.method === "DELETE") {
+                    const eventId = String(body.eventId ?? "").trim();
+                    const deletedEvents = gateway.deleteSharedEvent({
+                        calendarId,
+                        eventId,
+                    });
+                    await gateway.flushStore();
+                    log?.("info", "Shared calendar event deleted.", {
+                        component: "calendar-gateway",
+                        operation: "delete_shared_event",
+                        calendarId,
+                        eventId,
+                    });
+                    sendJson(res, 200, { data: deletedEvents });
+                    return true;
+                }
                 const event = gateway.addEventToCalendar({
                     calendarId,
                     title: String(body.title ?? "").trim(),

@@ -194,6 +194,21 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
     );
     capabilities.contribute("auth:routeContext", authContext);
+    let centralCalendarId = "";
+    capabilities.contribute("share:resolveToken", ((
+        token: string,
+        password?: string | null,
+    ) =>
+        token === "user-share-token" && password === "share-secret"
+            ? Promise.resolve({
+                  resourceType: "calendar",
+                  resourceId: centralCalendarId,
+                  grantedCapabilities: ["calendar:read", "calendar:write"],
+                  accessControls: {
+                      recipients: [{ type: "user", id: "calendar-admin" }],
+                  },
+              })
+            : Promise.resolve(null)) as never);
 
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -221,6 +236,107 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     assert.ok(defaultCalendar);
     const defaultCalendarId = defaultCalendar.id;
     const defaultCalendarName = defaultCalendar.name;
+    centralCalendarId = defaultCalendarId;
+
+    const writableShareBase = "/api/v1/calendar/caldav/share/user-share-token";
+    const writableSharePath = `${writableShareBase}?passphrase=share-secret`;
+    const writablePropfindRequest = new RequestRecorder({
+        method: "PROPFIND",
+        token: adminToken,
+    });
+    const writablePropfindResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        writablePropfindRequest,
+        writablePropfindResponse,
+        new URL(`http://localhost${writableSharePath}`),
+    );
+    assert.equal(writablePropfindResponse.statusCode, 207);
+    assert.match(
+        writablePropfindResponse.payload,
+        new RegExp(`<d:displayname>${defaultCalendarName}</d:displayname>`),
+    );
+    assert.match(writablePropfindResponse.payload, /<d:write\/>/);
+    assert.match(
+        writablePropfindResponse.payload,
+        /user-share-token\?passphrase=share-secret/,
+    );
+
+    const writablePutRequest = new RequestRecorder({
+        method: "PUT",
+        token: adminToken,
+        body: [
+            "BEGIN:VCALENDAR",
+            "BEGIN:VEVENT",
+            "UID:client-event",
+            "SUMMARY:Client Event",
+            "DTSTART:20270602T110000Z",
+            "DTEND:20270602T120000Z",
+            "END:VEVENT",
+            "END:VCALENDAR",
+        ].join("\r\n"),
+    });
+    const writablePutResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        writablePutRequest,
+        writablePutResponse,
+        new URL(
+            `http://localhost${writableShareBase}/client-event.ics?passphrase=share-secret`,
+        ),
+    );
+    assert.equal(writablePutResponse.statusCode, 201);
+    assert.match(writablePutResponse.headers.location, /\.ics$/);
+
+    const writableGetRequest = new RequestRecorder({
+        method: "GET",
+        token: adminToken,
+    });
+    const writableGetResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        writableGetRequest,
+        writableGetResponse,
+        new URL(`http://localhost${writableSharePath}`),
+    );
+    assert.equal(writableGetResponse.statusCode, 200);
+    assert.match(
+        writableGetResponse.payload,
+        new RegExp(`X-WR-CALNAME:${defaultCalendarName}`),
+    );
+    assert.match(
+        writableGetResponse.payload,
+        /X-CALENDARSERVER-ACCESS:READ-WRITE/,
+    );
+
+    const writableReportRequest = new RequestRecorder({
+        method: "REPORT",
+        token: adminToken,
+    });
+    const writableReportResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        writableReportRequest,
+        writableReportResponse,
+        new URL(`http://localhost${writableSharePath}`),
+    );
+    assert.equal(writableReportResponse.statusCode, 207);
+    assert.match(writableReportResponse.payload, /<c:calendar-data>/);
+    assert.match(writableReportResponse.payload, /Client Event/);
+
+    const savedEventPath = writablePutResponse.headers.location;
+    const writableDeleteRequest = new RequestRecorder({
+        method: "DELETE",
+        token: adminToken,
+    });
+    const writableDeleteResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        writableDeleteRequest,
+        writableDeleteResponse,
+        new URL(`http://localhost${savedEventPath}?passphrase=share-secret`),
+    );
+    assert.equal(writableDeleteResponse.statusCode, 204);
 
     const initialShareResponse = await dispatchJson(
         "GET",

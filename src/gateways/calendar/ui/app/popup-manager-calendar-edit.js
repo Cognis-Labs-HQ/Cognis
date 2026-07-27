@@ -73,9 +73,6 @@ async function openCalendarSharePopup({ calendar, i18n }) {
             passwordPlaceholder: i18n.t(
                 "gateway.calendar.share_password_placeholder",
             ),
-            passwordRequired: i18n.t(
-                "gateway.calendar.share_password_required",
-            ),
             webVariant: i18n.t("gateway.calendar.share_link_web"),
             icsVariant: i18n.t("gateway.calendar.share_link_ics"),
             caldavVariant: i18n.t("gateway.calendar.share_link_caldav"),

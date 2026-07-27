@@ -645,6 +645,22 @@ export class CoreCalendarGateway {
         return this.getEvent(targetCalendar.id, event.id) ?? event;
     }
 
+    updateSharedEvent(input: {
+        calendarId: string;
+        eventId: string;
+        title?: string;
+        description?: string | null;
+        startAt?: string;
+        endAt?: string;
+    }): CalendarEventRecord {
+        const calendar = this.getCalendar(input.calendarId);
+        if (!calendar) throw new Error("calendar_not_found");
+        return this.updateEvent({
+            ownerAccountId: calendar.ownerAccountId,
+            ...input,
+        });
+    }
+
     moveOwnedEvent(input: {
         ownerAccountId: string;
         calendarId: string;
@@ -720,6 +736,18 @@ export class CoreCalendarGateway {
             );
         }
         return deletedEvents;
+    }
+
+    deleteSharedEvent(input: {
+        calendarId: string;
+        eventId: string;
+    }): CalendarEventRecord[] {
+        const calendar = this.getCalendar(input.calendarId);
+        if (!calendar) throw new Error("calendar_not_found");
+        return this.deleteEvent({
+            ownerAccountId: calendar.ownerAccountId,
+            ...input,
+        });
     }
 
     getEventResponse(
@@ -869,8 +897,11 @@ export class CoreCalendarGateway {
         return this.tokenStore.consumeScopedMeetingToken(tokenValue);
     }
 
-    exportCalendarAsIcs(calendarId: string): string {
-        return buildCalendarIcs(this, calendarId);
+    exportCalendarAsIcs(
+        calendarId: string,
+        accessMode?: "read" | "write",
+    ): string {
+        return buildCalendarIcs(this, calendarId, accessMode);
     }
 
     importIcs(input: {

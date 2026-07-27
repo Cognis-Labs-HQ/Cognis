@@ -106,6 +106,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { buildShareTokenCallbacks } from "./share-api.js";
 
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
@@ -293,8 +294,32 @@ function renderBody(labels, state) {
 }
 
 function renderPasswordProtectionField(labels, state) {
-    const required = state.passwordRequired ? " required" : "";
-    return `<label><span>${escapeHtml(labels.password || "Password")}</span><input id="share-links-password" type="password" value="${escapeHtml(state.password)}" autocomplete="new-password" placeholder="${escapeHtml(labels.passwordPlaceholder || labels.optional || "Optional")}"${required} /></label>`;
+    return createFormBuilder(
+        {
+            i18n: {
+                t: () => labels.password,
+            },
+            escapeHtml,
+        },
+        {
+            formId: "share-links-password-form",
+            includeSubmitButton: false,
+            submitLabelKey: "ui.reuse.save",
+            fields: [
+                {
+                    name: "password",
+                    labelKey: "password",
+                    type: "password",
+                    required: state.passwordRequired,
+                    value: state.password,
+                    attributes: {
+                        autocomplete: "new-password",
+                        placeholder: labels.passwordPlaceholder,
+                    },
+                },
+            ],
+        },
+    ).render();
 }
 
 export async function openShareLinksPopup({
@@ -515,15 +540,14 @@ export async function openShareLinksPopup({
 
             const createCurrentShare = async () => {
                 if (state.isCreating) return;
+                const passwordForm = methodPage.querySelector(
+                    "#share-links-password-form",
+                );
                 if (
                     state.activeMethodId === "link" &&
-                    state.passwordRequired &&
-                    !state.password.trim()
+                    passwordForm instanceof HTMLFormElement &&
+                    !passwordForm.reportValidity()
                 ) {
-                    showToast(labels.passwordRequired || labels.createFailed, {
-                        variant: "warning",
-                    });
-                    methodPage.querySelector("#share-links-password")?.focus();
                     return;
                 }
                 const createButton = methodPage.querySelector(
@@ -634,7 +658,7 @@ export async function openShareLinksPopup({
                     state.expiresAt = target.value;
                     return;
                 }
-                if (target.id === "share-links-password") {
+                if (target.id === "form-builder-password") {
                     state.password = target.value;
                     return;
                 }
