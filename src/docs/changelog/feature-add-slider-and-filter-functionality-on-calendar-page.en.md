@@ -6,6 +6,8 @@ The Upcoming Events panel now provides a horizontal row of color-coded calendar 
 
 The compact dot list refreshes immediately after a calendar is created, while the overlaid clear button has reserved space and does not resize the side menu.
 
+Calendar-specific sizing keeps both the dots and clear action compact inside the toolbar instead of inheriting full-width menu button styles.
+
 ## Find the present quickly
 
 Day and week views open around the current time, while month and year views highlight today's date and the current month in blue.

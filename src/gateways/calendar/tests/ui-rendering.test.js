@@ -271,7 +271,11 @@ test("calendar upcoming events can be filtered with calendar color dots", () => 
     );
     assert.match(
         CSS_SOURCE,
-        /\.calendar-filter-dot\s*\{[\s\S]*background:\s*var\(--calendar-filter-color\);/s,
+        /\.toolbar \.calendar-filter-dot\s*\{[\s\S]*min-width:\s*1\.5rem;[\s\S]*min-height:\s*1\.5rem;/s,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.toolbar \.calendar-filter-dot::before\s*\{[\s\S]*background:\s*var\(--calendar-filter-color\);/s,
     );
     assert.match(
         CSS_SOURCE,
@@ -279,7 +283,7 @@ test("calendar upcoming events can be filtered with calendar color dots", () => 
     );
     assert.match(
         CSS_SOURCE,
-        /\.calendar-filter-clear\s*\{[\s\S]*position:\s*absolute;/s,
+        /\.toolbar \.calendar-filter-clear\s*\{[\s\S]*position:\s*absolute;[\s\S]*min-width:\s*1\.25rem;/s,
     );
 });
 

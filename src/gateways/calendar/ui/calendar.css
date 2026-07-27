@@ -345,25 +345,43 @@
     padding-inline-end: 1.75rem;
 }
 
-.calendar-filter-dot {
-    display: block;
+.toolbar .calendar-filter-dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     flex: 0 0 auto;
-    width: 0.85rem;
-    height: 0.85rem;
-    min-width: 0.85rem;
-    min-height: 0.85rem;
-    border: 1px solid color-mix(in srgb, var(--calendar-filter-color) 70%, #000);
+    width: 1.5rem;
+    height: 1.5rem;
+    min-width: 1.5rem;
+    min-height: 1.5rem;
+    border: 0;
     border-radius: 999px;
-    background: var(--calendar-filter-color);
+    background: transparent;
     padding: 0;
 }
 
-.calendar-filter-dot--active {
-    outline: 2px solid var(--text-color, var(--text));
-    outline-offset: 2px;
+.toolbar .calendar-filter-dot::before {
+    content: "";
+    width: 0.85rem;
+    height: 0.85rem;
+    border: 1px solid color-mix(in srgb, var(--calendar-filter-color) 70%, #000);
+    border-radius: 999px;
+    background: var(--calendar-filter-color);
 }
 
-.calendar-filter-clear {
+.toolbar .calendar-filter-dot:hover,
+.toolbar .calendar-filter-dot:focus-visible {
+    border-color: transparent;
+    background: transparent;
+}
+
+.toolbar .calendar-filter-dot--active::before {
+    box-shadow:
+        0 0 0 2px var(--surface, transparent),
+        0 0 0 4px var(--text-color, var(--text));
+}
+
+.toolbar .calendar-filter-clear {
     position: absolute;
     inset-block-start: 0;
     inset-inline-end: 0;
@@ -375,6 +393,7 @@
     border-radius: 999px;
     font-size: 0.8rem;
     line-height: 1;
+    text-align: center;
     box-shadow: 0 0 0 0.25rem var(--surface, transparent);
 }
 

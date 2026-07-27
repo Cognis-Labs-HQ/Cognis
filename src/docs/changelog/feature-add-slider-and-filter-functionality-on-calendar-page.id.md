@@ -6,6 +6,8 @@ Panel Acara Mendatang kini menyediakan deretan titik kalender berwarna secara ho
 
 Daftar titik yang ringkas langsung diperbarui setelah kalender dibuat, sedangkan tombol hapus yang ditumpangkan memiliki ruang tersendiri sehingga tidak memperlebar menu samping.
 
+Ukuran khusus kalender menjaga titik dan tindakan hapus tetap ringkas di dalam bilah alat tanpa mewarisi gaya tombol menu selebar penuh.
+
 ## Temukan waktu sekarang
 
 Tampilan hari dan minggu dibuka di sekitar waktu saat ini, sedangkan tampilan bulan dan tahun menyorot tanggal hari ini serta bulan saat ini dengan warna biru.

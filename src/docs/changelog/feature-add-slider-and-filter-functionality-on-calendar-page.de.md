@@ -6,6 +6,8 @@ Der Bereich „Bevorstehende Termine“ bietet nun eine horizontale Reihe farbig
 
 Die kompakte Punktliste wird direkt nach dem Erstellen eines Kalenders aktualisiert. Für die darüberliegende Löschen-Schaltfläche ist Platz reserviert, sodass sie das Seitenmenü nicht verbreitert.
 
+Kalenderspezifische Größen halten Punkte und Löschaktion in der Werkzeugleiste kompakt, statt die volle Breite allgemeiner Menüschaltflächen zu übernehmen.
+
 ## Gegenwart schnell finden
 
 Tages- und Wochenansichten öffnen sich bei der aktuellen Uhrzeit, während Monats- und Jahresansichten das heutige Datum und den aktuellen Monat blau hervorheben.
