@@ -120,7 +120,10 @@
   <string name="gateway.calendar.delete_calendar_success">Calendar deleted.</string>
   <string name="gateway.calendar.delete_calendar_failed">Could not delete calendar.</string>
   <string name="gateway.calendar.share_calendar">Share Calendar</string>
-  <string name="gateway.calendar.share_users_heading">Shared Users</string>
+  <string name="gateway.calendar.share_users_heading">Share with People</string>
+  <string name="gateway.calendar.share_users_empty">No people have access yet.</string>
+  <string name="gateway.calendar.share_email_recipients">Email Recipients</string>
+  <string name="gateway.calendar.share_email_recipients_placeholder">Type an email address and press Enter</string>
   <string name="gateway.calendar.share_links_heading">Share Links</string>
   <string name="gateway.calendar.share_link_permission">Permission</string>
   <string name="gateway.calendar.share_user_invite_default_tooltip">Shared users are invited to all events in this calendar by default.</string>

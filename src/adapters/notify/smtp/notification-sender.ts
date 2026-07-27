@@ -994,6 +994,14 @@ export class SmtpNotificationSender implements NotificationSender {
             subject: envelope.subject,
             body: envelope.body,
             theme,
+            verifyUrl:
+                typeof envelope.metadata?.verifyUrl === "string"
+                    ? envelope.metadata.verifyUrl
+                    : undefined,
+            verifyButtonLabel:
+                typeof envelope.metadata?.verifyButtonLabel === "string"
+                    ? envelope.metadata.verifyButtonLabel
+                    : undefined,
         });
     }
 }

@@ -120,7 +120,10 @@
   <string name="gateway.calendar.delete_calendar_success">Kalender dihapus.</string>
   <string name="gateway.calendar.delete_calendar_failed">Tidak dapat menghapus kalender.</string>
   <string name="gateway.calendar.share_calendar">Bagikan Kalender</string>
-  <string name="gateway.calendar.share_users_heading">Pengguna berbagi</string>
+  <string name="gateway.calendar.share_users_heading">Bagikan dengan Orang</string>
+  <string name="gateway.calendar.share_users_empty">Belum ada orang yang memiliki akses.</string>
+  <string name="gateway.calendar.share_email_recipients">Penerima Email</string>
+  <string name="gateway.calendar.share_email_recipients_placeholder">Ketik alamat email lalu tekan Enter</string>
   <string name="gateway.calendar.share_links_heading">Tautan berbagi</string>
   <string name="gateway.calendar.share_link_permission">Izin</string>
   <string name="gateway.calendar.share_user_invite_default_tooltip">Pengguna yang dibagikan akan diundang ke semua acara di kalender ini secara default.</string>

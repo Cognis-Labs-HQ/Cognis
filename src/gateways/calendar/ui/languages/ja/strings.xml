@@ -120,7 +120,10 @@
   <string name="gateway.calendar.delete_calendar_success">カレンダーを削除しました。</string>
   <string name="gateway.calendar.delete_calendar_failed">カレンダーを削除できませんでした。</string>
   <string name="gateway.calendar.share_calendar">カレンダーを共有</string>
-  <string name="gateway.calendar.share_users_heading">共有ユーザー</string>
+  <string name="gateway.calendar.share_users_heading">共有する相手</string>
+  <string name="gateway.calendar.share_users_empty">アクセスできる相手はまだいません。</string>
+  <string name="gateway.calendar.share_email_recipients">メール受信者</string>
+  <string name="gateway.calendar.share_email_recipients_placeholder">メールアドレスを入力して Enter キーを押す</string>
   <string name="gateway.calendar.share_links_heading">共有リンク</string>
   <string name="gateway.calendar.share_link_permission">権限</string>
   <string name="gateway.calendar.share_user_invite_default_tooltip">共有ユーザーはこのカレンダー内のすべてのイベントにデフォルトで招待されます。</string>

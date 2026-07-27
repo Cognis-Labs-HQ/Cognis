@@ -37,6 +37,11 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
             expiresAtLabel: i18n.t("gateway.calendar.share_links_heading"),
             expiredAtLabel: i18n.t("gateway.calendar.share_links_heading"),
             users: i18n.t("gateway.calendar.share_users_heading"),
+            userEmpty: i18n.t("gateway.calendar.share_users_empty"),
+            emailRecipients: i18n.t("gateway.calendar.share_email_recipients"),
+            emailRecipientsPlaceholder: i18n.t(
+                "gateway.calendar.share_email_recipients_placeholder",
+            ),
             userSearchPlaceholder: i18n.t(
                 "gateway.calendar.attendees_placeholder",
             ),

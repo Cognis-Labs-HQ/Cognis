@@ -120,7 +120,10 @@
   <string name="gateway.calendar.delete_calendar_success">Kalender gelöscht.</string>
   <string name="gateway.calendar.delete_calendar_failed">Kalender konnte nicht gelöscht werden.</string>
   <string name="gateway.calendar.share_calendar">Kalender Teilen</string>
-  <string name="gateway.calendar.share_users_heading">Geteilte Benutzer</string>
+  <string name="gateway.calendar.share_users_heading">Mit Personen teilen</string>
+  <string name="gateway.calendar.share_users_empty">Noch keine Personen haben Zugriff.</string>
+  <string name="gateway.calendar.share_email_recipients">E-Mail-Empfänger</string>
+  <string name="gateway.calendar.share_email_recipients_placeholder">E-Mail-Adresse eingeben und Eingabetaste drücken</string>
   <string name="gateway.calendar.share_links_heading">Freigabelinks</string>
   <string name="gateway.calendar.share_link_permission">Berechtigung</string>
   <string name="gateway.calendar.share_user_invite_default_tooltip">Geteilte Benutzer werden standardmäßig zu allen Ereignissen in diesem Kalender eingeladen.</string>

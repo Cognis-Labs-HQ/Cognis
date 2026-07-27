@@ -357,6 +357,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
         );
     }
+    if (ctx.flow.exists("construct-share-page")) {
+        ctx.flow.extend(
+            "construct-share-page",
+            "resolve-resource-renderer",
+            { id: "calendar-gateway:share-renderer" },
+            (stageCtx) =>
+                String(
+                    (stageCtx.input as { resourceType?: unknown })
+                        ?.resourceType ?? "",
+                ) === "calendar"
+                    ? {
+                          rendererScriptUrl:
+                              "/static/gateways/calendar/ui/share-renderer.js",
+                          stringsBaseUrl: [
+                              "/static/gateways/calendar/ui/languages",
+                          ],
+                      }
+                    : null,
+        );
+    }
     if (ctx.flow.exists("revoke-share-token")) {
         ctx.flow.extend(
             "revoke-share-token",

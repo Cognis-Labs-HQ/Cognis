@@ -265,3 +265,25 @@
     min-width: 5rem;
     padding: 0.2rem 0.35rem;
 }
+
+.share-email-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.share-email-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    background: var(--surface-3, var(--surface-2));
+}
+
+.share-email-tag button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+}

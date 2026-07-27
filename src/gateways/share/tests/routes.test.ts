@@ -92,6 +92,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 `${String(input.label ?? "")}\n${input.shareUrl}`,
             )}`) as never,
     );
+    const shareEmailRecipients: string[] = [];
+    capabilities.contribute("notify:sendShareEmail", ((emailInput: {
+        recipientEmail: string;
+    }) => {
+        shareEmailRecipients.push(emailInput.recipientEmail);
+        return Promise.resolve({ dispatched: ["smtp"] });
+    }) as never);
     capabilities.contribute("share:resolveVariants", ((input: {
         token: string;
         shareUrl: string;
@@ -257,6 +264,22 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         createResponse.body.data.quickShareActions[0].href,
         /^mailto:/,
     );
+
+    const shareEmailResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}/email`,
+        { recipients: ["guest@example.com", "guest@example.com"] },
+    );
+    assert.equal(shareEmailResponse.statusCode, 200);
+    assert.deepEqual(shareEmailRecipients, ["guest@example.com"]);
+    const repeatedShareEmailResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}/email`,
+        { recipients: ["guest@example.com"] },
+    );
+    assert.equal(repeatedShareEmailResponse.statusCode, 429);
 
     const listResponse = await dispatchJson(
         "GET",

@@ -13,6 +13,9 @@ import {
 } from "../../../api/reuse/route-context.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 
+const SHARE_EMAIL_COOLDOWN_MS = 12 * 60 * 60 * 1000;
+const shareEmailSentAt = new Map<string, number>();
+
 function sendJson(
     res: ServerResponse,
     statusCode: number,
@@ -301,6 +304,89 @@ export function createShareRoutes(input: {
                 return true;
             }
             sendJson(res, 200, { data: { deleted: true } });
+            return true;
+        }
+
+        const emailMatch = url.pathname.match(
+            /^\/api\/v1\/share\/tokens\/([^/]+)\/email$/,
+        );
+        if (req.method === "POST" && emailMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const shareId = decodeURIComponent(emailMatch[1]);
+            const shareRecord = await input.gateway.getTokenById(shareId);
+            if (!shareRecord || shareRecord.ownerAccountId !== claims.sub) {
+                sendError(res, 404, "not_found", "Share token not found.");
+                return true;
+            }
+            const body = (await readJson(req)) as { recipients?: unknown };
+            const recipients = Array.from(
+                new Set(
+                    (Array.isArray(body.recipients) ? body.recipients : [])
+                        .map((recipient) =>
+                            String(recipient ?? "")
+                                .trim()
+                                .toLowerCase(),
+                        )
+                        .filter((recipient) =>
+                            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient),
+                        ),
+                ),
+            ).slice(0, 20);
+            if (recipients.length === 0) {
+                sendError(res, 400, "bad_request", "Recipients are required.");
+                return true;
+            }
+            const now = Date.now();
+            const limitedRecipient = recipients.find((recipient) => {
+                const sentAt =
+                    shareEmailSentAt.get(`${claims.sub}:${recipient}`) ?? 0;
+                return now - sentAt < SHARE_EMAIL_COOLDOWN_MS;
+            });
+            if (limitedRecipient) {
+                sendError(
+                    res,
+                    429,
+                    "rate_limited",
+                    "A share email was recently sent to this recipient.",
+                );
+                return true;
+            }
+            const sendShareEmail = input.gateway.getCapability<
+                (emailInput: {
+                    recipientEmail: string;
+                    shareUrl: string;
+                    shareLabel: string;
+                }) => Promise<unknown>
+            >("notify:sendShareEmail");
+            if (!sendShareEmail) {
+                sendError(
+                    res,
+                    503,
+                    "unavailable",
+                    "Share email is unavailable.",
+                );
+                return true;
+            }
+            const shareUrl = String(shareRecord.shareUrl ?? "");
+            await Promise.all(
+                recipients.map(async (recipient) => {
+                    await sendShareEmail({
+                        recipientEmail: recipient,
+                        shareUrl,
+                        shareLabel: String(shareRecord.label ?? ""),
+                    });
+                    shareEmailSentAt.set(`${claims.sub}:${recipient}`, now);
+                }),
+            );
+            input.log?.("info", "Share emails dispatched.", {
+                component: "share-gateway",
+                operation: "send_share_email",
+                accountId: claims.sub,
+                shareId,
+                recipientCount: recipients.length,
+            });
+            sendJson(res, 200, { data: { sent: recipients.length } });
             return true;
         }
 

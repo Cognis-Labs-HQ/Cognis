@@ -96,6 +96,76 @@ export function createCalendarCoreRoutes({
     ): Promise<boolean> => {
         ensureNotificationCategory();
         const dispatchNotification = getDispatchNotification();
+        const sharedEventsMatch = url.pathname.match(
+            /^\/api\/v1\/calendar\/shared\/([^/]+)\/events$/,
+        );
+        if (
+            sharedEventsMatch &&
+            (req.method === "GET" || req.method === "POST")
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const calendarId = decodeURIComponent(sharedEventsMatch[1]);
+            const resolveGuestAccess = ctx.getCapability?.<
+                (accessInput: {
+                    claims: { sub?: string };
+                    resourceType: string;
+                    resourceId: string;
+                    requiredCapability: string;
+                }) => Promise<{ shareGuest: boolean; authorized: boolean }>
+            >("share:resolveGuestAccess");
+            const requiredCapability =
+                req.method === "POST" ? "calendar:write" : "calendar:read";
+            const guestAccess = resolveGuestAccess
+                ? await resolveGuestAccess({
+                      claims,
+                      resourceType: "calendar",
+                      resourceId: calendarId,
+                      requiredCapability,
+                  })
+                : { shareGuest: false, authorized: false };
+            if (!guestAccess.authorized) {
+                sendCalendarError(
+                    res,
+                    "forbidden",
+                    "Share access denied.",
+                    403,
+                );
+                return true;
+            }
+            if (req.method === "GET") {
+                sendJson(res, 200, { data: gateway.listEvents(calendarId) });
+                return true;
+            }
+            const body = (await readJson(req)) as Record<string, unknown>;
+            try {
+                const event = gateway.addEventToCalendar({
+                    calendarId,
+                    title: String(body.title ?? "").trim(),
+                    description: String(body.description ?? ""),
+                    startAt: String(body.startAt ?? ""),
+                    endAt: String(body.endAt ?? ""),
+                    createdBy: claims.sub,
+                    attendees: [],
+                    inviteEmails: [],
+                    reminderOffsetsMinutes: [],
+                    meetingUrl: null,
+                    status: "busy",
+                    recurrence: "none",
+                });
+                await gateway.flushStore();
+                log?.("info", "Shared calendar event created.", {
+                    component: "calendar-gateway",
+                    operation: "create_shared_event",
+                    calendarId,
+                    eventId: event.id,
+                });
+                sendJson(res, 201, { data: event });
+            } catch (error) {
+                sendCalendarError(res, "bad_request", errorMessage(error), 400);
+            }
+            return true;
+        }
         if (
             url.pathname === "/api/v1/calendar/calendars" &&
             req.method === "GET"

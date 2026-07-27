@@ -272,6 +272,8 @@ function renderRows(labels, links) {
 }
 
 function renderBody(labels, state) {
+    const activeModule = state.methodModules.get(state.activeMethodId);
+    const emptyLabel = activeModule?.getEmptyLabel?.(labels) ?? labels.empty;
     return `
     <section class="share-links-popup">
       <nav class="share-method-tabs" aria-label="${escapeHtml(labels.methods || "Share methods")}">
@@ -279,9 +281,9 @@ function renderBody(labels, state) {
       </nav>
       <p class="share-method-description"></p>
       <div class="share-method-page"></div>
-      <h3 class="share-method-history-heading"></h3>
-      <div class="share-links-list-container">
-        ${renderRows(labels, state.visibleLinks)}
+          <h3 class="share-method-history-heading"></h3>
+          <div class="share-links-list-container">
+        ${renderRows({ ...labels, empty: emptyLabel }, state.visibleLinks)}
       </div>
     </section>
   `;
@@ -390,7 +392,16 @@ export async function openShareLinksPopup({
         if (!(listContainer instanceof HTMLElement)) {
             return;
         }
-        listContainer.innerHTML = renderRows(labels, state.visibleLinks);
+        listContainer.innerHTML = renderRows(
+            {
+                ...labels,
+                empty:
+                    state.methodModules
+                        .get(state.activeMethodId)
+                        ?.getEmptyLabel?.(labels) ?? labels.empty,
+            },
+            state.visibleLinks,
+        );
         hydrateProfileAvatars(listContainer);
     }
 
@@ -447,9 +458,10 @@ export async function openShareLinksPopup({
                 selectedUsers.innerHTML = state.recipients
                     .map(
                         (recipient) =>
-                            `<span class="share-links-recipient-chip">${escapeHtml(recipient.label || recipient.id)}<small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
+                            `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}${recipient.handle ? `<small>@${escapeHtml(recipient.handle)}</small>` : ""}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
                     )
                     .join("");
+                hydrateProfileAvatars(selectedUsers);
             };
 
             const renderMethodPage = () => {
@@ -509,35 +521,13 @@ export async function openShareLinksPopup({
                             ? new Date(state.expiresAt).toISOString()
                             : "",
                         password: state.password,
-                        recipients:
-                            state.activeMethodId === "user"
-                                ? state.recipients
-                                : [],
+                        recipients: state.recipients,
                         shareMethod: state.activeMethodId,
+                        permission: state.permission,
+                        selectedAccess: state.linkAccessOptions.find(
+                            (option) => option.id === state.linkAccessId,
+                        ),
                     };
-                    const selectedAccess = state.linkAccessOptions.find(
-                        (option) => option.id === state.linkAccessId,
-                    );
-                    if (state.activeMethodId === "link" && selectedAccess) {
-                        createInput.grantedCapabilities =
-                            selectedAccess.grantedCapabilities;
-                        createInput.accessControls = {
-                            permissions: selectedAccess.permissions,
-                        };
-                    } else if (state.activeMethodId === "user") {
-                        createInput.accessControls = {
-                            permissions:
-                                state.permission === "write"
-                                    ? ["read", "write"]
-                                    : ["read"],
-                        };
-                    }
-                    if (
-                        state.activeMethodId === "user" &&
-                        state.recipients.length === 0
-                    ) {
-                        throw new Error("recipient_required");
-                    }
                     const methodModule = state.methodModules.get(
                         state.activeMethodId,
                     );
@@ -546,6 +536,9 @@ export async function openShareLinksPopup({
                             ? methodModule.buildCreateOptions(createInput)
                             : createInput,
                     );
+                    if (typeof methodModule?.afterCreate === "function") {
+                        await methodModule.afterCreate({ result });
+                    }
                     if (result?.id) {
                         state.pendingLinks.set(String(result.id), result);
                         state.links = [
@@ -654,6 +647,18 @@ export async function openShareLinksPopup({
             methodPage.addEventListener("click", (event) => {
                 const target = event.target;
                 if (!(target instanceof HTMLElement)) return;
+                const activeModule = state.methodModules.get(
+                    state.activeMethodId,
+                );
+                if (
+                    typeof activeModule?.handleClick === "function" &&
+                    activeModule.handleClick({
+                        target,
+                        page: methodPage,
+                        escapeHtml,
+                    })
+                )
+                    return;
                 if (target.closest("#share-links-create-btn")) {
                     void createCurrentShare();
                     return;
@@ -694,6 +699,17 @@ export async function openShareLinksPopup({
                     );
                     renderSelectedUsers();
                 }
+            });
+
+            methodPage.addEventListener("keydown", (event) => {
+                const activeModule = state.methodModules.get(
+                    state.activeMethodId,
+                );
+                activeModule?.handleKeydown?.({
+                    event,
+                    page: methodPage,
+                    escapeHtml,
+                });
             });
 
             listContainer.addEventListener("click", (event) => {

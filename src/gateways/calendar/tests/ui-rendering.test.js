@@ -58,6 +58,10 @@ const POPUP_MANAGER_CALENDAR_EDIT_SOURCE = readFileSync(
     ),
     "utf8",
 );
+const SHARE_RENDERER_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/share-renderer.js"),
+    "utf8",
+);
 const POPUP_MANAGER_RESPONSE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-response.js"),
     "utf8",
@@ -464,4 +468,11 @@ test("calendar upcoming and pending event helpers exclude past events via endAt 
         HELPERS_SOURCE,
         /function collectPendingEvents[\s\S]*\.filter\(\(event\) => new Date\(event\.endAt\)\.getTime\(\) >= Date\.now\(\)\)/s,
     );
+});
+
+test("calendar share renderer displays one calendar and enables scoped writes", () => {
+    assert.match(SHARE_RENDERER_SOURCE, /registerShareRenderer\(\s*"calendar"/);
+    assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
+    assert.match(SHARE_RENDERER_SOURCE, /\/api\/v1\/calendar\/shared\//);
+    assert.match(SHARE_RENDERER_SOURCE, /shared-calendar-event-form/);
 });
