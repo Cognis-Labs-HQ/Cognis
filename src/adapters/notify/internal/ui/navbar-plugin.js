@@ -43,6 +43,14 @@ function navigateNotif(actionUrl) {
     try {
         const url = new URL(actionUrl, window.location.origin);
         if (url.origin === window.location.origin) {
+            if (url.pathname.startsWith("/share/")) {
+                // Share pages are public/full-document entry points whose
+                // authentication and keyring hooks are installed by the
+                // share page template. They are intentionally outside the
+                // authenticated dashboard SPA route registry.
+                window.location.assign(url.pathname + url.search + url.hash);
+                return;
+            }
             navigateTo(url.pathname + url.search + url.hash);
         } else {
             window.open(actionUrl, "_blank", "noopener,noreferrer");
