@@ -7,9 +7,18 @@ export function acceptsShare(share) {
 }
 
 export function buildCreateOptions(input) {
+    const defaultCapabilities = Array.isArray(input.defaultGrantedCapabilities)
+        ? input.defaultGrantedCapabilities
+        : [];
     return {
         ...input,
         recipients: input.recipients || [],
+        grantedCapabilities:
+            input.permission === "write"
+                ? defaultCapabilities
+                : defaultCapabilities.filter(
+                      (capability) => !String(capability).endsWith(":write"),
+                  ),
         accessControls: {
             permissions:
                 input.permission === "write" ? ["read", "write"] : ["read"],

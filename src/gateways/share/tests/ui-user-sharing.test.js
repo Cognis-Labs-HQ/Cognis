@@ -40,6 +40,12 @@ test("share popup owns user recipient search and selection", () => {
     assert.match(userPageSource, /share-links-user-permission/);
     assert.match(userPageSource, /type="datetime-local"/);
     assert.match(userPageSource, /gatewayFields\.password/);
+    assert.match(userPageSource, /defaultGrantedCapabilities/);
+    assert.match(userPageSource, /endsWith\(":write"\)/);
+    assert.match(
+        popupSource,
+        /defaultGrantedCapabilities: grantedCapabilities/,
+    );
     assert.doesNotMatch(userPageSource, /share-links-label/);
 });
 
@@ -104,4 +110,28 @@ test("selected users retain lookup-card placement without visible handles", () =
     );
     assert.match(popupSource, /profileHandle: recipient\.handle/);
     assert.doesNotMatch(popupSource, /recipient\.handle \? `<small>@/);
+});
+
+test("user share permissions constrain granted capabilities", async () => {
+    const userPageModule = await import(
+        new URL("../../../adapters/share/user/page.js", import.meta.url)
+    );
+    const baseInput = {
+        recipients: [{ type: "user", id: "bob" }],
+        defaultGrantedCapabilities: ["calendar:read", "calendar:write"],
+    };
+    assert.deepEqual(
+        userPageModule.buildCreateOptions({
+            ...baseInput,
+            permission: "read",
+        }).grantedCapabilities,
+        ["calendar:read"],
+    );
+    assert.deepEqual(
+        userPageModule.buildCreateOptions({
+            ...baseInput,
+            permission: "write",
+        }).grantedCapabilities,
+        ["calendar:read", "calendar:write"],
+    );
 });

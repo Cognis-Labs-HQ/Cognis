@@ -202,6 +202,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "share:resolveVariants",
         (variantInput: {
             resourceType: string;
+            resourceId: string;
             token: string;
             shareUrl: string;
             grantedCapabilities: string[];
@@ -218,8 +219,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 ];
             }
             const encodedToken = encodeURIComponent(variantInput.token);
+            const calendar = gateway.getCalendar(variantInput.resourceId);
             const calendarPathName = encodeURIComponent(
-                String(variantInput.metadata?.resourceName ?? "calendar"),
+                String(
+                    calendar?.name ??
+                        variantInput.metadata?.resourceName ??
+                        "calendar",
+                ),
             );
             const access = variantInput.grantedCapabilities.includes(
                 "calendar:write",

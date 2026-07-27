@@ -124,6 +124,7 @@ export function openSharePopup({
     return openShareLinksPopup({
         ...popupOptions,
         passwordRequired,
+        defaultGrantedCapabilities: grantedCapabilities,
         ...buildShareTokenCallbacks({
             resourceType,
             resourceId,
@@ -333,6 +334,7 @@ export async function openShareLinksPopup({
     fetchMethods,
     linkAccessOptions = [],
     passwordRequired = false,
+    defaultGrantedCapabilities = [],
 }) {
     await ensureStylesheet();
 
@@ -345,6 +347,7 @@ export async function openShareLinksPopup({
         expiresAt: "",
         password: "",
         passwordRequired,
+        defaultGrantedCapabilities,
         recipients: [],
         methods: [],
         methodModules: new Map(),
@@ -569,6 +572,8 @@ export async function openShareLinksPopup({
                         selectedAccess: state.linkAccessOptions.find(
                             (option) => option.id === state.linkAccessId,
                         ),
+                        defaultGrantedCapabilities:
+                            state.defaultGrantedCapabilities,
                     };
                     const methodModule = state.methodModules.get(
                         state.activeMethodId,

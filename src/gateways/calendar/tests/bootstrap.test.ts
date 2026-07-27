@@ -49,9 +49,20 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
 
     const routes = routeRegistry.getHandlers();
     assert.ok(routes.length > 0);
+    const createCalendarResponse = await createJsonDispatcher(routeRegistry)(
+        "POST",
+        adminToken,
+        "/api/v1/calendar/calendars",
+        {
+            name: "Live Team Calendar",
+            visibility: "private",
+        },
+    );
+    assert.equal(createCalendarResponse.statusCode, 201);
     const resolveVariants = capabilities.get<
         (input: {
             resourceType: string;
+            resourceId: string;
             token: string;
             shareUrl: string;
             grantedCapabilities: string[];
@@ -60,13 +71,14 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     >("share:resolveVariants");
     const variants = resolveVariants?.({
         resourceType: "calendar",
+        resourceId: createCalendarResponse.body.data.id,
         token: "protected-token",
         shareUrl: "/share/protected-token",
         grantedCapabilities: ["calendar:read"],
-        metadata: { resourceName: "Team Calendar" },
+        metadata: { resourceName: "Stale Calendar Name" },
     });
     const caldavVariant = variants?.find((variant) => variant.id === "caldav");
-    assert.match(caldavVariant?.url ?? "", /\/Team%20Calendar\/$/);
+    assert.match(caldavVariant?.url ?? "", /\/Live%20Team%20Calendar\/$/);
     assert.doesNotMatch(caldavVariant?.url ?? "", /passphrase=/);
     assert.equal(caldavVariant?.access, "read");
 });
