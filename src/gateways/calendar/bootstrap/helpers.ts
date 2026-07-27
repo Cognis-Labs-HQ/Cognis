@@ -82,6 +82,7 @@ export function normalizeReminderOffsets(value: unknown): number[] {
 
 export function buildCalendarShareData(input: {
     shareLink: CalendarShareLinkRegistryRecord;
+    calendarName: string;
     buildAbsoluteUrl: (relativePath: string) => string;
 }): {
     id: string;
@@ -92,12 +93,13 @@ export function buildCalendarShareData(input: {
     caldavUrl: string;
     icsUrl: string;
 } {
+    const encodedCalendarName = encodeURIComponent(input.calendarName);
     const caldavPath = `/api/v1/calendar/caldav/share/${encodeURIComponent(
         input.shareLink.token,
-    )}`;
+    )}/${encodedCalendarName}/`;
     const icsPath = `/api/v1/calendar/ics/share/${encodeURIComponent(
         input.shareLink.token,
-    )}`;
+    )}/${encodedCalendarName}.ics`;
     const caldavUrl = input.buildAbsoluteUrl(caldavPath);
     const icsUrl = input.buildAbsoluteUrl(icsPath);
     return {

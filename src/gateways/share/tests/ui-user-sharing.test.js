@@ -39,7 +39,7 @@ test("share popup owns user recipient search and selection", () => {
     assert.match(userPageSource, /share-links-user-search/);
     assert.match(userPageSource, /share-links-user-permission/);
     assert.match(userPageSource, /type="datetime-local"/);
-    assert.match(userPageSource, /gatewayFields\.password/);
+    assert.doesNotMatch(userPageSource, /gatewayFields\.password/);
     assert.match(userPageSource, /defaultGrantedCapabilities/);
     assert.match(userPageSource, /endsWith\(":write"\)/);
     assert.match(
@@ -58,6 +58,9 @@ test("share popup callbacks use only share gateway recipient and token routes", 
     assert.match(popupSource, /createFormBuilder/);
     assert.match(popupSource, /required: state\.passwordRequired/);
     assert.match(popupSource, /passwordForm\.reportValidity\(\)/);
+    assert.match(popupSource, /renderInfoTooltip/);
+    assert.match(popupSource, /data-share-generate-password/);
+    assert.match(popupSource, /crypto\.getRandomValues/);
     assert.doesNotMatch(apiSource, /\/api\/v1\/calendar/);
 });
 

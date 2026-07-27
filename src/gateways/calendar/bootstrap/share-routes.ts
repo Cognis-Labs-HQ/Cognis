@@ -85,6 +85,7 @@ export async function handleCalendarShareRoutes(input: {
             data: shareLinks.map((shareLink) =>
                 buildCalendarShareData({
                     shareLink,
+                    calendarName: calendar.name,
                     buildAbsoluteUrl: input.buildAbsoluteUrl,
                 }),
             ),
@@ -118,6 +119,7 @@ export async function handleCalendarShareRoutes(input: {
             data: shareLinks.map((shareLink) =>
                 buildCalendarShareData({
                     shareLink,
+                    calendarName: calendar.name,
                     buildAbsoluteUrl: input.buildAbsoluteUrl,
                 }),
             ),
@@ -165,6 +167,7 @@ export async function handleCalendarShareRoutes(input: {
             data: shareLinks.map((shareLink) =>
                 buildCalendarShareData({
                     shareLink,
+                    calendarName: calendar.name,
                     buildAbsoluteUrl: input.buildAbsoluteUrl,
                 }),
             ),

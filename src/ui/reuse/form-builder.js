@@ -41,7 +41,7 @@ const NEAR_LIMIT_THRESHOLD = 0.1;
  *   const html = formBuilder.render();
  *   const controller = formBuilder.attach(document.querySelector('#register-form'));
  *
- * @param {{ i18n?: { t: (key: string) => string }, escapeHtml?: (value: string) => string } | undefined} ctx
+ * @param {{ i18n?: { t: (key: string) => string }, escapeHtml?: (value: string) => string, renderInfoTooltip?: (text: string, ariaLabel?: string, id?: string) => string } | undefined} ctx
  * @param {{
  *   formId: string,
  *   formClassName?: string,
@@ -70,6 +70,7 @@ const NEAR_LIMIT_THRESHOLD = 0.1;
  *       mode?: 'live'|'submit',
  *     }>,
  *     criteriaDisplay?: 'inline'|'floating-alert',
+ *     infoTooltip?: { text: string, ariaLabel?: string, id?: string },
  *   }>,
  * }} options
  * @returns {{ render: () => string, attach: (formElement: HTMLFormElement, attachOptions?: { signal?: AbortSignal }) => { validateField: (fieldName: string, forceTouched?: boolean) => boolean, validateAll: (forceTouched?: boolean) => boolean, getValues: () => Record<string, string>, detach: () => void } }}
@@ -156,6 +157,13 @@ export function createFormBuilder(ctx, options) {
         const requiredFlagInline = required
             ? `<span class="form-builder-required-flag" data-form-builder-required="${escapeHtml(fieldName)}" aria-hidden="true"> *</span>`
             : "";
+        const infoTooltip = fieldConfig.infoTooltip?.text
+            ? (ctx.renderInfoTooltip?.(
+                  fieldConfig.infoTooltip.text,
+                  fieldConfig.infoTooltip.ariaLabel,
+                  fieldConfig.infoTooltip.id,
+              ) ?? "")
+            : "";
 
         const criteriaItems = (
             Array.isArray(fieldConfig.criteria) ? fieldConfig.criteria : []
@@ -231,7 +239,7 @@ export function createFormBuilder(ctx, options) {
 
         return `
       <label class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
-        <span class="form-builder-label-text">${escapeHtml(label)}${requiredFlagInline}</span>
+        <span class="form-builder-label-text">${escapeHtml(label)}${requiredFlagInline}${infoTooltip}</span>
         ${inputMarkup}
         ${counterMarkup}
         ${inlineCriteria}

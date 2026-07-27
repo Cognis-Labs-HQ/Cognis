@@ -136,6 +136,8 @@
   <string name="gateway.calendar.share_expiry_datetime_optional">有効期限（任意）</string>
   <string name="gateway.calendar.share_password_optional">パスワード保護</string>
   <string name="gateway.calendar.share_password_placeholder">共有パスワードを入力</string>
+  <string name="gateway.calendar.share_password_required_info">このカレンダーは非公開のため、リンク共有をパスワードで保護する必要があります。</string>
+  <string name="gateway.calendar.share_password_generate">安全な共有パスワードを生成</string>
   <string name="gateway.calendar.share_link_expiry_1h">1時間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_24h">24時間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_7d">7日間で期限切れ</string>

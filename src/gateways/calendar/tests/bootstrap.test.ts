@@ -276,7 +276,7 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     const defaultCalendarName = defaultCalendar.name;
     centralCalendarId = defaultCalendarId;
 
-    const writableShareBase = "/api/v1/calendar/caldav/share/user-share-token";
+    const writableShareBase = `/api/v1/calendar/caldav/share/user-share-token/${encodeURIComponent(defaultCalendarName)}/`;
     const writableSharePath = `${writableShareBase}?passphrase=share-secret`;
     const protectedProbeRequest = new RequestRecorder({
         method: "PROPFIND",
@@ -312,7 +312,9 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     assert.match(writablePropfindResponse.payload, /<d:write\/>/);
     assert.match(
         writablePropfindResponse.payload,
-        /user-share-token\?passphrase=share-secret/,
+        new RegExp(
+            `user-share-token/${encodeURIComponent(defaultCalendarName)}/\\?passphrase=share-secret`,
+        ),
     );
 
     const writablePutRequest = new RequestRecorder({
@@ -335,7 +337,7 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         writablePutRequest,
         writablePutResponse,
         new URL(
-            `http://localhost${writableShareBase}/client-event.ics?passphrase=share-secret`,
+            `http://localhost${writableShareBase}client-event.ics?passphrase=share-secret`,
         ),
     );
     assert.equal(writablePutResponse.statusCode, 201);
@@ -407,11 +409,15 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     assert.equal(shareResponse.body.data.length, 1);
     assert.match(
         shareResponse.body.data[0].caldavUrl,
-        /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/,
+        new RegExp(
+            `/api/v1/calendar/caldav/share/[^/]+/${encodeURIComponent(defaultCalendarName)}/$`,
+        ),
     );
     assert.match(
         shareResponse.body.data[0].icsUrl,
-        /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/,
+        new RegExp(
+            `/api/v1/calendar/ics/share/[^/]+/${encodeURIComponent(defaultCalendarName)}\\.ics$`,
+        ),
     );
     assert.equal(
         shareResponse.body.data[0].shareUrl,
@@ -551,26 +557,9 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         privateIcsResponse,
         new URL(`http://localhost${privateIcsPath}`),
     );
-    assert.equal(privateIcsResponse.statusCode, 302);
-    assert.match(
-        privateIcsResponse.headers.location,
-        new RegExp(`/${encodeURIComponent(defaultCalendarName)}\\.ics$`),
-    );
-    const namedPrivateIcsPath = privateIcsResponse.headers.location;
-    const namedPrivateIcsRequest = new RequestRecorder({
-        method: "GET",
-        headers: privateIcsRequest.headers,
-    });
-    const namedPrivateIcsResponse = new ResponseRecorder();
-    await dispatchRoute(
-        routeRegistry,
-        namedPrivateIcsRequest,
-        namedPrivateIcsResponse,
-        new URL(`http://localhost${namedPrivateIcsPath}`),
-    );
-    assert.equal(namedPrivateIcsResponse.statusCode, 200);
+    assert.equal(privateIcsResponse.statusCode, 200);
     assert.equal(
-        namedPrivateIcsResponse.headers["x-cognis-calendar-access"],
+        privateIcsResponse.headers["x-cognis-calendar-access"],
         "read",
     );
 
@@ -587,7 +576,7 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         routeRegistry,
         privateIcsPropfindRequest,
         privateIcsPropfindResponse,
-        new URL(`http://localhost${namedPrivateIcsPath}`),
+        new URL(`http://localhost${privateIcsPath}`),
     );
     assert.equal(privateIcsPropfindResponse.statusCode, 207);
     assert.match(privateIcsPropfindResponse.payload, /<d:read\/>/);
@@ -602,7 +591,7 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         routeRegistry,
         privateIcsMutationRequest,
         privateIcsMutationResponse,
-        new URL(`http://localhost${namedPrivateIcsPath}`),
+        new URL(`http://localhost${privateIcsPath}`),
     );
     assert.equal(privateIcsMutationResponse.statusCode, 403);
     assert.match(privateIcsMutationResponse.payload, /<d:need-privileges>/);
@@ -653,11 +642,15 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     assert.ok(publicShare);
     assert.match(
         publicShare.caldavUrl,
-        /^\/api\/v1\/calendar\/caldav\/share\/[^/]+$/,
+        new RegExp(
+            `/api/v1/calendar/caldav/share/[^/]+/${encodeURIComponent(defaultCalendarName)}/$`,
+        ),
     );
     assert.match(
         publicShare.icsUrl,
-        /^\/api\/v1\/calendar\/ics\/share\/[^/]+$/,
+        new RegExp(
+            `/api/v1/calendar/ics/share/[^/]+/${encodeURIComponent(defaultCalendarName)}\\.ics$`,
+        ),
     );
     assert.equal(publicShare.passphrase, null);
 

@@ -107,6 +107,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { buildShareTokenCallbacks } from "./share-api.js";
 
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
@@ -295,12 +296,13 @@ function renderBody(labels, state) {
 }
 
 function renderPasswordProtectionField(labels, state) {
-    return createFormBuilder(
+    const formMarkup = createFormBuilder(
         {
             i18n: {
                 t: () => labels.password,
             },
             escapeHtml,
+            renderInfoTooltip,
         },
         {
             formId: "share-links-password-form",
@@ -312,6 +314,15 @@ function renderPasswordProtectionField(labels, state) {
                     labelKey: "password",
                     type: "password",
                     required: state.passwordRequired,
+                    infoTooltip:
+                        state.passwordRequired &&
+                        state.activeMethodId === "link"
+                            ? {
+                                  text: labels.passwordRequiredInfo,
+                                  ariaLabel: labels.moreInformation,
+                                  id: "share-password-required",
+                              }
+                            : undefined,
                     value: state.password,
                     attributes: {
                         autocomplete: "new-password",
@@ -321,6 +332,24 @@ function renderPasswordProtectionField(labels, state) {
             ],
         },
     ).render();
+    return `<div class="share-links-password-row">${formMarkup}<button type="button" class="btn-neutral btn-animated share-links-password-generate" data-share-generate-password aria-label="${escapeHtml(labels.generatePassword)}" title="${escapeHtml(labels.generatePassword)}"><span aria-hidden="true">&#8635;</span></button></div>`;
+}
+
+function generateSharePassword() {
+    const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789_-";
+    const characters = [];
+    const randomValues = new Uint8Array(32);
+    while (characters.length < 20) {
+        crypto.getRandomValues(randomValues);
+        for (const value of randomValues) {
+            if (value >= 228) continue;
+            characters.push(alphabet[value % alphabet.length]);
+            if (characters.length === 20) break;
+        }
+    }
+    return Array.from({ length: 5 }, (_, index) =>
+        characters.slice(index * 4, index * 4 + 4).join(""),
+    ).join("-");
 }
 
 export async function openShareLinksPopup({
@@ -713,6 +742,17 @@ export async function openShareLinksPopup({
             methodPage.addEventListener("click", (event) => {
                 const target = event.target;
                 if (!(target instanceof HTMLElement)) return;
+                if (target.closest("[data-share-generate-password]")) {
+                    state.password = generateSharePassword();
+                    const passwordInput = methodPage.querySelector(
+                        "#form-builder-password",
+                    );
+                    if (passwordInput instanceof HTMLInputElement) {
+                        passwordInput.value = state.password;
+                        passwordInput.focus();
+                    }
+                    return;
+                }
                 if (target.closest("[data-share-cancel-edit]")) {
                     clearEditMode();
                     return;

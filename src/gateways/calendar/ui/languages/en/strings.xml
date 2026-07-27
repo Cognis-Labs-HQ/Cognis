@@ -136,6 +136,8 @@
   <string name="gateway.calendar.share_expiry_datetime_optional">Expires (optional)</string>
   <string name="gateway.calendar.share_password_optional">Password Protection</string>
   <string name="gateway.calendar.share_password_placeholder">Enter a share password</string>
+  <string name="gateway.calendar.share_password_required_info">This calendar is private, so its link share must be protected with a password.</string>
+  <string name="gateway.calendar.share_password_generate">Generate a secure share password</string>
   <string name="gateway.calendar.share_link_expiry_1h">Expires in 1 hour</string>
   <string name="gateway.calendar.share_link_expiry_24h">Expires in 24 hours</string>
   <string name="gateway.calendar.share_link_expiry_7d">Expires in 7 days</string>
