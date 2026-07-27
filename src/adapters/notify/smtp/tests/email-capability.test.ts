@@ -21,10 +21,13 @@ test("SMTP sends a component-contributed email template generically", async () =
     await bootstrapNotifyAdapter({
         capabilities,
         gateway: {
-            dispatch: async (envelope: Record<string, unknown>) => {
-                envelopes.push(envelope);
-                return { dispatched: ["smtp"] };
-            },
+            isSenderEnabled: () => true,
+            getSender: () => ({
+                sendTracked: async (envelope: Record<string, unknown>) => {
+                    envelopes.push(envelope);
+                    return { notificationId: "notification-1" };
+                },
+            }),
         },
         log: () => {},
     } as never);

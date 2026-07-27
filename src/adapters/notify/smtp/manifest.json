@@ -1,6 +1,6 @@
 {
     "id": "smtp",
     "name": "SMTP Email",
-    "version": "0.2.10",
+    "version": "0.2.11",
     "publisher": "Cognis Labs HQ"
 }

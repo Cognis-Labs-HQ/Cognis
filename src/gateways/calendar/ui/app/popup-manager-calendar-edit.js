@@ -19,9 +19,13 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
             revoke: i18n.t("ui.reuse.remove"),
             shareOptions: i18n.t("gateway.calendar.share_links_heading"),
             mail: i18n.t("ui.reuse.mail"),
+            send: i18n.t("gateway.calendar.share_email_send"),
             cancel: i18n.t("ui.reuse.cancel"),
             emailSent: i18n.t("gateway.calendar.share_email_sent"),
             emailFailed: i18n.t("gateway.calendar.share_email_failed"),
+            emailRecipientsRequired: i18n.t(
+                "gateway.calendar.share_email_recipients_required",
+            ),
             label: i18n.t("gateway.calendar.share_link_name_placeholder"),
             labelPlaceholder: i18n.t(
                 "gateway.calendar.share_link_name_placeholder",

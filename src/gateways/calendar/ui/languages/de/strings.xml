@@ -126,6 +126,8 @@
   <string name="gateway.calendar.share_email_recipients_placeholder">E-Mail-Adresse eingeben und Eingabetaste drücken</string>
   <string name="gateway.calendar.share_email_sent">Freigabe-E-Mail gesendet.</string>
   <string name="gateway.calendar.share_email_failed">Freigabe-E-Mail konnte nicht gesendet werden.</string>
+  <string name="gateway.calendar.share_email_send">Senden</string>
+  <string name="gateway.calendar.share_email_recipients_required">Fügen Sie mindestens einen E-Mail-Empfänger hinzu.</string>
   <string name="gateway.calendar.share_links_heading">Freigabelinks</string>
   <string name="gateway.calendar.share_link_permission">Berechtigung</string>
   <string name="gateway.calendar.share_user_invite_default_tooltip">Geteilte Benutzer werden standardmäßig zu allen Ereignissen in diesem Kalender eingeladen.</string>

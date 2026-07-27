@@ -31,7 +31,12 @@ export async function bootstrapNotifyAdapter(
             >("notify:renderEmailTemplate");
             const message = renderTemplate?.(input.templateId, input.variables);
             if (!message) throw new Error("email_template_not_found");
-            const result = await ctx.gateway.dispatch({
+            if (!ctx.gateway.isSenderEnabled("smtp")) {
+                throw new Error("smtp_sender_disabled");
+            }
+            const sender = ctx.gateway.getSender("smtp");
+            if (!sender) throw new Error("smtp_sender_unavailable");
+            const envelope = {
                 category: "system",
                 recipientUsername: input.recipientEmail,
                 recipientEmail: input.recipientEmail,
@@ -43,11 +48,12 @@ export async function bootstrapNotifyAdapter(
                     verifyUrl: message.actionUrl,
                     verifyButtonLabel: message.actionLabel,
                 },
-            });
-            if (!result.dispatched.includes("smtp")) {
-                throw new Error("smtp_email_not_dispatched");
+            };
+            if (typeof sender.sendTracked === "function") {
+                return sender.sendTracked(envelope);
             }
-            return result;
+            await sender.send(envelope);
+            return { sent: true };
         },
     );
     ctx.log?.("info", "SMTP email capability registered.", {

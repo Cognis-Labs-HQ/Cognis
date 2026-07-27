@@ -86,6 +86,9 @@ test("share history supports email delivery and in-place update mode", () => {
     assert.match(userPageSource, /Update User Share/);
     assert.match(linkPageSource, /openEmailPopup/);
     assert.match(linkPageSource, /await openPopup/);
+    assert.match(linkPageSource, /labels\.emailRecipientsRequired/);
+    assert.match(linkPageSource, /variant: "warning"/);
+    assert.match(linkPageSource, /label: labels\.send/);
     assert.match(popupSource, /data-share-cancel-edit/);
     assert.match(popupSource, /clearEditMode/);
     assert.doesNotMatch(popupSource, /variant\.access === "write"/);

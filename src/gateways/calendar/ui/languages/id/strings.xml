@@ -126,6 +126,8 @@
   <string name="gateway.calendar.share_email_recipients_placeholder">Ketik alamat email lalu tekan Enter</string>
   <string name="gateway.calendar.share_email_sent">Email berbagi terkirim.</string>
   <string name="gateway.calendar.share_email_failed">Email berbagi tidak dapat dikirim.</string>
+  <string name="gateway.calendar.share_email_send">Kirim</string>
+  <string name="gateway.calendar.share_email_recipients_required">Tambahkan setidaknya satu penerima email.</string>
   <string name="gateway.calendar.share_links_heading">Tautan berbagi</string>
   <string name="gateway.calendar.share_link_permission">Izin</string>
   <string name="gateway.calendar.share_user_invite_default_tooltip">Pengguna yang dibagikan akan diundang ke semua acara di kalender ini secara default.</string>

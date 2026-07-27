@@ -79,7 +79,7 @@ export async function openEmailPopup({ share, labels, escapeHtml }) {
         actions: [
             {
                 id: "send",
-                label: labels.mail,
+                label: labels.send,
                 variant: "confirm",
             },
             {
@@ -103,7 +103,12 @@ export async function openEmailPopup({ share, labels, escapeHtml }) {
         },
         onAction: async (actionId) => {
             if (actionId !== "send") return true;
-            if (emailRecipients.length === 0) return false;
+            if (emailRecipients.length === 0) {
+                showToast(labels.emailRecipientsRequired, {
+                    variant: "warning",
+                });
+                return false;
+            }
             const response = await apiFetch(
                 `/api/v1/share/tokens/${encodeURIComponent(share.id)}/email`,
                 {
