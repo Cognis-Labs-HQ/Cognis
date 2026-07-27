@@ -1,9 +1,4 @@
-import {
-    createHmac,
-    pbkdf2Sync,
-    randomBytes,
-    timingSafeEqual,
-} from "node:crypto";
+import { pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
@@ -45,28 +40,6 @@ export interface ShareTokenRecord {
     expiresAt: string;
     createdAt: string;
     updatedAt: string;
-}
-
-export function deriveShareTransportPassword(
-    record: Pick<ShareTokenRecord, "passwordHash" | "tokenHash">,
-): string | null {
-    if (!record.passwordHash) return null;
-    return `shr_auth_${createHmac("sha256", record.passwordHash)
-        .update(record.tokenHash)
-        .digest("base64url")}`;
-}
-
-function sharePasswordsMatch(
-    candidate: string,
-    expected: string | null,
-): boolean {
-    if (!expected) return false;
-    const candidateBuffer = Buffer.from(candidate);
-    const expectedBuffer = Buffer.from(expected);
-    return (
-        candidateBuffer.length === expectedBuffer.length &&
-        timingSafeEqual(candidateBuffer, expectedBuffer)
-    );
 }
 
 function normalizeOptionalString(value: unknown): string | null {
@@ -643,13 +616,7 @@ export class ShareTokenStore {
         }
         if (record.passwordHash) {
             const candidate = password ? String(password) : "";
-            if (
-                !verifySharePassword(candidate, record.passwordHash) &&
-                !sharePasswordsMatch(
-                    candidate,
-                    deriveShareTransportPassword(record),
-                )
-            ) {
+            if (!verifySharePassword(candidate, record.passwordHash)) {
                 return null;
             }
         }

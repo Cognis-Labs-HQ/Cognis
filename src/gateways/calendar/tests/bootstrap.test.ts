@@ -55,25 +55,20 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
             token: string;
             shareUrl: string;
             grantedCapabilities: string[];
-            transportPassword: string;
+            metadata: Record<string, string>;
         }) => Array<{ id: string; url: string; access?: string }>
     >("share:resolveVariants");
     const variants = resolveVariants?.({
         resourceType: "calendar",
-        token: "share-token",
-        shareUrl: "/share/share-token",
+        token: "protected-token",
+        shareUrl: "/share/protected-token",
         grantedCapabilities: ["calendar:read"],
-        transportPassword: "transport-secret",
         metadata: { resourceName: "Team Calendar" },
     });
-    assert.match(
-        variants?.find((variant) => variant.id === "caldav")?.url ?? "",
-        /\/Team%20Calendar\/\?passphrase=transport-secret$/,
-    );
-    assert.equal(
-        variants?.find((variant) => variant.id === "caldav")?.access,
-        "read",
-    );
+    const caldavVariant = variants?.find((variant) => variant.id === "caldav");
+    assert.match(caldavVariant?.url ?? "", /\/Team%20Calendar\/$/);
+    assert.doesNotMatch(caldavVariant?.url ?? "", /passphrase=/);
+    assert.equal(caldavVariant?.access, "read");
 });
 
 test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {
@@ -506,6 +501,10 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
     assert.equal(privateCaldavPropfindResponse.statusCode, 207);
     assert.match(privateCaldavPropfindResponse.payload, /<d:read\/>/);
     assert.doesNotMatch(privateCaldavPropfindResponse.payload, /<d:write\/>/);
+    assert.match(
+        privateCaldavPropfindResponse.payload,
+        /<c:supported-calendar-component-set><c:comp name="VEVENT"\/><\/c:supported-calendar-component-set>/,
+    );
 
     const privateIcsRequest = new RequestRecorder({
         method: "GET",
@@ -527,6 +526,25 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         privateIcsResponse.headers["x-cognis-calendar-access"],
         "read",
     );
+
+    const privateIcsPropfindRequest = new RequestRecorder({
+        method: "PROPFIND",
+        headers: {
+            authorization:
+                "Basic " +
+                Buffer.from(`calendar:${privatePassphrase}`).toString("base64"),
+        },
+    });
+    const privateIcsPropfindResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        privateIcsPropfindRequest,
+        privateIcsPropfindResponse,
+        new URL(`http://localhost${privateIcsPath}`),
+    );
+    assert.equal(privateIcsPropfindResponse.statusCode, 207);
+    assert.match(privateIcsPropfindResponse.payload, /<d:read\/>/);
+    assert.doesNotMatch(privateIcsPropfindResponse.payload, /<d:write\/>/);
 
     const expiringShareResponse = await dispatchJson(
         "POST",

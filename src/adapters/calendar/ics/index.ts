@@ -20,6 +20,15 @@ export function createCalendarAdapter(): CalendarAdapter {
     };
 }
 
+function escapeXml(value: string): string {
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&apos;");
+}
+
 function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
@@ -45,6 +54,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         payload: string,
         calendarName: string,
         calendarId: string,
+        resourcePath: string,
         accessMode: "read" | "write" = "read",
     ) => {
         const headers = {
@@ -59,7 +69,17 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             res.end();
             return;
         }
-        if (reqMethod === "HEAD" || reqMethod === "PROPFIND") {
+        if (reqMethod === "PROPFIND") {
+            res.writeHead(207, {
+                ...headers,
+                "content-type": "application/xml; charset=utf-8",
+            });
+            res.end(
+                `<?xml version="1.0" encoding="utf-8"?><d:multistatus xmlns:d="DAV:"><d:response><d:href>${escapeXml(resourcePath)}</d:href><d:propstat><d:prop><d:displayname>${escapeXml(calendarName)}</d:displayname><d:getcontenttype>text/calendar</d:getcontenttype><d:current-user-privilege-set><d:privilege><d:read/></d:privilege></d:current-user-privilege-set></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>`,
+            );
+            return;
+        }
+        if (reqMethod === "HEAD") {
             res.writeHead(200, headers);
             res.end();
             return;
@@ -103,6 +123,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 ics,
                 calendar.name,
                 calendar.id,
+                `${url.pathname}${url.search}`,
                 "read",
             );
             return true;
@@ -160,16 +181,15 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            const ics = ctx.gateway.exportCalendarAsIcs(
-                calendar.id,
-                shareLink.writable ? "write" : "read",
-            );
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");
             respondCalendarPayload(
                 req.method,
                 res,
                 ics,
                 calendar.name,
                 calendar.id,
+                `${url.pathname}${url.search}`,
+                "read",
             );
             return true;
         }
@@ -217,6 +237,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 ics,
                 calendar.name,
                 calendar.id,
+                `${url.pathname}${url.search}`,
+                "read",
             );
             return true;
         }
