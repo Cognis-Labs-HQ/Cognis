@@ -307,6 +307,7 @@ export async function openShareLinksPopup({
     const state = {
         isCreating: false,
         links: [],
+        pendingLinks: new Map(),
         label: "",
         expiresAt: "",
         password: "",
@@ -369,7 +370,14 @@ export async function openShareLinksPopup({
 
     async function refreshLinks({ preserveOnError = true } = {}) {
         try {
-            state.links = await fetchLinks();
+            const fetchedLinks = await fetchLinks();
+            const fetchedIds = new Set(
+                fetchedLinks.map((link) => String(link.id)),
+            );
+            for (const shareId of fetchedIds) {
+                state.pendingLinks.delete(shareId);
+            }
+            state.links = [...state.pendingLinks.values(), ...fetchedLinks];
             filterLinksForActiveMethod();
         } catch {
             if (!preserveOnError) {
@@ -538,6 +546,16 @@ export async function openShareLinksPopup({
                             ? methodModule.buildCreateOptions(createInput)
                             : createInput,
                     );
+                    if (result?.id) {
+                        state.pendingLinks.set(String(result.id), result);
+                        state.links = [
+                            result,
+                            ...state.links.filter(
+                                (link) => String(link.id) !== String(result.id),
+                            ),
+                        ];
+                        filterLinksForActiveMethod();
+                    }
                     shareUrl =
                         state.activeMethodId === "link"
                             ? (result?.shareUrl ?? null)
@@ -545,8 +563,9 @@ export async function openShareLinksPopup({
                     state.label = "";
                     state.password = "";
                     state.recipients = [];
-                    await refreshLinks();
                     if (popupOpen) renderMethodPage();
+                    await refreshLinks();
+                    if (popupOpen) renderLinksList(listContainer);
                 } catch {
                     showToast(labels.createFailed, { variant: "error" });
                 } finally {
@@ -731,6 +750,7 @@ export async function openShareLinksPopup({
                 if (!shareId) return;
                 void deleteLink({ shareId })
                     .then(async () => {
+                        state.pendingLinks.delete(shareId);
                         await refreshLinks();
                         if (popupOpen) renderLinksList(listContainer);
                     })

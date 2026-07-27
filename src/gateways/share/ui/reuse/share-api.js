@@ -49,6 +49,7 @@ export function buildShareTokenCallbacks({
             const response = await apiFetch(
                 `${SHARE_API}?resourceType=${encodeURIComponent(resourceType)}&resourceId=${encodeURIComponent(resourceId)}`,
             );
+            if (!response.ok) throw new Error("links_failed");
             const payload = await response.json().catch(() => ({ data: [] }));
             return Array.isArray(payload?.data) ? payload.data : [];
         },

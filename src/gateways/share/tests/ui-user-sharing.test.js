@@ -59,3 +59,19 @@ test("share popup renders link variants and profile-backed user cards", () => {
     assert.match(popupSource, /data-share-user-avatar-key/);
     assert.match(popupSource, /profileHandle/);
 });
+
+test("share popup adds a created token to history before refetching", () => {
+    assert.match(popupSource, /state\.links = \[/);
+    assert.match(popupSource, /String\(link\.id\).*String\(result\.id\)/s);
+    assert.match(popupSource, /renderMethodPage\(\);\s*await refreshLinks\(\)/);
+    assert.match(
+        apiSource,
+        /if \(!response\.ok\) throw new Error\("links_failed"\)/,
+    );
+    assert.match(popupSource, /pendingLinks: new Map\(\)/);
+    assert.match(
+        popupSource,
+        /state\.pendingLinks\.set\(String\(result\.id\), result\)/,
+    );
+    assert.match(popupSource, /\.\.\.state\.pendingLinks\.values\(\)/);
+});
