@@ -45,6 +45,35 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         notifStore,
     );
 
+    type EmailTemplate = (variables: Record<string, string>) => {
+        subject: string;
+        body: string;
+        senderName?: string;
+        actionUrl?: string;
+        actionLabel?: string;
+    };
+    const emailTemplates = new Map<string, EmailTemplate>();
+    ctx.capabilities.contribute(
+        "notify:registerEmailTemplate",
+        (templateId: string, template: EmailTemplate) => {
+            const normalizedId = String(templateId ?? "").trim();
+            if (
+                !normalizedId ||
+                typeof template !== "function" ||
+                emailTemplates.has(normalizedId)
+            )
+                return false;
+            emailTemplates.set(normalizedId, template);
+            return true;
+        },
+    );
+    ctx.capabilities.contribute(
+        "notify:renderEmailTemplate",
+        (templateId: string, variables: Record<string, string>) =>
+            emailTemplates.get(String(templateId ?? "").trim())?.(variables) ??
+            null,
+    );
+
     const notifyAdaptersRoot = path.join(ctx.adaptersRoot, "notify");
     await gateway.discoverSenders(notifyAdaptersRoot);
     await gateway.loadPersistedConfigs();
@@ -149,7 +178,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "notify",
         name: "Notification Gateway",
-        version: "1.5.0",
+        version: "1.5.2",
         description: "Dispatches notifications via pluggable adapter senders.",
         publisher: "Cognis Labs HQ",
         required: true,

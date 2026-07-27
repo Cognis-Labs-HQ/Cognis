@@ -93,9 +93,11 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             )}`) as never,
     );
     const shareEmailRecipients: string[] = [];
-    capabilities.contribute("notify:sendShareEmail", ((emailInput: {
+    capabilities.contribute("notify:sendEmail", ((emailInput: {
         recipientEmail: string;
+        templateId: string;
     }) => {
+        assert.equal(emailInput.templateId, "share-link");
         shareEmailRecipients.push(emailInput.recipientEmail);
         return Promise.resolve({ dispatched: ["smtp"] });
     }) as never);

@@ -352,14 +352,15 @@ export function createShareRoutes(input: {
                 );
                 return true;
             }
-            const sendShareEmail = input.gateway.getCapability<
-                (emailInput: {
-                    recipientEmail: string;
-                    shareUrl: string;
-                    shareLabel: string;
-                }) => Promise<unknown>
-            >("notify:sendShareEmail");
-            if (!sendShareEmail) {
+            const sendEmail =
+                input.gateway.getCapability<
+                    (emailInput: {
+                        recipientEmail: string;
+                        templateId: string;
+                        variables: Record<string, string>;
+                    }) => Promise<unknown>
+                >("notify:sendEmail");
+            if (!sendEmail) {
                 sendError(
                     res,
                     503,
@@ -371,10 +372,13 @@ export function createShareRoutes(input: {
             const shareUrl = String(shareRecord.shareUrl ?? "");
             await Promise.all(
                 recipients.map(async (recipient) => {
-                    await sendShareEmail({
+                    await sendEmail({
                         recipientEmail: recipient,
-                        shareUrl,
-                        shareLabel: String(shareRecord.label ?? ""),
+                        templateId: "share-link",
+                        variables: {
+                            url: shareUrl,
+                            label: String(shareRecord.label ?? ""),
+                        },
                     });
                     shareEmailSentAt.set(`${claims.sub}:${recipient}`, now);
                 }),

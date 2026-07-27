@@ -46,6 +46,25 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         undefined,
         ctx.capabilities.get.bind(ctx.capabilities),
     );
+    const registerEmailTemplate = ctx.capabilities.get<
+        (
+            templateId: string,
+            template: (variables: Record<string, string>) => {
+                subject: string;
+                body: string;
+                senderName: string;
+                actionUrl: string;
+                actionLabel: string;
+            },
+        ) => boolean
+    >("notify:registerEmailTemplate");
+    registerEmailTemplate?.("share-link", (variables) => ({
+        subject: variables.label || "A Cognis item was shared with you",
+        body: `A Cognis item was shared with you.\n\nOpen the shared item:\n${variables.url}`,
+        senderName: "Cognis Share",
+        actionUrl: variables.url,
+        actionLabel: "Open Shared Item",
+    }));
     await gateway.ensureSchema();
     await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT);
 
@@ -133,7 +152,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.6.3",
+        version: "1.6.4",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,
