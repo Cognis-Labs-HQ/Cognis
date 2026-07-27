@@ -107,6 +107,15 @@ export async function resolveGatewayCalendarShare(
               }
             : null;
     }
+    const inspectToken = capabilities.get<
+        (tokenValue: string) => Promise<{
+            resourceType?: unknown;
+        } | null>
+    >("share:inspectToken");
+    const protectedShare = inspectToken ? await inspectToken(token) : null;
+    if (protectedShare?.resourceType === "calendar") {
+        return { unauthorized: true };
+    }
     const calendarLink = resolveCalendarLink
         ? await resolveCalendarLink(token)
         : null;

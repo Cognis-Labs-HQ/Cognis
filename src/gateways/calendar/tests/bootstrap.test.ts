@@ -209,6 +209,10 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
                   },
               })
             : Promise.resolve(null)) as never);
+    capabilities.contribute("share:inspectToken", ((token: string) =>
+        Promise.resolve(
+            token === "user-share-token" ? { resourceType: "calendar" } : null,
+        )) as never);
 
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -240,6 +244,21 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
 
     const writableShareBase = "/api/v1/calendar/caldav/share/user-share-token";
     const writableSharePath = `${writableShareBase}?passphrase=share-secret`;
+    const protectedProbeRequest = new RequestRecorder({
+        method: "PROPFIND",
+    });
+    const protectedProbeResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        protectedProbeRequest,
+        protectedProbeResponse,
+        new URL(`http://localhost${writableShareBase}`),
+    );
+    assert.equal(protectedProbeResponse.statusCode, 401);
+    assert.equal(
+        protectedProbeResponse.headers["www-authenticate"],
+        'Basic realm="Calendar Share"',
+    );
     const writablePropfindRequest = new RequestRecorder({
         method: "PROPFIND",
         token: adminToken,

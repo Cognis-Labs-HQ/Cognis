@@ -105,3 +105,21 @@ test("resolveGatewayCalendarShare authorizes user-share recipients", async () =>
         { unauthorized: true },
     );
 });
+
+test("resolveGatewayCalendarShare challenges for a protected calendar token", async () => {
+    const capabilities = {
+        get<T>(name: string): T | undefined {
+            if (name === "share:resolveToken") {
+                return (async () => null) as T;
+            }
+            if (name === "share:inspectToken") {
+                return (async () => ({ resourceType: "calendar" })) as T;
+            }
+            return undefined;
+        },
+    };
+    assert.deepEqual(
+        await resolveGatewayCalendarShare(capabilities, "protected-token", ""),
+        { unauthorized: true },
+    );
+});

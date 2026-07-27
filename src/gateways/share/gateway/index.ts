@@ -282,6 +282,10 @@ export class CoreShareGateway {
         return this.store.resolve(tokenValue, password);
     }
 
+    async inspectToken(tokenValue: string): Promise<ShareTokenRecord | null> {
+        return this.store.inspect(tokenValue);
+    }
+
     async createGuestProfile(input: {
         shareId: string;
         displayName?: string;

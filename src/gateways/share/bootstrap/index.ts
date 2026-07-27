@@ -93,6 +93,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.resolveToken.bind(gateway),
     );
     ctx.capabilities.contribute(
+        "share:inspectToken",
+        gateway.inspectToken.bind(gateway),
+    );
+    ctx.capabilities.contribute(
         "share:getTokenById",
         gateway.getTokenById.bind(gateway),
     );
