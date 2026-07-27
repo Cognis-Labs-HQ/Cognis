@@ -138,6 +138,12 @@
   <string name="gateway.calendar.share_password_placeholder">Enter a share password</string>
   <string name="gateway.calendar.share_password_required_info">This calendar is private, so its link share must be protected with a password.</string>
   <string name="gateway.calendar.share_password_generate">Generate a secure share password</string>
+  <string name="gateway.calendar.share_password_popup_title">Share Password</string>
+  <string name="gateway.calendar.share_password_popup_label">Send this password separately to the recipients</string>
+  <string name="gateway.calendar.share_password_reveal">Reveal share password</string>
+  <string name="gateway.calendar.share_password_copy">Copy Password</string>
+  <string name="gateway.calendar.share_password_copied">Share password copied.</string>
+  <string name="gateway.calendar.share_created_at">Created</string>
   <string name="gateway.calendar.share_link_expiry_1h">Expires in 1 hour</string>
   <string name="gateway.calendar.share_link_expiry_24h">Expires in 24 hours</string>
   <string name="gateway.calendar.share_link_expiry_7d">Expires in 7 days</string>

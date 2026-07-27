@@ -79,7 +79,7 @@ export function createInternalNotificationRoutes(
         }
 
         const singleReadMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/inbox\/([^/]+)\/read$/,
+            /^\/api\/v1\/notify\/inbox\/([^/]+)\/read$/,
         );
         if (singleReadMatch && req.method === "PUT") {
             const id = decodeURIComponent(singleReadMatch[1]);
@@ -102,7 +102,7 @@ export function createInternalNotificationRoutes(
         }
 
         const deleteMatch = url.pathname.match(
-            /^\/api\/v1\/notifications\/inbox\/([^/]+)$/,
+            /^\/api\/v1\/notify\/inbox\/([^/]+)$/,
         );
         if (deleteMatch && req.method === "DELETE") {
             const id = decodeURIComponent(deleteMatch[1]);

@@ -138,6 +138,12 @@
   <string name="gateway.calendar.share_password_placeholder">Freigabepasswort eingeben</string>
   <string name="gateway.calendar.share_password_required_info">Dieser Kalender ist privat. Deshalb muss seine Linkfreigabe mit einem Passwort geschützt werden.</string>
   <string name="gateway.calendar.share_password_generate">Sicheres Freigabepasswort erzeugen</string>
+  <string name="gateway.calendar.share_password_popup_title">Freigabepasswort</string>
+  <string name="gateway.calendar.share_password_popup_label">Sende dieses Passwort getrennt an die Empfänger</string>
+  <string name="gateway.calendar.share_password_reveal">Freigabepasswort anzeigen</string>
+  <string name="gateway.calendar.share_password_copy">Passwort kopieren</string>
+  <string name="gateway.calendar.share_password_copied">Freigabepasswort kopiert.</string>
+  <string name="gateway.calendar.share_created_at">Erstellt</string>
   <string name="gateway.calendar.share_link_expiry_1h">Läuft in 1 Stunde ab</string>
   <string name="gateway.calendar.share_link_expiry_24h">Läuft in 24 Stunden ab</string>
   <string name="gateway.calendar.share_link_expiry_7d">Läuft in 7 Tagen ab</string>

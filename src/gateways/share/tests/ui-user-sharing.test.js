@@ -23,7 +23,7 @@ test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
     assert.match(popupSource, /data-share-user-id/);
     assert.match(popupSource, /state\.activeMethodId === "user"/);
-    assert.match(popupSource, /data-share-recipient-remove/);
+    assert.match(popupSource, /data-selected-recipient-remove/);
     assert.match(popupSource, /share-method-tabs/);
     assert.match(popupSource, /methodModule\.buildCreateOptions/);
     assert.match(popupSource, /methodModule\.renderPage/);
@@ -88,7 +88,7 @@ test("share popup adds a created token to history before refetching", () => {
     assert.match(popupSource, /\.\.\.state\.pendingLinks\.values\(\)/);
 });
 
-test("share history supports email delivery and in-place update mode", () => {
+test("share history supports email delivery and form-based update mode", () => {
     assert.match(popupSource, /data-share-email/);
     assert.match(popupSource, /editingShareId/);
     assert.match(popupSource, /await updateLink/);
@@ -103,6 +103,11 @@ test("share history supports email delivery and in-place update mode", () => {
     assert.match(linkPageSource, /label: labels\.send/);
     assert.match(popupSource, /data-share-cancel-edit/);
     assert.match(popupSource, /clearEditMode/);
+    assert.match(popupSource, /renderSecretVisibilityField/);
+    assert.match(popupSource, /bindSecretVisibilityToggles/);
+    assert.match(popupSource, /createdAtLabel/);
+    assert.doesNotMatch(popupSource, /data-share-recipient-permission/);
+    assert.doesNotMatch(popupSource, /data-share-recipient-remove/);
     assert.doesNotMatch(popupSource, /variant\.access === "write"/);
 });
 

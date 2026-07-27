@@ -49,6 +49,7 @@ async function openCalendarSharePopup({ calendar, i18n }) {
             statusExpired: i18n.t("gateway.calendar.share_link_expiry_never"),
             expiresAtLabel: i18n.t("gateway.calendar.share_links_heading"),
             expiredAtLabel: i18n.t("gateway.calendar.share_links_heading"),
+            createdAtLabel: i18n.t("gateway.calendar.share_created_at"),
             users: i18n.t("gateway.calendar.share_users_heading"),
             userEmpty: i18n.t("gateway.calendar.share_users_empty"),
             emailRecipients: i18n.t("gateway.calendar.share_email_recipients"),
@@ -79,6 +80,15 @@ async function openCalendarSharePopup({ calendar, i18n }) {
             generatePassword: i18n.t(
                 "gateway.calendar.share_password_generate",
             ),
+            passwordPopupTitle: i18n.t(
+                "gateway.calendar.share_password_popup_title",
+            ),
+            passwordPopupLabel: i18n.t(
+                "gateway.calendar.share_password_popup_label",
+            ),
+            passwordReveal: i18n.t("gateway.calendar.share_password_reveal"),
+            passwordCopy: i18n.t("gateway.calendar.share_password_copy"),
+            passwordCopied: i18n.t("gateway.calendar.share_password_copied"),
             moreInformation: i18n.t("ui.reuse.more_information"),
             webVariant: i18n.t("gateway.calendar.share_link_web"),
             icsVariant: i18n.t("gateway.calendar.share_link_ics"),

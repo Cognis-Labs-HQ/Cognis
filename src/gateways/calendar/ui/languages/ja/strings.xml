@@ -138,6 +138,12 @@
   <string name="gateway.calendar.share_password_placeholder">共有パスワードを入力</string>
   <string name="gateway.calendar.share_password_required_info">このカレンダーは非公開のため、リンク共有をパスワードで保護する必要があります。</string>
   <string name="gateway.calendar.share_password_generate">安全な共有パスワードを生成</string>
+  <string name="gateway.calendar.share_password_popup_title">共有パスワード</string>
+  <string name="gateway.calendar.share_password_popup_label">このパスワードを受信者へ別の方法で送信してください</string>
+  <string name="gateway.calendar.share_password_reveal">共有パスワードを表示</string>
+  <string name="gateway.calendar.share_password_copy">パスワードをコピー</string>
+  <string name="gateway.calendar.share_password_copied">共有パスワードをコピーしました。</string>
+  <string name="gateway.calendar.share_created_at">作成日時</string>
   <string name="gateway.calendar.share_link_expiry_1h">1時間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_24h">24時間で期限切れ</string>
   <string name="gateway.calendar.share_link_expiry_7d">7日間で期限切れ</string>

@@ -311,6 +311,21 @@
     font-size: 1.25rem;
 }
 
+.share-password-result {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.share-password-result .btn-confirm {
+    justify-self: start;
+}
+
+.share-links-row-created {
+    margin: 0;
+    color: var(--text-muted, currentColor);
+    font-size: 0.85rem;
+}
+
 .share-email-popup {
     display: grid;
     gap: 0.75rem;

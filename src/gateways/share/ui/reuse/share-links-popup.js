@@ -108,6 +108,10 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import {
+    bindSecretVisibilityToggles,
+    renderSecretVisibilityField,
+} from "/static/reuse/secret-visibility-toggle.js";
 import { buildShareTokenCallbacks } from "./share-api.js";
 
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
@@ -230,6 +234,7 @@ function renderRows(labels, links) {
               const variants = Array.isArray(link?.variants)
                   ? link.variants
                   : [];
+              const createdAt = String(link?.createdAt ?? "").trim();
               return `
             <article class="share-links-row" data-share-edit="${escapeHtml(shareId)}">
               <button
@@ -255,7 +260,8 @@ function renderRows(labels, links) {
                   }
                 </div>
                 ${renderShareStatus(link, labels)}
-                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><select data-share-recipient-permission="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.permission || "Permission")}"><option value="read"${recipient.permissions?.includes("write") ? "" : " selected"}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${recipient.permissions?.includes("write") ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select><button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
+                ${createdAt ? `<p class="share-links-row-created">${escapeHtml(labels.createdAtLabel || "Created")}: ${escapeHtml(formatDateTime(createdAt))}</p>` : ""}
+                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small></span>`).join("")}</div>` : ""}
                 ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(variant.label)}</button>`).join("")}</div>` : ""}
               </div>
               ${
@@ -333,6 +339,30 @@ function renderPasswordProtectionField(labels, state) {
         },
     ).render();
     return `<div class="share-links-password-row">${formMarkup}<button type="button" class="btn-neutral btn-animated share-links-password-generate" data-share-generate-password aria-label="${escapeHtml(labels.generatePassword)}" title="${escapeHtml(labels.generatePassword)}"><span aria-hidden="true">&#8635;</span></button></div>`;
+}
+
+async function showSharePasswordPopup(password, labels) {
+    const normalizedPassword = String(password ?? "");
+    if (!normalizedPassword) return;
+    await openPopup({
+        title: labels.passwordPopupTitle || labels.password,
+        body: () =>
+            `<div class="share-password-result">${renderSecretVisibilityField({ id: "created-share-password", value: normalizedPassword, label: labels.passwordPopupLabel || labels.password, toggleLabel: labels.passwordReveal, escapeHtml })}<button type="button" class="btn-confirm" data-share-password-copy>${escapeHtml(labels.passwordCopy || labels.copyLink)}</button></div>`,
+        actions: [{ id: "done", label: labels.done, variant: "confirm" }],
+        onOpen(overlay) {
+            bindSecretVisibilityToggles({ root: overlay });
+            overlay
+                .querySelector("[data-share-password-copy]")
+                ?.addEventListener("click", async () => {
+                    const copied =
+                        await copyTextToClipboard(normalizedPassword);
+                    showToast(
+                        copied ? labels.passwordCopied : labels.copyFailed,
+                        { variant: copied ? "success" : "error" },
+                    );
+                });
+        },
+    });
 }
 
 function generateSharePassword() {
@@ -474,6 +504,11 @@ export async function openShareLinksPopup({
             return;
         }
         createButton.disabled = state.isCreating;
+        if (state.activeMethodId === "user") {
+            createButton.textContent = state.editingShareId
+                ? labels.updateUserShare || "Update User Share"
+                : `${labels.shareWithPrefix || "Share with"} ${state.recipients.length} ${labels.usersCountLabel || "users"}`;
+        }
     }
 
     await refreshLinks({ preserveOnError: false });
@@ -526,6 +561,9 @@ export async function openShareLinksPopup({
                     )
                     .join("");
                 hydrateProfileAvatars(selectedUsers);
+                syncCreateButton(
+                    methodPage.querySelector("#share-links-create-btn"),
+                );
             };
 
             const renderMethodPage = () => {
@@ -589,6 +627,7 @@ export async function openShareLinksPopup({
                 state.isCreating = true;
                 syncCreateButton(createButton);
                 let shareUrl = null;
+                let revealedPassword = "";
                 try {
                     const createInput = {
                         label: state.label,
@@ -621,6 +660,9 @@ export async function openShareLinksPopup({
                     if (typeof methodModule?.afterCreate === "function") {
                         await methodModule.afterCreate({ result });
                     }
+                    revealedPassword = String(
+                        state.password || result?.generatedPassword || "",
+                    );
                     if (result?.id) {
                         state.pendingLinks.set(String(result.id), result);
                         state.links = [
@@ -657,6 +699,9 @@ export async function openShareLinksPopup({
                             { variant: copied ? "success" : "error" },
                         );
                     });
+                }
+                if (revealedPassword) {
+                    await showSharePasswordPopup(revealedPassword, labels);
                 }
             };
 
@@ -848,7 +893,7 @@ export async function openShareLinksPopup({
                 if (
                     editRow instanceof HTMLElement &&
                     !event.target.closest(
-                        "[data-share-delete],[data-share-copy],[data-share-recipient-remove],select",
+                        "[data-share-delete],[data-share-copy]",
                     )
                 ) {
                     const selectedShare = state.links.find(
@@ -913,34 +958,6 @@ export async function openShareLinksPopup({
                     );
                     return;
                 }
-                const recipientRemove = event.target.closest(
-                    "[data-share-recipient-remove]",
-                );
-                if (
-                    recipientRemove instanceof HTMLElement &&
-                    typeof updateLink === "function"
-                ) {
-                    const link = state.links.find(
-                        (entry) =>
-                            String(entry.id) ===
-                            recipientRemove.dataset.shareId,
-                    );
-                    const recipients = (
-                        link?.accessControls?.recipients || []
-                    ).filter(
-                        (entry) =>
-                            entry.id !==
-                            recipientRemove.dataset.shareRecipientRemove,
-                    );
-                    void updateLink({
-                        shareId: recipientRemove.dataset.shareId,
-                        accessControls: { ...link.accessControls, recipients },
-                    }).then(async () => {
-                        await refreshLinks();
-                        if (popupOpen) renderLinksList(listContainer);
-                    });
-                    return;
-                }
                 const deleteButton = event.target.closest(
                     "[data-share-delete]",
                 );
@@ -958,37 +975,6 @@ export async function openShareLinksPopup({
                     .catch(() =>
                         showToast(labels.deleteFailed, { variant: "error" }),
                     );
-            });
-
-            listContainer.addEventListener("change", (event) => {
-                const target = event.target;
-                if (
-                    !(target instanceof HTMLSelectElement) ||
-                    typeof updateLink !== "function"
-                )
-                    return;
-                const link = state.links.find(
-                    (entry) => String(entry.id) === target.dataset.shareId,
-                );
-                const recipients = (link?.accessControls?.recipients || []).map(
-                    (entry) =>
-                        entry.id === target.dataset.shareRecipientPermission
-                            ? {
-                                  ...entry,
-                                  permissions:
-                                      target.value === "write"
-                                          ? ["read", "write"]
-                                          : ["read"],
-                              }
-                            : entry,
-                );
-                void updateLink({
-                    shareId: target.dataset.shareId,
-                    accessControls: { ...link.accessControls, recipients },
-                }).then(async () => {
-                    await refreshLinks();
-                    if (popupOpen) renderLinksList(listContainer);
-                });
             });
 
             renderMethodPage();
