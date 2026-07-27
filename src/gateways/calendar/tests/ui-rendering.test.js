@@ -479,4 +479,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
     assert.match(SHARE_RENDERER_SOURCE, /\/api\/v1\/calendar\/shared\//);
     assert.match(SHARE_RENDERER_SOURCE, /shared-calendar-event-form/);
+    assert.match(SHARE_RENDERER_SOURCE, /guestAccessToken/);
+    assert.match(SHARE_RENDERER_SOURCE, /authorization: `Bearer/);
+    assert.doesNotMatch(SHARE_RENDERER_SOURCE, /apiFetch/);
 });

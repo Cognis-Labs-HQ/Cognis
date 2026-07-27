@@ -240,6 +240,7 @@ export async function mount(root, { signal } = {}) {
         renderedContent = renderer({
             data: shareContext.payload ?? {},
             grantedCapabilities: shareContext.grantedCapabilities,
+            guestAccessToken: shareContext.guestAccessToken,
             i18n: state.i18n,
             signal,
         });

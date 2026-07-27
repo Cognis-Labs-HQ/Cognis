@@ -393,6 +393,10 @@ export async function registerShareBootstrapHooks(input: {
                 inputPayload.password,
             );
             if (!tokenRecord) {
+                const inspectedRecord = await input.gateway.inspectToken(token);
+                if (inspectedRecord?.passwordHash) {
+                    return { valid: false, reason: "password_required" };
+                }
                 return { valid: false, reason: "invalid_token" };
             }
             const requesterClaims = (

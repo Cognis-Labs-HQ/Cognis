@@ -472,7 +472,11 @@ export function createShareRoutes(input: {
                 const reason = String(resolved?.reason ?? "invalid_token");
                 sendError(
                     res,
-                    reason === "invalid_token" ? 404 : 403,
+                    reason === "invalid_token"
+                        ? 404
+                        : reason === "password_required"
+                          ? 401
+                          : 403,
                     reason,
                     reason === "invalid_token"
                         ? "Share token is invalid or expired."

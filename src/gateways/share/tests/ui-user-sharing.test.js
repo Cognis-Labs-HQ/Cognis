@@ -18,6 +18,10 @@ const userPageSource = await readFile(
     new URL("../../../adapters/share/user/page.js", import.meta.url),
     "utf8",
 );
+const sessionFlowSource = await readFile(
+    new URL("../ui/session-flow-hooks.js", import.meta.url),
+    "utf8",
+);
 
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
@@ -141,5 +145,17 @@ test("user share permissions constrain granted capabilities", async () => {
             permission: "write",
         }).grantedCapabilities,
         ["calendar:read", "calendar:write"],
+    );
+});
+
+test("logged-in share recipients keep their account session", () => {
+    assert.match(sessionFlowSource, /if \(priorSessionResult\?\.valid\)/);
+    assert.match(
+        sessionFlowSource,
+        /guestAccessToken: shareData\.guestAccessToken/,
+    );
+    assert.doesNotMatch(
+        sessionFlowSource,
+        /priorSessionResult\?\.valid && shareData\.directAccess === true/,
     );
 });

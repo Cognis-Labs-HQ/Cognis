@@ -256,12 +256,11 @@ uiCtx.extendFlow(
             guestProfile: shareData.guestProfile ?? null,
         };
 
-        if (priorSessionResult?.valid && shareData.directAccess === true) {
-            // The logged-in visitor already has direct access to the
-            // resource through their own account — render it using their
-            // real session instead of downgrading them to a guest. No
-            // token swap happens, so every subsequent request continues to
-            // authenticate as the real account.
+        if (priorSessionResult?.valid) {
+            // Logged-in recipients retain their full account session. The
+            // renderer receives the scoped guest token separately for
+            // share-only API calls, so notification navigation never swaps
+            // localStorage credentials or appears to log the user out.
             return {
                 authenticated: true,
                 accountId: priorSessionResult.accountId,

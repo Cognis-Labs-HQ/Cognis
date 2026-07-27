@@ -350,6 +350,18 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const protectedToken = encodeURIComponent(
         protectedCreateResponse.body.data.shareUrl.split("/share/")[1],
     );
+    const missingPasswordResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET" }),
+        missingPasswordResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${protectedToken}`),
+    );
+    assert.equal(missingPasswordResponse.statusCode, 401);
+    assert.equal(
+        JSON.parse(missingPasswordResponse.payload).error.code,
+        "password_required",
+    );
     const basicPassword = Buffer.from(
         "calendar:mail-client-secret",
         "utf8",
