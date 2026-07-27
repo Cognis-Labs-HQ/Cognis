@@ -319,6 +319,8 @@ export function createShareRoutes(input: {
                 sendError(res, 404, "not_found", "Share token not found.");
                 return true;
             }
+            const serializedShare =
+                await input.gateway.serializeRecord(shareRecord);
             const body = (await readJson(req)) as { recipients?: unknown };
             const recipients = Array.from(
                 new Set(
@@ -369,7 +371,35 @@ export function createShareRoutes(input: {
                 );
                 return true;
             }
-            const shareUrl = String(shareRecord.shareUrl ?? "");
+            const shareUrl = String(serializedShare.shareUrl ?? "");
+            const metadata =
+                serializedShare.metadata &&
+                typeof serializedShare.metadata === "object"
+                    ? (serializedShare.metadata as Record<string, unknown>)
+                    : {};
+            const profileStore = input.gateway.getCapability<{
+                getProfile?: (accountId: string) => Promise<{
+                    displayName?: string | null;
+                    handle?: string | null;
+                } | null>;
+            }>("social:profileStore");
+            const senderProfile = await profileStore?.getProfile?.(claims.sub);
+            const senderName = String(
+                senderProfile?.displayName ??
+                    senderProfile?.handle ??
+                    claims.sub,
+            ).trim();
+            const resourceName = String(
+                metadata.resourceName ??
+                    serializedShare.label ??
+                    serializedShare.resourceId ??
+                    "shared item",
+            ).trim();
+            const resourceTypeLabel = String(
+                metadata.resourceTypeLabel ??
+                    serializedShare.resourceType ??
+                    "item",
+            ).trim();
             await Promise.all(
                 recipients.map(async (recipient) => {
                     await sendEmail({
@@ -377,7 +407,9 @@ export function createShareRoutes(input: {
                         templateId: "share-link",
                         variables: {
                             url: shareUrl,
-                            label: String(shareRecord.label ?? ""),
+                            senderName,
+                            resourceName,
+                            resourceTypeLabel,
                         },
                     });
                     shareEmailSentAt.set(`${claims.sub}:${recipient}`, now);

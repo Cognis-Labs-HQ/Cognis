@@ -49,6 +49,7 @@ test("share popup callbacks use only share gateway recipient and token routes", 
     assert.match(apiSource, /password: String\(password/);
     assert.match(apiSource, /String\(expiresAt/);
     assert.match(popupSource, /renderPasswordProtectionField/);
+    assert.match(popupSource, /state\.passwordRequired \? " required"/);
     assert.doesNotMatch(apiSource, /\/api\/v1\/calendar/);
 });
 

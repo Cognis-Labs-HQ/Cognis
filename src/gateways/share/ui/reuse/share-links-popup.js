@@ -117,10 +117,12 @@ export function openSharePopup({
     resourceType,
     resourceId,
     grantedCapabilities = [],
+    passwordRequired = false,
     ...popupOptions
 }) {
     return openShareLinksPopup({
         ...popupOptions,
+        passwordRequired,
         ...buildShareTokenCallbacks({
             resourceType,
             resourceId,
@@ -291,7 +293,8 @@ function renderBody(labels, state) {
 }
 
 function renderPasswordProtectionField(labels, state) {
-    return `<label><span>${escapeHtml(labels.password || "Password")}</span><input id="share-links-password" type="password" value="${escapeHtml(state.password)}" autocomplete="new-password" placeholder="${escapeHtml(labels.passwordPlaceholder || labels.optional || "Optional")}" /></label>`;
+    const required = state.passwordRequired ? " required" : "";
+    return `<label><span>${escapeHtml(labels.password || "Password")}</span><input id="share-links-password" type="password" value="${escapeHtml(state.password)}" autocomplete="new-password" placeholder="${escapeHtml(labels.passwordPlaceholder || labels.optional || "Optional")}"${required} /></label>`;
 }
 
 export async function openShareLinksPopup({
@@ -304,6 +307,7 @@ export async function openShareLinksPopup({
     searchUsers,
     fetchMethods,
     linkAccessOptions = [],
+    passwordRequired = false,
 }) {
     await ensureStylesheet();
 
@@ -315,6 +319,7 @@ export async function openShareLinksPopup({
         label: "",
         expiresAt: "",
         password: "",
+        passwordRequired,
         recipients: [],
         methods: [],
         methodModules: new Map(),
@@ -510,6 +515,17 @@ export async function openShareLinksPopup({
 
             const createCurrentShare = async () => {
                 if (state.isCreating) return;
+                if (
+                    state.activeMethodId === "link" &&
+                    state.passwordRequired &&
+                    !state.password.trim()
+                ) {
+                    showToast(labels.passwordRequired || labels.createFailed, {
+                        variant: "warning",
+                    });
+                    methodPage.querySelector("#share-links-password")?.focus();
+                    return;
+                }
                 const createButton = methodPage.querySelector(
                     "#share-links-create-btn",
                 );

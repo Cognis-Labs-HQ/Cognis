@@ -4,12 +4,13 @@ import {
     normalizeReminderOffsets,
     renderReminderField,
 } from "./popup-manager-reminders.js";
-async function openCalendarSharePopup({ calendarId, i18n }) {
+async function openCalendarSharePopup({ calendar, i18n }) {
     const { openSharePopup } =
         await import("/static/gateways/share/ui/reuse/share-links-popup.js");
     await openSharePopup({
         resourceType: "calendar",
-        resourceId: calendarId,
+        resourceId: calendar.id,
+        passwordRequired: calendar.visibility === "private",
         grantedCapabilities: ["calendar:read", "calendar:write"],
         title: i18n.t("gateway.calendar.share_calendar"),
         labels: {
@@ -71,6 +72,9 @@ async function openCalendarSharePopup({ calendarId, i18n }) {
             password: i18n.t("gateway.calendar.share_password_optional"),
             passwordPlaceholder: i18n.t(
                 "gateway.calendar.share_password_placeholder",
+            ),
+            passwordRequired: i18n.t(
+                "gateway.calendar.share_password_required",
             ),
             webVariant: i18n.t("gateway.calendar.share_link_web"),
             icsVariant: i18n.t("gateway.calendar.share_link_ics"),
@@ -159,7 +163,7 @@ export function createCalendarEditPopupHandler({
                         ?.addEventListener("click", () => {
                             closePopup();
                             void openCalendarSharePopup({
-                                calendarId: calendar.id,
+                                calendar,
                                 i18n,
                             });
                         });

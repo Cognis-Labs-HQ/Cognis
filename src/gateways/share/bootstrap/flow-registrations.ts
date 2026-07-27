@@ -121,6 +121,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 ownerAccountId?: string;
                 meetingInstanceId?: string;
+                metadata?: Record<string, string>;
             } | null;
             const authorizeResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
@@ -272,15 +273,19 @@ export async function registerShareBootstrapHooks(input: {
                     "",
                 resourceType: resourceResult.resourceType ?? "",
                 resourceId: resourceResult.resourceId ?? "",
-                metadata: authorizeResult.meetingInstanceId
-                    ? {
-                          meetingInstanceId: authorizeResult.meetingInstanceId,
-                      }
-                    : resourceResult.meetingInstanceId
-                      ? {
-                            meetingInstanceId: resourceResult.meetingInstanceId,
-                        }
-                      : null,
+                metadata:
+                    resourceResult.metadata ??
+                    (authorizeResult.meetingInstanceId
+                        ? {
+                              meetingInstanceId:
+                                  authorizeResult.meetingInstanceId,
+                          }
+                        : resourceResult.meetingInstanceId
+                          ? {
+                                meetingInstanceId:
+                                    resourceResult.meetingInstanceId,
+                            }
+                          : null),
                 label: inputPayload.label,
                 grantedCapabilities: Array.isArray(
                     inputPayload.grantedCapabilities,

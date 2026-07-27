@@ -93,12 +93,15 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             )}`) as never,
     );
     const shareEmailRecipients: string[] = [];
+    const shareEmailVariables: Array<Record<string, string>> = [];
     capabilities.contribute("notify:sendEmail", ((emailInput: {
         recipientEmail: string;
         templateId: string;
+        variables: Record<string, string>;
     }) => {
         assert.equal(emailInput.templateId, "share-link");
         shareEmailRecipients.push(emailInput.recipientEmail);
+        shareEmailVariables.push(emailInput.variables);
         return Promise.resolve({ dispatched: ["smtp"] });
     }) as never);
     capabilities.contribute("share:resolveVariants", ((input: {
@@ -147,6 +150,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             resourceType: "meeting",
             resourceId: "meeting-1",
             ownerAccountId: "alice",
+            metadata: {
+                resourceName: "Project Sync",
+                resourceTypeLabel: "meeting",
+            },
         }),
     );
     flowCtx.flow.extend(
@@ -258,6 +265,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(createResponse.statusCode, 200);
     assert.equal(createResponse.body.data.resourceType, "meeting");
+    assert.equal(
+        createResponse.body.data.metadata.resourceName,
+        "Project Sync",
+    );
     assert.equal(createResponse.body.data.quickShareActions.length, 1);
     assert.equal(createResponse.body.data.quickShareActions[0].id, "smtp");
     assert.equal(createResponse.body.data.variants.length, 2);
@@ -275,6 +286,14 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(shareEmailResponse.statusCode, 200);
     assert.deepEqual(shareEmailRecipients, ["guest@example.com"]);
+    assert.deepEqual(shareEmailVariables, [
+        {
+            url: createResponse.body.data.shareUrl,
+            senderName: "alice",
+            resourceName: "Project Sync",
+            resourceTypeLabel: "meeting",
+        },
+    ]);
     const repeatedShareEmailResponse = await dispatchJson(
         "POST",
         adminToken,

@@ -59,8 +59,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ) => boolean
     >("notify:registerEmailTemplate");
     registerEmailTemplate?.("share-link", (variables) => ({
-        subject: variables.label || "A Cognis item was shared with you",
-        body: `A Cognis item was shared with you.\n\nOpen the shared item:\n${variables.url}`,
+        subject: `${variables.senderName} shared ${variables.resourceName} with you`,
+        body: `${variables.senderName} shared the ${variables.resourceTypeLabel} “${variables.resourceName}” with you.\n\nOpen the shared item:\n${variables.url}`,
         senderName: "Cognis Share",
         actionUrl: variables.url,
         actionLabel: "Open Shared Item",

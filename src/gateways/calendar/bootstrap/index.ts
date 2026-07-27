@@ -257,6 +257,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     resourceType?: string;
                     resourceId?: string;
                     ownerAccountId?: string;
+                    password?: string | null;
                 };
                 if (flowInput.resourceType !== "calendar") {
                     return {
@@ -268,11 +269,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     String(flowInput.ownerAccountId ?? ""),
                     String(flowInput.resourceId ?? ""),
                 );
+                if (
+                    calendar?.visibility === "private" &&
+                    !String(flowInput.password ?? "").trim()
+                ) {
+                    return {
+                        valid: false,
+                        reason: "share_password_required",
+                    };
+                }
                 return calendar
                     ? {
                           valid: true,
                           resourceType: "calendar",
                           resourceId: calendar.id,
+                          metadata: {
+                              resourceName: calendar.name,
+                              resourceTypeLabel: "calendar",
+                          },
                           ownerAccountId: String(
                               flowInput.ownerAccountId ?? "",
                           ),

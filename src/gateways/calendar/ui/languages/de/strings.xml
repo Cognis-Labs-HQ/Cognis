@@ -134,8 +134,9 @@
   <string name="gateway.calendar.share_link_permission_read">Nur Lesen</string>
   <string name="gateway.calendar.share_link_permission_write">Lesen &amp; Schreiben</string>
   <string name="gateway.calendar.share_expiry_datetime_optional">Läuft ab (optional)</string>
-  <string name="gateway.calendar.share_password_optional">Passwortschutz (optional)</string>
-  <string name="gateway.calendar.share_password_placeholder">Leer lassen für kein Passwort</string>
+  <string name="gateway.calendar.share_password_optional">Passwortschutz</string>
+  <string name="gateway.calendar.share_password_placeholder">Freigabepasswort eingeben</string>
+  <string name="gateway.calendar.share_password_required">Für private Kalender ist ein Passwort erforderlich.</string>
   <string name="gateway.calendar.share_link_expiry_1h">Läuft in 1 Stunde ab</string>
   <string name="gateway.calendar.share_link_expiry_24h">Läuft in 24 Stunden ab</string>
   <string name="gateway.calendar.share_link_expiry_7d">Läuft in 7 Tagen ab</string>

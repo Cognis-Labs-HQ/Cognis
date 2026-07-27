@@ -48,6 +48,9 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         const headers = {
             ...buildCalendarExportHeaders(calendarName, calendarId),
             "x-cognis-calendar-access": accessMode,
+            "x-cognis-calendar-read-only":
+                accessMode === "read" ? "true" : "false",
+            dav: "1, calendar-access",
         };
         if (reqMethod === "OPTIONS") {
             res.writeHead(204, {
@@ -57,7 +60,21 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             res.end();
             return;
         }
-        if (reqMethod === "HEAD" || reqMethod === "PROPFIND") {
+        if (reqMethod === "PROPFIND") {
+            const writePrivileges =
+                accessMode === "write"
+                    ? "<d:privilege><d:write/></d:privilege><d:privilege><d:write-content/></d:privilege>"
+                    : "";
+            res.writeHead(207, {
+                ...headers,
+                "content-type": "application/xml; charset=utf-8",
+            });
+            res.end(
+                `<?xml version="1.0" encoding="utf-8"?><d:multistatus xmlns:d="DAV:"><d:response><d:href>/</d:href><d:propstat><d:prop><d:current-user-privilege-set><d:privilege><d:read/></d:privilege>${writePrivileges}</d:current-user-privilege-set></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>`,
+            );
+            return;
+        }
+        if (reqMethod === "HEAD") {
             res.writeHead(200, headers);
             res.end();
             return;
