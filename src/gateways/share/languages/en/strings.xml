@@ -12,4 +12,8 @@
   <string name="share.approval.message">%requester% has requested to create a share link for "%resource%".</string>
   <string name="share.approval.approve">Approve</string>
   <string name="share.approval.decline">Decline</string>
+  <string name="share.unlock.title">Unlock Shared Item</string>
+  <string name="share.unlock.message">Enter the share password. It will be saved in your encrypted keyring after successful access.</string>
+  <string name="share.unlock.action">Unlock</string>
+  <string name="share.unlock.cancel">Cancel</string>
 </resources>

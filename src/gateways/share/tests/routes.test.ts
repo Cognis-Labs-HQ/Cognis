@@ -94,6 +94,16 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     const shareEmailRecipients: string[] = [];
     const shareEmailVariables: Array<Record<string, string>> = [];
+    const userShareNotifications: Array<Record<string, unknown>> = [];
+    const notificationCategories: string[] = [];
+    capabilities.contribute("notify:registerCategory", ((id: string) =>
+        notificationCategories.push(id)) as never);
+    capabilities.contribute("notify:dispatch", ((
+        envelope: Record<string, unknown>,
+    ) => {
+        userShareNotifications.push(envelope);
+        return Promise.resolve({ dispatched: ["internal"] });
+    }) as never);
     capabilities.contribute("notify:sendEmail", ((emailInput: {
         recipientEmail: string;
         templateId: string;
@@ -369,6 +379,16 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         },
     );
     assert.equal(restrictedCreateResponse.statusCode, 200);
+    assert.ok(notificationCategories.includes("share"));
+    assert.deepEqual(
+        userShareNotifications.map((entry) => entry.recipientUsername),
+        ["bob"],
+    );
+    assert.equal(userShareNotifications[0]?.category, "share");
+    assert.equal(
+        userShareNotifications[0]?.actionUrl,
+        restrictedCreateResponse.body.data.shareUrl,
+    );
     const restrictedToken = encodeURIComponent(
         restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],
     );

@@ -39,6 +39,10 @@
 
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { createI18n } from "/static/reuse/i18n.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import "/static/reuse/keyring.js";
 import { GUEST_SESSION_ACTIVE_STORAGE_KEY } from "./reuse/share-button.js";
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
@@ -117,6 +121,44 @@ function restoreGuestToken() {
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
 }
 
+async function promptForSharePassword(shareToken) {
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/share/languages"],
+    });
+    let passwordInput = null;
+    const action = await openPopup({
+        title: i18n.t("share.unlock.title"),
+        body: `<label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label>`,
+        actions: [
+            {
+                id: "unlock",
+                label: i18n.t("share.unlock.action"),
+                variant: "confirm",
+            },
+            {
+                id: "cancel",
+                label: i18n.t("share.unlock.cancel"),
+                variant: "cancel",
+            },
+        ],
+        onOpen(overlay) {
+            passwordInput = overlay.querySelector("#share-unlock-password");
+            passwordInput?.focus();
+        },
+        onAction(actionId) {
+            if (actionId !== "unlock") return true;
+            return Boolean(passwordInput?.value);
+        },
+    });
+    if (action !== "unlock" || !passwordInput?.value) return null;
+    const password = passwordInput.value;
+    const setKeyringValue = uiCtx.capabilities.get("keyring:set");
+    return {
+        password,
+        save: () => setKeyringValue?.(`share:${shareToken}`, password),
+    };
+}
+
 uiCtx.extendFlow(
     "authenticate-session",
     "apply-alternate-auth",
@@ -154,12 +196,31 @@ uiCtx.extendFlow(
                 ? { authorization: "Bearer " + ownAccessToken }
                 : undefined;
 
+        const keyringPassword = uiCtx.capabilities.get("keyring:get")?.(
+            `share:${shareToken}`,
+        );
+        const resolveShare = (password) => {
+            const requestHeaders = new Headers(headers);
+            if (password)
+                requestHeaders.set("x-cognis-share-password", password);
+            return fetch(
+                "/api/v1/share/resolve/" + encodeURIComponent(shareToken),
+                Array.from(requestHeaders).length > 0
+                    ? { headers: requestHeaders }
+                    : undefined,
+            );
+        };
         let response;
         try {
-            response = await fetch(
-                "/api/v1/share/resolve/" + encodeURIComponent(shareToken),
-                headers ? { headers } : undefined,
-            );
+            response = await resolveShare(keyringPassword);
+            if (response.status === 401) {
+                const unlock = await promptForSharePassword(shareToken);
+                if (unlock) {
+                    response = await resolveShare(unlock.password);
+                    if (response.ok)
+                        await Promise.resolve(unlock.save()).catch(() => {});
+                }
+            }
         } catch {
             return { authenticated: false, reason: "share_resolve_failed" };
         }

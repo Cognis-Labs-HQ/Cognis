@@ -12,4 +12,8 @@
   <string name="share.approval.message">%requester% telah meminta untuk membuat tautan berbagi untuk "%resource%".</string>
   <string name="share.approval.approve">Setujui</string>
   <string name="share.approval.decline">Tolak</string>
+  <string name="share.unlock.title">Buka Item Bersama</string>
+  <string name="share.unlock.message">Masukkan kata sandi berbagi. Setelah akses berhasil, kata sandi akan disimpan di keyring terenkripsi Anda.</string>
+  <string name="share.unlock.action">Buka</string>
+  <string name="share.unlock.cancel">Batal</string>
 </resources>

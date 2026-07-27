@@ -12,4 +12,8 @@
   <string name="share.approval.message">%requester%さんが「%resource%」の共有リンク作成をリクエストしました。</string>
   <string name="share.approval.approve">承認</string>
   <string name="share.approval.decline">拒否</string>
+  <string name="share.unlock.title">共有アイテムのロックを解除</string>
+  <string name="share.unlock.message">共有パスワードを入力してください。アクセスに成功すると、暗号化されたキーリングに保存されます。</string>
+  <string name="share.unlock.action">ロック解除</string>
+  <string name="share.unlock.cancel">キャンセル</string>
 </resources>

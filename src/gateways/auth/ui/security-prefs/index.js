@@ -5,11 +5,17 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
 import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
+import {
+    getKeyringRelockMinutes,
+    setKeyringRelockMinutes,
+} from "/static/reuse/keyring.js";
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
     const settingsRoot = root ?? document;
     let subsectionInstances = null;
+    let keyringRelockMinutes = getKeyringRelockMinutes();
+    let savedKeyringRelockMinutes = keyringRelockMinutes;
 
     async function loadCapability() {
         const response = await apiFetch(
@@ -40,6 +46,18 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         <button class="btn-animated" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
         ${unsupported ? `<p>${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
       </div>
+      <div class="settings-auth-keyring">
+        <h3>${i18n.t("gateway.auth.security.keyring_title")}</h3>
+        <p>${i18n.t("gateway.auth.security.keyring_description")}</p>
+        <label><span>${i18n.t("gateway.auth.security.keyring_relock")}</span>
+          <select id="settings-keyring-relock"${keyringRelockMinutes === null ? " disabled" : ""}>
+            <option value="0"${keyringRelockMinutes === 0 ? " selected" : ""}>${i18n.t("gateway.auth.security.keyring_logout")}</option>
+            <option value="15"${keyringRelockMinutes === 15 ? " selected" : ""}>15 ${i18n.t("gateway.auth.security.keyring_minutes")}</option>
+            <option value="60"${keyringRelockMinutes === 60 ? " selected" : ""}>60 ${i18n.t("gateway.auth.security.keyring_minutes")}</option>
+            <option value="240"${keyringRelockMinutes === 240 ? " selected" : ""}>240 ${i18n.t("gateway.auth.security.keyring_minutes")}</option>
+          </select>
+        </label>
+      </div>
     `;
     }
 
@@ -58,6 +76,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 showToast,
             });
         };
+        const keyringSelect = settingsRoot.querySelector(
+            "#settings-keyring-relock",
+        );
+        keyringSelect?.addEventListener("change", () => {
+            keyringRelockMinutes = Number(keyringSelect.value);
+            markDirty?.();
+        });
     }
 
     function rerender() {
@@ -134,8 +159,12 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             await renderSubsections();
         },
         isDirty: () =>
+            keyringRelockMinutes !== savedKeyringRelockMinutes ||
             (subsectionInstances ?? []).some((section) => section.isDirty?.()),
         async save() {
+            if (keyringRelockMinutes !== savedKeyringRelockMinutes) {
+                await setKeyringRelockMinutes(keyringRelockMinutes);
+            }
             for (const section of subsectionInstances ?? []) {
                 if (section.isDirty?.()) {
                     await section.save?.();
@@ -143,11 +172,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             }
         },
         commit() {
+            savedKeyringRelockMinutes = keyringRelockMinutes;
             for (const section of subsectionInstances ?? []) {
                 section.commit?.();
             }
         },
         discard() {
+            keyringRelockMinutes = savedKeyringRelockMinutes;
             for (const section of subsectionInstances ?? []) {
                 section.discard?.();
             }

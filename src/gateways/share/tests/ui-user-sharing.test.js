@@ -39,7 +39,7 @@ test("share popup owns user recipient search and selection", () => {
     assert.match(userPageSource, /share-links-user-search/);
     assert.match(userPageSource, /share-links-user-permission/);
     assert.match(userPageSource, /type="datetime-local"/);
-    assert.doesNotMatch(userPageSource, /gatewayFields\.password/);
+    assert.match(userPageSource, /gatewayFields\.password/);
     assert.match(userPageSource, /defaultGrantedCapabilities/);
     assert.match(userPageSource, /endsWith\(":write"\)/);
     assert.match(

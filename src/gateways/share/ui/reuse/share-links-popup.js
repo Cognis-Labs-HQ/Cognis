@@ -576,7 +576,8 @@ export async function openShareLinksPopup({
                     "#share-links-password-form",
                 );
                 if (
-                    state.activeMethodId === "link" &&
+                    (state.activeMethodId === "link" ||
+                        state.activeMethodId === "user") &&
                     passwordForm instanceof HTMLFormElement &&
                     !passwordForm.reportValidity()
                 ) {

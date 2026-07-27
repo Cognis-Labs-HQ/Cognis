@@ -306,7 +306,7 @@ export async function registerShareBootstrapHooks(input: {
         "mint-share-token",
         "emit-event",
         { id: "share-gateway:emit-event" },
-        (stageCtx) => {
+        async (stageCtx) => {
             const issued = getFirstStageResult(
                 stageCtx.stageResults,
                 "issue-token",
@@ -314,9 +314,63 @@ export async function registerShareBootstrapHooks(input: {
                 minted?: boolean;
                 shareRecord?: unknown;
             } | null;
+            const shareRecord = issued?.shareRecord as {
+                ownerAccountId?: string;
+                resourceType?: string;
+                resourceId?: string;
+                label?: string;
+                shareUrl?: string;
+                accessControls?: {
+                    recipients?: Array<{ type?: string; id?: string }>;
+                };
+            } | null;
+            const userRecipients = Array.from(
+                new Set(
+                    (shareRecord?.accessControls?.recipients ?? [])
+                        .filter((recipient) => recipient?.type === "user")
+                        .map((recipient) => String(recipient.id ?? "").trim())
+                        .filter(Boolean),
+                ),
+            );
+            const registerCategory = input.ctx.capabilities.get<
+                (id: string, label: string) => void
+            >("notify:registerCategory");
+            const dispatch =
+                input.ctx.capabilities.get<
+                    (envelope: {
+                        category: string;
+                        recipientUsername: string;
+                        subject: string;
+                        body: string;
+                        actionUrl?: string;
+                        senderName?: string;
+                        metadata?: Record<string, unknown>;
+                    }) => Promise<unknown>
+                >("notify:dispatch");
+            if (issued?.minted && dispatch && userRecipients.length > 0) {
+                registerCategory?.("share", "Share");
+                await Promise.allSettled(
+                    userRecipients.map((recipientUsername) =>
+                        dispatch({
+                            category: "share",
+                            recipientUsername,
+                            subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
+                            body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
+                            actionUrl: shareRecord?.shareUrl,
+                            senderName: "Cognis Share",
+                            metadata: {
+                                shareId: (shareRecord as { id?: string })?.id,
+                                resourceType: shareRecord?.resourceType,
+                                resourceId: shareRecord?.resourceId,
+                            },
+                        }),
+                    ),
+                );
+            }
             return {
                 emitted: Boolean(issued?.minted),
-                shareRecord: issued?.shareRecord ?? null,
+                shareRecord: shareRecord ?? null,
+                notifiedRecipients: userRecipients,
             };
         },
     );

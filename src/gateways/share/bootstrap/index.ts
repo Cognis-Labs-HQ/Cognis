@@ -58,6 +58,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
         ) => boolean
     >("notify:registerEmailTemplate");
+    ctx.capabilities.get<(id: string, label: string) => void>(
+        "notify:registerCategory",
+    )?.("share", "Share");
     registerEmailTemplate?.("share-link", (variables) => ({
         subject: `${variables.senderName} shared ${variables.resourceName} with you`,
         body: `${variables.senderName} shared the ${variables.resourceTypeLabel} “${variables.resourceName}” with you.\n\nOpen the shared item:\n${variables.url}`,

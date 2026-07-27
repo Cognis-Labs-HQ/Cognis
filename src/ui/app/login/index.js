@@ -14,6 +14,7 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
+import { unlockKeyring } from "../../reuse/keyring.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -948,6 +949,7 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
+                                await unlockKeyring(payload.password);
                                 await handleAuthResult(body.data);
                                 return;
                             }
