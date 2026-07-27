@@ -49,6 +49,31 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
 
     const routes = routeRegistry.getHandlers();
     assert.ok(routes.length > 0);
+    const resolveVariants = capabilities.get<
+        (input: {
+            resourceType: string;
+            token: string;
+            shareUrl: string;
+            grantedCapabilities: string[];
+            transportPassword: string;
+        }) => Array<{ id: string; url: string; access?: string }>
+    >("share:resolveVariants");
+    const variants = resolveVariants?.({
+        resourceType: "calendar",
+        token: "share-token",
+        shareUrl: "/share/share-token",
+        grantedCapabilities: ["calendar:read"],
+        transportPassword: "transport-secret",
+        metadata: { resourceName: "Team Calendar" },
+    });
+    assert.match(
+        variants?.find((variant) => variant.id === "caldav")?.url ?? "",
+        /\/Team%20Calendar\/\?passphrase=transport-secret$/,
+    );
+    assert.equal(
+        variants?.find((variant) => variant.id === "caldav")?.access,
+        "read",
+    );
 });
 
 test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {

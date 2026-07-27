@@ -205,6 +205,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             token: string;
             shareUrl: string;
             grantedCapabilities: string[];
+            transportPassword?: string | null;
+            metadata?: Record<string, string> | null;
         }) => {
             if (variantInput.resourceType !== "calendar") {
                 return [
@@ -217,6 +219,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 ];
             }
             const encodedToken = encodeURIComponent(variantInput.token);
+            const authenticationQuery = variantInput.transportPassword
+                ? `?passphrase=${encodeURIComponent(variantInput.transportPassword)}`
+                : "";
+            const calendarPathName = encodeURIComponent(
+                String(variantInput.metadata?.resourceName ?? "calendar"),
+            );
             const access = variantInput.grantedCapabilities.includes(
                 "calendar:write",
             )
@@ -234,14 +242,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     id: "ics",
                     label: "ICS",
                     access: "read",
-                    url: `/api/v1/calendar/ics/share/${encodedToken}`,
+                    url: `/api/v1/calendar/ics/share/${encodedToken}${authenticationQuery}`,
                     contentType: "text/calendar",
                 },
                 {
                     id: "caldav",
                     label: "CalDAV",
                     access,
-                    url: `/api/v1/calendar/caldav/share/${encodedToken}`,
+                    url: `/api/v1/calendar/caldav/share/${encodedToken}/${calendarPathName}/${authenticationQuery}`,
                     contentType: "text/calendar",
                 },
             ];

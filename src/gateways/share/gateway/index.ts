@@ -1,6 +1,7 @@
 import { resolveExternalBaseUrl } from "../../../api/reuse/url-parts.js";
 import {
     ShareTokenStore,
+    deriveShareTransportPassword,
     generateSharePassword,
     isExpired,
     type ShareAccessControls,
@@ -147,6 +148,8 @@ export class CoreShareGateway {
                 token: string;
                 shareUrl: string;
                 grantedCapabilities: string[];
+                transportPassword: string | null;
+                metadata: Record<string, string> | null;
             }) => Promise<ShareVariant[]> | ShareVariant[]
         >("share:resolveVariants");
         const resolvedVariants = resolveVariants
@@ -156,6 +159,8 @@ export class CoreShareGateway {
                   token: record.tokenValue,
                   shareUrl,
                   grantedCapabilities: record.grantedCapabilities,
+                  transportPassword: deriveShareTransportPassword(record),
+                  metadata: record.metadata,
               })
             : [];
         const variants = resolvedVariants.map((variant) => ({

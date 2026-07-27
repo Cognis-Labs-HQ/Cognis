@@ -5,7 +5,10 @@ import type {
     StructuredDbCommandResult,
 } from "../../db/reuse/db-command.js";
 import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
-import { ShareTokenStore } from "../gateway/store.js";
+import {
+    ShareTokenStore,
+    deriveShareTransportPassword,
+} from "../gateway/store.js";
 
 class MemoryExecutor {
     public readonly tableDefs: StructuredDbTableDef[] = [];
@@ -135,6 +138,14 @@ test("issue, list, resolve, and delete share tokens", async () => {
     const inspected = await store.inspect(issued.tokenValue);
     assert.equal(inspected?.id, issued.id);
     assert.equal(Boolean(inspected?.passwordHash), true);
+    const transportPassword = inspected
+        ? deriveShareTransportPassword(inspected)
+        : null;
+    assert.match(String(transportPassword), /^shr_auth_/);
+    assert.equal(
+        (await store.resolve(issued.tokenValue, transportPassword))?.id,
+        issued.id,
+    );
     const resolved = await store.resolve(issued.tokenValue, "secret");
     assert.ok(resolved);
     assert.equal(resolved?.resourceId, "meeting-1");

@@ -236,7 +236,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         }
 
         const shareMatch = url.pathname.match(
-            /^\/api\/v1\/calendar\/caldav\/share\/([^/]+)(?:\/([^/]+))?$/,
+            /^\/api\/v1\/calendar\/caldav\/share\/([^/]+)(?:\/([^/]+))?(?:\/([^/]+))?\/?$/,
         );
         if (
             shareMatch &&
@@ -246,6 +246,9 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 isMetadataProbeMethod(req.method))
         ) {
             const token = decodeURIComponent(shareMatch[1]);
+            const collectionPathName = shareMatch[2]
+                ? encodeURIComponent(decodeURIComponent(shareMatch[2]))
+                : "";
             const receivedPassphrase = readSharePassphrase(req, url);
             const shareLink = await resolveGatewayCalendarShare(
                 ctx.capabilities,
@@ -304,7 +307,10 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     return true;
                 }
                 const pathEventId = decodeURIComponent(
-                    shareMatch[2] ?? "",
+                    shareMatch[3] ??
+                        (shareMatch[2] && !url.pathname.endsWith("/")
+                            ? shareMatch[2]
+                            : ""),
                 ).replace(/\.ics$/i, "");
                 if (req.method === "DELETE") {
                     ctx.gateway.deleteSharedEvent({
@@ -374,7 +380,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     eventId: savedEvent.id,
                 });
                 res.writeHead(existingEvent ? 204 : 201, {
-                    location: `/api/v1/calendar/caldav/share/${encodeURIComponent(token)}/${encodeURIComponent(savedEvent.id)}.ics`,
+                    location: `/api/v1/calendar/caldav/share/${encodeURIComponent(token)}/${collectionPathName ? `${collectionPathName}/` : ""}${encodeURIComponent(savedEvent.id)}.ics`,
                 });
                 res.end();
                 return true;
