@@ -41,6 +41,18 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     >("calendar:resolveShareLink");
     const isMetadataProbeMethod = (method: string | undefined) =>
         method === "HEAD" || method === "OPTIONS" || method === "PROPFIND";
+    const isMutationMethod = (method: string | undefined) =>
+        [
+            "PUT",
+            "POST",
+            "DELETE",
+            "MKCOL",
+            "MKCALENDAR",
+            "MOVE",
+            "COPY",
+            "PROPPATCH",
+            "ACL",
+        ].includes(String(method ?? ""));
 
     const respondCalendarPayload = (
         reqMethod: string | undefined,
@@ -130,11 +142,13 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         }
 
         const shareMatch = url.pathname.match(
-            /^\/api\/v1\/calendar\/ics\/share\/([^/]+)$/,
+            /^\/api\/v1\/calendar\/ics\/share\/([^/]+)(?:\/([^/]+\.ics))?$/,
         );
         if (
             shareMatch &&
-            (req.method === "GET" || isMetadataProbeMethod(req.method))
+            (req.method === "GET" ||
+                isMutationMethod(req.method) ||
+                isMetadataProbeMethod(req.method))
         ) {
             const token = decodeURIComponent(shareMatch[1]);
             const receivedPassphrase = readSharePassphrase(req, url);
@@ -179,6 +193,24 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                         },
                     }),
                 );
+                return true;
+            }
+            if (isMutationMethod(req.method)) {
+                res.writeHead(403, {
+                    "content-type": "application/xml; charset=utf-8",
+                    allow: "GET,HEAD,OPTIONS,PROPFIND",
+                });
+                res.end(
+                    `<?xml version="1.0" encoding="utf-8"?><d:error xmlns:d="DAV:"><d:need-privileges><d:resource><d:href>${escapeXml(`${url.pathname}${url.search}`)}</d:href><d:privilege><d:write/></d:privilege></d:resource></d:need-privileges></d:error>`,
+                );
+                return true;
+            }
+            if (!shareMatch[2]) {
+                const filename = `${encodeURIComponent(calendar.name)}.ics`;
+                res.writeHead(302, {
+                    location: `/api/v1/calendar/ics/share/${encodeURIComponent(token)}/${filename}${url.search}`,
+                });
+                res.end();
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");

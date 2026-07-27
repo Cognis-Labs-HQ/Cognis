@@ -244,7 +244,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     id: "ics",
                     label: "ICS",
                     access: "read",
-                    url: `/api/v1/calendar/ics/share/${encodedToken}`,
+                    url: `/api/v1/calendar/ics/share/${encodedToken}/${calendarPathName}.ics`,
                     contentType: "text/calendar",
                 },
                 {

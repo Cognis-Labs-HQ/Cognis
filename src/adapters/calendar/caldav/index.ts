@@ -77,6 +77,18 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         method === "OPTIONS" ||
         method === "PROPFIND" ||
         method === "REPORT";
+    const isMutationMethod = (method: string | undefined) =>
+        [
+            "PUT",
+            "POST",
+            "DELETE",
+            "MKCOL",
+            "MKCALENDAR",
+            "MOVE",
+            "COPY",
+            "PROPPATCH",
+            "ACL",
+        ].includes(String(method ?? ""));
     const respondCalendarPayload = (
         reqMethod: string | undefined,
         res: {
@@ -241,8 +253,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         if (
             shareMatch &&
             (req.method === "GET" ||
-                req.method === "PUT" ||
-                req.method === "DELETE" ||
+                isMutationMethod(req.method) ||
                 isMetadataProbeMethod(req.method))
         ) {
             const token = decodeURIComponent(shareMatch[1]);
@@ -293,17 +304,22 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            if (req.method === "PUT" || req.method === "DELETE") {
+            if (isMutationMethod(req.method)) {
                 if (!shareLink.writable) {
-                    res.writeHead(403, { "content-type": "application/json" });
+                    res.writeHead(403, {
+                        "content-type": "application/xml; charset=utf-8",
+                        allow: "GET,HEAD,OPTIONS,PROPFIND,REPORT",
+                    });
                     res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "read_only",
-                                message: "Calendar share is read-only.",
-                            },
-                        }),
+                        `<?xml version="1.0" encoding="utf-8"?><d:error xmlns:d="DAV:"><d:need-privileges><d:resource><d:href>${escapeXml(`${url.pathname}${url.search}`)}</d:href><d:privilege><d:write/></d:privilege></d:resource></d:need-privileges></d:error>`,
                     );
+                    return true;
+                }
+                if (req.method !== "PUT" && req.method !== "DELETE") {
+                    res.writeHead(405, {
+                        allow: "GET,HEAD,OPTIONS,PROPFIND,REPORT,PUT,DELETE",
+                    });
+                    res.end();
                     return true;
                 }
                 const pathEventId = decodeURIComponent(
