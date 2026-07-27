@@ -1,7 +1,7 @@
 {
     "id": "share",
     "name": "Share Gateway",
-    "version": "1.6.4",
+    "version": "1.6.5",
     "required": false,
     "requires": ["auth", "db"],
     "hasAdapters": false,

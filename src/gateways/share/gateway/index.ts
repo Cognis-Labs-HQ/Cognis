@@ -37,6 +37,7 @@ export interface ShareVariant {
     label: string;
     url: string;
     contentType?: string;
+    access?: "read" | "write";
 }
 
 export class CoreShareGateway {
@@ -145,6 +146,7 @@ export class CoreShareGateway {
                 resourceId: string;
                 token: string;
                 shareUrl: string;
+                grantedCapabilities: string[];
             }) => Promise<ShareVariant[]> | ShareVariant[]
         >("share:resolveVariants");
         const resolvedVariants = resolveVariants
@@ -153,6 +155,7 @@ export class CoreShareGateway {
                   resourceId: record.resourceId,
                   token: record.tokenValue,
                   shareUrl,
+                  grantedCapabilities: record.grantedCapabilities,
               })
             : [];
         const variants = resolvedVariants.map((variant) => ({
@@ -176,6 +179,7 @@ export class CoreShareGateway {
             updatedAt: record.updatedAt,
             shareUrl,
             variants,
+            emailSupported: Boolean(this.resolveCapability("notify:sendEmail")),
             quickShareActions: await resolveQuickShareActions(
                 this.resolveCapability,
                 {

@@ -226,7 +226,7 @@ function renderRows(labels, links) {
                   ? link.variants
                   : [];
               return `
-            <article class="share-links-row">
+            <article class="share-links-row" data-share-edit="${escapeHtml(shareId)}">
               <button
                 type="button"
                 class="popup-close-btn btn-cancel btn-animated share-links-row-close"
@@ -251,7 +251,8 @@ function renderRows(labels, links) {
                 </div>
                 ${renderShareStatus(link, labels)}
                 ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><select data-share-recipient-permission="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.permission || "Permission")}"><option value="read"${recipient.permissions?.includes("write") ? "" : " selected"}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${recipient.permissions?.includes("write") ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select><button type="button" data-share-recipient-remove="${escapeHtml(recipient.id)}" data-share-id="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.removeUser || labels.revoke)}">×</button></span>`).join("")}</div>` : ""}
-                ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(labels[`${variant.id}Variant`] || variant.label)}</button>`).join("")}</div>` : ""}
+                ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(variant.label)}${variant.access ? ` (${escapeHtml(variant.access === "write" ? labels.writePermission : labels.readPermission)})` : ""}</button>`).join("")}</div>` : ""}
+                ${!isUserShare && link.emailSupported ? `<button type="button" class="btn-neutral share-links-email-action" data-share-email="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.mail)}" title="${escapeHtml(labels.mail)}"><span class="share-links-row-mail-icon" aria-hidden="true"></span></button>` : ""}
               </div>
               ${
                   isUserShare
@@ -310,6 +311,7 @@ export async function openShareLinksPopup({
         isCreating: false,
         links: [],
         pendingLinks: new Map(),
+        editingShareId: "",
         label: "",
         expiresAt: "",
         password: "",
@@ -458,7 +460,7 @@ export async function openShareLinksPopup({
                 selectedUsers.innerHTML = state.recipients
                     .map(
                         (recipient) =>
-                            `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}${recipient.handle ? `<small>@${escapeHtml(recipient.handle)}</small>` : ""}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
+                            `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.id, colorSeed: recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
                     )
                     .join("");
                 hydrateProfileAvatars(selectedUsers);
@@ -531,11 +533,16 @@ export async function openShareLinksPopup({
                     const methodModule = state.methodModules.get(
                         state.activeMethodId,
                     );
-                    const result = await createLink(
+                    const preparedInput =
                         typeof methodModule?.buildCreateOptions === "function"
                             ? methodModule.buildCreateOptions(createInput)
-                            : createInput,
-                    );
+                            : createInput;
+                    const result = state.editingShareId
+                        ? await updateLink({
+                              shareId: state.editingShareId,
+                              ...preparedInput,
+                          })
+                        : await createLink(preparedInput);
                     if (typeof methodModule?.afterCreate === "function") {
                         await methodModule.afterCreate({ result });
                     }
@@ -556,6 +563,7 @@ export async function openShareLinksPopup({
                     state.label = "";
                     state.password = "";
                     state.recipients = [];
+                    state.editingShareId = "";
                     if (popupOpen) renderMethodPage();
                     await refreshLinks();
                     if (popupOpen) renderLinksList(listContainer);
@@ -621,7 +629,7 @@ export async function openShareLinksPopup({
                             )
                             .map(
                                 (user) =>
-                                    `<div class="share-links-user-result" role="button" tabindex="0" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}" data-share-user-handle="${escapeHtml(user.handle || "")}" data-share-user-avatar-key="${escapeHtml(user.avatarKey || "")}">${buildProfileAvatarMarkup({ avatarKey: user.avatarKey || null, label: user.label || user.handle || user.id, colorSeed: user.handle || user.id, profileHandle: user.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(user.label || user.handle || user.id)}${user.handle ? ` <small>@${escapeHtml(user.handle)}</small>` : ""}</span></div>`,
+                                    `<div class="share-links-user-result" role="button" tabindex="0" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}" data-share-user-handle="${escapeHtml(user.handle || "")}" data-share-user-avatar-key="${escapeHtml(user.avatarKey || "")}">${buildProfileAvatarMarkup({ avatarKey: user.avatarKey || null, label: user.label || user.id, colorSeed: user.id, profileHandle: user.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(user.label || user.id)}</span></div>`,
                             )
                             .join("");
                         hydrateProfileAvatars(results);
@@ -714,6 +722,67 @@ export async function openShareLinksPopup({
 
             listContainer.addEventListener("click", (event) => {
                 if (!(event.target instanceof HTMLElement)) return;
+                const emailButton = event.target.closest("[data-share-email]");
+                const editRow = event.target.closest("[data-share-edit]");
+                if (
+                    editRow instanceof HTMLElement &&
+                    !event.target.closest(
+                        "[data-share-delete],[data-share-copy],[data-share-recipient-remove],select",
+                    )
+                ) {
+                    const selectedShare = state.links.find(
+                        (link) => String(link.id) === editRow.dataset.shareEdit,
+                    );
+                    if (selectedShare) {
+                        const hasUserRecipients = Array.isArray(
+                            selectedShare.accessControls?.recipients,
+                        )
+                            ? selectedShare.accessControls.recipients.some(
+                                  (recipient) => recipient?.type === "user",
+                              )
+                            : false;
+                        state.activeMethodId = hasUserRecipients
+                            ? "user"
+                            : "link";
+                        state.editingShareId = String(selectedShare.id);
+                        state.label = String(selectedShare.label ?? "");
+                        state.expiresAt = selectedShare.expiresAt
+                            ? new Date(selectedShare.expiresAt)
+                                  .toISOString()
+                                  .slice(0, 16)
+                            : "";
+                        state.recipients = Array.isArray(
+                            selectedShare.accessControls?.recipients,
+                        )
+                            ? selectedShare.accessControls.recipients
+                            : [];
+                        state.permission =
+                            selectedShare.accessControls?.permissions?.includes(
+                                "write",
+                            )
+                                ? "write"
+                                : "read";
+                        const matchingAccess = state.linkAccessOptions.find(
+                            (option) =>
+                                option.grantedCapabilities?.every(
+                                    (capability) =>
+                                        selectedShare.grantedCapabilities?.includes(
+                                            capability,
+                                        ),
+                                ),
+                        );
+                        if (matchingAccess) {
+                            state.linkAccessId = matchingAccess.id;
+                        }
+                        renderMethodPage();
+                        if (emailButton) {
+                            methodPage
+                                .querySelector("#share-email-input")
+                                ?.focus();
+                        }
+                    }
+                    return;
+                }
                 const copyButton = event.target.closest("[data-share-copy]");
                 if (copyButton instanceof HTMLElement) {
                     const shareUrl = String(

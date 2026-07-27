@@ -138,7 +138,11 @@
   <string name="gateway.calendar.share_link_expiry_30d">Expires in 30 days</string>
   <string name="gateway.calendar.share_link_expiry_never">Never Expires</string>
   <string name="gateway.calendar.share_link_expiry">Expiry</string>
-  <string name="gateway.calendar.share_link_generate">Generate Links</string>
+  <string name="gateway.calendar.share_link_generate">Create Link Share</string>
+  <string name="gateway.calendar.share_link_update">Update Link Share</string>
+  <string name="gateway.calendar.share_user_update">Update User Share</string>
+  <string name="gateway.calendar.share_with_prefix">Share with</string>
+  <string name="gateway.calendar.share_users_count">users</string>
   <string name="gateway.calendar.share_links_details">Calendar client links</string>
   <string name="gateway.calendar.share_link_copy">Copy</string>
   <string name="gateway.calendar.share_link_copied">Link copied!</string>

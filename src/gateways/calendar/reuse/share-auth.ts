@@ -55,7 +55,11 @@ export async function resolveGatewayCalendarShare(
         calendarId: string;
         passphrase: string | null;
     } | null>,
-): Promise<{ calendarId?: string; unauthorized?: boolean } | null> {
+): Promise<{
+    calendarId?: string;
+    unauthorized?: boolean;
+    writable?: boolean;
+} | null> {
     const resolveToken = capabilities.get<
         (
             tokenValue: string,
@@ -63,6 +67,7 @@ export async function resolveGatewayCalendarShare(
         ) => Promise<{
             resourceType?: unknown;
             resourceId?: unknown;
+            grantedCapabilities?: unknown;
         } | null>
     >("share:resolveToken");
     const share = resolveToken
@@ -70,7 +75,14 @@ export async function resolveGatewayCalendarShare(
         : null;
     if (share?.resourceType === "calendar") {
         const calendarId = String(share.resourceId ?? "").trim();
-        return calendarId ? { calendarId } : null;
+        return calendarId
+            ? {
+                  calendarId,
+                  writable:
+                      Array.isArray(share.grantedCapabilities) &&
+                      share.grantedCapabilities.includes("calendar:write"),
+              }
+            : null;
     }
     const calendarLink = resolveCalendarLink
         ? await resolveCalendarLink(token)
@@ -81,5 +93,5 @@ export async function resolveGatewayCalendarShare(
         !passphrasesMatch(calendarLink.passphrase, password)
     )
         return { unauthorized: true };
-    return { calendarId: calendarLink.calendarId };
+    return { calendarId: calendarLink.calendarId, writable: false };
 }

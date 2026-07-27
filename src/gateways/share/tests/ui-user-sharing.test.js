@@ -75,3 +75,22 @@ test("share popup adds a created token to history before refetching", () => {
     );
     assert.match(popupSource, /\.\.\.state\.pendingLinks\.values\(\)/);
 });
+
+test("share history supports email delivery and in-place update mode", () => {
+    assert.match(popupSource, /data-share-email/);
+    assert.match(popupSource, /editingShareId/);
+    assert.match(popupSource, /await updateLink/);
+    assert.match(linkPageSource, /Create Link Share/);
+    assert.match(linkPageSource, /Update Link Share/);
+    assert.match(userPageSource, /state\.recipients\.length/);
+    assert.match(userPageSource, /Update User Share/);
+});
+
+test("selected users retain lookup-card placement without visible handles", () => {
+    assert.match(
+        userPageSource,
+        /share-links-user-results[\s\S]*share-links-selected-users/,
+    );
+    assert.match(popupSource, /profileHandle: recipient\.handle/);
+    assert.doesNotMatch(popupSource, /recipient\.handle \? `<small>@/);
+});

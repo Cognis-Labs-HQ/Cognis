@@ -86,13 +86,26 @@ export function buildShareTokenCallbacks({
             const payload = await response.json().catch(() => ({ data: null }));
             return payload?.data ?? null;
         },
-        updateLink: async ({ shareId, accessControls }) => {
+        updateLink: async ({
+            shareId,
+            label,
+            expiresAt,
+            password,
+            accessControls,
+            grantedCapabilities: requestedCapabilities,
+        }) => {
             const response = await apiFetch(
                 `${SHARE_API}/${encodeURIComponent(shareId)}`,
                 {
                     method: "PATCH",
                     headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ accessControls }),
+                    body: JSON.stringify({
+                        label,
+                        expiresAt,
+                        password,
+                        accessControls,
+                        grantedCapabilities: requestedCapabilities,
+                    }),
                 },
             );
             if (!response.ok) throw new Error("update_failed");

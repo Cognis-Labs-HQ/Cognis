@@ -49,6 +49,10 @@ test("resolveGatewayCalendarShare resolves a central token with its supplied pas
                     ? {
                           resourceType: "calendar",
                           resourceId: "calendar-1",
+                          grantedCapabilities: [
+                              "calendar:read",
+                              "calendar:write",
+                          ],
                       }
                     : null;
             }) as T;
@@ -60,7 +64,7 @@ test("resolveGatewayCalendarShare resolves a central token with its supplied pas
             "shared-token",
             "client-secret",
         ),
-        { calendarId: "calendar-1" },
+        { calendarId: "calendar-1", writable: true },
     );
     assert.deepEqual(observedPasswords, ["client-secret"]);
 });

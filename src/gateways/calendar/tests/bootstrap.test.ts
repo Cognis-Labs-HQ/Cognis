@@ -321,6 +321,10 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         new URL(`http://localhost${privateCaldavPath}`),
     );
     assert.equal(privateCaldavResponse.statusCode, 200);
+    assert.equal(
+        privateCaldavResponse.headers["x-cognis-calendar-access"],
+        "read",
+    );
 
     const privateIcsRequest = new RequestRecorder({
         method: "GET",
@@ -338,6 +342,10 @@ test("calendar share endpoint returns multiple expiring ICS and CalDAV links", a
         new URL(`http://localhost${privateIcsPath}`),
     );
     assert.equal(privateIcsResponse.statusCode, 200);
+    assert.equal(
+        privateIcsResponse.headers["x-cognis-calendar-access"],
+        "read",
+    );
 
     const expiringShareResponse = await dispatchJson(
         "POST",

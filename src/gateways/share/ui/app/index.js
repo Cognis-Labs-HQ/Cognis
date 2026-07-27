@@ -213,6 +213,12 @@ export async function mount(root, { signal } = {}) {
         globalThis.__spaRouter = true;
         try {
             await import(String(shareContext.page.rendererScriptUrl));
+        } catch {
+            state.loading = false;
+            state.errorKey = "share.error.renderer_missing";
+            updatePageDescriptor(root, state.i18n, state.errorKey);
+            composer.refresh([buildShareElement(state)]);
+            return;
         } finally {
             globalThis.__spaRouterCount--;
             if (globalThis.__spaRouterCount === 0) {
@@ -229,12 +235,21 @@ export async function mount(root, { signal } = {}) {
         return;
     }
 
-    const renderedContent = renderer({
-        data: shareContext.payload ?? {},
-        grantedCapabilities: shareContext.grantedCapabilities,
-        i18n: state.i18n,
-        signal,
-    });
+    let renderedContent = "";
+    try {
+        renderedContent = renderer({
+            data: shareContext.payload ?? {},
+            grantedCapabilities: shareContext.grantedCapabilities,
+            i18n: state.i18n,
+            signal,
+        });
+    } catch {
+        state.loading = false;
+        state.errorKey = "share.error.malformed_response";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
+        composer.refresh([buildShareElement(state)]);
+        return;
+    }
     state.loading = false;
     state.errorKey = "";
     state.renderedContent =

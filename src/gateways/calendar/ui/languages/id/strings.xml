@@ -138,7 +138,11 @@
   <string name="gateway.calendar.share_link_expiry_30d">Kedaluwarsa dalam 30 hari</string>
   <string name="gateway.calendar.share_link_expiry_never">Tidak Pernah Kedaluwarsa</string>
   <string name="gateway.calendar.share_link_expiry">Kedaluwarsa</string>
-  <string name="gateway.calendar.share_link_generate">Buat Tautan</string>
+  <string name="gateway.calendar.share_link_generate">Buat Berbagi Tautan</string>
+  <string name="gateway.calendar.share_link_update">Perbarui Berbagi Tautan</string>
+  <string name="gateway.calendar.share_user_update">Perbarui Berbagi Pengguna</string>
+  <string name="gateway.calendar.share_with_prefix">Bagikan dengan</string>
+  <string name="gateway.calendar.share_users_count">pengguna</string>
   <string name="gateway.calendar.share_links_details">Tautan klien kalender</string>
   <string name="gateway.calendar.share_link_copy">Salin</string>
   <string name="gateway.calendar.share_link_copied">Tautan disalin!</string>

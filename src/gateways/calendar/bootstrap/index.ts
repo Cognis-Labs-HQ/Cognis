@@ -204,6 +204,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             resourceType: string;
             token: string;
             shareUrl: string;
+            grantedCapabilities: string[];
         }) => {
             if (variantInput.resourceType !== "calendar") {
                 return [
@@ -216,22 +217,30 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 ];
             }
             const encodedToken = encodeURIComponent(variantInput.token);
+            const access = variantInput.grantedCapabilities.includes(
+                "calendar:write",
+            )
+                ? "write"
+                : "read";
             return [
                 {
                     id: "web",
                     label: "Web",
+                    access,
                     url: variantInput.shareUrl,
                     contentType: "text/html",
                 },
                 {
                     id: "ics",
                     label: "ICS",
+                    access: "read",
                     url: `/api/v1/calendar/ics/share/${encodedToken}`,
                     contentType: "text/calendar",
                 },
                 {
                     id: "caldav",
                     label: "CalDAV",
+                    access,
                     url: `/api/v1/calendar/caldav/share/${encodedToken}`,
                     contentType: "text/calendar",
                 },

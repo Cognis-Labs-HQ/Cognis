@@ -27,6 +27,7 @@ export function buildCreateOptions(input) {
                   grantedCapabilities: input.selectedAccess.grantedCapabilities,
                   accessControls: {
                       permissions: input.selectedAccess.permissions,
+                      recipients: [],
                   },
               }
             : {}),
@@ -96,6 +97,6 @@ export function renderPage({ labels, state, escapeHtml, gatewayFields }) {
       ${gatewayFields.password}
       <label><span>${escapeHtml(labels.emailRecipients || "Email recipients")}</span><input id="share-email-input" type="email" autocomplete="email" placeholder="${escapeHtml(labels.emailRecipientsPlaceholder || "Type an email and press Enter")}" /></label>
       <div class="share-email-tags">${renderEmailTags(escapeHtml)}</div>
-      <button id="share-links-create-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(labels.generateLink)}</button>
+      <button id="share-links-create-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(state.editingShareId ? labels.updateLinkShare || "Update Link Share" : labels.createLinkShare || "Create Link Share")}</button>
     </div>`;
 }

@@ -45,8 +45,12 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         payload: string,
         calendarName: string,
         calendarId: string,
+        accessMode: "read" | "write" = "read",
     ) => {
-        const headers = buildCalendarExportHeaders(calendarName, calendarId);
+        const headers = {
+            ...buildCalendarExportHeaders(calendarName, calendarId),
+            "x-cognis-calendar-access": accessMode,
+        };
         if (reqMethod === "OPTIONS") {
             res.writeHead(204, {
                 ...headers,
@@ -99,6 +103,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 ics,
                 calendar.name,
                 calendar.id,
+                "read",
             );
             return true;
         }
