@@ -319,3 +319,7 @@ Every load of a password-protected recipient calendar now revalidates its share 
 ## Refused secret prompts stay locked
 
 Cancelling keyring and secret prompts now leaves the protected object unavailable instead of continuing with partial access. Locked shared calendars appear grey with an explanatory tooltip and retry their unlock flow when clicked. Once the keyring is unlocked, its add, edit, delete, and reveal controls remain freely usable without repeated account-password confirmations.
+
+## Shared calendars no longer imply event invitations
+
+Creating an event in a calendar with user shares no longer adds every share recipient as an attendee; recipients can still view the event through the shared calendar, while invitations are sent only to explicitly selected attendees. Keyring pages reuse an already-unlocked vault, and locked-vault prompts now use the dedicated Unlock Keyring wording and a deferred page-action flow so navigation finishes before a popup opens.

@@ -220,3 +220,12 @@ test("share session-flow-hooks.js defaults guest share chrome to hidden", () => 
         /page:\s*\{[\s\S]*\.\.\.SHARE_GUEST_PAGE_DEFAULTS[\s\S]*\.\.\.\(shareData\.page \?\? \{\}\)/,
     );
 });
+
+test("page actions can defer popup work until mounting has completed", () => {
+    const registrySource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/flow-registry.js"),
+        "utf8",
+    );
+    assert.match(registrySource, /registerFlow\("defer-page-action"/);
+    assert.match(registrySource, /setTimeout\(\(\) => void action\(\), 0\)/);
+});

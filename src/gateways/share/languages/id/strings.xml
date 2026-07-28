@@ -19,4 +19,6 @@
   <string name="share.unlock.cancel">Batal</string>
   <string name="share.unlock.keyring_label">Kata Sandi Berbagi Kalender Privat</string>
   <string name="share.unlock.do_not_save">Jangan simpan kata sandi ini ke keyring saya</string>
+  <string name="share.keyring.unlock_title">Buka Keyring</string>
+  <string name="share.keyring.unlock_message">Masukkan kata sandi akun Anda untuk membuka keyring terenkripsi.</string>
 </resources>

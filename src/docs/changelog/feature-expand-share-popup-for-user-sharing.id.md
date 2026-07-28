@@ -319,3 +319,7 @@ Setiap pemuatan kalender penerima yang dilindungi kata sandi kini memvalidasi ul
 ## Permintaan rahasia yang ditolak tetap terkunci
 
 Membatalkan permintaan keyring dan rahasia kini membuat objek terlindungi tetap tidak tersedia, bukan melanjutkan dengan akses sebagian. Kalender bersama yang terkunci tampil abu-abu dengan tooltip penjelasan dan mencoba membuka kunci kembali saat diklik. Setelah keyring terbuka, kontrol tambah, edit, hapus, dan tampilkan dapat digunakan bebas tanpa konfirmasi kata sandi akun berulang.
+
+## Kalender bersama tidak lagi berarti undangan acara
+
+Membuat acara pada kalender yang dibagikan kepada pengguna tidak lagi menambahkan semua penerima berbagi sebagai peserta. Penerima tetap dapat melihat acara melalui kalender bersama, sedangkan undangan hanya dikirim kepada peserta yang dipilih secara eksplisit. Halaman Keyring menggunakan kembali vault yang sudah terbuka, dan permintaan vault terkunci kini memakai judul Buka Keyring serta alur tindakan halaman tertunda agar navigasi selesai sebelum popup dibuka.

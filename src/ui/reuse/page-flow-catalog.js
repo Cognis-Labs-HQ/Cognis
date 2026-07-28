@@ -27,6 +27,9 @@
  *   Drives a direct (non-SPA) page load: auth enforcement then mount.
  *   Stages: authenticate → mount-page
  *
+ * `defer-page-action`
+ *   Defers popup-producing actions until the current page mount completes.
+ *
  * @example
  * ```js
  * import '/static/reuse/page-flow-catalog.js';

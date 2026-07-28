@@ -605,4 +605,11 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);
     assert.match(HELPERS_SOURCE, /share_secrets_not_provided/);
     assert.match(CSS_SOURCE, /calendar-item-btn--locked/);
+    assert.match(APP_SOURCE, /runFlow\("defer-page-action"/);
+    assert.match(CALENDAR_API_SOURCE, /promptWhenLocked/);
+    assert.match(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
+    assert.doesNotMatch(
+        CALENDAR_ROUTES_SOURCE,
+        /includeSharedAudienceAttendees/,
+    );
 });

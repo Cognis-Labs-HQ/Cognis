@@ -859,6 +859,19 @@ test("calendar shared write access appears in recipient list and supports event 
         "write",
     );
 
+    const ownerEventAfterShare = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(defaultAliceCalendarId)}/events`,
+        {
+            title: "Owner event without recipient invite",
+            startAt: "2026-06-14T10:00:00.000Z",
+            endAt: "2026-06-14T10:30:00.000Z",
+        },
+    );
+    assert.equal(ownerEventAfterShare.statusCode, 201);
+    assert.deepEqual(ownerEventAfterShare.body.data.attendees, ["alice"]);
+
     const bobCalendars = await dispatchJson(
         "GET",
         bobToken,

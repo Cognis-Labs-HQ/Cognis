@@ -6,6 +6,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createCalendarPopupManager } from "./popup-manager.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
@@ -137,6 +138,20 @@ export async function mount(root, { signal } = {}) {
         } catch (err) {
             console.warn("Failed to load pending invitations:", err);
             pendingInvitations = [];
+        }
+    }
+
+    async function retryCalendarUnlock(calendar) {
+        try {
+            const events = await calendarUi.fetchEvents(calendar.id, calendar, {
+                promptWhenLocked: true,
+            });
+            eventsByCalendar[calendar.id] = events;
+            calendar.secretsUnavailable = false;
+            return true;
+        } catch {
+            calendar.secretsUnavailable = true;
+            return false;
         }
     }
 
@@ -651,20 +666,11 @@ export async function mount(root, { signal } = {}) {
                             if (!calendar) return;
                             if (calendar.secretsUnavailable) {
                                 void (async () => {
-                                    try {
-                                        const events =
-                                            await calendarUi.fetchEvents(
-                                                calendar.id,
-                                                calendar,
-                                            );
-                                        eventsByCalendar[calendar.id] = events;
-                                        calendar.secretsUnavailable = false;
+                                    if (await retryCalendarUnlock(calendar)) {
                                         selectedCalendarId = calendarId;
                                         selectedEventId = "";
                                         syncRouteSelection();
                                         refreshCalendarComposer();
-                                    } catch {
-                                        calendar.secretsUnavailable = true;
                                     }
                                 })();
                                 return;
@@ -774,6 +780,19 @@ export async function mount(root, { signal } = {}) {
 
     await composer.init();
     syncRouteSelection();
+    const lockedCalendars = calendars.filter(
+        (calendar) => calendar.secretsUnavailable,
+    );
+    if (lockedCalendars.length > 0) {
+        void uiCtx.runFlow("defer-page-action", {
+            action: async () => {
+                for (const calendar of lockedCalendars) {
+                    if (!(await retryCalendarUnlock(calendar))) break;
+                }
+                refreshCalendarComposer();
+            },
+        });
+    }
     if (routeCalendarId && routeEventId) {
         void openEventPopup(routeCalendarId, routeEventId);
     }

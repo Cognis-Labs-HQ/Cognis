@@ -68,9 +68,14 @@ async function unlockKeyringForShare(i18n) {
     const unlock = uiCtx.capabilities.get("keyring:unlock");
     if (!createGuard || !unlock) return false;
     const guard = createGuard({ i18n });
-    let confirmation = await guard.requestPasswordConfirmation();
+    const unlockPrompt = {
+        title: i18n.t("share.keyring.unlock_title"),
+        message: i18n.t("share.keyring.unlock_message"),
+    };
+    let confirmation = await guard.requestPasswordConfirmation(unlockPrompt);
     if (confirmation && !confirmation.password) {
         confirmation = await guard.requestPasswordConfirmation({
+            ...unlockPrompt,
             alwaysPrompt: true,
         });
     }

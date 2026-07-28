@@ -19,4 +19,6 @@
   <string name="share.unlock.cancel">Cancel</string>
   <string name="share.unlock.keyring_label">Private Calendar Share Password</string>
   <string name="share.unlock.do_not_save">Do not save this password to my keyring</string>
+  <string name="share.keyring.unlock_title">Unlock Keyring</string>
+  <string name="share.keyring.unlock_message">Enter your account password to unlock your encrypted keyring.</string>
 </resources>

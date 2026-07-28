@@ -3,10 +3,30 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const shareAccessByCalendarId = new Map();
 
-async function requestCalendarResource(calendarId, request) {
+function refusedSecretError() {
+    const error = new Error("calendar_share_secrets_refused");
+    error.code = error.message;
+    return error;
+}
+
+async function requestCalendarResource(
+    calendarId,
+    request,
+    { promptWhenLocked = true } = {},
+) {
     const shareAccess = shareAccessByCalendarId.get(String(calendarId));
     if (!shareAccess?.sharePasswordProtected || !shareAccess?.shareId) {
         return request(null);
+    }
+    if (!promptWhenLocked) {
+        if (!uiCtx.capabilities.get("keyring:isUnlocked")?.()) {
+            throw refusedSecretError();
+        }
+        const storedPassword = uiCtx.capabilities
+            .get("keyring:forComponent")?.("Calendar Gateway")
+            ?.get(`share:${shareAccess.shareId}`);
+        if (!storedPassword) throw refusedSecretError();
+        return request(storedPassword);
     }
     const fetchProtected = uiCtx.capabilities.get(
         "share:fetchProtectedResource",
@@ -28,7 +48,11 @@ async function fetchCalendarState() {
     };
 }
 
-async function fetchEvents(calendarId, shareAccess = null) {
+async function fetchEvents(
+    calendarId,
+    shareAccess = null,
+    { promptWhenLocked = false } = {},
+) {
     if (shareAccess) {
         shareAccessByCalendarId.set(String(calendarId), shareAccess);
     }
@@ -39,14 +63,15 @@ async function fetchEvents(calendarId, shareAccess = null) {
                 ? { headers: { "x-cognis-share-password": password } }
                 : undefined,
         );
-    const response = await requestCalendarResource(calendarId, request);
+    const response = await requestCalendarResource(calendarId, request, {
+        promptWhenLocked,
+    });
     if (!response) throw new Error("calendar_share_password_unavailable");
     if (!response.ok) {
-        const error = new Error(
+        const error =
             response.status === 401
-                ? "calendar_share_secrets_refused"
-                : "calendar_events_failed",
-        );
+                ? refusedSecretError()
+                : new Error("calendar_events_failed");
         error.code = error.message;
         throw error;
     }

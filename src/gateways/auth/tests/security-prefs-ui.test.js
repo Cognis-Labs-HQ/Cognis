@@ -51,10 +51,8 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /renderSecretVisibilityField/);
     assert.match(KEYRING_SETTINGS_SOURCE, /bindSecretVisibilityToggles/);
     assert.match(KEYRING_SETTINGS_SOURCE, /class="theme-select"/);
-    assert.match(
-        KEYRING_SETTINGS_SOURCE,
-        /!isKeyringUnlocked\(\) && \(await promptToUnlock\(\)\)/,
-    );
+    assert.match(KEYRING_SETTINGS_SOURCE, /runFlow\("defer-page-action"/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /if \(!isKeyringUnlocked\(\)\)/);
     assert.match(KEYRING_SETTINGS_STYLES, /tbody\.is-locked/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-obscured/);
     assert.match(KEYRING_SETTINGS_SOURCE, /if \(!unlocked\)/);

@@ -319,3 +319,7 @@ Bei jedem Laden eines passwortgeschützten Empfängerkalenders wird das Freigabe
 ## Abgelehnte Geheimnisabfragen bleiben gesperrt
 
 Das Abbrechen von Schlüsselbund- und Geheimnisabfragen lässt das geschützte Objekt nun nicht verfügbar, anstatt mit teilweisem Zugriff fortzufahren. Gesperrte freigegebene Kalender erscheinen grau mit einem erklärenden Hinweis und versuchen beim Anklicken erneut, sich zu entsperren. Sobald der Schlüsselbund entsperrt ist, können seine Funktionen zum Hinzufügen, Bearbeiten, Löschen und Anzeigen ohne wiederholte Bestätigung des Kontopassworts verwendet werden.
+
+## Freigegebene Kalender bedeuten keine Termineinladungen mehr
+
+Beim Erstellen eines Termins in einem Kalender mit Benutzerfreigaben werden nicht mehr alle Freigabeempfänger als Teilnehmer hinzugefügt. Empfänger können den Termin weiterhin im freigegebenen Kalender sehen, während Einladungen nur an ausdrücklich ausgewählte Teilnehmer gesendet werden. Die Schlüsselbundseite verwendet einen bereits entsperrten Tresor weiter; bei gesperrtem Tresor nutzt die Abfrage nun den eindeutigen Titel „Schlüsselbund entsperren“ und einen verzögerten Seitenaktionsablauf, damit die Navigation vor dem Popup abgeschlossen wird.

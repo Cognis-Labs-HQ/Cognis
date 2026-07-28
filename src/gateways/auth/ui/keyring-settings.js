@@ -4,6 +4,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
@@ -296,11 +297,16 @@ export function createSettingsSection({ i18n, root }) {
             await ensurePageStylesheet(
                 "/static/gateways/auth/keyring-settings.css",
             );
-            if (!isKeyringUnlocked() && (await promptToUnlock())) {
-                rerender();
-                return;
-            }
             bindActions();
+            if (!isKeyringUnlocked()) {
+                void uiCtx.runFlow("defer-page-action", {
+                    action: async () => {
+                        if (!isKeyringUnlocked() && (await promptToUnlock())) {
+                            rerender();
+                        }
+                    },
+                });
+            }
         },
         isDirty: () => false,
         async save() {},
