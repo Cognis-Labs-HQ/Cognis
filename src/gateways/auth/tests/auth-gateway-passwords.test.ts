@@ -11,6 +11,7 @@ import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../access-tokens.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 import {
+    contributeTestKeyring,
     adminToken,
     dispatchRoute,
     HttpIncomingMessage,
@@ -27,6 +28,7 @@ async function bootstrapAuthGateway(input: {
     const systemCtx = createCtx();
     input.capabilities.contribute(CTX_CAPABILITY, systemCtx);
     input.capabilities.contribute("db:executor", input.db);
+    contributeTestKeyring(input.capabilities);
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry: input.routeRegistry,

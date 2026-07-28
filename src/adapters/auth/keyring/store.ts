@@ -1,4 +1,12 @@
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+export interface KeyringDbExecutor {
+    ensureTable(input: {
+        name: string;
+        columns: Array<Record<string, unknown>>;
+    }): Promise<void>;
+    executeCommand(
+        input: Record<string, unknown>,
+    ): Promise<{ rows?: Array<Record<string, unknown>> }>;
+}
 
 export interface KeyringVaultStore {
     ensureSchema(): Promise<void>;
@@ -8,7 +16,11 @@ export interface KeyringVaultStore {
 }
 
 export class DbKeyringVaultStore implements KeyringVaultStore {
-    constructor(private readonly db: DbExecutor) {}
+    private readonly db: KeyringDbExecutor;
+
+    constructor(db: unknown) {
+        this.db = db as KeyringDbExecutor;
+    }
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({

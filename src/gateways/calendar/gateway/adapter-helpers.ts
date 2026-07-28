@@ -7,6 +7,19 @@ import type {
     CalendarBootstrapBaseCtx,
     CalendarEventRecord,
 } from "./utils.js";
+
+export function getAdapterConfig(
+    registeredAdapters: Map<string, CalendarAdapter>,
+    disabledAdapters: Set<string>,
+    adapterId: string,
+): Record<string, unknown> | null {
+    const adapter = registeredAdapters.get(adapterId);
+    if (!adapter) return null;
+    return {
+        ...(typeof adapter.getConfig === "function" ? adapter.getConfig() : {}),
+        enabled: !disabledAdapters.has(adapterId),
+    };
+}
 import {
     escapeIcsText,
     formatIcsDate,

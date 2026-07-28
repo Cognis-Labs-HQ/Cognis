@@ -46,7 +46,13 @@ function resolveRole(sessionRole: string | undefined): AccessRole {
 }
 
 export function createAuthRoutes(
-    authGateway: AuthGateway,
+    authGateway: AuthGateway & {
+        confirmPassword(
+            accountId: string,
+            password: string,
+            providerId?: string,
+        ): Promise<boolean>;
+    },
     accountStore: LocalAccountStore,
     createProfile?: (
         accountId: string,
@@ -215,7 +221,7 @@ export function createAuthRoutes(
 
             const body = await readJson(req);
             const password = String(body.password ?? "");
-            const verified = await gateway.confirmPassword(
+            const verified = await authGateway.confirmPassword(
                 claims.sub,
                 password,
                 claims.providerId,

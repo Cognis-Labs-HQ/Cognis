@@ -12,6 +12,7 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import {
+    contributeTestKeyring,
     makeInMemoryDb,
     type InMemoryDb,
 } from "./auth-gateway-test-helpers.js";
@@ -24,6 +25,7 @@ function makeBaseCtx(capabilities: CapabilityStore, dbExecutor: InMemoryDb) {
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
     capabilities.contribute("db:executor", dbExecutor);
+    contributeTestKeyring(capabilities);
     return { flow: systemCtx.flow };
 }
 

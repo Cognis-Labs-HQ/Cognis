@@ -96,7 +96,6 @@
  * }} options
  * @returns {Promise<void>}
  */
-
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
     buildProfileAvatarMarkup,
@@ -113,12 +112,9 @@ import {
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 import { buildShareTokenCallbacks } from "./share-api.js";
-
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
-
 let stylesheetReady = null;
-
 export function openSharePopup({
     resourceType,
     resourceId,
@@ -137,7 +133,6 @@ export function openSharePopup({
         }),
     });
 }
-
 function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
     const existing = document.querySelector(`link[href="${STYLESHEET_HREF}"]`);
@@ -158,7 +153,6 @@ function ensureStylesheet() {
     document.head.appendChild(link);
     return stylesheetReady;
 }
-
 function renderQuickShareActions(link, labels) {
     const quickShareActions = Array.isArray(link?.quickShareActions)
         ? link.quickShareActions
@@ -194,7 +188,6 @@ function renderQuickShareActions(link, labels) {
         })
         .join("");
 }
-
 function renderShareStatus(link, labels) {
     const expiresAt = String(link?.expiresAt ?? "").trim();
     const isExpired = link?.status === "expired";
@@ -212,7 +205,6 @@ function renderShareStatus(link, labels) {
     </div>
   `;
 }
-
 function renderRows(labels, links) {
     if (!Array.isArray(links) || links.length === 0) {
         return `<p class="share-links-empty">${escapeHtml(labels.empty)}</p>`;

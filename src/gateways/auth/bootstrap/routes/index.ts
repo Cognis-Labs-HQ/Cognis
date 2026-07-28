@@ -3,6 +3,7 @@ import type {
     CapabilityStore,
     GatewayBootstrapContext,
 } from "../../../shared.js";
+import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { CoreAuthGateway } from "../../gateway.js";
 import type {
     AuthAccountStore,
@@ -12,7 +13,6 @@ import type {
 import { MemoryRateLimiter } from "../rate-limiter.js";
 import { PASSWORD_RESET_RATE_LIMIT_MS } from "../route-runtime.js";
 import { createLoginLinkRoutes } from "./login-links.js";
-import { createKeyringRoutes } from "../../../../adapters/auth/keyring/routes.js";
 import { createPasswordRoutes } from "./password.js";
 import { createRegistrationRoutes } from "./registration.js";
 import { createSecurityRoutes, type SecuritySubsection } from "./security.js";
@@ -23,6 +23,7 @@ export function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: AuthAccountStore,
     capabilities: CapabilityStore,
+    routeContext: RouteContext,
     authRouteBootstrapRuntime: AuthRouteBootstrapRuntime,
     securitySubsections: SecuritySubsection[],
     log?: GatewayBootstrapContext["log"],
@@ -68,8 +69,11 @@ export function createAuthGatewayRoutes(
         PASSWORD_RESET_RATE_LIMIT_MS,
     );
 
+    const keyringRouteFactory = capabilities.require<
+        (context: RouteContext) => AuthGatewayRouteHandler
+    >("auth:keyringRouteFactory");
     const handlers: AuthGatewayRouteHandler[] = [
-        createKeyringRoutes(capabilities),
+        keyringRouteFactory(routeContext),
         createSessionRoutes({
             authGateway,
             accountStore,

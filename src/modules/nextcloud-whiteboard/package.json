@@ -1,11 +1,11 @@
 {
     "name": "@cognis/module-nextcloud-whiteboard",
-    "version": "2.2.11",
+    "version": "2.2.12",
     "private": true,
     "type": "module",
     "dependencies": {
         "@cognis/adapter-social-profile": "<=1.1.20",
-        "@cognis/gateway-share": "<=1.6.26",
+        "@cognis/gateway-share": "<=1.6.28",
         "@cognis/gateways": "<=0.1.4"
     }
 }

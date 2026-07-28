@@ -9,7 +9,11 @@ import {
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
-import { dispatchRoute, makeJsonRequest } from "./auth-gateway-test-helpers.js";
+import {
+    contributeTestKeyring,
+    dispatchRoute,
+    makeJsonRequest,
+} from "./auth-gateway-test-helpers.js";
 
 async function bootstrapAuthGateway(input: {
     gatewayRegistry: GatewayRegistry;
@@ -20,6 +24,7 @@ async function bootstrapAuthGateway(input: {
     const systemCtx = createCtx();
     input.capabilities.contribute(CTX_CAPABILITY, systemCtx);
     input.capabilities.contribute("db:executor", input.db);
+    contributeTestKeyring(input.capabilities);
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry: input.routeRegistry,

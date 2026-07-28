@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CapabilityStore } from "@cognis/core";
 import { issueAccessToken } from "../access-tokens.js";
-import { createKeyringRoutes } from "../../../adapters/auth/keyring/routes.js";
+import { createKeyringRoutes } from "../../../adapters/auth/keyring/api/routes/index.js";
+import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
 import { makeJsonRequest, makeResponse } from "./auth-gateway-test-helpers.js";
 
 function validVault() {
@@ -18,8 +18,7 @@ function validVault() {
 
 test("authenticated users can save and load an opaque keyring vault", async () => {
     const values = new Map<string, string>();
-    const capabilities = new CapabilityStore();
-    capabilities.contribute("auth:keyringVaultStore", {
+    const store = {
         async ensureSchema() {},
         async get(accountId: string) {
             return values.get(accountId) ?? null;
@@ -30,8 +29,11 @@ test("authenticated users can save and load an opaque keyring vault", async () =
         async delete(accountId: string) {
             values.delete(accountId);
         },
+    };
+    const route = createKeyringRoutes({
+        routeContext: createDefaultRouteContext(),
+        store,
     });
-    const route = createKeyringRoutes(capabilities);
     const token = issueAccessToken("keyring-user", "user", 60);
     const headers = { authorization: `Bearer ${token}` };
 
@@ -84,16 +86,18 @@ test("authenticated users can save and load an opaque keyring vault", async () =
 });
 
 test("keyring API rejects malformed vault payloads", async () => {
-    const capabilities = new CapabilityStore();
-    capabilities.contribute("auth:keyringVaultStore", {
+    const store = {
         async ensureSchema() {},
         async get() {
             return null;
         },
         async set() {},
         async delete() {},
+    };
+    const route = createKeyringRoutes({
+        routeContext: createDefaultRouteContext(),
+        store,
     });
-    const route = createKeyringRoutes(capabilities);
     const token = issueAccessToken("keyring-user-invalid", "user", 60);
     const response = makeResponse();
     await route(

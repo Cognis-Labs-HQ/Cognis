@@ -26,18 +26,8 @@
  * @returns {Promise<boolean>} Whether the vault was successfully unlocked.
  */
 
-const keyringApiModule = await import(
-    typeof window === "undefined"
-        ? "../../../../ui/reuse/api-client.js"
-        : "/static/reuse/api-client.js"
-);
-const keyringContextModule = await import(
-    typeof window === "undefined"
-        ? "../../../../ui/reuse/ui-ctx.js"
-        : "/static/reuse/ui-ctx.js"
-);
-const { apiFetch } = keyringApiModule;
-const { uiCtx } = keyringContextModule;
+import { apiFetch } from "./api-client.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const STORAGE_KEY = "cognis_secure_keyring";
 const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";

@@ -1,7 +1,7 @@
 import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
-import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
+import { createKeyringScope } from "/static/reuse/keyring.js";
 
 export const componentSearchId = "social-messages";
 

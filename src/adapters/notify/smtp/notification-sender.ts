@@ -122,7 +122,6 @@ function sanitizeSmtpPath(value: string): string {
         .replace(/[\r\n<>]/g, "")
         .trim();
 }
-
 function extractEmailAddress(value: string): string {
     const sanitized = sanitizeHeader(value);
     const openingBracketIndex = sanitized.indexOf("<");
@@ -137,7 +136,6 @@ function extractEmailAddress(value: string): string {
     }
     return bracketed;
 }
-
 function getAddressDomain(value: string): string | null {
     const address = extractEmailAddress(value);
     const atIndex = address.lastIndexOf("@");
@@ -146,7 +144,6 @@ function getAddressDomain(value: string): string | null {
     if (/^[a-z0-9.-]+\.[a-z0-9-]+$/.test(domain)) return domain;
     return null;
 }
-
 function sanitizeMessageIdDomain(value: string | undefined): string | null {
     if (!value) return null;
     const candidate = sanitizeHeader(value)
@@ -157,7 +154,6 @@ function sanitizeMessageIdDomain(value: string | undefined): string | null {
     if (/^[a-z0-9.-]+\.[a-z0-9-]+$/.test(candidate)) return candidate;
     return null;
 }
-
 function makeMessageId(from: string, domainHint?: string): string {
     const domain =
         getAddressDomain(from) ??
@@ -165,18 +161,15 @@ function makeMessageId(from: string, domainHint?: string): string {
         "localhost.localdomain";
     return `<${Date.now()}.${randomUUID()}@${domain}>`;
 }
-
 function encodeHeaderPhrase(value: string): string {
     const sanitized = sanitizeHeader(value);
     if (/^[\x20-\x7e]*$/.test(sanitized)) return sanitized;
     return `=?UTF-8?B?${Buffer.from(sanitized, "utf8").toString("base64")}?=`;
 }
-
 function foldHeader(name: string, value: string): string {
     const prefix = `${name}: `;
     const maxFirst = MAX_HEADER_LINE_LENGTH - prefix.length;
     if (value.length <= maxFirst) return `${prefix}${value}`;
-
     const words = value.split(" ");
     const lines: string[] = [];
     let current = prefix;
@@ -200,7 +193,6 @@ function foldHeader(name: string, value: string): string {
     lines.push(current);
     return lines.join("\r\n");
 }
-
 function encodeAddressDisplayName(value: string): string {
     const encoded = encodeHeaderPhrase(value);
     if (encoded.startsWith("=?")) return encoded;

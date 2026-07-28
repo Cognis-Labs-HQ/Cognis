@@ -1,10 +1,20 @@
-import {
-    readJson,
-    requireAuth,
-    type CapabilityStore,
-} from "../../../gateways/shared.js";
-import type { KeyringVaultStore } from "./store.js";
-import type { AuthGatewayRouteHandler } from "../../../gateways/auth/bootstrap/routes/shared.js";
+import { readJson } from "../../../../../gateways/shared.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import type { KeyringVaultStore } from "../../store.js";
+
+export interface KeyringRouteContext {
+    requireAuth(
+        req: IncomingMessage,
+        res: ServerResponse,
+        minRole?: "user" | "teacher" | "moderator" | "admin" | "owner",
+    ): { sub: string; role: string } | null;
+}
+
+export type KeyringRouteHandler = (
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+) => Promise<boolean>;
 
 const MAX_VAULT_BYTES = 2 * 1024 * 1024;
 
@@ -21,24 +31,17 @@ function validVault(value: unknown): value is Record<string, unknown> {
     );
 }
 
-export function createKeyringRoutes(
-    capabilities: CapabilityStore,
-): AuthGatewayRouteHandler {
+export function createKeyringRoutes(input: {
+    routeContext: KeyringRouteContext;
+    store: KeyringVaultStore;
+}): KeyringRouteHandler {
     return async (req, res, url): Promise<boolean> => {
         if (url.pathname !== "/api/v1/auth/keyring") return false;
-        const claims = requireAuth(req, res, "user");
+        const claims = input.routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
-        const store = capabilities.get<KeyringVaultStore>(
-            "auth:keyringVaultStore",
-        );
-        if (!store) {
-            res.writeHead(503, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: { code: "keyring_unavailable" } }));
-            return true;
-        }
 
         if (req.method === "GET") {
-            const stored = await store.get(claims.sub);
+            const stored = await input.store.get(claims.sub);
             let vault = null;
             try {
                 vault = stored ? JSON.parse(stored) : null;
@@ -69,14 +72,14 @@ export function createKeyringRoutes(
                 );
                 return true;
             }
-            await store.set(claims.sub, serialized);
+            await input.store.set(claims.sub, serialized);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
         if (req.method === "DELETE") {
-            await store.delete(claims.sub);
+            await input.store.delete(claims.sub);
             res.writeHead(204);
             res.end();
             return true;

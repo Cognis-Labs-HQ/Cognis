@@ -13,7 +13,6 @@ import {
 } from "../../shared.js";
 import { type AccessRole } from "../access-tokens.js";
 import { CoreAuthGateway } from "../gateway.js";
-import { DbKeyringVaultStore } from "../../../adapters/auth/keyring/store.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { createAdapterAdminRoutes } from "./adapter-admin-routes.js";
 import {
@@ -143,9 +142,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();
-    const keyringVaultStore = new DbKeyringVaultStore(dbExecutor);
-    await keyringVaultStore.ensureSchema();
-    ctx.capabilities.contribute("auth:keyringVaultStore", keyringVaultStore);
     ctx.log?.("info", "Auth gateway adapter schema ready.", {
         component: "auth-gateway",
     });
@@ -195,12 +191,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }
 
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
-    ctx.uiRegistry?.registerAdapterStaticDir(
-        "auth",
-        "keyring",
-        path.join(authAdaptersRoot, "keyring", "ui"),
-    );
-    await authGateway.discoverAdapters(authAdaptersRoot);
+    await authGateway.discoverAdapters(authAdaptersRoot, {
+        capabilities: ctx.capabilities,
+    });
+    ctx.capabilities.require("auth:keyringVaultStore");
     for (const adapter of authGateway.listAdapters()) {
         const adapterUiDirectory = path.join(
             authAdaptersRoot,
@@ -270,11 +264,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
+    const routeContext: RouteContext = createDefaultRouteContext({
+        getCapability: ctx.capabilities.get.bind(ctx.capabilities),
+        requireCapability: ctx.capabilities.require.bind(ctx.capabilities),
+        flow: ctx.flow,
+    });
+
     ctx.routeRegistry.register(
         createAuthGatewayRoutes(
             authGateway,
             accountStore,
             ctx.capabilities,
+            routeContext,
             authRouteBootstrapRuntime,
             securitySubsections,
             ctx.log,
@@ -316,11 +317,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stringsBaseUrl: "/static/gateways/auth/languages",
     });
 
-    const routeContext: RouteContext = createDefaultRouteContext({
-        getCapability: ctx.capabilities.get.bind(ctx.capabilities),
-        requireCapability: ctx.capabilities.require.bind(ctx.capabilities),
-        flow: ctx.flow,
-    });
     await runAuthBootstrapHooks({
         accountStore,
         authGateway,

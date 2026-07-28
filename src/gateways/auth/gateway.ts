@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext, AuthGateway, FlowApi } from "@cognis/core";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
+import type { CapabilityStore } from "../shared.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 
 export type { AuthContext, AuthGateway };
@@ -527,7 +528,10 @@ export class CoreAuthGateway {
         return this.localAdapter;
     }
 
-    async discoverAdapters(authAdaptersRoot: string): Promise<void> {
+    async discoverAdapters(
+        authAdaptersRoot: string,
+        bootstrapContext?: { capabilities: CapabilityStore },
+    ): Promise<void> {
         let entries: string[];
         try {
             entries = await readdir(authAdaptersRoot);
@@ -570,6 +574,12 @@ export class CoreAuthGateway {
                     pkg.main,
                 );
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
+                if (
+                    bootstrapContext &&
+                    typeof mod.bootstrapAuthAdapter === "function"
+                ) {
+                    await mod.bootstrapAuthAdapter(bootstrapContext);
+                }
                 if (typeof mod.createAdapter === "function") {
                     const adapter = mod.createAdapter() as AuthProviderAdapter;
                     if (pkg.version) {

@@ -7,3 +7,11 @@ The keyring client, persistence store, and API route now belong to a required Au
 ## Keep sharing responsibilities within their owning adapters
 
 The User Share adapter now enforces recipient uniqueness, while SMTP remains solely responsible for queued email rate limiting. The Share gateway only orchestrates these adapter-owned policies.
+
+## Align keyring bootstrap with capability architecture
+
+The reusable browser keyring remains at its canonical UI surface. The required Authentication adapter now self-bootstraps its vault and route capabilities during gateway discovery, receives authentication through route context injection, and includes component-owned documentation.
+
+## Restore source-size and dependency compliance
+
+Large Calendar route and test files were split into focused modules, oversized touched files were brought below the 1,000-line limit, and Share dependency ceilings now match the tested workspace version.

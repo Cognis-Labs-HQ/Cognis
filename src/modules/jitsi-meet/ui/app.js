@@ -951,7 +951,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     state.availableParticipants = state.allParticipants.map((entry) => ({
         ...entry,
     }));
-
     const composer = createPageComposer(root, {
         allowCustomization: !inShareView,
         enableDomParking: true,
@@ -981,7 +980,6 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             }
         },
     });
-
     await composer.init();
     if (inShareView && state.requestedMeetingId) {
         await joinMeetingById(state.requestedMeetingId);

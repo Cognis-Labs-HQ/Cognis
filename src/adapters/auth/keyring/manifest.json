@@ -1,9 +1,10 @@
 {
     "id": "keyring",
     "name": "Encrypted Keyring",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "publisher": "Cognis Labs HQ",
     "gateway": "auth",
+    "requires": ["db"],
     "required": true,
     "locked": true
 }

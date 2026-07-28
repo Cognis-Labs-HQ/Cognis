@@ -10,6 +10,7 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../access-tokens.js";
 import {
+    contributeTestKeyring,
     adminToken,
     HttpIncomingMessage,
     makeInMemoryDb,
@@ -25,6 +26,7 @@ async function bootstrapAuthGateway(input: {
     const systemCtx = createCtx();
     input.capabilities.contribute(CTX_CAPABILITY, systemCtx);
     input.capabilities.contribute("db:executor", input.db);
+    contributeTestKeyring(input.capabilities);
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry: input.routeRegistry,

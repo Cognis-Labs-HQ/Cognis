@@ -843,14 +843,12 @@ async function openBoard(board) {
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);
     }
-
     setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
     socketInstance = connectSocket(io, session, canvasInstance);
     composer?.refreshPresence?.();
     bindCanvasToolbar(canvasInstance);
     setOverlayVisible(false);
 }
-
 function renderCanvasElement() {
     return renderWhiteboardCanvasElement({
         activeBoard,
@@ -865,7 +863,6 @@ function renderCanvasElement() {
         integrationCanvasMode,
     });
 }
-
 function onCanvasRender() {
     document
         .getElementById("whiteboard-start-new")
@@ -899,7 +896,6 @@ function onCanvasRender() {
     });
     bindCanvasToolbar(canvasInstance);
 }
-
 function buildElements() {
     return [
         {
@@ -915,17 +911,14 @@ function buildElements() {
         },
     ];
 }
-
 export async function mount(root, { signal, shareContext } = {}) {
     registerSearchIndex("nextcloud-whiteboard", collectWhiteboardSearchGroups);
-
     i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/modules/nextcloud-whiteboard/languages",
         ],
     });
     applyDocumentTitle(i18n, "module.nextcloud_whiteboard.page_title");
-
     activeShareContext = shareContext ?? null;
     integrationCanvasMode =
         Boolean(shareContext?.page?.instantCanvas) ||
