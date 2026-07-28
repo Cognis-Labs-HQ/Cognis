@@ -98,6 +98,9 @@ export async function fetchProtectedShareResource({ shareId, request }) {
     response = await request(entered.password);
     if (response.ok && entered.saveToKeyring) {
         try {
+            if (!uiCtx.capabilities.get("keyring:isUnlocked")?.()) {
+                throw new Error("keyring_locked");
+            }
             await keyring?.set(keyringId, entered.password, {
                 label: i18n.t("share.unlock.keyring_label"),
             });
@@ -144,7 +147,10 @@ export async function resolveReceivedShare(token, { headers } = {}) {
             });
             const payload = await response.clone().json();
             const shareId = String(payload?.data?.shareId ?? "").trim();
-            if (entered.saveToKeyring)
+            if (
+                entered.saveToKeyring &&
+                uiCtx.capabilities.get("keyring:isUnlocked")?.()
+            )
                 await Promise.resolve(
                     keyring?.set(
                         shareId ? `share:${shareId}` : keyringId,

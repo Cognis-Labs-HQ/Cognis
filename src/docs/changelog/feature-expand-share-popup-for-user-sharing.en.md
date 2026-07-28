@@ -315,3 +315,7 @@ Encrypted keyring envelopes now persist in a dedicated authentication database t
 ## Revalidated protected calendar access
 
 Every load of a password-protected recipient calendar now revalidates its share password on the server. Calendar loading first unlocks and checks the user's keyring, prompts when the key is absent or invalid, and offers an explicit opt-out control so recipients can choose not to save the verified password.
+
+## Refused secret prompts stay locked
+
+Cancelling keyring and secret prompts now leaves the protected object unavailable instead of continuing with partial access. Locked shared calendars appear grey with an explanatory tooltip and retry their unlock flow when clicked. Once the keyring is unlocked, its add, edit, delete, and reveal controls remain freely usable without repeated account-password confirmations.

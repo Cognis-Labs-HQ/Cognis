@@ -219,20 +219,16 @@ export function createSettingsSection({ i18n, root }) {
         settingsRoot.querySelector("#settings-keyring-add")?.addEventListener(
             "click",
             async () => {
-                await guard.runWithReprompt(
-                    async () => {
-                        const input = await readEntryInput();
-                        if (!input) return;
-                        await keyring.set(input.id, input.value, {
-                            label: input.label,
-                        });
-                        rerender();
-                        showToast(i18n.t("gateway.auth.keyring.saved"), {
-                            variant: "success",
-                        });
-                    },
-                    { alwaysPrompt: true },
-                );
+                if (!isKeyringUnlocked()) return;
+                const input = await readEntryInput();
+                if (!input) return;
+                await keyring.set(input.id, input.value, {
+                    label: input.label,
+                });
+                rerender();
+                showToast(i18n.t("gateway.auth.keyring.saved"), {
+                    variant: "success",
+                });
             },
             { once: true },
         );
@@ -261,36 +257,28 @@ export function createSettingsSection({ i18n, root }) {
                         (candidate) => candidate.id === id,
                     );
                     if (!entry) return;
-                    await guard.runWithReprompt(
-                        async () => {
-                            const input = await readEntryInput(entry);
-                            if (!input) return;
-                            await keyring.set(id, input.value, {
-                                label: input.label,
-                            });
-                            rerender();
-                            showToast(i18n.t("gateway.auth.keyring.saved"), {
-                                variant: "success",
-                            });
-                        },
-                        { alwaysPrompt: true },
-                    );
+                    if (!isKeyringUnlocked()) return;
+                    const input = await readEntryInput(entry);
+                    if (!input) return;
+                    await keyring.set(id, input.value, {
+                        label: input.label,
+                    });
+                    rerender();
+                    showToast(i18n.t("gateway.auth.keyring.saved"), {
+                        variant: "success",
+                    });
                 },
                 { once: true },
             );
             row.querySelector("[data-keyring-delete]")?.addEventListener(
                 "click",
                 async () => {
-                    await guard.runWithReprompt(
-                        async () => {
-                            await deleteKeyringValue(id);
-                            rerender();
-                            showToast(i18n.t("gateway.auth.keyring.deleted"), {
-                                variant: "success",
-                            });
-                        },
-                        { alwaysPrompt: true },
-                    );
+                    if (!isKeyringUnlocked()) return;
+                    await deleteKeyringValue(id);
+                    rerender();
+                    showToast(i18n.t("gateway.auth.keyring.deleted"), {
+                        variant: "success",
+                    });
                 },
                 { once: true },
             );

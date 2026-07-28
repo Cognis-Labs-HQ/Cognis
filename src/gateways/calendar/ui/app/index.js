@@ -120,6 +120,13 @@ export async function mount(root, { signal } = {}) {
                 await calendarUi.fetchEvents(calendar.id, calendar),
             ]),
         );
+        calendars = calendars.map((calendar, index) => ({
+            ...calendar,
+            secretsUnavailable:
+                eventResults[index]?.status === "rejected" &&
+                eventResults[index]?.reason?.code ===
+                    "calendar_share_secrets_refused",
+        }));
         eventsByCalendar = Object.fromEntries(
             eventResults
                 .filter((result) => result.status === "fulfilled")
@@ -642,6 +649,26 @@ export async function mount(root, { signal } = {}) {
                                 (c) => c.id === calendarId,
                             );
                             if (!calendar) return;
+                            if (calendar.secretsUnavailable) {
+                                void (async () => {
+                                    try {
+                                        const events =
+                                            await calendarUi.fetchEvents(
+                                                calendar.id,
+                                                calendar,
+                                            );
+                                        eventsByCalendar[calendar.id] = events;
+                                        calendar.secretsUnavailable = false;
+                                        selectedCalendarId = calendarId;
+                                        selectedEventId = "";
+                                        syncRouteSelection();
+                                        refreshCalendarComposer();
+                                    } catch {
+                                        calendar.secretsUnavailable = true;
+                                    }
+                                })();
+                                return;
+                            }
                             selectedCalendarId = calendarId;
                             selectedEventId = "";
                             syncRouteSelection();

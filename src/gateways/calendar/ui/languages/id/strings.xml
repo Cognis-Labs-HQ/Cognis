@@ -9,6 +9,7 @@
   <string name="gateway.calendar.visibility_public">Publik</string>
   <string name="gateway.calendar.visibility_heading">Visibilitas</string>
   <string name="gateway.calendar.visibility_shared">Dibagikan</string>
+  <string name="gateway.calendar.share_secrets_not_provided">Rahasia tidak diberikan. Klik untuk mencoba membuka kalender ini lagi.</string>
   <string name="gateway.calendar.shared_calendar_local_color">Anda dapat mengubah nama lokal dan warna. Label pemberi berbagi, pengaturan berbagi, dan penghapusan tetap dikendalikan pemilik.</string>
   <string name="gateway.calendar.calendar_name_placeholder">Nama Kalender</string>
   <string name="gateway.calendar.create_calendar">Buat Kalender</string>

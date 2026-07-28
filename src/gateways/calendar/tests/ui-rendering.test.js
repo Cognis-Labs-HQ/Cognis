@@ -600,4 +600,9 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarPassword/);
     assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
     assert.match(SHARED_PASSWORD_SOURCE, /share:resolveToken/);
+    assert.match(CALENDAR_API_SOURCE, /calendar_share_secrets_refused/);
+    assert.match(APP_SOURCE, /secretsUnavailable/);
+    assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);
+    assert.match(HELPERS_SOURCE, /share_secrets_not_provided/);
+    assert.match(CSS_SOURCE, /calendar-item-btn--locked/);
 });

@@ -207,6 +207,12 @@
     padding: 0;
 }
 
+.calendar-item-btn--locked {
+    filter: grayscale(1);
+    opacity: 0.45;
+    cursor: pointer;
+}
+
 .calendar-select-dot {
     display: inline-flex;
     width: 0.75rem;

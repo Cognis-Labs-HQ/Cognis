@@ -41,7 +41,15 @@ async function fetchEvents(calendarId, shareAccess = null) {
         );
     const response = await requestCalendarResource(calendarId, request);
     if (!response) throw new Error("calendar_share_password_unavailable");
-    if (!response.ok) throw new Error("calendar_events_failed");
+    if (!response.ok) {
+        const error = new Error(
+            response.status === 401
+                ? "calendar_share_secrets_refused"
+                : "calendar_events_failed",
+        );
+        error.code = error.message;
+        throw error;
+    }
     const payload = await response.json();
     return Array.isArray(payload?.data?.events) ? payload.data.events : [];
 }

@@ -315,3 +315,7 @@ Envelope keyring terenkripsi kini disimpan secara persisten dalam tabel basis da
 ## Validasi ulang akses kalender terlindungi
 
 Setiap pemuatan kalender penerima yang dilindungi kata sandi kini memvalidasi ulang kata sandi berbagi di server. Pemuatan kalender terlebih dahulu membuka dan memeriksa keyring pengguna, meminta kata sandi jika kunci tidak ada atau tidak valid, serta menyediakan pilihan penolakan eksplisit agar penerima dapat memilih untuk tidak menyimpan kata sandi terverifikasi.
+
+## Permintaan rahasia yang ditolak tetap terkunci
+
+Membatalkan permintaan keyring dan rahasia kini membuat objek terlindungi tetap tidak tersedia, bukan melanjutkan dengan akses sebagian. Kalender bersama yang terkunci tampil abu-abu dengan tooltip penjelasan dan mencoba membuka kunci kembali saat diklik. Setelah keyring terbuka, kontrol tambah, edit, hapus, dan tampilkan dapat digunakan bebas tanpa konfirmasi kata sandi akun berulang.

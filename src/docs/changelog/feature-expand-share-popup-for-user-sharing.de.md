@@ -315,3 +315,7 @@ Verschlüsselte Schlüsselbund-Umschläge werden nun in einer eigenen Authentifi
 ## Erneut geprüfter Zugriff auf geschützte Kalender
 
 Bei jedem Laden eines passwortgeschützten Empfängerkalenders wird das Freigabepasswort nun erneut auf dem Server geprüft. Das Laden entsperrt und prüft zuerst den Schlüsselbund des Benutzers, fragt bei einem fehlenden oder ungültigen Schlüssel nach und bietet ein ausdrückliches Abwahlfeld, mit dem Empfänger das Speichern des bestätigten Passworts ablehnen können.
+
+## Abgelehnte Geheimnisabfragen bleiben gesperrt
+
+Das Abbrechen von Schlüsselbund- und Geheimnisabfragen lässt das geschützte Objekt nun nicht verfügbar, anstatt mit teilweisem Zugriff fortzufahren. Gesperrte freigegebene Kalender erscheinen grau mit einem erklärenden Hinweis und versuchen beim Anklicken erneut, sich zu entsperren. Sobald der Schlüsselbund entsperrt ist, können seine Funktionen zum Hinzufügen, Bearbeiten, Löschen und Anzeigen ohne wiederholte Bestätigung des Kontopassworts verwendet werden.

@@ -348,7 +348,7 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     return `<ul class="calendar-calendars-list">${calendars
         .map(
             (calendar) => `<li>
-        <button type="button" class="calendar-item-btn" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'data-current="true"' : ""} title="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">
+        <button type="button" class="calendar-item-btn${calendar.secretsUnavailable ? " calendar-item-btn--locked" : ""}" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'data-current="true"' : ""} title="${escapeHtml(i18n.t(calendar.secretsUnavailable ? "gateway.calendar.share_secrets_not_provided" : "gateway.calendar.edit_calendar"))}"${calendar.secretsUnavailable ? ' aria-disabled="true" data-calendar-secrets-unavailable="true"' : ""}>
           <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
           <span class="calendar-item-label">${escapeHtml(calendar.name)}</span>
           ${visibilityIcon(calendar.visibility, calendar.sharedPermission, i18n)}

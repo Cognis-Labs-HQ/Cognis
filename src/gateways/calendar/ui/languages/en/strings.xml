@@ -9,6 +9,7 @@
   <string name="gateway.calendar.visibility_public">Public</string>
   <string name="gateway.calendar.visibility_heading">Visibility</string>
   <string name="gateway.calendar.visibility_shared">Shared</string>
+  <string name="gateway.calendar.share_secrets_not_provided">Secrets were not provided. Click to try unlocking this calendar again.</string>
   <string name="gateway.calendar.shared_calendar_local_color">You can change the local name and color. The shared-by label, sharing settings, and removal remain controlled by the owner.</string>
   <string name="gateway.calendar.calendar_name_placeholder">Calendar Name</string>
   <string name="gateway.calendar.create_calendar">Create Calendar</string>

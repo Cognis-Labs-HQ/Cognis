@@ -33,11 +33,12 @@ test("auth security preferences disable password reset for external users", () =
     assert.match(SOURCE, /external_password_notice/);
 });
 
-test("keyring settings require password confirmation for secret changes", () => {
+test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /listKeyringEntries/);
     assert.match(KEYRING_SETTINGS_SOURCE, /createKeyringScope/);
     assert.match(KEYRING_SETTINGS_SOURCE, /deleteKeyringValue/);
     assert.match(KEYRING_SETTINGS_SOURCE, /alwaysPrompt:\s*true/);
+    assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /runWithReprompt/);
     assert.match(KEYRING_SETTINGS_SOURCE, /type="password"/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-table/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-info/);
