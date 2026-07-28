@@ -12,6 +12,7 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import type { CoreShareGateway } from "../gateway/index.js";
+import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
 
 function sendJson(
     res: ServerResponse,
@@ -108,6 +109,67 @@ export function createShareRoutes(input: {
     const routeContext = resolveRouteContext(input.routeContext);
 
     return async (req, res, url): Promise<boolean> => {
+        const adapterAdminBase = "/api/v1/gateways/share/adapters";
+        if (req.method === "GET" && url.pathname === adapterAdminBase) {
+            if (!routeContext.requireAuth(req, res, "admin")) return true;
+            sendJson(res, 200, {
+                data: input.gateway.listAdapters().map((adapter) => ({
+                    ...adapter,
+                    active: true,
+                    controls: buildGatewayAdapterAdminControls(
+                        adapterAdminBase,
+                        adapter.id,
+                    ),
+                })),
+            });
+            return true;
+        }
+
+        const adapterConfigMatch = url.pathname.match(
+            /^\/api\/v1\/gateways\/share\/adapters\/([^/]+)\/config$/,
+        );
+        if (
+            adapterConfigMatch &&
+            (req.method === "GET" || req.method === "PUT")
+        ) {
+            if (!routeContext.requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(adapterConfigMatch[1]);
+            if (!input.gateway.getAdapter(adapterId)) {
+                sendError(res, 404, "not_found", "Adapter not found.");
+                return true;
+            }
+            if (req.method === "PUT") await readJson(req);
+            sendJson(res, 200, {
+                data: req.method === "GET" ? {} : { saved: true },
+                ...(req.method === "GET"
+                    ? { schema: [], requiredFields: [] }
+                    : {}),
+            });
+            return true;
+        }
+
+        const adapterToggleMatch = url.pathname.match(
+            /^\/api\/v1\/gateways\/share\/adapters\/([^/]+)\/(enable|disable)$/,
+        );
+        if (adapterToggleMatch && req.method === "POST") {
+            if (!routeContext.requireAuth(req, res, "admin")) return true;
+            const adapterId = decodeURIComponent(adapterToggleMatch[1]);
+            const adapter = input.gateway.getAdapter(adapterId);
+            if (!adapter) {
+                sendError(res, 404, "not_found", "Adapter not found.");
+                return true;
+            }
+            if (adapter.locked) {
+                sendError(
+                    res,
+                    403,
+                    "locked_adapter",
+                    "This adapter is always on and cannot be toggled.",
+                );
+                return true;
+            }
+        }
+
         if (
             req.method === "GET" &&
             (url.pathname === "/share" || url.pathname.startsWith("/share/"))

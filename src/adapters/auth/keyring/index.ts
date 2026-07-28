@@ -9,8 +9,25 @@ import {
     type KeyringDbExecutor,
     type KeyringVaultStore,
 } from "./store.js";
+import type { AuthProviderAdapter } from "../../../gateways/auth/gateway.js";
 
 export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
+
+export function createAdapter(): AuthProviderAdapter {
+    return {
+        id: "keyring",
+        name: "Encrypted Keyring",
+        locked: true,
+        authenticationProvider: false,
+        async authenticate() {
+            return null;
+        },
+        getConfigSchema() {
+            return [];
+        },
+        configure() {},
+    };
+}
 
 export async function bootstrapAuthAdapter(input: {
     capabilities: CapabilityStore;

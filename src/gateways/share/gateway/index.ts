@@ -26,6 +26,7 @@ export interface ShareMethodAdapter {
     order?: number;
     version?: string;
     publisher?: string;
+    locked?: boolean;
     prepare(input: {
         recipients?: unknown;
         accessControls?: Record<string, unknown>;
@@ -78,6 +79,12 @@ export class CoreShareGateway {
                     ),
                 ) as { main?: string; version?: string };
                 if (!pkg.main) continue;
+                const manifest = JSON.parse(
+                    await readFile(
+                        path.join(packageRoot, "manifest.json"),
+                        "utf8",
+                    ),
+                ) as { locked?: boolean; publisher?: string };
                 const module = await import(
                     path.resolve(packageRoot, pkg.main)
                 );
@@ -89,6 +96,8 @@ export class CoreShareGateway {
                 this.adapters.set(adapter.id, {
                     ...adapter,
                     version: pkg.version,
+                    publisher: manifest.publisher,
+                    locked: manifest.locked === true,
                 });
             } catch {
                 // One unavailable sharing method must not disable the gateway.
@@ -102,6 +111,10 @@ export class CoreShareGateway {
                 (left.order ?? 100) - (right.order ?? 100) ||
                 left.name.localeCompare(right.name),
         );
+    }
+
+    getAdapter(adapterId: string): ShareMethodAdapter | null {
+        return this.adapters.get(adapterId) ?? null;
     }
 
     prepareAdapterShare(

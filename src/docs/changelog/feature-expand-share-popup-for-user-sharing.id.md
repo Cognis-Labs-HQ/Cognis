@@ -347,3 +347,7 @@ Berkas rute dan pengujian Kalender yang besar telah dipecah menjadi modul terfok
 ## Menampung seluruh keyring di adapter Autentikasi
 
 Keyring peramban kini berada bersama penyimpanan, rute, manifes, dan dokumentasi adapter. Adapter mendaftarkan direktori UI statisnya sendiri selama penemuan, dan setiap konsumen mengimpor permukaan peramban milik adapter.
+
+## Adapter berbagi dan keyring tampil di Administrasi
+
+Manifest gateway Autentikasi dan Berbagi kini mengumumkan adapter miliknya. Adapter Keyring terenkripsi, Tautan, dan Pengguna yang wajib menyediakan metadata komponen terkunci dan kontrol administrasi kanonis, termasuk permukaan konfigurasi kosong yang valid.

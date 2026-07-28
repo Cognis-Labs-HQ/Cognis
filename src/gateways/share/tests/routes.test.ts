@@ -282,6 +282,37 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
+    const adaptersResponse = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/gateways/share/adapters",
+    );
+    assert.equal(adaptersResponse.statusCode, 200);
+    assert.deepEqual(
+        adaptersResponse.body.data.map(
+            (adapter: { id: string; locked: boolean }) => ({
+                id: adapter.id,
+                locked: adapter.locked,
+            }),
+        ),
+        [
+            { id: "link", locked: true },
+            { id: "user", locked: true },
+        ],
+    );
+    assert.equal(
+        adaptersResponse.body.data[0].controls.config,
+        "/api/v1/gateways/share/adapters/link/config",
+    );
+
+    const linkConfigResponse = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/gateways/share/adapters/link/config",
+    );
+    assert.equal(linkConfigResponse.statusCode, 200);
+    assert.deepEqual(linkConfigResponse.body.data, {});
+
     const createResponse = await dispatchJson(
         "POST",
         adminToken,

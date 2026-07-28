@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import {
     CTX_CAPABILITY,
     GatewayRegistry,
@@ -16,6 +16,14 @@ import {
     makeInMemoryDb,
     type InMemoryDb,
 } from "./auth-gateway-test-helpers.js";
+
+test("auth manifest advertises its adapter administration surface", async () => {
+    const manifest = JSON.parse(
+        await readFile("src/gateways/auth/manifest.json", "utf8"),
+    ) as { hasAdapters?: boolean };
+
+    assert.equal(manifest.hasAdapters, true);
+});
 
 function createDbExecutor(): InMemoryDb {
     return makeInMemoryDb();
@@ -351,6 +359,28 @@ test("CoreAuthGateway lists adapter publisher metadata", async () => {
     });
 
     assert.equal(gateway.listAdapters()[0]?.publisher, "Cognis Labs HQ");
+});
+
+test("CoreAuthGateway lists a locked keyring without treating it as a login provider", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const { createAdapter } =
+        await import("../../../adapters/auth/keyring/index.js");
+    const gateway = new CoreAuthGateway(makeInMemoryDb());
+
+    gateway.registerAdapter(createAdapter(), ["db"]);
+
+    assert.deepEqual(gateway.listAdapters(), [
+        {
+            id: "keyring",
+            name: "Encrypted Keyring",
+            enabled: true,
+            locked: true,
+            config: {},
+            schema: [],
+            requires: ["db"],
+        },
+    ]);
+    assert.deepEqual(gateway.getEnabledAdapters(), []);
 });
 
 test("CoreAuthGateway redacts configured passwords and preserves them on blank updates", async () => {

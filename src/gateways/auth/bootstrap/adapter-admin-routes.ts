@@ -6,6 +6,7 @@ import {
     type GatewayBootstrapContext,
 } from "../../shared.js";
 import type { CoreAuthGateway } from "../gateway.js";
+import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
 
 export function createAdapterAdminRoutes(
     gatewayId: string,
@@ -33,7 +34,18 @@ export function createAdapterAdminRoutes(
                 count: authGateway.listAdapters().length,
             });
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: authGateway.listAdapters() }));
+            res.end(
+                JSON.stringify({
+                    data: authGateway.listAdapters().map((adapter) => ({
+                        ...adapter,
+                        active: adapter.enabled,
+                        controls: buildGatewayAdapterAdminControls(
+                            base,
+                            adapter.id,
+                        ),
+                    })),
+                }),
+            );
             return true;
         }
 
@@ -182,7 +194,8 @@ export function createAdapterAdminRoutes(
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(enableMatch[1]);
             const action = enableMatch[2];
-            if (adapterId === "local" && action === "disable") {
+            const adapter = authGateway.getAdapter(adapterId);
+            if (adapterId === "local" || adapter?.locked) {
                 log?.(
                     "warn",
                     "Blocked attempt to disable locked auth adapter.",
@@ -197,13 +210,13 @@ export function createAdapterAdminRoutes(
                         error: {
                             code: "locked_adapter",
                             message:
-                                "The local authentication adapter cannot be disabled",
+                                "This authentication adapter is always on and cannot be toggled",
                         },
                     }),
                 );
                 return true;
             }
-            if (!authGateway.getAdapter(adapterId)) {
+            if (!adapter) {
                 log?.(
                     "warn",
                     "Auth adapter toggle failed because adapter was not found.",

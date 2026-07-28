@@ -347,3 +347,7 @@ Große Kalender-Routen- und Testdateien wurden in fokussierte Module aufgeteilt,
 ## Den vollständigen Schlüsselbund im Authentifizierungsadapter kapseln
 
 Der Browser-Schlüsselbund liegt nun zusammen mit Speicher, Routen, Manifest und Dokumentation im Adapter. Der Adapter registriert sein eigenes statisches UI-Verzeichnis bei der Erkennung, und alle Verbraucher importieren die adaptereigene Browser-Schnittstelle.
+
+## Freigabe- und Schlüsselbund-Adapter in der Administration sichtbar
+
+Die Manifeste der Authentifizierungs- und Freigabe-Gateways weisen nun ihre Adapter aus. Die erforderlichen verschlüsselten Schlüsselbund-, Link- und Benutzer-Adapter stellen gesperrte Komponentenmetadaten und kanonische Administrationssteuerungen einschließlich gültiger leerer Konfigurationsoberflächen bereit.

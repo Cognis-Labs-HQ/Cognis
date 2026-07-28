@@ -347,3 +347,7 @@ Large Calendar route and test files were split into focused modules, oversized t
 ## Contain the complete keyring in its Authentication adapter
 
 The browser keyring now lives with the adapter’s store, routes, manifest, and documentation. The adapter registers its own static UI directory during discovery, and every consumer imports the adapter-owned browser surface.
+
+## Share and keyring adapters appear in Administration
+
+The Authentication and Share gateway manifests now advertise their adapters. The required encrypted Keyring, Link, and User adapters expose locked component metadata and canonical administration controls, including valid empty configuration surfaces.

@@ -21,6 +21,8 @@ export interface AuthProviderAdapter {
     readonly version?: string;
     readonly publisher?: string;
     readonly configPopupScriptUrl?: string;
+    readonly locked?: boolean;
+    readonly authenticationProvider?: boolean;
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;
@@ -210,6 +212,7 @@ export class CoreAuthGateway {
 
     registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void {
         this.adapters.set(adapter.id, adapter);
+        if (adapter.locked) this.enabledAdapters.add(adapter.id);
         if (requires && requires.length > 0) {
             this.adapterRequires.set(adapter.id, requires);
         }
@@ -344,7 +347,9 @@ export class CoreAuthGateway {
     }
 
     async disableAdapter(adapterId: string): Promise<void> {
-        if (adapterId === "local") return;
+        if (adapterId === "local" || this.adapters.get(adapterId)?.locked) {
+            return;
+        }
         this.enabledAdapters.delete(adapterId);
         const existing = await this.getPersistedConfig(adapterId);
         await this.persistAdapterState(adapterId, false, existing);
@@ -415,7 +420,7 @@ export class CoreAuthGateway {
                 ...(adapter.version ? { version: adapter.version } : {}),
                 ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
                 enabled: this.enabledAdapters.has(adapter.id),
-                locked: adapter.id === "local" || undefined,
+                locked: adapter.id === "local" || adapter.locked || undefined,
                 config: {},
                 schema: adapter.getConfigSchema(),
                 ...(requires && requires.length > 0 ? { requires } : {}),
@@ -424,8 +429,10 @@ export class CoreAuthGateway {
     }
 
     getEnabledAdapters(): AuthProviderAdapter[] {
-        return Array.from(this.adapters.values()).filter((a) =>
-            this.enabledAdapters.has(a.id),
+        return Array.from(this.adapters.values()).filter(
+            (a) =>
+                this.enabledAdapters.has(a.id) &&
+                a.authenticationProvider !== false,
         );
     }
 
@@ -557,6 +564,7 @@ export class CoreAuthGateway {
 
                 let requires: string[] | undefined;
                 let publisher: string | undefined;
+                let locked = false;
                 try {
                     const manifestRaw = await readFile(
                         path.join(authAdaptersRoot, entry, "manifest.json"),
@@ -565,8 +573,10 @@ export class CoreAuthGateway {
                     const manifest = JSON.parse(manifestRaw) as {
                         requires?: string[];
                         publisher?: string;
+                        locked?: boolean;
                     };
                     publisher = manifest.publisher;
+                    locked = manifest.locked;
                     if (Array.isArray(manifest.requires)) {
                         requires = manifest.requires;
                     }
@@ -595,6 +605,7 @@ export class CoreAuthGateway {
                         Object.assign(adapter, { version: pkg.version });
                     }
                     if (publisher) Object.assign(adapter, { publisher });
+                    if (locked) Object.assign(adapter, { locked: true });
                     if (adapter.id !== "local") {
                         this.registerAdapter(adapter, requires);
                     }
