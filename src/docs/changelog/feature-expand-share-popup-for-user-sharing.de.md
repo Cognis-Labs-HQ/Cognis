@@ -295,3 +295,7 @@ Die Schlüsselbund-Einstellungsseite zeigt ihre Erklärung jetzt in einem Inform
 ## Passwörter privater Freigaben sind erkennbar
 
 Bestätigte Passwörter für geschützte Kalenderfreigaben werden mit aussagekräftigen Schlüsselbund-Metadaten gespeichert und als Teil des verschlüsselten Tresors synchronisiert. Dadurch erscheinen sie in der Übersicht, ohne dass der Server Klartext erhält.
+
+## Anbieterabhängige Passwortbestätigung
+
+Die Passwortbestätigung gehört nun zum Authentifizierungs-Gateway und steht sensiblen Abläufen als Fähigkeit `auth:confirmPassword` zur Verfügung. Die Bestätigung wird über den aktiven Anbieter des Kontos geleitet, einschließlich separat benannter LDAP-Quellen, statt für jedes Konto einen lokalen Passworteintrag vorauszusetzen.

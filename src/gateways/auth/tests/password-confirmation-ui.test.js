@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createRepromptGuard } from "../reprompt.js";
+import { createPasswordConfirmationGuard } from "../ui/reuse/password-confirmation-guard.js";
 
 function createI18nStub() {
     return {
@@ -14,12 +14,13 @@ test("reprompt guard reuses fresh verification without opening popup", async () 
     let popupOpened = false;
     let actionRan = false;
     const apiCalls = [];
-    const guard = createRepromptGuard({
+    const guard = createPasswordConfirmationGuard({
         i18n: createI18nStub(),
-        async apiFetchImpl(url, options) {
-            apiCalls.push({ url, options });
-            return { ok: true };
+        async confirmPasswordImpl(password) {
+            apiCalls.push(password);
+            return true;
         },
+        escapeHtmlImpl: String,
         async openPopupImpl() {
             popupOpened = true;
             return "confirm";
@@ -34,19 +35,19 @@ test("reprompt guard reuses fresh verification without opening popup", async () 
     assert.equal(actionRan, true);
     assert.equal(popupOpened, false);
     assert.equal(apiCalls.length, 1);
-    assert.equal(apiCalls[0].url, "/api/v1/auth/verify");
-    assert.equal(apiCalls[0].options.body, JSON.stringify({}));
+    assert.equal(apiCalls[0], undefined);
 });
 
 test("reprompt guard opens popup when silent verification is stale", async () => {
     let popupOpened = false;
     const apiCalls = [];
-    const guard = createRepromptGuard({
+    const guard = createPasswordConfirmationGuard({
         i18n: createI18nStub(),
-        async apiFetchImpl(url, options) {
-            apiCalls.push({ url, options });
-            return { ok: false };
+        async confirmPasswordImpl(password) {
+            apiCalls.push(password);
+            return false;
         },
+        escapeHtmlImpl: String,
         async openPopupImpl() {
             popupOpened = true;
             return "cancel";

@@ -5,7 +5,7 @@ import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
-import { createRepromptGuard } from "../../reuse/reprompt.js";
+import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { formatDate, formatDateTime } from "../../reuse/timestamp.js";
 import { isSmtpAdapterActive } from "/static/gateways/notify/smtp-adapter.js";

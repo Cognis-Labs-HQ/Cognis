@@ -213,6 +213,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: authGateway.listAdapters().length,
     });
 
+    ctx.capabilities.contribute(
+        "auth:confirmPassword",
+        (accountId: string, password: string, providerId?: string) =>
+            authGateway.confirmPassword(accountId, password, providerId),
+    );
+
     const authRouteBootstrapRuntime = createAuthRouteBootstrapRuntime();
     await runAuthRouteBootstrapHooks({
         capabilities: ctx.capabilities,
@@ -279,7 +285,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.7.11",
+        version: "1.7.12",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

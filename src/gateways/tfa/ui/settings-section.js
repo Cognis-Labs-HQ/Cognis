@@ -5,7 +5,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { formatTemplate } from "/static/reuse/format-template.js";
 import { createQrImageSource } from "/static/reuse/qr-image-source.js";
-import { createRepromptGuard } from "/static/reuse/reprompt.js";
+import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,

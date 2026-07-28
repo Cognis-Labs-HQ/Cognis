@@ -215,7 +215,11 @@ export function createAuthRoutes(
 
             const body = await readJson(req);
             const password = String(body.password ?? "");
-            const verified = await accountStore.verify(claims.sub, password);
+            const verified = await gateway.confirmPassword(
+                claims.sub,
+                password,
+                claims.providerId,
+            );
             if (!verified) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(

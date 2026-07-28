@@ -101,6 +101,45 @@ test("ldap adapter forwards every user-bound email for provisioning", async () =
     ]);
 });
 
+test("LDAP password confirmation preserves a separately namespaced source", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        setClient(client: {
+            authenticate: (
+                username: string,
+                password: string,
+                options: LdapRuntimeOptions,
+            ) => Promise<{ id: string; groups: string[] }>;
+        }): void;
+    };
+    adapter.configure({
+        unify: false,
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldap://faculty",
+                roleMappings: { staff: "user" },
+            },
+        ],
+    });
+    adapter.setClient({
+        authenticate: async (username, password, options) => {
+            assert.equal(username, "alice");
+            assert.equal(password, "directory-password");
+            assert.equal(options.identifier, "Faculty");
+            return { id: "alice", groups: ["staff"] };
+        },
+    });
+
+    assert.equal(
+        await adapter.confirmPassword?.(
+            "ldap:Faculty:alice",
+            "directory-password",
+            "ldap:Faculty",
+        ),
+        true,
+    );
+});
+
 test("LDAP user-group mapping rejects authenticated users outside the group", async () => {
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         setClient(client: {

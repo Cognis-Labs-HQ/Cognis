@@ -295,3 +295,7 @@ The Keyring settings page now keeps its explanation in an information popup, lis
 ## Private share passwords are identifiable
 
 Passwords verified for protected calendar shares are saved with descriptive keyring metadata and synchronized as part of the encrypted vault, so they appear in the user's key inventory without exposing their plaintext to the server.
+
+## Provider-aware password confirmation
+
+Password confirmation now belongs to the Authentication gateway and is exposed as an `auth:confirmPassword` capability for sensitive flows. Confirmation is routed through the account's active provider, including separately namespaced LDAP sources, instead of assuming every account has a local password record.

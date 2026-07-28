@@ -1,4 +1,4 @@
-import { createRepromptGuard } from "/static/reuse/reprompt.js";
+import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";

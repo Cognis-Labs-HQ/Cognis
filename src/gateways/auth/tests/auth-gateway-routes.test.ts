@@ -74,6 +74,32 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     assert.ok(Array.isArray(body.data));
 });
 
+test("auth bootstrap exposes provider-aware password confirmation", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb(),
+    });
+
+    const confirmPassword = capabilities.get<
+        (
+            accountId: string,
+            password: string,
+            providerId?: string,
+        ) => Promise<boolean>
+    >("auth:confirmPassword");
+    assert.equal(typeof confirmPassword, "function");
+    assert.equal(
+        await confirmPassword?.("missing", "password", "local"),
+        false,
+    );
+});
+
 test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

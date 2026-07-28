@@ -5,7 +5,7 @@ import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { showToast } from "../../reuse/toast.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-import { createRepromptGuard } from "../../reuse/reprompt.js";
+import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import { formatDateTime } from "../../reuse/timestamp.js";
 
 async function loadTokens() {

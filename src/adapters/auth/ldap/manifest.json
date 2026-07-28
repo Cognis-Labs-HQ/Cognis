@@ -1,6 +1,6 @@
 {
     "id": "ldap",
     "name": "LDAP Authentication",
-    "version": "0.5.4",
+    "version": "0.5.5",
     "publisher": "Cognis Labs HQ"
 }

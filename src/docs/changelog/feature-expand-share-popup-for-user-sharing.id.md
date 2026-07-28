@@ -295,3 +295,7 @@ Halaman pengaturan Keyring kini menempatkan penjelasannya dalam popup informasi,
 ## Kata sandi berbagi privat mudah dikenali
 
 Kata sandi yang telah diverifikasi untuk berbagi kalender terlindungi disimpan dengan metadata keyring yang jelas dan disinkronkan sebagai bagian dari brankas terenkripsi. Entri tersebut terlihat dalam inventaris pengguna tanpa membuka teks aslinya kepada server.
+
+## Konfirmasi kata sandi sesuai penyedia
+
+Konfirmasi kata sandi kini dimiliki gateway Autentikasi dan tersedia bagi alur sensitif melalui kemampuan `auth:confirmPassword`. Konfirmasi diteruskan ke penyedia aktif akun, termasuk sumber LDAP yang memiliki ruang nama terpisah, sehingga tidak lagi menganggap setiap akun mempunyai catatan kata sandi lokal.

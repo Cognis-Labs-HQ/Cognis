@@ -23,6 +23,11 @@ export interface AuthProviderAdapter {
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;
+    confirmPassword?(
+        accountId: string,
+        password: string,
+        providerId?: string,
+    ): Promise<boolean>;
     getConfigSchema(): AuthConfigField[];
     configure(config: Record<string, unknown>): void;
     getPasswordResetSupport?(): { supported: boolean; reason?: string };
@@ -421,6 +426,30 @@ export class CoreAuthGateway {
         return Array.from(this.adapters.values()).filter((a) =>
             this.enabledAdapters.has(a.id),
         );
+    }
+
+    async confirmPassword(
+        accountId: string,
+        password: string,
+        providerId = "local",
+    ): Promise<boolean> {
+        if (!accountId || !password) return false;
+        const adapterId = providerId.split(":", 1)[0] || "local";
+        const adapter = this.getEnabledAdapter(adapterId);
+        if (!adapter) return false;
+        try {
+            if (adapter.confirmPassword) {
+                return adapter.confirmPassword(accountId, password, providerId);
+            }
+            const session = await adapter.authenticate({
+                username: accountId,
+                password,
+                authSourceId: providerId,
+            });
+            return session?.accountId === accountId;
+        } catch {
+            return false;
+        }
     }
 
     getPasswordResetSupport(adapterId: string): {

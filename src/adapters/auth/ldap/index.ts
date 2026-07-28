@@ -123,7 +123,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.5.4";
+    readonly version = "0.5.5";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -165,7 +165,8 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             !this.configuration.unify && requestedSource.startsWith("ldap:")
                 ? servers.filter(
                       (server) =>
-                          `ldap:${server.identifier}` === requestedSource,
+                          `ldap:${encodeURIComponent(String(server.identifier ?? ""))}` ===
+                          requestedSource,
                   )
                 : servers;
         for (const server of candidates) {
@@ -208,6 +209,23 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         return null;
     }
 
+    async confirmPassword(
+        accountId: string,
+        password: string,
+        providerId = "ldap",
+    ): Promise<boolean> {
+        const providerPrefix = `${providerId}:`;
+        const username = accountId.startsWith(providerPrefix)
+            ? accountId.slice(providerPrefix.length)
+            : accountId;
+        const session = await this.authenticate({
+            username,
+            password,
+            authSourceId: providerId,
+        });
+        return session?.accountId === accountId;
+    }
+
     private resolveRole(
         groups: string[],
         options: LdapRuntimeOptions = this.options,
@@ -236,7 +254,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             return [{ id: this.id, name: this.name, credential: true }];
         }
         return this.configuration.servers.map((server) => ({
-            id: `ldap:${server.identifier}`,
+            id: `ldap:${encodeURIComponent(String(server.identifier ?? ""))}`,
             name: String(server.identifier),
             credential: true,
         }));
