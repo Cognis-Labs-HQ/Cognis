@@ -1,6 +1,6 @@
 {
     "id": "oidc",
     "name": "OIDC SSO Authentication",
-    "version": "0.1.3",
+    "version": "0.1.5",
     "publisher": "Cognis Labs HQ"
 }

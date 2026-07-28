@@ -332,6 +332,7 @@ const REQUIRED_INSTRUCTION_SNIPPETS = [
     "Move code out of `reuse/` when it only serves one feature surface; keep `reuse/` strictly cross-cutting.",
     "Keep HTML and JS/TS in separate files; do not embed page markup as feature-sized string templates in JS/TS modules.",
     "Runtime extension modules must use a consistent root layout:",
+    "Version updates are atomic repository-wide changes.",
 ];
 
 test("ai instructions keep the compliance guardrails explicit", () => {
@@ -544,6 +545,74 @@ test("internal dependency ceilings include local workspace versions", () => {
         violations,
         [],
         `Internal dependency ceilings must match tested workspace versions:\n${violations.join("\n")}`,
+    );
+});
+
+test("component versions match manifests, lockfile, and translated indexes", () => {
+    const packagePaths = walk(resolve(ROOT, "src")).filter((filePath) =>
+        filePath.endsWith("package.json"),
+    );
+    const packageVersionsByPath = new Map();
+    const violations = [];
+
+    for (const packagePath of packagePaths) {
+        const packageManifest = JSON.parse(readFileSync(packagePath, "utf8"));
+        const componentPath = dirname(packagePath);
+        packageVersionsByPath.set(
+            `${normalizePath(relative(ROOT, componentPath))}/`,
+            packageManifest.version,
+        );
+        const adjacentManifestPath = resolve(componentPath, "manifest.json");
+        try {
+            const adjacentManifest = JSON.parse(
+                readFileSync(adjacentManifestPath, "utf8"),
+            );
+            if (adjacentManifest.version !== packageManifest.version) {
+                violations.push(
+                    `${normalizePath(relative(ROOT, adjacentManifestPath))}: ${adjacentManifest.version} != ${packageManifest.version}`,
+                );
+            }
+        } catch (error) {
+            if (error?.code !== "ENOENT") throw error;
+        }
+    }
+
+    const lockfile = JSON.parse(
+        readFileSync(resolve(ROOT, "package-lock.json"), "utf8"),
+    );
+    for (const [componentPath, version] of packageVersionsByPath) {
+        const lockEntry = lockfile.packages?.[componentPath.slice(0, -1)];
+        if (lockEntry && lockEntry.version !== version) {
+            violations.push(
+                `package-lock.json: ${componentPath} ${lockEntry.version} != ${version}`,
+            );
+        }
+    }
+
+    for (const language of ["de", "en", "id", "ja"]) {
+        const versionsPath = resolve(ROOT, `src/docs/versions.${language}.md`);
+        const source = readFileSync(versionsPath, "utf8");
+        for (const [componentPath, version] of packageVersionsByPath) {
+            if (!source.includes(`\`${componentPath}\``)) continue;
+            const escapedPath = componentPath.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                "\\$&",
+            );
+            const rowPattern = new RegExp(
+                `\\|[^\\n]*\\\`${escapedPath}\\\`[^\\n]*\\\`${version.replaceAll(".", "\\.")}\\\`[^\\n]*\\|`,
+            );
+            if (!rowPattern.test(source)) {
+                violations.push(
+                    `${normalizePath(relative(ROOT, versionsPath))}: ${componentPath} must report ${version}`,
+                );
+            }
+        }
+    }
+
+    assert.deepEqual(
+        violations,
+        [],
+        `Component versions must be synchronized repository-wide:\n${violations.join("\n")}`,
     );
 });
 
