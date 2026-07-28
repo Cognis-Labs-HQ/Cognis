@@ -90,6 +90,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
 
     const deliverUserShare = capabilities.get<
         (delivery: {
+            shareId: string;
             resourceType: string;
             resourceId: string;
             ownerAccountId: string;
@@ -99,6 +100,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         }) => Promise<{ navigationUrl?: string } | null>
     >("share:deliverUserShare:calendar");
     const delivery = {
+        shareId: "calendar-share-1",
         resourceType: "calendar",
         resourceId: createCalendarResponse.body.data.id,
         ownerAccountId: "calendar-admin",
@@ -136,6 +138,33 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         ).sharedPermission,
         "write",
     );
+    await deliverUserShare?.({
+        ...delivery,
+        expiresAt: new Date(Date.now() + 20).toISOString(),
+    });
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    const calendarsAfterExpiry = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        "/api/v1/calendar/calendars",
+    );
+    assert.equal(
+        calendarsAfterExpiry.body.data.some(
+            (calendar: { id?: string }) => calendar.id === deliveredCalendarId,
+        ),
+        false,
+    );
+    const writeAfterExpiry = await createJsonDispatcher(routeRegistry)(
+        "POST",
+        recipientToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(deliveredCalendarId ?? "")}/events`,
+        {
+            title: "Too late",
+            startAt: "2030-01-01T10:00:00.000Z",
+            endAt: "2030-01-01T11:00:00.000Z",
+        },
+    );
+    assert.equal(writeAfterExpiry.statusCode, 404);
 });
 
 test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {

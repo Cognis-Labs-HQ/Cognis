@@ -129,8 +129,19 @@ export function createCalendarEditPopupHandler({
             maxWidth: "460px",
             body: () => {
                 const isShared = calendar.visibility === "shared";
-                const nameFieldDisabledAttr =
-                    calendar.isDefault || isShared ? " disabled" : "";
+                const sharedSuffixMatch = isShared
+                    ? String(calendar.name).match(/( \(Shared by .+\))$/)
+                    : null;
+                const editableCalendarName = sharedSuffixMatch
+                    ? String(calendar.name).slice(
+                          0,
+                          -sharedSuffixMatch[1].length,
+                      )
+                    : String(calendar.name);
+                const immutableSharedSuffix = sharedSuffixMatch?.[1] ?? "";
+                const nameFieldDisabledAttr = calendar.isDefault
+                    ? " disabled"
+                    : "";
                 const isPrivate = calendar.visibility !== "public";
                 const shareControlsMarkup = isShared
                     ? ""
@@ -138,7 +149,8 @@ export function createCalendarEditPopupHandler({
                 return `<div class="calendar-edit-popup">
           <div class="calendar-create-row">
             <input id="calendar-edit-color" type="color" value="${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}" class="calendar-color-picker-bare" />
-            <input id="calendar-edit-name" type="text" value="${escapeHtml(calendar.name)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameFieldDisabledAttr} />
+            <input id="calendar-edit-name" type="text" maxlength="30" value="${escapeHtml(editableCalendarName)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameFieldDisabledAttr} />
+            ${immutableSharedSuffix ? `<span class="calendar-shared-name-suffix">${escapeHtml(immutableSharedSuffix)}</span>` : ""}
           </div>
           ${
               isShared
@@ -254,7 +266,7 @@ export function createCalendarEditPopupHandler({
                     );
                 if (!hasCalendarChanges) return true;
                 const updatePayload = isShared
-                    ? { color }
+                    ? { name, color }
                     : {
                           ...(name !== undefined ? { name } : {}),
                           color,

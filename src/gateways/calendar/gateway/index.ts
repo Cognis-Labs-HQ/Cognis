@@ -459,6 +459,18 @@ export class CoreCalendarGateway {
             );
     }
 
+    resolveGlobalEventId(eventId: string): CalendarEventRecord[] {
+        const normalizedEventId = eventId.trim();
+        if (!normalizedEventId) return [];
+        return Array.from(this.eventsByCalendar.values())
+            .flatMap((events) => events)
+            .filter(
+                (event) =>
+                    event.id === normalizedEventId ||
+                    event.sourceEventId === normalizedEventId,
+            );
+    }
+
     listInvitedPendingEvents(accountId: string): CalendarEventRecord[] {
         return listInvitedPendingEvents(
             accountId,

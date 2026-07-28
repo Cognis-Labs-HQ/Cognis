@@ -101,6 +101,11 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
                 description:
                     "Delete or mark the token inactive in the owning share token registry.",
             },
+            {
+                id: "remove-delivery",
+                description:
+                    "Remove recipient-side objects delivered by the revoked share.",
+            },
         ],
     }),
     createFlowContract({

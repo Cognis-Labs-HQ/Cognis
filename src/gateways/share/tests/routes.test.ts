@@ -488,5 +488,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             (delivery) => delivery.recipientAccountId === "bob",
         ),
     );
+    assert.equal(typeof deliveredShares[0]?.shareId, "string");
+    assert.ok(String(deliveredShares[0]?.shareId ?? "").length > 0);
     assert.equal(deliveredShares.length, 1);
 });

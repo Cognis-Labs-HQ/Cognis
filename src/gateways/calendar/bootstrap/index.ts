@@ -195,12 +195,77 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.log,
     );
     await shareRegistry.ensureSchema();
+    const shareExpiryTimers = new Map<string, ReturnType<typeof setTimeout>>();
+    const removeDeliveredCalendarShare = async (shareId: string) => {
+        const share = await shareRegistry.getCalendarUserShareById(shareId);
+        if (!share) return false;
+        await shareRegistry.deleteCalendarUserShareByShareId(shareId);
+        const recipientCalendar = gateway.getOwnedCalendar(
+            share.recipientAccountId,
+            share.recipientCalendarId,
+        );
+        if (recipientCalendar?.visibility === "shared") {
+            gateway.deleteCalendar({
+                ownerAccountId: share.recipientAccountId,
+                calendarId: share.recipientCalendarId,
+            });
+            await gateway.flushStore();
+        }
+        const timer = shareExpiryTimers.get(shareId);
+        if (timer) clearTimeout(timer);
+        shareExpiryTimers.delete(shareId);
+        ctx.log?.("info", "Removed delivered calendar user share.", {
+            component: "calendar",
+            operation: "remove_user_share_delivery",
+            shareId,
+            recipientAccountId: share.recipientAccountId,
+        });
+        return true;
+    };
+    const scheduleCalendarShareExpiry = (
+        shareId: string,
+        expiresAt: string,
+    ) => {
+        const existingTimer = shareExpiryTimers.get(shareId);
+        if (existingTimer) clearTimeout(existingTimer);
+        shareExpiryTimers.delete(shareId);
+        const expiryMs = Date.parse(expiresAt);
+        if (!Number.isFinite(expiryMs)) return;
+        const delay = Math.max(0, expiryMs - Date.now());
+        const timer = setTimeout(
+            () => {
+                if (expiryMs > Date.now()) {
+                    scheduleCalendarShareExpiry(shareId, expiresAt);
+                    return;
+                }
+                void removeDeliveredCalendarShare(shareId).catch((error) => {
+                    ctx.log?.(
+                        "error",
+                        "Failed to expire calendar user share.",
+                        {
+                            component: "calendar",
+                            operation: "expire_user_share_delivery",
+                            shareId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                });
+            },
+            Math.min(delay, 2_147_483_647),
+        );
+        timer.unref?.();
+        shareExpiryTimers.set(shareId, timer);
+    };
     ctx.capabilities.contribute("calendar:resolveShareLink", (token: string) =>
         shareRegistry.resolveShareLink(token),
     );
     ctx.capabilities.contribute(
         "share:deliverUserShare:calendar",
         async (delivery: {
+            shareId: string;
             resourceType: string;
             resourceId: string;
             ownerAccountId: string;
@@ -237,6 +302,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     color: normalizeCalendarColor(ownerCalendar.color),
                 }).id;
             await shareRegistry.upsertCalendarUserShare({
+                shareId: delivery.shareId,
                 ownerAccountId: delivery.ownerAccountId,
                 ownerCalendarId: delivery.resourceId,
                 recipientAccountId: delivery.recipientAccountId,
@@ -248,6 +314,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     : "read",
                 expiresAt: delivery.expiresAt,
             });
+            scheduleCalendarShareExpiry(delivery.shareId, delivery.expiresAt);
             await gateway.flushStore();
             ctx.log?.("info", "Delivered calendar user share.", {
                 component: "calendar",
@@ -507,6 +574,37 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     : { authorized: false, reason: "forbidden" };
             },
         );
+        ctx.flow.extend(
+            "revoke-share-token",
+            "remove-delivery",
+            { id: "calendar-gateway:remove-share-delivery" },
+            async (stageCtx) => {
+                const flowInput = (stageCtx.input ?? {}) as {
+                    shareId?: string;
+                    resourceType?: string;
+                };
+                if (
+                    flowInput.resourceType !== "calendar" ||
+                    !flowInput.shareId
+                ) {
+                    return null;
+                }
+                const deletionResults =
+                    stageCtx.stageResults["delete-token"] ?? [];
+                if (
+                    !deletionResults.some((result) =>
+                        Boolean((result as { revoked?: boolean })?.revoked),
+                    )
+                ) {
+                    return { removed: false };
+                }
+                return {
+                    removed: await removeDeliveredCalendarShare(
+                        flowInput.shareId,
+                    ),
+                };
+            },
+        );
     }
 
     await gateway.discoverAdapters(adaptersRoot);
@@ -647,7 +745,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.4.18",
+        version: "1.4.19",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

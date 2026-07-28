@@ -33,6 +33,27 @@ import { createReminderScheduler } from "./reminder-scheduler.js";
 import { handleCalendarResponseRoute } from "./respond-route.js";
 import { handleCalendarShareRoutes } from "./share-routes.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
+
+function rejectInactiveSharedCalendar(input: {
+    gateway: CoreCalendarGateway;
+    accountId: string;
+    calendarId: string;
+    activeShare: unknown;
+    res: ServerResponse;
+}): boolean {
+    const calendar = input.gateway.getOwnedCalendar(
+        input.accountId,
+        input.calendarId,
+    );
+    if (calendar?.visibility !== "shared" || input.activeShare) return false;
+    sendCalendarError(
+        input.res,
+        "share_inactive",
+        "This calendar share is no longer active.",
+        410,
+    );
+    return true;
+}
 export function createCalendarCoreRoutes({
     gateway,
     shareRegistry,
@@ -305,6 +326,15 @@ export function createCalendarCoreRoutes({
                 );
                 return true;
             }
+            if (name.length > 30) {
+                sendCalendarError(
+                    res,
+                    "validation_error",
+                    "Calendar names are limited to 30 characters.",
+                    400,
+                );
+                return true;
+            }
             const requestedAccountId = String(
                 url.searchParams.get("accountId") ?? "",
             ).trim();
@@ -355,24 +385,66 @@ export function createCalendarCoreRoutes({
             const calendarId = decodeURIComponent(patchCalendarMatch[1]);
             const sharedCalendar =
                 await shareRegistry.getByRecipientCalendarId(calendarId);
+            if (
+                rejectInactiveSharedCalendar({
+                    gateway,
+                    accountId: claims.sub,
+                    calendarId,
+                    activeShare:
+                        sharedCalendar?.recipientAccountId === claims.sub
+                            ? sharedCalendar
+                            : null,
+                    res,
+                })
+            ) {
+                return true;
+            }
             const body = await readJson(req);
             if (sharedCalendar?.recipientAccountId === claims.sub) {
                 const requestedFields = Object.keys(body ?? {});
                 if (
-                    requestedFields.length !== 1 ||
-                    requestedFields[0] !== "color"
+                    requestedFields.some(
+                        (field) => field !== "color" && field !== "name",
+                    )
                 ) {
                     sendCalendarError(
                         res,
                         "forbidden",
-                        "Only the local color of a shared calendar can be changed.",
+                        "Only the local name and color of a shared calendar can be changed.",
                         403,
+                    );
+                    return true;
+                }
+                const currentCalendar = gateway.getOwnedCalendar(
+                    claims.sub,
+                    calendarId,
+                );
+                const suffixMatch = String(currentCalendar?.name ?? "").match(
+                    /( \(Shared by .+\))$/,
+                );
+                const requestedName =
+                    body.name === undefined
+                        ? undefined
+                        : String(body.name).trim();
+                if (
+                    requestedName !== undefined &&
+                    (!requestedName || requestedName.length > 30)
+                ) {
+                    sendCalendarError(
+                        res,
+                        "validation_error",
+                        "Calendar names must contain 1 to 30 characters.",
+                        400,
                     );
                     return true;
                 }
                 const updated = gateway.updateCalendar({
                     ownerAccountId: claims.sub,
                     calendarId,
+                    name:
+                        requestedName === undefined
+                            ? undefined
+                            : `${requestedName}${suffixMatch?.[1] ?? ""}`,
                     color: normalizeCalendarColor(body.color),
                 });
                 await gateway.flushStore();
@@ -385,6 +457,18 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             try {
+                if (
+                    body?.name !== undefined &&
+                    String(body.name).trim().length > 30
+                ) {
+                    sendCalendarError(
+                        res,
+                        "validation_error",
+                        "Calendar names are limited to 30 characters.",
+                        400,
+                    );
+                    return true;
+                }
                 const updated = gateway.updateCalendar({
                     ownerAccountId: claims.sub,
                     calendarId,
@@ -462,6 +546,20 @@ export function createCalendarCoreRoutes({
             const calendarId = decodeURIComponent(deleteCalendarMatch[1]);
             const sharedCalendar =
                 await shareRegistry.getByRecipientCalendarId(calendarId);
+            if (
+                rejectInactiveSharedCalendar({
+                    gateway,
+                    accountId: claims.sub,
+                    calendarId,
+                    activeShare:
+                        sharedCalendar?.recipientAccountId === claims.sub
+                            ? sharedCalendar
+                            : null,
+                    res,
+                })
+            ) {
+                return true;
+            }
             if (sharedCalendar?.recipientAccountId === claims.sub) {
                 sendCalendarError(
                     res,
@@ -568,6 +666,17 @@ export function createCalendarCoreRoutes({
                 sharedCalendar?.recipientAccountId === claims.sub
                     ? sharedCalendar
                     : null;
+            if (
+                rejectInactiveSharedCalendar({
+                    gateway,
+                    accountId: claims.sub,
+                    calendarId,
+                    activeShare: activeSharedCalendar,
+                    res,
+                })
+            ) {
+                return true;
+            }
             if (!ownedCalendar && !activeSharedCalendar) {
                 sendCalendarError(res, "not_found", "Calendar not found.", 404);
                 return true;
@@ -626,6 +735,17 @@ export function createCalendarCoreRoutes({
                     sharedCalendar?.recipientAccountId === claims.sub
                         ? sharedCalendar
                         : null;
+                if (
+                    rejectInactiveSharedCalendar({
+                        gateway,
+                        accountId: claims.sub,
+                        calendarId,
+                        activeShare: activeSharedCalendar,
+                        res,
+                    })
+                ) {
+                    return true;
+                }
                 const shared = activeSharedCalendar;
                 if (shared?.permission === "read") {
                     throw new Error("calendar_forbidden");
@@ -787,6 +907,17 @@ export function createCalendarCoreRoutes({
                 sharedCalendar?.recipientAccountId === claims.sub
                     ? sharedCalendar
                     : null;
+            if (
+                rejectInactiveSharedCalendar({
+                    gateway,
+                    accountId: claims.sub,
+                    calendarId,
+                    activeShare: activeSharedCalendar,
+                    res,
+                })
+            ) {
+                return true;
+            }
             const ownedCalendar = activeSharedCalendar
                 ? null
                 : gateway.getOwnedCalendar(claims.sub, calendarId);
@@ -838,6 +969,17 @@ export function createCalendarCoreRoutes({
                 sharedCalendar?.recipientAccountId === claims.sub
                     ? sharedCalendar
                     : null;
+            if (
+                rejectInactiveSharedCalendar({
+                    gateway,
+                    accountId: claims.sub,
+                    calendarId,
+                    activeShare: activeSharedCalendar,
+                    res,
+                })
+            ) {
+                return true;
+            }
             const ownerAccountId =
                 activeSharedCalendar?.ownerAccountId ?? claims.sub;
             const sourceCalendarId =
@@ -1022,6 +1164,17 @@ export function createCalendarCoreRoutes({
                 sharedCalendar?.recipientAccountId === claims.sub
                     ? sharedCalendar
                     : null;
+            if (
+                rejectInactiveSharedCalendar({
+                    gateway,
+                    accountId: claims.sub,
+                    calendarId,
+                    activeShare: activeSharedCalendar,
+                    res,
+                })
+            ) {
+                return true;
+            }
             const ownerAccountId =
                 activeSharedCalendar?.ownerAccountId ?? claims.sub;
             const sourceCalendarId =

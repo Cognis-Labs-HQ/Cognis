@@ -719,6 +719,8 @@ export function resolveEventMeta(
             sharedPermission === null &&
             event.attendees.includes(accountId) &&
             !hasResponded,
+        responseUpdatesExistingEvent:
+            event.createdBy !== accountId && event.sourceEventId === null,
         response,
         responseOptions: ["accepted", "tentative", "declined"],
     };

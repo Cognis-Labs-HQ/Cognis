@@ -5,7 +5,7 @@
     "type": "module",
     "main": "sqlite-db-gateway.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.3",
+        "@cognis/core": "<=0.3.4",
         "@cognis/gateways": "<=0.1.4"
     }
 }

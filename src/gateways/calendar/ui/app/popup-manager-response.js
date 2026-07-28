@@ -142,6 +142,7 @@ export function createCalendarResponseHandler({
             eventData.calendar?.visibility === "shared";
         if (
             !isSharedCalendarEvent &&
+            eventData.meta?.responseUpdatesExistingEvent !== true &&
             (responseOption === "accepted" || responseOption === "tentative")
         ) {
             targetCalendarId = await promptTargetCalendar(eventData);

@@ -93,7 +93,11 @@ test("shared recipients control local color while writable shares control events
         `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}`,
         { name: "Renamed by recipient" },
     );
-    assert.equal(renameSharedCalendar.statusCode, 403);
+    assert.equal(renameSharedCalendar.statusCode, 200);
+    assert.match(
+        renameSharedCalendar.body.data.name,
+        /^Renamed by recipient \(Shared by /,
+    );
     const deleteSharedCalendar = await dispatchJson(
         "DELETE",
         bobToken,

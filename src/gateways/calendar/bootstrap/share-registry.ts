@@ -309,6 +309,7 @@ export class CalendarShareRegistry {
     }
 
     async upsertCalendarUserShare(input: {
+        shareId?: string;
         ownerAccountId: string;
         ownerCalendarId: string;
         recipientAccountId: string;
@@ -329,7 +330,7 @@ export class CalendarShareRegistry {
             (share) => share.recipientAccountId === input.recipientAccountId,
         );
         const share: CalendarUserShareRegistryRecord = {
-            id: existing?.id ?? randomUUID(),
+            id: existing?.id ?? input.shareId ?? randomUUID(),
             ownerAccountId: input.ownerAccountId,
             ownerCalendarId: input.ownerCalendarId,
             recipientAccountId: input.recipientAccountId,
@@ -434,6 +435,62 @@ export class CalendarShareRegistry {
         const targetShare = shares.find((share) => share.id === input.shareId);
         if (!targetShare) return false;
         await this.deleteCalendarUserShareById(targetShare.id);
+        return true;
+    }
+
+    async getCalendarUserShareById(
+        shareId: string,
+    ): Promise<CalendarUserShareRegistryRecord | null> {
+        if (!this.db) return this.memoryUserShares.get(shareId) ?? null;
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "calendar_user_shares",
+            columns: [
+                "id",
+                "owner_account_id",
+                "owner_calendar_id",
+                "recipient_account_id",
+                "recipient_calendar_id",
+                "recipient_handle",
+                "recipient_display_name",
+                "recipient_avatar_key",
+                "permission",
+                "expires_at",
+                "created_at",
+                "updated_at",
+            ],
+            where: [{ column: "id", value: shareId }],
+            limit: 1,
+        });
+        const row = result.rows?.[0];
+        return row
+            ? {
+                  id: String(row.id),
+                  ownerAccountId: String(row.owner_account_id),
+                  ownerCalendarId: String(row.owner_calendar_id),
+                  recipientAccountId: String(row.recipient_account_id),
+                  recipientCalendarId: String(row.recipient_calendar_id),
+                  recipientHandle: this.normalizeOptionalString(
+                      row.recipient_handle,
+                  ),
+                  recipientDisplayName: this.normalizeOptionalString(
+                      row.recipient_display_name,
+                  ),
+                  recipientAvatarKey: this.normalizeOptionalString(
+                      row.recipient_avatar_key,
+                  ),
+                  permission: row.permission === "write" ? "write" : "read",
+                  expiresAt: String(row.expires_at ?? ""),
+                  createdAt: String(row.created_at ?? ""),
+                  updatedAt: String(row.updated_at ?? ""),
+              }
+            : null;
+    }
+
+    async deleteCalendarUserShareByShareId(shareId: string): Promise<boolean> {
+        const share = await this.getCalendarUserShareById(shareId);
+        if (!share) return false;
+        await this.deleteCalendarUserShareById(shareId);
         return true;
     }
 

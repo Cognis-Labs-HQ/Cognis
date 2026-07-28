@@ -782,6 +782,14 @@ export async function openShareLinksPopup({
                 ) {
                     state.permission =
                         target.value === "write" ? "write" : "read";
+                    state.recipients = state.recipients.map((recipient) => ({
+                        ...recipient,
+                        permissions:
+                            state.permission === "write"
+                                ? ["read", "write"]
+                                : ["read"],
+                    }));
+                    renderSelectedUsers();
                 } else if (
                     target instanceof HTMLSelectElement &&
                     target.id === "share-links-access-mode"

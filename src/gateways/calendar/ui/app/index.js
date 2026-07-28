@@ -684,7 +684,7 @@ export async function mount(root, { signal } = {}) {
         <form id="calendar-create-popup-form" class="calendar-create-form">
           <div class="calendar-create-row">
             <input id="calendar-popup-color" type="color" value="${popupColorValue}" class="calendar-color-picker-bare" />
-            <input id="calendar-popup-name" type="text" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
+            <input id="calendar-popup-name" type="text" maxlength="30" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
           </div>
           <div class="calendar-visibility-row">
             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_heading"))}</p>

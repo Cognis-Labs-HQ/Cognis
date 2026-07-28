@@ -159,6 +159,14 @@ test("user share permissions constrain granted capabilities", async () => {
     );
 });
 
+test("selected recipient badges track the pending permission", () => {
+    assert.match(
+        popupSource,
+        /state\.recipients = state\.recipients\.map\(\(recipient\) => \(\{[\s\S]*permissions:/,
+    );
+    assert.match(popupSource, /renderSelectedUsers\(\)/);
+});
+
 test("logged-in share recipients keep their account session", () => {
     assert.match(sessionFlowSource, /if \(priorSessionResult\?\.valid\)/);
     assert.match(

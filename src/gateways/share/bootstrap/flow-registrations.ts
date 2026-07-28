@@ -616,6 +616,7 @@ export async function registerShareBootstrapHooks(input: {
                 ) as Record<string, unknown> | null) ?? {};
             return {
                 resolved: true,
+                shareId: String(tokenResult.tokenRecord?.id ?? ""),
                 resourceType: resourceResult.resourceType,
                 resourceId: resourceResult.resourceId,
                 ownerAccountId: String(
@@ -666,6 +667,7 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 resolved?: boolean;
                 resourceType?: string;
+                shareId?: string;
                 resourceId?: string;
                 ownerAccountId?: string;
                 expiresAt?: string;
@@ -694,6 +696,7 @@ export async function registerShareBootstrapHooks(input: {
             const deliverUserShare = input.gateway.getCapability<
                 (delivery: {
                     resourceType: string;
+                    shareId: string;
                     resourceId: string;
                     ownerAccountId: string;
                     recipientAccountId: string;
@@ -703,6 +706,7 @@ export async function registerShareBootstrapHooks(input: {
             >(`share:deliverUserShare:${resolved.resourceType ?? ""}`);
             if (!deliverUserShare) return null;
             return deliverUserShare({
+                shareId: String(resolved.shareId ?? ""),
                 resourceType: String(resolved.resourceType ?? ""),
                 resourceId: String(resolved.resourceId ?? ""),
                 ownerAccountId: String(resolved.ownerAccountId ?? ""),
