@@ -266,37 +266,48 @@ export async function registerShareBootstrapHooks(input: {
                 generatePassword?: boolean;
                 expiresAt?: string;
             };
-            const shareRecord = await input.gateway.issueToken({
-                ownerAccountId:
-                    authorizeResult.ownerAccountId ??
-                    resourceResult.ownerAccountId ??
-                    "",
-                resourceType: resourceResult.resourceType ?? "",
-                resourceId: resourceResult.resourceId ?? "",
-                metadata:
-                    resourceResult.metadata ??
-                    (authorizeResult.meetingInstanceId
-                        ? {
-                              meetingInstanceId:
-                                  authorizeResult.meetingInstanceId,
-                          }
-                        : resourceResult.meetingInstanceId
-                          ? {
-                                meetingInstanceId:
-                                    resourceResult.meetingInstanceId,
-                            }
-                          : null),
-                label: inputPayload.label,
-                grantedCapabilities: Array.isArray(
-                    inputPayload.grantedCapabilities,
-                )
-                    ? inputPayload.grantedCapabilities
-                    : [],
-                accessControls: inputPayload.accessControls,
-                password: inputPayload.password,
-                generatePassword: inputPayload.generatePassword === true,
-                expiresAt: String(inputPayload.expiresAt ?? ""),
-            });
+            let shareRecord;
+            try {
+                shareRecord = await input.gateway.issueToken({
+                    ownerAccountId:
+                        authorizeResult.ownerAccountId ??
+                        resourceResult.ownerAccountId ??
+                        "",
+                    resourceType: resourceResult.resourceType ?? "",
+                    resourceId: resourceResult.resourceId ?? "",
+                    metadata:
+                        resourceResult.metadata ??
+                        (authorizeResult.meetingInstanceId
+                            ? {
+                                  meetingInstanceId:
+                                      authorizeResult.meetingInstanceId,
+                              }
+                            : resourceResult.meetingInstanceId
+                              ? {
+                                    meetingInstanceId:
+                                        resourceResult.meetingInstanceId,
+                                }
+                              : null),
+                    label: inputPayload.label,
+                    grantedCapabilities: Array.isArray(
+                        inputPayload.grantedCapabilities,
+                    )
+                        ? inputPayload.grantedCapabilities
+                        : [],
+                    accessControls: inputPayload.accessControls,
+                    password: inputPayload.password,
+                    generatePassword: inputPayload.generatePassword === true,
+                    expiresAt: String(inputPayload.expiresAt ?? ""),
+                });
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "duplicate_user_share"
+                ) {
+                    return { minted: false, reason: "duplicate_user_share" };
+                }
+                throw error;
+            }
             stageCtx.data.shareRecord = shareRecord;
             return { minted: true, shareRecord };
         },

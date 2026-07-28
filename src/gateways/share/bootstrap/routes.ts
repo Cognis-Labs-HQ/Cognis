@@ -34,6 +34,15 @@ function sendError(
     sendJson(res, statusCode, { error: { code, message } });
 }
 
+function sendDuplicateUserShareError(res: ServerResponse): void {
+    sendError(
+        res,
+        409,
+        "duplicate_user_share",
+        "This item is already shared with one or more selected users.",
+    );
+}
+
 function readResourceFilter(url: URL): {
     resourceType?: string;
     resourceId?: string;
@@ -211,9 +220,14 @@ export function createShareRoutes(input: {
             });
             const issued = getFirstStageResult<{
                 minted?: boolean;
+                reason?: string;
                 shareRecord?: unknown;
             }>(flowResult.stageResults, "issue-token");
             if (!issued?.minted) {
+                if (issued?.reason === "duplicate_user_share") {
+                    sendDuplicateUserShareError(res);
+                    return true;
+                }
                 sendError(
                     res,
                     403,
@@ -242,27 +256,42 @@ export function createShareRoutes(input: {
                 clearPassword?: unknown;
                 expiresAt?: unknown;
             };
-            const updated = await input.gateway.updateToken({
-                shareId,
-                ownerAccountId: claims.sub,
-                label: typeof body.label === "string" ? body.label : undefined,
-                grantedCapabilities: Array.isArray(body.grantedCapabilities)
-                    ? body.grantedCapabilities
-                    : undefined,
-                accessControls:
-                    body.accessControls &&
-                    typeof body.accessControls === "object"
-                        ? body.accessControls
+            let updated;
+            try {
+                updated = await input.gateway.updateToken({
+                    shareId,
+                    ownerAccountId: claims.sub,
+                    label:
+                        typeof body.label === "string" ? body.label : undefined,
+                    grantedCapabilities: Array.isArray(body.grantedCapabilities)
+                        ? body.grantedCapabilities
                         : undefined,
-                password:
-                    typeof body.password === "string" ? body.password : null,
-                generatePassword: body.generatePassword === true,
-                clearPassword: body.clearPassword === true,
-                expiresAt:
-                    typeof body.expiresAt === "string"
-                        ? body.expiresAt
-                        : undefined,
-            });
+                    accessControls:
+                        body.accessControls &&
+                        typeof body.accessControls === "object"
+                            ? body.accessControls
+                            : undefined,
+                    password:
+                        typeof body.password === "string"
+                            ? body.password
+                            : null,
+                    generatePassword: body.generatePassword === true,
+                    clearPassword: body.clearPassword === true,
+                    expiresAt:
+                        typeof body.expiresAt === "string"
+                            ? body.expiresAt
+                            : undefined,
+                });
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "duplicate_user_share"
+                ) {
+                    sendDuplicateUserShareError(res);
+                    return true;
+                }
+                throw error;
+            }
             if (!updated) {
                 sendError(res, 404, "not_found", "Share token not found.");
                 return true;

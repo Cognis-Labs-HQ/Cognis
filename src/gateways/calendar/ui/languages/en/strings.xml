@@ -8,7 +8,7 @@
   <string name="gateway.calendar.visibility_public">Public</string>
   <string name="gateway.calendar.visibility_heading">Visibility</string>
   <string name="gateway.calendar.visibility_shared">Shared</string>
-  <string name="gateway.calendar.shared_calendar_local_color">You can change this calendar’s color. Its name, sharing settings, and removal are controlled by its owner.</string>
+  <string name="gateway.calendar.shared_calendar_local_color">Only the color can be changed by recipients. The name cannot be edited, and sharing settings and removal remain controlled by the owner.</string>
   <string name="gateway.calendar.calendar_name_placeholder">Calendar Name</string>
   <string name="gateway.calendar.create_calendar">Create Calendar</string>
   <string name="gateway.calendar.create_calendar_success">Calendar created.</string>
@@ -124,6 +124,7 @@
   <string name="gateway.calendar.share_calendar">Share Calendar</string>
   <string name="gateway.calendar.share_users_heading">Share with People</string>
   <string name="gateway.calendar.share_users_empty">No people have access yet.</string>
+  <string name="gateway.calendar.share_user_duplicate">This calendar is already shared with one or more selected users.</string>
   <string name="gateway.calendar.share_email_recipients">Email Recipients</string>
   <string name="gateway.calendar.share_email_recipients_placeholder">Type an email address and press Enter</string>
   <string name="gateway.calendar.share_email_sent">Share email sent.</string>

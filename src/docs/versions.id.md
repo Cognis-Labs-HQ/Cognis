@@ -60,7 +60,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.7.5`  |
-| Share                 | `src/gateways/share/`        | `1.6.17` |
+| Share                 | `src/gateways/share/`        | `1.6.18` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.10` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -68,7 +68,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.17` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.18` |
 
 ## Kontrak inti
 
@@ -87,7 +87,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi   |
 | -------------------- | ----------------------------------- | ------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4` |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.1` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.1` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.2` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.2` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6` |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4` |

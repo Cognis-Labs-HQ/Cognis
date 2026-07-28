@@ -684,8 +684,13 @@ export async function openShareLinksPopup({
                     if (popupOpen) renderMethodPage();
                     await refreshLinks();
                     if (popupOpen) renderLinksList(listContainer);
-                } catch {
-                    showToast(labels.createFailed, { variant: "error" });
+                } catch (error) {
+                    showToast(
+                        error?.code === "duplicate_user_share"
+                            ? labels.duplicateUserShare || labels.createFailed
+                            : labels.createFailed,
+                        { variant: "error" },
+                    );
                 } finally {
                     state.isCreating = false;
                     syncCreateButton(

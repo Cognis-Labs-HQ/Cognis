@@ -82,7 +82,14 @@ export function buildShareTokenCallbacks({
                     password: String(password ?? ""),
                 }),
             });
-            if (!response.ok) throw new Error("create_failed");
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null);
+                const error = new Error(
+                    String(payload?.error?.code ?? "create_failed"),
+                );
+                error.code = payload?.error?.code;
+                throw error;
+            }
             const payload = await response.json().catch(() => ({ data: null }));
             return payload?.data ?? null;
         },

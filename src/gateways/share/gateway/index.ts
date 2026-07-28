@@ -40,6 +40,20 @@ export interface ShareVariant {
     access?: "read" | "write";
 }
 
+function userRecipientIds(
+    accessControls: Partial<ShareAccessControls> | undefined,
+): Set<string> {
+    return new Set(
+        (Array.isArray(accessControls?.recipients)
+            ? accessControls.recipients
+            : []
+        )
+            .filter((recipient) => recipient?.type === "user")
+            .map((recipient) => String(recipient.id ?? "").trim())
+            .filter(Boolean),
+    );
+}
+
 export class CoreShareGateway {
     private readonly adapters = new Map<string, ShareMethodAdapter>();
     constructor(
@@ -204,6 +218,12 @@ export class CoreShareGateway {
         generatePassword?: boolean;
         expiresAt?: string;
     }): Promise<Record<string, unknown>> {
+        await this.assertNoDuplicateUserRecipients({
+            ownerAccountId: input.ownerAccountId,
+            resourceType: input.resourceType,
+            resourceId: input.resourceId,
+            accessControls: input.accessControls,
+        });
         const generatedPassword = input.generatePassword
             ? generateSharePassword()
             : null;
@@ -228,6 +248,21 @@ export class CoreShareGateway {
         clearPassword?: boolean;
         expiresAt?: string;
     }): Promise<Record<string, unknown> | null> {
+        const existingRecord = await this.store.getById(input.shareId);
+        if (
+            !existingRecord ||
+            existingRecord.ownerAccountId !== input.ownerAccountId
+        ) {
+            return null;
+        }
+        await this.assertNoDuplicateUserRecipients({
+            ownerAccountId: input.ownerAccountId,
+            resourceType: existingRecord.resourceType,
+            resourceId: existingRecord.resourceId,
+            accessControls:
+                input.accessControls ?? existingRecord.accessControls,
+            excludeShareId: existingRecord.id,
+        });
         const generatedPassword = input.generatePassword
             ? generateSharePassword()
             : null;
@@ -252,6 +287,33 @@ export class CoreShareGateway {
         return await Promise.all(
             records.map((record) => this.serializeRecord(record)),
         );
+    }
+
+    private async assertNoDuplicateUserRecipients(input: {
+        ownerAccountId: string;
+        resourceType: string;
+        resourceId: string;
+        accessControls?: Partial<ShareAccessControls>;
+        excludeShareId?: string;
+    }): Promise<void> {
+        const requestedRecipientIds = userRecipientIds(input.accessControls);
+        if (requestedRecipientIds.size === 0) return;
+        const existingRecords = await this.store.listByOwner({
+            ownerAccountId: input.ownerAccountId,
+            resourceType: input.resourceType,
+            resourceId: input.resourceId,
+        });
+        const duplicateExists = existingRecords
+            .filter((record) => record.id !== input.excludeShareId)
+            .filter((record) => !this.isTokenExpired(record))
+            .some((record) =>
+                record.accessControls.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" &&
+                        requestedRecipientIds.has(recipient.id),
+                ),
+            );
+        if (duplicateExists) throw new Error("duplicate_user_share");
     }
 
     async listByResource(filter: {

@@ -8,7 +8,7 @@
   <string name="gateway.calendar.visibility_public">公開</string>
   <string name="gateway.calendar.visibility_heading">公開範囲</string>
   <string name="gateway.calendar.visibility_shared">共有</string>
-  <string name="gateway.calendar.shared_calendar_local_color">このカレンダーの色は変更できます。名前、共有設定、削除は所有者が管理します。</string>
+  <string name="gateway.calendar.shared_calendar_local_color">受信者が変更できるのは色だけです。名前は編集できず、共有設定と削除は引き続き所有者が管理します。</string>
   <string name="gateway.calendar.calendar_name_placeholder">カレンダー名</string>
   <string name="gateway.calendar.create_calendar">カレンダーを作成</string>
   <string name="gateway.calendar.create_calendar_success">カレンダーを作成しました。</string>
@@ -124,6 +124,7 @@
   <string name="gateway.calendar.share_calendar">カレンダーを共有</string>
   <string name="gateway.calendar.share_users_heading">共有する相手</string>
   <string name="gateway.calendar.share_users_empty">アクセスできる相手はまだいません。</string>
+  <string name="gateway.calendar.share_user_duplicate">このカレンダーは、選択したユーザーのうち1人以上とすでに共有されています。</string>
   <string name="gateway.calendar.share_email_recipients">メール受信者</string>
   <string name="gateway.calendar.share_email_recipients_placeholder">メールアドレスを入力して Enter キーを押す</string>
   <string name="gateway.calendar.share_email_sent">共有メールを送信しました。</string>

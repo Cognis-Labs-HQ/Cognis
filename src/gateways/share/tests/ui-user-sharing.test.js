@@ -74,6 +74,9 @@ test("share popup callbacks use only share gateway recipient and token routes", 
     assert.match(popupSource, /data-share-generate-password/);
     assert.match(popupSource, /crypto\.getRandomValues/);
     assert.doesNotMatch(apiSource, /\/api\/v1\/calendar/);
+    assert.match(apiSource, /payload\?\.error\?\.code/);
+    assert.match(popupSource, /duplicate_user_share/);
+    assert.match(popupSource, /labels\.duplicateUserShare/);
 });
 
 test("share popup renders link variants and profile-backed user cards", () => {

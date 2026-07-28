@@ -398,10 +398,53 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         },
     );
     assert.equal(restrictedCreateResponse.statusCode, 200);
+    const duplicateRestrictedResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            grantedCapabilities: ["meeting:join", "meeting:write"],
+            accessControls: {
+                permissions: ["read", "write"],
+                recipients: [{ type: "user", id: "bob" }],
+            },
+        },
+    );
+    assert.equal(duplicateRestrictedResponse.statusCode, 409);
+    assert.equal(
+        duplicateRestrictedResponse.body.error.code,
+        "duplicate_user_share",
+    );
+    const alternateRecipientResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            accessControls: {
+                recipients: [{ type: "user", id: "charlie" }],
+            },
+        },
+    );
+    assert.equal(alternateRecipientResponse.statusCode, 200);
+    const duplicateUpdateResponse = await dispatchJson(
+        "PATCH",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(alternateRecipientResponse.body.data.id)}`,
+        {
+            accessControls: {
+                recipients: [{ type: "user", id: "bob" }],
+            },
+        },
+    );
+    assert.equal(duplicateUpdateResponse.statusCode, 409);
     assert.ok(notificationCategories.includes("share"));
     assert.deepEqual(
         userShareNotifications.map((entry) => entry.recipientUsername),
-        ["bob"],
+        ["bob", "charlie"],
     );
     assert.equal(userShareNotifications[0]?.category, "share");
     assert.equal(

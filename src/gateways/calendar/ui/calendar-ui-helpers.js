@@ -283,7 +283,8 @@ function collectPendingEvents(
     );
 }
 
-function visibilityIcon(visibility) {
+function visibilityIcon(visibility, sharedPermission = null) {
+    if (visibility === "shared" && sharedPermission === "read") return "🔒";
     if (visibility === "shared") return "🤝";
     return visibility === "public" ? "🌐" : "🔒";
 }
@@ -329,7 +330,7 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
         <button type="button" class="calendar-item-btn" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'data-current="true"' : ""} title="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">
           <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
           <span class="calendar-item-label">${escapeHtml(calendar.name)}</span>
-          <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
+          <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility, calendar.sharedPermission)}</span>
         </button>
       </li>`,
         )
@@ -835,11 +836,25 @@ function createEventComposerBuilder({
     readOnly = false,
 }) {
     const calendarOptions = Array.isArray(calendars)
-        ? calendars.map((calendar) => ({
-              value: String(calendar?.id ?? ""),
-              label: String(calendar?.name ?? ""),
-          }))
+        ? calendars
+              .filter(
+                  (calendar) =>
+                      calendar?.visibility !== "shared" ||
+                      calendar?.sharedPermission === "write",
+              )
+              .map((calendar) => ({
+                  value: String(calendar?.id ?? ""),
+                  label: String(calendar?.name ?? ""),
+              }))
         : [];
+    const requestedCalendarId = String(
+        defaultValues.calendarId ?? selectedCalendarId ?? "",
+    );
+    const selectedWritableCalendarId = calendarOptions.some(
+        (option) => option.value === requestedCalendarId,
+    )
+        ? requestedCalendarId
+        : (calendarOptions[0]?.value ?? "");
     const fields = [
         {
             name: "title",
@@ -921,7 +936,7 @@ function createEventComposerBuilder({
             labelKey: "gateway.calendar.event_calendar",
             type: "select",
             required: true,
-            value: String(defaultValues.calendarId ?? selectedCalendarId ?? ""),
+            value: selectedWritableCalendarId,
             options:
                 calendarOptions.length > 0
                     ? calendarOptions

@@ -358,7 +358,20 @@ test("calendar app reads jitsi availability from calendar metadata", () => {
 });
 
 test("calendar toolbar shows shared visibility icon", () => {
-    assert.match(HELPERS_SOURCE, /if \(visibility === "shared"\) return "🤝"/);
+    assert.match(
+        HELPERS_SOURCE,
+        /visibility === "shared" && sharedPermission === "read"/,
+    );
+    assert.match(HELPERS_SOURCE, /return "🔒"/);
+    assert.match(HELPERS_SOURCE, /return "🤝"/);
+});
+
+test("event composer excludes read-only shared calendars", () => {
+    assert.match(
+        HELPERS_SOURCE,
+        /calendar\?\.visibility !== "shared"[\s\S]*calendar\?\.sharedPermission === "write"/,
+    );
+    assert.match(HELPERS_SOURCE, /selectedWritableCalendarId/);
 });
 
 test("calendar deep-link event popup does not block mount completion", () => {
