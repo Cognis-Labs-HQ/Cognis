@@ -327,3 +327,23 @@ Beim Erstellen eines Termins in einem Kalender mit Benutzerfreigaben werden nich
 ## Einstellung zum Speichern des Passworts
 
 Die Eingabeaufforderung für geschützte Freigaben fragt nun mit einer positiven Formulierung, ob das Passwort im Schlüsselbund gespeichert werden soll. Die Option ist standardmäßig ausgewählt und kann deaktiviert werden, um das Passwort zu verwenden, ohne es zu speichern.
+
+## Verschlüsselte Geheimnisse in den erforderlichen Schlüsselbund-Adapter der Authentifizierung verschieben
+
+Schlüsselbund-Client, Persistenzspeicher und API-Route gehören jetzt zu einem erforderlichen Authentifizierungsadapter. Die Migration alter Einstellungen und der Klartextabruf von Chatraumschlüsseln wurden entfernt, sodass Geheimnisse ausschließlich über den verschlüsselten Schlüsselbund aufgelöst werden.
+
+## Freigabeaufgaben in den zuständigen Adaptern belassen
+
+Der Benutzerfreigabe-Adapter erzwingt nun die Eindeutigkeit der Empfänger, während ausschließlich SMTP die Ratenbegrenzung seiner E-Mail-Warteschlange verwaltet. Das Freigabe-Gateway orchestriert nur diese Adapterrichtlinien.
+
+## Schlüsselbund-Bootstrap an die Fähigkeitsarchitektur anpassen
+
+Der wiederverwendbare Browser-Schlüsselbund ist vollständig im erforderlichen Authentifizierungsadapter enthalten. Der erforderliche Authentifizierungsadapter initialisiert seine Tresor- und Routenfähigkeiten nun selbst während der Gateway-Erkennung, erhält die Authentifizierung über den injizierten Routenkontext und enthält komponenteneigene Dokumentation.
+
+## Quellgrößen- und Abhängigkeitskonformität wiederherstellen
+
+Große Kalender-Routen- und Testdateien wurden in fokussierte Module aufgeteilt, berührte übergroße Dateien unterschreiten nun die Grenze von 1.000 Zeilen, und die Abhängigkeitsobergrenzen für Freigaben entsprechen der getesteten Workspace-Version.
+
+## Den vollständigen Schlüsselbund im Authentifizierungsadapter kapseln
+
+Der Browser-Schlüsselbund liegt nun zusammen mit Speicher, Routen, Manifest und Dokumentation im Adapter. Der Adapter registriert sein eigenes statisches UI-Verzeichnis bei der Erkennung, und alle Verbraucher importieren die adaptereigene Browser-Schnittstelle.

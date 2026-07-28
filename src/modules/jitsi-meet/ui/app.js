@@ -951,6 +951,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     state.availableParticipants = state.allParticipants.map((entry) => ({
         ...entry,
     }));
+
     const composer = createPageComposer(root, {
         allowCustomization: !inShareView,
         enableDomParking: true,

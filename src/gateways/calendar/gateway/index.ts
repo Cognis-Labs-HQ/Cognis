@@ -160,6 +160,7 @@ export class CoreCalendarGateway {
             this.adapterRequires.set(adapter.adapterId, effectiveRequires);
         }
     }
+
     listAdapters(): CalendarAdapterInfo[] {
         return Array.from(this.registeredAdapters.values()).map((adapter) => {
             const requires = this.adapterRequires.get(adapter.adapterId);
