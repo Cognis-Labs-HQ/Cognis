@@ -199,6 +199,73 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         shareRegistry.resolveShareLink(token),
     );
     ctx.capabilities.contribute(
+        "share:deliverUserShare:calendar",
+        async (delivery: {
+            resourceType: string;
+            resourceId: string;
+            ownerAccountId: string;
+            recipientAccountId: string;
+            grantedCapabilities: string[];
+            expiresAt: string;
+        }) => {
+            if (delivery.resourceType !== "calendar") return null;
+            if (delivery.ownerAccountId === delivery.recipientAccountId) {
+                return {
+                    navigationUrl: `/calendar?calendarId=${encodeURIComponent(delivery.resourceId)}`,
+                };
+            }
+            const ownerCalendar = gateway.getOwnedCalendar(
+                delivery.ownerAccountId,
+                delivery.resourceId,
+            );
+            if (!ownerCalendar || !delivery.recipientAccountId) return null;
+            const existing = (
+                await shareRegistry.listCalendarUserShares(
+                    delivery.ownerAccountId,
+                    delivery.resourceId,
+                )
+            ).find(
+                (share) =>
+                    share.recipientAccountId === delivery.recipientAccountId,
+            );
+            const recipientCalendarId =
+                existing?.recipientCalendarId ??
+                gateway.createCalendar({
+                    ownerAccountId: delivery.recipientAccountId,
+                    name: `${ownerCalendar.name} (Shared by ${delivery.ownerAccountId})`,
+                    visibility: "shared",
+                    color: normalizeCalendarColor(ownerCalendar.color),
+                }).id;
+            await shareRegistry.upsertCalendarUserShare({
+                ownerAccountId: delivery.ownerAccountId,
+                ownerCalendarId: delivery.resourceId,
+                recipientAccountId: delivery.recipientAccountId,
+                recipientCalendarId,
+                permission: delivery.grantedCapabilities.includes(
+                    "calendar:write",
+                )
+                    ? "write"
+                    : "read",
+                expiresAt: delivery.expiresAt,
+            });
+            await gateway.flushStore();
+            ctx.log?.("info", "Delivered calendar user share.", {
+                component: "calendar",
+                operation: "deliver_user_share",
+                calendarId: delivery.resourceId,
+                recipientAccountId: delivery.recipientAccountId,
+                permission: delivery.grantedCapabilities.includes(
+                    "calendar:write",
+                )
+                    ? "write"
+                    : "read",
+            });
+            return {
+                navigationUrl: `/calendar?calendarId=${encodeURIComponent(recipientCalendarId)}`,
+            };
+        },
+    );
+    ctx.capabilities.contribute(
         "share:resolveVariants",
         (variantInput: {
             resourceType: string;
@@ -580,7 +647,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.2.0",
+        version: "1.4.16",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

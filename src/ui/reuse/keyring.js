@@ -64,9 +64,9 @@ async function persistVault() {
     if (!vaultKey || !vaultData) throw new Error("keyring_locked");
     const salt = vaultSalt;
     if (!salt) throw new Error("keyring_locked");
-    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const initializationVector = crypto.getRandomValues(new Uint8Array(12));
     const cipher = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
+        { name: "AES-GCM", iv: initializationVector },
         vaultKey,
         new TextEncoder().encode(JSON.stringify(vaultData)),
     );
@@ -76,7 +76,7 @@ async function persistVault() {
             version: 1,
             iterations: vaultIterations,
             salt: encodeBytes(salt),
-            iv: encodeBytes(iv),
+            iv: encodeBytes(initializationVector),
             cipher: encodeBytes(new Uint8Array(cipher)),
         }),
     );

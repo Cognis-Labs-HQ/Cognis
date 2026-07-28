@@ -459,6 +459,8 @@ export function createShareRoutes(input: {
                 reason?: string;
                 resourceType?: string;
                 resourceId?: string;
+                ownerAccountId?: string;
+                expiresAt?: string;
                 payload?: Record<string, unknown>;
                 directAccess?: boolean;
                 grantedCapabilities?: string[];
@@ -484,6 +486,9 @@ export function createShareRoutes(input: {
                 );
                 return true;
             }
+            const delivered = getFirstStageResult<{
+                navigationUrl?: string;
+            }>(flowResult.stageResults, "deliver-recipient");
             sendJson(res, 200, {
                 data: {
                     resourceType: resolved.resourceType,
@@ -499,6 +504,7 @@ export function createShareRoutes(input: {
                             : "",
                     guestProfile: resolved.guestProfile ?? null,
                     page: resolved.page ?? {},
+                    navigationUrl: delivered?.navigationUrl ?? null,
                 },
             });
             return true;

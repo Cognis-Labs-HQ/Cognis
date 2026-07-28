@@ -154,12 +154,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     uiHooks.registerNavbarPlugin(
         "/static/gateways/share/ui/approval-poller.js",
     );
+    uiHooks.registerNavbarPlugin(
+        "/static/gateways/share/ui/received-share-action.js",
+    );
 
     ctx.routeRegistry.registerPrefix("/api/v1/share", "share");
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.6.6",
+        version: "1.6.17",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,

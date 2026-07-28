@@ -607,6 +607,10 @@ export async function registerShareBootstrapHooks(input: {
                 resolved: true,
                 resourceType: resourceResult.resourceType,
                 resourceId: resourceResult.resourceId,
+                ownerAccountId: String(
+                    tokenResult.tokenRecord?.ownerAccountId ?? "",
+                ),
+                expiresAt: String(tokenResult.tokenRecord?.expiresAt ?? ""),
                 payload: resourceResult.payload ?? {},
                 directAccess: accessResult?.directAccess === true,
                 guestAccessToken:
@@ -637,6 +641,64 @@ export async function registerShareBootstrapHooks(input: {
                     ...rendererResult,
                 },
             };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "resolve-share-token",
+        "deliver-recipient",
+        { id: "share-gateway:deliver-recipient" },
+        async (stageCtx) => {
+            const resolved = getFirstStageResult(
+                stageCtx.stageResults,
+                "build-payload",
+            ) as {
+                resolved?: boolean;
+                resourceType?: string;
+                resourceId?: string;
+                ownerAccountId?: string;
+                expiresAt?: string;
+                grantedCapabilities?: string[];
+                accessControls?: { recipients?: unknown };
+            } | null;
+            const requesterClaims = (
+                stageCtx.input as { requesterClaims?: { sub?: unknown } }
+            ).requesterClaims;
+            const recipientAccountId = String(requesterClaims?.sub ?? "");
+            const recipients = resolved?.accessControls?.recipients;
+            const isUserRecipient =
+                Array.isArray(recipients) &&
+                recipients.some((entry) => {
+                    if (!entry || typeof entry !== "object") return false;
+                    const recipient = entry as {
+                        type?: unknown;
+                        id?: unknown;
+                    };
+                    return (
+                        recipient.type === "user" &&
+                        String(recipient.id ?? "") === recipientAccountId
+                    );
+                });
+            if (!resolved?.resolved || !isUserRecipient) return null;
+            const deliverUserShare = input.gateway.getCapability<
+                (delivery: {
+                    resourceType: string;
+                    resourceId: string;
+                    ownerAccountId: string;
+                    recipientAccountId: string;
+                    grantedCapabilities: string[];
+                    expiresAt: string;
+                }) => Promise<{ navigationUrl?: string } | null>
+            >(`share:deliverUserShare:${resolved.resourceType ?? ""}`);
+            if (!deliverUserShare) return null;
+            return deliverUserShare({
+                resourceType: String(resolved.resourceType ?? ""),
+                resourceId: String(resolved.resourceId ?? ""),
+                ownerAccountId: String(resolved.ownerAccountId ?? ""),
+                recipientAccountId,
+                grantedCapabilities: resolved.grantedCapabilities ?? [],
+                expiresAt: String(resolved.expiresAt ?? ""),
+            });
         },
     );
 

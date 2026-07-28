@@ -22,6 +22,14 @@ const sessionFlowSource = await readFile(
     new URL("../ui/session-flow-hooks.js", import.meta.url),
     "utf8",
 );
+const receivedShareActionSource = await readFile(
+    new URL("../ui/received-share-action.js", import.meta.url),
+    "utf8",
+);
+const receivedShareSource = await readFile(
+    new URL("../ui/received-share.js", import.meta.url),
+    "utf8",
+);
 
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
@@ -158,4 +166,17 @@ test("logged-in share recipients keep their account session", () => {
         sessionFlowSource,
         /priorSessionResult\?\.valid && shareData\.directAccess === true/,
     );
+});
+
+test("received user shares unlock in place and navigate to the component", () => {
+    assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
+    assert.match(receivedShareActionSource, /resolveReceivedShare/);
+    assert.match(receivedShareActionSource, /payload\.data\.navigationUrl/);
+    assert.match(
+        receivedShareActionSource,
+        /await navigateTo\(navigationUrl\)/,
+    );
+    assert.match(receivedShareSource, /response\.status !== 401/);
+    assert.match(receivedShareSource, /await promptForPassword\(\)/);
+    assert.match(receivedShareSource, /keyring:set/);
 });

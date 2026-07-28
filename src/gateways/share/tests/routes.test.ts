@@ -131,6 +131,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             contentType: "text/calendar",
         },
     ]) as never);
+    const deliveredShares: Array<Record<string, unknown>> = [];
+    capabilities.contribute("share:deliverUserShare:meeting", (async (
+        delivery: Record<string, unknown>,
+    ) => {
+        deliveredShares.push(delivery);
+        return { navigationUrl: "/meetings/shared" };
+    }) as never);
     capabilities.contribute(
         "auth:routeContext",
         createAuthContext(
@@ -429,4 +436,14 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
     );
     assert.equal(bobRestrictedResponse.statusCode, 200);
+    assert.equal(
+        JSON.parse(bobRestrictedResponse.payload).data.navigationUrl,
+        "/meetings/shared",
+    );
+    assert.ok(
+        deliveredShares.some(
+            (delivery) => delivery.recipientAccountId === "bob",
+        ),
+    );
+    assert.equal(deliveredShares.length, 1);
 });

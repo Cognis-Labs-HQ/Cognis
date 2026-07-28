@@ -78,6 +78,11 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
                 description:
                     "Assemble the final public payload consumed by the share page renderer.",
             },
+            {
+                id: "deliver-recipient",
+                description:
+                    "Deliver an authenticated user share to its owning component and return its account navigation target.",
+            },
         ],
     }),
     createFlowContract({

@@ -20,8 +20,12 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const adminToken = issueAccessToken("calendar-admin", "admin", 60);
+    const recipientToken = issueAccessToken("calendar-recipient", "user", 60);
     const authContext = createAuthContext(
-        new Map([[adminToken, { sub: "calendar-admin", role: "admin" }]]),
+        new Map([
+            [adminToken, { sub: "calendar-admin", role: "admin" }],
+            [recipientToken, { sub: "calendar-recipient", role: "user" }],
+        ]),
     );
     capabilities.contribute("auth:routeContext", authContext);
 
@@ -83,6 +87,55 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     assert.match(icsVariant?.url ?? "", /\/Live%20Team%20Calendar\.ics$/);
     assert.doesNotMatch(caldavVariant?.url ?? "", /passphrase=/);
     assert.equal(caldavVariant?.access, "read");
+
+    const deliverUserShare = capabilities.get<
+        (delivery: {
+            resourceType: string;
+            resourceId: string;
+            ownerAccountId: string;
+            recipientAccountId: string;
+            grantedCapabilities: string[];
+            expiresAt: string;
+        }) => Promise<{ navigationUrl?: string } | null>
+    >("share:deliverUserShare:calendar");
+    const delivery = {
+        resourceType: "calendar",
+        resourceId: createCalendarResponse.body.data.id,
+        ownerAccountId: "calendar-admin",
+        recipientAccountId: "calendar-recipient",
+        grantedCapabilities: ["calendar:read"],
+        expiresAt: "",
+    };
+    const delivered = await deliverUserShare?.(delivery);
+    assert.match(delivered?.navigationUrl ?? "", /^\/calendar\?calendarId=/);
+    const deliveredCalendarId = new URL(
+        delivered?.navigationUrl ?? "",
+        "http://localhost",
+    ).searchParams.get("calendarId");
+    const recipientCalendars = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        "/api/v1/calendar/calendars",
+    );
+    const deliveredCalendar = recipientCalendars.body.data.find(
+        (calendar: { id?: string }) => calendar.id === deliveredCalendarId,
+    );
+    assert.equal(deliveredCalendar.sharedPermission, "read");
+    await deliverUserShare?.({
+        ...delivery,
+        grantedCapabilities: ["calendar:read", "calendar:write"],
+    });
+    const updatedRecipientCalendars = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        "/api/v1/calendar/calendars",
+    );
+    assert.equal(
+        updatedRecipientCalendars.body.data.find(
+            (calendar: { id?: string }) => calendar.id === deliveredCalendarId,
+        ).sharedPermission,
+        "write",
+    );
 });
 
 test("calendar calendars metadata resolves meetings availability via ctx capability", async () => {
