@@ -40,6 +40,13 @@ test("keyring settings require password confirmation for secret changes", () => 
     assert.match(KEYRING_SETTINGS_SOURCE, /unlockKeyring/);
     assert.match(KEYRING_SETTINGS_SOURCE, /lockKeyring/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-relock/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /requestPasswordConfirmation/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /keyring-settings\.css/);
+    assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /keyring-unlock-password/);
+    assert.doesNotMatch(
+        KEYRING_SETTINGS_SOURCE,
+        /settings-keyring-relock"\$\{unlocked \? "" : " disabled"\}/,
+    );
     assert.doesNotMatch(SOURCE, /settings-keyring-relock/);
 });
 

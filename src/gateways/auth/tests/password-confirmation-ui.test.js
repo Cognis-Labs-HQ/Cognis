@@ -60,3 +60,43 @@ test("reprompt guard opens popup when silent verification is stale", async () =>
     assert.equal(popupOpened, true);
     assert.equal(apiCalls.length, 1);
 });
+
+test("password request returns the provider-confirmed password", async () => {
+    const guard = createPasswordConfirmationGuard({
+        i18n: createI18nStub(),
+        async confirmPasswordImpl(password) {
+            return password === "directory-password";
+        },
+        escapeHtmlImpl: String,
+        async openPopupImpl(options) {
+            const input = {
+                value: "directory-password",
+                focus() {},
+                select() {},
+            };
+            const warning = { textContent: "", hidden: true };
+            options.onOpen({
+                querySelector(selector) {
+                    if (selector === "#reprompt-password") return input;
+                    if (selector === "#reprompt-warning") return warning;
+                    return { addEventListener() {} };
+                },
+            });
+            assert.equal(await options.onAction("confirm"), true);
+            return "confirm";
+        },
+    });
+    const OriginalInput = globalThis.HTMLInputElement;
+    const OriginalElement = globalThis.HTMLElement;
+    globalThis.HTMLInputElement = Object;
+    globalThis.HTMLElement = Object;
+    try {
+        assert.deepEqual(
+            await guard.requestPasswordConfirmation({ alwaysPrompt: true }),
+            { password: "directory-password" },
+        );
+    } finally {
+        globalThis.HTMLInputElement = OriginalInput;
+        globalThis.HTMLElement = OriginalElement;
+    }
+});

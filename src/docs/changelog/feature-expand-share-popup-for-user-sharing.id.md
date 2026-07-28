@@ -299,3 +299,7 @@ Kata sandi yang telah diverifikasi untuk berbagi kalender terlindungi disimpan d
 ## Konfirmasi kata sandi sesuai penyedia
 
 Konfirmasi kata sandi kini dimiliki gateway Autentikasi dan tersedia bagi alur sensitif melalui kemampuan `auth:confirmPassword`. Konfirmasi diteruskan ke penyedia aktif akun, termasuk sumber LDAP yang memiliki ruang nama terpisah, sehingga tidak lagi menganggap setiap akun mempunyai catatan kata sandi lokal.
+
+## Penguncian keyring mengikuti konfirmasi
+
+Pembukaan keyring kini menggunakan permintaan konfirmasi kata sandi sesuai penyedia dari gateway Autentikasi beserta masa berlaku normalnya. Penguncian membatalkan masa konfirmasi tersebut agar permintaan rahasia berikutnya meminta kata sandi akun. Preferensi penguncian otomatis tetap dapat diubah saat brankas terkunci, dan halaman Keyring kini memiliki tata letak responsif yang lebih lapang.

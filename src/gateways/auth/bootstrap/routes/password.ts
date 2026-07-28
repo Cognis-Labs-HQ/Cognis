@@ -1,5 +1,6 @@
 import { extractBearerToken } from "../../../../api/reuse/access-token-http.js";
 import {
+    invalidateTokenVerification,
     isTokenVerificationFresh,
     recordTokenVerification,
     revokeAccessTokensForSubject,
@@ -46,6 +47,15 @@ export function createPasswordRoutes({
         url,
         logMeta: AuthRouteLogMeta,
     ): Promise<boolean> => {
+        if (url.pathname === "/api/v1/auth/verify" && req.method === "DELETE") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const rawToken = extractBearerToken(req) ?? "";
+            if (rawToken) invalidateTokenVerification(rawToken);
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
         if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;

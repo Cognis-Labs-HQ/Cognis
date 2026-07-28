@@ -299,3 +299,7 @@ Bestätigte Passwörter für geschützte Kalenderfreigaben werden mit aussagekr�
 ## Anbieterabhängige Passwortbestätigung
 
 Die Passwortbestätigung gehört nun zum Authentifizierungs-Gateway und steht sensiblen Abläufen als Fähigkeit `auth:confirmPassword` zur Verfügung. Die Bestätigung wird über den aktiven Anbieter des Kontos geleitet, einschließlich separat benannter LDAP-Quellen, statt für jedes Konto einen lokalen Passworteintrag vorauszusetzen.
+
+## Schlüsselbund folgt der Bestätigung
+
+Das Entsperren des Schlüsselbunds verwendet nun die anbieterabhängige Passwortabfrage des Authentifizierungs-Gateways und deren normales Gültigkeitsfenster. Beim Sperren wird dieses Bestätigungsfenster ungültig, sodass die nächste Geheimnisabfrage das Kontopasswort verlangt. Die automatische Sperrzeit bleibt auch bei gesperrtem Tresor änderbar, und die Schlüsselbundseite besitzt ein großzügigeres responsives Layout.

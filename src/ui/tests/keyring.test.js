@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
+import { uiCtx } from "../reuse/ui-ctx.js";
 
 const values = new Map();
 Object.defineProperty(globalThis, "crypto", {
@@ -12,6 +13,14 @@ globalThis.localStorage = {
     setItem: (key, value) => values.set(key, String(value)),
     removeItem: (key) => values.delete(key),
 };
+let confirmationInvalidations = 0;
+uiCtx.capabilities.contribute(
+    "auth:invalidatePasswordConfirmation",
+    async () => {
+        confirmationInvalidations += 1;
+        return true;
+    },
+);
 
 test("encrypted keyring unlocks, persists share secrets, and relocks", async () => {
     const keyring = await import("../reuse/keyring.js");
@@ -23,13 +32,14 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     assert.equal(keyring.getKeyringRelockMinutes(), 15);
     assert.doesNotMatch(values.get("cognis_secure_keyring"), /share-password/);
 
-    keyring.lockKeyring();
+    await keyring.lockKeyring();
+    assert.equal(confirmationInvalidations, 1);
     assert.equal(keyring.isKeyringUnlocked(), false);
     assert.equal(keyring.getKeyringValue("share:token-1"), null);
     assert.equal(await keyring.unlockKeyring("wrong-password"), false);
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
-    keyring.lockKeyring();
+    await keyring.lockKeyring();
 });
 
 test("locked keyring retains new secrets only for the active session", async () => {
@@ -43,7 +53,7 @@ test("locked keyring retains new secrets only for the active session", async () 
         values.get("cognis_secure_keyring") ?? "",
         /session-token|share-password/,
     );
-    keyring.lockKeyring();
+    await keyring.lockKeyring();
     assert.equal(keyring.getKeyringValue("share:session-token"), null);
 });
 
@@ -75,5 +85,13 @@ test("keyring lists metadata and replaces an invalid stored secret", async () =>
         await keyring.deleteKeyringValue("meeting:one:password"),
         true,
     );
-    keyring.lockKeyring();
+    await keyring.lockKeyring();
+});
+
+test("locked keyring accepts an updated automatic lock timeout", async () => {
+    const keyring = await import("../reuse/keyring.js");
+    await keyring.lockKeyring();
+    await keyring.setKeyringRelockMinutes(60);
+    assert.equal(keyring.isKeyringUnlocked(), false);
+    assert.equal(keyring.getKeyringRelockMinutes(), 60);
 });

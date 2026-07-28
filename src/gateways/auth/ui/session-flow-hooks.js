@@ -27,6 +27,7 @@
  */
 
 import "/static/reuse/flow-registry.js";
+import "/static/gateways/auth/reuse/password-confirmation.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 

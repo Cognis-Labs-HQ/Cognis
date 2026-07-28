@@ -29,6 +29,7 @@ import { apiFetch } from "./api-client.js";
 import { uiCtx } from "./ui-ctx.js";
 
 const STORAGE_KEY = "cognis_secure_keyring";
+const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
 const DEFAULT_ITERATIONS = 310_000;
 let vaultKey = null;
@@ -46,6 +47,15 @@ function keyringStorageKey() {
     return accountId
         ? `${STORAGE_KEY}:${encodeURIComponent(accountId)}`
         : STORAGE_KEY;
+}
+
+function relockStorageKey() {
+    const accountId = String(
+        localStorage.getItem("cognis_account") ?? "",
+    ).trim();
+    return accountId
+        ? `${RELOCK_STORAGE_KEY}:${encodeURIComponent(accountId)}`
+        : RELOCK_STORAGE_KEY;
 }
 
 function encodeBytes(bytes) {
@@ -92,7 +102,7 @@ async function deriveKey(password, salt, iterations) {
 
 function scheduleRelock() {
     clearTimeout(relockTimer);
-    const minutes = Number(vaultData?.preferences?.relockMinutes ?? 0);
+    const minutes = getKeyringRelockMinutes();
     if (minutes > 0) relockTimer = setTimeout(lockKeyring, minutes * 60_000);
 }
 
@@ -201,6 +211,19 @@ export async function unlockKeyring(password) {
     vaultIterations = iterations;
     lastVaultEnvelope = stored;
     vaultData.values ??= {};
+    vaultData.preferences ??= {};
+    const storedRelockMinutes = localStorage.getItem(relockStorageKey());
+    if (storedRelockMinutes !== null) {
+        vaultData.preferences.relockMinutes = Math.max(
+            0,
+            Number(storedRelockMinutes) || 0,
+        );
+    } else {
+        localStorage.setItem(
+            relockStorageKey(),
+            String(vaultData.preferences.relockMinutes ?? 0),
+        );
+    }
     for (const [id, entry] of Object.entries(vaultData.values)) {
         vaultData.values[id] = normalizeEntry(entry, id);
     }
@@ -217,6 +240,9 @@ export async function unlockKeyring(password) {
 
 export function lockKeyring() {
     clearVault(true);
+    return Promise.resolve(
+        uiCtx.capabilities.get("auth:invalidatePasswordConfirmation")?.(),
+    ).catch(() => {});
 }
 
 export function isKeyringUnlocked() {
@@ -297,15 +323,20 @@ export async function resolveKeyringValue(id, options = {}) {
 }
 
 export function getKeyringRelockMinutes() {
-    return vaultData ? Number(vaultData.preferences?.relockMinutes ?? 0) : null;
+    const stored = localStorage.getItem(relockStorageKey());
+    if (stored !== null) return Math.max(0, Number(stored) || 0);
+    return Math.max(0, Number(vaultData?.preferences?.relockMinutes ?? 0));
 }
 
 export async function setKeyringRelockMinutes(minutes) {
-    if (!vaultData) throw new Error("keyring_locked");
-    vaultData.preferences ??= {};
-    vaultData.preferences.relockMinutes = Math.max(0, Number(minutes) || 0);
-    await persistVault();
-    scheduleRelock();
+    const normalizedMinutes = Math.max(0, Number(minutes) || 0);
+    localStorage.setItem(relockStorageKey(), String(normalizedMinutes));
+    if (vaultData) {
+        vaultData.preferences ??= {};
+        vaultData.preferences.relockMinutes = normalizedMinutes;
+        await persistVault();
+        scheduleRelock();
+    }
 }
 
 uiCtx.capabilities.contribute("keyring:get", getKeyringValue);

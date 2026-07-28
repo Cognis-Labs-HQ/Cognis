@@ -24,6 +24,7 @@ interface AccessTokenRecord {
 const tokenStore = new Map<string, AccessTokenRecord>();
 const revokedTokenStore = new Map<string, AccessTokenRecord>();
 const verifiedAtByToken = new Map<string, number>();
+const invalidatedVerificationTokens = new Set<string>();
 const MAX_TOKEN_STORE_SIZE = 10_000;
 const tokenStorePath =
     process.env.COGNIS_ACCESS_TOKEN_STORE_PATH ??
@@ -180,6 +181,7 @@ function pruneStore(
         if (record.expiresAt !== null && record.expiresAt < now) {
             store.delete(tokenHash);
             verifiedAtByToken.delete(tokenHash);
+            invalidatedVerificationTokens.delete(tokenHash);
             removed = true;
         }
     }
@@ -300,6 +302,7 @@ export function consumeAccessToken(
     tokenStore.delete(tokenHash);
     revokedTokenStore.set(tokenHash, record);
     verifiedAtByToken.delete(tokenHash);
+    invalidatedVerificationTokens.delete(tokenHash);
     persistTokenStore();
     return {
         sub: record.subject,
@@ -319,6 +322,7 @@ export function revokeAccessToken(rawToken: string): boolean {
     tokenStore.delete(tokenHash);
     revokedTokenStore.set(tokenHash, record);
     verifiedAtByToken.delete(tokenHash);
+    invalidatedVerificationTokens.delete(tokenHash);
     persistTokenStore();
     return true;
 }
@@ -330,6 +334,7 @@ export function revokeAccessTokensForSubject(subject: string): number {
         tokenStore.delete(tokenHash);
         revokedTokenStore.set(tokenHash, record);
         verifiedAtByToken.delete(tokenHash);
+        invalidatedVerificationTokens.delete(tokenHash);
         removed++;
     }
     if (removed > 0) {
@@ -353,6 +358,7 @@ export function revokeSetupPendingAccessTokens(
         tokenStore.delete(tokenHash);
         revokedTokenStore.set(tokenHash, record);
         verifiedAtByToken.delete(tokenHash);
+        invalidatedVerificationTokens.delete(tokenHash);
         removed++;
     }
     if (removed > 0) {
@@ -415,10 +421,18 @@ export function isTokenVerificationFresh(
     const tokenHash = hashToken(rawToken);
     const record = tokenStore.get(tokenHash);
     if (!record) return false;
+    if (invalidatedVerificationTokens.has(tokenHash)) return false;
     const now = Date.now();
     if (record.issuedAt && now - record.issuedAt <= windowMs) return true;
     const lastVerified = verifiedAtByToken.get(tokenHash);
     return lastVerified !== undefined && now - lastVerified <= windowMs;
+}
+
+export function invalidateTokenVerification(rawToken: string): void {
+    const tokenHash = hashToken(rawToken);
+    if (!tokenStore.has(tokenHash)) return;
+    verifiedAtByToken.delete(tokenHash);
+    invalidatedVerificationTokens.add(tokenHash);
 }
 
 /**
@@ -428,5 +442,6 @@ export function isTokenVerificationFresh(
 export function recordTokenVerification(rawToken: string): void {
     const tokenHash = hashToken(rawToken);
     if (!tokenStore.has(tokenHash)) return;
+    invalidatedVerificationTokens.delete(tokenHash);
     verifiedAtByToken.set(tokenHash, Date.now());
 }

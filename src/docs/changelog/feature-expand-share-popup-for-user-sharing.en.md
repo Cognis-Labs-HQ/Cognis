@@ -299,3 +299,7 @@ Passwords verified for protected calendar shares are saved with descriptive keyr
 ## Provider-aware password confirmation
 
 Password confirmation now belongs to the Authentication gateway and is exposed as an `auth:confirmPassword` capability for sensitive flows. Confirmation is routed through the account's active provider, including separately namespaced LDAP sources, instead of assuming every account has a local password record.
+
+## Keyring locking follows confirmation
+
+Unlocking the keyring now uses the Authentication gateway's provider-aware password confirmation prompt and its normal freshness window. Locking invalidates that confirmation window so the next secret query requests the account password, while the automatic-lock preference remains editable even when the vault is locked. The Keyring page also has a roomier responsive layout.

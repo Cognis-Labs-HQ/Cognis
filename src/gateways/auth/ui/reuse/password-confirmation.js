@@ -6,6 +6,7 @@
  *     authentication provider.
  *   createRepromptGuard(options) — wraps a sensitive action in the shared
  *     password confirmation popup.
+ *   invalidatePasswordConfirmation() — makes the next confirmation prompt.
  *
  * Usage:
  *   const confirm = uiCtx.capabilities.get('auth:confirmPassword');
@@ -31,6 +32,13 @@ export async function confirmPassword(password = "") {
     return response.ok;
 }
 
+export async function invalidatePasswordConfirmation() {
+    const response = await apiFetch("/api/v1/auth/verify", {
+        method: "DELETE",
+    });
+    return response.ok;
+}
+
 export function createRepromptGuard({
     i18n,
     confirmPasswordImpl = confirmPassword,
@@ -45,3 +53,7 @@ export function createRepromptGuard({
 }
 
 uiCtx.capabilities.contribute("auth:confirmPassword", confirmPassword);
+uiCtx.capabilities.contribute(
+    "auth:invalidatePasswordConfirmation",
+    invalidatePasswordConfirmation,
+);

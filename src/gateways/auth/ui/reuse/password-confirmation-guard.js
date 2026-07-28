@@ -15,7 +15,7 @@
  *   await guard.runWithReprompt(saveSecret, { alwaysPrompt: true });
  *
  * @param {{ i18n: { t: (key: string) => string }, confirmPasswordImpl: (password?: string) => Promise<boolean>, openPopupImpl: Function, escapeHtmlImpl: (value: unknown) => string }} options
- * @returns {{ runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<boolean> }}
+ * @returns {{ requestPasswordConfirmation: (config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<{ password: string | null } | null>, runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<boolean> }}
  */
 export function createPasswordConfirmationGuard({
     i18n,
@@ -23,7 +23,7 @@ export function createPasswordConfirmationGuard({
     openPopupImpl,
     escapeHtmlImpl,
 }) {
-    async function runWithReprompt(action, config = {}) {
+    async function requestPasswordConfirmation(config = {}) {
         const title = config.title ?? i18n.t("ui.reuse.reconfirm_action");
         const message =
             config.message ?? i18n.t("ui.reuse.sensitive_action_prompt");
@@ -34,12 +34,12 @@ export function createPasswordConfirmationGuard({
         if (config.alwaysPrompt !== true) {
             try {
                 if (await confirmPasswordImpl()) {
-                    await action();
-                    return true;
+                    return { password: null };
                 }
             } catch {}
         }
 
+        let confirmedPassword = null;
         const result = await openPopupImpl({
             title,
             body: () => `
@@ -95,6 +95,7 @@ export function createPasswordConfirmationGuard({
                         warnAndRefocus();
                         return false;
                     }
+                    confirmedPassword = inputEl.value;
                 } catch {
                     warnAndRefocus();
                     return false;
@@ -106,13 +107,19 @@ export function createPasswordConfirmationGuard({
                     warningEl.textContent = "";
                     warningEl.hidden = true;
                 }
-                await action();
                 return true;
             },
         });
 
-        return result === "confirm";
+        return result === "confirm" ? { password: confirmedPassword } : null;
     }
 
-    return { runWithReprompt };
+    async function runWithReprompt(action, config = {}) {
+        const confirmation = await requestPasswordConfirmation(config);
+        if (!confirmation) return false;
+        await action();
+        return true;
+    }
+
+    return { requestPasswordConfirmation, runWithReprompt };
 }

@@ -3,6 +3,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import {
     deleteKeyringValue,
     getKeyringRelockMinutes,
@@ -57,7 +58,7 @@ export function createSettingsSection({ i18n, root }) {
           <button id="settings-keyring-add" type="button" class="btn-confirm"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.add"))}</button>
         </div>
         <label class="settings-keyring-timeout"><span>${escapeHtml(i18n.t("gateway.auth.keyring.relock"))}</span>
-          <select id="settings-keyring-relock"${unlocked ? "" : " disabled"}>
+          <select id="settings-keyring-relock">
             <option value="0"${timeout === 0 ? " selected" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.logout"))}</option>
             ${[15, 60, 240].map((minutes) => `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${minutes} ${escapeHtml(i18n.t("gateway.auth.keyring.minutes"))}</option>`).join("")}
           </select>
@@ -74,42 +75,25 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function promptToUnlock() {
-        let passwordInput = null;
-        let errorElement = null;
-        const result = await openPopup({
+        let confirmation = await guard.requestPasswordConfirmation({
             title: i18n.t("gateway.auth.keyring.unlock_title"),
-            body: `<label class="stack"><span>${escapeHtml(i18n.t("gateway.auth.keyring.unlock_message"))}</span><input id="keyring-unlock-password" type="password" autocomplete="current-password" required></label><p id="keyring-unlock-error" class="form-error" hidden>${escapeHtml(i18n.t("gateway.auth.keyring.unlock_failed"))}</p>`,
-            actions: [
-                {
-                    id: "unlock",
-                    label: i18n.t("gateway.auth.keyring.unlock"),
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
-            onOpen(overlay) {
-                passwordInput = overlay.querySelector(
-                    "#keyring-unlock-password",
-                );
-                errorElement = overlay.querySelector("#keyring-unlock-error");
-                passwordInput?.focus();
-            },
-            async onAction(actionId) {
-                if (actionId !== "unlock") return true;
-                if (!passwordInput?.value) return false;
-                const unlocked = await unlockKeyring(passwordInput.value);
-                if (!unlocked) {
-                    if (errorElement) errorElement.hidden = false;
-                    passwordInput.select();
-                }
-                return unlocked;
-            },
+            message: i18n.t("gateway.auth.keyring.unlock_message"),
         });
-        return result === "unlock";
+        if (confirmation && !confirmation.password) {
+            confirmation = await guard.requestPasswordConfirmation({
+                title: i18n.t("gateway.auth.keyring.unlock_title"),
+                message: i18n.t("gateway.auth.keyring.unlock_message"),
+                alwaysPrompt: true,
+            });
+        }
+        if (!confirmation?.password) return false;
+        const unlocked = await unlockKeyring(confirmation.password);
+        if (!unlocked) {
+            showToast(i18n.t("gateway.auth.keyring.unlock_failed"), {
+                variant: "warning",
+            });
+        }
+        return unlocked;
     }
 
     async function readEntryInput(entry = null) {
@@ -182,7 +166,7 @@ export function createSettingsSection({ i18n, root }) {
             ?.addEventListener(
                 "click",
                 async () => {
-                    if (isKeyringUnlocked()) lockKeyring();
+                    if (isKeyringUnlocked()) await lockKeyring();
                     else if (!(await promptToUnlock())) return;
                     rerender();
                 },
@@ -276,6 +260,9 @@ export function createSettingsSection({ i18n, root }) {
         renderContent: () =>
             `<section class="settings-keyring-manager" id="settings-keyring-manager">${renderManager()}</section>`,
         async onRender() {
+            await ensurePageStylesheet(
+                "/static/gateways/auth/keyring-settings.css",
+            );
             bindActions();
         },
         isDirty: () => false,
