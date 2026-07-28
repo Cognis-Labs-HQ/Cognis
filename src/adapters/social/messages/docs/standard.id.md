@@ -22,7 +22,6 @@ Semua endpoint berada di bawah `/api/v1/social/messages`. Autentikasi wajib, kec
 | POST   | `/messages/requests/:id/approve`                    | Setujui permintaan dan buka/buat ruang DM.                                     |
 | POST   | `/messages/requests/:id/reject`                     | Tolak permintaan dan keluarkan penerima dari ruang DM yang sempat disiapkan.   |
 | GET    | `/messages/rooms/:id`                               | Metadata ruang dan anggota.                                                    |
-| GET    | `/messages/rooms/:id/key`                           | Ambil kunci AES-GCM ruang (hanya anggota).                                     |
 | GET    | `/messages/rooms/:id/messages?before&limit`         | Riwayat berpaginasi (penerima permintaan masuk tetap kosong sampai disetujui). |
 | POST   | `/messages/rooms/:id/messages`                      | Tambah pesan (`ciphertext`, `iv`, opsional `authTag`).                         |
 | POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle reaksi emoji pada pesan.                                                |

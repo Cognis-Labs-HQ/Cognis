@@ -1,8 +1,7 @@
-import { apiFetch } from "/static/reuse/api-client.js";
 import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
-import { createKeyringScope } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 
 export const componentSearchId = "social-messages";
 
@@ -20,14 +19,6 @@ async function getSearchRoomKey(roomId) {
         validate: async (candidate) => {
             await importRoomKey(candidate, ["decrypt"]);
             return true;
-        },
-        fallback: async () => {
-            const response = await apiFetch(
-                `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
-            );
-            if (!response.ok) return null;
-            const payload = await response.json().catch(() => null);
-            return payload?.data?.key ?? null;
         },
         metadata: { label: `Chat ${roomId}` },
     });

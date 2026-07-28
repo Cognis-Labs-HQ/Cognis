@@ -13,9 +13,6 @@ import {
 } from "../../../api/reuse/route-context.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 
-const SHARE_EMAIL_COOLDOWN_MS = 12 * 60 * 60 * 1000;
-const shareEmailSentAt = new Map<string, number>();
-
 function sendJson(
     res: ServerResponse,
     statusCode: number,
@@ -368,21 +365,6 @@ export function createShareRoutes(input: {
                 sendError(res, 400, "bad_request", "Recipients are required.");
                 return true;
             }
-            const now = Date.now();
-            const limitedRecipient = recipients.find((recipient) => {
-                const sentAt =
-                    shareEmailSentAt.get(`${claims.sub}:${recipient}`) ?? 0;
-                return now - sentAt < SHARE_EMAIL_COOLDOWN_MS;
-            });
-            if (limitedRecipient) {
-                sendError(
-                    res,
-                    429,
-                    "rate_limited",
-                    "A share email was recently sent to this recipient.",
-                );
-                return true;
-            }
             const sendEmail =
                 input.gateway.getCapability<
                     (emailInput: {
@@ -441,7 +423,6 @@ export function createShareRoutes(input: {
                             resourceTypeLabel,
                         },
                     });
-                    shareEmailSentAt.set(`${claims.sub}:${recipient}`, now);
                 }),
             );
             input.log?.("info", "Share emails dispatched.", {

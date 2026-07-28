@@ -23,7 +23,6 @@
 | POST     | `/messages/requests/:id/approve`                    | リクエスト承認と DM ルーム作成/再利用。                        |
 | POST     | `/messages/requests/:id/reject`                     | リクエスト拒否。事前作成された DM ルームから受信者を削除。     |
 | GET      | `/messages/rooms/:id`                               | ルーム情報とメンバー。                                         |
-| GET      | `/messages/rooms/:id/key`                           | ルーム AES-GCM 鍵を取得（メンバーのみ）。                      |
 | GET      | `/messages/rooms/:id/messages?before&limit`         | ページング履歴（受信側が保留中の場合は承認まで空配列）。       |
 | POST     | `/messages/rooms/:id/messages`                      | メッセージ追加（`ciphertext`, `iv`, 任意 `authTag`）。         |
 | POST     | `/messages/rooms/:id/messages/:messageId/reactions` | 絵文字リアクションのトグル。                                   |

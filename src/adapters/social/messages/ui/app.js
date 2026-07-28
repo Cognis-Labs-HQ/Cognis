@@ -5,11 +5,8 @@
  *   left  — list of rooms with last message preview and unread badge.
  *   right — selected room's message thread + composer.
  *
- * Messages are encrypted client-side with a per-room AES-GCM key fetched
- * from `GET /api/v1/social/messages/rooms/:id/key` and cached in memory for the
- * page's lifetime. The server holds the at-rest-wrapped form of the same
- * key. See `src/adapters/social/messages/docs/standard.en.md` for the full
- * threat model.
+ * Messages are encrypted client-side with per-room AES-GCM keys resolved from
+ * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
 
 import {
@@ -55,7 +52,7 @@ import { createRoomKeyStore } from "./room-keys.mjs";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
 import { importRoomKey } from "/static/reuse/crypto-utils.js";
-import { createKeyringScope } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const TYPING_TTL_SECONDS = 8;
@@ -67,7 +64,6 @@ const messagesKeyring = createKeyringScope("Social Messages");
 
 const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
     {
-        fetchRoomKey: apiFetch,
         importKey: importRoomKey,
         onInvalidSecret: (roomId) => reportInvalidRoomKey(roomId),
         resolveSecret: messagesKeyring.resolve,

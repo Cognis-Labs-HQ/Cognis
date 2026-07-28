@@ -21,7 +21,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
-import "/static/reuse/keyring.js";
+import "/static/adapters/auth/keyring/keyring.js";
 
 async function promptForPassword() {
     const i18n = await createI18n({

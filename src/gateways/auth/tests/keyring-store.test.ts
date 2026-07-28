@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
-import { DbKeyringVaultStore } from "../keyring-store.js";
+import { DbKeyringVaultStore } from "../../../adapters/auth/keyring/store.js";
 
 test("keyring vaults persist opaque envelopes in their own database table", async () => {
     const db = new InMemoryTestExecutor();

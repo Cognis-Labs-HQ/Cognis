@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { CapabilityStore } from "@cognis/core";
 import { issueAccessToken } from "../access-tokens.js";
-import { createKeyringRoutes } from "../bootstrap/routes/keyring.js";
+import { createKeyringRoutes } from "../../../adapters/auth/keyring/routes.js";
 import { makeJsonRequest, makeResponse } from "./auth-gateway-test-helpers.js";
 
 function validVault() {
@@ -110,48 +110,4 @@ test("keyring API rejects malformed vault payloads", async () => {
     );
     assert.equal(response.status, 400);
     assert.match(response.payload, /invalid_keyring_vault/);
-});
-
-test("keyring API migrates the legacy opaque preference into the vault table", async () => {
-    let migrated: string | null = null;
-    let legacy = JSON.stringify(validVault());
-    const capabilities = new CapabilityStore();
-    capabilities.contribute("auth:keyringVaultStore", {
-        async ensureSchema() {},
-        async get() {
-            return migrated;
-        },
-        async set(_accountId: string, value: string) {
-            migrated = value;
-        },
-        async delete() {},
-    });
-    capabilities.contribute("preferences:store", {
-        async get() {
-            return legacy;
-        },
-        async set(_accountId: string, _pageId: string, value: string) {
-            legacy = value;
-        },
-        async clearUser() {},
-    });
-    const route = createKeyringRoutes(capabilities);
-    const response = makeResponse();
-    await route(
-        makeJsonRequest(
-            "GET",
-            {},
-            {
-                authorization: `Bearer ${issueAccessToken("legacy-user", "user", 60)}`,
-            },
-        ),
-        response as any,
-        new URL("http://localhost/api/v1/auth/keyring"),
-        {} as any,
-    );
-
-    assert.equal(response.status, 200);
-    assert.match(response.payload, /opaque-ciphertext/);
-    assert.match(migrated ?? "", /opaque-ciphertext/);
-    assert.equal(legacy, "null");
 });

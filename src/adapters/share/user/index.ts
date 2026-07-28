@@ -7,6 +7,26 @@ export function createShareAdapter(): ShareMethodAdapter {
         description: "Grant access directly to Cognis users.",
         pageModuleUrl: "/static/adapters/share/user/page.js",
         order: 20,
+        owns(accessControls) {
+            return (accessControls.recipients ?? []).some(
+                (recipient) => recipient.type === "user",
+            );
+        },
+        validateUnique({ accessControls, existingAccessControls }) {
+            const requestedRecipientIds = new Set(
+                (accessControls.recipients ?? [])
+                    .filter((recipient) => recipient.type === "user")
+                    .map((recipient) => recipient.id),
+            );
+            const duplicateExists = existingAccessControls.some((existing) =>
+                existing.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" &&
+                        requestedRecipientIds.has(recipient.id),
+                ),
+            );
+            if (duplicateExists) throw new Error("duplicate_user_share");
+        },
         prepare(input) {
             const recipients = Array.isArray(input.recipients)
                 ? input.recipients

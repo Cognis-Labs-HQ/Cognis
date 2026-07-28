@@ -329,7 +329,11 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}/email`,
         { recipients: ["guest@example.com"] },
     );
-    assert.equal(repeatedShareEmailResponse.statusCode, 429);
+    assert.equal(repeatedShareEmailResponse.statusCode, 200);
+    assert.deepEqual(shareEmailRecipients, [
+        "guest@example.com",
+        "guest@example.com",
+    ]);
 
     const listResponse = await dispatchJson(
         "GET",

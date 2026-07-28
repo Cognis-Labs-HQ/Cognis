@@ -297,20 +297,7 @@ test("messages templates are opened from sidebar in a popup", () => {
 });
 
 test("messages UI skips room-key fetch for incoming pending requests", async () => {
-    let apiFetchCallCount = 0;
-    const { resolveThreadRoomKey } = createRoomKeyStore({
-        fetchRoomKey: async () => {
-            apiFetchCallCount += 1;
-            return {
-                ok: true,
-                status: 200,
-                statusText: "OK",
-                async json() {
-                    return { data: { key: "00" } };
-                },
-            };
-        },
-    });
+    const { resolveThreadRoomKey } = createRoomKeyStore();
 
     const key = await resolveThreadRoomKey(
         {
@@ -323,36 +310,19 @@ test("messages UI skips room-key fetch for incoming pending requests", async () 
     );
 
     assert.equal(key, null);
-    assert.equal(apiFetchCallCount, 0);
 });
 
-test("requireRoomKey throws detailed errors on failure", async () => {
-    const { requireRoomKey } = createRoomKeyStore({
-        fetchRoomKey: async () => ({
-            ok: false,
-            status: 403,
-            statusText: "Forbidden",
-            async json() {
-                return {
-                    error: {
-                        code: "forbidden",
-                        message:
-                            "Approve the message request before reading messages.",
-                    },
-                };
-            },
-        }),
-    });
+test("requireRoomKey reports a missing keyring secret", async () => {
+    const { requireRoomKey } = createRoomKeyStore();
 
     await assert.rejects(
         () => requireRoomKey("room-403"),
         (error) => {
             assert.equal(
                 error.message,
-                "Approve the message request before reading messages.",
+                "Room key is unavailable in the keyring.",
             );
-            assert.equal(error.status, 403);
-            assert.equal(error.code, "forbidden");
+            assert.equal(error.code, "missing_keyring_secret");
             assert.equal(error.roomId, "room-403");
             return true;
         },
@@ -370,14 +340,8 @@ test("room keys use keyring resolution and refresh invalid secrets", async () =>
         resolveSecret: async (id, options) => {
             assert.equal(id, "chatroom:room-1:key");
             options.onInvalid();
-            return options.fallback();
+            return "current-key";
         },
-        fetchRoomKey: async () => ({
-            ok: true,
-            async json() {
-                return { data: { key: "current-key" } };
-            },
-        }),
         onInvalidSecret: (roomId) => {
             invalidRoomId = roomId;
         },

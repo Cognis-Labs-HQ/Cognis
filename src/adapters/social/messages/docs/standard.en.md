@@ -24,7 +24,6 @@ probe used by the UI to detect whether the adapter is loaded.
 | POST   | `/messages/requests/:id/approve`                    | Approve request and create/open the DM room.                                            |
 | POST   | `/messages/requests/:id/reject`                     | Reject a pending message request and remove the recipient from the pending DM room.     |
 | GET    | `/messages/rooms/:id`                               | Room metadata + members.                                                                |
-| GET    | `/messages/rooms/:id/key`                           | Fetch unwrapped per-room AES-GCM key (members only).                                    |
 | GET    | `/messages/rooms/:id/messages?before&limit`         | Paginated history (incoming pending-request recipients see no messages until approval). |
 | POST   | `/messages/rooms/:id/messages`                      | Append message (`ciphertext`, `iv`, optional `authTag`).                                |
 | POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle an emoji reaction for the message.                                               |

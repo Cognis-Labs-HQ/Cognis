@@ -30,6 +30,11 @@ export interface ShareMethodAdapter {
         recipients?: unknown;
         accessControls?: Record<string, unknown>;
     }): { accessControls: Record<string, unknown> };
+    owns?(accessControls: Partial<ShareAccessControls>): boolean;
+    validateUnique?(input: {
+        accessControls: Partial<ShareAccessControls>;
+        existingAccessControls: ShareAccessControls[];
+    }): void;
 }
 
 export interface ShareVariant {
@@ -38,20 +43,6 @@ export interface ShareVariant {
     url: string;
     contentType?: string;
     access?: "read" | "write";
-}
-
-function userRecipientIds(
-    accessControls: Partial<ShareAccessControls> | undefined,
-): Set<string> {
-    return new Set(
-        (Array.isArray(accessControls?.recipients)
-            ? accessControls.recipients
-            : []
-        )
-            .filter((recipient) => recipient?.type === "user")
-            .map((recipient) => String(recipient.id ?? "").trim())
-            .filter(Boolean),
-    );
 }
 
 export class CoreShareGateway {
@@ -218,7 +209,7 @@ export class CoreShareGateway {
         generatePassword?: boolean;
         expiresAt?: string;
     }): Promise<Record<string, unknown>> {
-        await this.assertNoDuplicateUserRecipients({
+        await this.validateAdapterUniqueness({
             ownerAccountId: input.ownerAccountId,
             resourceType: input.resourceType,
             resourceId: input.resourceId,
@@ -255,7 +246,7 @@ export class CoreShareGateway {
         ) {
             return null;
         }
-        await this.assertNoDuplicateUserRecipients({
+        await this.validateAdapterUniqueness({
             ownerAccountId: input.ownerAccountId,
             resourceType: existingRecord.resourceType,
             resourceId: existingRecord.resourceId,
@@ -333,31 +324,34 @@ export class CoreShareGateway {
         return records.length;
     }
 
-    private async assertNoDuplicateUserRecipients(input: {
+    private async validateAdapterUniqueness(input: {
         ownerAccountId: string;
         resourceType: string;
         resourceId: string;
         accessControls?: Partial<ShareAccessControls>;
         excludeShareId?: string;
     }): Promise<void> {
-        const requestedRecipientIds = userRecipientIds(input.accessControls);
-        if (requestedRecipientIds.size === 0) return;
         const existingRecords = await this.store.listByOwner({
             ownerAccountId: input.ownerAccountId,
             resourceType: input.resourceType,
             resourceId: input.resourceId,
         });
-        const duplicateExists = existingRecords
+        const existingAccessControls = existingRecords
             .filter((record) => record.id !== input.excludeShareId)
             .filter((record) => !this.isTokenExpired(record))
-            .some((record) =>
-                record.accessControls.recipients.some(
-                    (recipient) =>
-                        recipient.type === "user" &&
-                        requestedRecipientIds.has(recipient.id),
-                ),
-            );
-        if (duplicateExists) throw new Error("duplicate_user_share");
+            .map((record) => record.accessControls);
+        for (const adapter of this.adapters.values()) {
+            if (
+                !adapter.validateUnique ||
+                !adapter.owns?.(input.accessControls ?? {})
+            ) {
+                continue;
+            }
+            adapter.validateUnique({
+                accessControls: input.accessControls ?? {},
+                existingAccessControls,
+            });
+        }
     }
 
     async listByResource(filter: {

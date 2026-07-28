@@ -23,7 +23,6 @@ erforderlich, außer für `GET /messages/ping`.
 | POST    | `/messages/requests/:id/approve`                    | Genehmigt Anfrage und öffnet/erstellt den DM-Raum.                                   |
 | POST    | `/messages/requests/:id/reject`                     | Lehnt Anfrage ab und entfernt den Empfänger aus dem vorbereiteten DM-Raum.           |
 | GET     | `/messages/rooms/:id`                               | Raum-Metadaten und Mitglieder.                                                       |
-| GET     | `/messages/rooms/:id/key`                           | Unverpackter AES-GCM-Raumschlüssel (nur Mitglieder).                                 |
 | GET     | `/messages/rooms/:id/messages?before&limit`         | Paginierte Historie (bei eingehender ausstehender Anfrage bis zur Genehmigung leer). |
 | POST    | `/messages/rooms/:id/messages`                      | Nachricht anhängen (`ciphertext`, `iv`, optional `authTag`).                         |
 | POST    | `/messages/rooms/:id/messages/:messageId/reactions` | Emoji-Reaktion für eine Nachricht umschalten.                                        |

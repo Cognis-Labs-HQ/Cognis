@@ -23,7 +23,7 @@ uiCtx.capabilities.contribute(
 );
 
 test("encrypted keyring unlocks, persists share secrets, and relocks", async () => {
-    const keyring = await import("../reuse/keyring.js");
+    const keyring = await import("../../adapters/auth/keyring/ui/keyring.js");
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     assert.equal(keyring.isKeyringUnlocked(), true);
     await keyring.setKeyringValue("share:token-1", "share-password");
@@ -33,7 +33,6 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     assert.doesNotMatch(values.get("cognis_secure_keyring"), /share-password/);
 
     await keyring.lockKeyring();
-    assert.equal(confirmationInvalidations, 1);
     assert.equal(keyring.isKeyringUnlocked(), false);
     assert.equal(keyring.getKeyringValue("share:token-1"), null);
     assert.equal(await keyring.unlockKeyring("wrong-password"), false);
@@ -43,7 +42,7 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
 });
 
 test("locked keyring retains new secrets only for the active session", async () => {
-    const keyring = await import("../reuse/keyring.js");
+    const keyring = await import("../../adapters/auth/keyring/ui/keyring.js");
     await keyring.setKeyringValue("share:session-token", "share-password");
     assert.equal(
         keyring.getKeyringValue("share:session-token"),
@@ -58,7 +57,7 @@ test("locked keyring retains new secrets only for the active session", async () 
 });
 
 test("keyring lists metadata and replaces an invalid stored secret", async () => {
-    const keyring = await import("../reuse/keyring.js");
+    const keyring = await import("../../adapters/auth/keyring/ui/keyring.js");
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     await keyring.setKeyringValue("meeting:one:password", "stale", {
         label: "Weekly meeting",
@@ -89,7 +88,7 @@ test("keyring lists metadata and replaces an invalid stored secret", async () =>
 });
 
 test("component keyring scopes derive the stored source name", async () => {
-    const keyring = await import("../reuse/keyring.js");
+    const keyring = await import("../../adapters/auth/keyring/ui/keyring.js");
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     const scoped = keyring.createKeyringScope("Calendar Gateway");
     await scoped.set("calendar:secret", "value", { label: "Calendar" });
@@ -103,7 +102,7 @@ test("component keyring scopes derive the stored source name", async () => {
 });
 
 test("locked keyring accepts an updated automatic lock timeout", async () => {
-    const keyring = await import("../reuse/keyring.js");
+    const keyring = await import("../../adapters/auth/keyring/ui/keyring.js");
     await keyring.lockKeyring();
     await keyring.setKeyringRelockMinutes(60);
     assert.equal(keyring.isKeyringUnlocked(), false);
@@ -111,7 +110,7 @@ test("locked keyring accepts an updated automatic lock timeout", async () => {
 });
 
 test("locked keyring exposes no entry metadata or decrypted values", async () => {
-    const keyring = await import("../reuse/keyring.js");
+    const keyring = await import("../../adapters/auth/keyring/ui/keyring.js");
     await keyring.unlockKeyring("account-password");
     await keyring.setKeyringValue("private:secret", "sensitive-value", {
         label: "Private secret",

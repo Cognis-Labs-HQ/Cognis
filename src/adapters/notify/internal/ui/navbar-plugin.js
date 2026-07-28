@@ -16,6 +16,7 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -30,6 +31,7 @@ const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 const notificationTextDecoder = new TextDecoder();
 const roomKeyCache = new Map();
+const notificationKeyring = createKeyringScope("Internal Notifications");
 
 function injectStyles() {
     if (document.querySelector(`link[href="${CSS_HREF}"]`)) return;
@@ -59,12 +61,16 @@ function navigateNotif(actionUrl) {
 
 async function getRoomKey(roomId) {
     if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
-    const response = await apiFetch(
-        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
+    const roomKeyHex = await notificationKeyring.resolve(
+        `chatroom:${roomId}:key`,
+        {
+            validate: async (candidate) => {
+                await importRoomKey(candidate, ["decrypt"]);
+                return true;
+            },
+            metadata: { label: `Chat ${roomId}` },
+        },
     );
-    if (!response.ok) return null;
-    const payload = await response.json().catch(() => null);
-    const roomKeyHex = payload?.data?.key;
     if (typeof roomKeyHex !== "string" || roomKeyHex.length === 0) return null;
     const roomKey = await importRoomKey(roomKeyHex, ["decrypt"]);
     roomKeyCache.set(roomId, roomKey);

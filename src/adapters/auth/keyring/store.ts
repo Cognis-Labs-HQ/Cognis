@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 export interface KeyringVaultStore {
     ensureSchema(): Promise<void>;

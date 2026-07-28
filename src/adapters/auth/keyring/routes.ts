@@ -2,13 +2,11 @@ import {
     readJson,
     requireAuth,
     type CapabilityStore,
-} from "../../../shared.js";
-import type { KeyringVaultStore } from "../../keyring-store.js";
-import type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
-import type { AuthGatewayRouteHandler } from "./shared.js";
+} from "../../../gateways/shared.js";
+import type { KeyringVaultStore } from "./store.js";
+import type { AuthGatewayRouteHandler } from "../../../gateways/auth/bootstrap/routes/shared.js";
 
 const MAX_VAULT_BYTES = 2 * 1024 * 1024;
-const LEGACY_KEYRING_PREFERENCE_ID = "secure-keyring-v1";
 
 function validVault(value: unknown): value is Record<string, unknown> {
     if (!value || typeof value !== "object" || Array.isArray(value))
@@ -40,24 +38,7 @@ export function createKeyringRoutes(
         }
 
         if (req.method === "GET") {
-            let stored = await store.get(claims.sub);
-            if (!stored) {
-                const preferences =
-                    capabilities.get<UserPreferenceStore>("preferences:store");
-                const legacy = await preferences?.get(
-                    claims.sub,
-                    LEGACY_KEYRING_PREFERENCE_ID,
-                );
-                if (legacy && legacy !== "null") {
-                    stored = legacy;
-                    await store.set(claims.sub, legacy);
-                    await preferences?.set(
-                        claims.sub,
-                        LEGACY_KEYRING_PREFERENCE_ID,
-                        "null",
-                    );
-                }
-            }
+            const stored = await store.get(claims.sub);
             let vault = null;
             try {
                 vault = stored ? JSON.parse(stored) : null;

@@ -128,10 +128,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         if (
             isAllowedShareGuest &&
             !(
-                (sub === "key" && !subArg && req.method === "GET") ||
-                (sub === "messages" &&
-                    !subArg &&
-                    (req.method === "GET" || req.method === "POST"))
+                sub === "messages" &&
+                !subArg &&
+                (req.method === "GET" || req.method === "POST")
             )
         ) {
             res.writeHead(403, { "content-type": "application/json" });
@@ -140,7 +139,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     error: {
                         code: "forbidden",
                         message:
-                            "Share guest access is limited to room key and message reads.",
+                            "Share guest access is limited to message reads.",
                     },
                 }),
             );
@@ -233,52 +232,6 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: updated }));
-            return true;
-        }
-
-        if (sub === "key" && !subArg && req.method === "GET") {
-            if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message:
-                                "Share guest access cannot read this room key.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (incomingPendingRoomRequest) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message:
-                                "Approve the message request before reading messages.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const plaintextKeyHex =
-                await messagesStore.getUnwrappedRoomKey(roomId);
-            if (!plaintextKeyHex) {
-                res.writeHead(500, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "missing_key",
-                            message: "Room key missing.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { key: plaintextKeyHex } }));
             return true;
         }
 

@@ -13,7 +13,7 @@ import {
 } from "../../shared.js";
 import { type AccessRole } from "../access-tokens.js";
 import { CoreAuthGateway } from "../gateway.js";
-import { DbKeyringVaultStore } from "../keyring-store.js";
+import { DbKeyringVaultStore } from "../../../adapters/auth/keyring/store.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { createAdapterAdminRoutes } from "./adapter-admin-routes.js";
 import {
@@ -195,6 +195,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }
 
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
+    ctx.uiRegistry?.registerAdapterStaticDir(
+        "auth",
+        "keyring",
+        path.join(authAdaptersRoot, "keyring", "ui"),
+    );
     await authGateway.discoverAdapters(authAdaptersRoot);
     for (const adapter of authGateway.listAdapters()) {
         const adapterUiDirectory = path.join(

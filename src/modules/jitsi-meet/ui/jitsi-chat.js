@@ -7,7 +7,7 @@ import {
     hexToBytes,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
-import { createKeyringScope } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";
@@ -35,16 +35,6 @@ export function createChatHandlers({
             validate: async (candidate) => {
                 await importRoomKey(candidate);
                 return true;
-            },
-            fallback: async () => {
-                const response = await apiFetch(
-                    `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
-                );
-                if (!response.ok) return null;
-                const payload = await response
-                    .json()
-                    .catch(() => ({ data: null }));
-                return String(payload?.data?.key ?? "").trim() || null;
             },
             metadata: {
                 label: state.meeting?.meetingName || `Chat ${roomId}`,
