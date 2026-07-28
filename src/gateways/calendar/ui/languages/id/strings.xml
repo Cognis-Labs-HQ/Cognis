@@ -7,6 +7,8 @@
   <string name="gateway.calendar.visibility_private">Privat</string>
   <string name="gateway.calendar.visibility_public">Publik</string>
   <string name="gateway.calendar.visibility_heading">Visibilitas</string>
+  <string name="gateway.calendar.visibility_shared">Dibagikan</string>
+  <string name="gateway.calendar.shared_calendar_local_color">Anda dapat mengubah warna kalender ini. Nama, pengaturan berbagi, dan penghapusannya dikendalikan oleh pemilik.</string>
   <string name="gateway.calendar.calendar_name_placeholder">Nama Kalender</string>
   <string name="gateway.calendar.create_calendar">Buat Kalender</string>
   <string name="gateway.calendar.create_calendar_success">Kalender dibuat.</string>

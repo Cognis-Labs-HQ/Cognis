@@ -483,3 +483,22 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /authorization: `Bearer/);
     assert.doesNotMatch(SHARE_RENDERER_SOURCE, /apiFetch/);
 });
+
+test("shared calendar settings expose only the recipient-local color", () => {
+    assert.match(APP_SOURCE, /openCalendarEditPopup\(calendar\)/);
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /isShared\s*\? \{ color \}/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /gateway\.calendar\.shared_calendar_local_color/,
+    );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /renderInfoTooltip/);
+});
+
+test("shared calendar events are excluded from quick response controls", () => {
+    assert.match(HELPERS_SOURCE, /calendarVisibility/);
+    assert.match(HELPERS_SOURCE, /event\.calendarVisibility !== "shared"/);
+    assert.match(HELPERS_SOURCE, /sharedEventRootIds/);
+});

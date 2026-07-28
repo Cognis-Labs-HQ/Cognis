@@ -253,16 +253,14 @@ export function requireOrganizerOwnedSourceEvent(input: {
     return targetEvent;
 }
 
-export function requireWritableSharedOrganizerSourceEvent(input: {
+export function requireWritableSharedSourceEvent(input: {
     gateway: CoreCalendarGateway;
     sharedCalendar: {
         ownerCalendarId: string;
         permission: "read" | "write";
     };
-    organizerAccountId: string;
     eventId: string;
     res: ServerResponse;
-    actionVerb: "edit" | "delete";
 }): CalendarEventRecord | null {
     if (input.sharedCalendar.permission !== "write") {
         sendCalendarError(
@@ -279,18 +277,6 @@ export function requireWritableSharedOrganizerSourceEvent(input: {
     );
     if (!sourceEvent) {
         sendCalendarError(input.res, "not_found", "Event not found.", 404);
-        return null;
-    }
-    if (
-        sourceEvent.createdBy !== input.organizerAccountId ||
-        sourceEvent.sourceEventId !== null
-    ) {
-        sendCalendarError(
-            input.res,
-            "forbidden",
-            `Only the event organizer can ${input.actionVerb} this event.`,
-            403,
-        );
         return null;
     }
     return sourceEvent;
@@ -721,14 +707,18 @@ export function resolveEventMeta(
     event: CalendarEventRecord,
     accountId: string,
     response: CalendarEventResponse | null,
+    sharedPermission: "read" | "write" | null = null,
 ): Record<string, unknown> {
     const hasResponded =
         response === "accepted" ||
         response === "tentative" ||
         response === "declined";
     return {
-        canEdit: event.createdBy === accountId,
-        canRespond: event.attendees.includes(accountId) && !hasResponded,
+        canEdit: sharedPermission === "write" || event.createdBy === accountId,
+        canRespond:
+            sharedPermission === null &&
+            event.attendees.includes(accountId) &&
+            !hasResponded,
         response,
         responseOptions: ["accepted", "tentative", "declined"],
     };

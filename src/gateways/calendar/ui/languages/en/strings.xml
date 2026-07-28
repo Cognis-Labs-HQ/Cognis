@@ -7,6 +7,8 @@
   <string name="gateway.calendar.visibility_private">Private</string>
   <string name="gateway.calendar.visibility_public">Public</string>
   <string name="gateway.calendar.visibility_heading">Visibility</string>
+  <string name="gateway.calendar.visibility_shared">Shared</string>
+  <string name="gateway.calendar.shared_calendar_local_color">You can change this calendar’s color. Its name, sharing settings, and removal are controlled by its owner.</string>
   <string name="gateway.calendar.calendar_name_placeholder">Calendar Name</string>
   <string name="gateway.calendar.create_calendar">Create Calendar</string>
   <string name="gateway.calendar.create_calendar_success">Calendar created.</string>

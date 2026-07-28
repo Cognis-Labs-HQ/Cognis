@@ -4,6 +4,7 @@ import {
     normalizeReminderOffsets,
     renderReminderField,
 } from "./popup-manager-reminders.js";
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 async function openCalendarSharePopup({ calendar, i18n }) {
     const { openSharePopup } =
         await import("/static/gateways/share/ui/reuse/share-links-popup.js");
@@ -126,10 +127,9 @@ export function createCalendarEditPopupHandler({
             title: i18n.t("gateway.calendar.edit_calendar"),
             maxWidth: "460px",
             body: () => {
-                const nameFieldDisabledAttr = calendar.isDefault
-                    ? " disabled"
-                    : "";
                 const isShared = calendar.visibility === "shared";
+                const nameFieldDisabledAttr =
+                    calendar.isDefault || isShared ? " disabled" : "";
                 const isPrivate = calendar.visibility !== "public";
                 const shareControlsMarkup = isShared
                     ? ""
@@ -139,21 +139,29 @@ export function createCalendarEditPopupHandler({
             <input id="calendar-edit-color" type="color" value="${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}" class="calendar-color-picker-bare" />
             <input id="calendar-edit-name" type="text" value="${escapeHtml(calendar.name)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameFieldDisabledAttr} />
           </div>
-          <div class="calendar-visibility-row">
+          ${
+              isShared
+                  ? `<div class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_shared"))} ${renderInfoTooltip(i18n.t("gateway.calendar.shared_calendar_local_color"), i18n.t("ui.reuse.more_information"), `shared-calendar-${calendar.id}`)}</div>`
+                  : `<div class="calendar-visibility-row">
             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_heading"))}</p>
-            <select id="calendar-edit-visibility"${isShared ? " disabled" : ""}>
+            <select id="calendar-edit-visibility">
               <option value="private"${isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_private"))}</option>
               <option value="public"${!isPrivate ? " selected" : ""}>${escapeHtml(i18n.t("gateway.calendar.visibility_public"))}</option>
-              ${isShared ? `<option value="shared" selected>${escapeHtml(i18n.t("gateway.calendar.visibility_shared"))}</option>` : ""}
             </select>
-          </div>
+          </div>`
+          }
           ${shareControlsMarkup}
-          ${renderReminderField({
-              i18n,
-              escapeHtml,
-              selectedOffsets: calendar.defaultReminderOffsetsMinutes ?? [],
-              showDefaultTooltip: true,
-          })}
+          ${
+              isShared
+                  ? ""
+                  : renderReminderField({
+                        i18n,
+                        escapeHtml,
+                        selectedOffsets:
+                            calendar.defaultReminderOffsetsMinutes ?? [],
+                        showDefaultTooltip: true,
+                    })
+          }
           ${!calendar.isDefault && !isShared ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
         </div>`;
             },
@@ -213,6 +221,7 @@ export function createCalendarEditPopupHandler({
             },
             onAction: async (actionId, overlay) => {
                 if (actionId !== "save") return true;
+                const isShared = calendar.visibility === "shared";
                 const editedName = String(
                     overlay.querySelector("#calendar-edit-name")?.value ?? "",
                 ).trim();
@@ -221,12 +230,15 @@ export function createCalendarEditPopupHandler({
                 const color = calendarUi.normalizeHexColor(
                     overlay.querySelector("#calendar-edit-color")?.value,
                 );
-                const visibility = String(
-                    overlay.querySelector("#calendar-edit-visibility")?.value ??
-                        "private",
-                );
-                const defaultReminderOffsetsMinutes =
-                    getSelectedReminderOffsets(overlay);
+                const visibility = isShared
+                    ? "shared"
+                    : String(
+                          overlay.querySelector("#calendar-edit-visibility")
+                              ?.value ?? "private",
+                      );
+                const defaultReminderOffsetsMinutes = isShared
+                    ? (calendar.defaultReminderOffsetsMinutes ?? [])
+                    : getSelectedReminderOffsets(overlay);
                 const normalizedCurrentReminderOffsets =
                     normalizeReminderOffsets(defaultReminderOffsetsMinutes);
                 const hasCalendarChanges =
@@ -240,13 +252,15 @@ export function createCalendarEditPopupHandler({
                         ),
                     );
                 if (!hasCalendarChanges) return true;
-                const updatePayload = {
-                    ...(name !== undefined ? { name } : {}),
-                    color,
-                    visibility,
-                    defaultReminderOffsetsMinutes:
-                        normalizedCurrentReminderOffsets,
-                };
+                const updatePayload = isShared
+                    ? { color }
+                    : {
+                          ...(name !== undefined ? { name } : {}),
+                          color,
+                          visibility,
+                          defaultReminderOffsetsMinutes:
+                              normalizedCurrentReminderOffsets,
+                      };
                 const res = await apiFetch(
                     `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}`,
                     {

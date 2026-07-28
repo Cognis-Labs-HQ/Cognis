@@ -184,6 +184,9 @@ function collectUpcomingEvents(
                     calendarById.get(calendarId)?.color,
                 ),
                 calendarName: String(calendarById.get(calendarId)?.name ?? ""),
+                calendarVisibility: String(
+                    calendarById.get(calendarId)?.visibility ?? "",
+                ),
             })),
         )
         .sort((left, right) => left.startAt.localeCompare(right.startAt))
@@ -217,7 +220,7 @@ function collectPendingEvents(
     pendingInvitations,
 ) {
     if (!currentAccountId) return [];
-    const ownPending = collectUpcomingEvents(
+    const pendingCalendarEvents = collectUpcomingEvents(
         eventsByCalendar,
         calendars,
         selectedCalendarId,
@@ -230,9 +233,23 @@ function collectPendingEvents(
                 String(event.responses?.[currentAccountId] ?? "pending") ===
                 "pending",
         );
+    const sharedEventRootIds = new Set(
+        pendingCalendarEvents
+            .filter((event) => event.calendarVisibility === "shared")
+            .map((event) => String(event.sourceEventId ?? event.id ?? "")),
+    );
+    const ownPending = pendingCalendarEvents.filter(
+        (event) => event.calendarVisibility !== "shared",
+    );
     const invitePending = Array.isArray(pendingInvitations)
         ? pendingInvitations
               .filter((event) => new Date(event.endAt).getTime() >= Date.now())
+              .filter(
+                  (event) =>
+                      !sharedEventRootIds.has(
+                          String(event.sourceEventId ?? event.id ?? ""),
+                      ),
+              )
               .map((event) => ({
                   ...event,
                   calendarColor: normalizeHexColor(null),

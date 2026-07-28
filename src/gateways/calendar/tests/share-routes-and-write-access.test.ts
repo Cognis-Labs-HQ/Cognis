@@ -44,7 +44,7 @@ test("share route returns 404 for missing owned calendar", async () => {
     assert.equal(response.statusCode, 404);
 });
 
-test("shared-write recipient can edit and delete events they created", async () => {
+test("shared recipients control local color while writable shares control events", async () => {
     const aliceToken = issueAccessToken("alice", "admin", 60);
     const bobToken = issueAccessToken("bob", "admin", 60);
     const dispatchJson = await createDispatchJson(
@@ -69,12 +69,48 @@ test("shared-write recipient can edit and delete events they created", async () 
             recipientAccountId: "bob",
             recipientHandle: "bob",
             recipientDisplayName: "Bob",
-            permission: "write",
+            permission: "read",
         },
     );
     assert.equal(shareUserResponse.statusCode, 200);
     const shareId = String(shareUserResponse.body.data.id ?? "");
     assert.ok(shareId);
+    const sharedCalendarId = String(
+        shareUserResponse.body.data.calendarId ?? "",
+    );
+    assert.ok(sharedCalendarId);
+    const updateSharedColor = await dispatchJson(
+        "PATCH",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}`,
+        { color: "#123456" },
+    );
+    assert.equal(updateSharedColor.statusCode, 200);
+    assert.equal(updateSharedColor.body.data.color, "#123456");
+    const renameSharedCalendar = await dispatchJson(
+        "PATCH",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}`,
+        { name: "Renamed by recipient" },
+    );
+    assert.equal(renameSharedCalendar.statusCode, 403);
+    const deleteSharedCalendar = await dispatchJson(
+        "DELETE",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}`,
+    );
+    assert.equal(deleteSharedCalendar.statusCode, 403);
+    const ownerCalendarsAfterColorChange = await dispatchJson(
+        "GET",
+        aliceToken,
+        "/api/v1/calendar/calendars",
+    );
+    assert.notEqual(
+        ownerCalendarsAfterColorChange.body.data.find(
+            (calendar: { id: string }) => calendar.id === ownerCalendarId,
+        ).color,
+        "#123456",
+    );
     const elevateShareResponse = await dispatchJson(
         "PATCH",
         aliceToken,
@@ -82,10 +118,54 @@ test("shared-write recipient can edit and delete events they created", async () 
         { permission: "write" },
     );
     assert.equal(elevateShareResponse.statusCode, 200);
-    const sharedCalendarId = String(
-        shareUserResponse.body.data.calendarId ?? "",
+
+    const ownerEvent = await dispatchJson(
+        "POST",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/events`,
+        {
+            title: "Owner event",
+            startAt: "2026-06-14T09:00:00.000Z",
+            endAt: "2026-06-14T09:30:00.000Z",
+            attendees: ["bob"],
+        },
     );
-    assert.ok(sharedCalendarId);
+    assert.equal(ownerEvent.statusCode, 201);
+    const ownerEventId = String(ownerEvent.body.data.id ?? "");
+    const sharedEventDetails = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events/${encodeURIComponent(ownerEventId)}`,
+    );
+    assert.equal(sharedEventDetails.body.data.meta.canEdit, true);
+    assert.equal(sharedEventDetails.body.data.meta.canRespond, false);
+    const respondToSharedEvent = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events/${encodeURIComponent(ownerEventId)}/respond`,
+        { response: "accepted" },
+    );
+    assert.equal(respondToSharedEvent.statusCode, 403);
+    const editSharedParticipants = await dispatchJson(
+        "PATCH",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events/${encodeURIComponent(ownerEventId)}`,
+        { attendees: [] },
+    );
+    assert.equal(editSharedParticipants.statusCode, 403);
+    const editOwnerEvent = await dispatchJson(
+        "PATCH",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events/${encodeURIComponent(ownerEventId)}`,
+        { title: "Owner event updated by recipient" },
+    );
+    assert.equal(editOwnerEvent.statusCode, 200);
+    const deleteOwnerEvent = await dispatchJson(
+        "DELETE",
+        bobToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events/${encodeURIComponent(ownerEventId)}`,
+    );
+    assert.equal(deleteOwnerEvent.statusCode, 200);
     const createViaShared = await dispatchJson(
         "POST",
         bobToken,

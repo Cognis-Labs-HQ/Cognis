@@ -26,3 +26,18 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
     keyring.lockKeyring();
 });
+
+test("locked keyring retains new secrets only for the active session", async () => {
+    const keyring = await import("../reuse/keyring.js");
+    await keyring.setKeyringValue("share:session-token", "share-password");
+    assert.equal(
+        keyring.getKeyringValue("share:session-token"),
+        "share-password",
+    );
+    assert.doesNotMatch(
+        values.get("cognis_secure_keyring") ?? "",
+        /session-token|share-password/,
+    );
+    keyring.lockKeyring();
+    assert.equal(keyring.getKeyringValue("share:session-token"), null);
+});

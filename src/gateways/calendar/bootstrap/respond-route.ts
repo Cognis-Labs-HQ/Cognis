@@ -38,20 +38,26 @@ export async function handleCalendarResponseRoute(input: {
         sharedCalendar?.recipientAccountId === input.claims.sub
             ? sharedCalendar
             : null;
-    const lookupCalendarId = activeSharedCalendar
-        ? activeSharedCalendar.ownerCalendarId
-        : input.calendarId;
+    if (activeSharedCalendar) {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            "Shared calendar recipients cannot respond to events.",
+            403,
+        );
+        return;
+    }
+    const lookupCalendarId = input.calendarId;
     const ownedCalendar = input.gateway.getOwnedCalendar(
         input.claims.sub,
         lookupCalendarId,
     );
-    const event =
-        ownedCalendar || activeSharedCalendar
-            ? input.gateway.getEvent(lookupCalendarId, input.eventId)
-            : null;
+    const event = ownedCalendar
+        ? input.gateway.getEvent(lookupCalendarId, input.eventId)
+        : null;
     // Also allow responding when the user is an attendee on a non-owned event
     let invitedEvent = null;
-    if (!ownedCalendar && !activeSharedCalendar) {
+    if (!ownedCalendar) {
         const ev = input.gateway.getEvent(input.calendarId, input.eventId);
         invitedEvent = ev?.attendees.includes(input.claims.sub) ? ev : null;
     }

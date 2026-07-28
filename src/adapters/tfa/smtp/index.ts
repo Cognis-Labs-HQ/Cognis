@@ -424,10 +424,6 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         state: Record<string, unknown>;
         issuer: string;
     }): Promise<{ details: Record<string, string> } | null> {
-        const email = String(input.state.email ?? "").trim();
-        if (!email) {
-            return null;
-        }
         return { details: {} };
     }
 

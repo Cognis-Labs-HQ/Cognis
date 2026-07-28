@@ -646,15 +646,6 @@ export async function mount(root, { signal } = {}) {
                             selectedEventId = "";
                             syncRouteSelection();
                             refreshCalendarComposer();
-                            if (calendar.visibility === "shared") {
-                                showToast(
-                                    i18n.t(
-                                        "gateway.calendar.update_calendar_failed",
-                                    ),
-                                    "warning",
-                                );
-                                return;
-                            }
                             openCalendarEditPopup(calendar);
                         },
                         { signal },

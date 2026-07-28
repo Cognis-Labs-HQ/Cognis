@@ -17,7 +17,7 @@ import {
     normalizeStringList,
     normalizeVisibility,
     requireOrganizerOwnedSourceEvent,
-    requireWritableSharedOrganizerSourceEvent,
+    requireWritableSharedSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
     resolveJitsiAvailability,
@@ -355,16 +355,35 @@ export function createCalendarCoreRoutes({
             const calendarId = decodeURIComponent(patchCalendarMatch[1]);
             const sharedCalendar =
                 await shareRegistry.getByRecipientCalendarId(calendarId);
+            const body = await readJson(req);
             if (sharedCalendar?.recipientAccountId === claims.sub) {
-                sendCalendarError(
-                    res,
-                    "forbidden",
-                    "Shared calendars cannot be edited by recipients.",
-                    403,
-                );
+                const requestedFields = Object.keys(body ?? {});
+                if (
+                    requestedFields.length !== 1 ||
+                    requestedFields[0] !== "color"
+                ) {
+                    sendCalendarError(
+                        res,
+                        "forbidden",
+                        "Only the local color of a shared calendar can be changed.",
+                        403,
+                    );
+                    return true;
+                }
+                const updated = gateway.updateCalendar({
+                    ownerAccountId: claims.sub,
+                    calendarId,
+                    color: normalizeCalendarColor(body.color),
+                });
+                await gateway.flushStore();
+                sendJson(res, 200, {
+                    data: {
+                        ...updated,
+                        sharedPermission: sharedCalendar.permission,
+                    },
+                });
                 return true;
             }
-            const body = await readJson(req);
             try {
                 const updated = gateway.updateCalendar({
                     ownerAccountId: claims.sub,
@@ -801,6 +820,7 @@ export function createCalendarCoreRoutes({
                         effectiveEvent,
                         claims.sub,
                         gateway.getEventResponse(effectiveEvent.id, claims.sub),
+                        activeSharedCalendar?.permission ?? null,
                     ),
                 },
             });
@@ -823,6 +843,19 @@ export function createCalendarCoreRoutes({
             const sourceCalendarId =
                 activeSharedCalendar?.ownerCalendarId ?? calendarId;
             const body = (await readJson(req)) as Record<string, unknown>;
+            if (
+                activeSharedCalendar &&
+                (body.attendees !== undefined ||
+                    body.inviteEmails !== undefined)
+            ) {
+                sendCalendarError(
+                    res,
+                    "forbidden",
+                    "Shared calendar recipients cannot change event participants or responses.",
+                    403,
+                );
+                return true;
+            }
             const inviteEmails = normalizeStringList(body.inviteEmails);
             const canInviteByEmail = hasMinRole(claims.role, "admin");
             if (inviteEmails.length > 0 && !canInviteByEmail) {
@@ -836,13 +869,11 @@ export function createCalendarCoreRoutes({
             }
             if (
                 activeSharedCalendar &&
-                !requireWritableSharedOrganizerSourceEvent({
+                !requireWritableSharedSourceEvent({
                     gateway,
                     sharedCalendar: activeSharedCalendar,
-                    organizerAccountId: claims.sub,
                     eventId,
                     res,
-                    actionVerb: "edit",
                 })
             ) {
                 return true;
@@ -998,13 +1029,11 @@ export function createCalendarCoreRoutes({
             try {
                 if (
                     activeSharedCalendar &&
-                    !requireWritableSharedOrganizerSourceEvent({
+                    !requireWritableSharedSourceEvent({
                         gateway,
                         sharedCalendar: activeSharedCalendar,
-                        organizerAccountId: claims.sub,
                         eventId,
                         res,
-                        actionVerb: "delete",
                     })
                 ) {
                     return true;

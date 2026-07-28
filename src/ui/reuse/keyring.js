@@ -6,7 +6,8 @@
  *   unlockKeyring(password) — derives the in-memory vault key at login.
  *   lockKeyring() — immediately forgets the derived key and decrypted values.
  *   getKeyringValue(id) — retrieves a secret by capability-owned identifier.
- *   setKeyringValue(id, value) — encrypts and persists a secret.
+ *   setKeyringValue(id, value) — encrypts and persists a secret when unlocked,
+ *     or retains it only in memory for the active locked session.
  *   getKeyringRelockMinutes() / setKeyringRelockMinutes(minutes) — controls
  *     automatic relocking; zero keeps the keyring open until logout.
  *
@@ -28,6 +29,7 @@ let vaultData = null;
 let vaultSalt = null;
 let vaultIterations = DEFAULT_ITERATIONS;
 let relockTimer = null;
+const pendingValues = new Map();
 
 function encodeBytes(bytes) {
     return btoa(String.fromCharCode(...bytes));
@@ -60,6 +62,15 @@ function scheduleRelock() {
     if (minutes > 0) relockTimer = setTimeout(lockKeyring, minutes * 60_000);
 }
 
+function clearVault(clearPendingValues) {
+    clearTimeout(relockTimer);
+    relockTimer = null;
+    vaultKey = null;
+    vaultData = null;
+    vaultSalt = null;
+    if (clearPendingValues) pendingValues.clear();
+}
+
 async function persistVault() {
     if (!vaultKey || !vaultData) throw new Error("keyring_locked");
     const salt = vaultSalt;
@@ -85,7 +96,7 @@ async function persistVault() {
 export async function unlockKeyring(password) {
     const normalizedPassword = String(password ?? "");
     if (!normalizedPassword) return false;
-    lockKeyring();
+    clearVault(false);
     let stored;
     try {
         stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
@@ -116,27 +127,34 @@ export async function unlockKeyring(password) {
     vaultKey = key;
     vaultSalt = salt;
     vaultIterations = iterations;
-    if (!stored) await persistVault();
+    for (const [id, value] of pendingValues) {
+        vaultData.values ??= {};
+        vaultData.values[id] = value;
+    }
+    pendingValues.clear();
+    if (!stored || Object.keys(vaultData.values ?? {}).length > 0) {
+        await persistVault();
+    }
     scheduleRelock();
     return true;
 }
 
 export function lockKeyring() {
-    clearTimeout(relockTimer);
-    relockTimer = null;
-    vaultKey = null;
-    vaultData = null;
-    vaultSalt = null;
+    clearVault(true);
 }
 
 export function getKeyringValue(id) {
-    if (!vaultData) return null;
+    const normalizedId = String(id);
+    if (!vaultData) return pendingValues.get(normalizedId) ?? null;
     scheduleRelock();
-    return vaultData.values?.[String(id)] ?? null;
+    return vaultData.values?.[normalizedId] ?? null;
 }
 
 export async function setKeyringValue(id, value) {
-    if (!vaultData) throw new Error("keyring_locked");
+    if (!vaultData) {
+        pendingValues.set(String(id), String(value));
+        return;
+    }
     vaultData.values ??= {};
     vaultData.values[String(id)] = String(value);
     await persistVault();
