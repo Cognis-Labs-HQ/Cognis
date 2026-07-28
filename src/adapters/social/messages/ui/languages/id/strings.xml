@@ -74,4 +74,7 @@
   <string name="module.social.messages.emoji_search_placeholder">Cari emoji…</string>
   <string name="module.social.messages.nav_title">Pesan</string>
   <string name="adapter.social.messages.keyring_invalid">Kunci obrolan yang tersimpan tidak valid dan telah diperbarui.</string>
+  <string name="adapter.social.messages.keyring_unlock_title">Buka keyring</string>
+  <string name="adapter.social.messages.keyring_unlock_message">Buka keyring Anda untuk menyimpan kunci enkripsi ruang ini.</string>
+  <string name="adapter.social.messages.keyring_unlock_required">Buka keyring untuk membuka ruang terenkripsi ini.</string>
 </resources>

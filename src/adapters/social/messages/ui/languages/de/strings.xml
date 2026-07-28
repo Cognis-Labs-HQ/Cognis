@@ -74,4 +74,7 @@
   <string name="module.social.messages.emoji_search_placeholder">Emojis suchen…</string>
   <string name="module.social.messages.nav_title">Nachrichten</string>
   <string name="adapter.social.messages.keyring_invalid">Der gespeicherte Chat-Schlüssel war ungültig und wurde aktualisiert.</string>
+  <string name="adapter.social.messages.keyring_unlock_title">Schlüsselbund entsperren</string>
+  <string name="adapter.social.messages.keyring_unlock_message">Entsperren Sie Ihren Schlüsselbund, um den Verschlüsselungsschlüssel dieses Raums zu speichern.</string>
+  <string name="adapter.social.messages.keyring_unlock_required">Entsperren Sie den Schlüsselbund, um diesen verschlüsselten Raum zu öffnen.</string>
 </resources>

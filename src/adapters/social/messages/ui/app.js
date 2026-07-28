@@ -53,6 +53,7 @@ import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
 import { importRoomKey } from "/static/reuse/crypto-utils.js";
 import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const TYPING_TTL_SECONDS = 8;
@@ -62,13 +63,13 @@ const LIVE_REFRESH_INTERVAL_MS = 2500;
 let reportInvalidRoomKey = () => undefined;
 const messagesKeyring = createKeyringScope("Social Messages");
 
-const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
-    {
+const { getRoomKey, requireRoomKey, resolveThreadRoomKey, contributeRoomKey } =
+    createRoomKeyStore({
         importKey: importRoomKey,
         onInvalidSecret: (roomId) => reportInvalidRoomKey(roomId),
         resolveSecret: messagesKeyring.resolve,
-    },
-);
+        contributeSecret: messagesKeyring.set,
+    });
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
@@ -132,6 +133,40 @@ export async function mount(root, { signal } = {}) {
         getRoomKey,
         requireRoomKey,
         resolveThreadRoomKey,
+        acceptRoomKeyContribution: async (roomId, contribution) => {
+            const isUnlocked = uiCtx.capabilities.get("keyring:isUnlocked");
+            if (!isUnlocked?.()) {
+                const createGuard = uiCtx.capabilities.get(
+                    "auth:createRepromptGuard",
+                );
+                const unlock = uiCtx.capabilities.get("keyring:unlock");
+                if (!createGuard || !unlock) return false;
+                const guard = createGuard({ i18n });
+                const prompt = {
+                    title: i18n.t(
+                        "adapter.social.messages.keyring_unlock_title",
+                    ),
+                    message: i18n.t(
+                        "adapter.social.messages.keyring_unlock_message",
+                    ),
+                };
+                let confirmation =
+                    await guard.requestPasswordConfirmation(prompt);
+                if (confirmation && !confirmation.password) {
+                    confirmation = await guard.requestPasswordConfirmation({
+                        ...prompt,
+                        alwaysPrompt: true,
+                    });
+                }
+                if (
+                    !confirmation?.password ||
+                    !(await unlock(confirmation.password))
+                ) {
+                    return false;
+                }
+            }
+            return contributeRoomKey(roomId, contribution);
+        },
         lastOpenedRoomKey: LAST_OPENED_ROOM_KEY,
         typingTtlSeconds: TYPING_TTL_SECONDS,
         typingIdleResetMs: TYPING_IDLE_RESET_MS,

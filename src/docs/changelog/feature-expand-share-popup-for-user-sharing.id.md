@@ -359,3 +359,7 @@ Pesan uji SMTP, verifikasi pengguna, undangan, pesan masuk sekali pakai, dan pes
 ## Kepemilikan adapter ditemukan secara terpusat
 
 Bootstrap gateway inti kini memperoleh `hasAdapters` dari bidang `gateway` pada setiap manifest adapter. Gateway tidak lagi memerlukan penanda keberadaan adapter yang digandakan dalam manifest atau pendaftaran bootstrap miliknya.
+
+## Kunci ruang diterima secara otomatis
+
+Saat ruang dibuka, kunci ruang yang hilang kini dibuat di server dan hanya dikirim kepada anggota ruang yang telah disetujui. Messages meminta pengguna membuka keyring terenkripsi bila diperlukan, memvalidasi kunci yang dikirim, menyimpannya dengan pengenal kapabilitas ruang, lalu membuka utas terenkripsi.

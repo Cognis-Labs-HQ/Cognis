@@ -350,6 +350,41 @@ test("room keys use keyring resolution and refresh invalid secrets", async () =>
     assert.equal(invalidRoomId, "room-1");
 });
 
+test("server room key contributions are validated and saved to the keyring", async () => {
+    const saved = [];
+    const imported = { type: "secret" };
+    const { contributeRoomKey, requireRoomKey } = createRoomKeyStore({
+        importKey: async (hex) => {
+            assert.equal(hex, "generated-room-key");
+            return imported;
+        },
+        contributeSecret: async (...args) => saved.push(args),
+    });
+
+    assert.equal(
+        await contributeRoomKey("room-1", {
+            id: "chatroom:room-1:key",
+            value: "generated-room-key",
+            metadata: { label: "Chat room-1" },
+        }),
+        true,
+    );
+    assert.deepEqual(saved, [
+        ["chatroom:room-1:key", "generated-room-key", { label: "Chat room-1" }],
+    ]);
+    assert.equal(await requireRoomKey("room-1"), imported);
+});
+
+test("messages unlock the keyring before accepting a delivered room key", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(source, /acceptRoomKeyContribution/);
+    assert.match(source, /keyring:isUnlocked/);
+    assert.match(source, /auth:createRepromptGuard/);
+    assert.match(source, /keyring:unlock/);
+    assert.match(source, /contributeRoomKey\(roomId, contribution\)/);
+});
+
 test("messages saved templates are scoped to the current account", () => {
     const source = readMessagesUiBundle();
 

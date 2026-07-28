@@ -359,3 +359,7 @@ SMTP-Testnachrichten, Benutzerbestätigungen, Einladungen, Einmal-Anmeldenachric
 ## Adapterzugehörigkeit wird zentral erkannt
 
 Der zentrale Gateway-Bootstrap leitet `hasAdapters` nun aus dem Feld `gateway` jedes Adaptermanifests ab. Gateways benötigen keine doppelten Angaben zur Adapterpräsenz mehr in ihrem eigenen Manifest oder ihrer Bootstrap-Registrierung.
+
+## Raumschlüssel werden automatisch bereitgestellt
+
+Beim Öffnen eines Raums wird ein fehlender Raumschlüssel nun auf dem Server erzeugt und ausschließlich an ein bestätigtes Raummitglied ausgeliefert. Messages fordert bei Bedarf zum Entsperren des verschlüsselten Schlüsselbunds auf, prüft den ausgelieferten Schlüssel, speichert ihn unter der Fähigkeitskennung des Raums und öffnet anschließend den verschlüsselten Verlauf.

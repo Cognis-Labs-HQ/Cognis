@@ -3,6 +3,7 @@ export function createRoomKeyStore({
         throw new Error("importKey dependency is required.");
     },
     onInvalidSecret = () => undefined,
+    contributeSecret = async () => undefined,
     resolveSecret = async (_id, options) => options.fallback?.(),
 } = {}) {
     const roomKeyCache = new Map();
@@ -40,6 +41,24 @@ export function createRoomKeyStore({
         throw error;
     }
 
+    async function contributeRoomKey(roomId, contribution) {
+        if (
+            contribution?.id !== `chatroom:${roomId}:key` ||
+            typeof contribution?.value !== "string" ||
+            !contribution.value
+        ) {
+            return false;
+        }
+        const key = await importKey(contribution.value);
+        await contributeSecret(
+            contribution.id,
+            contribution.value,
+            contribution.metadata ?? {},
+        );
+        roomKeyCache.set(roomId, key);
+        return true;
+    }
+
     async function resolveThreadRoomKey(roomContext, roomId) {
         if (hasIncomingPendingRequest(roomContext)) return null;
         return requireRoomKey(roomId);
@@ -48,6 +67,7 @@ export function createRoomKeyStore({
     return {
         getRoomKey,
         requireRoomKey,
+        contributeRoomKey,
         resolveThreadRoomKey,
         hasIncomingPendingRequest,
     };

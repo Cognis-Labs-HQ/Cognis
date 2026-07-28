@@ -359,3 +359,7 @@ SMTP test messages, user verification, invitations, one-time login messages, and
 ## Adapter ownership is discovered centrally
 
 Core gateway bootstrap now derives `hasAdapters` from each adapter manifest's `gateway` field. Gateways no longer need duplicate adapter-presence flags in their own manifests or bootstrap registration.
+
+## Room keys arrive automatically
+
+Opening a room now generates a missing room key on the server and delivers it only to an approved room member. Messages prompts to unlock the encrypted keyring when necessary, validates the delivered key, stores it under the room capability identifier, and then opens the encrypted thread.

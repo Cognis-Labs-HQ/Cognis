@@ -172,7 +172,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
               );
 
         if (!sub && req.method === "GET") {
-            const members = await messagesStore.listMembers(roomId);
+            const resolveRoomKey = async () => {
+                if (incomingPendingRoomRequest || isAllowedShareGuest) {
+                    return null;
+                }
+                return (
+                    (await messagesStore.getUnwrappedRoomKey(roomId)) ??
+                    messagesStore.generateAndStoreRoomKey(roomId)
+                );
+            };
+            const [members, roomKey] = await Promise.all([
+                messagesStore.listMembers(roomId),
+                resolveRoomKey(),
+            ]);
             const enrichedMembers = await enrichMembersWithProfiles(
                 members,
                 profileStore,
@@ -188,6 +200,17 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                             !member.archived &&
                             !(room.kind === "dm" && members.length < 2),
                         pendingRequest: pendingRequestSummary,
+                        ...(roomKey
+                            ? {
+                                  keyContribution: {
+                                      id: `chatroom:${roomId}:key`,
+                                      value: roomKey,
+                                      metadata: {
+                                          label: `Chat ${roomId}`,
+                                      },
+                                  },
+                              }
+                            : {}),
                     },
                 }),
             );
