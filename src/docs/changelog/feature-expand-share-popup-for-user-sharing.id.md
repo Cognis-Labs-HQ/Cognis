@@ -323,3 +323,7 @@ Membatalkan permintaan keyring dan rahasia kini membuat objek terlindungi tetap 
 ## Kalender bersama tidak lagi berarti undangan acara
 
 Membuat acara pada kalender yang dibagikan kepada pengguna tidak lagi menambahkan semua penerima berbagi sebagai peserta. Penerima tetap dapat melihat acara melalui kalender bersama, sedangkan undangan hanya dikirim kepada peserta yang dipilih secara eksplisit. Halaman Keyring menggunakan kembali vault yang sudah terbuka, dan permintaan vault terkunci kini memakai judul Buka Keyring serta alur tindakan halaman tertunda agar navigasi selesai sebelum popup dibuka.
+
+## Preferensi Penyimpanan Kata Sandi
+
+Dialog berbagi terlindungi kini menanyakan apakah kata sandi akan disimpan ke keyring dengan kalimat positif. Opsi ini dipilih secara default dan dapat dinonaktifkan untuk menggunakan kata sandi tanpa menyimpannya.

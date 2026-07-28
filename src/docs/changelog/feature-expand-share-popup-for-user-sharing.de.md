@@ -323,3 +323,7 @@ Das Abbrechen von Schlüsselbund- und Geheimnisabfragen lässt das geschützte O
 ## Freigegebene Kalender bedeuten keine Termineinladungen mehr
 
 Beim Erstellen eines Termins in einem Kalender mit Benutzerfreigaben werden nicht mehr alle Freigabeempfänger als Teilnehmer hinzugefügt. Empfänger können den Termin weiterhin im freigegebenen Kalender sehen, während Einladungen nur an ausdrücklich ausgewählte Teilnehmer gesendet werden. Die Schlüsselbundseite verwendet einen bereits entsperrten Tresor weiter; bei gesperrtem Tresor nutzt die Abfrage nun den eindeutigen Titel „Schlüsselbund entsperren“ und einen verzögerten Seitenaktionsablauf, damit die Navigation vor dem Popup abgeschlossen wird.
+
+## Einstellung zum Speichern des Passworts
+
+Die Eingabeaufforderung für geschützte Freigaben fragt nun mit einer positiven Formulierung, ob das Passwort im Schlüsselbund gespeichert werden soll. Die Option ist standardmäßig ausgewählt und kann deaktiviert werden, um das Passwort zu verwenden, ohne es zu speichern.

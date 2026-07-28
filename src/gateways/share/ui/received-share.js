@@ -31,7 +31,7 @@ async function promptForPassword() {
     let saveInput = null;
     const action = await openPopup({
         title: i18n.t("share.unlock.title"),
-        body: `<div class="stack"><label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label><label><input id="share-unlock-no-save" type="checkbox" /> ${escapeHtml(i18n.t("share.unlock.do_not_save"))}</label></div>`,
+        body: `<div class="stack"><label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label><label><input id="share-unlock-save" type="checkbox" checked /> ${escapeHtml(i18n.t("share.unlock.save_to_keyring"))}</label></div>`,
         actions: [
             {
                 id: "unlock",
@@ -46,7 +46,7 @@ async function promptForPassword() {
         ],
         onOpen(overlay) {
             passwordInput = overlay.querySelector("#share-unlock-password");
-            saveInput = overlay.querySelector("#share-unlock-no-save");
+            saveInput = overlay.querySelector("#share-unlock-save");
             passwordInput?.focus();
         },
         onAction(actionId) {
@@ -56,7 +56,7 @@ async function promptForPassword() {
     return action === "unlock"
         ? {
               password: passwordInput?.value || "",
-              saveToKeyring: saveInput?.checked !== true,
+              saveToKeyring: saveInput?.checked !== false,
           }
         : null;
 }

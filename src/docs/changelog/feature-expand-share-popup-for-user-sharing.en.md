@@ -323,3 +323,7 @@ Cancelling keyring and secret prompts now leaves the protected object unavailabl
 ## Shared calendars no longer imply event invitations
 
 Creating an event in a calendar with user shares no longer adds every share recipient as an attendee; recipients can still view the event through the shared calendar, while invitations are sent only to explicitly selected attendees. Keyring pages reuse an already-unlocked vault, and locked-vault prompts now use the dedicated Unlock Keyring wording and a deferred page-action flow so navigation finishes before a popup opens.
+
+## Save Password Preference
+
+The protected-share prompt now asks whether to save the password to the keyring using positive wording. The option is selected by default and can be cleared to use the password without storing it.
