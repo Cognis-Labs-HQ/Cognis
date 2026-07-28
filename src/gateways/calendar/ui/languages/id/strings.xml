@@ -5,6 +5,7 @@
   <string name="gateway.calendar.no_calendars">Anda belum memiliki kalender.</string>
   <string name="gateway.calendar.no_events">Belum ada acara di kalender ini.</string>
   <string name="gateway.calendar.visibility_private">Privat</string>
+  <string name="gateway.calendar.read_only_tooltip">Hanya-Baca</string>
   <string name="gateway.calendar.visibility_public">Publik</string>
   <string name="gateway.calendar.visibility_heading">Visibilitas</string>
   <string name="gateway.calendar.visibility_shared">Dibagikan</string>

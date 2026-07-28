@@ -229,9 +229,30 @@
 }
 
 .calendar-visibility-icon {
-    font-size: 0.8rem;
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
     opacity: 0.8;
     flex-shrink: 0;
+}
+
+.calendar-visibility-icon--read-only {
+    background-image: url("/static/assets/reuse/view-eye-light.svg");
+}
+
+.calendar-visibility-icon--private {
+    background-image: url("/static/assets/reuse/secure-light.svg");
+}
+
+body[data-theme="dark"] .calendar-visibility-icon--read-only {
+    background-image: url("/static/assets/reuse/view-eye-dark.svg");
+}
+
+body[data-theme="dark"] .calendar-visibility-icon--private {
+    background-image: url("/static/assets/reuse/secure-dark.svg");
 }
 
 .calendar-item-btn[data-current="true"] .calendar-item-label {

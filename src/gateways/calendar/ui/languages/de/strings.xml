@@ -5,6 +5,7 @@
   <string name="gateway.calendar.no_calendars">Du hast noch keine Kalender.</string>
   <string name="gateway.calendar.no_events">Für diesen Kalender sind keine Termine geplant.</string>
   <string name="gateway.calendar.visibility_private">Privat</string>
+  <string name="gateway.calendar.read_only_tooltip">Schreibgeschützt</string>
   <string name="gateway.calendar.visibility_public">Öffentlich</string>
   <string name="gateway.calendar.visibility_heading">Sichtbarkeit</string>
   <string name="gateway.calendar.visibility_shared">Geteilt</string>

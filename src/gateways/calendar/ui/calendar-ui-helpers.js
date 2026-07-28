@@ -283,10 +283,21 @@ function collectPendingEvents(
     );
 }
 
-function visibilityIcon(visibility, sharedPermission = null) {
-    if (visibility === "shared" && sharedPermission === "read") return "🔒";
+function visibilityIcon(visibility, sharedPermission = null, i18n) {
+    if (visibility === "shared" && sharedPermission === "read") {
+        const readOnlyLabel = escapeHtml(
+            i18n.t("gateway.calendar.read_only_tooltip"),
+        );
+        return `<span class="calendar-visibility-icon calendar-visibility-icon--read-only" role="img" aria-label="${readOnlyLabel}" title="${readOnlyLabel}"></span>`;
+    }
+    if (visibility === "private") {
+        const privateLabel = escapeHtml(
+            i18n.t("gateway.calendar.visibility_private"),
+        );
+        return `<span class="calendar-visibility-icon calendar-visibility-icon--private" role="img" aria-label="${privateLabel}" title="${privateLabel}"></span>`;
+    }
     if (visibility === "shared") return "🤝";
-    return visibility === "public" ? "🌐" : "🔒";
+    return "🌐";
 }
 
 function getStatusLabelKey(status) {
@@ -330,7 +341,7 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
         <button type="button" class="calendar-item-btn" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'data-current="true"' : ""} title="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">
           <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
           <span class="calendar-item-label">${escapeHtml(calendar.name)}</span>
-          <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility, calendar.sharedPermission)}</span>
+          ${visibilityIcon(calendar.visibility, calendar.sharedPermission, i18n)}
         </button>
       </li>`,
         )

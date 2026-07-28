@@ -5,6 +5,7 @@
   <string name="gateway.calendar.no_calendars">まだカレンダーがありません。</string>
   <string name="gateway.calendar.no_events">このカレンダーには予定がありません。</string>
   <string name="gateway.calendar.visibility_private">非公開</string>
+  <string name="gateway.calendar.read_only_tooltip">読み取り専用</string>
   <string name="gateway.calendar.visibility_public">公開</string>
   <string name="gateway.calendar.visibility_heading">公開範囲</string>
   <string name="gateway.calendar.visibility_shared">共有</string>

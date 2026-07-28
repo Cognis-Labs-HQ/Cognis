@@ -366,8 +366,14 @@ test("calendar toolbar shows shared visibility icon", () => {
         HELPERS_SOURCE,
         /visibility === "shared" && sharedPermission === "read"/,
     );
-    assert.match(HELPERS_SOURCE, /return "🔒"/);
-    assert.match(HELPERS_SOURCE, /return "🤝"/);
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--read-only/);
+    assert.match(HELPERS_SOURCE, /read_only_tooltip/);
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--private/);
+    assert.match(HELPERS_SOURCE, /visibility_private/);
+    assert.match(CSS_SOURCE, /view-eye-light\.svg/);
+    assert.match(CSS_SOURCE, /view-eye-dark\.svg/);
+    assert.match(CSS_SOURCE, /secure-light\.svg/);
+    assert.match(CSS_SOURCE, /secure-dark\.svg/);
 });
 
 test("event composer excludes read-only shared calendars", () => {

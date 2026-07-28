@@ -68,7 +68,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.19` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.20` |
 
 ## Kernverträge
 
