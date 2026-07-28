@@ -302,7 +302,10 @@ function visibilityIcon(visibility, sharedPermission = null, i18n) {
         );
         return `<span class="calendar-visibility-icon calendar-visibility-icon--shared" role="img" aria-label="${sharedLabel}" title="${sharedLabel}"></span>`;
     }
-    return "🌐";
+    const publicLabel = escapeHtml(
+        i18n.t("gateway.calendar.visibility_public"),
+    );
+    return `<span class="calendar-visibility-icon calendar-visibility-icon--public" role="img" aria-label="${publicLabel}" title="${publicLabel}"></span>`;
 }
 
 function getStatusLabelKey(status) {

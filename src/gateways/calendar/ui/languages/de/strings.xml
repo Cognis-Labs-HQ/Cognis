@@ -120,6 +120,8 @@
   <string name="gateway.calendar.update_calendar_success">Kalender aktualisiert.</string>
   <string name="gateway.calendar.update_calendar_failed">Kalender konnte nicht aktualisiert werden.</string>
   <string name="gateway.calendar.delete_calendar">Kalender Löschen</string>
+  <string name="gateway.calendar.delete_calendar_confirm_title">Kalender löschen?</string>
+  <string name="gateway.calendar.delete_calendar_confirm">Dieser Kalender wird sofort entfernt. Alle zugehörigen Freigaben funktionieren dann ebenfalls nicht mehr.</string>
   <string name="gateway.calendar.delete_calendar_success">Kalender gelöscht.</string>
   <string name="gateway.calendar.delete_calendar_failed">Kalender konnte nicht gelöscht werden.</string>
   <string name="gateway.calendar.share_calendar">Kalender Teilen</string>

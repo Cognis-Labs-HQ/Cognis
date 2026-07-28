@@ -120,6 +120,8 @@
   <string name="gateway.calendar.update_calendar_success">カレンダーを更新しました。</string>
   <string name="gateway.calendar.update_calendar_failed">カレンダーを更新できませんでした。</string>
   <string name="gateway.calendar.delete_calendar">カレンダーを削除</string>
+  <string name="gateway.calendar.delete_calendar_confirm_title">カレンダーを削除しますか？</string>
+  <string name="gateway.calendar.delete_calendar_confirm">このカレンダーはすぐに削除され、関連する共有も利用できなくなります。</string>
   <string name="gateway.calendar.delete_calendar_success">カレンダーを削除しました。</string>
   <string name="gateway.calendar.delete_calendar_failed">カレンダーを削除できませんでした。</string>
   <string name="gateway.calendar.share_calendar">カレンダーを共有</string>

@@ -526,7 +526,24 @@ test("shared calendar settings expose recipient-local name and color", () => {
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /immutableSharedSuffix/);
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /!calendar\.isDefault \? `<div class="calendar-delete-zone"/,
+        /\.\.\.\(!calendar\.isDefault/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /delete_calendar_confirm_title/,
+    );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /confirmed !== "delete"/);
+    assert.doesNotMatch(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-delete-zone/);
+});
+
+test("calendar visibility uses theme-aware SVG icons", () => {
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--public/);
+    assert.doesNotMatch(HELPERS_SOURCE, /🌐|🌍|🌎|🌏/);
+    assert.match(CSS_SOURCE, /globe-light\.svg/);
+    assert.match(CSS_SOURCE, /globe-dark\.svg/);
+    assert.match(
+        CSS_SOURCE,
+        /calendar-visibility-icon--shared[\s\S]*width:\s*1\.1rem;[\s\S]*height:\s*1\.1rem;/,
     );
 });
 

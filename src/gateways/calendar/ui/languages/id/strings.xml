@@ -120,6 +120,8 @@
   <string name="gateway.calendar.update_calendar_success">Kalender diperbarui.</string>
   <string name="gateway.calendar.update_calendar_failed">Kalender tidak dapat diperbarui.</string>
   <string name="gateway.calendar.delete_calendar">Hapus Kalender</string>
+  <string name="gateway.calendar.delete_calendar_confirm_title">Hapus kalender?</string>
+  <string name="gateway.calendar.delete_calendar_confirm">Kalender ini akan segera dihapus. Semua berbagi yang terkait juga akan berhenti berfungsi.</string>
   <string name="gateway.calendar.delete_calendar_success">Kalender dihapus.</string>
   <string name="gateway.calendar.delete_calendar_failed">Tidak dapat menghapus kalender.</string>
   <string name="gateway.calendar.share_calendar">Bagikan Kalender</string>

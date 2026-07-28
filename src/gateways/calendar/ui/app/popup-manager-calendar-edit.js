@@ -175,7 +175,6 @@ export function createCalendarEditPopupHandler({
                         showDefaultTooltip: true,
                     })
           }
-          ${!calendar.isDefault ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
         </div>`;
             },
             closeProtection: false,
@@ -185,6 +184,17 @@ export function createCalendarEditPopupHandler({
                     label: i18n.t("gateway.calendar.update_calendar"),
                     variant: "confirm",
                 },
+                ...(!calendar.isDefault
+                    ? [
+                          {
+                              id: "delete",
+                              label: i18n.t(
+                                  "gateway.calendar.delete_calendar",
+                              ),
+                              variant: "cancel",
+                          },
+                      ]
+                    : []),
                 {
                     id: "cancel",
                     label: i18n.t("ui.reuse.cancel"),
@@ -204,35 +214,50 @@ export function createCalendarEditPopupHandler({
                         });
                 }
                 bindReminderFieldBehavior({ overlay, i18n });
-                const deleteBtn = overlay.querySelector(
-                    "#calendar-edit-delete",
-                );
-                if (deleteBtn) {
-                    deleteBtn.addEventListener("click", async () => {
-                        const res = await apiFetch(
-                            `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}`,
-                            { method: "DELETE" },
-                        );
-                        if (!res.ok) {
-                            showToast(
-                                i18n.t(
-                                    "gateway.calendar.delete_calendar_failed",
-                                ),
-                                "error",
-                            );
-                            return;
-                        }
-                        await reloadState();
-                        showToast(
-                            i18n.t("gateway.calendar.delete_calendar_success"),
-                            "success",
-                        );
-                        refreshComposer();
-                        closePopup();
-                    });
-                }
             },
             onAction: async (actionId, overlay) => {
+                if (actionId === "delete") {
+                    const confirmed = await openPopup({
+                        title: i18n.t(
+                            "gateway.calendar.delete_calendar_confirm_title",
+                        ),
+                        body: `<p>${escapeHtml(i18n.t("gateway.calendar.delete_calendar_confirm"))}</p>`,
+                        variant: "danger",
+                        actions: [
+                            {
+                                id: "delete",
+                                label: i18n.t(
+                                    "gateway.calendar.delete_calendar",
+                                ),
+                                variant: "cancel",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "neutral",
+                            },
+                        ],
+                    });
+                    if (confirmed !== "delete") return false;
+                    const res = await apiFetch(
+                        `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}`,
+                        { method: "DELETE" },
+                    );
+                    if (!res.ok) {
+                        showToast(
+                            i18n.t("gateway.calendar.delete_calendar_failed"),
+                            "error",
+                        );
+                        return false;
+                    }
+                    await reloadState();
+                    showToast(
+                        i18n.t("gateway.calendar.delete_calendar_success"),
+                        "success",
+                    );
+                    refreshComposer();
+                    return true;
+                }
                 if (actionId !== "save") return true;
                 const isShared = calendar.visibility === "shared";
                 const editedName = String(

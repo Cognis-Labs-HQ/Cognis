@@ -120,6 +120,8 @@
   <string name="gateway.calendar.update_calendar_success">Calendar updated.</string>
   <string name="gateway.calendar.update_calendar_failed">Could not update calendar.</string>
   <string name="gateway.calendar.delete_calendar">Delete Calendar</string>
+  <string name="gateway.calendar.delete_calendar_confirm_title">Delete calendar?</string>
+  <string name="gateway.calendar.delete_calendar_confirm">This calendar will be removed immediately. Any associated shares will also stop working.</string>
   <string name="gateway.calendar.delete_calendar_success">Calendar deleted.</string>
   <string name="gateway.calendar.delete_calendar_failed">Could not delete calendar.</string>
   <string name="gateway.calendar.share_calendar">Share Calendar</string>

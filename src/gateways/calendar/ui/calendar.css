@@ -75,11 +75,6 @@
     color: color-mix(in srgb, var(--text-color, var(--text)) 82%, transparent);
 }
 
-.calendar-delete-zone {
-    border-top: 1px solid var(--field-border);
-    padding-top: 0.65rem;
-}
-
 .calendar-share-controls {
     display: grid;
     gap: 0.45rem;
@@ -248,7 +243,13 @@
 }
 
 .calendar-visibility-icon--shared {
+    width: 1.1rem;
+    height: 1.1rem;
     background-image: url("/static/assets/reuse/share-light.svg");
+}
+
+.calendar-visibility-icon--public {
+    background-image: url("/static/assets/reuse/globe-light.svg");
 }
 
 body[data-theme="dark"] .calendar-visibility-icon--read-only {
@@ -261,6 +262,10 @@ body[data-theme="dark"] .calendar-visibility-icon--private {
 
 body[data-theme="dark"] .calendar-visibility-icon--shared {
     background-image: url("/static/assets/reuse/share-dark.svg");
+}
+
+body[data-theme="dark"] .calendar-visibility-icon--public {
+    background-image: url("/static/assets/reuse/globe-dark.svg");
 }
 
 .calendar-item-btn[data-current="true"] .calendar-item-label {
