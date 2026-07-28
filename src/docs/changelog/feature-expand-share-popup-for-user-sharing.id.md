@@ -307,3 +307,7 @@ Pembukaan keyring kini menggunakan permintaan konfirmasi kata sandi sesuai penye
 ## Rahasia komponen yang dapat diperiksa
 
 Entri keyring kini menyebutkan komponen yang menyimpannya, dapat diperluas dengan klik, dan menyediakan kontrol mata SVG untuk menampilkan rahasia. Membuka pengaturan Keyring otomatis meminta konfirmasi sesuai penyedia dan membuka brankas bila memungkinkan. Entri terkunci tetap terlihat tersamarkan, sedangkan kontrol bertema Batas Waktu Kunci Keyring tetap dikelompokkan dengan labelnya.
+
+## Vault keyring buram berbasis basis data
+
+Envelope keyring terenkripsi kini disimpan secara persisten dalam tabel basis data autentikasi khusus, bukan penyimpanan preferensi umum. Browser hanya mengambil dan mendekripsi envelope saat membuka kunci, sedangkan pengaturan Keyring yang terkunci merender placeholder sintetis tanpa pengenal, metadata, atau nilai rahasia di DOM.

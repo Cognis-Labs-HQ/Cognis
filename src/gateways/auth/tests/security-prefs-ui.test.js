@@ -55,6 +55,8 @@ test("keyring settings require password confirmation for secret changes", () => 
         /!isKeyringUnlocked\(\) && \(await promptToUnlock\(\)\)/,
     );
     assert.match(KEYRING_SETTINGS_STYLES, /tbody\.is-locked/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-obscured/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /if \(!unlocked\)/);
     assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /keyring-unlock-password/);
     assert.doesNotMatch(
         KEYRING_SETTINGS_SOURCE,

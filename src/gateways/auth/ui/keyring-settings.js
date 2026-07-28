@@ -26,6 +26,21 @@ export function createSettingsSection({ i18n, root }) {
     let unbindSecretVisibility = null;
 
     function renderEntries(unlocked = isKeyringUnlocked()) {
+        if (!unlocked) {
+            const obscured = `<span class="settings-keyring-obscured" aria-hidden="true">••••••••</span>`;
+            return `<div class="settings-table-wrap settings-keyring-entries"><table class="settings-keyring-table">
+              <thead><tr>
+                <th>${escapeHtml(i18n.t("gateway.auth.keyring.label"))}</th>
+                <th>${escapeHtml(i18n.t("gateway.auth.keyring.identifier"))}</th>
+                <th>${escapeHtml(i18n.t("gateway.auth.keyring.source"))}</th>
+                <th>${escapeHtml(i18n.t("gateway.auth.keyring.updated"))}</th>
+                <th>${escapeHtml(i18n.t("gateway.auth.keyring.actions"))}</th>
+              </tr></thead>
+              <tbody class="is-locked" aria-label="${escapeHtml(i18n.t("gateway.auth.keyring.locked"))}">
+                <tr>${Array.from({ length: 5 }, () => `<td>${obscured}</td>`).join("")}</tr>
+              </tbody>
+            </table></div>`;
+        }
         const entries = listKeyringEntries();
         const rows = entries.length
             ? entries

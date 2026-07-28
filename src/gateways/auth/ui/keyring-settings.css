@@ -69,6 +69,15 @@
     user-select: none;
 }
 
+.settings-keyring-obscured {
+    display: inline-block;
+    min-width: 5rem;
+    color: transparent;
+    background: var(--text, currentColor);
+    border-radius: 999px;
+    opacity: 0.55;
+}
+
 .settings-keyring-actions {
     display: flex;
     flex-wrap: wrap;

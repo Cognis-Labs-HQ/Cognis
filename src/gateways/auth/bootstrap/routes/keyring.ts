@@ -3,11 +3,12 @@ import {
     requireAuth,
     type CapabilityStore,
 } from "../../../shared.js";
+import type { KeyringVaultStore } from "../../keyring-store.js";
 import type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
 import type { AuthGatewayRouteHandler } from "./shared.js";
 
-const KEYRING_PREFERENCE_ID = "secure-keyring-v1";
 const MAX_VAULT_BYTES = 2 * 1024 * 1024;
+const LEGACY_KEYRING_PREFERENCE_ID = "secure-keyring-v1";
 
 function validVault(value: unknown): value is Record<string, unknown> {
     if (!value || typeof value !== "object" || Array.isArray(value))
@@ -29,8 +30,9 @@ export function createKeyringRoutes(
         if (url.pathname !== "/api/v1/auth/keyring") return false;
         const claims = requireAuth(req, res, "user");
         if (!claims) return true;
-        const store =
-            capabilities.get<UserPreferenceStore>("preferences:store");
+        const store = capabilities.get<KeyringVaultStore>(
+            "auth:keyringVaultStore",
+        );
         if (!store) {
             res.writeHead(503, { "content-type": "application/json" });
             res.end(JSON.stringify({ error: { code: "keyring_unavailable" } }));
@@ -38,7 +40,24 @@ export function createKeyringRoutes(
         }
 
         if (req.method === "GET") {
-            const stored = await store.get(claims.sub, KEYRING_PREFERENCE_ID);
+            let stored = await store.get(claims.sub);
+            if (!stored) {
+                const preferences =
+                    capabilities.get<UserPreferenceStore>("preferences:store");
+                const legacy = await preferences?.get(
+                    claims.sub,
+                    LEGACY_KEYRING_PREFERENCE_ID,
+                );
+                if (legacy && legacy !== "null") {
+                    stored = legacy;
+                    await store.set(claims.sub, legacy);
+                    await preferences?.set(
+                        claims.sub,
+                        LEGACY_KEYRING_PREFERENCE_ID,
+                        "null",
+                    );
+                }
+            }
             let vault = null;
             try {
                 vault = stored ? JSON.parse(stored) : null;
@@ -69,14 +88,14 @@ export function createKeyringRoutes(
                 );
                 return true;
             }
-            await store.set(claims.sub, KEYRING_PREFERENCE_ID, serialized);
+            await store.set(claims.sub, serialized);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
         if (req.method === "DELETE") {
-            await store.set(claims.sub, KEYRING_PREFERENCE_ID, "null");
+            await store.delete(claims.sub);
             res.writeHead(204);
             res.end();
             return true;

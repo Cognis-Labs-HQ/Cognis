@@ -307,3 +307,7 @@ Das Entsperren des Schlüsselbunds verwendet nun die anbieterabhängige Passwort
 ## Einsehbare Komponenten-Geheimnisse
 
 Schlüsselbund-Einträge nennen nun die Komponente, die sie gespeichert hat, lassen sich per Klick erweitern und bieten eine SVG-Augensteuerung zum Anzeigen des Geheimnisses. Beim Öffnen der Schlüsselbund-Einstellungen wird automatisch die anbieterabhängige Bestätigung angefordert und der Tresor nach Möglichkeit entsperrt. Gesperrte Einträge bleiben sichtbar verschleiert, und die themenfähige Sperrzeit des Schlüsselbunds bleibt mit ihrer Beschriftung gruppiert.
+
+## Datenbankgestützte und undurchsichtige Schlüsselbund-Tresore
+
+Verschlüsselte Schlüsselbund-Umschläge werden nun in einer eigenen Authentifizierungs-Datenbanktabelle statt im allgemeinen Einstellungsspeicher dauerhaft gespeichert. Der Browser lädt und entschlüsselt den Umschlag nur beim Entsperren; gesperrte Schlüsselbund-Einstellungen zeigen künstliche Platzhalter ohne geheime Kennungen, Metadaten oder Werte im DOM.

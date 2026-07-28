@@ -19,14 +19,17 @@ function validVault() {
 test("authenticated users can save and load an opaque keyring vault", async () => {
     const values = new Map<string, string>();
     const capabilities = new CapabilityStore();
-    capabilities.contribute("preferences:store", {
-        async get(accountId: string, pageId: string) {
-            return values.get(`${accountId}:${pageId}`) ?? null;
+    capabilities.contribute("auth:keyringVaultStore", {
+        async ensureSchema() {},
+        async get(accountId: string) {
+            return values.get(accountId) ?? null;
         },
-        async set(accountId: string, pageId: string, value: string) {
-            values.set(`${accountId}:${pageId}`, value);
+        async set(accountId: string, value: string) {
+            values.set(accountId, value);
         },
-        async clearUser() {},
+        async delete(accountId: string) {
+            values.delete(accountId);
+        },
     });
     const route = createKeyringRoutes(capabilities);
     const token = issueAccessToken("keyring-user", "user", 60);
@@ -82,12 +85,13 @@ test("authenticated users can save and load an opaque keyring vault", async () =
 
 test("keyring API rejects malformed vault payloads", async () => {
     const capabilities = new CapabilityStore();
-    capabilities.contribute("preferences:store", {
+    capabilities.contribute("auth:keyringVaultStore", {
+        async ensureSchema() {},
         async get() {
             return null;
         },
         async set() {},
-        async clearUser() {},
+        async delete() {},
     });
     const route = createKeyringRoutes(capabilities);
     const token = issueAccessToken("keyring-user-invalid", "user", 60);
@@ -106,4 +110,48 @@ test("keyring API rejects malformed vault payloads", async () => {
     );
     assert.equal(response.status, 400);
     assert.match(response.payload, /invalid_keyring_vault/);
+});
+
+test("keyring API migrates the legacy opaque preference into the vault table", async () => {
+    let migrated: string | null = null;
+    let legacy = JSON.stringify(validVault());
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("auth:keyringVaultStore", {
+        async ensureSchema() {},
+        async get() {
+            return migrated;
+        },
+        async set(_accountId: string, value: string) {
+            migrated = value;
+        },
+        async delete() {},
+    });
+    capabilities.contribute("preferences:store", {
+        async get() {
+            return legacy;
+        },
+        async set(_accountId: string, _pageId: string, value: string) {
+            legacy = value;
+        },
+        async clearUser() {},
+    });
+    const route = createKeyringRoutes(capabilities);
+    const response = makeResponse();
+    await route(
+        makeJsonRequest(
+            "GET",
+            {},
+            {
+                authorization: `Bearer ${issueAccessToken("legacy-user", "user", 60)}`,
+            },
+        ),
+        response as any,
+        new URL("http://localhost/api/v1/auth/keyring"),
+        {} as any,
+    );
+
+    assert.equal(response.status, 200);
+    assert.match(response.payload, /opaque-ciphertext/);
+    assert.match(migrated ?? "", /opaque-ciphertext/);
+    assert.equal(legacy, "null");
 });

@@ -13,6 +13,7 @@ import {
 } from "../../shared.js";
 import { type AccessRole } from "../access-tokens.js";
 import { CoreAuthGateway } from "../gateway.js";
+import { DbKeyringVaultStore } from "../keyring-store.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import { createAdapterAdminRoutes } from "./adapter-admin-routes.js";
 import {
@@ -142,6 +143,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();
+    const keyringVaultStore = new DbKeyringVaultStore(dbExecutor);
+    await keyringVaultStore.ensureSchema();
+    ctx.capabilities.contribute("auth:keyringVaultStore", keyringVaultStore);
     ctx.log?.("info", "Auth gateway adapter schema ready.", {
         component: "auth-gateway",
     });
@@ -285,7 +289,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.7.14",
+        version: "1.7.15",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

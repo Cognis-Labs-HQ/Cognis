@@ -40,8 +40,6 @@ let vaultIterations = DEFAULT_ITERATIONS;
 let relockTimer = null;
 let lastVaultEnvelope = null;
 const pendingValues = new Map();
-let lockedEntryMetadata = [];
-let lockedEntryStorageKey = null;
 
 function keyringStorageKey() {
     const accountId = String(
@@ -112,15 +110,6 @@ function scheduleRelock() {
 function clearVault(clearPendingValues) {
     clearTimeout(relockTimer);
     relockTimer = null;
-    if (vaultData?.values) {
-        lockedEntryStorageKey = keyringStorageKey();
-        lockedEntryMetadata = Object.entries(vaultData.values).map(
-            ([id, entry]) => {
-                const normalized = normalizeEntry(entry, id);
-                return { id, ...normalized, value: "" };
-            },
-        );
-    }
     vaultKey = null;
     vaultData = null;
     vaultSalt = null;
@@ -223,8 +212,6 @@ export async function unlockKeyring(password) {
     vaultIterations = iterations;
     lastVaultEnvelope = stored;
     vaultData.values ??= {};
-    lockedEntryMetadata = [];
-    lockedEntryStorageKey = null;
     vaultData.preferences ??= {};
     const storedRelockMinutes = localStorage.getItem(relockStorageKey());
     if (storedRelockMinutes !== null) {
@@ -325,15 +312,7 @@ export async function deleteKeyringValue(id) {
 }
 
 export function listKeyringEntries() {
-    if (
-        !vaultData &&
-        pendingValues.size === 0 &&
-        lockedEntryStorageKey === keyringStorageKey()
-    ) {
-        return [...lockedEntryMetadata].sort((left, right) =>
-            left.label.localeCompare(right.label),
-        );
-    }
+    if (!vaultData) return [];
     const values = vaultData?.values ?? Object.fromEntries(pendingValues);
     return Object.entries(values)
         .map(([id, entry]) => ({ id, ...normalizeEntry(entry, id) }))

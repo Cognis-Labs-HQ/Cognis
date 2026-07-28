@@ -109,3 +109,16 @@ test("locked keyring accepts an updated automatic lock timeout", async () => {
     assert.equal(keyring.isKeyringUnlocked(), false);
     assert.equal(keyring.getKeyringRelockMinutes(), 60);
 });
+
+test("locked keyring exposes no entry metadata or decrypted values", async () => {
+    const keyring = await import("../reuse/keyring.js");
+    await keyring.unlockKeyring("account-password");
+    await keyring.setKeyringValue("private:secret", "sensitive-value", {
+        label: "Private secret",
+        componentName: "Test Component",
+    });
+    await keyring.lockKeyring();
+
+    assert.deepEqual(keyring.listKeyringEntries(), []);
+    assert.equal(keyring.getKeyringValue("private:secret"), null);
+});

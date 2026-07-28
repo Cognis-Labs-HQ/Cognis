@@ -307,3 +307,7 @@ Unlocking the keyring now uses the Authentication gateway's provider-aware passw
 ## Inspectable component secrets
 
 Keyring entries now identify the component that stored them, expand on click, and provide an SVG eye control for revealing the secret. Opening Keyring settings automatically requests provider-aware confirmation and unlocks the vault when possible. Locked entries remain visibly obfuscated, and the themed Keyring Lock Timeout control stays grouped with its label.
+
+## Database-backed opaque keyring vaults
+
+Encrypted keyring envelopes now persist in a dedicated authentication database table instead of the general preference store. The browser fetches and decrypts the envelope only as part of unlocking, and locked Keyring settings render synthetic placeholders without secret identifiers, metadata, or values in the DOM.
