@@ -6,6 +6,7 @@
  * Public exports:
  *   unlockKeyring(password) — unlocks the newest local or server vault.
  *   lockKeyring() — forgets decrypted values and the derived key.
+ *   isKeyringUnlocked() — reports whether decrypted values are available.
  *   getKeyringValue(id) / setKeyringValue(id, value, metadata) — read/write.
  *   deleteKeyringValue(id) / listKeyringEntries() — manage stored entries.
  *   resolveKeyringValue(id, options) — validate a stored value and recover by
@@ -218,6 +219,10 @@ export function lockKeyring() {
     clearVault(true);
 }
 
+export function isKeyringUnlocked() {
+    return Boolean(vaultData && vaultKey);
+}
+
 export function getKeyringValue(id) {
     const normalizedId = String(id);
     const entry = vaultData
@@ -309,6 +314,8 @@ uiCtx.capabilities.contribute("keyring:delete", deleteKeyringValue);
 uiCtx.capabilities.contribute("keyring:list", listKeyringEntries);
 uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
+uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
+uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
 uiCtx.capabilities.contribute(
     "keyring:getRelockMinutes",
     getKeyringRelockMinutes,

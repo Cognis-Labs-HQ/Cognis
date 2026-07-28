@@ -287,3 +287,11 @@ The encrypted browser keyring now synchronizes only opaque ciphertext through au
 ## Meetings and Chats Use the Keyring
 
 Generated meeting passwords and chat encryption keys are added to the keyring automatically. If an edited secret is invalid, keyring resolution removes it and prompts for or retrieves a current value so access continues.
+
+## Keyring controls and inventory
+
+The Keyring settings page now keeps its explanation in an information popup, lists stored secrets in a structured table, and provides manual lock and password-protected unlock controls. Automatic locking is configured alongside the keyring instead of on the general Security page.
+
+## Private share passwords are identifiable
+
+Passwords verified for protected calendar shares are saved with descriptive keyring metadata and synchronized as part of the encrypted vault, so they appear in the user's key inventory without exposing their plaintext to the server.

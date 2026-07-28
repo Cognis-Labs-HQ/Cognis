@@ -17,4 +17,5 @@
   <string name="share.unlock.message">Enter the share password. It will be saved in your encrypted keyring after successful access.</string>
   <string name="share.unlock.action">Unlock</string>
   <string name="share.unlock.cancel">Cancel</string>
+  <string name="share.unlock.keyring_label">Private Calendar Share Password</string>
 </resources>

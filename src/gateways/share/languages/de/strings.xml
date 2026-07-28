@@ -17,4 +17,5 @@
   <string name="share.unlock.message">Gib das Freigabepasswort ein. Nach erfolgreichem Zugriff wird es in deinem verschlüsselten Schlüsselbund gespeichert.</string>
   <string name="share.unlock.action">Entsperren</string>
   <string name="share.unlock.cancel">Abbrechen</string>
+  <string name="share.unlock.keyring_label">Passwort für private Kalenderfreigabe</string>
 </resources>

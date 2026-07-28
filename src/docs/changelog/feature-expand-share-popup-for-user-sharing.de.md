@@ -287,3 +287,11 @@ Der verschlüsselte Browser-Schlüsselbund synchronisiert nur undurchsichtigen C
 ## Besprechungen und Chats nutzen den Schlüsselbund
 
 Erzeugte Besprechungspasswörter und Chat-Verschlüsselungsschlüssel werden automatisch im Schlüsselbund abgelegt. Ist ein bearbeitetes Geheimnis ungültig, entfernt die Schlüsselbundauflösung es und fordert einen aktuellen Wert an oder lädt ihn erneut, damit der Zugriff erhalten bleibt.
+
+## Schlüsselbund-Steuerung und Übersicht
+
+Die Schlüsselbund-Einstellungsseite zeigt ihre Erklärung jetzt in einem Informationsfenster, listet gespeicherte Geheimnisse in einer übersichtlichen Tabelle auf und bietet manuelles Sperren sowie passwortgeschütztes Entsperren. Die automatische Sperre wird nun direkt beim Schlüsselbund statt auf der allgemeinen Sicherheitsseite konfiguriert.
+
+## Passwörter privater Freigaben sind erkennbar
+
+Bestätigte Passwörter für geschützte Kalenderfreigaben werden mit aussagekräftigen Schlüsselbund-Metadaten gespeichert und als Teil des verschlüsselten Tresors synchronisiert. Dadurch erscheinen sie in der Übersicht, ohne dass der Server Klartext erhält.

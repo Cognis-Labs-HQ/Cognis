@@ -17,4 +17,5 @@
   <string name="share.unlock.message">Masukkan kata sandi berbagi. Setelah akses berhasil, kata sandi akan disimpan di keyring terenkripsi Anda.</string>
   <string name="share.unlock.action">Buka</string>
   <string name="share.unlock.cancel">Batal</string>
+  <string name="share.unlock.keyring_label">Kata Sandi Berbagi Kalender Privat</string>
 </resources>

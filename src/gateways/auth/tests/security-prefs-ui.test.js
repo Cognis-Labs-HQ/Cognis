@@ -35,6 +35,12 @@ test("keyring settings require password confirmation for secret changes", () => 
     assert.match(KEYRING_SETTINGS_SOURCE, /deleteKeyringValue/);
     assert.match(KEYRING_SETTINGS_SOURCE, /alwaysPrompt:\s*true/);
     assert.match(KEYRING_SETTINGS_SOURCE, /type="password"/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-table/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-info/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /unlockKeyring/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /lockKeyring/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-relock/);
+    assert.doesNotMatch(SOURCE, /settings-keyring-relock/);
 });
 
 test("password change popup revalidates confirm password reactively", () => {

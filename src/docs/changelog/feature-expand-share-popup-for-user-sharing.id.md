@@ -287,3 +287,11 @@ Keyring peramban terenkripsi kini hanya menyinkronkan ciphertext buram melalui e
 ## Rapat dan obrolan memakai keyring
 
 Kata sandi rapat dan kunci enkripsi obrolan yang dibuat otomatis ditambahkan ke keyring. Jika rahasia yang diedit tidak valid, resolusi keyring menghapusnya lalu meminta atau mengambil nilai terkini agar akses tetap berjalan.
+
+## Kontrol dan inventaris keyring
+
+Halaman pengaturan Keyring kini menempatkan penjelasannya dalam popup informasi, menampilkan rahasia tersimpan dalam tabel terstruktur, serta menyediakan kontrol penguncian manual dan pembukaan kunci yang dilindungi kata sandi. Penguncian otomatis kini dikonfigurasi bersama keyring, bukan di halaman Keamanan umum.
+
+## Kata sandi berbagi privat mudah dikenali
+
+Kata sandi yang telah diverifikasi untuk berbagi kalender terlindungi disimpan dengan metadata keyring yang jelas dan disinkronkan sebagai bagian dari brankas terenkripsi. Entri tersebut terlihat dalam inventaris pengguna tanpa membuka teks aslinya kepada server.

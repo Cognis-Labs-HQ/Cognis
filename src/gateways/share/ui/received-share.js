@@ -74,8 +74,14 @@ export async function resolveReceivedShare(token, { headers } = {}) {
     response = await request(password);
     if (response.ok) {
         try {
+            const i18n = await createI18n({
+                componentStringBaseUrls: ["/static/gateways/share/languages"],
+            });
             await Promise.resolve(
-                uiCtx.capabilities.get("keyring:set")?.(keyringId, password),
+                uiCtx.capabilities.get("keyring:set")?.(keyringId, password, {
+                    label: i18n.t("share.unlock.keyring_label"),
+                    source: "calendar-share",
+                }),
             );
         } catch {
             const i18n = await createI18n({

@@ -17,4 +17,5 @@
   <string name="share.unlock.message">共有パスワードを入力してください。アクセスに成功すると、暗号化されたキーリングに保存されます。</string>
   <string name="share.unlock.action">ロック解除</string>
   <string name="share.unlock.cancel">キャンセル</string>
+  <string name="share.unlock.keyring_label">非公開カレンダー共有のパスワード</string>
 </resources>

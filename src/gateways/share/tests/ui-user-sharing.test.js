@@ -190,4 +190,6 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareSource, /response\.status !== 401/);
     assert.match(receivedShareSource, /await promptForPassword\(\)/);
     assert.match(receivedShareSource, /keyring:set/);
+    assert.match(receivedShareSource, /share\.unlock\.keyring_label/);
+    assert.match(receivedShareSource, /source: "calendar-share"/);
 });

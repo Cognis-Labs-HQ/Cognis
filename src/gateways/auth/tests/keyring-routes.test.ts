@@ -57,6 +57,27 @@ test("authenticated users can save and load an opaque keyring vault", async () =
     );
     assert.equal(getResponse.status, 200);
     assert.match(getResponse.payload, /opaque-ciphertext/);
+
+    const deleteResponse = makeResponse();
+    assert.equal(
+        await route(
+            makeJsonRequest("DELETE", {}, headers),
+            deleteResponse as any,
+            new URL("http://localhost/api/v1/auth/keyring"),
+            {} as any,
+        ),
+        true,
+    );
+    assert.equal(deleteResponse.status, 204);
+
+    const emptyResponse = makeResponse();
+    await route(
+        makeJsonRequest("GET", {}, headers),
+        emptyResponse as any,
+        new URL("http://localhost/api/v1/auth/keyring"),
+        {} as any,
+    );
+    assert.match(emptyResponse.payload, /"vault":null/);
 });
 
 test("keyring API rejects malformed vault payloads", async () => {
