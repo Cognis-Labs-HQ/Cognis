@@ -23,3 +23,252 @@ The popup now mounts only the selected adapter's page. Link inputs are not prese
 ## Shares support exact expiry, access modes, and passwords
 
 Link and User pages now use an optional date/time expiry selector and optional password protection. Components can also declare Link access modes, allowing Calendar to distinguish read-only links from read/write links and grant only the corresponding capabilities.
+
+## Protected calendar discovery
+
+Calendar clients now receive an authentication challenge when they probe a valid password-protected calendar share, instead of an indistinguishable not-found response.
+
+## Safe token inspection
+
+Share can verify that a token exists and is active without bypassing its password, allowing Calendar to request credentials before returning any shared content.
+
+## Clear client metadata
+
+Calendar feeds now publish the calendar name and read-only or read-write state, while CalDAV discovery retains the authenticated share address.
+
+## Read-write CalDAV shares
+
+Calendar clients can create, edit, and delete events through read-write link shares and authenticated user shares. Read-only shares continue to reject changes.
+
+## Consistent required fields
+
+Private share passwords now use the standard form builder required marker and native field validation without separate warning messages.
+
+## Named ICS resources
+
+ICS variants now end with the encoded live calendar name and `.ics`. Older token-only addresses redirect after authentication to the named resource, allowing import clients to derive the correct calendar name.
+
+## Enforced read-only transport
+
+Read-only ICS and CalDAV shares reject every mutating WebDAV method with `403` and a `DAV:need-privileges` response. Writable CalDAV shares continue to accept supported event writes.
+
+## Updated calendar icons
+Public calendars now use a theme-aware globe SVG, and the share icon is ten percent larger for clearer recognition.
+## Safer calendar deletion
+The delete action now sits with the other popup actions and requires confirmation before the calendar and its associated shares are removed.
+
+## Theme-aware visibility
+
+Read-only shared calendars now use a view-eye icon with a Read-only hover tooltip, while private calendars use a secure lock icon. Both icons include dedicated light and dark theme variants.
+
+## Authentication remains required
+
+Password-protected ICS and CalDAV links no longer contain derived credentials. Calendar clients must authenticate with the configured share password before receiving calendar data.
+
+## Standards-based permissions
+
+CalDAV discovery now publishes the RFC-defined current user privileges and supported VEVENT component set. ICS WebDAV probes publish read-only privileges because subscription feeds do not support writes.
+
+## Calendar names in addresses
+
+CalDAV variant addresses contain the encoded calendar name, allowing clients to derive a friendly name from the collection URI without exposing authentication material.
+
+## Clear calendar ownership
+
+Shared calendars now use a theme-aware share icon. Deleting an owned calendar removes its links, user shares, and recipient copies, while default calendars remain protected. Recipients can delete a received calendar to leave only their recipient entry; the share is deleted when its last recipient leaves.
+
+## Calendar identity in shares
+
+Calendar shares now retain the calendar name, so links and email messages identify the calendar rather than an internal share identifier.
+
+## Client access discovery
+
+CalDAV clients receive explicit read-only or read-write privilege metadata and avoid write attempts against read-only shares.
+
+## Safer private sharing
+
+Private calendars require a share password, and share emails include the sender, calendar name, visible link, and open button.
+
+## Reliable calendar Web shares
+
+Calendar Web shares now stop loading deterministically, render guest content, and enforce read or write capabilities on guest event operations.
+
+## Clear calendar access modes
+
+Web, ICS, and CalDAV variants display their read-only or read-and-write mode, and calendar feed responses expose the effective access mode to clients.
+
+## Editable share history
+
+Selecting a share restores its values to the appropriate adapter form and updates the existing record. Link shares expose templated email delivery, while user selections retain profile-preview cards without visible handles.
+
+## Live calendar names
+
+Calendar client links now derive their collection name from the current Calendar gateway record, with share metadata used only when the live resource is unavailable.
+
+## Read-only user shares
+
+The User sharing adapter now removes write capabilities whenever Read permission is selected. CalDAV discovery therefore exposes only read privileges and calendar clients disable editing.
+
+## Duplicate user shares are blocked
+
+An object cannot be shared with the same user more than once, even when the requested access mode differs or an existing share is edited to target that user.
+
+## Read-only calendars are clearer
+
+Read-only shared calendars display a lock in the calendar list and are excluded from the event composer’s calendar choices. Shared-calendar guidance now states explicitly that recipients cannot edit the calendar name.
+
+## Direct SMTP delivery
+
+Generic templated email requests now target the enabled SMTP sender directly instead of depending on notification-category preferences, preventing valid share emails from being skipped.
+
+## Clear send validation
+
+The email dialog now labels its confirmation action Send and displays a warning toast when no recipients have been added.
+
+## Component-contributed templates
+
+Components can now register email templates through the Notification gateway capability and select those templates when requesting delivery.
+
+## Provider-neutral SMTP
+
+The SMTP adapter now exposes only generic template-based email delivery and has no knowledge of Share terminology or message content. Share owns and registers its own email template.
+
+## Immediate history updates
+
+New shares now appear in link history as soon as the Share gateway confirms creation, without depending on the Calendar editor's Save Changes action.
+
+## Reliable history refresh
+
+Failed history requests no longer replace the visible list with an empty result, so confirmed shares remain available while the popup retries synchronization.
+
+## Private shares explain their password requirement
+
+Private calendar link shares now use the standard information bubble to explain why a password is required.
+
+## Secure passwords can be generated in place
+
+A refresh-style control beside the password field creates a secure, readable share password without leaving the form.
+
+## Calendar share URLs are canonical
+
+New ICS and CalDAV links include the calendar name directly and no longer retain token-only compatibility routes.
+
+## Dedicated share emails
+
+Link shares can now email multiple tagged recipients through the SMTP notifier using a share-specific message and action button. Per-sender recipient delivery is limited to once every 12 hours.
+
+## Interactive calendar shares
+
+The Web calendar variant now renders one guest calendar and permits event creation only when the share grants write access.
+
+## Clearer people sharing
+
+People search results appear directly below the search field, selected people retain their full profile cards, and user-share empty text no longer refers to calendar-client links.
+
+## Separate email dialog
+
+The email action now appears beneath each link-share heading and opens a focused recipient dialog instead of switching the share form into edit mode.
+
+## Easy update cancellation
+
+Link and user update forms now include a close action that clears restored values and returns immediately to create mode.
+
+## Simpler variant labels
+
+Calendar variant buttons use concise Web, ICS, and CalDAV labels while access enforcement remains available to calendar clients through response metadata.
+
+## Revocation and expiry
+
+Delivered user-share objects are removed when their share is revoked or expires, and later writes are rejected because the recipient mapping is no longer active.
+
+## Calendar behavior
+
+User-share permission badges follow the selected access mode before creation. Shared calendar names allow a local 30-character name while preserving the immutable shared-by suffix. Responses to events already stored in a shared calendar update that global event instead of importing a duplicate.
+
+## Share actions load the complete share page
+
+Opening a Share notification now performs a full document navigation for its `/share/…` action. This ensures the share page installs its authentication, password-keyring, and renderer hooks instead of being ignored by the dashboard SPA router.
+
+## Share passwords are ready to send
+
+After creating a password-protected link or user share, a popup presents the password in a concealed field with the standard reveal control and a copy action.
+
+## Share history has creation times and form editing
+
+Every share card shows when it was created. Selecting a user-share card loads its recipients, permission, expiry, and other values into the share form for an explicit update instead of editing controls inside the history card.
+
+## User counts and notification actions work reliably
+
+The user-share action updates its recipient count as people are selected or removed. Opening an in-app share notification can now mark that notification read through the canonical inbox route.
+
+## Protected shares prompt instead of appearing missing
+
+The Share gateway now distinguishes a valid password-protected token from an invalid token. The share page receives an authentication challenge, checks the encrypted keyring, prompts when needed, saves the verified password, and then loads the shared object.
+
+## Notification access no longer replaces login state
+
+Logged-in recipients retain their account token when opening a share notification. A separate scoped share token is passed directly to component renderers for shared API operations, so Calendar writes remain permission-controlled without logging the user out.
+
+## Shared calendar appearance stays local
+
+Recipients can change the color of a shared calendar without changing the owner’s calendar. Names, sharing settings, and deletion remain owner-controlled.
+
+## Shared event permissions are explicit
+
+Read-only calendars no longer show a generic editing error. Writable recipients may create, update, and delete events, but cannot answer invitations or change participant responses through the shared calendar.
+
+## Share passwords remain available
+
+When the encrypted keyring is locked, a newly verified share password remains securely in memory for the active session instead of producing a save error.
+
+## SMTP security details open reliably
+
+Configured SMTP two-factor methods can open their management popup even when no displayable secret details are stored.
+
+## Single-step client authentication
+
+Password-protected calendar-client variants now carry a scoped, reproducible transport credential so clients can authenticate without displaying a second password prompt.
+
+## Recognizable calendar identity
+
+CalDAV collection URLs include the calendar name, while discovery continues to publish the display name and effective read-only or read-write privileges.
+
+## Password protection retained
+
+The transport credential is derived from the protected share and does not expose the chosen share password. Direct password authentication remains supported.
+
+## Unlock shares without leaving your page
+
+User-share notifications now open their password prompt inside the signed-in dashboard and reuse a saved keyring password without opening the public share page.
+
+## Shared calendars join the recipient account
+
+After successful authorization, Calendar adds the shared calendar to the recipient's account and opens it directly. Calendar remains responsible for read-only or read-write enforcement and synchronized content.
+
+## User shares notify recipients
+
+Sharing an item with Cognis users now sends a Share-category notification through each recipient's configured notification preferences. The notification opens the shared item directly.
+
+## Passwords stay encrypted in a keyring
+
+Password-protected user shares prompt recipients to unlock the item once and save the verified password in a browser keyring encrypted from their login password. Components access entries through named keyring capabilities rather than plaintext storage.
+
+## Relocking is configurable
+
+Security settings now let users keep the keyring unlocked until logout or automatically relock it after a selected period. Read-only and read-write permissions continue to govern the shared component data.
+
+## Internal packages install locally
+
+All internal Cognis dependency ceilings now include the versions present in this repository, preventing npm from attempting to download private workspace packages from the public registry.
+
+## Version updates stay atomic
+
+Contributor guidance now requires versions, manifests, dependency specifications, the lockfile, and every translated version index to be updated and verified together.
+
+## Calendar-ready link variants
+
+Calendar shares now expose Web, ICS, and CalDAV variants backed by one Share gateway token, so browsers and calendar clients receive the format they expect.
+
+## Sharing popup fixes
+
+Calendar share revocation is authorized correctly, opening the Share popup no longer traps the Calendar editor, and user lookup results show linked profile avatars.
