@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
 
 const values = new Map();
-globalThis.crypto = webcrypto;
+Object.defineProperty(globalThis, "crypto", {
+    configurable: true,
+    value: webcrypto,
+});
 globalThis.localStorage = {
     getItem: (key) => values.get(key) ?? null,
     setItem: (key, value) => values.set(key, String(value)),
@@ -40,4 +43,35 @@ test("locked keyring retains new secrets only for the active session", async () 
     );
     keyring.lockKeyring();
     assert.equal(keyring.getKeyringValue("share:session-token"), null);
+});
+
+test("keyring lists metadata and replaces an invalid stored secret", async () => {
+    const keyring = await import("../reuse/keyring.js");
+    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    await keyring.setKeyringValue("meeting:one:password", "stale", {
+        label: "Weekly meeting",
+        source: "test",
+    });
+    let invalidReported = false;
+    const resolved = await keyring.resolveKeyringValue("meeting:one:password", {
+        validate: (value) => value === "current",
+        prompt: ({ invalid }) => (invalid ? "current" : null),
+        onInvalid: () => {
+            invalidReported = true;
+        },
+        metadata: { label: "Weekly meeting", source: "test" },
+    });
+    assert.equal(resolved, "current");
+    assert.equal(invalidReported, true);
+    assert.equal(
+        keyring
+            .listKeyringEntries()
+            .find((entry) => entry.id === "meeting:one:password")?.label,
+        "Weekly meeting",
+    );
+    assert.equal(
+        await keyring.deleteKeyringValue("meeting:one:password"),
+        true,
+    );
+    keyring.lockKeyring();
 });

@@ -311,7 +311,7 @@ export async function mount(root, { signal } = {}) {
     } = popupManager;
 
     composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: false,
         elements: [
             {
                 id: "calendar-view",

@@ -13,6 +13,10 @@ const PASSWORD_CHANGE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/security-prefs/password-change.js"),
     "utf8",
 );
+const KEYRING_SETTINGS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/keyring-settings.js"),
+    "utf8",
+);
 
 test("auth security preferences disable password reset for external users", () => {
     assert.match(SOURCE, /settings-auth-password-reset/);
@@ -23,6 +27,14 @@ test("auth security preferences disable password reset for external users", () =
     assert.match(SOURCE, /unsupported = capability\.supported !== true/);
     assert.match(SOURCE, /unsupported \? " disabled"/);
     assert.match(SOURCE, /external_password_notice/);
+});
+
+test("keyring settings require password confirmation for secret changes", () => {
+    assert.match(KEYRING_SETTINGS_SOURCE, /listKeyringEntries/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /setKeyringValue/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /deleteKeyringValue/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /alwaysPrompt:\s*true/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /type="password"/);
 });
 
 test("password change popup revalidates confirm password reactively", () => {

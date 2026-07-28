@@ -1,4 +1,11 @@
 import { showToast } from "/static/reuse/toast.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import {
+    getKeyringValue,
+    resolveKeyringValue,
+    setKeyringValue,
+} from "/static/reuse/keyring.js";
 import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,
@@ -43,9 +50,20 @@ export function createEmbedHandlers({
             return;
         }
 
-        const meetingPassword = String(
+        const meetingKeyringId = `meeting:${state.meeting.id}:password`;
+        const suppliedMeetingPassword = String(
             state.meeting.meetingPassword ?? "",
         ).trim();
+        if (!getKeyringValue(meetingKeyringId) && suppliedMeetingPassword) {
+            await setKeyringValue(meetingKeyringId, suppliedMeetingPassword, {
+                label: state.meeting.meetingName || i18n.t("ui.reuse.meeting"),
+                source: "jitsi-meet",
+            });
+        }
+        let meetingPassword = String(
+            getKeyringValue(meetingKeyringId) || suppliedMeetingPassword,
+        ).trim();
+        let submittedStoredPassword = false;
         const themeMode = resolveThemeMode();
         const defaultBackground = resolveJitsiDefaultBackground(themeMode);
         const apiInstance = new window.JitsiMeetExternalAPI(meetingHost, {
@@ -99,6 +117,35 @@ export function createEmbedHandlers({
                 "password",
                 meetingPassword,
             );
+            submittedStoredPassword = true;
+        };
+        const promptForCurrentMeetingPassword = async ({ invalid }) => {
+            let passwordInput = null;
+            const result = await openPopup({
+                title: i18n.t("module.jitsi_meet.keyring_prompt_title"),
+                body: `<label class="stack"><span>${escapeHtml(i18n.t(invalid ? "module.jitsi_meet.keyring_invalid" : "module.jitsi_meet.keyring_prompt"))}</span><input id="jitsi-keyring-password" type="password" autocomplete="off" required></label>`,
+                actions: [
+                    {
+                        id: "save",
+                        label: i18n.t("ui.reuse.save"),
+                        variant: "confirm",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                ],
+                onOpen: (overlay) => {
+                    passwordInput = overlay.querySelector(
+                        "#jitsi-keyring-password",
+                    );
+                    passwordInput?.focus();
+                },
+                onAction: (actionId) =>
+                    actionId !== "save" || Boolean(passwordInput?.value),
+            });
+            return result === "save" ? (passwordInput?.value ?? null) : null;
         };
         const applyParticipantProfile = () => {
             if (state.jitsiApi !== apiInstance) return;
@@ -161,8 +208,26 @@ export function createEmbedHandlers({
                 callbacks.getParticipantRole(event) === "moderator";
             applyPrivilegedMeetingSettings();
         });
-        apiInstance.addEventListener("passwordRequired", () => {
+        apiInstance.addEventListener("passwordRequired", async () => {
             utils.deferAloneParticipantPrompt();
+            if (submittedStoredPassword) {
+                const replacement = await resolveKeyringValue(
+                    meetingKeyringId,
+                    {
+                        validate: () => false,
+                        prompt: promptForCurrentMeetingPassword,
+                        metadata: {
+                            label:
+                                state.meeting.meetingName ||
+                                i18n.t("ui.reuse.meeting"),
+                            source: "jitsi-meet",
+                        },
+                    },
+                );
+                if (!replacement) return;
+                meetingPassword = replacement;
+                submittedStoredPassword = false;
+            }
             submitMeetingPassword();
             applyPrivilegedMeetingSettings();
         });

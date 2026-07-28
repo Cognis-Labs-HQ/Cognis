@@ -142,8 +142,14 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
         /hashParams\.set\([\s\S]*"interfaceConfig\.DEFAULT_BACKGROUND",[\s\S]*resolveJitsiDefaultBackground\(themeMode\)/,
     );
     assert.match(source, /"password",[\s\S]*meetingPassword/);
-    assert.match(source, /addEventListener\("passwordRequired", \(\) => \{/);
+    assert.match(
+        source,
+        /addEventListener\("passwordRequired", async \(\) => \{/,
+    );
     assert.match(source, /const submitMeetingPassword = \(\) =>/);
+    assert.match(source, /meeting:\$\{state\.meeting\.id\}:password/);
+    assert.match(source, /setKeyringValue\(meetingKeyringId/);
+    assert.match(source, /resolveKeyringValue\(/);
     assert.match(
         source,
         /participantRoleChanged[\s\S]*getParticipantRole\(event\) === "moderator"/,
@@ -359,11 +365,11 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(
         source,
-        /apiInstance\.addEventListener\("passwordRequired", \(\) => \{/,
+        /apiInstance\.addEventListener\("passwordRequired", async \(\) => \{/,
     );
     assert.match(
         source,
-        /utils\.deferAloneParticipantPrompt\(\);\n\s*submitMeetingPassword\(\);/,
+        /utils\.deferAloneParticipantPrompt\(\);[\s\S]*resolveKeyringValue[\s\S]*submitMeetingPassword\(\);/,
     );
 
     assert.match(source, /async function loadMeetingState\(\)/);
@@ -510,7 +516,7 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
     assert.match(source, /organizerUsername: resolved\.meeting\.createdBy/);
     assert.match(source, /organizerUsername: meeting\.createdBy/);
     assert.match(source, /excludeUsernames: \[resolved\.requesterUsername\]/);
-    assert.match(source, /!excludedRecipients\.has\(username\)/);
+    assert.match(source, /excludedRecipients\.has\(normalizedCandidate\)/);
     assert.match(source, /senderName:/);
     assert.match(source, /actionUrl: buildMeetingActionUrl/);
     assert.match(source, /resolveMessagesUiResources/);

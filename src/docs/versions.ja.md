@@ -50,7 +50,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`    |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`    |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.20`   |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.26`   |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.27`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.7`    |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`    |
 
@@ -68,7 +68,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/` | `1.1.10`   |
 | Logging               | `src/gateways/logging/`      | `1.5.2`    |
 | Study                 | `src/gateways/study/`        | `1.5.7`    |
-| Calendar              | `src/gateways/calendar/`     | `1.4.22`   |
+| Calendar              | `src/gateways/calendar/`     | `1.4.23`   |
 
 ## コア契約
 
@@ -87,7 +87,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント       | パス                                | バージョン |
 | -------------------- | ----------------------------------- | ---------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`    |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.5`    |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.6`    |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.5`    |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`    |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`    |

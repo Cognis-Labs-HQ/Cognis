@@ -73,4 +73,5 @@
   <string name="module.social.messages.emoji_more">リアクションを追加</string>
   <string name="module.social.messages.emoji_search_placeholder">絵文字を検索…</string>
   <string name="module.social.messages.nav_title">メッセージ</string>
+  <string name="adapter.social.messages.keyring_invalid">保存されたチャットキーが無効だったため更新しました。</string>
 </resources>

@@ -359,6 +359,33 @@ test("requireRoomKey throws detailed errors on failure", async () => {
     );
 });
 
+test("room keys use keyring resolution and refresh invalid secrets", async () => {
+    const imported = { type: "secret" };
+    let invalidRoomId = null;
+    const { getRoomKey } = createRoomKeyStore({
+        importKey: async (hex) => {
+            assert.equal(hex, "current-key");
+            return imported;
+        },
+        resolveSecret: async (id, options) => {
+            assert.equal(id, "chatroom:room-1:key");
+            options.onInvalid();
+            return options.fallback();
+        },
+        fetchRoomKey: async () => ({
+            ok: true,
+            async json() {
+                return { data: { key: "current-key" } };
+            },
+        }),
+        onInvalidSecret: (roomId) => {
+            invalidRoomId = roomId;
+        },
+    });
+    assert.equal(await getRoomKey("room-1"), imported);
+    assert.equal(invalidRoomId, "room-1");
+});
+
 test("messages saved templates are scoped to the current account", () => {
     const source = readMessagesUiBundle();
 

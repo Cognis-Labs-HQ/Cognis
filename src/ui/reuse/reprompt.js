@@ -18,7 +18,7 @@ import { apiFetch } from "./api-client.js";
  *   });
  *
  * @param {{ i18n: { t: (key: string) => string, [key: string]: unknown } }} options
- * @returns {{ runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string }) => Promise<boolean> }}
+ * @returns {{ runWithReprompt: (action: () => Promise<void> | void, config?: { title?: string, message?: string, alwaysPrompt?: boolean }) => Promise<boolean> }}
  */
 export function createRepromptGuard({
     i18n,
@@ -42,13 +42,15 @@ export function createRepromptGuard({
         let warningEl = null;
         let isVerifying = false;
 
-        try {
-            const verificationResponse = await verifyCurrentSession();
-            if (verificationResponse.ok) {
-                await action();
-                return true;
-            }
-        } catch {}
+        if (config.alwaysPrompt !== true) {
+            try {
+                const verificationResponse = await verifyCurrentSession();
+                if (verificationResponse.ok) {
+                    await action();
+                    return true;
+                }
+            } catch {}
+        }
 
         const result = await openPopupImpl({
             title,

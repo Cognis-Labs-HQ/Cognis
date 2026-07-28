@@ -108,4 +108,7 @@
   <string name="module.jitsi_meet.share.delete_failed">Der Freigabelink konnte nicht widerrufen werden.</string>
   <string name="module.jitsi_meet.share.no_meeting">Starten oder betreten Sie zuerst ein Meeting, bevor Sie es teilen.</string>
   <string name="module.jitsi_meet.admin.enable_test_failed">Jitsi Meet muss die Serverprüfung bestehen, bevor es aktiviert werden kann.</string>
+  <string name="module.jitsi_meet.keyring_prompt_title">Besprechungspasswort aktualisieren</string>
+  <string name="module.jitsi_meet.keyring_prompt">Gib das Besprechungspasswort ein.</string>
+  <string name="module.jitsi_meet.keyring_invalid">Das gespeicherte Besprechungspasswort ist ungültig. Gib das aktuelle Passwort ein.</string>
 </resources>

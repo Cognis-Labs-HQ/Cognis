@@ -50,7 +50,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.20` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.26` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.27` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.7`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.0.0`  |
@@ -61,7 +61,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.3.1`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.8`  |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.10` |
 | Share                 | `src/gateways/share/`        | `1.6.20` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.10` |
 | Notification (notify) | `src/gateways/notify/`       | `1.5.1`  |
@@ -70,7 +70,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/` | `1.1.12` |
 | Logging               | `src/gateways/logging/`      | `1.5.3`  |
 | Study                 | `src/gateways/study/`        | `1.5.8`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.22` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.23` |
 
 ## Core contracts
 
@@ -89,7 +89,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version |
 | -------------------- | ----------------------------------- | ------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4` |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.5` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.6` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.5` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6` |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4` |

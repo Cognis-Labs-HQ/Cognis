@@ -53,8 +53,11 @@ ICS-Varianten enden nun mit dem kodierten aktuellen Kalendernamen und `.ics`. Ä
 Schreibgeschützte ICS- und CalDAV-Freigaben lehnen jede verändernde WebDAV-Methode mit `403` und einer `DAV:need-privileges`-Antwort ab. Beschreibbare CalDAV-Freigaben akzeptieren weiterhin unterstützte Terminänderungen.
 
 ## Aktualisierte Kalendersymbole
+
 Öffentliche Kalender verwenden nun ein themenabhängiges Globus-SVG, und das Freigabesymbol ist zur besseren Erkennbarkeit zehn Prozent größer.
+
 ## Sichereres Löschen von Kalendern
+
 Die Löschaktion befindet sich nun bei den anderen Popup-Aktionen und erfordert eine Bestätigung, bevor der Kalender und seine zugehörigen Freigaben entfernt werden.
 
 ## Themenabhängige Sichtbarkeit
@@ -272,3 +275,15 @@ Kalenderfreigaben bieten jetzt Web-, ICS- und CalDAV-Varianten mit demselben Tok
 ## Korrekturen am Freigabefenster
 
 Das Widerrufen von Kalenderfreigaben wird korrekt autorisiert, das Freigabefenster blockiert den Kalendereditor nicht mehr und die Benutzersuche zeigt verknüpfte Profilbilder.
+
+## Geteilte Ereignisse bleiben bevorstehend
+
+Ereignisse aus empfangenen Kalendern bleiben nun unter „Bevorstehende Ereignisse“ sichtbar, Überschriften im Seitenmenü sind zentriert und das Kalenderlayout kann nicht mehr über die Seitenkomposition verändert werden.
+
+## Ein synchronisierter Benutzerschlüsselbund
+
+Der verschlüsselte Browser-Schlüsselbund synchronisiert nur undurchsichtigen Chiffretext über authentifizierte Schlüsselbund-Endpunkte. In den Benutzereinstellungen können Geheimnisse nach ausdrücklicher Passwortbestätigung hinzugefügt, bearbeitet und entfernt werden.
+
+## Besprechungen und Chats nutzen den Schlüsselbund
+
+Erzeugte Besprechungspasswörter und Chat-Verschlüsselungsschlüssel werden automatisch im Schlüsselbund abgelegt. Ist ein bearbeitetes Geheimnis ungültig, entfernt die Schlüsselbundauflösung es und fordert einen aktuellen Wert an oder lädt ihn erneut, damit der Zugriff erhalten bleibt.

@@ -108,4 +108,7 @@
   <string name="module.jitsi_meet.share.delete_failed">共有リンクを無効化できませんでした。</string>
   <string name="module.jitsi_meet.share.no_meeting">共有する前にミーティングを開始するか参加してください。</string>
   <string name="module.jitsi_meet.admin.enable_test_failed">Jitsi Meet を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
+  <string name="module.jitsi_meet.keyring_prompt_title">会議パスワードを更新</string>
+  <string name="module.jitsi_meet.keyring_prompt">会議パスワードを入力してください。</string>
+  <string name="module.jitsi_meet.keyring_invalid">保存された会議パスワードが無効です。現在のパスワードを入力してください。</string>
 </resources>

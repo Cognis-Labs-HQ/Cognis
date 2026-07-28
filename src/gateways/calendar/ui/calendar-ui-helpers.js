@@ -196,6 +196,7 @@ function collectUpcomingEvents(
                 !selectedCalendarId || event.calendarId === selectedCalendarId,
         )
         .filter((event) => {
+            if (event.calendarVisibility === "shared") return true;
             if (!currentAccountId) return true;
             if (event.createdBy === currentAccountId) return true;
             const response = String(

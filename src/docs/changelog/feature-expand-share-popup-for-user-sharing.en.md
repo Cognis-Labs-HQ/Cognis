@@ -53,8 +53,11 @@ ICS variants now end with the encoded live calendar name and `.ics`. Older token
 Read-only ICS and CalDAV shares reject every mutating WebDAV method with `403` and a `DAV:need-privileges` response. Writable CalDAV shares continue to accept supported event writes.
 
 ## Updated calendar icons
+
 Public calendars now use a theme-aware globe SVG, and the share icon is ten percent larger for clearer recognition.
+
 ## Safer calendar deletion
+
 The delete action now sits with the other popup actions and requires confirmation before the calendar and its associated shares are removed.
 
 ## Theme-aware visibility
@@ -272,3 +275,15 @@ Calendar shares now expose Web, ICS, and CalDAV variants backed by one Share gat
 ## Sharing popup fixes
 
 Calendar share revocation is authorized correctly, opening the Share popup no longer traps the Calendar editor, and user lookup results show linked profile avatars.
+
+## Shared Events Stay Upcoming
+
+Events from received calendars now remain visible in Upcoming Events, side-menu headings are centered, and the Calendar layout can no longer be rearranged with page-composer editing.
+
+## A Synced User Keyring
+
+The encrypted browser keyring now synchronizes only opaque ciphertext through authenticated keyring endpoints. User Settings includes a Keyring page for adding, editing, and removing secrets after an explicit password confirmation.
+
+## Meetings and Chats Use the Keyring
+
+Generated meeting passwords and chat encryption keys are added to the keyring automatically. If an edited secret is invalid, keyring resolution removes it and prompts for or retrieves a current value so access continues.

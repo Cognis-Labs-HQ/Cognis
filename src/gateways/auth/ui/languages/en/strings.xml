@@ -29,4 +29,19 @@
   <string name="gateway.auth.security.keyring_relock">Automatically lock the keyring</string>
   <string name="gateway.auth.security.keyring_logout">At logout</string>
   <string name="gateway.auth.security.keyring_minutes">minutes</string>
+  <string name="gateway.auth.keyring.section_title">Keyring</string>
+  <string name="gateway.auth.keyring.description">Manage encrypted passwords and keys used by meetings, chats, and protected shares. Your password must be confirmed before a secret can be changed.</string>
+  <string name="gateway.auth.keyring.empty">No secrets are stored.</string>
+  <string name="gateway.auth.keyring.add">Add Secret</string>
+  <string name="gateway.auth.keyring.add_title">Add Secret</string>
+  <string name="gateway.auth.keyring.edit_title">Edit Secret</string>
+  <string name="gateway.auth.keyring.label">Name</string>
+  <string name="gateway.auth.keyring.identifier">Identifier</string>
+  <string name="gateway.auth.keyring.value">Secret</string>
+  <string name="gateway.auth.keyring.secret_hidden">Secret value hidden</string>
+  <string name="gateway.auth.keyring.saved">Secret saved.</string>
+  <string name="gateway.auth.keyring.deleted">Secret removed.</string>
+  <string name="gateway.auth.keyring.invalid">The stored secret is invalid. Enter the current secret to restore access.</string>
+  <string name="gateway.auth.keyring.prompt_title">Update Stored Secret</string>
+  <string name="gateway.auth.keyring.prompt_message">The stored secret no longer works. Enter the current secret.</string>
 </resources>

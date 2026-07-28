@@ -16,6 +16,17 @@ Do this before exploration, implementation, linting, or testing so the required 
 
 ## Architecture
 
+### User-specific secrets belong in the keyring
+
+Use `src/ui/reuse/keyring.js` as the canonical storage and retrieval surface
+for passwords, encryption keys, and other user-specific secrets. Never add a
+new plaintext `localStorage`, `sessionStorage`, preference, or component-owned
+secret cache. Components that generate or receive a secret must contribute it
+to the keyring immediately with a stable capability-owned identifier and useful
+metadata. Retrieval must use the keyring resolver so an invalid edited value is
+removed and the user is prompted, or an authoritative source is consulted,
+without permanently breaking access.
+
 ### Route handlers must be thin and provider-agnostic
 
 Route handlers should be unassuming about the details of any backing service or gateway. The goal is plug-and-play provider support: switching a provider (e.g. database, auth, file storage) should require only an environment variable change — the core codebase never knows the difference. All concrete interactions are encapsulated behind gateway/adapter abstractions.

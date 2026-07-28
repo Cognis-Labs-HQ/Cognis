@@ -188,9 +188,7 @@ export function createCalendarEditPopupHandler({
                     ? [
                           {
                               id: "delete",
-                              label: i18n.t(
-                                  "gateway.calendar.delete_calendar",
-                              ),
+                              label: i18n.t("gateway.calendar.delete_calendar"),
                               variant: "cancel",
                           },
                       ]

@@ -501,6 +501,22 @@ test("calendar upcoming and pending event helpers exclude past events via endAt 
     );
 });
 
+test("shared events stay visible in Upcoming and calendar layout is fixed", () => {
+    assert.match(
+        HELPERS_SOURCE,
+        /event\.calendarVisibility === "shared"\) return true/,
+    );
+    assert.match(APP_SOURCE, /allowCustomization:\s*false/);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-heading h3\s*\{[\s\S]*text-align:\s*center/,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-subsection h4\s*\{[\s\S]*text-align:\s*center/,
+    );
+});
+
 test("calendar share renderer displays one calendar and enables scoped writes", () => {
     assert.match(SHARE_RENDERER_SOURCE, /registerShareRenderer\(\s*"calendar"/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
@@ -533,7 +549,10 @@ test("shared calendar settings expose recipient-local name and color", () => {
         /delete_calendar_confirm_title/,
     );
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /confirmed !== "delete"/);
-    assert.doesNotMatch(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-delete-zone/);
+    assert.doesNotMatch(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-delete-zone/,
+    );
 });
 
 test("calendar visibility uses theme-aware SVG icons", () => {

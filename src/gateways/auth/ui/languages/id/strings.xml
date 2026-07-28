@@ -29,4 +29,19 @@
   <string name="gateway.auth.security.keyring_relock">Kunci keyring secara otomatis</string>
   <string name="gateway.auth.security.keyring_logout">Saat keluar</string>
   <string name="gateway.auth.security.keyring_minutes">menit</string>
+  <string name="gateway.auth.keyring.section_title">Keyring</string>
+  <string name="gateway.auth.keyring.description">Kelola kata sandi dan kunci terenkripsi yang digunakan rapat, obrolan, dan berbagi terlindungi. Kata sandi Anda harus dikonfirmasi sebelum rahasia diubah.</string>
+  <string name="gateway.auth.keyring.empty">Tidak ada rahasia yang tersimpan.</string>
+  <string name="gateway.auth.keyring.add">Tambah Rahasia</string>
+  <string name="gateway.auth.keyring.add_title">Tambah Rahasia</string>
+  <string name="gateway.auth.keyring.edit_title">Edit Rahasia</string>
+  <string name="gateway.auth.keyring.label">Nama</string>
+  <string name="gateway.auth.keyring.identifier">Pengenal</string>
+  <string name="gateway.auth.keyring.value">Rahasia</string>
+  <string name="gateway.auth.keyring.secret_hidden">Nilai rahasia disembunyikan</string>
+  <string name="gateway.auth.keyring.saved">Rahasia disimpan.</string>
+  <string name="gateway.auth.keyring.deleted">Rahasia dihapus.</string>
+  <string name="gateway.auth.keyring.invalid">Rahasia tersimpan tidak valid. Masukkan rahasia saat ini untuk memulihkan akses.</string>
+  <string name="gateway.auth.keyring.prompt_title">Perbarui Rahasia Tersimpan</string>
+  <string name="gateway.auth.keyring.prompt_message">Rahasia tersimpan tidak lagi berfungsi. Masukkan rahasia saat ini.</string>
 </resources>

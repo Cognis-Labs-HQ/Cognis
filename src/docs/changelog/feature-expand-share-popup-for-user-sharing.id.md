@@ -53,8 +53,11 @@ Varian ICS kini berakhir dengan nama kalender aktif yang dikodekan dan `.ics`. A
 Berbagi ICS dan CalDAV baca-saja menolak setiap metode WebDAV yang mengubah data dengan `403` dan respons `DAV:need-privileges`. Berbagi CalDAV baca-tulis tetap menerima perubahan acara yang didukung.
 
 ## Ikon kalender diperbarui
+
 Kalender publik kini menggunakan SVG globe yang mengikuti tema, dan ikon berbagi diperbesar sepuluh persen agar lebih mudah dikenali.
+
 ## Penghapusan kalender lebih aman
+
 Tindakan hapus kini berada bersama tindakan popup lainnya dan memerlukan konfirmasi sebelum kalender beserta berbagi terkait dihapus.
 
 ## Visibilitas sesuai tema
@@ -272,3 +275,15 @@ Berbagi kalender kini menyediakan varian Web, ICS, dan CalDAV dengan satu token 
 ## Perbaikan popup berbagi
 
 Pencabutan berbagi kalender kini diotorisasi dengan benar, popup Share tidak lagi mengunci editor Kalender, dan pencarian pengguna menampilkan avatar profil yang tertaut.
+
+## Acara bersama tetap akan datang
+
+Acara dari kalender yang diterima kini tetap terlihat di Acara Mendatang, judul menu samping dipusatkan, dan tata letak Kalender tidak lagi dapat disusun ulang melalui pengeditan komposer halaman.
+
+## Keyring pengguna tersinkronisasi
+
+Keyring peramban terenkripsi kini hanya menyinkronkan ciphertext buram melalui endpoint keyring terautentikasi. Pengaturan Pengguna menyediakan halaman Keyring untuk menambah, mengedit, dan menghapus rahasia setelah konfirmasi kata sandi secara eksplisit.
+
+## Rapat dan obrolan memakai keyring
+
+Kata sandi rapat dan kunci enkripsi obrolan yang dibuat otomatis ditambahkan ke keyring. Jika rahasia yang diedit tidak valid, resolusi keyring menghapusnya lalu meminta atau mengambil nilai terkini agar akses tetap berjalan.

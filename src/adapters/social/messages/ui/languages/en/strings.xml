@@ -73,4 +73,5 @@
   <string name="module.social.messages.emoji_more">More Reactions</string>
   <string name="module.social.messages.emoji_search_placeholder">Search emojis…</string>
   <string name="module.social.messages.nav_title">Messages</string>
+  <string name="adapter.social.messages.keyring_invalid">The stored chat key was invalid and has been refreshed.</string>
 </resources>

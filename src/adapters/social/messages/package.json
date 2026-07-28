@@ -1,6 +1,6 @@
 {
     "name": "@cognis/adapter-social-messages",
-    "version": "1.4.26",
+    "version": "1.4.27",
     "description": "Private messaging and chatrooms.",
     "type": "module",
     "main": "index.ts",

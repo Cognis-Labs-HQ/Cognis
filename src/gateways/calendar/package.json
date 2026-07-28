@@ -1,6 +1,6 @@
 {
     "name": "@cognis/gateway-calendar",
-    "version": "1.4.22",
+    "version": "1.4.23",
     "description": "Calendar gateway for events, shares, and exports.",
     "type": "module",
     "private": true,

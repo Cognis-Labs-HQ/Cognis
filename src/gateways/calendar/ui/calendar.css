@@ -312,13 +312,15 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .calendar-toolbar-heading {
+    position: relative;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     gap: 0.6rem;
 }
 
 .calendar-toolbar-heading h3 {
+    text-align: center;
     margin: 0;
     flex: 1 1 auto;
     min-width: 0;
@@ -328,6 +330,8 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .toolbar .calendar-toolbar-add {
+    position: absolute;
+    inset-inline-end: 0;
     border: 1px solid var(--field-border);
     border-radius: 8px;
     background: transparent;
@@ -840,6 +844,7 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .calendar-toolbar-subsection h4 {
+    text-align: center;
     margin: 0;
     font-size: 0.85rem;
 }

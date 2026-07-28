@@ -108,4 +108,7 @@
   <string name="module.jitsi_meet.share.delete_failed">Tautan bagikan tidak dapat dicabut.</string>
   <string name="module.jitsi_meet.share.no_meeting">Mulai atau gabung ke rapat sebelum membagikannya.</string>
   <string name="module.jitsi_meet.admin.enable_test_failed">Jitsi Meet harus lulus pemeriksaan server sebelum dapat diaktifkan.</string>
+  <string name="module.jitsi_meet.keyring_prompt_title">Perbarui Kata Sandi Rapat</string>
+  <string name="module.jitsi_meet.keyring_prompt">Masukkan kata sandi rapat.</string>
+  <string name="module.jitsi_meet.keyring_invalid">Kata sandi rapat yang tersimpan tidak valid. Masukkan kata sandi saat ini.</string>
 </resources>

@@ -12,6 +12,7 @@ import type {
 import { MemoryRateLimiter } from "../rate-limiter.js";
 import { PASSWORD_RESET_RATE_LIMIT_MS } from "../route-runtime.js";
 import { createLoginLinkRoutes } from "./login-links.js";
+import { createKeyringRoutes } from "./keyring.js";
 import { createPasswordRoutes } from "./password.js";
 import { createRegistrationRoutes } from "./registration.js";
 import { createSecurityRoutes, type SecuritySubsection } from "./security.js";
@@ -68,6 +69,7 @@ export function createAuthGatewayRoutes(
     );
 
     const handlers: AuthGatewayRouteHandler[] = [
+        createKeyringRoutes(capabilities),
         createSessionRoutes({
             authGateway,
             accountStore,
