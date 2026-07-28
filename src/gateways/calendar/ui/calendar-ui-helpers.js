@@ -296,7 +296,12 @@ function visibilityIcon(visibility, sharedPermission = null, i18n) {
         );
         return `<span class="calendar-visibility-icon calendar-visibility-icon--private" role="img" aria-label="${privateLabel}" title="${privateLabel}"></span>`;
     }
-    if (visibility === "shared") return "🤝";
+    if (visibility === "shared") {
+        const sharedLabel = escapeHtml(
+            i18n.t("gateway.calendar.visibility_shared"),
+        );
+        return `<span class="calendar-visibility-icon calendar-visibility-icon--shared" role="img" aria-label="${sharedLabel}" title="${sharedLabel}"></span>`;
+    }
     return "🌐";
 }
 

@@ -289,6 +289,50 @@ export class CoreShareGateway {
         );
     }
 
+    async removeUserRecipient(input: {
+        shareId: string;
+        recipientAccountId: string;
+    }): Promise<"updated" | "deleted" | "not_found"> {
+        const record = await this.store.getById(input.shareId);
+        if (!record) return "not_found";
+        const recipients = record.accessControls.recipients;
+        const nextRecipients = recipients.filter(
+            (recipient) =>
+                !(
+                    recipient.type === "user" &&
+                    recipient.id === input.recipientAccountId
+                ),
+        );
+        if (nextRecipients.length === recipients.length) return "not_found";
+        if (nextRecipients.length === 0) {
+            await this.store.deleteById({ shareId: record.id });
+            return "deleted";
+        }
+        await this.store.updateById({
+            shareId: record.id,
+            ownerAccountId: record.ownerAccountId,
+            accessControls: {
+                ...record.accessControls,
+                recipients: nextRecipients,
+            },
+        });
+        return "updated";
+    }
+
+    async deleteResourceShares(input: {
+        ownerAccountId: string;
+        resourceType: string;
+        resourceId: string;
+    }): Promise<number> {
+        const records = await this.store.listByOwner(input);
+        await Promise.all(
+            records.map((record) =>
+                this.store.deleteById({ shareId: record.id }),
+            ),
+        );
+        return records.length;
+    }
+
     private async assertNoDuplicateUserRecipients(input: {
         ownerAccountId: string;
         resourceType: string;

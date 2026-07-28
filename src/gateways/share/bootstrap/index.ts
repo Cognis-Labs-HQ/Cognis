@@ -88,6 +88,37 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.deleteToken.bind(gateway),
     );
     ctx.capabilities.contribute(
+        "share:removeUserRecipient",
+        async (input: { shareId: string; recipientAccountId: string }) => {
+            const result = await gateway.removeUserRecipient(input);
+            ctx.log?.("info", "Removed recipient from user share.", {
+                component: "share-gateway",
+                operation: "remove_user_recipient",
+                shareId: input.shareId,
+                recipientAccountId: input.recipientAccountId,
+                result,
+            });
+            return result;
+        },
+    );
+    ctx.capabilities.contribute(
+        "share:deleteResourceShares",
+        async (input: {
+            ownerAccountId: string;
+            resourceType: string;
+            resourceId: string;
+        }) => {
+            const deletedCount = await gateway.deleteResourceShares(input);
+            ctx.log?.("info", "Deleted shares for removed resource.", {
+                component: "share-gateway",
+                operation: "delete_resource_shares",
+                ...input,
+                deletedCount,
+            });
+            return deletedCount;
+        },
+    );
+    ctx.capabilities.contribute(
         "share:updateToken",
         gateway.updateToken.bind(gateway),
     );
@@ -162,7 +193,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.6.19",
+        version: "1.6.20",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
         hasAdapters: true,

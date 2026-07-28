@@ -15,6 +15,7 @@ export type CalendarShareLinkRegistryRecord = {
 
 export type CalendarUserShareRegistryRecord = {
     id: string;
+    shareTokenId: string | null;
     ownerAccountId: string;
     ownerCalendarId: string;
     recipientAccountId: string;
@@ -80,6 +81,7 @@ export class CalendarShareRegistry {
             name: "calendar_user_shares",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
+                { name: "share_token_id", type: "text" },
                 { name: "owner_account_id", type: "text", notNull: true },
                 { name: "owner_calendar_id", type: "text", notNull: true },
                 { name: "recipient_account_id", type: "text", notNull: true },
@@ -251,6 +253,7 @@ export class CalendarShareRegistry {
             table: "calendar_user_shares",
             columns: [
                 "id",
+                "share_token_id",
                 "owner_account_id",
                 "owner_calendar_id",
                 "recipient_account_id",
@@ -270,6 +273,7 @@ export class CalendarShareRegistry {
         });
         const shares = (result.rows ?? []).map((row) => ({
             id: String(row.id ?? ""),
+            shareTokenId: this.normalizeOptionalString(row.share_token_id),
             ownerAccountId: String(row.owner_account_id ?? ""),
             ownerCalendarId: String(row.owner_calendar_id ?? ""),
             recipientAccountId: String(row.recipient_account_id ?? ""),
@@ -330,7 +334,8 @@ export class CalendarShareRegistry {
             (share) => share.recipientAccountId === input.recipientAccountId,
         );
         const share: CalendarUserShareRegistryRecord = {
-            id: existing?.id ?? input.shareId ?? randomUUID(),
+            id: existing?.id ?? randomUUID(),
+            shareTokenId: input.shareId ?? existing?.shareTokenId ?? null,
             ownerAccountId: input.ownerAccountId,
             ownerCalendarId: input.ownerCalendarId,
             recipientAccountId: input.recipientAccountId,
@@ -353,6 +358,7 @@ export class CalendarShareRegistry {
             table: "calendar_user_shares",
             values: {
                 id: share.id,
+                share_token_id: share.shareTokenId,
                 owner_account_id: share.ownerAccountId,
                 owner_calendar_id: share.ownerCalendarId,
                 recipient_account_id: share.recipientAccountId,
@@ -370,6 +376,7 @@ export class CalendarShareRegistry {
                 target: ["id"],
                 update: {
                     recipient_handle: share.recipientHandle,
+                    share_token_id: share.shareTokenId,
                     recipient_display_name: share.recipientDisplayName,
                     recipient_avatar_key: share.recipientAvatarKey,
                     permission: share.permission,
@@ -447,6 +454,7 @@ export class CalendarShareRegistry {
             table: "calendar_user_shares",
             columns: [
                 "id",
+                "share_token_id",
                 "owner_account_id",
                 "owner_calendar_id",
                 "recipient_account_id",
@@ -466,6 +474,9 @@ export class CalendarShareRegistry {
         return row
             ? {
                   id: String(row.id),
+                  shareTokenId: this.normalizeOptionalString(
+                      row.share_token_id,
+                  ),
                   ownerAccountId: String(row.owner_account_id),
                   ownerCalendarId: String(row.owner_calendar_id),
                   recipientAccountId: String(row.recipient_account_id),
@@ -487,11 +498,38 @@ export class CalendarShareRegistry {
             : null;
     }
 
-    async deleteCalendarUserShareByShareId(shareId: string): Promise<boolean> {
-        const share = await this.getCalendarUserShareById(shareId);
-        if (!share) return false;
-        await this.deleteCalendarUserShareById(shareId);
-        return true;
+    async listCalendarUserSharesByTokenId(
+        shareTokenId: string,
+    ): Promise<CalendarUserShareRegistryRecord[]> {
+        if (!this.db) {
+            return Array.from(this.memoryUserShares.values()).filter(
+                (share) => share.shareTokenId === shareTokenId,
+            );
+        }
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "calendar_user_shares",
+            columns: ["id"],
+            where: [{ column: "share_token_id", value: shareTokenId }],
+        });
+        const shares = await Promise.all(
+            (result.rows ?? []).map((row) =>
+                this.getCalendarUserShareById(String(row.id ?? "")),
+            ),
+        );
+        return shares.filter(
+            (share): share is CalendarUserShareRegistryRecord => Boolean(share),
+        );
+    }
+
+    async deleteCalendarUserSharesByTokenId(
+        shareTokenId: string,
+    ): Promise<number> {
+        const shares = await this.listCalendarUserSharesByTokenId(shareTokenId);
+        await Promise.all(
+            shares.map((share) => this.deleteCalendarUserShareById(share.id)),
+        );
+        return shares.length;
     }
 
     async getByRecipientCalendarId(
@@ -513,6 +551,7 @@ export class CalendarShareRegistry {
             table: "calendar_user_shares",
             columns: [
                 "id",
+                "share_token_id",
                 "owner_account_id",
                 "owner_calendar_id",
                 "recipient_account_id",
@@ -534,6 +573,7 @@ export class CalendarShareRegistry {
         if (!row) return null;
         const share: CalendarUserShareRegistryRecord = {
             id: String(row.id ?? ""),
+            shareTokenId: this.normalizeOptionalString(row.share_token_id),
             ownerAccountId: String(row.owner_account_id ?? ""),
             ownerCalendarId: String(row.owner_calendar_id ?? ""),
             recipientAccountId: String(row.recipient_account_id ?? ""),

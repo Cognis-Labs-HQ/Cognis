@@ -374,6 +374,10 @@ test("calendar toolbar shows shared visibility icon", () => {
     assert.match(CSS_SOURCE, /view-eye-dark\.svg/);
     assert.match(CSS_SOURCE, /secure-light\.svg/);
     assert.match(CSS_SOURCE, /secure-dark\.svg/);
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--shared/);
+    assert.match(CSS_SOURCE, /share-light\.svg/);
+    assert.match(CSS_SOURCE, /share-dark\.svg/);
+    assert.doesNotMatch(HELPERS_SOURCE, /🤝/);
 });
 
 test("event composer excludes read-only shared calendars", () => {
@@ -520,6 +524,10 @@ test("shared calendar settings expose recipient-local name and color", () => {
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /renderInfoTooltip/);
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /maxlength="30"/);
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /immutableSharedSuffix/);
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /!calendar\.isDefault \? `<div class="calendar-delete-zone"/,
+    );
 });
 
 test("shared calendar events are excluded from quick response controls", () => {

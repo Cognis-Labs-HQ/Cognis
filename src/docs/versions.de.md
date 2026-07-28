@@ -60,7 +60,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.7.5`  |
-| Share                 | `src/gateways/share/`        | `1.6.19` |
+| Share                 | `src/gateways/share/`        | `1.6.20` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.10` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -68,7 +68,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/` | `1.1.10` |
 | Logging               | `src/gateways/logging/`      | `1.5.2`  |
 | Study                 | `src/gateways/study/`        | `1.5.7`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.20` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.21` |
 
 ## Kernverträge
 
@@ -87,7 +87,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version |
 | -------------------- | ----------------------------------- | ------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4` |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.3` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.3` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.4` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.4` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6` |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4` |

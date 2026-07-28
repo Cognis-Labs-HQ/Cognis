@@ -47,6 +47,18 @@ class MemoryExecutor {
             );
             return { rows: entries };
         }
+        if (command.option === "UPDATE") {
+            let rowCount = 0;
+            for (const [key, row] of this.rows.entries()) {
+                const matches = (command.where ?? []).every(
+                    (condition) => row[condition.column] === condition.value,
+                );
+                if (!matches) continue;
+                this.rows.set(key, { ...row, ...command.values });
+                rowCount += 1;
+            }
+            return { rowCount };
+        }
         if (command.option === "DELETE") {
             for (const [key, row] of this.rows.entries()) {
                 const matches = (command.where ?? []).every(
@@ -491,4 +503,80 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(typeof deliveredShares[0]?.shareId, "string");
     assert.ok(String(deliveredShares[0]?.shareId ?? "").length > 0);
     assert.equal(deliveredShares.length, 1);
+
+    const restrictedShareId = String(restrictedCreateResponse.body.data.id);
+    const addSecondRecipientResponse = await dispatchJson(
+        "PATCH",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(restrictedShareId)}`,
+        {
+            accessControls: {
+                recipients: [
+                    { type: "user", id: "bob" },
+                    { type: "user", id: "diana" },
+                ],
+            },
+        },
+    );
+    assert.equal(addSecondRecipientResponse.statusCode, 200);
+    const removeUserRecipient = capabilities.get<
+        (input: {
+            shareId: string;
+            recipientAccountId: string;
+        }) => Promise<"updated" | "deleted" | "not_found">
+    >("share:removeUserRecipient");
+    assert.equal(
+        await removeUserRecipient?.({
+            shareId: restrictedShareId,
+            recipientAccountId: "bob",
+        }),
+        "updated",
+    );
+    const afterBobLeaves = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
+    );
+    const remainingShare = afterBobLeaves.body.data.find(
+        (share: { id?: string }) => share.id === restrictedShareId,
+    );
+    assert.equal(remainingShare.accessControls.recipients.length, 1);
+    assert.equal(remainingShare.accessControls.recipients[0].id, "diana");
+    assert.equal(
+        await removeUserRecipient?.({
+            shareId: restrictedShareId,
+            recipientAccountId: "diana",
+        }),
+        "deleted",
+    );
+    const afterLastRecipientLeaves = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
+    );
+    assert.equal(
+        afterLastRecipientLeaves.body.data.some(
+            (share: { id?: string }) => share.id === restrictedShareId,
+        ),
+        false,
+    );
+    const deleteResourceShares = capabilities.get<
+        (input: {
+            ownerAccountId: string;
+            resourceType: string;
+            resourceId: string;
+        }) => Promise<number>
+    >("share:deleteResourceShares");
+    const deletedResourceShareCount = await deleteResourceShares?.({
+        ownerAccountId: "alice",
+        resourceType: "meeting",
+        resourceId: "meeting-1",
+    });
+    assert.ok((deletedResourceShareCount ?? 0) > 0);
+    const afterResourceDeletion = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
+    );
+    assert.equal(afterResourceDeletion.body.data.length, 0);
 });

@@ -247,12 +247,20 @@
     background-image: url("/static/assets/reuse/secure-light.svg");
 }
 
+.calendar-visibility-icon--shared {
+    background-image: url("/static/assets/reuse/share-light.svg");
+}
+
 body[data-theme="dark"] .calendar-visibility-icon--read-only {
     background-image: url("/static/assets/reuse/view-eye-dark.svg");
 }
 
 body[data-theme="dark"] .calendar-visibility-icon--private {
     background-image: url("/static/assets/reuse/secure-dark.svg");
+}
+
+body[data-theme="dark"] .calendar-visibility-icon--shared {
+    background-image: url("/static/assets/reuse/share-dark.svg");
 }
 
 .calendar-item-btn[data-current="true"] .calendar-item-label {

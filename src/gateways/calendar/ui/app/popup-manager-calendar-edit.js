@@ -175,7 +175,7 @@ export function createCalendarEditPopupHandler({
                         showDefaultTooltip: true,
                     })
           }
-          ${!calendar.isDefault && !isShared ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
+          ${!calendar.isDefault ? `<div class="calendar-delete-zone"><button type="button" id="calendar-edit-delete" class="btn-cancel btn-no-animation">${escapeHtml(i18n.t("gateway.calendar.delete_calendar"))}</button></div>` : ""}
         </div>`;
             },
             closeProtection: false,

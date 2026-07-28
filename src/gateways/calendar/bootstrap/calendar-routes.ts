@@ -65,6 +65,7 @@ export function createCalendarCoreRoutes({
     log,
     getDispatchNotification,
     ensureNotificationCategory,
+    getCapability,
 }: {
     gateway: CoreCalendarGateway;
     shareRegistry: CalendarShareRegistry;
@@ -87,6 +88,7 @@ export function createCalendarCoreRoutes({
     log?: CalendarLogger;
     getDispatchNotification: () => NotificationDispatcher | null;
     ensureNotificationCategory: () => void;
+    getCapability: <T>(capabilityId: string) => T | undefined;
 }): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(routeContext);
     const externalHost =
@@ -561,12 +563,62 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             if (sharedCalendar?.recipientAccountId === claims.sub) {
-                sendCalendarError(
-                    res,
-                    "forbidden",
-                    "Shared calendars cannot be deleted by recipients.",
-                    403,
-                );
+                const removeUserShareRecipient = getCapability<
+                    (input: {
+                        shareId: string;
+                        recipientAccountId: string;
+                    }) => Promise<"updated" | "deleted" | "not_found">
+                >("share:removeUserRecipient");
+                if (!removeUserShareRecipient) {
+                    sendCalendarError(
+                        res,
+                        "service_unavailable",
+                        "Share recipient removal is unavailable.",
+                        503,
+                    );
+                    return true;
+                }
+                if (!sharedCalendar.shareTokenId) {
+                    sendCalendarError(
+                        res,
+                        "not_found",
+                        "Share token not found.",
+                        404,
+                    );
+                    return true;
+                }
+                const removalResult = await removeUserShareRecipient({
+                    shareId: sharedCalendar.shareTokenId,
+                    recipientAccountId: claims.sub,
+                });
+                if (removalResult === "not_found") {
+                    sendCalendarError(
+                        res,
+                        "not_found",
+                        "Share not found.",
+                        404,
+                    );
+                    return true;
+                }
+                await shareRegistry.deleteCalendarUserShare({
+                    ownerAccountId: sharedCalendar.ownerAccountId,
+                    ownerCalendarId: sharedCalendar.ownerCalendarId,
+                    shareId: sharedCalendar.id,
+                });
+                gateway.deleteCalendar({
+                    ownerAccountId: claims.sub,
+                    calendarId,
+                });
+                await gateway.flushStore();
+                log?.("info", "Calendar recipient left user share.", {
+                    component: "calendar-gateway",
+                    operation: "leave_calendar_share",
+                    calendarId: sharedCalendar.ownerCalendarId,
+                    recipientAccountId: claims.sub,
+                    shareId: sharedCalendar.shareTokenId,
+                    shareDeleted: removalResult === "deleted",
+                });
+                sendJson(res, 200, { data: { deleted: true } });
                 return true;
             }
             try {
@@ -583,6 +635,61 @@ export function createCalendarCoreRoutes({
                     );
                     return true;
                 }
+                if (ownedCalendar.isDefault) {
+                    sendCalendarError(
+                        res,
+                        "conflict",
+                        "Default calendar cannot be deleted.",
+                        409,
+                    );
+                    return true;
+                }
+                const deleteResourceShares = getCapability<
+                    (input: {
+                        ownerAccountId: string;
+                        resourceType: string;
+                        resourceId: string;
+                    }) => Promise<number>
+                >("share:deleteResourceShares");
+                const userShares = await shareRegistry.listCalendarUserShares(
+                    claims.sub,
+                    calendarId,
+                );
+                for (const userShare of userShares) {
+                    const recipientCalendar = gateway.getOwnedCalendar(
+                        userShare.recipientAccountId,
+                        userShare.recipientCalendarId,
+                    );
+                    if (recipientCalendar?.visibility === "shared") {
+                        gateway.deleteCalendar({
+                            ownerAccountId: userShare.recipientAccountId,
+                            calendarId: userShare.recipientCalendarId,
+                        });
+                    }
+                    await shareRegistry.deleteCalendarUserShare({
+                        ownerAccountId: claims.sub,
+                        ownerCalendarId: calendarId,
+                        shareId: userShare.id,
+                    });
+                }
+                const shareLinks = await shareRegistry.listShareLinks(
+                    claims.sub,
+                    calendarId,
+                );
+                await Promise.all(
+                    shareLinks.map((shareLink) =>
+                        shareRegistry.deleteShareLink({
+                            ownerAccountId: claims.sub,
+                            calendarId,
+                            shareId: shareLink.id,
+                        }),
+                    ),
+                );
+                await deleteResourceShares?.({
+                    ownerAccountId: claims.sub,
+                    resourceType: "calendar",
+                    resourceId: calendarId,
+                });
                 const deletedEventIds = gateway
                     .listEvents(calendarId)
                     .map((event) => event.id);
