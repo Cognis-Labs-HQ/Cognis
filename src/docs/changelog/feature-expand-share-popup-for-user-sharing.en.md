@@ -311,3 +311,7 @@ Keyring entries now identify the component that stored them, expand on click, an
 ## Database-backed opaque keyring vaults
 
 Encrypted keyring envelopes now persist in a dedicated authentication database table instead of the general preference store. The browser fetches and decrypts the envelope only as part of unlocking, and locked Keyring settings render synthetic placeholders without secret identifiers, metadata, or values in the DOM.
+
+## Revalidated protected calendar access
+
+Every load of a password-protected recipient calendar now revalidates its share password on the server. Calendar loading first unlocks and checks the user's keyring, prompts when the key is absent or invalid, and offers an explicit opt-out control so recipients can choose not to save the verified password.

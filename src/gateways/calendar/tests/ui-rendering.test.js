@@ -17,6 +17,10 @@ const APP_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
     "utf8",
 );
+const CALENDAR_API_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-api.js"),
+    "utf8",
+);
 const TIMED_GRID_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.js"),
     "utf8",
@@ -68,6 +72,14 @@ const POPUP_MANAGER_RESPONSE_SOURCE = readFileSync(
 );
 const BOOTSTRAP_HELPERS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/bootstrap/helpers.ts"),
+    "utf8",
+);
+const CALENDAR_ROUTES_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/calendar-routes.ts"),
+    "utf8",
+);
+const SHARED_PASSWORD_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/shared-password.ts"),
     "utf8",
 );
 const POPUP_MANAGER_PENDING_RESPONSE_SOURCE = readFileSync(
@@ -578,4 +590,14 @@ test("responses for globally stored events bypass calendar import", () => {
         /responseUpdatesExistingEvent !== true/,
     );
     assert.match(BOOTSTRAP_HELPERS_SOURCE, /responseUpdatesExistingEvent:/);
+});
+
+test("shared calendar event loading resolves password protection through keyring", () => {
+    assert.match(APP_SOURCE, /fetchEvents\(calendar\.id, calendar\)/);
+    assert.match(CALENDAR_API_SOURCE, /share:fetchProtectedResource/);
+    assert.match(CALENDAR_API_SOURCE, /x-cognis-share-password/);
+    assert.match(CALENDAR_API_SOURCE, /sharePasswordProtected/);
+    assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarPassword/);
+    assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
+    assert.match(SHARED_PASSWORD_SOURCE, /share:resolveToken/);
 });

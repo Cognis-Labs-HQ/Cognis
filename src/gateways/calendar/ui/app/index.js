@@ -117,7 +117,7 @@ export async function mount(root, { signal } = {}) {
         const eventResults = await Promise.allSettled(
             calendars.map(async (calendar) => [
                 calendar.id,
-                await calendarUi.fetchEvents(calendar.id),
+                await calendarUi.fetchEvents(calendar.id, calendar),
             ]),
         );
         eventsByCalendar = Object.fromEntries(

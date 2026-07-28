@@ -53,6 +53,7 @@ export function createRepromptGuard({
 }
 
 uiCtx.capabilities.contribute("auth:confirmPassword", confirmPassword);
+uiCtx.capabilities.contribute("auth:createRepromptGuard", createRepromptGuard);
 uiCtx.capabilities.contribute(
     "auth:invalidatePasswordConfirmation",
     invalidatePasswordConfirmation,

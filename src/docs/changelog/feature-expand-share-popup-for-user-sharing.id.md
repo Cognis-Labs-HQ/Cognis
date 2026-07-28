@@ -311,3 +311,7 @@ Entri keyring kini menyebutkan komponen yang menyimpannya, dapat diperluas denga
 ## Vault keyring buram berbasis basis data
 
 Envelope keyring terenkripsi kini disimpan secara persisten dalam tabel basis data autentikasi khusus, bukan penyimpanan preferensi umum. Browser hanya mengambil dan mendekripsi envelope saat membuka kunci, sedangkan pengaturan Keyring yang terkunci merender placeholder sintetis tanpa pengenal, metadata, atau nilai rahasia di DOM.
+
+## Validasi ulang akses kalender terlindungi
+
+Setiap pemuatan kalender penerima yang dilindungi kata sandi kini memvalidasi ulang kata sandi berbagi di server. Pemuatan kalender terlebih dahulu membuka dan memeriksa keyring pengguna, meminta kata sandi jika kunci tidak ada atau tidak valid, serta menyediakan pilihan penolakan eksplisit agar penerima dapat memilih untuk tidak menyimpan kata sandi terverifikasi.

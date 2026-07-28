@@ -14,8 +14,9 @@
   <string name="share.approval.approve">Genehmigen</string>
   <string name="share.approval.decline">Ablehnen</string>
   <string name="share.unlock.title">Freigegebenes Element entsperren</string>
-  <string name="share.unlock.message">Gib das Freigabepasswort ein. Nach erfolgreichem Zugriff wird es in deinem verschlüsselten Schlüsselbund gespeichert.</string>
+  <string name="share.unlock.message">Gib das Freigabepasswort ein, um fortzufahren.</string>
   <string name="share.unlock.action">Entsperren</string>
   <string name="share.unlock.cancel">Abbrechen</string>
   <string name="share.unlock.keyring_label">Passwort für private Kalenderfreigabe</string>
+  <string name="share.unlock.do_not_save">Dieses Passwort nicht in meinem Schlüsselbund speichern</string>
 </resources>

@@ -33,6 +33,7 @@ import { createReminderScheduler } from "./reminder-scheduler.js";
 import { handleCalendarResponseRoute } from "./respond-route.js";
 import { handleCalendarShareRoutes } from "./share-routes.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
+import { requireSharedCalendarPassword } from "./shared-password.js";
 
 function rejectInactiveSharedCalendar(input: {
     gateway: CoreCalendarGateway;
@@ -54,6 +55,7 @@ function rejectInactiveSharedCalendar(input: {
     );
     return true;
 }
+
 export function createCalendarCoreRoutes({
     gateway,
     shareRegistry,
@@ -271,8 +273,30 @@ export function createCalendarCoreRoutes({
                 gateway,
                 log,
             );
+            const getShareTokenById = getCapability<
+                (shareId: string) => Promise<{
+                    accessControls?: { passwordProtected?: boolean };
+                } | null>
+            >("share:getTokenById");
+            const calendarsWithShareAccess = await Promise.all(
+                validatedCalendars.map(async (calendar) => {
+                    if (calendar.visibility !== "shared") return calendar;
+                    const shared = await shareRegistry.getByRecipientCalendarId(
+                        calendar.id,
+                    );
+                    const token = shared?.shareTokenId
+                        ? await getShareTokenById?.(shared.shareTokenId)
+                        : null;
+                    return {
+                        ...calendar,
+                        shareId: shared?.shareTokenId ?? null,
+                        sharePasswordProtected:
+                            token?.accessControls?.passwordProtected === true,
+                    };
+                }),
+            );
             sendJson(res, 200, {
-                data: validatedCalendars,
+                data: calendarsWithShareAccess,
                 meta: {
                     canInviteExternal: hasMinRole(claims.role, "admin"),
                     currentAccountId: targetAccountId,
@@ -774,6 +798,17 @@ export function createCalendarCoreRoutes({
                     ? sharedCalendar
                     : null;
             if (
+                activeSharedCalendar &&
+                !(await requireSharedCalendarPassword({
+                    req,
+                    res,
+                    shareTokenId: activeSharedCalendar.shareTokenId,
+                    getCapability,
+                }))
+            ) {
+                return true;
+            }
+            if (
                 rejectInactiveSharedCalendar({
                     gateway,
                     accountId: claims.sub,
@@ -842,6 +877,17 @@ export function createCalendarCoreRoutes({
                     sharedCalendar?.recipientAccountId === claims.sub
                         ? sharedCalendar
                         : null;
+                if (
+                    activeSharedCalendar &&
+                    !(await requireSharedCalendarPassword({
+                        req,
+                        res,
+                        shareTokenId: activeSharedCalendar.shareTokenId,
+                        getCapability,
+                    }))
+                ) {
+                    return true;
+                }
                 if (
                     rejectInactiveSharedCalendar({
                         gateway,
@@ -1015,6 +1061,17 @@ export function createCalendarCoreRoutes({
                     ? sharedCalendar
                     : null;
             if (
+                activeSharedCalendar &&
+                !(await requireSharedCalendarPassword({
+                    req,
+                    res,
+                    shareTokenId: activeSharedCalendar.shareTokenId,
+                    getCapability,
+                }))
+            ) {
+                return true;
+            }
+            if (
                 rejectInactiveSharedCalendar({
                     gateway,
                     accountId: claims.sub,
@@ -1076,6 +1133,17 @@ export function createCalendarCoreRoutes({
                 sharedCalendar?.recipientAccountId === claims.sub
                     ? sharedCalendar
                     : null;
+            if (
+                activeSharedCalendar &&
+                !(await requireSharedCalendarPassword({
+                    req,
+                    res,
+                    shareTokenId: activeSharedCalendar.shareTokenId,
+                    getCapability,
+                }))
+            ) {
+                return true;
+            }
             if (
                 rejectInactiveSharedCalendar({
                     gateway,
@@ -1272,6 +1340,17 @@ export function createCalendarCoreRoutes({
                     ? sharedCalendar
                     : null;
             if (
+                activeSharedCalendar &&
+                !(await requireSharedCalendarPassword({
+                    req,
+                    res,
+                    shareTokenId: activeSharedCalendar.shareTokenId,
+                    getCapability,
+                }))
+            ) {
+                return true;
+            }
+            if (
                 rejectInactiveSharedCalendar({
                     gateway,
                     accountId: claims.sub,
@@ -1366,12 +1445,28 @@ export function createCalendarCoreRoutes({
         if (respondMatch && req.method === "POST") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
+            const responseCalendarId = decodeURIComponent(respondMatch[1]);
+            const responseSharedCalendar =
+                await shareRegistry.getByRecipientCalendarId(
+                    responseCalendarId,
+                );
+            if (
+                responseSharedCalendar?.recipientAccountId === claims.sub &&
+                !(await requireSharedCalendarPassword({
+                    req,
+                    res,
+                    shareTokenId: responseSharedCalendar.shareTokenId,
+                    getCapability,
+                }))
+            ) {
+                return true;
+            }
             await handleCalendarResponseRoute({
                 req,
                 res,
                 url,
                 claims,
-                calendarId: decodeURIComponent(respondMatch[1]),
+                calendarId: responseCalendarId,
                 eventId: decodeURIComponent(respondMatch[2]),
                 gateway,
                 shareRegistry,

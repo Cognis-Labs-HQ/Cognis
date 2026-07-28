@@ -14,8 +14,9 @@
   <string name="share.approval.approve">Setujui</string>
   <string name="share.approval.decline">Tolak</string>
   <string name="share.unlock.title">Buka Item Bersama</string>
-  <string name="share.unlock.message">Masukkan kata sandi berbagi. Setelah akses berhasil, kata sandi akan disimpan di keyring terenkripsi Anda.</string>
+  <string name="share.unlock.message">Masukkan kata sandi berbagi untuk melanjutkan.</string>
   <string name="share.unlock.action">Buka</string>
   <string name="share.unlock.cancel">Batal</string>
   <string name="share.unlock.keyring_label">Kata Sandi Berbagi Kalender Privat</string>
+  <string name="share.unlock.do_not_save">Jangan simpan kata sandi ini ke keyring saya</string>
 </resources>

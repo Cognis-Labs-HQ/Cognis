@@ -60,7 +60,6 @@ export function createCalendarPopupManager({
         showToast,
         i18n,
         getEventsByCalendar,
-        apiFetch,
         reloadState,
         setSelectedCalendarId,
         syncRouteSelection,

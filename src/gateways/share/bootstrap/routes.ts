@@ -485,6 +485,7 @@ export function createShareRoutes(input: {
             });
             const resolved = getFirstStageResult<{
                 resolved?: boolean;
+                shareId?: string;
                 reason?: string;
                 resourceType?: string;
                 resourceId?: string;
@@ -520,6 +521,7 @@ export function createShareRoutes(input: {
             }>(flowResult.stageResults, "deliver-recipient");
             sendJson(res, 200, {
                 data: {
+                    shareId: resolved.shareId ?? "",
                     resourceType: resolved.resourceType,
                     resourceId: resolved.resourceId,
                     payload: resolved.payload ?? {},

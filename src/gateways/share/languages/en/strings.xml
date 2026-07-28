@@ -14,8 +14,9 @@
   <string name="share.approval.approve">Approve</string>
   <string name="share.approval.decline">Decline</string>
   <string name="share.unlock.title">Unlock Shared Item</string>
-  <string name="share.unlock.message">Enter the share password. It will be saved in your encrypted keyring after successful access.</string>
+  <string name="share.unlock.message">Enter the share password to continue.</string>
   <string name="share.unlock.action">Unlock</string>
   <string name="share.unlock.cancel">Cancel</string>
   <string name="share.unlock.keyring_label">Private Calendar Share Password</string>
+  <string name="share.unlock.do_not_save">Do not save this password to my keyring</string>
 </resources>
