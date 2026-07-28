@@ -43,10 +43,10 @@
   <string name="gateway.auth.keyring.unlock_title">キーリングのロック解除</string>
   <string name="gateway.auth.keyring.unlock_message">キーリングを復号するため、アカウントのパスワードを入力してください。</string>
   <string name="gateway.auth.keyring.unlock_failed">このパスワードではキーリングのロックを解除できません。</string>
-  <string name="gateway.auth.keyring.relock">自動ロック</string>
+  <string name="gateway.auth.keyring.relock">キーリングのロック時間</string>
   <string name="gateway.auth.keyring.logout">ログアウト時</string>
   <string name="gateway.auth.keyring.minutes">分</string>
-  <string name="gateway.auth.keyring.timeout_saved">自動ロックの時間を保存しました。</string>
+  <string name="gateway.auth.keyring.timeout_saved">キーリングのロック時間を保存しました。</string>
   <string name="gateway.auth.keyring.empty">保存されている秘密情報はありません。</string>
   <string name="gateway.auth.keyring.add">秘密情報を追加</string>
   <string name="gateway.auth.keyring.add_title">秘密情報を追加</string>
@@ -54,6 +54,7 @@
   <string name="gateway.auth.keyring.label">名前</string>
   <string name="gateway.auth.keyring.identifier">識別子</string>
   <string name="gateway.auth.keyring.value">秘密情報</string>
+  <string name="gateway.auth.keyring.toggle_visibility">秘密情報の表示を切り替え</string>
   <string name="gateway.auth.keyring.secret_hidden">秘密情報を非表示</string>
   <string name="gateway.auth.keyring.saved">秘密情報を保存しました。</string>
   <string name="gateway.auth.keyring.deleted">秘密情報を削除しました。</string>

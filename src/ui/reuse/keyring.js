@@ -12,6 +12,7 @@
  *   resolveKeyringValue(id, options) — validate a stored value and recover by
  *     prompting or an authoritative fallback when it is invalid.
  *   getKeyringRelockMinutes() / setKeyringRelockMinutes(minutes) — relocking.
+ *   createKeyringScope(componentName) — component-attributed access helpers.
  *
  * Usage:
  *   await unlockKeyring(loginPassword);
@@ -39,6 +40,8 @@ let vaultIterations = DEFAULT_ITERATIONS;
 let relockTimer = null;
 let lastVaultEnvelope = null;
 const pendingValues = new Map();
+let lockedEntryMetadata = [];
+let lockedEntryStorageKey = null;
 
 function keyringStorageKey() {
     const accountId = String(
@@ -109,6 +112,15 @@ function scheduleRelock() {
 function clearVault(clearPendingValues) {
     clearTimeout(relockTimer);
     relockTimer = null;
+    if (vaultData?.values) {
+        lockedEntryStorageKey = keyringStorageKey();
+        lockedEntryMetadata = Object.entries(vaultData.values).map(
+            ([id, entry]) => {
+                const normalized = normalizeEntry(entry, id);
+                return { id, ...normalized, value: "" };
+            },
+        );
+    }
     vaultKey = null;
     vaultData = null;
     vaultSalt = null;
@@ -211,6 +223,8 @@ export async function unlockKeyring(password) {
     vaultIterations = iterations;
     lastVaultEnvelope = stored;
     vaultData.values ??= {};
+    lockedEntryMetadata = [];
+    lockedEntryStorageKey = null;
     vaultData.preferences ??= {};
     const storedRelockMinutes = localStorage.getItem(relockStorageKey());
     if (storedRelockMinutes !== null) {
@@ -263,7 +277,7 @@ export async function setKeyringValue(id, value, metadata = {}) {
     const entry = {
         value: String(value),
         label: String(metadata.label ?? normalizedId),
-        source: String(metadata.source ?? "user"),
+        source: String(metadata.componentName ?? metadata.source ?? "Cognis"),
         updatedAt: new Date().toISOString(),
     };
     if (!vaultData) {
@@ -274,6 +288,30 @@ export async function setKeyringValue(id, value, metadata = {}) {
     vaultData.values[normalizedId] = entry;
     await persistVault();
     scheduleRelock();
+}
+
+export function createKeyringScope(componentName) {
+    const source = String(componentName ?? "").trim() || "Cognis";
+    return {
+        get: getKeyringValue,
+        list: listKeyringEntries,
+        delete: deleteKeyringValue,
+        set(id, value, metadata = {}) {
+            return setKeyringValue(id, value, {
+                ...metadata,
+                componentName: source,
+            });
+        },
+        resolve(id, options = {}) {
+            return resolveKeyringValue(id, {
+                ...options,
+                metadata: {
+                    ...options.metadata,
+                    componentName: source,
+                },
+            });
+        },
+    };
 }
 
 export async function deleteKeyringValue(id) {
@@ -287,6 +325,15 @@ export async function deleteKeyringValue(id) {
 }
 
 export function listKeyringEntries() {
+    if (
+        !vaultData &&
+        pendingValues.size === 0 &&
+        lockedEntryStorageKey === keyringStorageKey()
+    ) {
+        return [...lockedEntryMetadata].sort((left, right) =>
+            left.label.localeCompare(right.label),
+        );
+    }
     const values = vaultData?.values ?? Object.fromEntries(pendingValues);
     return Object.entries(values)
         .map(([id, entry]) => ({ id, ...normalizeEntry(entry, id) }))
@@ -347,6 +394,7 @@ uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
 uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
 uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
+uiCtx.capabilities.contribute("keyring:forComponent", createKeyringScope);
 uiCtx.capabilities.contribute(
     "keyring:getRelockMinutes",
     getKeyringRelockMinutes,

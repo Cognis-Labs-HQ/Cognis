@@ -50,7 +50,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`    |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`    |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.20`   |
-| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.27`   |
+| Messages (Social)     | `src/adapters/social/messages/`     | `1.4.28`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.7`    |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`    |
 
@@ -59,8 +59,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                         | バージョン |
 | --------------------- | ---------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`    |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.13`   |
-| Share                 | `src/gateways/share/`        | `1.6.21`   |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.14`   |
+| Share                 | `src/gateways/share/`        | `1.6.22`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.11`   |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11`   |
 | Social                | `src/gateways/social/`       | `1.2.7`    |
@@ -87,7 +87,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント       | パス                                | バージョン |
 | -------------------- | ----------------------------------- | ---------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`    |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.7`    |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.6`    |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.8`    |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.7`    |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`    |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`    |

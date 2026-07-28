@@ -43,10 +43,10 @@
   <string name="gateway.auth.keyring.unlock_title">Buka Kunci Keyring</string>
   <string name="gateway.auth.keyring.unlock_message">Masukkan kata sandi akun Anda untuk mendekripsi keyring.</string>
   <string name="gateway.auth.keyring.unlock_failed">Kata sandi tidak dapat membuka keyring ini.</string>
-  <string name="gateway.auth.keyring.relock">Kunci Otomatis</string>
+  <string name="gateway.auth.keyring.relock">Batas Waktu Kunci Keyring</string>
   <string name="gateway.auth.keyring.logout">Saat Keluar</string>
   <string name="gateway.auth.keyring.minutes">menit</string>
-  <string name="gateway.auth.keyring.timeout_saved">Batas waktu penguncian otomatis disimpan.</string>
+  <string name="gateway.auth.keyring.timeout_saved">Batas waktu kunci keyring disimpan.</string>
   <string name="gateway.auth.keyring.empty">Tidak ada rahasia yang tersimpan.</string>
   <string name="gateway.auth.keyring.add">Tambah Rahasia</string>
   <string name="gateway.auth.keyring.add_title">Tambah Rahasia</string>
@@ -54,6 +54,7 @@
   <string name="gateway.auth.keyring.label">Nama</string>
   <string name="gateway.auth.keyring.identifier">Pengenal</string>
   <string name="gateway.auth.keyring.value">Rahasia</string>
+  <string name="gateway.auth.keyring.toggle_visibility">Alihkan visibilitas rahasia</string>
   <string name="gateway.auth.keyring.secret_hidden">Nilai rahasia disembunyikan</string>
   <string name="gateway.auth.keyring.saved">Rahasia disimpan.</string>
   <string name="gateway.auth.keyring.deleted">Rahasia dihapus.</string>

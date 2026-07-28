@@ -17,6 +17,10 @@ const KEYRING_SETTINGS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/keyring-settings.js"),
     "utf8",
 );
+const KEYRING_SETTINGS_STYLES = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/keyring-settings.css"),
+    "utf8",
+);
 
 test("auth security preferences disable password reset for external users", () => {
     assert.match(SOURCE, /settings-auth-password-reset/);
@@ -31,7 +35,7 @@ test("auth security preferences disable password reset for external users", () =
 
 test("keyring settings require password confirmation for secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /listKeyringEntries/);
-    assert.match(KEYRING_SETTINGS_SOURCE, /setKeyringValue/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /createKeyringScope/);
     assert.match(KEYRING_SETTINGS_SOURCE, /deleteKeyringValue/);
     assert.match(KEYRING_SETTINGS_SOURCE, /alwaysPrompt:\s*true/);
     assert.match(KEYRING_SETTINGS_SOURCE, /type="password"/);
@@ -42,6 +46,15 @@ test("keyring settings require password confirmation for secret changes", () => 
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-relock/);
     assert.match(KEYRING_SETTINGS_SOURCE, /requestPasswordConfirmation/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring-settings\.css/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-expand/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /renderSecretVisibilityField/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /bindSecretVisibilityToggles/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /class="theme-select"/);
+    assert.match(
+        KEYRING_SETTINGS_SOURCE,
+        /!isKeyringUnlocked\(\) && \(await promptToUnlock\(\)\)/,
+    );
+    assert.match(KEYRING_SETTINGS_STYLES, /tbody\.is-locked/);
     assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /keyring-unlock-password/);
     assert.doesNotMatch(
         KEYRING_SETTINGS_SOURCE,

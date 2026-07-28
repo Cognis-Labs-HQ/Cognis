@@ -303,3 +303,7 @@ Password confirmation now belongs to the Authentication gateway and is exposed a
 ## Keyring locking follows confirmation
 
 Unlocking the keyring now uses the Authentication gateway's provider-aware password confirmation prompt and its normal freshness window. Locking invalidates that confirmation window so the next secret query requests the account password, while the automatic-lock preference remains editable even when the vault is locked. The Keyring page also has a roomier responsive layout.
+
+## Inspectable component secrets
+
+Keyring entries now identify the component that stored them, expand on click, and provide an SVG eye control for revealing the secret. Opening Keyring settings automatically requests provider-aware confirmation and unlocks the vault when possible. Locked entries remain visibly obfuscated, and the themed Keyring Lock Timeout control stays grouped with its label.

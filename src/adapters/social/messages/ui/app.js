@@ -55,7 +55,7 @@ import { createRoomKeyStore } from "./room-keys.mjs";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
 import { importRoomKey } from "/static/reuse/crypto-utils.js";
-import { resolveKeyringValue } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/reuse/keyring.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const TYPING_TTL_SECONDS = 8;
@@ -63,13 +63,14 @@ const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
 let reportInvalidRoomKey = () => undefined;
+const messagesKeyring = createKeyringScope("Social Messages");
 
 const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
     {
         fetchRoomKey: apiFetch,
         importKey: importRoomKey,
         onInvalidSecret: (roomId) => reportInvalidRoomKey(roomId),
-        resolveSecret: resolveKeyringValue,
+        resolveSecret: messagesKeyring.resolve,
     },
 );
 

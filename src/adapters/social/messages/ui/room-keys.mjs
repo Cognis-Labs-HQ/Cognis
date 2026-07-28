@@ -34,7 +34,6 @@ export function createRoomKeyStore({
             onInvalid: () => onInvalidSecret(roomId),
             metadata: {
                 label: `Chat ${roomId}`,
-                source: "social-messages",
             },
         });
         if (!hex) return null;

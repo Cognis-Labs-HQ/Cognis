@@ -61,7 +61,7 @@ export function renderSecretVisibilityField({
     const labelMarkup = label
         ? `<span class="secret-visibility-label">${escapeHtml(label)}</span>`
         : "";
-    return `<label class="secret-visibility-field" data-secret-visibility-field>${labelMarkup}<span class="secret-visibility-control"><input id="${escapedId}" class="secret-visibility-input" type="password" readonly value="${escapeHtml(value)}" data-secret-visibility-input /><button type="button" class="secret-visibility-toggle" data-secret-visibility-toggle="${escapedId}" aria-controls="${escapedId}" aria-pressed="false" aria-label="${escapeHtml(toggleLabel)}"><span aria-hidden="true">👁</span></button></span></label>`;
+    return `<label class="secret-visibility-field" data-secret-visibility-field>${labelMarkup}<span class="secret-visibility-control"><input id="${escapedId}" class="secret-visibility-input" type="password" readonly value="${escapeHtml(value)}" data-secret-visibility-input /><button type="button" class="secret-visibility-toggle" data-secret-visibility-toggle="${escapedId}" aria-controls="${escapedId}" aria-pressed="false" aria-label="${escapeHtml(toggleLabel)}"><span class="secret-visibility-eye" aria-hidden="true"></span></button></span></label>`;
 }
 
 /**

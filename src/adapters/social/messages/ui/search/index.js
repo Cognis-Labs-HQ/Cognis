@@ -2,7 +2,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
-import { resolveKeyringValue } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/reuse/keyring.js";
 
 export const componentSearchId = "social-messages";
 
@@ -10,12 +10,13 @@ const messagesSearchDecoder = new TextDecoder();
 const messagesSearchRoomKeys = new Map();
 const messagesSearchRoomMessages = new Map();
 const MESSAGE_SEARCH_PAGE_SIZE = 100;
+const messagesKeyring = createKeyringScope("Social Messages");
 
 async function getSearchRoomKey(roomId) {
     if (messagesSearchRoomKeys.has(roomId)) {
         return messagesSearchRoomKeys.get(roomId);
     }
-    const roomKeyHex = await resolveKeyringValue(`chatroom:${roomId}:key`, {
+    const roomKeyHex = await messagesKeyring.resolve(`chatroom:${roomId}:key`, {
         validate: async (candidate) => {
             await importRoomKey(candidate, ["decrypt"]);
             return true;
@@ -28,7 +29,7 @@ async function getSearchRoomKey(roomId) {
             const payload = await response.json().catch(() => null);
             return payload?.data?.key ?? null;
         },
-        metadata: { label: `Chat ${roomId}`, source: "social-messages" },
+        metadata: { label: `Chat ${roomId}` },
     });
     if (typeof roomKeyHex !== "string" || roomKeyHex.length === 0) return null;
     const roomKey = await importRoomKey(roomKeyHex, ["decrypt"]);

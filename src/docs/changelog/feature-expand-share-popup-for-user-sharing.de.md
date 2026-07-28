@@ -303,3 +303,7 @@ Die Passwortbestätigung gehört nun zum Authentifizierungs-Gateway und steht se
 ## Schlüsselbund folgt der Bestätigung
 
 Das Entsperren des Schlüsselbunds verwendet nun die anbieterabhängige Passwortabfrage des Authentifizierungs-Gateways und deren normales Gültigkeitsfenster. Beim Sperren wird dieses Bestätigungsfenster ungültig, sodass die nächste Geheimnisabfrage das Kontopasswort verlangt. Die automatische Sperrzeit bleibt auch bei gesperrtem Tresor änderbar, und die Schlüsselbundseite besitzt ein großzügigeres responsives Layout.
+
+## Einsehbare Komponenten-Geheimnisse
+
+Schlüsselbund-Einträge nennen nun die Komponente, die sie gespeichert hat, lassen sich per Klick erweitern und bieten eine SVG-Augensteuerung zum Anzeigen des Geheimnisses. Beim Öffnen der Schlüsselbund-Einstellungen wird automatisch die anbieterabhängige Bestätigung angefordert und der Tresor nach Möglichkeit entsperrt. Gesperrte Einträge bleiben sichtbar verschleiert, und die themenfähige Sperrzeit des Schlüsselbunds bleibt mit ihrer Beschriftung gruppiert.

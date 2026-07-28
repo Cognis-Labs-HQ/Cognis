@@ -303,3 +303,7 @@ Konfirmasi kata sandi kini dimiliki gateway Autentikasi dan tersedia bagi alur s
 ## Penguncian keyring mengikuti konfirmasi
 
 Pembukaan keyring kini menggunakan permintaan konfirmasi kata sandi sesuai penyedia dari gateway Autentikasi beserta masa berlaku normalnya. Penguncian membatalkan masa konfirmasi tersebut agar permintaan rahasia berikutnya meminta kata sandi akun. Preferensi penguncian otomatis tetap dapat diubah saat brankas terkunci, dan halaman Keyring kini memiliki tata letak responsif yang lebih lapang.
+
+## Rahasia komponen yang dapat diperiksa
+
+Entri keyring kini menyebutkan komponen yang menyimpannya, dapat diperluas dengan klik, dan menyediakan kontrol mata SVG untuk menampilkan rahasia. Membuka pengaturan Keyring otomatis meminta konfirmasi sesuai penyedia dan membuka brankas bila memungkinkan. Entri terkunci tetap terlihat tersamarkan, sedangkan kontrol bertema Batas Waktu Kunci Keyring tetap dikelompokkan dengan labelnya.

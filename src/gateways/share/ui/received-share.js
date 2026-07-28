@@ -56,7 +56,10 @@ export async function resolveReceivedShare(token, { headers } = {}) {
     const normalizedToken = String(token ?? "").trim();
     if (!normalizedToken) return null;
     const keyringId = `share:${normalizedToken}`;
-    const keyringPassword = uiCtx.capabilities.get("keyring:get")?.(keyringId);
+    const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
+        "Share Gateway",
+    );
+    const keyringPassword = keyring?.get(keyringId);
     const request = (password) => {
         const requestHeaders = new Headers(headers);
         if (password) requestHeaders.set("x-cognis-share-password", password);
@@ -78,9 +81,8 @@ export async function resolveReceivedShare(token, { headers } = {}) {
                 componentStringBaseUrls: ["/static/gateways/share/languages"],
             });
             await Promise.resolve(
-                uiCtx.capabilities.get("keyring:set")?.(keyringId, password, {
+                keyring?.set(keyringId, password, {
                     label: i18n.t("share.unlock.keyring_label"),
-                    source: "calendar-share",
                 }),
             );
         } catch {

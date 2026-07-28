@@ -28,6 +28,7 @@
     align-items: center;
     gap: 1rem;
     padding: 0 0.25rem;
+    max-width: 34rem;
 }
 
 .settings-keyring-table {
@@ -45,6 +46,27 @@
 
 .settings-keyring-table code {
     overflow-wrap: anywhere;
+}
+
+.settings-keyring-entry {
+    cursor: pointer;
+}
+
+.settings-keyring-entry:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+}
+
+.settings-keyring-detail td {
+    padding: 1rem 1.5rem 1.25rem;
+    background: color-mix(in srgb, var(--control-bg) 85%, transparent);
+}
+
+.settings-keyring-table tbody.is-locked {
+    filter: blur(5px);
+    opacity: 0.45;
+    pointer-events: none;
+    user-select: none;
 }
 
 .settings-keyring-actions {

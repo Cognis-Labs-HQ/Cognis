@@ -5,26 +5,35 @@ import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import {
+    bindSecretVisibilityToggles,
+    renderSecretVisibilityField,
+} from "/static/reuse/secret-visibility-toggle.js";
+import {
+    createKeyringScope,
     deleteKeyringValue,
     getKeyringRelockMinutes,
     isKeyringUnlocked,
     listKeyringEntries,
     lockKeyring,
     setKeyringRelockMinutes,
-    setKeyringValue,
     unlockKeyring,
 } from "/static/reuse/keyring.js";
 
 export function createSettingsSection({ i18n, root }) {
     const settingsRoot = root ?? document;
     const guard = createRepromptGuard({ i18n });
+    const keyring = createKeyringScope("Authentication Gateway");
+    let unbindSecretVisibility = null;
 
     function renderEntries(unlocked = isKeyringUnlocked()) {
         const entries = listKeyringEntries();
         const rows = entries.length
             ? entries
                   .map(
-                      (entry) => `<tr data-keyring-id="${escapeHtml(entry.id)}">
+                      (
+                          entry,
+                          index,
+                      ) => `<tr class="settings-keyring-entry" data-keyring-id="${escapeHtml(entry.id)}" data-keyring-expand tabindex="0" aria-expanded="false">
               <td><strong>${escapeHtml(entry.label)}</strong></td>
               <td><code>${escapeHtml(entry.id)}</code></td>
               <td>${escapeHtml(entry.source)}</td>
@@ -33,18 +42,21 @@ export function createSettingsSection({ i18n, root }) {
                 <button type="button" data-keyring-edit${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.edit_title"))}</button>
                 <button type="button" class="btn-cancel" data-keyring-delete${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("ui.reuse.remove"))}</button>
               </td>
-            </tr>`,
+            </tr>
+            <tr class="settings-keyring-detail" data-keyring-detail hidden><td colspan="5">
+              ${unlocked ? renderSecretVisibilityField({ id: `keyring-secret-${index}`, value: entry.value, label: i18n.t("gateway.auth.keyring.value"), toggleLabel: i18n.t("gateway.auth.keyring.toggle_visibility"), escapeHtml }) : ""}
+            </td></tr>`,
                   )
                   .join("")
             : `<tr><td colspan="5" class="profile-empty">${escapeHtml(i18n.t("gateway.auth.keyring.empty"))}</td></tr>`;
-        return `<div class="settings-table-wrap"><table class="settings-keyring-table">
+        return `<div class="settings-table-wrap settings-keyring-entries"><table class="settings-keyring-table">
           <thead><tr>
             <th>${escapeHtml(i18n.t("gateway.auth.keyring.label"))}</th>
             <th>${escapeHtml(i18n.t("gateway.auth.keyring.identifier"))}</th>
             <th>${escapeHtml(i18n.t("gateway.auth.keyring.source"))}</th>
             <th>${escapeHtml(i18n.t("gateway.auth.keyring.updated"))}</th>
             <th>${escapeHtml(i18n.t("gateway.auth.keyring.actions"))}</th>
-          </tr></thead><tbody>${rows}</tbody>
+          </tr></thead><tbody class="${unlocked ? "" : "is-locked"}">${rows}</tbody>
         </table></div>`;
     }
 
@@ -58,7 +70,7 @@ export function createSettingsSection({ i18n, root }) {
           <button id="settings-keyring-add" type="button" class="btn-confirm"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.add"))}</button>
         </div>
         <label class="settings-keyring-timeout"><span>${escapeHtml(i18n.t("gateway.auth.keyring.relock"))}</span>
-          <select id="settings-keyring-relock">
+          <select id="settings-keyring-relock" class="theme-select">
             <option value="0"${timeout === 0 ? " selected" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.logout"))}</option>
             ${[15, 60, 240].map((minutes) => `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${minutes} ${escapeHtml(i18n.t("gateway.auth.keyring.minutes"))}</option>`).join("")}
           </select>
@@ -145,6 +157,10 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     function bindActions() {
+        unbindSecretVisibility?.();
+        unbindSecretVisibility = bindSecretVisibilityToggles({
+            root: settingsRoot.querySelector("#settings-keyring-manager"),
+        });
         settingsRoot.querySelector("#settings-keyring-info")?.addEventListener(
             "click",
             () =>
@@ -192,9 +208,8 @@ export function createSettingsSection({ i18n, root }) {
                     async () => {
                         const input = await readEntryInput();
                         if (!input) return;
-                        await setKeyringValue(input.id, input.value, {
+                        await keyring.set(input.id, input.value, {
                             label: input.label,
-                            source: "user",
                         });
                         rerender();
                         showToast(i18n.t("gateway.auth.keyring.saved"), {
@@ -208,6 +223,22 @@ export function createSettingsSection({ i18n, root }) {
         );
         settingsRoot.querySelectorAll("[data-keyring-id]").forEach((row) => {
             const id = row.getAttribute("data-keyring-id");
+            const toggleDetail = (event) => {
+                if (event?.target?.closest?.("button")) return;
+                if (
+                    event?.type === "keydown" &&
+                    !["Enter", " "].includes(event.key)
+                )
+                    return;
+                event?.preventDefault?.();
+                const detail = row.nextElementSibling;
+                if (!detail?.matches?.("[data-keyring-detail]")) return;
+                const expanded = detail.hidden;
+                detail.hidden = !expanded;
+                row.setAttribute("aria-expanded", String(expanded));
+            };
+            row.addEventListener("click", toggleDetail, { once: false });
+            row.addEventListener("keydown", toggleDetail, { once: false });
             row.querySelector("[data-keyring-edit]")?.addEventListener(
                 "click",
                 async () => {
@@ -219,9 +250,8 @@ export function createSettingsSection({ i18n, root }) {
                         async () => {
                             const input = await readEntryInput(entry);
                             if (!input) return;
-                            await setKeyringValue(id, input.value, {
+                            await keyring.set(id, input.value, {
                                 label: input.label,
-                                source: "user",
                             });
                             rerender();
                             showToast(i18n.t("gateway.auth.keyring.saved"), {
@@ -263,6 +293,10 @@ export function createSettingsSection({ i18n, root }) {
             await ensurePageStylesheet(
                 "/static/gateways/auth/keyring-settings.css",
             );
+            if (!isKeyringUnlocked() && (await promptToUnlock())) {
+                rerender();
+                return;
+            }
             bindActions();
         },
         isDirty: () => false,

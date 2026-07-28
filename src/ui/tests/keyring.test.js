@@ -88,6 +88,20 @@ test("keyring lists metadata and replaces an invalid stored secret", async () =>
     await keyring.lockKeyring();
 });
 
+test("component keyring scopes derive the stored source name", async () => {
+    const keyring = await import("../reuse/keyring.js");
+    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    const scoped = keyring.createKeyringScope("Calendar Gateway");
+    await scoped.set("calendar:secret", "value", { label: "Calendar" });
+    assert.equal(
+        keyring
+            .listKeyringEntries()
+            .find((entry) => entry.id === "calendar:secret")?.source,
+        "Calendar Gateway",
+    );
+    await keyring.lockKeyring();
+});
+
 test("locked keyring accepts an updated automatic lock timeout", async () => {
     const keyring = await import("../reuse/keyring.js");
     await keyring.lockKeyring();

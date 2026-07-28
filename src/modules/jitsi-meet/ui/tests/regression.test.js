@@ -148,8 +148,8 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     );
     assert.match(source, /const submitMeetingPassword = \(\) =>/);
     assert.match(source, /meeting:\$\{state\.meeting\.id\}:password/);
-    assert.match(source, /setKeyringValue\(meetingKeyringId/);
-    assert.match(source, /resolveKeyringValue\(/);
+    assert.match(source, /meetingKeyring\.set\(\s*meetingKeyringId/);
+    assert.match(source, /meetingKeyring\.resolve\(/);
     assert.match(
         source,
         /participantRoleChanged[\s\S]*getParticipantRole\(event\) === "moderator"/,
@@ -369,7 +369,7 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(
         source,
-        /utils\.deferAloneParticipantPrompt\(\);[\s\S]*resolveKeyringValue[\s\S]*submitMeetingPassword\(\);/,
+        /utils\.deferAloneParticipantPrompt\(\);[\s\S]*meetingKeyring\.resolve[\s\S]*submitMeetingPassword\(\);/,
     );
 
     assert.match(source, /async function loadMeetingState\(\)/);

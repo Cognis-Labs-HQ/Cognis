@@ -1,11 +1,7 @@
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    getKeyringValue,
-    resolveKeyringValue,
-    setKeyringValue,
-} from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/reuse/keyring.js";
 import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,
@@ -14,6 +10,8 @@ import {
     resolveThemeMode,
 } from "./meeting-embed.js";
 import { JITSI_TOOLBAR_BUTTONS, MEETING_SUBJECT } from "./constants.js";
+
+const meetingKeyring = createKeyringScope("Jitsi Meet");
 
 export function createEmbedHandlers({
     root,
@@ -54,14 +52,18 @@ export function createEmbedHandlers({
         const suppliedMeetingPassword = String(
             state.meeting.meetingPassword ?? "",
         ).trim();
-        if (!getKeyringValue(meetingKeyringId) && suppliedMeetingPassword) {
-            await setKeyringValue(meetingKeyringId, suppliedMeetingPassword, {
-                label: state.meeting.meetingName || i18n.t("ui.reuse.meeting"),
-                source: "jitsi-meet",
-            });
+        if (!meetingKeyring.get(meetingKeyringId) && suppliedMeetingPassword) {
+            await meetingKeyring.set(
+                meetingKeyringId,
+                suppliedMeetingPassword,
+                {
+                    label:
+                        state.meeting.meetingName || i18n.t("ui.reuse.meeting"),
+                },
+            );
         }
         let meetingPassword = String(
-            getKeyringValue(meetingKeyringId) || suppliedMeetingPassword,
+            meetingKeyring.get(meetingKeyringId) || suppliedMeetingPassword,
         ).trim();
         let submittedStoredPassword = false;
         const themeMode = resolveThemeMode();
@@ -211,7 +213,7 @@ export function createEmbedHandlers({
         apiInstance.addEventListener("passwordRequired", async () => {
             utils.deferAloneParticipantPrompt();
             if (submittedStoredPassword) {
-                const replacement = await resolveKeyringValue(
+                const replacement = await meetingKeyring.resolve(
                     meetingKeyringId,
                     {
                         validate: () => false,
@@ -220,7 +222,6 @@ export function createEmbedHandlers({
                             label:
                                 state.meeting.meetingName ||
                                 i18n.t("ui.reuse.meeting"),
-                            source: "jitsi-meet",
                         },
                     },
                 );

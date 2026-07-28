@@ -7,10 +7,12 @@ import {
     hexToBytes,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
-import { resolveKeyringValue } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/reuse/keyring.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";
+
+const jitsiKeyring = createKeyringScope("Jitsi Meet");
 import {
     createChatParticipantAvatarButton,
     normalizeChatRoomId,
@@ -29,7 +31,7 @@ export function createChatHandlers({
         if (state.chatRoomKey && state.chatRoomId === roomId) {
             return state.chatRoomKey;
         }
-        const keyHex = await resolveKeyringValue(`chatroom:${roomId}:key`, {
+        const keyHex = await jitsiKeyring.resolve(`chatroom:${roomId}:key`, {
             validate: async (candidate) => {
                 await importRoomKey(candidate);
                 return true;
@@ -46,7 +48,6 @@ export function createChatHandlers({
             },
             metadata: {
                 label: state.meeting?.meetingName || `Chat ${roomId}`,
-                source: "jitsi-meet",
             },
         });
         if (!keyHex) return null;
