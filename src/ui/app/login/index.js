@@ -14,7 +14,7 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
-import { unlockKeyring } from "../../reuse/keyring.js";
+import { unlockKeyring } from "/static/adapters/auth/keyring/keyring.js";
 
 /**
  * Mounts the login page into the provided root element.

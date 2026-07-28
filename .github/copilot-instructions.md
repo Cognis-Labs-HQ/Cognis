@@ -18,7 +18,7 @@ Do this before exploration, implementation, linting, or testing so the required 
 
 ### User-specific secrets belong in the keyring
 
-Use `src/ui/reuse/keyring.js` as the canonical storage and retrieval surface
+Use `src/adapters/auth/keyring/ui/keyring.js` as the canonical storage and retrieval surface
 for passwords, encryption keys, and other user-specific secrets. Never add a
 new plaintext `localStorage`, `sessionStorage`, preference, or component-owned
 secret cache. Components that generate or receive a secret must contribute it

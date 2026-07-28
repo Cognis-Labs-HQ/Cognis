@@ -33,11 +33,11 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.13` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.12` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.13` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.5`  |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.4`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| Encrypted Keyring     | `src/adapters/auth/keyring/`        | `1.0.1`  |
+| Encrypted Keyring     | `src/adapters/auth/keyring/`        | `1.0.2`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.5`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
@@ -51,7 +51,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.20` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.0`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.1`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.8`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.7`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
@@ -61,8 +61,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.20` |
-| Share                 | `src/gateways/share/`        | `1.6.28` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.21` |
+| Share                 | `src/gateways/share/`        | `1.6.29` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.11` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -89,7 +89,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.14` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.12` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.15` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.13` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

@@ -530,7 +530,13 @@ export class CoreAuthGateway {
 
     async discoverAdapters(
         authAdaptersRoot: string,
-        bootstrapContext?: { capabilities: CapabilityStore },
+        bootstrapContext?: {
+            capabilities: CapabilityStore;
+            registerStaticDir?: (
+                adapterId: string,
+                absolutePath: string,
+            ) => void;
+        },
     ): Promise<void> {
         let entries: string[];
         try {
@@ -578,7 +584,10 @@ export class CoreAuthGateway {
                     bootstrapContext &&
                     typeof mod.bootstrapAuthAdapter === "function"
                 ) {
-                    await mod.bootstrapAuthAdapter(bootstrapContext);
+                    await mod.bootstrapAuthAdapter({
+                        ...bootstrapContext,
+                        adapterRoot: path.join(authAdaptersRoot, entry),
+                    });
                 }
                 if (typeof mod.createAdapter === "function") {
                     const adapter = mod.createAdapter() as AuthProviderAdapter;

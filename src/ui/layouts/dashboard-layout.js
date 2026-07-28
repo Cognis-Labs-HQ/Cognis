@@ -26,7 +26,7 @@ import { ensureFullAccountSession } from "../reuse/auth-session.js";
 import { createSearchBar } from "../reuse/search-util/popup.js";
 import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
-import { lockKeyring } from "../reuse/keyring.js";
+import { lockKeyring } from "/static/adapters/auth/keyring/keyring.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");

@@ -52,7 +52,7 @@ import { createRoomKeyStore } from "./room-keys.mjs";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
 import { importRoomKey } from "/static/reuse/crypto-utils.js";
-import { createKeyringScope } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const TYPING_TTL_SECONDS = 8;

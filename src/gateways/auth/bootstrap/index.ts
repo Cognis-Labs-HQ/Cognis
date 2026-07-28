@@ -193,6 +193,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
     await authGateway.discoverAdapters(authAdaptersRoot, {
         capabilities: ctx.capabilities,
+        registerStaticDir: (adapterId, absolutePath) =>
+            ctx.uiRegistry?.registerAdapterStaticDir(
+                "auth",
+                adapterId,
+                absolutePath,
+            ),
     });
     ctx.capabilities.require("auth:keyringVaultStore");
     for (const adapter of authGateway.listAdapters()) {

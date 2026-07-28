@@ -7,7 +7,7 @@ import {
     hexToBytes,
     importRoomKey,
 } from "/static/reuse/crypto-utils.js";
-import { createKeyringScope } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";

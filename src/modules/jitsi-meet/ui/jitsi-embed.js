@@ -1,7 +1,7 @@
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { createKeyringScope } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,

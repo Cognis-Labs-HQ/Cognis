@@ -18,7 +18,7 @@ import {
     lockKeyring,
     setKeyringRelockMinutes,
     unlockKeyring,
-} from "/static/reuse/keyring.js";
+} from "/static/adapters/auth/keyring/keyring.js";
 
 export function createSettingsSection({ i18n, root }) {
     const settingsRoot = root ?? document;

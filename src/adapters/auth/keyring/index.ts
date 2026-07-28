@@ -1,4 +1,5 @@
 import type { CapabilityStore } from "../../../gateways/shared.js";
+import path from "node:path";
 import {
     createKeyringRoutes,
     type KeyringRouteContext,
@@ -13,6 +14,8 @@ export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
 
 export async function bootstrapAuthAdapter(input: {
     capabilities: CapabilityStore;
+    adapterRoot: string;
+    registerStaticDir?: (adapterId: string, absolutePath: string) => void;
 }): Promise<void> {
     const store = new DbKeyringVaultStore(
         input.capabilities.require<KeyringDbExecutor>("db:executor"),
@@ -24,4 +27,5 @@ export async function bootstrapAuthAdapter(input: {
         (routeContext: KeyringRouteContext) =>
             createKeyringRoutes({ routeContext, store }),
     );
+    input.registerStaticDir?.("keyring", path.join(input.adapterRoot, "ui"));
 }

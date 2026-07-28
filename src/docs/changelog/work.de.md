@@ -10,8 +10,12 @@ Der Benutzerfreigabe-Adapter erzwingt nun die Eindeutigkeit der Empfänger, wäh
 
 ## Schlüsselbund-Bootstrap an die Fähigkeitsarchitektur anpassen
 
-Der wiederverwendbare Browser-Schlüsselbund verbleibt an seiner kanonischen UI-Schnittstelle. Der erforderliche Authentifizierungsadapter initialisiert seine Tresor- und Routenfähigkeiten nun selbst während der Gateway-Erkennung, erhält die Authentifizierung über den injizierten Routenkontext und enthält komponenteneigene Dokumentation.
+Der wiederverwendbare Browser-Schlüsselbund ist vollständig im erforderlichen Authentifizierungsadapter enthalten. Der erforderliche Authentifizierungsadapter initialisiert seine Tresor- und Routenfähigkeiten nun selbst während der Gateway-Erkennung, erhält die Authentifizierung über den injizierten Routenkontext und enthält komponenteneigene Dokumentation.
 
 ## Quellgrößen- und Abhängigkeitskonformität wiederherstellen
 
 Große Kalender-Routen- und Testdateien wurden in fokussierte Module aufgeteilt, berührte übergroße Dateien unterschreiten nun die Grenze von 1.000 Zeilen, und die Abhängigkeitsobergrenzen für Freigaben entsprechen der getesteten Workspace-Version.
+
+## Den vollständigen Schlüsselbund im Authentifizierungsadapter kapseln
+
+Der Browser-Schlüsselbund liegt nun zusammen mit Speicher, Routen, Manifest und Dokumentation im Adapter. Der Adapter registriert sein eigenes statisches UI-Verzeichnis bei der Erkennung, und alle Verbraucher importieren die adaptereigene Browser-Schnittstelle.

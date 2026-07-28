@@ -16,7 +16,7 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
-import { createKeyringScope } from "/static/reuse/keyring.js";
+import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";

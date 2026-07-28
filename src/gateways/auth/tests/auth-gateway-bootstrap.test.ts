@@ -239,6 +239,13 @@ test("auth gateway registers adapter-owned UI directories", async () => {
     const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
     assert.ok(ldapUiDirectory);
     await assert.doesNotReject(access(`${ldapUiDirectory}/config-popup.js`));
+
+    const keyringUiDirectory = uiRegistry.getAdapterStaticDir(
+        "auth",
+        "keyring",
+    );
+    assert.ok(keyringUiDirectory);
+    await assert.doesNotReject(access(`${keyringUiDirectory}/keyring.js`));
 });
 
 test("auth gateway bootstrap registers security section without redundant authentication admin section", async () => {
