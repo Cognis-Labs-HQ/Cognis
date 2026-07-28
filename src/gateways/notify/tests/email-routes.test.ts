@@ -28,6 +28,28 @@ function makeGateway() {
     );
 }
 
+function makeEmailDelivery(gateway: {
+    canSendVerificationEmail(): boolean;
+    sendVerificationEmail?(
+        recipientEmail: string,
+        code: string,
+        verifyUrl?: string,
+    ): Promise<void>;
+}) {
+    return {
+        canSendVerificationEmail: () => gateway.canSendVerificationEmail(),
+        sendEmail: async (input: {
+            recipientEmail: string;
+            variables: Record<string, string>;
+        }) =>
+            gateway.sendVerificationEmail?.(
+                input.recipientEmail,
+                input.variables.code,
+                input.variables.verifyUrl || undefined,
+            ),
+    };
+}
+
 function makeRequest(
     method: string,
     body: Record<string, unknown>,
@@ -68,17 +90,19 @@ test("adding the first email auto-sets it as primary", async () => {
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
     );
-    const mockGateway = {
-        canSendVerificationEmail: () => true,
-        sendVerificationEmail: async () => {},
-    } as any;
+    const sentEmails: Array<Record<string, unknown>> = [];
     const token = issueAccessToken("alice", "user", 60);
 
     const route = createUserEmailRoutes(
         notifStore,
         tfaService,
         verifyTokenService,
-        mockGateway,
+        {
+            canSendVerificationEmail: () => true,
+            sendEmail: async (input) => {
+                sentEmails.push(input);
+            },
+        },
     );
     const res = makeResponse();
 
@@ -88,6 +112,8 @@ test("adding the first email auto-sets it as primary", async () => {
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
     assert.equal(res.status, 201);
+    assert.equal(sentEmails[0]?.templateId, "notify-verification");
+    assert.equal(sentEmails[0]?.recipientEmail, "alice@example.com");
 
     const emails = await notifStore.getUserEmails("alice");
     assert.equal(emails.length, 1);
@@ -107,7 +133,7 @@ test("returns 503 when SMTP is not available and does not add the email", async 
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
     const res = makeResponse();
 
@@ -144,7 +170,7 @@ test("cannot delete primary email", async () => {
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
     const res = makeResponse();
 
@@ -183,7 +209,7 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
         notifStore,
         tfaService,
         verifyTokenService,
-        mockGateway,
+        makeEmailDelivery(mockGateway),
     );
 
     const addRes = makeResponse();
@@ -237,7 +263,7 @@ test("email verification codes use configured TFA SMTP code length", async () =>
         notifStore,
         tfaService,
         verifyTokenService,
-        mockGateway,
+        makeEmailDelivery(mockGateway),
         undefined,
         undefined,
         () => 8,
@@ -271,7 +297,7 @@ test("email verification rejects wrong code with 422", async () => {
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
     const res = makeResponse();
 
@@ -300,7 +326,7 @@ test("link verification GET redirects to /verify-email", async () => {
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
         "http://localhost",
     );
     let capturedLocation = "";
@@ -346,7 +372,7 @@ test("POST /api/v1/notify/verify-email with valid token verifies email", async (
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
     const res = makeResponse();
 
@@ -378,7 +404,7 @@ test("POST /api/v1/notify/verify-email token cannot be reused", async () => {
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
 
     const first = makeResponse();
@@ -425,7 +451,7 @@ test("add email issues both TFA code and verify token and includes link in email
         notifStore,
         tfaService,
         verifyTokenService,
-        mockGateway,
+        makeEmailDelivery(mockGateway),
         "http://localhost",
     );
     const res = makeResponse();
@@ -459,7 +485,7 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
     const res = makeResponse();
 
@@ -490,7 +516,7 @@ test("verify-tokens/status returns pending:false after token is consumed", async
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
         "http://localhost",
     );
 
@@ -530,7 +556,7 @@ test("owner can list another user's emails", async () => {
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
     const res = makeResponse();
 
@@ -559,7 +585,7 @@ test("verify-tokens/status returns pending:false for an unknown token", async ()
         notifStore,
         tfaService,
         verifyTokenService,
-        gateway,
+        makeEmailDelivery(gateway),
     );
     const res = makeResponse();
 

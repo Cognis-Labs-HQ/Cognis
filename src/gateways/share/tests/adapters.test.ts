@@ -13,12 +13,22 @@ function createGateway(): CoreShareGateway {
     );
 }
 
-test("share manifest advertises its adapter administration surface", async () => {
-    const manifest = JSON.parse(
-        await readFile("src/gateways/share/manifest.json", "utf8"),
-    ) as { hasAdapters?: boolean };
+test("share adapter manifests declare their parent gateway", async () => {
+    const manifests = await Promise.all(
+        ["link", "user"].map(async (adapterId) =>
+            JSON.parse(
+                await readFile(
+                    `src/adapters/share/${adapterId}/manifest.json`,
+                    "utf8",
+                ),
+            ),
+        ),
+    );
 
-    assert.equal(manifest.hasAdapters, true);
+    assert.deepEqual(
+        manifests.map((manifest: { gateway?: string }) => manifest.gateway),
+        ["share", "share"],
+    );
 });
 
 test("share gateway discovers Link and User method adapters", async () => {

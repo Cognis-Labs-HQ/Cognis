@@ -196,7 +196,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         version: "1.6.30",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
-        hasAdapters: true,
     });
 
     const cleanupTimer = setInterval(() => {

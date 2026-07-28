@@ -201,6 +201,12 @@ export function createNotificationRoutes(
     options?: {
         getTrustedDomains?: () => Promise<string[]>;
         routeContext?: RouteContext;
+        sendEmail?: (input: {
+            recipientEmail: string;
+            templateId: string;
+            variables: Record<string, string>;
+            config?: Record<string, unknown>;
+        }) => Promise<unknown>;
     },
 ) {
     const ctx = resolveRouteContext(options?.routeContext);
@@ -630,8 +636,7 @@ export function createNotificationRoutes(
                 !Array.isArray(body.config)
                     ? (body.config as Record<string, unknown>)
                     : undefined;
-            const sender = gateway.getSender(senderId);
-            if (!sender || typeof sender.sendTestEmail !== "function") {
+            if (senderId !== "smtp" || !options?.sendEmail) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -643,7 +648,12 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            await sender.sendTestEmail(to, overrideConfig);
+            await options.sendEmail({
+                recipientEmail: to,
+                templateId: "notify-test",
+                variables: {},
+                config: overrideConfig,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { sent: true } }));
             return true;

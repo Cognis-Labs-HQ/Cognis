@@ -305,7 +305,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,
-        hasAdapters: true,
     });
 
     const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");

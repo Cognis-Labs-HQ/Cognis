@@ -114,6 +114,7 @@ export class CapabilityStore {
 export interface GatewayBootstrapBase {
     gatewayRegistry: GatewayRegistry;
     capabilities: CapabilityStore;
+    adaptersRoot?: string;
     /**
      * Direct access to the platform flow API. Use `ctx.flow.exists()` and
      * `ctx.flow.extend()` to check for and inject stage hooks without
@@ -198,6 +199,42 @@ export class GatewayService {
         }
 
         const requiredIds: string[] = [];
+        const adapterGatewayIds = new Set<string>();
+        if (ctx.adaptersRoot) {
+            try {
+                const adapterFamilies = await readdir(ctx.adaptersRoot, {
+                    withFileTypes: true,
+                });
+                for (const adapterFamily of adapterFamilies) {
+                    if (!adapterFamily.isDirectory()) continue;
+                    const familyRoot = path.join(
+                        ctx.adaptersRoot,
+                        adapterFamily.name,
+                    );
+                    const adapterEntries = await readdir(familyRoot, {
+                        withFileTypes: true,
+                    });
+                    for (const adapterEntry of adapterEntries) {
+                        if (!adapterEntry.isDirectory()) continue;
+                        try {
+                            const adapterManifest = JSON.parse(
+                                await readFile(
+                                    path.join(
+                                        familyRoot,
+                                        adapterEntry.name,
+                                        "manifest.json",
+                                    ),
+                                    "utf8",
+                                ),
+                            ) as { gateway?: string };
+                            if (adapterManifest.gateway) {
+                                adapterGatewayIds.add(adapterManifest.gateway);
+                            }
+                        } catch {}
+                    }
+                }
+            } catch {}
+        }
         const gatewayManifests = new Map<
             string,
             { required: boolean; requires: string[] }
@@ -264,6 +301,9 @@ export class GatewayService {
                 ctx.gatewayRegistry.patch(gatewayId, {
                     requires: manifestRequires,
                 });
+            }
+            if (adapterGatewayIds.has(gatewayId)) {
+                ctx.gatewayRegistry.patch(gatewayId, { hasAdapters: true });
             }
 
             // After the logging gateway runs, pull the contributed log function

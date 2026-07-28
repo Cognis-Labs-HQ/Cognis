@@ -16,6 +16,8 @@ export async function bootstrapNotifyAdapter(
             recipientEmail: string;
             templateId: string;
             variables: Record<string, string>;
+            config?: Record<string, unknown>;
+            theme?: string;
         }) => {
             const renderTemplate = ctx.capabilities.get<
                 (
@@ -36,6 +38,13 @@ export async function bootstrapNotifyAdapter(
             }
             const sender = ctx.gateway.getSender("smtp");
             if (!sender) throw new Error("smtp_sender_unavailable");
+            if (
+                input.templateId === "notify-test" &&
+                typeof sender.sendTestEmail === "function"
+            ) {
+                await sender.sendTestEmail(input.recipientEmail, input.config);
+                return { sent: true };
+            }
             const envelope = {
                 category: "system",
                 recipientUsername: input.recipientEmail,
@@ -45,6 +54,7 @@ export async function bootstrapNotifyAdapter(
                 senderName: message.senderName,
                 actionUrl: message.actionUrl,
                 metadata: {
+                    ...(input.theme ? { theme: input.theme } : {}),
                     verifyUrl: message.actionUrl,
                     verifyButtonLabel: message.actionLabel,
                 },

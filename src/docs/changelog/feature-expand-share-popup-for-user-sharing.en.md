@@ -350,4 +350,12 @@ The browser keyring now lives with the adapter’s store, routes, manifest, and 
 
 ## Share and keyring adapters appear in Administration
 
-The Authentication and Share gateway manifests now advertise their adapters. The required encrypted Keyring, Link, and User adapters expose locked component metadata and canonical administration controls, including valid empty configuration surfaces.
+The Keyring, Link, and User adapter manifests now advertise their Authentication or Share parent gateway. The required encrypted Keyring, Link, and User adapters expose locked component metadata and canonical administration controls, including valid empty configuration surfaces.
+
+## Email delivery uses one capability
+
+SMTP test messages, user verification, invitations, one-time login messages, and queued verification messages now use the adapter-owned `notify:sendEmail` ctx capability. Administration and email-verification route tests cover successful capability dispatch so regressions no longer surface as unexplained `400` responses.
+
+## Adapter ownership is discovered centrally
+
+Core gateway bootstrap now derives `hasAdapters` from each adapter manifest's `gateway` field. Gateways no longer need duplicate adapter-presence flags in their own manifests or bootstrap registration.

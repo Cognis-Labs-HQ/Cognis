@@ -12,6 +12,12 @@ export function createGatewayAdapterRoutes(
     gateway: CoreNotificationGateway,
     gatewayRegistry: GatewayRegistry,
     routeContext?: RouteContext,
+    sendEmail?: (input: {
+        recipientEmail: string;
+        templateId: string;
+        variables: Record<string, string>;
+        config?: Record<string, unknown>;
+    }) => Promise<unknown>,
 ) {
     const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
@@ -174,8 +180,7 @@ export function createGatewayAdapterRoutes(
                 !Array.isArray(body.config)
                     ? (body.config as Record<string, unknown>)
                     : undefined;
-            const sender = gateway.getSender(adapterId);
-            if (!sender || typeof sender.sendTestEmail !== "function") {
+            if (adapterId !== "smtp" || !sendEmail) {
                 res.writeHead(400, {
                     "content-type": "application/json",
                 });
@@ -189,7 +194,12 @@ export function createGatewayAdapterRoutes(
                 );
                 return true;
             }
-            await sender.sendTestEmail(to, overrideConfig);
+            await sendEmail({
+                recipientEmail: to,
+                templateId: "notify-test",
+                variables: {},
+                config: overrideConfig,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { sent: true } }));
             return true;

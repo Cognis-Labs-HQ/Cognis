@@ -17,12 +17,12 @@ import {
     type InMemoryDb,
 } from "./auth-gateway-test-helpers.js";
 
-test("auth manifest advertises its adapter administration surface", async () => {
+test("keyring manifest declares the Authentication gateway as its parent", async () => {
     const manifest = JSON.parse(
-        await readFile("src/gateways/auth/manifest.json", "utf8"),
-    ) as { hasAdapters?: boolean };
+        await readFile("src/adapters/auth/keyring/manifest.json", "utf8"),
+    ) as { gateway?: string };
 
-    assert.equal(manifest.hasAdapters, true);
+    assert.equal(manifest.gateway, "auth");
 });
 
 function createDbExecutor(): InMemoryDb {

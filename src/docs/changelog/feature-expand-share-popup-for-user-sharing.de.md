@@ -350,4 +350,12 @@ Der Browser-Schlüsselbund liegt nun zusammen mit Speicher, Routen, Manifest und
 
 ## Freigabe- und Schlüsselbund-Adapter in der Administration sichtbar
 
-Die Manifeste der Authentifizierungs- und Freigabe-Gateways weisen nun ihre Adapter aus. Die erforderlichen verschlüsselten Schlüsselbund-, Link- und Benutzer-Adapter stellen gesperrte Komponentenmetadaten und kanonische Administrationssteuerungen einschließlich gültiger leerer Konfigurationsoberflächen bereit.
+Die Manifeste der Schlüsselbund-, Link- und Benutzer-Adapter weisen nun ihr übergeordnetes Authentifizierungs- oder Freigabe-Gateway aus. Die erforderlichen verschlüsselten Schlüsselbund-, Link- und Benutzer-Adapter stellen gesperrte Komponentenmetadaten und kanonische Administrationssteuerungen einschließlich gültiger leerer Konfigurationsoberflächen bereit.
+
+## E-Mail-Versand verwendet eine einzige Fähigkeit
+
+SMTP-Testnachrichten, Benutzerbestätigungen, Einladungen, Einmal-Anmeldenachrichten und eingereihte Bestätigungsnachrichten verwenden nun die adaptereigene ctx-Fähigkeit `notify:sendEmail`. Tests der Administrations- und E-Mail-Bestätigungsrouten prüfen die erfolgreiche Weiterleitung, damit Regressionen nicht mehr als unerklärliche `400`-Antworten auftreten.
+
+## Adapterzugehörigkeit wird zentral erkannt
+
+Der zentrale Gateway-Bootstrap leitet `hasAdapters` nun aus dem Feld `gateway` jedes Adaptermanifests ab. Gateways benötigen keine doppelten Angaben zur Adapterpräsenz mehr in ihrem eigenen Manifest oder ihrer Bootstrap-Registrierung.

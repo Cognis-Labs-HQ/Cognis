@@ -350,4 +350,12 @@ Keyring peramban kini berada bersama penyimpanan, rute, manifes, dan dokumentasi
 
 ## Adapter berbagi dan keyring tampil di Administrasi
 
-Manifest gateway Autentikasi dan Berbagi kini mengumumkan adapter miliknya. Adapter Keyring terenkripsi, Tautan, dan Pengguna yang wajib menyediakan metadata komponen terkunci dan kontrol administrasi kanonis, termasuk permukaan konfigurasi kosong yang valid.
+Manifest adapter Keyring, Tautan, dan Pengguna kini mengumumkan gateway induk Autentikasi atau Berbagi. Adapter Keyring terenkripsi, Tautan, dan Pengguna yang wajib menyediakan metadata komponen terkunci dan kontrol administrasi kanonis, termasuk permukaan konfigurasi kosong yang valid.
+
+## Pengiriman email menggunakan satu kapabilitas
+
+Pesan uji SMTP, verifikasi pengguna, undangan, pesan masuk sekali pakai, dan pesan verifikasi antrean kini menggunakan kapabilitas ctx `notify:sendEmail` milik adapter. Pengujian rute Administrasi dan verifikasi email memastikan pengiriman kapabilitas berhasil agar regresi tidak lagi muncul sebagai respons `400` tanpa penjelasan.
+
+## Kepemilikan adapter ditemukan secara terpusat
+
+Bootstrap gateway inti kini memperoleh `hasAdapters` dari bidang `gateway` pada setiap manifest adapter. Gateway tidak lagi memerlukan penanda keberadaan adapter yang digandakan dalam manifest atau pendaftaran bootstrap miliknya.

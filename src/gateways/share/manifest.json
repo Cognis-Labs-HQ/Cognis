@@ -4,7 +4,6 @@
     "version": "1.6.30",
     "required": false,
     "requires": ["auth", "db"],
-    "hasAdapters": true,
     "description": "Gateway-owned public share token orchestration for Cognis resources.",
     "publisher": "Cognis Labs HQ",
     "entrypoints": {
