@@ -293,6 +293,31 @@ test("first login sets up a new keyring with the selected encryption password", 
     localStorage.removeItem("cognis_account");
 });
 
+test("new keyring setup can be deferred until the dashboard is visible", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    localStorage.setItem("cognis_account", "deferred-user");
+
+    assert.deepEqual(
+        await keyring.setupKeyringAfterLogin("account-password", {
+            deferNewSetup: true,
+        }),
+        { setup: false, unlocked: false, deferred: true },
+    );
+    assert.equal(uiCtx.capabilities.get("keyring:hasDeferredSetup")?.(), true);
+
+    assert.deepEqual(
+        await keyring.setupKeyringAfterLogin("", {
+            requestSetupPassword: async () => "dashboard-password",
+        }),
+        { setup: true, unlocked: true },
+    );
+    assert.equal(uiCtx.capabilities.get("keyring:hasDeferredSetup")?.(), false);
+    await keyring.lockKeyring();
+    localStorage.removeItem("cognis_account");
+});
+
 test("server-side deletion invalidates the browser keyring copy on login", async () => {
     const keyring = await import("../ui/keyring.js");
     values.clear();

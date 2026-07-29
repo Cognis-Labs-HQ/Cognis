@@ -52,6 +52,7 @@ const STORAGE_KEY = "cognis_secure_keyring";
 const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
 const DEFAULT_ITERATIONS = 310_000;
+const DEFERRED_SETUP_KEY = "cognis_keyring_setup_pending";
 let vaultKey = null;
 let vaultData = null;
 let vaultSalt = null;
@@ -448,11 +449,18 @@ async function requestKeyringSetup(accountPassword) {
             passwordInput = overlay.querySelector("#keyring-setup-password");
             passwordInput?.focus();
         },
-        onAction: () => Boolean(passwordInput?.value || accountPassword),
+        onAction: () => true,
     });
-    return result === "setup"
-        ? resolveKeyringSetupPassword(passwordInput?.value, accountPassword)
-        : "";
+    if (result !== "setup") return "";
+    const selectedPassword = resolveKeyringSetupPassword(
+        passwordInput?.value,
+        accountPassword,
+    );
+    if (selectedPassword) return selectedPassword;
+    return requestKeyringPassword({
+        i18n,
+        message: i18n.t("adapter.auth.keyring.setup_account_password_message"),
+    });
 }
 
 export function resolveKeyringSetupPassword(enteredPassword, accountPassword) {
@@ -464,6 +472,7 @@ export async function setupKeyringAfterLogin(
     {
         requestSetupPassword = requestKeyringSetup,
         requestUnlock = requestKeyringUnlock,
+        deferNewSetup = false,
     } = {},
 ) {
     const localEnvelope = loadLocalEnvelope();
@@ -487,10 +496,15 @@ export async function setupKeyringAfterLogin(
         });
         return { setup: false, unlocked };
     }
+    if (deferNewSetup) {
+        sessionStorage.setItem(DEFERRED_SETUP_KEY, "1");
+        return { setup: false, unlocked: false, deferred: true };
+    }
     const encryptionPassword = await requestSetupPassword(accountPassword);
     const unlocked = encryptionPassword
         ? await unlockKeyring(encryptionPassword)
         : false;
+    if (unlocked) sessionStorage.removeItem(DEFERRED_SETUP_KEY);
     return { setup: true, unlocked };
 }
 
@@ -667,6 +681,10 @@ uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
 uiCtx.capabilities.contribute("keyring:requestUnlock", requestKeyringUnlock);
 uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
 uiCtx.capabilities.contribute(
+    "keyring:hasDeferredSetup",
+    () => sessionStorage.getItem(DEFERRED_SETUP_KEY) === "1",
+);
+uiCtx.capabilities.contribute(
     "keyring:activateTemporary",
     activateTemporaryKeyring,
 );
@@ -679,6 +697,10 @@ if (uiCtx.flowExists("complete-login")) {
         (stageContext) =>
             setupKeyringAfterLogin(
                 String(stageContext.input?.accountPassword ?? ""),
+                {
+                    deferNewSetup:
+                        stageContext.input?.deferNewKeyringSetup === true,
+                },
             ),
     );
 }

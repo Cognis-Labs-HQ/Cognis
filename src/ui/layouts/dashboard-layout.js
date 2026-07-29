@@ -27,6 +27,7 @@ import { createSearchBar } from "../reuse/search-util/popup.js";
 import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
+import { showToast } from "../reuse/toast.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -333,6 +334,29 @@ async function loadNavbarPlugins() {
     return navbarPluginsLoadPromise;
 }
 
+function completeDeferredLoginSetup() {
+    return loadNavbarPlugins().then(() => {
+        const hasDeferredKeyringSetup = uiCtx.capabilities.get(
+            "keyring:hasDeferredSetup",
+        );
+        return hasDeferredKeyringSetup?.()
+            ? uiCtx.runFlow("complete-login", {})
+            : undefined;
+    });
+}
+
+function scheduleDeferredLoginSetup(i18n) {
+    requestAnimationFrame(() => {
+        completeDeferredLoginSetup().catch((error) => {
+            console.error(
+                "[dashboard-layout]:deferred-login-setup-failed",
+                error,
+            );
+            showToast(i18n.t("ui.reuse.error"), { variant: "error" });
+        });
+    });
+}
+
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
     navbarPluginsLoaded = false;
     loadNavbarPlugins().catch(() => {});
@@ -600,6 +624,7 @@ export async function renderDashboardLayout(root, slots = {}) {
                 );
             });
             scheduleNavbarEnhancements();
+            scheduleDeferredLoginSetup(i18n);
             initSearchBar(i18n);
             bindProfilePreviews(i18n);
             ensureReleaseChangelogPopupChecked(i18n);
@@ -651,6 +676,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             );
         });
         scheduleNavbarEnhancements();
+        scheduleDeferredLoginSetup(i18n);
         applyActiveNavigation();
         applyCompactNav(root);
         initRouter(root);

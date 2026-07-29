@@ -411,3 +411,7 @@ Autentikasi kini memberikan pengenal sekunder sementara untuk setiap siklus hidu
 ## Perlindungan instans akun untuk data pengguna
 
 Data kalender, kelas, chat, profil, preferensi, grafik sosial, dan notifikasi kini terdaftar sebagai pemilik data akun. Autentikasi mencatat instans akun terakhir yang dilayani setiap pemilik dan otomatis memusnahkan catatan usang sebelum akun yang dibuat ulang dapat mengaksesnya.
+
+## Penyiapan keyring setelah tiba di dasbor
+
+Pengguna baru kini tiba di dasbor sebelum dialog penyiapan Keyring Pengguna dibuka. Dialog tersebut menjelaskan bahwa keyring melindungi kata sandi dan kunci enkripsi yang digunakan fitur Cognis. GitHub Actions kini secara eksplisit menjalankan seluruh rangkaian pengujian setelah pemeriksaan tipe.

@@ -411,3 +411,7 @@ Authentication now assigns each account lifecycle a transient secondary identifi
 ## Account-instance protection across user data
 
 Calendar, classroom, chat, profile, preferences, social graph, and notification data now register as account-data owners. Authentication records the account instance each owner last served and automatically destroys that owner's stale records before a recreated account can access them.
+
+## Keyring setup after dashboard arrival
+
+New users now reach the dashboard before the User Keyring setup dialog opens. The dialog explains that the keyring protects passwords and encryption keys used by Cognis features. GitHub Actions now runs the full test suite explicitly after typechecking.

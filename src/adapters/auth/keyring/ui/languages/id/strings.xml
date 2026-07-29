@@ -8,7 +8,8 @@ Masukkan kata sandi keyring untuk melanjutkan.</string>
   <string name="adapter.auth.keyring.unlock_action">Buka</string>
   <string name="adapter.auth.keyring.cancel_action">Batal</string>
   <string name="adapter.auth.keyring.setup_title">Siapkan enkripsi keyring</string>
-  <string name="adapter.auth.keyring.setup_message">Pilih kata sandi untuk mengenkripsi keyring Anda.</string>
+  <string name="adapter.auth.keyring.setup_message">Keyring Anda menyimpan kata sandi dan kunci enkripsi yang digunakan fitur Cognis secara aman. Pilih kata sandi untuk melindunginya.</string>
+  <string name="adapter.auth.keyring.setup_account_password_message">Masukkan kata sandi akun untuk menggunakannya sebagai perlindungan keyring.</string>
   <string name="adapter.auth.keyring.setup_placeholder">Kata sandi keyring (opsional)</string>
   <string name="adapter.auth.keyring.setup_hint">Biarkan kosong untuk menggunakan kata sandi akun Anda.</string>
   <string name="adapter.auth.keyring.setup_action">Siapkan keyring</string>

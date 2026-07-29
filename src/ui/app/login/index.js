@@ -389,7 +389,10 @@ export async function mount(root) {
 
     async function finalizeAuthenticatedSession(data, password = "") {
         persistSession(data);
-        await uiCtx.runFlow("complete-login", { accountPassword: password });
+        await uiCtx.runFlow("complete-login", {
+            accountPassword: password,
+            deferNewKeyringSetup: true,
+        });
         const requiresUserValidation =
             data.requiredUserValidation === true &&
             data.userValidationMode === "smtp";
@@ -429,6 +432,7 @@ export async function mount(root) {
                 persistSession(data);
                 await uiCtx.runFlow("complete-login", {
                     accountPassword: password,
+                    deferNewKeyringSetup: true,
                 });
                 tfaLoginClient.handleSetupRequired(() => undefined, data);
             }

@@ -1,8 +1,8 @@
-# Encrypted Keyring Adapter
+# User Keyring Adapter
 
 ## Overview
 
-The Encrypted Keyring adapter persists opaque browser-encrypted vaults for authenticated accounts. It is a required Authentication adapter because passwords, encryption keys, and other user-specific secrets need one stable capability regardless of the active login provider.
+The User Keyring adapter persists opaque browser-encrypted vaults for authenticated accounts. It is a required Authentication adapter because passwords, encryption keys, and other user-specific secrets need one stable capability regardless of the active login provider.
 
 The browser-facing keyring remains the reusable `src/adapters/auth/keyring/ui/keyring.js` surface. Encryption and decryption happen in the browser; the adapter never receives plaintext secrets.
 

@@ -17,7 +17,7 @@ export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
 export function createAdapter(): AuthProviderAdapter {
     return {
         id: "keyring",
-        name: "Encrypted Keyring",
+        name: "User Keyring",
         locked: true,
         authenticationProvider: false,
         async authenticate() {

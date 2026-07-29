@@ -411,3 +411,7 @@ Die Authentifizierung weist jedem Kontolebenszyklus nun eine vorübergehende sek
 ## Kontoinstanzschutz für Benutzerdaten
 
 Kalender-, Unterrichtsraum-, Chat-, Profil-, Einstellungs-, Sozialgraph- und Benachrichtigungsdaten registrieren sich jetzt als Eigentümer von Kontodaten. Die Authentifizierung speichert die zuletzt von jedem Eigentümer bediente Kontoinstanz und entfernt veraltete Datensätze automatisch, bevor ein neu erstelltes Konto darauf zugreifen kann.
+
+## Schlüsselbundeinrichtung nach Ankunft im Dashboard
+
+Neue Benutzer erreichen nun das Dashboard, bevor der Dialog zur Einrichtung des Benutzerschlüsselbunds geöffnet wird. Der Dialog erklärt, dass der Schlüsselbund Passwörter und Verschlüsselungsschlüssel für Cognis-Funktionen schützt. GitHub Actions führt nach der Typprüfung nun ausdrücklich die vollständige Testsuite aus.

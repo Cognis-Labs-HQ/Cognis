@@ -37,11 +37,11 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.5`  |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.4`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| Encrypted Keyring     | `src/adapters/auth/keyring/`        | `1.0.13` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.14` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.5`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.13` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.14` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.8`  |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.6`  |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.6`  |
@@ -51,7 +51,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.21` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.13` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.14` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.5`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.9`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
@@ -92,7 +92,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.27` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.28` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.16` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

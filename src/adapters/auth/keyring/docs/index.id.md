@@ -1,8 +1,8 @@
-# Adapter Keyring Terenkripsi
+# Adapter Keyring Pengguna
 
 ## Ringkasan
 
-Adapter Keyring Terenkripsi menyimpan brankas buram yang dienkripsi di peramban untuk akun terautentikasi. Adapter Autentikasi ini wajib agar kata sandi, kunci enkripsi, dan rahasia khusus pengguna tersedia melalui satu kapabilitas stabil tanpa bergantung pada penyedia masuk.
+Adapter Keyring Pengguna menyimpan brankas buram yang dienkripsi di peramban untuk akun terautentikasi. Adapter Autentikasi ini wajib agar kata sandi, kunci enkripsi, dan rahasia khusus pengguna tersedia melalui satu kapabilitas stabil tanpa bergantung pada penyedia masuk.
 
 Antarmuka peramban tetap berada di `src/adapters/auth/keyring/ui/keyring.js`. Enkripsi dan dekripsi berlangsung di peramban; adapter tidak pernah menerima rahasia teks biasa.
 

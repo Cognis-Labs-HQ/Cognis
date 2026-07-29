@@ -20,9 +20,10 @@ import {
 test("keyring manifest declares the Authentication gateway as its parent", async () => {
     const manifest = JSON.parse(
         await readFile("src/adapters/auth/keyring/manifest.json", "utf8"),
-    ) as { gateway?: string };
+    ) as { gateway?: string; name?: string };
 
     assert.equal(manifest.gateway, "auth");
+    assert.equal(manifest.name, "User Keyring");
 });
 
 test("keyring adapter purges a vault when user deletion persists", async () => {
@@ -432,7 +433,7 @@ test("CoreAuthGateway lists a locked keyring without treating it as a login prov
     assert.deepEqual(gateway.listAdapters(), [
         {
             id: "keyring",
-            name: "Encrypted Keyring",
+            name: "User Keyring",
             enabled: true,
             locked: true,
             config: {},
