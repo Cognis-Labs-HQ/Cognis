@@ -26,7 +26,7 @@ import { ensureFullAccountSession } from "../reuse/auth-session.js";
 import { createSearchBar } from "../reuse/search-util/popup.js";
 import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
-import { lockKeyring } from "/static/adapters/auth/keyring/keyring.js";
+import { uiCtx } from "../reuse/ui-ctx.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -234,7 +234,7 @@ function bindTopbarActions() {
         localStorage.removeItem("cognis_role");
         localStorage.removeItem("cognis_is_founder");
         localStorage.removeItem("cognis_user_validation_mode");
-        lockKeyring();
+        uiCtx.capabilities.get("keyring:lock")?.();
         document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
         window.location.href = "/login";
     });

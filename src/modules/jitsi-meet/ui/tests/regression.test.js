@@ -70,6 +70,20 @@ test("jitsi meeting group chats include the meeting date in their title", () => 
     assert.match(source, /title:\s*meetingChatTitle/);
 });
 
+test("jitsi chat loads room keys through the messages adapter loading flow", () => {
+    const chatSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+    const resourcesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/ui-resources.js"),
+        "utf8",
+    );
+    assert.match(chatSource, /await loadChatRoomKey\(roomId, \{ i18n \}\)/);
+    assert.doesNotMatch(chatSource, /adapters\/auth\/keyring/);
+    assert.match(resourcesSource, /chatLoadingModuleUrl/);
+});
+
 test("jitsi meeting window has light-theme overlay overrides", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meet.css"),

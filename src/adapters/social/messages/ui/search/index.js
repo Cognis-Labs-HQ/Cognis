@@ -1,31 +1,16 @@
-import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
+import { hexToBytes } from "/static/reuse/crypto-utils.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
-import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
+import { loadChatRoomKey } from "../chat-loading.js";
 
 export const componentSearchId = "social-messages";
 
 const messagesSearchDecoder = new TextDecoder();
-const messagesSearchRoomKeys = new Map();
 const messagesSearchRoomMessages = new Map();
 const MESSAGE_SEARCH_PAGE_SIZE = 100;
-const messagesKeyring = createKeyringScope("Social Messages");
 
 async function getSearchRoomKey(roomId) {
-    if (messagesSearchRoomKeys.has(roomId)) {
-        return messagesSearchRoomKeys.get(roomId);
-    }
-    const roomKeyHex = await messagesKeyring.resolve(`chatroom:${roomId}:key`, {
-        validate: async (candidate) => {
-            await importRoomKey(candidate, ["decrypt"]);
-            return true;
-        },
-        metadata: { label: `Chat ${roomId}` },
-    });
-    if (typeof roomKeyHex !== "string" || roomKeyHex.length === 0) return null;
-    const roomKey = await importRoomKey(roomKeyHex, ["decrypt"]);
-    messagesSearchRoomKeys.set(roomId, roomKey);
-    return roomKey;
+    return loadChatRoomKey(roomId);
 }
 
 async function decryptSearchMessage(roomKey, messageRecord) {

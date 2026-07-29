@@ -1,7 +1,7 @@
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { resolveUrlHost } from "/static/reuse/value-normalizers.js";
 import {
     loadJitsiExternalApi,
@@ -10,8 +10,6 @@ import {
     resolveThemeMode,
 } from "./meeting-embed.js";
 import { JITSI_TOOLBAR_BUTTONS, MEETING_SUBJECT } from "./constants.js";
-
-const meetingKeyring = createKeyringScope("Jitsi Meet");
 
 export function createEmbedHandlers({
     root,
@@ -48,11 +46,15 @@ export function createEmbedHandlers({
             return;
         }
 
+        const createKeyringScope = uiCtx.capabilities.get(
+            "keyring:forComponent",
+        );
+        const meetingKeyring = createKeyringScope?.("Jitsi Meet");
         const meetingKeyringId = `meeting:${state.meeting.id}:password`;
         const suppliedMeetingPassword = String(
             state.meeting.meetingPassword ?? "",
         ).trim();
-        if (!meetingKeyring.get(meetingKeyringId) && suppliedMeetingPassword) {
+        if (!meetingKeyring?.get(meetingKeyringId) && suppliedMeetingPassword) {
             await meetingKeyring.set(
                 meetingKeyringId,
                 suppliedMeetingPassword,
@@ -63,7 +65,7 @@ export function createEmbedHandlers({
             );
         }
         let meetingPassword = String(
-            meetingKeyring.get(meetingKeyringId) || suppliedMeetingPassword,
+            meetingKeyring?.get(meetingKeyringId) || suppliedMeetingPassword,
         ).trim();
         let submittedStoredPassword = false;
         const themeMode = resolveThemeMode();

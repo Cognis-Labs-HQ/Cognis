@@ -543,6 +543,7 @@ export class CoreAuthGateway {
                 adapterId: string,
                 absolutePath: string,
             ) => void;
+            registerNavbarPlugin?: (scriptUrl: string) => void;
         },
     ): Promise<void> {
         let entries: string[];

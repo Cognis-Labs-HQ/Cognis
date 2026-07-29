@@ -371,3 +371,7 @@ Ein gültiges Freigabetoken erzeugt nun eine isolierte Gastidentität mit einer 
 ## Nachrichten warten auf den Schlüsselbund
 
 Die Anmeldung speichert nun das authentifizierte Konto, bevor dessen verschlüsselter Schlüsselbund entsperrt wird. Messages führt gleichzeitige Raumöffnungen zusammen und pausiert die Live-Aktualisierung, bis die Raumschlüsselübergabe und eine gegebenenfalls erforderliche Entsperrabfrage abgeschlossen sind. Dadurch erzeugt die Hintergrundabfrage keine Promise-Ablehnungen wegen fehlender Schlüssel mehr.
+
+## Schlüsselbunde begleiten jeden Komponenten-Ladevorgang
+
+Anmeldungen mit Passwort und Zwei-Faktor-Authentifizierung entsperren den Schlüsselbund nun vor der Navigation und beachten weiterhin die konfigurierte automatische Sperrfrist. Der Messages-Adapter besitzt einen stufenweisen Chat-Ladevorgang, der Raumschlüssel auflöst, abruft, prüft und speichert. Messages-Seite, globale Suche, Benachrichtigungen und der Mini-Chat in Meetings verwenden diese gemeinsame Fähigkeit statt Schlüsselbund-Interna direkt zu importieren.

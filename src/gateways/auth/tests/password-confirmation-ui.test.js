@@ -17,6 +17,18 @@ test("login persists the authenticated identity before unlocking its keyring", (
     );
 });
 
+test("login retains the password until TFA authentication unlocks the keyring", () => {
+    assert.match(loginSource, /pendingKeyringPassword = password;/);
+    assert.match(
+        loginSource,
+        /finalizeAuthenticatedSession\(\s*tfaBody\.data,\s*pendingKeyringPassword,\s*\)/,
+    );
+    assert.match(
+        loginSource,
+        /persistSession\(data\);\s*if \(password\) await unlockKeyring\(password\);\s*tfaLoginClient\.handleSetupRequired/,
+    );
+});
+
 function createI18nStub() {
     return {
         t(key) {

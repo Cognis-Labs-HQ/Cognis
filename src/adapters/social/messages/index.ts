@@ -384,6 +384,8 @@ export async function bootstrapSocialAdapter(
         ],
         reactionHelpersModuleUrl:
             "/static/adapters/social/messages/reactions.js",
+        chatLoadingModuleUrl:
+            "/static/adapters/social/messages/chat-loading.js",
     });
 
     ctx.registerRoute(

@@ -371,3 +371,7 @@ A valid share token now creates an isolated guest identity with a derived keyrin
 ## Message loading waits for the keyring
 
 Login now persists the authenticated account before unlocking its encrypted keyring. Messages deduplicates concurrent room opens and pauses live conversation refreshes until room-key delivery and any required unlock prompt have completed, preventing background polling from raising missing-key promise rejections.
+
+## Keyrings follow every component loading flow
+
+Password and TFA login paths now unlock the user's keyring before navigation while preserving the configured automatic lock timeout. The Messages adapter owns a staged chat-loading flow that resolves, obtains, validates, and persists room keys; the Messages page, global search, notifications, and Meetings mini-chat all consume that shared capability instead of importing keyring internals.

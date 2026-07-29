@@ -48,28 +48,25 @@ import {
     formatRoomListAvatar,
 } from "./message-render.js";
 import { resolveMessageTemplateVariables } from "./message-templates.js";
-import { createRoomKeyStore } from "./room-keys.mjs";
+import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
-import { importRoomKey } from "/static/reuse/crypto-utils.js";
-import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
-import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
-let reportInvalidRoomKey = () => undefined;
-const messagesKeyring = createKeyringScope("Social Messages");
+let messagesI18n = null;
 
-const { getRoomKey, requireRoomKey, resolveThreadRoomKey, contributeRoomKey } =
-    createRoomKeyStore({
-        importKey: importRoomKey,
-        onInvalidSecret: (roomId) => reportInvalidRoomKey(roomId),
-        resolveSecret: messagesKeyring.resolve,
-        contributeSecret: messagesKeyring.set,
-    });
+const getRoomKey = (roomId) => loadChatRoomKey(roomId, { i18n: messagesI18n });
+const requireRoomKey = (roomId) =>
+    requireChatRoomKey(roomId, { i18n: messagesI18n });
+const resolveThreadRoomKey = (roomContext, roomId) =>
+    roomContext?.pendingRequest?.direction === "incoming" ||
+    roomContext?.direction === "incoming"
+        ? null
+        : requireRoomKey(roomId);
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
@@ -78,10 +75,7 @@ export async function mount(root, { signal } = {}) {
             "/static/gateways/social/languages",
         ],
     });
-    reportInvalidRoomKey = () =>
-        showToast(i18n.t("adapter.social.messages.keyring_invalid"), {
-            variant: "warning",
-        });
+    messagesI18n = i18n;
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
     const {
@@ -133,40 +127,13 @@ export async function mount(root, { signal } = {}) {
         getRoomKey,
         requireRoomKey,
         resolveThreadRoomKey,
-        acceptRoomKeyContribution: async (roomId, contribution) => {
-            const isUnlocked = uiCtx.capabilities.get("keyring:isUnlocked");
-            if (!isUnlocked?.()) {
-                const createGuard = uiCtx.capabilities.get(
-                    "auth:createRepromptGuard",
-                );
-                const unlock = uiCtx.capabilities.get("keyring:unlock");
-                if (!createGuard || !unlock) return false;
-                const guard = createGuard({ i18n });
-                const prompt = {
-                    title: i18n.t(
-                        "adapter.social.messages.keyring_unlock_title",
-                    ),
-                    message: i18n.t(
-                        "adapter.social.messages.keyring_unlock_message",
-                    ),
-                };
-                let confirmation =
-                    await guard.requestPasswordConfirmation(prompt);
-                if (confirmation && !confirmation.password) {
-                    confirmation = await guard.requestPasswordConfirmation({
-                        ...prompt,
-                        alwaysPrompt: true,
-                    });
-                }
-                if (
-                    !confirmation?.password ||
-                    !(await unlock(confirmation.password))
-                ) {
-                    return false;
-                }
-            }
-            return contributeRoomKey(roomId, contribution);
-        },
+        acceptRoomKeyContribution: async (roomId, keyContribution) =>
+            Boolean(
+                await loadChatRoomKey(roomId, {
+                    i18n,
+                    keyContribution,
+                }),
+            ),
         lastOpenedRoomKey: LAST_OPENED_ROOM_KEY,
         typingTtlSeconds: TYPING_TTL_SECONDS,
         typingIdleResetMs: TYPING_IDLE_RESET_MS,

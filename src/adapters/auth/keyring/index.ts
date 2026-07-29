@@ -33,6 +33,7 @@ export async function bootstrapAuthAdapter(input: {
     capabilities: CapabilityStore;
     adapterRoot: string;
     registerStaticDir?: (adapterId: string, absolutePath: string) => void;
+    registerNavbarPlugin?: (scriptUrl: string) => void;
 }): Promise<void> {
     const store = new DbKeyringVaultStore(
         input.capabilities.require<KeyringDbExecutor>("db:executor"),
@@ -49,4 +50,5 @@ export async function bootstrapAuthAdapter(input: {
             createKeyringRoutes({ routeContext, store }),
     );
     input.registerStaticDir?.("keyring", path.join(input.adapterRoot, "ui"));
+    input.registerNavbarPlugin?.("/static/adapters/auth/keyring/keyring.js");
 }

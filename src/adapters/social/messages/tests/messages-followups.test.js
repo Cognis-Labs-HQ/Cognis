@@ -16,6 +16,16 @@ function readMessagesUiBundle() {
         .join("\n");
 }
 
+test("all chat consumers use the adapter-owned key loading flow", () => {
+    const source = readMessagesUiBundle();
+    assert.match(source, /registerFlow\(FLOW_ID/);
+    assert.match(source, /"resolve-keyring"/);
+    assert.match(source, /"load-key-contribution"/);
+    assert.match(source, /"persist-key-contribution"/);
+    assert.match(source, /social:messages:loadChatRoomKey/);
+    assert.doesNotMatch(source, /adapters\/auth\/keyring\/keyring\.js/);
+});
+
 test("messages new-conversation search uses messaging lookup endpoint", () => {
     const source = readMessagesUiBundle();
     assert.match(

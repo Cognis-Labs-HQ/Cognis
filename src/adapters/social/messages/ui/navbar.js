@@ -1,5 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerSearchIndexing } from "./search/index.js";
+import "./chat-loading.js";
 
 const messagesLink = document.querySelector("[data-messages-link]");
 

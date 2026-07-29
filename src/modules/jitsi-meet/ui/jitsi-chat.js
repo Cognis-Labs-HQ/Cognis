@@ -2,17 +2,11 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatTime } from "/static/reuse/timestamp.js";
-import {
-    bytesToHex,
-    hexToBytes,
-    importRoomKey,
-} from "/static/reuse/crypto-utils.js";
-import { createKeyringScope } from "/static/adapters/auth/keyring/keyring.js";
+import { bytesToHex, hexToBytes } from "/static/reuse/crypto-utils.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";
 
-const jitsiKeyring = createKeyringScope("Jitsi Meet");
 import {
     createChatParticipantAvatarButton,
     normalizeChatRoomId,
@@ -25,25 +19,17 @@ export function createChatHandlers({
     i18n,
     apiFetch,
     messageReactions,
+    loadChatRoomKey,
 }) {
     async function getChatRoomKey(roomId) {
         if (!roomId) return null;
         if (state.chatRoomKey && state.chatRoomId === roomId) {
             return state.chatRoomKey;
         }
-        const keyHex = await jitsiKeyring.resolve(`chatroom:${roomId}:key`, {
-            validate: async (candidate) => {
-                await importRoomKey(candidate);
-                return true;
-            },
-            metadata: {
-                label: state.meeting?.meetingName || `Chat ${roomId}`,
-            },
-        });
-        if (!keyHex) return null;
-        const imported = await importRoomKey(keyHex);
-        state.chatRoomKey = imported;
-        return imported;
+        if (typeof loadChatRoomKey !== "function") return null;
+        const roomKey = await loadChatRoomKey(roomId, { i18n });
+        state.chatRoomKey = roomKey;
+        return roomKey;
     }
 
     async function decryptChatMessage(message, key) {

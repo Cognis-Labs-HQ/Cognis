@@ -26,6 +26,7 @@ export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
     let currentTfaLoginAttemptId = null;
+    let pendingKeyringPassword = "";
     let lastTfaPayload = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
@@ -418,11 +419,14 @@ export async function mount(root) {
             }
             if (data.tfaRequired === true) {
                 lastTfaPayload = data;
+                pendingKeyringPassword = password;
                 hideCredentialProviderSelector();
                 currentTfaLoginAttemptId =
                     tfaLoginClient.switchToTfaPrompt(data);
             } else {
-                tfaLoginClient.handleSetupRequired(persistSession, data);
+                persistSession(data);
+                if (password) await unlockKeyring(password);
+                tfaLoginClient.handleSetupRequired(() => undefined, data);
             }
             return;
         }
@@ -919,6 +923,7 @@ export async function mount(root) {
                                 if (tfaResponse.ok && tfaBody?.data) {
                                     await finalizeAuthenticatedSession(
                                         tfaBody.data,
+                                        pendingKeyringPassword,
                                     );
                                     return;
                                 }

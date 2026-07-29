@@ -53,6 +53,10 @@ export function buildJitsiUiResourcesPayload(messagesUiResources) {
             typeof messagesUiResources?.reactionHelpersModuleUrl === "string"
                 ? messagesUiResources.reactionHelpersModuleUrl
                 : null,
+        chatLoadingModuleUrl:
+            typeof messagesUiResources?.chatLoadingModuleUrl === "string"
+                ? messagesUiResources.chatLoadingModuleUrl
+                : null,
         profileFileNamespace:
             typeof messagesUiResources?.profileFileNamespace === "string"
                 ? messagesUiResources.profileFileNamespace
@@ -65,6 +69,7 @@ export function buildUnavailableJitsiUiResourcesPayload() {
         languageBaseUrls: JITSI_MODULE_LANGUAGE_BASE_URLS,
         stylesheetUrls: [],
         reactionHelpersModuleUrl: null,
+        chatLoadingModuleUrl: null,
         profileFileNamespace: null,
     };
 }

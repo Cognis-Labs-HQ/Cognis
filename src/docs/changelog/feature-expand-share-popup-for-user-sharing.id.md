@@ -371,3 +371,7 @@ Token berbagi yang valid kini membuat identitas tamu terisolasi dengan frasa san
 ## Pemuatan pesan menunggu keyring
 
 Proses masuk kini menyimpan akun terautentikasi sebelum membuka keyring terenkripsinya. Messages menggabungkan pembukaan ruang yang bersamaan dan menjeda penyegaran percakapan langsung sampai pengiriman kunci ruang serta dialog pembukaan yang diperlukan selesai, sehingga polling latar belakang tidak lagi menghasilkan penolakan promise karena kunci hilang.
+
+## Keyring mengikuti setiap alur pemuatan komponen
+
+Jalur masuk dengan kata sandi dan autentikasi dua faktor kini membuka keyring pengguna sebelum navigasi dengan tetap menghormati batas waktu penguncian otomatis yang dikonfigurasi. Adapter Messages memiliki alur pemuatan chat bertahap yang menemukan, mengambil, memvalidasi, dan menyimpan kunci ruang; halaman Messages, pencarian global, notifikasi, dan chat mini Meetings semuanya memakai kapabilitas bersama tersebut tanpa mengimpor bagian internal keyring.

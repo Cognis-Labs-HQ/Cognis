@@ -254,6 +254,15 @@ test("auth gateway registers adapter-owned UI directories", async () => {
     );
     assert.ok(keyringUiDirectory);
     await assert.doesNotReject(access(`${keyringUiDirectory}/keyring.js`));
+    assert.ok(
+        uiRegistry
+            .listNavbarPlugins()
+            .some(
+                (plugin) =>
+                    plugin.scriptUrl ===
+                    "/static/adapters/auth/keyring/keyring.js",
+            ),
+    );
 });
 
 test("auth gateway bootstrap registers security section without redundant authentication admin section", async () => {
