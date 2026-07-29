@@ -81,6 +81,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const routeRegistry = new RouteRegistry();
     const gatewayRegistry = new GatewayRegistry();
     const capabilities = new CapabilityStore();
+    capabilities.contribute("auth:issueAccessToken", issueAccessToken);
     const uiRegistry = new UIRegistry();
     const dbExecutor = new MemoryExecutor();
     const adminToken = issueAccessToken("alice", "admin", 60);
@@ -386,10 +387,11 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ),
     );
     assert.equal(resolveResponse.statusCode, 200);
-    assert.equal(
-        JSON.parse(resolveResponse.payload).data.resourceType,
-        "meeting",
-    );
+    const resolvedShare = JSON.parse(resolveResponse.payload).data;
+    assert.equal(resolvedShare.resourceType, "meeting");
+    assert.match(resolvedShare.guestAccessToken, /^cgs_/);
+    assert.match(resolvedShare.guestKeyring.accountId, /^share:[^:]+:[^:]+$/);
+    assert.match(resolvedShare.guestKeyring.passphrase, /^[A-Za-z0-9_-]+$/);
 
     const protectedCreateResponse = await dispatchJson(
         "POST",

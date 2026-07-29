@@ -418,7 +418,18 @@ export class CoreShareGateway {
     }
 
     async purgeExpiredGuestProfiles(): Promise<void> {
-        await this.guestProfileStore.purgeExpired();
+        const expiredProfiles = await this.guestProfileStore.listExpired();
+        const deleteKeyringVault = this.resolveCapability<
+            (accountId: string) => Promise<void>
+        >("auth:deleteKeyringVault");
+        for (const profile of expiredProfiles) {
+            if (deleteKeyringVault) {
+                await deleteKeyringVault(
+                    `share:${profile.shareId}:${profile.guestId}`,
+                );
+            }
+            await this.guestProfileStore.deleteById(profile.guestId);
+        }
     }
 
     async createApprovalRequestBatch(input: {

@@ -363,3 +363,7 @@ Core gateway bootstrap now derives `hasAdapters` from each adapter manifest's `g
 ## Room keys arrive automatically
 
 Opening a room now generates a missing room key on the server and delivers it only to an approved room member. Messages prompts to unlock the encrypted keyring when necessary, validates the delivered key, stores it under the room capability identifier, and then opens the encrypted thread.
+
+## Temporary keyrings for share guests
+
+A valid share token now creates an isolated guest identity with a derived keyring passphrase. The browser opens that session-only keyring automatically, keeps it unlocked for the guest identity lifetime, and stores guest secrets without touching a signed-in user's vault. Expired guest cleanup removes the matching server-side keyring vault alongside the guest profile.

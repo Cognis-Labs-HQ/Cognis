@@ -10,6 +10,7 @@ import {
     getFirstStageResult,
 } from "../../../api/reuse/flow-helpers.js";
 import type { CoreShareGateway } from "../gateway/index.js";
+import { createHash } from "node:crypto";
 
 const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
 
@@ -517,7 +518,14 @@ export async function registerShareBootstrapHooks(input: {
                     purpose: "share",
                 },
             );
+            const guestKeyringAccountId = `share:${tokenResult.tokenRecord.id}:${guestProfile.guestId}`;
             stageCtx.data.guestAccessToken = guestAccessToken;
+            stageCtx.data.guestKeyring = {
+                accountId: guestKeyringAccountId,
+                passphrase: createHash("sha256")
+                    .update(`guest-keyring:${guestAccessToken}`)
+                    .digest("base64url"),
+            };
             stageCtx.data.guestProfile = {
                 displayName: guestProfile.displayName,
                 avatarKey: guestProfile.avatarKey,
@@ -647,6 +655,10 @@ export async function registerShareBootstrapHooks(input: {
                 guestProfile:
                     typeof stageCtx.data.guestProfile === "object"
                         ? stageCtx.data.guestProfile
+                        : null,
+                guestKeyring:
+                    typeof stageCtx.data.guestKeyring === "object"
+                        ? stageCtx.data.guestKeyring
                         : null,
                 page: {
                     ...shellResult,

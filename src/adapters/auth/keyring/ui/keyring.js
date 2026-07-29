@@ -13,6 +13,9 @@
  *     prompting or an authoritative fallback when it is invalid.
  *   getKeyringRelockMinutes() / setKeyringRelockMinutes(minutes) — relocking.
  *   createKeyringScope(componentName) — component-attributed access helpers.
+ *   activateTemporaryKeyring(accountId, passphrase) — opens a session-only
+ *     guest vault that remains unlocked for the guest identity lifetime.
+ *   endTemporaryKeyring() — removes the browser copy when that identity ends.
  *
  * Usage:
  *   await unlockKeyring(loginPassword);
@@ -49,6 +52,7 @@ let vaultSalt = null;
 let vaultIterations = DEFAULT_ITERATIONS;
 let relockTimer = null;
 let lastVaultEnvelope = null;
+let temporaryKeyringAccountId = "";
 const pendingValues = new Map();
 
 function keyringStorageKey() {
@@ -58,6 +62,10 @@ function keyringStorageKey() {
     return accountId
         ? `${STORAGE_KEY}:${encodeURIComponent(accountId)}`
         : STORAGE_KEY;
+}
+
+function keyringStorage() {
+    return temporaryKeyringAccountId ? sessionStorage : localStorage;
 }
 
 function relockStorageKey() {
@@ -113,6 +121,7 @@ async function deriveKey(password, salt, iterations) {
 
 function scheduleRelock() {
     clearTimeout(relockTimer);
+    if (temporaryKeyringAccountId) return;
     const minutes = getKeyringRelockMinutes();
     if (minutes > 0) relockTimer = setTimeout(lockKeyring, minutes * 60_000);
 }
@@ -172,7 +181,7 @@ async function persistVault() {
         cipher: encodeBytes(new Uint8Array(cipher)),
         updatedAt: new Date().toISOString(),
     };
-    localStorage.setItem(keyringStorageKey(), JSON.stringify(envelope));
+    keyringStorage().setItem(keyringStorageKey(), JSON.stringify(envelope));
     lastVaultEnvelope = envelope;
     await syncEnvelope(envelope);
 }
@@ -184,8 +193,10 @@ export async function unlockKeyring(password) {
     let localEnvelope = null;
     try {
         localEnvelope = JSON.parse(
-            localStorage.getItem(keyringStorageKey()) ||
-                localStorage.getItem(STORAGE_KEY) ||
+            keyringStorage().getItem(keyringStorageKey()) ||
+                (temporaryKeyringAccountId
+                    ? null
+                    : localStorage.getItem(STORAGE_KEY)) ||
                 "null",
         );
     } catch {
@@ -241,7 +252,7 @@ export async function unlockKeyring(password) {
     for (const [id, entry] of pendingValues) vaultData.values[id] = entry;
     pendingValues.clear();
     if (remoteEnvelope === stored && stored) {
-        localStorage.setItem(keyringStorageKey(), JSON.stringify(stored));
+        keyringStorage().setItem(keyringStorageKey(), JSON.stringify(stored));
     }
     if (!stored || Object.keys(vaultData.values).length > 0)
         await persistVault();
@@ -250,10 +261,32 @@ export async function unlockKeyring(password) {
 }
 
 export function lockKeyring() {
+    if (temporaryKeyringAccountId) return Promise.resolve();
     clearVault(true);
     return Promise.resolve(
         uiCtx.capabilities.get("auth:invalidatePasswordConfirmation")?.(),
     ).catch(() => {});
+}
+
+export async function activateTemporaryKeyring(accountId, passphrase) {
+    const normalizedAccountId = String(accountId ?? "").trim();
+    const normalizedPassphrase = String(passphrase ?? "");
+    if (!normalizedAccountId || !normalizedPassphrase) return false;
+    if (localStorage.getItem("cognis_account") !== normalizedAccountId) {
+        return false;
+    }
+    temporaryKeyringAccountId = normalizedAccountId;
+    const unlocked = await unlockKeyring(normalizedPassphrase);
+    if (!unlocked) temporaryKeyringAccountId = "";
+    return unlocked;
+}
+
+export function endTemporaryKeyring() {
+    if (!temporaryKeyringAccountId) return;
+    const storageKey = keyringStorageKey();
+    clearVault(true);
+    sessionStorage.removeItem(storageKey);
+    temporaryKeyringAccountId = "";
 }
 
 export function isKeyringUnlocked() {
@@ -383,6 +416,11 @@ uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
 uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
 uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
+uiCtx.capabilities.contribute(
+    "keyring:activateTemporary",
+    activateTemporaryKeyring,
+);
+uiCtx.capabilities.contribute("keyring:endTemporary", endTemporaryKeyring);
 uiCtx.capabilities.contribute("keyring:forComponent", createKeyringScope);
 uiCtx.capabilities.contribute(
     "keyring:getRelockMinutes",

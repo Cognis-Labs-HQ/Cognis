@@ -37,7 +37,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.5`  |
 | Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.4`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| Encrypted Keyring     | `src/adapters/auth/keyring/`        | `1.0.3`  |
+| Encrypted Keyring     | `src/adapters/auth/keyring/`        | `1.0.4`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.5`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
@@ -63,7 +63,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.7.22` |
-| Share                 | `src/gateways/share/`        | `1.6.30` |
+| Share                 | `src/gateways/share/`        | `1.6.31` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.11` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |
 | Social                | `src/gateways/social/`       | `1.2.7`  |
@@ -90,7 +90,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.16` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.14` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.17` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.15` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

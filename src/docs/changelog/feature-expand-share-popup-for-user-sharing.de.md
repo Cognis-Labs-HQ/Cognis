@@ -363,3 +363,7 @@ Der zentrale Gateway-Bootstrap leitet `hasAdapters` nun aus dem Feld `gateway` j
 ## Raumschlüssel werden automatisch bereitgestellt
 
 Beim Öffnen eines Raums wird ein fehlender Raumschlüssel nun auf dem Server erzeugt und ausschließlich an ein bestätigtes Raummitglied ausgeliefert. Messages fordert bei Bedarf zum Entsperren des verschlüsselten Schlüsselbunds auf, prüft den ausgelieferten Schlüssel, speichert ihn unter der Fähigkeitskennung des Raums und öffnet anschließend den verschlüsselten Verlauf.
+
+## Temporäre Schlüsselbunde für Freigabegäste
+
+Ein gültiges Freigabetoken erzeugt nun eine isolierte Gastidentität mit einer abgeleiteten Schlüsselbund-Passphrase. Der Browser öffnet diesen sitzungsgebundenen Schlüsselbund automatisch, hält ihn während der Lebensdauer der Gastidentität entsperrt und speichert Gastgeheimnisse, ohne den Tresor eines angemeldeten Benutzers zu verändern. Die Bereinigung abgelaufener Gäste entfernt zusammen mit dem Gastprofil auch den zugehörigen serverseitigen Schlüsselbundtresor.

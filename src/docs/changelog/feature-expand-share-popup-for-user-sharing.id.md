@@ -363,3 +363,7 @@ Bootstrap gateway inti kini memperoleh `hasAdapters` dari bidang `gateway` pada 
 ## Kunci ruang diterima secara otomatis
 
 Saat ruang dibuka, kunci ruang yang hilang kini dibuat di server dan hanya dikirim kepada anggota ruang yang telah disetujui. Messages meminta pengguna membuka keyring terenkripsi bila diperlukan, memvalidasi kunci yang dikirim, menyimpannya dengan pengenal kapabilitas ruang, lalu membuka utas terenkripsi.
+
+## Keyring sementara untuk tamu berbagi
+
+Token berbagi yang valid kini membuat identitas tamu terisolasi dengan frasa sandi keyring turunan. Peramban membuka keyring khusus sesi tersebut secara otomatis, menjaganya tetap terbuka selama masa hidup identitas tamu, dan menyimpan rahasia tamu tanpa menyentuh vault pengguna yang masuk. Pembersihan tamu kedaluwarsa menghapus vault keyring sisi server yang sesuai bersama profil tamu.

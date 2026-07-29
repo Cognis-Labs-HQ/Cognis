@@ -40,6 +40,10 @@ export async function bootstrapAuthAdapter(input: {
     await store.ensureSchema();
     input.capabilities.contribute("auth:keyringVaultStore", store);
     input.capabilities.contribute(
+        "auth:deleteKeyringVault",
+        (accountId: string) => store.delete(accountId),
+    );
+    input.capabilities.contribute(
         "auth:keyringRouteFactory",
         (routeContext: KeyringRouteContext) =>
             createKeyringRoutes({ routeContext, store }),

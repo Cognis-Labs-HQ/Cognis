@@ -179,6 +179,13 @@ test("logged-in share recipients keep their account session", () => {
     );
 });
 
+test("anonymous share guests activate a temporary unlocked keyring", () => {
+    assert.match(sessionFlowSource, /guestKeyring: shareData\.guestKeyring/);
+    assert.match(sessionFlowSource, /keyring:activateTemporary/);
+    assert.match(sessionFlowSource, /await activateGuestToken/);
+    assert.match(sessionFlowSource, /keyring:endTemporary/);
+});
+
 test("received user shares unlock in place and navigate to the component", () => {
     assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
     assert.match(receivedShareActionSource, /resolveReceivedShare/);

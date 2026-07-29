@@ -63,7 +63,11 @@ function resolveShareTokenFromLocation() {
     ).trim();
 }
 
-function activateGuestToken(guestAccessToken, guestProfile = null) {
+async function activateGuestToken(
+    guestAccessToken,
+    guestProfile = null,
+    guestKeyring = null,
+) {
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
     const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -86,7 +90,23 @@ function activateGuestToken(guestAccessToken, guestProfile = null) {
     }
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
-    localStorage.removeItem(ACCOUNT_KEY);
+    const guestKeyringAccountId = String(guestKeyring?.accountId ?? "").trim();
+    if (guestKeyringAccountId) {
+        localStorage.setItem(ACCOUNT_KEY, guestKeyringAccountId);
+        const activateTemporaryKeyring = uiCtx.capabilities.get(
+            "keyring:activateTemporary",
+        );
+        const activated = await activateTemporaryKeyring?.(
+            guestKeyringAccountId,
+            guestKeyring?.passphrase,
+        );
+        if (!activated) {
+            restoreGuestToken();
+            return null;
+        }
+    } else {
+        localStorage.removeItem(ACCOUNT_KEY);
+    }
     const displayName = String(guestProfile?.displayName ?? "").trim();
     if (displayName) localStorage.setItem(DISPLAY_NAME_KEY, displayName);
     return new AbortController();
@@ -94,6 +114,7 @@ function activateGuestToken(guestAccessToken, guestProfile = null) {
 
 function restoreGuestToken() {
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
+    uiCtx.capabilities.get("keyring:endTemporary")?.();
     const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
     const priorAccount = sessionStorage.getItem(PREV_ACCOUNT_KEY);
     const priorDisplayName = sessionStorage.getItem(PREV_DISPLAY_NAME_KEY);
@@ -195,6 +216,7 @@ uiCtx.extendFlow(
             },
             guestAccessToken: shareData.guestAccessToken ?? null,
             guestProfile: shareData.guestProfile ?? null,
+            guestKeyring: shareData.guestKeyring ?? null,
         };
 
         if (priorSessionResult?.valid) {
@@ -211,9 +233,10 @@ uiCtx.extendFlow(
             };
         }
 
-        const abortController = activateGuestToken(
+        const abortController = await activateGuestToken(
             shareData.guestAccessToken,
             shareData.guestProfile,
+            shareData.guestKeyring,
         );
         if (abortController && stageCtx.data) {
             stageCtx.data.shareAbortController = abortController;

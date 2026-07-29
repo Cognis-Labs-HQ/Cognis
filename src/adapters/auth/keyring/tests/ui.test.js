@@ -4,6 +4,7 @@ import { webcrypto } from "node:crypto";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 
 const values = new Map();
+const sessionValues = new Map();
 Object.defineProperty(globalThis, "crypto", {
     configurable: true,
     value: webcrypto,
@@ -12,6 +13,11 @@ globalThis.localStorage = {
     getItem: (key) => values.get(key) ?? null,
     setItem: (key, value) => values.set(key, String(value)),
     removeItem: (key) => values.delete(key),
+};
+globalThis.sessionStorage = {
+    getItem: (key) => sessionValues.get(key) ?? null,
+    setItem: (key, value) => sessionValues.set(key, String(value)),
+    removeItem: (key) => sessionValues.delete(key),
 };
 let confirmationInvalidations = 0;
 uiCtx.capabilities.contribute(
@@ -120,4 +126,29 @@ test("locked keyring exposes no entry metadata or decrypted values", async () =>
 
     assert.deepEqual(keyring.listKeyringEntries(), []);
     assert.equal(keyring.getKeyringValue("private:secret"), null);
+});
+
+test("temporary guest keyrings stay unlocked and use session storage", async () => {
+    const keyring = await import("../ui/keyring.js");
+    localStorage.setItem("cognis_account", "share:share-1:guest-1");
+
+    assert.equal(
+        await keyring.activateTemporaryKeyring(
+            "share:share-1:guest-1",
+            "derived-guest-passphrase",
+        ),
+        true,
+    );
+    await keyring.setKeyringValue("chatroom:room-1:key", "room-key");
+    await keyring.lockKeyring();
+
+    assert.equal(keyring.isKeyringUnlocked(), true);
+    assert.equal(keyring.getKeyringValue("chatroom:room-1:key"), "room-key");
+    assert.ok(
+        sessionValues.has("cognis_secure_keyring:share%3Ashare-1%3Aguest-1"),
+    );
+    keyring.endTemporaryKeyring();
+    assert.equal(keyring.isKeyringUnlocked(), false);
+    assert.equal(sessionValues.size, 0);
+    localStorage.removeItem("cognis_account");
 });

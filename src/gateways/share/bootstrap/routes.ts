@@ -541,6 +541,7 @@ export function createShareRoutes(input: {
                 readonlyWatermark?: boolean;
                 guestAccessToken?: string;
                 guestProfile?: Record<string, unknown> | null;
+                guestKeyring?: Record<string, unknown> | null;
                 page?: Record<string, unknown>;
             }>(flowResult.stageResults, "build-payload");
             if (!resolved?.resolved) {
@@ -577,6 +578,7 @@ export function createShareRoutes(input: {
                             ? resolved.guestAccessToken
                             : "",
                     guestProfile: resolved.guestProfile ?? null,
+                    guestKeyring: resolved.guestKeyring ?? null,
                     page: resolved.page ?? {},
                     navigationUrl: delivered?.navigationUrl ?? null,
                 },
