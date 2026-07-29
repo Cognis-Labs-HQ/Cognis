@@ -391,3 +391,7 @@ Bei der ersten Anmeldung eines Benutzers fügt der Schlüsselbundadapter nun ein
 ## Schlüsselbundaktivität und Lebenszyklussteuerung
 
 Die Entsperranfrage trennt ihre Erklärung durch eine Leerzeile von der Passwortanweisung. Die Schlüsselbundeinstellungen zeigen nun ein verschlüsseltes Aktivitätsprotokoll für Entsperr-, Lese-, Schreib-, Entfernungs-, Leerungs- und Passwortänderungsereignisse samt Kennungen und Zeitstempeln und bieten Steuerelemente zum Leeren gespeicherter Geheimnisse oder Ändern des Verschlüsselungspassworts. Beim Löschen eines Benutzers wird auch dessen Schlüsselbundtresor entfernt.
+
+## Vollständiger, durchsuchbarer Schlüsselbundverlauf
+
+Der Schlüsselbund bewahrt nun seinen vollständigen verschlüsselten Aktivitätsverlauf auf. In den Einstellungen werden Schlüssel und Protokolle als einklappbare Bereiche dargestellt, und Protokolleinträge werden bei entsperrtem Tresor seitenweise angezeigt.

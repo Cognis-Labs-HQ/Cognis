@@ -208,6 +208,11 @@ test("keyring logs access, clears values, and changes its encryption password", 
         keyring.listKeyringEvents().some((event) => event.type === "clear"),
     );
 
+    for (let index = 0; index < 125; index += 1) {
+        keyring.getKeyringValue("test:event-retention");
+    }
+    assert.ok(keyring.listKeyringEvents().length > 100);
+
     assert.equal(
         await keyring.changeKeyringPassword("changed-keyring-password"),
         true,

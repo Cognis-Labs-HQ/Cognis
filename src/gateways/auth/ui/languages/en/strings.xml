@@ -62,6 +62,12 @@
   <string name="gateway.auth.keyring.prompt_message">The stored secret no longer works. Enter the current secret.</string>
   <string name="gateway.auth.keyring.change_password">Change password</string>
   <string name="gateway.auth.keyring.clear">Clear keyring</string>
+  <string name="gateway.auth.keyring.keys">Keys</string>
+  <string name="gateway.auth.keyring.logs">Logs</string>
+  <string name="gateway.auth.keyring.log_pages">Keyring log pages</string>
+  <string name="gateway.auth.keyring.previous">Previous</string>
+  <string name="gateway.auth.keyring.next">Next</string>
+  <string name="gateway.auth.keyring.page">Page {{current}} of {{total}}</string>
   <string name="gateway.auth.keyring.event_log">Keyring activity</string>
   <string name="gateway.auth.keyring.event">Event</string>
   <string name="gateway.auth.keyring.event_empty">No keyring activity has been recorded.</string>

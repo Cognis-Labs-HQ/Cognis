@@ -391,3 +391,7 @@ Pada login pertama pengguna, adapter Keyring kini menyumbangkan tahap penyiapan 
 ## Aktivitas keyring dan kontrol siklus hidup
 
 Permintaan pembukaan memisahkan penjelasan dari petunjuk kata sandi dengan satu baris kosong. Pengaturan Keyring kini menampilkan log aktivitas terenkripsi untuk peristiwa pembukaan, pembacaan, penulisan, penghapusan, pengosongan, dan perubahan kata sandi beserta pengenal dan stempel waktu, serta menyediakan kontrol untuk mengosongkan rahasia tersimpan atau mengubah kata sandi enkripsi. Menghapus pengguna juga membersihkan vault keyring akun tersebut.
+
+## Riwayat keyring lengkap yang dapat dijelajahi
+
+Keyring kini menyimpan seluruh riwayat aktivitas terenkripsi. Pengaturan menampilkan Kunci dan Log sebagai bagian yang dapat diciutkan serta membagi catatan log ke dalam halaman saat brankas terbuka.

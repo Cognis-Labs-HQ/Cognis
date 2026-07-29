@@ -391,3 +391,7 @@ On a user's first login, the Keyring adapter now contributes a post-login setup 
 ## Keyring activity and lifecycle controls
 
 The unlock request separates its explanation from the password instruction with a blank line. Keyring settings now show an encrypted activity log for unlock, read, write, removal, clear, and password-change events, including identifiers and timestamps, and provide controls to clear stored secrets or change the encryption password. Deleting a user also purges that account's keyring vault.
+
+## Complete, browsable keyring history
+
+The keyring now retains its complete encrypted activity history. Settings presents Keys and Logs as collapsible sections and paginates log records while the vault is unlocked.

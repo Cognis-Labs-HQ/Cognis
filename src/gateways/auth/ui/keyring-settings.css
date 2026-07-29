@@ -93,6 +93,23 @@
     margin: 0;
 }
 
+.settings-keyring-section {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.settings-keyring-section > summary {
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.settings-keyring-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
 @media (max-width: 700px) {
     .settings-keyring-toolbar > button {
         flex: 1 1 9rem;

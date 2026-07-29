@@ -9,6 +9,7 @@ import {
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 export function createSettingsSection({ i18n, root }) {
+    const eventPageSize = 25;
     const settingsRoot = root ?? document;
     const createKeyringScope = uiCtx.capabilities.get("keyring:forComponent");
     const deleteKeyringValue = uiCtx.capabilities.get("keyring:delete");
@@ -31,6 +32,9 @@ export function createSettingsSection({ i18n, root }) {
     );
     const keyring = createKeyringScope("Authentication Gateway");
     let unbindSecretVisibility = null;
+    let eventPage = 0;
+    let keysExpanded = true;
+    let logsExpanded = true;
 
     function renderEntries(unlocked = isKeyringUnlocked()) {
         if (!unlocked) {
@@ -99,14 +103,26 @@ export function createSettingsSection({ i18n, root }) {
             ${[15, 60, 240].map((minutes) => `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${minutes} ${escapeHtml(i18n.t("gateway.auth.keyring.minutes"))}</option>`).join("")}
           </select>
         </label>
-        <div id="settings-keyring-entries">${renderEntries(unlocked)}</div>
-        ${renderEventLog(unlocked)}`;
+        <details class="settings-keyring-section" data-keyring-section="keys"${keysExpanded ? " open" : ""}>
+          <summary>${escapeHtml(i18n.t("gateway.auth.keyring.keys"))}</summary>
+          <div id="settings-keyring-entries">${renderEntries(unlocked)}</div>
+        </details>
+        <details class="settings-keyring-section" data-keyring-section="logs"${logsExpanded ? " open" : ""}>
+          <summary>${escapeHtml(i18n.t("gateway.auth.keyring.logs"))}</summary>
+          ${renderEventLog(unlocked)}
+        </details>`;
     }
 
     function renderEventLog(unlocked) {
         const events = unlocked ? listKeyringEvents() : [];
-        const rows = events.length
-            ? events
+        const pageCount = Math.max(1, Math.ceil(events.length / eventPageSize));
+        eventPage = Math.min(eventPage, pageCount - 1);
+        const pageEvents = events.slice(
+            eventPage * eventPageSize,
+            (eventPage + 1) * eventPageSize,
+        );
+        const rows = pageEvents.length
+            ? pageEvents
                   .map(
                       (event) => `<tr>
                 <td>${escapeHtml(i18n.t(`gateway.auth.keyring.event_${event.type}`))}</td>
@@ -122,6 +138,20 @@ export function createSettingsSection({ i18n, root }) {
             <thead><tr><th>${escapeHtml(i18n.t("gateway.auth.keyring.event"))}</th><th>${escapeHtml(i18n.t("gateway.auth.keyring.identifier"))}</th><th>${escapeHtml(i18n.t("gateway.auth.keyring.updated"))}</th></tr></thead>
             <tbody>${rows}</tbody>
           </table></div>
+          ${
+              unlocked && events.length
+                  ? `<nav class="settings-keyring-pagination" aria-label="${escapeHtml(i18n.t("gateway.auth.keyring.log_pages"))}">
+            <button type="button" data-keyring-log-previous${eventPage === 0 ? " disabled" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.previous"))}</button>
+            <span>${escapeHtml(
+                i18n
+                    .t("gateway.auth.keyring.page")
+                    .replace("{{current}}", String(eventPage + 1))
+                    .replace("{{total}}", String(pageCount)),
+            )}</span>
+            <button type="button" data-keyring-log-next${eventPage + 1 >= pageCount ? " disabled" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.next"))}</button>
+          </nav>`
+                  : ""
+          }
         </section>`;
     }
 
@@ -254,6 +284,28 @@ export function createSettingsSection({ i18n, root }) {
         unbindSecretVisibility = bindSecretVisibilityToggles({
             root: settingsRoot.querySelector("#settings-keyring-manager"),
         });
+        settingsRoot
+            .querySelector('[data-keyring-section="keys"]')
+            ?.addEventListener("toggle", (event) => {
+                keysExpanded = event.currentTarget.open;
+            });
+        settingsRoot
+            .querySelector('[data-keyring-section="logs"]')
+            ?.addEventListener("toggle", (event) => {
+                logsExpanded = event.currentTarget.open;
+            });
+        settingsRoot
+            .querySelector("[data-keyring-log-previous]")
+            ?.addEventListener("click", () => {
+                eventPage = Math.max(0, eventPage - 1);
+                rerender();
+            });
+        settingsRoot
+            .querySelector("[data-keyring-log-next]")
+            ?.addEventListener("click", () => {
+                eventPage += 1;
+                rerender();
+            });
         settingsRoot.querySelector("#settings-keyring-info")?.addEventListener(
             "click",
             () =>

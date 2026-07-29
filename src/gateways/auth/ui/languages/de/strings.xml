@@ -62,6 +62,12 @@
   <string name="gateway.auth.keyring.prompt_message">Das gespeicherte Geheimnis funktioniert nicht mehr. Gib das aktuelle Geheimnis ein.</string>
   <string name="gateway.auth.keyring.change_password">Passwort ändern</string>
   <string name="gateway.auth.keyring.clear">Schlüsselbund leeren</string>
+  <string name="gateway.auth.keyring.keys">Schlüssel</string>
+  <string name="gateway.auth.keyring.logs">Protokolle</string>
+  <string name="gateway.auth.keyring.log_pages">Seiten des Schlüsselbundprotokolls</string>
+  <string name="gateway.auth.keyring.previous">Zurück</string>
+  <string name="gateway.auth.keyring.next">Weiter</string>
+  <string name="gateway.auth.keyring.page">Seite {{current}} von {{total}}</string>
   <string name="gateway.auth.keyring.event_log">Schlüsselbundaktivität</string>
   <string name="gateway.auth.keyring.event">Ereignis</string>
   <string name="gateway.auth.keyring.event_empty">Es wurde noch keine Schlüsselbundaktivität aufgezeichnet.</string>

@@ -52,7 +52,6 @@ const STORAGE_KEY = "cognis_secure_keyring";
 const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
 const DEFAULT_ITERATIONS = 310_000;
-const MAX_KEYRING_EVENTS = 100;
 let vaultKey = null;
 let vaultData = null;
 let vaultSalt = null;
@@ -229,7 +228,6 @@ function recordKeyringEvent(type, identifier = "") {
         identifier: String(identifier),
         timestamp: new Date().toISOString(),
     });
-    vaultData.events = vaultData.events.slice(-MAX_KEYRING_EVENTS);
     if (typeof window !== "undefined") {
         window.dispatchEvent(new CustomEvent("cognis:keyring-event"));
     }
