@@ -38,6 +38,8 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /createKeyringScope/);
     assert.match(KEYRING_SETTINGS_SOURCE, /deleteKeyringValue/);
     assert.match(KEYRING_SETTINGS_SOURCE, /requestKeyringUnlock/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /request_action_manage/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /request_process_stored_secrets/);
     assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /runWithReprompt/);
     assert.match(KEYRING_SETTINGS_SOURCE, /type="password"/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-table/);

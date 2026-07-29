@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="adapter.auth.keyring.unlock_title">Schlüsselbund entsperren</string>
-  <string name="adapter.auth.keyring.unlock_message">Gib dein Kontopasswort ein, um deinen verschlüsselten Schlüsselbund zu entsperren.</string>
+  <string name="adapter.auth.keyring.unlock_message">„{{component}}“ hat Zugriff auf den Schlüsselbund angefordert, um „{{action}}“ „{{process}}“ auszuführen. Gib dein Kontopasswort ein, um fortzufahren.</string>
   <string name="adapter.auth.keyring.unlock_failed">Das Passwort konnte diesen Schlüsselbund nicht entsperren.</string>
 </strings>

@@ -60,27 +60,18 @@ async function promptForPassword() {
         : null;
 }
 
-async function unlockKeyringForShare(i18n) {
-    const isUnlocked = uiCtx.capabilities.get("keyring:isUnlocked");
-    if (isUnlocked?.()) return true;
-    const createGuard = uiCtx.capabilities.get("auth:createRepromptGuard");
-    const unlock = uiCtx.capabilities.get("keyring:unlock");
-    if (!createGuard || !unlock) return false;
-    const guard = createGuard({ i18n });
-    const unlockPrompt = {
-        title: i18n.t("share.keyring.unlock_title"),
-        message: i18n.t("share.keyring.unlock_message"),
-    };
-    let confirmation = await guard.requestPasswordConfirmation(unlockPrompt);
-    if (confirmation && !confirmation.password) {
-        confirmation = await guard.requestPasswordConfirmation({
-            ...unlockPrompt,
-            alwaysPrompt: true,
-        });
-    }
-    return confirmation?.password
-        ? Boolean(await unlock(confirmation.password))
-        : false;
+async function unlockKeyringForShare(i18n, shareId) {
+    const requestUnlock = uiCtx.capabilities.get("keyring:requestUnlock");
+    if (typeof requestUnlock !== "function") return false;
+    return requestUnlock({
+        request: {
+            component: i18n.t("share.keyring.request_component"),
+            action: i18n.t("share.keyring.request_action_access"),
+            process: i18n
+                .t("share.keyring.request_process")
+                .replace("{{shareId}}", shareId),
+        },
+    });
 }
 
 export async function fetchProtectedShareResource({ shareId, request }) {
@@ -88,7 +79,7 @@ export async function fetchProtectedShareResource({ shareId, request }) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
-    await unlockKeyringForShare(i18n);
+    await unlockKeyringForShare(i18n, normalizedShareId);
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         "Share Gateway",
     );
@@ -123,7 +114,7 @@ export async function resolveReceivedShare(token, { headers } = {}) {
     const shareI18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
-    await unlockKeyringForShare(shareI18n);
+    await unlockKeyringForShare(shareI18n, normalizedToken);
     const keyringId = `share:${normalizedToken}`;
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         "Share Gateway",

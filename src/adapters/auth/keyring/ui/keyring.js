@@ -22,6 +22,7 @@
  *   await unlockKeyring(loginPassword);
  *   await setKeyringValue('meeting:123:password', secret, { label: 'Meeting' });
  *   const password = await resolveKeyringValue('meeting:123:password', {
+ *     request: { component: 'Meetings', action: 'join', process: 'meeting 123' },
  *     validate: value => value.length > 0,
  *     prompt: ({ invalid }) => askForPassword(invalid),
  *   });
@@ -295,7 +296,20 @@ export function isKeyringUnlocked() {
     return Boolean(vaultData && vaultKey);
 }
 
+function normalizeUnlockRequest(request) {
+    const normalizedRequest = {
+        component: String(request?.component ?? "").trim(),
+        action: String(request?.action ?? "").trim(),
+        process: String(request?.process ?? "").trim(),
+    };
+    if (Object.values(normalizedRequest).some((value) => !value)) {
+        throw new Error("keyring_unlock_request_context_required");
+    }
+    return normalizedRequest;
+}
+
 export async function requestKeyringUnlock(options = {}) {
+    const request = normalizeUnlockRequest(options.request);
     if (isKeyringUnlocked()) return true;
     if (unlockRequestPromise) return unlockRequestPromise;
     const createGuard = uiCtx.capabilities.get("auth:createRepromptGuard");
@@ -313,7 +327,11 @@ export async function requestKeyringUnlock(options = {}) {
         const guard = createGuard({ i18n });
         const prompt = {
             title: i18n.t("adapter.auth.keyring.unlock_title"),
-            message: i18n.t("adapter.auth.keyring.unlock_message"),
+            message: i18n
+                .t("adapter.auth.keyring.unlock_message")
+                .replace("{{component}}", request.component)
+                .replace("{{action}}", request.action)
+                .replace("{{process}}", request.process),
         };
         let confirmation = await guard.requestPasswordConfirmation(prompt);
         if (confirmation && !confirmation.password) {
@@ -379,6 +397,10 @@ export function createKeyringScope(componentName) {
         resolve(id, options = {}) {
             return resolveKeyringValue(id, {
                 ...options,
+                request: {
+                    ...options.request,
+                    component: source,
+                },
                 metadata: {
                     ...options.metadata,
                     componentName: source,
@@ -408,7 +430,13 @@ export function listKeyringEntries() {
 }
 
 export async function resolveKeyringValue(id, options = {}) {
-    if (!isKeyringUnlocked() && !(await requestKeyringUnlock())) return null;
+    if (
+        !(await requestKeyringUnlock({
+            request: options.request,
+        }))
+    ) {
+        return null;
+    }
     const stored = getKeyringValue(id);
     if (stored !== null) {
         let valid = true;

@@ -19,6 +19,7 @@
   <string name="share.unlock.cancel">キャンセル</string>
   <string name="share.unlock.keyring_label">非公開カレンダー共有のパスワード</string>
   <string name="share.unlock.save_to_keyring">このパスワードをキーリングに保存する</string>
-  <string name="share.keyring.unlock_title">キーリングのロック解除</string>
-  <string name="share.keyring.unlock_message">暗号化されたキーリングを解除するため、アカウントパスワードを入力してください。</string>
+  <string name="share.keyring.request_component">共有</string>
+  <string name="share.keyring.request_action_access">アクセス</string>
+  <string name="share.keyring.request_process">共有 {{shareId}}</string>
 </resources>

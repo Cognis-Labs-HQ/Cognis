@@ -379,3 +379,7 @@ Anmeldungen mit Passwort und Zwei-Faktor-Authentifizierung entsperren den Schlü
 ## Ein Schlüsselbundstatus und eine Entsperrabfrage
 
 Alle Schlüsselbundnutzer verwenden nun eine gemeinsame Entsperrfähigkeit und eine einzige laufende Abfrage. Eine erfolgreiche Entsperrung gilt sofort für Meetings, Messages, Benachrichtigungen, Freigaben und die Schlüsselbundeinstellungen, bis die konfigurierte automatische Sperrfrist abläuft. Die gemeinsame Abfrage verwendet nun allgemeine Schlüsselbundtexte ohne Bezug auf einen Chatraum.
+
+## Schlüsselbundanfragen erklären den Zugriffsgrund
+
+Jede Anfrage zum Entsperren des Schlüsselbunds muss nun eine Komponente, eine Aktion und einen Vorgang angeben. Das gemeinsame Fenster zeigt alle drei Angaben an, etwa wenn „Meetings“ Zugriff anfordert, um „Besprechung 123456“ „beizutreten“. So ist vor der Passworteingabe ersichtlich, warum verschlüsselte Geheimnisse benötigt werden.

@@ -379,3 +379,7 @@ Jalur masuk dengan kata sandi dan autentikasi dua faktor kini membuka keyring pe
 ## Satu status keyring dan satu dialog pembukaan
 
 Semua pemakai keyring kini berbagi satu kapabilitas permintaan pembukaan dan satu dialog yang sedang berlangsung. Pembukaan yang berhasil langsung berlaku untuk Meetings, Messages, notifikasi, berbagi, dan pengaturan Keyring sampai batas waktu penguncian otomatis yang dikonfigurasi berakhir. Dialog bersama kini menggunakan kata-kata umum tentang keyring, bukan merujuk pada ruang chat.
+
+## Permintaan keyring menjelaskan alasan akses
+
+Setiap permintaan untuk membuka keyring kini wajib menyertakan komponen, tindakan, dan proses. Dialog bersama menampilkan ketiganya, misalnya “Meetings” meminta akses untuk “bergabung” dengan “rapat 123456”, sehingga pengguna memahami alasan rahasia terenkripsi diperlukan sebelum memasukkan kata sandi.

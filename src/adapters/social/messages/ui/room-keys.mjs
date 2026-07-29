@@ -5,6 +5,7 @@ export function createRoomKeyStore({
     onInvalidSecret = () => undefined,
     contributeSecret = async () => undefined,
     resolveSecret = async (_id, options) => options.fallback?.(),
+    buildRequest = async () => null,
 } = {}) {
     const roomKeyCache = new Map();
 
@@ -25,6 +26,7 @@ export function createRoomKeyStore({
             metadata: {
                 label: `Chat ${roomId}`,
             },
+            request: await buildRequest(roomId),
         });
         if (!hex) return null;
         const key = await importKey(hex);

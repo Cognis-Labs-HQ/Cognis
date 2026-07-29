@@ -104,7 +104,15 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function promptToUnlock() {
-        return requestKeyringUnlock();
+        return requestKeyringUnlock({
+            request: {
+                component: i18n.t("gateway.auth.keyring.section_title"),
+                action: i18n.t("gateway.auth.keyring.request_action_manage"),
+                process: i18n.t(
+                    "gateway.auth.keyring.request_process_stored_secrets",
+                ),
+            },
+        });
     }
 
     async function readEntryInput(entry = null) {

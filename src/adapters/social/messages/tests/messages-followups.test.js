@@ -349,9 +349,17 @@ test("room keys use keyring resolution and refresh invalid secrets", async () =>
         },
         resolveSecret: async (id, options) => {
             assert.equal(id, "chatroom:room-1:key");
+            assert.deepEqual(options.request, {
+                action: "open",
+                process: "chat room-1",
+            });
             options.onInvalid();
             return "current-key";
         },
+        buildRequest: async (roomId) => ({
+            action: "open",
+            process: `chat ${roomId}`,
+        }),
         onInvalidSecret: (roomId) => {
             invalidRoomId = roomId;
         },

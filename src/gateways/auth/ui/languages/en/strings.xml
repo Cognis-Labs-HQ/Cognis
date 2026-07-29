@@ -40,6 +40,8 @@
   <string name="gateway.auth.keyring.unlocked">Unlocked</string>
   <string name="gateway.auth.keyring.lock">Lock</string>
   <string name="gateway.auth.keyring.unlock">Unlock</string>
+  <string name="gateway.auth.keyring.request_action_manage">manage</string>
+  <string name="gateway.auth.keyring.request_process_stored_secrets">stored secrets</string>
   <string name="gateway.auth.keyring.relock">Keyring Lock Timeout</string>
   <string name="gateway.auth.keyring.logout">On Logout</string>
   <string name="gateway.auth.keyring.minutes">minutes</string>

@@ -19,6 +19,7 @@
   <string name="share.unlock.cancel">Abbrechen</string>
   <string name="share.unlock.keyring_label">Passwort für private Kalenderfreigabe</string>
   <string name="share.unlock.save_to_keyring">Dieses Passwort in meinem Schlüsselbund speichern</string>
-  <string name="share.keyring.unlock_title">Schlüsselbund entsperren</string>
-  <string name="share.keyring.unlock_message">Geben Sie Ihr Kontopasswort ein, um den verschlüsselten Schlüsselbund zu entsperren.</string>
+  <string name="share.keyring.request_component">Freigaben</string>
+  <string name="share.keyring.request_action_access">zugreifen auf</string>
+  <string name="share.keyring.request_process">Freigabe {{shareId}}</string>
 </resources>

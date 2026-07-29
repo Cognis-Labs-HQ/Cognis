@@ -164,6 +164,8 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     assert.match(source, /meeting:\$\{state\.meeting\.id\}:password/);
     assert.match(source, /meetingKeyring\.resolve\(/);
     assert.match(source, /fallback:\s*\(\) => suppliedMeetingPassword/);
+    assert.match(source, /action:\s*i18n\.t\("ui\.reuse\.join"\)/);
+    assert.match(source, /process:\s*meetingProcess/);
     assert.match(
         source,
         /participantRoleChanged[\s\S]*getParticipantRole\(event\) === "moderator"/,

@@ -379,3 +379,7 @@ Password and TFA login paths now unlock the user's keyring before navigation whi
 ## One keyring state and one unlock prompt
 
 Keyring consumers now share one unlock request capability and one in-flight prompt. A successful unlock immediately applies to Meetings, Messages, notifications, shares, and Keyring settings until the configured automatic lock timeout expires. The shared prompt now uses general keyring wording rather than referring to a chat room.
+
+## Keyring requests explain who needs access
+
+Every keyring unlock request must now provide a component, action, and process. The shared popup displays all three, such as “Meetings” requesting access to “join” “meeting 123456”, so users can understand why their encrypted secrets are needed before entering a password.

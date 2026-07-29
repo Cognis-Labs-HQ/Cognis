@@ -109,6 +109,8 @@
   <string name="module.jitsi_meet.share.no_meeting">Start or join a meeting before sharing it.</string>
   <string name="module.jitsi_meet.admin.enable_test_failed">Jitsi Meet must pass its server check before it can be enabled.</string>
   <string name="module.jitsi_meet.keyring_prompt_title">Update Meeting Password</string>
+  <string name="module.jitsi_meet.keyring_request_action_update">update the password for</string>
+  <string name="module.jitsi_meet.keyring_request_process">meeting {{meeting}}</string>
   <string name="module.jitsi_meet.keyring_prompt">Enter the meeting password.</string>
   <string name="module.jitsi_meet.keyring_invalid">The stored meeting password is invalid. Enter the current password.</string>
 </resources>

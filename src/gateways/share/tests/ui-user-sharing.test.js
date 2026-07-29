@@ -203,7 +203,8 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareSource, /type="checkbox" checked/);
     assert.match(receivedShareSource, /saveToKeyring/);
     assert.match(receivedShareSource, /share:fetchProtectedResource/);
-    assert.match(receivedShareSource, /auth:createRepromptGuard/);
-    assert.match(receivedShareSource, /share\.keyring\.unlock_title/);
-    assert.match(receivedShareSource, /share\.keyring\.unlock_message/);
+    assert.match(receivedShareSource, /keyring:requestUnlock/);
+    assert.match(receivedShareSource, /share\.keyring\.request_component/);
+    assert.match(receivedShareSource, /share\.keyring\.request_action_access/);
+    assert.match(receivedShareSource, /share\.keyring\.request_process/);
 });

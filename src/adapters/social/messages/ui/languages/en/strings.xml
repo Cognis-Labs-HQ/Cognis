@@ -75,4 +75,7 @@
   <string name="module.social.messages.nav_title">Messages</string>
   <string name="adapter.social.messages.keyring_invalid">The stored chat key was invalid and has been refreshed.</string>
   <string name="adapter.social.messages.keyring_unlock_required">Unlock the keyring to open this encrypted room.</string>
+  <string name="adapter.social.messages.keyring_request_action_open">open</string>
+  <string name="adapter.social.messages.keyring_request_action_save">save an encryption key for</string>
+  <string name="adapter.social.messages.keyring_request_process">chat {{roomId}}</string>
 </resources>

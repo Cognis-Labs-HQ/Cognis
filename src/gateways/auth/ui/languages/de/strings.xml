@@ -40,6 +40,8 @@
   <string name="gateway.auth.keyring.unlocked">Entsperrt</string>
   <string name="gateway.auth.keyring.lock">Sperren</string>
   <string name="gateway.auth.keyring.unlock">Entsperren</string>
+  <string name="gateway.auth.keyring.request_action_manage">verwalten</string>
+  <string name="gateway.auth.keyring.request_process_stored_secrets">gespeicherte Geheimnisse</string>
   <string name="gateway.auth.keyring.relock">Sperrzeit des Schlüsselbunds</string>
   <string name="gateway.auth.keyring.logout">Beim Abmelden</string>
   <string name="gateway.auth.keyring.minutes">Minuten</string>

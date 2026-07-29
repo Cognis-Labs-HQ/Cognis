@@ -5,12 +5,32 @@ import { createRoomKeyStore } from "./room-keys.mjs";
 
 const FLOW_ID = "load-social-chat";
 let messagesKeyring = null;
+let messagesI18nPromise = null;
 
 function getMessagesKeyring() {
     if (messagesKeyring) return messagesKeyring;
     const keyringScopeFactory = uiCtx.capabilities.get("keyring:forComponent");
     messagesKeyring = keyringScopeFactory?.("Social Messages") ?? null;
     return messagesKeyring;
+}
+
+async function buildChatUnlockRequest(roomId, actionKey) {
+    messagesI18nPromise ??= import("/static/reuse/i18n.js").then(
+        ({ createI18n }) =>
+            createI18n({
+                componentStringBaseUrls: [
+                    "/static/adapters/social/messages/languages",
+                ],
+            }),
+    );
+    const i18n = await messagesI18nPromise;
+    return {
+        component: i18n.t("ui.reuse.messages"),
+        action: i18n.t(actionKey),
+        process: i18n
+            .t("adapter.social.messages.keyring_request_process")
+            .replace("{{roomId}}", roomId),
+    };
 }
 
 const roomKeys = createRoomKeyStore({
@@ -22,6 +42,11 @@ const roomKeys = createRoomKeyStore({
         if (!keyring) throw new Error("keyring_unavailable");
         await keyring.set(id, value, metadata);
     },
+    buildRequest: (roomId) =>
+        buildChatUnlockRequest(
+            roomId,
+            "adapter.social.messages.keyring_request_action_open",
+        ),
 });
 
 if (!uiCtx.flowExists(FLOW_ID)) {
@@ -72,7 +97,16 @@ uiCtx.extendFlow(
             return;
         }
         const requestUnlock = uiCtx.capabilities.get("keyring:requestUnlock");
-        if (typeof requestUnlock !== "function" || !(await requestUnlock())) {
+        const request = await buildChatUnlockRequest(
+            stageContext.input.roomId,
+            "adapter.social.messages.keyring_request_action_save",
+        );
+        if (
+            typeof requestUnlock !== "function" ||
+            !(await requestUnlock({
+                request,
+            }))
+        ) {
             return;
         }
         const contributed = await roomKeys.contributeRoomKey(

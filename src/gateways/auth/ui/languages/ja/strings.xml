@@ -40,6 +40,8 @@
   <string name="gateway.auth.keyring.unlocked">ロック解除済み</string>
   <string name="gateway.auth.keyring.lock">ロック</string>
   <string name="gateway.auth.keyring.unlock">ロック解除</string>
+  <string name="gateway.auth.keyring.request_action_manage">管理</string>
+  <string name="gateway.auth.keyring.request_process_stored_secrets">保存済みの秘密情報</string>
   <string name="gateway.auth.keyring.relock">キーリングのロック時間</string>
   <string name="gateway.auth.keyring.logout">ログアウト時</string>
   <string name="gateway.auth.keyring.minutes">分</string>

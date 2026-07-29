@@ -40,6 +40,8 @@
   <string name="gateway.auth.keyring.unlocked">Terbuka</string>
   <string name="gateway.auth.keyring.lock">Kunci</string>
   <string name="gateway.auth.keyring.unlock">Buka Kunci</string>
+  <string name="gateway.auth.keyring.request_action_manage">mengelola</string>
+  <string name="gateway.auth.keyring.request_process_stored_secrets">rahasia tersimpan</string>
   <string name="gateway.auth.keyring.relock">Batas Waktu Kunci Keyring</string>
   <string name="gateway.auth.keyring.logout">Saat Keluar</string>
   <string name="gateway.auth.keyring.minutes">menit</string>

@@ -49,14 +49,26 @@ export function createEmbedHandlers({
         const createKeyringScope = uiCtx.capabilities.get(
             "keyring:forComponent",
         );
-        const meetingKeyring = createKeyringScope?.("Jitsi Meet");
+        const meetingKeyring = createKeyringScope?.(
+            i18n.t("ui.reuse.meetings"),
+        );
         const meetingKeyringId = `meeting:${state.meeting.id}:password`;
+        const meetingProcess = i18n
+            .t("module.jitsi_meet.keyring_request_process")
+            .replace(
+                "{{meeting}}",
+                state.meeting.meetingName || state.meeting.id,
+            );
         const suppliedMeetingPassword = String(
             state.meeting.meetingPassword ?? "",
         ).trim();
         let meetingPassword = String(
             (await meetingKeyring?.resolve(meetingKeyringId, {
                 fallback: () => suppliedMeetingPassword || null,
+                request: {
+                    action: i18n.t("ui.reuse.join"),
+                    process: meetingProcess,
+                },
                 metadata: {
                     label:
                         state.meeting.meetingName || i18n.t("ui.reuse.meeting"),
@@ -216,6 +228,12 @@ export function createEmbedHandlers({
                     {
                         validate: () => false,
                         prompt: promptForCurrentMeetingPassword,
+                        request: {
+                            action: i18n.t(
+                                "module.jitsi_meet.keyring_request_action_update",
+                            ),
+                            process: meetingProcess,
+                        },
                         metadata: {
                             label:
                                 state.meeting.meetingName ||
