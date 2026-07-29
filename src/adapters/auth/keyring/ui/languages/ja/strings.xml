@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="adapter.auth.keyring.unlock_title">キーリングを解除</string>
-  <string name="adapter.auth.keyring.unlock_message">{{component}} が {{process}} を {{action}} するためにキーリングへのアクセスを要求しました。続行するにはキーリングのパスワードを入力してください。</string>
+  <string name="adapter.auth.keyring.unlock_message">{{component}} が {{process}} を {{action}} するためにキーリングへのアクセスを要求しました。
+
+続行するにはキーリングのパスワードを入力してください。</string>
   <string name="adapter.auth.keyring.unlock_failed">このパスワードではキーリングを解除できませんでした。</string>
   <string name="adapter.auth.keyring.unlock_action">解除</string>
   <string name="adapter.auth.keyring.cancel_action">キャンセル</string>

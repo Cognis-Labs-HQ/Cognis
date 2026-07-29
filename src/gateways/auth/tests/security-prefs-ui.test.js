@@ -46,6 +46,12 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-info/);
     assert.match(KEYRING_SETTINGS_SOURCE, /lockKeyring/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-relock/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-change-password/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-clear/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-log/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /keyring:listEvents/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /keyring:changePassword/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /keyring:clear/);
     assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /requestPasswordConfirmation/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring-settings\.css/);
     assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-expand/);

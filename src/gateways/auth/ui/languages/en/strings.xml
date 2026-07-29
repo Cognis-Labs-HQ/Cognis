@@ -60,4 +60,24 @@
   <string name="gateway.auth.keyring.invalid">The stored secret is invalid. Enter the current secret to restore access.</string>
   <string name="gateway.auth.keyring.prompt_title">Update Stored Secret</string>
   <string name="gateway.auth.keyring.prompt_message">The stored secret no longer works. Enter the current secret.</string>
+  <string name="gateway.auth.keyring.change_password">Change password</string>
+  <string name="gateway.auth.keyring.clear">Clear keyring</string>
+  <string name="gateway.auth.keyring.event_log">Keyring activity</string>
+  <string name="gateway.auth.keyring.event">Event</string>
+  <string name="gateway.auth.keyring.event_empty">No keyring activity has been recorded.</string>
+  <string name="gateway.auth.keyring.event_locked">Unlock the keyring to view its activity.</string>
+  <string name="gateway.auth.keyring.event_keyring">Keyring</string>
+  <string name="gateway.auth.keyring.event_unlock">Unlocked</string>
+  <string name="gateway.auth.keyring.event_read">Read</string>
+  <string name="gateway.auth.keyring.event_write">Written</string>
+  <string name="gateway.auth.keyring.event_delete">Removed</string>
+  <string name="gateway.auth.keyring.event_clear">Cleared</string>
+  <string name="gateway.auth.keyring.event_password-change">Password changed</string>
+  <string name="gateway.auth.keyring.clear_title">Clear keyring</string>
+  <string name="gateway.auth.keyring.clear_message">Remove every stored secret from this keyring? The activity log will be retained.</string>
+  <string name="gateway.auth.keyring.cleared">Keyring cleared.</string>
+  <string name="gateway.auth.keyring.change_password_title">Change keyring password</string>
+  <string name="gateway.auth.keyring.new_password">New keyring password</string>
+  <string name="gateway.auth.keyring.confirm_password">Confirm keyring password</string>
+  <string name="gateway.auth.keyring.password_changed">Keyring password changed.</string>
 </resources>

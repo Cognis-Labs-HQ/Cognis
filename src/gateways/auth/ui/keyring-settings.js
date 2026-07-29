@@ -17,6 +17,11 @@ export function createSettingsSection({ i18n, root }) {
     );
     const isKeyringUnlocked = uiCtx.capabilities.get("keyring:isUnlocked");
     const listKeyringEntries = uiCtx.capabilities.get("keyring:list");
+    const listKeyringEvents = uiCtx.capabilities.get("keyring:listEvents");
+    const clearKeyringValues = uiCtx.capabilities.get("keyring:clear");
+    const changeKeyringPassword = uiCtx.capabilities.get(
+        "keyring:changePassword",
+    );
     const lockKeyring = uiCtx.capabilities.get("keyring:lock");
     const requestKeyringUnlock = uiCtx.capabilities.get(
         "keyring:requestUnlock",
@@ -85,6 +90,8 @@ export function createSettingsSection({ i18n, root }) {
           <span class="settings-keyring-status" role="status">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.unlocked" : "gateway.auth.keyring.locked"))}</span>
           <button id="settings-keyring-toggle" type="button" class="${unlocked ? "btn-cancel" : "btn-confirm"}">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.lock" : "gateway.auth.keyring.unlock"))}</button>
           <button id="settings-keyring-add" type="button" class="btn-confirm"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.add"))}</button>
+          <button id="settings-keyring-change-password" type="button"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.change_password"))}</button>
+          <button id="settings-keyring-clear" type="button" class="btn-cancel"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.clear"))}</button>
         </div>
         <label class="settings-keyring-timeout"><span>${escapeHtml(i18n.t("gateway.auth.keyring.relock"))}</span>
           <select id="settings-keyring-relock" class="theme-select">
@@ -92,7 +99,30 @@ export function createSettingsSection({ i18n, root }) {
             ${[15, 60, 240].map((minutes) => `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${minutes} ${escapeHtml(i18n.t("gateway.auth.keyring.minutes"))}</option>`).join("")}
           </select>
         </label>
-        <div id="settings-keyring-entries">${renderEntries(unlocked)}</div>`;
+        <div id="settings-keyring-entries">${renderEntries(unlocked)}</div>
+        ${renderEventLog(unlocked)}`;
+    }
+
+    function renderEventLog(unlocked) {
+        const events = unlocked ? listKeyringEvents() : [];
+        const rows = events.length
+            ? events
+                  .map(
+                      (event) => `<tr>
+                <td>${escapeHtml(i18n.t(`gateway.auth.keyring.event_${event.type}`))}</td>
+                <td><code>${escapeHtml(event.identifier || i18n.t("gateway.auth.keyring.event_keyring"))}</code></td>
+                <td>${escapeHtml(formatDateTime(event.timestamp))}</td>
+              </tr>`,
+                  )
+                  .join("")
+            : `<tr><td colspan="3" class="profile-empty">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.event_empty" : "gateway.auth.keyring.event_locked"))}</td></tr>`;
+        return `<section class="settings-keyring-log" aria-labelledby="settings-keyring-log-title">
+          <h3 id="settings-keyring-log-title">${escapeHtml(i18n.t("gateway.auth.keyring.event_log"))}</h3>
+          <div class="settings-table-wrap"><table class="settings-keyring-table">
+            <thead><tr><th>${escapeHtml(i18n.t("gateway.auth.keyring.event"))}</th><th>${escapeHtml(i18n.t("gateway.auth.keyring.identifier"))}</th><th>${escapeHtml(i18n.t("gateway.auth.keyring.updated"))}</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table></div>
+        </section>`;
     }
 
     function rerender() {
@@ -163,6 +193,62 @@ export function createSettingsSection({ i18n, root }) {
         };
     }
 
+    async function confirmClearKeyring() {
+        return (
+            (await openPopup({
+                title: i18n.t("gateway.auth.keyring.clear_title"),
+                body: `<p>${escapeHtml(i18n.t("gateway.auth.keyring.clear_message"))}</p>`,
+                actions: [
+                    {
+                        id: "clear",
+                        label: i18n.t("gateway.auth.keyring.clear"),
+                        variant: "danger",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "cancel",
+                    },
+                ],
+            })) === "clear"
+        );
+    }
+
+    async function readNewKeyringPassword() {
+        let passwordInput = null;
+        let confirmationInput = null;
+        const result = await openPopup({
+            title: i18n.t("gateway.auth.keyring.change_password_title"),
+            body: `<div class="stack"><label><span>${escapeHtml(i18n.t("gateway.auth.keyring.new_password"))}</span><input id="keyring-new-password" type="password" autocomplete="new-password" required /></label><label><span>${escapeHtml(i18n.t("gateway.auth.keyring.confirm_password"))}</span><input id="keyring-confirm-password" type="password" autocomplete="new-password" required /></label></div>`,
+            actions: [
+                {
+                    id: "change",
+                    label: i18n.t("gateway.auth.keyring.change_password"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onOpen(overlay) {
+                passwordInput = overlay.querySelector("#keyring-new-password");
+                confirmationInput = overlay.querySelector(
+                    "#keyring-confirm-password",
+                );
+                passwordInput?.focus();
+            },
+            onAction: (actionId) =>
+                actionId !== "change" ||
+                Boolean(
+                    passwordInput?.value &&
+                    passwordInput.value === confirmationInput?.value,
+                ),
+        });
+        return result === "change" ? (passwordInput?.value ?? "") : "";
+    }
+
     function bindActions() {
         unbindSecretVisibility?.();
         unbindSecretVisibility = bindSecretVisibilityToggles({
@@ -224,6 +310,33 @@ export function createSettingsSection({ i18n, root }) {
             },
             { once: true },
         );
+        settingsRoot.querySelector("#settings-keyring-clear")?.addEventListener(
+            "click",
+            async () => {
+                if (!(await confirmClearKeyring())) return;
+                await clearKeyringValues();
+                rerender();
+                showToast(i18n.t("gateway.auth.keyring.cleared"), {
+                    variant: "success",
+                });
+            },
+            { once: true },
+        );
+        settingsRoot
+            .querySelector("#settings-keyring-change-password")
+            ?.addEventListener(
+                "click",
+                async () => {
+                    const password = await readNewKeyringPassword();
+                    if (!password) return;
+                    await changeKeyringPassword(password);
+                    rerender();
+                    showToast(i18n.t("gateway.auth.keyring.password_changed"), {
+                        variant: "success",
+                    });
+                },
+                { once: true },
+            );
         settingsRoot.querySelectorAll("[data-keyring-id]").forEach((row) => {
             const id = row.getAttribute("data-keyring-id");
             const toggleDetail = (event) => {

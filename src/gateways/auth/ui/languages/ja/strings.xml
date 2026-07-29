@@ -60,4 +60,24 @@
   <string name="gateway.auth.keyring.invalid">保存された秘密情報が無効です。現在の秘密情報を入力してアクセスを復元してください。</string>
   <string name="gateway.auth.keyring.prompt_title">保存済み秘密情報を更新</string>
   <string name="gateway.auth.keyring.prompt_message">保存された秘密情報は使用できません。現在の秘密情報を入力してください。</string>
+  <string name="gateway.auth.keyring.change_password">パスワードを変更</string>
+  <string name="gateway.auth.keyring.clear">キーリングを消去</string>
+  <string name="gateway.auth.keyring.event_log">キーリングのアクティビティ</string>
+  <string name="gateway.auth.keyring.event">イベント</string>
+  <string name="gateway.auth.keyring.event_empty">キーリングのアクティビティはまだ記録されていません。</string>
+  <string name="gateway.auth.keyring.event_locked">アクティビティを表示するにはキーリングを解除してください。</string>
+  <string name="gateway.auth.keyring.event_keyring">キーリング</string>
+  <string name="gateway.auth.keyring.event_unlock">解除</string>
+  <string name="gateway.auth.keyring.event_read">読み取り</string>
+  <string name="gateway.auth.keyring.event_write">書き込み</string>
+  <string name="gateway.auth.keyring.event_delete">削除</string>
+  <string name="gateway.auth.keyring.event_clear">消去</string>
+  <string name="gateway.auth.keyring.event_password-change">パスワード変更</string>
+  <string name="gateway.auth.keyring.clear_title">キーリングを消去</string>
+  <string name="gateway.auth.keyring.clear_message">このキーリングに保存されたすべての秘密情報を削除しますか？アクティビティログは保持されます。</string>
+  <string name="gateway.auth.keyring.cleared">キーリングを消去しました。</string>
+  <string name="gateway.auth.keyring.change_password_title">キーリングパスワードを変更</string>
+  <string name="gateway.auth.keyring.new_password">新しいキーリングパスワード</string>
+  <string name="gateway.auth.keyring.confirm_password">キーリングパスワードを確認</string>
+  <string name="gateway.auth.keyring.password_changed">キーリングパスワードを変更しました。</string>
 </resources>

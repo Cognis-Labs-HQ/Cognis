@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <strings>
   <string name="adapter.auth.keyring.unlock_title">Buka keyring</string>
-  <string name="adapter.auth.keyring.unlock_message">{{component}} meminta akses ke keyring untuk {{action}} {{process}}. Masukkan kata sandi keyring untuk melanjutkan.</string>
+  <string name="adapter.auth.keyring.unlock_message">{{component}} meminta akses ke keyring untuk {{action}} {{process}}.
+
+Masukkan kata sandi keyring untuk melanjutkan.</string>
   <string name="adapter.auth.keyring.unlock_failed">Kata sandi tidak dapat membuka keyring ini.</string>
   <string name="adapter.auth.keyring.unlock_action">Buka</string>
   <string name="adapter.auth.keyring.cancel_action">Batal</string>

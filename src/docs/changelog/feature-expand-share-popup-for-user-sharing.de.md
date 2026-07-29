@@ -387,3 +387,7 @@ Jede Anfrage zum Entsperren des Schlüsselbunds muss nun eine Komponente, eine A
 ## Die erste Anmeldung richtet die Schlüsselbundverschlüsselung ein
 
 Bei der ersten Anmeldung eines Benutzers fügt der Schlüsselbundadapter nun eine Einrichtungsstufe nach der Anmeldung hinzu, die nach einem optionalen eigenen Schlüsselbundpasswort fragt. Bleibt das Feld leer, wird das Kontopasswort verwendet. Bestehende Schlüsselbunde werden über dieselbe Stufe entsperrt; Entsperrfenster sprechen nur noch vom Schlüsselbundpasswort und zeigen Anfragedetails ohne dekorative Anführungszeichen.
+
+## Schlüsselbundaktivität und Lebenszyklussteuerung
+
+Die Entsperranfrage trennt ihre Erklärung durch eine Leerzeile von der Passwortanweisung. Die Schlüsselbundeinstellungen zeigen nun ein verschlüsseltes Aktivitätsprotokoll für Entsperr-, Lese-, Schreib-, Entfernungs-, Leerungs- und Passwortänderungsereignisse samt Kennungen und Zeitstempeln und bieten Steuerelemente zum Leeren gespeicherter Geheimnisse oder Ändern des Verschlüsselungspassworts. Beim Löschen eines Benutzers wird auch dessen Schlüsselbundtresor entfernt.

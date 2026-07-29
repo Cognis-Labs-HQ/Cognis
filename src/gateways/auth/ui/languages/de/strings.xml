@@ -60,4 +60,24 @@
   <string name="gateway.auth.keyring.invalid">Das gespeicherte Geheimnis ist ungültig. Gib das aktuelle Geheimnis ein, um den Zugriff wiederherzustellen.</string>
   <string name="gateway.auth.keyring.prompt_title">Gespeichertes Geheimnis aktualisieren</string>
   <string name="gateway.auth.keyring.prompt_message">Das gespeicherte Geheimnis funktioniert nicht mehr. Gib das aktuelle Geheimnis ein.</string>
+  <string name="gateway.auth.keyring.change_password">Passwort ändern</string>
+  <string name="gateway.auth.keyring.clear">Schlüsselbund leeren</string>
+  <string name="gateway.auth.keyring.event_log">Schlüsselbundaktivität</string>
+  <string name="gateway.auth.keyring.event">Ereignis</string>
+  <string name="gateway.auth.keyring.event_empty">Es wurde noch keine Schlüsselbundaktivität aufgezeichnet.</string>
+  <string name="gateway.auth.keyring.event_locked">Entsperre den Schlüsselbund, um seine Aktivität anzuzeigen.</string>
+  <string name="gateway.auth.keyring.event_keyring">Schlüsselbund</string>
+  <string name="gateway.auth.keyring.event_unlock">Entsperrt</string>
+  <string name="gateway.auth.keyring.event_read">Gelesen</string>
+  <string name="gateway.auth.keyring.event_write">Geschrieben</string>
+  <string name="gateway.auth.keyring.event_delete">Entfernt</string>
+  <string name="gateway.auth.keyring.event_clear">Geleert</string>
+  <string name="gateway.auth.keyring.event_password-change">Passwort geändert</string>
+  <string name="gateway.auth.keyring.clear_title">Schlüsselbund leeren</string>
+  <string name="gateway.auth.keyring.clear_message">Alle gespeicherten Geheimnisse aus diesem Schlüsselbund entfernen? Das Aktivitätsprotokoll bleibt erhalten.</string>
+  <string name="gateway.auth.keyring.cleared">Schlüsselbund geleert.</string>
+  <string name="gateway.auth.keyring.change_password_title">Schlüsselbundpasswort ändern</string>
+  <string name="gateway.auth.keyring.new_password">Neues Schlüsselbundpasswort</string>
+  <string name="gateway.auth.keyring.confirm_password">Schlüsselbundpasswort bestätigen</string>
+  <string name="gateway.auth.keyring.password_changed">Schlüsselbundpasswort geändert.</string>
 </resources>

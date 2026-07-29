@@ -60,6 +60,7 @@ test("unlock wording names only the keyring password without variable quotes", (
             /name="adapter\.auth\.keyring\.unlock_message">([^<]+)/,
         )?.[1] ?? "";
     assert.match(unlockMessage, /keyring password/);
+    assert.match(unlockMessage, /\.\n\nEnter the keyring password/);
     assert.doesNotMatch(unlockMessage, /account password|[“”]/i);
 });
 
@@ -186,6 +187,35 @@ test("component keyring scopes derive the stored source name", async () => {
             .find((entry) => entry.id === "calendar:secret")?.source,
         "Calendar Gateway",
     );
+    await keyring.lockKeyring();
+});
+
+test("keyring logs access, clears values, and changes its encryption password", async () => {
+    const keyring = await import("../ui/keyring.js");
+    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    await keyring.setKeyringValue("test:logged-secret", "secret");
+    assert.equal(keyring.getKeyringValue("test:logged-secret"), "secret");
+
+    const eventTypes = keyring
+        .listKeyringEvents()
+        .map((event) => `${event.type}:${event.identifier}`);
+    assert.ok(eventTypes.includes("write:test:logged-secret"));
+    assert.ok(eventTypes.includes("read:test:logged-secret"));
+
+    assert.equal(await keyring.clearKeyringValues(), true);
+    assert.equal(keyring.getKeyringValue("test:logged-secret"), null);
+    assert.ok(
+        keyring.listKeyringEvents().some((event) => event.type === "clear"),
+    );
+
+    assert.equal(
+        await keyring.changeKeyringPassword("changed-keyring-password"),
+        true,
+    );
+    await keyring.lockKeyring();
+    assert.equal(await keyring.unlockKeyring("account-password"), false);
+    assert.equal(await keyring.unlockKeyring("changed-keyring-password"), true);
+    await keyring.changeKeyringPassword("account-password");
     await keyring.lockKeyring();
 });
 

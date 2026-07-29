@@ -201,6 +201,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ),
         registerNavbarPlugin: (scriptUrl) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
+        flow: ctx.flow,
     });
     ctx.capabilities.require("auth:keyringVaultStore");
     for (const adapter of authGateway.listAdapters()) {
@@ -303,7 +304,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.7.26",
+        version: "1.7.27",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

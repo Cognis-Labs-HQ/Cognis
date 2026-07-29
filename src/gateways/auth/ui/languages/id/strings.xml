@@ -60,4 +60,24 @@
   <string name="gateway.auth.keyring.invalid">Rahasia tersimpan tidak valid. Masukkan rahasia saat ini untuk memulihkan akses.</string>
   <string name="gateway.auth.keyring.prompt_title">Perbarui Rahasia Tersimpan</string>
   <string name="gateway.auth.keyring.prompt_message">Rahasia tersimpan tidak lagi berfungsi. Masukkan rahasia saat ini.</string>
+  <string name="gateway.auth.keyring.change_password">Ubah kata sandi</string>
+  <string name="gateway.auth.keyring.clear">Kosongkan keyring</string>
+  <string name="gateway.auth.keyring.event_log">Aktivitas keyring</string>
+  <string name="gateway.auth.keyring.event">Peristiwa</string>
+  <string name="gateway.auth.keyring.event_empty">Belum ada aktivitas keyring yang direkam.</string>
+  <string name="gateway.auth.keyring.event_locked">Buka keyring untuk melihat aktivitasnya.</string>
+  <string name="gateway.auth.keyring.event_keyring">Keyring</string>
+  <string name="gateway.auth.keyring.event_unlock">Dibuka</string>
+  <string name="gateway.auth.keyring.event_read">Dibaca</string>
+  <string name="gateway.auth.keyring.event_write">Ditulis</string>
+  <string name="gateway.auth.keyring.event_delete">Dihapus</string>
+  <string name="gateway.auth.keyring.event_clear">Dikosongkan</string>
+  <string name="gateway.auth.keyring.event_password-change">Kata sandi diubah</string>
+  <string name="gateway.auth.keyring.clear_title">Kosongkan keyring</string>
+  <string name="gateway.auth.keyring.clear_message">Hapus semua rahasia tersimpan dari keyring ini? Log aktivitas akan dipertahankan.</string>
+  <string name="gateway.auth.keyring.cleared">Keyring dikosongkan.</string>
+  <string name="gateway.auth.keyring.change_password_title">Ubah kata sandi keyring</string>
+  <string name="gateway.auth.keyring.new_password">Kata sandi keyring baru</string>
+  <string name="gateway.auth.keyring.confirm_password">Konfirmasi kata sandi keyring</string>
+  <string name="gateway.auth.keyring.password_changed">Kata sandi keyring diubah.</string>
 </resources>

@@ -10,6 +10,7 @@ import {
     type KeyringVaultStore,
 } from "./store.js";
 import type { AuthProviderAdapter } from "../../../gateways/auth/gateway.js";
+import type { FlowApi } from "@cognis/core";
 
 export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
 
@@ -34,6 +35,7 @@ export async function bootstrapAuthAdapter(input: {
     adapterRoot: string;
     registerStaticDir?: (adapterId: string, absolutePath: string) => void;
     registerNavbarPlugin?: (scriptUrl: string) => void;
+    flow?: FlowApi;
 }): Promise<void> {
     const store = new DbKeyringVaultStore(
         input.capabilities.require<KeyringDbExecutor>("db:executor"),
@@ -51,4 +53,30 @@ export async function bootstrapAuthAdapter(input: {
     );
     input.registerStaticDir?.("keyring", path.join(input.adapterRoot, "ui"));
     input.registerNavbarPlugin?.("/static/adapters/auth/keyring/keyring.js");
+    input.flow?.extend(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "auth-keyring:purge-deleted-user" },
+        async (stageContext) => {
+            const request = (stageContext.input ?? {}) as {
+                username?: string;
+                action?: string;
+            };
+            const persisted = (
+                stageContext.stageResults["persist-state"] ?? []
+            ).some(
+                (result) =>
+                    (result as { persisted?: boolean }).persisted === true,
+            );
+            if (
+                !persisted ||
+                request.action !== "delete" ||
+                !request.username
+            ) {
+                return { purged: false };
+            }
+            await store.delete(request.username);
+            return { purged: true, accountId: request.username };
+        },
+    );
 }

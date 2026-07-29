@@ -387,3 +387,7 @@ Every keyring unlock request must now provide a component, action, and process. 
 ## First login sets up keyring encryption
 
 On a user's first login, the Keyring adapter now contributes a post-login setup stage that asks for an optional dedicated keyring password. Leaving it empty uses the account password. Existing keyrings unlock through the same stage, while unlock prompts now refer only to the keyring password and display request details without decorative quotation marks.
+
+## Keyring activity and lifecycle controls
+
+The unlock request separates its explanation from the password instruction with a blank line. Keyring settings now show an encrypted activity log for unlock, read, write, removal, clear, and password-change events, including identifiers and timestamps, and provide controls to clear stored secrets or change the encryption password. Deleting a user also purges that account's keyring vault.

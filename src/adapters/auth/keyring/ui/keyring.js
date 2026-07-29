@@ -52,6 +52,7 @@ const STORAGE_KEY = "cognis_secure_keyring";
 const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
 const DEFAULT_ITERATIONS = 310_000;
+const MAX_KEYRING_EVENTS = 100;
 let vaultKey = null;
 let vaultData = null;
 let vaultSalt = null;
@@ -220,6 +221,24 @@ async function persistVault() {
     await syncEnvelope(envelope);
 }
 
+function recordKeyringEvent(type, identifier = "") {
+    if (!vaultData) return;
+    vaultData.events ??= [];
+    vaultData.events.push({
+        type: String(type),
+        identifier: String(identifier),
+        timestamp: new Date().toISOString(),
+    });
+    vaultData.events = vaultData.events.slice(-MAX_KEYRING_EVENTS);
+    if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("cognis:keyring-event"));
+    }
+}
+
+function persistRecordedEvent() {
+    void persistVault().catch(() => undefined);
+}
+
 export async function unlockKeyring(password) {
     const normalizedPassword = String(password ?? "");
     if (!normalizedPassword) return false;
@@ -274,11 +293,11 @@ export async function unlockKeyring(password) {
     }
     for (const [id, entry] of pendingValues) vaultData.values[id] = entry;
     pendingValues.clear();
+    recordKeyringEvent("unlock");
     if (remoteEnvelope === stored && stored) {
         keyringStorage().setItem(keyringStorageKey(), JSON.stringify(stored));
     }
-    if (!stored || Object.keys(vaultData.values).length > 0)
-        await persistVault();
+    await persistVault();
     scheduleRelock();
     return true;
 }
@@ -364,7 +383,7 @@ async function requestKeyringPassword({ i18n, message }) {
     let passwordInput = null;
     const result = await openPopup({
         title: i18n.t("adapter.auth.keyring.unlock_title"),
-        body: `<label class="stack"><span>${escapeHtml(message)}</span><input id="keyring-unlock-password" type="password" autocomplete="current-password" required /></label>`,
+        body: `<label class="stack"><span style="white-space: pre-line">${escapeHtml(message)}</span><input id="keyring-unlock-password" type="password" autocomplete="current-password" required /></label>`,
         actions: [
             {
                 id: "unlock",
@@ -455,7 +474,11 @@ export function getKeyringValue(id) {
     const entry = vaultData
         ? vaultData.values?.[normalizedId]
         : pendingValues.get(normalizedId);
-    if (vaultData) scheduleRelock();
+    if (vaultData) {
+        recordKeyringEvent("read", normalizedId);
+        persistRecordedEvent();
+        scheduleRelock();
+    }
     return entry ? normalizeEntry(entry, normalizedId).value : null;
 }
 
@@ -473,6 +496,7 @@ export async function setKeyringValue(id, value, metadata = {}) {
     }
     vaultData.values ??= {};
     vaultData.values[normalizedId] = entry;
+    recordKeyringEvent("write", normalizedId);
     await persistVault();
     scheduleRelock();
 }
@@ -510,6 +534,7 @@ export async function deleteKeyringValue(id) {
     pendingValues.delete(normalizedId);
     if (!vaultData?.values || !(normalizedId in vaultData.values)) return false;
     delete vaultData.values[normalizedId];
+    recordKeyringEvent("delete", normalizedId);
     await persistVault();
     scheduleRelock();
     return true;
@@ -522,6 +547,33 @@ export function listKeyringEntries() {
     return Object.entries(values)
         .map(([id, entry]) => ({ id, ...normalizeEntry(entry, id) }))
         .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+export function listKeyringEvents() {
+    if (!vaultData) return [];
+    return [...(vaultData.events ?? [])].reverse();
+}
+
+export async function clearKeyringValues() {
+    if (!vaultData) return false;
+    vaultData.values = {};
+    pendingValues.clear();
+    recordKeyringEvent("clear");
+    await persistVault();
+    scheduleRelock();
+    return true;
+}
+
+export async function changeKeyringPassword(password) {
+    const normalizedPassword = String(password ?? "");
+    if (!vaultData || !normalizedPassword) return false;
+    vaultSalt = crypto.getRandomValues(new Uint8Array(16));
+    vaultIterations = DEFAULT_ITERATIONS;
+    vaultKey = await deriveKey(normalizedPassword, vaultSalt, vaultIterations);
+    recordKeyringEvent("password-change");
+    await persistVault();
+    scheduleRelock();
+    return true;
 }
 
 export async function resolveKeyringValue(id, options = {}) {
@@ -581,6 +633,9 @@ uiCtx.capabilities.contribute("keyring:get", getKeyringValue);
 uiCtx.capabilities.contribute("keyring:set", setKeyringValue);
 uiCtx.capabilities.contribute("keyring:delete", deleteKeyringValue);
 uiCtx.capabilities.contribute("keyring:list", listKeyringEntries);
+uiCtx.capabilities.contribute("keyring:listEvents", listKeyringEvents);
+uiCtx.capabilities.contribute("keyring:clear", clearKeyringValues);
+uiCtx.capabilities.contribute("keyring:changePassword", changeKeyringPassword);
 uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
 uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);

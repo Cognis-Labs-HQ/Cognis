@@ -25,6 +25,50 @@ test("keyring manifest declares the Authentication gateway as its parent", async
     assert.equal(manifest.gateway, "auth");
 });
 
+test("keyring adapter purges a vault when user deletion persists", async () => {
+    const { bootstrapAuthAdapter } =
+        await import("../../../adapters/auth/keyring/index.js");
+    const commands: Array<Record<string, unknown>> = [];
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("db:executor", {
+        async ensureTable() {},
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            return { rows: [] };
+        },
+    });
+    const systemCtx = createCtx();
+    systemCtx.registerFlow({
+        id: "deprovision-user",
+        stages: ["persist-state", "cleanup-dependencies"],
+    });
+    systemCtx.flow.extend(
+        "deprovision-user",
+        "persist-state",
+        { id: "test:persist-user-deletion" },
+        () => ({ persisted: true }),
+    );
+    await bootstrapAuthAdapter({
+        adapterRoot: "src/adapters/auth/keyring",
+        capabilities,
+        flow: systemCtx.flow,
+    });
+
+    await systemCtx.flow.run("deprovision-user", {
+        username: "deleted-user",
+        action: "delete",
+    });
+
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "auth_keyring_vaults" &&
+                JSON.stringify(command.where).includes("deleted-user"),
+        ),
+    );
+});
+
 function createDbExecutor(): InMemoryDb {
     return makeInMemoryDb();
 }

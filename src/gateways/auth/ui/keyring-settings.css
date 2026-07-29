@@ -84,6 +84,15 @@
     gap: 0.5rem;
 }
 
+.settings-keyring-log {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.settings-keyring-log h3 {
+    margin: 0;
+}
+
 @media (max-width: 700px) {
     .settings-keyring-toolbar > button {
         flex: 1 1 9rem;

@@ -387,3 +387,7 @@ Setiap permintaan untuk membuka keyring kini wajib menyertakan komponen, tindaka
 ## Login pertama menyiapkan enkripsi keyring
 
 Pada login pertama pengguna, adapter Keyring kini menyumbangkan tahap penyiapan setelah login yang meminta kata sandi khusus keyring secara opsional. Jika dibiarkan kosong, kata sandi akun digunakan. Keyring yang sudah ada dibuka melalui tahap yang sama, sedangkan dialog pembukaan kini hanya menyebut kata sandi keyring dan menampilkan detail permintaan tanpa tanda kutip dekoratif.
+
+## Aktivitas keyring dan kontrol siklus hidup
+
+Permintaan pembukaan memisahkan penjelasan dari petunjuk kata sandi dengan satu baris kosong. Pengaturan Keyring kini menampilkan log aktivitas terenkripsi untuk peristiwa pembukaan, pembacaan, penulisan, penghapusan, pengosongan, dan perubahan kata sandi beserta pengenal dan stempel waktu, serta menyediakan kontrol untuk mengosongkan rahasia tersimpan atau mengubah kata sandi enkripsi. Menghapus pengguna juga membersihkan vault keyring akun tersebut.
