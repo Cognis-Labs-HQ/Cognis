@@ -399,3 +399,7 @@ The keyring now retains its complete encrypted activity history. Settings presen
 ## LDAP deletion now purges keyrings
 
 The keyring adapter now participates in the same user-deletion cleanup flow as Calendar and Messages, normalizes LDAP account identifiers, and removes the matching encrypted vault after account deletion persists.
+
+## Deleted vaults invalidate browser copies
+
+A successful empty response from the keyring API is now authoritative. After administrative deletion, the next login discards the browser's encrypted copy, opens first-login keyring setup, and cannot restore deleted entries or logs.

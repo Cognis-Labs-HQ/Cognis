@@ -399,3 +399,7 @@ Keyring kini menyimpan seluruh riwayat aktivitas terenkripsi. Pengaturan menampi
 ## Penghapusan LDAP kini membersihkan keyring
 
 Adapter keyring kini mengikuti alur pembersihan penghapusan pengguna yang sama dengan Kalender dan Pesan, menormalkan pengenal akun LDAP, serta menghapus brankas terenkripsi yang sesuai setelah penghapusan akun tersimpan.
+
+## Brankas terhapus membatalkan salinan peramban
+
+Respons kosong yang berhasil dari API keyring kini menjadi sumber utama. Setelah penghapusan administratif, login berikutnya membuang salinan terenkripsi di peramban, membuka penyiapan keyring pertama, dan tidak dapat memulihkan entri atau log yang telah dihapus.

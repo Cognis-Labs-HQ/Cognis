@@ -159,11 +159,11 @@ function clearVault(clearPendingValues) {
 async function loadRemoteEnvelope() {
     try {
         const response = await apiFetch(KEYRING_API);
-        if (!response.ok) return null;
+        if (!response.ok) return { resolved: false, envelope: null };
         const payload = await response.json();
-        return payload?.data?.vault ?? null;
+        return { resolved: true, envelope: payload?.data?.vault ?? null };
     } catch {
-        return null;
+        return { resolved: false, envelope: null };
     }
 }
 
@@ -181,9 +181,23 @@ function loadLocalEnvelope() {
     }
 }
 
+function removeLocalEnvelope() {
+    keyringStorage().removeItem(keyringStorageKey());
+    if (!temporaryKeyringAccountId) localStorage.removeItem(STORAGE_KEY);
+}
+
 function envelopeTimestamp(envelope) {
     const timestamp = Date.parse(String(envelope?.updatedAt ?? ""));
     return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+export function selectKeyringEnvelope(localEnvelope, remoteState) {
+    if (remoteState.resolved && !remoteState.envelope) return null;
+    if (!remoteState.resolved) return localEnvelope;
+    return envelopeTimestamp(remoteState.envelope) >
+        envelopeTimestamp(localEnvelope)
+        ? remoteState.envelope
+        : localEnvelope;
 }
 
 async function syncEnvelope(envelope) {
@@ -242,11 +256,11 @@ export async function unlockKeyring(password) {
     if (!normalizedPassword) return false;
     clearVault(false);
     const localEnvelope = loadLocalEnvelope();
-    const remoteEnvelope = await loadRemoteEnvelope();
-    const stored =
-        envelopeTimestamp(remoteEnvelope) > envelopeTimestamp(localEnvelope)
-            ? remoteEnvelope
-            : localEnvelope;
+    const remoteState = await loadRemoteEnvelope();
+    const stored = selectKeyringEnvelope(localEnvelope, remoteState);
+    if (remoteState.resolved && !remoteState.envelope && localEnvelope) {
+        removeLocalEnvelope();
+    }
     const salt = stored?.salt
         ? decodeBytes(stored.salt)
         : crypto.getRandomValues(new Uint8Array(16));
@@ -292,7 +306,7 @@ export async function unlockKeyring(password) {
     for (const [id, entry] of pendingValues) vaultData.values[id] = entry;
     pendingValues.clear();
     recordKeyringEvent("unlock");
-    if (remoteEnvelope === stored && stored) {
+    if (remoteState.envelope === stored && stored) {
         keyringStorage().setItem(keyringStorageKey(), JSON.stringify(stored));
     }
     await persistVault();
@@ -444,8 +458,12 @@ export async function setupKeyringAfterLogin(
     } = {},
 ) {
     const localEnvelope = loadLocalEnvelope();
-    const remoteEnvelope = await loadRemoteEnvelope();
-    if (localEnvelope || remoteEnvelope) {
+    const remoteState = await loadRemoteEnvelope();
+    const storedEnvelope = selectKeyringEnvelope(localEnvelope, remoteState);
+    if (remoteState.resolved && !remoteState.envelope && localEnvelope) {
+        removeLocalEnvelope();
+    }
+    if (storedEnvelope) {
         if (accountPassword && (await unlockKeyring(accountPassword))) {
             return { setup: false, unlocked: true };
         }

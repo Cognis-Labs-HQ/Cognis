@@ -293,6 +293,46 @@ test("first login sets up a new keyring with the selected encryption password", 
     localStorage.removeItem("cognis_account");
 });
 
+test("server-side deletion invalidates the browser keyring copy on login", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    localStorage.setItem("cognis_account", "deleted-ldap-user");
+    assert.equal(await keyring.unlockKeyring("old-password"), true);
+    await keyring.setKeyringValue("test:deleted-secret", "old-secret");
+    await keyring.lockKeyring();
+
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (requestPath, options = {}) =>
+        new Response(
+            options.method === "PUT"
+                ? JSON.stringify({ data: { saved: true } })
+                : JSON.stringify({ data: { vault: null } }),
+            {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            },
+        );
+    try {
+        const result = await keyring.setupKeyringAfterLogin(
+            "account-password",
+            {
+                requestSetupPassword: async () => "replacement-password",
+            },
+        );
+
+        assert.deepEqual(result, { setup: true, unlocked: true });
+        assert.equal(keyring.getKeyringValue("test:deleted-secret"), null);
+        assert.equal(
+            values.has("cognis_secure_keyring:deleted-ldap-user"),
+            true,
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+        await keyring.lockKeyring();
+        localStorage.removeItem("cognis_account");
+    }
+});
+
 test("empty keyring setup password falls back to the account password", async () => {
     const keyring = await import("../ui/keyring.js");
     assert.equal(

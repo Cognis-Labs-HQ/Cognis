@@ -399,3 +399,7 @@ Der Schlüsselbund bewahrt nun seinen vollständigen verschlüsselten Aktivität
 ## LDAP-Löschung entfernt jetzt Schlüsselbunde
 
 Der Schlüsselbundadapter nimmt jetzt am selben Bereinigungsablauf für Benutzerlöschungen wie Kalender und Nachrichten teil, normalisiert LDAP-Kontokennungen und entfernt den zugehörigen verschlüsselten Tresor, nachdem die Kontolöschung gespeichert wurde.
+
+## Gelöschte Tresore entwerten Browserkopien
+
+Eine erfolgreiche leere Antwort der Schlüsselbund-API ist jetzt maßgeblich. Nach einer administrativen Löschung verwirft die nächste Anmeldung die verschlüsselte Browserkopie, öffnet die erstmalige Schlüsselbundeinrichtung und kann gelöschte Einträge oder Protokolle nicht wiederherstellen.
