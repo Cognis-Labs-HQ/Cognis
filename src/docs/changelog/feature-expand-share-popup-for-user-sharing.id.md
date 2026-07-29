@@ -383,3 +383,7 @@ Semua pemakai keyring kini berbagi satu kapabilitas permintaan pembukaan dan sat
 ## Permintaan keyring menjelaskan alasan akses
 
 Setiap permintaan untuk membuka keyring kini wajib menyertakan komponen, tindakan, dan proses. Dialog bersama menampilkan ketiganya, misalnya “Meetings” meminta akses untuk “bergabung” dengan “rapat 123456”, sehingga pengguna memahami alasan rahasia terenkripsi diperlukan sebelum memasukkan kata sandi.
+
+## Login pertama menyiapkan enkripsi keyring
+
+Pada login pertama pengguna, adapter Keyring kini menyumbangkan tahap penyiapan setelah login yang meminta kata sandi khusus keyring secara opsional. Jika dibiarkan kosong, kata sandi akun digunakan. Keyring yang sudah ada dibuka melalui tahap yang sama, sedangkan dialog pembukaan kini hanya menyebut kata sandi keyring dan menampilkan detail permintaan tanpa tanda kutip dekoratif.

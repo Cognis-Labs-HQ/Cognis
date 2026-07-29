@@ -30,6 +30,10 @@
  * `defer-page-action` (owner: ui)
  *   Schedules popup-producing work after the current page mount/navigation
  *   stack has completed. Stages: schedule
+ *
+ * `complete-login` (owner: auth-gateway)
+ *   Lets authentication adapters prepare account-bound browser services after
+ *   session persistence and before navigation. Stages: setup-account-services
  */
 
 import { uiCtx } from "./ui-ctx.js";
@@ -62,6 +66,8 @@ uiCtx.extendFlow(
         return { scheduled: true };
     },
 );
+
+uiCtx.registerFlow("complete-login", ["setup-account-services"]);
 
 uiCtx.registerFlow("search", [
     "visible-indexes",

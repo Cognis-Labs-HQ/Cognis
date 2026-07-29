@@ -383,3 +383,7 @@ Alle Schlüsselbundnutzer verwenden nun eine gemeinsame Entsperrfähigkeit und e
 ## Schlüsselbundanfragen erklären den Zugriffsgrund
 
 Jede Anfrage zum Entsperren des Schlüsselbunds muss nun eine Komponente, eine Aktion und einen Vorgang angeben. Das gemeinsame Fenster zeigt alle drei Angaben an, etwa wenn „Meetings“ Zugriff anfordert, um „Besprechung 123456“ „beizutreten“. So ist vor der Passworteingabe ersichtlich, warum verschlüsselte Geheimnisse benötigt werden.
+
+## Die erste Anmeldung richtet die Schlüsselbundverschlüsselung ein
+
+Bei der ersten Anmeldung eines Benutzers fügt der Schlüsselbundadapter nun eine Einrichtungsstufe nach der Anmeldung hinzu, die nach einem optionalen eigenen Schlüsselbundpasswort fragt. Bleibt das Feld leer, wird das Kontopasswort verwendet. Bestehende Schlüsselbunde werden über dieselbe Stufe entsperrt; Entsperrfenster sprechen nur noch vom Schlüsselbundpasswort und zeigen Anfragedetails ohne dekorative Anführungszeichen.

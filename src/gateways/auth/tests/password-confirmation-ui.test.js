@@ -6,15 +6,12 @@ import { resolve } from "node:path";
 
 const loginSource = readFileSync(resolve("src/ui/app/login/index.js"), "utf8");
 
-test("login persists the authenticated identity before unlocking its keyring", () => {
+test("login persists the authenticated identity before running account setup flows", () => {
     assert.match(
         loginSource,
-        /async function finalizeAuthenticatedSession\(data, password = ""\) \{\s*persistSession\(data\);\s*if \(password\) await unlockKeyring\(password\);/,
+        /async function finalizeAuthenticatedSession\(data, password = ""\) \{\s*persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{ accountPassword: password \}\);/,
     );
-    assert.doesNotMatch(
-        loginSource,
-        /await unlockKeyring\(payload\.password\);\s*await handleAuthResult/,
-    );
+    assert.doesNotMatch(loginSource, /unlockKeyring/);
 });
 
 test("login retains the password until TFA authentication unlocks the keyring", () => {
@@ -25,7 +22,7 @@ test("login retains the password until TFA authentication unlocks the keyring", 
     );
     assert.match(
         loginSource,
-        /persistSession\(data\);\s*if \(password\) await unlockKeyring\(password\);\s*tfaLoginClient\.handleSetupRequired/,
+        /persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{\s*accountPassword: password,\s*\}\);\s*tfaLoginClient\.handleSetupRequired/,
     );
 });
 

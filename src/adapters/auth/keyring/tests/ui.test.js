@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 
 const values = new Map();
@@ -21,7 +23,6 @@ globalThis.sessionStorage = {
 };
 let confirmationInvalidations = 0;
 let unlockPromptCount = 0;
-let unlockPromptPassword = null;
 let lastUnlockPrompt = null;
 uiCtx.capabilities.contribute(
     "auth:invalidatePasswordConfirmation",
@@ -30,20 +31,17 @@ uiCtx.capabilities.contribute(
         return true;
     },
 );
-uiCtx.capabilities.contribute("auth:createRepromptGuard", () => ({
-    async requestPasswordConfirmation(prompt) {
-        unlockPromptCount += 1;
-        lastUnlockPrompt = prompt;
-        return unlockPromptPassword === null
-            ? null
-            : { password: unlockPromptPassword };
-    },
-}));
+
+async function testPasswordPrompt(prompt) {
+    unlockPromptCount += 1;
+    lastUnlockPrompt = prompt;
+    return "account-password";
+}
 
 const testI18n = {
     t: (key) =>
         key === "adapter.auth.keyring.unlock_message"
-            ? "“{{component}}” requested “{{action}}” “{{process}}”"
+            ? "{{component}} requested {{action}} {{process}}"
             : key,
 };
 const testUnlockRequest = {
@@ -51,6 +49,19 @@ const testUnlockRequest = {
     action: "read",
     process: "test secret",
 };
+
+test("unlock wording names only the keyring password without variable quotes", () => {
+    const strings = readFileSync(
+        resolve("src/adapters/auth/keyring/ui/languages/en/strings.xml"),
+        "utf8",
+    );
+    const unlockMessage =
+        strings.match(
+            /name="adapter\.auth\.keyring\.unlock_message">([^<]+)/,
+        )?.[1] ?? "";
+    assert.match(unlockMessage, /keyring password/);
+    assert.doesNotMatch(unlockMessage, /account password|[“”]/i);
+});
 
 test("encrypted keyring unlocks, persists share secrets, and relocks", async () => {
     const keyring = await import("../ui/keyring.js");
@@ -73,16 +84,17 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
 
 test("all consumers share one unlock state and one pending prompt", async () => {
     const keyring = await import("../ui/keyring.js");
-    unlockPromptPassword = "account-password";
     unlockPromptCount = 0;
 
     const [firstResult, secondResult] = await Promise.all([
         keyring.requestKeyringUnlock({
             i18n: testI18n,
+            passwordPrompt: testPasswordPrompt,
             request: testUnlockRequest,
         }),
         keyring.requestKeyringUnlock({
             i18n: testI18n,
+            passwordPrompt: testPasswordPrompt,
             request: testUnlockRequest,
         }),
     ]);
@@ -92,7 +104,7 @@ test("all consumers share one unlock state and one pending prompt", async () => 
     assert.equal(unlockPromptCount, 1);
     assert.equal(
         lastUnlockPrompt.message,
-        "“Test Component” requested “read” “test secret”",
+        "Test Component requested read test secret",
     );
     assert.equal(keyring.isKeyringUnlocked(), true);
     assert.equal(
@@ -103,7 +115,6 @@ test("all consumers share one unlock state and one pending prompt", async () => 
     );
     assert.equal(unlockPromptCount, 1);
     await keyring.lockKeyring();
-    unlockPromptPassword = null;
 });
 
 test("unlock requests require component, action, and process context", async () => {
@@ -222,4 +233,42 @@ test("temporary guest keyrings stay unlocked and use session storage", async () 
     assert.equal(keyring.isKeyringUnlocked(), false);
     assert.equal(sessionValues.size, 0);
     localStorage.removeItem("cognis_account");
+});
+
+test("first login sets up a new keyring with the selected encryption password", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    localStorage.setItem("cognis_account", "new-user");
+
+    const result = await keyring.setupKeyringAfterLogin("account-password", {
+        requestSetupPassword: async (accountPassword) => {
+            assert.equal(accountPassword, "account-password");
+            return "custom-keyring-password";
+        },
+    });
+
+    assert.deepEqual(result, { setup: true, unlocked: true });
+    assert.equal(keyring.isKeyringUnlocked(), true);
+    assert.ok(values.has("cognis_secure_keyring:new-user"));
+    await keyring.lockKeyring();
+    assert.equal(await keyring.unlockKeyring("account-password"), false);
+    assert.equal(await keyring.unlockKeyring("custom-keyring-password"), true);
+    await keyring.lockKeyring();
+    localStorage.removeItem("cognis_account");
+});
+
+test("empty keyring setup password falls back to the account password", async () => {
+    const keyring = await import("../ui/keyring.js");
+    assert.equal(
+        keyring.resolveKeyringSetupPassword("", "account-password"),
+        "account-password",
+    );
+    assert.equal(
+        keyring.resolveKeyringSetupPassword(
+            "custom-keyring-password",
+            "account-password",
+        ),
+        "custom-keyring-password",
+    );
 });

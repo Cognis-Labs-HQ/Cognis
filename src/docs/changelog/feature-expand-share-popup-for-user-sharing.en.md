@@ -383,3 +383,7 @@ Keyring consumers now share one unlock request capability and one in-flight prom
 ## Keyring requests explain who needs access
 
 Every keyring unlock request must now provide a component, action, and process. The shared popup displays all three, such as “Meetings” requesting access to “join” “meeting 123456”, so users can understand why their encrypted secrets are needed before entering a password.
+
+## First login sets up keyring encryption
+
+On a user's first login, the Keyring adapter now contributes a post-login setup stage that asks for an optional dedicated keyring password. Leaving it empty uses the account password. Existing keyrings unlock through the same stage, while unlock prompts now refer only to the keyring password and display request details without decorative quotation marks.

@@ -14,7 +14,9 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
-import { unlockKeyring } from "/static/adapters/auth/keyring/keyring.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
+import "../../reuse/flow-registry.js";
+import "/static/adapters/auth/keyring/keyring.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -387,7 +389,7 @@ export async function mount(root) {
 
     async function finalizeAuthenticatedSession(data, password = "") {
         persistSession(data);
-        if (password) await unlockKeyring(password);
+        await uiCtx.runFlow("complete-login", { accountPassword: password });
         const requiresUserValidation =
             data.requiredUserValidation === true &&
             data.userValidationMode === "smtp";
@@ -425,7 +427,9 @@ export async function mount(root) {
                     tfaLoginClient.switchToTfaPrompt(data);
             } else {
                 persistSession(data);
-                if (password) await unlockKeyring(password);
+                await uiCtx.runFlow("complete-login", {
+                    accountPassword: password,
+                });
                 tfaLoginClient.handleSetupRequired(() => undefined, data);
             }
             return;
