@@ -367,3 +367,7 @@ Saat ruang dibuka, kunci ruang yang hilang kini dibuat di server dan hanya dikir
 ## Keyring sementara untuk tamu berbagi
 
 Token berbagi yang valid kini membuat identitas tamu terisolasi dengan frasa sandi keyring turunan. Peramban membuka keyring khusus sesi tersebut secara otomatis, menjaganya tetap terbuka selama masa hidup identitas tamu, dan menyimpan rahasia tamu tanpa menyentuh vault pengguna yang masuk. Pembersihan tamu kedaluwarsa menghapus vault keyring sisi server yang sesuai bersama profil tamu.
+
+## Pemuatan pesan menunggu keyring
+
+Proses masuk kini menyimpan akun terautentikasi sebelum membuka keyring terenkripsinya. Messages menggabungkan pembukaan ruang yang bersamaan dan menjeda penyegaran percakapan langsung sampai pengiriman kunci ruang serta dialog pembukaan yang diperlukan selesai, sehingga polling latar belakang tidak lagi menghasilkan penolakan promise karena kunci hilang.

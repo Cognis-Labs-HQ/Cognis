@@ -50,6 +50,9 @@ export function createMessagesRoomState({
     let pendingBannerSlotElement = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
+    let openingRoomId = null;
+    let roomOpenPromise = null;
+    let readyRoomId = null;
 
     async function loadInitialRooms() {
         rooms = await loadRooms(i18n, { getRoomKey });
@@ -190,13 +193,14 @@ export function createMessagesRoomState({
         }
     }
 
-    async function openRoom(roomId) {
+    async function performOpenRoom(roomId) {
         const threadList = document.getElementById("messages-thread-list");
         const headerSlot = document.getElementById(
             "messages-thread-header-slot",
         );
         if (!threadList) return;
         selectedRoomId = roomId;
+        readyRoomId = null;
         localStorage.setItem(lastOpenedRoomKey, roomId);
         const room = await loadRoom(roomId);
         if (room) {
@@ -244,6 +248,23 @@ export function createMessagesRoomState({
         }
         await markSelectedRoomRead({ force: true });
         bindPendingRequestBannerEvents();
+        readyRoomId = roomId;
+    }
+
+    function openRoom(roomId) {
+        if (openingRoomId === roomId && roomOpenPromise) {
+            return roomOpenPromise;
+        }
+        openingRoomId = roomId;
+        const pendingOpen = performOpenRoom(roomId);
+        const trackedOpen = pendingOpen.finally(() => {
+            if (roomOpenPromise === trackedOpen) {
+                openingRoomId = null;
+                roomOpenPromise = null;
+            }
+        });
+        roomOpenPromise = trackedOpen;
+        return roomOpenPromise;
     }
 
     function renderRoomsListIntoDom({ force = false } = {}) {
@@ -458,11 +479,13 @@ export function createMessagesRoomState({
 
     async function refreshActiveConversation() {
         if (!selectedRoomId || document.visibilityState !== "visible") return;
+        if (readyRoomId !== selectedRoomId) return;
         await reloadRoomsList();
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
         const selectedRoom = getSelectedRoom();
-        const key = await resolveThreadRoomKey(selectedRoom, selectedRoomId);
+        const key = await getRoomKey(selectedRoomId);
+        if (!key && !selectedRoom?.pendingRequest) return;
         const threadResult = await renderThread(
             selectedRoomId,
             key,

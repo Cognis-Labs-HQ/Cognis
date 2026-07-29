@@ -367,3 +367,7 @@ Beim Öffnen eines Raums wird ein fehlender Raumschlüssel nun auf dem Server er
 ## Temporäre Schlüsselbunde für Freigabegäste
 
 Ein gültiges Freigabetoken erzeugt nun eine isolierte Gastidentität mit einer abgeleiteten Schlüsselbund-Passphrase. Der Browser öffnet diesen sitzungsgebundenen Schlüsselbund automatisch, hält ihn während der Lebensdauer der Gastidentität entsperrt und speichert Gastgeheimnisse, ohne den Tresor eines angemeldeten Benutzers zu verändern. Die Bereinigung abgelaufener Gäste entfernt zusammen mit dem Gastprofil auch den zugehörigen serverseitigen Schlüsselbundtresor.
+
+## Nachrichten warten auf den Schlüsselbund
+
+Die Anmeldung speichert nun das authentifizierte Konto, bevor dessen verschlüsselter Schlüsselbund entsperrt wird. Messages führt gleichzeitige Raumöffnungen zusammen und pausiert die Live-Aktualisierung, bis die Raumschlüsselübergabe und eine gegebenenfalls erforderliche Entsperrabfrage abgeschlossen sind. Dadurch erzeugt die Hintergrundabfrage keine Promise-Ablehnungen wegen fehlender Schlüssel mehr.

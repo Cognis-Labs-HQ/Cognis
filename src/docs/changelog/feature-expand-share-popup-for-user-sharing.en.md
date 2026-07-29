@@ -367,3 +367,7 @@ Opening a room now generates a missing room key on the server and delivers it on
 ## Temporary keyrings for share guests
 
 A valid share token now creates an isolated guest identity with a derived keyring passphrase. The browser opens that session-only keyring automatically, keeps it unlocked for the guest identity lifetime, and stores guest secrets without touching a signed-in user's vault. Expired guest cleanup removes the matching server-side keyring vault alongside the guest profile.
+
+## Message loading waits for the keyring
+
+Login now persists the authenticated account before unlocking its encrypted keyring. Messages deduplicates concurrent room opens and pauses live conversation refreshes until room-key delivery and any required unlock prompt have completed, preventing background polling from raising missing-key promise rejections.

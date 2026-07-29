@@ -384,8 +384,9 @@ export async function mount(root) {
         localStorage.removeItem("cognis_user_validation_mode");
     }
 
-    async function finalizeAuthenticatedSession(data) {
+    async function finalizeAuthenticatedSession(data, password = "") {
         persistSession(data);
+        if (password) await unlockKeyring(password);
         const requiresUserValidation =
             data.requiredUserValidation === true &&
             data.userValidationMode === "smtp";
@@ -406,7 +407,7 @@ export async function mount(root) {
         window.location.href = "/dashboard";
     }
 
-    async function handleAuthResult(data) {
+    async function handleAuthResult(data, password = "") {
         if (data.tfaRequired === true || data.tfaSetupRequired === true) {
             const tfaLoginClient = await loadTfaLoginClient();
             if (!tfaLoginClient) {
@@ -425,7 +426,7 @@ export async function mount(root) {
             }
             return;
         }
-        await finalizeAuthenticatedSession(data);
+        await finalizeAuthenticatedSession(data, password);
     }
 
     function buildSupportMessage(contactEmail) {
@@ -949,8 +950,10 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
-                                await unlockKeyring(payload.password);
-                                await handleAuthResult(body.data);
+                                await handleAuthResult(
+                                    body.data,
+                                    payload.password,
+                                );
                                 return;
                             }
                             const errorKeyByCode = {

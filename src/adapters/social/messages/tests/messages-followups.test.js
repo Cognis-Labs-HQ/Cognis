@@ -385,6 +385,19 @@ test("messages unlock the keyring before accepting a delivered room key", () => 
     assert.match(source, /contributeRoomKey\(roomId, contribution\)/);
 });
 
+test("messages pause refresh polling until room-key setup completes", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(source, /openingRoomId === roomId && roomOpenPromise/);
+    assert.match(source, /readyRoomId !== selectedRoomId\) return/);
+    assert.match(source, /const key = await getRoomKey\(selectedRoomId\)/);
+    const refreshBlock = source.match(
+        /async function refreshActiveConversation\(\)[\s\S]*?function startTypingPolling/,
+    )?.[0];
+    assert.ok(refreshBlock);
+    assert.doesNotMatch(refreshBlock, /requireRoomKey/);
+});
+
 test("messages saved templates are scoped to the current account", () => {
     const source = readMessagesUiBundle();
 

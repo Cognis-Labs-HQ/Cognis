@@ -1,6 +1,21 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createPasswordConfirmationGuard } from "../ui/reuse/password-confirmation-guard.js";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const loginSource = readFileSync(resolve("src/ui/app/login/index.js"), "utf8");
+
+test("login persists the authenticated identity before unlocking its keyring", () => {
+    assert.match(
+        loginSource,
+        /async function finalizeAuthenticatedSession\(data, password = ""\) \{\s*persistSession\(data\);\s*if \(password\) await unlockKeyring\(password\);/,
+    );
+    assert.doesNotMatch(
+        loginSource,
+        /await unlockKeyring\(payload\.password\);\s*await handleAuthResult/,
+    );
+});
 
 function createI18nStub() {
     return {
