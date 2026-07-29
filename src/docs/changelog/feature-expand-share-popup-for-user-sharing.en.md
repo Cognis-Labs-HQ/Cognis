@@ -395,3 +395,7 @@ The unlock request separates its explanation from the password instruction with 
 ## Complete, browsable keyring history
 
 The keyring now retains its complete encrypted activity history. Settings presents Keys and Logs as collapsible sections and paginates log records while the vault is unlocked.
+
+## LDAP deletion now purges keyrings
+
+The keyring adapter now participates in the same user-deletion cleanup flow as Calendar and Messages, normalizes LDAP account identifiers, and removes the matching encrypted vault after account deletion persists.

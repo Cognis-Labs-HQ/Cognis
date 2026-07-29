@@ -54,8 +54,8 @@ test("keyring adapter purges a vault when user deletion persists", async () => {
         flow: systemCtx.flow,
     });
 
-    await systemCtx.flow.run("deprovision-user", {
-        username: "deleted-user",
+    const result = await systemCtx.flow.run("deprovision-user", {
+        username: "LDAP.User",
         action: "delete",
     });
 
@@ -64,9 +64,12 @@ test("keyring adapter purges a vault when user deletion persists", async () => {
             (command) =>
                 command.option === "DELETE" &&
                 command.table === "auth_keyring_vaults" &&
-                JSON.stringify(command.where).includes("deleted-user"),
+                JSON.stringify(command.where).includes("ldap.user"),
         ),
     );
+    assert.deepEqual(result.stageResults["cleanup-dependencies"], [
+        { purged: true, accountId: "ldap.user" },
+    ]);
 });
 
 function createDbExecutor(): InMemoryDb {

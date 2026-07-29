@@ -545,6 +545,11 @@ export class CoreAuthGateway {
             ) => void;
             registerNavbarPlugin?: (scriptUrl: string) => void;
             flow?: FlowApi;
+            log?: (
+                level: "info" | "warn" | "error",
+                message: string,
+                metadata?: Record<string, unknown>,
+            ) => void;
         },
     ): Promise<void> {
         let entries: string[];

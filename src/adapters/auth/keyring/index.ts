@@ -36,6 +36,11 @@ export async function bootstrapAuthAdapter(input: {
     registerStaticDir?: (adapterId: string, absolutePath: string) => void;
     registerNavbarPlugin?: (scriptUrl: string) => void;
     flow?: FlowApi;
+    log?: (
+        level: "info" | "warn" | "error",
+        message: string,
+        metadata?: Record<string, unknown>,
+    ) => void;
 }): Promise<void> {
     const store = new DbKeyringVaultStore(
         input.capabilities.require<KeyringDbExecutor>("db:executor"),
@@ -75,8 +80,14 @@ export async function bootstrapAuthAdapter(input: {
             ) {
                 return { purged: false };
             }
-            await store.delete(request.username);
-            return { purged: true, accountId: request.username };
+            const accountId = request.username.trim().toLowerCase();
+            await store.delete(accountId);
+            input.log?.("info", "Deleted user keyring vault.", {
+                component: "auth-keyring-adapter",
+                operation: "delete_user_keyring",
+                accountId,
+            });
+            return { purged: true, accountId };
         },
     );
 }

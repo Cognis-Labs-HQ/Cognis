@@ -39,9 +39,10 @@ export function createKeyringRoutes(input: {
         if (url.pathname !== "/api/v1/auth/keyring") return false;
         const claims = input.routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
+        const accountId = claims.sub.trim().toLowerCase();
 
         if (req.method === "GET") {
-            const stored = await input.store.get(claims.sub);
+            const stored = await input.store.get(accountId);
             let vault = null;
             try {
                 vault = stored ? JSON.parse(stored) : null;
@@ -72,14 +73,14 @@ export function createKeyringRoutes(input: {
                 );
                 return true;
             }
-            await input.store.set(claims.sub, serialized);
+            await input.store.set(accountId, serialized);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
         if (req.method === "DELETE") {
-            await input.store.delete(claims.sub);
+            await input.store.delete(accountId);
             res.writeHead(204);
             res.end();
             return true;

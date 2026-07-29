@@ -34,7 +34,7 @@ test("authenticated users can save and load an opaque keyring vault", async () =
         routeContext: createDefaultRouteContext(),
         store,
     });
-    const token = issueAccessToken("keyring-user", "user", 60);
+    const token = issueAccessToken("Keyring-User", "user", 60);
     const headers = { authorization: `Bearer ${token}` };
 
     const putResponse = makeResponse();
@@ -48,6 +48,7 @@ test("authenticated users can save and load an opaque keyring vault", async () =
         true,
     );
     assert.equal(putResponse.status, 200);
+    assert.equal(values.has("keyring-user"), true);
     assert.doesNotMatch(values.values().next().value ?? "", /password|secret/);
 
     const getResponse = makeResponse();

@@ -395,3 +395,7 @@ Die Entsperranfrage trennt ihre Erklärung durch eine Leerzeile von der Passwort
 ## Vollständiger, durchsuchbarer Schlüsselbundverlauf
 
 Der Schlüsselbund bewahrt nun seinen vollständigen verschlüsselten Aktivitätsverlauf auf. In den Einstellungen werden Schlüssel und Protokolle als einklappbare Bereiche dargestellt, und Protokolleinträge werden bei entsperrtem Tresor seitenweise angezeigt.
+
+## LDAP-Löschung entfernt jetzt Schlüsselbunde
+
+Der Schlüsselbundadapter nimmt jetzt am selben Bereinigungsablauf für Benutzerlöschungen wie Kalender und Nachrichten teil, normalisiert LDAP-Kontokennungen und entfernt den zugehörigen verschlüsselten Tresor, nachdem die Kontolöschung gespeichert wurde.

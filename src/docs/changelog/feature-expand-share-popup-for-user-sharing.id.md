@@ -395,3 +395,7 @@ Permintaan pembukaan memisahkan penjelasan dari petunjuk kata sandi dengan satu 
 ## Riwayat keyring lengkap yang dapat dijelajahi
 
 Keyring kini menyimpan seluruh riwayat aktivitas terenkripsi. Pengaturan menampilkan Kunci dan Log sebagai bagian yang dapat diciutkan serta membagi catatan log ke dalam halaman saat brankas terbuka.
+
+## Penghapusan LDAP kini membersihkan keyring
+
+Adapter keyring kini mengikuti alur pembersihan penghapusan pengguna yang sama dengan Kalender dan Pesan, menormalkan pengenal akun LDAP, serta menghapus brankas terenkripsi yang sesuai setelah penghapusan akun tersimpan.
