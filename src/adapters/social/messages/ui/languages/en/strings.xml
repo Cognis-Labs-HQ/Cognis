@@ -74,7 +74,5 @@
   <string name="module.social.messages.emoji_search_placeholder">Search emojis…</string>
   <string name="module.social.messages.nav_title">Messages</string>
   <string name="adapter.social.messages.keyring_invalid">The stored chat key was invalid and has been refreshed.</string>
-  <string name="adapter.social.messages.keyring_unlock_title">Unlock keyring</string>
-  <string name="adapter.social.messages.keyring_unlock_message">Unlock your keyring to save this room’s encryption key.</string>
   <string name="adapter.social.messages.keyring_unlock_required">Unlock the keyring to open this encrypted room.</string>
 </resources>

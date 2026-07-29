@@ -40,9 +40,6 @@
   <string name="gateway.auth.keyring.unlocked">Entsperrt</string>
   <string name="gateway.auth.keyring.lock">Sperren</string>
   <string name="gateway.auth.keyring.unlock">Entsperren</string>
-  <string name="gateway.auth.keyring.unlock_title">Schlüsselbund entsperren</string>
-  <string name="gateway.auth.keyring.unlock_message">Gib dein Kontopasswort ein, um den Schlüsselbund zu entschlüsseln.</string>
-  <string name="gateway.auth.keyring.unlock_failed">Mit diesem Passwort konnte der Schlüsselbund nicht entsperrt werden.</string>
   <string name="gateway.auth.keyring.relock">Sperrzeit des Schlüsselbunds</string>
   <string name="gateway.auth.keyring.logout">Beim Abmelden</string>
   <string name="gateway.auth.keyring.minutes">Minuten</string>

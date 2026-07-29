@@ -27,7 +27,7 @@ export function createChatHandlers({
             return state.chatRoomKey;
         }
         if (typeof loadChatRoomKey !== "function") return null;
-        const roomKey = await loadChatRoomKey(roomId, { i18n });
+        const roomKey = await loadChatRoomKey(roomId);
         state.chatRoomKey = roomKey;
         return roomKey;
     }

@@ -20,6 +20,8 @@ globalThis.sessionStorage = {
     removeItem: (key) => sessionValues.delete(key),
 };
 let confirmationInvalidations = 0;
+let unlockPromptCount = 0;
+let unlockPromptPassword = null;
 uiCtx.capabilities.contribute(
     "auth:invalidatePasswordConfirmation",
     async () => {
@@ -27,6 +29,16 @@ uiCtx.capabilities.contribute(
         return true;
     },
 );
+uiCtx.capabilities.contribute("auth:createRepromptGuard", () => ({
+    async requestPasswordConfirmation() {
+        unlockPromptCount += 1;
+        return unlockPromptPassword === null
+            ? null
+            : { password: unlockPromptPassword };
+    },
+}));
+
+const testI18n = { t: (key) => key };
 
 test("encrypted keyring unlocks, persists share secrets, and relocks", async () => {
     const keyring = await import("../ui/keyring.js");
@@ -45,6 +57,29 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
     await keyring.lockKeyring();
+});
+
+test("all consumers share one unlock state and one pending prompt", async () => {
+    const keyring = await import("../ui/keyring.js");
+    unlockPromptPassword = "account-password";
+    unlockPromptCount = 0;
+
+    const [firstResult, secondResult] = await Promise.all([
+        keyring.requestKeyringUnlock({ i18n: testI18n }),
+        keyring.requestKeyringUnlock({ i18n: testI18n }),
+    ]);
+
+    assert.equal(firstResult, true);
+    assert.equal(secondResult, true);
+    assert.equal(unlockPromptCount, 1);
+    assert.equal(keyring.isKeyringUnlocked(), true);
+    assert.equal(
+        await keyring.resolveKeyringValue("share:token-1"),
+        "share-password",
+    );
+    assert.equal(unlockPromptCount, 1);
+    await keyring.lockKeyring();
+    unlockPromptPassword = null;
 });
 
 test("locked keyring retains new secrets only for the active session", async () => {

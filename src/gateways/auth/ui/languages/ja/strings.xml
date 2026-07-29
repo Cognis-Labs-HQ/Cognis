@@ -40,9 +40,6 @@
   <string name="gateway.auth.keyring.unlocked">ロック解除済み</string>
   <string name="gateway.auth.keyring.lock">ロック</string>
   <string name="gateway.auth.keyring.unlock">ロック解除</string>
-  <string name="gateway.auth.keyring.unlock_title">キーリングのロック解除</string>
-  <string name="gateway.auth.keyring.unlock_message">キーリングを復号するため、アカウントのパスワードを入力してください。</string>
-  <string name="gateway.auth.keyring.unlock_failed">このパスワードではキーリングのロックを解除できません。</string>
   <string name="gateway.auth.keyring.relock">キーリングのロック時間</string>
   <string name="gateway.auth.keyring.logout">ログアウト時</string>
   <string name="gateway.auth.keyring.minutes">分</string>

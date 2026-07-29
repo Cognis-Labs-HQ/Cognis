@@ -40,9 +40,6 @@
   <string name="gateway.auth.keyring.unlocked">Unlocked</string>
   <string name="gateway.auth.keyring.lock">Lock</string>
   <string name="gateway.auth.keyring.unlock">Unlock</string>
-  <string name="gateway.auth.keyring.unlock_title">Unlock Keyring</string>
-  <string name="gateway.auth.keyring.unlock_message">Enter your account password to decrypt your keyring.</string>
-  <string name="gateway.auth.keyring.unlock_failed">The password could not unlock this keyring.</string>
   <string name="gateway.auth.keyring.relock">Keyring Lock Timeout</string>
   <string name="gateway.auth.keyring.logout">On Logout</string>
   <string name="gateway.auth.keyring.minutes">minutes</string>

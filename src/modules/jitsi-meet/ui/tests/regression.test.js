@@ -79,7 +79,7 @@ test("jitsi chat loads room keys through the messages adapter loading flow", () 
         resolve(ROOT, "src/modules/jitsi-meet/api/ui-resources.js"),
         "utf8",
     );
-    assert.match(chatSource, /await loadChatRoomKey\(roomId, \{ i18n \}\)/);
+    assert.match(chatSource, /await loadChatRoomKey\(roomId\)/);
     assert.doesNotMatch(chatSource, /adapters\/auth\/keyring/);
     assert.match(resourcesSource, /chatLoadingModuleUrl/);
 });
@@ -162,8 +162,8 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
     );
     assert.match(source, /const submitMeetingPassword = \(\) =>/);
     assert.match(source, /meeting:\$\{state\.meeting\.id\}:password/);
-    assert.match(source, /meetingKeyring\.set\(\s*meetingKeyringId/);
     assert.match(source, /meetingKeyring\.resolve\(/);
+    assert.match(source, /fallback:\s*\(\) => suppliedMeetingPassword/);
     assert.match(
         source,
         /participantRoleChanged[\s\S]*getParticipantRole\(event\) === "moderator"/,

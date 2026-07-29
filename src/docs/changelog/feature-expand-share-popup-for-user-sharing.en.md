@@ -375,3 +375,7 @@ Login now persists the authenticated account before unlocking its encrypted keyr
 ## Keyrings follow every component loading flow
 
 Password and TFA login paths now unlock the user's keyring before navigation while preserving the configured automatic lock timeout. The Messages adapter owns a staged chat-loading flow that resolves, obtains, validates, and persists room keys; the Messages page, global search, notifications, and Meetings mini-chat all consume that shared capability instead of importing keyring internals.
+
+## One keyring state and one unlock prompt
+
+Keyring consumers now share one unlock request capability and one in-flight prompt. A successful unlock immediately applies to Meetings, Messages, notifications, shares, and Keyring settings until the configured automatic lock timeout expires. The shared prompt now uses general keyring wording rather than referring to a chat room.

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<strings>
+  <string name="adapter.auth.keyring.unlock_title">Unlock keyring</string>
+  <string name="adapter.auth.keyring.unlock_message">Enter your account password to unlock your encrypted keyring.</string>
+  <string name="adapter.auth.keyring.unlock_failed">The password could not unlock this keyring.</string>
+</strings>

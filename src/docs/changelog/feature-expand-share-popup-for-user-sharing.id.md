@@ -375,3 +375,7 @@ Proses masuk kini menyimpan akun terautentikasi sebelum membuka keyring terenkri
 ## Keyring mengikuti setiap alur pemuatan komponen
 
 Jalur masuk dengan kata sandi dan autentikasi dua faktor kini membuka keyring pengguna sebelum navigasi dengan tetap menghormati batas waktu penguncian otomatis yang dikonfigurasi. Adapter Messages memiliki alur pemuatan chat bertahap yang menemukan, mengambil, memvalidasi, dan menyimpan kunci ruang; halaman Messages, pencarian global, notifikasi, dan chat mini Meetings semuanya memakai kapabilitas bersama tersebut tanpa mengimpor bagian internal keyring.
+
+## Satu status keyring dan satu dialog pembukaan
+
+Semua pemakai keyring kini berbagi satu kapabilitas permintaan pembukaan dan satu dialog yang sedang berlangsung. Pembukaan yang berhasil langsung berlaku untuk Meetings, Messages, notifikasi, berbagi, dan pengaturan Keyring sampai batas waktu penguncian otomatis yang dikonfigurasi berakhir. Dialog bersama kini menggunakan kata-kata umum tentang keyring, bukan merujuk pada ruang chat.

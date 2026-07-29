@@ -54,18 +54,14 @@ export function createEmbedHandlers({
         const suppliedMeetingPassword = String(
             state.meeting.meetingPassword ?? "",
         ).trim();
-        if (!meetingKeyring?.get(meetingKeyringId) && suppliedMeetingPassword) {
-            await meetingKeyring.set(
-                meetingKeyringId,
-                suppliedMeetingPassword,
-                {
+        let meetingPassword = String(
+            (await meetingKeyring?.resolve(meetingKeyringId, {
+                fallback: () => suppliedMeetingPassword || null,
+                metadata: {
                     label:
                         state.meeting.meetingName || i18n.t("ui.reuse.meeting"),
                 },
-            );
-        }
-        let meetingPassword = String(
-            meetingKeyring?.get(meetingKeyringId) || suppliedMeetingPassword,
+            })) || suppliedMeetingPassword,
         ).trim();
         let submittedStoredPassword = false;
         const themeMode = resolveThemeMode();

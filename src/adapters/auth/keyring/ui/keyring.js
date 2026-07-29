@@ -5,6 +5,7 @@
  *
  * Public exports:
  *   unlockKeyring(password) — unlocks the newest local or server vault.
+ *   requestKeyringUnlock() — opens the shared unlock prompt when required.
  *   lockKeyring() — forgets decrypted values and the derived key.
  *   isKeyringUnlocked() — reports whether decrypted values are available.
  *   getKeyringValue(id) / setKeyringValue(id, value, metadata) — read/write.
@@ -53,6 +54,7 @@ let vaultIterations = DEFAULT_ITERATIONS;
 let relockTimer = null;
 let lastVaultEnvelope = null;
 let temporaryKeyringAccountId = "";
+let unlockRequestPromise = null;
 const pendingValues = new Map();
 
 function keyringStorageKey() {
@@ -293,6 +295,48 @@ export function isKeyringUnlocked() {
     return Boolean(vaultData && vaultKey);
 }
 
+export async function requestKeyringUnlock(options = {}) {
+    if (isKeyringUnlocked()) return true;
+    if (unlockRequestPromise) return unlockRequestPromise;
+    const createGuard = uiCtx.capabilities.get("auth:createRepromptGuard");
+    if (!createGuard) return false;
+    unlockRequestPromise = (async () => {
+        const i18n =
+            options.i18n ??
+            (await (
+                await import("/static/reuse/i18n.js")
+            ).createI18n({
+                componentStringBaseUrls: [
+                    "/static/adapters/auth/keyring/languages",
+                ],
+            }));
+        const guard = createGuard({ i18n });
+        const prompt = {
+            title: i18n.t("adapter.auth.keyring.unlock_title"),
+            message: i18n.t("adapter.auth.keyring.unlock_message"),
+        };
+        let confirmation = await guard.requestPasswordConfirmation(prompt);
+        if (confirmation && !confirmation.password) {
+            confirmation = await guard.requestPasswordConfirmation({
+                ...prompt,
+                alwaysPrompt: true,
+            });
+        }
+        if (!confirmation?.password) return false;
+        const unlocked = await unlockKeyring(confirmation.password);
+        if (!unlocked) {
+            const { showToast } = await import("/static/reuse/toast.js");
+            showToast(i18n.t("adapter.auth.keyring.unlock_failed"), {
+                variant: "warning",
+            });
+        }
+        return unlocked;
+    })().finally(() => {
+        unlockRequestPromise = null;
+    });
+    return unlockRequestPromise;
+}
+
 export function getKeyringValue(id) {
     const normalizedId = String(id);
     const entry = vaultData
@@ -356,6 +400,7 @@ export async function deleteKeyringValue(id) {
 
 export function listKeyringEntries() {
     if (!vaultData) return [];
+    scheduleRelock();
     const values = vaultData?.values ?? Object.fromEntries(pendingValues);
     return Object.entries(values)
         .map(([id, entry]) => ({ id, ...normalizeEntry(entry, id) }))
@@ -363,6 +408,7 @@ export function listKeyringEntries() {
 }
 
 export async function resolveKeyringValue(id, options = {}) {
+    if (!isKeyringUnlocked() && !(await requestKeyringUnlock())) return null;
     const stored = getKeyringValue(id);
     if (stored !== null) {
         let valid = true;
@@ -415,6 +461,7 @@ uiCtx.capabilities.contribute("keyring:list", listKeyringEntries);
 uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
 uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
+uiCtx.capabilities.contribute("keyring:requestUnlock", requestKeyringUnlock);
 uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
 uiCtx.capabilities.contribute(
     "keyring:activateTemporary",

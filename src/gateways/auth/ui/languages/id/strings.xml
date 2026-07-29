@@ -40,9 +40,6 @@
   <string name="gateway.auth.keyring.unlocked">Terbuka</string>
   <string name="gateway.auth.keyring.lock">Kunci</string>
   <string name="gateway.auth.keyring.unlock">Buka Kunci</string>
-  <string name="gateway.auth.keyring.unlock_title">Buka Kunci Keyring</string>
-  <string name="gateway.auth.keyring.unlock_message">Masukkan kata sandi akun Anda untuk mendekripsi keyring.</string>
-  <string name="gateway.auth.keyring.unlock_failed">Kata sandi tidak dapat membuka keyring ini.</string>
   <string name="gateway.auth.keyring.relock">Batas Waktu Kunci Keyring</string>
   <string name="gateway.auth.keyring.logout">Saat Keluar</string>
   <string name="gateway.auth.keyring.minutes">menit</string>

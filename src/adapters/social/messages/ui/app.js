@@ -57,11 +57,8 @@ const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
-let messagesI18n = null;
-
-const getRoomKey = (roomId) => loadChatRoomKey(roomId, { i18n: messagesI18n });
-const requireRoomKey = (roomId) =>
-    requireChatRoomKey(roomId, { i18n: messagesI18n });
+const getRoomKey = (roomId) => loadChatRoomKey(roomId);
+const requireRoomKey = (roomId) => requireChatRoomKey(roomId);
 const resolveThreadRoomKey = (roomContext, roomId) =>
     roomContext?.pendingRequest?.direction === "incoming" ||
     roomContext?.direction === "incoming"
@@ -75,7 +72,6 @@ export async function mount(root, { signal } = {}) {
             "/static/gateways/social/languages",
         ],
     });
-    messagesI18n = i18n;
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
     const {
@@ -130,7 +126,6 @@ export async function mount(root, { signal } = {}) {
         acceptRoomKeyContribution: async (roomId, keyContribution) =>
             Boolean(
                 await loadChatRoomKey(roomId, {
-                    i18n,
                     keyContribution,
                 }),
             ),

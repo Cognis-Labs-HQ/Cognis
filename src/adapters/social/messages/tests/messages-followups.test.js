@@ -389,10 +389,9 @@ test("messages unlock the keyring before accepting a delivered room key", () => 
     const source = readMessagesUiBundle();
 
     assert.match(source, /acceptRoomKeyContribution/);
-    assert.match(source, /keyring:isUnlocked/);
-    assert.match(source, /auth:createRepromptGuard/);
-    assert.match(source, /keyring:unlock/);
-    assert.match(source, /contributeRoomKey\(roomId, contribution\)/);
+    assert.match(source, /keyring:requestUnlock/);
+    assert.match(source, /roomKeys\.contributeRoomKey/);
+    assert.doesNotMatch(source, /auth:createRepromptGuard/);
 });
 
 test("messages pause refresh polling until room-key setup completes", () => {

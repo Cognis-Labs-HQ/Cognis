@@ -375,3 +375,7 @@ Die Anmeldung speichert nun das authentifizierte Konto, bevor dessen verschlüss
 ## Schlüsselbunde begleiten jeden Komponenten-Ladevorgang
 
 Anmeldungen mit Passwort und Zwei-Faktor-Authentifizierung entsperren den Schlüsselbund nun vor der Navigation und beachten weiterhin die konfigurierte automatische Sperrfrist. Der Messages-Adapter besitzt einen stufenweisen Chat-Ladevorgang, der Raumschlüssel auflöst, abruft, prüft und speichert. Messages-Seite, globale Suche, Benachrichtigungen und der Mini-Chat in Meetings verwenden diese gemeinsame Fähigkeit statt Schlüsselbund-Interna direkt zu importieren.
+
+## Ein Schlüsselbundstatus und eine Entsperrabfrage
+
+Alle Schlüsselbundnutzer verwenden nun eine gemeinsame Entsperrfähigkeit und eine einzige laufende Abfrage. Eine erfolgreiche Entsperrung gilt sofort für Meetings, Messages, Benachrichtigungen, Freigaben und die Schlüsselbundeinstellungen, bis die konfigurierte automatische Sperrfrist abläuft. Die gemeinsame Abfrage verwendet nun allgemeine Schlüsselbundtexte ohne Bezug auf einen Chatraum.

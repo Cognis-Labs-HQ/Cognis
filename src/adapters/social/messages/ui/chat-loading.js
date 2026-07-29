@@ -71,35 +71,9 @@ uiCtx.extendFlow(
         if (stageContext.data.roomKey || !stageContext.data.keyContribution) {
             return;
         }
-        const isUnlocked = uiCtx.capabilities.get("keyring:isUnlocked");
-        if (!isUnlocked?.()) {
-            const createGuard = uiCtx.capabilities.get(
-                "auth:createRepromptGuard",
-            );
-            const unlock = uiCtx.capabilities.get("keyring:unlock");
-            if (!createGuard || !unlock || !stageContext.input.i18n) return;
-            const guard = createGuard({ i18n: stageContext.input.i18n });
-            const prompt = {
-                title: stageContext.input.i18n.t(
-                    "adapter.social.messages.keyring_unlock_title",
-                ),
-                message: stageContext.input.i18n.t(
-                    "adapter.social.messages.keyring_unlock_message",
-                ),
-            };
-            let confirmation = await guard.requestPasswordConfirmation(prompt);
-            if (confirmation && !confirmation.password) {
-                confirmation = await guard.requestPasswordConfirmation({
-                    ...prompt,
-                    alwaysPrompt: true,
-                });
-            }
-            if (
-                !confirmation?.password ||
-                !(await unlock(confirmation.password))
-            ) {
-                return;
-            }
+        const requestUnlock = uiCtx.capabilities.get("keyring:requestUnlock");
+        if (typeof requestUnlock !== "function" || !(await requestUnlock())) {
+            return;
         }
         const contributed = await roomKeys.contributeRoomKey(
             stageContext.input.roomId,
@@ -117,7 +91,6 @@ export async function loadChatRoomKey(roomId, options = {}) {
     if (!roomId) return null;
     const result = await uiCtx.runFlow(FLOW_ID, {
         roomId,
-        i18n: options.i18n,
         keyContribution: options.keyContribution,
     });
     return result.data.roomKey ?? null;

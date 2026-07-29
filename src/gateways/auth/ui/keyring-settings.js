@@ -1,4 +1,3 @@
-import { createRepromptGuard } from "/static/gateways/auth/reuse/password-confirmation.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -9,20 +8,22 @@ import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
-import {
-    createKeyringScope,
-    deleteKeyringValue,
-    getKeyringRelockMinutes,
-    isKeyringUnlocked,
-    listKeyringEntries,
-    lockKeyring,
-    setKeyringRelockMinutes,
-    unlockKeyring,
-} from "/static/adapters/auth/keyring/keyring.js";
-
 export function createSettingsSection({ i18n, root }) {
     const settingsRoot = root ?? document;
-    const guard = createRepromptGuard({ i18n });
+    const createKeyringScope = uiCtx.capabilities.get("keyring:forComponent");
+    const deleteKeyringValue = uiCtx.capabilities.get("keyring:delete");
+    const getKeyringRelockMinutes = uiCtx.capabilities.get(
+        "keyring:getRelockMinutes",
+    );
+    const isKeyringUnlocked = uiCtx.capabilities.get("keyring:isUnlocked");
+    const listKeyringEntries = uiCtx.capabilities.get("keyring:list");
+    const lockKeyring = uiCtx.capabilities.get("keyring:lock");
+    const requestKeyringUnlock = uiCtx.capabilities.get(
+        "keyring:requestUnlock",
+    );
+    const setKeyringRelockMinutes = uiCtx.capabilities.get(
+        "keyring:setRelockMinutes",
+    );
     const keyring = createKeyringScope("Authentication Gateway");
     let unbindSecretVisibility = null;
 
@@ -103,25 +104,7 @@ export function createSettingsSection({ i18n, root }) {
     }
 
     async function promptToUnlock() {
-        let confirmation = await guard.requestPasswordConfirmation({
-            title: i18n.t("gateway.auth.keyring.unlock_title"),
-            message: i18n.t("gateway.auth.keyring.unlock_message"),
-        });
-        if (confirmation && !confirmation.password) {
-            confirmation = await guard.requestPasswordConfirmation({
-                title: i18n.t("gateway.auth.keyring.unlock_title"),
-                message: i18n.t("gateway.auth.keyring.unlock_message"),
-                alwaysPrompt: true,
-            });
-        }
-        if (!confirmation?.password) return false;
-        const unlocked = await unlockKeyring(confirmation.password);
-        if (!unlocked) {
-            showToast(i18n.t("gateway.auth.keyring.unlock_failed"), {
-                variant: "warning",
-            });
-        }
-        return unlocked;
+        return requestKeyringUnlock();
     }
 
     async function readEntryInput(entry = null) {

@@ -37,7 +37,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.5`  |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.4`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| Encrypted Keyring     | `src/adapters/auth/keyring/`        | `1.0.5`  |
+| Encrypted Keyring     | `src/adapters/auth/keyring/`        | `1.0.6`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.5`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
@@ -51,7 +51,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.20` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.4`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.5`  |
 | Link Share            | `src/adapters/share/link/`          | `1.1.5`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.9`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.7`  |
@@ -64,7 +64,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.3.1`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.23` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.24` |
 | Share                 | `src/gateways/share/`        | `1.6.32` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.11` |
 | Notification (notify) | `src/gateways/notify/`       | `1.5.1`  |
@@ -92,7 +92,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.18` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.19` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.15` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |
