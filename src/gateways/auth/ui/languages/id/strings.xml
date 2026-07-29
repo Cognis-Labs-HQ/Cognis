@@ -44,6 +44,14 @@
   <string name="gateway.auth.keyring.request_process_stored_secrets">rahasia tersimpan</string>
   <string name="gateway.auth.keyring.relock">Batas Waktu Kunci Keyring</string>
   <string name="gateway.auth.keyring.logout">Saat Keluar</string>
+  <string name="gateway.auth.keyring.timeout_5_minutes">5 menit</string>
+  <string name="gateway.auth.keyring.timeout_15_minutes">15 menit</string>
+  <string name="gateway.auth.keyring.timeout_30_minutes">30 menit</string>
+  <string name="gateway.auth.keyring.timeout_1_hour">1 jam</string>
+  <string name="gateway.auth.keyring.timeout_6_hours">6 jam</string>
+  <string name="gateway.auth.keyring.timeout_12_hours">12 jam</string>
+  <string name="gateway.auth.keyring.timeout_1_day">1 hari</string>
+  <string name="gateway.auth.keyring.timeout_1_week">1 minggu</string>
   <string name="gateway.auth.keyring.minutes">menit</string>
   <string name="gateway.auth.keyring.timeout_saved">Batas waktu kunci keyring disimpan.</string>
   <string name="gateway.auth.keyring.empty">Tidak ada rahasia yang tersimpan.</string>

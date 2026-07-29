@@ -8,6 +8,7 @@ import { makeJsonRequest, makeResponse } from "./auth-gateway-test-helpers.js";
 function validVault() {
     return {
         version: 1,
+        accountInstanceId: "instance-1",
         iterations: 310000,
         salt: "salt",
         iv: "iv",
@@ -33,6 +34,7 @@ test("authenticated users can save and load an opaque keyring vault", async () =
     const route = createKeyringRoutes({
         routeContext: createDefaultRouteContext(),
         store,
+        getAccountInstanceId: async () => "instance-1",
     });
     const token = issueAccessToken("Keyring-User", "user", 60);
     const headers = { authorization: `Bearer ${token}` };
@@ -98,6 +100,7 @@ test("keyring API rejects malformed vault payloads", async () => {
     const route = createKeyringRoutes({
         routeContext: createDefaultRouteContext(),
         store,
+        getAccountInstanceId: async () => "instance-1",
     });
     const token = issueAccessToken("keyring-user-invalid", "user", 60);
     const response = makeResponse();
@@ -115,4 +118,39 @@ test("keyring API rejects malformed vault payloads", async () => {
     );
     assert.equal(response.status, 400);
     assert.match(response.payload, /invalid_keyring_vault/);
+});
+
+test("keyring API purges a vault from a previous account instance", async () => {
+    let deletedAccountId = "";
+    const staleVault = {
+        ...validVault(),
+        accountInstanceId: "retired-instance",
+    };
+    const route = createKeyringRoutes({
+        routeContext: createDefaultRouteContext(),
+        store: {
+            async ensureSchema() {},
+            async get() {
+                return JSON.stringify(staleVault);
+            },
+            async set() {},
+            async delete(accountId: string) {
+                deletedAccountId = accountId;
+            },
+        },
+        getAccountInstanceId: async () => "current-instance",
+    });
+    const token = issueAccessToken("Recreated-User", "user", 60);
+    const response = makeResponse();
+
+    await route(
+        makeJsonRequest("GET", {}, { authorization: `Bearer ${token}` }),
+        response as any,
+        new URL("http://localhost/api/v1/auth/keyring"),
+        {} as any,
+    );
+
+    assert.equal(deletedAccountId, "recreated-user");
+    assert.match(response.payload, /"vault":null/);
+    assert.match(response.payload, /"accountInstanceId":"current-instance"/);
 });

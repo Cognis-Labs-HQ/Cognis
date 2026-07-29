@@ -1,4 +1,5 @@
 import path from "node:path";
+import { AccountInstanceStore } from "../account-instance-store.js";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
@@ -139,6 +140,44 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.log?.("info", "Auth gateway account schema ready.", {
         component: "auth-gateway",
     });
+    const accountInstanceStore = new AccountInstanceStore(dbExecutor);
+    await accountInstanceStore.ensureSchema();
+    ctx.capabilities.contribute(
+        "auth:getAccountInstanceId",
+        (accountId: string) => accountInstanceStore.getOrCreate(accountId),
+    );
+    ctx.flow.extend(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "auth-gateway:delete-account-instance" },
+        async (stageContext) => {
+            const request = stageContext.input as {
+                username?: string;
+                action?: string;
+            };
+            const persisted = (
+                stageContext.stageResults["persist-state"] ?? []
+            ).some((result) => (result as { persisted?: boolean }).persisted);
+            if (
+                !persisted ||
+                request.action !== "delete" ||
+                !request.username
+            ) {
+                return { cleaned: false };
+            }
+            await accountInstanceStore.delete(request.username);
+            const accountId = request.username.trim().toLowerCase();
+            ctx.log?.("info", "Deleted transient account instance.", {
+                component: "auth-gateway",
+                operation: "delete_account_instance",
+                accountId,
+            });
+            return {
+                cleaned: true,
+                accountId,
+            };
+        },
+    );
 
     const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();
@@ -305,7 +344,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.7.30",
+        version: "1.7.31",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

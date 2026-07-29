@@ -44,6 +44,17 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /type="password"/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-table/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-info/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /renderInfoTooltip/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /\[5, "5_minutes"\]/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /\[10080, "1_week"\]/);
+    assert.match(
+        KEYRING_SETTINGS_SOURCE,
+        /id: "clear",[\s\S]*variant: "neutral"/,
+    );
+    assert.match(
+        KEYRING_SETTINGS_SOURCE,
+        /id: "cancel",[\s\S]*variant: "danger"/,
+    );
     assert.match(KEYRING_SETTINGS_SOURCE, /lockKeyring/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-relock/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-change-password/);

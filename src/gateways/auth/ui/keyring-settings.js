@@ -3,6 +3,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     bindSecretVisibilityToggles,
@@ -90,7 +91,7 @@ export function createSettingsSection({ i18n, root }) {
         const unlocked = isKeyringUnlocked();
         const timeout = getKeyringRelockMinutes();
         return `<div class="settings-keyring-toolbar">
-          <button id="settings-keyring-info" type="button" aria-label="${escapeHtml(i18n.t("gateway.auth.keyring.info"))}">${escapeHtml(i18n.t("gateway.auth.keyring.info"))}</button>
+          ${renderInfoTooltip(i18n.t("gateway.auth.keyring.description"), i18n.t("gateway.auth.keyring.info"), "settings-keyring-info")}
           <span class="settings-keyring-status" role="status">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.unlocked" : "gateway.auth.keyring.locked"))}</span>
           <button id="settings-keyring-toggle" type="button" class="${unlocked ? "btn-cancel" : "btn-confirm"}">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.lock" : "gateway.auth.keyring.unlock"))}</button>
           <button id="settings-keyring-add" type="button" class="btn-confirm"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.add"))}</button>
@@ -100,7 +101,21 @@ export function createSettingsSection({ i18n, root }) {
         <label class="settings-keyring-timeout"><span>${escapeHtml(i18n.t("gateway.auth.keyring.relock"))}</span>
           <select id="settings-keyring-relock" class="theme-select">
             <option value="0"${timeout === 0 ? " selected" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.logout"))}</option>
-            ${[15, 60, 240].map((minutes) => `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${minutes} ${escapeHtml(i18n.t("gateway.auth.keyring.minutes"))}</option>`).join("")}
+            ${[
+                [5, "5_minutes"],
+                [15, "15_minutes"],
+                [30, "30_minutes"],
+                [60, "1_hour"],
+                [360, "6_hours"],
+                [720, "12_hours"],
+                [1440, "1_day"],
+                [10080, "1_week"],
+            ]
+                .map(
+                    ([minutes, label]) =>
+                        `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${escapeHtml(i18n.t(`gateway.auth.keyring.timeout_${label}`))}</option>`,
+                )
+                .join("")}
           </select>
         </label>
         <details class="settings-keyring-section" data-keyring-section="keys"${keysExpanded ? " open" : ""}>
@@ -232,12 +247,12 @@ export function createSettingsSection({ i18n, root }) {
                     {
                         id: "clear",
                         label: i18n.t("gateway.auth.keyring.clear"),
-                        variant: "danger",
+                        variant: "neutral",
                     },
                     {
                         id: "cancel",
                         label: i18n.t("ui.reuse.cancel"),
-                        variant: "cancel",
+                        variant: "danger",
                     },
                 ],
             })) === "clear"
@@ -306,22 +321,6 @@ export function createSettingsSection({ i18n, root }) {
                 eventPage += 1;
                 rerender();
             });
-        settingsRoot.querySelector("#settings-keyring-info")?.addEventListener(
-            "click",
-            () =>
-                openPopup({
-                    title: i18n.t("gateway.auth.keyring.info_title"),
-                    body: `<p>${escapeHtml(i18n.t("gateway.auth.keyring.description"))}</p>`,
-                    actions: [
-                        {
-                            id: "close",
-                            label: i18n.t("ui.reuse.close"),
-                            variant: "cancel",
-                        },
-                    ],
-                }),
-            { once: true },
-        );
         settingsRoot
             .querySelector("#settings-keyring-toggle")
             ?.addEventListener(

@@ -58,6 +58,7 @@ let vaultSalt = null;
 let vaultIterations = DEFAULT_ITERATIONS;
 let relockTimer = null;
 let lastVaultEnvelope = null;
+let accountInstanceId = "";
 let temporaryKeyringAccountId = "";
 let unlockRequestPromise = null;
 let keyringI18nPromise = null;
@@ -161,7 +162,11 @@ async function loadRemoteEnvelope() {
         const response = await apiFetch(KEYRING_API);
         if (!response.ok) return { resolved: false, envelope: null };
         const payload = await response.json();
-        return { resolved: true, envelope: payload?.data?.vault ?? null };
+        return {
+            resolved: true,
+            envelope: payload?.data?.vault ?? null,
+            accountInstanceId: String(payload?.data?.accountInstanceId ?? ""),
+        };
     } catch {
         return { resolved: false, envelope: null };
     }
@@ -223,6 +228,7 @@ async function persistVault() {
     );
     const envelope = {
         version: 1,
+        accountInstanceId,
         iterations: vaultIterations,
         salt: encodeBytes(vaultSalt),
         iv: encodeBytes(initializationVector),
@@ -257,6 +263,9 @@ export async function unlockKeyring(password) {
     clearVault(false);
     const localEnvelope = loadLocalEnvelope();
     const remoteState = await loadRemoteEnvelope();
+    accountInstanceId =
+        remoteState.accountInstanceId ||
+        String(localEnvelope?.accountInstanceId ?? "");
     const stored = selectKeyringEnvelope(localEnvelope, remoteState);
     if (remoteState.resolved && !remoteState.envelope && localEnvelope) {
         removeLocalEnvelope();

@@ -259,3 +259,11 @@
 **Deferred scope:** The design plan suggested an admin-only panel (likely under Administration) listing every registered namespace with its default quota, editable by admins, reusing `createPageComposer` contribution patterns.
 
 **Reason deferred:** `src/ui/app/administration/index.js` is already at 990 lines (the repository's own 1000-line file-size ceiling), and adding a full namespace-defaults panel would either push it over that limit or require a larger restructuring (splitting the file into a subdirectory with focused sibling modules) that is out of proportion to this task's core requirement (namespace/ACL/quota enforcement + the one real existing consumer's migration). The backend admin routes (`GET/PUT /api/v1/files/admin/namespace-defaults[...]`, `PUT /api/v1/files/admin/global-default`) are fully implemented and tested; only the UI panel is deferred. The higher-value, directly-tied-to-existing-UI per-user "Storage Quotas" popup (in `src/ui/app/users/index.js`) was implemented instead. A follow-up task should split `administration/index.js` per the file-size convention and add the namespace-defaults panel as a new contributed section.
+
+## Keyring account-instance hardening
+
+### Extend account-instance mismatch into a whole-account purge flow
+
+**Suggestion:** Use a keyring account-instance mismatch as an additional trigger for purging all account-owned Calendar, Messages, and other component data.
+
+**Reason deferred:** Those components currently key their records only by the stable account ID and do not store the new account-instance identifier. Triggering their existing account-ID deletion hooks after a recreated user has become active could therefore erase data belonging to the new account lifecycle. The keyring is safely purged now because its envelope carries the instance identifier. A broader purge must first add instance metadata to every participating component and define a dedicated stale-incarnation flow that cannot invoke account deletion or remove current-incarnation data.

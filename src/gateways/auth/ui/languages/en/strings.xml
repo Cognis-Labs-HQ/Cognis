@@ -44,6 +44,14 @@
   <string name="gateway.auth.keyring.request_process_stored_secrets">stored secrets</string>
   <string name="gateway.auth.keyring.relock">Keyring Lock Timeout</string>
   <string name="gateway.auth.keyring.logout">On Logout</string>
+  <string name="gateway.auth.keyring.timeout_5_minutes">5 minutes</string>
+  <string name="gateway.auth.keyring.timeout_15_minutes">15 minutes</string>
+  <string name="gateway.auth.keyring.timeout_30_minutes">30 minutes</string>
+  <string name="gateway.auth.keyring.timeout_1_hour">1 hour</string>
+  <string name="gateway.auth.keyring.timeout_6_hours">6 hours</string>
+  <string name="gateway.auth.keyring.timeout_12_hours">12 hours</string>
+  <string name="gateway.auth.keyring.timeout_1_day">1 day</string>
+  <string name="gateway.auth.keyring.timeout_1_week">1 week</string>
   <string name="gateway.auth.keyring.minutes">minutes</string>
   <string name="gateway.auth.keyring.timeout_saved">Keyring lock timeout saved.</string>
   <string name="gateway.auth.keyring.empty">No secrets are stored.</string>

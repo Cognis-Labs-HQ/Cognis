@@ -403,3 +403,7 @@ The keyring adapter now participates in the same user-deletion cleanup flow as C
 ## Deleted vaults invalidate browser copies
 
 A successful empty response from the keyring API is now authoritative. After administrative deletion, the next login discards the browser's encrypted copy, opens first-login keyring setup, and cannot restore deleted entries or logs.
+
+## Account-instance-bound keyrings
+
+Authentication now assigns each account lifecycle a transient secondary identifier. Keyrings store and validate that identifier, so deleting and recreating the same LDAP username purges stale server and browser vaults. Keyring settings also add the expanded timeout choices, use the reusable information tooltip, and clarify clear-vault actions.

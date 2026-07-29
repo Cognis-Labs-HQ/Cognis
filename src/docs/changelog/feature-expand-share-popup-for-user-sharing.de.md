@@ -403,3 +403,7 @@ Der Schlüsselbundadapter nimmt jetzt am selben Bereinigungsablauf für Benutzer
 ## Gelöschte Tresore entwerten Browserkopien
 
 Eine erfolgreiche leere Antwort der Schlüsselbund-API ist jetzt maßgeblich. Nach einer administrativen Löschung verwirft die nächste Anmeldung die verschlüsselte Browserkopie, öffnet die erstmalige Schlüsselbundeinrichtung und kann gelöschte Einträge oder Protokolle nicht wiederherstellen.
+
+## An Kontoinstanzen gebundene Schlüsselbunde
+
+Die Authentifizierung weist jedem Kontolebenszyklus nun eine vorübergehende sekundäre Kennung zu. Schlüsselbunde speichern und prüfen diese Kennung, sodass das Löschen und erneute Erstellen desselben LDAP-Benutzernamens veraltete Server- und Browser-Tresore entfernt. Die Schlüsselbundeinstellungen bieten außerdem erweiterte Zeitlimits, den wiederverwendbaren Informationstooltip und eindeutigere Aktionen zum Leeren des Tresors.

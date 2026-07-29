@@ -127,6 +127,10 @@ test("auth gateway contributes account and token lifecycle capabilities", async 
         "function",
         "auth:revokeAccessTokensForSubject should be contributed for lifecycle cleanup flows",
     );
+    const getAccountInstanceId = capabilities.get<
+        (accountId: string) => Promise<string>
+    >("auth:getAccountInstanceId");
+    assert.equal(typeof getAccountInstanceId, "function");
 });
 
 test("auth bootstrap registers canonical ctx flow skeletons", async () => {

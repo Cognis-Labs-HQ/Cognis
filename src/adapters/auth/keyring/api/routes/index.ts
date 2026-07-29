@@ -27,6 +27,7 @@ function validVault(value: unknown): value is Record<string, unknown> {
         typeof vault.salt === "string" &&
         typeof vault.iv === "string" &&
         typeof vault.cipher === "string" &&
+        typeof vault.accountInstanceId === "string" &&
         typeof vault.updatedAt === "string"
     );
 }
@@ -34,12 +35,19 @@ function validVault(value: unknown): value is Record<string, unknown> {
 export function createKeyringRoutes(input: {
     routeContext: KeyringRouteContext;
     store: KeyringVaultStore;
+    getAccountInstanceId(accountId: string): Promise<string>;
+    log?: (
+        level: "info" | "warn" | "error",
+        message: string,
+        metadata?: Record<string, unknown>,
+    ) => void;
 }): KeyringRouteHandler {
     return async (req, res, url): Promise<boolean> => {
         if (url.pathname !== "/api/v1/auth/keyring") return false;
         const claims = input.routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub.trim().toLowerCase();
+        const accountInstanceId = await input.getAccountInstanceId(accountId);
 
         if (req.method === "GET") {
             const stored = await input.store.get(accountId);
@@ -49,8 +57,19 @@ export function createKeyringRoutes(input: {
             } catch {
                 vault = null;
             }
+            if (vault?.accountInstanceId !== accountInstanceId) {
+                if (vault) {
+                    await input.store.delete(accountId);
+                    input.log?.("info", "Purged stale account keyring vault.", {
+                        component: "auth-keyring-adapter",
+                        operation: "purge_stale_account_instance",
+                        accountId,
+                    });
+                }
+                vault = null;
+            }
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { vault } }));
+            res.end(JSON.stringify({ data: { vault, accountInstanceId } }));
             return true;
         }
 
@@ -61,6 +80,15 @@ export function createKeyringRoutes(input: {
                 res.end(
                     JSON.stringify({
                         error: { code: "invalid_keyring_vault" },
+                    }),
+                );
+                return true;
+            }
+            if (body.vault.accountInstanceId !== accountInstanceId) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "keyring_account_instance_mismatch" },
                     }),
                 );
                 return true;

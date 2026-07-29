@@ -44,6 +44,14 @@
   <string name="gateway.auth.keyring.request_process_stored_secrets">gespeicherte Geheimnisse</string>
   <string name="gateway.auth.keyring.relock">Sperrzeit des Schlüsselbunds</string>
   <string name="gateway.auth.keyring.logout">Beim Abmelden</string>
+  <string name="gateway.auth.keyring.timeout_5_minutes">5 Minuten</string>
+  <string name="gateway.auth.keyring.timeout_15_minutes">15 Minuten</string>
+  <string name="gateway.auth.keyring.timeout_30_minutes">30 Minuten</string>
+  <string name="gateway.auth.keyring.timeout_1_hour">1 Stunde</string>
+  <string name="gateway.auth.keyring.timeout_6_hours">6 Stunden</string>
+  <string name="gateway.auth.keyring.timeout_12_hours">12 Stunden</string>
+  <string name="gateway.auth.keyring.timeout_1_day">1 Tag</string>
+  <string name="gateway.auth.keyring.timeout_1_week">1 Woche</string>
   <string name="gateway.auth.keyring.minutes">Minuten</string>
   <string name="gateway.auth.keyring.timeout_saved">Sperrzeit des Schlüsselbunds gespeichert.</string>
   <string name="gateway.auth.keyring.empty">Keine Geheimnisse gespeichert.</string>

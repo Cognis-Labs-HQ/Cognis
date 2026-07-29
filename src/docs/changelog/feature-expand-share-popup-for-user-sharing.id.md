@@ -403,3 +403,7 @@ Adapter keyring kini mengikuti alur pembersihan penghapusan pengguna yang sama d
 ## Brankas terhapus membatalkan salinan peramban
 
 Respons kosong yang berhasil dari API keyring kini menjadi sumber utama. Setelah penghapusan administratif, login berikutnya membuang salinan terenkripsi di peramban, membuka penyiapan keyring pertama, dan tidak dapat memulihkan entri atau log yang telah dihapus.
+
+## Keyring terikat instans akun
+
+Autentikasi kini memberikan pengenal sekunder sementara untuk setiap siklus hidup akun. Keyring menyimpan dan memvalidasi pengenal tersebut, sehingga menghapus lalu membuat ulang nama pengguna LDAP yang sama membersihkan brankas server dan peramban yang usang. Pengaturan keyring juga menyediakan pilihan batas waktu yang diperluas, tooltip informasi guna ulang, dan tindakan pengosongan brankas yang lebih jelas.

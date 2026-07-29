@@ -54,7 +54,14 @@ export async function bootstrapAuthAdapter(input: {
     input.capabilities.contribute(
         "auth:keyringRouteFactory",
         (routeContext: KeyringRouteContext) =>
-            createKeyringRoutes({ routeContext, store }),
+            createKeyringRoutes({
+                routeContext,
+                store,
+                getAccountInstanceId: input.capabilities.require(
+                    "auth:getAccountInstanceId",
+                ),
+                log: input.log,
+            }),
     );
     input.registerStaticDir?.("keyring", path.join(input.adapterRoot, "ui"));
     input.registerNavbarPlugin?.("/static/adapters/auth/keyring/keyring.js");

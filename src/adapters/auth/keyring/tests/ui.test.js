@@ -306,7 +306,12 @@ test("server-side deletion invalidates the browser keyring copy on login", async
         new Response(
             options.method === "PUT"
                 ? JSON.stringify({ data: { saved: true } })
-                : JSON.stringify({ data: { vault: null } }),
+                : JSON.stringify({
+                      data: {
+                          vault: null,
+                          accountInstanceId: "replacement-instance",
+                      },
+                  }),
             {
                 status: 200,
                 headers: { "content-type": "application/json" },
@@ -325,6 +330,11 @@ test("server-side deletion invalidates the browser keyring copy on login", async
         assert.equal(
             values.has("cognis_secure_keyring:deleted-ldap-user"),
             true,
+        );
+        assert.equal(
+            JSON.parse(values.get("cognis_secure_keyring:deleted-ldap-user"))
+                .accountInstanceId,
+            "replacement-instance",
         );
     } finally {
         globalThis.fetch = originalFetch;
