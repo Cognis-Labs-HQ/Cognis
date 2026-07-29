@@ -407,3 +407,7 @@ Eine erfolgreiche leere Antwort der Schlüsselbund-API ist jetzt maßgeblich. Na
 ## An Kontoinstanzen gebundene Schlüsselbunde
 
 Die Authentifizierung weist jedem Kontolebenszyklus nun eine vorübergehende sekundäre Kennung zu. Schlüsselbunde speichern und prüfen diese Kennung, sodass das Löschen und erneute Erstellen desselben LDAP-Benutzernamens veraltete Server- und Browser-Tresore entfernt. Die Schlüsselbundeinstellungen bieten außerdem erweiterte Zeitlimits, den wiederverwendbaren Informationstooltip und eindeutigere Aktionen zum Leeren des Tresors.
+
+## Kontoinstanzschutz für Benutzerdaten
+
+Kalender-, Unterrichtsraum-, Chat-, Profil-, Einstellungs-, Sozialgraph- und Benachrichtigungsdaten registrieren sich jetzt als Eigentümer von Kontodaten. Die Authentifizierung speichert die zuletzt von jedem Eigentümer bediente Kontoinstanz und entfernt veraltete Datensätze automatisch, bevor ein neu erstelltes Konto darauf zugreifen kann.

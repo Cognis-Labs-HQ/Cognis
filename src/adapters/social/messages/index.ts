@@ -129,6 +129,55 @@ export async function bootstrapSocialAdapter(
 
     const messagesStore = new DbMessagesStore(dbExecutor);
     await messagesStore.ensureSchema();
+    const deleteAccountActivity = async (
+        accountId: string,
+        subjectHandle = accountId,
+    ) => {
+        const rooms = await messagesStore.listRoomsForAccount(accountId);
+        for (const room of rooms) {
+            if (room.kind === "group") {
+                await messagesStore.appendRoomEvent({
+                    roomId: room.id,
+                    actorId: accountId,
+                    eventType: "member_left",
+                    subjectAccountId: accountId,
+                    subjectHandle,
+                });
+            }
+            await messagesStore.removeMemberAndApplyLifecycle(
+                room.id,
+                accountId,
+            );
+        }
+        await dbExecutor.transaction(async (transactionDb) => {
+            for (const table of [
+                "chatroom_typing",
+                "chat_message_reactions",
+                "chat_emoji_usage",
+            ]) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table,
+                    where: [{ column: "account_id", value: accountId }],
+                });
+            }
+            for (const column of ["from_account_id", "to_account_id"]) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "chat_message_requests",
+                    where: [{ column, value: accountId }],
+                });
+            }
+        });
+        ctx.log?.("info", "Deleted user messaging activity.", {
+            component: "social-messages-adapter",
+            operation: "delete_user_activity",
+            accountId,
+        });
+    };
+    ctx.capabilities.get<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerAccountDataOwner")?.("messages", deleteAccountActivity);
     ctx.flow.extend(
         "deprovision-user",
         "cleanup-dependencies",
@@ -148,47 +197,7 @@ export async function bootstrapSocialAdapter(
                 return { cleaned: false };
             }
             const accountId = input.username.trim().toLowerCase();
-            const rooms = await messagesStore.listRoomsForAccount(accountId);
-            for (const room of rooms) {
-                if (room.kind === "group") {
-                    await messagesStore.appendRoomEvent({
-                        roomId: room.id,
-                        actorId: accountId,
-                        eventType: "member_left",
-                        subjectAccountId: accountId,
-                        subjectHandle: input.username,
-                    });
-                }
-                await messagesStore.removeMemberAndApplyLifecycle(
-                    room.id,
-                    accountId,
-                );
-            }
-            await dbExecutor.transaction(async (transactionDb) => {
-                for (const table of [
-                    "chatroom_typing",
-                    "chat_message_reactions",
-                    "chat_emoji_usage",
-                ]) {
-                    await transactionDb.executeCommand({
-                        option: "DELETE",
-                        table,
-                        where: [{ column: "account_id", value: accountId }],
-                    });
-                }
-                for (const column of ["from_account_id", "to_account_id"]) {
-                    await transactionDb.executeCommand({
-                        option: "DELETE",
-                        table: "chat_message_requests",
-                        where: [{ column, value: accountId }],
-                    });
-                }
-            });
-            ctx.log?.("info", "Deleted user messaging activity.", {
-                component: "social-messages-adapter",
-                operation: "delete_user_activity",
-                accountId,
-            });
+            await deleteAccountActivity(accountId, input.username);
             return { cleaned: true, accountId };
         },
     );

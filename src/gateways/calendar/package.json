@@ -1,11 +1,11 @@
 {
     "name": "@cognis/gateway-calendar",
-    "version": "1.4.27",
+    "version": "1.4.28",
     "description": "Calendar gateway for events, shares, and exports.",
     "type": "module",
     "private": true,
     "dependencies": {
-        "@cognis/adapter-social-profile": "<=1.1.20",
+        "@cognis/adapter-social-profile": "<=1.1.21",
         "@cognis/gateways": "<=0.1.4"
     }
 }

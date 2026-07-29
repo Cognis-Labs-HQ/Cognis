@@ -407,3 +407,7 @@ Respons kosong yang berhasil dari API keyring kini menjadi sumber utama. Setelah
 ## Keyring terikat instans akun
 
 Autentikasi kini memberikan pengenal sekunder sementara untuk setiap siklus hidup akun. Keyring menyimpan dan memvalidasi pengenal tersebut, sehingga menghapus lalu membuat ulang nama pengguna LDAP yang sama membersihkan brankas server dan peramban yang usang. Pengaturan keyring juga menyediakan pilihan batas waktu yang diperluas, tooltip informasi guna ulang, dan tindakan pengosongan brankas yang lebih jelas.
+
+## Perlindungan instans akun untuk data pengguna
+
+Data kalender, kelas, chat, profil, preferensi, grafik sosial, dan notifikasi kini terdaftar sebagai pemilik data akun. Autentikasi mencatat instans akun terakhir yang dilayani setiap pemilik dan otomatis memusnahkan catatan usang sebelum akun yang dibuat ulang dapat mengaksesnya.

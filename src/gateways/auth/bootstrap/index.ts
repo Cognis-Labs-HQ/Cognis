@@ -142,9 +142,40 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     const accountInstanceStore = new AccountInstanceStore(dbExecutor);
     await accountInstanceStore.ensureSchema();
+    const accountDataOwners = new Map<
+        string,
+        (accountId: string) => Promise<void>
+    >();
+    ctx.capabilities.contribute(
+        "auth:registerAccountDataOwner",
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => {
+            accountDataOwners.set(ownerId, purge);
+        },
+    );
     ctx.capabilities.contribute(
         "auth:getAccountInstanceId",
-        (accountId: string) => accountInstanceStore.getOrCreate(accountId),
+        async (accountId: string) => {
+            const instanceId =
+                await accountInstanceStore.getOrCreate(accountId);
+            for (const [ownerId, purge] of accountDataOwners) {
+                const mismatched =
+                    await accountInstanceStore.reconcileDataOwner(
+                        ownerId,
+                        accountId,
+                        instanceId,
+                        purge,
+                    );
+                if (mismatched) {
+                    ctx.log?.("info", "Purged stale account-owned data.", {
+                        component: "auth-gateway",
+                        operation: "purge_stale_account_data",
+                        ownerId,
+                        accountId: accountId.trim().toLowerCase(),
+                    });
+                }
+            }
+            return instanceId;
+        },
     );
     ctx.flow.extend(
         "deprovision-user",
@@ -344,7 +375,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.7.31",
+        version: "1.7.32",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,

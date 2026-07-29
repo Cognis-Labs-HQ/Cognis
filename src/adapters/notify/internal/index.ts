@@ -127,6 +127,21 @@ export async function bootstrapNotifyAdapter(
     }
 
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    const deleteAccountActivity = async (accountId: string) => {
+        const deletedCount = await activeStore.deleteAll(accountId);
+        ctx.log?.("info", "Deleted user notifications.", {
+            component: "notify-internal",
+            operation: "delete_user_notifications",
+            accountId,
+            deletedCount,
+        });
+    };
+    ctx.capabilities.get<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerAccountDataOwner")?.(
+        "notifications",
+        deleteAccountActivity,
+    );
     systemCtx?.flow.extend(
         "deprovision-user",
         "cleanup-dependencies",
@@ -146,14 +161,8 @@ export async function bootstrapNotifyAdapter(
                 return { cleaned: false };
             }
             const accountId = input.username.trim().toLowerCase();
-            const deletedCount = await activeStore.deleteAll(accountId);
-            ctx.log?.("info", "Deleted user notifications.", {
-                component: "notify-internal",
-                operation: "delete_user_notifications",
-                accountId,
-                deletedCount,
-            });
-            return { cleaned: true, accountId, deletedCount };
+            await deleteAccountActivity(accountId);
+            return { cleaned: true, accountId };
         },
     );
 

@@ -136,6 +136,49 @@ export async function bootstrapStudyAdapter(
     }
 
     adapterReady = true;
+    const deleteAccountActivity = async (accountId: string) => {
+        await dbExecutor.transaction(async (transactionDb) => {
+            const classResult = await transactionDb.executeCommand({
+                option: "SELECT",
+                table: "study_classes",
+                columns: ["id"],
+                where: [{ column: "teacher_account_id", value: accountId }],
+            });
+            for (const classRow of classResult.rows ?? []) {
+                const classId = String(classRow.id);
+                for (const table of ["class_memberships", "classroom_state"]) {
+                    await transactionDb.executeCommand({
+                        option: "DELETE",
+                        table,
+                        where: [{ column: "class_id", value: classId }],
+                    });
+                }
+            }
+            const deletions = [
+                ["class_memberships", "student_account_id"],
+                ["teacher_requests", "account_id"],
+                ["teacher_requests", "reviewed_by"],
+                ["teacher_assignments", "account_id"],
+                ["study_user_preferences", "account_id"],
+                ["study_classes", "teacher_account_id"],
+            ] as const;
+            for (const [table, column] of deletions) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table,
+                    where: [{ column, value: accountId }],
+                });
+            }
+        });
+        ctx.log?.("info", "Deleted user classroom activity.", {
+            component: "study-classes",
+            operation: "delete_user_activity",
+            accountId,
+        });
+    };
+    ctx.capabilities.get<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerAccountDataOwner")?.("classroom", deleteAccountActivity);
     ctx.flow.extend(
         "deprovision-user",
         "cleanup-dependencies",
@@ -155,47 +198,7 @@ export async function bootstrapStudyAdapter(
                 return { cleaned: false };
             }
             const accountId = input.username.trim().toLowerCase();
-            await dbExecutor.transaction(async (transactionDb) => {
-                const classResult = await transactionDb.executeCommand({
-                    option: "SELECT",
-                    table: "study_classes",
-                    columns: ["id"],
-                    where: [{ column: "teacher_account_id", value: accountId }],
-                });
-                for (const classRow of classResult.rows ?? []) {
-                    const classId = String(classRow.id);
-                    for (const table of [
-                        "class_memberships",
-                        "classroom_state",
-                    ]) {
-                        await transactionDb.executeCommand({
-                            option: "DELETE",
-                            table,
-                            where: [{ column: "class_id", value: classId }],
-                        });
-                    }
-                }
-                const deletions = [
-                    ["class_memberships", "student_account_id"],
-                    ["teacher_requests", "account_id"],
-                    ["teacher_requests", "reviewed_by"],
-                    ["teacher_assignments", "account_id"],
-                    ["study_user_preferences", "account_id"],
-                    ["study_classes", "teacher_account_id"],
-                ] as const;
-                for (const [table, column] of deletions) {
-                    await transactionDb.executeCommand({
-                        option: "DELETE",
-                        table,
-                        where: [{ column, value: accountId }],
-                    });
-                }
-            });
-            ctx.log?.("info", "Deleted user classroom activity.", {
-                component: "study-classes",
-                operation: "delete_user_activity",
-                accountId,
-            });
+            await deleteAccountActivity(accountId);
             return { cleaned: true, accountId };
         },
     );

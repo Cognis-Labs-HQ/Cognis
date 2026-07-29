@@ -154,6 +154,23 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const store = new DbCalendarStore(dbExecutor);
             await store.ensureSchema();
             await gateway.attachStore(store);
+            const deleteAccountActivity = async (accountId: string) => {
+                await gateway.deleteAccountActivity(accountId);
+                ctx.log?.("info", "Deleted user calendar activity.", {
+                    component: "calendar-gateway",
+                    operation: "delete_user_activity",
+                    accountId,
+                });
+            };
+            ctx.capabilities.get<
+                (
+                    ownerId: string,
+                    purge: (accountId: string) => Promise<void>,
+                ) => void
+            >("auth:registerAccountDataOwner")?.(
+                "calendar",
+                deleteAccountActivity,
+            );
             ctx.flow.extend(
                 "deprovision-user",
                 "cleanup-dependencies",
@@ -174,12 +191,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         return { cleaned: false };
                     }
                     const accountId = input.username.trim().toLowerCase();
-                    await gateway.deleteAccountActivity(accountId);
-                    ctx.log?.("info", "Deleted user calendar activity.", {
-                        component: "calendar-gateway",
-                        operation: "delete_user_activity",
-                        accountId,
-                    });
+                    await deleteAccountActivity(accountId);
                     return { cleaned: true, accountId };
                 },
             );
