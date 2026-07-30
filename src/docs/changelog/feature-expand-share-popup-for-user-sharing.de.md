@@ -423,3 +423,11 @@ Speichergrenzen und Stärke der Passwortableitung werden jetzt in den Einstellun
 ## Lesbare Abstände werden erzwungen
 
 Beabsichtigte Leerzeilen zwischen Calendar- und SMTP-Klassenmethoden sowie zwischen Jitsi-Initialisierungsblöcken wurden wiederhergestellt. Die Lesbarkeitsprüfung schützt diese Grenzen künftig.
+
+## Bearbeitete Benutzerfreigaben synchron halten
+
+Freigabeänderungen durchlaufen nun einen gestuften Lebenszyklus, sodass zugestellte Kalender entfernte Empfänger, Berechtigungsänderungen und aktualisierte Ablaufzeiten sofort übernehmen.
+
+## Gespeicherte Passwörter und Offline-Schlüsselbunde bewahren
+
+Gespeicherte Freigabepasswörter verwenden nun dieselbe Token-Kennung wie die Suche. Offline erstellte Schlüsselbunde werden nach Wiederherstellung der Verbindung hochgeladen und nur verworfen, wenn der Server einen Wechsel der Kontoinstanz bestätigt.

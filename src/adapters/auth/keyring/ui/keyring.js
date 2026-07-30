@@ -168,7 +168,19 @@ function envelopeTimestamp(envelope) {
 }
 
 export function selectKeyringEnvelope(localEnvelope, remoteState) {
-    if (remoteState.resolved && !remoteState.envelope) return null;
+    const localAccountInstanceId = String(
+        localEnvelope?.accountInstanceId ?? "",
+    );
+    const remoteAccountInstanceId = String(remoteState.accountInstanceId ?? "");
+    if (
+        remoteState.resolved &&
+        localAccountInstanceId &&
+        remoteAccountInstanceId &&
+        localAccountInstanceId !== remoteAccountInstanceId
+    ) {
+        return null;
+    }
+    if (remoteState.resolved && !remoteState.envelope) return localEnvelope;
     if (!remoteState.resolved) return localEnvelope;
     return envelopeTimestamp(remoteState.envelope) >
         envelopeTimestamp(localEnvelope)
@@ -238,7 +250,7 @@ export async function unlockKeyring(password) {
         remoteState.accountInstanceId ||
         String(localEnvelope?.accountInstanceId ?? "");
     const stored = selectKeyringEnvelope(localEnvelope, remoteState);
-    if (remoteState.resolved && !remoteState.envelope && localEnvelope) {
+    if (remoteState.resolved && localEnvelope && !stored) {
         removeLocalEnvelope();
     }
     const salt = stored?.salt
@@ -453,7 +465,7 @@ export async function setupKeyringAfterLogin(
     const localEnvelope = loadLocalEnvelope();
     const remoteState = await loadRemoteEnvelope();
     const storedEnvelope = selectKeyringEnvelope(localEnvelope, remoteState);
-    if (remoteState.resolved && !remoteState.envelope && localEnvelope) {
+    if (remoteState.resolved && localEnvelope && !storedEnvelope) {
         removeLocalEnvelope();
     }
     if (storedEnvelope) {

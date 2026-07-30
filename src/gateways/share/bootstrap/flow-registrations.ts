@@ -730,6 +730,58 @@ export async function registerShareBootstrapHooks(input: {
     );
 
     input.ctx.flow.extend(
+        "update-share-token",
+        "authorize-update",
+        { id: "share-gateway:authorize-update" },
+        async (stageCtx) => {
+            const flowInput = (stageCtx.input ?? {}) as {
+                claims?: { sub?: string };
+                shareId?: string;
+            };
+            const existingToken = await input.gateway.getTokenById(
+                String(flowInput.shareId ?? ""),
+            );
+            const ownerAccountId = String(flowInput.claims?.sub ?? "");
+            const authorized =
+                Boolean(existingToken) &&
+                existingToken?.ownerAccountId === ownerAccountId;
+            return {
+                authorized,
+                existingToken: authorized ? existingToken : null,
+            };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "update-share-token",
+        "update-token",
+        { id: "share-gateway:update-token" },
+        async (stageCtx) => {
+            const authorization = getFirstStageResult(
+                stageCtx.stageResults,
+                "authorize-update",
+            ) as { authorized?: boolean } | null;
+            if (!authorization?.authorized) {
+                return { updated: false, reason: "forbidden" };
+            }
+            const flowInput = (stageCtx.input ?? {}) as {
+                claims?: { sub?: string };
+                shareId?: string;
+                changes?: Parameters<CoreShareGateway["updateToken"]>[0];
+            };
+            const updatedToken = await input.gateway.updateToken({
+                ...(flowInput.changes ?? {}),
+                shareId: String(flowInput.shareId ?? ""),
+                ownerAccountId: String(flowInput.claims?.sub ?? ""),
+            });
+            return {
+                updated: Boolean(updatedToken),
+                updatedToken,
+            };
+        },
+    );
+
+    input.ctx.flow.extend(
         "revoke-share-token",
         "delete-token",
         { id: "share-gateway:delete-token" },

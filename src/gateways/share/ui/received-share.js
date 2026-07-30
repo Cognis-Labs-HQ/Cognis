@@ -147,13 +147,10 @@ export async function resolveReceivedShare(token, { headers } = {}) {
                 uiCtx.capabilities.get("keyring:isUnlocked")?.()
             )
                 await Promise.resolve(
-                    keyring?.set(
-                        shareId ? `share:${shareId}` : keyringId,
-                        entered.password,
-                        {
-                            label: i18n.t("share.unlock.keyring_label"),
-                        },
-                    ),
+                    keyring?.set(keyringId, entered.password, {
+                        label: i18n.t("share.unlock.keyring_label"),
+                        shareId,
+                    }),
                 );
         } catch {
             const i18n = await createI18n({

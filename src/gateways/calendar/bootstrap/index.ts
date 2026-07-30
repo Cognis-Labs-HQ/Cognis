@@ -239,6 +239,29 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         });
         return true;
     };
+
+    const removeDeliveredCalendarRecipient = async (
+        share: Awaited<
+            ReturnType<CalendarShareRegistry["listCalendarUserSharesByTokenId"]>
+        >[number],
+    ) => {
+        await shareRegistry.deleteCalendarUserShare({
+            ownerAccountId: share.ownerAccountId,
+            ownerCalendarId: share.ownerCalendarId,
+            shareId: share.id,
+        });
+        const recipientCalendar = gateway.getOwnedCalendar(
+            share.recipientAccountId,
+            share.recipientCalendarId,
+        );
+        if (recipientCalendar?.visibility === "shared") {
+            gateway.deleteCalendar({
+                ownerAccountId: share.recipientAccountId,
+                calendarId: share.recipientCalendarId,
+            });
+        }
+    };
+
     const scheduleCalendarShareExpiry = (
         shareId: string,
         expiresAt: string,
@@ -619,6 +642,86 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     removed: await removeDeliveredCalendarShare(
                         flowInput.shareId,
                     ),
+                };
+            },
+        );
+    }
+    if (ctx.flow.exists("update-share-token")) {
+        ctx.flow.extend(
+            "update-share-token",
+            "reconcile-deliveries",
+            { id: "calendar-gateway:reconcile-share-deliveries" },
+            async (stageCtx) => {
+                const updateResult = (
+                    stageCtx.stageResults["update-token"] ?? []
+                ).find((result) =>
+                    Boolean((result as { updated?: boolean })?.updated),
+                ) as {
+                    updated?: boolean;
+                    updatedToken?: {
+                        id?: string;
+                        resourceType?: string;
+                        accessControls?: {
+                            recipients?: Array<{
+                                type?: string;
+                                id?: string;
+                            }>;
+                        };
+                        grantedCapabilities?: string[];
+                        expiresAt?: string;
+                    };
+                } | null;
+                const updatedToken = updateResult?.updatedToken;
+                if (
+                    !updateResult?.updated ||
+                    updatedToken?.resourceType !== "calendar" ||
+                    !updatedToken.id
+                ) {
+                    return null;
+                }
+                const recipientIds = new Set(
+                    (updatedToken.accessControls?.recipients ?? [])
+                        .filter((recipient) => recipient.type === "user")
+                        .map((recipient) => String(recipient.id ?? ""))
+                        .filter(Boolean),
+                );
+                const deliveredShares =
+                    await shareRegistry.listCalendarUserSharesByTokenId(
+                        updatedToken.id,
+                    );
+                for (const deliveredShare of deliveredShares) {
+                    if (!recipientIds.has(deliveredShare.recipientAccountId)) {
+                        await removeDeliveredCalendarRecipient(deliveredShare);
+                        continue;
+                    }
+                    await shareRegistry.upsertCalendarUserShare({
+                        shareId: updatedToken.id,
+                        ownerAccountId: deliveredShare.ownerAccountId,
+                        ownerCalendarId: deliveredShare.ownerCalendarId,
+                        recipientAccountId: deliveredShare.recipientAccountId,
+                        recipientCalendarId: deliveredShare.recipientCalendarId,
+                        recipientHandle: deliveredShare.recipientHandle,
+                        recipientDisplayName:
+                            deliveredShare.recipientDisplayName,
+                        recipientAvatarKey: deliveredShare.recipientAvatarKey,
+                        permission: updatedToken.grantedCapabilities?.includes(
+                            "calendar:write",
+                        )
+                            ? "write"
+                            : "read",
+                        expiresAt: String(updatedToken.expiresAt ?? ""),
+                    });
+                }
+                if (deliveredShares.length > 0) {
+                    scheduleCalendarShareExpiry(
+                        updatedToken.id,
+                        String(updatedToken.expiresAt ?? ""),
+                    );
+                    await gateway.flushStore();
+                }
+                return {
+                    reconciled: true,
+                    deliveredCount: deliveredShares.length,
                 };
             },
         );

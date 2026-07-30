@@ -80,13 +80,20 @@ test("core flow catalog exposes canonical auth flow contracts", () => {
             "check-access",
             "issue-guest-token",
             "build-payload",
+            "deliver-recipient",
         ],
+    );
+    assert.deepEqual(
+        getCanonicalFlowContract("update-share-token")?.stages.map(
+            (stage) => stage.id,
+        ),
+        ["authorize-update", "update-token", "reconcile-deliveries"],
     );
     assert.deepEqual(
         getCanonicalFlowContract("revoke-share-token")?.stages.map(
             (stage) => stage.id,
         ),
-        ["authorize-revocation", "delete-token"],
+        ["authorize-revocation", "delete-token", "remove-delivery"],
     );
     assert.deepEqual(
         getCanonicalFlowContract("construct-share-page")?.stages.map(

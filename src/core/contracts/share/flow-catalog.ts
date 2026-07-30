@@ -86,6 +86,29 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
         ],
     }),
     createFlowContract({
+        id: "update-share-token",
+        owner: "share",
+        description:
+            "Updates a share token and reconciles recipient-side deliveries through staged authorization and lifecycle hooks.",
+        stages: [
+            {
+                id: "authorize-update",
+                description:
+                    "Load the existing token and confirm the caller owns the share being updated.",
+            },
+            {
+                id: "update-token",
+                description:
+                    "Persist the canonical share token changes in the Share gateway.",
+            },
+            {
+                id: "reconcile-deliveries",
+                description:
+                    "Synchronize already-delivered recipient resources with the updated recipients, permissions, and expiry.",
+            },
+        ],
+    }),
+    createFlowContract({
         id: "revoke-share-token",
         owner: "share",
         description:

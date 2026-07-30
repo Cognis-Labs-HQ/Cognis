@@ -423,3 +423,11 @@ Batas penyimpanan dan kekuatan derivasi kata sandi kini dikelola melalui pengatu
 ## Jarak keterbacaan diberlakukan
 
 Baris kosong yang disengaja antara metode kelas Calendar dan SMTP serta blok inisialisasi Jitsi telah dipulihkan. Pemeriksaan keterbacaan kini melindungi batas tersebut.
+
+## Menjaga sinkronisasi berbagi pengguna yang diedit
+
+Perubahan berbagi kini berjalan melalui siklus hidup bertahap agar kalender yang telah dikirim segera mencerminkan penghapusan penerima, perubahan izin, dan masa berlaku terbaru.
+
+## Mempertahankan kata sandi tersimpan dan keyring offline
+
+Kata sandi berbagi yang disimpan kini memakai pengenal token yang sama dengan pencarian. Keyring yang dibuat saat offline diunggah ketika koneksi kembali dan hanya dihapus jika server mengonfirmasi bahwa instans akun telah berubah.

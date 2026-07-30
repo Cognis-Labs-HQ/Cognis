@@ -315,31 +315,37 @@ export function createShareRoutes(input: {
                 clearPassword?: unknown;
                 expiresAt?: unknown;
             };
-            let updated;
+            let flowResult;
             try {
-                updated = await input.gateway.updateToken({
+                flowResult = await input.flow.run("update-share-token", {
+                    claims,
                     shareId,
-                    ownerAccountId: claims.sub,
-                    label:
-                        typeof body.label === "string" ? body.label : undefined,
-                    grantedCapabilities: Array.isArray(body.grantedCapabilities)
-                        ? body.grantedCapabilities
-                        : undefined,
-                    accessControls:
-                        body.accessControls &&
-                        typeof body.accessControls === "object"
-                            ? body.accessControls
+                    changes: {
+                        label:
+                            typeof body.label === "string"
+                                ? body.label
+                                : undefined,
+                        grantedCapabilities: Array.isArray(
+                            body.grantedCapabilities,
+                        )
+                            ? body.grantedCapabilities
                             : undefined,
-                    password:
-                        typeof body.password === "string"
-                            ? body.password
-                            : null,
-                    generatePassword: body.generatePassword === true,
-                    clearPassword: body.clearPassword === true,
-                    expiresAt:
-                        typeof body.expiresAt === "string"
-                            ? body.expiresAt
-                            : undefined,
+                        accessControls:
+                            body.accessControls &&
+                            typeof body.accessControls === "object"
+                                ? body.accessControls
+                                : undefined,
+                        password:
+                            typeof body.password === "string"
+                                ? body.password
+                                : null,
+                        generatePassword: body.generatePassword === true,
+                        clearPassword: body.clearPassword === true,
+                        expiresAt:
+                            typeof body.expiresAt === "string"
+                                ? body.expiresAt
+                                : undefined,
+                    },
                 });
             } catch (error) {
                 if (
@@ -351,11 +357,15 @@ export function createShareRoutes(input: {
                 }
                 throw error;
             }
-            if (!updated) {
+            const updateResult = getFirstStageResult<{
+                updated?: boolean;
+                updatedToken?: unknown;
+            }>(flowResult.stageResults, "update-token");
+            if (!updateResult?.updated) {
                 sendError(res, 404, "not_found", "Share token not found.");
                 return true;
             }
-            sendJson(res, 200, { data: updated });
+            sendJson(res, 200, { data: updateResult.updatedToken ?? null });
             return true;
         }
 

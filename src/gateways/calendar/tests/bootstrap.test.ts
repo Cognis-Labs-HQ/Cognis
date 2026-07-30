@@ -19,6 +19,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
+    const systemCtx = createCtx();
     const adminToken = issueAccessToken("calendar-admin", "admin", 60);
     const recipientToken = issueAccessToken("calendar-recipient", "user", 60);
     const authContext = createAuthContext(
@@ -28,6 +29,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         ]),
     );
     capabilities.contribute("auth:routeContext", authContext);
+    capabilities.contribute("system:ctx", systemCtx);
 
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -35,7 +37,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        flow: createCtx().flow,
+        flow: systemCtx.flow,
     } as any);
 
     const gateway = gatewayRegistry.get("calendar");
@@ -63,6 +65,87 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         },
     );
     assert.equal(createCalendarResponse.statusCode, 201);
+    const deliverLifecycleShare = capabilities.get<
+        (delivery: {
+            shareId: string;
+            resourceType: string;
+            resourceId: string;
+            ownerAccountId: string;
+            recipientAccountId: string;
+            grantedCapabilities: string[];
+            expiresAt: string;
+        }) => Promise<{ navigationUrl?: string } | null>
+    >("share:deliverUserShare:calendar");
+    const shareId = "central-share-token";
+    const expiry = new Date(Date.now() + 3_600_000).toISOString();
+    await deliverLifecycleShare?.({
+        shareId,
+        resourceType: "calendar",
+        resourceId: createCalendarResponse.body.data.id,
+        ownerAccountId: "calendar-admin",
+        recipientAccountId: "calendar-recipient",
+        grantedCapabilities: ["calendar:read", "calendar:write"],
+        expiresAt: expiry,
+    });
+    systemCtx.flow.extend(
+        "update-share-token",
+        "update-token",
+        { id: "test:update-calendar-share" },
+        () => ({
+            updated: true,
+            updatedToken: {
+                id: shareId,
+                resourceType: "calendar",
+                accessControls: {
+                    recipients: [{ type: "user", id: "calendar-recipient" }],
+                },
+                grantedCapabilities: ["calendar:read"],
+                expiresAt: expiry,
+            },
+        }),
+    );
+    await systemCtx.flow.run("update-share-token", {});
+    const recipientCalendarsAfterDowngrade = await createJsonDispatcher(
+        routeRegistry,
+    )("GET", recipientToken, "/api/v1/calendar/calendars");
+    assert.equal(
+        recipientCalendarsAfterDowngrade.body.data.find(
+            (calendar: { visibility?: string }) =>
+                calendar.visibility === "shared",
+        )?.sharedPermission,
+        "read",
+    );
+    systemCtx.removeFlowStageHook(
+        "update-share-token",
+        "update-token",
+        "test:update-calendar-share",
+    );
+    systemCtx.flow.extend(
+        "update-share-token",
+        "update-token",
+        { id: "test:remove-calendar-recipient" },
+        () => ({
+            updated: true,
+            updatedToken: {
+                id: shareId,
+                resourceType: "calendar",
+                accessControls: { recipients: [] },
+                grantedCapabilities: ["calendar:read"],
+                expiresAt: expiry,
+            },
+        }),
+    );
+    await systemCtx.flow.run("update-share-token", {});
+    const recipientCalendarsAfterRemoval = await createJsonDispatcher(
+        routeRegistry,
+    )("GET", recipientToken, "/api/v1/calendar/calendars");
+    assert.equal(
+        recipientCalendarsAfterRemoval.body.data.some(
+            (calendar: { visibility?: string }) =>
+                calendar.visibility === "shared",
+        ),
+        false,
+    );
     const resolveVariants = capabilities.get<
         (input: {
             resourceType: string;

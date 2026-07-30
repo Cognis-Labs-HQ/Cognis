@@ -423,3 +423,11 @@ Keyring storage limits and password-derivation strength are now managed through 
 ## Readability spacing is enforced
 
 Intentional blank lines between Calendar and SMTP class methods and between Jitsi initialization blocks have been restored. The readability lint now protects these boundaries so formatting cannot silently collapse them again.
+
+## Keep edited user shares synchronized
+
+Share edits now run through a staged lifecycle so delivered calendars immediately reflect recipient removal, permission changes, and updated expiry.
+
+## Preserve saved passwords and offline keyrings
+
+Saved share passwords now use the same token identifier used for lookup. Keyrings created offline are uploaded when connectivity returns and are discarded only when the server confirms that the account instance changed.

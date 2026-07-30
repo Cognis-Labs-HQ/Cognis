@@ -71,6 +71,30 @@ test("unlock wording names only the keyring password without variable quotes", (
     );
 });
 
+test("keyring envelope selection preserves offline data unless the account instance changed", async () => {
+    const { selectKeyringEnvelope } = await import("../ui/keyring.js");
+    const localEnvelope = {
+        accountInstanceId: "account-instance-one",
+        updatedAt: "2026-01-01T00:00:00.000Z",
+    };
+    assert.equal(
+        selectKeyringEnvelope(localEnvelope, {
+            resolved: true,
+            envelope: null,
+            accountInstanceId: "account-instance-one",
+        }),
+        localEnvelope,
+    );
+    assert.equal(
+        selectKeyringEnvelope(localEnvelope, {
+            resolved: true,
+            envelope: null,
+            accountInstanceId: "account-instance-two",
+        }),
+        null,
+    );
+});
+
 test("encrypted keyring unlocks, persists share secrets, and relocks", async () => {
     const keyring = await import("../ui/keyring.js");
     assert.equal(await keyring.unlockKeyring("account-password"), true);
@@ -332,6 +356,14 @@ test("server-side deletion invalidates the browser keyring copy on login", async
     assert.equal(await keyring.unlockKeyring("old-password"), true);
     await keyring.setKeyringValue("test:deleted-secret", "old-secret");
     await keyring.lockKeyring();
+    const browserEnvelope = JSON.parse(
+        values.get("cognis_secure_keyring:deleted-ldap-user"),
+    );
+    browserEnvelope.accountInstanceId = "original-instance";
+    values.set(
+        "cognis_secure_keyring:deleted-ldap-user",
+        JSON.stringify(browserEnvelope),
+    );
 
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (requestPath, options = {}) =>
