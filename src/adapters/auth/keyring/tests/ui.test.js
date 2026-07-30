@@ -59,9 +59,16 @@ test("unlock wording names only the keyring password without variable quotes", (
         strings.match(
             /name="adapter\.auth\.keyring\.unlock_message">([^<]+)/,
         )?.[1] ?? "";
-    assert.match(unlockMessage, /keyring password/);
-    assert.match(unlockMessage, /\.\n\nEnter the keyring password/);
-    assert.doesNotMatch(unlockMessage, /account password|[“”]/i);
+    const unlockPrompt =
+        strings.match(
+            /name="adapter\.auth\.keyring\.unlock_prompt">([^<]+)/,
+        )?.[1] ?? "";
+    assert.match(unlockMessage, /requested access to the keyring/);
+    assert.match(unlockPrompt, /keyring password/);
+    assert.doesNotMatch(
+        `${unlockMessage} ${unlockPrompt}`,
+        /account password|[“”]/i,
+    );
 });
 
 test("encrypted keyring unlocks, persists share secrets, and relocks", async () => {

@@ -20,7 +20,7 @@ Not responsible for: authenticating users, deriving encryption keys, or interpre
 
 ## Configuration
 
-The adapter has no configurable fields and is required. It uses the active `db:executor` provider selected for Cognis.
+The required adapter uses the active `db:executor`. Administrators configure the maximum encrypted vault size in MiB and the password-derivation iteration count through the adapter settings. Existing vaults retain their recorded derivation count; the configured count applies when a vault is created.
 
 ## API Routes
 
@@ -29,3 +29,17 @@ The adapter has no configurable fields and is required. It uses the active `db:e
 | GET    | `/api/v1/auth/keyring` | Read the account's encrypted vault. | User |
 | PUT    | `/api/v1/auth/keyring` | Replace the encrypted vault.        | User |
 | DELETE | `/api/v1/auth/keyring` | Delete the encrypted vault.         | User |
+
+## Browser capability API
+
+Components obtain keyring operations from `uiCtx.capabilities`; they do not import adapter internals. Use `keyring:forComponent` to create an attributed scope, then resolve secrets with a stable capability-owned identifier. Resolution validates an existing value and can prompt or consult an authoritative source when it is missing or invalid. The adapter also exposes lock state, entry management, password changes, activity pagination, and temporary guest-keyring lifecycle operations through the registered capabilities.
+
+```js
+const keyring = uiCtx.capabilities.require("keyring:forComponent")("Meetings");
+const password = await keyring.resolve("meeting:123:password", {
+    action: "join",
+    process: "meeting 123",
+    validate: (value) => value.length > 0,
+    prompt: ({ invalid }) => askForPassword(invalid),
+});
+```

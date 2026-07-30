@@ -116,6 +116,7 @@ const MAX_QP_LINE_LENGTH = 76;
 function normalizeNewlines(value: string): string {
     return value.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
 }
+
 function encodeQuotedPrintable(input: string): string {
     const normalized = normalizeNewlines(input);
     const encodedLines = normalized.split("\n").map((line) => {

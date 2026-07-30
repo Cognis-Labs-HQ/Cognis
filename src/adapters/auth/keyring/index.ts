@@ -14,6 +14,27 @@ import type { FlowApi } from "@cognis/core";
 
 export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
 
+const DEFAULT_MAX_VAULT_MIB = 2;
+const DEFAULT_DERIVATION_ITERATIONS = 310_000;
+const keyringConfig = {
+    maxVaultMiB: DEFAULT_MAX_VAULT_MIB,
+    derivationIterations: DEFAULT_DERIVATION_ITERATIONS,
+};
+
+function positiveNumber(value: unknown, fallback: number): number {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) && parsedValue > 0
+        ? parsedValue
+        : fallback;
+}
+
+function getKeyringPolicy() {
+    return {
+        maxVaultBytes: Math.floor(keyringConfig.maxVaultMiB * 1024 * 1024),
+        derivationIterations: Math.floor(keyringConfig.derivationIterations),
+    };
+}
+
 export function createAdapter(): AuthProviderAdapter {
     return {
         id: "keyring",
@@ -24,9 +45,31 @@ export function createAdapter(): AuthProviderAdapter {
             return null;
         },
         getConfigSchema() {
-            return [];
+            return [
+                {
+                    key: "maxVaultMiB",
+                    label: "Maximum vault size (MiB)",
+                    type: "number",
+                    required: true,
+                },
+                {
+                    key: "derivationIterations",
+                    label: "Password derivation iterations",
+                    type: "number",
+                    required: true,
+                },
+            ];
         },
-        configure() {},
+        configure(config) {
+            keyringConfig.maxVaultMiB = positiveNumber(
+                config.maxVaultMiB,
+                DEFAULT_MAX_VAULT_MIB,
+            );
+            keyringConfig.derivationIterations = positiveNumber(
+                config.derivationIterations,
+                DEFAULT_DERIVATION_ITERATIONS,
+            );
+        },
     };
 }
 
@@ -35,6 +78,12 @@ export async function bootstrapAuthAdapter(input: {
     adapterRoot: string;
     registerStaticDir?: (adapterId: string, absolutePath: string) => void;
     registerNavbarPlugin?: (scriptUrl: string) => void;
+    registerSettingsSection?: (section: {
+        id: string;
+        label: string;
+        scriptUrl: string;
+        stringsBaseUrl?: string;
+    }) => void;
     flow?: FlowApi;
     log?: (
         level: "info" | "warn" | "error",
@@ -60,11 +109,18 @@ export async function bootstrapAuthAdapter(input: {
                 getAccountInstanceId: input.capabilities.require(
                     "auth:getAccountInstanceId",
                 ),
+                getPolicy: getKeyringPolicy,
                 log: input.log,
             }),
     );
     input.registerStaticDir?.("keyring", path.join(input.adapterRoot, "ui"));
     input.registerNavbarPlugin?.("/static/adapters/auth/keyring/keyring.js");
+    input.registerSettingsSection?.({
+        id: "keyring",
+        label: "Keyring",
+        scriptUrl: "/static/adapters/auth/keyring/settings.js",
+        stringsBaseUrl: "/static/adapters/auth/keyring/languages",
+    });
     input.flow?.extend(
         "deprovision-user",
         "cleanup-dependencies",

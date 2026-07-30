@@ -271,6 +271,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ),
         registerNavbarPlugin: (scriptUrl) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
+        registerSettingsSection: (section) =>
+            ctx.uiRegistry?.registerSettingsSection(section),
         flow: ctx.flow,
         log: ctx.log,
     });
@@ -375,7 +377,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.7.32",
+        version: "1.7.33",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,
@@ -389,13 +391,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/auth/security-prefs/index.js",
         stringsBaseUrl: "/static/gateways/auth/languages",
     });
-    ctx.uiRegistry?.registerSettingsSection({
-        id: "keyring",
-        label: "Keyring",
-        scriptUrl: "/static/gateways/auth/keyring-settings.js",
-        stringsBaseUrl: "/static/gateways/auth/languages",
-    });
-
     await runAuthBootstrapHooks({
         accountStore,
         authGateway,

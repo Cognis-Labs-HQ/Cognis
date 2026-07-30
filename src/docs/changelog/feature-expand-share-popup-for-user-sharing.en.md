@@ -415,3 +415,11 @@ Calendar, classroom, chat, profile, preferences, social graph, and notification 
 ## Keyring setup after dashboard arrival
 
 New users now reach the dashboard before the User Keyring setup dialog opens. The dialog explains that the keyring protects passwords and encryption keys used by Cognis features. GitHub Actions now runs the full test suite explicitly after typechecking.
+
+## Configurable, self-contained keyring administration
+
+Keyring storage limits and password-derivation strength are now managed through Authentication adapter settings. The adapter owns its settings UI, translations, routes, and technical documentation, and unlock instructions use separate translatable text keys.
+
+## Readability spacing is enforced
+
+Intentional blank lines between Calendar and SMTP class methods and between Jitsi initialization blocks have been restored. The readability lint now protects these boundaries so formatting cannot silently collapse them again.

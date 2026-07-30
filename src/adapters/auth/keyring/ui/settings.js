@@ -450,7 +450,7 @@ export function createSettingsSection({ i18n, root }) {
             `<section class="settings-keyring-manager" id="settings-keyring-manager">${renderManager()}</section>`,
         async onRender() {
             await ensurePageStylesheet(
-                "/static/gateways/auth/keyring-settings.css",
+                "/static/adapters/auth/keyring/settings.css",
             );
             bindActions();
             if (!isKeyringUnlocked()) {

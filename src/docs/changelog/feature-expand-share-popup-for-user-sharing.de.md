@@ -415,3 +415,11 @@ Kalender-, Unterrichtsraum-, Chat-, Profil-, Einstellungs-, Sozialgraph- und Ben
 ## Schlüsselbundeinrichtung nach Ankunft im Dashboard
 
 Neue Benutzer erreichen nun das Dashboard, bevor der Dialog zur Einrichtung des Benutzerschlüsselbunds geöffnet wird. Der Dialog erklärt, dass der Schlüsselbund Passwörter und Verschlüsselungsschlüssel für Cognis-Funktionen schützt. GitHub Actions führt nach der Typprüfung nun ausdrücklich die vollständige Testsuite aus.
+
+## Konfigurierbare, eigenständige Schlüsselbundverwaltung
+
+Speichergrenzen und Stärke der Passwortableitung werden jetzt in den Einstellungen des Authentifizierungsadapters verwaltet. Der Adapter besitzt seine Einstellungsoberfläche, Übersetzungen, Routen und technische Dokumentation; Entsperrhinweise verwenden getrennte übersetzbare Textschlüssel.
+
+## Lesbare Abstände werden erzwungen
+
+Beabsichtigte Leerzeilen zwischen Calendar- und SMTP-Klassenmethoden sowie zwischen Jitsi-Initialisierungsblöcken wurden wiederhergestellt. Die Lesbarkeitsprüfung schützt diese Grenzen künftig.

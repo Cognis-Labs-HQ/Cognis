@@ -37,7 +37,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.5`  |
 | Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.4`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.14` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.15` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.5`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
@@ -62,7 +62,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                        | Versi    |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.2.2`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.32` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.33` |
 | Share                 | `src/gateways/share/`        | `1.6.33` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.11` |
 | Notification (notify) | `src/gateways/notify/`       | `1.4.11` |

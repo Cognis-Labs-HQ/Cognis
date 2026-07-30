@@ -985,6 +985,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             }
         },
     });
+
     await composer.init();
     if (inShareView && state.requestedMeetingId) {
         await joinMeetingById(state.requestedMeetingId);

@@ -14,11 +14,11 @@ const PASSWORD_CHANGE_SOURCE = readFileSync(
     "utf8",
 );
 const KEYRING_SETTINGS_SOURCE = readFileSync(
-    resolve(ROOT, "src/gateways/auth/ui/keyring-settings.js"),
+    resolve(ROOT, "src/adapters/auth/keyring/ui/settings.js"),
     "utf8",
 );
 const KEYRING_SETTINGS_STYLES = readFileSync(
-    resolve(ROOT, "src/gateways/auth/ui/keyring-settings.css"),
+    resolve(ROOT, "src/adapters/auth/keyring/ui/settings.css"),
     "utf8",
 );
 
@@ -68,7 +68,7 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:changePassword/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:clear/);
     assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /requestPasswordConfirmation/);
-    assert.match(KEYRING_SETTINGS_SOURCE, /keyring-settings\.css/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /settings\.css/);
     assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-expand/);
     assert.match(KEYRING_SETTINGS_SOURCE, /renderSecretVisibilityField/);
     assert.match(KEYRING_SETTINGS_SOURCE, /bindSecretVisibilityToggles/);

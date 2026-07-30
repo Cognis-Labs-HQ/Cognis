@@ -29,3 +29,7 @@ Adapter wajib ini tidak memiliki bidang konfigurasi dan menggunakan penyedia `db
 | GET    | `/api/v1/auth/keyring` | Membaca brankas terenkripsi akun. | Pengguna    |
 | PUT    | `/api/v1/auth/keyring` | Mengganti brankas terenkripsi.    | Pengguna    |
 | DELETE | `/api/v1/auth/keyring` | Menghapus brankas terenkripsi.    | Pengguna    |
+
+## API capability browser
+
+Komponen memperoleh operasi gantungan kunci melalui `uiCtx.capabilities` dan tidak mengimpor internal adaptor. Gunakan `keyring:forComponent` untuk membuat lingkup yang beratribusi, lalu selesaikan rahasia dengan pengenal stabil milik capability. Resolusi memvalidasi nilai yang ada dan dapat meminta pengguna atau berkonsultasi dengan sumber otoritatif saat nilai hilang atau tidak valid. Status kunci, pengelolaan entri, perubahan kata sandi, halaman aktivitas, dan siklus hidup gantungan kunci tamu sementara juga tersedia sebagai capability.

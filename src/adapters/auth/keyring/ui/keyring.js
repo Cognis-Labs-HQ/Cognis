@@ -1,37 +1,3 @@
-/**
- * Encrypted user keyring for secrets that follow an authenticated account.
- * Values are encrypted in the browser; the server API receives only the opaque
- * AES-GCM vault so components and infrastructure never persist plaintext.
- *
- * Public exports:
- *   unlockKeyring(password) — unlocks the newest local or server vault.
- *   requestKeyringUnlock() — opens the shared unlock prompt when required.
- *   setupKeyringAfterLogin(password) — initializes or unlocks after login.
- *   lockKeyring() — forgets decrypted values and the derived key.
- *   isKeyringUnlocked() — reports whether decrypted values are available.
- *   getKeyringValue(id) / setKeyringValue(id, value, metadata) — read/write.
- *   deleteKeyringValue(id) / listKeyringEntries() — manage stored entries.
- *   resolveKeyringValue(id, options) — validate a stored value and recover by
- *     prompting or an authoritative fallback when it is invalid.
- *   getKeyringRelockMinutes() / setKeyringRelockMinutes(minutes) — relocking.
- *   createKeyringScope(componentName) — component-attributed access helpers.
- *   activateTemporaryKeyring(accountId, passphrase) — opens a session-only
- *     guest vault that remains unlocked for the guest identity lifetime.
- *   endTemporaryKeyring() — removes the browser copy when that identity ends.
- *
- * Usage:
- *   await unlockKeyring(loginPassword);
- *   await setKeyringValue('meeting:123:password', secret, { label: 'Meeting' });
- *   const password = await resolveKeyringValue('meeting:123:password', {
- *     request: { component: 'Meetings', action: 'join', process: 'meeting 123' },
- *     validate: value => value.length > 0,
- *     prompt: ({ invalid }) => askForPassword(invalid),
- *   });
- *
- * @param {string} password Account password used only to derive an AES key.
- * @returns {Promise<boolean>} Whether the vault was successfully unlocked.
- */
-
 const keyringApiModule = await import(
     typeof window === "undefined"
         ? "../../../../ui/reuse/api-client.js"
@@ -167,6 +133,10 @@ async function loadRemoteEnvelope() {
             resolved: true,
             envelope: payload?.data?.vault ?? null,
             accountInstanceId: String(payload?.data?.accountInstanceId ?? ""),
+            derivationIterations: Number(
+                payload?.data?.policy?.derivationIterations ??
+                    DEFAULT_ITERATIONS,
+            ),
         };
     } catch {
         return { resolved: false, envelope: null };
@@ -274,7 +244,11 @@ export async function unlockKeyring(password) {
     const salt = stored?.salt
         ? decodeBytes(stored.salt)
         : crypto.getRandomValues(new Uint8Array(16));
-    const iterations = Number(stored?.iterations ?? DEFAULT_ITERATIONS);
+    const iterations = Number(
+        stored?.iterations ??
+            remoteState.derivationIterations ??
+            DEFAULT_ITERATIONS,
+    );
     const key = await deriveKey(normalizedPassword, salt, iterations);
     try {
         vaultData = stored?.cipher
@@ -380,8 +354,9 @@ export async function requestKeyringUnlock(options = {}) {
             .replace("{{component}}", request.component)
             .replace("{{action}}", request.action)
             .replace("{{process}}", request.process);
+        const prompt = i18n.t("adapter.auth.keyring.unlock_prompt");
         const passwordPrompt = options.passwordPrompt ?? requestKeyringPassword;
-        const password = await passwordPrompt({ i18n, message });
+        const password = await passwordPrompt({ i18n, message, prompt });
         if (!password) return false;
         const unlocked = await unlockKeyring(password);
         if (!unlocked) {
@@ -397,7 +372,7 @@ export async function requestKeyringUnlock(options = {}) {
     return unlockRequestPromise;
 }
 
-async function requestKeyringPassword({ i18n, message }) {
+async function requestKeyringPassword({ i18n, message, prompt = "" }) {
     const [{ openPopup }, { escapeHtml }] = await Promise.all([
         import("/static/reuse/popup.js"),
         import("/static/reuse/escape-html.js"),
@@ -405,7 +380,7 @@ async function requestKeyringPassword({ i18n, message }) {
     let passwordInput = null;
     const result = await openPopup({
         title: i18n.t("adapter.auth.keyring.unlock_title"),
-        body: `<label class="stack"><span style="white-space: pre-line">${escapeHtml(message)}</span><input id="keyring-unlock-password" type="password" autocomplete="current-password" required /></label>`,
+        body: `<label class="stack"><span>${escapeHtml(message)}</span><span>${escapeHtml(prompt)}</span><input id="keyring-unlock-password" type="password" autocomplete="current-password" required /></label>`,
         actions: [
             {
                 id: "unlock",

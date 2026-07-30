@@ -544,6 +544,12 @@ export class CoreAuthGateway {
                 absolutePath: string,
             ) => void;
             registerNavbarPlugin?: (scriptUrl: string) => void;
+            registerSettingsSection?: (section: {
+                id: string;
+                label: string;
+                scriptUrl: string;
+                stringsBaseUrl?: string;
+            }) => void;
             flow?: FlowApi;
             log?: (
                 level: "info" | "warn" | "error",

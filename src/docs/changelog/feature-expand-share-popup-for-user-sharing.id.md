@@ -415,3 +415,11 @@ Data kalender, kelas, chat, profil, preferensi, grafik sosial, dan notifikasi ki
 ## Penyiapan keyring setelah tiba di dasbor
 
 Pengguna baru kini tiba di dasbor sebelum dialog penyiapan Keyring Pengguna dibuka. Dialog tersebut menjelaskan bahwa keyring melindungi kata sandi dan kunci enkripsi yang digunakan fitur Cognis. GitHub Actions kini secara eksplisit menjalankan seluruh rangkaian pengujian setelah pemeriksaan tipe.
+
+## Administrasi gantungan kunci mandiri dan dapat dikonfigurasi
+
+Batas penyimpanan dan kekuatan derivasi kata sandi kini dikelola melalui pengaturan adaptor Autentikasi. Adaptor memiliki UI pengaturan, terjemahan, rute, dan dokumentasi teknisnya; petunjuk membuka kunci memakai kunci teks terjemahan yang terpisah.
+
+## Jarak keterbacaan diberlakukan
+
+Baris kosong yang disengaja antara metode kelas Calendar dan SMTP serta blok inisialisasi Jitsi telah dipulihkan. Pemeriksaan keterbacaan kini melindungi batas tersebut.
