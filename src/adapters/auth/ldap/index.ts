@@ -149,7 +149,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.5.6";
+    readonly version = "0.5.7";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -284,6 +284,22 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             name: String(server.identifier),
             credential: true,
         }));
+    }
+
+    isConfigured(): boolean {
+        return (
+            this.configuration.servers.length > 0 &&
+            this.configuration.servers.every(
+                (server) =>
+                    Boolean(server.identifier?.trim()) &&
+                    Boolean(server.serverUrl?.trim()) &&
+                    Boolean(server.baseDn?.trim()) &&
+                    Boolean(server.bindDn?.trim()) &&
+                    Boolean(server.bindPassword) &&
+                    Boolean(server.userAttribute?.trim()) &&
+                    Boolean(server.userFilter?.trim()),
+            )
+        );
     }
 
     getConfigSchema(): AuthConfigField[] {

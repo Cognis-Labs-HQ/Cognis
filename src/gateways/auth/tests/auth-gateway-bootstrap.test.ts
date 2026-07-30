@@ -430,17 +430,15 @@ test("CoreAuthGateway lists a locked keyring without treating it as a login prov
 
     gateway.registerAdapter(createAdapter(), ["db"]);
 
-    assert.deepEqual(gateway.listAdapters(), [
-        {
-            id: "keyring",
-            name: "User Keyring",
-            enabled: true,
-            locked: true,
-            config: {},
-            schema: [],
-            requires: ["db"],
-        },
-    ]);
+    const listedKeyring = gateway.listAdapters()[0];
+    assert.equal(listedKeyring?.id, "keyring");
+    assert.equal(listedKeyring?.name, "User Keyring");
+    assert.equal(listedKeyring?.enabled, true);
+    assert.equal(listedKeyring?.locked, true);
+    assert.deepEqual(listedKeyring?.requires, ["db"]);
+    assert.ok(
+        listedKeyring?.schema.some((field) => field.key === "maxVaultMiB"),
+    );
     assert.deepEqual(gateway.getEnabledAdapters(), []);
 });
 

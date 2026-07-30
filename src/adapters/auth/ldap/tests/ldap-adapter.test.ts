@@ -326,6 +326,29 @@ test("ldap adapter config schema has required fields", () => {
     assert.ok(keys.includes("writebackBaseDn"));
 });
 
+test("ldap adapter reports a completed multi-server configuration", () => {
+    const adapter = createAdapter() as {
+        configure(config: Record<string, unknown>): void;
+        isConfigured(): boolean;
+    };
+    assert.equal(adapter.isConfigured(), false);
+    adapter.configure({
+        unify: true,
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://ldap.example.org",
+                baseDn: "dc=example,dc=org",
+                bindDn: "uid=service,dc=example,dc=org",
+                bindPassword: "secret",
+                userAttribute: "uid",
+                userFilter: "(uid={username})",
+            },
+        ],
+    });
+    assert.equal(adapter.isConfigured(), true);
+});
+
 test("ldap test configuration returns only client-discovered directory entries", async () => {
     const adapter = createAdapter() as {
         setClient(client: {

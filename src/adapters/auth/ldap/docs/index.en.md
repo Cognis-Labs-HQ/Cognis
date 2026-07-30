@@ -56,3 +56,5 @@ Configure via `PUT /api/v1/gateways/auth/adapters/ldap/config` (admin only).
 ## Connection tests
 
 The adapter test endpoint validates the configured service-account bind before directory discovery. Invalid LDAP credentials are reported as a bind DN or password rejection; transport and certificate failures use separate safe diagnostics. Detailed provider errors are recorded only in server logs.
+
+A saved LDAP adapter is ready to enable when every named server has a server URL, base DN, bind DN, bind password, username attribute, and user filter. Readiness is evaluated by the adapter so nested multi-server configuration and redacted passwords are handled correctly.

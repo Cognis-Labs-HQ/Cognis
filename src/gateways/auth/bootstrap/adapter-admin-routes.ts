@@ -101,6 +101,7 @@ export function createAdapterAdminRoutes(
                             redactedConfig.configuredSecretFields,
                         schema,
                         requiredFields,
+                        configured: authGateway.isAdapterConfigured(adapterId),
                         configPopupScriptUrl: adapter.configPopupScriptUrl,
                     }),
                 );
@@ -249,6 +250,21 @@ export function createAdapterAdminRoutes(
                 return true;
             }
             if (action === "enable") {
+                if (!authGateway.isAdapterConfigured(adapterId)) {
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "setup_required",
+                                message:
+                                    "This adapter must be configured before it can be enabled.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 await authGateway.enableAdapter(adapterId);
             } else {
                 await authGateway.disableAdapter(adapterId);

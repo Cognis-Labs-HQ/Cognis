@@ -41,6 +41,9 @@ export async function adapterRequiresSetup(configUrl) {
     const response = await apiFetch(configUrl);
     if (!response.ok) return false;
     const payload = await response.json();
+    if (typeof payload.configured === "boolean") {
+        return !payload.configured;
+    }
     const requiredFields = Array.isArray(payload.requiredFields)
         ? payload.requiredFields
         : [];

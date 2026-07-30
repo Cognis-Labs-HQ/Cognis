@@ -55,6 +55,7 @@ export interface AuthProviderAdapter {
     testConfiguration?(
         config: Record<string, unknown>,
     ): Promise<Record<string, unknown>>;
+    isConfigured?(): boolean;
 }
 
 export interface AdapterInfo {
@@ -404,6 +405,14 @@ export class CoreAuthGateway {
 
     getAdapter(adapterId: string): AuthProviderAdapter | null {
         return this.adapters.get(adapterId) ?? null;
+    }
+
+    isAdapterConfigured(adapterId: string): boolean {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) return false;
+        return typeof adapter.isConfigured === "function"
+            ? adapter.isConfigured()
+            : true;
     }
 
     getEnabledAdapter(adapterId: string): AuthProviderAdapter | null {
