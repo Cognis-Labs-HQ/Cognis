@@ -2,6 +2,7 @@ import net from "node:net";
 import tls from "node:tls";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 import type {
     NotificationEnvelope,
     NotificationSender,
@@ -9,6 +10,7 @@ import type {
 } from "@cognis/core";
 import { encodeBasicHtmlEntities } from "./html-entities.js";
 import {
+    encodeHeaderPhrase,
     foldHeader,
     formatAddressHeader,
     makeMessageId,
@@ -599,7 +601,7 @@ export class SmtpNotificationSender implements NotificationSender {
             this.sleep,
             async (payload) => {
                 await sendMailWithRetry(
-                    this.config,
+                    (payload.config as SmtpConfig | undefined) ?? this.config,
                     payload.recipientEmail,
                     payload.subject,
                     payload.body,
@@ -843,15 +845,13 @@ export class SmtpNotificationSender implements NotificationSender {
                 merged.authDisabled = overrideConfig.authDisabled;
             cfg = merged;
         }
-        await sendMailWithRetry(
-            cfg,
-            to,
-            "Cognis SMTP Test",
-            "This is a test email from Cognis.",
-            this.sleep,
-            undefined,
-            undefined,
-        );
+        const queued = this.queue.enqueue({
+            recipientEmail: to,
+            subject: "Cognis SMTP Test",
+            body: "This is a test email from Cognis.",
+            config: cfg,
+        });
+        await this.queue.waitForResult(queued.notificationId);
     }
 
     async send(envelope: NotificationEnvelope): Promise<void> {

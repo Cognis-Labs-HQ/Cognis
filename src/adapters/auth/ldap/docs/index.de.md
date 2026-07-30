@@ -39,3 +39,7 @@ Konfiguration über `PUT /api/v1/gateways/auth/adapters/ldap/config` (nur Admin)
 | `bindPassword` | Passwort für den Bind-DN                                           | Ja           |
 | `baseDn`       | Basis-DN für Benutzersuchen                                        | Ja           |
 | `adminGroups`  | Kommagetrennte LDAP-Gruppen, deren Mitglieder Admin-Rolle erhalten | Nein         |
+
+## Verbindungstests
+
+Der Adapter-Testendpunkt prüft die Bindung des konfigurierten Dienstkontos vor der Verzeichnissuche. Ungültige LDAP-Zugangsdaten werden als Ablehnung von Bind-DN oder Passwort gemeldet; Transport- und Zertifikatsfehler erhalten getrennte sichere Diagnosen. Genaue Anbieterfehler werden nur im Serverprotokoll erfasst.

@@ -375,6 +375,32 @@ test("ldap test configuration returns only client-discovered directory entries",
     );
 });
 
+test("ldap test configuration explains rejected bind credentials", async () => {
+    const adapter = createAdapter() as {
+        setClient(client: {
+            authenticate: () => Promise<null>;
+            discover: () => Promise<never>;
+        }): void;
+        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
+    };
+    adapter.setClient({
+        authenticate: async () => null,
+        discover: async () => {
+            throw new Error(" Code: 0x31");
+        },
+    });
+    await assert.rejects(
+        () =>
+            adapter.testConfiguration({
+                serverUrl: "ldaps://ldap.example.org",
+                baseDn: "dc=example,dc=org",
+                bindDn: "uid=service,dc=example,dc=org",
+                bindPassword: "incorrect",
+            }),
+        /rejected the bind DN or bind password/,
+    );
+});
+
 test("LDAP setup credential test returns user details and mapped role", async () => {
     const adapter = createAdapter() as {
         setClient(client: {

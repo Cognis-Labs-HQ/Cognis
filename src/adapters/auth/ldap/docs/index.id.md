@@ -32,3 +32,7 @@ Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/ldap/config` (hanya admi
 | `bindPassword` | Password untuk bind DN                                        | Ya         |
 | `baseDn`       | Base DN untuk pencarian pengguna                              | Ya         |
 | `adminGroups`  | Grup LDAP yang anggotanya mendapat peran admin (dipisah koma) | Tidak      |
+
+## Uji koneksi
+
+Endpoint uji adapter memvalidasi bind akun layanan yang dikonfigurasi sebelum penemuan direktori. Kredensial LDAP yang tidak valid dilaporkan sebagai penolakan DN bind atau kata sandi; kegagalan transportasi dan sertifikat memakai diagnosis aman yang terpisah. Galat penyedia terperinci hanya dicatat di log server.

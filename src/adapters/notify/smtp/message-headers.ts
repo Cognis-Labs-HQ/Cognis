@@ -58,7 +58,7 @@ export function makeMessageId(from: string, domainHint?: string): string {
     return `<${Date.now()}.${randomUUID()}@${domain}>`;
 }
 
-function encodeHeaderPhrase(value: string): string {
+export function encodeHeaderPhrase(value: string): string {
     const sanitized = sanitizeHeader(value);
     if (/^[\x20-\x7e]*$/.test(sanitized)) return sanitized;
     return `=?UTF-8?B?${Buffer.from(sanitized, "utf8").toString("base64")}?=`;

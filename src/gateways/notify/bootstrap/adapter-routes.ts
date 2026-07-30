@@ -18,6 +18,11 @@ export function createGatewayAdapterRoutes(
         variables: Record<string, string>;
         config?: Record<string, unknown>;
     }) => Promise<unknown>,
+    log?: (
+        level: string,
+        message: string,
+        metadata?: Record<string, unknown>,
+    ) => void,
 ) {
     const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
@@ -194,12 +199,35 @@ export function createGatewayAdapterRoutes(
                 );
                 return true;
             }
-            await sendEmail({
-                recipientEmail: to,
-                templateId: "notify-test",
-                variables: {},
-                config: overrideConfig,
-            });
+            try {
+                await sendEmail({
+                    recipientEmail: to,
+                    templateId: "notify-test",
+                    variables: {},
+                    config: overrideConfig,
+                });
+            } catch (error) {
+                log?.("error", "SMTP test email failed.", {
+                    component: "notify-smtp",
+                    operation: "send_test_email",
+                    recipientEmail: to,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                res.writeHead(400, {
+                    "content-type": "application/json",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "smtp_test_failed",
+                            message:
+                                "SMTP test email could not be sent. Verify the server, security mode, sender, and authentication settings.",
+                        },
+                    }),
+                );
+                return true;
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { sent: true } }));
             return true;

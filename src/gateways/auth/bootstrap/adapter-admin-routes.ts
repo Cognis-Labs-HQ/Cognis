@@ -171,11 +171,22 @@ export function createAdapterAdminRoutes(
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data }));
             } catch (error) {
+                log?.("error", "Auth adapter configuration test failed.", {
+                    ...logMeta,
+                    adapterId,
+                    operation: "test_adapter_configuration",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                    cause:
+                        error instanceof Error && error.cause instanceof Error
+                            ? error.cause.message
+                            : undefined,
+                });
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "ldap_test_failed",
+                            code: `${adapterId}_test_failed`,
                             message:
                                 error instanceof Error
                                     ? error.message

@@ -52,3 +52,7 @@ Configure via `PUT /api/v1/gateways/auth/adapters/ldap/config` (admin only).
 | `bindPassword` | Password for the bind DN                                     | Yes      |
 | `baseDn`       | Base DN for user searches                                    | Yes      |
 | `adminGroups`  | Comma-separated LDAP groups whose members receive admin role | No       |
+
+## Connection tests
+
+The adapter test endpoint validates the configured service-account bind before directory discovery. Invalid LDAP credentials are reported as a bind DN or password rejection; transport and certificate failures use separate safe diagnostics. Detailed provider errors are recorded only in server logs.

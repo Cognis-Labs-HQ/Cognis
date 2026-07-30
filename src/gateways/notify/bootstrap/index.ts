@@ -207,6 +207,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.gatewayRegistry,
             routeContext,
             sendEmail,
+            ctx.log,
         ),
         "notify",
     );

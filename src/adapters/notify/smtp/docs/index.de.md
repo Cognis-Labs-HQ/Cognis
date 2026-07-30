@@ -24,3 +24,7 @@ Der Adapter implementiert Greylist-tolerante Zustellung: Bei einer vorübergehen
 | `COGNIS_SMTP_USER`   | —        | SMTP-Authentifizierungsbenutzername                               |
 | `COGNIS_SMTP_PASS`   | —        | SMTP-Authentifizierungspasswort                                   |
 | `COGNIS_SMTP_FROM`   | —        | Absenderadresse im `From`-Header                                  |
+
+## Testzustellung
+
+Testnachrichten verwenden dieselbe adaptereigene Warteschlange und empfängerbezogene Ratenbegrenzung wie der reguläre SMTP-Versand. Die übermittelte Konfiguration bleibt beim eingereihten Test, und die API wartet auf das endgültige Zustellergebnis.
