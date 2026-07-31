@@ -21,6 +21,12 @@ export interface NotifyAdapterBootstrapCtx {
     ): void;
     registerNavbarPlugin(scriptUrl: string): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    requireAuth(
+        req: IncomingMessage,
+        res: ServerResponse,
+        minimumRole: "admin",
+    ): boolean;
+    readJson(req: IncomingMessage): Promise<Record<string, unknown>>;
     log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
 }
 
@@ -568,6 +574,56 @@ export class CoreNotificationGateway
 
     getSender(senderId: string): NotificationSender | undefined {
         return this.senders.get(senderId);
+    }
+
+    getSenderAdminContract(senderId: string): {
+        config: Record<string, unknown>;
+        envValues: Record<string, string | undefined>;
+        requiredFields: string[];
+        supportsTest: boolean;
+        locked: boolean;
+    } | null {
+        const sender = this.senders.get(senderId);
+        if (!sender?.getConfig) return null;
+        return {
+            config: sender.getConfig(),
+            envValues: sender.getEnvValues?.() ?? {},
+            requiredFields: sender.getRequiredFields?.() ?? [],
+            supportsTest: typeof sender.sendTestEmail === "function",
+            locked: this.alwaysOnSenders.has(senderId),
+        };
+    }
+
+    hasSender(senderId: string): boolean {
+        return this.senders.has(senderId);
+    }
+
+    async sendTestEmail(
+        senderId: string,
+        recipientEmail: string,
+        config?: Record<string, unknown>,
+    ): Promise<void> {
+        const sender = this.senders.get(senderId);
+        if (!sender?.sendTestEmail) {
+            throw new Error("notification_sender_test_unavailable");
+        }
+        await sender.sendTestEmail(recipientEmail, config);
+    }
+
+    async sendWithSender(
+        senderId: string,
+        envelope: NotificationEnvelope,
+    ): Promise<{ sent: true; notificationId?: string }> {
+        const sender = this.senders.get(senderId);
+        if (!sender) throw new Error("notification_sender_unavailable");
+        if (sender.sendTracked) {
+            return {
+                sent: true,
+                ...(await sender.sendTracked(envelope)),
+            };
+        }
+        await sender.send(envelope);
+        return { sent: true };
     }
 
     canSendVerificationEmail(): boolean {

@@ -431,3 +431,19 @@ Share edits now run through a staged lifecycle so delivered calendars immediatel
 ## Preserve saved passwords and offline keyrings
 
 Saved share passwords now use the same token identifier used for lookup. Keyrings created offline are uploaded when connectivity returns and are discarded only when the server confirms that the account instance changed.
+
+## LDAP reports actionable bind failures
+
+LDAP setup now translates directory error code 0x31 into guidance to verify the bind DN and password, while detailed causes remain in structured server logs.
+
+## SMTP tests use the delivery queue
+
+SMTP test messages now pass through the adapter-owned queue and rate limiter. Failed tests return a specific, actionable response instead of a generic request failure.
+
+## Saved LDAP servers enable correctly
+
+Authentication adapters now report their setup state through their gateway contract. A complete saved LDAP server set is recognized even though its fields and redacted password are nested under `servers`.
+
+## Adapter boundaries are restored
+
+SMTP now owns and registers its test route, while gateway routes use gateway contracts instead of holding notification or authentication adapter instances. Localized version indexes now match every component manifest.

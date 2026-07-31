@@ -54,11 +54,12 @@ export function createAdapterAdminRoutes(
         );
         if (configMatch) {
             const adapterId = decodeURIComponent(configMatch[1]);
-            const adapter = authGateway.getAdapter(adapterId);
+            const configContract =
+                authGateway.getAdapterConfigContract(adapterId);
 
             if (req.method === "GET") {
                 if (!requireAuth(req, res, "admin")) return true;
-                if (!adapter) {
+                if (!configContract) {
                     log?.(
                         "warn",
                         "Auth adapter config lookup failed because adapter was not found.",
@@ -84,7 +85,7 @@ export function createAdapterAdminRoutes(
                     adapterId,
                     storedConfig,
                 );
-                const schema = adapter.getConfigSchema();
+                const schema = configContract.schema;
                 const requiredFields = schema
                     .filter((field) => field.required)
                     .map((field) => field.key);
@@ -102,7 +103,8 @@ export function createAdapterAdminRoutes(
                         schema,
                         requiredFields,
                         configured: authGateway.isAdapterConfigured(adapterId),
-                        configPopupScriptUrl: adapter.configPopupScriptUrl,
+                        configPopupScriptUrl:
+                            configContract.configPopupScriptUrl,
                     }),
                 );
                 return true;
@@ -110,7 +112,7 @@ export function createAdapterAdminRoutes(
 
             if (req.method === "PUT") {
                 if (!requireAuth(req, res, "admin")) return true;
-                if (!adapter) {
+                if (!configContract) {
                     log?.(
                         "warn",
                         "Auth adapter config update failed because adapter was not found.",
@@ -153,14 +155,15 @@ export function createAdapterAdminRoutes(
         if (testMatch && req.method === "POST") {
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(testMatch[1]);
-            const adapter = authGateway.getAdapter(adapterId);
-            if (!adapter || typeof adapter.testConfiguration !== "function") {
+            const configContract =
+                authGateway.getAdapterConfigContract(adapterId);
+            if (!configContract || !configContract.supportsTest) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
-                            message: "Adapter test is not available",
+                            message: "Adapter not found",
                         },
                     }),
                 );
@@ -168,7 +171,10 @@ export function createAdapterAdminRoutes(
             }
             const body = (await readJson(req)) as Record<string, unknown>;
             try {
-                const data = await adapter.testConfiguration(body);
+                const data = await authGateway.testAdapterConfiguration(
+                    adapterId,
+                    body,
+                );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data }));
             } catch (error) {
@@ -206,8 +212,9 @@ export function createAdapterAdminRoutes(
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(enableMatch[1]);
             const action = enableMatch[2];
-            const adapter = authGateway.getAdapter(adapterId);
-            if (adapterId === "local" || adapter?.locked) {
+            const configContract =
+                authGateway.getAdapterConfigContract(adapterId);
+            if (authGateway.isAdapterLocked(adapterId)) {
                 log?.(
                     "warn",
                     "Blocked attempt to disable locked auth adapter.",
@@ -228,7 +235,7 @@ export function createAdapterAdminRoutes(
                 );
                 return true;
             }
-            if (!adapter) {
+            if (!configContract) {
                 log?.(
                     "warn",
                     "Auth adapter toggle failed because adapter was not found.",

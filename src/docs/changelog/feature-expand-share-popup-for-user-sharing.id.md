@@ -431,3 +431,19 @@ Perubahan berbagi kini berjalan melalui siklus hidup bertahap agar kalender yang
 ## Mempertahankan kata sandi tersimpan dan keyring offline
 
 Kata sandi berbagi yang disimpan kini memakai pengenal token yang sama dengan pencarian. Keyring yang dibuat saat offline diunggah ketika koneksi kembali dan hanya dihapus jika server mengonfirmasi bahwa instans akun telah berubah.
+
+## LDAP menjelaskan kegagalan bind
+
+Penyiapan LDAP kini menerjemahkan kode galat direktori 0x31 menjadi panduan untuk memeriksa DN bind dan kata sandi, sementara penyebab terperinci tetap dicatat secara terstruktur di log server.
+
+## Uji SMTP memakai antrean pengiriman
+
+Pesan uji SMTP kini melewati antrean dan pembatas laju milik adapter. Uji yang gagal memberikan respons khusus yang dapat ditindaklanjuti, bukan kegagalan permintaan umum.
+
+## Server LDAP tersimpan dapat diaktifkan
+
+Adapter autentikasi kini melaporkan status penyiapannya melalui kontrak gateway. Kumpulan server LDAP tersimpan yang lengkap dikenali meskipun bidang dan kata sandi yang disamarkan berada di dalam `servers`.
+
+## Batas adapter dipulihkan
+
+SMTP kini memiliki dan mendaftarkan rute ujinya sendiri, sedangkan rute gateway memakai kontrak gateway alih-alih menyimpan instans adapter notifikasi atau autentikasi. Indeks versi yang dilokalkan kini sesuai dengan setiap manifes komponen.

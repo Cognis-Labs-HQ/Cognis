@@ -4,7 +4,6 @@ import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
-import { createGatewayAdapterRoutes } from "../bootstrap/adapter-routes.js";
 
 function makeInMemoryDb() {
     return {
@@ -36,84 +35,6 @@ function makeResponse() {
 }
 
 const adminToken = issueAccessToken("test-session", "admin", 60);
-
-test("SMTP adapter test endpoint sends through the ctx email capability", async () => {
-    const requests: Array<Record<string, unknown>> = [];
-    const gatewayRegistry = new GatewayRegistry();
-    gatewayRegistry.register({
-        id: "notify",
-        name: "Notification Gateway",
-        version: "1.0.0",
-    });
-    const route = createGatewayAdapterRoutes(
-        "notify",
-        {
-            getSender: () => ({ senderId: "smtp" }),
-        } as never,
-        gatewayRegistry,
-        undefined,
-        async (input) => {
-            requests.push(input);
-            return { sent: true };
-        },
-    );
-    const response = makeResponse();
-
-    await route(
-        {
-            method: "POST",
-            headers: { authorization: `Bearer ${adminToken}` },
-            async *[Symbol.asyncIterator]() {
-                yield Buffer.from(JSON.stringify({ to: "admin@example.test" }));
-            },
-        } as never,
-        response,
-        new URL("http://localhost/api/v1/gateways/notify/adapters/smtp/test"),
-    );
-
-    assert.equal(response.status, 200);
-    assert.equal(requests[0]?.templateId, "notify-test");
-    assert.equal(requests[0]?.recipientEmail, "admin@example.test");
-});
-
-test("SMTP adapter test endpoint returns an actionable delivery failure", async () => {
-    const loggedFailures: Array<Record<string, unknown>> = [];
-    const gatewayRegistry = new GatewayRegistry();
-    gatewayRegistry.register({
-        id: "notify",
-        name: "Notification Gateway",
-        version: "1.0.0",
-    });
-    const route = createGatewayAdapterRoutes(
-        "notify",
-        { getSender: () => ({ senderId: "smtp" }) } as never,
-        gatewayRegistry,
-        undefined,
-        async () => {
-            throw new Error("ECONNREFUSED smtp.internal:587");
-        },
-        (_level, _message, metadata) => {
-            loggedFailures.push(metadata ?? {});
-        },
-    );
-    const response = makeResponse();
-
-    await route(
-        {
-            method: "POST",
-            headers: { authorization: `Bearer ${adminToken}` },
-            async *[Symbol.asyncIterator]() {
-                yield Buffer.from(JSON.stringify({ to: "admin@example.test" }));
-            },
-        } as never,
-        response,
-        new URL("http://localhost/api/v1/gateways/notify/adapters/smtp/test"),
-    );
-
-    assert.equal(response.status, 400);
-    assert.equal(JSON.parse(response.payload).error.code, "smtp_test_failed");
-    assert.equal(loggedFailures[0]?.operation, "send_test_email");
-});
 
 async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();

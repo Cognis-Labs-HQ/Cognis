@@ -407,6 +407,37 @@ export class CoreAuthGateway {
         return this.adapters.get(adapterId) ?? null;
     }
 
+    getAdapterConfigContract(adapterId: string): {
+        schema: AuthConfigField[];
+        configPopupScriptUrl?: string;
+        supportsTest: boolean;
+    } | null {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) return null;
+        return {
+            schema: adapter.getConfigSchema(),
+            configPopupScriptUrl: adapter.configPopupScriptUrl,
+            supportsTest: typeof adapter.testConfiguration === "function",
+        };
+    }
+
+    async testAdapterConfiguration(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): Promise<Record<string, unknown>> {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) throw new Error("auth_adapter_not_found");
+        if (!adapter.testConfiguration) {
+            throw new Error("auth_adapter_test_unavailable");
+        }
+        return adapter.testConfiguration(config);
+    }
+
+    isAdapterLocked(adapterId: string): boolean {
+        const adapter = this.adapters.get(adapterId);
+        return adapterId === "local" || adapter?.locked === true;
+    }
+
     isAdapterConfigured(adapterId: string): boolean {
         const adapter = this.adapters.get(adapterId);
         if (!adapter) return false;

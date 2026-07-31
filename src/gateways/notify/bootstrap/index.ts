@@ -1,5 +1,5 @@
 import path from "node:path";
-import { type GatewayBootstrapContext } from "../../shared.js";
+import { readJson, type GatewayBootstrapContext } from "../../shared.js";
 import { CoreNotificationGateway } from "../gateway.js";
 import {
     TfaCodeService,
@@ -115,6 +115,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
         registerStaticDir: (prefix, dir) =>
             ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        requireAuth: (req, res, minimumRole) =>
+            routeContext?.requireAuth(req, res, minimumRole) ?? false,
+        readJson: (req) => readJson(req) as Promise<Record<string, unknown>>,
         log: ctx.log,
         dbExecutor,
     });
@@ -206,8 +209,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway,
             ctx.gatewayRegistry,
             routeContext,
-            sendEmail,
-            ctx.log,
         ),
         "notify",
     );

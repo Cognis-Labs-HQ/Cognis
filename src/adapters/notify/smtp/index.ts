@@ -10,6 +10,48 @@ export { createNotificationSender } from "./notification-sender-factory.js";
 export async function bootstrapNotifyAdapter(
     ctx: NotifyAdapterBootstrapCtx,
 ): Promise<void> {
+    ctx.registerRoute(async (req, res, url) => {
+        if (
+            url.pathname !== "/api/v1/gateways/notify/adapters/smtp/test" ||
+            req.method !== "POST"
+        ) {
+            return false;
+        }
+        if (!ctx.requireAuth(req, res, "admin")) return true;
+        const body = await ctx.readJson(req);
+        const recipientEmail = String(body.to ?? "").trim();
+        const config =
+            body.config &&
+            typeof body.config === "object" &&
+            !Array.isArray(body.config)
+                ? (body.config as Record<string, unknown>)
+                : undefined;
+        try {
+            await ctx.gateway.sendTestEmail("smtp", recipientEmail, config);
+        } catch (error) {
+            ctx.log?.("error", "SMTP test email failed.", {
+                component: "notify-smtp",
+                operation: "send_test_email",
+                recipientEmail,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "smtp_test_failed",
+                        message:
+                            "SMTP test email could not be sent. Verify the server, security mode, sender, and authentication settings.",
+                    },
+                }),
+            );
+            return true;
+        }
+        res.writeHead(200, { "content-type": "application/json" });
+        res.end(JSON.stringify({ data: { sent: true } }));
+        return true;
+    }, "notify");
+
     ctx.capabilities.contribute(
         "notify:sendEmail",
         async (input: {
@@ -36,13 +78,12 @@ export async function bootstrapNotifyAdapter(
             if (!ctx.gateway.isSenderEnabled("smtp")) {
                 throw new Error("smtp_sender_disabled");
             }
-            const sender = ctx.gateway.getSender("smtp");
-            if (!sender) throw new Error("smtp_sender_unavailable");
-            if (
-                input.templateId === "notify-test" &&
-                typeof sender.sendTestEmail === "function"
-            ) {
-                await sender.sendTestEmail(input.recipientEmail, input.config);
+            if (input.templateId === "notify-test") {
+                await ctx.gateway.sendTestEmail(
+                    "smtp",
+                    input.recipientEmail,
+                    input.config,
+                );
                 return { sent: true };
             }
             const envelope = {
@@ -59,11 +100,7 @@ export async function bootstrapNotifyAdapter(
                     verifyButtonLabel: message.actionLabel,
                 },
             };
-            if (typeof sender.sendTracked === "function") {
-                return sender.sendTracked(envelope);
-            }
-            await sender.send(envelope);
-            return { sent: true };
+            return ctx.gateway.sendWithSender("smtp", envelope);
         },
     );
     ctx.log?.("info", "SMTP email capability registered.", {
