@@ -49,11 +49,6 @@ function buildShareElement(state) {
         },
         render: () => {
             if (state.isMountedApp && !state.errorKey) {
-                // A mounted app (e.g. the real Jitsi Meet meetings page)
-                // owns its own full-page composer, so it is mounted
-                // directly with no extra wrapping card around it — this
-                // lets it render exactly like the real page instead of
-                // being squeezed into a nested share-window box.
                 return '<div id="share-resource-mount-root" class="share-app-mount"></div>';
             }
             if (state.loading) {
@@ -202,8 +197,22 @@ export async function mount(root, { signal } = {}) {
         }
         state.loading = false;
         state.errorKey = "";
-        root.replaceChildren();
-        await mountSharedPage(root, {
+        const preserveShareShell =
+            shareContext.page?.preserveShareShell === true;
+        let mountRoot = root;
+        if (preserveShareShell) {
+            state.isMountedApp = true;
+            composer.refresh([buildShareElement(state)]);
+            mountRoot = root.querySelector("#share-resource-mount-root");
+            if (!(mountRoot instanceof HTMLElement)) {
+                state.errorKey = "share.error.renderer_missing";
+                composer.refresh([buildShareElement(state)]);
+                return;
+            }
+        } else {
+            root.replaceChildren();
+        }
+        await mountSharedPage(mountRoot, {
             shareContext,
             i18n: state.i18n,
             signal,

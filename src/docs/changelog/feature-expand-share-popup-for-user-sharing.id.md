@@ -487,3 +487,7 @@ URL berbagi kini memeriksa gateway sebelum menyentuh keyring akun, sehingga akse
 ## Kontrol Kalender dan penjaga kalender tulis dipulihkan
 
 Pengalihan tampilan, navigasi periode, dan pembuatan acara dari slot waktu kini memakai batas interaksi terdelegasi yang tetap aktif setelah composer dirender ulang. Sebelum membuka penyusun acara, Calendar memeriksa semua kalender yang tersedia memakai aturan tulis berbagi yang ada dan menampilkan “Tidak ada kalender yang dapat ditulis” bila tidak ada kalender yang dapat menerima acara. Penulisan kalender tamu tetap memakai token tamu terbatas.
+
+## Berbagi kalender mempertahankan shell Share standar
+
+Tamu tautan kalender kini memasang perender Kalender di dalam page composer Share standar, bukan menggantinya dengan page composer bertingkat. Header bersama, kontrol tema, footer, gaya, dan siklus hidup halaman tetap aktif, sedangkan Calendar hanya merender komponen kalender tunggal di slot pemasangan yang disediakan. Penghapusan composer bertingkat juga memulihkan kontrol tampilan, navigasi, tindakan slot waktu, dan penyusunan acara dengan token tamu.

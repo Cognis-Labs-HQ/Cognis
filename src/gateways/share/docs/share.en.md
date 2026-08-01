@@ -41,3 +41,7 @@ A share facilitator may return generic delivery feedback containing a translatio
 ## Resolution and revocation UX
 
 The browser probes token resolution without opening the account keyring. Only a `401 password_required` challenge permits account-keyring restoration and a saved-password retry; `404` responses display the localized no-longer-existing share state. Every share revocation requires a confirmation popup before the delete request is sent.
+
+## Embedded component renderers
+
+A component page descriptor can set `preserveShareShell: true` with `mountScriptUrl`. Share then keeps its standard page composer, header, theme controls, footer, styles, and lifecycle, and passes the component a dedicated `#share-resource-mount-root`. Full-page applications can continue replacing the shell by omitting this flag.

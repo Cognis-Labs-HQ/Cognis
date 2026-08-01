@@ -11,3 +11,7 @@ Calendar menyediakan `/static/gateways/calendar/ui/share-renderer.js` sebagai `m
 ## Batas interaksi Kalender
 
 Halaman Kalender pengguna mendelegasikan tindakan tampilan, periode, dan slot waktu dari akar halaman yang persisten sehingga render ulang composer tidak melepaskan kontrol. Pembuatan acara lebih dahulu memfilter semua kalender dengan aturan kalender tulis standar; bila tidak ada tujuan, toast terlokalisasi tentang ketiadaan kalender tulis ditampilkan sebagai pengganti formulir. Berbagi publik yang dapat ditulis mengautentikasi mutasi acara dengan token tamu terbatas.
+
+## Integrasi shell Share
+
+Calendar meminta `preserveShareShell` dari kontrak halaman Share. Perendernya hanya memasang komponen kalender terisolasi ke slot sumber daya yang disediakan Share sehingga header bersama standar dan boilerplate halaman tetap ada. Perender mengimpor dependensi formulir, popup, stempel waktu, dan tampilan Kalender secara langsung serta mengautentikasi mutasi acara dengan token tamu terbatas yang diberikan.

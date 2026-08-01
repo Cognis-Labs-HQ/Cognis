@@ -11,3 +11,7 @@ Calendar stellt `/static/gateways/calendar/ui/share-renderer.js` als `mountScrip
 ## Interaktionsgrenze des Kalenders
 
 Die angemeldete Kalenderseite delegiert Ansichts-, Zeitraum- und Zeitrasteraktionen vom dauerhaften Seitenstamm, sodass Composer-Neudarstellungen keine Steuerelemente trennen. Die Ereigniserstellung filtert zunächst alle Kalender mit der üblichen Schreibregel; bleibt kein Ziel übrig, erscheint die lokalisierte Meldung für fehlende beschreibbare Kalender statt des Formulars. Öffentliche beschreibbare Freigaben authentifizieren Ereignisänderungen mit ihrem begrenzten Gast-Token.
+
+## Integration in die Share-Shell
+
+Calendar fordert `preserveShareShell` über den Share-Seitenvertrag an. Sein Renderer mountet nur die isolierte Kalenderkomponente in den von Share bereitgestellten Ressourcen-Slot, sodass die gemeinsame Standard-Kopfzeile und das Seiten-Grundgerüst erhalten bleiben. Der Renderer importiert Formular-, Popup-, Zeitstempel- und Kalenderansichts-Abhängigkeiten direkt und authentifiziert Ereignisänderungen mit dem übergebenen begrenzten Gast-Token.

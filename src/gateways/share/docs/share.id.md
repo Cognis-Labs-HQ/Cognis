@@ -41,3 +41,7 @@ Fasilitator berbagi dapat mengembalikan umpan balik pengiriman generik yang beri
 ## Pengalaman resolusi dan pencabutan
 
 Peramban memeriksa resolusi token tanpa membuka keyring akun. Hanya tantangan `401 password_required` yang mengizinkan pemulihan keyring akun dan percobaan ulang dengan kata sandi tersimpan; respons `404` menampilkan status berbagi yang sudah tidak ada secara terlokalisasi. Setiap pencabutan berbagi memerlukan popup konfirmasi sebelum permintaan penghapusan dikirim.
+
+## Perender komponen tertanam
+
+Deskriptor halaman komponen dapat menetapkan `preserveShareShell: true` bersama `mountScriptUrl`. Share kemudian mempertahankan page composer standar, header, kontrol tema, footer, gaya, dan siklus hidup, lalu memberikan `#share-resource-mount-root` khusus kepada komponen. Aplikasi halaman penuh tetap dapat mengganti shell dengan tidak menetapkan penanda ini.

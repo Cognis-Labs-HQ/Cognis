@@ -1,4 +1,3 @@
-import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -178,8 +177,6 @@ export async function mount(
         shareContext?.grantedCapabilities?.includes("calendar:write");
     const calendarId = String(calendar.id ?? "");
     const guestAccessToken = String(shareContext?.guestAccessToken ?? "");
-    let composer;
-
     root.classList.add("calendar-share-page");
     signal.addEventListener(
         "abort",
@@ -200,20 +197,16 @@ export async function mount(
         }
         const payload = await response.json();
         events = Array.isArray(payload?.data) ? payload.data : [];
-        composer.refresh([buildCalendarElement()]);
+        renderCalendar();
     };
 
-    const buildCalendarElement = () => ({
-        id: "shared-calendar-view",
-        label: calendar.name || i18n.t("gateway.calendar.page_title"),
-        pinned: true,
-        gridSize: { default: [12, 10], min: [8, 6], max: ["fill", "fill"] },
-        render: () => {
-            const periodLabel =
-                selectedView === "year"
-                    ? String(activeDate.getFullYear())
-                    : formatMonthYear(activeDate);
-            return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
+    function renderCalendar() {
+        const periodLabel =
+            selectedView === "year"
+                ? String(activeDate.getFullYear())
+                : formatMonthYear(activeDate);
+        root.innerHTML = `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
+                <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
                 <header class="calendar-view-header">
                     <div class="calendar-view-nav">
                         <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
@@ -227,8 +220,7 @@ export async function mount(
                 </header>
                 <div class="calendar-view-canvas">${renderCalendarView(events, selectedView, activeDate, i18n)}</div>
             </section>`;
-        },
-    });
+    }
 
     root.addEventListener(
         "click",
@@ -243,7 +235,7 @@ export async function mount(
                 );
                 if (!CALENDAR_VIEWS.includes(requestedView)) return;
                 selectedView = requestedView;
-                composer.refresh([buildCalendarElement()]);
+                renderCalendar();
                 return;
             }
             const navigationButton = clickEvent.target.closest(
@@ -259,7 +251,7 @@ export async function mount(
                               selectedView,
                               direction === "next" ? 1 : -1,
                           );
-                composer.refresh([buildCalendarElement()]);
+                renderCalendar();
                 return;
             }
             if (!canWrite) return;
@@ -286,19 +278,5 @@ export async function mount(
         { signal },
     );
 
-    composer = createPageComposer(root, {
-        allowCustomization: false,
-        persistLayoutPreferences: false,
-        showTopbar: false,
-        showNavbar: false,
-        showFooter: false,
-        i18n,
-        preferenceKey: "shared-calendar-layout",
-        pageContext: {
-            title: i18n.t("gateway.calendar.page_title"),
-            subtitle: i18n.t("gateway.calendar.page_subtitle"),
-        },
-        elements: [buildCalendarElement()],
-    });
-    await composer.init();
+    renderCalendar();
 }

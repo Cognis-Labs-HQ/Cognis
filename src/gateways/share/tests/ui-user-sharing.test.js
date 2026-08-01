@@ -30,6 +30,10 @@ const receivedShareSource = await readFile(
     new URL("../ui/received-share.js", import.meta.url),
     "utf8",
 );
+const shareAppSource = await readFile(
+    new URL("../ui/app/index.js", import.meta.url),
+    "utf8",
+);
 
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
@@ -196,6 +200,13 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
         receivedShareSource,
         /promptForPassword\(\{ allowSave: useAccountKeyring \}\)/,
     );
+});
+
+test("component renderers can mount inside the standard share shell", () => {
+    assert.match(shareAppSource, /preserveShareShell/);
+    assert.match(shareAppSource, /state\.isMountedApp = true/);
+    assert.match(shareAppSource, /#share-resource-mount-root/);
+    assert.match(shareAppSource, /mountSharedPage\(mountRoot/);
 });
 
 test("received user shares unlock in place and navigate to the component", () => {

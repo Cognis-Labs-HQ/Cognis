@@ -11,3 +11,7 @@ Calendar contributes `/static/gateways/calendar/ui/share-renderer.js` as the `mo
 ## Calendar interaction boundary
 
 The signed-in Calendar page delegates view, period, and timeslot actions from its persistent page root so composer rerenders cannot detach controls. Event creation first filters all calendars with the standard writable-calendar rule; when no destination remains, it shows the localized no-writable-calendars toast instead of opening the form. Public writable shares authenticate event mutations with their scoped guest token.
+
+## Share shell integration
+
+Calendar requests `preserveShareShell` from the Share page contract. Its renderer mounts only the isolated calendar component into Share's provided resource slot, so the standard shared header and page boilerplate remain present. The renderer imports its form, popup, timestamp, and Calendar view dependencies directly and authenticates event mutations with the supplied scoped guest token.
