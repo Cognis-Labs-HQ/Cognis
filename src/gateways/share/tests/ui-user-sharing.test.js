@@ -169,7 +169,7 @@ test("selected recipient badges track the pending permission", () => {
 });
 
 test("logged-in share recipients keep their account session", () => {
-    assert.match(sessionFlowSource, /if \(priorSessionResult\?\.valid\)/);
+    assert.match(sessionFlowSource, /if \(hasValidatedAccountSession\)/);
     assert.match(
         sessionFlowSource,
         /guestAccessToken: shareData\.guestAccessToken/,
@@ -187,8 +187,10 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(sessionFlowSource, /keyring:endTemporary/);
     assert.match(
         sessionFlowSource,
-        /useAccountKeyring: priorSessionResult\?\.valid === true/,
+        /useAccountKeyring: hasValidatedAccountSession/,
     );
+    assert.match(sessionFlowSource, /!isViewingAsGuest\(\)/);
+    assert.match(sessionFlowSource, /!ownAccountId\.startsWith\("share:"\)/);
     assert.match(receivedShareSource, /if \(useAccountKeyring\)/);
     assert.match(
         receivedShareSource,

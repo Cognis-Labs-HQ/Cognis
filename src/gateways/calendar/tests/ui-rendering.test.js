@@ -66,6 +66,10 @@ const SHARE_RENDERER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/share-renderer.js"),
     "utf8",
 );
+const SHARE_RENDERER_CSS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/share-renderer.css"),
+    "utf8",
+);
 const BOOTSTRAP_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/bootstrap/index.ts"),
     "utf8",
@@ -548,6 +552,8 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar-view-switcher/);
+    assert.match(SHARE_RENDERER_SOURCE, /root\.addEventListener/);
+    assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
     assert.match(SHARE_RENDERER_SOURCE, /\/api\/v1\/calendar\/shared\//);
@@ -562,6 +568,14 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(BOOTSTRAP_SOURCE, /share-renderer\.css/);
     assert.match(BOOTSTRAP_SOURCE, /calendar\.css/);
     assert.match(BOOTSTRAP_SOURCE, /share_import_success/);
+    assert.match(
+        SHARE_RENDERER_CSS_SOURCE,
+        /\.calendar-share-page \.calendar-timeslot-grid\s*\{[\s\S]*overflow-y:\s*auto/,
+    );
+    assert.match(
+        SHARE_RENDERER_CSS_SOURCE,
+        /\.calendar-share-page \.widget-card\s*\{[\s\S]*overflow-y:\s*hidden/,
+    );
 });
 
 test("shared calendar settings expose recipient-local name and color", () => {

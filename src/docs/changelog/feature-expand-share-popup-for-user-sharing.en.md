@@ -475,3 +475,7 @@ Direct page loads and refreshes now bootstrap the required keyring before sessio
 ## Passwordless guest keyring sessions
 
 Anonymous calendar-share guests no longer trigger the account-keyring unlock prompt. Share now limits account-keyring lookup and password saving to validated account sessions, while delivered guest keyrings activate automatically, remain unlocked for the guest session, and are deleted with their session-only vault when the guest session ends.
+
+## Reliable guest calendar controls and scrolling
+
+Calendar link-share view switching and period navigation now use a stable delegated interaction boundary that survives composer refreshes. Vertical scrolling is confined to the timeslot grid rather than the widget card, matching the signed-in Calendar view. Reloaded guest identities are also excluded from account-keyring resolution, eliminating the remaining guest keyring popup.

@@ -14,4 +14,16 @@
 
 .shared-calendar .calendar-view-canvas {
     min-height: 36rem;
+    overflow-y: hidden;
+}
+
+.calendar-share-page .content-panel,
+.calendar-share-page .composer-cell-content,
+.calendar-share-page .widget-card {
+    overflow-y: hidden;
+}
+
+.calendar-share-page .calendar-timeslot-grid {
+    min-height: 0;
+    overflow-y: auto;
 }

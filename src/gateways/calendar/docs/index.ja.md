@@ -6,4 +6,4 @@ Calendar は `ctx` のフローフックとケイパビリティを通じて Sha
 
 ## 公開共有レンダラー
 
-Calendar はカレンダーリンク用の `mountScriptUrl` として `/static/gateways/calendar/ui/share-renderer.js` を提供します。Share は解決済みカレンダーペイロード、許可されたケイパビリティ、限定ゲストトークン、翻訳、終了シグナルを `mount(root, options)` に渡します。アダプターレンダラーは、日・週・月・年の表示切替と標準タイムスロット表を備えた単一のカレンダーカードをマウントし、受信者のほかのカレンダーやダッシュボード操作は読み込みません。読み取り共有は予定を表示します。`calendar:write` 共有では、限定ゲストトークンを使って `/api/v1/calendar/shared/:calendarId/events` から予定を作成、編集、削除できます。
+Calendar はカレンダーリンク用の `mountScriptUrl` として `/static/gateways/calendar/ui/share-renderer.js` を提供します。Share は解決済みカレンダーペイロード、許可されたケイパビリティ、限定ゲストトークン、翻訳、終了シグナルを `mount(root, options)` に渡します。アダプターレンダラーは、日・週・月・年の表示切替と標準タイムスロット表を備えた単一のカレンダーカードをマウントし、受信者のほかのカレンダーやダッシュボード操作は読み込みません。縦スクロールはタイムスロットグリッドだけで行われ、サインイン後のカレンダーカードと一致します。読み取り共有は予定を表示します。`calendar:write` 共有では、限定ゲストトークンを使って `/api/v1/calendar/shared/:calendarId/events` から予定を作成、編集、削除できます。

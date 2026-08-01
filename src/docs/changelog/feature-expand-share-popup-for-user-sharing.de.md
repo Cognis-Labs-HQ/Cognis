@@ -475,3 +475,7 @@ Direkte Seitenaufrufe und Aktualisierungen starten nun den erforderlichen Schlü
 ## Passwortlose Gastschlüsselbund-Sitzungen
 
 Anonyme Gäste von Kalenderfreigaben lösen keinen Entsperrdialog für den Kontoschlüsselbund mehr aus. Share begrenzt Suche und Passwortspeicherung im Kontoschlüsselbund auf bestätigte Kontositzungen. Zugestellte Gastschlüsselbunde werden automatisch aktiviert, bleiben während der Gastsitzung entsperrt und werden zusammen mit ihrem sitzungsgebundenen Tresor am Sitzungsende gelöscht.
+
+## Zuverlässige Gastkalender-Steuerung und Bildlauf
+
+Die Ansichtsumschaltung und Zeitraum-Navigation von Kalenderlinks verwendet nun eine stabile delegierte Interaktionsgrenze, die Composer-Aktualisierungen übersteht. Vertikaler Bildlauf ist auf das Zeitraster statt auf die Widget-Karte begrenzt und entspricht damit der angemeldeten Kalenderansicht. Neu geladene Gastidentitäten sind außerdem von der Kontoschlüsselbund-Auflösung ausgeschlossen, wodurch der verbleibende Gastschlüsselbunddialog entfällt.

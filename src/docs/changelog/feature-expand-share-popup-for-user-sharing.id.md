@@ -475,3 +475,7 @@ Pemuatan halaman langsung dan penyegaran kini memulai keyring wajib sebelum aute
 ## Sesi keyring tamu tanpa kata sandi
 
 Tamu anonim tautan kalender tidak lagi memicu dialog buka kunci keyring akun. Share membatasi pencarian keyring akun dan penyimpanan kata sandi pada sesi akun tervalidasi, sedangkan keyring tamu yang dikirim aktif secara otomatis, tetap terbuka selama sesi tamu, dan dihapus bersama brankas khusus sesinya saat sesi tamu berakhir.
+
+## Kontrol dan pengguliran kalender tamu yang andal
+
+Pengalihan tampilan dan navigasi periode pada tautan kalender kini menggunakan batas interaksi terdelegasi yang stabil dan tetap aktif setelah penyegaran composer. Pengguliran vertikal dibatasi pada kisi slot waktu, bukan kartu widget, agar sesuai dengan tampilan Kalender pengguna. Identitas tamu yang dimuat ulang juga dikecualikan dari resolusi keyring akun sehingga popup keyring tamu yang tersisa tidak muncul lagi.

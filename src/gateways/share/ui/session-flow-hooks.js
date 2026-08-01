@@ -40,7 +40,10 @@
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { resolveReceivedShare } from "./received-share.js";
-import { GUEST_SESSION_ACTIVE_STORAGE_KEY } from "./reuse/share-button.js";
+import {
+    GUEST_SESSION_ACTIVE_STORAGE_KEY,
+    isViewingAsGuest,
+} from "./reuse/share-button.js";
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
@@ -171,8 +174,15 @@ uiCtx.extendFlow(
         const priorSessionResult =
             (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
         const ownAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const ownAccountId = String(
+            localStorage.getItem(ACCOUNT_KEY) ?? "",
+        ).trim();
+        const hasValidatedAccountSession =
+            priorSessionResult?.valid === true &&
+            !isViewingAsGuest() &&
+            !ownAccountId.startsWith("share:");
         const headers =
-            priorSessionResult?.valid && ownAccessToken
+            hasValidatedAccountSession && ownAccessToken
                 ? { authorization: "Bearer " + ownAccessToken }
                 : undefined;
 
@@ -180,7 +190,7 @@ uiCtx.extendFlow(
         try {
             response = await resolveReceivedShare(shareToken, {
                 headers,
-                useAccountKeyring: priorSessionResult?.valid === true,
+                useAccountKeyring: hasValidatedAccountSession,
             });
         } catch {
             return { authenticated: false, reason: "share_resolve_failed" };
@@ -222,7 +232,7 @@ uiCtx.extendFlow(
             guestKeyring: shareData.guestKeyring ?? null,
         };
 
-        if (priorSessionResult?.valid) {
+        if (hasValidatedAccountSession) {
             // Logged-in recipients retain their full account session. The
             // renderer receives the scoped guest token separately for
             // share-only API calls, so notification navigation never swaps
