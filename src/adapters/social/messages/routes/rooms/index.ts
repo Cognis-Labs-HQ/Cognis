@@ -212,62 +212,17 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                     primaryTarget.accountId,
                 ));
             if (!canDirectWithoutRequest) {
-                let room = await messagesStore.findDmBetween(
-                    accountId,
-                    primaryTarget.accountId,
-                );
-                if (!room) {
-                    room = await messagesStore.createDm(
-                        accountId,
-                        primaryTarget.accountId,
-                    );
-                    await messagesStore.addMember(room.id, accountId, "owner");
-                    await messagesStore.addMember(
-                        room.id,
-                        primaryTarget.accountId,
-                        "member",
-                    );
-                    await messagesStore.generateAndStoreRoomKey(room.id);
-                    const requesterProfile =
-                        await profileStore.getProfile(accountId);
-                    await messagesStore.appendRoomEvent({
-                        roomId: room.id,
-                        actorId: accountId,
-                        eventType: "member_joined",
-                        subjectAccountId: accountId,
-                        subjectHandle: requesterProfile?.handle ?? null,
-                        subjectDisplayName:
-                            requesterProfile?.displayName ?? null,
-                    });
-                }
-                await Promise.all([
-                    messagesStore.setArchived(room.id, accountId, false),
-                    messagesStore.setArchived(
-                        room.id,
-                        primaryTarget.accountId,
-                        false,
-                    ),
-                ]);
                 const pending = await messagesStore.findPendingMessageRequest(
                     accountId,
                     primaryTarget.accountId,
                 );
-                if (pending && !pending.roomId) {
-                    await messagesStore.updateMessageRequestStatus(
-                        pending.id,
-                        "cancelled",
-                    );
-                }
-                const existingRequest =
-                    pending && pending.roomId === room.id ? pending : null;
                 const request =
-                    existingRequest ??
+                    pending ??
                     (await messagesStore.createMessageRequest({
                         fromAccountId: accountId,
                         toAccountId: primaryTarget.accountId,
-                        roomId: room.id,
                     }));
-                if (dispatch && !existingRequest) {
+                if (dispatch && !pending) {
                     const sender = await profileStore.getProfile(accountId);
                     await dispatch({
                         category: "message-requests",
@@ -275,9 +230,8 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                         subject: "New message request",
                         body: "New message request",
                         senderName: sender?.handle ?? sender?.accountId,
-                        actionUrl: `/messages/${room.id}`,
+                        actionUrl: "/messages",
                         metadata: {
-                            roomId: room.id,
                             requestId: request.id,
                         },
                     }).catch(() => undefined);
@@ -286,7 +240,6 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                 res.end(
                     JSON.stringify({
                         data: {
-                            id: room.id,
                             requiresApproval: true,
                             requestId: request.id,
                             status: request.status,
@@ -308,30 +261,26 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                       typeof body.title === "string" ? body.title : null,
                       accountId,
                   );
-        await messagesStore.addMember(room.id, accountId, "owner");
-        for (const target of targets) {
-            await messagesStore.addMember(room.id, target.accountId, "member");
-        }
-        await messagesStore.generateAndStoreRoomKey(room.id);
         const creatorProfile = await profileStore.getProfile(accountId);
-        await messagesStore.appendRoomEvent({
+        await messagesStore.addMemberWithEvent({
             roomId: room.id,
             actorId: accountId,
-            eventType: "member_joined",
-            subjectAccountId: accountId,
-            subjectHandle: creatorProfile?.handle ?? null,
-            subjectDisplayName: creatorProfile?.displayName ?? null,
+            accountId,
+            role: "owner",
+            handle: creatorProfile?.handle ?? null,
+            displayName: creatorProfile?.displayName ?? null,
         });
         for (const target of targets) {
-            await messagesStore.appendRoomEvent({
+            await messagesStore.addMemberWithEvent({
                 roomId: room.id,
                 actorId: accountId,
-                eventType: "member_joined",
-                subjectAccountId: target.accountId,
-                subjectHandle: target.handle,
-                subjectDisplayName: target.displayName,
+                accountId: target.accountId,
+                role: "member",
+                handle: target.handle,
+                displayName: target.displayName,
             });
         }
+        await messagesStore.generateAndStoreRoomKey(room.id);
         if (isDm && primaryTarget) {
             await messagesStore.approvePendingRequestsBetween(
                 accountId,

@@ -447,3 +447,7 @@ Adapter autentikasi kini melaporkan status penyiapannya melalui kontrak gateway.
 ## Batas adapter dipulihkan
 
 SMTP kini memiliki dan mendaftarkan rute ujinya sendiri, sedangkan rute gateway memakai kontrak gateway alih-alih menyimpan instans adapter notifikasi atau autentikasi. Indeks versi yang dilokalkan kini sesuai dengan setiap manifes komponen.
+
+## Linimasa keanggotaan ruang yang konsisten
+
+Permintaan pesan tidak lagi membuat ruang pesan langsung yang hanya berisi peristiwa. Perubahan keanggotaan dan peristiwa linimasa pasifnya kini bersifat atomik, dan obrolan rapat mencatat peristiwa bergabung untuk setiap peserta yang ditemukan.

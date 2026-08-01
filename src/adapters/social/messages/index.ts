@@ -85,22 +85,6 @@ function createMessagesPageRoutes(
     };
 }
 
-/**
- * Messages for the Social Gateway. Owns chatrooms, members, and messages —
- * see docs/standard.en.md for the full threat model.
- *
- * Cross-adapter dependencies:
- *   social:profileStore    — Profile-store capability contributed by the
- *                            profile adapter.
- *                            Used for handle lookup, visibility, follow, and
- *                            block queries that gate messaging eligibility.
- *   notify:dispatch (opt)  — When present, new-message events are dispatched
- *                            to the notify gateway with category 'messages'.
- *                            Absent → notifications are silently skipped.
- *
- * Runtime routes are not registered if the profile adapter has not contributed
- * `social:profileStore`, since every meaningful operation needs profile data.
- */
 export async function bootstrapSocialAdapter(
     ctx: SocialAdapterBootstrapCtx,
 ): Promise<void> {
@@ -135,19 +119,12 @@ export async function bootstrapSocialAdapter(
     ) => {
         const rooms = await messagesStore.listRoomsForAccount(accountId);
         for (const room of rooms) {
-            if (room.kind === "group") {
-                await messagesStore.appendRoomEvent({
-                    roomId: room.id,
-                    actorId: accountId,
-                    eventType: "member_left",
-                    subjectAccountId: accountId,
-                    subjectHandle,
-                });
-            }
-            await messagesStore.removeMemberAndApplyLifecycle(
-                room.id,
+            await messagesStore.removeMemberWithEvent({
+                roomId: room.id,
+                actorId: accountId,
                 accountId,
-            );
+                handle: subjectHandle,
+            });
         }
         await dbExecutor.transaction(async (transactionDb) => {
             for (const table of [
@@ -323,9 +300,6 @@ export async function bootstrapSocialAdapter(
                     accountIds.push(profile.accountId);
                 }
             }
-            // Callers that expect non-member guests to join the room later
-            // (e.g. share-link guests joining a solo-hosted meeting) can opt
-            // into creating a room with just the single known account.
             const minAccounts = input.allowSingleMember ? 1 : 2;
             if (accountIds.length < minAccounts) {
                 throw new Error(
@@ -357,23 +331,18 @@ export async function bootstrapSocialAdapter(
                 title,
                 ownerAccountId,
             );
-            for (const accountId of accountIds) {
-                await messagesStore.addMember(
-                    room.id,
-                    accountId,
-                    accountId === ownerAccountId ? "owner" : "member",
-                );
-            }
             await messagesStore.generateAndStoreRoomKey(room.id);
-            const ownerProfile = await profileStore.getProfile(ownerAccountId);
-            await messagesStore.appendRoomEvent({
-                roomId: room.id,
-                actorId: ownerAccountId,
-                eventType: "member_joined",
-                subjectAccountId: ownerAccountId,
-                subjectHandle: ownerProfile?.handle ?? null,
-                subjectDisplayName: ownerProfile?.displayName ?? null,
-            });
+            for (const accountId of accountIds) {
+                const profile = await profileStore.getProfile(accountId);
+                await messagesStore.addMemberWithEvent({
+                    roomId: room.id,
+                    actorId: ownerAccountId,
+                    accountId,
+                    role: accountId === ownerAccountId ? "owner" : "member",
+                    handle: profile?.handle ?? null,
+                    displayName: profile?.displayName ?? null,
+                });
+            }
             return {
                 roomId: room.id,
                 url: `/messages/${encodeURIComponent(room.id)}`,

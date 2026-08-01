@@ -40,7 +40,7 @@ test("POST /messages/requests/:id/approve reactivates archived DM members", asyn
         async createRoom() {
             return { id: "unexpected-room", kind: "dm" };
         },
-        async addMember() {},
+        async addMemberWithEvent() {},
         async generateAndStoreRoomKey() {},
         async setArchived(
             roomId: string,

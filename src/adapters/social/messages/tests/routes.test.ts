@@ -121,9 +121,10 @@ test("canDirectMessageNowOrByApprovedRequest blocks approved history when reques
     assert.equal(allowed, false);
 });
 
-test("POST /messages/requests/:id/reject removes rejected recipient from pending room", async () => {
+test("POST /messages/requests/:id/reject cleans up a legacy pending room", async () => {
     const token = issueAccessToken("bob", "user", 60);
-    const removed: Array<{ roomId: string; accountId: string }> = [];
+    const updated: Array<{ requestId: string; status: string }> = [];
+    const removedAccountIds: string[] = [];
     const messagesStore = {
         async getMessageRequest(requestId: string) {
             if (requestId !== "req-1") return null;
@@ -135,11 +136,12 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
                 roomId: "room-1",
             };
         },
-        async updateMessageRequestStatus() {},
-        async removeMemberAndApplyLifecycle(roomId: string, accountId: string) {
-            removed.push({ roomId, accountId });
+        async updateMessageRequestStatus(requestId: string, status: string) {
+            updated.push({ requestId, status });
         },
-        async appendRoomEvent() {},
+        async removeMemberWithEvent(input: { accountId: string }) {
+            removedAccountIds.push(input.accountId);
+        },
     };
     const profileStore = {
         async getProfile(accountId: string) {
@@ -177,14 +179,15 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
 
     assert.equal(handled, true);
     assert.equal(statusCode, 200);
-    assert.deepEqual(removed, [{ roomId: "room-1", accountId: "bob" }]);
+    assert.deepEqual(updated, [{ requestId: "req-1", status: "rejected" }]);
+    assert.deepEqual(removedAccountIds, ["bob", "alice"]);
     assert.match(responseBody, /"rejected"/);
 });
 
 test("admin can create DM with hidden recipient without a message request", async () => {
     const token = issueAccessToken("admin", "admin", 60);
     const createdRequests: unknown[] = [];
-    const addedMembers: Array<{ roomId: string; accountId: string }> = [];
+    const addedMembers: Array<Record<string, unknown>> = [];
     const messagesStore = {
         async findDmBetween() {
             return null;
@@ -195,11 +198,10 @@ test("admin can create DM with hidden recipient without a message request", asyn
         async createDm() {
             return { id: "room-admin-hidden", kind: "dm" };
         },
-        async addMember(roomId: string, accountId: string) {
-            addedMembers.push({ roomId, accountId });
+        async addMemberWithEvent(input: Record<string, unknown>) {
+            addedMembers.push(input);
         },
         async generateAndStoreRoomKey() {},
-        async appendRoomEvent() {},
         async approvePendingRequestsBetween() {},
         async findPendingMessageRequest() {
             return null;
@@ -275,8 +277,22 @@ test("admin can create DM with hidden recipient without a message request", asyn
     assert.equal(statusCode, 201);
     assert.deepEqual(createdRequests, []);
     assert.deepEqual(addedMembers, [
-        { roomId: "room-admin-hidden", accountId: "admin" },
-        { roomId: "room-admin-hidden", accountId: "hidden-user-id" },
+        {
+            roomId: "room-admin-hidden",
+            actorId: "admin",
+            accountId: "admin",
+            role: "owner",
+            handle: "admin",
+            displayName: "Admin",
+        },
+        {
+            roomId: "room-admin-hidden",
+            actorId: "admin",
+            accountId: "hidden-user-id",
+            role: "member",
+            handle: "hidden-user",
+            displayName: "Hidden User",
+        },
     ]);
     assert.match(responseBody, /room-admin-hidden/);
 });

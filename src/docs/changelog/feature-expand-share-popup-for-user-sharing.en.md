@@ -447,3 +447,7 @@ Authentication adapters now report their setup state through their gateway contr
 ## Adapter boundaries are restored
 
 SMTP now owns and registers its test route, while gateway routes use gateway contracts instead of holding notification or authentication adapter instances. Localized version indexes now match every component manifest.
+
+## Consistent room membership timelines
+
+Message requests no longer create event-only direct-message rooms. Membership changes and their passive timeline events are now atomic, and meeting chats record a join event for every resolved participant.

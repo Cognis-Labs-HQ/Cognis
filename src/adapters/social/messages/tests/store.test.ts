@@ -261,6 +261,75 @@ test("new DMs use distinct room ids across account incarnations", async () => {
     assert.notEqual(insertedIds[0], insertedIds[1]);
 });
 
+test("membership changes persist their room event in the same transaction", async () => {
+    const commandCalls: Array<StructuredDbCommand> = [];
+    let transactionCount = 0;
+    const db: DbExecutor = {
+        async ensureTable() {},
+        async executeCommand(command) {
+            commandCalls.push(command);
+            if (command.option === "INSERT") {
+                return { rows: [], rowCount: 1 };
+            }
+            if (
+                command.option === "SELECT" &&
+                command.table === "chat_messages"
+            ) {
+                return {
+                    rows: [
+                        {
+                            id: "event-1",
+                            chatroom_id: "room-1",
+                            sender_id: "alice",
+                            ciphertext: JSON.stringify({
+                                eventType: "member_joined",
+                            }),
+                            iv: "",
+                            auth_tag: "",
+                            content_type:
+                                "application/vnd.cognis.room-event+json",
+                            created_at: new Date().toISOString(),
+                        },
+                    ],
+                };
+            }
+            return { rows: [] };
+        },
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
+            transactionCount += 1;
+            return callback(db);
+        },
+    };
+    const store = new DbMessagesStore(db);
+
+    const added = await store.addMemberWithEvent({
+        roomId: "room-1",
+        actorId: "alice",
+        accountId: "bob",
+        role: "member",
+        handle: "bob",
+        displayName: "Bob",
+    });
+
+    assert.equal(added, true);
+    assert.equal(transactionCount, 1);
+    const memberInsert = commandCalls.find(
+        (command) =>
+            command.option === "INSERT" && command.table === "chatroom_members",
+    );
+    const eventInsert = commandCalls.find(
+        (command) =>
+            command.option === "INSERT" && command.table === "chat_messages",
+    );
+    assert.ok(memberInsert);
+    assert.ok(eventInsert);
+    assert.equal(
+        eventInsert.values.content_type,
+        "application/vnd.cognis.room-event+json",
+    );
+    assert.equal(eventInsert.values.chatroom_id, "room-1");
+});
+
 test("createMessageRequest persists room id when provided", async () => {
     const { db, commandCalls } = createRecordingExecutor();
     const store = new DbMessagesStore(db);

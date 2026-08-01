@@ -8,6 +8,7 @@ import {
     setArchived,
     setMuted,
     unreadCount,
+    insertRoomEvent,
 } from "./messages.js";
 import {
     generateAndStoreRoomKey,
@@ -95,8 +96,66 @@ export class DbMessagesStore {
         roomId: string,
         accountId: string,
         role: MemberRole,
-    ): Promise<void> {
-        await addMember(this.db, roomId, accountId, role);
+    ): Promise<boolean> {
+        return addMember(this.db, roomId, accountId, role);
+    }
+
+    async addMemberWithEvent(input: {
+        roomId: string;
+        actorId: string;
+        accountId: string;
+        role: MemberRole;
+        handle?: string | null;
+        displayName?: string | null;
+    }): Promise<boolean> {
+        return this.db.transaction(async (executor) => {
+            const added = await addMember(
+                executor,
+                input.roomId,
+                input.accountId,
+                input.role,
+            );
+            if (!added) return false;
+            await insertRoomEvent(executor, {
+                roomId: input.roomId,
+                actorId: input.actorId,
+                eventType: "member_joined",
+                subjectAccountId: input.accountId,
+                subjectHandle: input.handle,
+                subjectDisplayName: input.displayName,
+            });
+            return true;
+        });
+    }
+
+    async removeMemberWithEvent(input: {
+        roomId: string;
+        actorId: string;
+        accountId: string;
+        handle?: string | null;
+        displayName?: string | null;
+    }): Promise<"active" | "archived" | "deleted" | "not_member"> {
+        return this.db.transaction(async (executor) => {
+            const member = await getMember(
+                executor,
+                input.roomId,
+                input.accountId,
+            );
+            if (!member) return "not_member";
+            await insertRoomEvent(executor, {
+                roomId: input.roomId,
+                actorId: input.actorId,
+                eventType: "member_left",
+                subjectAccountId: input.accountId,
+                subjectHandle: input.handle,
+                subjectDisplayName: input.displayName,
+            });
+            return removeMemberAndApplyLifecycle(
+                executor,
+                input.roomId,
+                input.accountId,
+            );
+        });
     }
 
     async removeMember(roomId: string, accountId: string): Promise<void> {

@@ -447,3 +447,7 @@ Authentifizierungsadapter melden ihren Einrichtungsstatus nun über ihren Gatewa
 ## Adaptergrenzen sind wiederhergestellt
 
 SMTP besitzt und registriert nun seine Test-Route selbst, während Gateway-Routen Gateway-Verträge verwenden, anstatt Instanzen von Benachrichtigungs- oder Authentifizierungsadaptern zu halten. Lokalisierte Versionsverzeichnisse stimmen nun mit allen Komponentenmanifesten überein.
+
+## Konsistente Zeitleisten für Raummitgliedschaften
+
+Nachrichtenanfragen erstellen keine Direktnachrichtenräume mehr, die nur Ereignisse enthalten. Mitgliedschaftsänderungen und ihre passiven Zeitleistenereignisse sind nun atomar, und Besprechungschats erfassen für alle ermittelten Teilnehmenden ein Beitrittsereignis.

@@ -708,14 +708,13 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            await messagesStore.addMember(roomId, target.accountId, "member");
-            await messagesStore.appendRoomEvent({
+            await messagesStore.addMemberWithEvent({
                 roomId,
                 actorId: accountId,
-                eventType: "member_joined",
-                subjectAccountId: target.accountId,
-                subjectHandle: target.handle,
-                subjectDisplayName: target.displayName,
+                accountId: target.accountId,
+                role: "member",
+                handle: target.handle,
+                displayName: target.displayName,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
@@ -750,18 +749,13 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            await messagesStore.appendRoomEvent({
+            await messagesStore.removeMemberWithEvent({
                 roomId,
                 actorId: accountId,
-                eventType: "member_left",
-                subjectAccountId: target.accountId,
-                subjectHandle: target.handle,
-                subjectDisplayName: target.displayName,
+                accountId: target.accountId,
+                handle: target.handle,
+                displayName: target.displayName,
             });
-            await messagesStore.removeMemberAndApplyLifecycle(
-                roomId,
-                target.accountId,
-            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;

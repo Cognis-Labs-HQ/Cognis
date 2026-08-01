@@ -74,13 +74,16 @@ export async function addMember(
     roomId: string,
     accountId: string,
     role: MemberRole,
-): Promise<void> {
+): Promise<boolean> {
+    const existingMember = await getMember(db, roomId, accountId);
+    if (existingMember) return false;
     await db.executeCommand({
         option: "INSERT",
         table: "chatroom_members",
         values: { chatroom_id: roomId, account_id: accountId, role },
         conflict: { action: "ignore" },
     });
+    return true;
 }
 
 export async function removeMember(

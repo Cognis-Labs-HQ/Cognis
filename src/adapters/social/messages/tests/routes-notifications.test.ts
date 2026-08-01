@@ -166,18 +166,6 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
         async findDmBetween() {
             return null;
         },
-        async createDm() {
-            return {
-                id: "room-req-1",
-                kind: "dm",
-                title: null,
-                avatarKey: null,
-            };
-        },
-        async addMember() {},
-        async setArchived() {},
-        async generateAndStoreRoomKey() {},
-        async appendRoomEvent() {},
         async findPendingMessageRequest() {
             return null;
         },
@@ -257,13 +245,15 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
 
     assert.equal(handled, true);
     assert.equal(statusCode, 202);
-    assert.equal(JSON.parse(responseBody).data.requestId, "req-1");
+    const responseData = JSON.parse(responseBody).data;
+    assert.equal(responseData.requestId, "req-1");
+    assert.equal(responseData.id, undefined);
     assert.equal(dispatched.length, 1);
     assert.equal(dispatched[0].category, "message-requests");
     assert.equal(dispatched[0].subject, "New message request");
     assert.equal(dispatched[0].recipientUsername, "bob");
+    assert.equal(dispatched[0].actionUrl, "/messages");
     assert.deepEqual(dispatched[0].metadata, {
-        roomId: "room-req-1",
         requestId: "req-1",
     });
 });

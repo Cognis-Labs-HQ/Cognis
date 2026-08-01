@@ -127,3 +127,9 @@ user's `messages` category preference both suppress this dispatch.
 
 The notify gateway's per-user category preferences then determine which
 senders fan out (in-app, email, etc.).
+
+## Room membership timeline events
+
+Membership changes are persisted atomically with passive `member_joined` and `member_left` entries in the room's `chat_messages` timeline. These entries use the `application/vnd.cognis.room-event+json` content type; callers change membership and do not create a second room or separately publish an event. Meeting chat resolution applies the same operation to every resolved participant.
+
+A message request does not create a chatroom. The direct-message room, key, memberships, and initial join events are created only when the recipient approves the request, preventing request-only rooms from appearing in either participant's room list.

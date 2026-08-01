@@ -62,3 +62,9 @@ Beim Senden einer Nachricht wird pro weiterem Raummitglied eine
 Benachrichtigung mit Kategorie `messages` und `actionUrl` `/messages/<room-id>`
 an das Notify Gateway übergeben. Stummschaltung pro Raum und
 Kategorie-Präferenzen können die Zustellung unterdrücken.
+
+## Raum-Mitgliedschaftsereignisse in der Zeitleiste
+
+Mitgliedschaftsänderungen werden atomar zusammen mit passiven Einträgen `member_joined` und `member_left` in der `chat_messages`-Zeitleiste des Raums gespeichert. Diese Einträge verwenden den Inhaltstyp `application/vnd.cognis.room-event+json`; Aufrufer ändern die Mitgliedschaft, ohne einen zweiten Raum anzulegen oder ein Ereignis separat zu veröffentlichen. Bei der Auflösung eines Besprechungschats wird derselbe Vorgang auf alle ermittelten Teilnehmenden angewendet.
+
+Eine Nachrichtenanfrage erstellt keinen Chatraum. Der Direktnachrichtenraum, der Schlüssel, die Mitgliedschaften und die ersten Beitrittsereignisse werden erst angelegt, wenn die empfangende Person die Anfrage genehmigt. Dadurch erscheinen keine reinen Anfrageräume in den Raumlisten.

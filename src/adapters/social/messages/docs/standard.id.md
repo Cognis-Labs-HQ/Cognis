@@ -60,3 +60,9 @@ Saat pesan baru ditambahkan, adapter mengirim amplop notifikasi per anggota lain
 dengan kategori `messages` dan `actionUrl` `/messages/<room-id>` ke Notify
 Gateway. Pengaturan mute per ruang dan preferensi kategori dapat menonaktifkan
 pengiriman.
+
+## Peristiwa linimasa keanggotaan ruang
+
+Perubahan keanggotaan disimpan secara atomik bersama entri pasif `member_joined` dan `member_left` di linimasa `chat_messages` ruang. Entri ini memakai jenis konten `application/vnd.cognis.room-event+json`; pemanggil mengubah keanggotaan tanpa membuat ruang kedua atau menerbitkan peristiwa secara terpisah. Resolusi obrolan rapat menerapkan operasi yang sama untuk setiap peserta yang berhasil ditemukan.
+
+Permintaan pesan tidak membuat ruang obrolan. Ruang pesan langsung, kunci, keanggotaan, dan peristiwa bergabung awal baru dibuat saat penerima menyetujui permintaan, sehingga ruang yang hanya berisi permintaan tidak muncul dalam daftar ruang peserta.
