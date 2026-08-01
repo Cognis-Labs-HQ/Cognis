@@ -74,7 +74,10 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
             recipientAccountId: string;
             grantedCapabilities: string[];
             expiresAt: string;
-        }) => Promise<{ navigationUrl?: string } | null>
+        }) => Promise<{
+            navigationUrl?: string;
+            feedback?: { messageKey?: string } | null;
+        } | null>
     >("share:deliverUserShare:calendar");
     const shareId = "central-share-token";
     const expiry = new Date(Date.now() + 3_600_000).toISOString();
@@ -193,6 +196,10 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     };
     const delivered = await deliverUserShare?.(delivery);
     assert.match(delivered?.navigationUrl ?? "", /^\/calendar\?calendarId=/);
+    assert.equal(
+        delivered?.feedback?.messageKey,
+        "gateway.calendar.share_import_success",
+    );
     const deliveredCalendarId = new URL(
         delivered?.navigationUrl ?? "",
         "http://localhost",
@@ -206,10 +213,11 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         (calendar: { id?: string }) => calendar.id === deliveredCalendarId,
     );
     assert.equal(deliveredCalendar.sharedPermission, "read");
-    await deliverUserShare?.({
+    const updatedDelivery = await deliverUserShare?.({
         ...delivery,
         grantedCapabilities: ["calendar:read", "calendar:write"],
     });
+    assert.equal(updatedDelivery?.feedback, null);
     const updatedRecipientCalendars = await createJsonDispatcher(routeRegistry)(
         "GET",
         recipientToken,

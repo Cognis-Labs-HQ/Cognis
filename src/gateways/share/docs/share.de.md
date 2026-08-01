@@ -31,3 +31,7 @@ Das Popup erkennt Freigabemethoden über Adapter des Share-Gateways und zeigt si
 ## Ablauf und Schutz
 
 Beide integrierten Methoden akzeptieren optional ein genaues Ablaufdatum mit Uhrzeit; ohne Angabe läuft die Freigabe nicht ab. Hashing und Prüfung von Passwörtern verbleiben im Share-Gateway. Ressourcenkomponenten können Link-Zugriffsarten mit passenden Berechtigungen und Fähigkeiten bereitstellen.
+
+## Rückmeldung zur Empfängerzustellung und Passwort-Aliasse
+
+Eine Freigabekomponente kann eine allgemeine Zustellungsrückmeldung mit Übersetzungsschlüssel und Basis-URL der Komponentenübersetzungen zurückgeben. Die authentifizierte Benachrichtigungsaktion zeigt diese Rückmeldung vor der Navigation zur zugestellten Ressource an. Nach dem Auflösen eines geschützten Tokens speichert Share das bestätigte Passwort sowohl unter dem undurchsichtigen Link-Token als auch unter der kanonischen Freigabekennung, damit die empfangende Komponente es ohne erneute Abfrage verwenden kann.

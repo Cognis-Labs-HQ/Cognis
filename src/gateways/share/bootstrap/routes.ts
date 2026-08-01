@@ -572,6 +572,10 @@ export function createShareRoutes(input: {
             }
             const delivered = getFirstStageResult<{
                 navigationUrl?: string;
+                feedback?: {
+                    messageKey?: string;
+                    stringsBaseUrl?: string | string[];
+                };
             }>(flowResult.stageResults, "deliver-recipient");
             sendJson(res, 200, {
                 data: {
@@ -591,6 +595,7 @@ export function createShareRoutes(input: {
                     guestKeyring: resolved.guestKeyring ?? null,
                     page: resolved.page ?? {},
                     navigationUrl: delivered?.navigationUrl ?? null,
+                    feedback: delivered?.feedback ?? null,
                 },
             });
             return true;

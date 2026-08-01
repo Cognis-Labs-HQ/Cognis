@@ -35,6 +35,16 @@ window.addEventListener("cognis:notification-action", (event) => {
             if (!navigationUrl) {
                 throw new Error("share_delivery_unavailable");
             }
+            const feedback = payload.data.feedback;
+            const messageKey = String(feedback?.messageKey ?? "").trim();
+            if (messageKey) {
+                const feedbackI18n = await createI18n({
+                    componentStringBaseUrls: feedback.stringsBaseUrl,
+                });
+                showToast(feedbackI18n.t(messageKey), {
+                    variant: "success",
+                });
+            }
             await navigateTo(navigationUrl);
         } catch {
             const i18n = await createI18n({

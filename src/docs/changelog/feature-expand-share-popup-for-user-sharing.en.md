@@ -455,3 +455,7 @@ Message requests no longer create event-only direct-message rooms. Membership ch
 ## Keyring prompts only when content needs them
 
 Login now tries the account password opportunistically without opening a keyring dialog when it differs. The contextual unlock prompt appears only when a component actually resolves protected content.
+
+## Calendar shares unlock and render once
+
+A verified password is now reused when an imported user calendar loads, newly imported calendars show a success toast, and public calendar links mount the Calendar-owned guest renderer instead of remaining on the loading screen.

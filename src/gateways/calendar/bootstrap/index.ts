@@ -369,6 +369,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             });
             return {
                 navigationUrl: `/calendar?calendarId=${encodeURIComponent(recipientCalendarId)}`,
+                feedback: existing
+                    ? null
+                    : {
+                          messageKey: "gateway.calendar.share_import_success",
+                          stringsBaseUrl: [
+                              "/static/gateways/calendar/ui/languages",
+                          ],
+                      },
             };
         },
     );
@@ -575,10 +583,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         ?.resourceType ?? "",
                 ) === "calendar"
                     ? {
-                          rendererScriptUrl:
+                          mountScriptUrl:
                               "/static/gateways/calendar/ui/share-renderer.js",
                           stringsBaseUrl: [
                               "/static/gateways/calendar/ui/languages",
+                          ],
+                          stylesheetUrls: [
+                              "/static/gateways/calendar/ui/share-renderer.css",
                           ],
                       }
                     : null,
@@ -867,7 +878,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.4.26",
+        version: "1.4.30",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

@@ -31,3 +31,7 @@ The popup discovers sharing methods from Share gateway adapters and displays the
 ## Expiry and Protection
 
 Both built-in methods accept an optional exact expiry date and time; leaving it unset creates a non-expiring share. Password hashing and verification remain owned by the Share gateway. Resource components may provide Link access modes with method-specific permissions and granted capabilities.
+
+## Recipient delivery feedback and password aliases
+
+A share facilitator may return generic delivery feedback containing a translation key and component string base URL. The authenticated notification action displays that feedback before navigating to the delivered resource. After a protected token resolves, Share saves the verified password under both the opaque link token and the canonical share identifier so the receiving component can reuse it without prompting again.

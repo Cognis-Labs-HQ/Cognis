@@ -145,13 +145,25 @@ export async function resolveReceivedShare(token, { headers } = {}) {
             if (
                 entered.saveToKeyring &&
                 uiCtx.capabilities.get("keyring:isUnlocked")?.()
-            )
-                await Promise.resolve(
-                    keyring?.set(keyringId, entered.password, {
-                        label: i18n.t("share.unlock.keyring_label"),
-                        shareId,
-                    }),
+            ) {
+                const metadata = {
+                    label: i18n.t("share.unlock.keyring_label"),
+                    shareId,
+                };
+                const identifiers = [keyringId];
+                if (shareId) identifiers.push(`share:${shareId}`);
+                await Promise.all(
+                    [...new Set(identifiers)].map((identifier) =>
+                        Promise.resolve(
+                            keyring?.set(
+                                identifier,
+                                entered.password,
+                                metadata,
+                            ),
+                        ),
+                    ),
                 );
+            }
         } catch {
             const i18n = await createI18n({
                 componentStringBaseUrls: ["/static/gateways/share/languages"],

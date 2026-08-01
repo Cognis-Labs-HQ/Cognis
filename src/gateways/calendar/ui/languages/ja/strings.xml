@@ -180,4 +180,6 @@
   <string name="gateway.calendar.share_link_web">ウェブ</string>
   <string name="gateway.calendar.share_link_ics">ICS</string>
   <string name="gateway.calendar.share_link_caldav">CalDAV</string>
+  <string name="gateway.calendar.share_import_success">共有カレンダーを追加しました。</string>
+  <string name="gateway.calendar.share_no_events">このカレンダーには予定がありません。</string>
 </resources>

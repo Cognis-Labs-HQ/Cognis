@@ -455,3 +455,7 @@ Permintaan pesan tidak lagi membuat ruang pesan langsung yang hanya berisi peris
 ## Permintaan keyring hanya saat konten membutuhkannya
 
 Proses masuk kini mencoba kata sandi akun secara oportunistik tanpa membuka dialog keyring bila kata sandinya berbeda. Permintaan buka kunci kontekstual hanya muncul saat komponen benar-benar menyelesaikan konten terlindungi.
+
+## Berbagi kalender dibuka dan dirender sekali
+
+Kata sandi yang telah diverifikasi kini digunakan kembali saat kalender pengguna yang diimpor dimuat. Kalender yang baru diimpor menampilkan notifikasi berhasil, dan tautan kalender publik memasang perender tamu milik Kalender alih-alih berhenti di layar pemuatan.

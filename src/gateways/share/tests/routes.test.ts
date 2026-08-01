@@ -149,7 +149,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         delivery: Record<string, unknown>,
     ) => {
         deliveredShares.push(delivery);
-        return { navigationUrl: "/meetings/shared" };
+        return {
+            navigationUrl: "/meetings/shared",
+            feedback: {
+                messageKey: "meeting.share_imported",
+                stringsBaseUrl: ["/static/modules/meeting/languages"],
+            },
+        };
     }) as never);
     capabilities.contribute(
         "auth:routeContext",
@@ -531,6 +537,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(
         JSON.parse(bobRestrictedResponse.payload).data.navigationUrl,
         "/meetings/shared",
+    );
+    assert.equal(
+        JSON.parse(bobRestrictedResponse.payload).data.feedback.messageKey,
+        "meeting.share_imported",
     );
     assert.ok(
         deliveredShares.some(

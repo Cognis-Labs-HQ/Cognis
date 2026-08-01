@@ -204,8 +204,10 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareSource, /saveToKeyring/);
     assert.match(
         receivedShareSource,
-        /keyring\?\.set\(keyringId, entered\.password/,
+        /identifiers\.push\(`share:\$\{shareId\}`\)/,
     );
+    assert.match(receivedShareActionSource, /payload\.data\.feedback/);
+    assert.match(receivedShareActionSource, /variant: "success"/);
     assert.match(receivedShareSource, /share:fetchProtectedResource/);
     assert.match(receivedShareSource, /keyring:requestUnlock/);
     assert.match(receivedShareSource, /share\.keyring\.request_component/);

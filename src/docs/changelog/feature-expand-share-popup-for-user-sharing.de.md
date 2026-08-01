@@ -455,3 +455,7 @@ Nachrichtenanfragen erstellen keine Direktnachrichtenräume mehr, die nur Ereign
 ## Schlüsselbundabfragen nur bei benötigten Inhalten
 
 Bei der Anmeldung wird das Kontopasswort nun unverbindlich ausprobiert, ohne bei einem abweichenden Schlüsselbundpasswort einen Dialog zu öffnen. Die kontextbezogene Entsperrabfrage erscheint erst, wenn eine Komponente tatsächlich geschützte Inhalte auflöst.
+
+## Kalenderfreigaben werden einmal entsperrt und dargestellt
+
+Ein bestätigtes Passwort wird nun beim Laden eines importierten Benutzerkalenders wiederverwendet. Neu importierte Kalender zeigen eine Erfolgsmeldung, und öffentliche Kalenderlinks binden die gastseitige Kalenderdarstellung ein, statt auf dem Ladebildschirm zu verbleiben.

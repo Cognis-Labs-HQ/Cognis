@@ -66,6 +66,10 @@ const SHARE_RENDERER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/share-renderer.js"),
     "utf8",
 );
+const BOOTSTRAP_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/index.ts"),
+    "utf8",
+);
 const POPUP_MANAGER_RESPONSE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-response.js"),
     "utf8",
@@ -530,13 +534,19 @@ test("shared events stay visible in Upcoming and calendar layout is fixed", () =
 });
 
 test("calendar share renderer displays one calendar and enables scoped writes", () => {
-    assert.match(SHARE_RENDERER_SOURCE, /registerShareRenderer\(\s*"calendar"/);
+    assert.match(SHARE_RENDERER_SOURCE, /export async function mount/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
     assert.match(SHARE_RENDERER_SOURCE, /\/api\/v1\/calendar\/shared\//);
     assert.match(SHARE_RENDERER_SOURCE, /shared-calendar-event-form/);
     assert.match(SHARE_RENDERER_SOURCE, /guestAccessToken/);
     assert.match(SHARE_RENDERER_SOURCE, /authorization: `Bearer/);
     assert.doesNotMatch(SHARE_RENDERER_SOURCE, /apiFetch/);
+    assert.match(
+        BOOTSTRAP_SOURCE,
+        /mountScriptUrl:\s*"\/static\/gateways\/calendar\/ui\/share-renderer\.js"/,
+    );
+    assert.match(BOOTSTRAP_SOURCE, /share-renderer\.css/);
+    assert.match(BOOTSTRAP_SOURCE, /share_import_success/);
 });
 
 test("shared calendar settings expose recipient-local name and color", () => {
