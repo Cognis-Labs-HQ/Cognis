@@ -14,6 +14,7 @@
  *   formatTime(iso, fallback, opts)       — formats an ISO string as a localised time while
  *                                           respecting the user's 12/24-hour preference.
  *   formatDateTime(iso, fallback, opts)   — formats an ISO string as a localised date + time.
+ *   formatMonthYear(iso, fallback)        — formats an ISO value as a localised month and year.
  *   formatRelativeTime(epochMs, fallback) — formats a past epoch timestamp as a relative
  *                                           locale-aware string, e.g. "5 minutes ago".
  *   getBrowserDetectedTimezone()          — returns the browser-detected IANA timezone string.
@@ -151,6 +152,19 @@ export function formatDateTime(iso, fallback = "", options = {}) {
         });
     } catch {
         return iso;
+    }
+}
+
+export function formatMonthYear(iso, fallback = "") {
+    if (!iso) return fallback;
+    try {
+        return new Date(iso).toLocaleDateString(undefined, {
+            year: "numeric",
+            month: "long",
+            timeZone: getEffectiveTimezone(),
+        });
+    } catch {
+        return fallback || String(iso);
     }
 }
 

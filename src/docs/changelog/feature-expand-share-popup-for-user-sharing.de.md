@@ -467,3 +467,7 @@ Messages weist sich beim Anfordern vorhandener Chat-Geheimnisse nun als Social M
 ## Portables Teilen und verschlüsselter Besprechungschat gehärtet
 
 Das Teilen-Popup verwendet nun eine optionale UI-Avatar-Capability mit Initialen als Rückfall, sodass es auch ohne Social verfügbar bleibt. Gäste von Besprechungsfreigaben erhalten den maßgeblichen Chatschlüssel über ihren temporären Schlüsselbund, falsche gespeicherte Raumschlüssel werden ersetzt und große verschlüsselte Schlüsselbundtresore werden in sicheren Blöcken kodiert. Die lokalisierten Schlüsselbunddokumentationen und Komponentenversionen sind synchronisiert; außerdem wurde die Lesbarkeit des Kalender-Stylesheets wiederhergestellt.
+
+## Automatisches Entsperren und vollständige Kalenderlinkdarstellung
+
+Direkte Seitenaufrufe und Aktualisierungen starten nun den erforderlichen Schlüsselbund vor der Sitzungsprüfung. Die Entsperrung des Tabs wird automatisch wiederhergestellt oder bei geschützten Inhalten angefordert. Kalenderlinks zeigen eine isolierte Kalenderkarte mit der üblichen Ansichtsauswahl und Zeitrastertabelle; beschreibbare Token können Ereignisse anlegen, bearbeiten und löschen, ohne andere Kalender oder Dashboard-Steuerelemente offenzulegen.

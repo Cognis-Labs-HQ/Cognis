@@ -139,6 +139,18 @@ test("auth session-flow-hooks.js imports flow-registry.js before extending flows
     );
 });
 
+test("auth session bootstrap loads the required keyring before page authentication", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
+        "utf8",
+    );
+    assert.match(source, /\/static\/adapters\/auth\/keyring\/keyring\.js/);
+    assert.ok(
+        source.indexOf("/static/adapters/auth/keyring/keyring.js") <
+            source.indexOf("uiCtx.extendFlow"),
+    );
+});
+
 test("auth session-flow-hooks.js registers a validate-stored-token hook", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(

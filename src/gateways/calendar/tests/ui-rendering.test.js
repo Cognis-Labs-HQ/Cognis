@@ -544,6 +544,11 @@ test("shared events stay visible in Upcoming and calendar layout is fixed", () =
 
 test("calendar share renderer displays one calendar and enables scoped writes", () => {
     assert.match(SHARE_RENDERER_SOURCE, /export async function mount/);
+    assert.match(SHARE_RENDERER_SOURCE, /createPageComposer/);
+    assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
+    assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
+    assert.match(SHARE_RENDERER_SOURCE, /calendar-view-switcher/);
+    assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
     assert.match(SHARE_RENDERER_SOURCE, /\/api\/v1\/calendar\/shared\//);
     assert.match(SHARE_RENDERER_SOURCE, /shared-calendar-event-form/);
@@ -555,6 +560,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
         /mountScriptUrl:\s*"\/static\/gateways\/calendar\/ui\/share-renderer\.js"/,
     );
     assert.match(BOOTSTRAP_SOURCE, /share-renderer\.css/);
+    assert.match(BOOTSTRAP_SOURCE, /calendar\.css/);
     assert.match(BOOTSTRAP_SOURCE, /share_import_success/);
 });
 

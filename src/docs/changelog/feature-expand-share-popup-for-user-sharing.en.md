@@ -467,3 +467,7 @@ Messages now identifies itself as Social Messages when requesting existing chat 
 ## Hardened portable sharing and encrypted meeting chat
 
 The Share popup now uses an optional UI avatar capability with an initials fallback, so it remains available without Social. Meeting-share guests receive the authoritative chat key through their temporary keyring, incorrect stored room keys are replaced, and large encrypted keyring vaults are encoded in safe chunks. Localized keyring documentation and component version indexes are synchronized, and Calendar stylesheet spacing is restored.
+
+## Automatic content unlocking and full calendar link rendering
+
+Direct page loads and refreshes now bootstrap the required keyring before session authentication, automatically restoring the tab unlock or prompting when protected content needs it. Calendar link shares render one isolated calendar card with the standard view switcher and timeslot table; writable tokens can create, edit, and delete events without exposing other calendars or dashboard controls.

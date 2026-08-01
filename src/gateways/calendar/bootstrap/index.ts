@@ -589,6 +589,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                               "/static/gateways/calendar/ui/languages",
                           ],
                           stylesheetUrls: [
+                              "/static/gateways/calendar/ui/calendar.css",
                               "/static/gateways/calendar/ui/share-renderer.css",
                           ],
                       }

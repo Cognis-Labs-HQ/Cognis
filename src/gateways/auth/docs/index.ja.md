@@ -69,3 +69,7 @@ export class CoreAuthGateway {
 | `PUT`    | `/api/v1/gateways/auth/adapters/:id/config`  | アダプターの設定を更新             | 管理者   |
 | `POST`   | `/api/v1/gateways/auth/adapters/:id/enable`  | アダプターを有効化                 | 管理者   |
 | `POST`   | `/api/v1/gateways/auth/adapters/:id/disable` | アダプターを無効化                 | 管理者   |
+
+## ブラウザーキーリング起動
+
+認証ゲートウェイは、ブラウザーセッションフックを登録する前に必須キーリングアダプターを読み込みます。これにより、ページの直接読み込みや再読み込みのたびに、現在のタブの抽出不可能なセッション鍵を自動復元できます。復元できない場合は、保護されたコンテンツを最初に解決するときにコンテキスト付きキーリング解除ダイアログを開きます。

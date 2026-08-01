@@ -69,3 +69,7 @@ Capability yang disediakan:
 | `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Memperbarui konfigurasi untuk adapter       | Admin            |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Mengaktifkan adapter                        | Admin            |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Menonaktifkan adapter                       | Admin            |
+
+## Bootstrap keyring peramban
+
+Gateway Autentikasi memuat adapter keyring wajib sebelum mendaftarkan hook alur sesi peramban. Karena itu, setiap pemuatan halaman langsung dan penyegaran dapat memulihkan kunci sesi tab saat ini yang tidak dapat diekstrak secara otomatis. Jika pemulihan tidak tersedia, penyelesai konten terlindungi pertama membuka dialog buka kunci keyring kontekstual.

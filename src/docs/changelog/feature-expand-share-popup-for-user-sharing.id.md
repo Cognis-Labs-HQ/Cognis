@@ -467,3 +467,7 @@ Messages kini mengidentifikasi dirinya sebagai Social Messages saat meminta raha
 ## Berbagi portabel dan obrolan rapat terenkripsi diperkuat
 
 Popup Berbagi kini memakai kapabilitas avatar UI opsional dengan inisial sebagai cadangan, sehingga tetap tersedia tanpa Social. Tamu berbagi rapat menerima kunci obrolan otoritatif melalui keyring sementara, kunci ruang tersimpan yang salah diganti, dan brankas keyring terenkripsi besar dikodekan dalam potongan aman. Dokumentasi keyring terlokalisasi dan indeks versi komponen diselaraskan, serta spasi stylesheet Kalender dipulihkan.
+
+## Buka kunci otomatis dan perenderan tautan kalender lengkap
+
+Pemuatan halaman langsung dan penyegaran kini memulai keyring wajib sebelum autentikasi sesi, lalu memulihkan status buka kunci tab secara otomatis atau meminta kata sandi saat konten terlindungi membutuhkannya. Tautan kalender merender satu kartu kalender terisolasi dengan pemilih tampilan dan tabel slot waktu standar; token tulis dapat membuat, mengedit, dan menghapus acara tanpa menampilkan kalender lain atau kontrol dasbor.

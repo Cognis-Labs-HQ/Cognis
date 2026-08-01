@@ -1,98 +1,167 @@
-import { formatDateTime } from "/static/reuse/timestamp.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { formatMonthYear } from "/static/reuse/timestamp.js";
+import {
+    CALENDAR_VIEWS,
+    addDays,
+    renderCalendarView,
+    toDateTimeLocalValue,
+} from "./calendar-ui-helpers.js";
 
-function appendTextElement(parent, tagName, text) {
-    const element = document.createElement(tagName);
-    element.textContent = String(text ?? "");
-    parent.append(element);
-    return element;
-}
-
-function appendEvent(container, event) {
-    const article = document.createElement("article");
-    appendTextElement(article, "h3", event.title);
-    appendTextElement(
-        article,
-        "p",
-        `${formatDateTime(event.startAt)} – ${formatDateTime(event.endAt)}`,
-    );
-    if (event.description) {
-        appendTextElement(article, "p", event.description);
+function shiftActiveDate(activeDate, selectedView, direction) {
+    const shiftedDate = new Date(activeDate);
+    if (selectedView === "day") return addDays(shiftedDate, direction);
+    if (selectedView === "week") return addDays(shiftedDate, direction * 7);
+    if (selectedView === "year") {
+        shiftedDate.setFullYear(shiftedDate.getFullYear() + direction);
+        return shiftedDate;
     }
-    container.append(article);
+    shiftedDate.setMonth(shiftedDate.getMonth() + direction);
+    return shiftedDate;
 }
 
-function appendField(form, { label, name, type = "text" }) {
-    const field = document.createElement("label");
-    const labelText = document.createElement("span");
-    labelText.textContent = label;
-    const input = document.createElement("input");
-    input.name = name;
-    input.type = type;
-    input.required = true;
-    field.append(labelText, input);
-    form.append(field);
-}
-
-function appendEventForm(
-    section,
-    { calendarId, guestAccessToken, i18n, signal },
-) {
-    const form = document.createElement("form");
-    form.className = "shared-calendar-event-form";
-    appendField(form, {
-        label: i18n.t("gateway.calendar.event_title"),
-        name: "title",
-    });
-    appendField(form, {
-        label: i18n.t("gateway.calendar.event_start"),
-        name: "startAt",
-        type: "datetime-local",
-    });
-    appendField(form, {
-        label: i18n.t("gateway.calendar.event_end"),
-        name: "endAt",
-        type: "datetime-local",
-    });
-    const submitButton = document.createElement("button");
-    submitButton.type = "submit";
-    submitButton.className = "btn-confirm";
-    submitButton.textContent = i18n.t("gateway.calendar.create_event");
-    form.append(submitButton);
-    form.addEventListener(
-        "submit",
-        async (event) => {
-            event.preventDefault();
-            const response = await fetch(
-                `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
+function buildEventFormMarkup(i18n, event = {}, slot = {}) {
+    return createFormBuilder(
+        { i18n, escapeHtml },
+        {
+            formId: "shared-calendar-event-form",
+            formClassName: "shared-calendar-event-form",
+            includeSubmitButton: false,
+            fields: [
                 {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                        ...(guestAccessToken
-                            ? {
-                                  authorization: `Bearer ${guestAccessToken}`,
-                              }
-                            : {}),
-                    },
-                    body: JSON.stringify(
-                        Object.fromEntries(new FormData(form)),
+                    name: "title",
+                    labelKey: "gateway.calendar.event_title",
+                    required: true,
+                    value: event.title ?? "",
+                },
+                {
+                    name: "description",
+                    labelKey: "gateway.calendar.event_description",
+                    value: event.description ?? "",
+                },
+                {
+                    name: "startAt",
+                    labelKey: "gateway.calendar.event_start",
+                    type: "datetime-local",
+                    required: true,
+                    value: toDateTimeLocalValue(
+                        event.startAt ?? slot.startAt ?? new Date(),
                     ),
                 },
-            );
-            showToast(
-                i18n.t(
-                    response.ok
-                        ? "gateway.calendar.create_event_success"
-                        : "gateway.calendar.create_event_failed",
-                ),
-                { variant: response.ok ? "success" : "error" },
-            );
-            if (response.ok) globalThis.location.reload();
+                {
+                    name: "endAt",
+                    labelKey: "gateway.calendar.event_end",
+                    type: "datetime-local",
+                    required: true,
+                    value: toDateTimeLocalValue(
+                        event.endAt ??
+                            slot.endAt ??
+                            new Date(Date.now() + 60 * 60 * 1000),
+                    ),
+                },
+            ],
         },
-        { signal },
+    ).render();
+}
+
+async function mutateSharedEvent({
+    calendarId,
+    guestAccessToken,
+    method,
+    body,
+}) {
+    return fetch(
+        `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
+        {
+            method,
+            headers: {
+                "content-type": "application/json",
+                authorization: `Bearer ${guestAccessToken}`,
+            },
+            body: JSON.stringify(body),
+        },
     );
-    section.append(form);
+}
+
+async function openEventEditor({
+    calendarId,
+    event,
+    slot,
+    guestAccessToken,
+    i18n,
+    onChanged,
+}) {
+    let form = null;
+    const isEditing = Boolean(event?.id);
+    const action = await openPopup({
+        title: i18n.t(
+            isEditing
+                ? "gateway.calendar.edit_event"
+                : "gateway.calendar.create_event",
+        ),
+        body: buildEventFormMarkup(i18n, event, slot),
+        actions: [
+            {
+                id: "save",
+                label: i18n.t(
+                    isEditing
+                        ? "gateway.calendar.save_event"
+                        : "gateway.calendar.create_event",
+                ),
+                variant: "confirm",
+            },
+            ...(isEditing
+                ? [
+                      {
+                          id: "delete",
+                          label: i18n.t("gateway.calendar.delete_event"),
+                          variant: "danger",
+                      },
+                  ]
+                : []),
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "cancel",
+            },
+        ],
+        onOpen: (overlay) => {
+            form = overlay.querySelector("#shared-calendar-event-form");
+        },
+        onAction: (actionId) =>
+            actionId !== "save" || form?.reportValidity() === true,
+    });
+    if (action !== "save" && action !== "delete") return;
+    if (!(form instanceof HTMLFormElement)) return;
+    const formData = Object.fromEntries(new FormData(form));
+    const response = await mutateSharedEvent({
+        calendarId,
+        guestAccessToken,
+        method: action === "delete" ? "DELETE" : isEditing ? "PATCH" : "POST",
+        body:
+            action === "delete"
+                ? { eventId: event.id }
+                : { ...formData, eventId: event?.id },
+    });
+    const successKey =
+        action === "delete"
+            ? "gateway.calendar.delete_event_success"
+            : isEditing
+              ? "gateway.calendar.update_event_success"
+              : "gateway.calendar.create_event_success";
+    const failureKey =
+        action === "delete"
+            ? "gateway.calendar.delete_event_failed"
+            : isEditing
+              ? "gateway.calendar.update_event_failed"
+              : "gateway.calendar.create_event_failed";
+    showToast(i18n.t(response.ok ? successKey : failureKey), {
+        variant: response.ok ? "success" : "error",
+    });
+    if (response.ok) await onChanged();
 }
 
 export async function mount(
@@ -100,35 +169,130 @@ export async function mount(
     { shareContext, i18n, signal = new AbortController().signal } = {},
 ) {
     const calendar = shareContext?.payload?.calendar ?? {};
-    const events = Array.isArray(shareContext?.payload?.events)
+    let events = Array.isArray(shareContext?.payload?.events)
         ? shareContext.payload.events
         : [];
-    const section = document.createElement("section");
-    section.className = "shared-calendar";
-    appendTextElement(
-        section,
-        "h2",
-        calendar.name || i18n.t("gateway.calendar.page_title"),
-    );
-    const eventList = document.createElement("div");
-    eventList.className = "shared-calendar-events";
-    if (events.length === 0) {
-        appendTextElement(
-            eventList,
-            "p",
-            i18n.t("gateway.calendar.share_no_events"),
+    let selectedView = "day";
+    let activeDate = new Date();
+    const canWrite =
+        shareContext?.grantedCapabilities?.includes("calendar:write");
+    const calendarId = String(calendar.id ?? "");
+    const guestAccessToken = String(shareContext?.guestAccessToken ?? "");
+    let composer;
+
+    const reloadEvents = async () => {
+        const response = await fetch(
+            `/api/v1/calendar/shared/${encodeURIComponent(calendarId)}/events`,
+            { headers: { authorization: `Bearer ${guestAccessToken}` } },
         );
-    } else {
-        for (const event of events) appendEvent(eventList, event);
-    }
-    section.append(eventList);
-    if (shareContext?.grantedCapabilities?.includes("calendar:write")) {
-        appendEventForm(section, {
-            calendarId: calendar.id,
-            guestAccessToken: shareContext.guestAccessToken,
-            i18n,
-            signal,
-        });
-    }
-    root.replaceChildren(section);
+        if (!response.ok) {
+            showToast(i18n.t("gateway.calendar.load_failed"), {
+                variant: "error",
+            });
+            return;
+        }
+        const payload = await response.json();
+        events = Array.isArray(payload?.data) ? payload.data : [];
+        composer.refresh([buildCalendarElement()]);
+    };
+
+    const buildCalendarElement = () => ({
+        id: "shared-calendar-view",
+        label: calendar.name || i18n.t("gateway.calendar.page_title"),
+        pinned: true,
+        gridSize: { default: [12, 10], min: [8, 6], max: ["fill", "fill"] },
+        render: () => {
+            const periodLabel =
+                selectedView === "year"
+                    ? String(activeDate.getFullYear())
+                    : formatMonthYear(activeDate);
+            return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
+                <header class="calendar-view-header">
+                    <div class="calendar-view-nav">
+                        <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
+                        <button type="button" data-calendar-nav="today">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
+                        <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
+                        <span class="calendar-nav-month-label">${escapeHtml(periodLabel)}</span>
+                    </div>
+                    <div class="calendar-view-switcher">
+                        ${CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${escapeHtml(i18n.t(`gateway.calendar.view_${view}`))}</button>`).join("")}
+                    </div>
+                </header>
+                <div class="calendar-view-canvas">${renderCalendarView(events, selectedView, activeDate, i18n)}</div>
+            </section>`;
+        },
+        onRender: () => {
+            root.querySelectorAll("[data-calendar-view]").forEach((button) => {
+                button.addEventListener(
+                    "click",
+                    () => {
+                        selectedView = button.dataset.calendarView;
+                        composer.refresh([buildCalendarElement()]);
+                    },
+                    { signal },
+                );
+            });
+            root.querySelectorAll("[data-calendar-nav]").forEach((button) => {
+                button.addEventListener(
+                    "click",
+                    () => {
+                        const direction = button.dataset.calendarNav;
+                        activeDate =
+                            direction === "today"
+                                ? new Date()
+                                : shiftActiveDate(
+                                      activeDate,
+                                      selectedView,
+                                      direction === "next" ? 1 : -1,
+                                  );
+                        composer.refresh([buildCalendarElement()]);
+                    },
+                    { signal },
+                );
+            });
+            if (!canWrite) return;
+            root.querySelector(".calendar-view-canvas")?.addEventListener(
+                "click",
+                (clickEvent) => {
+                    const target = clickEvent.target.closest(
+                        "[data-calendar-event], [data-timeslot-add]",
+                    );
+                    if (!(target instanceof HTMLElement)) return;
+                    const selectedEvent = events.find(
+                        (candidate) =>
+                            String(candidate.id) ===
+                            target.dataset.calendarEvent,
+                    );
+                    void openEventEditor({
+                        calendarId,
+                        event: selectedEvent,
+                        slot: {
+                            startAt: target.dataset.slotStart,
+                            endAt: target.dataset.slotEnd,
+                        },
+                        guestAccessToken,
+                        i18n,
+                        onChanged: reloadEvents,
+                    });
+                },
+                { signal },
+            );
+        },
+    });
+
+    composer = createPageComposer(root, {
+        allowCustomization: false,
+        persistLayoutPreferences: false,
+        showTopbar: false,
+        showNavbar: false,
+        showFooter: false,
+        i18n,
+        preferenceKey: "shared-calendar-layout",
+        pageContext: {
+            title: i18n.t("gateway.calendar.page_title"),
+            subtitle: i18n.t("gateway.calendar.page_subtitle"),
+        },
+        elements: [buildCalendarElement()],
+    });
+    await composer.init();
 }

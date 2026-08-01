@@ -69,3 +69,7 @@ Beigetragene Capabilities:
 | `PUT`   | `/api/v1/gateways/auth/adapters/:id/config`  | Konfig für einen Adapter aktualisieren          | Admin             |
 | `POST`  | `/api/v1/gateways/auth/adapters/:id/enable`  | Adapter aktivieren                              | Admin             |
 | `POST`  | `/api/v1/gateways/auth/adapters/:id/disable` | Adapter deaktivieren                            | Admin             |
+
+## Browser-Schlüsselbundstart
+
+Das Authentifizierungs-Gateway lädt seinen erforderlichen Schlüsselbundadapter, bevor es die Browser-Sitzungs-Flow-Hooks registriert. Dadurch kann jeder direkte Seitenaufruf und jede Aktualisierung den nicht exportierbaren Sitzungsschlüssel des aktuellen Tabs automatisch wiederherstellen. Ist die Wiederherstellung nicht verfügbar, öffnet die erste Auflösung geschützter Inhalte den kontextbezogenen Entsperrdialog.
