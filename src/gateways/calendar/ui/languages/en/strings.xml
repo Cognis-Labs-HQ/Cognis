@@ -3,6 +3,7 @@
   <string name="gateway.calendar.page_subtitle">Plan calendars, compose events, and manage upcoming schedules.</string>
   <string name="gateway.calendar.my_calendars">My Calendars</string>
   <string name="gateway.calendar.no_calendars">You have no calendars yet.</string>
+  <string name="gateway.calendar.no_writable_calendars_found">No Writable Calendars Found</string>
   <string name="gateway.calendar.no_events">No events scheduled for this calendar.</string>
   <string name="gateway.calendar.visibility_private">Private</string>
   <string name="gateway.calendar.read_only_tooltip">Read-Only</string>

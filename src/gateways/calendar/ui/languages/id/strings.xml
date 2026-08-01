@@ -3,6 +3,7 @@
   <string name="gateway.calendar.page_subtitle">Rencanakan kalender, susun acara, dan kelola jadwal mendatang.</string>
   <string name="gateway.calendar.my_calendars">Kalender Saya</string>
   <string name="gateway.calendar.no_calendars">Anda belum memiliki kalender.</string>
+  <string name="gateway.calendar.no_writable_calendars_found">Tidak ada kalender yang dapat ditulis</string>
   <string name="gateway.calendar.no_events">Belum ada acara di kalender ini.</string>
   <string name="gateway.calendar.visibility_private">Privat</string>
   <string name="gateway.calendar.read_only_tooltip">Hanya-Baca</string>

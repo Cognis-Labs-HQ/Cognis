@@ -332,6 +332,83 @@ export async function mount(root, { signal } = {}) {
         openCalendarEditPopup,
     } = popupManager;
 
+    root.addEventListener(
+        "click",
+        (event) => {
+            if (!(event.target instanceof Element)) return;
+            const viewButton = event.target.closest("[data-calendar-view]");
+            if (viewButton instanceof HTMLElement) {
+                const nextView = String(
+                    viewButton.getAttribute("data-calendar-view") ?? "month",
+                );
+                if (!calendarUi.CALENDAR_VIEWS.includes(nextView)) return;
+                setSelectedView(nextView);
+                refreshCalendarComposer();
+                return;
+            }
+            const navigationButton = event.target.closest(
+                "[data-calendar-nav]",
+            );
+            if (navigationButton instanceof HTMLElement) {
+                const navigation =
+                    navigationButton.getAttribute("data-calendar-nav");
+                if (navigation === "today") {
+                    activeDate = new Date();
+                } else if (selectedView === "day") {
+                    activeDate = calendarUi.addDays(
+                        activeDate,
+                        navigation === "next" ? 1 : -1,
+                    );
+                } else if (selectedView === "week") {
+                    activeDate = calendarUi.addDays(
+                        activeDate,
+                        navigation === "next" ? 7 : -7,
+                    );
+                } else if (selectedView === "month") {
+                    activeDate = new Date(
+                        activeDate.getFullYear(),
+                        activeDate.getMonth() +
+                            (navigation === "next" ? 1 : -1),
+                        1,
+                    );
+                } else {
+                    activeDate = new Date(
+                        activeDate.getFullYear() +
+                            (navigation === "next" ? 1 : -1),
+                        0,
+                        1,
+                    );
+                }
+                refreshCalendarComposer();
+                return;
+            }
+            const timeslotAddButton = event.target.closest(
+                "[data-timeslot-add]",
+            );
+            if (timeslotAddButton instanceof HTMLElement) {
+                void openEventComposerPopup({
+                    startAt: String(
+                        timeslotAddButton.getAttribute("data-slot-start") ?? "",
+                    ),
+                    endAt: String(
+                        timeslotAddButton.getAttribute("data-slot-end") ?? "",
+                    ),
+                });
+                return;
+            }
+            const timeslotCell = event.target.closest("[data-timeslot-events]");
+            if (!(timeslotCell instanceof HTMLElement)) return;
+            if (event.target.closest("[data-calendar-event]")) return;
+            void openEventComposerPopup({
+                startAt: String(
+                    timeslotCell.getAttribute("data-slot-start") ?? "",
+                ),
+                endAt: String(timeslotCell.getAttribute("data-slot-end") ?? ""),
+            });
+        },
+        { signal },
+    );
+
     composer = createPageComposer(root, {
         allowCustomization: false,
         elements: [
@@ -372,127 +449,6 @@ export async function mount(root, { signal } = {}) {
                     window.addEventListener("resize", syncWeekViewLayout, {
                         signal,
                     });
-
-                    root.querySelectorAll("[data-calendar-view]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () => {
-                                    const nextView = String(
-                                        button.getAttribute(
-                                            "data-calendar-view",
-                                        ) ?? "month",
-                                    );
-                                    if (
-                                        !calendarUi.CALENDAR_VIEWS.includes(
-                                            nextView,
-                                        )
-                                    ) {
-                                        return;
-                                    }
-                                    setSelectedView(nextView);
-                                    refreshCalendarComposer();
-                                },
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-calendar-nav]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () => {
-                                    const nav =
-                                        button.getAttribute(
-                                            "data-calendar-nav",
-                                        );
-                                    if (nav === "today") {
-                                        activeDate = new Date();
-                                    } else if (selectedView === "day") {
-                                        activeDate = calendarUi.addDays(
-                                            activeDate,
-                                            nav === "next" ? 1 : -1,
-                                        );
-                                    } else if (selectedView === "week") {
-                                        activeDate = calendarUi.addDays(
-                                            activeDate,
-                                            nav === "next" ? 7 : -7,
-                                        );
-                                    } else if (selectedView === "month") {
-                                        activeDate = new Date(
-                                            activeDate.getFullYear(),
-                                            activeDate.getMonth() +
-                                                (nav === "next" ? 1 : -1),
-                                            1,
-                                        );
-                                    } else {
-                                        activeDate = new Date(
-                                            activeDate.getFullYear() +
-                                                (nav === "next" ? 1 : -1),
-                                            0,
-                                            1,
-                                        );
-                                    }
-                                    refreshCalendarComposer();
-                                },
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-timeslot-add]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () =>
-                                    openEventComposerPopup({
-                                        startAt: String(
-                                            button.getAttribute(
-                                                "data-slot-start",
-                                            ) ?? "",
-                                        ),
-                                        endAt: String(
-                                            button.getAttribute(
-                                                "data-slot-end",
-                                            ) ?? "",
-                                        ),
-                                    }),
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-timeslot-events]").forEach(
-                        (cell) => {
-                            cell.addEventListener(
-                                "click",
-                                (event) => {
-                                    if (
-                                        event.target instanceof Element &&
-                                        event.target.closest(
-                                            "[data-calendar-event], [data-timeslot-add]",
-                                        )
-                                    ) {
-                                        return;
-                                    }
-                                    openEventComposerPopup({
-                                        startAt: String(
-                                            cell.getAttribute(
-                                                "data-slot-start",
-                                            ) ?? "",
-                                        ),
-                                        endAt: String(
-                                            cell.getAttribute(
-                                                "data-slot-end",
-                                            ) ?? "",
-                                        ),
-                                    });
-                                },
-                                { signal },
-                            );
-                        },
-                    );
 
                     root.querySelectorAll("[data-month-create-date]").forEach(
                         (button) => {

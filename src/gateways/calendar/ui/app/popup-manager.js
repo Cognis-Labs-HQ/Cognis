@@ -425,6 +425,18 @@ export function createCalendarPopupManager({
         endAt = "",
         eventData = null,
     } = {}) {
+        const writableCalendars = getCalendars().filter(
+            (calendar) =>
+                calendar?.visibility !== "shared" ||
+                calendar?.sharedPermission === "write",
+        );
+        if (writableCalendars.length === 0) {
+            showToast(
+                i18n.t("gateway.calendar.no_writable_calendars_found"),
+                "warning",
+            );
+            return;
+        }
         const normalizeParticipantIdentifier = (value) =>
             normalizeUserIdentifier({ username: value });
         const currentUserIdentifier = normalizeParticipantIdentifier(
@@ -432,7 +444,7 @@ export function createCalendarPopupManager({
         );
         const popupBuilder = calendarUi.createEventComposerBuilder({
             i18n,
-            calendars: getCalendars(),
+            calendars: writableCalendars,
             selectedCalendarId: getSelectedCalendarId(),
             defaultValues: {
                 title: eventData?.event?.title ?? "",

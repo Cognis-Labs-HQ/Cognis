@@ -3,6 +3,7 @@
   <string name="gateway.calendar.page_subtitle">Kalender planen, Termine erstellen und kommende Zeitpläne verwalten.</string>
   <string name="gateway.calendar.my_calendars">Meine Kalender</string>
   <string name="gateway.calendar.no_calendars">Du hast noch keine Kalender.</string>
+  <string name="gateway.calendar.no_writable_calendars_found">Keine beschreibbaren Kalender gefunden</string>
   <string name="gateway.calendar.no_events">Für diesen Kalender sind keine Termine geplant.</string>
   <string name="gateway.calendar.visibility_private">Privat</string>
   <string name="gateway.calendar.read_only_tooltip">Schreibgeschützt</string>

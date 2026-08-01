@@ -483,3 +483,7 @@ Pengalihan tampilan dan navigasi periode pada tautan kalender kini menggunakan b
 ## Resolusi sadar kata sandi dan penghapusan berbagi yang aman
 
 URL berbagi kini memeriksa gateway sebelum menyentuh keyring akun, sehingga akses keyring hanya terjadi setelah gateway mengembalikan tantangan kata sandi. Tautan yang hilang atau dicabut menampilkan pesan tidak lagi tersedia yang sudah ada pada halaman berbagi dan tindakan notifikasi. Pencabutan berbagi kini memerlukan popup konfirmasi eksplisit sebelum penghapusan.
+
+## Kontrol Kalender dan penjaga kalender tulis dipulihkan
+
+Pengalihan tampilan, navigasi periode, dan pembuatan acara dari slot waktu kini memakai batas interaksi terdelegasi yang tetap aktif setelah composer dirender ulang. Sebelum membuka penyusun acara, Calendar memeriksa semua kalender yang tersedia memakai aturan tulis berbagi yang ada dan menampilkan “Tidak ada kalender yang dapat ditulis” bila tidak ada kalender yang dapat menerima acara. Penulisan kalender tamu tetap memakai token tamu terbatas.

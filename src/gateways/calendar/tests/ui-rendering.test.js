@@ -139,7 +139,11 @@ test("calendar composer keeps title counter without title criteria list", () => 
 test("calendar slot clicks create events outside event buttons and empty slots omit add buttons", () => {
     assert.match(
         APP_SOURCE,
-        /event\.target\.closest\(\s*"\[data-calendar-event\], \[data-timeslot-add\]"/,
+        /event\.target\.closest\("\[data-calendar-event\]"\)/,
+    );
+    assert.match(
+        APP_SOURCE,
+        /event\.target\.closest\(\s*"\[data-timeslot-add\]"/,
     );
     assert.doesNotMatch(HELPERS_SOURCE, /data-timeslot-add/);
     assert.match(HELPERS_SOURCE, /calendar-day-all-day-slot/);
@@ -234,6 +238,29 @@ test("calendar composer supports multiple reminders and remembers selected view"
     assert.match(APP_SOURCE, /SELECTED_VIEW_STORAGE_KEY/);
     assert.match(APP_SOURCE, /loadSelectedViewPreference/);
     assert.match(APP_SOURCE, /window\.localStorage\.setItem/);
+});
+
+test("calendar navigation and event creation use a persistent delegated boundary", () => {
+    assert.match(APP_SOURCE, /root\.addEventListener\(/);
+    assert.match(
+        APP_SOURCE,
+        /event\.target\.closest\("\[data-calendar-view\]"\)/,
+    );
+    assert.match(APP_SOURCE, /"\[data-calendar-nav\]"/);
+    assert.match(APP_SOURCE, /"\[data-timeslot-add\]"/);
+    assert.match(APP_SOURCE, /void openEventComposerPopup/);
+});
+
+test("event composer refuses to open without a writable calendar", () => {
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /const writableCalendars = getCalendars\(\)\.filter/,
+    );
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /writableCalendars\.length === 0[\s\S]*no_writable_calendars_found[\s\S]*return/,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /calendars: writableCalendars/);
 });
 
 test("calendar year view day dots inherit calendar event colors", () => {

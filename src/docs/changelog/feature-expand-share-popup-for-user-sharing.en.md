@@ -483,3 +483,7 @@ Calendar link-share view switching and period navigation now use a stable delega
 ## Password-aware resolution and safe share deletion
 
 Share URLs now probe the gateway before touching the account keyring, so keyring access occurs only after the gateway returns a password challenge. Missing or revoked links render the existing no-longer-available message for both share pages and notification actions. Revoking any share now requires an explicit confirmation popup before deletion.
+
+## Restored Calendar controls and writable-calendar guard
+
+Calendar view switching, period navigation, and timeslot event creation now use a persistent delegated interaction boundary that remains active across composer rerenders. Before opening the event composer, Calendar evaluates every available calendar with the existing shared-write rules and shows “No Writable Calendars Found” when none can accept an event. Guest calendar writes continue through the scoped guest token.

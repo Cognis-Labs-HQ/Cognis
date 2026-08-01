@@ -3,6 +3,7 @@
   <string name="gateway.calendar.page_subtitle">カレンダーを計画し、イベントを作成して今後の予定を管理します。</string>
   <string name="gateway.calendar.my_calendars">マイカレンダー</string>
   <string name="gateway.calendar.no_calendars">まだカレンダーがありません。</string>
+  <string name="gateway.calendar.no_writable_calendars_found">書き込み可能なカレンダーがありません</string>
   <string name="gateway.calendar.no_events">このカレンダーには予定がありません。</string>
   <string name="gateway.calendar.visibility_private">非公開</string>
   <string name="gateway.calendar.read_only_tooltip">読み取り専用</string>

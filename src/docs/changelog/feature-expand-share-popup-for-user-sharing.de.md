@@ -483,3 +483,7 @@ Die Ansichtsumschaltung und Zeitraum-Navigation von Kalenderlinks verwendet nun 
 ## Passwortbewusste Auflösung und sichere Freigabelöschung
 
 Freigabe-URLs fragen nun zuerst das Gateway ab, bevor sie auf den Kontoschlüsselbund zugreifen. Ein Schlüsselbundzugriff erfolgt nur nach einer Passwortanforderung des Gateways. Fehlende oder widerrufene Links zeigen auf Freigabeseiten und bei Benachrichtigungsaktionen die vorhandene Nicht-mehr-verfügbar-Meldung. Das Widerrufen jeder Freigabe erfordert nun vor dem Löschen eine ausdrückliche Bestätigung.
+
+## Kalendersteuerung und Schreibschutz wiederhergestellt
+
+Ansichtswechsel, Zeitraum-Navigation und Ereigniserstellung über Zeitraster verwenden nun eine dauerhafte delegierte Interaktionsgrenze, die Composer-Neudarstellungen übersteht. Vor dem Öffnen des Ereignisformulars prüft Calendar alle verfügbaren Kalender nach den vorhandenen Schreibregeln für Freigaben und zeigt „Keine beschreibbaren Kalender gefunden“, wenn kein Kalender ein Ereignis aufnehmen kann. Gast-Schreibvorgänge laufen weiterhin über das begrenzte Gast-Token.
