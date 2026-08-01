@@ -6,6 +6,7 @@ import { createRoomKeyStore } from "./room-keys.mjs";
 const FLOW_ID = "load-social-chat";
 let messagesKeyring = null;
 let messagesI18nPromise = null;
+const pendingRoomKeyLoads = new Map();
 
 function getMessagesKeyring() {
     if (messagesKeyring) return messagesKeyring;
@@ -124,11 +125,26 @@ uiCtx.extendFlow(
 
 export async function loadChatRoomKey(roomId, options = {}) {
     if (!roomId) return null;
-    const result = await uiCtx.runFlow(FLOW_ID, {
-        roomId,
-        keyContribution: options.keyContribution,
-    });
-    return result.data.roomKey ?? null;
+    const loadId = String(roomId);
+    const existingLoad = pendingRoomKeyLoads.get(loadId);
+    if (existingLoad) {
+        const existingKey = await existingLoad;
+        if (existingKey || !options.keyContribution) return existingKey;
+    }
+
+    const pendingLoad = uiCtx
+        .runFlow(FLOW_ID, {
+            roomId,
+            keyContribution: options.keyContribution,
+        })
+        .then((result) => result.data.roomKey ?? null)
+        .finally(() => {
+            if (pendingRoomKeyLoads.get(loadId) === pendingLoad) {
+                pendingRoomKeyLoads.delete(loadId);
+            }
+        });
+    pendingRoomKeyLoads.set(loadId, pendingLoad);
+    return pendingLoad;
 }
 
 export async function requireChatRoomKey(roomId, options = {}) {

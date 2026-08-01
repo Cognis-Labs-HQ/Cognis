@@ -12,6 +12,31 @@ import {
 } from "../shared.js";
 import type { SocialMessagesProfile } from "../../profile-store-contract.js";
 
+const pendingDirectRoomCreations = new Map<string, Promise<unknown>>();
+
+async function serializeDirectRoomCreation<Result>(
+    accountA: string,
+    accountB: string,
+    create: () => Promise<Result>,
+): Promise<Result> {
+    const pairId = [accountA, accountB].sort().join("\u0000");
+    const previousCreation = pendingDirectRoomCreations.get(pairId);
+    const pendingCreation = (async () => {
+        if (previousCreation) {
+            await previousCreation.catch(() => undefined);
+        }
+        return create();
+    })();
+    pendingDirectRoomCreations.set(pairId, pendingCreation);
+    try {
+        return await pendingCreation;
+    } finally {
+        if (pendingDirectRoomCreations.get(pairId) === pendingCreation) {
+            pendingDirectRoomCreations.delete(pairId);
+        }
+    }
+}
+
 function isPendingRequestLookupSchemaError(error: unknown): boolean {
     const message = error instanceof Error ? error.message : String(error);
     return (
@@ -250,37 +275,58 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             }
         }
 
-        const room =
-            isDm && primaryTarget
-                ? await messagesStore.createDm(
-                      accountId,
-                      primaryTarget.accountId,
-                  )
-                : await messagesStore.createRoom(
-                      "group",
-                      typeof body.title === "string" ? body.title : null,
-                      accountId,
-                  );
-        const creatorProfile = await profileStore.getProfile(accountId);
-        await messagesStore.addMemberWithEvent({
-            roomId: room.id,
-            actorId: accountId,
-            accountId,
-            role: "owner",
-            handle: creatorProfile?.handle ?? null,
-            displayName: creatorProfile?.displayName ?? null,
-        });
-        for (const target of targets) {
+        const createRoomWithMembers = async () => {
+            const existingRoom =
+                isDm && primaryTarget
+                    ? await messagesStore.findDmBetween(
+                          accountId,
+                          primaryTarget.accountId,
+                      )
+                    : null;
+            if (existingRoom) return { room: existingRoom, created: false };
+
+            const room =
+                isDm && primaryTarget
+                    ? await messagesStore.createDm(
+                          accountId,
+                          primaryTarget.accountId,
+                      )
+                    : await messagesStore.createRoom(
+                          "group",
+                          typeof body.title === "string" ? body.title : null,
+                          accountId,
+                      );
+            const creatorProfile = await profileStore.getProfile(accountId);
             await messagesStore.addMemberWithEvent({
                 roomId: room.id,
                 actorId: accountId,
-                accountId: target.accountId,
-                role: "member",
-                handle: target.handle,
-                displayName: target.displayName,
+                accountId,
+                role: "owner",
+                handle: creatorProfile?.handle ?? accountId,
+                displayName: creatorProfile?.displayName ?? accountId,
             });
-        }
-        await messagesStore.generateAndStoreRoomKey(room.id);
+            for (const target of targets) {
+                await messagesStore.addMemberWithEvent({
+                    roomId: room.id,
+                    actorId: accountId,
+                    accountId: target.accountId,
+                    role: "member",
+                    handle: target.handle,
+                    displayName: target.displayName,
+                });
+            }
+            await messagesStore.generateAndStoreRoomKey(room.id);
+            return { room, created: true };
+        };
+        const result =
+            isDm && primaryTarget
+                ? await serializeDirectRoomCreation(
+                      accountId,
+                      primaryTarget.accountId,
+                      createRoomWithMembers,
+                  )
+                : await createRoomWithMembers();
+        const { room } = result;
         if (isDm && primaryTarget) {
             await messagesStore.approvePendingRequestsBetween(
                 accountId,
@@ -288,7 +334,9 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                 room.id,
             );
         }
-        res.writeHead(201, { "content-type": "application/json" });
+        res.writeHead(result.created ? 201 : 200, {
+            "content-type": "application/json",
+        });
         res.end(JSON.stringify({ data: room }));
         return true;
     };

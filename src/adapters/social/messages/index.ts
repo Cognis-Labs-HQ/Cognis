@@ -155,9 +155,6 @@ export async function bootstrapSocialAdapter(
     ctx.capabilities.get<
         (ownerId: string, purge: (accountId: string) => Promise<void>) => void
     >("auth:registerAccountDataOwner")?.("messages", deleteAccountActivity);
-    ctx.capabilities.get<
-        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
-    >("auth:registerKeyringDataOwner")?.("messages", deleteAccountActivity);
     ctx.flow.extend(
         "deprovision-user",
         "cleanup-dependencies",

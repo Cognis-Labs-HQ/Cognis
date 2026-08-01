@@ -520,3 +520,27 @@ test("messages onRoomOpened clears composer when opened room has no saved draft"
         /persistedState\.size === 0[\s\S]*composerInputRef\.value = ""/m,
     );
 });
+
+test("messages serialize concurrent room-key loads during SPA mounting", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/chat-loading.js"),
+        "utf8",
+    );
+
+    assert.match(source, /const pendingRoomKeyLoads = new Map\(\)/);
+    assert.match(
+        source,
+        /const existingLoad = pendingRoomKeyLoads\.get\(loadId\)/,
+    );
+    assert.match(source, /if \(existingKey \|\| !options\.keyContribution\)/);
+});
+
+test("keyring reset preserves message-room membership", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+
+    assert.doesNotMatch(source, /auth:registerKeyringDataOwner/);
+    assert.match(source, /auth:registerAccountDataOwner/);
+});
