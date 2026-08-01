@@ -585,7 +585,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     ? {
                           mountScriptUrl:
                               "/static/gateways/calendar/ui/share-renderer.js",
-                          preserveShareShell: true,
                           stringsBaseUrl: [
                               "/static/gateways/calendar/ui/languages",
                           ],

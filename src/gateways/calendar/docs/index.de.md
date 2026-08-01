@@ -14,4 +14,4 @@ Die angemeldete Kalenderseite delegiert Ansichts-, Zeitraum- und Zeitrasteraktio
 
 ## Integration in die Share-Shell
 
-Calendar fordert `preserveShareShell` über den Share-Seitenvertrag an. Sein Renderer mountet nur die isolierte Kalenderkomponente in den von Share bereitgestellten Ressourcen-Slot, sodass die gemeinsame Standard-Kopfzeile und das Seiten-Grundgerüst erhalten bleiben. Der Renderer importiert Formular-, Popup-, Zeitstempel- und Kalenderansichts-Abhängigkeiten direkt und authentifiziert Ereignisänderungen mit dem übergebenen begrenzten Gast-Token.
+Calendar folgt dem bewährten Lebenszyklus für Meeting-Freigaben: Share entfernt seinen Lade-Composer und übergibt Seitenstamm, aufgelösten Kontext, Übersetzungen und Abbruchsignal an Calendar. Calendar besitzt danach eine vollständige `createPageComposer`-Seite mit Standard-Kopfzeile, Theme-Steuerung und Fußzeile, aber ohne Kontonavigation. Das einzelne Kalenderelement importiert Formular-, Popup-, Zeitstempel- und Ansichtsabhängigkeiten direkt; Ereignisänderungen werden mit dem übergebenen begrenzten Gast-Token authentifiziert.

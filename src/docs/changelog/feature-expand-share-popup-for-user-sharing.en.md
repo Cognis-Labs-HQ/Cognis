@@ -488,6 +488,6 @@ Share URLs now probe the gateway before touching the account keyring, so keyring
 
 Calendar view switching, period navigation, and timeslot event creation now use a persistent delegated interaction boundary that remains active across composer rerenders. Before opening the event composer, Calendar evaluates every available calendar with the existing shared-write rules and shows “No Writable Calendars Found” when none can accept an event. Guest calendar writes continue through the scoped guest token.
 
-## Calendar shares now retain the standard Share shell
+## Calendar shares use the proven meeting-page lifecycle
 
-Calendar link guests now mount the Calendar renderer inside the standard Share page composer instead of replacing it with a nested page composer. The shared header, theme controls, footer, styles, and page lifecycle remain active, while Calendar renders only its single-calendar component in the provided mount slot. Removing the nested composer also restores view controls, navigation, timeslot actions, and guest-token event composition.
+Share now hands Calendar the page root after resolution, exactly as it does for meeting links. Calendar owns the resulting full page composer, so the standard header, theme controls, footer, and lifecycle render together with the single-calendar card instead of leaving the Share loading placeholder visible. Delegated view, navigation, timeslot, and guest-token event controls remain attached across calendar rerenders.

@@ -14,4 +14,4 @@ The signed-in Calendar page delegates view, period, and timeslot actions from it
 
 ## Share shell integration
 
-Calendar requests `preserveShareShell` from the Share page contract. Its renderer mounts only the isolated calendar component into Share's provided resource slot, so the standard shared header and page boilerplate remain present. The renderer imports its form, popup, timestamp, and Calendar view dependencies directly and authenticates event mutations with the supplied scoped guest token.
+Calendar follows the proven meeting-share lifecycle: Share clears its loading composer and passes the page root, resolved context, translations, and abort signal to Calendar. Calendar then owns a full `createPageComposer` page with the standard header, theme control, and footer but no account navigation. Its single calendar element imports form, popup, timestamp, and view dependencies directly, while event mutations authenticate with the supplied scoped guest token.

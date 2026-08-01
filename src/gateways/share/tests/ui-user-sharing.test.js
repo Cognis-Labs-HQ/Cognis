@@ -202,11 +202,11 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     );
 });
 
-test("component renderers can mount inside the standard share shell", () => {
-    assert.match(shareAppSource, /preserveShareShell/);
-    assert.match(shareAppSource, /state\.isMountedApp = true/);
-    assert.match(shareAppSource, /#share-resource-mount-root/);
-    assert.match(shareAppSource, /mountSharedPage\(mountRoot/);
+test("component page renderers receive the root used by meeting shares", () => {
+    assert.match(shareAppSource, /root\.replaceChildren\(\)/);
+    assert.match(shareAppSource, /mountSharedPage\(root/);
+    assert.doesNotMatch(shareAppSource, /preserveShareShell/);
+    assert.doesNotMatch(shareAppSource, /share-resource-mount-root/);
 });
 
 test("received user shares unlock in place and navigate to the component", () => {

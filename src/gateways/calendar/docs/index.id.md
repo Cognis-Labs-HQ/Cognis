@@ -14,4 +14,4 @@ Halaman Kalender pengguna mendelegasikan tindakan tampilan, periode, dan slot wa
 
 ## Integrasi shell Share
 
-Calendar meminta `preserveShareShell` dari kontrak halaman Share. Perendernya hanya memasang komponen kalender terisolasi ke slot sumber daya yang disediakan Share sehingga header bersama standar dan boilerplate halaman tetap ada. Perender mengimpor dependensi formulir, popup, stempel waktu, dan tampilan Kalender secara langsung serta mengautentikasi mutasi acara dengan token tamu terbatas yang diberikan.
+Calendar mengikuti siklus hidup berbagi rapat yang sudah terbukti: Share menghapus composer pemuatan lalu meneruskan akar halaman, konteks terselesaikan, terjemahan, dan sinyal pembatalan ke Calendar. Calendar kemudian memiliki halaman `createPageComposer` lengkap dengan header standar, kontrol tema, dan footer tanpa navigasi akun. Elemen kalender tunggal mengimpor dependensi formulir, popup, stempel waktu, dan tampilan secara langsung, sedangkan mutasi acara diautentikasi dengan token tamu terbatas yang diberikan.

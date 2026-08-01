@@ -48,9 +48,6 @@ function buildShareElement(state) {
             max: ["fill", "fill"],
         },
         render: () => {
-            if (state.isMountedApp && !state.errorKey) {
-                return '<div id="share-resource-mount-root" class="share-app-mount"></div>';
-            }
             if (state.loading) {
                 return `
                     <div class="share-window card-elevated">
@@ -84,7 +81,6 @@ export async function mount(root, { signal } = {}) {
         loading: true,
         errorKey: "",
         renderedContent: "",
-        isMountedApp: false,
         i18n: await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         }),
@@ -197,22 +193,8 @@ export async function mount(root, { signal } = {}) {
         }
         state.loading = false;
         state.errorKey = "";
-        const preserveShareShell =
-            shareContext.page?.preserveShareShell === true;
-        let mountRoot = root;
-        if (preserveShareShell) {
-            state.isMountedApp = true;
-            composer.refresh([buildShareElement(state)]);
-            mountRoot = root.querySelector("#share-resource-mount-root");
-            if (!(mountRoot instanceof HTMLElement)) {
-                state.errorKey = "share.error.renderer_missing";
-                composer.refresh([buildShareElement(state)]);
-                return;
-            }
-        } else {
-            root.replaceChildren();
-        }
-        await mountSharedPage(mountRoot, {
+        root.replaceChildren();
+        await mountSharedPage(root, {
             shareContext,
             i18n: state.i18n,
             signal,

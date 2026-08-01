@@ -1,6 +1,7 @@
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatMonthYear } from "/static/reuse/timestamp.js";
 import {
@@ -177,6 +178,7 @@ export async function mount(
         shareContext?.grantedCapabilities?.includes("calendar:write");
     const calendarId = String(calendar.id ?? "");
     const guestAccessToken = String(shareContext?.guestAccessToken ?? "");
+    let composer;
     root.classList.add("calendar-share-page");
     signal.addEventListener(
         "abort",
@@ -201,11 +203,24 @@ export async function mount(
     };
 
     function renderCalendar() {
+        composer.refresh([buildCalendarElement()]);
+    }
+
+    function buildCalendarElement() {
         const periodLabel =
             selectedView === "year"
                 ? String(activeDate.getFullYear())
                 : formatMonthYear(activeDate);
-        root.innerHTML = `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
+        return {
+            id: "shared-calendar",
+            label: calendar.name || i18n.t("gateway.calendar.page_title"),
+            pinned: true,
+            gridSize: {
+                default: [12, 10],
+                min: [8, 5],
+                max: ["fill", "fill"],
+            },
+            render: () => `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
                 <header class="calendar-view-header">
                     <div class="calendar-view-nav">
@@ -219,7 +234,8 @@ export async function mount(
                     </div>
                 </header>
                 <div class="calendar-view-canvas">${renderCalendarView(events, selectedView, activeDate, i18n)}</div>
-            </section>`;
+            </section>`,
+        };
     }
 
     root.addEventListener(
@@ -278,5 +294,24 @@ export async function mount(
         { signal },
     );
 
-    renderCalendar();
+    composer = createPageComposer(root, {
+        allowCustomization: false,
+        enableDomParking: true,
+        elements: [buildCalendarElement()],
+        preferenceKey: "shared-calendar-layout",
+        i18n,
+        pageContext: {
+            title: i18n.t("gateway.calendar.page_title"),
+            subtitle: i18n.t("gateway.calendar.page_subtitle"),
+        },
+        showTopbar: true,
+        showNavbar: false,
+        showFooter: true,
+        showThemeToggle: true,
+        persistLayoutPreferences: false,
+        frameless: false,
+        requireAccountSession: false,
+    });
+
+    await composer.init();
 }

@@ -488,6 +488,6 @@ Freigabe-URLs fragen nun zuerst das Gateway ab, bevor sie auf den Kontoschlüsse
 
 Ansichtswechsel, Zeitraum-Navigation und Ereigniserstellung über Zeitraster verwenden nun eine dauerhafte delegierte Interaktionsgrenze, die Composer-Neudarstellungen übersteht. Vor dem Öffnen des Ereignisformulars prüft Calendar alle verfügbaren Kalender nach den vorhandenen Schreibregeln für Freigaben und zeigt „Keine beschreibbaren Kalender gefunden“, wenn kein Kalender ein Ereignis aufnehmen kann. Gast-Schreibvorgänge laufen weiterhin über das begrenzte Gast-Token.
 
-## Kalenderfreigaben behalten die Standard-Share-Shell
+## Kalenderfreigaben verwenden den bewährten Meeting-Seitenlebenszyklus
 
-Gäste von Kalenderlinks mounten den Kalender-Renderer nun innerhalb des Standard-Share-Page-Composers, statt ihn durch einen verschachtelten Page-Composer zu ersetzen. Gemeinsame Kopfzeile, Theme-Steuerung, Fußzeile, Stile und Seitenlebenszyklus bleiben aktiv, während Calendar nur seine einzelne Kalenderkomponente im bereitgestellten Mount-Slot darstellt. Das Entfernen des verschachtelten Composers stellt außerdem Ansichtssteuerung, Navigation, Zeitrasteraktionen und Ereigniserstellung mit Gast-Token wieder her.
+Share übergibt Calendar nach der Auflösung nun den Seitenstamm, genau wie bei Meeting-Links. Calendar besitzt den daraus entstehenden vollständigen Page Composer, sodass Standard-Kopfzeile, Theme-Steuerung, Fußzeile und Lebenszyklus gemeinsam mit der einzelnen Kalenderkarte erscheinen, statt den Share-Ladeplatzhalter sichtbar zu lassen. Delegierte Ansichts-, Navigations-, Zeitraster- und Gast-Token-Ereignissteuerungen bleiben bei Kalender-Neudarstellungen verbunden.
