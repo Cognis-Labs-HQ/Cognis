@@ -527,3 +527,7 @@ The Share gateway now registers its popup through the UI capability context, con
 ## Link popup ownership and readable spacing
 
 The share-links popup now lives with the Link Share adapter that owns link sharing rather than in the generic Share gateway. Intentional blank lines between Nextcloud Whiteboard functions were also restored to preserve readable code boundaries.
+
+## Link adapter test ownership
+
+The Link Share popup regression tests now live with the Link Share adapter and its UI implementation rather than in the generic Share gateway test suite.

@@ -1,19 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const IMPLEMENTATION_URL = new URL(
+    "../ui/share-links-popup/implementation.js",
+    import.meta.url,
+);
+const STYLESHEET_URL = new URL(
+    "../ui/share-links-popup/index.css",
+    import.meta.url,
+);
 
 test("share popup keeps the active adapter page and history rendering separate", () => {
-    const source = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/share/link/ui/share-links-popup/implementation.js",
-        ),
-        "utf8",
-    );
+    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
 
     assert.match(source, /share-method-page/);
     assert.match(source, /share-links-list-container/);
@@ -26,17 +25,8 @@ test("share popup keeps the active adapter page and history rendering separate",
 });
 
 test("share links popup renders existing links as an icon-only copy button", () => {
-    const source = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/share/link/ui/share-links-popup/implementation.js",
-        ),
-        "utf8",
-    );
-    const cssSource = readFileSync(
-        resolve(ROOT, "src/adapters/share/link/ui/share-links-popup/index.css"),
-        "utf8",
-    );
+    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+    const cssSource = readFileSync(STYLESHEET_URL, "utf8");
 
     assert.match(source, /class="share-links-row-header"/);
     assert.match(source, /class="share-links-row-copy"/);
@@ -51,13 +41,7 @@ test("share links popup renders existing links as an icon-only copy button", () 
 });
 
 test("share deletion requires explicit confirmation", () => {
-    const source = readFileSync(
-        resolve(
-            ROOT,
-            "src/adapters/share/link/ui/share-links-popup/implementation.js",
-        ),
-        "utf8",
-    );
+    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
 
     assert.match(source, /const confirmation = await openPopup/);
     assert.match(source, /if \(confirmation !== "confirm"\) return/);

@@ -52,7 +52,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.23` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.24` |
-| Link Share            | `src/adapters/share/link/`          | `1.1.8`  |
+| Link Share            | `src/adapters/share/link/`          | `1.1.9`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.11` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |

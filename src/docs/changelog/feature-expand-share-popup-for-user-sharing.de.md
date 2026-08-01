@@ -527,3 +527,7 @@ Das Share-Gateway registriert sein Popup nun über den UI-Fähigkeitskontext. Ve
 ## Link-Popup und lesbare Abstände
 
 Das Popup für Freigabelinks befindet sich nun beim Link-Share-Adapter, der die Linkfreigabe verantwortet, statt im allgemeinen Share-Gateway. Außerdem wurden beabsichtigte Leerzeilen zwischen Nextcloud-Whiteboard-Funktionen wiederhergestellt, um lesbare Codegrenzen zu bewahren.
+
+## Testverantwortung des Link-Adapters
+
+Die Regressionstests für das Link-Share-Popup befinden sich nun zusammen mit dem Link-Share-Adapter und seiner UI-Implementierung statt in der allgemeinen Share-Gateway-Testsuite.

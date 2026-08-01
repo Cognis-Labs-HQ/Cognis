@@ -527,3 +527,7 @@ Gateway Share kini mendaftarkan popup melalui konteks kapabilitas UI. Konsumen t
 ## Kepemilikan popup tautan dan spasi
 
 Popup tautan berbagi kini berada di dalam adapter Link Share yang memiliki fungsi berbagi tautan, bukan di gateway Share generik. Baris kosong yang disengaja di antara fungsi Nextcloud Whiteboard juga dipulihkan untuk menjaga batas kode tetap mudah dibaca.
+
+## Kepemilikan pengujian adapter tautan
+
+Pengujian regresi popup Link Share kini berada bersama adapter Link Share dan implementasi UI-nya, bukan di rangkaian pengujian gateway Share generik.
