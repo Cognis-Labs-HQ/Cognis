@@ -133,7 +133,10 @@ export async function mount(root, { signal } = {}) {
         // (expired, revoked, or invalid). Render the fallback screen
         // directly instead of the generic missing/malformed messages below.
         state.loading = false;
-        state.errorKey = "share.error.expired";
+        state.errorKey =
+            session.failureReason === "share_not_found"
+                ? "share.error.not_found"
+                : "share.error.expired";
         updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;

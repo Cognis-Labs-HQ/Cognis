@@ -114,17 +114,10 @@ export async function resolveReceivedShare(
 ) {
     const normalizedToken = String(token ?? "").trim();
     if (!normalizedToken) return null;
-    const shareI18n = await createI18n({
-        componentStringBaseUrls: ["/static/gateways/share/languages"],
-    });
-    if (useAccountKeyring) {
-        await unlockKeyringForShare(shareI18n, normalizedToken);
-    }
     const keyringId = `share:${normalizedToken}`;
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         "Share Gateway",
     );
-    const keyringPassword = useAccountKeyring ? keyring?.get(keyringId) : null;
     const request = (password) => {
         const requestHeaders = new Headers(headers);
         if (password) requestHeaders.set("x-cognis-share-password", password);
@@ -135,8 +128,20 @@ export async function resolveReceivedShare(
             },
         );
     };
-    let response = await request(keyringPassword);
+    let response = await request(null);
     if (response.status !== 401) return response;
+    if (useAccountKeyring) {
+        const shareI18n = await createI18n({
+            componentStringBaseUrls: ["/static/gateways/share/languages"],
+        });
+        if (await unlockKeyringForShare(shareI18n, normalizedToken)) {
+            const keyringPassword = keyring?.get(keyringId);
+            if (keyringPassword) {
+                response = await request(keyringPassword);
+                if (response.status !== 401) return response;
+            }
+        }
+    }
     const entered = await promptForPassword({ allowSave: useAccountKeyring });
     if (!entered?.password) return null;
     response = await request(entered.password);

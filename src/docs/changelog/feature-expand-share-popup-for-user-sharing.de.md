@@ -479,3 +479,7 @@ Anonyme Gäste von Kalenderfreigaben lösen keinen Entsperrdialog für den Konto
 ## Zuverlässige Gastkalender-Steuerung und Bildlauf
 
 Die Ansichtsumschaltung und Zeitraum-Navigation von Kalenderlinks verwendet nun eine stabile delegierte Interaktionsgrenze, die Composer-Aktualisierungen übersteht. Vertikaler Bildlauf ist auf das Zeitraster statt auf die Widget-Karte begrenzt und entspricht damit der angemeldeten Kalenderansicht. Neu geladene Gastidentitäten sind außerdem von der Kontoschlüsselbund-Auflösung ausgeschlossen, wodurch der verbleibende Gastschlüsselbunddialog entfällt.
+
+## Passwortbewusste Auflösung und sichere Freigabelöschung
+
+Freigabe-URLs fragen nun zuerst das Gateway ab, bevor sie auf den Kontoschlüsselbund zugreifen. Ein Schlüsselbundzugriff erfolgt nur nach einer Passwortanforderung des Gateways. Fehlende oder widerrufene Links zeigen auf Freigabeseiten und bei Benachrichtigungsaktionen die vorhandene Nicht-mehr-verfügbar-Meldung. Das Widerrufen jeder Freigabe erfordert nun vor dem Löschen eine ausdrückliche Bestätigung.

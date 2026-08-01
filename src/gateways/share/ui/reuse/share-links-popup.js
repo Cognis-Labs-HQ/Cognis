@@ -63,6 +63,10 @@
  *     copySuccess: string,
  *     copyFailed: string,
  *     deleteFailed: string,
+ *     deleteConfirmTitle?: string,
+ *     deleteConfirmMessage?: string,
+ *     confirm?: string,
+ *     cancel?: string,
  *     statusActive: string,
  *     statusExpired: string,
  *     expiresAtLabel: string,
@@ -896,7 +900,7 @@ export async function openShareLinksPopup({
                 });
             });
 
-            listContainer.addEventListener("click", (event) => {
+            listContainer.addEventListener("click", async (event) => {
                 if (!(event.target instanceof HTMLElement)) return;
                 const emailButton = event.target.closest("[data-share-email]");
                 if (emailButton instanceof HTMLElement) {
@@ -994,6 +998,23 @@ export async function openShareLinksPopup({
                     deleteButton.getAttribute("data-share-delete") ?? "",
                 );
                 if (!shareId) return;
+                const confirmation = await openPopup({
+                    title: labels.deleteConfirmTitle || labels.revoke,
+                    body: `<p>${escapeHtml(labels.deleteConfirmMessage || labels.revoke)}</p>`,
+                    actions: [
+                        {
+                            id: "confirm",
+                            label: labels.confirm || labels.revoke,
+                            variant: "danger",
+                        },
+                        {
+                            id: "cancel",
+                            label: labels.cancel || labels.done,
+                            variant: "cancel",
+                        },
+                    ],
+                });
+                if (confirmation !== "confirm") return;
                 void deleteLink({ shareId })
                     .then(async () => {
                         state.pendingLinks.delete(shareId);

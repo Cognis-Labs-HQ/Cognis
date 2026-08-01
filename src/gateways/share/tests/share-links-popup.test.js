@@ -14,10 +14,8 @@ test("share popup keeps the active adapter page and history rendering separate",
 
     assert.match(source, /share-method-page/);
     assert.match(source, /share-links-list-container/);
-    assert.match(
-        source,
-        /listContainer\.innerHTML = renderRows\(labels, state\.visibleLinks\);/,
-    );
+    assert.match(source, /listContainer\.innerHTML = renderRows\(/);
+    assert.match(source, /state\.visibleLinks/);
     assert.match(source, /methodModule\.renderPage/);
     assert.match(source, /window\.setInterval\(/);
     assert.doesNotMatch(source, /captureFocusableTarget/);
@@ -44,4 +42,18 @@ test("share links popup renders existing links as an icon-only copy button", () 
     assert.match(cssSource, /\.share-links-row-header \{/);
     assert.match(cssSource, /\.share-links-row-copy \{/);
     assert.match(cssSource, /\.share-links-row-copy \{[\s\S]*flex: none;/);
+});
+
+test("share deletion requires explicit confirmation", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.js"),
+        "utf8",
+    );
+
+    assert.match(source, /const confirmation = await openPopup/);
+    assert.match(source, /if \(confirmation !== "confirm"\) return/);
+    assert.match(
+        source,
+        /if \(confirmation !== "confirm"\) return;[\s\S]*deleteLink\(\{ shareId \}\)/,
+    );
 });

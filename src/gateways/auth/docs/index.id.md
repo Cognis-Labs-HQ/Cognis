@@ -73,3 +73,7 @@ Capability yang disediakan:
 ## Bootstrap keyring peramban
 
 Gateway Autentikasi memuat adapter keyring wajib sebelum mendaftarkan hook alur sesi peramban. Karena itu, setiap pemuatan halaman langsung dan penyegaran dapat memulihkan kunci sesi tab saat ini yang tidak dapat diekstrak secara otomatis. Jika pemulihan tidak tersedia, penyelesai konten terlindungi pertama membuka dialog buka kunci keyring kontekstual.
+
+## Penerusan kegagalan berbagi
+
+Hasil sesi peramban mempertahankan alasan kegagalan autentikasi alternatif yang netral agar halaman sumber daya publik dapat membedakan sumber daya yang hilang dari status tidak tersedia lainnya tanpa mengimpor internal Autentikasi.

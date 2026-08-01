@@ -479,3 +479,7 @@ Anonymous calendar-share guests no longer trigger the account-keyring unlock pro
 ## Reliable guest calendar controls and scrolling
 
 Calendar link-share view switching and period navigation now use a stable delegated interaction boundary that survives composer refreshes. Vertical scrolling is confined to the timeslot grid rather than the widget card, matching the signed-in Calendar view. Reloaded guest identities are also excluded from account-keyring resolution, eliminating the remaining guest keyring popup.
+
+## Password-aware resolution and safe share deletion
+
+Share URLs now probe the gateway before touching the account keyring, so keyring access occurs only after the gateway returns a password challenge. Missing or revoked links render the existing no-longer-available message for both share pages and notification actions. Revoking any share now requires an explicit confirmation popup before deletion.

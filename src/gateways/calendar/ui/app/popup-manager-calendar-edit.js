@@ -19,6 +19,7 @@ async function openCalendarSharePopup({ calendar, i18n }) {
             untitled: i18n.t("gateway.calendar.share_link_name_fallback"),
             copyLink: i18n.t("gateway.calendar.share_link_copy"),
             revoke: i18n.t("ui.reuse.remove"),
+            confirm: i18n.t("ui.reuse.confirm"),
             shareOptions: i18n.t("gateway.calendar.share_links_heading"),
             mail: i18n.t("ui.reuse.mail"),
             send: i18n.t("gateway.calendar.share_email_send"),
@@ -47,6 +48,12 @@ async function openCalendarSharePopup({ calendar, i18n }) {
             copySuccess: i18n.t("gateway.calendar.share_link_copied"),
             copyFailed: i18n.t("gateway.calendar.share_link_failed"),
             deleteFailed: i18n.t("gateway.calendar.share_link_failed"),
+            deleteConfirmTitle: i18n.t(
+                "gateway.calendar.share_user_delete_confirm_title",
+            ),
+            deleteConfirmMessage: i18n.t(
+                "gateway.calendar.share_user_delete_confirm",
+            ),
             statusActive: i18n.t("gateway.calendar.visibility_shared"),
             statusExpired: i18n.t("gateway.calendar.share_link_expiry_never"),
             expiresAtLabel: i18n.t("gateway.calendar.share_links_heading"),

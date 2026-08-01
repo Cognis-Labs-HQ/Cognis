@@ -178,6 +178,11 @@ test("auth session-flow-hooks.js registers a resolve-session hook", () => {
     );
 });
 
+test("auth session result preserves an alternate share failure reason", () => {
+    const source = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    assert.match(source, /failureReason: alternateResult\.reason \?\? null/);
+});
+
 test("auth session-flow-hooks.js registers load-page hooks for authenticate and mount-page", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(

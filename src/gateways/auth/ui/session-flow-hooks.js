@@ -198,6 +198,7 @@ uiCtx.extendFlow(
                     shareContext: null,
                     isGuestSession: false,
                     shareAttempted: true,
+                    failureReason: alternateResult.reason ?? null,
                 };
             }
             const reason = tokenResult?.reason ?? null;
@@ -213,6 +214,7 @@ uiCtx.extendFlow(
                 shareContext: null,
                 isGuestSession: false,
                 shareAttempted: false,
+                failureReason: null,
             };
         }
 
@@ -226,6 +228,7 @@ uiCtx.extendFlow(
             shareContext: alternateResult?.shareContext ?? null,
             isGuestSession: alternateResult?.isGuestSession === true,
             shareAttempted: alternateResult !== null,
+            failureReason: null,
         };
     },
 );

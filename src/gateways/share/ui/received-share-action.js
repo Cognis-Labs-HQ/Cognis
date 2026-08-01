@@ -27,6 +27,17 @@ window.addEventListener("cognis:notification-action", (event) => {
                 useAccountKeyring: Boolean(accessToken) && !isViewingAsGuest(),
             });
             if (!response) return;
+            if (response.status === 404) {
+                const i18n = await createI18n({
+                    componentStringBaseUrls: [
+                        "/static/gateways/share/languages",
+                    ],
+                });
+                showToast(i18n.t("share.error.not_found"), {
+                    variant: "warning",
+                });
+                return;
+            }
             const payload = await response.json().catch(() => null);
             if (!response.ok || !payload?.data) {
                 throw new Error("share_resolution_failed");

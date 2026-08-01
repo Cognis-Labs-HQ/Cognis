@@ -37,3 +37,7 @@ Both built-in methods accept an optional exact expiry date and time; leaving it 
 ## Recipient delivery feedback and password aliases
 
 A share facilitator may return generic delivery feedback containing a translation key and component string base URL. The authenticated notification action displays that feedback before navigating to the delivered resource. After a protected token resolves, Share saves the verified password under both the opaque link token and the canonical share identifier so the receiving component can reuse it without prompting again.
+
+## Resolution and revocation UX
+
+The browser probes token resolution without opening the account keyring. Only a `401 password_required` challenge permits account-keyring restoration and a saved-password retry; `404` responses display the localized no-longer-existing share state. Every share revocation requires a confirmation popup before the delete request is sent.

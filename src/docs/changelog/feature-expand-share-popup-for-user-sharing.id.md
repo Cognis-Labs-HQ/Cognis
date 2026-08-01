@@ -479,3 +479,7 @@ Tamu anonim tautan kalender tidak lagi memicu dialog buka kunci keyring akun. Sh
 ## Kontrol dan pengguliran kalender tamu yang andal
 
 Pengalihan tampilan dan navigasi periode pada tautan kalender kini menggunakan batas interaksi terdelegasi yang stabil dan tetap aktif setelah penyegaran composer. Pengguliran vertikal dibatasi pada kisi slot waktu, bukan kartu widget, agar sesuai dengan tampilan Kalender pengguna. Identitas tamu yang dimuat ulang juga dikecualikan dari resolusi keyring akun sehingga popup keyring tamu yang tersisa tidak muncul lagi.
+
+## Resolusi sadar kata sandi dan penghapusan berbagi yang aman
+
+URL berbagi kini memeriksa gateway sebelum menyentuh keyring akun, sehingga akses keyring hanya terjadi setelah gateway mengembalikan tantangan kata sandi. Tautan yang hilang atau dicabut menampilkan pesan tidak lagi tersedia yang sudah ada pada halaman berbagi dan tindakan notifikasi. Pencabutan berbagi kini memerlukan popup konfirmasi eksplisit sebelum penghapusan.

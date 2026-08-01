@@ -223,6 +223,12 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareActionSource, /variant: "success"/);
     assert.match(receivedShareSource, /share:fetchProtectedResource/);
     assert.match(receivedShareSource, /keyring:requestUnlock/);
+    assert.match(
+        receivedShareSource,
+        /let response = await request\(null\);[\s\S]*if \(response\.status !== 401\) return response;[\s\S]*unlockKeyringForShare/,
+    );
+    assert.match(receivedShareActionSource, /response\.status === 404/);
+    assert.match(receivedShareActionSource, /share\.error\.not_found/);
     assert.match(receivedShareSource, /share\.keyring\.request_component/);
     assert.match(receivedShareSource, /share\.keyring\.request_action_access/);
     assert.match(receivedShareSource, /share\.keyring\.request_process/);

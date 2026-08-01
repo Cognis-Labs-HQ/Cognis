@@ -37,3 +37,7 @@ Kedua metode bawaan menerima tanggal dan waktu kedaluwarsa yang opsional; jika t
 ## Umpan balik pengiriman penerima dan alias kata sandi
 
 Fasilitator berbagi dapat mengembalikan umpan balik pengiriman generik yang berisi kunci terjemahan dan URL dasar string komponen. Tindakan notifikasi terautentikasi menampilkan umpan balik tersebut sebelum menavigasi ke sumber daya yang dikirim. Setelah token terlindungi diselesaikan, Share menyimpan kata sandi terverifikasi di bawah token tautan buram dan pengenal berbagi kanonis agar komponen penerima dapat menggunakannya kembali tanpa meminta ulang.
+
+## Pengalaman resolusi dan pencabutan
+
+Peramban memeriksa resolusi token tanpa membuka keyring akun. Hanya tantangan `401 password_required` yang mengizinkan pemulihan keyring akun dan percobaan ulang dengan kata sandi tersimpan; respons `404` menampilkan status berbagi yang sudah tidak ada secara terlokalisasi. Setiap pencabutan berbagi memerlukan popup konfirmasi sebelum permintaan penghapusan dikirim.

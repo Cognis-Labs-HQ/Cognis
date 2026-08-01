@@ -37,3 +37,7 @@ Beide integrierten Methoden akzeptieren optional ein genaues Ablaufdatum mit Uhr
 ## Rückmeldung zur Empfängerzustellung und Passwort-Aliasse
 
 Eine Freigabekomponente kann eine allgemeine Zustellungsrückmeldung mit Übersetzungsschlüssel und Basis-URL der Komponentenübersetzungen zurückgeben. Die authentifizierte Benachrichtigungsaktion zeigt diese Rückmeldung vor der Navigation zur zugestellten Ressource an. Nach dem Auflösen eines geschützten Tokens speichert Share das bestätigte Passwort sowohl unter dem undurchsichtigen Link-Token als auch unter der kanonischen Freigabekennung, damit die empfangende Komponente es ohne erneute Abfrage verwenden kann.
+
+## Auflösung und Widerrufsoberfläche
+
+Der Browser prüft die Tokenauflösung, ohne den Kontoschlüsselbund zu öffnen. Erst eine `401 password_required`-Anforderung erlaubt die Wiederherstellung des Kontoschlüsselbunds und einen Versuch mit dem gespeicherten Passwort; `404`-Antworten zeigen den lokalisierten Zustand für nicht mehr vorhandene Freigaben. Jeder Widerruf erfordert einen Bestätigungsdialog, bevor die Löschanfrage gesendet wird.
