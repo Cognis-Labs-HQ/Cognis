@@ -210,7 +210,15 @@ export function createShareRoutes(input: {
         if (req.method === "GET" && url.pathname === "/api/v1/share/methods") {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
-            sendJson(res, 200, { data: input.gateway.listAdapters() });
+            sendJson(res, 200, {
+                data: input.gateway.listAdapters().map((adapter) => ({
+                    id: adapter.id,
+                    nameKey: adapter.nameKey,
+                    descriptionKey: adapter.descriptionKey,
+                    pageModuleUrl: adapter.pageModuleUrl,
+                    order: adapter.order,
+                })),
+            });
             return true;
         }
 
@@ -242,6 +250,12 @@ export function createShareRoutes(input: {
             }
             const expiresAt = normalizeExpiresAt(body.expiresAt);
             if (expiresAt === null) {
+                input.log?.("warn", "Rejected invalid share expiration", {
+                    operation: "mint_share_token",
+                    ownerAccountId: claims.sub,
+                    resourceType,
+                    resourceId,
+                });
                 sendError(
                     res,
                     400,
@@ -337,6 +351,11 @@ export function createShareRoutes(input: {
             };
             const expiresAt = normalizeExpiresAt(body.expiresAt);
             if (expiresAt === null) {
+                input.log?.("warn", "Rejected invalid share expiration", {
+                    operation: "update_share_token",
+                    ownerAccountId: claims.sub,
+                    shareId,
+                });
                 sendError(
                     res,
                     400,

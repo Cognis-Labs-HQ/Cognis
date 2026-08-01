@@ -320,6 +320,22 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(linkConfigResponse.statusCode, 200);
     assert.deepEqual(linkConfigResponse.body.data, {});
 
+    const invalidCreateExpiryResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            expiresAt: "not-a-timestamp",
+        },
+    );
+    assert.equal(invalidCreateExpiryResponse.statusCode, 400);
+    assert.equal(
+        invalidCreateExpiryResponse.body.error.code,
+        "invalid_expires_at",
+    );
+
     const createResponse = await dispatchJson(
         "POST",
         adminToken,
@@ -343,6 +359,17 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.match(
         createResponse.body.data.quickShareActions[0].href,
         /^mailto:/,
+    );
+    const invalidUpdateExpiryResponse = await dispatchJson(
+        "PATCH",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}`,
+        { expiresAt: "not-a-timestamp" },
+    );
+    assert.equal(invalidUpdateExpiryResponse.statusCode, 400);
+    assert.equal(
+        invalidUpdateExpiryResponse.body.error.code,
+        "invalid_expires_at",
     );
 
     const shareEmailResponse = await dispatchJson(
@@ -626,13 +653,4 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
     );
     assert.equal(afterResourceDeletion.body.data.length, 0);
-});
-
-test("share routes reject malformed expiration timestamps before minting", async () => {
-    const source = await import("node:fs/promises").then(({ readFile }) =>
-        readFile(new URL("../bootstrap/routes.ts", import.meta.url), "utf8"),
-    );
-    assert.match(source, /normalizeExpiresAt\(body\.expiresAt\)/);
-    assert.match(source, /invalid_expires_at/);
-    assert.match(source, /Number\.isFinite\(timestamp\)/);
 });

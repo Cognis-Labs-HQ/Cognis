@@ -5,9 +5,10 @@ import {
     renderReminderField,
 } from "./popup-manager-reminders.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 async function openCalendarSharePopup({ calendar, i18n }) {
-    const { openSharePopup } =
-        await import("/static/gateways/share/ui/reuse/share-links-popup/index.js");
+    const openSharePopup = uiCtx.capabilities.get("share:openPopup");
+    if (typeof openSharePopup !== "function") return;
     await openSharePopup({
         resourceType: "calendar",
         resourceId: calendar.id,

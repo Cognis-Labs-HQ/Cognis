@@ -519,3 +519,7 @@ Gleichzeitige Auflösungen von Raumschlüsseln werden pro Raum koordiniert, soda
 ## Schlüsselbund-Persistenz und Freigabevalidierung gehärtet
 
 Schlüsselbund-Schreibvorgänge werden nun serialisiert und abgelehnte Serversynchronisierungen gemeldet, Ablaufzeitpunkte für Freigaben validiert, das übergroße Popup in fokussierte Module aufgeteilt und Namen sowie Beschreibungen der Freigabemethoden durch ihre jeweiligen Adapter lokalisiert.
+
+## Anbieterunabhängige Popup-Fähigkeit
+
+Das Share-Gateway registriert sein Popup nun über den UI-Fähigkeitskontext. Verbraucher importieren keine internen Share-Gateway-Module mehr, das Popup liegt in einem zweckgebundenen Verzeichnis und die Ablaufvalidierung wird mit echten API-Anfragen getestet.

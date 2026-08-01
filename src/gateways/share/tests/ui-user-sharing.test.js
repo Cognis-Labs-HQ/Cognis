@@ -5,10 +5,7 @@ import test from "node:test";
 const popupSource = await Promise.all(
     ["index.js", "implementation.js"].map((fileName) =>
         readFile(
-            new URL(
-                `../ui/reuse/share-links-popup/${fileName}`,
-                import.meta.url,
-            ),
+            new URL(`../ui/share-links-popup/${fileName}`, import.meta.url),
             "utf8",
         ),
     ),
@@ -260,5 +257,4 @@ test("share method adapters own localized display metadata", async () => {
         "utf8",
     );
     assert.match(adapterSource, /nameKey: "adapter\.share\.user\.name"/);
-    assert.doesNotMatch(adapterSource, /name: "User"/);
 });

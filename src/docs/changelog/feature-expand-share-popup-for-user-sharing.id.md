@@ -519,3 +519,7 @@ Resolusi kunci ruang yang berjalan bersamaan dikoordinasikan per ruang agar masu
 ## Persistensi keyring dan validasi berbagi diperkuat
 
 Penulisan keyring kini diserialkan dan sinkronisasi server yang ditolak dilaporkan, waktu kedaluwarsa berbagi divalidasi, popup yang terlalu besar dipecah menjadi modul terfokus, serta nama dan deskripsi metode berbagi dilokalkan oleh adapter pemiliknya.
+
+## Kapabilitas popup independen penyedia
+
+Gateway Share kini mendaftarkan popup melalui konteks kapabilitas UI. Konsumen tidak lagi mengimpor bagian internal gateway Share, popup berada dalam direktori khusus tujuan, dan validasi kedaluwarsa diuji melalui permintaan API nyata.

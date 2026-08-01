@@ -519,3 +519,7 @@ Concurrent room-key resolution is coordinated per room so SPA entry cannot displ
 ## Hardened keyring persistence and share validation
 
 Keyring writes are now serialized and rejected server synchronizations are surfaced, share expiration timestamps are validated, the oversized popup was split into focused modules, and share-method names and descriptions are localized by their owning adapters.
+
+## Provider-independent popup capability
+
+The Share gateway now registers its popup through the UI capability context, consumers no longer import Share gateway internals, the popup lives in a purpose-constrained directory, and expiration validation is covered through real API requests.

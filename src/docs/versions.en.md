@@ -52,8 +52,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.23` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.24` |
-| Link Share            | `src/adapters/share/link/`          | `1.1.6`  |
-| User Share            | `src/adapters/share/user/`          | `1.1.10` |
+| Link Share            | `src/adapters/share/link/`          | `1.1.7`  |
+| User Share            | `src/adapters/share/user/`          | `1.1.11` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.0.0`  |
@@ -65,7 +65,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.3.1`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.7.40` |
-| Share                 | `src/gateways/share/`        | `1.6.42` |
+| Share                 | `src/gateways/share/`        | `1.6.43` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.11` |
 | Notification (notify) | `src/gateways/notify/`       | `1.5.3`  |
 | Social                | `src/gateways/social/`       | `1.2.10` |
@@ -73,7 +73,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/` | `1.1.12` |
 | Logging               | `src/gateways/logging/`      | `1.5.3`  |
 | Study                 | `src/gateways/study/`        | `1.5.8`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.41` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.42` |
 
 ## Core contracts
 
@@ -92,7 +92,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.43` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.26` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.44` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.27` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

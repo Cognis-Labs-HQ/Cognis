@@ -27,7 +27,7 @@ import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
-const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
+const STYLESHEET_HREF = "/static/gateways/share/ui/share-links-popup/index.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
 let stylesheetReady = null;
 

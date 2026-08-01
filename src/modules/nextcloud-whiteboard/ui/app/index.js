@@ -3,6 +3,7 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 import { confirmClearCanvas } from "./clear-canvas.js";
@@ -529,12 +530,11 @@ async function bindShareButton(toolbar) {
 async function openSharePopup() {
     if (!activeBoard?.id || !canManageShares()) return;
     try {
-        const [{ openShareLinksPopup }, { buildShareCallbacks }] =
-            await Promise.all([
-                import("/static/gateways/share/ui/reuse/share-links-popup/index.js"),
-                import("/static/modules/nextcloud-whiteboard/share-adapter.js"),
-            ]);
-        await openShareLinksPopup({
+        const sharePopup = uiCtx.capabilities.get("share:openLinksPopup");
+        if (typeof sharePopup !== "function") return;
+        const { buildShareCallbacks } =
+            await import("/static/modules/nextcloud-whiteboard/share-adapter.js");
+        await sharePopup({
             title: translateModuleString(
                 "module.nextcloud_whiteboard.share_popup_title",
             ),

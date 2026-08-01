@@ -667,15 +667,67 @@ test("cancelling one unlock flushes concurrent and future requests until manual 
     await keyring.lockKeyring();
 });
 
-test("keyring persistence serializes writes and surfaces server rejection", () => {
-    const source = readFileSync(
-        resolve("src/adapters/auth/keyring/ui/keyring.js"),
-        "utf8",
-    );
-    assert.match(
-        source,
-        /persistenceQueue\.then\(\(\) => persistVaultSnapshot\(\)\)/,
-    );
-    assert.match(source, /if \(!response\.ok\)/);
-    assert.match(source, /keyring_sync_rejected/);
+test("keyring persistence serializes concurrent vault synchronization", async () => {
+    const keyring = await import("../ui/keyring.js");
+    const originalFetch = globalThis.fetch;
+    localStorage.setItem("cognis_account", "serialization-test-account");
+    localStorage.removeItem("cognis_secure_keyring:serialization-test-account");
+    localStorage.removeItem("cognis_secure_keyring");
+    let activeRequests = 0;
+    let maximumActiveRequests = 0;
+    try {
+        assert.equal(
+            await keyring.unlockKeyring("serialization-password"),
+            true,
+        );
+        globalThis.fetch = async () => {
+            activeRequests += 1;
+            maximumActiveRequests = Math.max(
+                maximumActiveRequests,
+                activeRequests,
+            );
+            await new Promise((resolve) => setTimeout(resolve, 5));
+            activeRequests -= 1;
+            return new Response(JSON.stringify({ data: { saved: true } }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            });
+        };
+        await Promise.all([
+            keyring.setKeyringValue("test:serialized:first", "first"),
+            keyring.setKeyringValue("test:serialized:second", "second"),
+        ]);
+        assert.equal(maximumActiveRequests, 1);
+        assert.equal(keyring.getKeyringValue("test:serialized:first"), "first");
+        assert.equal(
+            keyring.getKeyringValue("test:serialized:second"),
+            "second",
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+        await keyring.lockKeyring();
+        localStorage.removeItem("cognis_account");
+    }
+});
+
+test("keyring persistence surfaces definitive server rejection", async () => {
+    const keyring = await import("../ui/keyring.js");
+    const originalFetch = globalThis.fetch;
+    localStorage.setItem("cognis_account", "rejection-test-account");
+    localStorage.removeItem("cognis_secure_keyring:rejection-test-account");
+    localStorage.removeItem("cognis_secure_keyring");
+    try {
+        assert.equal(await keyring.unlockKeyring("rejection-password"), true);
+        globalThis.fetch = async () => new Response(null, { status: 413 });
+        await assert.rejects(
+            keyring.setKeyringValue("test:rejected", "secret"),
+            (error) =>
+                error?.message === "keyring_sync_rejected" &&
+                error?.status === 413,
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+        await keyring.lockKeyring();
+        localStorage.removeItem("cognis_account");
+    }
 });

@@ -15,7 +15,7 @@
  *
  * Usage:
  *   import { openShareLinksPopup } from
- *     '/static/gateways/share/ui/reuse/share-links-popup/index.js';
+ *     '/static/gateways/share/ui/share-links-popup/index.js';
  *
  *   await openShareLinksPopup({
  *     title: 'Share Meeting',
@@ -100,7 +100,8 @@
  * }} options
  * @returns {Promise<void>}
  */
-import { buildShareTokenCallbacks } from "../share-api.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { buildShareTokenCallbacks } from "../reuse/share-api.js";
 import { openShareLinksPopup } from "./implementation.js";
 
 export { openShareLinksPopup };
@@ -123,3 +124,6 @@ export function openSharePopup({
         }),
     });
 }
+
+uiCtx.capabilities.contribute("share:openPopup", openSharePopup);
+uiCtx.capabilities.contribute("share:openLinksPopup", openShareLinksPopup);
