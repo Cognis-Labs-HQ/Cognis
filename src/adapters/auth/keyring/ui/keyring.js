@@ -456,11 +456,7 @@ export function resolveKeyringSetupPassword(enteredPassword, accountPassword) {
 
 export async function setupKeyringAfterLogin(
     accountPassword,
-    {
-        requestSetupPassword = requestKeyringSetup,
-        requestUnlock = requestKeyringUnlock,
-        deferNewSetup = false,
-    } = {},
+    { requestSetupPassword = requestKeyringSetup, deferNewSetup = false } = {},
 ) {
     const localEnvelope = loadLocalEnvelope();
     const remoteState = await loadRemoteEnvelope();
@@ -472,16 +468,7 @@ export async function setupKeyringAfterLogin(
         if (accountPassword && (await unlockKeyring(accountPassword))) {
             return { setup: false, unlocked: true };
         }
-        const i18n = await loadKeyringI18n();
-        const unlocked = await requestUnlock({
-            i18n,
-            request: {
-                component: i18n.t("adapter.auth.keyring.request_component"),
-                action: i18n.t("adapter.auth.keyring.request_action_unlock"),
-                process: i18n.t("adapter.auth.keyring.request_process_session"),
-            },
-        });
-        return { setup: false, unlocked };
+        return { setup: false, unlocked: false };
     }
     if (deferNewSetup) {
         sessionStorage.setItem(DEFERRED_SETUP_KEY, "1");

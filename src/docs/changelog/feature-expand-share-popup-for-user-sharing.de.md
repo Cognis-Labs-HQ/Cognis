@@ -451,3 +451,7 @@ SMTP besitzt und registriert nun seine Test-Route selbst, während Gateway-Route
 ## Konsistente Zeitleisten für Raummitgliedschaften
 
 Nachrichtenanfragen erstellen keine Direktnachrichtenräume mehr, die nur Ereignisse enthalten. Mitgliedschaftsänderungen und ihre passiven Zeitleistenereignisse sind nun atomar, und Besprechungschats erfassen für alle ermittelten Teilnehmenden ein Beitrittsereignis.
+
+## Schlüsselbundabfragen nur bei benötigten Inhalten
+
+Bei der Anmeldung wird das Kontopasswort nun unverbindlich ausprobiert, ohne bei einem abweichenden Schlüsselbundpasswort einen Dialog zu öffnen. Die kontextbezogene Entsperrabfrage erscheint erst, wenn eine Komponente tatsächlich geschützte Inhalte auflöst.

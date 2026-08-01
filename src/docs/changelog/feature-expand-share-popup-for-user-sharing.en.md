@@ -451,3 +451,7 @@ SMTP now owns and registers its test route, while gateway routes use gateway con
 ## Consistent room membership timelines
 
 Message requests no longer create event-only direct-message rooms. Membership changes and their passive timeline events are now atomic, and meeting chats record a join event for every resolved participant.
+
+## Keyring prompts only when content needs them
+
+Login now tries the account password opportunistically without opening a keyring dialog when it differs. The contextual unlock prompt appears only when a component actually resolves protected content.

@@ -43,3 +43,7 @@ const password = await keyring.resolve("meeting:123:password", {
     prompt: ({ invalid }) => askForPassword(invalid),
 });
 ```
+
+## Login unlock behavior
+
+During login, the adapter opportunistically attempts to decrypt an existing vault with the account password. A failed attempt leaves the vault locked and never opens an unlock dialog or blocks dashboard navigation. The contextual unlock dialog is requested only when a component resolves keyring-backed content.

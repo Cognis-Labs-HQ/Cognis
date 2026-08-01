@@ -451,3 +451,7 @@ SMTP kini memiliki dan mendaftarkan rute ujinya sendiri, sedangkan rute gateway 
 ## Linimasa keanggotaan ruang yang konsisten
 
 Permintaan pesan tidak lagi membuat ruang pesan langsung yang hanya berisi peristiwa. Perubahan keanggotaan dan peristiwa linimasa pasifnya kini bersifat atomik, dan obrolan rapat mencatat peristiwa bergabung untuk setiap peserta yang ditemukan.
+
+## Permintaan keyring hanya saat konten membutuhkannya
+
+Proses masuk kini mencoba kata sandi akun secara oportunistik tanpa membuka dialog keyring bila kata sandinya berbeda. Permintaan buka kunci kontekstual hanya muncul saat komponen benar-benar menyelesaikan konten terlindungi.

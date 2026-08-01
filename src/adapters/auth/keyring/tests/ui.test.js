@@ -324,6 +324,25 @@ test("first login sets up a new keyring with the selected encryption password", 
     localStorage.removeItem("cognis_account");
 });
 
+test("login silently leaves the keyring locked when its password differs", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    localStorage.setItem("cognis_account", "separate-keyring-password-user");
+    assert.equal(await keyring.unlockKeyring("keyring-password"), true);
+    await keyring.setKeyringValue("chatroom:one:key", "room-key");
+    await keyring.lockKeyring();
+
+    const result = await keyring.setupKeyringAfterLogin("account-password");
+
+    assert.deepEqual(result, { setup: false, unlocked: false });
+    assert.equal(keyring.isKeyringUnlocked(), false);
+    assert.equal(await keyring.unlockKeyring("keyring-password"), true);
+    assert.equal(keyring.getKeyringValue("chatroom:one:key"), "room-key");
+    await keyring.lockKeyring();
+    localStorage.removeItem("cognis_account");
+});
+
 test("new keyring setup can be deferred until the dashboard is visible", async () => {
     const keyring = await import("../ui/keyring.js");
     values.clear();
