@@ -54,6 +54,7 @@ import {
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const unavailableAvatarKeys = new Set();
 const avatarBlobUrlCache = new Map();
@@ -245,6 +246,11 @@ export async function hydrateProfileAvatars(container) {
         }),
     );
 }
+
+uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
+    buildMarkup: buildProfileAvatarMarkup,
+    hydrate: hydrateProfileAvatars,
+});
 
 /**
  * Handles an "error" event on an avatar <img> by marking its key as

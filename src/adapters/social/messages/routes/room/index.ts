@@ -128,9 +128,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         if (
             isAllowedShareGuest &&
             !(
-                sub === "messages" &&
-                !subArg &&
-                (req.method === "GET" || req.method === "POST")
+                (!sub && req.method === "GET") ||
+                (sub === "messages" &&
+                    !subArg &&
+                    (req.method === "GET" || req.method === "POST"))
             )
         ) {
             res.writeHead(403, { "content-type": "application/json" });
@@ -173,7 +174,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
 
         if (!sub && req.method === "GET") {
             const resolveRoomKey = async () => {
-                if (incomingPendingRoomRequest || isAllowedShareGuest) {
+                if (incomingPendingRoomRequest) {
                     return null;
                 }
                 return (
@@ -195,9 +196,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     data: {
                         ...room,
                         members: enrichedMembers,
-                        isArchived: member.archived,
+                        isArchived: member?.archived ?? false,
                         canSend:
-                            !member.archived &&
+                            (isAllowedShareGuest || !member?.archived) &&
                             !(room.kind === "dm" && members.length < 2),
                         pendingRequest: pendingRequestSummary,
                         ...(roomKey

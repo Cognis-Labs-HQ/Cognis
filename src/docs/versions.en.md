@@ -37,7 +37,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.5`  |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.4`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.18` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.19` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.7`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
@@ -50,8 +50,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.7`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.21` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.19` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.22` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.20` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.5`  |
 | User Share            | `src/adapters/share/user/`          | `1.1.9`  |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
@@ -65,7 +65,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.3.1`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.7.35` |
-| Share                 | `src/gateways/share/`        | `1.6.35` |
+| Share                 | `src/gateways/share/`        | `1.6.36` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.11` |
 | Notification (notify) | `src/gateways/notify/`       | `1.5.3`  |
 | Social                | `src/gateways/social/`       | `1.2.10` |
@@ -73,7 +73,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/` | `1.1.12` |
 | Logging               | `src/gateways/logging/`      | `1.5.3`  |
 | Study                 | `src/gateways/study/`        | `1.5.8`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.31` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.32` |
 
 ## Core contracts
 
@@ -92,7 +92,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.33` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.18` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.34` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.19` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

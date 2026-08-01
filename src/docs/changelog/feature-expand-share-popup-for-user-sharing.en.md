@@ -463,3 +463,7 @@ A verified password is now reused when an imported user calendar loads, newly im
 ## Contextual chat unlock survives reloads
 
 Messages now identifies itself as Social Messages when requesting existing chat secrets, avoids a second save-secret prompt after cancellation, and refreshes encrypted previews immediately after unlock. A non-extractable session key restores the unlocked keyring after a page reload in the same tab. Calendar's add action is slightly larger and now reads “+ New”.
+
+## Hardened portable sharing and encrypted meeting chat
+
+The Share popup now uses an optional UI avatar capability with an initials fallback, so it remains available without Social. Meeting-share guests receive the authoritative chat key through their temporary keyring, incorrect stored room keys are replaced, and large encrypted keyring vaults are encoded in safe chunks. Localized keyring documentation and component version indexes are synchronized, and Calendar stylesheet spacing is restored.

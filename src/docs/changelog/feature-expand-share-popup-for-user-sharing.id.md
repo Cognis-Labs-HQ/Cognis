@@ -463,3 +463,7 @@ Kata sandi yang telah diverifikasi kini digunakan kembali saat kalender pengguna
 ## Buka kunci obrolan kontekstual bertahan setelah muat ulang
 
 Messages kini mengidentifikasi dirinya sebagai Social Messages saat meminta rahasia obrolan yang ada, menghindari permintaan penyimpanan kedua setelah pembatalan, dan segera memperbarui pratinjau terenkripsi setelah buka kunci. Kunci sesi yang tidak dapat diekstrak memulihkan keyring terbuka setelah muat ulang halaman pada tab yang sama. Tindakan tambah Kalender sedikit lebih besar dan kini bertuliskan “+ Baru”.
+
+## Berbagi portabel dan obrolan rapat terenkripsi diperkuat
+
+Popup Berbagi kini memakai kapabilitas avatar UI opsional dengan inisial sebagai cadangan, sehingga tetap tersedia tanpa Social. Tamu berbagi rapat menerima kunci obrolan otoritatif melalui keyring sementara, kunci ruang tersimpan yang salah diganti, dan brankas keyring terenkripsi besar dikodekan dalam potongan aman. Dokumentasi keyring terlokalisasi dan indeks versi komponen diselaraskan, serta spasi stylesheet Kalender dipulihkan.

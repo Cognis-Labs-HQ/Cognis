@@ -20,7 +20,7 @@
 
 ## 設定
 
-この必須アダプターに設定項目はなく、有効な `db:executor` プロバイダーを使用します。
+この必須アダプターは有効な `db:executor` を使用します。管理者はアダプター設定で、暗号化保管庫の最大サイズを MiB 単位で指定し、パスワード導出の反復回数を設定します。既存の保管庫は記録済みの導出回数を保持し、設定値は保管庫の作成時に適用されます。
 
 ## API ルート
 
@@ -33,6 +33,16 @@
 ## ブラウザー Capability API
 
 コンポーネントはアダプター内部を直接インポートせず、`uiCtx.capabilities` からキーリング操作を取得します。`keyring:forComponent` で帰属先付きスコープを作成し、Capability が所有する安定した識別子で秘密情報を解決します。解決処理は既存値を検証し、欠落または無効な場合は利用者への入力要求や信頼できる情報源への照会を行えます。ロック状態、項目管理、パスワード変更、操作履歴のページング、一時ゲストキーリングのライフサイクルも Capability として公開されます。
+
+```js
+const keyring = uiCtx.capabilities.require("keyring:forComponent")("Meetings");
+const password = await keyring.resolve("meeting:123:password", {
+    action: "join",
+    process: "meeting 123",
+    validate: (value) => value.length > 0,
+    prompt: ({ invalid }) => askForPassword(invalid),
+});
+```
 
 ## ログイン時のロック解除動作
 

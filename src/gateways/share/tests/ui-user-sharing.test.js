@@ -79,10 +79,11 @@ test("share popup callbacks use only share gateway recipient and token routes", 
     assert.match(popupSource, /labels\.duplicateUserShare/);
 });
 
-test("share popup renders link variants and profile-backed user cards", () => {
+test("share popup renders link variants with optional avatar capabilities", () => {
     assert.match(popupSource, /link\?\.variants/);
     assert.match(popupSource, /variant\.url/);
-    assert.match(popupSource, /buildProfileAvatarMarkup/);
+    assert.match(popupSource, /ui:profileAvatarRenderer/);
+    assert.doesNotMatch(popupSource, /static\/gateways\/social/);
     assert.match(popupSource, /data-share-user-avatar-key/);
     assert.match(popupSource, /profileHandle/);
 });

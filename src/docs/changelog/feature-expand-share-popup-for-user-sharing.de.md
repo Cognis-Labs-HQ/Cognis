@@ -463,3 +463,7 @@ Ein bestätigtes Passwort wird nun beim Laden eines importierten Benutzerkalende
 ## Kontextbezogene Chat-Entsperrung übersteht Neuladen
 
 Messages weist sich beim Anfordern vorhandener Chat-Geheimnisse nun als Social Messages aus, vermeidet nach einem Abbruch eine zweite Abfrage zum Speichern und aktualisiert verschlüsselte Vorschauen sofort nach dem Entsperren. Ein nicht exportierbarer Sitzungsschlüssel stellt das entsperrte Schlüsselbund nach dem Neuladen in derselben Registerkarte wieder her. Die Hinzufügen-Aktion im Kalender ist etwas größer und heißt nun „+ Neu“.
+
+## Portables Teilen und verschlüsselter Besprechungschat gehärtet
+
+Das Teilen-Popup verwendet nun eine optionale UI-Avatar-Capability mit Initialen als Rückfall, sodass es auch ohne Social verfügbar bleibt. Gäste von Besprechungsfreigaben erhalten den maßgeblichen Chatschlüssel über ihren temporären Schlüsselbund, falsche gespeicherte Raumschlüssel werden ersetzt und große verschlüsselte Schlüsselbundtresore werden in sicheren Blöcken kodiert. Die lokalisierten Schlüsselbunddokumentationen und Komponentenversionen sind synchronisiert; außerdem wurde die Lesbarkeit des Kalender-Stylesheets wiederhergestellt.

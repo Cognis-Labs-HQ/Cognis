@@ -20,7 +20,7 @@ Nicht verantwortlich für: Benutzeranmeldung, Schlüsselableitung oder Interpret
 
 ## Konfiguration
 
-Der erforderliche Adapter besitzt keine konfigurierbaren Felder und verwendet den aktiven `db:executor`-Anbieter.
+Der erforderliche Adapter verwendet den aktiven `db:executor`. Administratoren konfigurieren die maximale Größe des verschlüsselten Tresors in MiB und die Iterationszahl der Passwortableitung über die Adaptereinstellungen. Bestehende Tresore behalten ihre gespeicherte Ableitungszahl; der konfigurierte Wert gilt beim Erstellen eines Tresors.
 
 ## API-Routen
 
@@ -33,6 +33,16 @@ Der erforderliche Adapter besitzt keine konfigurierbaren Felder und verwendet de
 ## Browser-Capability-API
 
 Komponenten beziehen Schlüsselbundfunktionen über `uiCtx.capabilities` und importieren keine Adapter-Interna. `keyring:forComponent` erstellt einen zugeordneten Bereich; Geheimnisse werden anschließend über eine stabile, capability-eigene Kennung aufgelöst. Die Auflösung prüft vorhandene Werte und kann bei fehlenden oder ungültigen Werten nachfragen oder eine maßgebliche Quelle abfragen. Sperrstatus, Eintragsverwaltung, Passwortänderungen, Ereignisseiten und temporäre Gast-Schlüsselbunde stehen ebenfalls als Capabilities bereit.
+
+```js
+const keyring = uiCtx.capabilities.require("keyring:forComponent")("Meetings");
+const password = await keyring.resolve("meeting:123:password", {
+    action: "join",
+    process: "meeting 123",
+    validate: (value) => value.length > 0,
+    prompt: ({ invalid }) => askForPassword(invalid),
+});
+```
 
 ## Entsperrverhalten bei der Anmeldung
 

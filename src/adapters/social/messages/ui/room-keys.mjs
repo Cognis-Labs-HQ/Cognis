@@ -8,6 +8,7 @@ export function createRoomKeyStore({
     buildRequest = async () => null,
 } = {}) {
     const roomKeyCache = new Map();
+    const roomKeyValues = new Map();
 
     function hasIncomingPendingRequest(roomContext) {
         const pendingRequest =
@@ -15,22 +16,38 @@ export function createRoomKeyStore({
         return pendingRequest?.direction === "incoming";
     }
 
-    async function getRoomKey(roomId) {
-        if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
+    async function getRoomKey(roomId, authoritativeContribution = null) {
+        const authoritativeValue =
+            authoritativeContribution?.id === `chatroom:${roomId}:key`
+                ? authoritativeContribution.value
+                : null;
+        if (
+            roomKeyCache.has(roomId) &&
+            (!authoritativeValue ||
+                roomKeyValues.get(roomId) === authoritativeValue)
+        ) {
+            return roomKeyCache.get(roomId);
+        }
+        roomKeyCache.delete(roomId);
+        roomKeyValues.delete(roomId);
         const hex = await resolveSecret(`chatroom:${roomId}:key`, {
             validate: async (candidate) => {
                 await importKey(candidate);
-                return true;
+                return !authoritativeValue || candidate === authoritativeValue;
             },
             onInvalid: () => onInvalidSecret(roomId),
             metadata: {
                 label: `Chat ${roomId}`,
             },
             request: await buildRequest(roomId),
+            fallback: authoritativeValue
+                ? async () => authoritativeValue
+                : undefined,
         });
         if (!hex) return null;
         const key = await importKey(hex);
         roomKeyCache.set(roomId, key);
+        roomKeyValues.set(roomId, hex);
         return key;
     }
 
@@ -58,6 +75,7 @@ export function createRoomKeyStore({
             contribution.metadata ?? {},
         );
         roomKeyCache.set(roomId, key);
+        roomKeyValues.set(roomId, contribution.value);
         return true;
     }
 

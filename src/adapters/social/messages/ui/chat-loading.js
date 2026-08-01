@@ -51,29 +51,17 @@ const roomKeys = createRoomKeyStore({
 
 if (!uiCtx.flowExists(FLOW_ID)) {
     uiCtx.registerFlow(FLOW_ID, [
-        "resolve-keyring",
         "load-key-contribution",
+        "resolve-keyring",
         "persist-key-contribution",
     ]);
 }
 
 uiCtx.extendFlow(
     FLOW_ID,
-    "resolve-keyring",
-    { id: "social-messages:resolve-keyring" },
-    async (stageContext) => {
-        stageContext.data.roomKey = await roomKeys.getRoomKey(
-            stageContext.input.roomId,
-        );
-    },
-);
-
-uiCtx.extendFlow(
-    FLOW_ID,
     "load-key-contribution",
     { id: "social-messages:load-key-contribution" },
     async (stageContext) => {
-        if (stageContext.data.roomKey) return;
         if (!uiCtx.capabilities.get("keyring:isUnlocked")?.()) return;
         if (stageContext.input.keyContribution) {
             stageContext.data.keyContribution =
@@ -86,6 +74,18 @@ uiCtx.extendFlow(
         if (!response.ok) return;
         const payload = await response.json().catch(() => null);
         stageContext.data.keyContribution = payload?.data?.keyContribution;
+    },
+);
+
+uiCtx.extendFlow(
+    FLOW_ID,
+    "resolve-keyring",
+    { id: "social-messages:resolve-keyring" },
+    async (stageContext) => {
+        stageContext.data.roomKey = await roomKeys.getRoomKey(
+            stageContext.input.roomId,
+            stageContext.data.keyContribution,
+        );
     },
 );
 

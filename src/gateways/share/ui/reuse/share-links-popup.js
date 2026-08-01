@@ -98,9 +98,10 @@
  */
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
-    buildProfileAvatarMarkup,
-    hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
+    getInitialsText,
+    pickInitialsColor,
+} from "/static/reuse/avatar-utils.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
@@ -115,6 +116,28 @@ import { buildShareTokenCallbacks } from "./share-api.js";
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
 let stylesheetReady = null;
+
+function buildRecipientAvatarMarkup(options) {
+    const avatarRenderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (avatarRenderer?.buildMarkup) {
+        return avatarRenderer.buildMarkup(options);
+    }
+    const avatarClass = escapeHtml(options.avatarClass);
+    const fallbackClass = escapeHtml(options.fallbackClass);
+    const color = escapeHtml(pickInitialsColor(options.colorSeed));
+    const initials = escapeHtml(getInitialsText(options.label));
+    return (
+        `<span class="${avatarClass}">` +
+        `<span class="${fallbackClass}" style="--initials-bg: ${color};">` +
+        `${initials}</span></span>`
+    );
+}
+
+function hydrateRecipientAvatars(container) {
+    return uiCtx.capabilities
+        .get("ui:profileAvatarRenderer")
+        ?.hydrate?.(container);
+}
 export function openSharePopup({
     resourceType,
     resourceId,
@@ -253,7 +276,7 @@ function renderRows(labels, links) {
                 </div>
                 ${renderShareStatus(link, labels)}
                 ${createdAt ? `<p class="share-links-row-created">${escapeHtml(labels.createdAtLabel || "Created")}: ${escapeHtml(formatDateTime(createdAt))}</p>` : ""}
-                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small></span>`).join("")}</div>` : ""}
+                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small></span>`).join("")}</div>` : ""}
                 ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(variant.label)}</button>`).join("")}</div>` : ""}
               </div>
               ${
@@ -488,7 +511,7 @@ export async function openShareLinksPopup({
             },
             state.visibleLinks,
         );
-        hydrateProfileAvatars(listContainer);
+        hydrateRecipientAvatars(listContainer);
     }
 
     function syncCreateButton(createButton) {
@@ -538,7 +561,7 @@ export async function openShareLinksPopup({
             }
 
             popupOpen = true;
-            hydrateProfileAvatars(overlay);
+            hydrateRecipientAvatars(overlay);
             let searchSequence = 0;
 
             const renderSelectedUsers = () => {
@@ -549,10 +572,10 @@ export async function openShareLinksPopup({
                 selectedUsers.innerHTML = state.recipients
                     .map(
                         (recipient) =>
-                            `<span class="share-links-recipient-chip">${buildProfileAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.id, colorSeed: recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
+                            `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.id, colorSeed: recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
                     )
                     .join("");
-                hydrateProfileAvatars(selectedUsers);
+                hydrateRecipientAvatars(selectedUsers);
                 syncCreateButton(
                     methodPage.querySelector("#share-links-create-btn"),
                 );
@@ -759,10 +782,10 @@ export async function openShareLinksPopup({
                             )
                             .map(
                                 (user) =>
-                                    `<div class="share-links-user-result" role="button" tabindex="0" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}" data-share-user-handle="${escapeHtml(user.handle || "")}" data-share-user-avatar-key="${escapeHtml(user.avatarKey || "")}">${buildProfileAvatarMarkup({ avatarKey: user.avatarKey || null, label: user.label || user.id, colorSeed: user.id, profileHandle: user.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(user.label || user.id)}</span></div>`,
+                                    `<div class="share-links-user-result" role="button" tabindex="0" data-share-user-id="${escapeHtml(user.id)}" data-share-user-label="${escapeHtml(user.label || user.handle || user.id)}" data-share-user-handle="${escapeHtml(user.handle || "")}" data-share-user-avatar-key="${escapeHtml(user.avatarKey || "")}">${buildRecipientAvatarMarkup({ avatarKey: user.avatarKey || null, label: user.label || user.id, colorSeed: user.id, profileHandle: user.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(user.label || user.id)}</span></div>`,
                             )
                             .join("");
-                        hydrateProfileAvatars(results);
+                        hydrateRecipientAvatars(results);
                     });
             });
 

@@ -368,6 +368,29 @@ test("room keys use keyring resolution and refresh invalid secrets", async () =>
     assert.equal(invalidRoomId, "room-1");
 });
 
+test("room keys reject a valid but non-authoritative stored key", async () => {
+    const validStoredKey = "a".repeat(64);
+    const authoritativeKey = "b".repeat(64);
+    let validationResult = true;
+    const store = createRoomKeyStore({
+        importKey: async (value) => value,
+        resolveSecret: async (_id, options) => {
+            validationResult = await options.validate(validStoredKey);
+            return validationResult
+                ? validStoredKey
+                : options.fallback({ invalid: true });
+        },
+    });
+
+    const key = await store.getRoomKey("room-1", {
+        id: "chatroom:room-1:key",
+        value: authoritativeKey,
+    });
+
+    assert.equal(validationResult, false);
+    assert.equal(key, authoritativeKey);
+});
+
 test("server room key contributions are validated and saved to the keyring", async () => {
     const saved = [];
     const imported = { type: "secret" };

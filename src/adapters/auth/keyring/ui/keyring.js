@@ -69,7 +69,14 @@ function relockStorageKey() {
 }
 
 function encodeBytes(bytes) {
-    return btoa(String.fromCharCode(...bytes));
+    const chunkSize = 32_768;
+    let binary = "";
+    for (let offset = 0; offset < bytes.length; offset += chunkSize) {
+        binary += String.fromCharCode(
+            ...bytes.subarray(offset, offset + chunkSize),
+        );
+    }
+    return btoa(binary);
 }
 
 function decodeBytes(value) {

@@ -20,7 +20,7 @@ Tidak bertanggung jawab atas: autentikasi pengguna, penurunan kunci, atau penafs
 
 ## Konfigurasi
 
-Adapter wajib ini tidak memiliki bidang konfigurasi dan menggunakan penyedia `db:executor` aktif.
+Adapter wajib ini menggunakan `db:executor` aktif. Administrator mengatur ukuran maksimum brankas terenkripsi dalam MiB dan jumlah iterasi penurunan kata sandi melalui pengaturan adapter. Brankas yang sudah ada mempertahankan jumlah penurunan yang tersimpan; nilai konfigurasi berlaku saat brankas dibuat.
 
 ## Rute API
 
@@ -33,6 +33,16 @@ Adapter wajib ini tidak memiliki bidang konfigurasi dan menggunakan penyedia `db
 ## API capability browser
 
 Komponen memperoleh operasi gantungan kunci melalui `uiCtx.capabilities` dan tidak mengimpor internal adaptor. Gunakan `keyring:forComponent` untuk membuat lingkup yang beratribusi, lalu selesaikan rahasia dengan pengenal stabil milik capability. Resolusi memvalidasi nilai yang ada dan dapat meminta pengguna atau berkonsultasi dengan sumber otoritatif saat nilai hilang atau tidak valid. Status kunci, pengelolaan entri, perubahan kata sandi, halaman aktivitas, dan siklus hidup gantungan kunci tamu sementara juga tersedia sebagai capability.
+
+```js
+const keyring = uiCtx.capabilities.require("keyring:forComponent")("Meetings");
+const password = await keyring.resolve("meeting:123:password", {
+    action: "join",
+    process: "meeting 123",
+    validate: (value) => value.length > 0,
+    prompt: ({ invalid }) => askForPassword(invalid),
+});
+```
 
 ## Perilaku buka kunci saat masuk
 
