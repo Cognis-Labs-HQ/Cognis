@@ -5,7 +5,10 @@ import test from "node:test";
 const popupSource = await Promise.all(
     ["index.js", "implementation.js"].map((fileName) =>
         readFile(
-            new URL(`../ui/share-links-popup/${fileName}`, import.meta.url),
+            new URL(
+                `../../../adapters/share/link/ui/share-links-popup/${fileName}`,
+                import.meta.url,
+            ),
             "utf8",
         ),
     ),

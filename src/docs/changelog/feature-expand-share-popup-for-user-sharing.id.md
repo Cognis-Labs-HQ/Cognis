@@ -523,3 +523,7 @@ Penulisan keyring kini diserialkan dan sinkronisasi server yang ditolak dilapork
 ## Kapabilitas popup independen penyedia
 
 Gateway Share kini mendaftarkan popup melalui konteks kapabilitas UI. Konsumen tidak lagi mengimpor bagian internal gateway Share, popup berada dalam direktori khusus tujuan, dan validasi kedaluwarsa diuji melalui permintaan API nyata.
+
+## Kepemilikan popup tautan dan spasi
+
+Popup tautan berbagi kini berada di dalam adapter Link Share yang memiliki fungsi berbagi tautan, bukan di gateway Share generik. Baris kosong yang disengaja di antara fungsi Nextcloud Whiteboard juga dipulihkan untuk menjaga batas kode tetap mudah dibaca.

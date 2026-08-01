@@ -523,3 +523,7 @@ Schlüsselbund-Schreibvorgänge werden nun serialisiert und abgelehnte Serversyn
 ## Anbieterunabhängige Popup-Fähigkeit
 
 Das Share-Gateway registriert sein Popup nun über den UI-Fähigkeitskontext. Verbraucher importieren keine internen Share-Gateway-Module mehr, das Popup liegt in einem zweckgebundenen Verzeichnis und die Ablaufvalidierung wird mit echten API-Anfragen getestet.
+
+## Link-Popup und lesbare Abstände
+
+Das Popup für Freigabelinks befindet sich nun beim Link-Share-Adapter, der die Linkfreigabe verantwortet, statt im allgemeinen Share-Gateway. Außerdem wurden beabsichtigte Leerzeilen zwischen Nextcloud-Whiteboard-Funktionen wiederhergestellt, um lesbare Codegrenzen zu bewahren.

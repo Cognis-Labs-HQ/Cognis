@@ -189,14 +189,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/gateways/share/ui/received-share-action.js",
     );
     uiHooks.registerNavbarPlugin(
-        "/static/gateways/share/ui/share-links-popup/index.js",
+        "/static/adapters/share/link/ui/share-links-popup/index.js",
     );
 
     ctx.routeRegistry.registerPrefix("/api/v1/share", "share");
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.6.43",
+        version: "1.6.44",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

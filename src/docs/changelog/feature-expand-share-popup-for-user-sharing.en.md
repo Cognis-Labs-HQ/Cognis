@@ -523,3 +523,7 @@ Keyring writes are now serialized and rejected server synchronizations are surfa
 ## Provider-independent popup capability
 
 The Share gateway now registers its popup through the UI capability context, consumers no longer import Share gateway internals, the popup lives in a purpose-constrained directory, and expiration validation is covered through real API requests.
+
+## Link popup ownership and readable spacing
+
+The share-links popup now lives with the Link Share adapter that owns link sharing rather than in the generic Share gateway. Intentional blank lines between Nextcloud Whiteboard functions were also restored to preserve readable code boundaries.

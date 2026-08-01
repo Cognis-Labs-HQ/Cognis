@@ -140,10 +140,16 @@ test("GET /static/adapters/share/:method/page.js serves Share adapter pages", as
     }
 });
 
-test("GET /static/gateways/share/ui/share-links-popup/index.js serves share-gateway-owned popup module", async () => {
+test("GET /static/adapters/share/link/ui/share-links-popup/index.js serves Link Share adapter popup module", async () => {
     const uiRegistry = new UIRegistry();
-    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
-    uiRegistry.registerStaticDir("share", shareUiDir);
+    const linkAdapterRoot = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "share",
+        "link",
+    );
+    uiRegistry.registerAdapterStaticDir("share", "link", linkAdapterRoot);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -151,7 +157,7 @@ test("GET /static/gateways/share/ui/share-links-popup/index.js serves share-gate
         { headers: {} } as any,
         recorder.res as any,
         new URL(
-            "http://localhost/static/gateways/share/ui/share-links-popup/index.js",
+            "http://localhost/static/adapters/share/link/ui/share-links-popup/index.js",
         ),
     );
 
@@ -164,10 +170,16 @@ test("GET /static/gateways/share/ui/share-links-popup/index.js serves share-gate
     assert.match(recorder.body, /openShareLinksPopup/);
 });
 
-test("GET /static/gateways/share/ui/share-links-popup/index.css serves share-gateway-owned popup styles", async () => {
+test("GET /static/adapters/share/link/ui/share-links-popup/index.css serves Link Share adapter popup styles", async () => {
     const uiRegistry = new UIRegistry();
-    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
-    uiRegistry.registerStaticDir("share", shareUiDir);
+    const linkAdapterRoot = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "share",
+        "link",
+    );
+    uiRegistry.registerAdapterStaticDir("share", "link", linkAdapterRoot);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -175,7 +187,7 @@ test("GET /static/gateways/share/ui/share-links-popup/index.css serves share-gat
         { headers: {} } as any,
         recorder.res as any,
         new URL(
-            "http://localhost/static/gateways/share/ui/share-links-popup/index.css",
+            "http://localhost/static/adapters/share/link/ui/share-links-popup/index.css",
         ),
     );
 
