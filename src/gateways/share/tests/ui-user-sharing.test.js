@@ -2,10 +2,17 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const popupSource = await readFile(
-    new URL("../ui/reuse/share-links-popup.js", import.meta.url),
-    "utf8",
-);
+const popupSource = await Promise.all(
+    ["index.js", "implementation.js"].map((fileName) =>
+        readFile(
+            new URL(
+                `../ui/reuse/share-links-popup/${fileName}`,
+                import.meta.url,
+            ),
+            "utf8",
+        ),
+    ),
+).then((sources) => sources.join("\n"));
 const apiSource = await readFile(
     new URL("../ui/reuse/share-api.js", import.meta.url),
     "utf8",
@@ -243,4 +250,15 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareSource, /share\.keyring\.request_component/);
     assert.match(receivedShareSource, /share\.keyring\.request_action_access/);
     assert.match(receivedShareSource, /share\.keyring\.request_process/);
+});
+
+test("share method adapters own localized display metadata", async () => {
+    assert.match(userPageSource, /getMetadata/);
+    assert.match(userPageSource, /adapter\.share\.user\.name/);
+    const adapterSource = await readFile(
+        new URL("../../../adapters/share/user/index.ts", import.meta.url),
+        "utf8",
+    );
+    assert.match(adapterSource, /nameKey: "adapter\.share\.user\.name"/);
+    assert.doesNotMatch(adapterSource, /name: "User"/);
 });

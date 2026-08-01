@@ -627,3 +627,12 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(afterResourceDeletion.body.data.length, 0);
 });
+
+test("share routes reject malformed expiration timestamps before minting", async () => {
+    const source = await import("node:fs/promises").then(({ readFile }) =>
+        readFile(new URL("../bootstrap/routes.ts", import.meta.url), "utf8"),
+    );
+    assert.match(source, /normalizeExpiresAt\(body\.expiresAt\)/);
+    assert.match(source, /invalid_expires_at/);
+    assert.match(source, /Number\.isFinite\(timestamp\)/);
+});

@@ -41,6 +41,17 @@ function sendDuplicateUserShareError(res: ServerResponse): void {
     );
 }
 
+function normalizeExpiresAt(value: unknown): string | undefined | null {
+    if (value === undefined) return undefined;
+    if (typeof value !== "string") return null;
+    const expiresAt = value.trim();
+    if (!expiresAt) return "";
+    const timestamp = Date.parse(expiresAt);
+    return Number.isFinite(timestamp)
+        ? new Date(timestamp).toISOString()
+        : null;
+}
+
 function readResourceFilter(url: URL): {
     resourceType?: string;
     resourceId?: string;
@@ -229,6 +240,16 @@ export function createShareRoutes(input: {
                 );
                 return true;
             }
+            const expiresAt = normalizeExpiresAt(body.expiresAt);
+            if (expiresAt === null) {
+                sendError(
+                    res,
+                    400,
+                    "invalid_expires_at",
+                    "Share expiration must be a valid timestamp.",
+                );
+                return true;
+            }
             const requestedAccessControls =
                 body.accessControls && typeof body.accessControls === "object"
                     ? (body.accessControls as Record<string, unknown>)
@@ -274,8 +295,7 @@ export function createShareRoutes(input: {
                 password:
                     typeof body.password === "string" ? body.password : null,
                 generatePassword: body.generatePassword === true,
-                expiresAt:
-                    typeof body.expiresAt === "string" ? body.expiresAt : "",
+                expiresAt: expiresAt ?? "",
             });
             const issued = getFirstStageResult<{
                 minted?: boolean;
@@ -315,6 +335,16 @@ export function createShareRoutes(input: {
                 clearPassword?: unknown;
                 expiresAt?: unknown;
             };
+            const expiresAt = normalizeExpiresAt(body.expiresAt);
+            if (expiresAt === null) {
+                sendError(
+                    res,
+                    400,
+                    "invalid_expires_at",
+                    "Share expiration must be a valid timestamp.",
+                );
+                return true;
+            }
             let flowResult;
             try {
                 flowResult = await input.flow.run("update-share-token", {
@@ -341,10 +371,7 @@ export function createShareRoutes(input: {
                                 : null,
                         generatePassword: body.generatePassword === true,
                         clearPassword: body.clearPassword === true,
-                        expiresAt:
-                            typeof body.expiresAt === "string"
-                                ? body.expiresAt
-                                : undefined,
+                        expiresAt,
                     },
                 });
             } catch (error) {

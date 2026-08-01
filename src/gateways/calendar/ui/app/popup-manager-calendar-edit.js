@@ -7,7 +7,7 @@ import {
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 async function openCalendarSharePopup({ calendar, i18n }) {
     const { openSharePopup } =
-        await import("/static/gateways/share/ui/reuse/share-links-popup.js");
+        await import("/static/gateways/share/ui/reuse/share-links-popup/index.js");
     await openSharePopup({
         resourceType: "calendar",
         resourceId: calendar.id,

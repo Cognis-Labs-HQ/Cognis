@@ -515,3 +515,7 @@ Concurrent requests to start the same direct conversation are serialized and rec
 ## Messages wait for active key loading
 
 Concurrent room-key resolution is coordinated per room so SPA entry cannot display a stale unlock-required state while the unlocked keyring is already resolving the same room key.
+
+## Hardened keyring persistence and share validation
+
+Keyring writes are now serialized and rejected server synchronizations are surfaced, share expiration timestamps are validated, the oversized popup was split into focused modules, and share-method names and descriptions are localized by their owning adapters.

@@ -20,8 +20,8 @@ import path from "node:path";
 
 export interface ShareMethodAdapter {
     id: string;
-    name: string;
-    description: string;
+    nameKey: string;
+    descriptionKey: string;
     pageModuleUrl: string;
     order?: number;
     version?: string;
@@ -91,7 +91,7 @@ export class CoreShareGateway {
                 if (typeof module.createShareAdapter !== "function") continue;
                 const adapter =
                     module.createShareAdapter() as ShareMethodAdapter;
-                if (!adapter?.id || !adapter.name || !adapter.pageModuleUrl)
+                if (!adapter?.id || !adapter.nameKey || !adapter.pageModuleUrl)
                     continue;
                 this.adapters.set(adapter.id, {
                     ...adapter,
@@ -109,7 +109,7 @@ export class CoreShareGateway {
         return Array.from(this.adapters.values()).sort(
             (left, right) =>
                 (left.order ?? 100) - (right.order ?? 100) ||
-                left.name.localeCompare(right.name),
+                left.id.localeCompare(right.id),
         );
     }
 

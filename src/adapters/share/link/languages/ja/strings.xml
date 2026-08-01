@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.share.link.name">リンク</string>
+  <string name="adapter.share.link.description">Cognisの外部に送信できるリンクを作成します。</string>
+</resources>

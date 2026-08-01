@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.share.link.name">Link</string>
+  <string name="adapter.share.link.description">Erstellen Sie einen Link, der außerhalb von Cognis versendet werden kann.</string>
+</resources>

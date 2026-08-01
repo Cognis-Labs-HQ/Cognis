@@ -1,3 +1,21 @@
+let metadataI18nPromise = null;
+
+export async function getMetadata() {
+    metadataI18nPromise ??= import("/static/reuse/i18n.js").then(
+        ({ createI18n }) =>
+            createI18n({
+                componentStringBaseUrls: [
+                    "/static/adapters/share/user/languages",
+                ],
+            }),
+    );
+    const metadataI18n = await metadataI18nPromise;
+    return {
+        name: metadataI18n.t("adapter.share.user.name"),
+        description: metadataI18n.t("adapter.share.user.description"),
+    };
+}
+
 /** Cognis user sharing method page behavior. */
 export function acceptsShare(share) {
     return (

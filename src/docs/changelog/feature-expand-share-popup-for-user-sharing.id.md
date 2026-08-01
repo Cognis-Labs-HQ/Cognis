@@ -515,3 +515,7 @@ Permintaan bersamaan untuk memulai percakapan langsung yang sama diserialkan dan
 ## Pesan menunggu pemuatan kunci aktif
 
 Resolusi kunci ruang yang berjalan bersamaan dikoordinasikan per ruang agar masuk melalui SPA tidak menampilkan status lama yang meminta pembukaan kunci saat gantungan kunci yang sudah terbuka sedang menyelesaikan kunci ruang yang sama.
+
+## Persistensi keyring dan validasi berbagi diperkuat
+
+Penulisan keyring kini diserialkan dan sinkronisasi server yang ditolak dilaporkan, waktu kedaluwarsa berbagi divalidasi, popup yang terlalu besar dipecah menjadi modul terfokus, serta nama dan deskripsi metode berbagi dilokalkan oleh adapter pemiliknya.

@@ -140,7 +140,7 @@ test("GET /static/adapters/share/:method/page.js serves Share adapter pages", as
     }
 });
 
-test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gateway-owned popup module", async () => {
+test("GET /static/gateways/share/ui/reuse/share-links-popup/index.js serves share-gateway-owned popup module", async () => {
     const uiRegistry = new UIRegistry();
     const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
     uiRegistry.registerStaticDir("share", shareUiDir);
@@ -151,7 +151,7 @@ test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gate
         { headers: {} } as any,
         recorder.res as any,
         new URL(
-            "http://localhost/static/gateways/share/ui/reuse/share-links-popup.js",
+            "http://localhost/static/gateways/share/ui/reuse/share-links-popup/index.js",
         ),
     );
 

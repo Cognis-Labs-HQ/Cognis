@@ -52,7 +52,7 @@ export async function bindShareButton({
             }
             const [{ openShareLinksPopup }, { buildShareCallbacks }] =
                 await Promise.all([
-                    import("/static/gateways/share/ui/reuse/share-links-popup.js"),
+                    import("/static/gateways/share/ui/reuse/share-links-popup/index.js"),
                     import("./share-adapter.js"),
                 ]);
             // Opening the share popup pauses the local user's attention on

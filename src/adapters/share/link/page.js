@@ -1,3 +1,21 @@
+let metadataI18nPromise = null;
+
+export async function getMetadata() {
+    metadataI18nPromise ??= import("/static/reuse/i18n.js").then(
+        ({ createI18n }) =>
+            createI18n({
+                componentStringBaseUrls: [
+                    "/static/adapters/share/link/languages",
+                ],
+            }),
+    );
+    const metadataI18n = await metadataI18nPromise;
+    return {
+        name: metadataI18n.t("adapter.share.link.name"),
+        description: metadataI18n.t("adapter.share.link.description"),
+    };
+}
+
 /** Link sharing method page behavior. */
 import { apiFetch } from "/static/reuse/api-client.js";
 import { openPopup } from "/static/reuse/popup.js";

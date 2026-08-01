@@ -666,3 +666,16 @@ test("cancelling one unlock flushes concurrent and future requests until manual 
     );
     await keyring.lockKeyring();
 });
+
+test("keyring persistence serializes writes and surfaces server rejection", () => {
+    const source = readFileSync(
+        resolve("src/adapters/auth/keyring/ui/keyring.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /persistenceQueue\.then\(\(\) => persistVaultSnapshot\(\)\)/,
+    );
+    assert.match(source, /if \(!response\.ok\)/);
+    assert.match(source, /keyring_sync_rejected/);
+});

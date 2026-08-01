@@ -34,6 +34,7 @@ let temporaryKeyringAccountId = "";
 let unlockRequestPromise = null;
 let keyringAccessSuppressed = false;
 let keyringI18nPromise = null;
+let persistenceQueue = Promise.resolve();
 const pendingValues = new Map();
 
 function loadKeyringI18n() {
@@ -312,18 +313,25 @@ export function selectKeyringEnvelope(localEnvelope, remoteState) {
 }
 
 async function syncEnvelope(envelope) {
+    let response;
     try {
-        await apiFetch(KEYRING_API, {
+        response = await apiFetch(KEYRING_API, {
             method: "PUT",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ vault: envelope }),
         });
     } catch {
         // The encrypted local copy remains authoritative while offline.
+        return;
+    }
+    if (!response.ok) {
+        const error = new Error("keyring_sync_rejected");
+        error.status = response.status;
+        throw error;
     }
 }
 
-async function persistVault() {
+async function persistVaultSnapshot() {
     if (!vaultKey || !vaultData || !vaultSalt)
         throw new Error("keyring_locked");
     const initializationVector = crypto.getRandomValues(new Uint8Array(12));
@@ -344,6 +352,12 @@ async function persistVault() {
     keyringStorage().setItem(keyringStorageKey(), JSON.stringify(envelope));
     lastVaultEnvelope = envelope;
     await syncEnvelope(envelope);
+}
+
+function persistVault() {
+    const persistence = persistenceQueue.then(() => persistVaultSnapshot());
+    persistenceQueue = persistence.catch(() => undefined);
+    return persistence;
 }
 
 function recordKeyringEvent(type, identifier = "") {

@@ -3,8 +3,8 @@ import type { ShareMethodAdapter } from "../../../gateways/share/gateway/index.j
 export function createShareAdapter(): ShareMethodAdapter {
     return {
         id: "user",
-        name: "User",
-        description: "Grant access directly to Cognis users.",
+        nameKey: "adapter.share.user.name",
+        descriptionKey: "adapter.share.user.description",
         pageModuleUrl: "/static/adapters/share/user/page.js",
         order: 20,
         owns(accessControls) {

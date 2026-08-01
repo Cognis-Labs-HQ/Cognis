@@ -1,104 +1,15 @@
 /**
- * Share-gateway-owned popup for listing, creating, and revoking share links.
- *
- * Renders a modal dialog that displays a list of existing share links and a
- * form for generating new ones. All API calls are supplied by the caller via
- * async callback functions so this module stays provider-agnostic. It lives
- * under the Share gateway's own `ui/reuse` directory (not a generic
- * `src/ui/reuse` helper) so that disabling the Share gateway means this
- * static asset is never served, the dynamic import fails, and no share popup
- * or link-creation logic is ever created in the first place.
+ * Implements the Share gateway popup lifecycle and rendering.
  *
  * Public exports:
- *   openShareLinksPopup(options) — opens the popup and returns a Promise that
- *     resolves when the user dismisses it.
+ *   openShareLinksPopup(options) — renders and manages a share popup.
  *
  * Usage:
- *   import { openShareLinksPopup } from
- *     '/static/gateways/share/ui/reuse/share-links-popup.js';
+ *   import { openShareLinksPopup } from "./implementation.js";
+ *   await openShareLinksPopup(options);
  *
- *   await openShareLinksPopup({
- *     title: 'Share Meeting',
- *     labels: {
- *       empty: 'No share links yet.',
- *       untitled: 'Untitled',
- *       copyLink: 'Copy Link',
- *       revoke: 'Revoke',
- *       shareOptions: 'Share:',
- *       mail: 'Mail',
- *       label: 'Label',
- *       labelPlaceholder: 'Enter a label…',
- *       expiryLabel: 'Expires in (hours)',
- *       generateLink: 'Generate Link',
- *       done: 'Done',
- *       createFailed: 'Failed to create link.',
- *       copySuccess: 'Link copied!',
- *       copyFailed: 'Failed to copy link.',
- *       deleteFailed: 'Failed to revoke link.',
- *       statusActive: 'Active',
- *       statusExpired: 'Expired',
- *       expiresAtLabel: 'Expires',
- *       expiredAtLabel: 'Expired',
- *     },
- *     fetchLinks: async () => [{ id, label, shareUrl, status, expiresAt, quickShareActions: [] }],
- *     createLink: async ({ label, expiresInHours }) => ({ shareUrl }),
- *     deleteLink: async ({ shareId }) => {},
- *   });
- *
- * @param {{
- *   title: string,
- *   labels: {
- *     empty: string,
- *     untitled: string,
- *     copyLink: string,
- *     revoke: string,
- *     shareOptions: string,
- *     mail: string,
- *     label: string,
- *     labelPlaceholder: string,
- *     expiryLabel: string,
- *     generateLink: string,
- *     done: string,
- *     createFailed: string,
- *     copySuccess: string,
- *     copyFailed: string,
- *     deleteFailed: string,
- *     deleteConfirmTitle?: string,
- *     deleteConfirmMessage?: string,
- *     confirm?: string,
- *     cancel?: string,
- *     statusActive: string,
- *     statusExpired: string,
- *     expiresAtLabel: string,
- *     expiredAtLabel: string,
- *     users?: string,
- *     userSearchPlaceholder?: string,
- *     removeUser?: string,
- *     readPermission?: string,
- *     writePermission?: string,
- *     methods?: string,
- *     linkMethod?: string,
- *     userMethod?: string,
- *     shareWithUsers?: string,
- *   },
- *   fetchLinks: () => Promise<Array<{
- *     id: string,
- *     label: string,
- *     shareUrl: string,
- *     status?: 'active' | 'expired',
- *     expiresAt?: string,
- *     quickShareActions?: Array<{ id: string, label: string, href: string }>,
- *   }>>,
- *   createLink: (opts: { label: string, expiresInHours: string }) => Promise<{
- *     shareUrl?: string,
- *     quickShareActions?: Array<{ id: string, label: string, href: string }>,
- *   } | null>,
- *   deleteLink: (opts: { shareId: string }) => Promise<void>,
- *   updateLink?: (opts: { shareId: string, accessControls: object }) => Promise<object|null>,
- *   searchUsers?: (query: string) => Promise<Array<{id: string, label: string, handle?: string}>>,
- *   fetchMethods?: () => Promise<Array<{id: string, name: string, pageModuleUrl?: string}>>,
- * }} options
- * @returns {Promise<void>}
+ * @param {object} options Share popup callbacks, labels, and defaults.
+ * @returns {Promise<void>} Resolves after the popup closes.
  */
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
@@ -116,7 +27,6 @@ import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
-import { buildShareTokenCallbacks } from "./share-api.js";
 const STYLESHEET_HREF = "/static/gateways/share/ui/reuse/share-links-popup.css";
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
 let stylesheetReady = null;
@@ -141,24 +51,6 @@ function hydrateRecipientAvatars(container) {
     return uiCtx.capabilities
         .get("ui:profileAvatarRenderer")
         ?.hydrate?.(container);
-}
-export function openSharePopup({
-    resourceType,
-    resourceId,
-    grantedCapabilities = [],
-    passwordRequired = false,
-    ...popupOptions
-}) {
-    return openShareLinksPopup({
-        ...popupOptions,
-        passwordRequired,
-        defaultGrantedCapabilities: grantedCapabilities,
-        ...buildShareTokenCallbacks({
-            resourceType,
-            resourceId,
-            grantedCapabilities,
-        }),
-    });
 }
 function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
@@ -453,10 +345,11 @@ export async function openShareLinksPopup({
     for (const method of state.methods) {
         if (!method?.pageModuleUrl) continue;
         try {
-            state.methodModules.set(
-                method.id,
-                await import(method.pageModuleUrl),
-            );
+            const methodModule = await import(method.pageModuleUrl);
+            state.methodModules.set(method.id, methodModule);
+            if (typeof methodModule.getMetadata === "function") {
+                Object.assign(method, await methodModule.getMetadata());
+            }
         } catch {
             // A broken adapter page is isolated from the remaining methods.
         }

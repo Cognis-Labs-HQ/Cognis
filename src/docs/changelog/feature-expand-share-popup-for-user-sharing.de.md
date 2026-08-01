@@ -515,3 +515,7 @@ Gleichzeitige Anfragen zum Starten derselben Direktunterhaltung werden serialisi
 ## Nachrichten warten auf die aktive Schlüsselauflösung
 
 Gleichzeitige Auflösungen von Raumschlüsseln werden pro Raum koordiniert, sodass der SPA-Einstieg keinen veralteten Hinweis zum Entsperren anzeigt, während der bereits entsperrte Schlüsselbund denselben Raumschlüssel auflöst.
+
+## Schlüsselbund-Persistenz und Freigabevalidierung gehärtet
+
+Schlüsselbund-Schreibvorgänge werden nun serialisiert und abgelehnte Serversynchronisierungen gemeldet, Ablaufzeitpunkte für Freigaben validiert, das übergroße Popup in fokussierte Module aufgeteilt und Namen sowie Beschreibungen der Freigabemethoden durch ihre jeweiligen Adapter lokalisiert.

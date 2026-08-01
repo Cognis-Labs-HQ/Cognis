@@ -8,7 +8,10 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 test("share popup keeps the active adapter page and history rendering separate", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.js"),
+        resolve(
+            ROOT,
+            "src/gateways/share/ui/reuse/share-links-popup/implementation.js",
+        ),
         "utf8",
     );
 
@@ -24,7 +27,10 @@ test("share popup keeps the active adapter page and history rendering separate",
 
 test("share links popup renders existing links as an icon-only copy button", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.js"),
+        resolve(
+            ROOT,
+            "src/gateways/share/ui/reuse/share-links-popup/implementation.js",
+        ),
         "utf8",
     );
     const cssSource = readFileSync(
@@ -46,7 +52,10 @@ test("share links popup renders existing links as an icon-only copy button", () 
 
 test("share deletion requires explicit confirmation", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/gateways/share/ui/reuse/share-links-popup.js"),
+        resolve(
+            ROOT,
+            "src/gateways/share/ui/reuse/share-links-popup/implementation.js",
+        ),
         "utf8",
     );
 
