@@ -24,3 +24,7 @@ Adapter mengimplementasikan pengiriman yang toleran terhadap greylisting: jika p
 | `COGNIS_SMTP_USER`   | —       | Nama pengguna autentikasi SMTP                              |
 | `COGNIS_SMTP_PASS`   | —       | Kata sandi autentikasi SMTP                                 |
 | `COGNIS_SMTP_FROM`   | —       | Alamat pengirim yang ditampilkan di header `From`           |
+
+## Pengiriman uji
+
+Pesan uji memakai antrean milik adapter dan pembatas laju per penerima yang sama dengan pengiriman SMTP operasional. Konfigurasi yang dikirim disertakan bersama uji dalam antrean, dan API menunggu hasil akhir pengiriman.

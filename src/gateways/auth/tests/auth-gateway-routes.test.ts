@@ -10,6 +10,7 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../access-tokens.js";
 import {
+    contributeTestKeyring,
     adminToken,
     HttpIncomingMessage,
     makeInMemoryDb,
@@ -25,6 +26,7 @@ async function bootstrapAuthGateway(input: {
     const systemCtx = createCtx();
     input.capabilities.contribute(CTX_CAPABILITY, systemCtx);
     input.capabilities.contribute("db:executor", input.db);
+    contributeTestKeyring(input.capabilities);
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry: input.routeRegistry,
@@ -72,6 +74,32 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
     assert.equal(res.status, 200);
     const body = JSON.parse(res.payload) as { data: unknown[] };
     assert.ok(Array.isArray(body.data));
+});
+
+test("auth bootstrap exposes provider-aware password confirmation", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+
+    await bootstrapAuthGateway({
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db: makeInMemoryDb(),
+    });
+
+    const confirmPassword = capabilities.get<
+        (
+            accountId: string,
+            password: string,
+            providerId?: string,
+        ) => Promise<boolean>
+    >("auth:confirmPassword");
+    assert.equal(typeof confirmPassword, "function");
+    assert.equal(
+        await confirmPassword?.("missing", "password", "local"),
+        false,
+    );
 });
 
 test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations", async () => {

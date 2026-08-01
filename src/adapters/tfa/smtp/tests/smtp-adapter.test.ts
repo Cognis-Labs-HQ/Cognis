@@ -251,3 +251,13 @@ test("smtp adapter renderMethodDetails returns empty details for configured emai
     });
     assert.deepEqual(details, { details: {} });
 });
+
+test("smtp adapter renders management details without exposing setup state", async () => {
+    const adapter = createAdapter();
+    const details = await adapter.renderMethodDetails?.({
+        accountId: "alice",
+        state: {},
+        issuer: "Cognis",
+    });
+    assert.deepEqual(details, { details: {} });
+});

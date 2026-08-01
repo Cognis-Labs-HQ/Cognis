@@ -24,4 +24,9 @@
   <string name="gateway.auth.security.password_requires_lowercase">Harus mengandung setidaknya {count} huruf kecil.</string>
   <string name="gateway.auth.security.password_requires_digit">Harus mengandung minimal {count} angka.</string>
   <string name="gateway.auth.security.password_requires_special">Harus mengandung minimal {count} karakter khusus.</string>
+  <string name="gateway.auth.security.keyring_title">Keyring Berbagi</string>
+  <string name="gateway.auth.security.keyring_description">Kata sandi berbagi terenkripsi dibuka dengan kata sandi masuk Anda dan tidak pernah disimpan sebagai teks biasa.</string>
+  <string name="gateway.auth.security.keyring_relock">Kunci keyring secara otomatis</string>
+  <string name="gateway.auth.security.keyring_logout">Saat keluar</string>
+  <string name="gateway.auth.security.keyring_minutes">menit</string>
 </resources>

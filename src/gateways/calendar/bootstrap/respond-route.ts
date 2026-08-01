@@ -38,21 +38,47 @@ export async function handleCalendarResponseRoute(input: {
         sharedCalendar?.recipientAccountId === input.claims.sub
             ? sharedCalendar
             : null;
-    const lookupCalendarId = activeSharedCalendar
-        ? activeSharedCalendar.ownerCalendarId
-        : input.calendarId;
+    const recipientCalendar = input.gateway.getOwnedCalendar(
+        input.claims.sub,
+        input.calendarId,
+    );
+    if (recipientCalendar?.visibility === "shared" && !activeSharedCalendar) {
+        sendCalendarError(
+            input.res,
+            "share_inactive",
+            "This calendar share is no longer active.",
+            410,
+        );
+        return;
+    }
+    if (activeSharedCalendar) {
+        sendCalendarError(
+            input.res,
+            "forbidden",
+            "Shared calendar recipients cannot respond to events.",
+            403,
+        );
+        return;
+    }
+    const lookupCalendarId = input.calendarId;
     const ownedCalendar = input.gateway.getOwnedCalendar(
         input.claims.sub,
         lookupCalendarId,
     );
-    const event =
-        ownedCalendar || activeSharedCalendar
-            ? input.gateway.getEvent(lookupCalendarId, input.eventId)
-            : null;
+    const globallyResolvedEvents = input.gateway.resolveGlobalEventId(
+        input.eventId,
+    );
+    const event = ownedCalendar
+        ? (globallyResolvedEvents.find(
+              (candidate) => candidate.calendarId === lookupCalendarId,
+          ) ?? null)
+        : null;
     // Also allow responding when the user is an attendee on a non-owned event
     let invitedEvent = null;
-    if (!ownedCalendar && !activeSharedCalendar) {
-        const ev = input.gateway.getEvent(input.calendarId, input.eventId);
+    if (!ownedCalendar) {
+        const ev = globallyResolvedEvents.find((candidate) =>
+            candidate.attendees.includes(input.claims.sub),
+        );
         invitedEvent = ev?.attendees.includes(input.claims.sub) ? ev : null;
     }
     const effectiveEvent = event ?? invitedEvent;
@@ -93,7 +119,7 @@ export async function handleCalendarResponseRoute(input: {
             throw new Error("calendar_not_found");
         }
         const responseRecord = input.gateway.setEventResponse({
-            eventId: input.eventId,
+            eventId: effectiveEvent.sourceEventId ?? effectiveEvent.id,
             accountId: input.claims.sub,
             response,
             respondAll,

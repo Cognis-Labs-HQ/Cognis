@@ -36,6 +36,20 @@ function sortHooks(hooks) {
 
 function createFlowEngine() {
     const flows = new Map();
+    const capabilityValues = new Map();
+
+    const capabilities = {
+        contribute(id, value) {
+            const normalizedId = String(id ?? "").trim();
+            if (!normalizedId || capabilityValues.has(normalizedId))
+                return false;
+            capabilityValues.set(normalizedId, value);
+            return true;
+        },
+        get(id) {
+            return capabilityValues.get(String(id ?? "").trim());
+        },
+    };
 
     function registerFlow(id, stages) {
         const normalizedId = String(id ?? "").trim();
@@ -121,7 +135,7 @@ function createFlowEngine() {
         return flows.has(flowId);
     }
 
-    return { registerFlow, extendFlow, runFlow, flowExists };
+    return { registerFlow, extendFlow, runFlow, flowExists, capabilities };
 }
 
 export const uiCtx = createFlowEngine();

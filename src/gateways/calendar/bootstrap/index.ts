@@ -2,7 +2,11 @@ import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Ctx } from "@cognis/core";
+import {
+    registerCanonicalFlow,
+    SHARE_FLOW_CATALOG,
+    type Ctx,
+} from "@cognis/core";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -38,6 +42,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    // Calendar currently bootstraps before Share. Registering the shared flow
+    // contracts here makes the facilitator hooks below independent of gateway
+    // discovery order; Share's later registration is intentionally idempotent.
+    if (systemCtx) {
+        for (const flow of SHARE_FLOW_CATALOG) {
+            registerCanonicalFlow(systemCtx, flow);
+        }
+    }
     const resolveMeetingsProviderAvailability = systemCtx?.getCapability<
         (providerId: string) => Promise<boolean> | boolean
     >("meetings:isProviderAvailable");
@@ -142,6 +154,23 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const store = new DbCalendarStore(dbExecutor);
             await store.ensureSchema();
             await gateway.attachStore(store);
+            const deleteAccountActivity = async (accountId: string) => {
+                await gateway.deleteAccountActivity(accountId);
+                ctx.log?.("info", "Deleted user calendar activity.", {
+                    component: "calendar-gateway",
+                    operation: "delete_user_activity",
+                    accountId,
+                });
+            };
+            ctx.capabilities.get<
+                (
+                    ownerId: string,
+                    purge: (accountId: string) => Promise<void>,
+                ) => void
+            >("auth:registerAccountDataOwner")?.(
+                "calendar",
+                deleteAccountActivity,
+            );
             ctx.flow.extend(
                 "deprovision-user",
                 "cleanup-dependencies",
@@ -162,12 +191,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         return { cleaned: false };
                     }
                     const accountId = input.username.trim().toLowerCase();
-                    await gateway.deleteAccountActivity(accountId);
-                    ctx.log?.("info", "Deleted user calendar activity.", {
-                        component: "calendar-gateway",
-                        operation: "delete_user_activity",
-                        accountId,
-                    });
+                    await deleteAccountActivity(accountId);
                     return { cleaned: true, accountId };
                 },
             );
@@ -183,9 +207,562 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.log,
     );
     await shareRegistry.ensureSchema();
+    ctx.capabilities.get<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerKeyringDataOwner")?.(
+        "calendar-shares",
+        async (accountId) => {
+            const shares =
+                await shareRegistry.listCalendarUserSharesByRecipient(
+                    accountId,
+                );
+            for (const share of shares) {
+                await shareRegistry.deleteCalendarUserShareById(share.id);
+                const calendar = gateway.getOwnedCalendar(
+                    accountId,
+                    share.recipientCalendarId,
+                );
+                if (calendar?.visibility === "shared") {
+                    gateway.deleteCalendar({
+                        ownerAccountId: accountId,
+                        calendarId: share.recipientCalendarId,
+                    });
+                }
+            }
+            await gateway.flushStore();
+        },
+    );
+    const shareExpiryTimers = new Map<string, ReturnType<typeof setTimeout>>();
+    const removeDeliveredCalendarShare = async (shareId: string) => {
+        const shares =
+            await shareRegistry.listCalendarUserSharesByTokenId(shareId);
+        if (shares.length === 0) return false;
+        await shareRegistry.deleteCalendarUserSharesByTokenId(shareId);
+        for (const share of shares) {
+            const recipientCalendar = gateway.getOwnedCalendar(
+                share.recipientAccountId,
+                share.recipientCalendarId,
+            );
+            if (recipientCalendar?.visibility === "shared") {
+                gateway.deleteCalendar({
+                    ownerAccountId: share.recipientAccountId,
+                    calendarId: share.recipientCalendarId,
+                });
+            }
+        }
+        await gateway.flushStore();
+        const timer = shareExpiryTimers.get(shareId);
+        if (timer) clearTimeout(timer);
+        shareExpiryTimers.delete(shareId);
+        ctx.log?.("info", "Removed delivered calendar user share.", {
+            component: "calendar",
+            operation: "remove_user_share_delivery",
+            shareId,
+            recipientAccountIds: shares.map(
+                (share) => share.recipientAccountId,
+            ),
+        });
+        return true;
+    };
+
+    const removeDeliveredCalendarRecipient = async (
+        share: Awaited<
+            ReturnType<CalendarShareRegistry["listCalendarUserSharesByTokenId"]>
+        >[number],
+    ) => {
+        await shareRegistry.deleteCalendarUserShare({
+            ownerAccountId: share.ownerAccountId,
+            ownerCalendarId: share.ownerCalendarId,
+            shareId: share.id,
+        });
+        const recipientCalendar = gateway.getOwnedCalendar(
+            share.recipientAccountId,
+            share.recipientCalendarId,
+        );
+        if (recipientCalendar?.visibility === "shared") {
+            gateway.deleteCalendar({
+                ownerAccountId: share.recipientAccountId,
+                calendarId: share.recipientCalendarId,
+            });
+        }
+    };
+
+    const scheduleCalendarShareExpiry = (
+        shareId: string,
+        expiresAt: string,
+    ) => {
+        const existingTimer = shareExpiryTimers.get(shareId);
+        if (existingTimer) clearTimeout(existingTimer);
+        shareExpiryTimers.delete(shareId);
+        const expiryMs = Date.parse(expiresAt);
+        if (!Number.isFinite(expiryMs)) return;
+        const delay = Math.max(0, expiryMs - Date.now());
+        const timer = setTimeout(
+            () => {
+                if (expiryMs > Date.now()) {
+                    scheduleCalendarShareExpiry(shareId, expiresAt);
+                    return;
+                }
+                void removeDeliveredCalendarShare(shareId).catch((error) => {
+                    ctx.log?.(
+                        "error",
+                        "Failed to expire calendar user share.",
+                        {
+                            component: "calendar",
+                            operation: "expire_user_share_delivery",
+                            shareId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                });
+            },
+            Math.min(delay, 2_147_483_647),
+        );
+        timer.unref?.();
+        shareExpiryTimers.set(shareId, timer);
+    };
     ctx.capabilities.contribute("calendar:resolveShareLink", (token: string) =>
         shareRegistry.resolveShareLink(token),
     );
+    ctx.capabilities.contribute(
+        "share:deliverUserShare:calendar",
+        async (delivery: {
+            shareId: string;
+            resourceType: string;
+            resourceId: string;
+            ownerAccountId: string;
+            recipientAccountId: string;
+            grantedCapabilities: string[];
+            expiresAt: string;
+        }) => {
+            if (delivery.resourceType !== "calendar") return null;
+            if (delivery.ownerAccountId === delivery.recipientAccountId) {
+                return {
+                    navigationUrl: `/calendar?calendarId=${encodeURIComponent(delivery.resourceId)}`,
+                };
+            }
+            const ownerCalendar = gateway.getOwnedCalendar(
+                delivery.ownerAccountId,
+                delivery.resourceId,
+            );
+            if (!ownerCalendar || !delivery.recipientAccountId) return null;
+            const existing = (
+                await shareRegistry.listCalendarUserShares(
+                    delivery.ownerAccountId,
+                    delivery.resourceId,
+                )
+            ).find(
+                (share) =>
+                    share.recipientAccountId === delivery.recipientAccountId,
+            );
+            const recipientCalendarId =
+                existing?.recipientCalendarId ??
+                gateway.createCalendar({
+                    ownerAccountId: delivery.recipientAccountId,
+                    name: `${ownerCalendar.name} (Shared by ${delivery.ownerAccountId})`,
+                    visibility: "shared",
+                    color: normalizeCalendarColor(ownerCalendar.color),
+                }).id;
+            await shareRegistry.upsertCalendarUserShare({
+                shareId: delivery.shareId,
+                ownerAccountId: delivery.ownerAccountId,
+                ownerCalendarId: delivery.resourceId,
+                recipientAccountId: delivery.recipientAccountId,
+                recipientCalendarId,
+                permission: delivery.grantedCapabilities.includes(
+                    "calendar:write",
+                )
+                    ? "write"
+                    : "read",
+                expiresAt: delivery.expiresAt,
+            });
+            scheduleCalendarShareExpiry(delivery.shareId, delivery.expiresAt);
+            await gateway.flushStore();
+            ctx.log?.("info", "Delivered calendar user share.", {
+                component: "calendar",
+                operation: "deliver_user_share",
+                calendarId: delivery.resourceId,
+                recipientAccountId: delivery.recipientAccountId,
+                permission: delivery.grantedCapabilities.includes(
+                    "calendar:write",
+                )
+                    ? "write"
+                    : "read",
+            });
+            return {
+                navigationUrl: `/calendar?calendarId=${encodeURIComponent(recipientCalendarId)}`,
+                feedback: existing
+                    ? null
+                    : {
+                          messageKey: "gateway.calendar.share_import_success",
+                          stringsBaseUrl: [
+                              "/static/gateways/calendar/ui/languages",
+                          ],
+                      },
+            };
+        },
+    );
+    ctx.capabilities.contribute(
+        "share:resolveVariants",
+        (variantInput: {
+            resourceType: string;
+            resourceId: string;
+            token: string;
+            shareUrl: string;
+            grantedCapabilities: string[];
+            metadata?: Record<string, string> | null;
+        }) => {
+            if (variantInput.resourceType !== "calendar") {
+                return [
+                    {
+                        id: "web",
+                        label: "Web",
+                        url: variantInput.shareUrl,
+                        contentType: "text/html",
+                    },
+                ];
+            }
+            const encodedToken = encodeURIComponent(variantInput.token);
+            const calendar = gateway.getCalendar(variantInput.resourceId);
+            const calendarPathName = encodeURIComponent(
+                String(
+                    calendar?.name ??
+                        variantInput.metadata?.resourceName ??
+                        "calendar",
+                ),
+            );
+            const access = variantInput.grantedCapabilities.includes(
+                "calendar:write",
+            )
+                ? "write"
+                : "read";
+            return [
+                {
+                    id: "web",
+                    label: "Web",
+                    access,
+                    url: variantInput.shareUrl,
+                    contentType: "text/html",
+                },
+                {
+                    id: "ics",
+                    label: "ICS",
+                    access: "read",
+                    url: `/api/v1/calendar/ics/share/${encodedToken}/${calendarPathName}.ics`,
+                    contentType: "text/calendar",
+                },
+                {
+                    id: "caldav",
+                    label: "CalDAV",
+                    access,
+                    url: `/api/v1/calendar/caldav/share/${encodedToken}/${calendarPathName}/`,
+                    contentType: "text/calendar",
+                },
+            ];
+        },
+    );
+    if (ctx.flow.exists("mint-share-token")) {
+        ctx.flow.extend(
+            "mint-share-token",
+            "validate-resource",
+            { id: "calendar-gateway:validate-share-resource" },
+            (stageCtx) => {
+                const flowInput = (stageCtx.input ?? {}) as {
+                    resourceType?: string;
+                    resourceId?: string;
+                    ownerAccountId?: string;
+                    password?: string | null;
+                };
+                if (flowInput.resourceType !== "calendar") {
+                    return {
+                        valid: false,
+                        reason: "unsupported_resource_type",
+                    };
+                }
+                const calendar = gateway.getOwnedCalendar(
+                    String(flowInput.ownerAccountId ?? ""),
+                    String(flowInput.resourceId ?? ""),
+                );
+                if (
+                    calendar?.visibility === "private" &&
+                    !String(flowInput.password ?? "").trim()
+                ) {
+                    return {
+                        valid: false,
+                        reason: "share_password_required",
+                    };
+                }
+                return calendar
+                    ? {
+                          valid: true,
+                          resourceType: "calendar",
+                          resourceId: calendar.id,
+                          metadata: {
+                              resourceName: calendar.name,
+                              resourceTypeLabel: "calendar",
+                          },
+                          ownerAccountId: String(
+                              flowInput.ownerAccountId ?? "",
+                          ),
+                      }
+                    : { valid: false, reason: "resource_not_found" };
+            },
+        );
+        ctx.flow.extend(
+            "mint-share-token",
+            "authorize-minter",
+            { id: "calendar-gateway:authorize-share-minter" },
+            (stageCtx) => {
+                const result = (
+                    stageCtx.stageResults["validate-resource"] ?? []
+                ).find(
+                    (entry) =>
+                        (entry as { valid?: boolean; resourceType?: string })
+                            .valid === true &&
+                        (entry as { resourceType?: string }).resourceType ===
+                            "calendar",
+                ) as { ownerAccountId?: string } | undefined;
+                return result
+                    ? {
+                          authorized: true,
+                          ownerAccountId: result.ownerAccountId,
+                      }
+                    : { authorized: false, reason: "invalid_resource" };
+            },
+        );
+    }
+    if (ctx.flow.exists("resolve-share-token")) {
+        ctx.flow.extend(
+            "resolve-share-token",
+            "resolve-resource",
+            { id: "calendar-gateway:resolve-shared-calendar" },
+            (stageCtx) => {
+                const tokenRecord = (
+                    stageCtx.stageResults["validate-token"] ?? []
+                ).find(
+                    (entry) =>
+                        (entry as { valid?: boolean }).valid === true &&
+                        (entry as { tokenRecord?: { resourceType?: string } })
+                            .tokenRecord?.resourceType === "calendar",
+                ) as
+                    | {
+                          tokenRecord?: {
+                              resourceType?: string;
+                              resourceId?: string;
+                          };
+                      }
+                    | undefined;
+                const calendarId = String(
+                    tokenRecord?.tokenRecord?.resourceId ?? "",
+                );
+                const calendar = gateway.getCalendar(calendarId);
+                return calendar
+                    ? {
+                          resolved: true,
+                          resourceType: "calendar",
+                          resourceId: calendarId,
+                          payload: {
+                              calendar,
+                              events: gateway.listEvents(calendarId),
+                              ics: gateway.exportCalendarAsIcs(calendarId),
+                          },
+                      }
+                    : { resolved: false, reason: "resource_not_found" };
+            },
+        );
+        ctx.flow.extend(
+            "resolve-share-token",
+            "check-access",
+            { id: "calendar-gateway:allow-resolved-share" },
+            (stageCtx) => {
+                const resolved = (
+                    stageCtx.stageResults["resolve-resource"] ?? []
+                ).some(
+                    (entry) =>
+                        (
+                            entry as {
+                                resolved?: boolean;
+                                resourceType?: string;
+                            }
+                        ).resolved === true &&
+                        (entry as { resourceType?: string }).resourceType ===
+                            "calendar",
+                );
+                return resolved
+                    ? { allowed: true, directAccess: false }
+                    : { allowed: false, reason: "resource_unavailable" };
+            },
+        );
+    }
+    if (ctx.flow.exists("construct-share-page")) {
+        ctx.flow.extend(
+            "construct-share-page",
+            "resolve-resource-renderer",
+            { id: "calendar-gateway:share-renderer" },
+            (stageCtx) =>
+                String(
+                    (stageCtx.input as { resourceType?: unknown })
+                        ?.resourceType ?? "",
+                ) === "calendar"
+                    ? {
+                          mountScriptUrl:
+                              "/static/gateways/calendar/ui/share-renderer.js",
+                          stringsBaseUrl: [
+                              "/static/gateways/calendar/ui/languages",
+                          ],
+                          stylesheetUrls: [
+                              "/static/gateways/calendar/ui/calendar.css",
+                              "/static/gateways/calendar/ui/share-renderer.css",
+                          ],
+                      }
+                    : null,
+        );
+    }
+    if (ctx.flow.exists("revoke-share-token")) {
+        ctx.flow.extend(
+            "revoke-share-token",
+            "authorize-revocation",
+            { id: "calendar-gateway:authorize-share-revocation" },
+            (stageCtx) => {
+                const flowInput = (stageCtx.input ?? {}) as {
+                    claims?: { sub?: string };
+                    shareId?: string;
+                    resourceType?: string;
+                    resourceId?: string;
+                };
+                const ownerAccountId = String(flowInput.claims?.sub ?? "");
+                return flowInput.resourceType === "calendar" &&
+                    Boolean(
+                        gateway.getOwnedCalendar(
+                            ownerAccountId,
+                            String(flowInput.resourceId ?? ""),
+                        ),
+                    )
+                    ? {
+                          authorized: true,
+                          ownerAccountId,
+                          shareId: flowInput.shareId,
+                          resourceType: flowInput.resourceType,
+                          resourceId: flowInput.resourceId,
+                      }
+                    : { authorized: false, reason: "forbidden" };
+            },
+        );
+        ctx.flow.extend(
+            "revoke-share-token",
+            "remove-delivery",
+            { id: "calendar-gateway:remove-share-delivery" },
+            async (stageCtx) => {
+                const flowInput = (stageCtx.input ?? {}) as {
+                    shareId?: string;
+                    resourceType?: string;
+                };
+                if (
+                    flowInput.resourceType !== "calendar" ||
+                    !flowInput.shareId
+                ) {
+                    return null;
+                }
+                const deletionResults =
+                    stageCtx.stageResults["delete-token"] ?? [];
+                if (
+                    !deletionResults.some((result) =>
+                        Boolean((result as { revoked?: boolean })?.revoked),
+                    )
+                ) {
+                    return { removed: false };
+                }
+                return {
+                    removed: await removeDeliveredCalendarShare(
+                        flowInput.shareId,
+                    ),
+                };
+            },
+        );
+    }
+    if (ctx.flow.exists("update-share-token")) {
+        ctx.flow.extend(
+            "update-share-token",
+            "reconcile-deliveries",
+            { id: "calendar-gateway:reconcile-share-deliveries" },
+            async (stageCtx) => {
+                const updateResult = (
+                    stageCtx.stageResults["update-token"] ?? []
+                ).find((result) =>
+                    Boolean((result as { updated?: boolean })?.updated),
+                ) as {
+                    updated?: boolean;
+                    updatedToken?: {
+                        id?: string;
+                        resourceType?: string;
+                        accessControls?: {
+                            recipients?: Array<{
+                                type?: string;
+                                id?: string;
+                            }>;
+                        };
+                        grantedCapabilities?: string[];
+                        expiresAt?: string;
+                    };
+                } | null;
+                const updatedToken = updateResult?.updatedToken;
+                if (
+                    !updateResult?.updated ||
+                    updatedToken?.resourceType !== "calendar" ||
+                    !updatedToken.id
+                ) {
+                    return null;
+                }
+                const recipientIds = new Set(
+                    (updatedToken.accessControls?.recipients ?? [])
+                        .filter((recipient) => recipient.type === "user")
+                        .map((recipient) => String(recipient.id ?? ""))
+                        .filter(Boolean),
+                );
+                const deliveredShares =
+                    await shareRegistry.listCalendarUserSharesByTokenId(
+                        updatedToken.id,
+                    );
+                for (const deliveredShare of deliveredShares) {
+                    if (!recipientIds.has(deliveredShare.recipientAccountId)) {
+                        await removeDeliveredCalendarRecipient(deliveredShare);
+                        continue;
+                    }
+                    await shareRegistry.upsertCalendarUserShare({
+                        shareId: updatedToken.id,
+                        ownerAccountId: deliveredShare.ownerAccountId,
+                        ownerCalendarId: deliveredShare.ownerCalendarId,
+                        recipientAccountId: deliveredShare.recipientAccountId,
+                        recipientCalendarId: deliveredShare.recipientCalendarId,
+                        recipientHandle: deliveredShare.recipientHandle,
+                        recipientDisplayName:
+                            deliveredShare.recipientDisplayName,
+                        recipientAvatarKey: deliveredShare.recipientAvatarKey,
+                        permission: updatedToken.grantedCapabilities?.includes(
+                            "calendar:write",
+                        )
+                            ? "write"
+                            : "read",
+                        expiresAt: String(updatedToken.expiresAt ?? ""),
+                    });
+                }
+                if (deliveredShares.length > 0) {
+                    scheduleCalendarShareExpiry(
+                        updatedToken.id,
+                        String(updatedToken.expiresAt ?? ""),
+                    );
+                    await gateway.flushStore();
+                }
+                return {
+                    reconciled: true,
+                    deliveredCount: deliveredShares.length,
+                };
+            },
+        );
+    }
 
     await gateway.discoverAdapters(adaptersRoot);
 
@@ -265,6 +842,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 notificationResolver.getDispatchNotification(),
             ensureNotificationCategory: () =>
                 notificationResolver.ensureCategory(),
+            getCapability: <T>(capabilityId: string) =>
+                ctx.capabilities.get<T>(capabilityId),
         }),
         "calendar",
     );
@@ -325,7 +904,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.2.0",
+        version: "1.4.31",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

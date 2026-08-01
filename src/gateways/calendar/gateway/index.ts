@@ -36,11 +36,19 @@ import {
     bootstrapAdapters as bootstrapCalendarAdapters,
     discoverAdapters as discoverCalendarAdapters,
     exportCalendarAsIcs as buildCalendarIcs,
+    getAdapterConfig as getAdapterConfigHelper,
     importIcs as importCalendarIcs,
 } from "./adapter-helpers.js";
 import { moveOwnedEvents } from "./move-owned-events.js";
 import { removeDeclinedAttendee as removeDeclinedAttendeeHelper } from "./attendee-management.js";
-import { upsertEventRecord as upsertEventRecordHelper } from "./event-record-ops.js";
+import {
+    buildEventResponses,
+    moveEventRecord as moveEventRecordHelper,
+    removeEventRecord as removeEventRecordHelper,
+    setResponseRecord as setResponseRecordHelper,
+    upsertCalendarRecord as upsertCalendarRecordHelper,
+    upsertEventRecord as upsertEventRecordHelper,
+} from "./event-record-ops.js";
 import {
     getEventsByRecurrenceId,
     getResponseRootEventId,
@@ -83,7 +91,7 @@ export class CoreCalendarGateway {
             this.upsertCalendarRecord(calendar);
         }
         for (const event of events) {
-            this.upsertEventRecord({
+            upsertEventRecordHelper(this.eventsByCalendar, {
                 ...event,
                 attendees: normalizeAttendeeList(event.attendees),
                 inviteEmails: normalizeInviteEmails(event.inviteEmails),
@@ -93,7 +101,7 @@ export class CoreCalendarGateway {
             });
         }
         for (const response of responses) {
-            this.setResponseRecord(response);
+            setResponseRecordHelper(this.responsesByRootEvent, response);
         }
         for (const eventsForCalendar of this.eventsByCalendar.values()) {
             for (const event of eventsForCalendar) {
@@ -190,14 +198,11 @@ export class CoreCalendarGateway {
     }
 
     getAdapterConfig(adapterId: string): Record<string, unknown> | null {
-        const adapter = this.registeredAdapters.get(adapterId);
-        if (!adapter) return null;
-        return {
-            ...(typeof adapter.getConfig === "function"
-                ? adapter.getConfig()
-                : {}),
-            enabled: !this.disabledAdapters.has(adapterId),
-        };
+        return getAdapterConfigHelper(
+            this.registeredAdapters,
+            this.disabledAdapters,
+            adapterId,
+        );
     }
 
     async saveAdapterConfig(
@@ -459,6 +464,18 @@ export class CoreCalendarGateway {
             );
     }
 
+    resolveGlobalEventId(eventId: string): CalendarEventRecord[] {
+        const normalizedEventId = eventId.trim();
+        if (!normalizedEventId) return [];
+        return Array.from(this.eventsByCalendar.values())
+            .flatMap((events) => events)
+            .filter(
+                (event) =>
+                    event.id === normalizedEventId ||
+                    event.sourceEventId === normalizedEventId,
+            );
+    }
+
     listInvitedPendingEvents(accountId: string): CalendarEventRecord[] {
         return listInvitedPendingEvents(
             accountId,
@@ -645,6 +662,22 @@ export class CoreCalendarGateway {
         return this.getEvent(targetCalendar.id, event.id) ?? event;
     }
 
+    updateSharedEvent(input: {
+        calendarId: string;
+        eventId: string;
+        title?: string;
+        description?: string | null;
+        startAt?: string;
+        endAt?: string;
+    }): CalendarEventRecord {
+        const calendar = this.getCalendar(input.calendarId);
+        if (!calendar) throw new Error("calendar_not_found");
+        return this.updateEvent({
+            ownerAccountId: calendar.ownerAccountId,
+            ...input,
+        });
+    }
+
     moveOwnedEvent(input: {
         ownerAccountId: string;
         calendarId: string;
@@ -722,6 +755,18 @@ export class CoreCalendarGateway {
         return deletedEvents;
     }
 
+    deleteSharedEvent(input: {
+        calendarId: string;
+        eventId: string;
+    }): CalendarEventRecord[] {
+        const calendar = this.getCalendar(input.calendarId);
+        if (!calendar) throw new Error("calendar_not_found");
+        return this.deleteEvent({
+            ownerAccountId: calendar.ownerAccountId,
+            ...input,
+        });
+    }
+
     getEventResponse(
         eventId: string,
         accountId: string,
@@ -786,7 +831,7 @@ export class CoreCalendarGateway {
                 createdAt: existingRecord?.createdAt ?? now,
                 updatedAt: now,
             };
-            this.setResponseRecord(record);
+            setResponseRecordHelper(this.responsesByRootEvent, record);
             this.refreshResponsesForRootEvent(targetRootEventId);
             this.scheduleStoreWrite(() => this.store?.saveResponse(record));
             if (targetRootEventId === rootEventId) {
@@ -869,8 +914,11 @@ export class CoreCalendarGateway {
         return this.tokenStore.consumeScopedMeetingToken(tokenValue);
     }
 
-    exportCalendarAsIcs(calendarId: string): string {
-        return buildCalendarIcs(this, calendarId);
+    exportCalendarAsIcs(
+        calendarId: string,
+        accessMode?: "read" | "write",
+    ): string {
+        return buildCalendarIcs(this, calendarId, accessMode);
     }
 
     importIcs(input: {
@@ -893,7 +941,7 @@ export class CoreCalendarGateway {
     }
 
     private insertEventIntoCalendar(event: CalendarEventRecord): void {
-        this.upsertEventRecord(event);
+        upsertEventRecordHelper(this.eventsByCalendar, event);
         this.syncResponsesForAttendees(
             getResponseRootEventId(event),
             event.attendees,
@@ -914,58 +962,28 @@ export class CoreCalendarGateway {
     }
 
     private upsertCalendarRecord(calendar: CalendarRecord): void {
-        this.calendarsById.set(calendar.id, calendar);
-        const ownerCalendars =
-            this.calendarIdsByOwner.get(calendar.ownerAccountId) ?? new Set();
-        ownerCalendars.add(calendar.id);
-        this.calendarIdsByOwner.set(calendar.ownerAccountId, ownerCalendars);
-    }
-
-    private upsertEventRecord(event: CalendarEventRecord): void {
-        upsertEventRecordHelper(this.eventsByCalendar, event);
+        upsertCalendarRecordHelper(
+            this.calendarsById,
+            this.calendarIdsByOwner,
+            calendar,
+        );
     }
 
     private removeEventRecord(event: CalendarEventRecord): void {
-        const existingEvents =
-            this.eventsByCalendar.get(event.calendarId) ?? [];
-        const nextEvents = existingEvents.filter(
-            (existingEvent) => existingEvent.id !== event.id,
-        );
-        if (nextEvents.length > 0) {
-            this.eventsByCalendar.set(event.calendarId, nextEvents);
-        } else {
-            this.eventsByCalendar.delete(event.calendarId);
-        }
+        removeEventRecordHelper(this.eventsByCalendar, event);
     }
 
     private moveEventRecord(
         previousCalendarId: string,
         event: CalendarEventRecord,
     ): void {
-        if (previousCalendarId !== event.calendarId) {
-            const previousEvents =
-                this.eventsByCalendar.get(previousCalendarId) ?? [];
-            const remainingEvents = previousEvents.filter(
-                (existingEvent) => existingEvent.id !== event.id,
-            );
-            if (remainingEvents.length > 0) {
-                this.eventsByCalendar.set(previousCalendarId, remainingEvents);
-            } else {
-                this.eventsByCalendar.delete(previousCalendarId);
-            }
-        }
-        this.upsertEventRecord(event);
+        moveEventRecordHelper(this.eventsByCalendar, previousCalendarId, event);
     }
 
     private refreshEventResponses(event: CalendarEventRecord): void {
         const rootEventId = getResponseRootEventId(event);
         const responseRecords = this.responsesByRootEvent.get(rootEventId);
-        const responses: Record<string, CalendarEventResponse> = {};
-        for (const attendee of event.attendees) {
-            responses[attendee] =
-                responseRecords?.get(attendee)?.response ?? "pending";
-        }
-        event.responses = responses;
+        event.responses = buildEventResponses(event, responseRecords);
     }
 
     private refreshResponsesForRootEvent(rootEventId: string): void {
@@ -975,13 +993,6 @@ export class CoreCalendarGateway {
                 this.refreshEventResponses(event);
             }
         }
-    }
-
-    private setResponseRecord(record: CalendarEventResponseRecord): void {
-        const rootResponses =
-            this.responsesByRootEvent.get(record.rootEventId) ?? new Map();
-        rootResponses.set(record.accountId, record);
-        this.responsesByRootEvent.set(record.rootEventId, rootResponses);
     }
 
     private syncResponsesForAttendees(

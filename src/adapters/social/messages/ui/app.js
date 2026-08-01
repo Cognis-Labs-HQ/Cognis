@@ -5,11 +5,8 @@
  *   left  — list of rooms with last message preview and unread badge.
  *   right — selected room's message thread + composer.
  *
- * Messages are encrypted client-side with a per-room AES-GCM key fetched
- * from `GET /api/v1/social/messages/rooms/:id/key` and cached in memory for the
- * page's lifetime. The server holds the at-rest-wrapped form of the same
- * key. See `src/adapters/social/messages/docs/standard.en.md` for the full
- * threat model.
+ * Messages are encrypted client-side with per-room AES-GCM keys resolved from
+ * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
 
 import {
@@ -51,23 +48,22 @@ import {
     formatRoomListAvatar,
 } from "./message-render.js";
 import { resolveMessageTemplateVariables } from "./message-templates.js";
-import { createRoomKeyStore } from "./room-keys.mjs";
+import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
-import { importRoomKey } from "/static/reuse/crypto-utils.js";
 
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
 const TYPING_SEND_DEBOUNCE_MS = 1200;
 const LIVE_REFRESH_INTERVAL_MS = 2500;
-
-const { getRoomKey, requireRoomKey, resolveThreadRoomKey } = createRoomKeyStore(
-    {
-        fetchRoomKey: apiFetch,
-        importKey: importRoomKey,
-    },
-);
+const getRoomKey = (roomId) => loadChatRoomKey(roomId);
+const requireRoomKey = (roomId) => requireChatRoomKey(roomId);
+const resolveThreadRoomKey = (roomContext, roomId) =>
+    roomContext?.pendingRequest?.direction === "incoming" ||
+    roomContext?.direction === "incoming"
+        ? null
+        : requireRoomKey(roomId);
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
@@ -127,6 +123,12 @@ export async function mount(root, { signal } = {}) {
         getRoomKey,
         requireRoomKey,
         resolveThreadRoomKey,
+        acceptRoomKeyContribution: async (roomId, keyContribution) =>
+            Boolean(
+                await loadChatRoomKey(roomId, {
+                    keyContribution,
+                }),
+            ),
         lastOpenedRoomKey: LAST_OPENED_ROOM_KEY,
         typingTtlSeconds: TYPING_TTL_SECONDS,
         typingIdleResetMs: TYPING_IDLE_RESET_MS,
@@ -158,6 +160,26 @@ export async function mount(root, { signal } = {}) {
             }
         },
     });
+
+    let pageReady = false;
+    let refreshAfterKeyringUnlock = false;
+    const refreshDecryptedContent = async () => {
+        if (!pageReady) {
+            refreshAfterKeyringUnlock = true;
+            return;
+        }
+        await roomState.reloadRoomsList();
+        await roomState.refreshActiveConversation();
+    };
+    window.addEventListener(
+        "cognis:keyring-event",
+        (event) => {
+            if (event.detail?.type === "unlock") {
+                void refreshDecryptedContent();
+            }
+        },
+        { signal },
+    );
 
     await Promise.all([loadAllEmojis(), fetchEmojiUsage(apiFetch)]);
     await roomState.loadInitialRooms();
@@ -850,6 +872,11 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    pageReady = true;
+    if (refreshAfterKeyringUnlock) {
+        refreshAfterKeyringUnlock = false;
+        await refreshDecryptedContent();
+    }
     roomState.startTypingPolling();
     roomState.startLiveRefreshPolling();
 }

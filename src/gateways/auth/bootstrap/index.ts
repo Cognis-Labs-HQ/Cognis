@@ -1,4 +1,5 @@
 import path from "node:path";
+import { AccountInstanceStore } from "../account-instance-store.js";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage } from "node:http";
@@ -139,6 +140,94 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.log?.("info", "Auth gateway account schema ready.", {
         component: "auth-gateway",
     });
+    const accountInstanceStore = new AccountInstanceStore(dbExecutor);
+    await accountInstanceStore.ensureSchema();
+    const accountDataOwners = new Map<
+        string,
+        (accountId: string) => Promise<void>
+    >();
+    const keyringDataOwners = new Map<
+        string,
+        (accountId: string) => Promise<void>
+    >();
+    ctx.capabilities.contribute(
+        "auth:registerAccountDataOwner",
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => {
+            accountDataOwners.set(ownerId, purge);
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:registerKeyringDataOwner",
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => {
+            keyringDataOwners.set(ownerId, purge);
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:purgeKeyringDependentData",
+        async (accountId: string) => {
+            const normalizedAccountId = accountId.trim().toLowerCase();
+            for (const purge of keyringDataOwners.values()) {
+                await purge(normalizedAccountId);
+            }
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:getAccountInstanceId",
+        async (accountId: string) => {
+            const instanceId =
+                await accountInstanceStore.getOrCreate(accountId);
+            for (const [ownerId, purge] of accountDataOwners) {
+                const mismatched =
+                    await accountInstanceStore.reconcileDataOwner(
+                        ownerId,
+                        accountId,
+                        instanceId,
+                        purge,
+                    );
+                if (mismatched) {
+                    ctx.log?.("info", "Purged stale account-owned data.", {
+                        component: "auth-gateway",
+                        operation: "purge_stale_account_data",
+                        ownerId,
+                        accountId: accountId.trim().toLowerCase(),
+                    });
+                }
+            }
+            return instanceId;
+        },
+    );
+    ctx.flow.extend(
+        "deprovision-user",
+        "cleanup-dependencies",
+        { id: "auth-gateway:delete-account-instance" },
+        async (stageContext) => {
+            const request = stageContext.input as {
+                username?: string;
+                action?: string;
+            };
+            const persisted = (
+                stageContext.stageResults["persist-state"] ?? []
+            ).some((result) => (result as { persisted?: boolean }).persisted);
+            if (
+                !persisted ||
+                request.action !== "delete" ||
+                !request.username
+            ) {
+                return { cleaned: false };
+            }
+            await accountInstanceStore.delete(request.username);
+            const accountId = request.username.trim().toLowerCase();
+            ctx.log?.("info", "Deleted transient account instance.", {
+                component: "auth-gateway",
+                operation: "delete_account_instance",
+                accountId,
+            });
+            return {
+                cleaned: true,
+                accountId,
+            };
+        },
+    );
 
     const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();
@@ -191,7 +280,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }
 
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
-    await authGateway.discoverAdapters(authAdaptersRoot);
+    await authGateway.discoverAdapters(authAdaptersRoot, {
+        capabilities: ctx.capabilities,
+        registerStaticDir: (adapterId, absolutePath) =>
+            ctx.uiRegistry?.registerAdapterStaticDir(
+                "auth",
+                adapterId,
+                absolutePath,
+            ),
+        registerNavbarPlugin: (scriptUrl) =>
+            ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
+        registerSettingsSection: (section) =>
+            ctx.uiRegistry?.registerSettingsSection(section),
+        flow: ctx.flow,
+        log: ctx.log,
+    });
+    ctx.capabilities.require("auth:keyringVaultStore");
     for (const adapter of authGateway.listAdapters()) {
         const adapterUiDirectory = path.join(
             authAdaptersRoot,
@@ -212,6 +316,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adaptersRoot: authAdaptersRoot,
         adapterCount: authGateway.listAdapters().length,
     });
+
+    ctx.capabilities.contribute(
+        "auth:confirmPassword",
+        (accountId: string, password: string, providerId?: string) =>
+            authGateway.confirmPassword(accountId, password, providerId),
+    );
 
     const authRouteBootstrapRuntime = createAuthRouteBootstrapRuntime();
     await runAuthRouteBootstrapHooks({
@@ -255,11 +365,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
+    const routeContext: RouteContext = createDefaultRouteContext({
+        getCapability: ctx.capabilities.get.bind(ctx.capabilities),
+        requireCapability: ctx.capabilities.require.bind(ctx.capabilities),
+        flow: ctx.flow,
+    });
+
     ctx.routeRegistry.register(
         createAuthGatewayRoutes(
             authGateway,
             accountStore,
             ctx.capabilities,
+            routeContext,
             authRouteBootstrapRuntime,
             securitySubsections,
             ctx.log,
@@ -279,11 +396,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "auth",
         name: "Authentication Gateway",
-        version: "1.7.2",
+        version: "1.7.33",
         description: "Manages authentication providers and user login.",
         publisher: "Cognis Labs HQ",
         required: true,
-        hasAdapters: true,
     });
 
     const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
@@ -293,12 +409,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         label: "Security",
         scriptUrl: "/static/gateways/auth/security-prefs/index.js",
         stringsBaseUrl: "/static/gateways/auth/languages",
-    });
-
-    const routeContext: RouteContext = createDefaultRouteContext({
-        getCapability: ctx.capabilities.get.bind(ctx.capabilities),
-        requireCapability: ctx.capabilities.require.bind(ctx.capabilities),
-        flow: ctx.flow,
     });
     await runAuthBootstrapHooks({
         accountStore,

@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import {
     CTX_CAPABILITY,
     GatewayRegistry,
@@ -12,9 +12,66 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { bootstrap } from "../bootstrap.js";
 import {
+    contributeTestKeyring,
     makeInMemoryDb,
     type InMemoryDb,
 } from "./auth-gateway-test-helpers.js";
+
+test("keyring manifest declares the Authentication gateway as its parent", async () => {
+    const manifest = JSON.parse(
+        await readFile("src/adapters/auth/keyring/manifest.json", "utf8"),
+    ) as { gateway?: string; name?: string };
+
+    assert.equal(manifest.gateway, "auth");
+    assert.equal(manifest.name, "User Keyring");
+});
+
+test("keyring adapter purges a vault when user deletion persists", async () => {
+    const { bootstrapAuthAdapter } =
+        await import("../../../adapters/auth/keyring/index.js");
+    const commands: Array<Record<string, unknown>> = [];
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("db:executor", {
+        async ensureTable() {},
+        async executeCommand(command: Record<string, unknown>) {
+            commands.push(command);
+            return { rows: [] };
+        },
+    });
+    const systemCtx = createCtx();
+    systemCtx.registerFlow({
+        id: "deprovision-user",
+        stages: ["persist-state", "cleanup-dependencies"],
+    });
+    systemCtx.flow.extend(
+        "deprovision-user",
+        "persist-state",
+        { id: "test:persist-user-deletion" },
+        () => ({ persisted: true }),
+    );
+    await bootstrapAuthAdapter({
+        adapterRoot: "src/adapters/auth/keyring",
+        capabilities,
+        flow: systemCtx.flow,
+    });
+
+    const result = await systemCtx.flow.run("deprovision-user", {
+        username: "LDAP.User",
+        action: "delete",
+    });
+
+    assert.ok(
+        commands.some(
+            (command) =>
+                command.option === "DELETE" &&
+                command.table === "auth_keyring_vaults" &&
+                JSON.stringify(command.where).includes("ldap.user"),
+        ),
+    );
+    assert.deepEqual(result.stageResults["cleanup-dependencies"], [
+        { purged: true, accountId: "ldap.user" },
+    ]);
+});
 
 function createDbExecutor(): InMemoryDb {
     return makeInMemoryDb();
@@ -24,6 +81,7 @@ function makeBaseCtx(capabilities: CapabilityStore, dbExecutor: InMemoryDb) {
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
     capabilities.contribute("db:executor", dbExecutor);
+    contributeTestKeyring(capabilities);
     return { flow: systemCtx.flow };
 }
 
@@ -45,6 +103,53 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     const authGw = gateways.find((g) => g.id === "auth");
     assert.ok(authGw, "auth gateway should be registered");
     assert.equal(authGw.required, true);
+});
+
+test("keyring cleanup preserves account identity and unrelated account owners", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+    let profilePurges = 0;
+    let messagePurges = 0;
+    capabilities.require<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerAccountDataOwner")("profile", async () => {
+        profilePurges += 1;
+    });
+    capabilities.require<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerKeyringDataOwner")("messages", async (accountId) => {
+        assert.equal(accountId, "alice");
+        messagePurges += 1;
+    });
+    const getAccountInstanceId = capabilities.require<
+        (accountId: string) => Promise<string>
+    >("auth:getAccountInstanceId");
+    await getAccountInstanceId("Alice");
+
+    await capabilities.require<(accountId: string) => Promise<void>>(
+        "auth:purgeKeyringDependentData",
+    )("Alice");
+
+    assert.equal(messagePurges, 1);
+    assert.equal(profilePurges, 0);
+    const bootstrapSource = await readFile(
+        "src/gateways/auth/bootstrap/index.ts",
+        "utf8",
+    );
+    const keyringPurgeBlock = bootstrapSource.match(
+        /"auth:purgeKeyringDependentData",[\s\S]*?\n\s*\},\n\s*\);/,
+    )?.[0];
+    assert.ok(keyringPurgeBlock);
+    assert.doesNotMatch(keyringPurgeBlock, /accountInstanceStore\.delete/);
 });
 
 test("auth gateway contributes account and token lifecycle capabilities", async () => {
@@ -70,6 +175,10 @@ test("auth gateway contributes account and token lifecycle capabilities", async 
         "function",
         "auth:revokeAccessTokensForSubject should be contributed for lifecycle cleanup flows",
     );
+    const getAccountInstanceId = capabilities.get<
+        (accountId: string) => Promise<string>
+    >("auth:getAccountInstanceId");
+    assert.equal(typeof getAccountInstanceId, "function");
 });
 
 test("auth bootstrap registers canonical ctx flow skeletons", async () => {
@@ -237,6 +346,22 @@ test("auth gateway registers adapter-owned UI directories", async () => {
     const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
     assert.ok(ldapUiDirectory);
     await assert.doesNotReject(access(`${ldapUiDirectory}/config-popup.js`));
+
+    const keyringUiDirectory = uiRegistry.getAdapterStaticDir(
+        "auth",
+        "keyring",
+    );
+    assert.ok(keyringUiDirectory);
+    await assert.doesNotReject(access(`${keyringUiDirectory}/keyring.js`));
+    assert.ok(
+        uiRegistry
+            .listNavbarPlugins()
+            .some(
+                (plugin) =>
+                    plugin.scriptUrl ===
+                    "/static/adapters/auth/keyring/keyring.js",
+            ),
+    );
 });
 
 test("auth gateway bootstrap registers security section without redundant authentication admin section", async () => {
@@ -342,6 +467,26 @@ test("CoreAuthGateway lists adapter publisher metadata", async () => {
     });
 
     assert.equal(gateway.listAdapters()[0]?.publisher, "Cognis Labs HQ");
+});
+
+test("CoreAuthGateway lists a locked keyring without treating it as a login provider", async () => {
+    const { CoreAuthGateway } = await import("../gateway.js");
+    const { createAdapter } =
+        await import("../../../adapters/auth/keyring/index.js");
+    const gateway = new CoreAuthGateway(makeInMemoryDb());
+
+    gateway.registerAdapter(createAdapter(), ["db"]);
+
+    const listedKeyring = gateway.listAdapters()[0];
+    assert.equal(listedKeyring?.id, "keyring");
+    assert.equal(listedKeyring?.name, "User Keyring");
+    assert.equal(listedKeyring?.enabled, true);
+    assert.equal(listedKeyring?.locked, true);
+    assert.deepEqual(listedKeyring?.requires, ["db"]);
+    assert.ok(
+        listedKeyring?.schema.some((field) => field.key === "maxVaultMiB"),
+    );
+    assert.deepEqual(gateway.getEnabledAdapters(), []);
 });
 
 test("CoreAuthGateway redacts configured passwords and preserves them on blank updates", async () => {

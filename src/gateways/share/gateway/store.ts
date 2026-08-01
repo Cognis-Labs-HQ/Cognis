@@ -13,6 +13,8 @@ export interface ShareRecipient {
     type: ShareRecipientType;
     id: string;
     label?: string | null;
+    handle?: string | null;
+    avatarKey?: string | null;
     permissions: SharePermission[];
 }
 
@@ -85,6 +87,8 @@ function normalizeRecipients(value: unknown): ShareRecipient[] {
                 type,
                 id,
                 label: normalizeOptionalString(candidate.label),
+                handle: normalizeOptionalString(candidate.handle),
+                avatarKey: normalizeOptionalString(candidate.avatarKey),
                 permissions: normalizePermissions(candidate.permissions),
             },
         ];
@@ -606,6 +610,20 @@ export class ShareTokenStore {
         rawToken: string,
         password?: string | null,
     ): Promise<ShareTokenRecord | null> {
+        const record = await this.inspect(rawToken);
+        if (!record) {
+            return null;
+        }
+        if (record.passwordHash) {
+            const candidate = password ? String(password) : "";
+            if (!verifySharePassword(candidate, record.passwordHash)) {
+                return null;
+            }
+        }
+        return record;
+    }
+
+    async inspect(rawToken: string): Promise<ShareTokenRecord | null> {
         const parsedToken = parseShareToken(rawToken);
         if (!parsedToken) {
             return null;
@@ -619,12 +637,6 @@ export class ShareTokenStore {
         }
         if (isExpired(record.expiresAt)) {
             return null;
-        }
-        if (record.passwordHash) {
-            const candidate = password ? String(password) : "";
-            if (!verifySharePassword(candidate, record.passwordHash)) {
-                return null;
-            }
         }
         return record;
     }

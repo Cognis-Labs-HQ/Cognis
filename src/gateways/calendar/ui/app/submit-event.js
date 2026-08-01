@@ -6,7 +6,6 @@ export function createSubmitEvent({
     showToast,
     i18n,
     getEventsByCalendar,
-    apiFetch,
     reloadState,
     setSelectedCalendarId,
     syncRouteSelection,
@@ -53,27 +52,18 @@ export function createSubmitEvent({
             );
             return "conflict";
         }
-        const response = await apiFetch(
-            `/api/v1/calendar/calendars/${encodeURIComponent(targetCalendarId)}/events`,
-            {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                },
-                body: JSON.stringify({
-                    title,
-                    description,
-                    startAt: new Date(startAt).toISOString(),
-                    endAt: new Date(endAt).toISOString(),
-                    attendees,
-                    inviteEmails,
-                    reminderOffsetsMinutes,
-                    meetingUrl,
-                    status,
-                    recurrence,
-                }),
-            },
-        );
+        const response = await calendarUi.createEvent(targetCalendarId, {
+            title,
+            description,
+            startAt: new Date(startAt).toISOString(),
+            endAt: new Date(endAt).toISOString(),
+            attendees,
+            inviteEmails,
+            reminderOffsetsMinutes,
+            meetingUrl,
+            status,
+            recurrence,
+        });
         if (!response.ok) {
             showToast(i18n.t("gateway.calendar.create_event_failed"), "error");
             return false;

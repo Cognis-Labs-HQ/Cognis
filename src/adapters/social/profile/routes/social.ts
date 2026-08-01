@@ -79,6 +79,28 @@ async function canFollowProfile(
     return true;
 }
 
+async function ensureRequesterProfile(
+    profileStore: DbProfileStore,
+    accountId: string,
+    role: string,
+): Promise<AccountProfile | null> {
+    const existingProfile = await profileStore.getProfile(accountId);
+    if (existingProfile) return existingProfile;
+
+    const recreatedProfile = await profileStore.createProfile(
+        accountId,
+        accountId,
+        role as AccountProfile["role"],
+    );
+    if (!recreatedProfile) return null;
+
+    return (
+        (await profileStore.updateProfile(accountId, {
+            visibility: "private",
+        })) ?? recreatedProfile
+    );
+}
+
 export function createSocialRoutes(
     profileStore: DbProfileStore,
     routeContext?: RouteContext,
@@ -280,7 +302,11 @@ export function createSocialRoutes(
                     );
                     return true;
                 }
-                const requester = await profileStore.getProfile(claims.sub);
+                const requester = await ensureRequesterProfile(
+                    profileStore,
+                    claims.sub,
+                    claims.role,
+                );
                 const canDiscover = await canDiscoverProfile(
                     claims.sub,
                     claims.role,

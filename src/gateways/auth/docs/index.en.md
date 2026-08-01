@@ -69,3 +69,11 @@ Capabilities contributed:
 | `PUT`  | `/api/v1/gateways/auth/adapters/:id/config`  | Update config for an adapter          | Admin |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/enable`  | Enable an adapter                     | Admin |
 | `POST` | `/api/v1/gateways/auth/adapters/:id/disable` | Disable an adapter                    | Admin |
+
+## Browser keyring bootstrap
+
+The Authentication gateway loads its required keyring adapter before registering browser session-flow hooks. Every direct page load and refresh can therefore restore the current tab's non-extractable session key automatically; when restoration is unavailable, the first protected-content resolver opens the contextual keyring unlock prompt.
+
+## Share failure propagation
+
+Browser session results preserve a neutral alternate-authentication failure reason so a public resource page can distinguish a missing resource from other unavailable states without importing Authentication internals.

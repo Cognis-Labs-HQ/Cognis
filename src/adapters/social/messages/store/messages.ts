@@ -15,39 +15,69 @@ export async function appendMessage(
         contentType?: string;
     },
 ): Promise<MessageRow> {
+    return db.transaction((executor) => insertMessage(executor, input));
+}
+
+async function insertMessage(
+    db: DbExecutor,
+    input: {
+        roomId: string;
+        senderId: string;
+        ciphertext: string;
+        iv: string;
+        authTag?: string;
+        contentType?: string;
+    },
+): Promise<MessageRow> {
     const id = randomUUID();
     const nowIso = new Date().toISOString();
-    return db.transaction(async (executor) => {
-        await executor.executeCommand({
-            option: "INSERT",
-            table: "chat_messages",
-            values: {
-                id,
-                chatroom_id: input.roomId,
-                sender_id: input.senderId,
-                ciphertext: input.ciphertext,
-                iv: input.iv,
-                auth_tag: input.authTag ?? "",
-                content_type: input.contentType ?? "text/plain",
-                created_at: nowIso,
-            },
-        });
-        await executor.executeCommand({
-            option: "UPDATE",
-            table: "chatrooms",
-            set: { updated_at: nowIso },
-            where: [{ column: "id", value: input.roomId }],
-        });
-        const result = await executor.executeCommand({
-            option: "SELECT",
-            table: "chat_messages",
-            where: [{ column: "id", value: id }],
-        });
-        return rowToMessage(result.rows![0]);
+    await db.executeCommand({
+        option: "INSERT",
+        table: "chat_messages",
+        values: {
+            id,
+            chatroom_id: input.roomId,
+            sender_id: input.senderId,
+            ciphertext: input.ciphertext,
+            iv: input.iv,
+            auth_tag: input.authTag ?? "",
+            content_type: input.contentType ?? "text/plain",
+            created_at: nowIso,
+        },
     });
+    await db.executeCommand({
+        option: "UPDATE",
+        table: "chatrooms",
+        set: { updated_at: nowIso },
+        where: [{ column: "id", value: input.roomId }],
+    });
+    const result = await db.executeCommand({
+        option: "SELECT",
+        table: "chat_messages",
+        where: [{ column: "id", value: id }],
+    });
+    return rowToMessage(result.rows![0]);
 }
 
 export async function appendRoomEvent(
+    db: DbExecutor,
+    input: {
+        roomId: string;
+        actorId: string;
+        eventType:
+            | "member_joined"
+            | "member_left"
+            | "profile_display_name_changed"
+            | "profile_avatar_changed";
+        subjectAccountId: string;
+        subjectHandle?: string | null;
+        subjectDisplayName?: string | null;
+    },
+): Promise<MessageRow> {
+    return db.transaction((executor) => insertRoomEvent(executor, input));
+}
+
+export async function insertRoomEvent(
     db: DbExecutor,
     input: {
         roomId: string;
@@ -68,7 +98,7 @@ export async function appendRoomEvent(
         subjectHandle: input.subjectHandle ?? null,
         subjectDisplayName: input.subjectDisplayName ?? null,
     });
-    return appendMessage(db, {
+    return insertMessage(db, {
         roomId: input.roomId,
         senderId: input.actorId,
         ciphertext: payload,

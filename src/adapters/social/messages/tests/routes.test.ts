@@ -121,9 +121,10 @@ test("canDirectMessageNowOrByApprovedRequest blocks approved history when reques
     assert.equal(allowed, false);
 });
 
-test("POST /messages/requests/:id/reject removes rejected recipient from pending room", async () => {
+test("POST /messages/requests/:id/reject cleans up a legacy pending room", async () => {
     const token = issueAccessToken("bob", "user", 60);
-    const removed: Array<{ roomId: string; accountId: string }> = [];
+    const updated: Array<{ requestId: string; status: string }> = [];
+    const removedAccountIds: string[] = [];
     const messagesStore = {
         async getMessageRequest(requestId: string) {
             if (requestId !== "req-1") return null;
@@ -135,11 +136,12 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
                 roomId: "room-1",
             };
         },
-        async updateMessageRequestStatus() {},
-        async removeMemberAndApplyLifecycle(roomId: string, accountId: string) {
-            removed.push({ roomId, accountId });
+        async updateMessageRequestStatus(requestId: string, status: string) {
+            updated.push({ requestId, status });
         },
-        async appendRoomEvent() {},
+        async removeMemberWithEvent(input: { accountId: string }) {
+            removedAccountIds.push(input.accountId);
+        },
     };
     const profileStore = {
         async getProfile(accountId: string) {
@@ -177,14 +179,15 @@ test("POST /messages/requests/:id/reject removes rejected recipient from pending
 
     assert.equal(handled, true);
     assert.equal(statusCode, 200);
-    assert.deepEqual(removed, [{ roomId: "room-1", accountId: "bob" }]);
+    assert.deepEqual(updated, [{ requestId: "req-1", status: "rejected" }]);
+    assert.deepEqual(removedAccountIds, ["bob", "alice"]);
     assert.match(responseBody, /"rejected"/);
 });
 
 test("admin can create DM with hidden recipient without a message request", async () => {
     const token = issueAccessToken("admin", "admin", 60);
     const createdRequests: unknown[] = [];
-    const addedMembers: Array<{ roomId: string; accountId: string }> = [];
+    const addedMembers: Array<Record<string, unknown>> = [];
     const messagesStore = {
         async findDmBetween() {
             return null;
@@ -195,11 +198,10 @@ test("admin can create DM with hidden recipient without a message request", asyn
         async createDm() {
             return { id: "room-admin-hidden", kind: "dm" };
         },
-        async addMember(roomId: string, accountId: string) {
-            addedMembers.push({ roomId, accountId });
+        async addMemberWithEvent(input: Record<string, unknown>) {
+            addedMembers.push(input);
         },
         async generateAndStoreRoomKey() {},
-        async appendRoomEvent() {},
         async approvePendingRequestsBetween() {},
         async findPendingMessageRequest() {
             return null;
@@ -275,8 +277,22 @@ test("admin can create DM with hidden recipient without a message request", asyn
     assert.equal(statusCode, 201);
     assert.deepEqual(createdRequests, []);
     assert.deepEqual(addedMembers, [
-        { roomId: "room-admin-hidden", accountId: "admin" },
-        { roomId: "room-admin-hidden", accountId: "hidden-user-id" },
+        {
+            roomId: "room-admin-hidden",
+            actorId: "admin",
+            accountId: "admin",
+            role: "owner",
+            handle: "admin",
+            displayName: "Admin",
+        },
+        {
+            roomId: "room-admin-hidden",
+            actorId: "admin",
+            accountId: "hidden-user-id",
+            role: "member",
+            handle: "hidden-user",
+            displayName: "Hidden User",
+        },
     ]);
     assert.match(responseBody, /room-admin-hidden/);
 });
@@ -784,6 +800,86 @@ test("GET /messages/rooms/:id/messages returns messages when no pending request 
     const payload = JSON.parse(responseBody);
     assert.equal(payload.data.length, 1);
     assert.equal(payload.data[0].id, "msg-1");
+});
+
+test("GET /messages/rooms/:id generates and contributes a missing room key to members", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    let generated = false;
+    const messagesStore = {
+        async getRoom() {
+            return { id: "room-1", kind: "dm", title: null, avatarKey: null };
+        },
+        async getMember() {
+            return {
+                roomId: "room-1",
+                accountId: "alice",
+                role: "member",
+                muted: false,
+                archived: false,
+            };
+        },
+        async getPendingIncomingRoomMessageRequest() {
+            return null;
+        },
+        async getPendingRoomMessageRequest() {
+            return null;
+        },
+        async listMembers() {
+            return [
+                {
+                    roomId: "room-1",
+                    accountId: "alice",
+                    role: "member",
+                    muted: false,
+                    archived: false,
+                    lastReadAt: null,
+                },
+            ];
+        },
+        async getUnwrappedRoomKey() {
+            return null;
+        },
+        async generateAndStoreRoomKey() {
+            generated = true;
+            return "generated-room-key";
+        },
+    };
+    const profileStore = {
+        async getProfile(accountId: string) {
+            return {
+                accountId,
+                handle: accountId,
+                displayName: accountId,
+                visibility: "community",
+                avatarKey: null,
+            };
+        },
+    };
+    const route = createMessagesRoutes({
+        messagesStore: messagesStore as any,
+        profileStore: profileStore as any,
+        dispatch: null,
+        isAdapterEnabled: () => true,
+    });
+    let responseBody = "";
+
+    await route(
+        makeReq("GET", token),
+        {
+            writeHead() {},
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/social/messages/rooms/room-1"),
+    );
+
+    assert.equal(generated, true);
+    assert.deepEqual(JSON.parse(responseBody).data.keyContribution, {
+        id: "chatroom:room-1:key",
+        value: "generated-room-key",
+        metadata: { label: "Chat room-1" },
+    });
 });
 
 test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction notification with emoji", async () => {

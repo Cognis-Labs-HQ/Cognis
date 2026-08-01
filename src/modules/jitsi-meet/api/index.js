@@ -235,6 +235,25 @@ export function registerApiRoutes(router, ctx) {
         return;
     }
 
+    const removeMeetingMemberships = async (accountId) => {
+        await dbExecutor.transaction(async (transactionDb) => {
+            for (const table of [
+                "jitsi_meeting_presence",
+                "jitsi_meeting_participants",
+            ]) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table,
+                    where: [{ column: "username", value: accountId }],
+                });
+            }
+        });
+    };
+    systemCtx?.getCapability?.("auth:registerKeyringDataOwner")?.(
+        "jitsi-meet",
+        removeMeetingMemberships,
+    );
+
     systemCtx?.flow?.extend?.(
         "deprovision-user",
         "cleanup-dependencies",

@@ -1,12 +1,14 @@
 export function createRoomKeyStore({
-    fetchRoomKey = async () => {
-        throw new Error("fetchRoomKey dependency is required.");
-    },
     importKey = async () => {
         throw new Error("importKey dependency is required.");
     },
+    onInvalidSecret = () => undefined,
+    contributeSecret = async () => undefined,
+    resolveSecret = async (_id, options) => options.fallback?.(),
+    buildRequest = async () => null,
 } = {}) {
     const roomKeyCache = new Map();
+    const roomKeyValues = new Map();
 
     function hasIncomingPendingRequest(roomContext) {
         const pendingRequest =
@@ -14,48 +16,67 @@ export function createRoomKeyStore({
         return pendingRequest?.direction === "incoming";
     }
 
-    async function getRoomKey(roomId) {
-        if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
-        const res = await fetchRoomKey(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
-        );
-        if (!res.ok) return null;
-        const payload = await res.json();
-        const hex = payload?.data?.key;
+    async function getRoomKey(roomId, authoritativeContribution = null) {
+        const authoritativeValue =
+            authoritativeContribution?.id === `chatroom:${roomId}:key`
+                ? authoritativeContribution.value
+                : null;
+        if (
+            roomKeyCache.has(roomId) &&
+            (!authoritativeValue ||
+                roomKeyValues.get(roomId) === authoritativeValue)
+        ) {
+            return roomKeyCache.get(roomId);
+        }
+        roomKeyCache.delete(roomId);
+        roomKeyValues.delete(roomId);
+        const hex = await resolveSecret(`chatroom:${roomId}:key`, {
+            validate: async (candidate) => {
+                await importKey(candidate);
+                return !authoritativeValue || candidate === authoritativeValue;
+            },
+            onInvalid: () => onInvalidSecret(roomId),
+            metadata: {
+                label: `Chat ${roomId}`,
+            },
+            request: await buildRequest(roomId),
+            fallback: authoritativeValue
+                ? async () => authoritativeValue
+                : undefined,
+        });
         if (!hex) return null;
         const key = await importKey(hex);
         roomKeyCache.set(roomId, key);
+        roomKeyValues.set(roomId, hex);
         return key;
     }
 
     async function requireRoomKey(roomId) {
-        if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
-        const res = await fetchRoomKey(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
+        const cached = await getRoomKey(roomId);
+        if (cached) return cached;
+        const error = new Error("Room key is unavailable in the keyring.");
+        error.code = "missing_keyring_secret";
+        error.roomId = roomId;
+        throw error;
+    }
+
+    async function contributeRoomKey(roomId, contribution) {
+        if (
+            contribution?.id !== `chatroom:${roomId}:key` ||
+            typeof contribution?.value !== "string" ||
+            !contribution.value
+        ) {
+            return false;
+        }
+        const key = await importKey(contribution.value);
+        await contributeSecret(
+            contribution.id,
+            contribution.value,
+            contribution.metadata ?? {},
         );
-        if (!res.ok) {
-            const payload = await res.json().catch(() => null);
-            const message =
-                payload?.error?.message ||
-                `Failed to load room key (${res.status} ${res.statusText || "unknown"}).`;
-            const error = new Error(message);
-            error.status = res.status;
-            error.code = payload?.error?.code;
-            error.roomId = roomId;
-            throw error;
-        }
-        const payload = await res.json();
-        const hex = payload?.data?.key;
-        if (!hex) {
-            const error = new Error("Room key missing.");
-            error.status = 500;
-            error.code = "missing_key";
-            error.roomId = roomId;
-            throw error;
-        }
-        const key = await importKey(hex);
         roomKeyCache.set(roomId, key);
-        return key;
+        roomKeyValues.set(roomId, contribution.value);
+        return true;
     }
 
     async function resolveThreadRoomKey(roomContext, roomId) {
@@ -66,6 +87,7 @@ export function createRoomKeyStore({
     return {
         getRoomKey,
         requireRoomKey,
+        contributeRoomKey,
         resolveThreadRoomKey,
         hasIncomingPendingRequest,
     };

@@ -85,6 +85,14 @@ test("flow-registry.js declares load-page with the required stages", () => {
     assert.match(src, /mount-page/, "load-page must include mount-page stage");
 });
 
+test("flow-registry.js declares the post-login account setup flow", () => {
+    const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
+    assert.match(
+        src,
+        /uiCtx\.registerFlow\("complete-login", \["setup-account-services"\]\)/,
+    );
+});
+
 test("flow-registry.js declares search with component and settings index stages", () => {
     const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(src, /registerFlow\(["']search["']/);
@@ -131,6 +139,18 @@ test("auth session-flow-hooks.js imports flow-registry.js before extending flows
     );
 });
 
+test("auth session bootstrap loads the required keyring before page authentication", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
+        "utf8",
+    );
+    assert.match(source, /\/static\/adapters\/auth\/keyring\/keyring\.js/);
+    assert.ok(
+        source.indexOf("/static/adapters/auth/keyring/keyring.js") <
+            source.indexOf("uiCtx.extendFlow"),
+    );
+});
+
 test("auth session-flow-hooks.js registers a validate-stored-token hook", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
@@ -156,6 +176,11 @@ test("auth session-flow-hooks.js registers a resolve-session hook", () => {
         /extendFlow\(\s*["']authenticate-session["'],\s*["']resolve-session["']/,
         "auth session-flow-hooks.js must register a resolve-session hook",
     );
+});
+
+test("auth session result preserves an alternate share failure reason", () => {
+    const source = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    assert.match(source, /failureReason: alternateResult\.reason \?\? null/);
 });
 
 test("auth session-flow-hooks.js registers load-page hooks for authenticate and mount-page", () => {
@@ -219,4 +244,13 @@ test("share session-flow-hooks.js defaults guest share chrome to hidden", () => 
         src,
         /page:\s*\{[\s\S]*\.\.\.SHARE_GUEST_PAGE_DEFAULTS[\s\S]*\.\.\.\(shareData\.page \?\? \{\}\)/,
     );
+});
+
+test("page actions can defer popup work until mounting has completed", () => {
+    const registrySource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/flow-registry.js"),
+        "utf8",
+    );
+    assert.match(registrySource, /registerFlow\("defer-page-action"/);
+    assert.match(registrySource, /setTimeout\(\(\) => void action\(\), 0\)/);
 });

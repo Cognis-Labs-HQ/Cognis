@@ -1,5 +1,6 @@
 import { extractBearerToken } from "../../../../api/reuse/access-token-http.js";
 import {
+    invalidateTokenVerification,
     isTokenVerificationFresh,
     recordTokenVerification,
     revokeAccessTokensForSubject,
@@ -27,6 +28,12 @@ interface PasswordRouteDependencies {
     log?: GatewayBootstrapContext["log"];
 }
 
+type ConfirmPassword = (
+    accountId: string,
+    password: string,
+    providerId?: string,
+) => Promise<boolean>;
+
 export function createPasswordRoutes({
     authGateway,
     capabilities,
@@ -40,6 +47,15 @@ export function createPasswordRoutes({
         url,
         logMeta: AuthRouteLogMeta,
     ): Promise<boolean> => {
+        if (url.pathname === "/api/v1/auth/verify" && req.method === "DELETE") {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const rawToken = extractBearerToken(req) ?? "";
+            if (rawToken) invalidateTokenVerification(rawToken);
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
         if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
@@ -60,7 +76,12 @@ export function createPasswordRoutes({
             }
             const body = await readJson(req);
             const password = String(body.password ?? "");
-            const verified = await accountStore.verify(claims.sub, password);
+            const confirmPassword = capabilities.get<ConfirmPassword>(
+                "auth:confirmPassword",
+            );
+            const verified = confirmPassword
+                ? await confirmPassword(claims.sub, password, claims.providerId)
+                : false;
             if (!verified) {
                 log?.("warn", "Password verification failed.", {
                     ...logMeta,
@@ -110,7 +131,12 @@ export function createPasswordRoutes({
                 );
                 return true;
             }
-            const verified = await accountStore.verify(claims.sub, password);
+            const confirmPassword = capabilities.get<ConfirmPassword>(
+                "auth:confirmPassword",
+            );
+            const verified = confirmPassword
+                ? await confirmPassword(claims.sub, password, claims.providerId)
+                : false;
             if (!verified) {
                 log?.(
                     "warn",

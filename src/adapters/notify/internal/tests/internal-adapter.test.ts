@@ -8,6 +8,12 @@ import {
     getActiveStoreForTesting,
 } from "../index.js";
 import type { NotificationEnvelope } from "../../../../gateways/notify/gateway.js";
+import { createInternalNotificationRoutes } from "../routes/index.js";
+import {
+    createAuthContext,
+    RequestRecorder,
+    ResponseRecorder,
+} from "../../../../api/tests/reuse/route-test-helpers.js";
 
 function makeEnvelope(
     recipientUsername: string,
@@ -49,6 +55,31 @@ test("InternalNotificationStore: markRead", () => {
     assert.equal(found, true);
     assert.equal(store.countUnread("carol"), 0);
     assert.equal(store.list("carol")[0].read, true);
+});
+
+test("internal inbox route marks one notification read at the canonical URL", async () => {
+    const store = new AsyncInternalNotificationStore();
+    await store.add(makeEnvelope("route-user", "Shared item"));
+    const [notification] = await store.list("route-user");
+    const token = "route-token";
+    const handler = createInternalNotificationRoutes(
+        store,
+        createAuthContext(
+            new Map([[token, { sub: "route-user", role: "user" }]]),
+        ),
+    );
+    const request = new RequestRecorder({ method: "PUT", token });
+    const response = new ResponseRecorder();
+    const handled = await handler(
+        request,
+        response,
+        new URL(
+            `http://localhost/api/v1/notify/inbox/${encodeURIComponent(notification.id)}/read`,
+        ),
+    );
+    assert.equal(handled, true);
+    assert.equal(response.statusCode, 200);
+    assert.equal((await store.list("route-user"))[0].read, true);
 });
 
 test("InternalNotificationStore: markRead returns false for unknown id", () => {

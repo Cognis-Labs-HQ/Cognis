@@ -48,14 +48,6 @@ function buildShareElement(state) {
             max: ["fill", "fill"],
         },
         render: () => {
-            if (state.isMountedApp && !state.errorKey) {
-                // A mounted app (e.g. the real Jitsi Meet meetings page)
-                // owns its own full-page composer, so it is mounted
-                // directly with no extra wrapping card around it — this
-                // lets it render exactly like the real page instead of
-                // being squeezed into a nested share-window box.
-                return '<div id="share-resource-mount-root" class="share-app-mount"></div>';
-            }
             if (state.loading) {
                 return `
                     <div class="share-window card-elevated">
@@ -89,7 +81,6 @@ export async function mount(root, { signal } = {}) {
         loading: true,
         errorKey: "",
         renderedContent: "",
-        isMountedApp: false,
         i18n: await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         }),
@@ -133,7 +124,10 @@ export async function mount(root, { signal } = {}) {
         // (expired, revoked, or invalid). Render the fallback screen
         // directly instead of the generic missing/malformed messages below.
         state.loading = false;
-        state.errorKey = "share.error.expired";
+        state.errorKey =
+            session.failureReason === "share_not_found"
+                ? "share.error.not_found"
+                : "share.error.expired";
         updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
@@ -213,6 +207,12 @@ export async function mount(root, { signal } = {}) {
         globalThis.__spaRouter = true;
         try {
             await import(String(shareContext.page.rendererScriptUrl));
+        } catch {
+            state.loading = false;
+            state.errorKey = "share.error.renderer_missing";
+            updatePageDescriptor(root, state.i18n, state.errorKey);
+            composer.refresh([buildShareElement(state)]);
+            return;
         } finally {
             globalThis.__spaRouterCount--;
             if (globalThis.__spaRouterCount === 0) {
@@ -229,12 +229,22 @@ export async function mount(root, { signal } = {}) {
         return;
     }
 
-    const renderedContent = renderer({
-        data: shareContext.payload ?? {},
-        grantedCapabilities: shareContext.grantedCapabilities,
-        i18n: state.i18n,
-        signal,
-    });
+    let renderedContent = "";
+    try {
+        renderedContent = renderer({
+            data: shareContext.payload ?? {},
+            grantedCapabilities: shareContext.grantedCapabilities,
+            guestAccessToken: shareContext.guestAccessToken,
+            i18n: state.i18n,
+            signal,
+        });
+    } catch {
+        state.loading = false;
+        state.errorKey = "share.error.malformed_response";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
+        composer.refresh([buildShareElement(state)]);
+        return;
+    }
     state.loading = false;
     state.errorKey = "";
     state.renderedContent =

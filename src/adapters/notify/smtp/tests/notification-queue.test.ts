@@ -73,6 +73,26 @@ function smtpSuccessHandler(conn: net.Socket): void {
     });
 }
 
+test("SMTP queue carries test configuration through rate-limited delivery", async () => {
+    const delivered: Array<Record<string, unknown> | undefined> = [];
+    const queue = new SmtpNotificationQueue(
+        new SmtpRateLimiter(0),
+        async () => undefined,
+        async (payload) => {
+            delivered.push(payload.config);
+        },
+    );
+    const config = { host: "smtp.example.org", port: 2525 };
+    const queued = queue.enqueue({
+        recipientEmail: "admin@example.org",
+        subject: "SMTP test",
+        body: "Test",
+        config,
+    });
+    await queue.waitForResult(queued.notificationId);
+    assert.deepEqual(delivered, [config]);
+});
+
 async function waitFor(
     predicate: () => boolean,
     timeoutMs = 2_000,
@@ -109,8 +129,10 @@ test("SmtpNotificationSender.sendTracked returns IDs and exposes queue status", 
         assert.equal(queuedItem?.notificationId, receipt.notificationId);
         await waitFor(() => {
             const updated = sender.getQueueItem(receipt.notificationId);
-            return updated?.status === "sent";
+            return updated?.status === "sent" || updated?.status === "failed";
         });
+        const completed = sender.getQueueItem(receipt.notificationId);
+        assert.equal(completed?.status, "sent", completed?.error);
     } finally {
         await server.close();
     }

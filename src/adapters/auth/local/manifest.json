@@ -1,7 +1,7 @@
 {
     "id": "local",
     "name": "Local Authentication",
-    "version": "0.2.7",
+    "version": "0.3.5",
     "publisher": "Cognis Labs HQ",
     "locked": true
 }

@@ -27,6 +27,8 @@
  */
 
 import "/static/reuse/flow-registry.js";
+import "/static/gateways/auth/reuse/password-confirmation.js";
+import "/static/adapters/auth/keyring/keyring.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 
@@ -39,6 +41,7 @@ function getFirstResult(stageResults, stageId) {
 }
 
 function clearStoredSession() {
+    void uiCtx.capabilities.get("keyring:lock")?.();
     localStorage.removeItem("cognis_access_token");
     localStorage.removeItem("cognis_account");
     localStorage.removeItem("cognis_display_name");
@@ -196,6 +199,7 @@ uiCtx.extendFlow(
                     shareContext: null,
                     isGuestSession: false,
                     shareAttempted: true,
+                    failureReason: alternateResult.reason ?? null,
                 };
             }
             const reason = tokenResult?.reason ?? null;
@@ -211,6 +215,7 @@ uiCtx.extendFlow(
                 shareContext: null,
                 isGuestSession: false,
                 shareAttempted: false,
+                failureReason: null,
             };
         }
 
@@ -224,6 +229,7 @@ uiCtx.extendFlow(
             shareContext: alternateResult?.shareContext ?? null,
             isGuestSession: alternateResult?.isGuestSession === true,
             shareAttempted: alternateResult !== null,
+            failureReason: null,
         };
     },
 );

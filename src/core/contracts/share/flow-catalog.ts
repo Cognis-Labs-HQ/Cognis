@@ -2,6 +2,19 @@ import { createFlowContract } from "../flow-contract.js";
 
 export const SHARE_FLOW_CATALOG = Object.freeze([
     createFlowContract({
+        id: "prepare-share-method",
+        owner: "share",
+        description:
+            "Delegates method-specific share input normalization to a Share gateway adapter.",
+        stages: [
+            {
+                id: "prepare-method",
+                description:
+                    "Validate and normalize the selected adapter's implementation-specific share input.",
+            },
+        ],
+    }),
+    createFlowContract({
         id: "mint-share-token",
         owner: "share",
         description:
@@ -65,6 +78,34 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
                 description:
                     "Assemble the final public payload consumed by the share page renderer.",
             },
+            {
+                id: "deliver-recipient",
+                description:
+                    "Deliver an authenticated user share to its owning component and return its account navigation target.",
+            },
+        ],
+    }),
+    createFlowContract({
+        id: "update-share-token",
+        owner: "share",
+        description:
+            "Updates a share token and reconciles recipient-side deliveries through staged authorization and lifecycle hooks.",
+        stages: [
+            {
+                id: "authorize-update",
+                description:
+                    "Load the existing token and confirm the caller owns the share being updated.",
+            },
+            {
+                id: "update-token",
+                description:
+                    "Persist the canonical share token changes in the Share gateway.",
+            },
+            {
+                id: "reconcile-deliveries",
+                description:
+                    "Synchronize already-delivered recipient resources with the updated recipients, permissions, and expiry.",
+            },
         ],
     }),
     createFlowContract({
@@ -82,6 +123,11 @@ export const SHARE_FLOW_CATALOG = Object.freeze([
                 id: "delete-token",
                 description:
                     "Delete or mark the token inactive in the owning share token registry.",
+            },
+            {
+                id: "remove-delivery",
+                description:
+                    "Remove recipient-side objects delivered by the revoked share.",
             },
         ],
     }),

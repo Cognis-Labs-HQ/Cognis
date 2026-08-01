@@ -26,6 +26,14 @@
  *   Collects local search indexes from visible content, component-owned
  *   indexes, and the settings index before matching happens in the popup.
  *   Stages: visible-indexes → component-indexes → settings-index
+ *
+ * `defer-page-action` (owner: ui)
+ *   Schedules popup-producing work after the current page mount/navigation
+ *   stack has completed. Stages: schedule
+ *
+ * `complete-login` (owner: auth-gateway)
+ *   Lets authentication adapters prepare account-bound browser services after
+ *   session persistence and before navigation. Stages: setup-account-services
  */
 
 import { uiCtx } from "./ui-ctx.js";
@@ -45,6 +53,21 @@ uiCtx.registerFlow("navigate-to", [
 ]);
 
 uiCtx.registerFlow("load-page", ["authenticate", "mount-page"]);
+
+uiCtx.registerFlow("defer-page-action", ["schedule"]);
+uiCtx.extendFlow(
+    "defer-page-action",
+    "schedule",
+    { id: "ui:defer-page-action" },
+    (stageCtx) => {
+        const action = stageCtx.input?.action;
+        if (typeof action !== "function") return { scheduled: false };
+        setTimeout(() => void action(), 0);
+        return { scheduled: true };
+    },
+);
+
+uiCtx.registerFlow("complete-login", ["setup-account-services"]);
 
 uiCtx.registerFlow("search", [
     "visible-indexes",

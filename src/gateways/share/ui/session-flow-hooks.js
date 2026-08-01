@@ -39,7 +39,11 @@
 
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { GUEST_SESSION_ACTIVE_STORAGE_KEY } from "./reuse/share-button.js";
+import { resolveReceivedShare } from "./received-share.js";
+import {
+    GUEST_SESSION_ACTIVE_STORAGE_KEY,
+    isViewingAsGuest,
+} from "./reuse/share-button.js";
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
@@ -62,7 +66,11 @@ function resolveShareTokenFromLocation() {
     ).trim();
 }
 
-function activateGuestToken(guestAccessToken, guestProfile = null) {
+async function activateGuestToken(
+    guestAccessToken,
+    guestProfile = null,
+    guestKeyring = null,
+) {
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
     const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
@@ -85,7 +93,23 @@ function activateGuestToken(guestAccessToken, guestProfile = null) {
     }
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
-    localStorage.removeItem(ACCOUNT_KEY);
+    const guestKeyringAccountId = String(guestKeyring?.accountId ?? "").trim();
+    if (guestKeyringAccountId) {
+        localStorage.setItem(ACCOUNT_KEY, guestKeyringAccountId);
+        const activateTemporaryKeyring = uiCtx.capabilities.get(
+            "keyring:activateTemporary",
+        );
+        const activated = await activateTemporaryKeyring?.(
+            guestKeyringAccountId,
+            guestKeyring?.passphrase,
+        );
+        if (!activated) {
+            restoreGuestToken();
+            return null;
+        }
+    } else {
+        localStorage.removeItem(ACCOUNT_KEY);
+    }
     const displayName = String(guestProfile?.displayName ?? "").trim();
     if (displayName) localStorage.setItem(DISPLAY_NAME_KEY, displayName);
     return new AbortController();
@@ -93,6 +117,7 @@ function activateGuestToken(guestAccessToken, guestProfile = null) {
 
 function restoreGuestToken() {
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
+    uiCtx.capabilities.get("keyring:endTemporary")?.();
     const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
     const priorAccount = sessionStorage.getItem(PREV_ACCOUNT_KEY);
     const priorDisplayName = sessionStorage.getItem(PREV_DISPLAY_NAME_KEY);
@@ -149,19 +174,30 @@ uiCtx.extendFlow(
         const priorSessionResult =
             (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
         const ownAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const ownAccountId = String(
+            localStorage.getItem(ACCOUNT_KEY) ?? "",
+        ).trim();
+        const hasValidatedAccountSession =
+            priorSessionResult?.valid === true &&
+            !isViewingAsGuest() &&
+            !ownAccountId.startsWith("share:");
         const headers =
-            priorSessionResult?.valid && ownAccessToken
+            hasValidatedAccountSession && ownAccessToken
                 ? { authorization: "Bearer " + ownAccessToken }
                 : undefined;
 
         let response;
         try {
-            response = await fetch(
-                "/api/v1/share/resolve/" + encodeURIComponent(shareToken),
-                headers ? { headers } : undefined,
-            );
+            response = await resolveReceivedShare(shareToken, {
+                headers,
+                useAccountKeyring: hasValidatedAccountSession,
+            });
         } catch {
             return { authenticated: false, reason: "share_resolve_failed" };
+        }
+
+        if (!response) {
+            return { authenticated: false, reason: "share_unlock_cancelled" };
         }
 
         if (!response.ok) {
@@ -193,14 +229,14 @@ uiCtx.extendFlow(
             },
             guestAccessToken: shareData.guestAccessToken ?? null,
             guestProfile: shareData.guestProfile ?? null,
+            guestKeyring: shareData.guestKeyring ?? null,
         };
 
-        if (priorSessionResult?.valid && shareData.directAccess === true) {
-            // The logged-in visitor already has direct access to the
-            // resource through their own account — render it using their
-            // real session instead of downgrading them to a guest. No
-            // token swap happens, so every subsequent request continues to
-            // authenticate as the real account.
+        if (hasValidatedAccountSession) {
+            // Logged-in recipients retain their full account session. The
+            // renderer receives the scoped guest token separately for
+            // share-only API calls, so notification navigation never swaps
+            // localStorage credentials or appears to log the user out.
             return {
                 authenticated: true,
                 accountId: priorSessionResult.accountId,
@@ -210,9 +246,10 @@ uiCtx.extendFlow(
             };
         }
 
-        const abortController = activateGuestToken(
+        const abortController = await activateGuestToken(
             shareData.guestAccessToken,
             shareData.guestProfile,
+            shareData.guestKeyring,
         );
         if (abortController && stageCtx.data) {
             stageCtx.data.shareAbortController = abortController;

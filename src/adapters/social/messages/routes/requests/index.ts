@@ -86,21 +86,20 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
                 "rejected",
             );
             if (request.roomId) {
-                const recipientProfile = await profileStore.getProfile(
+                for (const memberAccountId of [
                     request.toAccountId,
-                );
-                await messagesStore.appendRoomEvent({
-                    roomId: request.roomId,
-                    actorId: request.toAccountId,
-                    eventType: "member_left",
-                    subjectAccountId: request.toAccountId,
-                    subjectHandle: recipientProfile?.handle ?? null,
-                    subjectDisplayName: recipientProfile?.displayName ?? null,
-                });
-                await messagesStore.removeMemberAndApplyLifecycle(
-                    request.roomId,
-                    request.toAccountId,
-                );
+                    request.fromAccountId,
+                ]) {
+                    const profile =
+                        await profileStore.getProfile(memberAccountId);
+                    await messagesStore.removeMemberWithEvent({
+                        roomId: request.roomId,
+                        actorId: request.toAccountId,
+                        accountId: memberAccountId,
+                        handle: profile?.handle ?? null,
+                        displayName: profile?.displayName ?? null,
+                    });
+                }
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { status: "rejected" } }));
@@ -137,18 +136,30 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
             existingRoom ??
             (await messagesStore.createRoom("dm", null, request.fromAccountId));
         if (!existingRoom) {
-            await messagesStore.addMember(
-                room.id,
-                request.fromAccountId,
-                "owner",
-            );
-            await messagesStore.addMember(
-                room.id,
-                request.toAccountId,
-                "member",
-            );
             await messagesStore.generateAndStoreRoomKey(room.id);
+            const requesterProfile = await profileStore.getProfile(
+                request.fromAccountId,
+            );
+            await messagesStore.addMemberWithEvent({
+                roomId: room.id,
+                actorId: request.fromAccountId,
+                accountId: request.fromAccountId,
+                role: "owner",
+                handle: requesterProfile?.handle ?? null,
+                displayName: requesterProfile?.displayName ?? null,
+            });
         }
+        const recipientProfile = await profileStore.getProfile(
+            request.toAccountId,
+        );
+        await messagesStore.addMemberWithEvent({
+            roomId: room.id,
+            actorId: request.toAccountId,
+            accountId: request.toAccountId,
+            role: "member",
+            handle: recipientProfile?.handle ?? null,
+            displayName: recipientProfile?.displayName ?? null,
+        });
         await Promise.all([
             messagesStore.setArchived(room.id, request.fromAccountId, false),
             messagesStore.setArchived(room.id, request.toAccountId, false),
@@ -163,17 +174,6 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
             request.toAccountId,
             room.id,
         );
-        const recipientProfile = await profileStore.getProfile(
-            request.toAccountId,
-        );
-        await messagesStore.appendRoomEvent({
-            roomId: room.id,
-            actorId: request.toAccountId,
-            eventType: "member_joined",
-            subjectAccountId: request.toAccountId,
-            subjectHandle: recipientProfile?.handle ?? null,
-            subjectDisplayName: recipientProfile?.displayName ?? null,
-        });
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify({ data: room }));
         return true;

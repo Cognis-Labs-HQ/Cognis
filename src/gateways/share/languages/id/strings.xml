@@ -3,6 +3,7 @@
   <string name="share.subtitle">Konten Bersama</string>
   <string name="share.loading">Sedang memuat konten bersama…</string>
   <string name="share.error.invalid_token">Tautan bagikan ini tidak valid atau sudah kedaluwarsa.</string>
+  <string name="share.error.keyring_locked">Berbagi telah dibuka, tetapi kata sandinya tidak dapat disimpan ke gantungan kunci Anda.</string>
   <string name="share.error.missing_token">Token bagikan tidak disediakan.</string>
   <string name="share.error.not_found">Tautan bagikan ini tidak valid atau sudah kedaluwarsa.</string>
   <string name="share.error.malformed_response">Item bersama ini memberikan respons yang tidak valid.</string>
@@ -12,4 +13,13 @@
   <string name="share.approval.message">%requester% telah meminta untuk membuat tautan berbagi untuk "%resource%".</string>
   <string name="share.approval.approve">Setujui</string>
   <string name="share.approval.decline">Tolak</string>
+  <string name="share.unlock.title">Buka Item Bersama</string>
+  <string name="share.unlock.message">Masukkan kata sandi berbagi untuk melanjutkan.</string>
+  <string name="share.unlock.action">Buka</string>
+  <string name="share.unlock.cancel">Batal</string>
+  <string name="share.unlock.keyring_label">Kata Sandi Berbagi Kalender Privat</string>
+  <string name="share.unlock.save_to_keyring">Simpan kata sandi ini ke keyring saya</string>
+  <string name="share.keyring.request_component">Berbagi</string>
+  <string name="share.keyring.request_action_access">mengakses</string>
+  <string name="share.keyring.request_process">berbagi {{shareId}}</string>
 </resources>

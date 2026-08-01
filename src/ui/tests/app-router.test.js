@@ -214,6 +214,16 @@ test("dashboard-layout initialises the router after shell setup", () => {
     );
 });
 
+test("dashboard layout resumes deferred login setup after rendering", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(source, /keyring:hasDeferredSetup/);
+    assert.match(source, /uiCtx\.runFlow\("complete-login", \{\}\)/);
+    assert.match(source, /scheduleDeferredLoginSetup\(i18n\)/);
+});
+
 test("docs page uses signal to clean up its popstate listener", () => {
     const src = readFileSync(resolve(ROOT, "src/ui/app/docs/index.js"), "utf8");
 

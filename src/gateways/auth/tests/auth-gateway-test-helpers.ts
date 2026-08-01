@@ -1,4 +1,5 @@
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
+import type { CapabilityStore } from "@cognis/core";
 import { issueAccessToken } from "../access-tokens.js";
 
 export type HttpIncomingMessage = import("node:http").IncomingMessage;
@@ -87,3 +88,18 @@ export function makeResponse(): TestResponse {
 }
 
 export const adminToken = issueAccessToken("test-session", "admin", null);
+
+export function contributeTestKeyring(capabilities: CapabilityStore): void {
+    capabilities.contribute("auth:keyringVaultStore", {
+        async ensureSchema() {},
+        async get() {
+            return null;
+        },
+        async set() {},
+        async delete() {},
+    });
+    capabilities.contribute(
+        "auth:keyringRouteFactory",
+        () => async () => false,
+    );
+}

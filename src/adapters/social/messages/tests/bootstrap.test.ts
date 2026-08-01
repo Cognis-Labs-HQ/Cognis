@@ -38,6 +38,21 @@ test("meeting-linked chat reuse does not rename existing group chats", () => {
     assert.doesNotMatch(source, /updateRoomTitle\(existing\.id, title\)/);
 });
 
+test("meeting-linked chats record every resolved participant joining", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+    const groupChatCapability =
+        source.match(
+            /social:messages:resolveGroupChatUrl[\s\S]*?social:messages:uiResources/,
+        )?.[0] ?? "";
+
+    assert.match(groupChatCapability, /for \(const accountId of accountIds\)/);
+    assert.match(groupChatCapability, /addMemberWithEvent\(\{/);
+    assert.match(groupChatCapability, /actorId: ownerAccountId/);
+});
+
 test("messages polling does not rerender for read timestamp churn", () => {
     const source = readMessagesUiBundle();
     const signatureBody =

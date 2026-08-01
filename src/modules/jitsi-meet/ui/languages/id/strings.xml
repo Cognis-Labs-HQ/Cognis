@@ -93,7 +93,9 @@
   <string name="module.jitsi_meet.share.share_options_label">Bagikan:</string>
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Label Opsional</string>
-  <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa Dalam (Jam)</string>
+  <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa (opsional)</string>
+  <string name="module.jitsi_meet.share.password_optional">Perlindungan kata sandi (opsional)</string>
+  <string name="module.jitsi_meet.share.password_placeholder">Biarkan kosong tanpa kata sandi</string>
   <string name="module.jitsi_meet.share.status_active">Aktif</string>
   <string name="module.jitsi_meet.share.status_expired">Kedaluwarsa</string>
   <string name="module.jitsi_meet.share.expires_at_label">Kedaluwarsa Pada</string>
@@ -106,4 +108,9 @@
   <string name="module.jitsi_meet.share.delete_failed">Tautan bagikan tidak dapat dicabut.</string>
   <string name="module.jitsi_meet.share.no_meeting">Mulai atau gabung ke rapat sebelum membagikannya.</string>
   <string name="module.jitsi_meet.admin.enable_test_failed">Jitsi Meet harus lulus pemeriksaan server sebelum dapat diaktifkan.</string>
+  <string name="module.jitsi_meet.keyring_prompt_title">Perbarui Kata Sandi Rapat</string>
+  <string name="module.jitsi_meet.keyring_request_action_update">memperbarui kata sandi untuk</string>
+  <string name="module.jitsi_meet.keyring_request_process">rapat {{meeting}}</string>
+  <string name="module.jitsi_meet.keyring_prompt">Masukkan kata sandi rapat.</string>
+  <string name="module.jitsi_meet.keyring_invalid">Kata sandi rapat yang tersimpan tidak valid. Masukkan kata sandi saat ini.</string>
 </resources>

@@ -6,6 +6,7 @@ import {
     type GatewayBootstrapContext,
 } from "../../shared.js";
 import type { CoreAuthGateway } from "../gateway.js";
+import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
 
 export function createAdapterAdminRoutes(
     gatewayId: string,
@@ -33,7 +34,18 @@ export function createAdapterAdminRoutes(
                 count: authGateway.listAdapters().length,
             });
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: authGateway.listAdapters() }));
+            res.end(
+                JSON.stringify({
+                    data: authGateway.listAdapters().map((adapter) => ({
+                        ...adapter,
+                        active: adapter.enabled,
+                        controls: buildGatewayAdapterAdminControls(
+                            base,
+                            adapter.id,
+                        ),
+                    })),
+                }),
+            );
             return true;
         }
 
@@ -42,11 +54,12 @@ export function createAdapterAdminRoutes(
         );
         if (configMatch) {
             const adapterId = decodeURIComponent(configMatch[1]);
-            const adapter = authGateway.getAdapter(adapterId);
+            const configContract =
+                authGateway.getAdapterConfigContract(adapterId);
 
             if (req.method === "GET") {
                 if (!requireAuth(req, res, "admin")) return true;
-                if (!adapter) {
+                if (!configContract) {
                     log?.(
                         "warn",
                         "Auth adapter config lookup failed because adapter was not found.",
@@ -72,7 +85,7 @@ export function createAdapterAdminRoutes(
                     adapterId,
                     storedConfig,
                 );
-                const schema = adapter.getConfigSchema();
+                const schema = configContract.schema;
                 const requiredFields = schema
                     .filter((field) => field.required)
                     .map((field) => field.key);
@@ -89,7 +102,9 @@ export function createAdapterAdminRoutes(
                             redactedConfig.configuredSecretFields,
                         schema,
                         requiredFields,
-                        configPopupScriptUrl: adapter.configPopupScriptUrl,
+                        configured: authGateway.isAdapterConfigured(adapterId),
+                        configPopupScriptUrl:
+                            configContract.configPopupScriptUrl,
                     }),
                 );
                 return true;
@@ -97,7 +112,7 @@ export function createAdapterAdminRoutes(
 
             if (req.method === "PUT") {
                 if (!requireAuth(req, res, "admin")) return true;
-                if (!adapter) {
+                if (!configContract) {
                     log?.(
                         "warn",
                         "Auth adapter config update failed because adapter was not found.",
@@ -140,14 +155,15 @@ export function createAdapterAdminRoutes(
         if (testMatch && req.method === "POST") {
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(testMatch[1]);
-            const adapter = authGateway.getAdapter(adapterId);
-            if (!adapter || typeof adapter.testConfiguration !== "function") {
+            const configContract =
+                authGateway.getAdapterConfigContract(adapterId);
+            if (!configContract || !configContract.supportsTest) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
-                            message: "Adapter test is not available",
+                            message: "Adapter not found",
                         },
                     }),
                 );
@@ -155,15 +171,29 @@ export function createAdapterAdminRoutes(
             }
             const body = (await readJson(req)) as Record<string, unknown>;
             try {
-                const data = await adapter.testConfiguration(body);
+                const data = await authGateway.testAdapterConfiguration(
+                    adapterId,
+                    body,
+                );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data }));
             } catch (error) {
+                log?.("error", "Auth adapter configuration test failed.", {
+                    ...logMeta,
+                    adapterId,
+                    operation: "test_adapter_configuration",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                    cause:
+                        error instanceof Error && error.cause instanceof Error
+                            ? error.cause.message
+                            : undefined,
+                });
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "ldap_test_failed",
+                            code: `${adapterId}_test_failed`,
                             message:
                                 error instanceof Error
                                     ? error.message
@@ -182,7 +212,9 @@ export function createAdapterAdminRoutes(
             if (!requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(enableMatch[1]);
             const action = enableMatch[2];
-            if (adapterId === "local" && action === "disable") {
+            const configContract =
+                authGateway.getAdapterConfigContract(adapterId);
+            if (authGateway.isAdapterLocked(adapterId)) {
                 log?.(
                     "warn",
                     "Blocked attempt to disable locked auth adapter.",
@@ -197,13 +229,13 @@ export function createAdapterAdminRoutes(
                         error: {
                             code: "locked_adapter",
                             message:
-                                "The local authentication adapter cannot be disabled",
+                                "This authentication adapter is always on and cannot be toggled",
                         },
                     }),
                 );
                 return true;
             }
-            if (!authGateway.getAdapter(adapterId)) {
+            if (!configContract) {
                 log?.(
                     "warn",
                     "Auth adapter toggle failed because adapter was not found.",
@@ -225,6 +257,21 @@ export function createAdapterAdminRoutes(
                 return true;
             }
             if (action === "enable") {
+                if (!authGateway.isAdapterConfigured(adapterId)) {
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "setup_required",
+                                message:
+                                    "This adapter must be configured before it can be enabled.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 await authGateway.enableAdapter(adapterId);
             } else {
                 await authGateway.disableAdapter(adapterId);

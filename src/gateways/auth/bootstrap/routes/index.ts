@@ -3,6 +3,7 @@ import type {
     CapabilityStore,
     GatewayBootstrapContext,
 } from "../../../shared.js";
+import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { CoreAuthGateway } from "../../gateway.js";
 import type {
     AuthAccountStore,
@@ -22,6 +23,7 @@ export function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
     accountStore: AuthAccountStore,
     capabilities: CapabilityStore,
+    routeContext: RouteContext,
     authRouteBootstrapRuntime: AuthRouteBootstrapRuntime,
     securitySubsections: SecuritySubsection[],
     log?: GatewayBootstrapContext["log"],
@@ -67,7 +69,11 @@ export function createAuthGatewayRoutes(
         PASSWORD_RESET_RATE_LIMIT_MS,
     );
 
+    const keyringRouteFactory = capabilities.require<
+        (context: RouteContext) => AuthGatewayRouteHandler
+    >("auth:keyringRouteFactory");
     const handlers: AuthGatewayRouteHandler[] = [
+        keyringRouteFactory(routeContext),
         createSessionRoutes({
             authGateway,
             accountStore,

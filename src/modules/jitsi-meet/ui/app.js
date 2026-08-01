@@ -65,6 +65,9 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         requestedMeetingId ||
         (inShareView ? String(shareContext?.resourceId ?? "") : "");
     const messageUiResources = await loadMessageUiResources();
+    const chatLoadingModule = messageUiResources.chatLoadingModuleUrl
+        ? await import(messageUiResources.chatLoadingModuleUrl)
+        : null;
     for (const stylesheetUrl of messageUiResources.stylesheetUrls) {
         ensureStylesheetLoaded(stylesheetUrl);
     }
@@ -210,6 +213,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         i18n,
         apiFetch,
         messageReactions,
+        loadChatRoomKey: chatLoadingModule?.loadChatRoomKey,
     });
     refreshNativeChat = chatHandlers.refreshNativeChat;
     const meetingHandlers = createMeetingHandlers({
@@ -246,6 +250,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     const {
         activateMeetingChat,
         activatePrivateChatForParticipant,
+        cleanupChatHandlers,
         encryptChatMessage,
         getChatRoomKey,
         openEmojiPickerPopup,
@@ -276,6 +281,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             "abort",
             () => {
                 clearTimers();
+                cleanupChatHandlers();
                 stopActiveMeetingsPolling();
                 closeMeetingEmbed();
             },

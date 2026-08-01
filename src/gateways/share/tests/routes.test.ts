@@ -47,6 +47,18 @@ class MemoryExecutor {
             );
             return { rows: entries };
         }
+        if (command.option === "UPDATE") {
+            let rowCount = 0;
+            for (const [key, row] of this.rows.entries()) {
+                const matches = (command.where ?? []).every(
+                    (condition) => row[condition.column] === condition.value,
+                );
+                if (!matches) continue;
+                this.rows.set(key, { ...row, ...command.values });
+                rowCount += 1;
+            }
+            return { rowCount };
+        }
         if (command.option === "DELETE") {
             for (const [key, row] of this.rows.entries()) {
                 const matches = (command.where ?? []).every(
@@ -69,6 +81,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const routeRegistry = new RouteRegistry();
     const gatewayRegistry = new GatewayRegistry();
     const capabilities = new CapabilityStore();
+    capabilities.contribute("auth:issueAccessToken", issueAccessToken);
     const uiRegistry = new UIRegistry();
     const dbExecutor = new MemoryExecutor();
     const adminToken = issueAccessToken("alice", "admin", 60);
@@ -92,6 +105,58 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 `${String(input.label ?? "")}\n${input.shareUrl}`,
             )}`) as never,
     );
+    const shareEmailRecipients: string[] = [];
+    const shareEmailVariables: Array<Record<string, string>> = [];
+    const userShareNotifications: Array<Record<string, unknown>> = [];
+    const notificationCategories: string[] = [];
+    capabilities.contribute("notify:registerCategory", ((id: string) =>
+        notificationCategories.push(id)) as never);
+    capabilities.contribute("notify:dispatch", ((
+        envelope: Record<string, unknown>,
+    ) => {
+        userShareNotifications.push(envelope);
+        return Promise.resolve({ dispatched: ["internal"] });
+    }) as never);
+    capabilities.contribute("notify:sendEmail", ((emailInput: {
+        recipientEmail: string;
+        templateId: string;
+        variables: Record<string, string>;
+    }) => {
+        assert.equal(emailInput.templateId, "share-link");
+        shareEmailRecipients.push(emailInput.recipientEmail);
+        shareEmailVariables.push(emailInput.variables);
+        return Promise.resolve({ dispatched: ["smtp"] });
+    }) as never);
+    capabilities.contribute("share:resolveVariants", ((input: {
+        token: string;
+        shareUrl: string;
+    }) => [
+        {
+            id: "web",
+            label: "Web",
+            url: input.shareUrl,
+            contentType: "text/html",
+        },
+        {
+            id: "feed",
+            label: "Feed",
+            url: `/feeds/${encodeURIComponent(input.token)}`,
+            contentType: "text/calendar",
+        },
+    ]) as never);
+    const deliveredShares: Array<Record<string, unknown>> = [];
+    capabilities.contribute("share:deliverUserShare:meeting", (async (
+        delivery: Record<string, unknown>,
+    ) => {
+        deliveredShares.push(delivery);
+        return {
+            navigationUrl: "/meetings/shared",
+            feedback: {
+                messageKey: "meeting.share_imported",
+                stringsBaseUrl: ["/static/modules/meeting/languages"],
+            },
+        };
+    }) as never);
     capabilities.contribute(
         "auth:routeContext",
         createAuthContext(
@@ -121,6 +186,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             resourceType: "meeting",
             resourceId: "meeting-1",
             ownerAccountId: "alice",
+            metadata: {
+                resourceName: "Project Sync",
+                resourceTypeLabel: "meeting",
+            },
         }),
     );
     flowCtx.flow.extend(
@@ -193,6 +262,18 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         uiRegistry.getStaticDir("share")?.endsWith("src/gateways/share"),
         true,
     );
+    assert.equal(
+        uiRegistry
+            .getAdapterStaticDir("share", "link")
+            ?.endsWith("src/adapters/share/link"),
+        true,
+    );
+    assert.equal(
+        uiRegistry
+            .getAdapterStaticDir("share", "user")
+            ?.endsWith("src/adapters/share/user"),
+        true,
+    );
 
     const response = new ResponseRecorder();
     await dispatchRoute(
@@ -208,6 +289,53 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
+    const adaptersResponse = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/gateways/share/adapters",
+    );
+    assert.equal(adaptersResponse.statusCode, 200);
+    assert.deepEqual(
+        adaptersResponse.body.data.map(
+            (adapter: { id: string; locked: boolean }) => ({
+                id: adapter.id,
+                locked: adapter.locked,
+            }),
+        ),
+        [
+            { id: "link", locked: true },
+            { id: "user", locked: true },
+        ],
+    );
+    assert.equal(
+        adaptersResponse.body.data[0].controls.config,
+        "/api/v1/gateways/share/adapters/link/config",
+    );
+
+    const linkConfigResponse = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/gateways/share/adapters/link/config",
+    );
+    assert.equal(linkConfigResponse.statusCode, 200);
+    assert.deepEqual(linkConfigResponse.body.data, {});
+
+    const invalidCreateExpiryResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            expiresAt: "not-a-timestamp",
+        },
+    );
+    assert.equal(invalidCreateExpiryResponse.statusCode, 400);
+    assert.equal(
+        invalidCreateExpiryResponse.body.error.code,
+        "invalid_expires_at",
+    );
+
     const createResponse = await dispatchJson(
         "POST",
         adminToken,
@@ -220,12 +348,57 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(createResponse.statusCode, 200);
     assert.equal(createResponse.body.data.resourceType, "meeting");
+    assert.equal(
+        createResponse.body.data.metadata.resourceName,
+        "Project Sync",
+    );
     assert.equal(createResponse.body.data.quickShareActions.length, 1);
     assert.equal(createResponse.body.data.quickShareActions[0].id, "smtp");
+    assert.equal(createResponse.body.data.variants.length, 2);
+    assert.match(createResponse.body.data.variants[1].url, /^\/feeds\//);
     assert.match(
         createResponse.body.data.quickShareActions[0].href,
         /^mailto:/,
     );
+    const invalidUpdateExpiryResponse = await dispatchJson(
+        "PATCH",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}`,
+        { expiresAt: "not-a-timestamp" },
+    );
+    assert.equal(invalidUpdateExpiryResponse.statusCode, 400);
+    assert.equal(
+        invalidUpdateExpiryResponse.body.error.code,
+        "invalid_expires_at",
+    );
+
+    const shareEmailResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}/email`,
+        { recipients: ["guest@example.com", "guest@example.com"] },
+    );
+    assert.equal(shareEmailResponse.statusCode, 200);
+    assert.deepEqual(shareEmailRecipients, ["guest@example.com"]);
+    assert.deepEqual(shareEmailVariables, [
+        {
+            url: createResponse.body.data.shareUrl,
+            senderName: "alice",
+            resourceName: "Project Sync",
+            resourceTypeLabel: "meeting",
+        },
+    ]);
+    const repeatedShareEmailResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}/email`,
+        { recipients: ["guest@example.com"] },
+    );
+    assert.equal(repeatedShareEmailResponse.statusCode, 200);
+    assert.deepEqual(shareEmailRecipients, [
+        "guest@example.com",
+        "guest@example.com",
+    ]);
 
     const listResponse = await dispatchJson(
         "GET",
@@ -247,10 +420,52 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ),
     );
     assert.equal(resolveResponse.statusCode, 200);
-    assert.equal(
-        JSON.parse(resolveResponse.payload).data.resourceType,
-        "meeting",
+    const resolvedShare = JSON.parse(resolveResponse.payload).data;
+    assert.equal(resolvedShare.resourceType, "meeting");
+    assert.match(resolvedShare.guestAccessToken, /^cgs_/);
+    assert.match(resolvedShare.guestKeyring.accountId, /^share:[^:]+:[^:]+$/);
+    assert.match(resolvedShare.guestKeyring.passphrase, /^[A-Za-z0-9_-]+$/);
+
+    const protectedCreateResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            password: "mail-client-secret",
+        },
     );
+    const protectedToken = encodeURIComponent(
+        protectedCreateResponse.body.data.shareUrl.split("/share/")[1],
+    );
+    const missingPasswordResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET" }),
+        missingPasswordResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${protectedToken}`),
+    );
+    assert.equal(missingPasswordResponse.statusCode, 401);
+    assert.equal(
+        JSON.parse(missingPasswordResponse.payload).error.code,
+        "password_required",
+    );
+    const basicPassword = Buffer.from(
+        "calendar:mail-client-secret",
+        "utf8",
+    ).toString("base64");
+    const basicResolveResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            headers: { authorization: `Basic ${basicPassword}` },
+        }),
+        basicResolveResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${protectedToken}`),
+    );
+    assert.equal(basicResolveResponse.statusCode, 200);
 
     const restrictedCreateResponse = await dispatchJson(
         "POST",
@@ -265,6 +480,59 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         },
     );
     assert.equal(restrictedCreateResponse.statusCode, 200);
+    const duplicateRestrictedResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            grantedCapabilities: ["meeting:join", "meeting:write"],
+            accessControls: {
+                permissions: ["read", "write"],
+                recipients: [{ type: "user", id: "bob" }],
+            },
+        },
+    );
+    assert.equal(duplicateRestrictedResponse.statusCode, 409);
+    assert.equal(
+        duplicateRestrictedResponse.body.error.code,
+        "duplicate_user_share",
+    );
+    const alternateRecipientResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            accessControls: {
+                recipients: [{ type: "user", id: "charlie" }],
+            },
+        },
+    );
+    assert.equal(alternateRecipientResponse.statusCode, 200);
+    const duplicateUpdateResponse = await dispatchJson(
+        "PATCH",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(alternateRecipientResponse.body.data.id)}`,
+        {
+            accessControls: {
+                recipients: [{ type: "user", id: "bob" }],
+            },
+        },
+    );
+    assert.equal(duplicateUpdateResponse.statusCode, 409);
+    assert.ok(notificationCategories.includes("share"));
+    assert.deepEqual(
+        userShareNotifications.map((entry) => entry.recipientUsername),
+        ["bob", "charlie"],
+    );
+    assert.equal(userShareNotifications[0]?.category, "share");
+    assert.equal(
+        userShareNotifications[0]?.actionUrl,
+        restrictedCreateResponse.body.data.shareUrl,
+    );
     const restrictedToken = encodeURIComponent(
         restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],
     );
@@ -293,4 +561,96 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
     );
     assert.equal(bobRestrictedResponse.statusCode, 200);
+    assert.equal(
+        JSON.parse(bobRestrictedResponse.payload).data.navigationUrl,
+        "/meetings/shared",
+    );
+    assert.equal(
+        JSON.parse(bobRestrictedResponse.payload).data.feedback.messageKey,
+        "meeting.share_imported",
+    );
+    assert.ok(
+        deliveredShares.some(
+            (delivery) => delivery.recipientAccountId === "bob",
+        ),
+    );
+    assert.equal(typeof deliveredShares[0]?.shareId, "string");
+    assert.ok(String(deliveredShares[0]?.shareId ?? "").length > 0);
+    assert.equal(deliveredShares.length, 1);
+
+    const restrictedShareId = String(restrictedCreateResponse.body.data.id);
+    const addSecondRecipientResponse = await dispatchJson(
+        "PATCH",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(restrictedShareId)}`,
+        {
+            accessControls: {
+                recipients: [
+                    { type: "user", id: "bob" },
+                    { type: "user", id: "diana" },
+                ],
+            },
+        },
+    );
+    assert.equal(addSecondRecipientResponse.statusCode, 200);
+    const removeUserRecipient = capabilities.get<
+        (input: {
+            shareId: string;
+            recipientAccountId: string;
+        }) => Promise<"updated" | "deleted" | "not_found">
+    >("share:removeUserRecipient");
+    assert.equal(
+        await removeUserRecipient?.({
+            shareId: restrictedShareId,
+            recipientAccountId: "bob",
+        }),
+        "updated",
+    );
+    const afterBobLeaves = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
+    );
+    const remainingShare = afterBobLeaves.body.data.find(
+        (share: { id?: string }) => share.id === restrictedShareId,
+    );
+    assert.equal(remainingShare.accessControls.recipients.length, 1);
+    assert.equal(remainingShare.accessControls.recipients[0].id, "diana");
+    assert.equal(
+        await removeUserRecipient?.({
+            shareId: restrictedShareId,
+            recipientAccountId: "diana",
+        }),
+        "deleted",
+    );
+    const afterLastRecipientLeaves = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
+    );
+    assert.equal(
+        afterLastRecipientLeaves.body.data.some(
+            (share: { id?: string }) => share.id === restrictedShareId,
+        ),
+        false,
+    );
+    const deleteResourceShares = capabilities.get<
+        (input: {
+            ownerAccountId: string;
+            resourceType: string;
+            resourceId: string;
+        }) => Promise<number>
+    >("share:deleteResourceShares");
+    const deletedResourceShareCount = await deleteResourceShares?.({
+        ownerAccountId: "alice",
+        resourceType: "meeting",
+        resourceId: "meeting-1",
+    });
+    assert.ok((deletedResourceShareCount ?? 0) > 0);
+    const afterResourceDeletion = await dispatchJson(
+        "GET",
+        adminToken,
+        "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
+    );
+    assert.equal(afterResourceDeletion.body.data.length, 0);
 });

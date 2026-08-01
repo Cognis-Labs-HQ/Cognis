@@ -128,7 +128,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         if (
             isAllowedShareGuest &&
             !(
-                (sub === "key" && !subArg && req.method === "GET") ||
+                (!sub && req.method === "GET") ||
                 (sub === "messages" &&
                     !subArg &&
                     (req.method === "GET" || req.method === "POST"))
@@ -140,7 +140,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     error: {
                         code: "forbidden",
                         message:
-                            "Share guest access is limited to room key and message reads.",
+                            "Share guest access is limited to message reads.",
                     },
                 }),
             );
@@ -173,7 +173,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
               );
 
         if (!sub && req.method === "GET") {
-            const members = await messagesStore.listMembers(roomId);
+            const resolveRoomKey = async () => {
+                if (incomingPendingRoomRequest) {
+                    return null;
+                }
+                return (
+                    (await messagesStore.getUnwrappedRoomKey(roomId)) ??
+                    messagesStore.generateAndStoreRoomKey(roomId)
+                );
+            };
+            const [members, roomKey] = await Promise.all([
+                messagesStore.listMembers(roomId),
+                resolveRoomKey(),
+            ]);
             const enrichedMembers = await enrichMembersWithProfiles(
                 members,
                 profileStore,
@@ -184,11 +196,22 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     data: {
                         ...room,
                         members: enrichedMembers,
-                        isArchived: member.archived,
+                        isArchived: member?.archived ?? false,
                         canSend:
-                            !member.archived &&
+                            (isAllowedShareGuest || !member?.archived) &&
                             !(room.kind === "dm" && members.length < 2),
                         pendingRequest: pendingRequestSummary,
+                        ...(roomKey
+                            ? {
+                                  keyContribution: {
+                                      id: `chatroom:${roomId}:key`,
+                                      value: roomKey,
+                                      metadata: {
+                                          label: `Chat ${roomId}`,
+                                      },
+                                  },
+                              }
+                            : {}),
                     },
                 }),
             );
@@ -233,52 +256,6 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: updated }));
-            return true;
-        }
-
-        if (sub === "key" && !subArg && req.method === "GET") {
-            if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message:
-                                "Share guest access cannot read this room key.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (incomingPendingRoomRequest) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "forbidden",
-                            message:
-                                "Approve the message request before reading messages.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const plaintextKeyHex =
-                await messagesStore.getUnwrappedRoomKey(roomId);
-            if (!plaintextKeyHex) {
-                res.writeHead(500, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "missing_key",
-                            message: "Room key missing.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { key: plaintextKeyHex } }));
             return true;
         }
 
@@ -732,14 +709,13 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            await messagesStore.addMember(roomId, target.accountId, "member");
-            await messagesStore.appendRoomEvent({
+            await messagesStore.addMemberWithEvent({
                 roomId,
                 actorId: accountId,
-                eventType: "member_joined",
-                subjectAccountId: target.accountId,
-                subjectHandle: target.handle,
-                subjectDisplayName: target.displayName,
+                accountId: target.accountId,
+                role: "member",
+                handle: target.handle,
+                displayName: target.displayName,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
@@ -774,18 +750,13 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            await messagesStore.appendRoomEvent({
+            await messagesStore.removeMemberWithEvent({
                 roomId,
                 actorId: accountId,
-                eventType: "member_left",
-                subjectAccountId: target.accountId,
-                subjectHandle: target.handle,
-                subjectDisplayName: target.displayName,
+                accountId: target.accountId,
+                handle: target.handle,
+                displayName: target.displayName,
             });
-            await messagesStore.removeMemberAndApplyLifecycle(
-                roomId,
-                target.accountId,
-            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { ok: true } }));
             return true;

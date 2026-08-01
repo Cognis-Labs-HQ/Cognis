@@ -16,6 +16,16 @@ function readMessagesUiBundle() {
         .join("\n");
 }
 
+test("all chat consumers use the adapter-owned key loading flow", () => {
+    const source = readMessagesUiBundle();
+    assert.match(source, /registerFlow\(FLOW_ID/);
+    assert.match(source, /"resolve-keyring"/);
+    assert.match(source, /"load-key-contribution"/);
+    assert.match(source, /"persist-key-contribution"/);
+    assert.match(source, /social:messages:loadChatRoomKey/);
+    assert.doesNotMatch(source, /adapters\/auth\/keyring\/keyring\.js/);
+});
+
 test("messages new-conversation search uses messaging lookup endpoint", () => {
     const source = readMessagesUiBundle();
     assert.match(
@@ -297,20 +307,7 @@ test("messages templates are opened from sidebar in a popup", () => {
 });
 
 test("messages UI skips room-key fetch for incoming pending requests", async () => {
-    let apiFetchCallCount = 0;
-    const { resolveThreadRoomKey } = createRoomKeyStore({
-        fetchRoomKey: async () => {
-            apiFetchCallCount += 1;
-            return {
-                ok: true,
-                status: 200,
-                statusText: "OK",
-                async json() {
-                    return { data: { key: "00" } };
-                },
-            };
-        },
-    });
+    const { resolveThreadRoomKey } = createRoomKeyStore();
 
     const key = await resolveThreadRoomKey(
         {
@@ -323,40 +320,135 @@ test("messages UI skips room-key fetch for incoming pending requests", async () 
     );
 
     assert.equal(key, null);
-    assert.equal(apiFetchCallCount, 0);
 });
 
-test("requireRoomKey throws detailed errors on failure", async () => {
-    const { requireRoomKey } = createRoomKeyStore({
-        fetchRoomKey: async () => ({
-            ok: false,
-            status: 403,
-            statusText: "Forbidden",
-            async json() {
-                return {
-                    error: {
-                        code: "forbidden",
-                        message:
-                            "Approve the message request before reading messages.",
-                    },
-                };
-            },
-        }),
-    });
+test("requireRoomKey reports a missing keyring secret", async () => {
+    const { requireRoomKey } = createRoomKeyStore();
 
     await assert.rejects(
         () => requireRoomKey("room-403"),
         (error) => {
             assert.equal(
                 error.message,
-                "Approve the message request before reading messages.",
+                "Room key is unavailable in the keyring.",
             );
-            assert.equal(error.status, 403);
-            assert.equal(error.code, "forbidden");
+            assert.equal(error.code, "missing_keyring_secret");
             assert.equal(error.roomId, "room-403");
             return true;
         },
     );
+});
+
+test("room keys use keyring resolution and refresh invalid secrets", async () => {
+    const imported = { type: "secret" };
+    let invalidRoomId = null;
+    const { getRoomKey } = createRoomKeyStore({
+        importKey: async (hex) => {
+            assert.equal(hex, "current-key");
+            return imported;
+        },
+        resolveSecret: async (id, options) => {
+            assert.equal(id, "chatroom:room-1:key");
+            assert.deepEqual(options.request, {
+                action: "open",
+                process: "chat room-1",
+            });
+            options.onInvalid();
+            return "current-key";
+        },
+        buildRequest: async (roomId) => ({
+            action: "open",
+            process: `chat ${roomId}`,
+        }),
+        onInvalidSecret: (roomId) => {
+            invalidRoomId = roomId;
+        },
+    });
+    assert.equal(await getRoomKey("room-1"), imported);
+    assert.equal(invalidRoomId, "room-1");
+});
+
+test("room keys reject a valid but non-authoritative stored key", async () => {
+    const validStoredKey = "a".repeat(64);
+    const authoritativeKey = "b".repeat(64);
+    let validationResult = true;
+    const store = createRoomKeyStore({
+        importKey: async (value) => value,
+        resolveSecret: async (_id, options) => {
+            validationResult = await options.validate(validStoredKey);
+            return validationResult
+                ? validStoredKey
+                : options.fallback({ invalid: true });
+        },
+    });
+
+    const key = await store.getRoomKey("room-1", {
+        id: "chatroom:room-1:key",
+        value: authoritativeKey,
+    });
+
+    assert.equal(validationResult, false);
+    assert.equal(key, authoritativeKey);
+});
+
+test("server room key contributions are validated and saved to the keyring", async () => {
+    const saved = [];
+    const imported = { type: "secret" };
+    const { contributeRoomKey, requireRoomKey } = createRoomKeyStore({
+        importKey: async (hex) => {
+            assert.equal(hex, "generated-room-key");
+            return imported;
+        },
+        contributeSecret: async (...args) => saved.push(args),
+    });
+
+    assert.equal(
+        await contributeRoomKey("room-1", {
+            id: "chatroom:room-1:key",
+            value: "generated-room-key",
+            metadata: { label: "Chat room-1" },
+        }),
+        true,
+    );
+    assert.deepEqual(saved, [
+        ["chatroom:room-1:key", "generated-room-key", { label: "Chat room-1" }],
+    ]);
+    assert.equal(await requireRoomKey("room-1"), imported);
+});
+
+test("messages unlock the keyring before accepting a delivered room key", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(source, /acceptRoomKeyContribution/);
+    assert.match(source, /getMessagesKeyring\(\)\?\.requestUnlock/);
+    assert.match(source, /keyringScopeFactory\?\.\("Social Messages"\)/);
+    assert.match(source, /roomKeys\.contributeRoomKey/);
+    assert.doesNotMatch(source, /auth:createRepromptGuard/);
+});
+
+test("messages refresh encrypted previews after a contextual keyring unlock", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(source, /"cognis:keyring-event"/);
+    assert.match(source, /event\.detail\?\.type === "unlock"/);
+    assert.match(source, /await roomState\.reloadRoomsList\(\)/);
+    assert.match(source, /await roomState\.refreshActiveConversation\(\)/);
+});
+
+test("messages pause refresh polling until room-key setup completes", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(source, /openingRoomId === roomId && roomOpenPromise/);
+    assert.match(source, /readyRoomId !== selectedRoomId\) return/);
+    assert.match(source, /const key = await getRoomKey\(selectedRoomId\)/);
+    const refreshBlock = source.match(
+        /async function refreshActiveConversation\(\)[\s\S]*?function startTypingPolling/,
+    )?.[0];
+    assert.ok(refreshBlock);
+    assert.doesNotMatch(refreshBlock, /requireRoomKey/);
+    assert.match(source, /keyring:isAccessSuppressed/);
+    assert.match(source, /cognis:keyring-access-state/);
+    assert.match(source, /handleKeyringAccessState/);
 });
 
 test("messages saved templates are scoped to the current account", () => {
@@ -427,4 +519,28 @@ test("messages onRoomOpened clears composer when opened room has no saved draft"
         source,
         /persistedState\.size === 0[\s\S]*composerInputRef\.value = ""/m,
     );
+});
+
+test("messages serialize concurrent room-key loads during SPA mounting", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/chat-loading.js"),
+        "utf8",
+    );
+
+    assert.match(source, /const pendingRoomKeyLoads = new Map\(\)/);
+    assert.match(
+        source,
+        /const existingLoad = pendingRoomKeyLoads\.get\(loadId\)/,
+    );
+    assert.match(source, /if \(existingKey \|\| !options\.keyContribution\)/);
+});
+
+test("keyring reset preserves message-room membership", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/index.ts"),
+        "utf8",
+    );
+
+    assert.doesNotMatch(source, /auth:registerKeyringDataOwner/);
+    assert.match(source, /auth:registerAccountDataOwner/);
 });

@@ -4,7 +4,10 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
+    invalidateTokenVerification,
+    isTokenVerificationFresh,
     issueAccessToken,
+    recordTokenVerification,
     revokeSetupPendingAccessTokens,
     revokeAccessTokensForSubject,
     verifyAccessToken,
@@ -20,6 +23,15 @@ test("access tokens issue and verify", () => {
     const token = issueAccessToken("u1", "admin", 60);
     const claims = verifyAccessToken(token);
     assert.equal(claims?.sub, "u1");
+});
+
+test("locking a secret flow invalidates the password confirmation window", () => {
+    const token = issueAccessToken("confirmation-user", "user", 60);
+    assert.equal(isTokenVerificationFresh(token, 60 * 60 * 1000), true);
+    invalidateTokenVerification(token);
+    assert.equal(isTokenVerificationFresh(token, 60 * 60 * 1000), false);
+    recordTokenVerification(token);
+    assert.equal(isTokenVerificationFresh(token, 60 * 60 * 1000), true);
 });
 
 test("guard enforces role scopes", () => {

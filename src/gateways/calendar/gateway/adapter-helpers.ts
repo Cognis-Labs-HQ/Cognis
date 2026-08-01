@@ -7,6 +7,19 @@ import type {
     CalendarBootstrapBaseCtx,
     CalendarEventRecord,
 } from "./utils.js";
+
+export function getAdapterConfig(
+    registeredAdapters: Map<string, CalendarAdapter>,
+    disabledAdapters: Set<string>,
+    adapterId: string,
+): Record<string, unknown> | null {
+    const adapter = registeredAdapters.get(adapterId);
+    if (!adapter) return null;
+    return {
+        ...(typeof adapter.getConfig === "function" ? adapter.getConfig() : {}),
+        enabled: !disabledAdapters.has(adapterId),
+    };
+}
 import {
     escapeIcsText,
     formatIcsDate,
@@ -20,6 +33,7 @@ import {
 export function exportCalendarAsIcs(
     gateway: CoreCalendarGateway,
     calendarId: string,
+    accessMode?: "read" | "write",
 ): string {
     const calendar = gateway.getCalendar(calendarId);
     if (!calendar) {
@@ -31,6 +45,12 @@ export function exportCalendarAsIcs(
         "VERSION:2.0",
         "PRODID:-//Cognis//Calendar Gateway//EN",
         `X-WR-CALNAME:${escapeIcsText(calendar.name)}`,
+        ...(accessMode
+            ? [
+                  `X-CALENDARSERVER-ACCESS:${accessMode === "write" ? "READ-WRITE" : "READ"}`,
+                  `X-CALENDARSERVER-READ-ONLY:${accessMode === "read" ? "TRUE" : "FALSE"}`,
+              ]
+            : []),
         ...events.flatMap((event) => {
             const attendeeLines = [...event.attendees, ...event.inviteEmails]
                 .map((attendee) => attendee.trim())

@@ -40,7 +40,7 @@ test("POST /messages/requests/:id/approve reactivates archived DM members", asyn
         async createRoom() {
             return { id: "unexpected-room", kind: "dm" };
         },
-        async addMember() {},
+        async addMemberWithEvent() {},
         async generateAndStoreRoomKey() {},
         async setArchived(
             roomId: string,
@@ -179,4 +179,82 @@ test("POST /messages/rooms reactivates archived members for existing DMs", async
         { roomId: "room-existing", accountId: "alice", archived: false },
         { roomId: "room-existing", accountId: "bob", archived: false },
     ]);
+});
+
+test("concurrent direct-room requests create only one room", async () => {
+    const token = issueAccessToken("alice", "user", 60);
+    let createdRoom: { id: string; kind: string } | null = null;
+    let createCount = 0;
+    const messagesStore = {
+        async findDmBetween() {
+            return createdRoom;
+        },
+        async createDm() {
+            createCount += 1;
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            createdRoom = { id: "room-only", kind: "dm" };
+            return createdRoom;
+        },
+        async addMemberWithEvent() {},
+        async generateAndStoreRoomKey() {},
+        async approvePendingRequestsBetween() {},
+        async hasApprovedMessageRequestBetween() {
+            return false;
+        },
+    };
+    const profileStore = {
+        async getProfile(accountId: string) {
+            return {
+                accountId,
+                handle: accountId,
+                displayName: accountId,
+                visibility: "community",
+            };
+        },
+        async getProfileByHandle(handle: string) {
+            return handle === "bob"
+                ? {
+                      accountId: "bob",
+                      handle: "bob",
+                      displayName: "Bob",
+                      visibility: "community",
+                  }
+                : null;
+        },
+        async isBlocked() {
+            return false;
+        },
+        async isFollowing() {
+            return true;
+        },
+    };
+    const route = createMessagesRoutes({
+        messagesStore: messagesStore as any,
+        profileStore: profileStore as any,
+        dispatch: null,
+        isAdapterEnabled: () => true,
+    });
+    const invoke = async () => {
+        const request = makeReq("POST", token);
+        request[Symbol.asyncIterator] = async function* () {
+            yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
+        };
+        let responseBody = "";
+        await route(
+            request,
+            {
+                writeHead() {},
+                end(payload: string) {
+                    responseBody = payload;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/social/messages/rooms"),
+        );
+        return responseBody;
+    };
+
+    const responses = await Promise.all([invoke(), invoke(), invoke()]);
+
+    assert.equal(createCount, 1);
+    assert.ok(responses.every((body) => body.includes("room-only")));
 });

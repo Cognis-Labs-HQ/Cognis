@@ -22,7 +22,6 @@ Semua endpoint berada di bawah `/api/v1/social/messages`. Autentikasi wajib, kec
 | POST   | `/messages/requests/:id/approve`                    | Setujui permintaan dan buka/buat ruang DM.                                     |
 | POST   | `/messages/requests/:id/reject`                     | Tolak permintaan dan keluarkan penerima dari ruang DM yang sempat disiapkan.   |
 | GET    | `/messages/rooms/:id`                               | Metadata ruang dan anggota.                                                    |
-| GET    | `/messages/rooms/:id/key`                           | Ambil kunci AES-GCM ruang (hanya anggota).                                     |
 | GET    | `/messages/rooms/:id/messages?before&limit`         | Riwayat berpaginasi (penerima permintaan masuk tetap kosong sampai disetujui). |
 | POST   | `/messages/rooms/:id/messages`                      | Tambah pesan (`ciphertext`, `iv`, opsional `authTag`).                         |
 | POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle reaksi emoji pada pesan.                                                |
@@ -61,3 +60,13 @@ Saat pesan baru ditambahkan, adapter mengirim amplop notifikasi per anggota lain
 dengan kategori `messages` dan `actionUrl` `/messages/<room-id>` ke Notify
 Gateway. Pengaturan mute per ruang dan preferensi kategori dapat menonaktifkan
 pengiriman.
+
+## Peristiwa linimasa keanggotaan ruang
+
+Perubahan keanggotaan disimpan secara atomik bersama entri pasif `member_joined` dan `member_left` di linimasa `chat_messages` ruang. Entri ini memakai jenis konten `application/vnd.cognis.room-event+json`; pemanggil mengubah keanggotaan tanpa membuat ruang kedua atau menerbitkan peristiwa secara terpisah. Resolusi obrolan rapat menerapkan operasi yang sama untuk setiap peserta yang berhasil ditemukan.
+
+Permintaan pesan tidak membuat ruang obrolan. Ruang pesan langsung, kunci, keanggotaan, dan peristiwa bergabung awal baru dibuat saat penerima menyetujui permintaan, sehingga ruang yang hanya berisi permintaan tidak muncul dalam daftar ruang peserta.
+
+## Pemuatan keyring kontekstual
+
+Halaman Pesan menyelesaikan kunci ruang melalui lingkup keyring `Social Messages`. Membuka halaman meminta akses untuk memuat rahasia obrolan yang ada; pembatalan buka kunci tidak dilanjutkan dengan permintaan kedua untuk menyimpan kunci kiriman. Saat buka kunci berhasil atau dipulihkan setelah muat ulang, halaman memperbarui pratinjau daftar ruang dan percakapan aktif agar placeholder terenkripsi segera diganti.

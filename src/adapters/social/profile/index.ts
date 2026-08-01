@@ -153,7 +153,45 @@ export async function bootstrapSocialAdapter(
 
     const profileStore = new DbProfileStore(dbExecutor);
     await profileStore.ensureSchema();
-    ctx.flow.extend(
+    const deleteAccountActivity = async (accountId: string) => {
+        await dbExecutor.transaction(async (transactionDb) => {
+            for (const column of ["follower_id", "following_id"]) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "account_follows",
+                    where: [{ column, value: accountId }],
+                });
+            }
+            for (const column of ["blocker_id", "blocked_id"]) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table: "account_blocks",
+                    where: [{ column, value: accountId }],
+                });
+            }
+            for (const table of ["posts", "account_profiles"]) {
+                await transactionDb.executeCommand({
+                    option: "DELETE",
+                    table,
+                    where: [{ column: "account_id", value: accountId }],
+                });
+            }
+            await transactionDb.executeCommand({
+                option: "DELETE",
+                table: "user_preferences",
+                where: [{ column: "account_id", value: accountId }],
+            });
+        });
+        ctx.log?.("info", "Deleted user profile and social activity.", {
+            component: "social-profile-adapter",
+            operation: "delete_user_activity",
+            accountId,
+        });
+    };
+    ctx.capabilities.get<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerAccountDataOwner")?.("profile", deleteAccountActivity);
+    ctx.flow?.extend(
         "deprovision-user",
         "cleanup-dependencies",
         { id: "social-profile:delete-user-activity" },
@@ -172,39 +210,7 @@ export async function bootstrapSocialAdapter(
                 return { cleaned: false };
             }
             const accountId = input.username.trim().toLowerCase();
-            await dbExecutor.transaction(async (transactionDb) => {
-                for (const column of ["follower_id", "following_id"]) {
-                    await transactionDb.executeCommand({
-                        option: "DELETE",
-                        table: "account_follows",
-                        where: [{ column, value: accountId }],
-                    });
-                }
-                for (const column of ["blocker_id", "blocked_id"]) {
-                    await transactionDb.executeCommand({
-                        option: "DELETE",
-                        table: "account_blocks",
-                        where: [{ column, value: accountId }],
-                    });
-                }
-                for (const table of ["posts", "account_profiles"]) {
-                    await transactionDb.executeCommand({
-                        option: "DELETE",
-                        table,
-                        where: [{ column: "account_id", value: accountId }],
-                    });
-                }
-                await transactionDb.executeCommand({
-                    option: "DELETE",
-                    table: "user_preferences",
-                    where: [{ column: "account_id", value: accountId }],
-                });
-            });
-            ctx.log?.("info", "Deleted user profile and social activity.", {
-                component: "social-profile-adapter",
-                operation: "delete_user_activity",
-                accountId,
-            });
+            await deleteAccountActivity(accountId);
             return { cleaned: true, accountId };
         },
     );

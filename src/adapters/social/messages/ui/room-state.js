@@ -10,6 +10,7 @@ import {
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadAllEmojis, recordEmojiUsage } from "./emoji-helpers.js";
 import {
     destroyMessageHoverPopups,
@@ -33,6 +34,7 @@ export function createMessagesRoomState({
     getRoomKey,
     requireRoomKey,
     resolveThreadRoomKey,
+    acceptRoomKeyContribution = async () => true,
     onRoomOpened = async () => {},
     lastOpenedRoomKey = "messages:last-opened-room",
     typingTtlSeconds = 8,
@@ -49,6 +51,32 @@ export function createMessagesRoomState({
     let pendingBannerSlotElement = null;
     let typingActive = false;
     let lastTypingSentAt = 0;
+    let openingRoomId = null;
+    let roomOpenPromise = null;
+    let readyRoomId = null;
+
+    function keyringAccessSuppressed() {
+        return (
+            uiCtx.capabilities.get("keyring:isAccessSuppressed")?.() === true
+        );
+    }
+
+    function handleKeyringAccessState(event) {
+        if (event.detail?.suppressed === true) {
+            if (typingPollIntervalId) clearInterval(typingPollIntervalId);
+            if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);
+            typingPollIntervalId = null;
+            liveRefreshIntervalId = null;
+            return;
+        }
+        startTypingPolling();
+        startLiveRefreshPolling();
+    }
+
+    window.addEventListener(
+        "cognis:keyring-access-state",
+        handleKeyringAccessState,
+    );
 
     async function loadInitialRooms() {
         rooms = await loadRooms(i18n, { getRoomKey });
@@ -189,13 +217,14 @@ export function createMessagesRoomState({
         }
     }
 
-    async function openRoom(roomId) {
+    async function performOpenRoom(roomId) {
         const threadList = document.getElementById("messages-thread-list");
         const headerSlot = document.getElementById(
             "messages-thread-header-slot",
         );
         if (!threadList) return;
         selectedRoomId = roomId;
+        readyRoomId = null;
         localStorage.setItem(lastOpenedRoomKey, roomId);
         const room = await loadRoom(roomId);
         if (room) {
@@ -216,6 +245,15 @@ export function createMessagesRoomState({
         }
         syncComposerAvailability(room);
         syncPendingRequestBanner(room?.pendingRequest ?? null);
+        if (
+            room?.keyContribution &&
+            !(await acceptRoomKeyContribution(room.id, room.keyContribution))
+        ) {
+            threadList.textContent = i18n.t(
+                "adapter.social.messages.keyring_unlock_required",
+            );
+            return;
+        }
         await onRoomOpened(room ?? null);
         const key = await resolveThreadRoomKey(room, roomId);
         const threadResult = await renderThread(
@@ -234,6 +272,23 @@ export function createMessagesRoomState({
         }
         await markSelectedRoomRead({ force: true });
         bindPendingRequestBannerEvents();
+        readyRoomId = roomId;
+    }
+
+    function openRoom(roomId) {
+        if (openingRoomId === roomId && roomOpenPromise) {
+            return roomOpenPromise;
+        }
+        openingRoomId = roomId;
+        const pendingOpen = performOpenRoom(roomId);
+        const trackedOpen = pendingOpen.finally(() => {
+            if (roomOpenPromise === trackedOpen) {
+                openingRoomId = null;
+                roomOpenPromise = null;
+            }
+        });
+        roomOpenPromise = trackedOpen;
+        return roomOpenPromise;
     }
 
     function renderRoomsListIntoDom({ force = false } = {}) {
@@ -447,12 +502,15 @@ export function createMessagesRoomState({
     }
 
     async function refreshActiveConversation() {
+        if (keyringAccessSuppressed()) return;
         if (!selectedRoomId || document.visibilityState !== "visible") return;
+        if (readyRoomId !== selectedRoomId) return;
         await reloadRoomsList();
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
         const selectedRoom = getSelectedRoom();
-        const key = await resolveThreadRoomKey(selectedRoom, selectedRoomId);
+        const key = await getRoomKey(selectedRoomId);
+        if (!key && !selectedRoom?.pendingRequest) return;
         const threadResult = await renderThread(
             selectedRoomId,
             key,
@@ -476,7 +534,12 @@ export function createMessagesRoomState({
             clearInterval(typingPollIntervalId);
             typingPollIntervalId = null;
         }
-        if (!selectedRoomId || document.visibilityState !== "visible") return;
+        if (
+            keyringAccessSuppressed() ||
+            !selectedRoomId ||
+            document.visibilityState !== "visible"
+        )
+            return;
         typingPollIntervalId = setInterval(() => {
             void refreshTypingIndicator();
         }, 3000);
@@ -487,7 +550,12 @@ export function createMessagesRoomState({
             clearInterval(liveRefreshIntervalId);
             liveRefreshIntervalId = null;
         }
-        if (!selectedRoomId || document.visibilityState !== "visible") return;
+        if (
+            keyringAccessSuppressed() ||
+            !selectedRoomId ||
+            document.visibilityState !== "visible"
+        )
+            return;
         liveRefreshIntervalId = setInterval(() => {
             void refreshActiveConversation();
         }, liveRefreshIntervalMs);
@@ -777,6 +845,10 @@ export function createMessagesRoomState({
     }
 
     function cleanup() {
+        window.removeEventListener(
+            "cognis:keyring-access-state",
+            handleKeyringAccessState,
+        );
         hideAllMessageHoverPopups();
         destroyMessageHoverPopups();
         if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);

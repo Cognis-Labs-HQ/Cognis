@@ -17,6 +17,10 @@ const APP_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/index.js"),
     "utf8",
 );
+const CALENDAR_API_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-api.js"),
+    "utf8",
+);
 const TIMED_GRID_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.js"),
     "utf8",
@@ -58,8 +62,32 @@ const POPUP_MANAGER_CALENDAR_EDIT_SOURCE = readFileSync(
     ),
     "utf8",
 );
+const SHARE_RENDERER_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/share-renderer.js"),
+    "utf8",
+);
+const SHARE_RENDERER_CSS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/share-renderer.css"),
+    "utf8",
+);
+const BOOTSTRAP_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/index.ts"),
+    "utf8",
+);
 const POPUP_MANAGER_RESPONSE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-response.js"),
+    "utf8",
+);
+const BOOTSTRAP_HELPERS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/helpers.ts"),
+    "utf8",
+);
+const CALENDAR_ROUTES_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/calendar-routes.ts"),
+    "utf8",
+);
+const SHARED_PASSWORD_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/shared-password.ts"),
     "utf8",
 );
 const POPUP_MANAGER_PENDING_RESPONSE_SOURCE = readFileSync(
@@ -111,7 +139,11 @@ test("calendar composer keeps title counter without title criteria list", () => 
 test("calendar slot clicks create events outside event buttons and empty slots omit add buttons", () => {
     assert.match(
         APP_SOURCE,
-        /event\.target\.closest\(\s*"\[data-calendar-event\], \[data-timeslot-add\]"/,
+        /event\.target\.closest\("\[data-calendar-event\]"\)/,
+    );
+    assert.match(
+        APP_SOURCE,
+        /event\.target\.closest\(\s*"\[data-timeslot-add\]"/,
     );
     assert.doesNotMatch(HELPERS_SOURCE, /data-timeslot-add/);
     assert.match(HELPERS_SOURCE, /calendar-day-all-day-slot/);
@@ -208,6 +240,29 @@ test("calendar composer supports multiple reminders and remembers selected view"
     assert.match(APP_SOURCE, /window\.localStorage\.setItem/);
 });
 
+test("calendar navigation and event creation use a persistent delegated boundary", () => {
+    assert.match(APP_SOURCE, /root\.addEventListener\(/);
+    assert.match(
+        APP_SOURCE,
+        /event\.target\.closest\("\[data-calendar-view\]"\)/,
+    );
+    assert.match(APP_SOURCE, /"\[data-calendar-nav\]"/);
+    assert.match(APP_SOURCE, /"\[data-timeslot-add\]"/);
+    assert.match(APP_SOURCE, /void openEventComposerPopup/);
+});
+
+test("event composer refuses to open without a writable calendar", () => {
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /const writableCalendars = getCalendars\(\)\.filter/,
+    );
+    assert.match(
+        POPUP_MANAGER_SOURCE,
+        /writableCalendars\.length === 0[\s\S]*no_writable_calendars_found[\s\S]*return/,
+    );
+    assert.match(POPUP_MANAGER_SOURCE, /calendars: writableCalendars/);
+});
+
 test("calendar year view day dots inherit calendar event colors", () => {
     assert.match(HELPERS_SOURCE, /--calendar-day-color:/);
     assert.match(HELPERS_SOURCE, /collectDayPaletteColors/);
@@ -297,96 +352,31 @@ test("calendar toolbar includes pending quick responses with shared-calendar tar
         CSS_SOURCE,
         /\.calendar-response-calendar-picker select\s*\{/s,
     );
-    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-generate/);
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /openSharePopup/);
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /void loadExistingShareLinks\(\);/,
+        /resourceType: "calendar"/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-user-search/,
+        /passwordRequired: calendar\.visibility === "private"/,
+    );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /linkAccessOptions: \[/);
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /grantedCapabilities: \["calendar:read"\]/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-user-options/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-user-chips/,
+        /calendar-open-share-popup/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /gateway\.calendar\.share_users_heading/,
     );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /gateway\.calendar\.share_links_heading/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /<div id="calendar-share-results" class="calendar-share-results" hidden><\/div>/,
-    );
-    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-name/);
-    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /calendar-share-expiry/);
     assert.doesNotMatch(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /gateway\.calendar\.share_link_regenerate/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /calendar-share-entry-summary/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-share-delete/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-user-share-permission/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-user-share-expiry/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /class="calendar-user-share-entry-remove btn-no-animation btn-cancel" data-calendar-user-share-delete=/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /if \(target === permissionSelect\) \{[\s\S]*update\.permission = permission;/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /if \(target === expirySelect\) \{[\s\S]*update\.expiresInHours = expiresInHours;/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /showToast\(i18n\.t\("gateway\.calendar\.share_user_updated"\), "success"\);/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /class="btn-no-animation calendar-share-copy-btn" data-calendar-share-copy/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /data-calendar-share-copy-kind/,
-    );
-    assert.doesNotMatch(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /btn-cancel btn-no-animation" data-calendar-share-copy/,
-    );
-    assert.match(
-        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
-        /href="#" class="btn-no-animation btn-cancel" data-calendar-share-delete=/,
-    );
-    assert.match(
-        SHARE_REMINDER_CSS_SOURCE,
-        /\.calendar-user-share-entry\s*\{[\s\S]*grid-template-columns:\s*auto minmax\(0, 1fr\);/s,
-    );
-    assert.match(
-        SHARE_REMINDER_CSS_SOURCE,
-        /\.calendar-user-share-entry-remove\s*\{[\s\S]*position:\s*absolute;/s,
+        /\/api\/v1\/calendar\/calendars\/.*\/share/,
     );
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
@@ -419,7 +409,39 @@ test("calendar app reads jitsi availability from calendar metadata", () => {
 });
 
 test("calendar toolbar shows shared visibility icon", () => {
-    assert.match(HELPERS_SOURCE, /if \(visibility === "shared"\) return "🤝"/);
+    assert.match(
+        HELPERS_SOURCE,
+        /visibility === "shared" && sharedPermission === "read"/,
+    );
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--read-only/);
+    assert.match(HELPERS_SOURCE, /read_only_tooltip/);
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--private/);
+    assert.match(HELPERS_SOURCE, /visibility_private/);
+    assert.match(CSS_SOURCE, /view-eye-light\.svg/);
+    assert.match(CSS_SOURCE, /view-eye-dark\.svg/);
+    assert.match(CSS_SOURCE, /secure-light\.svg/);
+    assert.match(CSS_SOURCE, /secure-dark\.svg/);
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--shared/);
+    assert.match(CSS_SOURCE, /share-light\.svg/);
+    assert.match(CSS_SOURCE, /share-dark\.svg/);
+    assert.doesNotMatch(HELPERS_SOURCE, /🤝/);
+});
+
+test("calendar toolbar uses a larger localized new-calendar action", () => {
+    assert.match(APP_SOURCE, /gateway\.calendar\.new_calendar_short/);
+    assert.match(CSS_SOURCE, /\.calendar-toolbar-add[\s\S]*height:\s*2\.25rem/);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-add[\s\S]*padding:\s*0 0\.65rem/,
+    );
+});
+
+test("event composer excludes read-only shared calendars", () => {
+    assert.match(
+        HELPERS_SOURCE,
+        /calendar\?\.visibility !== "shared"[\s\S]*calendar\?\.sharedPermission === "write"/,
+    );
+    assert.match(HELPERS_SOURCE, /selectedWritableCalendarId/);
 });
 
 test("calendar deep-link event popup does not block mount completion", () => {
@@ -532,5 +554,135 @@ test("calendar upcoming and pending event helpers exclude past events via endAt 
     assert.match(
         HELPERS_SOURCE,
         /function collectPendingEvents[\s\S]*\.filter\(\(event\) => new Date\(event\.endAt\)\.getTime\(\) >= Date\.now\(\)\)/s,
+    );
+});
+
+test("shared events stay visible in Upcoming and calendar layout is fixed", () => {
+    assert.match(
+        HELPERS_SOURCE,
+        /event\.calendarVisibility === "shared"\) return true/,
+    );
+    assert.match(APP_SOURCE, /allowCustomization:\s*false/);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-heading h3\s*\{[\s\S]*text-align:\s*center/,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-subsection h4\s*\{[\s\S]*text-align:\s*center/,
+    );
+});
+
+test("calendar share renderer displays one calendar and enables scoped writes", () => {
+    assert.match(SHARE_RENDERER_SOURCE, /export async function mount/);
+    assert.match(SHARE_RENDERER_SOURCE, /createPageComposer/);
+    assert.match(SHARE_RENDERER_SOURCE, /await composer\.init\(\)/);
+    assert.match(SHARE_RENDERER_SOURCE, /requireAccountSession:\s*false/);
+    assert.match(SHARE_RENDERER_SOURCE, /showNavbar:\s*false/);
+    assert.match(SHARE_RENDERER_SOURCE, /function renderCalendar\(\)/);
+    assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
+    assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
+    assert.match(SHARE_RENDERER_SOURCE, /calendar-view-switcher/);
+    assert.match(SHARE_RENDERER_SOURCE, /root\.addEventListener/);
+    assert.match(SHARE_RENDERER_SOURCE, /onRender:\s*bindInteractiveHandlers/);
+    assert.match(SHARE_RENDERER_SOURCE, /interactionController\?\.abort\(\)/);
+    assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
+    assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
+    assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
+    assert.match(SHARE_RENDERER_SOURCE, /\/api\/v1\/calendar\/shared\//);
+    assert.match(SHARE_RENDERER_SOURCE, /shared-calendar-event-form/);
+    assert.match(SHARE_RENDERER_SOURCE, /guestAccessToken/);
+    assert.match(SHARE_RENDERER_SOURCE, /authorization: `Bearer/);
+    assert.doesNotMatch(SHARE_RENDERER_SOURCE, /apiFetch/);
+    assert.match(
+        BOOTSTRAP_SOURCE,
+        /mountScriptUrl:\s*"\/static\/gateways\/calendar\/ui\/share-renderer\.js"/,
+    );
+    assert.doesNotMatch(BOOTSTRAP_SOURCE, /preserveShareShell/);
+    assert.match(BOOTSTRAP_SOURCE, /share-renderer\.css/);
+    assert.match(BOOTSTRAP_SOURCE, /calendar\.css/);
+    assert.match(BOOTSTRAP_SOURCE, /share_import_success/);
+    assert.match(
+        SHARE_RENDERER_CSS_SOURCE,
+        /\.calendar-share-page \.calendar-timeslot-grid\s*\{[\s\S]*overflow-y:\s*auto/,
+    );
+    assert.match(
+        SHARE_RENDERER_CSS_SOURCE,
+        /\.widget-card:has\(\.calendar-share-page\)\s*\{[\s\S]*overflow-y:\s*hidden/,
+    );
+});
+
+test("shared calendar settings expose recipient-local name and color", () => {
+    assert.match(APP_SOURCE, /openCalendarEditPopup\(calendar\)/);
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /isShared\s*\? \{ name, color \}/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /gateway\.calendar\.shared_calendar_local_color/,
+    );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /renderInfoTooltip/);
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /maxlength="30"/);
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /immutableSharedSuffix/);
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /\.\.\.\(!calendar\.isDefault/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /delete_calendar_confirm_title/,
+    );
+    assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /confirmed !== "delete"/);
+    assert.doesNotMatch(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /calendar-delete-zone/,
+    );
+});
+
+test("calendar visibility uses theme-aware SVG icons", () => {
+    assert.match(HELPERS_SOURCE, /calendar-visibility-icon--public/);
+    assert.doesNotMatch(HELPERS_SOURCE, /🌐|🌍|🌎|🌏/);
+    assert.match(CSS_SOURCE, /globe-light\.svg/);
+    assert.match(CSS_SOURCE, /globe-dark\.svg/);
+    assert.match(
+        CSS_SOURCE,
+        /calendar-visibility-icon--shared[\s\S]*width:\s*1\.1rem;[\s\S]*height:\s*1\.1rem;/,
+    );
+});
+
+test("shared calendar events are excluded from quick response controls", () => {
+    assert.match(HELPERS_SOURCE, /calendarVisibility/);
+    assert.match(HELPERS_SOURCE, /event\.calendarVisibility !== "shared"/);
+    assert.match(HELPERS_SOURCE, /sharedEventRootIds/);
+});
+
+test("responses for globally stored events bypass calendar import", () => {
+    assert.match(
+        POPUP_MANAGER_RESPONSE_SOURCE,
+        /responseUpdatesExistingEvent !== true/,
+    );
+    assert.match(BOOTSTRAP_HELPERS_SOURCE, /responseUpdatesExistingEvent:/);
+});
+
+test("shared calendar event loading resolves password protection through keyring", () => {
+    assert.match(APP_SOURCE, /fetchEvents\(calendar\.id, calendar\)/);
+    assert.match(CALENDAR_API_SOURCE, /share:fetchProtectedResource/);
+    assert.match(CALENDAR_API_SOURCE, /x-cognis-share-password/);
+    assert.match(CALENDAR_API_SOURCE, /sharePasswordProtected/);
+    assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarPassword/);
+    assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
+    assert.match(SHARED_PASSWORD_SOURCE, /share:resolveToken/);
+    assert.match(CALENDAR_API_SOURCE, /calendar_share_secrets_refused/);
+    assert.match(APP_SOURCE, /secretsUnavailable/);
+    assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);
+    assert.match(HELPERS_SOURCE, /share_secrets_not_provided/);
+    assert.match(CSS_SOURCE, /calendar-item-btn--locked/);
+    assert.match(APP_SOURCE, /runFlow\("defer-page-action"/);
+    assert.match(CALENDAR_API_SOURCE, /promptWhenLocked/);
+    assert.match(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
+    assert.doesNotMatch(
+        CALENDAR_ROUTES_SOURCE,
+        /includeSharedAudienceAttendees/,
     );
 });

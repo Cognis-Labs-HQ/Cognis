@@ -6,6 +6,7 @@ const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({
     languageBaseUrls: ["/static/modules/jitsi-meet/languages"],
     stylesheetUrls: [],
     reactionHelpersModuleUrl: null,
+    chatLoadingModuleUrl: null,
     profileFileNamespace: null,
 });
 
@@ -41,6 +42,11 @@ export async function loadMessageUiResources() {
             responseData.reactionHelpersModuleUrl.length > 0
                 ? responseData.reactionHelpersModuleUrl
                 : null;
+        const chatLoadingModuleUrl =
+            typeof responseData.chatLoadingModuleUrl === "string" &&
+            responseData.chatLoadingModuleUrl.length > 0
+                ? responseData.chatLoadingModuleUrl
+                : null;
         return {
             languageBaseUrls:
                 languageBaseUrls.length > 0
@@ -48,6 +54,7 @@ export async function loadMessageUiResources() {
                     : FALLBACK_MESSAGE_UI_RESOURCES.languageBaseUrls,
             stylesheetUrls,
             reactionHelpersModuleUrl,
+            chatLoadingModuleUrl,
             profileFileNamespace:
                 typeof responseData.profileFileNamespace === "string"
                     ? responseData.profileFileNamespace

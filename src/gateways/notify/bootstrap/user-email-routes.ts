@@ -1,5 +1,4 @@
 import { readJson } from "../../shared.js";
-import { CoreNotificationGateway } from "../gateway.js";
 import { TfaCodeService } from "../../../api/reuse/tfa-code.js";
 import { VerifyTokenService } from "../../../api/reuse/verify-token.js";
 import {
@@ -28,7 +27,14 @@ export function createUserEmailRoutes(
     notifStore: NotificationUserEmailStore,
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
-    gateway: CoreNotificationGateway,
+    emailDelivery: {
+        canSendVerificationEmail: () => boolean;
+        sendEmail: (input: {
+            recipientEmail: string;
+            templateId: string;
+            variables: Record<string, string>;
+        }) => Promise<unknown>;
+    },
     externalHost?: string,
     routeContext?: RouteContext,
     getVerificationCodeLength?: () => number | undefined,
@@ -201,7 +207,7 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
-                if (!gateway.canSendVerificationEmail()) {
+                if (!emailDelivery.canSendVerificationEmail()) {
                     res.writeHead(503, {
                         "content-type": "application/json",
                     });
@@ -226,7 +232,11 @@ export function createUserEmailRoutes(
                     const verifyUrl = externalHost
                         ? `${externalHost}/verify-email?token=${watchToken}`
                         : undefined;
-                    await gateway.sendVerificationEmail(email, code, verifyUrl);
+                    await emailDelivery.sendEmail({
+                        recipientEmail: email,
+                        templateId: "notify-verification",
+                        variables: { code, verifyUrl: verifyUrl ?? "" },
+                    });
                     res.writeHead(201, {
                         "content-type": "application/json",
                     });
@@ -436,7 +446,11 @@ export function createUserEmailRoutes(
                     const verifyUrl = externalHost
                         ? `${externalHost}/verify-email?token=${watchToken}`
                         : undefined;
-                    await gateway.sendVerificationEmail(email, code, verifyUrl);
+                    await emailDelivery.sendEmail({
+                        recipientEmail: email,
+                        templateId: "notify-verification",
+                        variables: { code, verifyUrl: verifyUrl ?? "" },
+                    });
                     res.writeHead(200, {
                         "content-type": "application/json",
                     });

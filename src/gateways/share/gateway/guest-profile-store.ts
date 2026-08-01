@@ -117,7 +117,6 @@ export class GuestProfileStore {
         const record = parseRecord(row);
         if (!record) return null;
         if (isExpired(record.expiresAt)) {
-            await this.deleteById(record.guestId);
             return null;
         }
         return record;
@@ -133,7 +132,24 @@ export class GuestProfileStore {
         });
     }
 
-    async purgeExpired(): Promise<void> {
+    async listExpired(): Promise<GuestProfileRecord[]> {
+        const nowIso = new Date().toISOString();
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_guest_profiles",
+            where: [
+                { column: "expires_at", operator: "!=", value: "" as const },
+                { column: "expires_at", operator: "<", value: nowIso },
+            ],
+        });
+        const expired = (result.rows ?? [])
+            .map(parseRecord)
+            .filter((record): record is GuestProfileRecord => Boolean(record));
+        return expired;
+    }
+
+    async purgeExpired(): Promise<GuestProfileRecord[]> {
+        const expired = await this.listExpired();
         const nowIso = new Date().toISOString();
         await this.db.executeCommand({
             option: "DELETE",
@@ -143,5 +159,6 @@ export class GuestProfileStore {
                 { column: "expires_at", operator: "<", value: nowIso },
             ],
         });
+        return expired;
     }
 }

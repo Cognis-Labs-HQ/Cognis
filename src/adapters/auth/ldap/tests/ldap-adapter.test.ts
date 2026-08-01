@@ -101,6 +101,45 @@ test("ldap adapter forwards every user-bound email for provisioning", async () =
     ]);
 });
 
+test("LDAP password confirmation preserves a separately namespaced source", async () => {
+    const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
+        setClient(client: {
+            authenticate: (
+                username: string,
+                password: string,
+                options: LdapRuntimeOptions,
+            ) => Promise<{ id: string; groups: string[] }>;
+        }): void;
+    };
+    adapter.configure({
+        unify: false,
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldap://faculty",
+                roleMappings: { staff: "user" },
+            },
+        ],
+    });
+    adapter.setClient({
+        authenticate: async (username, password, options) => {
+            assert.equal(username, "alice");
+            assert.equal(password, "directory-password");
+            assert.equal(options.identifier, "Faculty");
+            return { id: "alice", groups: ["staff"] };
+        },
+    });
+
+    assert.equal(
+        await adapter.confirmPassword?.(
+            "ldap:Faculty:alice",
+            "directory-password",
+            "ldap:Faculty",
+        ),
+        true,
+    );
+});
+
 test("LDAP user-group mapping rejects authenticated users outside the group", async () => {
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         setClient(client: {
@@ -287,6 +326,29 @@ test("ldap adapter config schema has required fields", () => {
     assert.ok(keys.includes("writebackBaseDn"));
 });
 
+test("ldap adapter reports a completed multi-server configuration", () => {
+    const adapter = createAdapter() as {
+        configure(config: Record<string, unknown>): void;
+        isConfigured(): boolean;
+    };
+    assert.equal(adapter.isConfigured(), false);
+    adapter.configure({
+        unify: true,
+        servers: [
+            {
+                identifier: "Faculty",
+                serverUrl: "ldaps://ldap.example.org",
+                baseDn: "dc=example,dc=org",
+                bindDn: "uid=service,dc=example,dc=org",
+                bindPassword: "secret",
+                userAttribute: "uid",
+                userFilter: "(uid={username})",
+            },
+        ],
+    });
+    assert.equal(adapter.isConfigured(), true);
+});
+
 test("ldap test configuration returns only client-discovered directory entries", async () => {
     const adapter = createAdapter() as {
         setClient(client: {
@@ -333,6 +395,32 @@ test("ldap test configuration returns only client-discovered directory entries",
     assert.deepEqual(
         result.groups.map(({ name }) => name),
         ["real-directory-admins"],
+    );
+});
+
+test("ldap test configuration explains rejected bind credentials", async () => {
+    const adapter = createAdapter() as {
+        setClient(client: {
+            authenticate: () => Promise<null>;
+            discover: () => Promise<never>;
+        }): void;
+        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
+    };
+    adapter.setClient({
+        authenticate: async () => null,
+        discover: async () => {
+            throw new Error(" Code: 0x31");
+        },
+    });
+    await assert.rejects(
+        () =>
+            adapter.testConfiguration({
+                serverUrl: "ldaps://ldap.example.org",
+                baseDn: "dc=example,dc=org",
+                bindDn: "uid=service,dc=example,dc=org",
+                bindPassword: "incorrect",
+            }),
+        /rejected the bind DN or bind password/,
     );
 });
 

@@ -16,11 +16,12 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { hexToBytes, importRoomKey } from "/static/reuse/crypto-utils.js";
+import { hexToBytes } from "/static/reuse/crypto-utils.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -29,7 +30,6 @@ const TOAST_AUTO_DISMISS_MS = 6_000;
 const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 const notificationTextDecoder = new TextDecoder();
-const roomKeyCache = new Map();
 
 function injectStyles() {
     if (document.querySelector(`link[href="${CSS_HREF}"]`)) return;
@@ -42,6 +42,11 @@ function injectStyles() {
 function navigateNotif(actionUrl) {
     try {
         const url = new URL(actionUrl, window.location.origin);
+        const actionEvent = new CustomEvent("cognis:notification-action", {
+            cancelable: true,
+            detail: { actionUrl: url.href },
+        });
+        if (!window.dispatchEvent(actionEvent)) return;
         if (url.origin === window.location.origin) {
             navigateTo(url.pathname + url.search + url.hash);
         } else {
@@ -53,17 +58,12 @@ function navigateNotif(actionUrl) {
 }
 
 async function getRoomKey(roomId) {
-    if (roomKeyCache.has(roomId)) return roomKeyCache.get(roomId);
-    const response = await apiFetch(
-        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
+    const loadChatRoomKey = uiCtx.capabilities.get(
+        "social:messages:loadChatRoomKey",
     );
-    if (!response.ok) return null;
-    const payload = await response.json().catch(() => null);
-    const roomKeyHex = payload?.data?.key;
-    if (typeof roomKeyHex !== "string" || roomKeyHex.length === 0) return null;
-    const roomKey = await importRoomKey(roomKeyHex, ["decrypt"]);
-    roomKeyCache.set(roomId, roomKey);
-    return roomKey;
+    return typeof loadChatRoomKey === "function"
+        ? loadChatRoomKey(roomId)
+        : null;
 }
 
 function parseRoomId(actionUrl) {

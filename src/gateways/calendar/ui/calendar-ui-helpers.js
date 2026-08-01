@@ -11,13 +11,13 @@ import {
     fetchEvents,
     fetchInvitations,
     fetchEvent,
+    createEvent,
     updateEvent,
     deleteEvent,
     respondToEvent,
     createJitsiMeeting,
 } from "./calendar-api.js";
 import { createRenderPendingEvents } from "./calendar-pending-render.js";
-
 const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
 const EVENT_RESPONSE_OPTIONS = ["accepted", "tentative", "declined"];
@@ -34,47 +34,39 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
 const TIMESLOT_EVENT_PREVIEW_LIMIT = 2;
 const MONTH_EVENT_PREVIEW_LIMIT = 3;
 const DAY_PALETTE_SEGMENT_OPACITY = 62;
-
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
     return query.get("calendarId");
 }
-
 function parseEventSelection() {
     const query = new URLSearchParams(window.location.search);
     return query.get("eventId");
 }
-
 function startOfDay(value) {
     const date = new Date(value);
     date.setHours(0, 0, 0, 0);
     return date;
 }
-
 function startOfWeek(value) {
     const date = startOfDay(value);
     date.setDate(date.getDate() - date.getDay());
     return date;
 }
-
 function startOfMonth(value) {
     const date = startOfDay(value);
     date.setDate(1);
     return date;
 }
-
 function startOfYear(value) {
     const date = startOfDay(value);
     date.setMonth(0, 1);
     return date;
 }
-
 function addDays(value, days) {
     const date = new Date(value);
     date.setDate(date.getDate() + days);
     return date;
 }
-
 function toDateTimeLocalValue(value) {
     const date = new Date(value);
     const year = String(date.getFullYear());
@@ -84,11 +76,9 @@ function toDateTimeLocalValue(value) {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
-
 function normalizeHexColor(value) {
     return normalizeCalendarColor(value);
 }
-
 function splitHandles(value) {
     return Array.from(
         new Set(
@@ -99,7 +89,6 @@ function splitHandles(value) {
         ),
     );
 }
-
 function splitInviteEmails(value) {
     return Array.from(
         new Set(
@@ -110,11 +99,9 @@ function splitInviteEmails(value) {
         ),
     );
 }
-
 function matchesEmailPattern(value) {
     return EMAIL_PATTERN.test(String(value ?? "").trim());
 }
-
 function listEventsInWindow(events, startDate, endDate) {
     const startTime = startDate.getTime();
     const endTime = endDate.getTime();
@@ -124,7 +111,6 @@ function listEventsInWindow(events, startDate, endDate) {
         return eventStart < endTime && eventEnd > startTime;
     });
 }
-
 /**
  * Collect up to `limit` unique calendar colors from the provided event list.
  * The default of four colors keeps year-day gradients readable and bounded;
@@ -146,7 +132,6 @@ function collectDayPaletteColors(events, limit = 4) {
     }
     return palette;
 }
-
 /**
  * Build a conic-gradient background string from a color palette.
  *
@@ -165,7 +150,6 @@ function buildDayPaletteGradient(palette) {
     });
     return `conic-gradient(${segments.join(",")})`;
 }
-
 function collectUpcomingEvents(
     eventsByCalendar,
     calendars,
@@ -184,6 +168,9 @@ function collectUpcomingEvents(
                     calendarById.get(calendarId)?.color,
                 ),
                 calendarName: String(calendarById.get(calendarId)?.name ?? ""),
+                calendarVisibility: String(
+                    calendarById.get(calendarId)?.visibility ?? "",
+                ),
             })),
         )
         .sort((left, right) => left.startAt.localeCompare(right.startAt))
@@ -193,6 +180,7 @@ function collectUpcomingEvents(
                 !selectedCalendarId || event.calendarId === selectedCalendarId,
         )
         .filter((event) => {
+            if (event.calendarVisibility === "shared") return true;
             if (!currentAccountId) return true;
             if (event.createdBy === currentAccountId) return true;
             const response = String(
@@ -201,7 +189,6 @@ function collectUpcomingEvents(
             return response === "accepted" || response === "tentative";
         });
 }
-
 /**
  * Returns upcoming events for the signed-in attendee whose response is still pending.
  * Includes invitation events from other users' calendars (passed as pendingInvitations).
@@ -217,7 +204,7 @@ function collectPendingEvents(
     pendingInvitations,
 ) {
     if (!currentAccountId) return [];
-    const ownPending = collectUpcomingEvents(
+    const pendingCalendarEvents = collectUpcomingEvents(
         eventsByCalendar,
         calendars,
         selectedCalendarId,
@@ -230,9 +217,23 @@ function collectPendingEvents(
                 String(event.responses?.[currentAccountId] ?? "pending") ===
                 "pending",
         );
+    const sharedEventRootIds = new Set(
+        pendingCalendarEvents
+            .filter((event) => event.calendarVisibility === "shared")
+            .map((event) => String(event.sourceEventId ?? event.id ?? "")),
+    );
+    const ownPending = pendingCalendarEvents.filter(
+        (event) => event.calendarVisibility !== "shared",
+    );
     const invitePending = Array.isArray(pendingInvitations)
         ? pendingInvitations
               .filter((event) => new Date(event.endAt).getTime() >= Date.now())
+              .filter(
+                  (event) =>
+                      !sharedEventRootIds.has(
+                          String(event.sourceEventId ?? event.id ?? ""),
+                      ),
+              )
               .map((event) => ({
                   ...event,
                   calendarColor: normalizeHexColor(null),
@@ -265,30 +266,44 @@ function collectPendingEvents(
         a.startAt.localeCompare(b.startAt),
     );
 }
-
-function visibilityIcon(visibility) {
-    if (visibility === "shared") return "🤝";
-    return visibility === "public" ? "🌐" : "🔒";
+function visibilityIcon(visibility, sharedPermission = null, i18n) {
+    if (visibility === "shared" && sharedPermission === "read") {
+        const readOnlyLabel = escapeHtml(
+            i18n.t("gateway.calendar.read_only_tooltip"),
+        );
+        return `<span class="calendar-visibility-icon calendar-visibility-icon--read-only" role="img" aria-label="${readOnlyLabel}" title="${readOnlyLabel}"></span>`;
+    }
+    if (visibility === "private") {
+        const privateLabel = escapeHtml(
+            i18n.t("gateway.calendar.visibility_private"),
+        );
+        return `<span class="calendar-visibility-icon calendar-visibility-icon--private" role="img" aria-label="${privateLabel}" title="${privateLabel}"></span>`;
+    }
+    if (visibility === "shared") {
+        const sharedLabel = escapeHtml(
+            i18n.t("gateway.calendar.visibility_shared"),
+        );
+        return `<span class="calendar-visibility-icon calendar-visibility-icon--shared" role="img" aria-label="${sharedLabel}" title="${sharedLabel}"></span>`;
+    }
+    const publicLabel = escapeHtml(
+        i18n.t("gateway.calendar.visibility_public"),
+    );
+    return `<span class="calendar-visibility-icon calendar-visibility-icon--public" role="img" aria-label="${publicLabel}" title="${publicLabel}"></span>`;
 }
-
 function getStatusLabelKey(status) {
     return status === "free"
         ? "gateway.calendar.status_free"
         : "gateway.calendar.status_busy";
 }
-
 function getRecurrenceLabelKey(recurrence) {
     return `gateway.calendar.recurrence_${EVENT_RECURRENCE_OPTIONS.includes(recurrence) ? recurrence : "none"}`;
 }
-
 function getResponseLabelKey(response) {
     return `gateway.calendar.response_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
-
 function getResponseActionLabelKey(response) {
     return `gateway.calendar.response_action_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
-
 function formatEventTimeLabel(event, { allDayLabel = "" } = {}) {
     if (isAllDayEvent(event)) {
         return allDayLabel;
@@ -301,7 +316,6 @@ function formatEventTimeLabel(event, { allDayLabel = "" } = {}) {
     }
     return `${startLabel} – ${endLabel}`;
 }
-
 function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     if (!calendars.length) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_calendars")}</p>`;
@@ -309,16 +323,15 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     return `<ul class="calendar-calendars-list">${calendars
         .map(
             (calendar) => `<li>
-        <button type="button" class="calendar-item-btn" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'data-current="true"' : ""} title="${escapeHtml(i18n.t("gateway.calendar.edit_calendar"))}">
+        <button type="button" class="calendar-item-btn${calendar.secretsUnavailable ? " calendar-item-btn--locked" : ""}" data-calendar-edit="${escapeHtml(calendar.id)}" ${selectedCalendarId === calendar.id ? 'data-current="true"' : ""} title="${escapeHtml(i18n.t(calendar.secretsUnavailable ? "gateway.calendar.share_secrets_not_provided" : "gateway.calendar.edit_calendar"))}"${calendar.secretsUnavailable ? ' aria-disabled="true" data-calendar-secrets-unavailable="true"' : ""}>
           <span class="calendar-select-dot" aria-hidden="true" style="background:${escapeHtml(normalizeHexColor(calendar.color))}; border-color:${escapeHtml(normalizeHexColor(calendar.color))}"></span>
           <span class="calendar-item-label">${escapeHtml(calendar.name)}</span>
-          <span class="calendar-visibility-icon" aria-hidden="true">${visibilityIcon(calendar.visibility)}</span>
+          ${visibilityIcon(calendar.visibility, calendar.sharedPermission, i18n)}
         </button>
       </li>`,
         )
         .join("")}</ul>`;
 }
-
 function renderEventBadges(event, i18n) {
     const badges = [
         `<span class="calendar-event-badge calendar-event-badge--status">${escapeHtml(i18n.t(getStatusLabelKey(event.status)))}</span>`,
@@ -330,7 +343,6 @@ function renderEventBadges(event, i18n) {
     }
     return badges.join("");
 }
-
 function renderResponseSummary(event, i18n, participantDirectory = null) {
     const responseEntries = Object.entries(event.responses ?? {});
     if (!responseEntries.length) return "";
@@ -349,7 +361,6 @@ function renderResponseSummary(event, i18n, participantDirectory = null) {
         )
         .join("")}</ul>`;
 }
-
 function renderEventButton(
     event,
     {
@@ -383,7 +394,6 @@ function renderEventButton(
       <strong class="calendar-slot-event-title">${meetingIcon}${escapeHtml(event.title)}</strong>
     </button>`;
 }
-
 const renderPendingEvents = createRenderPendingEvents({
     escapeHtml,
     formatDateTime,
@@ -391,7 +401,6 @@ const renderPendingEvents = createRenderPendingEvents({
     EVENT_RESPONSE_OPTIONS,
     getResponseActionLabelKey,
 });
-
 function renderToolbarSummary(summary, pendingEvents, i18n) {
     const pendingMarkup = renderPendingEvents(pendingEvents, i18n);
     if (!summary.length && !pendingEvents.length) {
@@ -818,11 +827,25 @@ function createEventComposerBuilder({
     readOnly = false,
 }) {
     const calendarOptions = Array.isArray(calendars)
-        ? calendars.map((calendar) => ({
-              value: String(calendar?.id ?? ""),
-              label: String(calendar?.name ?? ""),
-          }))
+        ? calendars
+              .filter(
+                  (calendar) =>
+                      calendar?.visibility !== "shared" ||
+                      calendar?.sharedPermission === "write",
+              )
+              .map((calendar) => ({
+                  value: String(calendar?.id ?? ""),
+                  label: String(calendar?.name ?? ""),
+              }))
         : [];
+    const requestedCalendarId = String(
+        defaultValues.calendarId ?? selectedCalendarId ?? "",
+    );
+    const selectedWritableCalendarId = calendarOptions.some(
+        (option) => option.value === requestedCalendarId,
+    )
+        ? requestedCalendarId
+        : (calendarOptions[0]?.value ?? "");
     const fields = [
         {
             name: "title",
@@ -904,7 +927,7 @@ function createEventComposerBuilder({
             labelKey: "gateway.calendar.event_calendar",
             type: "select",
             required: true,
-            value: String(defaultValues.calendarId ?? selectedCalendarId ?? ""),
+            value: selectedWritableCalendarId,
             options:
                 calendarOptions.length > 0
                     ? calendarOptions
@@ -954,6 +977,7 @@ export {
     fetchEvents,
     fetchInvitations,
     fetchEvent,
+    createEvent,
     updateEvent,
     deleteEvent,
     respondToEvent,

@@ -118,12 +118,38 @@ function parseRoleMappings(value: unknown): Record<string, string> {
     return mappings;
 }
 
+function describeLdapTestFailure(error: unknown): Error {
+    const message = error instanceof Error ? error.message : String(error);
+    if (/0x31|invalid credentials|code\s*49\b/i.test(message)) {
+        return new Error(
+            "LDAP rejected the bind DN or bind password. Verify the service account credentials and distinguished name.",
+            { cause: error },
+        );
+    }
+    if (/ECONNREFUSED|connect.*refused/i.test(message)) {
+        return new Error(
+            "LDAP refused the connection. Verify the server URL, port, and TLS mode.",
+            { cause: error },
+        );
+    }
+    if (/certificate|self[- ]signed|unable to verify/i.test(message)) {
+        return new Error(
+            "LDAP TLS certificate validation failed. Verify the server certificate and hostname.",
+            { cause: error },
+        );
+    }
+    return new Error(
+        "LDAP connection test failed. Verify the server, search base, and directory filters.",
+        { cause: error },
+    );
+}
+
 class LdapAuthAdapter implements AuthProviderAdapter {
     readonly id = "ldap";
     readonly name = "LDAP";
     readonly configPopupScriptUrl =
         "/static/adapters/auth/ldap/config-popup.js";
-    readonly version = "0.5.2";
+    readonly version = "0.5.7";
 
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
@@ -165,7 +191,8 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             !this.configuration.unify && requestedSource.startsWith("ldap:")
                 ? servers.filter(
                       (server) =>
-                          `ldap:${server.identifier}` === requestedSource,
+                          `ldap:${encodeURIComponent(String(server.identifier ?? ""))}` ===
+                          requestedSource,
                   )
                 : servers;
         for (const server of candidates) {
@@ -208,6 +235,23 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         return null;
     }
 
+    async confirmPassword(
+        accountId: string,
+        password: string,
+        providerId = "ldap",
+    ): Promise<boolean> {
+        const providerPrefix = `${providerId}:`;
+        const username = accountId.startsWith(providerPrefix)
+            ? accountId.slice(providerPrefix.length)
+            : accountId;
+        const session = await this.authenticate({
+            username,
+            password,
+            authSourceId: providerId,
+        });
+        return session?.accountId === accountId;
+    }
+
     private resolveRole(
         groups: string[],
         options: LdapRuntimeOptions = this.options,
@@ -236,10 +280,26 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             return [{ id: this.id, name: this.name, credential: true }];
         }
         return this.configuration.servers.map((server) => ({
-            id: `ldap:${server.identifier}`,
+            id: `ldap:${encodeURIComponent(String(server.identifier ?? ""))}`,
             name: String(server.identifier),
             credential: true,
         }));
+    }
+
+    isConfigured(): boolean {
+        return (
+            this.configuration.servers.length > 0 &&
+            this.configuration.servers.every(
+                (server) =>
+                    Boolean(server.identifier?.trim()) &&
+                    Boolean(server.serverUrl?.trim()) &&
+                    Boolean(server.baseDn?.trim()) &&
+                    Boolean(server.bindDn?.trim()) &&
+                    Boolean(server.bindPassword) &&
+                    Boolean(server.userAttribute?.trim()) &&
+                    Boolean(server.userFilter?.trim()),
+            )
+        );
     }
 
     getConfigSchema(): AuthConfigField[] {
@@ -420,11 +480,16 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 throw new Error(
                     "LDAP test username and password are required.",
                 );
-            const identity = await this.client.authenticate(
-                testUsername,
-                testPassword,
-                merged,
-            );
+            let identity;
+            try {
+                identity = await this.client.authenticate(
+                    testUsername,
+                    testPassword,
+                    merged,
+                );
+            } catch (error) {
+                throw describeLdapTestFailure(error);
+            }
             if (!identity) throw new Error("LDAP user credential test failed.");
             const role = this.resolveRole(identity.groups ?? [], merged);
             if (!role)
@@ -442,7 +507,13 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 },
             };
         }
-        if (this.client.discover) return this.client.discover(merged);
+        if (this.client.discover) {
+            try {
+                return await this.client.discover(merged);
+            } catch (error) {
+                throw describeLdapTestFailure(error);
+            }
+        }
         if (this.client?.testConnection) {
             const result = await this.client.testConnection(merged);
             if (result && typeof result === "object") return result;

@@ -2,6 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import type { AuthContext, AuthGateway, FlowApi } from "@cognis/core";
 import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
+import type { CapabilityStore } from "../shared.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 
 export type { AuthContext, AuthGateway };
@@ -20,9 +21,16 @@ export interface AuthProviderAdapter {
     readonly version?: string;
     readonly publisher?: string;
     readonly configPopupScriptUrl?: string;
+    readonly locked?: boolean;
+    readonly authenticationProvider?: boolean;
     authenticate(
         credentials: Record<string, unknown>,
     ): Promise<AuthContext | null>;
+    confirmPassword?(
+        accountId: string,
+        password: string,
+        providerId?: string,
+    ): Promise<boolean>;
     getConfigSchema(): AuthConfigField[];
     configure(config: Record<string, unknown>): void;
     getPasswordResetSupport?(): { supported: boolean; reason?: string };
@@ -47,6 +55,7 @@ export interface AuthProviderAdapter {
     testConfiguration?(
         config: Record<string, unknown>,
     ): Promise<Record<string, unknown>>;
+    isConfigured?(): boolean;
 }
 
 export interface AdapterInfo {
@@ -204,6 +213,7 @@ export class CoreAuthGateway {
 
     registerAdapter(adapter: AuthProviderAdapter, requires?: string[]): void {
         this.adapters.set(adapter.id, adapter);
+        if (adapter.locked) this.enabledAdapters.add(adapter.id);
         if (requires && requires.length > 0) {
             this.adapterRequires.set(adapter.id, requires);
         }
@@ -338,7 +348,9 @@ export class CoreAuthGateway {
     }
 
     async disableAdapter(adapterId: string): Promise<void> {
-        if (adapterId === "local") return;
+        if (adapterId === "local" || this.adapters.get(adapterId)?.locked) {
+            return;
+        }
         this.enabledAdapters.delete(adapterId);
         const existing = await this.getPersistedConfig(adapterId);
         await this.persistAdapterState(adapterId, false, existing);
@@ -395,6 +407,45 @@ export class CoreAuthGateway {
         return this.adapters.get(adapterId) ?? null;
     }
 
+    getAdapterConfigContract(adapterId: string): {
+        schema: AuthConfigField[];
+        configPopupScriptUrl?: string;
+        supportsTest: boolean;
+    } | null {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) return null;
+        return {
+            schema: adapter.getConfigSchema(),
+            configPopupScriptUrl: adapter.configPopupScriptUrl,
+            supportsTest: typeof adapter.testConfiguration === "function",
+        };
+    }
+
+    async testAdapterConfiguration(
+        adapterId: string,
+        config: Record<string, unknown>,
+    ): Promise<Record<string, unknown>> {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) throw new Error("auth_adapter_not_found");
+        if (!adapter.testConfiguration) {
+            throw new Error("auth_adapter_test_unavailable");
+        }
+        return adapter.testConfiguration(config);
+    }
+
+    isAdapterLocked(adapterId: string): boolean {
+        const adapter = this.adapters.get(adapterId);
+        return adapterId === "local" || adapter?.locked === true;
+    }
+
+    isAdapterConfigured(adapterId: string): boolean {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) return false;
+        return typeof adapter.isConfigured === "function"
+            ? adapter.isConfigured()
+            : true;
+    }
+
     getEnabledAdapter(adapterId: string): AuthProviderAdapter | null {
         if (!this.enabledAdapters.has(adapterId)) return null;
         return this.adapters.get(adapterId) ?? null;
@@ -409,7 +460,7 @@ export class CoreAuthGateway {
                 ...(adapter.version ? { version: adapter.version } : {}),
                 ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
                 enabled: this.enabledAdapters.has(adapter.id),
-                locked: adapter.id === "local" || undefined,
+                locked: adapter.id === "local" || adapter.locked || undefined,
                 config: {},
                 schema: adapter.getConfigSchema(),
                 ...(requires && requires.length > 0 ? { requires } : {}),
@@ -418,9 +469,35 @@ export class CoreAuthGateway {
     }
 
     getEnabledAdapters(): AuthProviderAdapter[] {
-        return Array.from(this.adapters.values()).filter((a) =>
-            this.enabledAdapters.has(a.id),
+        return Array.from(this.adapters.values()).filter(
+            (a) =>
+                this.enabledAdapters.has(a.id) &&
+                a.authenticationProvider !== false,
         );
+    }
+
+    async confirmPassword(
+        accountId: string,
+        password: string,
+        providerId = "local",
+    ): Promise<boolean> {
+        if (!accountId || !password) return false;
+        const adapterId = providerId.split(":", 1)[0] || "local";
+        const adapter = this.getEnabledAdapter(adapterId);
+        if (!adapter) return false;
+        try {
+            if (adapter.confirmPassword) {
+                return adapter.confirmPassword(accountId, password, providerId);
+            }
+            const session = await adapter.authenticate({
+                username: accountId,
+                password,
+                authSourceId: providerId,
+            });
+            return session?.accountId === accountId;
+        } catch {
+            return false;
+        }
     }
 
     getPasswordResetSupport(adapterId: string): {
@@ -498,7 +575,29 @@ export class CoreAuthGateway {
         return this.localAdapter;
     }
 
-    async discoverAdapters(authAdaptersRoot: string): Promise<void> {
+    async discoverAdapters(
+        authAdaptersRoot: string,
+        bootstrapContext?: {
+            capabilities: CapabilityStore;
+            registerStaticDir?: (
+                adapterId: string,
+                absolutePath: string,
+            ) => void;
+            registerNavbarPlugin?: (scriptUrl: string) => void;
+            registerSettingsSection?: (section: {
+                id: string;
+                label: string;
+                scriptUrl: string;
+                stringsBaseUrl?: string;
+            }) => void;
+            flow?: FlowApi;
+            log?: (
+                level: "info" | "warn" | "error",
+                message: string,
+                metadata?: Record<string, unknown>,
+            ) => void;
+        },
+    ): Promise<void> {
         let entries: string[];
         try {
             entries = await readdir(authAdaptersRoot);
@@ -518,6 +617,7 @@ export class CoreAuthGateway {
 
                 let requires: string[] | undefined;
                 let publisher: string | undefined;
+                let locked = false;
                 try {
                     const manifestRaw = await readFile(
                         path.join(authAdaptersRoot, entry, "manifest.json"),
@@ -526,8 +626,10 @@ export class CoreAuthGateway {
                     const manifest = JSON.parse(manifestRaw) as {
                         requires?: string[];
                         publisher?: string;
+                        locked?: boolean;
                     };
                     publisher = manifest.publisher;
+                    locked = manifest.locked;
                     if (Array.isArray(manifest.requires)) {
                         requires = manifest.requires;
                     }
@@ -541,12 +643,22 @@ export class CoreAuthGateway {
                     pkg.main,
                 );
                 const mod = await import(`${entryPath}?t=${Date.now()}`);
+                if (
+                    bootstrapContext &&
+                    typeof mod.bootstrapAuthAdapter === "function"
+                ) {
+                    await mod.bootstrapAuthAdapter({
+                        ...bootstrapContext,
+                        adapterRoot: path.join(authAdaptersRoot, entry),
+                    });
+                }
                 if (typeof mod.createAdapter === "function") {
                     const adapter = mod.createAdapter() as AuthProviderAdapter;
                     if (pkg.version) {
                         Object.assign(adapter, { version: pkg.version });
                     }
                     if (publisher) Object.assign(adapter, { publisher });
+                    if (locked) Object.assign(adapter, { locked: true });
                     if (adapter.id !== "local") {
                         this.registerAdapter(adapter, requires);
                     }

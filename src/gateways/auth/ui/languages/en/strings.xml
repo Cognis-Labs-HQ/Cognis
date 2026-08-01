@@ -24,4 +24,9 @@
   <string name="gateway.auth.security.password_requires_lowercase">Must contain at least {count} lowercase letter(s).</string>
   <string name="gateway.auth.security.password_requires_digit">Must contain at least {count} digit(s).</string>
   <string name="gateway.auth.security.password_requires_special">Must contain at least {count} special character(s).</string>
+  <string name="gateway.auth.security.keyring_title">Share Keyring</string>
+  <string name="gateway.auth.security.keyring_description">Encrypted share passwords are unlocked with your login password and never stored as plaintext.</string>
+  <string name="gateway.auth.security.keyring_relock">Automatically lock the keyring</string>
+  <string name="gateway.auth.security.keyring_logout">At logout</string>
+  <string name="gateway.auth.security.keyring_minutes">minutes</string>
 </resources>

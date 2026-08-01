@@ -24,6 +24,7 @@ const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "..",
 );
+const SHARE_ADAPTERS_ROOT = path.resolve(GATEWAY_ROOT, "../../adapters/share");
 
 const GUEST_PROFILE_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
 
@@ -45,7 +46,30 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         undefined,
         ctx.capabilities.get.bind(ctx.capabilities),
     );
+    const registerEmailTemplate = ctx.capabilities.get<
+        (
+            templateId: string,
+            template: (variables: Record<string, string>) => {
+                subject: string;
+                body: string;
+                senderName: string;
+                actionUrl: string;
+                actionLabel: string;
+            },
+        ) => boolean
+    >("notify:registerEmailTemplate");
+    ctx.capabilities.get<(id: string, label: string) => void>(
+        "notify:registerCategory",
+    )?.("share", "Share");
+    registerEmailTemplate?.("share-link", (variables) => ({
+        subject: `${variables.senderName} shared ${variables.resourceName} with you`,
+        body: `${variables.senderName} shared the ${variables.resourceTypeLabel} “${variables.resourceName}” with you.\n\nOpen the shared item:\n${variables.url}`,
+        senderName: "Cognis Share",
+        actionUrl: variables.url,
+        actionLabel: "Open Shared Item",
+    }));
     await gateway.ensureSchema();
+    await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT);
 
     ctx.capabilities.contribute(
         "share:mintToken",
@@ -64,12 +88,47 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.deleteToken.bind(gateway),
     );
     ctx.capabilities.contribute(
+        "share:removeUserRecipient",
+        async (input: { shareId: string; recipientAccountId: string }) => {
+            const result = await gateway.removeUserRecipient(input);
+            ctx.log?.("info", "Removed recipient from user share.", {
+                component: "share-gateway",
+                operation: "remove_user_recipient",
+                shareId: input.shareId,
+                recipientAccountId: input.recipientAccountId,
+                result,
+            });
+            return result;
+        },
+    );
+    ctx.capabilities.contribute(
+        "share:deleteResourceShares",
+        async (input: {
+            ownerAccountId: string;
+            resourceType: string;
+            resourceId: string;
+        }) => {
+            const deletedCount = await gateway.deleteResourceShares(input);
+            ctx.log?.("info", "Deleted shares for removed resource.", {
+                component: "share-gateway",
+                operation: "delete_resource_shares",
+                ...input,
+                deletedCount,
+            });
+            return deletedCount;
+        },
+    );
+    ctx.capabilities.contribute(
         "share:updateToken",
         gateway.updateToken.bind(gateway),
     );
     ctx.capabilities.contribute(
         "share:resolveToken",
         gateway.resolveToken.bind(gateway),
+    );
+    ctx.capabilities.contribute(
+        "share:inspectToken",
+        gateway.inspectToken.bind(gateway),
     );
     ctx.capabilities.contribute(
         "share:getTokenById",
@@ -117,18 +176,29 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "share");
     uiHooks.registerStaticDir("share", GATEWAY_ROOT);
+    for (const adapter of gateway.listAdapters()) {
+        uiHooks.registerAdapterStaticDir(
+            adapter.id,
+            path.join(SHARE_ADAPTERS_ROOT, adapter.id),
+        );
+    }
     uiHooks.registerNavbarPlugin(
         "/static/gateways/share/ui/approval-poller.js",
+    );
+    uiHooks.registerNavbarPlugin(
+        "/static/gateways/share/ui/received-share-action.js",
+    );
+    uiHooks.registerNavbarPlugin(
+        "/static/adapters/share/link/ui/share-links-popup/index.js",
     );
 
     ctx.routeRegistry.registerPrefix("/api/v1/share", "share");
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.3.0",
+        version: "1.6.44",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
-        hasAdapters: false,
     });
 
     const cleanupTimer = setInterval(() => {

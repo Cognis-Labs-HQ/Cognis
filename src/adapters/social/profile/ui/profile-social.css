@@ -253,6 +253,19 @@
     color: var(--text-muted);
 }
 
+.profile-globe-icon {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    background: center / contain no-repeat
+        url("/static/assets/reuse/globe-light.svg");
+}
+
+body[data-theme="dark"] .profile-globe-icon {
+    background-image: url("/static/assets/reuse/globe-dark.svg");
+}
+
 .profile-hero-link {
     color: var(--link);
     text-decoration: none;

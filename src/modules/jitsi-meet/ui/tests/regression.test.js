@@ -24,6 +24,18 @@ function readJitsiApiBundle() {
         .join("\n");
 }
 
+test("meeting chat polling respects cancelled keyring access", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+    assert.match(source, /keyring:isAccessSuppressed/);
+    assert.match(
+        source,
+        /function startNativeChatPolling\(\)[\s\S]*keyring:isAccessSuppressed/,
+    );
+});
+
 test("meetings search popup adds confirmed users directly to meeting participants", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
@@ -68,6 +80,20 @@ test("jitsi meeting group chats include the meeting date in their title", () => 
     const source = readJitsiApiBundle();
     assert.match(source, /function buildMeetingChatTitle[\s\S]*slice\(0, 10\)/);
     assert.match(source, /title:\s*meetingChatTitle/);
+});
+
+test("jitsi chat loads room keys through the messages adapter loading flow", () => {
+    const chatSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+    const resourcesSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/ui-resources.js"),
+        "utf8",
+    );
+    assert.match(chatSource, /await loadChatRoomKey\(roomId\)/);
+    assert.doesNotMatch(chatSource, /adapters\/auth\/keyring/);
+    assert.match(resourcesSource, /chatLoadingModuleUrl/);
 });
 
 test("jitsi meeting window has light-theme overlay overrides", () => {
@@ -142,8 +168,16 @@ test("jitsi meetings embed gates privileged settings by local moderator role and
         /hashParams\.set\([\s\S]*"interfaceConfig\.DEFAULT_BACKGROUND",[\s\S]*resolveJitsiDefaultBackground\(themeMode\)/,
     );
     assert.match(source, /"password",[\s\S]*meetingPassword/);
-    assert.match(source, /addEventListener\("passwordRequired", \(\) => \{/);
+    assert.match(
+        source,
+        /addEventListener\("passwordRequired", async \(\) => \{/,
+    );
     assert.match(source, /const submitMeetingPassword = \(\) =>/);
+    assert.match(source, /meeting:\$\{state\.meeting\.id\}:password/);
+    assert.match(source, /meetingKeyring\.resolve\(/);
+    assert.match(source, /fallback:\s*\(\) => suppliedMeetingPassword/);
+    assert.match(source, /action:\s*i18n\.t\("ui\.reuse\.join"\)/);
+    assert.match(source, /process:\s*meetingProcess/);
     assert.match(
         source,
         /participantRoleChanged[\s\S]*getParticipantRole\(event\) === "moderator"/,
@@ -359,11 +393,11 @@ test("meetings UI prompts a participant who becomes alone before leaving", () =>
     );
     assert.match(
         source,
-        /apiInstance\.addEventListener\("passwordRequired", \(\) => \{/,
+        /apiInstance\.addEventListener\("passwordRequired", async \(\) => \{/,
     );
     assert.match(
         source,
-        /utils\.deferAloneParticipantPrompt\(\);\n\s*submitMeetingPassword\(\);/,
+        /utils\.deferAloneParticipantPrompt\(\);[\s\S]*meetingKeyring\.resolve[\s\S]*submitMeetingPassword\(\);/,
     );
 
     assert.match(source, /async function loadMeetingState\(\)/);
@@ -510,7 +544,7 @@ test("jitsi API dispatches meeting lifecycle and participant notifications", () 
     assert.match(source, /organizerUsername: resolved\.meeting\.createdBy/);
     assert.match(source, /organizerUsername: meeting\.createdBy/);
     assert.match(source, /excludeUsernames: \[resolved\.requesterUsername\]/);
-    assert.match(source, /!excludedRecipients\.has\(username\)/);
+    assert.match(source, /excludedRecipients\.has\(normalizedCandidate\)/);
     assert.match(source, /senderName:/);
     assert.match(source, /actionUrl: buildMeetingActionUrl/);
     assert.match(source, /resolveMessagesUiResources/);

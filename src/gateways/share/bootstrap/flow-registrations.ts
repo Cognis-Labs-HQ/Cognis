@@ -10,6 +10,7 @@ import {
     getFirstStageResult,
 } from "../../../api/reuse/flow-helpers.js";
 import type { CoreShareGateway } from "../gateway/index.js";
+import { createHash } from "node:crypto";
 
 const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
 
@@ -79,6 +80,34 @@ export async function registerShareBootstrapHooks(input: {
     const APPROVAL_POLL_INTERVAL_MS = 1_000;
 
     input.ctx.flow.extend(
+        "prepare-share-method",
+        "prepare-method",
+        { id: "share-gateway:prepare-method" },
+        (stageCtx) => {
+            const flowInput = (stageCtx.input ?? {}) as {
+                shareMethod?: string;
+                recipients?: unknown;
+                accessControls?: Record<string, unknown>;
+            };
+            try {
+                return {
+                    prepared: true,
+                    ...input.gateway.prepareAdapterShare(
+                        String(flowInput.shareMethod ?? ""),
+                        flowInput,
+                    ),
+                };
+            } catch (error) {
+                return {
+                    prepared: false,
+                    reason:
+                        error instanceof Error ? error.message : String(error),
+                };
+            }
+        },
+    );
+
+    input.ctx.flow.extend(
         "mint-share-token",
         "request-approval",
         { id: "share-gateway:request-approval" },
@@ -93,6 +122,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 ownerAccountId?: string;
                 meetingInstanceId?: string;
+                metadata?: Record<string, string>;
             } | null;
             const authorizeResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
@@ -237,33 +267,48 @@ export async function registerShareBootstrapHooks(input: {
                 generatePassword?: boolean;
                 expiresAt?: string;
             };
-            const shareRecord = await input.gateway.issueToken({
-                ownerAccountId:
-                    authorizeResult.ownerAccountId ??
-                    resourceResult.ownerAccountId ??
-                    "",
-                resourceType: resourceResult.resourceType ?? "",
-                resourceId: resourceResult.resourceId ?? "",
-                metadata: authorizeResult.meetingInstanceId
-                    ? {
-                          meetingInstanceId: authorizeResult.meetingInstanceId,
-                      }
-                    : resourceResult.meetingInstanceId
-                      ? {
-                            meetingInstanceId: resourceResult.meetingInstanceId,
-                        }
-                      : null,
-                label: inputPayload.label,
-                grantedCapabilities: Array.isArray(
-                    inputPayload.grantedCapabilities,
-                )
-                    ? inputPayload.grantedCapabilities
-                    : [],
-                accessControls: inputPayload.accessControls,
-                password: inputPayload.password,
-                generatePassword: inputPayload.generatePassword === true,
-                expiresAt: String(inputPayload.expiresAt ?? ""),
-            });
+            let shareRecord;
+            try {
+                shareRecord = await input.gateway.issueToken({
+                    ownerAccountId:
+                        authorizeResult.ownerAccountId ??
+                        resourceResult.ownerAccountId ??
+                        "",
+                    resourceType: resourceResult.resourceType ?? "",
+                    resourceId: resourceResult.resourceId ?? "",
+                    metadata:
+                        resourceResult.metadata ??
+                        (authorizeResult.meetingInstanceId
+                            ? {
+                                  meetingInstanceId:
+                                      authorizeResult.meetingInstanceId,
+                              }
+                            : resourceResult.meetingInstanceId
+                              ? {
+                                    meetingInstanceId:
+                                        resourceResult.meetingInstanceId,
+                                }
+                              : null),
+                    label: inputPayload.label,
+                    grantedCapabilities: Array.isArray(
+                        inputPayload.grantedCapabilities,
+                    )
+                        ? inputPayload.grantedCapabilities
+                        : [],
+                    accessControls: inputPayload.accessControls,
+                    password: inputPayload.password,
+                    generatePassword: inputPayload.generatePassword === true,
+                    expiresAt: String(inputPayload.expiresAt ?? ""),
+                });
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "duplicate_user_share"
+                ) {
+                    return { minted: false, reason: "duplicate_user_share" };
+                }
+                throw error;
+            }
             stageCtx.data.shareRecord = shareRecord;
             return { minted: true, shareRecord };
         },
@@ -273,7 +318,7 @@ export async function registerShareBootstrapHooks(input: {
         "mint-share-token",
         "emit-event",
         { id: "share-gateway:emit-event" },
-        (stageCtx) => {
+        async (stageCtx) => {
             const issued = getFirstStageResult(
                 stageCtx.stageResults,
                 "issue-token",
@@ -281,9 +326,63 @@ export async function registerShareBootstrapHooks(input: {
                 minted?: boolean;
                 shareRecord?: unknown;
             } | null;
+            const shareRecord = issued?.shareRecord as {
+                ownerAccountId?: string;
+                resourceType?: string;
+                resourceId?: string;
+                label?: string;
+                shareUrl?: string;
+                accessControls?: {
+                    recipients?: Array<{ type?: string; id?: string }>;
+                };
+            } | null;
+            const userRecipients = Array.from(
+                new Set(
+                    (shareRecord?.accessControls?.recipients ?? [])
+                        .filter((recipient) => recipient?.type === "user")
+                        .map((recipient) => String(recipient.id ?? "").trim())
+                        .filter(Boolean),
+                ),
+            );
+            const registerCategory = input.ctx.capabilities.get<
+                (id: string, label: string) => void
+            >("notify:registerCategory");
+            const dispatch =
+                input.ctx.capabilities.get<
+                    (envelope: {
+                        category: string;
+                        recipientUsername: string;
+                        subject: string;
+                        body: string;
+                        actionUrl?: string;
+                        senderName?: string;
+                        metadata?: Record<string, unknown>;
+                    }) => Promise<unknown>
+                >("notify:dispatch");
+            if (issued?.minted && dispatch && userRecipients.length > 0) {
+                registerCategory?.("share", "Share");
+                await Promise.allSettled(
+                    userRecipients.map((recipientUsername) =>
+                        dispatch({
+                            category: "share",
+                            recipientUsername,
+                            subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
+                            body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
+                            actionUrl: shareRecord?.shareUrl,
+                            senderName: "Cognis Share",
+                            metadata: {
+                                shareId: (shareRecord as { id?: string })?.id,
+                                resourceType: shareRecord?.resourceType,
+                                resourceId: shareRecord?.resourceId,
+                            },
+                        }),
+                    ),
+                );
+            }
             return {
                 emitted: Boolean(issued?.minted),
-                shareRecord: issued?.shareRecord ?? null,
+                shareRecord: shareRecord ?? null,
+                notifiedRecipients: userRecipients,
             };
         },
     );
@@ -306,6 +405,10 @@ export async function registerShareBootstrapHooks(input: {
                 inputPayload.password,
             );
             if (!tokenRecord) {
+                const inspectedRecord = await input.gateway.inspectToken(token);
+                if (inspectedRecord?.passwordHash) {
+                    return { valid: false, reason: "password_required" };
+                }
                 return { valid: false, reason: "invalid_token" };
             }
             const requesterClaims = (
@@ -415,7 +518,14 @@ export async function registerShareBootstrapHooks(input: {
                     purpose: "share",
                 },
             );
+            const guestKeyringAccountId = `share:${tokenResult.tokenRecord.id}:${guestProfile.guestId}`;
             stageCtx.data.guestAccessToken = guestAccessToken;
+            stageCtx.data.guestKeyring = {
+                accountId: guestKeyringAccountId,
+                passphrase: createHash("sha256")
+                    .update(`guest-keyring:${guestAccessToken}`)
+                    .digest("base64url"),
+            };
             stageCtx.data.guestProfile = {
                 displayName: guestProfile.displayName,
                 avatarKey: guestProfile.avatarKey,
@@ -514,8 +624,13 @@ export async function registerShareBootstrapHooks(input: {
                 ) as Record<string, unknown> | null) ?? {};
             return {
                 resolved: true,
+                shareId: String(tokenResult.tokenRecord?.id ?? ""),
                 resourceType: resourceResult.resourceType,
                 resourceId: resourceResult.resourceId,
+                ownerAccountId: String(
+                    tokenResult.tokenRecord?.ownerAccountId ?? "",
+                ),
+                expiresAt: String(tokenResult.tokenRecord?.expiresAt ?? ""),
                 payload: resourceResult.payload ?? {},
                 directAccess: accessResult?.directAccess === true,
                 guestAccessToken:
@@ -541,10 +656,127 @@ export async function registerShareBootstrapHooks(input: {
                     typeof stageCtx.data.guestProfile === "object"
                         ? stageCtx.data.guestProfile
                         : null,
+                guestKeyring:
+                    typeof stageCtx.data.guestKeyring === "object"
+                        ? stageCtx.data.guestKeyring
+                        : null,
                 page: {
                     ...shellResult,
                     ...rendererResult,
                 },
+            };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "resolve-share-token",
+        "deliver-recipient",
+        { id: "share-gateway:deliver-recipient" },
+        async (stageCtx) => {
+            const resolved = getFirstStageResult(
+                stageCtx.stageResults,
+                "build-payload",
+            ) as {
+                resolved?: boolean;
+                resourceType?: string;
+                shareId?: string;
+                resourceId?: string;
+                ownerAccountId?: string;
+                expiresAt?: string;
+                grantedCapabilities?: string[];
+                accessControls?: { recipients?: unknown };
+            } | null;
+            const requesterClaims = (
+                stageCtx.input as { requesterClaims?: { sub?: unknown } }
+            ).requesterClaims;
+            const recipientAccountId = String(requesterClaims?.sub ?? "");
+            const recipients = resolved?.accessControls?.recipients;
+            const isUserRecipient =
+                Array.isArray(recipients) &&
+                recipients.some((entry) => {
+                    if (!entry || typeof entry !== "object") return false;
+                    const recipient = entry as {
+                        type?: unknown;
+                        id?: unknown;
+                    };
+                    return (
+                        recipient.type === "user" &&
+                        String(recipient.id ?? "") === recipientAccountId
+                    );
+                });
+            if (!resolved?.resolved || !isUserRecipient) return null;
+            const deliverUserShare = input.gateway.getCapability<
+                (delivery: {
+                    resourceType: string;
+                    shareId: string;
+                    resourceId: string;
+                    ownerAccountId: string;
+                    recipientAccountId: string;
+                    grantedCapabilities: string[];
+                    expiresAt: string;
+                }) => Promise<{ navigationUrl?: string } | null>
+            >(`share:deliverUserShare:${resolved.resourceType ?? ""}`);
+            if (!deliverUserShare) return null;
+            return deliverUserShare({
+                shareId: String(resolved.shareId ?? ""),
+                resourceType: String(resolved.resourceType ?? ""),
+                resourceId: String(resolved.resourceId ?? ""),
+                ownerAccountId: String(resolved.ownerAccountId ?? ""),
+                recipientAccountId,
+                grantedCapabilities: resolved.grantedCapabilities ?? [],
+                expiresAt: String(resolved.expiresAt ?? ""),
+            });
+        },
+    );
+
+    input.ctx.flow.extend(
+        "update-share-token",
+        "authorize-update",
+        { id: "share-gateway:authorize-update" },
+        async (stageCtx) => {
+            const flowInput = (stageCtx.input ?? {}) as {
+                claims?: { sub?: string };
+                shareId?: string;
+            };
+            const existingToken = await input.gateway.getTokenById(
+                String(flowInput.shareId ?? ""),
+            );
+            const ownerAccountId = String(flowInput.claims?.sub ?? "");
+            const authorized =
+                Boolean(existingToken) &&
+                existingToken?.ownerAccountId === ownerAccountId;
+            return {
+                authorized,
+                existingToken: authorized ? existingToken : null,
+            };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "update-share-token",
+        "update-token",
+        { id: "share-gateway:update-token" },
+        async (stageCtx) => {
+            const authorization = getFirstStageResult(
+                stageCtx.stageResults,
+                "authorize-update",
+            ) as { authorized?: boolean } | null;
+            if (!authorization?.authorized) {
+                return { updated: false, reason: "forbidden" };
+            }
+            const flowInput = (stageCtx.input ?? {}) as {
+                claims?: { sub?: string };
+                shareId?: string;
+                changes?: Parameters<CoreShareGateway["updateToken"]>[0];
+            };
+            const updatedToken = await input.gateway.updateToken({
+                ...(flowInput.changes ?? {}),
+                shareId: String(flowInput.shareId ?? ""),
+                ownerAccountId: String(flowInput.claims?.sub ?? ""),
+            });
+            return {
+                updated: Boolean(updatedToken),
+                updatedToken,
             };
         },
     );

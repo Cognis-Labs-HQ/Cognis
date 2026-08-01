@@ -1,0 +1,10 @@
+{
+    "id": "user",
+    "name": "User",
+    "version": "1.1.11",
+    "gateway": "share",
+    "required": true,
+    "locked": true,
+    "description": "Shares resources directly with Cognis users.",
+    "publisher": "Cognis Labs HQ"
+}

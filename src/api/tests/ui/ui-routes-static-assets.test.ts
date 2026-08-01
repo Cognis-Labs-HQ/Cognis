@@ -109,10 +109,47 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
     assert.match(recorder.body, /registerAvatarProvider/);
 });
 
-test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gateway-owned popup module", async () => {
+test("GET /static/adapters/share/:method/page.js serves Share adapter pages", async () => {
     const uiRegistry = new UIRegistry();
-    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
-    uiRegistry.registerStaticDir("share", shareUiDir);
+    for (const adapterId of ["link", "user"]) {
+        uiRegistry.registerAdapterStaticDir(
+            "share",
+            adapterId,
+            path.resolve(process.cwd(), "src", "adapters", "share", adapterId),
+        );
+    }
+    const route = createUiRoutes(undefined, uiRegistry);
+
+    for (const adapterId of ["link", "user"]) {
+        const recorder = createResponseRecorder();
+        const handled = await route(
+            { headers: {} } as any,
+            recorder.res as any,
+            new URL(
+                `http://localhost/static/adapters/share/${adapterId}/page.js`,
+            ),
+        );
+
+        assert.ok(handled);
+        assert.equal(recorder.status, 200);
+        assert.equal(
+            recorder.headers["content-type"],
+            "text/javascript; charset=utf-8",
+        );
+        assert.match(recorder.body, /renderPage/);
+    }
+});
+
+test("GET /static/adapters/share/link/ui/share-links-popup/index.js serves Link Share adapter popup module", async () => {
+    const uiRegistry = new UIRegistry();
+    const linkAdapterRoot = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "share",
+        "link",
+    );
+    uiRegistry.registerAdapterStaticDir("share", "link", linkAdapterRoot);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -120,7 +157,7 @@ test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gate
         { headers: {} } as any,
         recorder.res as any,
         new URL(
-            "http://localhost/static/gateways/share/ui/reuse/share-links-popup.js",
+            "http://localhost/static/adapters/share/link/ui/share-links-popup/index.js",
         ),
     );
 
@@ -133,10 +170,16 @@ test("GET /static/gateways/share/ui/reuse/share-links-popup.js serves share-gate
     assert.match(recorder.body, /openShareLinksPopup/);
 });
 
-test("GET /static/gateways/share/ui/reuse/share-links-popup.css serves share-gateway-owned popup styles", async () => {
+test("GET /static/adapters/share/link/ui/share-links-popup/index.css serves Link Share adapter popup styles", async () => {
     const uiRegistry = new UIRegistry();
-    const shareUiDir = path.resolve(process.cwd(), "src", "gateways", "share");
-    uiRegistry.registerStaticDir("share", shareUiDir);
+    const linkAdapterRoot = path.resolve(
+        process.cwd(),
+        "src",
+        "adapters",
+        "share",
+        "link",
+    );
+    uiRegistry.registerAdapterStaticDir("share", "link", linkAdapterRoot);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -144,7 +187,7 @@ test("GET /static/gateways/share/ui/reuse/share-links-popup.css serves share-gat
         { headers: {} } as any,
         recorder.res as any,
         new URL(
-            "http://localhost/static/gateways/share/ui/reuse/share-links-popup.css",
+            "http://localhost/static/adapters/share/link/ui/share-links-popup/index.css",
         ),
     );
 

@@ -4,8 +4,8 @@ import type {
 } from "../../../gateways/calendar/gateway/index.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import {
-    passphrasesMatch,
     readSharePassphrase,
+    resolveGatewayCalendarShare,
 } from "../../../gateways/calendar/reuse/share-auth.js";
 import {
     resolveRouteContext,
@@ -20,11 +20,20 @@ export function createCalendarAdapter(): CalendarAdapter {
     };
 }
 
+function escapeXml(value: string): string {
+    return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&apos;");
+}
+
 function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
-    const resolveShareLink = ctx.capabilities.get<
+    const resolveCalendarLink = ctx.capabilities.get<
         (token: string) => Promise<{
             calendarId: string;
             passphrase: string | null;
@@ -32,6 +41,18 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
     >("calendar:resolveShareLink");
     const isMetadataProbeMethod = (method: string | undefined) =>
         method === "HEAD" || method === "OPTIONS" || method === "PROPFIND";
+    const isMutationMethod = (method: string | undefined) =>
+        [
+            "PUT",
+            "POST",
+            "DELETE",
+            "MKCOL",
+            "MKCALENDAR",
+            "MOVE",
+            "COPY",
+            "PROPPATCH",
+            "ACL",
+        ].includes(String(method ?? ""));
 
     const respondCalendarPayload = (
         reqMethod: string | undefined,
@@ -45,8 +66,13 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         payload: string,
         calendarName: string,
         calendarId: string,
+        resourcePath: string,
+        accessMode: "read" | "write" = "read",
     ) => {
-        const headers = buildCalendarExportHeaders(calendarName, calendarId);
+        const headers = {
+            ...buildCalendarExportHeaders(calendarName, calendarId),
+            "x-cognis-calendar-access": accessMode,
+        };
         if (reqMethod === "OPTIONS") {
             res.writeHead(204, {
                 ...headers,
@@ -55,7 +81,17 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             res.end();
             return;
         }
-        if (reqMethod === "HEAD" || reqMethod === "PROPFIND") {
+        if (reqMethod === "PROPFIND") {
+            res.writeHead(207, {
+                ...headers,
+                "content-type": "application/xml; charset=utf-8",
+            });
+            res.end(
+                `<?xml version="1.0" encoding="utf-8"?><d:multistatus xmlns:d="DAV:"><d:response><d:href>${escapeXml(resourcePath)}</d:href><d:propstat><d:prop><d:displayname>${escapeXml(calendarName)}</d:displayname><d:getcontenttype>text/calendar</d:getcontenttype><d:current-user-privilege-set><d:privilege><d:read/></d:privilege></d:current-user-privilege-set></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>`,
+            );
+            return;
+        }
+        if (reqMethod === "HEAD") {
             res.writeHead(200, headers);
             res.end();
             return;
@@ -92,61 +128,59 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");
             respondCalendarPayload(
                 req.method,
                 res,
                 ics,
                 calendar.name,
                 calendar.id,
+                `${url.pathname}${url.search}`,
+                "read",
             );
             return true;
         }
 
         const shareMatch = url.pathname.match(
-            /^\/api\/v1\/calendar\/ics\/share\/([^/]+)$/,
+            /^\/api\/v1\/calendar\/ics\/share\/([^/]+)\/([^/]+\.ics)$/,
         );
         if (
             shareMatch &&
-            (req.method === "GET" || isMetadataProbeMethod(req.method))
+            (req.method === "GET" ||
+                isMutationMethod(req.method) ||
+                isMetadataProbeMethod(req.method))
         ) {
             const token = decodeURIComponent(shareMatch[1]);
-            const shareLink = resolveShareLink
-                ? await resolveShareLink(token)
-                : null;
-            if (!shareLink) {
-                res.writeHead(404, { "content-type": "application/json" });
+            const receivedPassphrase = readSharePassphrase(req, url);
+            const shareLink = await resolveGatewayCalendarShare(
+                ctx.capabilities,
+                token,
+                receivedPassphrase,
+                resolveCalendarLink,
+                routeContext.getAuthClaims(req)?.sub,
+            );
+            if (!shareLink?.calendarId) {
+                const unauthorized = shareLink?.unauthorized === true;
+                res.writeHead(unauthorized ? 401 : 404, {
+                    "content-type": "application/json",
+                    ...(unauthorized
+                        ? {
+                              "www-authenticate":
+                                  'Basic realm="Calendar Share"',
+                          }
+                        : {}),
+                });
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "not_found",
-                            message: "Calendar export not found.",
+                            code: unauthorized ? "unauthorized" : "not_found",
+                            message: unauthorized
+                                ? "Valid calendar share token required."
+                                : "Calendar export not found.",
                         },
                     }),
                 );
                 return true;
-            }
-            if (shareLink.passphrase) {
-                const receivedPassphrase = readSharePassphrase(req, url);
-                if (
-                    !receivedPassphrase ||
-                    !passphrasesMatch(shareLink.passphrase, receivedPassphrase)
-                ) {
-                    res.writeHead(401, {
-                        "content-type": "application/json",
-                        "www-authenticate": 'Basic realm="Calendar Share"',
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "unauthorized",
-                                message:
-                                    "Valid calendar share passphrase required.",
-                            },
-                        }),
-                    );
-                    return true;
-                }
             }
             const calendar = ctx.gateway.getCalendar(shareLink.calendarId);
             if (!calendar) {
@@ -161,13 +195,25 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id);
+            if (isMutationMethod(req.method)) {
+                res.writeHead(403, {
+                    "content-type": "application/xml; charset=utf-8",
+                    allow: "GET,HEAD,OPTIONS,PROPFIND",
+                });
+                res.end(
+                    `<?xml version="1.0" encoding="utf-8"?><d:error xmlns:d="DAV:"><d:need-privileges><d:resource><d:href>${escapeXml(`${url.pathname}${url.search}`)}</d:href><d:privilege><d:write/></d:privilege></d:resource></d:need-privileges></d:error>`,
+                );
+                return true;
+            }
+            const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");
             respondCalendarPayload(
                 req.method,
                 res,
                 ics,
                 calendar.name,
                 calendar.id,
+                `${url.pathname}${url.search}`,
+                "read",
             );
             return true;
         }
@@ -215,6 +261,8 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 ics,
                 calendar.name,
                 calendar.id,
+                `${url.pathname}${url.search}`,
+                "read",
             );
             return true;
         }

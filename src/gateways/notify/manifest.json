@@ -1,7 +1,7 @@
 {
     "id": "notify",
     "name": "Notification Gateway",
-    "version": "1.5.1",
+    "version": "1.5.3",
     "required": true,
     "requires": ["db"],
     "hasAdapters": true,

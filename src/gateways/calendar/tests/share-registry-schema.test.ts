@@ -107,3 +107,26 @@ test("updateCalendarUserShare sends structured UPDATE set payload", async () => 
         updated_at: updatedShare.updatedAt,
     });
 });
+
+test("keyring reset can enumerate only a recipient's delivered calendars", async () => {
+    const shareRegistry = new CalendarShareRegistry(null);
+    for (const [shareId, recipientAccountId] of [
+        ["share-bob", "bob"],
+        ["share-charlie", "charlie"],
+    ]) {
+        await shareRegistry.upsertCalendarUserShare({
+            shareId,
+            ownerAccountId: "alice",
+            ownerCalendarId: "calendar-owned",
+            recipientAccountId,
+            recipientCalendarId: `calendar-${recipientAccountId}`,
+            permission: "read",
+        });
+    }
+
+    const shares = await shareRegistry.listCalendarUserSharesByRecipient("bob");
+    assert.deepEqual(
+        shares.map((share) => share.recipientCalendarId),
+        ["calendar-bob"],
+    );
+});

@@ -20,6 +20,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 
 const SHARE_API = "/api/v1/share/tokens";
+const SHARE_METHODS_API = "/api/v1/share/methods";
 
 export function resolveShareExpiry(expiresInHours) {
     const hours = Number(expiresInHours);
@@ -30,7 +31,7 @@ export function resolveShareExpiry(expiresInHours) {
 
 /**
  * @param {{resourceType: string, resourceId: string, grantedCapabilities: string[]}} options
- * @returns {{fetchLinks: () => Promise<Array>, createLink: (input: {label: string, expiresInHours: number|string}) => Promise<object|null>, deleteLink: (input: {shareId: string}) => Promise<void>}}
+ * @returns {{fetchLinks: () => Promise<Array>, createLink: (input: {label: string, expiresInHours: number|string, recipients?: Array}) => Promise<object|null>, updateLink: (input: {shareId: string, accessControls: object}) => Promise<object|null>, deleteLink: (input: {shareId: string}) => Promise<void>, searchUsers: (query: string) => Promise<Array>}}
  */
 export function buildShareTokenCallbacks({
     resourceType,
@@ -38,14 +39,30 @@ export function buildShareTokenCallbacks({
     grantedCapabilities,
 } = {}) {
     return {
+        fetchMethods: async () => {
+            const response = await apiFetch(SHARE_METHODS_API);
+            if (!response.ok) throw new Error("methods_failed");
+            const payload = await response.json().catch(() => ({ data: [] }));
+            return Array.isArray(payload?.data) ? payload.data : [];
+        },
         fetchLinks: async () => {
             const response = await apiFetch(
                 `${SHARE_API}?resourceType=${encodeURIComponent(resourceType)}&resourceId=${encodeURIComponent(resourceId)}`,
             );
+            if (!response.ok) throw new Error("links_failed");
             const payload = await response.json().catch(() => ({ data: [] }));
             return Array.isArray(payload?.data) ? payload.data : [];
         },
-        createLink: async ({ label, expiresInHours }) => {
+        createLink: async ({
+            label,
+            expiresAt = "",
+            expiresInHours,
+            recipients = [],
+            shareMethod = "link",
+            password = "",
+            accessControls = {},
+            grantedCapabilities: requestedCapabilities,
+        }) => {
             const response = await apiFetch(SHARE_API, {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -53,13 +70,64 @@ export function buildShareTokenCallbacks({
                     resourceType,
                     resourceId,
                     label,
-                    expiresAt: resolveShareExpiry(expiresInHours),
-                    grantedCapabilities,
+                    expiresAt:
+                        String(expiresAt ?? "").trim() ||
+                        resolveShareExpiry(expiresInHours),
+                    grantedCapabilities: Array.isArray(requestedCapabilities)
+                        ? requestedCapabilities
+                        : grantedCapabilities,
+                    accessControls: { ...accessControls, recipients },
+                    recipients,
+                    shareMethod,
+                    password: String(password ?? ""),
                 }),
             });
-            if (!response.ok) throw new Error("create_failed");
+            if (!response.ok) {
+                const payload = await response.json().catch(() => null);
+                const error = new Error(
+                    String(payload?.error?.code ?? "create_failed"),
+                );
+                error.code = payload?.error?.code;
+                throw error;
+            }
             const payload = await response.json().catch(() => ({ data: null }));
             return payload?.data ?? null;
+        },
+        updateLink: async ({
+            shareId,
+            label,
+            expiresAt,
+            password,
+            accessControls,
+            grantedCapabilities: requestedCapabilities,
+        }) => {
+            const response = await apiFetch(
+                `${SHARE_API}/${encodeURIComponent(shareId)}`,
+                {
+                    method: "PATCH",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({
+                        label,
+                        expiresAt,
+                        password,
+                        accessControls,
+                        grantedCapabilities: requestedCapabilities,
+                    }),
+                },
+            );
+            if (!response.ok) throw new Error("update_failed");
+            const payload = await response.json().catch(() => ({ data: null }));
+            return payload?.data ?? null;
+        },
+        searchUsers: async (query) => {
+            const normalizedQuery = String(query ?? "").trim();
+            if (!normalizedQuery) return [];
+            const response = await apiFetch(
+                `/api/v1/share/recipients/users?q=${encodeURIComponent(normalizedQuery)}`,
+            );
+            if (!response.ok) throw new Error("search_failed");
+            const payload = await response.json().catch(() => ({ data: [] }));
+            return Array.isArray(payload?.data) ? payload.data : [];
         },
         deleteLink: async ({ shareId }) => {
             const response = await apiFetch(

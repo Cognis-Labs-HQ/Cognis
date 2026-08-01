@@ -14,6 +14,9 @@ import {
     renderAuthLayout,
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
+import "../../reuse/flow-registry.js";
+import "/static/adapters/auth/keyring/keyring.js";
 
 /**
  * Mounts the login page into the provided root element.
@@ -25,6 +28,7 @@ export async function mount(root) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.login");
     let currentTfaLoginAttemptId = null;
+    let pendingKeyringPassword = "";
     let lastTfaPayload = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
@@ -383,8 +387,12 @@ export async function mount(root) {
         localStorage.removeItem("cognis_user_validation_mode");
     }
 
-    async function finalizeAuthenticatedSession(data) {
+    async function finalizeAuthenticatedSession(data, password = "") {
         persistSession(data);
+        await uiCtx.runFlow("complete-login", {
+            accountPassword: password,
+            deferNewKeyringSetup: true,
+        });
         const requiresUserValidation =
             data.requiredUserValidation === true &&
             data.userValidationMode === "smtp";
@@ -405,7 +413,7 @@ export async function mount(root) {
         window.location.href = "/dashboard";
     }
 
-    async function handleAuthResult(data) {
+    async function handleAuthResult(data, password = "") {
         if (data.tfaRequired === true || data.tfaSetupRequired === true) {
             const tfaLoginClient = await loadTfaLoginClient();
             if (!tfaLoginClient) {
@@ -416,15 +424,21 @@ export async function mount(root) {
             }
             if (data.tfaRequired === true) {
                 lastTfaPayload = data;
+                pendingKeyringPassword = password;
                 hideCredentialProviderSelector();
                 currentTfaLoginAttemptId =
                     tfaLoginClient.switchToTfaPrompt(data);
             } else {
-                tfaLoginClient.handleSetupRequired(persistSession, data);
+                persistSession(data);
+                await uiCtx.runFlow("complete-login", {
+                    accountPassword: password,
+                    deferNewKeyringSetup: true,
+                });
+                tfaLoginClient.handleSetupRequired(() => undefined, data);
             }
             return;
         }
-        await finalizeAuthenticatedSession(data);
+        await finalizeAuthenticatedSession(data, password);
     }
 
     function buildSupportMessage(contactEmail) {
@@ -917,6 +931,7 @@ export async function mount(root) {
                                 if (tfaResponse.ok && tfaBody?.data) {
                                     await finalizeAuthenticatedSession(
                                         tfaBody.data,
+                                        pendingKeyringPassword,
                                     );
                                     return;
                                 }
@@ -948,7 +963,10 @@ export async function mount(root) {
                                 .json()
                                 .catch(() => null);
                             if (response.ok && body?.data) {
-                                await handleAuthResult(body.data);
+                                await handleAuthResult(
+                                    body.data,
+                                    payload.password,
+                                );
                                 return;
                             }
                             const errorKeyByCode = {

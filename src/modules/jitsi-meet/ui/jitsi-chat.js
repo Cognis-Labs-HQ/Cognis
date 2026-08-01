@@ -2,14 +2,12 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatTime } from "/static/reuse/timestamp.js";
-import {
-    bytesToHex,
-    hexToBytes,
-    importRoomKey,
-} from "/static/reuse/crypto-utils.js";
+import { bytesToHex, hexToBytes } from "/static/reuse/crypto-utils.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";
+
 import {
     createChatParticipantAvatarButton,
     normalizeChatRoomId,
@@ -22,22 +20,17 @@ export function createChatHandlers({
     i18n,
     apiFetch,
     messageReactions,
+    loadChatRoomKey,
 }) {
     async function getChatRoomKey(roomId) {
         if (!roomId) return null;
         if (state.chatRoomKey && state.chatRoomId === roomId) {
             return state.chatRoomKey;
         }
-        const response = await apiFetch(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/key`,
-        );
-        if (!response.ok) return null;
-        const payload = await response.json().catch(() => ({ data: null }));
-        const keyHex = String(payload?.data?.key ?? "").trim();
-        if (!keyHex) return null;
-        const imported = await importRoomKey(keyHex);
-        state.chatRoomKey = imported;
-        return imported;
+        if (typeof loadChatRoomKey !== "function") return null;
+        const roomKey = await loadChatRoomKey(roomId);
+        state.chatRoomKey = roomKey;
+        return roomKey;
     }
 
     async function decryptChatMessage(message, key) {
@@ -235,6 +228,8 @@ export function createChatHandlers({
     }
 
     async function refreshNativeChat() {
+        if (uiCtx.capabilities.get("keyring:isAccessSuppressed")?.() === true)
+            return;
         const roomId = state.chatRoomId;
         if (!roomId) {
             setNativeChatReady(false);
@@ -277,10 +272,33 @@ export function createChatHandlers({
     }
 
     function startNativeChatPolling() {
+        if (uiCtx.capabilities.get("keyring:isAccessSuppressed")?.() === true)
+            return;
         if (!state.chatRoomId || state.chatRefreshTimer !== null) return;
         state.chatRefreshTimer = setInterval(() => {
             void refreshNativeChat();
         }, CHAT_REFRESH_INTERVAL_MS);
+    }
+
+    function handleKeyringAccessState(event) {
+        if (event.detail?.suppressed === true) {
+            stopNativeChatPolling();
+            return;
+        }
+        startNativeChatPolling();
+    }
+
+    window.addEventListener(
+        "cognis:keyring-access-state",
+        handleKeyringAccessState,
+    );
+
+    function cleanupChatHandlers() {
+        window.removeEventListener(
+            "cognis:keyring-access-state",
+            handleKeyringAccessState,
+        );
+        stopNativeChatPolling();
     }
 
     async function activateMeetingChat() {
@@ -388,6 +406,7 @@ export function createChatHandlers({
     return {
         activateMeetingChat,
         activatePrivateChatForParticipant,
+        cleanupChatHandlers,
         encryptChatMessage,
         getChatRoomKey,
         openEmojiPickerPopup,

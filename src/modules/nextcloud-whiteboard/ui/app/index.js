@@ -3,6 +3,7 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 import { confirmClearCanvas } from "./clear-canvas.js";
@@ -526,15 +527,15 @@ async function bindShareButton(toolbar) {
         onClick: () => void openSharePopup(),
     });
 }
+
 async function openSharePopup() {
     if (!activeBoard?.id || !canManageShares()) return;
     try {
-        const [{ openShareLinksPopup }, { buildShareCallbacks }] =
-            await Promise.all([
-                import("/static/gateways/share/ui/reuse/share-links-popup.js"),
-                import("/static/modules/nextcloud-whiteboard/share-adapter.js"),
-            ]);
-        await openShareLinksPopup({
+        const sharePopup = uiCtx.capabilities.get("share:openLinksPopup");
+        if (typeof sharePopup !== "function") return;
+        const { buildShareCallbacks } =
+            await import("/static/modules/nextcloud-whiteboard/share-adapter.js");
+        await sharePopup({
             title: translateModuleString(
                 "module.nextcloud_whiteboard.share_popup_title",
             ),
@@ -563,6 +564,12 @@ async function openSharePopup() {
                 ),
                 expiryLabel: translateModuleString(
                     "module.nextcloud_whiteboard.share_expiry_label",
+                ),
+                password: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_optional",
+                ),
+                passwordPlaceholder: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_placeholder",
                 ),
                 statusActive: translateModuleString(
                     "module.nextcloud_whiteboard.share_status_active",
@@ -837,7 +844,6 @@ async function openBoard(board) {
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);
     }
-
     setSyncStatus("syncing", "module.nextcloud_whiteboard.status_syncing");
     socketInstance = connectSocket(io, session, canvasInstance);
     composer?.refreshPresence?.();
@@ -859,7 +865,6 @@ function renderCanvasElement() {
         integrationCanvasMode,
     });
 }
-
 function onCanvasRender() {
     document
         .getElementById("whiteboard-start-new")
@@ -893,7 +898,6 @@ function onCanvasRender() {
     });
     bindCanvasToolbar(canvasInstance);
 }
-
 function buildElements() {
     return [
         {
@@ -909,17 +913,14 @@ function buildElements() {
         },
     ];
 }
-
 export async function mount(root, { signal, shareContext } = {}) {
     registerSearchIndex("nextcloud-whiteboard", collectWhiteboardSearchGroups);
-
     i18n = await createI18n({
         componentStringBaseUrls: [
             "/static/modules/nextcloud-whiteboard/languages",
         ],
     });
     applyDocumentTitle(i18n, "module.nextcloud_whiteboard.page_title");
-
     activeShareContext = shareContext ?? null;
     integrationCanvasMode =
         Boolean(shareContext?.page?.instantCanvas) ||

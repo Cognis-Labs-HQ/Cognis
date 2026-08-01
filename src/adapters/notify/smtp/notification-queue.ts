@@ -40,6 +40,7 @@ interface SmtpQueueEntry extends NotificationSenderQueueEntry {
     verifyUrl?: string;
     verifyButtonLabel?: string;
     nextAttemptAt: number;
+    config?: Record<string, unknown>;
 }
 
 // Keep a bounded in-memory history so admins can inspect recent outcomes
@@ -55,6 +56,7 @@ export interface SmtpNotificationQueuePayload {
     verifyButtonLabel?: string;
     recipientUsername?: string;
     category?: string;
+    config?: Record<string, unknown>;
 }
 
 export class SmtpNotificationQueue {
@@ -198,6 +200,7 @@ export class SmtpNotificationQueue {
                         verifyButtonLabel: nextEntry.verifyButtonLabel,
                         recipientUsername: nextEntry.recipientUsername,
                         category: nextEntry.category,
+                        config: nextEntry.config,
                     });
                     this.rateLimiter.record(
                         nextEntry.recipientEmail,
@@ -245,6 +248,7 @@ export class SmtpNotificationQueue {
             theme: input.theme,
             verifyUrl: input.verifyUrl,
             verifyButtonLabel: input.verifyButtonLabel,
+            config: input.config,
             createdAt: nowIso,
             updatedAt: nowIso,
             status:

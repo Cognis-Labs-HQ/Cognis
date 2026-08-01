@@ -212,7 +212,7 @@ export function renderHero({
             ? `<span class="profile-hero-detail-item">📍 ${escapeHtml(profile.location)}</span>`
             : "",
         profile?.website
-            ? `<span class="profile-hero-detail-item">🌐 <a class="profile-hero-link" href="${escapeHtml(toAbsoluteUrl(profile.website))}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.website)}</a></span>`
+            ? `<span class="profile-hero-detail-item"><span class="profile-globe-icon" aria-hidden="true"></span><a class="profile-hero-link" href="${escapeHtml(toAbsoluteUrl(profile.website))}" target="_blank" rel="noopener noreferrer">${escapeHtml(profile.website)}</a></span>`
             : "",
     ]
         .filter(Boolean)
@@ -539,7 +539,7 @@ export function renderSocialLinks({ profile, i18n }) {
         class="profile-social-link-item"
         target="_blank"
         rel="noopener noreferrer"
-      >🌐 <span class="profile-social-link-label">${escapeHtml(i18n.t("ui.app.profile.social_links.website"))}</span>
+      ><span class="profile-globe-icon" aria-hidden="true"></span><span class="profile-social-link-label">${escapeHtml(i18n.t("ui.app.profile.social_links.website"))}</span>
         <span class="profile-social-link-url">${escapeHtml(website)}</span>
       </a>`
         : `<p class="profile-empty">${escapeHtml(i18n.t("ui.app.profile.social_links.empty"))}</p>`;

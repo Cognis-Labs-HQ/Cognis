@@ -32,6 +32,18 @@ test("clear-all notifications button is disabled for empty inboxes", () => {
     assert.match(source, /if \(currentNotifications\.length === 0\) return;/);
 });
 
+test("notification actions can be handled without leaving the dashboard", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+        "utf8",
+    );
+    assert.match(source, /new CustomEvent\("cognis:notification-action"/);
+    assert.match(
+        source,
+        /if \(!window\.dispatchEvent\(actionEvent\)\) return;/,
+    );
+});
+
 class FakeElement {
     constructor(tagName, ownerDocument) {
         this.tagName = String(tagName).toUpperCase();

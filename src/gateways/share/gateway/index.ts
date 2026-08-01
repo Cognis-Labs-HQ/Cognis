@@ -15,8 +15,41 @@ import {
     type ShareApprovalRequestRecord,
 } from "./approval-request-store.js";
 import { resolveQuickShareActions } from "./quick-share-actions.js";
+import { readdir, readFile } from "node:fs/promises";
+import path from "node:path";
+
+export interface ShareMethodAdapter {
+    id: string;
+    name: string;
+    description: string;
+    nameKey: string;
+    descriptionKey: string;
+    pageModuleUrl: string;
+    order?: number;
+    version?: string;
+    publisher?: string;
+    locked?: boolean;
+    prepare(input: {
+        recipients?: unknown;
+        accessControls?: Record<string, unknown>;
+    }): { accessControls: Record<string, unknown> };
+    owns?(accessControls: Partial<ShareAccessControls>): boolean;
+    validateUnique?(input: {
+        accessControls: Partial<ShareAccessControls>;
+        existingAccessControls: ShareAccessControls[];
+    }): void;
+}
+
+export interface ShareVariant {
+    id: string;
+    label: string;
+    url: string;
+    contentType?: string;
+    access?: "read" | "write";
+}
 
 export class CoreShareGateway {
+    private readonly adapters = new Map<string, ShareMethodAdapter>();
     constructor(
         private readonly store: ShareTokenStore,
         private readonly guestProfileStore: GuestProfileStore,
@@ -29,6 +62,73 @@ export class CoreShareGateway {
 
     getCapability<T>(name: string): T | undefined {
         return this.resolveCapability<T>(name);
+    }
+
+    async discoverAdapters(adaptersRoot: string): Promise<void> {
+        let entries: string[];
+        try {
+            entries = await readdir(adaptersRoot);
+        } catch {
+            return;
+        }
+        for (const entry of entries.sort()) {
+            try {
+                const packageRoot = path.join(adaptersRoot, entry);
+                const pkg = JSON.parse(
+                    await readFile(
+                        path.join(packageRoot, "package.json"),
+                        "utf8",
+                    ),
+                ) as { main?: string; version?: string };
+                if (!pkg.main) continue;
+                const manifest = JSON.parse(
+                    await readFile(
+                        path.join(packageRoot, "manifest.json"),
+                        "utf8",
+                    ),
+                ) as { locked?: boolean; publisher?: string };
+                const module = await import(
+                    path.resolve(packageRoot, pkg.main)
+                );
+                if (typeof module.createShareAdapter !== "function") continue;
+                const adapter =
+                    module.createShareAdapter() as ShareMethodAdapter;
+                if (!adapter?.id || !adapter.name || !adapter.pageModuleUrl)
+                    continue;
+                this.adapters.set(adapter.id, {
+                    ...adapter,
+                    version: pkg.version,
+                    publisher: manifest.publisher,
+                    locked: manifest.locked === true,
+                });
+            } catch {
+                // One unavailable sharing method must not disable the gateway.
+            }
+        }
+    }
+
+    listAdapters(): ShareMethodAdapter[] {
+        return Array.from(this.adapters.values()).sort(
+            (left, right) =>
+                (left.order ?? 100) - (right.order ?? 100) ||
+                left.name.localeCompare(right.name),
+        );
+    }
+
+    getAdapter(adapterId: string): ShareMethodAdapter | null {
+        return this.adapters.get(adapterId) ?? null;
+    }
+
+    prepareAdapterShare(
+        adapterId: string,
+        input: {
+            recipients?: unknown;
+            accessControls?: Record<string, unknown>;
+        },
+    ): { accessControls: Record<string, unknown> } {
+        const adapter = this.adapters.get(adapterId);
+        if (!adapter) throw new Error("share_method_not_found");
+        return adapter.prepare(input);
     }
 
     async ensureSchema(): Promise<void> {
@@ -60,6 +160,30 @@ export class CoreShareGateway {
         record: ShareTokenRecord,
     ): Promise<Record<string, unknown>> {
         const shareUrl = this.buildShareUrl(record.tokenValue);
+        const resolveVariants = this.resolveCapability<
+            (input: {
+                resourceType: string;
+                resourceId: string;
+                token: string;
+                shareUrl: string;
+                grantedCapabilities: string[];
+                metadata: Record<string, string> | null;
+            }) => Promise<ShareVariant[]> | ShareVariant[]
+        >("share:resolveVariants");
+        const resolvedVariants = resolveVariants
+            ? await resolveVariants({
+                  resourceType: record.resourceType,
+                  resourceId: record.resourceId,
+                  token: record.tokenValue,
+                  shareUrl,
+                  grantedCapabilities: record.grantedCapabilities,
+                  metadata: record.metadata,
+              })
+            : [];
+        const variants = resolvedVariants.map((variant) => ({
+            ...variant,
+            url: this.buildAbsoluteUrl(variant.url),
+        }));
         return {
             id: record.id,
             ownerAccountId: record.ownerAccountId,
@@ -76,6 +200,8 @@ export class CoreShareGateway {
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
             shareUrl,
+            variants,
+            emailSupported: Boolean(this.resolveCapability("notify:sendEmail")),
             quickShareActions: await resolveQuickShareActions(
                 this.resolveCapability,
                 {
@@ -98,6 +224,12 @@ export class CoreShareGateway {
         generatePassword?: boolean;
         expiresAt?: string;
     }): Promise<Record<string, unknown>> {
+        await this.validateAdapterUniqueness({
+            ownerAccountId: input.ownerAccountId,
+            resourceType: input.resourceType,
+            resourceId: input.resourceId,
+            accessControls: input.accessControls,
+        });
         const generatedPassword = input.generatePassword
             ? generateSharePassword()
             : null;
@@ -122,6 +254,21 @@ export class CoreShareGateway {
         clearPassword?: boolean;
         expiresAt?: string;
     }): Promise<Record<string, unknown> | null> {
+        const existingRecord = await this.store.getById(input.shareId);
+        if (
+            !existingRecord ||
+            existingRecord.ownerAccountId !== input.ownerAccountId
+        ) {
+            return null;
+        }
+        await this.validateAdapterUniqueness({
+            ownerAccountId: input.ownerAccountId,
+            resourceType: existingRecord.resourceType,
+            resourceId: existingRecord.resourceId,
+            accessControls:
+                input.accessControls ?? existingRecord.accessControls,
+            excludeShareId: existingRecord.id,
+        });
         const generatedPassword = input.generatePassword
             ? generateSharePassword()
             : null;
@@ -146,6 +293,80 @@ export class CoreShareGateway {
         return await Promise.all(
             records.map((record) => this.serializeRecord(record)),
         );
+    }
+
+    async removeUserRecipient(input: {
+        shareId: string;
+        recipientAccountId: string;
+    }): Promise<"updated" | "deleted" | "not_found"> {
+        const record = await this.store.getById(input.shareId);
+        if (!record) return "not_found";
+        const recipients = record.accessControls.recipients;
+        const nextRecipients = recipients.filter(
+            (recipient) =>
+                !(
+                    recipient.type === "user" &&
+                    recipient.id === input.recipientAccountId
+                ),
+        );
+        if (nextRecipients.length === recipients.length) return "not_found";
+        if (nextRecipients.length === 0) {
+            await this.store.deleteById({ shareId: record.id });
+            return "deleted";
+        }
+        await this.store.updateById({
+            shareId: record.id,
+            ownerAccountId: record.ownerAccountId,
+            accessControls: {
+                ...record.accessControls,
+                recipients: nextRecipients,
+            },
+        });
+        return "updated";
+    }
+
+    async deleteResourceShares(input: {
+        ownerAccountId: string;
+        resourceType: string;
+        resourceId: string;
+    }): Promise<number> {
+        const records = await this.store.listByOwner(input);
+        await Promise.all(
+            records.map((record) =>
+                this.store.deleteById({ shareId: record.id }),
+            ),
+        );
+        return records.length;
+    }
+
+    private async validateAdapterUniqueness(input: {
+        ownerAccountId: string;
+        resourceType: string;
+        resourceId: string;
+        accessControls?: Partial<ShareAccessControls>;
+        excludeShareId?: string;
+    }): Promise<void> {
+        const existingRecords = await this.store.listByOwner({
+            ownerAccountId: input.ownerAccountId,
+            resourceType: input.resourceType,
+            resourceId: input.resourceId,
+        });
+        const existingAccessControls = existingRecords
+            .filter((record) => record.id !== input.excludeShareId)
+            .filter((record) => !this.isTokenExpired(record))
+            .map((record) => record.accessControls);
+        for (const adapter of this.adapters.values()) {
+            if (
+                !adapter.validateUnique ||
+                !adapter.owns?.(input.accessControls ?? {})
+            ) {
+                continue;
+            }
+            adapter.validateUnique({
+                accessControls: input.accessControls ?? {},
+                existingAccessControls,
+            });
+        }
     }
 
     async listByResource(filter: {
@@ -178,6 +399,10 @@ export class CoreShareGateway {
         return this.store.resolve(tokenValue, password);
     }
 
+    async inspectToken(tokenValue: string): Promise<ShareTokenRecord | null> {
+        return this.store.inspect(tokenValue);
+    }
+
     async createGuestProfile(input: {
         shareId: string;
         displayName?: string;
@@ -195,7 +420,18 @@ export class CoreShareGateway {
     }
 
     async purgeExpiredGuestProfiles(): Promise<void> {
-        await this.guestProfileStore.purgeExpired();
+        const expiredProfiles = await this.guestProfileStore.listExpired();
+        const deleteKeyringVault = this.resolveCapability<
+            (accountId: string) => Promise<void>
+        >("auth:deleteKeyringVault");
+        for (const profile of expiredProfiles) {
+            if (deleteKeyringVault) {
+                await deleteKeyringVault(
+                    `share:${profile.shareId}:${profile.guestId}`,
+                );
+            }
+            await this.guestProfileStore.deleteById(profile.guestId);
+        }
     }
 
     async createApprovalRequestBatch(input: {

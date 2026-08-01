@@ -93,7 +93,9 @@
   <string name="module.jitsi_meet.share.share_options_label">Teilen:</string>
   <string name="module.jitsi_meet.share.label">Bezeichnung</string>
   <string name="module.jitsi_meet.share.label_placeholder">Optionale Bezeichnung</string>
-  <string name="module.jitsi_meet.share.expiry_label">Läuft ab in (Stunden)</string>
+  <string name="module.jitsi_meet.share.expiry_label">Läuft ab (optional)</string>
+  <string name="module.jitsi_meet.share.password_optional">Passwortschutz (optional)</string>
+  <string name="module.jitsi_meet.share.password_placeholder">Leer lassen für kein Passwort</string>
   <string name="module.jitsi_meet.share.status_active">Aktiv</string>
   <string name="module.jitsi_meet.share.status_expired">Abgelaufen</string>
   <string name="module.jitsi_meet.share.expires_at_label">Läuft ab</string>
@@ -106,4 +108,9 @@
   <string name="module.jitsi_meet.share.delete_failed">Der Freigabelink konnte nicht widerrufen werden.</string>
   <string name="module.jitsi_meet.share.no_meeting">Starten oder betreten Sie zuerst ein Meeting, bevor Sie es teilen.</string>
   <string name="module.jitsi_meet.admin.enable_test_failed">Jitsi Meet muss die Serverprüfung bestehen, bevor es aktiviert werden kann.</string>
+  <string name="module.jitsi_meet.keyring_prompt_title">Besprechungspasswort aktualisieren</string>
+  <string name="module.jitsi_meet.keyring_request_action_update">das Passwort aktualisieren für</string>
+  <string name="module.jitsi_meet.keyring_request_process">Besprechung {{meeting}}</string>
+  <string name="module.jitsi_meet.keyring_prompt">Gib das Besprechungspasswort ein.</string>
+  <string name="module.jitsi_meet.keyring_invalid">Das gespeicherte Besprechungspasswort ist ungültig. Gib das aktuelle Passwort ein.</string>
 </resources>

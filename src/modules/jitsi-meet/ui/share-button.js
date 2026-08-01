@@ -1,3 +1,5 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+
 /**
  * Wires the Jitsi Meet "share meeting" button.
  *
@@ -50,11 +52,11 @@ export async function bindShareButton({
             if (!state.meeting?.id || !state.jitsiConferenceJoined) {
                 return;
             }
-            const [{ openShareLinksPopup }, { buildShareCallbacks }] =
-                await Promise.all([
-                    import("/static/gateways/share/ui/reuse/share-links-popup.js"),
-                    import("./share-adapter.js"),
-                ]);
+            const openShareLinksPopup = uiCtx.capabilities.get(
+                "share:openLinksPopup",
+            );
+            if (typeof openShareLinksPopup !== "function") return;
+            const { buildShareCallbacks } = await import("./share-adapter.js");
             // Opening the share popup pauses the local user's attention on
             // the meeting for an unpredictable amount of time. Defer the
             // "alone in meeting" overlay for the duration so it doesn't fire
@@ -80,6 +82,12 @@ export async function bindShareButton({
                         ),
                         expiryLabel: i18n.t(
                             "module.jitsi_meet.share.expiry_label",
+                        ),
+                        password: i18n.t(
+                            "module.jitsi_meet.share.password_optional",
+                        ),
+                        passwordPlaceholder: i18n.t(
+                            "module.jitsi_meet.share.password_placeholder",
                         ),
                         statusActive: i18n.t(
                             "module.jitsi_meet.share.status_active",

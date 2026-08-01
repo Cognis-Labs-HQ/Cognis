@@ -16,6 +16,17 @@ Do this before exploration, implementation, linting, or testing so the required 
 
 ## Architecture
 
+### User-specific secrets belong in the keyring
+
+Use `src/adapters/auth/keyring/ui/keyring.js` as the canonical storage and retrieval surface
+for passwords, encryption keys, and other user-specific secrets. Never add a
+new plaintext `localStorage`, `sessionStorage`, preference, or component-owned
+secret cache. Components that generate or receive a secret must contribute it
+to the keyring immediately with a stable capability-owned identifier and useful
+metadata. Retrieval must use the keyring resolver so an invalid edited value is
+removed and the user is prompted, or an authoritative source is consulted,
+without permanently breaking access.
+
 ### Route handlers must be thin and provider-agnostic
 
 Route handlers should be unassuming about the details of any backing service or gateway. The goal is plug-and-play provider support: switching a provider (e.g. database, auth, file storage) should require only an environment variable change — the core codebase never knows the difference. All concrete interactions are encapsulated behind gateway/adapter abstractions.
@@ -181,6 +192,8 @@ Administration-facing adapter metadata must also announce its control endpoints 
 
 Every gateway, adapter, and module must carry a `package.json` (or equivalent manifest) with a `version` field. Any change to the code, schema, or API within that component's scope must be accompanied by a version bump. This prevents silent drift between components that depend on each other. A higher-level versioning document at `src/docs/versions.en.md` tracks the current version of each component and serves as a changelog index.
 
+Version updates are atomic repository-wide changes. When bumping a component, update its version in every adjacent `manifest.json` and `package.json`, update `package-lock.json`, raise dependency specifications in every adjacent manifest or package that consumes the new version, and update `src/docs/versions.md` or every available language variation such as `versions.en.md`, `versions.de.md`, `versions.id.md`, and `versions.ja.md`. Run `npm ci --ignore-scripts` afterward to prove that the lockfile resolves only local Cognis workspaces and published external packages; an internal `@cognis/*` registry lookup means the version update is incomplete.
+
 Component package dependencies on other Cognis components must use flexible tested-ceiling version ranges instead of exact pins. Use `<=<tested-version>` for every `@cognis/*` dependency so newer installed components can be detected as potentially untested without blocking older compatible patch lines at install time. Runtime lifecycle surfaces must treat missing or disabled declared dependencies as component errors, disable the affected component power control, and present a red exclamation warning with the expected and installed versions when the installed component is newer than the declared tested ceiling.
 
 ### Changelog entries
@@ -209,6 +222,7 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 - **Strings (i18n)**: each component can carry its own `languages/<lang>/strings.xml`; the i18n loader merges these at startup. Core-level `src/ui/languages/` files must contain only keys that are genuinely cross-component.
 - **User preferences**: adapters and gateways can contribute preference fields to the settings UI; the settings page is assembled from contributions rather than hardcoded sections.
 - **Docs**: each component places its documentation under a `docs/` subdirectory. The docs route auto-discovers all `docs/` directories across the codebase and serves them dynamically. Do not hardcode doc paths in the docs route. Follow the section structure, depth tiers, and language requirements defined in `src/docs/standard.en.md`.
+- Implementation contracts, technical details, and usage examples belong in component docs, not source-file overview comments. Keep source comments limited to non-obvious constraints.
 
 ### Auto-discovery over static wiring
 
@@ -445,6 +459,8 @@ Comprehensive logging is required for every new feature and behaviour change.
 ## Symbols and icons
 
 When applying a symbol or icon (e.g. as a UI label, button decoration, or status indicator), check https://www.w3schools.com/charsets/ref_utf_symbols.asp first. It provides the most expansive set of UTF symbol codes and should be the primary reference for selecting an appropriate character.
+
+Unicode emoji should be avoided for interface icons because their rendering varies by platform and cannot be themed consistently. Prefer reusable SVG assets with explicit light and dark variants; use Unicode symbols only when no suitable SVG asset exists and the symbol's textual meaning is intentional.
 
 ## Avatar interaction rule
 

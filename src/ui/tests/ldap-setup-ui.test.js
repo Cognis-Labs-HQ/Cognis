@@ -10,6 +10,10 @@ const adminPopupSource = readFileSync(
     new URL("../app/administration/adapter-config-popup.js", import.meta.url),
     "utf8",
 );
+const administrationApiSource = readFileSync(
+    new URL("../app/administration/api-loaders.js", import.meta.url),
+    "utf8",
+);
 const loginSource = readFileSync(
     new URL("../app/login/index.js", import.meta.url),
     "utf8",
@@ -63,6 +67,11 @@ test("LDAP setup requires a successful user bind before completion", () => {
     assert.match(ldapPopupSource, /testPassword/);
     assert.match(ldapPopupSource, /credentialTestResult/);
     assert.match(ldapPopupSource, /action !== "complete"/);
+});
+
+test("adapter setup checks honor adapter-reported configuration state", () => {
+    assert.match(administrationApiSource, /typeof payload\.configured/);
+    assert.match(administrationApiSource, /return !payload\.configured/);
 });
 
 test("LDAP role mapping sorts groups and renders names without DNs", () => {

@@ -5,8 +5,13 @@ import { VolatileLocalAccountStore } from "../reuse/account-store.js";
 import type { AuthContext, AuthGateway } from "@cognis/core";
 import { issueAccessToken, lookupAccessToken } from "../access-tokens.js";
 
-function makeGateway(store: VolatileLocalAccountStore): AuthGateway {
+function makeGateway(store: VolatileLocalAccountStore): AuthGateway & {
+    confirmPassword(accountId: string, password: string): Promise<boolean>;
+} {
     return {
+        async confirmPassword(accountId: string, password: string) {
+            return Boolean(await store.verify(accountId, password));
+        },
         async authenticate(token: string): Promise<AuthContext | null> {
             let payload: { username?: string; password?: string };
             try {

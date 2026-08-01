@@ -23,7 +23,6 @@ erforderlich, außer für `GET /messages/ping`.
 | POST    | `/messages/requests/:id/approve`                    | Genehmigt Anfrage und öffnet/erstellt den DM-Raum.                                   |
 | POST    | `/messages/requests/:id/reject`                     | Lehnt Anfrage ab und entfernt den Empfänger aus dem vorbereiteten DM-Raum.           |
 | GET     | `/messages/rooms/:id`                               | Raum-Metadaten und Mitglieder.                                                       |
-| GET     | `/messages/rooms/:id/key`                           | Unverpackter AES-GCM-Raumschlüssel (nur Mitglieder).                                 |
 | GET     | `/messages/rooms/:id/messages?before&limit`         | Paginierte Historie (bei eingehender ausstehender Anfrage bis zur Genehmigung leer). |
 | POST    | `/messages/rooms/:id/messages`                      | Nachricht anhängen (`ciphertext`, `iv`, optional `authTag`).                         |
 | POST    | `/messages/rooms/:id/messages/:messageId/reactions` | Emoji-Reaktion für eine Nachricht umschalten.                                        |
@@ -63,3 +62,13 @@ Beim Senden einer Nachricht wird pro weiterem Raummitglied eine
 Benachrichtigung mit Kategorie `messages` und `actionUrl` `/messages/<room-id>`
 an das Notify Gateway übergeben. Stummschaltung pro Raum und
 Kategorie-Präferenzen können die Zustellung unterdrücken.
+
+## Raum-Mitgliedschaftsereignisse in der Zeitleiste
+
+Mitgliedschaftsänderungen werden atomar zusammen mit passiven Einträgen `member_joined` und `member_left` in der `chat_messages`-Zeitleiste des Raums gespeichert. Diese Einträge verwenden den Inhaltstyp `application/vnd.cognis.room-event+json`; Aufrufer ändern die Mitgliedschaft, ohne einen zweiten Raum anzulegen oder ein Ereignis separat zu veröffentlichen. Bei der Auflösung eines Besprechungschats wird derselbe Vorgang auf alle ermittelten Teilnehmenden angewendet.
+
+Eine Nachrichtenanfrage erstellt keinen Chatraum. Der Direktnachrichtenraum, der Schlüssel, die Mitgliedschaften und die ersten Beitrittsereignisse werden erst angelegt, wenn die empfangende Person die Anfrage genehmigt. Dadurch erscheinen keine reinen Anfrageräume in den Raumlisten.
+
+## Kontextbezogenes Laden des Schlüsselbunds
+
+Die Nachrichtenseite löst Raumschlüssel über den Schlüsselbundbereich `Social Messages` auf. Beim Öffnen wird Zugriff zum Laden vorhandener Chat-Geheimnisse angefordert; nach einem abgebrochenen Entsperren folgt keine zweite Abfrage zum Speichern eines zugestellten Schlüssels. Nach erfolgreicher oder nach dem Neuladen wiederhergestellter Entsperrung aktualisiert die Seite sowohl die Vorschauen der Raumliste als auch die aktive Unterhaltung, sodass verschlüsselte Platzhalter sofort ersetzt werden.

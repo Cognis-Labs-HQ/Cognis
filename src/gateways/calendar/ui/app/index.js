@@ -6,6 +6,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createCalendarPopupManager } from "./popup-manager.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
@@ -117,9 +118,16 @@ export async function mount(root, { signal } = {}) {
         const eventResults = await Promise.allSettled(
             calendars.map(async (calendar) => [
                 calendar.id,
-                await calendarUi.fetchEvents(calendar.id),
+                await calendarUi.fetchEvents(calendar.id, calendar),
             ]),
         );
+        calendars = calendars.map((calendar, index) => ({
+            ...calendar,
+            secretsUnavailable:
+                eventResults[index]?.status === "rejected" &&
+                eventResults[index]?.reason?.code ===
+                    "calendar_share_secrets_refused",
+        }));
         eventsByCalendar = Object.fromEntries(
             eventResults
                 .filter((result) => result.status === "fulfilled")
@@ -130,6 +138,20 @@ export async function mount(root, { signal } = {}) {
         } catch (err) {
             console.warn("Failed to load pending invitations:", err);
             pendingInvitations = [];
+        }
+    }
+
+    async function retryCalendarUnlock(calendar) {
+        try {
+            const events = await calendarUi.fetchEvents(calendar.id, calendar, {
+                promptWhenLocked: true,
+            });
+            eventsByCalendar[calendar.id] = events;
+            calendar.secretsUnavailable = false;
+            return true;
+        } catch {
+            calendar.secretsUnavailable = true;
+            return false;
         }
     }
 
@@ -310,8 +332,85 @@ export async function mount(root, { signal } = {}) {
         openCalendarEditPopup,
     } = popupManager;
 
+    root.addEventListener(
+        "click",
+        (event) => {
+            if (!(event.target instanceof Element)) return;
+            const viewButton = event.target.closest("[data-calendar-view]");
+            if (viewButton instanceof HTMLElement) {
+                const nextView = String(
+                    viewButton.getAttribute("data-calendar-view") ?? "month",
+                );
+                if (!calendarUi.CALENDAR_VIEWS.includes(nextView)) return;
+                setSelectedView(nextView);
+                refreshCalendarComposer();
+                return;
+            }
+            const navigationButton = event.target.closest(
+                "[data-calendar-nav]",
+            );
+            if (navigationButton instanceof HTMLElement) {
+                const navigation =
+                    navigationButton.getAttribute("data-calendar-nav");
+                if (navigation === "today") {
+                    activeDate = new Date();
+                } else if (selectedView === "day") {
+                    activeDate = calendarUi.addDays(
+                        activeDate,
+                        navigation === "next" ? 1 : -1,
+                    );
+                } else if (selectedView === "week") {
+                    activeDate = calendarUi.addDays(
+                        activeDate,
+                        navigation === "next" ? 7 : -7,
+                    );
+                } else if (selectedView === "month") {
+                    activeDate = new Date(
+                        activeDate.getFullYear(),
+                        activeDate.getMonth() +
+                            (navigation === "next" ? 1 : -1),
+                        1,
+                    );
+                } else {
+                    activeDate = new Date(
+                        activeDate.getFullYear() +
+                            (navigation === "next" ? 1 : -1),
+                        0,
+                        1,
+                    );
+                }
+                refreshCalendarComposer();
+                return;
+            }
+            const timeslotAddButton = event.target.closest(
+                "[data-timeslot-add]",
+            );
+            if (timeslotAddButton instanceof HTMLElement) {
+                void openEventComposerPopup({
+                    startAt: String(
+                        timeslotAddButton.getAttribute("data-slot-start") ?? "",
+                    ),
+                    endAt: String(
+                        timeslotAddButton.getAttribute("data-slot-end") ?? "",
+                    ),
+                });
+                return;
+            }
+            const timeslotCell = event.target.closest("[data-timeslot-events]");
+            if (!(timeslotCell instanceof HTMLElement)) return;
+            if (event.target.closest("[data-calendar-event]")) return;
+            void openEventComposerPopup({
+                startAt: String(
+                    timeslotCell.getAttribute("data-slot-start") ?? "",
+                ),
+                endAt: String(timeslotCell.getAttribute("data-slot-end") ?? ""),
+            });
+        },
+        { signal },
+    );
+
     composer = createPageComposer(root, {
-        allowCustomization: true,
+        allowCustomization: false,
         elements: [
             {
                 id: "calendar-view",
@@ -350,127 +449,6 @@ export async function mount(root, { signal } = {}) {
                     window.addEventListener("resize", syncWeekViewLayout, {
                         signal,
                     });
-
-                    root.querySelectorAll("[data-calendar-view]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () => {
-                                    const nextView = String(
-                                        button.getAttribute(
-                                            "data-calendar-view",
-                                        ) ?? "month",
-                                    );
-                                    if (
-                                        !calendarUi.CALENDAR_VIEWS.includes(
-                                            nextView,
-                                        )
-                                    ) {
-                                        return;
-                                    }
-                                    setSelectedView(nextView);
-                                    refreshCalendarComposer();
-                                },
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-calendar-nav]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () => {
-                                    const nav =
-                                        button.getAttribute(
-                                            "data-calendar-nav",
-                                        );
-                                    if (nav === "today") {
-                                        activeDate = new Date();
-                                    } else if (selectedView === "day") {
-                                        activeDate = calendarUi.addDays(
-                                            activeDate,
-                                            nav === "next" ? 1 : -1,
-                                        );
-                                    } else if (selectedView === "week") {
-                                        activeDate = calendarUi.addDays(
-                                            activeDate,
-                                            nav === "next" ? 7 : -7,
-                                        );
-                                    } else if (selectedView === "month") {
-                                        activeDate = new Date(
-                                            activeDate.getFullYear(),
-                                            activeDate.getMonth() +
-                                                (nav === "next" ? 1 : -1),
-                                            1,
-                                        );
-                                    } else {
-                                        activeDate = new Date(
-                                            activeDate.getFullYear() +
-                                                (nav === "next" ? 1 : -1),
-                                            0,
-                                            1,
-                                        );
-                                    }
-                                    refreshCalendarComposer();
-                                },
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-timeslot-add]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () =>
-                                    openEventComposerPopup({
-                                        startAt: String(
-                                            button.getAttribute(
-                                                "data-slot-start",
-                                            ) ?? "",
-                                        ),
-                                        endAt: String(
-                                            button.getAttribute(
-                                                "data-slot-end",
-                                            ) ?? "",
-                                        ),
-                                    }),
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-timeslot-events]").forEach(
-                        (cell) => {
-                            cell.addEventListener(
-                                "click",
-                                (event) => {
-                                    if (
-                                        event.target instanceof Element &&
-                                        event.target.closest(
-                                            "[data-calendar-event], [data-timeslot-add]",
-                                        )
-                                    ) {
-                                        return;
-                                    }
-                                    openEventComposerPopup({
-                                        startAt: String(
-                                            cell.getAttribute(
-                                                "data-slot-start",
-                                            ) ?? "",
-                                        ),
-                                        endAt: String(
-                                            cell.getAttribute(
-                                                "data-slot-end",
-                                            ) ?? "",
-                                        ),
-                                    });
-                                },
-                                { signal },
-                            );
-                        },
-                    );
 
                     root.querySelectorAll("[data-month-create-date]").forEach(
                         (button) => {
@@ -579,7 +557,7 @@ export async function mount(root, { signal } = {}) {
           <section class="toolbar-section calendar-toolbar-section">
             <header class="calendar-toolbar-heading">
               <h3>${i18n.t("gateway.calendar.my_calendars")}</h3>
-              <button type="button" class="calendar-toolbar-add" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">+</button>
+              <button type="button" class="calendar-toolbar-add" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">${i18n.t("gateway.calendar.new_calendar_short")}</button>
             </header>
             <div id="calendar-toolbar-list">${calendarUi.renderCalendarToolbarList(calendars, selectedCalendarId, i18n)}</div>
             <div id="calendar-toolbar-summary">${calendarUi.renderPendingEvents(allPendingEvents(), i18n)}</div>
@@ -642,19 +620,21 @@ export async function mount(root, { signal } = {}) {
                                 (c) => c.id === calendarId,
                             );
                             if (!calendar) return;
+                            if (calendar.secretsUnavailable) {
+                                void (async () => {
+                                    if (await retryCalendarUnlock(calendar)) {
+                                        selectedCalendarId = calendarId;
+                                        selectedEventId = "";
+                                        syncRouteSelection();
+                                        refreshCalendarComposer();
+                                    }
+                                })();
+                                return;
+                            }
                             selectedCalendarId = calendarId;
                             selectedEventId = "";
                             syncRouteSelection();
                             refreshCalendarComposer();
-                            if (calendar.visibility === "shared") {
-                                showToast(
-                                    i18n.t(
-                                        "gateway.calendar.update_calendar_failed",
-                                    ),
-                                    "warning",
-                                );
-                                return;
-                            }
                             openCalendarEditPopup(calendar);
                         },
                         { signal },
@@ -693,7 +673,7 @@ export async function mount(root, { signal } = {}) {
         <form id="calendar-create-popup-form" class="calendar-create-form">
           <div class="calendar-create-row">
             <input id="calendar-popup-color" type="color" value="${popupColorValue}" class="calendar-color-picker-bare" />
-            <input id="calendar-popup-name" type="text" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
+            <input id="calendar-popup-name" type="text" maxlength="30" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
           </div>
           <div class="calendar-visibility-row">
             <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_heading"))}</p>
@@ -756,6 +736,19 @@ export async function mount(root, { signal } = {}) {
 
     await composer.init();
     syncRouteSelection();
+    const lockedCalendars = calendars.filter(
+        (calendar) => calendar.secretsUnavailable,
+    );
+    if (lockedCalendars.length > 0) {
+        void uiCtx.runFlow("defer-page-action", {
+            action: async () => {
+                for (const calendar of lockedCalendars) {
+                    if (!(await retryCalendarUnlock(calendar))) break;
+                }
+                refreshCalendarComposer();
+            },
+        });
+    }
     if (routeCalendarId && routeEventId) {
         void openEventPopup(routeCalendarId, routeEventId);
     }

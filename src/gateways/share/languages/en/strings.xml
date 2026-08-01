@@ -3,6 +3,7 @@
   <string name="share.subtitle">Shared Content</string>
   <string name="share.loading">Loading shared content…</string>
   <string name="share.error.invalid_token">This share link is invalid or has expired.</string>
+  <string name="share.error.keyring_locked">The share was unlocked, but its password could not be saved to your keyring.</string>
   <string name="share.error.missing_token">No share token was provided.</string>
   <string name="share.error.not_found">This share link is invalid or has expired.</string>
   <string name="share.error.malformed_response">This shared item returned an invalid response.</string>
@@ -12,4 +13,13 @@
   <string name="share.approval.message">%requester% has requested to create a share link for "%resource%".</string>
   <string name="share.approval.approve">Approve</string>
   <string name="share.approval.decline">Decline</string>
+  <string name="share.unlock.title">Unlock Shared Item</string>
+  <string name="share.unlock.message">Enter the share password to continue.</string>
+  <string name="share.unlock.action">Unlock</string>
+  <string name="share.unlock.cancel">Cancel</string>
+  <string name="share.unlock.keyring_label">Private Calendar Share Password</string>
+  <string name="share.unlock.save_to_keyring">Save this password to my keyring</string>
+  <string name="share.keyring.request_component">Shares</string>
+  <string name="share.keyring.request_action_access">access</string>
+  <string name="share.keyring.request_process">share {{shareId}}</string>
 </resources>

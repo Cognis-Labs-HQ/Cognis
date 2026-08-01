@@ -96,6 +96,47 @@ test("social routes - follow and unfollow", async () => {
     }
 });
 
+test("social routes - follow recreates a missing requester profile", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("bob", { visibility: "community" });
+        await executor.executeCommand({
+            option: "DELETE",
+            table: "account_profiles",
+            where: [{ column: "account_id", value: "alice" }],
+        });
+        const sentNotifications: any[] = [];
+        const route = createSocialRoutes(profileStore, undefined, {
+            dispatchNotification: async (envelope) => {
+                sentNotifications.push(envelope);
+            },
+        });
+        const aliceToken = issueAccessToken("alice", "user", 60);
+        let status = 0;
+
+        await route(
+            makeReq("POST", aliceToken),
+            {
+                writeHead(code: number) {
+                    status = code;
+                },
+                end() {},
+            } as any,
+            new URL("http://localhost/api/v1/social/users/bob/follow"),
+        );
+
+        assert.equal(status, 200);
+        assert.equal((await profileStore.getProfile("alice"))?.handle, "alice");
+        assert.equal(
+            sentNotifications[0]?.body,
+            "alice started following you.",
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
+    }
+});
+
 test("social routes - can unfollow inactive profile", async () => {
     const { dir, executor } = makeTempDb();
     try {

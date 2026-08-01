@@ -24,4 +24,9 @@
   <string name="gateway.auth.security.password_requires_lowercase">少なくとも {count} 個の小文字を含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_digit">数字を{count}文字以上含める必要があります。</string>
   <string name="gateway.auth.security.password_requires_special">特殊文字を{count}文字以上含める必要があります。</string>
+  <string name="gateway.auth.security.keyring_title">共有キーリング</string>
+  <string name="gateway.auth.security.keyring_description">暗号化された共有パスワードはログインパスワードで解除され、平文では保存されません。</string>
+  <string name="gateway.auth.security.keyring_relock">キーリングを自動的にロック</string>
+  <string name="gateway.auth.security.keyring_logout">ログアウト時</string>
+  <string name="gateway.auth.security.keyring_minutes">分</string>
 </resources>

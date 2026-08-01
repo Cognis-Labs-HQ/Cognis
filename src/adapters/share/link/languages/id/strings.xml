@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.share.link.name">Tautan</string>
+  <string name="adapter.share.link.description">Buat tautan yang dapat dikirim ke luar Cognis.</string>
+</resources>

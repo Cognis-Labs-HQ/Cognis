@@ -3,6 +3,7 @@
   <string name="share.subtitle">Geteilte Inhalte</string>
   <string name="share.loading">Geteilte Inhalte werden geladen…</string>
   <string name="share.error.invalid_token">Dieser Freigabelink ist ungültig oder abgelaufen.</string>
+  <string name="share.error.keyring_locked">Die Freigabe wurde entsperrt, aber das Passwort konnte nicht in Ihrem Schlüsselbund gespeichert werden.</string>
   <string name="share.error.missing_token">Es wurde kein Freigabetoken angegeben.</string>
   <string name="share.error.not_found">Dieser Freigabelink ist ungültig oder abgelaufen.</string>
   <string name="share.error.malformed_response">Dieses geteilte Element lieferte eine ungültige Antwort.</string>
@@ -12,4 +13,13 @@
   <string name="share.approval.message">%requester% hat beantragt, einen Freigabelink für "%resource%" zu erstellen.</string>
   <string name="share.approval.approve">Genehmigen</string>
   <string name="share.approval.decline">Ablehnen</string>
+  <string name="share.unlock.title">Freigegebenes Element entsperren</string>
+  <string name="share.unlock.message">Gib das Freigabepasswort ein, um fortzufahren.</string>
+  <string name="share.unlock.action">Entsperren</string>
+  <string name="share.unlock.cancel">Abbrechen</string>
+  <string name="share.unlock.keyring_label">Passwort für private Kalenderfreigabe</string>
+  <string name="share.unlock.save_to_keyring">Dieses Passwort in meinem Schlüsselbund speichern</string>
+  <string name="share.keyring.request_component">Freigaben</string>
+  <string name="share.keyring.request_action_access">zugreifen auf</string>
+  <string name="share.keyring.request_process">Freigabe {{shareId}}</string>
 </resources>

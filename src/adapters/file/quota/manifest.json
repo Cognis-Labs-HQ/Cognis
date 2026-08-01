@@ -1,7 +1,7 @@
 {
     "id": "quota",
     "name": "File Storage Quotas",
-    "version": "1.0.2",
+    "version": "1.0.4",
     "publisher": "Cognis Labs HQ",
     "locked": true
 }

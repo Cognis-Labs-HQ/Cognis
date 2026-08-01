@@ -82,6 +82,7 @@ export function normalizeReminderOffsets(value: unknown): number[] {
 
 export function buildCalendarShareData(input: {
     shareLink: CalendarShareLinkRegistryRecord;
+    calendarName: string;
     buildAbsoluteUrl: (relativePath: string) => string;
 }): {
     id: string;
@@ -92,12 +93,13 @@ export function buildCalendarShareData(input: {
     caldavUrl: string;
     icsUrl: string;
 } {
+    const encodedCalendarName = encodeURIComponent(input.calendarName);
     const caldavPath = `/api/v1/calendar/caldav/share/${encodeURIComponent(
         input.shareLink.token,
-    )}`;
+    )}/${encodedCalendarName}/`;
     const icsPath = `/api/v1/calendar/ics/share/${encodeURIComponent(
         input.shareLink.token,
-    )}`;
+    )}/${encodedCalendarName}.ics`;
     const caldavUrl = input.buildAbsoluteUrl(caldavPath);
     const icsUrl = input.buildAbsoluteUrl(icsPath);
     return {
@@ -158,29 +160,6 @@ export async function normalizeAttendeesForOwner(
         new Set(
             [...resolved, ownerAccountId]
                 .map((entry) => String(entry ?? "").trim())
-                .filter(Boolean),
-        ),
-    );
-}
-
-export async function includeSharedAudienceAttendees(
-    attendees: string[],
-    shareRegistry: CalendarShareRegistry,
-    ownerAccountId: string,
-    ownerCalendarId: string,
-): Promise<string[]> {
-    const shares = await shareRegistry.listCalendarUserShares(
-        ownerAccountId,
-        ownerCalendarId,
-    );
-    return Array.from(
-        new Set(
-            [
-                ...attendees,
-                ownerAccountId,
-                ...shares.map((share) => share.recipientAccountId),
-            ]
-                .map((accountId) => String(accountId ?? "").trim())
                 .filter(Boolean),
         ),
     );
@@ -251,16 +230,14 @@ export function requireOrganizerOwnedSourceEvent(input: {
     return targetEvent;
 }
 
-export function requireWritableSharedOrganizerSourceEvent(input: {
+export function requireWritableSharedSourceEvent(input: {
     gateway: CoreCalendarGateway;
     sharedCalendar: {
         ownerCalendarId: string;
         permission: "read" | "write";
     };
-    organizerAccountId: string;
     eventId: string;
     res: ServerResponse;
-    actionVerb: "edit" | "delete";
 }): CalendarEventRecord | null {
     if (input.sharedCalendar.permission !== "write") {
         sendCalendarError(
@@ -277,18 +254,6 @@ export function requireWritableSharedOrganizerSourceEvent(input: {
     );
     if (!sourceEvent) {
         sendCalendarError(input.res, "not_found", "Event not found.", 404);
-        return null;
-    }
-    if (
-        sourceEvent.createdBy !== input.organizerAccountId ||
-        sourceEvent.sourceEventId !== null
-    ) {
-        sendCalendarError(
-            input.res,
-            "forbidden",
-            `Only the event organizer can ${input.actionVerb} this event.`,
-            403,
-        );
         return null;
     }
     return sourceEvent;
@@ -719,14 +684,20 @@ export function resolveEventMeta(
     event: CalendarEventRecord,
     accountId: string,
     response: CalendarEventResponse | null,
+    sharedPermission: "read" | "write" | null = null,
 ): Record<string, unknown> {
     const hasResponded =
         response === "accepted" ||
         response === "tentative" ||
         response === "declined";
     return {
-        canEdit: event.createdBy === accountId,
-        canRespond: event.attendees.includes(accountId) && !hasResponded,
+        canEdit: sharedPermission === "write" || event.createdBy === accountId,
+        canRespond:
+            sharedPermission === null &&
+            event.attendees.includes(accountId) &&
+            !hasResponded,
+        responseUpdatesExistingEvent:
+            event.createdBy !== accountId && event.sourceEventId === null,
         response,
         responseOptions: ["accepted", "tentative", "declined"],
     };

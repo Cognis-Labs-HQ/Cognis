@@ -132,6 +132,9 @@ test("issue, list, resolve, and delete share tokens", async () => {
     assert.equal(listed[0].label, "Class meeting");
 
     assert.equal(await store.resolve(issued.tokenValue), null);
+    const inspected = await store.inspect(issued.tokenValue);
+    assert.equal(inspected?.id, issued.id);
+    assert.equal(Boolean(inspected?.passwordHash), true);
     const resolved = await store.resolve(issued.tokenValue, "secret");
     assert.ok(resolved);
     assert.equal(resolved?.resourceId, "meeting-1");

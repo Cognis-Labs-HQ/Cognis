@@ -24,7 +24,6 @@ probe used by the UI to detect whether the adapter is loaded.
 | POST   | `/messages/requests/:id/approve`                    | Approve request and create/open the DM room.                                            |
 | POST   | `/messages/requests/:id/reject`                     | Reject a pending message request and remove the recipient from the pending DM room.     |
 | GET    | `/messages/rooms/:id`                               | Room metadata + members.                                                                |
-| GET    | `/messages/rooms/:id/key`                           | Fetch unwrapped per-room AES-GCM key (members only).                                    |
 | GET    | `/messages/rooms/:id/messages?before&limit`         | Paginated history (incoming pending-request recipients see no messages until approval). |
 | POST   | `/messages/rooms/:id/messages`                      | Append message (`ciphertext`, `iv`, optional `authTag`).                                |
 | POST   | `/messages/rooms/:id/messages/:messageId/reactions` | Toggle an emoji reaction for the message.                                               |
@@ -128,3 +127,13 @@ user's `messages` category preference both suppress this dispatch.
 
 The notify gateway's per-user category preferences then determine which
 senders fan out (in-app, email, etc.).
+
+## Room membership timeline events
+
+Membership changes are persisted atomically with passive `member_joined` and `member_left` entries in the room's `chat_messages` timeline. These entries use the `application/vnd.cognis.room-event+json` content type; callers change membership and do not create a second room or separately publish an event. Meeting chat resolution applies the same operation to every resolved participant.
+
+A message request does not create a chatroom. The direct-message room, key, memberships, and initial join events are created only when the recipient approves the request, preventing request-only rooms from appearing in either participant's room list.
+
+## Contextual keyring loading
+
+The Messages page resolves room keys through the `Social Messages` keyring scope. Opening the page requests access to load existing chat secrets; a cancelled unlock does not fall through to a second prompt for saving a delivered key. When an unlock succeeds or is restored after reload, the page refreshes both room-list previews and the active conversation so ciphertext placeholders are replaced immediately.

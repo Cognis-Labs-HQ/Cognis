@@ -74,6 +74,9 @@ test("dashboard logout requests server revocation before clearing local token", 
     const clearTokenIndex = layoutSource.indexOf(
         'localStorage.removeItem("cognis_access_token")',
     );
+    const lockKeyringIndex = layoutSource.indexOf(
+        'await uiCtx.capabilities.get("keyring:lock")?.()',
+    );
     assert.ok(
         logoutFetchIndex !== -1 && clearTokenIndex !== -1,
         "expected logout fetch and local token clear calls in dashboard-layout.js",
@@ -81,6 +84,11 @@ test("dashboard logout requests server revocation before clearing local token", 
     assert.ok(
         logoutFetchIndex < clearTokenIndex,
         "logout fetch should occur before local token removal so revocation can use current auth state",
+    );
+    assert.ok(
+        lockKeyringIndex > logoutFetchIndex &&
+            lockKeyringIndex < clearTokenIndex,
+        "logout should clear the account-scoped keyring session before removing the account identity",
     );
     assert.ok(
         layoutSource.includes("Authorization: `Bearer ${accessToken}`"),
