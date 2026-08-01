@@ -12,7 +12,7 @@
  *   const result = await resolveReceivedShare(token, { headers });
  *
  * @param {string} token Share token from a notification or share URL.
- * @param {{ headers?: HeadersInit }} [options] Additional request headers.
+ * @param {{ headers?: HeadersInit, useAccountKeyring?: boolean }} [options] Request and account-keyring options.
  * @returns {Promise<Response|null>} Final response, or null when cancelled.
  */
 
@@ -22,7 +22,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
 
-async function promptForPassword() {
+async function promptForPassword({ allowSave = true } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
@@ -30,7 +30,7 @@ async function promptForPassword() {
     let saveInput = null;
     const action = await openPopup({
         title: i18n.t("share.unlock.title"),
-        body: `<div class="stack"><label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label><label><input id="share-unlock-save" type="checkbox" checked /> ${escapeHtml(i18n.t("share.unlock.save_to_keyring"))}</label></div>`,
+        body: `<div class="stack"><label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label>${allowSave ? `<label><input id="share-unlock-save" type="checkbox" checked /> ${escapeHtml(i18n.t("share.unlock.save_to_keyring"))}</label>` : ""}</div>`,
         actions: [
             {
                 id: "unlock",
@@ -55,7 +55,7 @@ async function promptForPassword() {
     return action === "unlock"
         ? {
               password: passwordInput?.value || "",
-              saveToKeyring: saveInput?.checked !== false,
+              saveToKeyring: allowSave && saveInput?.checked !== false,
           }
         : null;
 }
@@ -108,18 +108,23 @@ export async function fetchProtectedShareResource({ shareId, request }) {
     return response;
 }
 
-export async function resolveReceivedShare(token, { headers } = {}) {
+export async function resolveReceivedShare(
+    token,
+    { headers, useAccountKeyring = false } = {},
+) {
     const normalizedToken = String(token ?? "").trim();
     if (!normalizedToken) return null;
     const shareI18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
-    await unlockKeyringForShare(shareI18n, normalizedToken);
+    if (useAccountKeyring) {
+        await unlockKeyringForShare(shareI18n, normalizedToken);
+    }
     const keyringId = `share:${normalizedToken}`;
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         "Share Gateway",
     );
-    const keyringPassword = keyring?.get(keyringId);
+    const keyringPassword = useAccountKeyring ? keyring?.get(keyringId) : null;
     const request = (password) => {
         const requestHeaders = new Headers(headers);
         if (password) requestHeaders.set("x-cognis-share-password", password);
@@ -132,7 +137,7 @@ export async function resolveReceivedShare(token, { headers } = {}) {
     };
     let response = await request(keyringPassword);
     if (response.status !== 401) return response;
-    const entered = await promptForPassword();
+    const entered = await promptForPassword({ allowSave: useAccountKeyring });
     if (!entered?.password) return null;
     response = await request(entered.password);
     if (response.ok) {
@@ -143,6 +148,7 @@ export async function resolveReceivedShare(token, { headers } = {}) {
             const payload = await response.clone().json();
             const shareId = String(payload?.data?.shareId ?? "").trim();
             if (
+                useAccountKeyring &&
                 entered.saveToKeyring &&
                 uiCtx.capabilities.get("keyring:isUnlocked")?.()
             ) {

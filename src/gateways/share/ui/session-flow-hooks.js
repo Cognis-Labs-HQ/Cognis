@@ -178,7 +178,10 @@ uiCtx.extendFlow(
 
         let response;
         try {
-            response = await resolveReceivedShare(shareToken, { headers });
+            response = await resolveReceivedShare(shareToken, {
+                headers,
+                useAccountKeyring: priorSessionResult?.valid === true,
+            });
         } catch {
             return { authenticated: false, reason: "share_resolve_failed" };
         }

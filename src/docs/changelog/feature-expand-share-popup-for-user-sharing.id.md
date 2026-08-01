@@ -471,3 +471,7 @@ Popup Berbagi kini memakai kapabilitas avatar UI opsional dengan inisial sebagai
 ## Buka kunci otomatis dan perenderan tautan kalender lengkap
 
 Pemuatan halaman langsung dan penyegaran kini memulai keyring wajib sebelum autentikasi sesi, lalu memulihkan status buka kunci tab secara otomatis atau meminta kata sandi saat konten terlindungi membutuhkannya. Tautan kalender merender satu kartu kalender terisolasi dengan pemilih tampilan dan tabel slot waktu standar; token tulis dapat membuat, mengedit, dan menghapus acara tanpa menampilkan kalender lain atau kontrol dasbor.
+
+## Sesi keyring tamu tanpa kata sandi
+
+Tamu anonim tautan kalender tidak lagi memicu dialog buka kunci keyring akun. Share membatasi pencarian keyring akun dan penyimpanan kata sandi pada sesi akun tervalidasi, sedangkan keyring tamu yang dikirim aktif secara otomatis, tetap terbuka selama sesi tamu, dan dihapus bersama brankas khusus sesinya saat sesi tamu berakhir.

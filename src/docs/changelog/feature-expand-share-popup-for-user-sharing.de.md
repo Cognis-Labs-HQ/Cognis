@@ -471,3 +471,7 @@ Das Teilen-Popup verwendet nun eine optionale UI-Avatar-Capability mit Initialen
 ## Automatisches Entsperren und vollständige Kalenderlinkdarstellung
 
 Direkte Seitenaufrufe und Aktualisierungen starten nun den erforderlichen Schlüsselbund vor der Sitzungsprüfung. Die Entsperrung des Tabs wird automatisch wiederhergestellt oder bei geschützten Inhalten angefordert. Kalenderlinks zeigen eine isolierte Kalenderkarte mit der üblichen Ansichtsauswahl und Zeitrastertabelle; beschreibbare Token können Ereignisse anlegen, bearbeiten und löschen, ohne andere Kalender oder Dashboard-Steuerelemente offenzulegen.
+
+## Passwortlose Gastschlüsselbund-Sitzungen
+
+Anonyme Gäste von Kalenderfreigaben lösen keinen Entsperrdialog für den Kontoschlüsselbund mehr aus. Share begrenzt Suche und Passwortspeicherung im Kontoschlüsselbund auf bestätigte Kontositzungen. Zugestellte Gastschlüsselbunde werden automatisch aktiviert, bleiben während der Gastsitzung entsperrt und werden zusammen mit ihrem sitzungsgebundenen Tresor am Sitzungsende gelöscht.

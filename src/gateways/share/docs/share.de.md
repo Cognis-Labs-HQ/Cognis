@@ -12,6 +12,8 @@ Geteilte Ressourcen werden unter `/share/:token` geöffnet. Die Seite verwendet 
 
 Beim Auflösen eines Share-Tokens stellt das Share-Gateway jetzt ein kurzlebiges Gast-Access-Token (`purpose: share`) bereit, das an genau diesen Share-Datensatz gebunden ist (`sub: share:<shareId>`). Die Share-Seite tauscht dieses Token temporär in `localStorage` ein, damit API-Aufrufe eingebetteter geteilter Seiten als anonyme Gast-Sitzung laufen, und stellt beim Verlassen das vorherige Token wieder her.
 
+Anonyme Gäste entsperren niemals einen Kontoschlüsselbund. Share aktiviert den zugestellten Gastschlüsselbund mit dem vom Server ausgegebenen Sitzungsmaterial, hält ihn während der Gastsitzung ohne Benutzerpasswort offen und löscht seinen ausschließlich sitzungsgebundenen verschlüsselten Tresor am Sitzungsende. Suche und Speicherung im Kontoschlüsselbund stehen nur Besuchern mit einer bestätigten Kontositzung zur Verfügung.
+
 ## Manifest-Vertrag
 
 Freigabefähige Komponenten deklarieren in ihrem Manifest einen `share`-Block mit `shareable`, `mountScriptUrl`, `stringsBaseUrl` und `guestApiScopes`. Die Share-Seite priorisiert `mountScriptUrl`, damit geteilte Ressourcen echte Seitenkomponenten statt statischer Karten laden.

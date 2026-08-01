@@ -471,3 +471,7 @@ The Share popup now uses an optional UI avatar capability with an initials fallb
 ## Automatic content unlocking and full calendar link rendering
 
 Direct page loads and refreshes now bootstrap the required keyring before session authentication, automatically restoring the tab unlock or prompting when protected content needs it. Calendar link shares render one isolated calendar card with the standard view switcher and timeslot table; writable tokens can create, edit, and delete events without exposing other calendars or dashboard controls.
+
+## Passwordless guest keyring sessions
+
+Anonymous calendar-share guests no longer trigger the account-keyring unlock prompt. Share now limits account-keyring lookup and password saving to validated account sessions, while delivered guest keyrings activate automatically, remain unlocked for the guest session, and are deleted with their session-only vault when the guest session ends.

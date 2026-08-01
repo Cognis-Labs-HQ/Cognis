@@ -185,11 +185,21 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(sessionFlowSource, /keyring:activateTemporary/);
     assert.match(sessionFlowSource, /await activateGuestToken/);
     assert.match(sessionFlowSource, /keyring:endTemporary/);
+    assert.match(
+        sessionFlowSource,
+        /useAccountKeyring: priorSessionResult\?\.valid === true/,
+    );
+    assert.match(receivedShareSource, /if \(useAccountKeyring\)/);
+    assert.match(
+        receivedShareSource,
+        /promptForPassword\(\{ allowSave: useAccountKeyring \}\)/,
+    );
 });
 
 test("received user shares unlock in place and navigate to the component", () => {
     assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
     assert.match(receivedShareActionSource, /resolveReceivedShare/);
+    assert.match(receivedShareActionSource, /useAccountKeyring/);
     assert.match(receivedShareActionSource, /payload\.data\.navigationUrl/);
     assert.match(
         receivedShareActionSource,
