@@ -80,4 +80,11 @@
   <string name="gateway.auth.keyring.new_password">Neues Schlüsselbundpasswort</string>
   <string name="gateway.auth.keyring.confirm_password">Schlüsselbundpasswort bestätigen</string>
   <string name="gateway.auth.keyring.password_changed">Schlüsselbundpasswort geändert.</string>
+  <string name="adapter.auth.keyring.manual_unlock">Schlüsselbund manuell entsperren</string>
+  <string name="adapter.auth.keyring.component_name">Schlüsselbund</string>
+  <string name="adapter.auth.keyring.request_process_keyring">den Schlüsselbund</string>
+  <string name="gateway.auth.keyring.destroy">Schlüsselbund zerstören</string>
+  <string name="gateway.auth.keyring.destroy_title">Schlüsselbund zerstören und neu erstellen</string>
+  <string name="gateway.auth.keyring.destroy_message">Dadurch wird der verschlüsselte Schlüsselbund dauerhaft zerstört und deine Mitgliedschaft aus abhängigen geteilten Objekten entfernt. Anschließend wirst du zum Erstellen eines neuen Schlüsselbunds aufgefordert; Zugriff kann durch neue Einladungen wiederhergestellt werden.</string>
+  <string name="gateway.auth.keyring.recreated">Der Schlüsselbund wurde zerstört und neu erstellt.</string>
 </strings>

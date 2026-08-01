@@ -146,10 +146,34 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         string,
         (accountId: string) => Promise<void>
     >();
+    const keyringDataOwners = new Map<
+        string,
+        (accountId: string) => Promise<void>
+    >();
     ctx.capabilities.contribute(
         "auth:registerAccountDataOwner",
         (ownerId: string, purge: (accountId: string) => Promise<void>) => {
             accountDataOwners.set(ownerId, purge);
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:registerKeyringDataOwner",
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => {
+            keyringDataOwners.set(ownerId, purge);
+        },
+    );
+    ctx.capabilities.contribute(
+        "auth:purgeKeyringDependentData",
+        async (accountId: string) => {
+            const normalizedAccountId = accountId.trim().toLowerCase();
+            for (const purge of keyringDataOwners.values()) {
+                await purge(normalizedAccountId);
+            }
+            await accountInstanceStore.delete(normalizedAccountId);
+            await accountInstanceStore.deleteDataOwners(
+                normalizedAccountId,
+                keyringDataOwners.keys(),
+            );
         },
     );
     ctx.capabilities.contribute(

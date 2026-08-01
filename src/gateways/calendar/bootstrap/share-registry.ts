@@ -522,6 +522,35 @@ export class CalendarShareRegistry {
         );
     }
 
+    async listCalendarUserSharesByRecipient(
+        recipientAccountId: string,
+    ): Promise<CalendarUserShareRegistryRecord[]> {
+        if (!this.db) {
+            return Array.from(this.memoryUserShares.values()).filter(
+                (share) => share.recipientAccountId === recipientAccountId,
+            );
+        }
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "calendar_user_shares",
+            columns: ["id"],
+            where: [
+                {
+                    column: "recipient_account_id",
+                    value: recipientAccountId,
+                },
+            ],
+        });
+        const shares = await Promise.all(
+            (result.rows ?? []).map((row) =>
+                this.getCalendarUserShareById(String(row.id ?? "")),
+            ),
+        );
+        return shares.filter(
+            (share): share is CalendarUserShareRegistryRecord => Boolean(share),
+        );
+    }
+
     async deleteCalendarUserSharesByTokenId(
         shareTokenId: string,
     ): Promise<number> {

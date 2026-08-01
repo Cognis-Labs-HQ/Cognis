@@ -33,6 +33,9 @@ test("account instances persist per lifecycle and rotate after deletion", async 
                         String(command.values.instance_id),
                     );
                 }
+                if (command.option === "DELETE") {
+                    ownerInstances.delete(ownerKey);
+                }
                 return { rows: [] };
             }
             if (command.option === "SELECT") {
@@ -79,4 +82,6 @@ test("account instances persist per lifecycle and rotate after deletion", async 
         true,
     );
     assert.equal(purgeCount, 1);
+    await store.deleteDataOwners("ldap.user", ["calendar"]);
+    assert.equal(ownerInstances.has("calendar:ldap.user"), false);
 });

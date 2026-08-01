@@ -109,6 +109,9 @@ export async function bootstrapAuthAdapter(input: {
                 getAccountInstanceId: input.capabilities.require(
                     "auth:getAccountInstanceId",
                 ),
+                purgeDependentAccountData: input.capabilities.require(
+                    "auth:purgeKeyringDependentData",
+                ),
                 getPolicy: getKeyringPolicy,
                 log: input.log,
             }),

@@ -10,6 +10,7 @@ import {
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadAllEmojis, recordEmojiUsage } from "./emoji-helpers.js";
 import {
     destroyMessageHoverPopups,
@@ -53,6 +54,29 @@ export function createMessagesRoomState({
     let openingRoomId = null;
     let roomOpenPromise = null;
     let readyRoomId = null;
+
+    function keyringAccessSuppressed() {
+        return (
+            uiCtx.capabilities.get("keyring:isAccessSuppressed")?.() === true
+        );
+    }
+
+    function handleKeyringAccessState(event) {
+        if (event.detail?.suppressed === true) {
+            if (typingPollIntervalId) clearInterval(typingPollIntervalId);
+            if (liveRefreshIntervalId) clearInterval(liveRefreshIntervalId);
+            typingPollIntervalId = null;
+            liveRefreshIntervalId = null;
+            return;
+        }
+        startTypingPolling();
+        startLiveRefreshPolling();
+    }
+
+    window.addEventListener(
+        "cognis:keyring-access-state",
+        handleKeyringAccessState,
+    );
 
     async function loadInitialRooms() {
         rooms = await loadRooms(i18n, { getRoomKey });
@@ -478,6 +502,7 @@ export function createMessagesRoomState({
     }
 
     async function refreshActiveConversation() {
+        if (keyringAccessSuppressed()) return;
         if (!selectedRoomId || document.visibilityState !== "visible") return;
         if (readyRoomId !== selectedRoomId) return;
         await reloadRoomsList();
@@ -509,7 +534,12 @@ export function createMessagesRoomState({
             clearInterval(typingPollIntervalId);
             typingPollIntervalId = null;
         }
-        if (!selectedRoomId || document.visibilityState !== "visible") return;
+        if (
+            keyringAccessSuppressed() ||
+            !selectedRoomId ||
+            document.visibilityState !== "visible"
+        )
+            return;
         typingPollIntervalId = setInterval(() => {
             void refreshTypingIndicator();
         }, 3000);
@@ -520,7 +550,12 @@ export function createMessagesRoomState({
             clearInterval(liveRefreshIntervalId);
             liveRefreshIntervalId = null;
         }
-        if (!selectedRoomId || document.visibilityState !== "visible") return;
+        if (
+            keyringAccessSuppressed() ||
+            !selectedRoomId ||
+            document.visibilityState !== "visible"
+        )
+            return;
         liveRefreshIntervalId = setInterval(() => {
             void refreshActiveConversation();
         }, liveRefreshIntervalMs);
@@ -810,6 +845,10 @@ export function createMessagesRoomState({
     }
 
     function cleanup() {
+        window.removeEventListener(
+            "cognis:keyring-access-state",
+            handleKeyringAccessState,
+        );
         hideAllMessageHoverPopups();
         destroyMessageHoverPopups();
         if (typingSendTimeoutId) clearTimeout(typingSendTimeoutId);

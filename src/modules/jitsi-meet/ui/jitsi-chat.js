@@ -5,6 +5,7 @@ import { formatTime } from "/static/reuse/timestamp.js";
 import { bytesToHex, hexToBytes } from "/static/reuse/crypto-utils.js";
 import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";
 
 import {
@@ -227,6 +228,8 @@ export function createChatHandlers({
     }
 
     async function refreshNativeChat() {
+        if (uiCtx.capabilities.get("keyring:isAccessSuppressed")?.() === true)
+            return;
         const roomId = state.chatRoomId;
         if (!roomId) {
             setNativeChatReady(false);
@@ -269,10 +272,33 @@ export function createChatHandlers({
     }
 
     function startNativeChatPolling() {
+        if (uiCtx.capabilities.get("keyring:isAccessSuppressed")?.() === true)
+            return;
         if (!state.chatRoomId || state.chatRefreshTimer !== null) return;
         state.chatRefreshTimer = setInterval(() => {
             void refreshNativeChat();
         }, CHAT_REFRESH_INTERVAL_MS);
+    }
+
+    function handleKeyringAccessState(event) {
+        if (event.detail?.suppressed === true) {
+            stopNativeChatPolling();
+            return;
+        }
+        startNativeChatPolling();
+    }
+
+    window.addEventListener(
+        "cognis:keyring-access-state",
+        handleKeyringAccessState,
+    );
+
+    function cleanupChatHandlers() {
+        window.removeEventListener(
+            "cognis:keyring-access-state",
+            handleKeyringAccessState,
+        );
+        stopNativeChatPolling();
     }
 
     async function activateMeetingChat() {
@@ -380,6 +406,7 @@ export function createChatHandlers({
     return {
         activateMeetingChat,
         activatePrivateChatForParticipant,
+        cleanupChatHandlers,
         encryptChatMessage,
         getChatRoomKey,
         openEmojiPickerPopup,

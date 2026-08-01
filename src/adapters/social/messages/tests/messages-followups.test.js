@@ -446,6 +446,9 @@ test("messages pause refresh polling until room-key setup completes", () => {
     )?.[0];
     assert.ok(refreshBlock);
     assert.doesNotMatch(refreshBlock, /requireRoomKey/);
+    assert.match(source, /keyring:isAccessSuppressed/);
+    assert.match(source, /cognis:keyring-access-state/);
+    assert.match(source, /handleKeyringAccessState/);
 });
 
 test("messages saved templates are scoped to the current account", () => {

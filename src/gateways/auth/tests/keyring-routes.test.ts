@@ -35,6 +35,10 @@ test("authenticated users can save and load an opaque keyring vault", async () =
         routeContext: createDefaultRouteContext(),
         store,
         getAccountInstanceId: async () => "instance-1",
+        purgeDependentAccountData: async (accountId) => {
+            assert.equal(accountId, "keyring-user");
+            values.set("dependencies-purged", "true");
+        },
     });
     const token = issueAccessToken("Keyring-User", "user", 60);
     const headers = { authorization: `Bearer ${token}` };
@@ -77,6 +81,7 @@ test("authenticated users can save and load an opaque keyring vault", async () =
         true,
     );
     assert.equal(deleteResponse.status, 204);
+    assert.equal(values.get("dependencies-purged"), "true");
 
     const emptyResponse = makeResponse();
     await route(

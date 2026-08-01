@@ -21,6 +21,7 @@ export function createSettingsSection({ i18n, root }) {
     const listKeyringEntries = uiCtx.capabilities.get("keyring:list");
     const listKeyringEvents = uiCtx.capabilities.get("keyring:listEvents");
     const clearKeyringValues = uiCtx.capabilities.get("keyring:clear");
+    const destroyKeyring = uiCtx.capabilities.get("keyring:destroy");
     const changeKeyringPassword = uiCtx.capabilities.get(
         "keyring:changePassword",
     );
@@ -96,7 +97,7 @@ export function createSettingsSection({ i18n, root }) {
           <button id="settings-keyring-toggle" type="button" class="${unlocked ? "btn-cancel" : "btn-confirm"}">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.lock" : "gateway.auth.keyring.unlock"))}</button>
           <button id="settings-keyring-add" type="button" class="btn-confirm"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.add"))}</button>
           <button id="settings-keyring-change-password" type="button"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.change_password"))}</button>
-          <button id="settings-keyring-clear" type="button" class="btn-cancel"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.clear"))}</button>
+          <button id="settings-keyring-clear" type="button" class="btn-cancel">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.clear" : "gateway.auth.keyring.destroy"))}</button>
         </div>
         <label class="settings-keyring-timeout"><span>${escapeHtml(i18n.t("gateway.auth.keyring.relock"))}</span>
           <select id="settings-keyring-relock" class="theme-select">
@@ -238,16 +239,23 @@ export function createSettingsSection({ i18n, root }) {
         };
     }
 
-    async function confirmClearKeyring() {
+    async function confirmClearKeyring(destroy = false) {
+        const actionKey = destroy
+            ? "gateway.auth.keyring.destroy"
+            : "gateway.auth.keyring.clear";
         return (
             (await openPopup({
-                title: i18n.t("gateway.auth.keyring.clear_title"),
-                body: `<p>${escapeHtml(i18n.t("gateway.auth.keyring.clear_message"))}</p>`,
+                title: i18n.t(
+                    destroy
+                        ? "gateway.auth.keyring.destroy_title"
+                        : "gateway.auth.keyring.clear_title",
+                ),
+                body: `<p>${escapeHtml(i18n.t(destroy ? "gateway.auth.keyring.destroy_message" : "gateway.auth.keyring.clear_message"))}</p>`,
                 actions: [
                     {
                         id: "clear",
-                        label: i18n.t("gateway.auth.keyring.clear"),
-                        variant: "neutral",
+                        label: i18n.t(actionKey),
+                        variant: destroy ? "danger" : "neutral",
                     },
                     {
                         id: "cancel",
@@ -364,12 +372,23 @@ export function createSettingsSection({ i18n, root }) {
         settingsRoot.querySelector("#settings-keyring-clear")?.addEventListener(
             "click",
             async () => {
-                if (!(await confirmClearKeyring())) return;
-                await clearKeyringValues();
+                const destroy = !isKeyringUnlocked();
+                if (!(await confirmClearKeyring(destroy))) return;
+                const completed = destroy
+                    ? await destroyKeyring()
+                    : await clearKeyringValues();
+                if (!completed) return;
                 rerender();
-                showToast(i18n.t("gateway.auth.keyring.cleared"), {
-                    variant: "success",
-                });
+                showToast(
+                    i18n.t(
+                        destroy
+                            ? "gateway.auth.keyring.recreated"
+                            : "gateway.auth.keyring.cleared",
+                    ),
+                    {
+                        variant: "success",
+                    },
+                );
             },
             { once: true },
         );

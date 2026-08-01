@@ -499,3 +499,7 @@ Kalenderfreigaben binden Navigation, Ansichtswechsel, Zeitraster und Ereignisste
 ## Zuverlässige Kalendersteuerung und exakter Schlüsselbundablauf
 
 Kalenderfreigaben binden Navigation, Ansichtswechsel, Zeitraster und Ereignissteuerung nun im Render-Lebenszyklus des Composers, entsprechend dem bewährten Jitsi-Meet-Freigabemuster. Schlüsselbund-Sperrfristen verwenden einen absoluten Zeitpunkt, der weder durch Aktivität verlängert noch durch Seiten- oder Serverneuladungen zurückgesetzt wird; „Bei Abmeldung“ hat keine Frist und sperrt genau beim Ende der authentifizierten Sitzung.
+
+## Abbruchsicherer Schlüsselbundzugriff und zerstörende Wiederherstellung
+
+Das Abbrechen einer Schlüsselbundabfrage weist nun gleichzeitige Anfragen zurück, pausiert Polling für verschlüsselte Chats und unterdrückt weitere automatische Dialoge, bis die schwebende manuelle Entsperrung erfolgreich ist oder die Seite neu geladen wird. In gesperrten Einstellungen bleibt die Löschaktion als ausdrücklich zerstörendes Zurücksetzen verfügbar: abhängige Mitgliedschaften und Tresor werden entfernt, die Kontodateninstanz wird erneuert und die Ersteinrichtung startet; entsperrtes Leeren bleibt nicht zerstörend.

@@ -499,3 +499,7 @@ Halaman berbagi Kalender kini mengikat navigasi, peralihan tampilan, slot waktu,
 ## Kontrol kalender bersama yang andal dan kedaluwarsa keyring yang tepat
 
 Halaman berbagi Kalender kini mengikat navigasi, peralihan tampilan, slot waktu, dan kontrol acara dari siklus render composer, mengikuti pola berbagi Jitsi Meet yang telah terbukti. Pilihan penguncian keyring kini memakai tenggat absolut yang tidak diperpanjang oleh aktivitas atau diatur ulang oleh pemuatan halaman maupun server; “Saat Keluar” tidak memiliki tenggat dan mengunci tepat saat sesi terautentikasi berakhir.
+
+## Akses keyring aman-batal dan pemulihan destruktif
+
+Membatalkan permintaan keyring kini menolak permintaan bersamaan, menjeda polling chat terenkripsi, dan menekan dialog otomatis berikutnya sampai kontrol buka kunci manual mengautentikasi atau halaman dimuat ulang. Settings yang terkunci tetap menyediakan tindakan hapus sebagai reset destruktif eksplisit yang menghapus keanggotaan bergantung-keyring, menghapus vault, merotasi instans data akun, dan memulai penyiapan pertama; pengosongan saat terbuka tetap tidak destruktif.

@@ -24,6 +24,18 @@ function readJitsiApiBundle() {
         .join("\n");
 }
 
+test("meeting chat polling respects cancelled keyring access", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+    assert.match(source, /keyring:isAccessSuppressed/);
+    assert.match(
+        source,
+        /function startNativeChatPolling\(\)[\s\S]*keyring:isAccessSuppressed/,
+    );
+});
+
 test("meetings search popup adds confirmed users directly to meeting participants", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),

@@ -51,3 +51,11 @@ During login, the adapter opportunistically attempts to decrypt an existing vaul
 ## Browser-session unlock restoration
 
 After a successful unlock, the adapter stores the non-extractable Web Crypto key in its IndexedDB session-key store and writes only a non-secret marker to `sessionStorage`. A page reload can restore the unlocked vault within the same tab session without retaining the password or an extractable key. A finite relock preference records one absolute deadline when the keyring is unlocked; reads, writes, page reloads, and server restarts neither extend nor shorten it. “On Logout” stores no deadline and remains unlocked until the authenticated session explicitly ends. Explicit lock, logout, account-instance mismatch, and an elapsed finite deadline invalidate restoration. Components still request access through their attributed keyring scope, which first attempts restoration and opens the contextual unlock dialog only when restoration is unavailable.
+
+## Cancelled access and manual recovery
+
+Cancelling an attributed unlock request resolves every concurrent waiter as refused and suppresses subsequent automatic requests for the rest of the page lifetime. The adapter emits `cognis:keyring-access-state` with `{ suppressed: true }`; encrypted-content pollers must stop or no-op while this state is active. A floating lock control is added above the page-composer toggle stack. Activating it performs the only permitted manual unlock attempt, clears suppression after successful authentication, and emits `{ suppressed: false }`. Reloading the page also resets suppression.
+
+## Destructive reset
+
+`DELETE /api/v1/auth/keyring` is the destructive reset contract. Before deleting the opaque vault, Authentication invokes every owner registered through `auth:registerKeyringDataOwner`, removing the account from encrypted rooms and other objects whose access depends on keyring entries, then rotates the account-data instance. The locked Settings action uses this route and immediately starts first-time keyring setup. The unlocked action remains a non-destructive removal of entries from the current vault.

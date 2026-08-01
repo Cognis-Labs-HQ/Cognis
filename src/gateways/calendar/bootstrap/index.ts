@@ -207,6 +207,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.log,
     );
     await shareRegistry.ensureSchema();
+    ctx.capabilities.get<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerKeyringDataOwner")?.(
+        "calendar-shares",
+        async (accountId) => {
+            const shares =
+                await shareRegistry.listCalendarUserSharesByRecipient(
+                    accountId,
+                );
+            for (const share of shares) {
+                await shareRegistry.deleteCalendarUserShareById(share.id);
+                const calendar = gateway.getOwnedCalendar(
+                    accountId,
+                    share.recipientCalendarId,
+                );
+                if (calendar?.visibility === "shared") {
+                    gateway.deleteCalendar({
+                        ownerAccountId: accountId,
+                        calendarId: share.recipientCalendarId,
+                    });
+                }
+            }
+            await gateway.flushStore();
+        },
+    );
     const shareExpiryTimers = new Map<string, ReturnType<typeof setTimeout>>();
     const removeDeliveredCalendarShare = async (shareId: string) => {
         const shares =

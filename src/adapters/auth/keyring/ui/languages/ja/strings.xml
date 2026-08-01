@@ -80,4 +80,11 @@
   <string name="gateway.auth.keyring.new_password">新しいキーリングパスワード</string>
   <string name="gateway.auth.keyring.confirm_password">キーリングパスワードを確認</string>
   <string name="gateway.auth.keyring.password_changed">キーリングパスワードを変更しました。</string>
+  <string name="adapter.auth.keyring.manual_unlock">キーリングを手動で解除</string>
+  <string name="adapter.auth.keyring.component_name">キーリング</string>
+  <string name="adapter.auth.keyring.request_process_keyring">キーリング</string>
+  <string name="gateway.auth.keyring.destroy">キーリングを破棄</string>
+  <string name="gateway.auth.keyring.destroy_title">キーリングを破棄して再作成</string>
+  <string name="gateway.auth.keyring.destroy_message">暗号化キーリングを完全に破棄し、依存する共有オブジェクトからメンバーシップを削除します。新しいキーリングの作成を求められ、再招待によってアクセスを再確立できます。</string>
+  <string name="gateway.auth.keyring.recreated">キーリングを破棄して再作成しました。</string>
 </strings>

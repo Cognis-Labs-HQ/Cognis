@@ -499,3 +499,7 @@ Calendar share pages now bind navigation, view switching, timeslot, and event co
 ## Reliable shared-calendar controls and exact keyring expiry
 
 Calendar share pages now bind navigation, view switching, timeslot, and event controls from the composer's render lifecycle, matching the proven Jitsi Meet share pattern. Keyring relock choices now use an absolute deadline that is neither extended by activity nor reset by page or server reloads; “On Logout” has no deadline and locks exactly when the authenticated session ends.
+
+## Cancel-safe keyring access and destructive recovery
+
+Cancelling any keyring prompt now flushes concurrent requests, pauses encrypted chat polling, and suppresses further automatic prompts until a floating manual-unlock control succeeds or the page reloads. Locked Settings keeps its clear action available as an explicitly destructive reset that removes keyring-dependent memberships, deletes the vault, rotates its account-data instance, and starts first-time setup; unlocked clearing remains non-destructive.

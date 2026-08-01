@@ -80,4 +80,11 @@
   <string name="gateway.auth.keyring.new_password">Kata sandi keyring baru</string>
   <string name="gateway.auth.keyring.confirm_password">Konfirmasi kata sandi keyring</string>
   <string name="gateway.auth.keyring.password_changed">Kata sandi keyring diubah.</string>
+  <string name="adapter.auth.keyring.manual_unlock">Buka keyring secara manual</string>
+  <string name="adapter.auth.keyring.component_name">Keyring</string>
+  <string name="adapter.auth.keyring.request_process_keyring">keyring</string>
+  <string name="gateway.auth.keyring.destroy">Hancurkan keyring</string>
+  <string name="gateway.auth.keyring.destroy_title">Hancurkan dan buat ulang keyring</string>
+  <string name="gateway.auth.keyring.destroy_message">Tindakan ini menghancurkan keyring terenkripsi secara permanen dan menghapus keanggotaan Anda dari objek bersama yang bergantung padanya. Anda akan diminta membuat keyring baru, dan akses dapat dipulihkan melalui undangan baru.</string>
+  <string name="gateway.auth.keyring.recreated">Keyring telah dihancurkan dan dibuat ulang.</string>
 </strings>

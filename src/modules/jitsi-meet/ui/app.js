@@ -250,6 +250,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     const {
         activateMeetingChat,
         activatePrivateChatForParticipant,
+        cleanupChatHandlers,
         encryptChatMessage,
         getChatRoomKey,
         openEmojiPickerPopup,
@@ -280,6 +281,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             "abort",
             () => {
                 clearTimers();
+                cleanupChatHandlers();
                 stopActiveMeetingsPolling();
                 closeMeetingEmbed();
             },

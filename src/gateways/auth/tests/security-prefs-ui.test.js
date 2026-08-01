@@ -49,7 +49,7 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /\[10080, "1_week"\]/);
     assert.match(
         KEYRING_SETTINGS_SOURCE,
-        /id: "clear",[\s\S]*variant: "neutral"/,
+        /id: "clear",[\s\S]*variant: destroy \? "danger" : "neutral"/,
     );
     assert.match(
         KEYRING_SETTINGS_SOURCE,
@@ -67,6 +67,12 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:listEvents/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:changePassword/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:clear/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /keyring:destroy/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /destroyKeyring\(\)/);
+    assert.doesNotMatch(
+        KEYRING_SETTINGS_SOURCE,
+        /settings-keyring-clear[^>]*disabled/,
+    );
     assert.doesNotMatch(KEYRING_SETTINGS_SOURCE, /requestPasswordConfirmation/);
     assert.match(KEYRING_SETTINGS_SOURCE, /settings\.css/);
     assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-expand/);

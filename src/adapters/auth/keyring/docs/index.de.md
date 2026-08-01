@@ -51,3 +51,11 @@ Während der Anmeldung versucht der Adapter lediglich, einen vorhandenen Tresor 
 ## Wiederherstellung der Entsperrung in der Browsersitzung
 
 Nach erfolgreicher Entsperrung speichert der Adapter den nicht exportierbaren Web-Crypto-Schlüssel in seinem IndexedDB-Sitzungsschlüsselspeicher und schreibt nur eine nicht geheime Markierung in `sessionStorage`. Eine endliche Sperrfrist erzeugt beim Entsperren genau einen absoluten Zeitpunkt; Lese- und Schreibvorgänge, Seitenneuladungen und Serverneustarts verlängern oder verkürzen ihn nicht. „Bei Abmeldung“ speichert keine Frist und hält den Schlüsselbund bis zum ausdrücklichen Ende der authentifizierten Sitzung offen. Explizites Sperren, Abmeldung, eine abweichende Kontoinstanz und eine abgelaufene Frist verhindern die Wiederherstellung. Komponenten fordern Zugriff weiterhin über ihren zugeordneten Schlüsselbundbereich an, der zuerst die Wiederherstellung versucht und nur bei Bedarf den kontextbezogenen Dialog öffnet.
+
+## Abgebrochener Zugriff und manuelle Wiederherstellung
+
+Das Abbrechen einer zugeordneten Entsperranfrage weist alle gleichzeitig wartenden Anfragen zurück und unterdrückt weitere automatische Anfragen bis zum Neuladen der Seite. Der Adapter sendet `cognis:keyring-access-state` mit `{ suppressed: true }`; Poller für verschlüsselte Inhalte müssen in diesem Zustand anhalten. Eine schwebende Sperrschaltfläche oberhalb des Page-Composer-Schalterstapels erlaubt den einzigen manuellen Entsperrversuch. Nach erfolgreicher Authentifizierung hebt sie die Unterdrückung auf und sendet `{ suppressed: false }`.
+
+## Zerstörendes Zurücksetzen
+
+`DELETE /api/v1/auth/keyring` ist der Vertrag zum zerstörenden Zurücksetzen. Vor dem Löschen des undurchsichtigen Tresors ruft Authentication alle über `auth:registerKeyringDataOwner` registrierten Besitzer auf, entfernt das Konto aus verschlüsselten Räumen und anderen von Schlüsselbundeinträgen abhängigen Objekten und erneuert anschließend die Kontodateninstanz. Die gesperrte Einstellungsaktion verwendet diese Route und startet sofort die erstmalige Schlüsselbundeinrichtung. Im entsperrten Zustand werden weiterhin nur die Einträge des aktuellen Tresors entfernt.

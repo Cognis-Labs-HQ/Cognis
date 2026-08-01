@@ -51,3 +51,11 @@ Saat masuk, adapter hanya mencoba mendekripsi brankas yang ada dengan kata sandi
 ## Pemulihan buka kunci sesi peramban
 
 Setelah berhasil dibuka, adapter menyimpan kunci Web Crypto yang tidak dapat diekstrak di penyimpanan kunci sesi IndexedDB dan hanya menulis penanda nonrahasia ke `sessionStorage`. Batas penguncian terbatas mencatat satu tenggat absolut saat keyring dibuka; pembacaan, penulisan, pemuatan ulang halaman, dan mulai ulang server tidak memperpanjang atau memperpendeknya. “Saat Keluar” tidak menyimpan tenggat dan mempertahankan keyring terbuka sampai sesi terautentikasi berakhir secara eksplisit. Penguncian eksplisit, keluar, ketidakcocokan instans akun, dan tenggat yang berlalu membatalkan pemulihan. Komponen tetap meminta akses melalui lingkup keyring beratribusi yang mencoba pemulihan lebih dahulu dan hanya membuka dialog kontekstual saat diperlukan.
+
+## Akses yang dibatalkan dan pemulihan manual
+
+Membatalkan permintaan buka kunci beratribusi menolak semua penunggu bersamaan dan menekan permintaan otomatis berikutnya sampai halaman dimuat ulang. Adapter memancarkan `cognis:keyring-access-state` dengan `{ suppressed: true }`; poller konten terenkripsi harus berhenti dalam keadaan ini. Kontrol kunci mengambang di atas tumpukan tombol page composer menyediakan satu-satunya percobaan buka kunci manual. Setelah autentikasi berhasil, kontrol menghapus penekanan dan memancarkan `{ suppressed: false }`.
+
+## Reset destruktif
+
+`DELETE /api/v1/auth/keyring` adalah kontrak reset destruktif. Sebelum menghapus vault buram, Authentication memanggil setiap pemilik yang terdaftar melalui `auth:registerKeyringDataOwner`, menghapus akun dari ruang terenkripsi dan objek lain yang aksesnya bergantung pada entri keyring, lalu merotasi instans data akun. Tindakan Settings saat terkunci memakai rute ini dan langsung memulai penyiapan keyring pertama kali. Saat terbuka, tindakan tetap hanya menghapus entri dari vault saat ini.

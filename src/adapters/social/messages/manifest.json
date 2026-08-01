@@ -1,7 +1,7 @@
 {
     "id": "social-messages",
     "name": "Messages",
-    "version": "2.0.21",
+    "version": "2.0.22",
     "gateway": "social",
     "description": "Private messages with chatrooms (DM and group), per-room AES-GCM encryption, and notification dispatch.",
     "publisher": "Cognis Labs HQ",

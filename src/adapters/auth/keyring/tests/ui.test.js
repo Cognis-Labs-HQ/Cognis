@@ -118,6 +118,17 @@ test("unlock wording names only the keyring password without variable quotes", (
     );
 });
 
+test("cancelled access exposes an attributed manual unlock control", () => {
+    const source = readFileSync(
+        resolve("src/adapters/auth/keyring/ui/keyring.js"),
+        "utf8",
+    );
+    assert.match(source, /cognis:keyring-access-state/);
+    assert.match(source, /keyring-manual-unlock/);
+    assert.match(source, /manual:\s*true/);
+    assert.match(source, /keyring:isAccessSuppressed/);
+});
+
 test("keyring envelope selection preserves offline data unless the account instance changed", async () => {
     const { selectKeyringEnvelope } = await import("../ui/keyring.js");
     const localEnvelope = {
@@ -585,4 +596,73 @@ test("empty keyring setup password falls back to the account password", async ()
         ),
         "custom-keyring-password",
     );
+});
+
+test("destroying a locked keyring recreates an empty vault", async () => {
+    const keyring = await import("../ui/keyring.js");
+    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    await keyring.setKeyringValue("chatroom:destroy:key", "old-room-key");
+    await keyring.lockKeyring();
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_requestPath, options = {}) =>
+        options.method === "DELETE"
+            ? new Response(null, { status: 204 })
+            : new Response(
+                  JSON.stringify({
+                      data: {
+                          vault: null,
+                          accountInstanceId: "replacement-instance",
+                      },
+                  }),
+                  {
+                      status: 200,
+                      headers: { "content-type": "application/json" },
+                  },
+              );
+    try {
+        assert.equal(
+            await keyring.destroyKeyring({
+                requestSetupPassword: async () => "replacement-password",
+            }),
+            true,
+        );
+        assert.equal(keyring.getKeyringValue("chatroom:destroy:key"), null);
+    } finally {
+        globalThis.fetch = originalFetch;
+        await keyring.lockKeyring();
+    }
+});
+
+test("cancelling one unlock flushes concurrent and future requests until manual unlock", async () => {
+    const keyring = await import("../ui/keyring.js");
+    await keyring.lockKeyring();
+    let promptCount = 0;
+    const cancelPrompt = async () => {
+        promptCount += 1;
+        return "";
+    };
+    const request = {
+        i18n: testI18n,
+        passwordPrompt: cancelPrompt,
+        request: testUnlockRequest,
+    };
+    assert.deepEqual(
+        await Promise.all([
+            keyring.requestKeyringUnlock(request),
+            keyring.requestKeyringUnlock(request),
+        ]),
+        [false, false],
+    );
+    assert.equal(promptCount, 1);
+    assert.equal(await keyring.requestKeyringUnlock(request), false);
+    assert.equal(promptCount, 1);
+    assert.equal(
+        await keyring.requestKeyringUnlock({
+            ...request,
+            manual: true,
+            passwordPrompt: async () => "replacement-password",
+        }),
+        true,
+    );
+    await keyring.lockKeyring();
 });

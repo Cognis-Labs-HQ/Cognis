@@ -32,6 +32,7 @@ let lastVaultEnvelope = null;
 let accountInstanceId = "";
 let temporaryKeyringAccountId = "";
 let unlockRequestPromise = null;
+let keyringAccessSuppressed = false;
 let keyringI18nPromise = null;
 const pendingValues = new Map();
 
@@ -551,6 +552,7 @@ function normalizeUnlockRequest(request) {
 export async function requestKeyringUnlock(options = {}) {
     const request = normalizeUnlockRequest(options.request);
     if (isKeyringUnlocked()) return true;
+    if (keyringAccessSuppressed && options.manual !== true) return false;
     if (unlockRequestPromise) return unlockRequestPromise;
     unlockRequestPromise = (async () => {
         if (await restoreCurrentSessionUnlock()) return true;
@@ -563,7 +565,10 @@ export async function requestKeyringUnlock(options = {}) {
         const prompt = i18n.t("adapter.auth.keyring.unlock_prompt");
         const passwordPrompt = options.passwordPrompt ?? requestKeyringPassword;
         const password = await passwordPrompt({ i18n, message, prompt });
-        if (!password) return false;
+        if (!password) {
+            suppressKeyringAccess();
+            return false;
+        }
         const unlocked = await unlockKeyring(password);
         if (!unlocked) {
             const { showToast } = await import("/static/reuse/toast.js");
@@ -571,11 +576,70 @@ export async function requestKeyringUnlock(options = {}) {
                 variant: "warning",
             });
         }
+        if (unlocked && options.manual === true) resumeKeyringAccess();
         return unlocked;
     })().finally(() => {
         unlockRequestPromise = null;
     });
     return unlockRequestPromise;
+}
+
+function dispatchKeyringAccessState() {
+    if (typeof window === "undefined") return;
+    window.dispatchEvent(
+        new CustomEvent("cognis:keyring-access-state", {
+            detail: { suppressed: keyringAccessSuppressed },
+        }),
+    );
+    void renderManualUnlockButton();
+}
+
+function suppressKeyringAccess() {
+    keyringAccessSuppressed = true;
+    dispatchKeyringAccessState();
+}
+
+function resumeKeyringAccess() {
+    keyringAccessSuppressed = false;
+    dispatchKeyringAccessState();
+}
+
+async function renderManualUnlockButton() {
+    if (typeof document === "undefined") return;
+    let button = document.querySelector("#keyring-manual-unlock");
+    if (!keyringAccessSuppressed) {
+        button?.remove();
+        return;
+    }
+    const i18n = await loadKeyringI18n();
+    if (!(button instanceof HTMLButtonElement)) {
+        const { ensurePageStylesheet } =
+            await import("/static/reuse/page-styles.js");
+        await ensurePageStylesheet(
+            "/static/adapters/auth/keyring/keyring-controls.css",
+        );
+        button = document.createElement("button");
+        button.id = "keyring-manual-unlock";
+        button.type = "button";
+        button.className = "keyring-manual-unlock";
+        button.textContent = "🔒";
+        document.querySelector(".app-shell")?.append(button);
+    }
+    button.title = i18n.t("adapter.auth.keyring.manual_unlock");
+    button.setAttribute(
+        "aria-label",
+        i18n.t("adapter.auth.keyring.manual_unlock"),
+    );
+    button.onclick = async () => {
+        await requestKeyringUnlock({
+            manual: true,
+            request: {
+                component: i18n.t("adapter.auth.keyring.component_name"),
+                action: i18n.t("adapter.auth.keyring.request_action_unlock"),
+                process: i18n.t("adapter.auth.keyring.request_process_keyring"),
+            },
+        });
+    };
 }
 
 async function requestKeyringPassword({ i18n, message, prompt = "" }) {
@@ -783,6 +847,20 @@ export async function clearKeyringValues() {
     return true;
 }
 
+export async function destroyKeyring({
+    requestSetupPassword = requestKeyringSetup,
+} = {}) {
+    const response = await apiFetch(KEYRING_API, { method: "DELETE" });
+    if (!response.ok) return false;
+    clearVault(true);
+    removeLocalEnvelope();
+    await clearSessionUnlockKey();
+    const password = await requestSetupPassword("");
+    const recreated = password ? await unlockKeyring(password) : false;
+    if (recreated) resumeKeyringAccess();
+    return recreated;
+}
+
 export async function changeKeyringPassword(password) {
     const normalizedPassword = String(password ?? "");
     if (!vaultData || !normalizedPassword) return false;
@@ -854,12 +932,17 @@ uiCtx.capabilities.contribute("keyring:delete", deleteKeyringValue);
 uiCtx.capabilities.contribute("keyring:list", listKeyringEntries);
 uiCtx.capabilities.contribute("keyring:listEvents", listKeyringEvents);
 uiCtx.capabilities.contribute("keyring:clear", clearKeyringValues);
+uiCtx.capabilities.contribute("keyring:destroy", destroyKeyring);
 uiCtx.capabilities.contribute("keyring:changePassword", changeKeyringPassword);
 uiCtx.capabilities.contribute("keyring:resolve", resolveKeyringValue);
 uiCtx.capabilities.contribute("keyring:lock", lockKeyring);
 uiCtx.capabilities.contribute("keyring:unlock", unlockKeyring);
 uiCtx.capabilities.contribute("keyring:requestUnlock", requestKeyringUnlock);
 uiCtx.capabilities.contribute("keyring:isUnlocked", isKeyringUnlocked);
+uiCtx.capabilities.contribute(
+    "keyring:isAccessSuppressed",
+    () => keyringAccessSuppressed,
+);
 uiCtx.capabilities.contribute(
     "keyring:hasDeferredSetup",
     () => sessionStorage.getItem(DEFERRED_SETUP_KEY) === "1",

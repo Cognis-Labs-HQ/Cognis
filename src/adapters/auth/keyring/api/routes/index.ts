@@ -36,6 +36,7 @@ export function createKeyringRoutes(input: {
     routeContext: KeyringRouteContext;
     store: KeyringVaultStore;
     getAccountInstanceId(accountId: string): Promise<string>;
+    purgeDependentAccountData?: (accountId: string) => Promise<void>;
     getPolicy?: () => {
         maxVaultBytes: number;
         derivationIterations: number;
@@ -122,6 +123,7 @@ export function createKeyringRoutes(input: {
         }
 
         if (req.method === "DELETE") {
+            await input.purgeDependentAccountData?.(accountId);
             await input.store.delete(accountId);
             res.writeHead(204);
             res.end();

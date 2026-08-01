@@ -80,4 +80,11 @@
   <string name="gateway.auth.keyring.new_password">New keyring password</string>
   <string name="gateway.auth.keyring.confirm_password">Confirm keyring password</string>
   <string name="gateway.auth.keyring.password_changed">Keyring password changed.</string>
+  <string name="adapter.auth.keyring.manual_unlock">Unlock keyring manually</string>
+  <string name="adapter.auth.keyring.component_name">Keyring</string>
+  <string name="adapter.auth.keyring.request_process_keyring">the keyring</string>
+  <string name="gateway.auth.keyring.destroy">Destroy keyring</string>
+  <string name="gateway.auth.keyring.destroy_title">Destroy and recreate keyring</string>
+  <string name="gateway.auth.keyring.destroy_message">This permanently destroys the encrypted keyring and removes your membership from dependent shared objects. You will be prompted to create a new keyring, and access can be re-established through new invitations.</string>
+  <string name="gateway.auth.keyring.recreated">The keyring was destroyed and recreated.</string>
 </strings>
