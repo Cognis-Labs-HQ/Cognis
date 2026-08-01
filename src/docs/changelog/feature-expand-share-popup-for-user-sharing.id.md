@@ -503,3 +503,15 @@ Halaman berbagi Kalender kini mengikat navigasi, peralihan tampilan, slot waktu,
 ## Akses keyring aman-batal dan pemulihan destruktif
 
 Membatalkan permintaan keyring kini menolak permintaan bersamaan, menjeda polling chat terenkripsi, dan menekan dialog otomatis berikutnya sampai kontrol buka kunci manual mengautentikasi atau halaman dimuat ulang. Settings yang terkunci tetap menyediakan tindakan hapus sebagai reset destruktif eksplisit yang hanya menghapus keanggotaan bergantung-keyring dan vault, mempertahankan identitas akun serta data profil/sosial yang tidak terkait, lalu memulai penyiapan pertama; pengosongan saat terbuka tetap tidak destruktif.
+
+## Pengaturan ulang gantungan kunci mempertahankan identitas sosial
+
+Menghapus gantungan kunci tidak lagi menghapus keanggotaan ruang pesan. Tindakan sosial berbasis profil juga membuat ulang profil akun terautentikasi yang hilang sebelum digunakan, sehingga nama pelaku tidak kosong bagi akun yang terdampak pengaturan ulang destruktif sebelumnya.
+
+## Percakapan langsung bersifat idempoten
+
+Permintaan bersamaan untuk memulai percakapan langsung yang sama diserialkan dan memeriksa ulang ruang yang sudah ada, sehingga permintaan cepat atau bertumpuk tidak membuat ruang ganda.
+
+## Pesan menunggu pemuatan kunci aktif
+
+Resolusi kunci ruang yang berjalan bersamaan dikoordinasikan per ruang agar masuk melalui SPA tidak menampilkan status lama yang meminta pembukaan kunci saat gantungan kunci yang sudah terbuka sedang menyelesaikan kunci ruang yang sama.

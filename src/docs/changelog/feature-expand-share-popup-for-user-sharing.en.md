@@ -503,3 +503,15 @@ Calendar share pages now bind navigation, view switching, timeslot, and event co
 ## Cancel-safe keyring access and destructive recovery
 
 Cancelling any keyring prompt now flushes concurrent requests, pauses encrypted chat polling, and suppresses further automatic prompts until a floating manual-unlock control succeeds or the page reloads. Locked Settings keeps its clear action available as an explicitly destructive reset that removes only keyring-dependent memberships, deletes the vault, preserves account identity and unrelated profile/social data, and starts first-time setup; unlocked clearing remains non-destructive.
+
+## Keyring reset preserves social identity
+
+Destroying a keyring no longer removes message-room memberships. Profile-backed social actions also recreate a missing authenticated profile before use, preventing blank actor names for accounts affected by an earlier destructive reset.
+
+## Direct conversations are idempotent
+
+Concurrent requests to start the same direct conversation are serialized and recheck for an existing room, preventing duplicate rooms from rapid or overlapping requests.
+
+## Messages wait for active key loading
+
+Concurrent room-key resolution is coordinated per room so SPA entry cannot display a stale unlock-required state while the unlocked keyring is already resolving the same room key.
