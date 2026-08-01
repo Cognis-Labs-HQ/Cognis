@@ -68,3 +68,7 @@ Kategorie-Präferenzen können die Zustellung unterdrücken.
 Mitgliedschaftsänderungen werden atomar zusammen mit passiven Einträgen `member_joined` und `member_left` in der `chat_messages`-Zeitleiste des Raums gespeichert. Diese Einträge verwenden den Inhaltstyp `application/vnd.cognis.room-event+json`; Aufrufer ändern die Mitgliedschaft, ohne einen zweiten Raum anzulegen oder ein Ereignis separat zu veröffentlichen. Bei der Auflösung eines Besprechungschats wird derselbe Vorgang auf alle ermittelten Teilnehmenden angewendet.
 
 Eine Nachrichtenanfrage erstellt keinen Chatraum. Der Direktnachrichtenraum, der Schlüssel, die Mitgliedschaften und die ersten Beitrittsereignisse werden erst angelegt, wenn die empfangende Person die Anfrage genehmigt. Dadurch erscheinen keine reinen Anfrageräume in den Raumlisten.
+
+## Kontextbezogenes Laden des Schlüsselbunds
+
+Die Nachrichtenseite löst Raumschlüssel über den Schlüsselbundbereich `Social Messages` auf. Beim Öffnen wird Zugriff zum Laden vorhandener Chat-Geheimnisse angefordert; nach einem abgebrochenen Entsperren folgt keine zweite Abfrage zum Speichern eines zugestellten Schlüssels. Nach erfolgreicher oder nach dem Neuladen wiederhergestellter Entsperrung aktualisiert die Seite sowohl die Vorschauen der Raumliste als auch die aktive Unterhaltung, sodass verschlüsselte Platzhalter sofort ersetzt werden.

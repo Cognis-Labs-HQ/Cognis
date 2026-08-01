@@ -396,6 +396,15 @@ test("calendar toolbar shows shared visibility icon", () => {
     assert.doesNotMatch(HELPERS_SOURCE, /🤝/);
 });
 
+test("calendar toolbar uses a larger localized new-calendar action", () => {
+    assert.match(APP_SOURCE, /gateway\.calendar\.new_calendar_short/);
+    assert.match(CSS_SOURCE, /\.calendar-toolbar-add[\s\S]*height:\s*2\.25rem/);
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-add[\s\S]*padding:\s*0 0\.65rem/,
+    );
+});
+
 test("event composer excludes read-only shared calendars", () => {
     assert.match(
         HELPERS_SOURCE,

@@ -459,3 +459,7 @@ Bei der Anmeldung wird das Kontopasswort nun unverbindlich ausprobiert, ohne bei
 ## Kalenderfreigaben werden einmal entsperrt und dargestellt
 
 Ein bestätigtes Passwort wird nun beim Laden eines importierten Benutzerkalenders wiederverwendet. Neu importierte Kalender zeigen eine Erfolgsmeldung, und öffentliche Kalenderlinks binden die gastseitige Kalenderdarstellung ein, statt auf dem Ladebildschirm zu verbleiben.
+
+## Kontextbezogene Chat-Entsperrung übersteht Neuladen
+
+Messages weist sich beim Anfordern vorhandener Chat-Geheimnisse nun als Social Messages aus, vermeidet nach einem Abbruch eine zweite Abfrage zum Speichern und aktualisiert verschlüsselte Vorschauen sofort nach dem Entsperren. Ein nicht exportierbarer Sitzungsschlüssel stellt das entsperrte Schlüsselbund nach dem Neuladen in derselben Registerkarte wieder her. Die Hinzufügen-Aktion im Kalender ist etwas größer und heißt nun „+ Neu“.

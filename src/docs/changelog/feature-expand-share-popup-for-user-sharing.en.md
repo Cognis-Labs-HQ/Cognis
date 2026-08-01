@@ -459,3 +459,7 @@ Login now tries the account password opportunistically without opening a keyring
 ## Calendar shares unlock and render once
 
 A verified password is now reused when an imported user calendar loads, newly imported calendars show a success toast, and public calendar links mount the Calendar-owned guest renderer instead of remaining on the loading screen.
+
+## Contextual chat unlock survives reloads
+
+Messages now identifies itself as Social Messages when requesting existing chat secrets, avoids a second save-secret prompt after cancellation, and refreshes encrypted previews immediately after unlock. A non-extractable session key restores the unlocked keyring after a page reload in the same tab. Calendar's add action is slightly larger and now reads “+ New”.

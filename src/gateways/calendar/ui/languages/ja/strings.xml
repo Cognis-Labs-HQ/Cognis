@@ -182,4 +182,5 @@
   <string name="gateway.calendar.share_link_caldav">CalDAV</string>
   <string name="gateway.calendar.share_import_success">共有カレンダーを追加しました。</string>
   <string name="gateway.calendar.share_no_events">このカレンダーには予定がありません。</string>
+  <string name="gateway.calendar.new_calendar_short">+ 新規</string>
 </resources>

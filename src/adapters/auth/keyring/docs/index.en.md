@@ -47,3 +47,7 @@ const password = await keyring.resolve("meeting:123:password", {
 ## Login unlock behavior
 
 During login, the adapter opportunistically attempts to decrypt an existing vault with the account password. A failed attempt leaves the vault locked and never opens an unlock dialog or blocks dashboard navigation. The contextual unlock dialog is requested only when a component resolves keyring-backed content.
+
+## Browser-session unlock restoration
+
+After a successful unlock, the adapter stores the non-extractable Web Crypto key in its IndexedDB session-key store and writes only a non-secret marker to `sessionStorage`. A page reload can restore the unlocked vault within the same tab session without retaining the password or an extractable key. Explicit lock, automatic relock, account-instance mismatch, and session end invalidate restoration. Components still request access through their attributed keyring scope, which first attempts restoration and opens the contextual unlock dialog only when restoration is unavailable.

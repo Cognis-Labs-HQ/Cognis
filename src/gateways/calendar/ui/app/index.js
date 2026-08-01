@@ -601,7 +601,7 @@ export async function mount(root, { signal } = {}) {
           <section class="toolbar-section calendar-toolbar-section">
             <header class="calendar-toolbar-heading">
               <h3>${i18n.t("gateway.calendar.my_calendars")}</h3>
-              <button type="button" class="calendar-toolbar-add" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">+</button>
+              <button type="button" class="calendar-toolbar-add" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">${i18n.t("gateway.calendar.new_calendar_short")}</button>
             </header>
             <div id="calendar-toolbar-list">${calendarUi.renderCalendarToolbarList(calendars, selectedCalendarId, i18n)}</div>
             <div id="calendar-toolbar-summary">${calendarUi.renderPendingEvents(allPendingEvents(), i18n)}</div>

@@ -7,6 +7,7 @@ import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 
 const values = new Map();
 const sessionValues = new Map();
+const indexedDbValues = new Map();
 Object.defineProperty(globalThis, "crypto", {
     configurable: true,
     value: webcrypto,
@@ -20,6 +21,52 @@ globalThis.sessionStorage = {
     getItem: (key) => sessionValues.get(key) ?? null,
     setItem: (key, value) => sessionValues.set(key, String(value)),
     removeItem: (key) => sessionValues.delete(key),
+};
+globalThis.indexedDB = {
+    open() {
+        const request = {};
+        const database = {
+            objectStoreNames: {
+                contains: () => true,
+            },
+            createObjectStore() {},
+            transaction() {
+                const transaction = {
+                    objectStore() {
+                        return {
+                            put(record) {
+                                indexedDbValues.set(record.id, record);
+                                queueMicrotask(() =>
+                                    transaction.oncomplete?.(),
+                                );
+                            },
+                            get(id) {
+                                const getRequest = {};
+                                queueMicrotask(() => {
+                                    getRequest.result = indexedDbValues.get(id);
+                                    getRequest.onsuccess?.();
+                                });
+                                return getRequest;
+                            },
+                            delete(id) {
+                                indexedDbValues.delete(id);
+                                queueMicrotask(() =>
+                                    transaction.oncomplete?.(),
+                                );
+                            },
+                        };
+                    },
+                };
+                return transaction;
+            },
+            close() {},
+        };
+        queueMicrotask(() => {
+            request.result = database;
+            request.onsuccess?.();
+        });
+        return request;
+    },
 };
 let confirmationInvalidations = 0;
 let unlockPromptCount = 0;
@@ -158,6 +205,62 @@ test("unlock requests require component, action, and process context", async () 
         }),
         /keyring_unlock_request_context_required/,
     );
+});
+
+test("component scopes attribute direct unlock requests to their owner", async () => {
+    const keyring = await import("../ui/keyring.js");
+    const messagesKeyring = keyring.createKeyringScope("Social Messages");
+    lastUnlockPrompt = null;
+
+    assert.equal(
+        await messagesKeyring.requestUnlock({
+            i18n: testI18n,
+            passwordPrompt: testPasswordPrompt,
+            request: {
+                component: "Keyring",
+                action: "load",
+                process: "chat secrets",
+            },
+        }),
+        true,
+    );
+    assert.equal(
+        lastUnlockPrompt.message,
+        "Social Messages requested load chat secrets",
+    );
+    await keyring.lockKeyring();
+});
+
+test("a page reload restores the non-extractable session unlock without prompting", async () => {
+    const keyring = await import("../ui/keyring.js");
+    values.clear();
+    sessionValues.clear();
+    indexedDbValues.clear();
+    localStorage.setItem("cognis_account", "session-restore-user");
+    assert.equal(await keyring.unlockKeyring("keyring-password"), true);
+    await keyring.setKeyringValue("chatroom:session:key", "room-key");
+
+    const reloadedKeyring = await import("../ui/keyring.js?session-restore");
+    let prompted = false;
+    assert.equal(
+        await reloadedKeyring.requestKeyringUnlock({
+            i18n: testI18n,
+            passwordPrompt: async () => {
+                prompted = true;
+                return "keyring-password";
+            },
+            request: testUnlockRequest,
+        }),
+        true,
+    );
+    assert.equal(prompted, false);
+    assert.equal(
+        reloadedKeyring.getKeyringValue("chatroom:session:key"),
+        "room-key",
+    );
+    await reloadedKeyring.lockKeyring();
+    await keyring.lockKeyring();
+    localStorage.removeItem("cognis_account");
 });
 
 test("locked keyring retains new secrets only for the active session", async () => {

@@ -161,6 +161,26 @@ export async function mount(root, { signal } = {}) {
         },
     });
 
+    let pageReady = false;
+    let refreshAfterKeyringUnlock = false;
+    const refreshDecryptedContent = async () => {
+        if (!pageReady) {
+            refreshAfterKeyringUnlock = true;
+            return;
+        }
+        await roomState.reloadRoomsList();
+        await roomState.refreshActiveConversation();
+    };
+    window.addEventListener(
+        "cognis:keyring-event",
+        (event) => {
+            if (event.detail?.type === "unlock") {
+                void refreshDecryptedContent();
+            }
+        },
+        { signal },
+    );
+
     await Promise.all([loadAllEmojis(), fetchEmojiUsage(apiFetch)]);
     await roomState.loadInitialRooms();
     if (signal?.aborted) return;
@@ -852,6 +872,11 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    pageReady = true;
+    if (refreshAfterKeyringUnlock) {
+        refreshAfterKeyringUnlock = false;
+        await refreshDecryptedContent();
+    }
     roomState.startTypingPolling();
     roomState.startLiveRefreshPolling();
 }

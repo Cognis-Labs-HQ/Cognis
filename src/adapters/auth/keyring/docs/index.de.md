@@ -37,3 +37,7 @@ Komponenten beziehen Schlüsselbundfunktionen über `uiCtx.capabilities` und imp
 ## Entsperrverhalten bei der Anmeldung
 
 Während der Anmeldung versucht der Adapter lediglich, einen vorhandenen Tresor mit dem Kontopasswort zu entschlüsseln. Ein fehlgeschlagener Versuch lässt den Tresor gesperrt und öffnet weder einen Entsperrdialog noch blockiert er die Navigation zum Dashboard. Der kontextbezogene Entsperrdialog wird erst angefordert, wenn eine Komponente durch das Schlüsselbund geschützte Inhalte auflöst.
+
+## Wiederherstellung der Entsperrung in der Browsersitzung
+
+Nach erfolgreicher Entsperrung speichert der Adapter den nicht exportierbaren Web-Crypto-Schlüssel in seinem IndexedDB-Sitzungsschlüsselspeicher und schreibt nur eine nicht geheime Markierung in `sessionStorage`. Nach dem Neuladen kann der entsperrte Tresor in derselben Registerkartensitzung wiederhergestellt werden, ohne das Passwort oder einen exportierbaren Schlüssel aufzubewahren. Explizites Sperren, automatische Sperrung, eine abweichende Kontoinstanz und das Sitzungsende verhindern die Wiederherstellung. Komponenten fordern Zugriff weiterhin über ihren zugeordneten Schlüsselbundbereich an; dieser versucht zuerst die Wiederherstellung und öffnet den kontextbezogenen Entsperrdialog nur, wenn sie nicht verfügbar ist.

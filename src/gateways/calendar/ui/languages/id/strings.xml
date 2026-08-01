@@ -182,4 +182,5 @@
   <string name="gateway.calendar.share_link_caldav">CalDAV</string>
   <string name="gateway.calendar.share_import_success">Kalender bersama ditambahkan.</string>
   <string name="gateway.calendar.share_no_events">Tidak ada acara di kalender ini.</string>
+  <string name="gateway.calendar.new_calendar_short">+ Baru</string>
 </resources>

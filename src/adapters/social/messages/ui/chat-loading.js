@@ -25,7 +25,7 @@ async function buildChatUnlockRequest(roomId, actionKey) {
     );
     const i18n = await messagesI18nPromise;
     return {
-        component: i18n.t("ui.reuse.messages"),
+        component: "Social Messages",
         action: i18n.t(actionKey),
         process: i18n
             .t("adapter.social.messages.keyring_request_process")
@@ -74,6 +74,7 @@ uiCtx.extendFlow(
     { id: "social-messages:load-key-contribution" },
     async (stageContext) => {
         if (stageContext.data.roomKey) return;
+        if (!uiCtx.capabilities.get("keyring:isUnlocked")?.()) return;
         if (stageContext.input.keyContribution) {
             stageContext.data.keyContribution =
                 stageContext.input.keyContribution;
@@ -96,7 +97,7 @@ uiCtx.extendFlow(
         if (stageContext.data.roomKey || !stageContext.data.keyContribution) {
             return;
         }
-        const requestUnlock = uiCtx.capabilities.get("keyring:requestUnlock");
+        const requestUnlock = getMessagesKeyring()?.requestUnlock;
         const request = await buildChatUnlockRequest(
             stageContext.input.roomId,
             "adapter.social.messages.keyring_request_action_save",

@@ -459,3 +459,7 @@ Proses masuk kini mencoba kata sandi akun secara oportunistik tanpa membuka dial
 ## Berbagi kalender dibuka dan dirender sekali
 
 Kata sandi yang telah diverifikasi kini digunakan kembali saat kalender pengguna yang diimpor dimuat. Kalender yang baru diimpor menampilkan notifikasi berhasil, dan tautan kalender publik memasang perender tamu milik Kalender alih-alih berhenti di layar pemuatan.
+
+## Buka kunci obrolan kontekstual bertahan setelah muat ulang
+
+Messages kini mengidentifikasi dirinya sebagai Social Messages saat meminta rahasia obrolan yang ada, menghindari permintaan penyimpanan kedua setelah pembatalan, dan segera memperbarui pratinjau terenkripsi setelah buka kunci. Kunci sesi yang tidak dapat diekstrak memulihkan keyring terbuka setelah muat ulang halaman pada tab yang sama. Tindakan tambah Kalender sedikit lebih besar dan kini bertuliskan “+ Baru”.

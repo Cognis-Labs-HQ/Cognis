@@ -133,3 +133,7 @@ senders fan out (in-app, email, etc.).
 Membership changes are persisted atomically with passive `member_joined` and `member_left` entries in the room's `chat_messages` timeline. These entries use the `application/vnd.cognis.room-event+json` content type; callers change membership and do not create a second room or separately publish an event. Meeting chat resolution applies the same operation to every resolved participant.
 
 A message request does not create a chatroom. The direct-message room, key, memberships, and initial join events are created only when the recipient approves the request, preventing request-only rooms from appearing in either participant's room list.
+
+## Contextual keyring loading
+
+The Messages page resolves room keys through the `Social Messages` keyring scope. Opening the page requests access to load existing chat secrets; a cancelled unlock does not fall through to a second prompt for saving a delivered key. When an unlock succeeds or is restored after reload, the page refreshes both room-list previews and the active conversation so ciphertext placeholders are replaced immediately.

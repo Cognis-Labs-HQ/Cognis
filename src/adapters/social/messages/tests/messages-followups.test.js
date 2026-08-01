@@ -397,9 +397,19 @@ test("messages unlock the keyring before accepting a delivered room key", () => 
     const source = readMessagesUiBundle();
 
     assert.match(source, /acceptRoomKeyContribution/);
-    assert.match(source, /keyring:requestUnlock/);
+    assert.match(source, /getMessagesKeyring\(\)\?\.requestUnlock/);
+    assert.match(source, /keyringScopeFactory\?\.\("Social Messages"\)/);
     assert.match(source, /roomKeys\.contributeRoomKey/);
     assert.doesNotMatch(source, /auth:createRepromptGuard/);
+});
+
+test("messages refresh encrypted previews after a contextual keyring unlock", () => {
+    const source = readMessagesUiBundle();
+
+    assert.match(source, /"cognis:keyring-event"/);
+    assert.match(source, /event\.detail\?\.type === "unlock"/);
+    assert.match(source, /await roomState\.reloadRoomsList\(\)/);
+    assert.match(source, /await roomState\.refreshActiveConversation\(\)/);
 });
 
 test("messages pause refresh polling until room-key setup completes", () => {

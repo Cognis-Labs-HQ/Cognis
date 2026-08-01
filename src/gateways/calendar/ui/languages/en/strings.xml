@@ -182,4 +182,5 @@
   <string name="gateway.calendar.share_link_caldav">CalDAV</string>
   <string name="gateway.calendar.share_import_success">Shared calendar added.</string>
   <string name="gateway.calendar.share_no_events">There are no events in this calendar.</string>
+  <string name="gateway.calendar.new_calendar_short">+ New</string>
 </resources>

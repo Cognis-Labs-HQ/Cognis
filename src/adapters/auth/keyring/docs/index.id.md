@@ -37,3 +37,7 @@ Komponen memperoleh operasi gantungan kunci melalui `uiCtx.capabilities` dan tid
 ## Perilaku buka kunci saat masuk
 
 Saat masuk, adapter hanya mencoba mendekripsi brankas yang ada dengan kata sandi akun. Percobaan yang gagal membiarkan brankas terkunci, tidak membuka dialog buka kunci, dan tidak menghambat navigasi ke dasbor. Dialog buka kunci kontekstual baru diminta saat komponen menyelesaikan konten yang didukung keyring.
+
+## Pemulihan buka kunci sesi peramban
+
+Setelah berhasil dibuka, adapter menyimpan kunci Web Crypto yang tidak dapat diekstrak di penyimpanan kunci sesi IndexedDB miliknya dan hanya menulis penanda nonrahasia ke `sessionStorage`. Muat ulang halaman dapat memulihkan brankas yang terbuka dalam sesi tab yang sama tanpa menyimpan kata sandi atau kunci yang dapat diekstrak. Penguncian eksplisit, penguncian otomatis, ketidakcocokan instans akun, dan berakhirnya sesi membatalkan pemulihan. Komponen tetap meminta akses melalui lingkup keyring yang teratribusi, yang lebih dahulu mencoba pemulihan dan hanya membuka dialog kontekstual bila pemulihan tidak tersedia.

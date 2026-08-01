@@ -19,6 +19,9 @@ const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
 const DEFAULT_ITERATIONS = 310_000;
 const DEFERRED_SETUP_KEY = "cognis_keyring_setup_pending";
+const SESSION_UNLOCK_DATABASE = "cognis-keyring-session";
+const SESSION_UNLOCK_STORE = "keys";
+const SESSION_UNLOCK_MARKER = "cognis_keyring_session_unlocked";
 let vaultKey = null;
 let vaultData = null;
 let vaultSalt = null;
@@ -71,6 +74,100 @@ function encodeBytes(bytes) {
 
 function decodeBytes(value) {
     return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
+}
+
+function sessionUnlockId() {
+    return keyringStorageKey();
+}
+
+function sessionUnlockMarkerKey() {
+    return `${SESSION_UNLOCK_MARKER}:${encodeURIComponent(sessionUnlockId())}`;
+}
+
+function openSessionUnlockDatabase() {
+    if (typeof indexedDB === "undefined") return Promise.resolve(null);
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(SESSION_UNLOCK_DATABASE, 1);
+        request.onupgradeneeded = () => {
+            if (
+                !request.result.objectStoreNames.contains(SESSION_UNLOCK_STORE)
+            ) {
+                request.result.createObjectStore(SESSION_UNLOCK_STORE, {
+                    keyPath: "id",
+                });
+            }
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function writeSessionUnlockKey(key) {
+    if (temporaryKeyringAccountId) return;
+    const database = await openSessionUnlockDatabase().catch(() => null);
+    if (!database) return;
+    const written = await new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            SESSION_UNLOCK_STORE,
+            "readwrite",
+        );
+        transaction.objectStore(SESSION_UNLOCK_STORE).put({
+            id: sessionUnlockId(),
+            key,
+            accountInstanceId,
+        });
+        transaction.oncomplete = () => resolve(true);
+        transaction.onerror = () => reject(transaction.error);
+    }).catch(() => false);
+    database.close();
+    if (written) sessionStorage.setItem(sessionUnlockMarkerKey(), "1");
+}
+
+async function readSessionUnlockKey() {
+    if (temporaryKeyringAccountId) return null;
+    if (sessionStorage.getItem(sessionUnlockMarkerKey()) !== "1") {
+        await clearSessionUnlockKey();
+        return null;
+    }
+    const database = await openSessionUnlockDatabase().catch(() => null);
+    if (!database) return null;
+    const record = await new Promise((resolve, reject) => {
+        const transaction = database.transaction(
+            SESSION_UNLOCK_STORE,
+            "readonly",
+        );
+        const request = transaction
+            .objectStore(SESSION_UNLOCK_STORE)
+            .get(sessionUnlockId());
+        request.onsuccess = () => resolve(request.result ?? null);
+        request.onerror = () => reject(request.error);
+    }).catch(() => null);
+    database.close();
+    if (
+        record?.accountInstanceId &&
+        accountInstanceId &&
+        record.accountInstanceId !== accountInstanceId
+    ) {
+        await clearSessionUnlockKey();
+        return null;
+    }
+    return record?.key ?? null;
+}
+
+async function clearSessionUnlockKey() {
+    sessionStorage.removeItem(sessionUnlockMarkerKey());
+    const database = await openSessionUnlockDatabase().catch(() => null);
+    if (!database) return;
+    await new Promise((resolve) => {
+        const transaction = database.transaction(
+            SESSION_UNLOCK_STORE,
+            "readwrite",
+        );
+        transaction.objectStore(SESSION_UNLOCK_STORE).delete(sessionUnlockId());
+        transaction.oncomplete = resolve;
+        transaction.onerror = resolve;
+    });
+    database.close();
 }
 
 function normalizeEntry(value, id) {
@@ -232,7 +329,14 @@ function recordKeyringEvent(type, identifier = "") {
         timestamp: new Date().toISOString(),
     });
     if (typeof window !== "undefined") {
-        window.dispatchEvent(new CustomEvent("cognis:keyring-event"));
+        window.dispatchEvent(
+            new CustomEvent("cognis:keyring-event", {
+                detail: {
+                    type: String(type),
+                    identifier: String(identifier),
+                },
+            }),
+        );
     }
 }
 
@@ -240,28 +344,19 @@ function persistRecordedEvent() {
     void persistVault().catch(() => undefined);
 }
 
-export async function unlockKeyring(password) {
-    const normalizedPassword = String(password ?? "");
-    if (!normalizedPassword) return false;
-    clearVault(false);
-    const localEnvelope = loadLocalEnvelope();
-    const remoteState = await loadRemoteEnvelope();
-    accountInstanceId =
-        remoteState.accountInstanceId ||
-        String(localEnvelope?.accountInstanceId ?? "");
-    const stored = selectKeyringEnvelope(localEnvelope, remoteState);
-    if (remoteState.resolved && localEnvelope && !stored) {
-        removeLocalEnvelope();
-    }
-    const salt = stored?.salt
+async function activateVault(
+    key,
+    stored,
+    remoteState,
+    salt = stored?.salt
         ? decodeBytes(stored.salt)
-        : crypto.getRandomValues(new Uint8Array(16));
-    const iterations = Number(
+        : crypto.getRandomValues(new Uint8Array(16)),
+    iterations = Number(
         stored?.iterations ??
             remoteState.derivationIterations ??
             DEFAULT_ITERATIONS,
-    );
-    const key = await deriveKey(normalizedPassword, salt, iterations);
+    ),
+) {
     try {
         vaultData = stored?.cipher
             ? JSON.parse(
@@ -306,13 +401,64 @@ export async function unlockKeyring(password) {
         keyringStorage().setItem(keyringStorageKey(), JSON.stringify(stored));
     }
     await persistVault();
+    await writeSessionUnlockKey(key);
     scheduleRelock();
     return true;
 }
 
-export function lockKeyring() {
+export async function unlockKeyring(password) {
+    const normalizedPassword = String(password ?? "");
+    if (!normalizedPassword) return false;
+    clearVault(false);
+    const localEnvelope = loadLocalEnvelope();
+    const remoteState = await loadRemoteEnvelope();
+    accountInstanceId =
+        remoteState.accountInstanceId ||
+        String(localEnvelope?.accountInstanceId ?? "");
+    const stored = selectKeyringEnvelope(localEnvelope, remoteState);
+    if (remoteState.resolved && localEnvelope && !stored) {
+        removeLocalEnvelope();
+    }
+    const salt = stored?.salt
+        ? decodeBytes(stored.salt)
+        : crypto.getRandomValues(new Uint8Array(16));
+    const iterations = Number(
+        stored?.iterations ??
+            remoteState.derivationIterations ??
+            DEFAULT_ITERATIONS,
+    );
+    const key = await deriveKey(normalizedPassword, salt, iterations);
+    return activateVault(key, stored, remoteState, salt, iterations);
+}
+
+async function restoreSessionUnlock(stored, remoteState) {
+    const key = await readSessionUnlockKey();
+    if (!key) return false;
+    clearVault(false);
+    const restored = await activateVault(key, stored, remoteState);
+    if (!restored) await clearSessionUnlockKey();
+    return restored;
+}
+
+async function restoreCurrentSessionUnlock() {
+    const localEnvelope = loadLocalEnvelope();
+    const remoteState = await loadRemoteEnvelope();
+    accountInstanceId =
+        remoteState.accountInstanceId ||
+        String(localEnvelope?.accountInstanceId ?? "");
+    const stored = selectKeyringEnvelope(localEnvelope, remoteState);
+    if (remoteState.resolved && localEnvelope && !stored) {
+        removeLocalEnvelope();
+        await clearSessionUnlockKey();
+        return false;
+    }
+    return stored ? restoreSessionUnlock(stored, remoteState) : false;
+}
+
+export async function lockKeyring() {
     if (temporaryKeyringAccountId) return Promise.resolve();
     clearVault(true);
+    await clearSessionUnlockKey();
     return Promise.resolve(
         uiCtx.capabilities.get("auth:invalidatePasswordConfirmation")?.(),
     ).catch(() => {});
@@ -360,6 +506,7 @@ export async function requestKeyringUnlock(options = {}) {
     if (isKeyringUnlocked()) return true;
     if (unlockRequestPromise) return unlockRequestPromise;
     unlockRequestPromise = (async () => {
+        if (await restoreCurrentSessionUnlock()) return true;
         const i18n = options.i18n ?? (await loadKeyringI18n());
         const message = i18n
             .t("adapter.auth.keyring.unlock_message")
@@ -465,6 +612,9 @@ export async function setupKeyringAfterLogin(
         removeLocalEnvelope();
     }
     if (storedEnvelope) {
+        if (await restoreSessionUnlock(storedEnvelope, remoteState)) {
+            return { setup: false, unlocked: true, restored: true };
+        }
         if (accountPassword && (await unlockKeyring(accountPassword))) {
             return { setup: false, unlocked: true };
         }
@@ -536,6 +686,15 @@ export function createKeyringScope(componentName) {
                 metadata: {
                     ...options.metadata,
                     componentName: source,
+                },
+            });
+        },
+        requestUnlock(options = {}) {
+            return requestKeyringUnlock({
+                ...options,
+                request: {
+                    ...options.request,
+                    component: source,
                 },
             });
         },
