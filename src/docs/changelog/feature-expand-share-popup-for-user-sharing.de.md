@@ -491,3 +491,11 @@ Ansichtswechsel, Zeitraum-Navigation und Ereigniserstellung über Zeitraster ver
 ## Kalenderfreigaben verwenden den bewährten Meeting-Seitenlebenszyklus
 
 Share übergibt Calendar nach der Auflösung nun den Seitenstamm, genau wie bei Meeting-Links. Calendar besitzt den daraus entstehenden vollständigen Page Composer, sodass Standard-Kopfzeile, Theme-Steuerung, Fußzeile und Lebenszyklus gemeinsam mit der einzelnen Kalenderkarte erscheinen, statt den Share-Ladeplatzhalter sichtbar zu lassen. Delegierte Ansichts-, Navigations-, Zeitraster- und Gast-Token-Ereignissteuerungen bleiben bei Kalender-Neudarstellungen verbunden.
+
+## Zuverlässige Kalendersteuerung und exakter Schlüsselbundablauf
+
+Kalenderfreigaben binden Navigation, Ansichtswechsel, Zeitraster und Ereignissteuerung nun im Render-Lebenszyklus des Composers, entsprechend dem bewährten Jitsi-Meet-Freigabemuster. Schlüsselbund-Sperrfristen verwenden einen absoluten Zeitpunkt, der weder durch Aktivität verlängert noch durch Seiten- oder Serverneuladungen zurückgesetzt wird; „Bei Abmeldung“ hat keine Frist und sperrt genau beim Ende der authentifizierten Sitzung.
+
+## Zuverlässige Kalendersteuerung und exakter Schlüsselbundablauf
+
+Kalenderfreigaben binden Navigation, Ansichtswechsel, Zeitraster und Ereignissteuerung nun im Render-Lebenszyklus des Composers, entsprechend dem bewährten Jitsi-Meet-Freigabemuster. Schlüsselbund-Sperrfristen verwenden einen absoluten Zeitpunkt, der weder durch Aktivität verlängert noch durch Seiten- oder Serverneuladungen zurückgesetzt wird; „Bei Abmeldung“ hat keine Frist und sperrt genau beim Ende der authentifizierten Sitzung.

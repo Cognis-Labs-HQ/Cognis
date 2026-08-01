@@ -491,3 +491,11 @@ Calendar view switching, period navigation, and timeslot event creation now use 
 ## Calendar shares use the proven meeting-page lifecycle
 
 Share now hands Calendar the page root after resolution, exactly as it does for meeting links. Calendar owns the resulting full page composer, so the standard header, theme controls, footer, and lifecycle render together with the single-calendar card instead of leaving the Share loading placeholder visible. Delegated view, navigation, timeslot, and guest-token event controls remain attached across calendar rerenders.
+
+## Reliable shared-calendar controls and exact keyring expiry
+
+Calendar share pages now bind navigation, view switching, timeslot, and event controls from the composer's render lifecycle, matching the proven Jitsi Meet share pattern. Keyring relock choices now use an absolute deadline that is neither extended by activity nor reset by page or server reloads; “On Logout” has no deadline and locks exactly when the authenticated session ends.
+
+## Reliable shared-calendar controls and exact keyring expiry
+
+Calendar share pages now bind navigation, view switching, timeslot, and event controls from the composer's render lifecycle, matching the proven Jitsi Meet share pattern. Keyring relock choices now use an absolute deadline that is neither extended by activity nor reset by page or server reloads; “On Logout” has no deadline and locks exactly when the authenticated session ends.

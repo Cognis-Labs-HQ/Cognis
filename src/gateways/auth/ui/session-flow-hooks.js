@@ -41,6 +41,7 @@ function getFirstResult(stageResults, stageId) {
 }
 
 function clearStoredSession() {
+    void uiCtx.capabilities.get("keyring:lock")?.();
     localStorage.removeItem("cognis_access_token");
     localStorage.removeItem("cognis_account");
     localStorage.removeItem("cognis_display_name");

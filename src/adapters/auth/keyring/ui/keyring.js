@@ -22,6 +22,7 @@ const DEFERRED_SETUP_KEY = "cognis_keyring_setup_pending";
 const SESSION_UNLOCK_DATABASE = "cognis-keyring-session";
 const SESSION_UNLOCK_STORE = "keys";
 const SESSION_UNLOCK_MARKER = "cognis_keyring_session_unlocked";
+const SESSION_UNLOCK_EXPIRES_AT = "cognis_keyring_session_expires_at";
 let vaultKey = null;
 let vaultData = null;
 let vaultSalt = null;
@@ -89,6 +90,10 @@ function sessionUnlockId() {
 
 function sessionUnlockMarkerKey() {
     return `${SESSION_UNLOCK_MARKER}:${encodeURIComponent(sessionUnlockId())}`;
+}
+
+function sessionUnlockExpiryKey() {
+    return `${SESSION_UNLOCK_EXPIRES_AT}:${encodeURIComponent(sessionUnlockId())}`;
 }
 
 function openSessionUnlockDatabase() {
@@ -163,6 +168,7 @@ async function readSessionUnlockKey() {
 
 async function clearSessionUnlockKey() {
     sessionStorage.removeItem(sessionUnlockMarkerKey());
+    sessionStorage.removeItem(sessionUnlockExpiryKey());
     const database = await openSessionUnlockDatabase().catch(() => null);
     if (!database) return;
     await new Promise((resolve) => {
@@ -211,11 +217,23 @@ async function deriveKey(password, salt, iterations) {
     );
 }
 
-function scheduleRelock() {
+function scheduleRelock({ resetDeadline = false } = {}) {
     clearTimeout(relockTimer);
     if (temporaryKeyringAccountId) return;
     const minutes = getKeyringRelockMinutes();
-    if (minutes > 0) relockTimer = setTimeout(lockKeyring, minutes * 60_000);
+    if (minutes <= 0) {
+        sessionStorage.removeItem(sessionUnlockExpiryKey());
+        return;
+    }
+    const storedDeadline = Number(
+        sessionStorage.getItem(sessionUnlockExpiryKey()),
+    );
+    const deadline =
+        resetDeadline || !Number.isFinite(storedDeadline)
+            ? Date.now() + minutes * 60_000
+            : storedDeadline;
+    sessionStorage.setItem(sessionUnlockExpiryKey(), String(deadline));
+    relockTimer = setTimeout(lockKeyring, Math.max(0, deadline - Date.now()));
 }
 
 function clearVault(clearPendingValues) {
@@ -363,6 +381,7 @@ async function activateVault(
             remoteState.derivationIterations ??
             DEFAULT_ITERATIONS,
     ),
+    { preserveRelockDeadline = false } = {},
 ) {
     try {
         vaultData = stored?.cipher
@@ -409,7 +428,7 @@ async function activateVault(
     }
     await persistVault();
     await writeSessionUnlockKey(key);
-    scheduleRelock();
+    scheduleRelock({ resetDeadline: !preserveRelockDeadline });
     return true;
 }
 
@@ -439,10 +458,30 @@ export async function unlockKeyring(password) {
 }
 
 async function restoreSessionUnlock(stored, remoteState) {
+    const relockMinutes = getKeyringRelockMinutes();
+    const storedDeadline = Number(
+        sessionStorage.getItem(sessionUnlockExpiryKey()),
+    );
+    if (
+        relockMinutes > 0 &&
+        (!Number.isFinite(storedDeadline) || storedDeadline <= Date.now())
+    ) {
+        await clearSessionUnlockKey();
+        return false;
+    }
     const key = await readSessionUnlockKey();
     if (!key) return false;
     clearVault(false);
-    const restored = await activateVault(key, stored, remoteState);
+    const restored = await activateVault(
+        key,
+        stored,
+        remoteState,
+        undefined,
+        undefined,
+        {
+            preserveRelockDeadline: true,
+        },
+    );
     if (!restored) await clearSessionUnlockKey();
     return restored;
 }
@@ -465,6 +504,7 @@ async function restoreCurrentSessionUnlock() {
 export async function lockKeyring() {
     if (temporaryKeyringAccountId) return Promise.resolve();
     clearVault(true);
+    sessionStorage.removeItem(sessionUnlockExpiryKey());
     await clearSessionUnlockKey();
     return Promise.resolve(
         uiCtx.capabilities.get("auth:invalidatePasswordConfirmation")?.(),
@@ -804,7 +844,7 @@ export async function setKeyringRelockMinutes(minutes) {
         vaultData.preferences ??= {};
         vaultData.preferences.relockMinutes = normalizedMinutes;
         await persistVault();
-        scheduleRelock();
+        scheduleRelock({ resetDeadline: true });
     }
 }
 

@@ -229,13 +229,13 @@ function bindTopbarActions() {
         } catch {
             // Best-effort server-side revocation; navigate to login regardless.
         }
+        await uiCtx.capabilities.get("keyring:lock")?.();
         localStorage.removeItem("cognis_access_token");
         localStorage.removeItem("cognis_account");
         localStorage.removeItem("cognis_display_name");
         localStorage.removeItem("cognis_role");
         localStorage.removeItem("cognis_is_founder");
         localStorage.removeItem("cognis_user_validation_mode");
-        uiCtx.capabilities.get("keyring:lock")?.();
         document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
         window.location.href = "/login";
     });

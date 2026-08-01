@@ -491,3 +491,11 @@ Pengalihan tampilan, navigasi periode, dan pembuatan acara dari slot waktu kini 
 ## Berbagi Kalender memakai siklus hidup halaman rapat yang teruji
 
 Setelah resolusi, Share kini menyerahkan akar halaman kepada Calendar, persis seperti pada tautan rapat. Calendar memiliki page composer lengkap yang dihasilkan sehingga header standar, kontrol tema, footer, dan siklus hidup tampil bersama kartu kalender tunggal, bukan membiarkan placeholder pemuatan Share terlihat. Kontrol tampilan, navigasi, slot waktu, dan acara bertoken tamu yang didelegasikan tetap terpasang selama render ulang kalender.
+
+## Kontrol kalender bersama yang andal dan kedaluwarsa keyring yang tepat
+
+Halaman berbagi Kalender kini mengikat navigasi, peralihan tampilan, slot waktu, dan kontrol acara dari siklus render composer, mengikuti pola berbagi Jitsi Meet yang telah terbukti. Pilihan penguncian keyring kini memakai tenggat absolut yang tidak diperpanjang oleh aktivitas atau diatur ulang oleh pemuatan halaman maupun server; “Saat Keluar” tidak memiliki tenggat dan mengunci tepat saat sesi terautentikasi berakhir.
+
+## Kontrol kalender bersama yang andal dan kedaluwarsa keyring yang tepat
+
+Halaman berbagi Kalender kini mengikat navigasi, peralihan tampilan, slot waktu, dan kontrol acara dari siklus render composer, mengikuti pola berbagi Jitsi Meet yang telah terbukti. Pilihan penguncian keyring kini memakai tenggat absolut yang tidak diperpanjang oleh aktivitas atau diatur ulang oleh pemuatan halaman maupun server; “Saat Keluar” tidak memiliki tenggat dan mengunci tepat saat sesi terautentikasi berakhir.

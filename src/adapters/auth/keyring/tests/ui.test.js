@@ -148,7 +148,12 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     assert.equal(keyring.isKeyringUnlocked(), true);
     await keyring.setKeyringValue("share:token-1", "share-password");
     await keyring.setKeyringRelockMinutes(15);
+    const expiryKey = [...sessionValues.keys()].find((key) =>
+        key.startsWith("cognis_keyring_session_expires_at:"),
+    );
+    const expiry = sessionValues.get(expiryKey);
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
+    assert.equal(sessionValues.get(expiryKey), expiry);
     assert.equal(keyring.getKeyringRelockMinutes(), 15);
     assert.doesNotMatch(values.get("cognis_secure_keyring"), /share-password/);
 
@@ -158,6 +163,8 @@ test("encrypted keyring unlocks, persists share secrets, and relocks", async () 
     assert.equal(await keyring.unlockKeyring("wrong-password"), false);
     assert.equal(await keyring.unlockKeyring("account-password"), true);
     assert.equal(keyring.getKeyringValue("share:token-1"), "share-password");
+    await keyring.setKeyringRelockMinutes(0);
+    assert.equal(sessionValues.has(expiryKey), false);
     await keyring.lockKeyring();
 });
 
@@ -238,7 +245,12 @@ test("a page reload restores the non-extractable session unlock without promptin
     indexedDbValues.clear();
     localStorage.setItem("cognis_account", "session-restore-user");
     assert.equal(await keyring.unlockKeyring("keyring-password"), true);
+    await keyring.setKeyringRelockMinutes(5);
     await keyring.setKeyringValue("chatroom:session:key", "room-key");
+    const expiryKey = [...sessionValues.keys()].find((key) =>
+        key.startsWith("cognis_keyring_session_expires_at:"),
+    );
+    const expiry = sessionValues.get(expiryKey);
 
     const reloadedKeyring = await import("../ui/keyring.js?session-restore");
     let prompted = false;
@@ -254,10 +266,41 @@ test("a page reload restores the non-extractable session unlock without promptin
         true,
     );
     assert.equal(prompted, false);
+    assert.equal(sessionValues.get(expiryKey), expiry);
     assert.equal(
         reloadedKeyring.getKeyringValue("chatroom:session:key"),
         "room-key",
     );
+    await reloadedKeyring.lockKeyring();
+    await keyring.lockKeyring();
+    localStorage.removeItem("cognis_account");
+});
+
+test("a finite keyring deadline cannot be extended by reloading", async () => {
+    const keyring = await import("../ui/keyring.js");
+    localStorage.setItem("cognis_account", "expired-session-user");
+    assert.equal(await keyring.unlockKeyring("account-password"), true);
+    await keyring.setKeyringRelockMinutes(5);
+    const expiryKey = [...sessionValues.keys()].find((key) =>
+        key.includes(encodeURIComponent("expired-session-user")),
+    );
+    sessionValues.set(expiryKey, String(Date.now() - 1));
+
+    const reloadedKeyring = await import("../ui/keyring.js?expired-session");
+    let prompted = false;
+    assert.equal(
+        await reloadedKeyring.requestKeyringUnlock({
+            i18n: testI18n,
+            passwordPrompt: async () => {
+                prompted = true;
+                return "account-password";
+            },
+            request: testUnlockRequest,
+        }),
+        true,
+    );
+    assert.equal(prompted, true);
+
     await reloadedKeyring.lockKeyring();
     await keyring.lockKeyring();
     localStorage.removeItem("cognis_account");
