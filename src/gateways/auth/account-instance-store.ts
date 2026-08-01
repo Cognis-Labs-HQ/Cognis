@@ -62,23 +62,6 @@ export class AccountInstanceStore {
         });
     }
 
-    async deleteDataOwners(
-        accountId: string,
-        ownerIds: Iterable<string>,
-    ): Promise<void> {
-        const normalizedAccountId = accountId.trim().toLowerCase();
-        for (const ownerId of ownerIds) {
-            await this.db.executeCommand({
-                option: "DELETE",
-                table: "auth_account_data_instances",
-                where: [
-                    { column: "owner_id", value: ownerId },
-                    { column: "account_id", value: normalizedAccountId },
-                ],
-            });
-        }
-    }
-
     async reconcileDataOwner(
         ownerId: string,
         accountId: string,

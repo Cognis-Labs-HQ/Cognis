@@ -58,4 +58,4 @@ const password = await keyring.resolve("meeting:123:password", {
 
 ## 破壊的リセット
 
-`DELETE /api/v1/auth/keyring` は破壊的リセットの契約です。不透明な保管庫を削除する前に、Authentication は `auth:registerKeyringDataOwner` で登録された各所有者を呼び出し、暗号化ルームなどキーリング項目に依存するオブジェクトからアカウントを削除して、アカウントデータインスタンスを更新します。ロック中の Settings 操作はこのルートを使用し、直ちに初回キーリング設定を開始します。解除中の操作は現在の保管庫内の項目だけを削除します。
+`DELETE /api/v1/auth/keyring` は破壊的リセットの契約です。不透明な保管庫を削除する前に、Authentication は `auth:registerKeyringDataOwner` で登録された各所有者を呼び出し、暗号化ルームなどキーリング項目に依存するオブジェクトだけからアカウントを削除します。アカウントインスタンス、プロフィール、フォロワー関係、依存しないアカウント所有データは変更しません。ロック中の Settings 操作はこのルートを使用し、直ちに初回キーリング設定を開始します。解除中の操作は現在の保管庫内の項目だけを削除します。

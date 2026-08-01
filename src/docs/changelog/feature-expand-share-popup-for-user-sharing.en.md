@@ -502,4 +502,4 @@ Calendar share pages now bind navigation, view switching, timeslot, and event co
 
 ## Cancel-safe keyring access and destructive recovery
 
-Cancelling any keyring prompt now flushes concurrent requests, pauses encrypted chat polling, and suppresses further automatic prompts until a floating manual-unlock control succeeds or the page reloads. Locked Settings keeps its clear action available as an explicitly destructive reset that removes keyring-dependent memberships, deletes the vault, rotates its account-data instance, and starts first-time setup; unlocked clearing remains non-destructive.
+Cancelling any keyring prompt now flushes concurrent requests, pauses encrypted chat polling, and suppresses further automatic prompts until a floating manual-unlock control succeeds or the page reloads. Locked Settings keeps its clear action available as an explicitly destructive reset that removes only keyring-dependent memberships, deletes the vault, preserves account identity and unrelated profile/social data, and starts first-time setup; unlocked clearing remains non-destructive.

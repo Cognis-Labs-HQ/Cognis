@@ -105,6 +105,53 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     assert.equal(authGw.required, true);
 });
 
+test("keyring cleanup preserves account identity and unrelated account owners", async () => {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const dbExecutor = createDbExecutor();
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        ...makeBaseCtx(capabilities, dbExecutor),
+    });
+    let profilePurges = 0;
+    let messagePurges = 0;
+    capabilities.require<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerAccountDataOwner")("profile", async () => {
+        profilePurges += 1;
+    });
+    capabilities.require<
+        (ownerId: string, purge: (accountId: string) => Promise<void>) => void
+    >("auth:registerKeyringDataOwner")("messages", async (accountId) => {
+        assert.equal(accountId, "alice");
+        messagePurges += 1;
+    });
+    const getAccountInstanceId = capabilities.require<
+        (accountId: string) => Promise<string>
+    >("auth:getAccountInstanceId");
+    await getAccountInstanceId("Alice");
+
+    await capabilities.require<(accountId: string) => Promise<void>>(
+        "auth:purgeKeyringDependentData",
+    )("Alice");
+
+    assert.equal(messagePurges, 1);
+    assert.equal(profilePurges, 0);
+    const bootstrapSource = await readFile(
+        "src/gateways/auth/bootstrap/index.ts",
+        "utf8",
+    );
+    const keyringPurgeBlock = bootstrapSource.match(
+        /"auth:purgeKeyringDependentData",[\s\S]*?\n\s*\},\n\s*\);/,
+    )?.[0];
+    assert.ok(keyringPurgeBlock);
+    assert.doesNotMatch(keyringPurgeBlock, /accountInstanceStore\.delete/);
+});
+
 test("auth gateway contributes account and token lifecycle capabilities", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();

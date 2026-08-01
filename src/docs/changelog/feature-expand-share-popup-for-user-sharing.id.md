@@ -502,4 +502,4 @@ Halaman berbagi Kalender kini mengikat navigasi, peralihan tampilan, slot waktu,
 
 ## Akses keyring aman-batal dan pemulihan destruktif
 
-Membatalkan permintaan keyring kini menolak permintaan bersamaan, menjeda polling chat terenkripsi, dan menekan dialog otomatis berikutnya sampai kontrol buka kunci manual mengautentikasi atau halaman dimuat ulang. Settings yang terkunci tetap menyediakan tindakan hapus sebagai reset destruktif eksplisit yang menghapus keanggotaan bergantung-keyring, menghapus vault, merotasi instans data akun, dan memulai penyiapan pertama; pengosongan saat terbuka tetap tidak destruktif.
+Membatalkan permintaan keyring kini menolak permintaan bersamaan, menjeda polling chat terenkripsi, dan menekan dialog otomatis berikutnya sampai kontrol buka kunci manual mengautentikasi atau halaman dimuat ulang. Settings yang terkunci tetap menyediakan tindakan hapus sebagai reset destruktif eksplisit yang hanya menghapus keanggotaan bergantung-keyring dan vault, mempertahankan identitas akun serta data profil/sosial yang tidak terkait, lalu memulai penyiapan pertama; pengosongan saat terbuka tetap tidak destruktif.
