@@ -23,3 +23,7 @@ A completed account login now discards any browser session unlock key. Keyrings 
 ## Chats unlock before key recovery
 
 Opening a conversation now checks and unlocks the local keyring before requesting a missing room key. Room metadata no longer distributes keys; an explicit, authenticated room-entry request recovers a key only after the unlocked keyring reports it missing.
+
+## Destroy removes every local key
+
+Destroying a keyring now waits for pending saves, removes its local envelope and session key, and invalidates component key caches before creating the replacement vault. The destructive confirmation uses cancel styling, while the safe cancellation action uses confirm styling.

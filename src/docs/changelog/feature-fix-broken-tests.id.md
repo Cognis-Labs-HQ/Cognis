@@ -23,3 +23,7 @@ Login akun yang selesai kini menghapus kunci pembuka sesi browser. Keyring denga
 ## Chat membuka keyring sebelum pemulihan kunci
 
 Saat percakapan dibuka, keyring lokal kini diperiksa dan dibuka sebelum kunci ruang yang hilang diminta. Metadata ruang tidak lagi membagikan kunci; permintaan masuk ruang yang eksplisit dan terautentikasi hanya memulihkan kunci setelah keyring yang terbuka melaporkannya hilang.
+
+## Penghancuran menghapus setiap kunci lokal
+
+Menghancurkan keyring kini menunggu penyimpanan yang tertunda, menghapus amplop lokal dan kunci sesi, serta membatalkan cache kunci komponen sebelum brankas pengganti dibuat. Konfirmasi destruktif menggunakan gaya batal, sedangkan tindakan pembatalan yang aman menggunakan gaya konfirmasi.

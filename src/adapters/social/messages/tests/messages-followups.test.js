@@ -416,6 +416,25 @@ test("server room key contributions are validated and saved to the keyring", asy
     assert.equal(await requireRoomKey("room-1"), imported);
 });
 
+test("destroying the keyring clears cached room keys", async () => {
+    const imported = { type: "secret" };
+    const store = createRoomKeyStore({
+        importKey: async () => imported,
+        contributeSecret: async () => undefined,
+    });
+    await store.contributeRoomKey("room-1", {
+        id: "chatroom:room-1:key",
+        value: "generated-room-key",
+    });
+
+    store.clearRoomKeys();
+
+    await assert.rejects(
+        () => store.requireRoomKey("room-1"),
+        (error) => error.code === "missing_keyring_secret",
+    );
+});
+
 test("messages unlock the keyring before accepting a delivered room key", () => {
     const source = readMessagesUiBundle();
 
@@ -424,6 +443,8 @@ test("messages unlock the keyring before accepting a delivered room key", () => 
     assert.match(source, /keyring:isUnlocked/);
     assert.match(source, /recoverMissing !== true/);
     assert.match(source, /\/key-contribution/);
+    assert.match(source, /event\.detail\?\.type !== "destroy"/);
+    assert.match(source, /roomKeys\.clearRoomKeys\(\)/);
     assert.match(source, /keyringScopeFactory\?\.\("Social Messages"\)/);
     assert.match(source, /roomKeys\.contributeRoomKey/);
     assert.doesNotMatch(source, /auth:createRepromptGuard/);

@@ -255,12 +255,12 @@ export function createSettingsSection({ i18n, root }) {
                     {
                         id: "clear",
                         label: i18n.t(actionKey),
-                        variant: destroy ? "danger" : "neutral",
+                        variant: destroy ? "cancel" : "neutral",
                     },
                     {
                         id: "cancel",
                         label: i18n.t("ui.reuse.cancel"),
-                        variant: "danger",
+                        variant: destroy ? "confirm" : "danger",
                     },
                 ],
             })) === "clear"

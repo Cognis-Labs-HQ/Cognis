@@ -23,3 +23,7 @@ Nach einer Kontoanmeldung wird jeder Entsperrschlüssel der Browsersitzung verwo
 ## Chats entsperren vor der Schlüsselwiederherstellung
 
 Beim Öffnen einer Unterhaltung wird nun zuerst der lokale Schlüsselbund geprüft und entsperrt, bevor ein fehlender Raumschlüssel angefordert wird. Raummetadaten verteilen keine Schlüssel mehr; eine ausdrückliche, authentifizierte Raumeintrittsanfrage stellt einen Schlüssel erst wieder her, nachdem der entsperrte Schlüsselbund ihn als fehlend gemeldet hat.
+
+## Zerstören entfernt jeden lokalen Schlüssel
+
+Beim Zerstören eines Schlüsselbunds werden nun ausstehende Speichervorgänge abgewartet, die lokale Hülle und der Sitzungsschlüssel entfernt sowie Schlüsselzwischenspeicher der Komponenten ungültig gemacht, bevor der Ersatzspeicher erstellt wird. Die zerstörerische Bestätigung verwendet die Abbruchdarstellung, während der sichere Abbruch die Bestätigungsdarstellung nutzt.

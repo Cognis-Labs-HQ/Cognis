@@ -360,14 +360,7 @@ function persistVault() {
     return persistence;
 }
 
-function recordKeyringEvent(type, identifier = "") {
-    if (!vaultData) return;
-    vaultData.events ??= [];
-    vaultData.events.push({
-        type: String(type),
-        identifier: String(identifier),
-        timestamp: new Date().toISOString(),
-    });
+function dispatchKeyringEvent(type, identifier = "") {
     if (typeof window !== "undefined") {
         window.dispatchEvent(
             new CustomEvent("cognis:keyring-event", {
@@ -379,7 +372,16 @@ function recordKeyringEvent(type, identifier = "") {
         );
     }
 }
-
+function recordKeyringEvent(type, identifier = "") {
+    if (!vaultData) return;
+    vaultData.events ??= [];
+    vaultData.events.push({
+        type: String(type),
+        identifier: String(identifier),
+        timestamp: new Date().toISOString(),
+    });
+    dispatchKeyringEvent(type, identifier);
+}
 function persistRecordedEvent() {
     void persistVault().catch(() => undefined);
 }
@@ -866,11 +868,13 @@ export async function clearKeyringValues() {
 export async function destroyKeyring({
     requestSetupPassword = requestKeyringSetup,
 } = {}) {
+    await persistenceQueue;
     const response = await apiFetch(KEYRING_API, { method: "DELETE" });
     if (!response.ok) return false;
     clearVault(true);
     removeLocalEnvelope();
     await clearSessionUnlockKey();
+    dispatchKeyringEvent("destroy");
     const password = await requestSetupPassword("");
     const recreated = password ? await unlockKeyring(password) : false;
     if (recreated) resumeKeyringAccess();

@@ -84,11 +84,17 @@ export function createRoomKeyStore({
         return requireRoomKey(roomId);
     }
 
+    function clearRoomKeys() {
+        roomKeyCache.clear();
+        roomKeyValues.clear();
+    }
+
     return {
         getRoomKey,
         requireRoomKey,
         contributeRoomKey,
         resolveThreadRoomKey,
         hasIncomingPendingRequest,
+        clearRoomKeys,
     };
 }

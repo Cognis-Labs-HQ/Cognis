@@ -7,6 +7,7 @@ const FLOW_ID = "load-social-chat";
 let messagesKeyring = null;
 let messagesI18nPromise = null;
 const pendingRoomKeyLoads = new Map();
+let keyringGeneration = 0;
 
 function getMessagesKeyring() {
     if (messagesKeyring) return messagesKeyring;
@@ -63,9 +64,12 @@ uiCtx.extendFlow(
     "resolve-keyring",
     { id: "social-messages:resolve-keyring" },
     async (stageContext) => {
-        stageContext.data.roomKey = await roomKeys.getRoomKey(
-            stageContext.input.roomId,
-        );
+        const roomKey = await roomKeys.getRoomKey(stageContext.input.roomId);
+        if (stageContext.input.keyringGeneration !== keyringGeneration) {
+            roomKeys.clearRoomKeys();
+            return;
+        }
+        stageContext.data.roomKey = roomKey;
     },
 );
 
@@ -76,6 +80,7 @@ uiCtx.extendFlow(
     async (stageContext) => {
         if (
             stageContext.data.roomKey ||
+            stageContext.input.keyringGeneration !== keyringGeneration ||
             stageContext.input.recoverMissing !== true ||
             !uiCtx.capabilities.get("keyring:isUnlocked")?.()
         ) {
@@ -96,7 +101,11 @@ uiCtx.extendFlow(
     "persist-key-contribution",
     { id: "social-messages:persist-key-contribution" },
     async (stageContext) => {
-        if (stageContext.data.roomKey || !stageContext.data.keyContribution) {
+        if (
+            stageContext.input.keyringGeneration !== keyringGeneration ||
+            stageContext.data.roomKey ||
+            !stageContext.data.keyContribution
+        ) {
             return;
         }
         const contributed = await roomKeys.contributeRoomKey(
@@ -119,12 +128,18 @@ export async function loadChatRoomKey(roomId, { recoverMissing = false } = {}) {
         return existingLoad;
     }
 
+    const loadGeneration = keyringGeneration;
     const pendingLoad = uiCtx
         .runFlow(FLOW_ID, {
             roomId,
             recoverMissing,
+            keyringGeneration: loadGeneration,
         })
-        .then((result) => result.data.roomKey ?? null)
+        .then((result) =>
+            loadGeneration === keyringGeneration
+                ? (result.data.roomKey ?? null)
+                : null,
+        )
         .finally(() => {
             if (pendingRoomKeyLoads.get(loadId) === pendingLoad) {
                 pendingRoomKeyLoads.delete(loadId);
@@ -132,6 +147,15 @@ export async function loadChatRoomKey(roomId, { recoverMissing = false } = {}) {
         });
     pendingRoomKeyLoads.set(loadId, pendingLoad);
     return pendingLoad;
+}
+
+if (typeof window !== "undefined") {
+    window.addEventListener("cognis:keyring-event", (event) => {
+        if (event.detail?.type !== "destroy") return;
+        keyringGeneration += 1;
+        pendingRoomKeyLoads.clear();
+        roomKeys.clearRoomKeys();
+    });
 }
 
 export async function requireChatRoomKey(roomId, options = {}) {
