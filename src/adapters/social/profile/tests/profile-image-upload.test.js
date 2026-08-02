@@ -51,6 +51,17 @@ test("successful uploads do not fail on optional follow-up data", () => {
     );
 });
 
+test("profile image selection and upload reject duplicate activation", () => {
+    assert.match(PROFILE_APP_SOURCE, /pendingImageSelections\.has\(kind\)/);
+    assert.match(PROFILE_APP_SOURCE, /pendingImageSelections\.add\(kind\)/);
+    assert.match(PROFILE_UPLOAD_SOURCE, /pendingUploads\.has\(kind\)/);
+    assert.match(PROFILE_UPLOAD_SOURCE, /pendingUploads\.add\(kind\)/);
+    assert.match(
+        PROFILE_UPLOAD_SOURCE,
+        /finally \{\s*pendingUploads\.delete\(kind\);\s*\}/,
+    );
+});
+
 test("profile media refreshes only the profile hero composer card", () => {
     assert.match(
         PROFILE_APP_SOURCE,

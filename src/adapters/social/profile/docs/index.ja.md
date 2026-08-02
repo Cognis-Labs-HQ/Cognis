@@ -31,3 +31,7 @@
 | `src/gateways/profile/routes/social.ts`  | フォロー、ブロック、フォロワーのルート         |
 | `src/gateways/profile/routes/posts.ts`   | 投稿の作成、一覧表示、削除                     |
 | `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — すべてのプロフィールSQL操作 |
+
+## プロフィールの即時更新
+
+保存したプロフィール情報はすぐに表示されます。フォロワー数、フォロー数、および各ユーザーカードは自動的に更新されます。プロフィール画像では、一度に1件の選択またはアップロードだけを受け付けます。

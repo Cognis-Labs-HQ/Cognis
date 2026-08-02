@@ -178,6 +178,17 @@ function refreshProfileHero() {
     bindProfileHeroEvents();
 }
 
+function refreshProfileCards(cardIds) {
+    for (const cardId of cardIds) {
+        const cardElement = elements.find((element) => element.id === cardId);
+        const cardHost = root.querySelector(
+            `[data-composer-element="${CSS.escape(cardId)}"]`,
+        );
+        if (!cardElement || !(cardHost instanceof HTMLElement)) continue;
+        cardHost.innerHTML = cardElement.render();
+    }
+}
+
 async function loadSocialConnectionList(profileHandle, connectionKind) {
     const response = await apiFetch(
         `/api/v1/social/users/${encodeURIComponent(profileHandle)}/${connectionKind}`,
@@ -206,7 +217,14 @@ async function refreshFollowerCounts() {
     if (!followersChanged && !followingChanged) return false;
     followers = latestFollowers;
     following = latestFollowing;
-    refreshPage();
+    refreshProfileCards([
+        "hero",
+        ...(followersChanged ? ["followers"] : []),
+        ...(followingChanged ? ["following"] : []),
+        "suggested",
+    ]);
+    bindProfileHeroEvents();
+    bindSocialCardEvents();
     return true;
 }
 
@@ -243,6 +261,20 @@ bannerFileInput.type = "file";
 bannerFileInput.accept = "image/*";
 bannerFileInput.hidden = true;
 document.body.appendChild(bannerFileInput);
+const pendingImageSelections = new Set();
+
+function requestImageSelection(kind, fileInput) {
+    if (pendingImageSelections.has(kind)) return;
+    pendingImageSelections.add(kind);
+    window.addEventListener(
+        "focus",
+        () => {
+            window.setTimeout(() => pendingImageSelections.delete(kind), 0);
+        },
+        { once: true },
+    );
+    fileInput.click();
+}
 
 async function openEditPopup() {
     const currentBio = profile?.bio ?? "";
@@ -413,9 +445,11 @@ async function openEditPopup() {
                     i18n.t("ui.app.profile.save_failed");
                 throw new Error(responseMessage);
             }
+            const responseBody = await response.json();
             localStorage.setItem("cognis_display_name", displayName);
-            setState({ profile: await loadOwnProfile() });
-            refreshPage();
+            setState({ profile: responseBody.data });
+            refreshProfileCards(["hero", "social-links", "posts-new"]);
+            bindProfileHeroEvents();
             updateNavbarAvatar().catch(() => {});
             showToast(i18n.t("ui.app.profile.saved"), { variant: "success" });
         } catch (error) {
@@ -435,6 +469,7 @@ avatarFileInput.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
     if (!file) {
         avatarFileInput.value = "";
+        pendingImageSelections.delete("avatar");
         return;
     }
     try {
@@ -447,12 +482,14 @@ avatarFileInput.addEventListener("change", async () => {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
     }
     avatarFileInput.value = "";
+    pendingImageSelections.delete("avatar");
 });
 
 bannerFileInput.addEventListener("change", async () => {
     const file = bannerFileInput.files?.[0];
     if (!file) {
         bannerFileInput.value = "";
+        pendingImageSelections.delete("banner");
         return;
     }
     try {
@@ -465,6 +502,7 @@ bannerFileInput.addEventListener("change", async () => {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
     }
     bannerFileInput.value = "";
+    pendingImageSelections.delete("banner");
 });
 
 function bindFollowButtonHover(button) {
@@ -517,13 +555,13 @@ function bindProfileHeroEvents() {
                 bannerHeight,
                 bannerRect,
             );
-            bannerFileInput.click();
+            requestImageSelection("banner", bannerFileInput);
         },
     );
     root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
         "click",
         () => {
-            avatarFileInput.click();
+            requestImageSelection("avatar", avatarFileInput);
         },
     );
     root.querySelector(".profile-avatar-remove-btn")?.addEventListener(
@@ -612,6 +650,18 @@ function bindProfileHeroEvents() {
             },
         );
     }
+}
+
+function bindSocialCardEvents() {
+    root.querySelectorAll(".profile-follow-btn[data-handle]").forEach(
+        (button) => {
+            if (button.dataset.followActionBound === "true") return;
+            button.dataset.followActionBound = "true";
+            button.addEventListener("click", () =>
+                postActions?.doFollowUser(button.dataset.handle),
+            );
+        },
+    );
 }
 
 function bindPageEvents() {
@@ -705,13 +755,7 @@ function bindPageEvents() {
             );
         },
     );
-    root.querySelectorAll(".profile-follow-btn[data-handle]").forEach(
-        (button) => {
-            button.addEventListener("click", () =>
-                postActions?.doFollowUser(button.dataset.handle),
-            );
-        },
-    );
+    bindSocialCardEvents();
 }
 
 export async function mount(rootEl, { signal } = {}) {

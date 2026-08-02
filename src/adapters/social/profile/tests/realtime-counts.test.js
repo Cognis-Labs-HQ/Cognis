@@ -17,9 +17,21 @@ test("profile page polls follower and following lists for real-time counts", () 
         appSource,
         /loadSocialConnectionList\(profileHandle, "following"\)/,
     );
-    assert.match(appSource, /refreshPage\(\)/);
+    assert.match(
+        appSource,
+        /refreshProfileCards\(\[\s*"hero",[\s\S]*?followersChanged[\s\S]*?followingChanged[\s\S]*?"suggested",\s*\]\)/,
+    );
     assert.match(
         appSource,
         /signal\?\.addEventListener\("abort", stopFollowerCountPoller/,
+    );
+});
+
+test("profile edits repaint profile cards from the mutation response", () => {
+    assert.match(appSource, /const responseBody = await response\.json\(\)/);
+    assert.match(appSource, /setState\(\{ profile: responseBody\.data \}\)/);
+    assert.match(
+        appSource,
+        /refreshProfileCards\(\["hero", "social-links", "posts-new"\]\)/,
     );
 });
