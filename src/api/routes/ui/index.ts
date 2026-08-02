@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import {
     isRoleAllowed,
@@ -25,6 +25,34 @@ const PUBLIC_ROOT = path.join(UI_ROOT, "public");
 const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
     path.resolve(process.cwd(), "src", "modules");
+const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
+const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
+const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
+
+function versionAssetUrl(assetUrl: string): string {
+    if (!assetUrl.startsWith("/static/") && !assetUrl.startsWith("/assets/")) {
+        return assetUrl;
+    }
+    const separator = assetUrl.includes("?") ? "&" : "?";
+    return `${assetUrl}${separator}v=${encodeURIComponent(ASSET_VERSION)}`;
+}
+
+function versionDescriptor<T>(descriptor: T): T {
+    if (Array.isArray(descriptor)) {
+        return descriptor.map(versionDescriptor) as T;
+    }
+    if (descriptor && typeof descriptor === "object") {
+        return Object.fromEntries(
+            Object.entries(descriptor).map(([key, value]) => [
+                key,
+                typeof value === "string"
+                    ? versionAssetUrl(value)
+                    : versionDescriptor(value),
+            ]),
+        ) as T;
+    }
+    return descriptor;
+}
 
 function resolveContentType(filePath: string) {
     const ext = path.extname(filePath);
@@ -42,6 +70,7 @@ function resolveContentType(filePath: string) {
 }
 
 async function serveStaticAsset(
+    req: IncomingMessage,
     res: ServerResponse,
     filePath: string,
     contentType: string,
@@ -50,13 +79,31 @@ async function serveStaticAsset(
     cacheControl: string = "no-store",
 ) {
     try {
-        const file = await readFile(filePath);
-        res.writeHead(200, {
+        const metadata = await stat(filePath);
+        const etag = `W/\"${metadata.size.toString(16)}-${Math.trunc(metadata.mtimeMs).toString(16)}\"`;
+        const headers = {
             "content-type": contentType,
             "cache-control": cacheControl,
+            etag,
+            "last-modified": metadata.mtime.toUTCString(),
             "x-content-type-options": "nosniff",
+        };
+        if (
+            req.headers["if-none-match"] === etag ||
+            (!req.headers["if-none-match"] &&
+                req.headers["if-modified-since"] &&
+                Date.parse(req.headers["if-modified-since"]) >=
+                    Math.trunc(metadata.mtimeMs / 1000) * 1000)
+        ) {
+            res.writeHead(304, headers);
+            res.end();
+            return;
+        }
+        res.writeHead(200, {
+            ...headers,
+            "content-length": metadata.size,
         });
-        res.end(file);
+        res.end(await readFile(filePath));
     } catch (error) {
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
@@ -71,6 +118,27 @@ async function serveStaticAsset(
             }),
         );
     }
+}
+
+async function serveVersionedAsset(
+    req: IncomingMessage,
+    res: ServerResponse,
+    url: URL,
+    filePath: string,
+    contentType: string,
+    routeContext?: RouteContext,
+) {
+    routeContext?.setPageSecurityHeaders(res);
+    const isVersioned = url.searchParams.get("v") === ASSET_VERSION;
+    await serveStaticAsset(
+        req,
+        res,
+        filePath,
+        contentType,
+        undefined,
+        undefined,
+        isVersioned ? IMMUTABLE_CACHE_CONTROL : REVALIDATED_CACHE_CONTROL,
+    );
 }
 
 async function serveFile(
@@ -262,8 +330,29 @@ export function createUiRoutes(
             return true;
         }
 
+        if (
+            url.pathname === "/api/v1/ui/asset-manifest" &&
+            req.method === "GET"
+        ) {
+            res.writeHead(200, {
+                "content-type": "application/json; charset=utf-8",
+                "cache-control": REVALIDATED_CACHE_CONTROL,
+            });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        version: ASSET_VERSION,
+                        queryParameter: "v",
+                        immutableCacheControl: IMMUTABLE_CACHE_CONTROL,
+                    },
+                }),
+            );
+            return true;
+        }
+
         if (url.pathname === "/manifest.webmanifest" && req.method === "GET") {
             await serveStaticAsset(
+                req,
                 res,
                 path.join(PUBLIC_ROOT, "manifest.webmanifest"),
                 "application/manifest+json; charset=utf-8",
@@ -790,7 +879,7 @@ export function createUiRoutes(
                 );
             }
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: sections }));
+            res.end(JSON.stringify({ data: versionDescriptor(sections) }));
             return true;
         }
 
@@ -806,7 +895,7 @@ export function createUiRoutes(
                     isRoleAllowed(claims.role, plugin.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: plugins }));
+            res.end(JSON.stringify({ data: versionDescriptor(plugins) }));
             return true;
         }
 
@@ -819,7 +908,7 @@ export function createUiRoutes(
                     isRoleAllowed(claims.role, route.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: routes }));
+            res.end(JSON.stringify({ data: versionDescriptor(routes) }));
             return true;
         }
 
@@ -839,12 +928,12 @@ export function createUiRoutes(
                     /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
                     !filePart.includes("..")
                 ) {
-                    await serveFile(
+                    await serveVersionedAsset(
+                        req,
                         res,
+                        url,
                         path.join(dir, filePart),
                         resolveContentType(filePart),
-                        undefined,
-                        undefined,
                         ctx,
                     );
                     return true;
@@ -874,12 +963,12 @@ export function createUiRoutes(
                     /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
                     !filePart.includes("..")
                 ) {
-                    await serveFile(
+                    await serveVersionedAsset(
+                        req,
                         res,
+                        url,
                         path.join(dir, filePart),
                         resolveContentType(filePart),
-                        undefined,
-                        undefined,
                         ctx,
                     );
                     return true;
@@ -919,12 +1008,12 @@ export function createUiRoutes(
             }
             const resolved = uiRegistry?.resolveModulePath(urlPath);
             if (resolved) {
-                await serveFile(
+                await serveVersionedAsset(
+                    req,
                     res,
+                    url,
                     path.join(resolved.dir, resolved.relPath),
                     resolveContentType(resolved.relPath),
-                    undefined,
-                    undefined,
                     ctx,
                 );
                 return true;
@@ -982,12 +1071,12 @@ export function createUiRoutes(
                 ? path.join(PUBLIC_ROOT, relative)
                 : path.join(STATIC_ROOT, relative);
 
-        await serveFile(
+        await serveVersionedAsset(
+            req,
             res,
+            url,
             filePath,
             resolveContentType(filePath),
-            undefined,
-            undefined,
             ctx,
         );
         return true;
