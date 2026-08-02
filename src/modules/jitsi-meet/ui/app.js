@@ -43,20 +43,6 @@ const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
     showReactionHoverPopup: () => undefined,
     toggleReaction: async () => undefined,
 });
-/**
- * Mounts the Meetings page inside the dashboard shell and wires all runtime
- * interactions (participant selection, meeting lifecycle polling, and chat
- * embed updates). The optional AbortSignal is used by the SPA router to clean
- * up timers and event listeners when users navigate away.
- *
- * When the page is loaded inside a share context (detected via getShareContext()),
- * the shell chrome (topbar, navbar, footer) is hidden and the share button is
- * suppressed — no explicit `embedded` or `shareEnabled` flags are needed.
- *
- * @param {HTMLElement} root - Page mount root (usually #app).
- * @param {{ signal?: AbortSignal, requestedMeetingId?: string }} [options] - Router lifecycle options.
- * @returns {Promise<void>}
- */
 export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     await ensureFullAccountSession();
     const shareContext = getShareContext();

@@ -51,31 +51,31 @@ export async function handleCalendarResponseRoute(input: {
         );
         return;
     }
-    if (activeSharedCalendar) {
+    if (activeSharedCalendar?.permission === "write") {
         sendCalendarError(
             input.res,
             "forbidden",
-            "Shared calendar recipients cannot respond to events.",
+            "Writable shared calendar recipients edit events instead of responding to them.",
             403,
         );
         return;
     }
-    const lookupCalendarId = input.calendarId;
-    const ownedCalendar = input.gateway.getOwnedCalendar(
-        input.claims.sub,
-        lookupCalendarId,
-    );
+    const lookupCalendarId =
+        activeSharedCalendar?.ownerCalendarId ?? input.calendarId;
+    const ownedCalendar = activeSharedCalendar
+        ? null
+        : input.gateway.getOwnedCalendar(input.claims.sub, lookupCalendarId);
     const globallyResolvedEvents = input.gateway.resolveGlobalEventId(
         input.eventId,
     );
-    const event = ownedCalendar
-        ? (globallyResolvedEvents.find(
-              (candidate) => candidate.calendarId === lookupCalendarId,
-          ) ?? null)
-        : null;
-    // Also allow responding when the user is an attendee on a non-owned event
+    const event =
+        ownedCalendar || activeSharedCalendar
+            ? (globallyResolvedEvents.find(
+                  (candidate) => candidate.calendarId === lookupCalendarId,
+              ) ?? null)
+            : null;
     let invitedEvent = null;
-    if (!ownedCalendar) {
+    if (!ownedCalendar && !activeSharedCalendar) {
         const ev = globallyResolvedEvents.find((candidate) =>
             candidate.attendees.includes(input.claims.sub),
         );

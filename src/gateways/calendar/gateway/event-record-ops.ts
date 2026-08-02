@@ -5,6 +5,43 @@ import type {
     CalendarRecord,
 } from "./utils.js";
 
+export function synchronizeAttendeeResponses(input: {
+    responsesByRootEvent: Map<string, Map<string, CalendarEventResponseRecord>>;
+    rootEventId: string;
+    attendees: string[];
+    acceptedAccountId: string | null;
+    saveResponse: (response: CalendarEventResponseRecord) => void;
+    deleteResponse: (accountId: string) => void;
+}): void {
+    const existingResponses =
+        input.responsesByRootEvent.get(input.rootEventId) ?? new Map();
+    const nextAccountIds = new Set(input.attendees);
+    for (const attendee of input.attendees) {
+        if (existingResponses.has(attendee)) continue;
+        const now = new Date().toISOString();
+        const response: CalendarEventResponseRecord = {
+            rootEventId: input.rootEventId,
+            accountId: attendee,
+            response:
+                attendee === input.acceptedAccountId ? "accepted" : "pending",
+            createdAt: now,
+            updatedAt: now,
+        };
+        existingResponses.set(attendee, response);
+        input.saveResponse(response);
+    }
+    for (const accountId of existingResponses.keys()) {
+        if (nextAccountIds.has(accountId)) continue;
+        existingResponses.delete(accountId);
+        input.deleteResponse(accountId);
+    }
+    if (existingResponses.size > 0) {
+        input.responsesByRootEvent.set(input.rootEventId, existingResponses);
+    } else {
+        input.responsesByRootEvent.delete(input.rootEventId);
+    }
+}
+
 export function upsertCalendarRecord(
     calendarsById: Map<string, CalendarRecord>,
     calendarIdsByOwner: Map<string, Set<string>>,
