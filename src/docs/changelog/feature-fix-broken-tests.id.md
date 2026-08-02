@@ -11,3 +11,7 @@ Membagikan kalender kembali kepada penerima yang sudah ada tidak lagi mengatur u
 ## Berkas sumber memenuhi batas arsitektur
 
 Berkas sumber kalender, rapat, dan papan tulis diringkas hingga di bawah batas ukuran yang diberlakukan tanpa mengubah perilakunya.
+
+## Popup berbagi berhasil dimuat
+
+Popup Berbagi Tautan kini memuat panggilan balik API dari jalur aset statis Gateway Berbagi yang terdaftar, bukan meminta berkas lokal adaptor yang tidak tersedia.

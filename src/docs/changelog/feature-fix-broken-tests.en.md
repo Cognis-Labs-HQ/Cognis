@@ -11,3 +11,7 @@ Sharing a calendar with an existing recipient no longer resets write permission 
 ## Source files meet architecture limits
 
 Calendar, meeting, and whiteboard source files were trimmed below the enforced size limit without changing their behavior.
+
+## Share popup loads successfully
+
+The Link Share popup now loads its API callbacks from the Share gateway's registered static asset path instead of requesting a missing adapter-local file.

@@ -11,3 +11,7 @@ Eine erneute Kalenderfreigabe für einen vorhandenen Empfänger setzt Schreibber
 ## Quelldateien erfüllen Architekturgrenzen
 
 Kalender-, Besprechungs- und Whiteboard-Quelldateien wurden ohne Verhaltensänderungen unter die vorgegebene Größenbegrenzung gebracht.
+
+## Freigabefenster wird erfolgreich geladen
+
+Das Linkfreigabefenster lädt seine API-Rückrufe jetzt über den registrierten statischen Pfad des Freigabe-Gateways, anstatt eine fehlende adapterlokale Datei anzufordern.
