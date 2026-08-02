@@ -15,3 +15,7 @@ Calendar, meeting, and whiteboard source files were trimmed below the enforced s
 ## Share popup loads successfully
 
 The Link Share popup now loads its API callbacks from the Share gateway's registered static asset path instead of requesting a missing adapter-local file.
+
+## Recreated keyrings restore on login
+
+Session restoration now applies the authoritative account instance before persisting a recreated keyring, preventing synchronization conflicts for LDAP accounts whose keyring password differs from their login password.

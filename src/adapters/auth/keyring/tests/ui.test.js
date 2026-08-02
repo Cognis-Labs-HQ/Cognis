@@ -633,6 +633,61 @@ test("destroying a locked keyring recreates an empty vault", async () => {
     }
 });
 
+test("login restores a recreated custom-password keyring with its account instance", async () => {
+    const keyring = await import("../ui/keyring.js");
+    const originalFetch = globalThis.fetch;
+    values.clear();
+    sessionValues.clear();
+    indexedDbValues.clear();
+    localStorage.setItem("cognis_account", "recreated-ldap-keyring-user");
+    let remoteEnvelope = null;
+    const accountInstanceId = "recreated-ldap-account-instance";
+    globalThis.fetch = async (_requestPath, options = {}) => {
+        if (options.method === "PUT") {
+            const submittedEnvelope = JSON.parse(options.body).vault;
+            if (submittedEnvelope.accountInstanceId !== accountInstanceId) {
+                return new Response(null, { status: 409 });
+            }
+            remoteEnvelope = submittedEnvelope;
+            return new Response(JSON.stringify({ data: { saved: true } }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            });
+        }
+        return new Response(
+            JSON.stringify({
+                data: {
+                    vault: remoteEnvelope,
+                    accountInstanceId,
+                },
+            }),
+            {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            },
+        );
+    };
+    try {
+        assert.equal(
+            await keyring.unlockKeyring("custom-keyring-password"),
+            true,
+        );
+        const reloadedKeyring =
+            await import("../ui/keyring.js?recreated-ldap-keyring");
+
+        assert.deepEqual(
+            await reloadedKeyring.setupKeyringAfterLogin("ldap-password"),
+            { setup: false, unlocked: true, restored: true },
+        );
+        assert.equal(remoteEnvelope.accountInstanceId, accountInstanceId);
+        await reloadedKeyring.lockKeyring();
+    } finally {
+        globalThis.fetch = originalFetch;
+        await keyring.lockKeyring();
+        localStorage.removeItem("cognis_account");
+    }
+});
+
 test("cancelling one unlock flushes concurrent and future requests until manual unlock", async () => {
     const keyring = await import("../ui/keyring.js");
     await keyring.lockKeyring();

@@ -732,6 +732,9 @@ export async function setupKeyringAfterLogin(
 ) {
     const localEnvelope = loadLocalEnvelope();
     const remoteState = await loadRemoteEnvelope();
+    accountInstanceId =
+        remoteState.accountInstanceId ||
+        String(localEnvelope?.accountInstanceId ?? "");
     const storedEnvelope = selectKeyringEnvelope(localEnvelope, remoteState);
     if (remoteState.resolved && localEnvelope && !storedEnvelope) {
         removeLocalEnvelope();

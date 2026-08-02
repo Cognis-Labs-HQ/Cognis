@@ -15,3 +15,7 @@ Kalender-, Besprechungs- und Whiteboard-Quelldateien wurden ohne Verhaltensände
 ## Freigabefenster wird erfolgreich geladen
 
 Das Linkfreigabefenster lädt seine API-Rückrufe jetzt über den registrierten statischen Pfad des Freigabe-Gateways, anstatt eine fehlende adapterlokale Datei anzufordern.
+
+## Neu erstellte Schlüsselbunde werden bei der Anmeldung wiederhergestellt
+
+Die Sitzungswiederherstellung übernimmt nun vor dem Speichern eines neu erstellten Schlüsselbunds die maßgebliche Kontoinstanz. Dadurch werden Synchronisierungskonflikte bei LDAP-Konten vermieden, deren Schlüsselbundpasswort vom Anmeldepasswort abweicht.
