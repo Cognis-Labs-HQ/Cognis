@@ -735,14 +735,13 @@ export async function setupKeyringAfterLogin(
     accountInstanceId =
         remoteState.accountInstanceId ||
         String(localEnvelope?.accountInstanceId ?? "");
+    clearVault(false);
+    await clearSessionUnlockKey();
     const storedEnvelope = selectKeyringEnvelope(localEnvelope, remoteState);
     if (remoteState.resolved && localEnvelope && !storedEnvelope) {
         removeLocalEnvelope();
     }
     if (storedEnvelope) {
-        if (await restoreSessionUnlock(storedEnvelope, remoteState)) {
-            return { setup: false, unlocked: true, restored: true };
-        }
         if (accountPassword && (await unlockKeyring(accountPassword))) {
             return { setup: false, unlocked: true };
         }

@@ -16,6 +16,6 @@ Berkas sumber kalender, rapat, dan papan tulis diringkas hingga di bawah batas u
 
 Popup Berbagi Tautan kini memuat panggilan balik API dari jalur aset statis Gateway Berbagi yang terdaftar, bukan meminta berkas lokal adaptor yang tidak tersedia.
 
-## Keyring yang dibuat ulang dipulihkan saat masuk
+## Login membatalkan pembukaan keyring
 
-Pemulihan sesi kini menerapkan instans akun resmi sebelum menyimpan keyring yang dibuat ulang, sehingga mencegah konflik sinkronisasi pada akun LDAP yang kata sandi keyring-nya berbeda dari kata sandi masuk.
+Login akun yang selesai kini menghapus kunci pembuka sesi browser. Keyring dengan kata sandi terpisah tetap terkunci sampai kata sandi tersebut dimasukkan secara lokal, sedangkan pemuatan ulang halaman biasa masih dapat mempertahankan sesi yang dibuka secara eksplisit.

@@ -16,6 +16,6 @@ Kalender-, Besprechungs- und Whiteboard-Quelldateien wurden ohne Verhaltensände
 
 Das Linkfreigabefenster lädt seine API-Rückrufe jetzt über den registrierten statischen Pfad des Freigabe-Gateways, anstatt eine fehlende adapterlokale Datei anzufordern.
 
-## Neu erstellte Schlüsselbunde werden bei der Anmeldung wiederhergestellt
+## Anmeldung verwirft Schlüsselbund-Entsperrung
 
-Die Sitzungswiederherstellung übernimmt nun vor dem Speichern eines neu erstellten Schlüsselbunds die maßgebliche Kontoinstanz. Dadurch werden Synchronisierungskonflikte bei LDAP-Konten vermieden, deren Schlüsselbundpasswort vom Anmeldepasswort abweicht.
+Nach einer Kontoanmeldung wird jeder Entsperrschlüssel der Browsersitzung verworfen. Schlüsselbunde mit eigenem Passwort bleiben gesperrt, bis dieses lokal eingegeben wird; bei gewöhnlichen Seitenaktualisierungen kann eine ausdrücklich entsperrte Sitzung erhalten bleiben.

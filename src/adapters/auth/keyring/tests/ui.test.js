@@ -633,7 +633,7 @@ test("destroying a locked keyring recreates an empty vault", async () => {
     }
 });
 
-test("login restores a recreated custom-password keyring with its account instance", async () => {
+test("login requires the recreated custom keyring password after session invalidation", async () => {
     const keyring = await import("../ui/keyring.js");
     const originalFetch = globalThis.fetch;
     values.clear();
@@ -677,8 +677,24 @@ test("login restores a recreated custom-password keyring with its account instan
 
         assert.deepEqual(
             await reloadedKeyring.setupKeyringAfterLogin("ldap-password"),
-            { setup: false, unlocked: true, restored: true },
+            {
+                setup: false,
+                unlocked: false,
+            },
         );
+        let prompted = false;
+        assert.equal(
+            await reloadedKeyring.requestKeyringUnlock({
+                i18n: testI18n,
+                passwordPrompt: async () => {
+                    prompted = true;
+                    return "custom-keyring-password";
+                },
+                request: testUnlockRequest,
+            }),
+            true,
+        );
+        assert.equal(prompted, true);
         assert.equal(remoteEnvelope.accountInstanceId, accountInstanceId);
         await reloadedKeyring.lockKeyring();
     } finally {
