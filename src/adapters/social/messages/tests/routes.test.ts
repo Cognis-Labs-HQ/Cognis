@@ -802,7 +802,7 @@ test("GET /messages/rooms/:id/messages returns messages when no pending request 
     assert.equal(payload.data[0].id, "msg-1");
 });
 
-test("GET /messages/rooms/:id generates and contributes a missing room key to members", async () => {
+test("POST /messages/rooms/:id/key-contribution explicitly contributes a room key to members", async () => {
     const token = issueAccessToken("alice", "user", 60);
     let generated = false;
     const messagesStore = {
@@ -864,14 +864,16 @@ test("GET /messages/rooms/:id generates and contributes a missing room key to me
     let responseBody = "";
 
     await route(
-        makeReq("GET", token),
+        makeReq("POST", token),
         {
             writeHead() {},
             end(payload: string) {
                 responseBody = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/social/messages/rooms/room-1"),
+        new URL(
+            "http://localhost/api/v1/social/messages/rooms/room-1/key-contribution",
+        ),
     );
 
     assert.equal(generated, true);

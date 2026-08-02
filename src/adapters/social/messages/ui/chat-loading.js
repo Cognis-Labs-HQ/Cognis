@@ -52,25 +52,38 @@ const roomKeys = createRoomKeyStore({
 
 if (!uiCtx.flowExists(FLOW_ID)) {
     uiCtx.registerFlow(FLOW_ID, [
-        "load-key-contribution",
         "resolve-keyring",
+        "request-key-contribution",
         "persist-key-contribution",
     ]);
 }
 
 uiCtx.extendFlow(
     FLOW_ID,
-    "load-key-contribution",
-    { id: "social-messages:load-key-contribution" },
+    "resolve-keyring",
+    { id: "social-messages:resolve-keyring" },
     async (stageContext) => {
-        if (!uiCtx.capabilities.get("keyring:isUnlocked")?.()) return;
-        if (stageContext.input.keyContribution) {
-            stageContext.data.keyContribution =
-                stageContext.input.keyContribution;
+        stageContext.data.roomKey = await roomKeys.getRoomKey(
+            stageContext.input.roomId,
+        );
+    },
+);
+
+uiCtx.extendFlow(
+    FLOW_ID,
+    "request-key-contribution",
+    { id: "social-messages:request-key-contribution" },
+    async (stageContext) => {
+        if (
+            stageContext.data.roomKey ||
+            stageContext.input.recoverMissing !== true ||
+            !uiCtx.capabilities.get("keyring:isUnlocked")?.()
+        ) {
             return;
         }
         const response = await apiFetch(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(stageContext.input.roomId)}`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(stageContext.input.roomId)}/key-contribution`,
+            { method: "POST" },
         );
         if (!response.ok) return;
         const payload = await response.json().catch(() => null);
@@ -80,35 +93,10 @@ uiCtx.extendFlow(
 
 uiCtx.extendFlow(
     FLOW_ID,
-    "resolve-keyring",
-    { id: "social-messages:resolve-keyring" },
-    async (stageContext) => {
-        stageContext.data.roomKey = await roomKeys.getRoomKey(
-            stageContext.input.roomId,
-            stageContext.data.keyContribution,
-        );
-    },
-);
-
-uiCtx.extendFlow(
-    FLOW_ID,
     "persist-key-contribution",
     { id: "social-messages:persist-key-contribution" },
     async (stageContext) => {
         if (stageContext.data.roomKey || !stageContext.data.keyContribution) {
-            return;
-        }
-        const requestUnlock = getMessagesKeyring()?.requestUnlock;
-        const request = await buildChatUnlockRequest(
-            stageContext.input.roomId,
-            "adapter.social.messages.keyring_request_action_save",
-        );
-        if (
-            typeof requestUnlock !== "function" ||
-            !(await requestUnlock({
-                request,
-            }))
-        ) {
             return;
         }
         const contributed = await roomKeys.contributeRoomKey(
@@ -123,19 +111,18 @@ uiCtx.extendFlow(
     },
 );
 
-export async function loadChatRoomKey(roomId, options = {}) {
+export async function loadChatRoomKey(roomId, { recoverMissing = false } = {}) {
     if (!roomId) return null;
-    const loadId = String(roomId);
+    const loadId = `${String(roomId)}:${recoverMissing ? "recover" : "local"}`;
     const existingLoad = pendingRoomKeyLoads.get(loadId);
     if (existingLoad) {
-        const existingKey = await existingLoad;
-        if (existingKey || !options.keyContribution) return existingKey;
+        return existingLoad;
     }
 
     const pendingLoad = uiCtx
         .runFlow(FLOW_ID, {
             roomId,
-            keyContribution: options.keyContribution,
+            recoverMissing,
         })
         .then((result) => result.data.roomKey ?? null)
         .finally(() => {
@@ -148,7 +135,10 @@ export async function loadChatRoomKey(roomId, options = {}) {
 }
 
 export async function requireChatRoomKey(roomId, options = {}) {
-    const roomKey = await loadChatRoomKey(roomId, options);
+    const roomKey = await loadChatRoomKey(roomId, {
+        ...options,
+        recoverMissing: true,
+    });
     if (roomKey) return roomKey;
     const error = new Error("Room key is unavailable in the keyring.");
     error.code = "missing_keyring_secret";

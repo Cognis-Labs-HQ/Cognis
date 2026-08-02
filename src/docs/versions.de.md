@@ -51,7 +51,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.23` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.26` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.27` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.10` |
 | User Share            | `src/adapters/share/user/`          | `1.1.11` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
@@ -92,7 +92,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.48` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.49` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.29` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

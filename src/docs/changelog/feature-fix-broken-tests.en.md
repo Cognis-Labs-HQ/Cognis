@@ -19,3 +19,7 @@ The Link Share popup now loads its API callbacks from the Share gateway's regist
 ## Login invalidates keyring unlocks
 
 A completed account login now discards any browser session unlock key. Keyrings with a separate password remain locked until that password is entered locally, while ordinary page reloads can still retain an explicitly unlocked session.
+
+## Chats unlock before key recovery
+
+Opening a conversation now checks and unlocks the local keyring before requesting a missing room key. Room metadata no longer distributes keys; an explicit, authenticated room-entry request recovers a key only after the unlocked keyring reports it missing.

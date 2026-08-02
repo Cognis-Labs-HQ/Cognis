@@ -123,12 +123,6 @@ export async function mount(root, { signal } = {}) {
         getRoomKey,
         requireRoomKey,
         resolveThreadRoomKey,
-        acceptRoomKeyContribution: async (roomId, keyContribution) =>
-            Boolean(
-                await loadChatRoomKey(roomId, {
-                    keyContribution,
-                }),
-            ),
         lastOpenedRoomKey: LAST_OPENED_ROOM_KEY,
         typingTtlSeconds: TYPING_TTL_SECONDS,
         typingIdleResetMs: TYPING_IDLE_RESET_MS,

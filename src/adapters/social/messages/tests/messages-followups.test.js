@@ -20,7 +20,7 @@ test("all chat consumers use the adapter-owned key loading flow", () => {
     const source = readMessagesUiBundle();
     assert.match(source, /registerFlow\(FLOW_ID/);
     assert.match(source, /"resolve-keyring"/);
-    assert.match(source, /"load-key-contribution"/);
+    assert.match(source, /"request-key-contribution"/);
     assert.match(source, /"persist-key-contribution"/);
     assert.match(source, /social:messages:loadChatRoomKey/);
     assert.doesNotMatch(source, /adapters\/auth\/keyring\/keyring\.js/);
@@ -419,8 +419,11 @@ test("server room key contributions are validated and saved to the keyring", asy
 test("messages unlock the keyring before accepting a delivered room key", () => {
     const source = readMessagesUiBundle();
 
-    assert.match(source, /acceptRoomKeyContribution/);
-    assert.match(source, /getMessagesKeyring\(\)\?\.requestUnlock/);
+    assert.match(source, /"resolve-keyring"/);
+    assert.match(source, /"request-key-contribution"/);
+    assert.match(source, /keyring:isUnlocked/);
+    assert.match(source, /recoverMissing !== true/);
+    assert.match(source, /\/key-contribution/);
     assert.match(source, /keyringScopeFactory\?\.\("Social Messages"\)/);
     assert.match(source, /roomKeys\.contributeRoomKey/);
     assert.doesNotMatch(source, /auth:createRepromptGuard/);
@@ -532,7 +535,8 @@ test("messages serialize concurrent room-key loads during SPA mounting", () => {
         source,
         /const existingLoad = pendingRoomKeyLoads\.get\(loadId\)/,
     );
-    assert.match(source, /if \(existingKey \|\| !options\.keyContribution\)/);
+    assert.match(source, /recoverMissing \? "recover" : "local"/);
+    assert.match(source, /if \(existingLoad\) \{\s*return existingLoad;/);
 });
 
 test("keyring reset preserves message-room membership", () => {

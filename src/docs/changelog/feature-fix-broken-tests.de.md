@@ -19,3 +19,7 @@ Das Linkfreigabefenster lädt seine API-Rückrufe jetzt über den registrierten 
 ## Anmeldung verwirft Schlüsselbund-Entsperrung
 
 Nach einer Kontoanmeldung wird jeder Entsperrschlüssel der Browsersitzung verworfen. Schlüsselbunde mit eigenem Passwort bleiben gesperrt, bis dieses lokal eingegeben wird; bei gewöhnlichen Seitenaktualisierungen kann eine ausdrücklich entsperrte Sitzung erhalten bleiben.
+
+## Chats entsperren vor der Schlüsselwiederherstellung
+
+Beim Öffnen einer Unterhaltung wird nun zuerst der lokale Schlüsselbund geprüft und entsperrt, bevor ein fehlender Raumschlüssel angefordert wird. Raummetadaten verteilen keine Schlüssel mehr; eine ausdrückliche, authentifizierte Raumeintrittsanfrage stellt einen Schlüssel erst wieder her, nachdem der entsperrte Schlüsselbund ihn als fehlend gemeldet hat.

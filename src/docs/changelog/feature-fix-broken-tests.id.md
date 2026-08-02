@@ -19,3 +19,7 @@ Popup Berbagi Tautan kini memuat panggilan balik API dari jalur aset statis Gate
 ## Login membatalkan pembukaan keyring
 
 Login akun yang selesai kini menghapus kunci pembuka sesi browser. Keyring dengan kata sandi terpisah tetap terkunci sampai kata sandi tersebut dimasukkan secara lokal, sedangkan pemuatan ulang halaman biasa masih dapat mempertahankan sesi yang dibuka secara eksplisit.
+
+## Chat membuka keyring sebelum pemulihan kunci
+
+Saat percakapan dibuka, keyring lokal kini diperiksa dan dibuka sebelum kunci ruang yang hilang diminta. Metadata ruang tidak lagi membagikan kunci; permintaan masuk ruang yang eksplisit dan terautentikasi hanya memulihkan kunci setelah keyring yang terbuka melaporkannya hilang.
