@@ -35,6 +35,41 @@ async function buildChatUnlockRequest(roomId, actionKey) {
     };
 }
 
+async function promptForRoomKey(roomId) {
+    await buildChatUnlockRequest(
+        roomId,
+        "adapter.social.messages.keyring_request_action_open",
+    );
+    const [{ openPopup }, { escapeHtml }, i18n] = await Promise.all([
+        import("/static/reuse/popup.js"),
+        import("/static/reuse/escape-html.js"),
+        messagesI18nPromise,
+    ]);
+    let keyInput = null;
+    const result = await openPopup({
+        title: i18n.t("adapter.social.messages.room_key_prompt_title"),
+        body: `<label class="stack"><span>${escapeHtml(i18n.t("adapter.social.messages.room_key_prompt"))}</span><input id="messages-room-key" type="password" autocomplete="off" required></label>`,
+        actions: [
+            {
+                id: "save",
+                label: i18n.t("adapter.social.messages.room_key_save"),
+                variant: "confirm",
+            },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "neutral",
+            },
+        ],
+        onOpen(overlay) {
+            keyInput = overlay.querySelector("#messages-room-key");
+            keyInput?.focus();
+        },
+        onAction: (actionId) => actionId !== "save" || Boolean(keyInput?.value),
+    });
+    return result === "save" ? String(keyInput?.value ?? "") : null;
+}
+
 const roomKeys = createRoomKeyStore({
     importKey: importRoomKey,
     resolveSecret: async (id, options) =>
@@ -49,6 +84,7 @@ const roomKeys = createRoomKeyStore({
             roomId,
             "adapter.social.messages.keyring_request_action_open",
         ),
+    promptSecret: promptForRoomKey,
 });
 
 if (!uiCtx.flowExists(FLOW_ID)) {
@@ -56,6 +92,7 @@ if (!uiCtx.flowExists(FLOW_ID)) {
         "resolve-keyring",
         "request-key-contribution",
         "persist-key-contribution",
+        "prompt-missing-key",
     ]);
 }
 
@@ -70,6 +107,27 @@ uiCtx.extendFlow(
             return;
         }
         stageContext.data.roomKey = roomKey;
+    },
+);
+
+uiCtx.extendFlow(
+    FLOW_ID,
+    "prompt-missing-key",
+    { id: "social-messages:prompt-missing-key" },
+    async (stageContext) => {
+        if (
+            stageContext.data.roomKey ||
+            stageContext.input.keyringGeneration !== keyringGeneration ||
+            stageContext.input.recoverMissing !== true ||
+            !uiCtx.capabilities.get("keyring:isUnlocked")?.()
+        ) {
+            return;
+        }
+        stageContext.data.roomKey = await roomKeys.getRoomKey(
+            stageContext.input.roomId,
+            null,
+            true,
+        );
     },
 );
 

@@ -185,9 +185,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const roomKey =
-                (await messagesStore.getUnwrappedRoomKey(roomId)) ??
-                (await messagesStore.generateAndStoreRoomKey(roomId));
+            const roomKey = await messagesStore.claimRoomKeyContribution(
+                roomId,
+                accountId,
+            );
+            if (!roomKey) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "room_key_already_delivered" },
+                    }),
+                );
+                return true;
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

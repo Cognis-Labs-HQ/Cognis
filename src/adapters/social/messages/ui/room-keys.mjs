@@ -6,6 +6,7 @@ export function createRoomKeyStore({
     contributeSecret = async () => undefined,
     resolveSecret = async (_id, options) => options.fallback?.(),
     buildRequest = async () => null,
+    promptSecret,
 } = {}) {
     const roomKeyCache = new Map();
     const roomKeyValues = new Map();
@@ -16,7 +17,11 @@ export function createRoomKeyStore({
         return pendingRequest?.direction === "incoming";
     }
 
-    async function getRoomKey(roomId, authoritativeContribution = null) {
+    async function getRoomKey(
+        roomId,
+        authoritativeContribution = null,
+        promptMissing = false,
+    ) {
         const authoritativeValue =
             authoritativeContribution?.id === `chatroom:${roomId}:key`
                 ? authoritativeContribution.value
@@ -43,6 +48,10 @@ export function createRoomKeyStore({
             fallback: authoritativeValue
                 ? async () => authoritativeValue
                 : undefined,
+            prompt:
+                !authoritativeValue && promptMissing
+                    ? async () => promptSecret?.(roomId)
+                    : undefined,
         });
         if (!hex) return null;
         const key = await importKey(hex);

@@ -258,6 +258,11 @@ export function registerMeetingLifecycleRoutes({
                     ? `/messages/${encodeURIComponent(resolved.meeting.chatRoomId)}`
                     : null,
                 requiresReclaim,
+                meetingPassword:
+                    (await store.claimMeetingPassword(
+                        resolved.meeting.id,
+                        resolved.requesterUsername,
+                    )) ?? "",
             });
 
             if (meetingStarted) {

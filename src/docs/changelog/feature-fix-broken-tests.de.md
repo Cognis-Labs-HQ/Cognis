@@ -27,3 +27,7 @@ Beim Öffnen einer Unterhaltung wird nun zuerst der lokale Schlüsselbund geprü
 ## Zerstören entfernt jeden lokalen Schlüssel
 
 Beim Zerstören eines Schlüsselbunds werden nun ausstehende Speichervorgänge abgewartet, die lokale Hülle und der Sitzungsschlüssel entfernt sowie Schlüsselzwischenspeicher der Komponenten ungültig gemacht, bevor der Ersatzspeicher erstellt wird. Die zerstörerische Bestätigung verwendet die Abbruchdarstellung, während der sichere Abbruch die Bestätigungsdarstellung nutzt.
+
+## Einmalige Geheimniszustellung und synchronisierte Chatvorschauen
+
+Erstellung und Zerstörung des Schlüsselbunds verwenden nun getrennte Erfolgs- und Warnmeldungen. Chatvorschauen werden aktualisiert, sobald ein Raumschlüssel in den Schlüsselbund gelangt, und der Server protokolliert die Raumschlüsselzustellung pro Mitglied, sodass ein authentifiziertes Mitglied einen erzeugten Raumschlüssel nur einmal erhalten kann; ein verlorener Schlüssel muss manuell oder durch eine neue Teilnehmereinladung bereitgestellt werden. Besprechungspasswörter sind im Ruhezustand verschlüsselt und werden jedem eingeladenen Teilnehmer ebenfalls nur beim ersten Beitritt zugestellt.

@@ -17,6 +17,7 @@ export interface MemberRow {
     role: MemberRole;
     joinedAt: string;
     lastReadAt: string | null;
+    keyDeliveredAt: string | null;
     muted: boolean;
     archived: boolean;
 }

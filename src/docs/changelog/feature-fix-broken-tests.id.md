@@ -27,3 +27,7 @@ Saat percakapan dibuka, keyring lokal kini diperiksa dan dibuka sebelum kunci ru
 ## Penghancuran menghapus setiap kunci lokal
 
 Menghancurkan keyring kini menunggu penyimpanan yang tertunda, menghapus amplop lokal dan kunci sesi, serta membatalkan cache kunci komponen sebelum brankas pengganti dibuat. Konfirmasi destruktif menggunakan gaya batal, sedangkan tindakan pembatalan yang aman menggunakan gaya konfirmasi.
+
+## Pengiriman rahasia satu kali dan pratinjau obrolan yang tersinkronisasi
+
+Pembuatan dan penghancuran keyring kini menggunakan notifikasi sukses dan peringatan yang terpisah. Pratinjau obrolan diperbarui segera setelah kunci ruang masuk ke keyring, dan server mencatat pengiriman kunci ruang per anggota sehingga anggota terautentikasi hanya dapat menerima kunci ruang yang dibuat satu kali; kunci yang hilang harus ditambahkan secara manual atau melalui undangan peserta baru. Kata sandi rapat dienkripsi saat disimpan dan juga hanya dikirim kepada setiap peserta yang diundang pada saat pertama kali bergabung.

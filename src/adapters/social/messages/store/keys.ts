@@ -61,3 +61,37 @@ export async function generateAndStoreRoomKey(
     await storeWrappedRoomKey(db, roomId, plaintextHex);
     return plaintextHex;
 }
+
+export async function claimRoomKeyContribution(
+    db: DbExecutor,
+    roomId: string,
+    accountId: string,
+): Promise<string | null> {
+    return db.transaction(async (executor) => {
+        const membership = await executor.executeCommand({
+            option: "SELECT",
+            table: "chatroom_members",
+            columns: ["key_delivered_at"],
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+            ],
+        });
+        if (!membership.rows?.[0] || membership.rows[0].key_delivered_at) {
+            return null;
+        }
+        const roomKey = await getUnwrappedRoomKey(executor, roomId);
+        if (!roomKey) return null;
+        await executor.executeCommand({
+            option: "UPDATE",
+            table: "chatroom_members",
+            set: { key_delivered_at: new Date().toISOString() },
+            where: [
+                { column: "chatroom_id", value: roomId },
+                { column: "account_id", value: accountId },
+                { column: "key_delivered_at", value: null },
+            ],
+        });
+        return roomKey;
+    });
+}

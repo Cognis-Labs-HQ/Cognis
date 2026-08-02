@@ -129,6 +129,16 @@ test("cancelled access exposes an attributed manual unlock control", () => {
     assert.match(source, /keyring:isAccessSuppressed/);
 });
 
+test("keyring lifecycle uses distinct destroyed and created notifications", () => {
+    const source = readFileSync(
+        resolve("src/adapters/auth/keyring/ui/keyring.js"),
+        "utf8",
+    );
+    assert.match(source, /"adapter\.auth\.keyring\.destroyed",\s*"warning"/);
+    assert.match(source, /"adapter\.auth\.keyring\.created",\s*"success"/);
+    assert.match(source, /if \(unlocked && !stored\)/);
+});
+
 test("keyring envelope selection preserves offline data unless the account instance changed", async () => {
     const { selectKeyringEnvelope } = await import("../ui/keyring.js");
     const localEnvelope = {

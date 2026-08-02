@@ -435,6 +435,20 @@ test("destroying the keyring clears cached room keys", async () => {
     );
 });
 
+test("missing previously delivered room keys fall through to manual entry", async () => {
+    const store = createRoomKeyStore({
+        importKey: async (value) => value,
+        resolveSecret: async (_id, options) => options.prompt?.(),
+        promptSecret: async () => "manually-supplied-key",
+    });
+
+    assert.equal(await store.getRoomKey("room-1"), null);
+    assert.equal(
+        await store.getRoomKey("room-1", null, true),
+        "manually-supplied-key",
+    );
+});
+
 test("messages unlock the keyring before accepting a delivered room key", () => {
     const source = readMessagesUiBundle();
 
@@ -455,6 +469,8 @@ test("messages refresh encrypted previews after a contextual keyring unlock", ()
 
     assert.match(source, /"cognis:keyring-event"/);
     assert.match(source, /event\.detail\?\.type === "unlock"/);
+    assert.match(source, /event\.detail\?\.type === "write"/);
+    assert.match(source, /\.startsWith\("chatroom:"\)/);
     assert.match(source, /await roomState\.reloadRoomsList\(\)/);
     assert.match(source, /await roomState\.refreshActiveConversation\(\)/);
 });

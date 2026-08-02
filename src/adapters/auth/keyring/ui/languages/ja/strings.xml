@@ -12,6 +12,8 @@
   <string name="adapter.auth.keyring.setup_placeholder">キーリングパスワード（任意）</string>
   <string name="adapter.auth.keyring.setup_hint">空欄にするとアカウントパスワードを使用します。</string>
   <string name="adapter.auth.keyring.setup_action">キーリングを設定</string>
+  <string name="adapter.auth.keyring.created">キーリングを作成しました。</string>
+  <string name="adapter.auth.keyring.destroyed">キーリングを破棄しました。そのシークレットは自動的に復元できません。</string>
   <string name="adapter.auth.keyring.request_component">認証</string>
   <string name="adapter.auth.keyring.request_action_unlock">解除</string>
   <string name="adapter.auth.keyring.request_process_session">このセッションのキーリング</string>

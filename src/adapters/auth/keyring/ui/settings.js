@@ -379,16 +379,11 @@ export function createSettingsSection({ i18n, root }) {
                     : await clearKeyringValues();
                 if (!completed) return;
                 rerender();
-                showToast(
-                    i18n.t(
-                        destroy
-                            ? "gateway.auth.keyring.recreated"
-                            : "gateway.auth.keyring.cleared",
-                    ),
-                    {
+                if (!destroy) {
+                    showToast(i18n.t("gateway.auth.keyring.cleared"), {
                         variant: "success",
-                    },
-                );
+                    });
+                }
             },
             { once: true },
         );

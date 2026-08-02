@@ -168,7 +168,11 @@ export async function mount(root, { signal } = {}) {
     window.addEventListener(
         "cognis:keyring-event",
         (event) => {
-            if (event.detail?.type === "unlock") {
+            const refreshAfterUnlock = event.detail?.type === "unlock";
+            const refreshAfterRoomKeyWrite =
+                event.detail?.type === "write" &&
+                String(event.detail?.identifier ?? "").startsWith("chatroom:");
+            if (refreshAfterUnlock || refreshAfterRoomKeyWrite) {
                 void refreshDecryptedContent();
             }
         },

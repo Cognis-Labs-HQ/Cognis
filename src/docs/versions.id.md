@@ -37,7 +37,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.5`  |
 | Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.4`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.25` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.26` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.7`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
@@ -51,7 +51,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.23` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.28` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.29` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.10` |
 | User Share            | `src/adapters/share/user/`          | `1.1.11` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
@@ -92,7 +92,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.50` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.51` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.29` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

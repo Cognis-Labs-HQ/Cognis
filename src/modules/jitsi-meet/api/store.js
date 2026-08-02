@@ -10,6 +10,12 @@ import {
 } from "../../../api/reuse/normalize-handle.js";
 import { normalizeMeetingPrefix } from "./meeting-values.js";
 import { readDbTimestampValue } from "../../../gateways/db/reuse/timestamp.js";
+import {
+    decryptPayload,
+    deriveScopedKey,
+    encryptPayload,
+    getDataEncryptionKey,
+} from "../../../api/reuse/crypto.js";
 
 const AUTH_WAIT_TIMEOUT_MS = 2 * 60 * 1000;
 // Background/unfocused browser tabs are throttled by the browser and can
@@ -91,6 +97,7 @@ export class JitsiMeetStore {
                     notNull: true,
                 },
                 { name: "meeting_password", type: "text", notNull: true },
+                { name: "meeting_password_iv", type: "text" },
                 {
                     name: "meeting_name",
                     type: "text",
@@ -129,6 +136,7 @@ export class JitsiMeetStore {
                     notNull: true,
                     default: "now",
                 },
+                { name: "password_delivered_at", type: "timestamp" },
             ],
             primaryKey: ["meeting_id", "username"],
         });
@@ -176,6 +184,37 @@ export class JitsiMeetStore {
             ],
             primaryKey: ["meeting_id", "username", "session_id"],
         });
+
+        const meetings = await this.db.executeCommand({
+            option: "SELECT",
+            table: "jitsi_meetings",
+            columns: ["id", "meeting_password", "meeting_password_iv"],
+        });
+        for (const meeting of meetings.rows ?? []) {
+            if (
+                !meeting.id ||
+                !meeting.meeting_password ||
+                meeting.meeting_password_iv
+            )
+                continue;
+            const wrapper = await deriveScopedKey(
+                `jitsi:meeting:${String(meeting.id)}:password`,
+                getDataEncryptionKey(),
+            );
+            const encryptedPassword = await encryptPayload(
+                wrapper,
+                String(meeting.meeting_password),
+            );
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "jitsi_meetings",
+                set: {
+                    meeting_password: encryptedPassword.ciphertext,
+                    meeting_password_iv: encryptedPassword.iv,
+                },
+                where: [{ column: "id", value: meeting.id }],
+            });
+        }
     }
 
     async getConfig() {
@@ -256,13 +295,21 @@ export class JitsiMeetStore {
         const participantKey =
             row.participant_key ??
             buildParticipantKey(participants, row.classroom_id ?? null);
+        const meetingPassword = row.meeting_password_iv
+            ? await decryptPayload(
+                  await deriveScopedKey(
+                      `jitsi:meeting:${String(row.id)}:password`,
+                      getDataEncryptionKey(),
+                  ),
+                  String(row.meeting_password_iv),
+                  String(row.meeting_password),
+              )
+            : String(row.meeting_password ?? "");
         return {
             id: String(row.id),
             participantKey: String(participantKey),
             meetingUrl: row.meeting_url ? String(row.meeting_url) : "",
-            meetingPassword: row.meeting_password
-                ? String(row.meeting_password)
-                : "",
+            meetingPassword,
             meetingName: String(row.meeting_name ?? "Cognis Classroom"),
             chatRoomId: row.chat_room_id ? String(row.chat_room_id) : null,
             classroomId: row.classroom_id ? String(row.classroom_id) : null,
@@ -367,6 +414,14 @@ export class JitsiMeetStore {
         const meetingSlug = buildRoomSlug(prefix);
         const meetingUrl = `${normalizedInstanceUrl}/${meetingSlug}`;
         const meetingPassword = randomBytes(12).toString("base64url");
+        const passwordWrapper = await deriveScopedKey(
+            `jitsi:meeting:${meetingId}:password`,
+            getDataEncryptionKey(),
+        );
+        const encryptedPassword = await encryptPayload(
+            passwordWrapper,
+            meetingPassword,
+        );
         const participantKey = buildParticipantKey(
             participantUsernames,
             normalizedClassroomId,
@@ -383,7 +438,8 @@ export class JitsiMeetStore {
                 id: meetingId,
                 participant_key: participantKey,
                 meeting_url: meetingUrl,
-                meeting_password: meetingPassword,
+                meeting_password: encryptedPassword.ciphertext,
+                meeting_password_iv: encryptedPassword.iv,
                 meeting_name: "Cognis Classroom",
                 room_slug: meetingSlug,
                 chat_room_id: chatRoomId ?? null,
@@ -433,6 +489,54 @@ export class JitsiMeetStore {
             ...(createdMeeting ?? {}),
             reused: false,
         };
+    }
+
+    async claimMeetingPassword(meetingId, username) {
+        return this.db.transaction(async (executor) => {
+            const result = await executor.executeCommand({
+                option: "SELECT",
+                table: "jitsi_meeting_participants",
+                columns: ["password_delivered_at"],
+                where: [
+                    { column: "meeting_id", value: meetingId },
+                    { column: "username", value: username },
+                ],
+                limit: 1,
+            });
+            if (!result.rows?.[0] || result.rows[0].password_delivered_at) {
+                return null;
+            }
+            const meetingResult = await executor.executeCommand({
+                option: "SELECT",
+                table: "jitsi_meetings",
+                columns: ["meeting_password", "meeting_password_iv"],
+                where: [{ column: "id", value: meetingId }],
+                limit: 1,
+            });
+            const meeting = meetingResult.rows?.[0];
+            if (!meeting?.meeting_password) return null;
+            const meetingPassword = meeting.meeting_password_iv
+                ? await decryptPayload(
+                      await deriveScopedKey(
+                          `jitsi:meeting:${meetingId}:password`,
+                          getDataEncryptionKey(),
+                      ),
+                      String(meeting.meeting_password_iv),
+                      String(meeting.meeting_password),
+                  )
+                : String(meeting.meeting_password);
+            await executor.executeCommand({
+                option: "UPDATE",
+                table: "jitsi_meeting_participants",
+                set: { password_delivered_at: new Date().toISOString() },
+                where: [
+                    { column: "meeting_id", value: meetingId },
+                    { column: "username", value: username },
+                    { column: "password_delivered_at", value: null },
+                ],
+            });
+            return meetingPassword;
+        });
     }
 
     async getMeetingState(meetingId) {
@@ -710,7 +814,7 @@ export class JitsiMeetStore {
             id: meeting.id,
             meetingUrl: meeting.meetingUrl,
             meetingName: meeting.meetingName,
-            meetingPassword: meeting.meetingPassword,
+            meetingPassword: extra.meetingPassword ?? "",
             classroomId: meeting.classroomId,
             chatRoomId: meeting.chatRoomId,
             participants,

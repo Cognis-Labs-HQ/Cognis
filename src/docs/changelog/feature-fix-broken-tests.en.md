@@ -27,3 +27,7 @@ Opening a conversation now checks and unlocks the local keyring before requestin
 ## Destroy removes every local key
 
 Destroying a keyring now waits for pending saves, removes its local envelope and session key, and invalidates component key caches before creating the replacement vault. The destructive confirmation uses cancel styling, while the safe cancellation action uses confirm styling.
+
+## One-time secret delivery and synchronized chat previews
+
+Keyring creation and destruction now use separate success and warning notifications. Chat previews refresh as soon as a room key enters the keyring, and the server records room-key delivery per member so an authenticated member can receive a generated room key only once; a lost key must be supplied manually or through a new participant invitation. Meeting passwords are encrypted at rest and are likewise delivered to each invited participant only on their first join.
