@@ -12,6 +12,8 @@
   <string name="adapter.auth.keyring.setup_placeholder">Kata sandi keyring (opsional)</string>
   <string name="adapter.auth.keyring.setup_hint">Biarkan kosong untuk menggunakan kata sandi akun Anda.</string>
   <string name="adapter.auth.keyring.setup_action">Siapkan keyring</string>
+  <string name="adapter.auth.keyring.created">Keyring dibuat.</string>
+  <string name="adapter.auth.keyring.destroyed">Keyring dihancurkan. Rahasianya tidak dapat lagi dipulihkan secara otomatis.</string>
   <string name="adapter.auth.keyring.request_component">Autentikasi</string>
   <string name="adapter.auth.keyring.request_action_unlock">membuka</string>
   <string name="adapter.auth.keyring.request_process_session">keyring untuk sesi ini</string>

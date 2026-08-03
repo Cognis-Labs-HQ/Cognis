@@ -82,6 +82,18 @@ test("login issues setup-pending token when global TFA setup is required", async
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
     capabilities.contribute("db:executor", db);
+    capabilities.contribute("auth:keyringVaultStore", {
+        async ensureSchema() {},
+        async get() {
+            return null;
+        },
+        async set() {},
+        async delete() {},
+    });
+    capabilities.contribute(
+        "auth:keyringRouteFactory",
+        () => async () => false,
+    );
 
     await bootstrapAuth({
         adaptersRoot: "/nonexistent",

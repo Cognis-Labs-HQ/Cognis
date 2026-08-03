@@ -129,6 +129,16 @@ test("cancelled access exposes an attributed manual unlock control", () => {
     assert.match(source, /keyring:isAccessSuppressed/);
 });
 
+test("keyring lifecycle uses distinct destroyed and created notifications", () => {
+    const source = readFileSync(
+        resolve("src/adapters/auth/keyring/ui/keyring.js"),
+        "utf8",
+    );
+    assert.match(source, /"adapter\.auth\.keyring\.destroyed",\s*"warning"/);
+    assert.match(source, /"adapter\.auth\.keyring\.created",\s*"success"/);
+    assert.match(source, /if \(unlocked && !stored\)/);
+});
+
 test("keyring envelope selection preserves offline data unless the account instance changed", async () => {
     const { selectKeyringEnvelope } = await import("../ui/keyring.js");
     const localEnvelope = {
@@ -630,6 +640,77 @@ test("destroying a locked keyring recreates an empty vault", async () => {
     } finally {
         globalThis.fetch = originalFetch;
         await keyring.lockKeyring();
+    }
+});
+
+test("login requires the recreated custom keyring password after session invalidation", async () => {
+    const keyring = await import("../ui/keyring.js");
+    const originalFetch = globalThis.fetch;
+    values.clear();
+    sessionValues.clear();
+    indexedDbValues.clear();
+    localStorage.setItem("cognis_account", "recreated-ldap-keyring-user");
+    let remoteEnvelope = null;
+    const accountInstanceId = "recreated-ldap-account-instance";
+    globalThis.fetch = async (_requestPath, options = {}) => {
+        if (options.method === "PUT") {
+            const submittedEnvelope = JSON.parse(options.body).vault;
+            if (submittedEnvelope.accountInstanceId !== accountInstanceId) {
+                return new Response(null, { status: 409 });
+            }
+            remoteEnvelope = submittedEnvelope;
+            return new Response(JSON.stringify({ data: { saved: true } }), {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            });
+        }
+        return new Response(
+            JSON.stringify({
+                data: {
+                    vault: remoteEnvelope,
+                    accountInstanceId,
+                },
+            }),
+            {
+                status: 200,
+                headers: { "content-type": "application/json" },
+            },
+        );
+    };
+    try {
+        assert.equal(
+            await keyring.unlockKeyring("custom-keyring-password"),
+            true,
+        );
+        const reloadedKeyring =
+            await import("../ui/keyring.js?recreated-ldap-keyring");
+
+        assert.deepEqual(
+            await reloadedKeyring.setupKeyringAfterLogin("ldap-password"),
+            {
+                setup: false,
+                unlocked: false,
+            },
+        );
+        let prompted = false;
+        assert.equal(
+            await reloadedKeyring.requestKeyringUnlock({
+                i18n: testI18n,
+                passwordPrompt: async () => {
+                    prompted = true;
+                    return "custom-keyring-password";
+                },
+                request: testUnlockRequest,
+            }),
+            true,
+        );
+        assert.equal(prompted, true);
+        assert.equal(remoteEnvelope.accountInstanceId, accountInstanceId);
+        await reloadedKeyring.lockKeyring();
+    } finally {
+        globalThis.fetch = originalFetch;
+        await keyring.lockKeyring();
+        localStorage.removeItem("cognis_account");
     }
 });
 

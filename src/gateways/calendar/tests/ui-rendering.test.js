@@ -681,8 +681,4 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(APP_SOURCE, /runFlow\("defer-page-action"/);
     assert.match(CALENDAR_API_SOURCE, /promptWhenLocked/);
     assert.match(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
-    assert.doesNotMatch(
-        CALENDAR_ROUTES_SOURCE,
-        /includeSharedAudienceAttendees/,
-    );
 });

@@ -45,6 +45,7 @@ export function rowToMember(row: Record<string, unknown>): MemberRow {
         role: row.role as MemberRole,
         joinedAt: readString(row.joined_at),
         lastReadAt: readNullableString(row.last_read_at),
+        keyDeliveredAt: readNullableString(row.key_delivered_at),
         muted: Boolean(row.muted),
         archived: Boolean(row.archived),
     };

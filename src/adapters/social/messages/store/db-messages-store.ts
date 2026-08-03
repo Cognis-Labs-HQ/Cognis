@@ -1,5 +1,6 @@
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
+    acknowledgeRoomKeyContribution,
     appendMessage,
     appendRoomEvent,
     getMessage,
@@ -11,6 +12,7 @@ import {
     insertRoomEvent,
 } from "./messages.js";
 import {
+    claimRoomKeyContribution,
     generateAndStoreRoomKey,
     getUnwrappedRoomKey,
     storeWrappedRoomKey,
@@ -393,6 +395,20 @@ export class DbMessagesStore {
 
     async generateAndStoreRoomKey(roomId: string): Promise<string> {
         return generateAndStoreRoomKey(this.db, roomId);
+    }
+
+    async claimRoomKeyContribution(
+        roomId: string,
+        accountId: string,
+    ): Promise<string | null> {
+        return claimRoomKeyContribution(this.db, roomId, accountId);
+    }
+
+    async acknowledgeRoomKeyContribution(
+        roomId: string,
+        accountId: string,
+    ): Promise<void> {
+        await acknowledgeRoomKeyContribution(this.db, roomId, accountId);
     }
 
     async incrementEmojiUsage(accountId: string, emoji: string): Promise<void> {

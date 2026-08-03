@@ -12,6 +12,8 @@
   <string name="adapter.auth.keyring.setup_placeholder">Keyring password (optional)</string>
   <string name="adapter.auth.keyring.setup_hint">Leave this empty to use your account password.</string>
   <string name="adapter.auth.keyring.setup_action">Set up keyring</string>
+  <string name="adapter.auth.keyring.created">Keyring created.</string>
+  <string name="adapter.auth.keyring.destroyed">Keyring destroyed. Its secrets can no longer be recovered automatically.</string>
   <string name="adapter.auth.keyring.request_component">Authentication</string>
   <string name="adapter.auth.keyring.request_action_unlock">unlock</string>
   <string name="adapter.auth.keyring.request_process_session">the keyring for this session</string>
