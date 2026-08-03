@@ -33,6 +33,10 @@ function versionAssetUrl(assetUrl: string): string {
     if (!assetUrl.startsWith("/static/") && !assetUrl.startsWith("/assets/")) {
         return assetUrl;
     }
+    const pathname = new URL(assetUrl, "http://localhost").pathname;
+    if (!/\.(?:css|html|jpe?g|js|json|mjs|png|svg|webp|xml)$/.test(pathname)) {
+        return assetUrl;
+    }
     const separator = assetUrl.includes("?") ? "&" : "?";
     return `${assetUrl}${separator}v=${encodeURIComponent(ASSET_VERSION)}`;
 }
