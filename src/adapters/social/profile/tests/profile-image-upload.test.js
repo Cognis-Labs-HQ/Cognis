@@ -24,6 +24,13 @@ const PROFILE_APP_SOURCE = readFileSync(
     resolve(dirname(fileURLToPath(import.meta.url)), "../ui/app.js"),
     "utf8",
 );
+const PROFILE_IMAGE_SELECTION_SOURCE = readFileSync(
+    resolve(
+        dirname(fileURLToPath(import.meta.url)),
+        "../ui/profile-image-selection.js",
+    ),
+    "utf8",
+);
 
 test("successful uploads refresh local blob state before follow-up requests", () => {
     const refreshIndex = PROFILE_UPLOAD_SOURCE.indexOf("refreshPage();");
@@ -52,8 +59,14 @@ test("successful uploads do not fail on optional follow-up data", () => {
 });
 
 test("profile image selection and upload reject duplicate activation", () => {
-    assert.match(PROFILE_APP_SOURCE, /pendingImageSelections\.has\(kind\)/);
-    assert.match(PROFILE_APP_SOURCE, /pendingImageSelections\.add\(kind\)/);
+    assert.match(
+        PROFILE_IMAGE_SELECTION_SOURCE,
+        /pendingSelections\.has\(kind\)/,
+    );
+    assert.match(
+        PROFILE_IMAGE_SELECTION_SOURCE,
+        /pendingSelections\.add\(kind\)/,
+    );
     assert.match(PROFILE_UPLOAD_SOURCE, /pendingUploads\.has\(kind\)/);
     assert.match(PROFILE_UPLOAD_SOURCE, /pendingUploads\.add\(kind\)/);
     assert.match(
@@ -65,7 +78,7 @@ test("profile image selection and upload reject duplicate activation", () => {
 test("profile media refreshes only the profile hero composer card", () => {
     assert.match(
         PROFILE_APP_SOURCE,
-        /function refreshProfileHero\(\) \{[\s\S]*?\[data-composer-element="hero"\][\s\S]*?heroHost\.innerHTML = heroElement\.render\(\);[\s\S]*?bindProfileHeroEvents\(\);/,
+        /function refreshProfileHero\(\) \{\s*composer\?\.refreshElements\(\["hero"\]\);\s*\}/,
     );
     assert.match(
         PROFILE_APP_SOURCE,

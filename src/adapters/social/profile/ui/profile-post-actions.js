@@ -138,7 +138,14 @@ export function createProfilePostActions({
                     ? currentState.followers.filter(
                           (user) => user.handle !== currentState.ownAccount,
                       )
-                    : currentState.followers;
+                    : currentState.followers.some(
+                            (user) => user.handle === currentState.ownAccount,
+                        )
+                      ? currentState.followers
+                      : [
+                            ...currentState.followers,
+                            { handle: currentState.ownAccount },
+                        ];
                 const nextFollowing = isFollowingTarget
                     ? currentState.following
                     : matchingUser

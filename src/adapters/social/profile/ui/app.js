@@ -35,6 +35,7 @@ import {
     renderFollowRequests,
 } from "./profile-render.js";
 import { createProfileImageUploadActions } from "./profile-image-upload.js";
+import { createProfileImageSelection } from "./profile-image-selection.js";
 import { resolveBannerCropAspectRatio } from "./image-crop.js";
 import { createProfilePostActions } from "./profile-post-actions.js";
 
@@ -171,22 +172,11 @@ function refreshPage() {
 }
 
 function refreshProfileHero() {
-    const heroElement = elements.find((element) => element.id === "hero");
-    const heroHost = root.querySelector('[data-composer-element="hero"]');
-    if (!heroElement || !(heroHost instanceof HTMLElement)) return;
-    heroHost.innerHTML = heroElement.render();
-    bindProfileHeroEvents();
+    composer?.refreshElements(["hero"]);
 }
 
 function refreshProfileCards(cardIds) {
-    for (const cardId of cardIds) {
-        const cardElement = elements.find((element) => element.id === cardId);
-        const cardHost = root.querySelector(
-            `[data-composer-element="${CSS.escape(cardId)}"]`,
-        );
-        if (!cardElement || !(cardHost instanceof HTMLElement)) continue;
-        cardHost.innerHTML = cardElement.render();
-    }
+    composer?.refreshElements(cardIds);
 }
 
 async function loadSocialConnectionList(profileHandle, connectionKind) {
@@ -250,31 +240,12 @@ function startFollowerCountPoller(signal) {
     followerCountPoller.start();
 }
 
-const avatarFileInput = document.createElement("input");
-avatarFileInput.type = "file";
-avatarFileInput.accept = "image/*";
-avatarFileInput.hidden = true;
-document.body.appendChild(avatarFileInput);
-
-const bannerFileInput = document.createElement("input");
-bannerFileInput.type = "file";
-bannerFileInput.accept = "image/*";
-bannerFileInput.hidden = true;
-document.body.appendChild(bannerFileInput);
-const pendingImageSelections = new Set();
-
-function requestImageSelection(kind, fileInput) {
-    if (pendingImageSelections.has(kind)) return;
-    pendingImageSelections.add(kind);
-    window.addEventListener(
-        "focus",
-        () => {
-            window.setTimeout(() => pendingImageSelections.delete(kind), 0);
-        },
-        { once: true },
-    );
-    fileInput.click();
-}
+const {
+    avatarFileInput,
+    bannerFileInput,
+    clearPendingSelection,
+    requestSelection,
+} = createProfileImageSelection();
 
 async function openEditPopup() {
     const currentBio = profile?.bio ?? "";
@@ -469,7 +440,7 @@ avatarFileInput.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
     if (!file) {
         avatarFileInput.value = "";
-        pendingImageSelections.delete("avatar");
+        clearPendingSelection("avatar");
         return;
     }
     try {
@@ -482,14 +453,14 @@ avatarFileInput.addEventListener("change", async () => {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
     }
     avatarFileInput.value = "";
-    pendingImageSelections.delete("avatar");
+    clearPendingSelection("avatar");
 });
 
 bannerFileInput.addEventListener("change", async () => {
     const file = bannerFileInput.files?.[0];
     if (!file) {
         bannerFileInput.value = "";
-        pendingImageSelections.delete("banner");
+        clearPendingSelection("banner");
         return;
     }
     try {
@@ -502,7 +473,7 @@ bannerFileInput.addEventListener("change", async () => {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
     }
     bannerFileInput.value = "";
-    pendingImageSelections.delete("banner");
+    clearPendingSelection("banner");
 });
 
 function bindFollowButtonHover(button) {
@@ -555,13 +526,13 @@ function bindProfileHeroEvents() {
                 bannerHeight,
                 bannerRect,
             );
-            requestImageSelection("banner", bannerFileInput);
+            requestSelection("banner", bannerFileInput);
         },
     );
     root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
         "click",
         () => {
-            requestImageSelection("avatar", avatarFileInput);
+            requestSelection("avatar", avatarFileInput);
         },
     );
     root.querySelector(".profile-avatar-remove-btn")?.addEventListener(
