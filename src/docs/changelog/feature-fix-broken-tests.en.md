@@ -31,3 +31,7 @@ Destroying a keyring now waits for pending saves, removes its local envelope and
 ## One-time secret delivery and synchronized chat previews
 
 Keyring creation and destruction now use separate success and warning notifications. Chat previews refresh as soon as a room key enters the keyring, and the server records room-key delivery per member so an authenticated member can receive a generated room key only once; a lost key must be supplied manually or through a new participant invitation. Meeting passwords are encrypted at rest and are likewise delivered to each invited participant only on their first join.
+
+## Restore intentional spacing and documentation
+
+Restored existing source spacing in the keyring, calendar, and whiteboard components and retained the Meetings page mount contract documentation so the regression fixes remain focused on behavioral changes.

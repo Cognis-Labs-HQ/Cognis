@@ -31,3 +31,7 @@ Beim Zerstören eines Schlüsselbunds werden nun ausstehende Speichervorgänge a
 ## Einmalige Geheimniszustellung und synchronisierte Chatvorschauen
 
 Erstellung und Zerstörung des Schlüsselbunds verwenden nun getrennte Erfolgs- und Warnmeldungen. Chatvorschauen werden aktualisiert, sobald ein Raumschlüssel in den Schlüsselbund gelangt, und der Server protokolliert die Raumschlüsselzustellung pro Mitglied, sodass ein authentifiziertes Mitglied einen erzeugten Raumschlüssel nur einmal erhalten kann; ein verlorener Schlüssel muss manuell oder durch eine neue Teilnehmereinladung bereitgestellt werden. Besprechungspasswörter sind im Ruhezustand verschlüsselt und werden jedem eingeladenen Teilnehmer ebenfalls nur beim ersten Beitritt zugestellt.
+
+## Beabsichtigte Abstände und Dokumentation wiederherstellen
+
+Bestehende Quellabstände in den Schlüsselbund-, Kalender- und Whiteboard-Komponenten sowie die Vertragsdokumentation zum Einbinden der Meetings-Seite wurden wiederhergestellt, damit die Regressionskorrekturen auf Verhaltensänderungen beschränkt bleiben.
