@@ -527,6 +527,7 @@ async function bindShareButton(toolbar) {
         onClick: () => void openSharePopup(),
     });
 }
+
 async function openSharePopup() {
     if (!activeBoard?.id || !canManageShares()) return;
     try {
@@ -849,6 +850,7 @@ async function openBoard(board) {
     bindCanvasToolbar(canvasInstance);
     setOverlayVisible(false);
 }
+
 function renderCanvasElement() {
     return renderWhiteboardCanvasElement({
         activeBoard,

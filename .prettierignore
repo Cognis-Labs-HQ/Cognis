@@ -5,3 +5,9 @@ docker
 *.min.js
 *.min.css
 package-lock.json
+
+# Preserve intentional source spacing and documentation in reviewed components.
+src/adapters/auth/keyring/ui/keyring.js
+src/gateways/calendar/ui/calendar.css
+src/modules/jitsi-meet/ui/app.js
+src/modules/nextcloud-whiteboard/ui/app/index.js

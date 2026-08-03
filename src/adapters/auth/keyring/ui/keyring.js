@@ -53,6 +53,7 @@ function loadKeyringI18n() {
     );
     return keyringI18nPromise;
 }
+
 function keyringStorageKey() {
     const accountId = String(
         localStorage.getItem("cognis_account") ?? "",
@@ -61,9 +62,11 @@ function keyringStorageKey() {
         ? `${STORAGE_KEY}:${encodeURIComponent(accountId)}`
         : STORAGE_KEY;
 }
+
 function keyringStorage() {
     return temporaryKeyringAccountId ? sessionStorage : localStorage;
 }
+
 function relockStorageKey() {
     const accountId = String(
         localStorage.getItem("cognis_account") ?? "",
@@ -72,6 +75,7 @@ function relockStorageKey() {
         ? `${RELOCK_STORAGE_KEY}:${encodeURIComponent(accountId)}`
         : RELOCK_STORAGE_KEY;
 }
+
 function encodeBytes(bytes) {
     const chunkSize = 32_768;
     let binary = "";
@@ -82,18 +86,23 @@ function encodeBytes(bytes) {
     }
     return btoa(binary);
 }
+
 function decodeBytes(value) {
     return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
 }
+
 function sessionUnlockId() {
     return keyringStorageKey();
 }
+
 function sessionUnlockMarkerKey() {
     return `${SESSION_UNLOCK_MARKER}:${encodeURIComponent(sessionUnlockId())}`;
 }
+
 function sessionUnlockExpiryKey() {
     return `${SESSION_UNLOCK_EXPIRES_AT}:${encodeURIComponent(sessionUnlockId())}`;
 }
+
 function openSessionUnlockDatabase() {
     if (typeof indexedDB === "undefined") return Promise.resolve(null);
     return new Promise((resolve, reject) => {
@@ -180,6 +189,7 @@ async function clearSessionUnlockKey() {
     });
     database.close();
 }
+
 function normalizeEntry(value, id) {
     if (value && typeof value === "object" && "value" in value) {
         return {
@@ -213,6 +223,7 @@ async function deriveKey(password, salt, iterations) {
         ["encrypt", "decrypt"],
     );
 }
+
 function scheduleRelock({ resetDeadline = false } = {}) {
     clearTimeout(relockTimer);
     if (temporaryKeyringAccountId) return;
@@ -231,6 +242,7 @@ function scheduleRelock({ resetDeadline = false } = {}) {
     sessionStorage.setItem(sessionUnlockExpiryKey(), String(deadline));
     relockTimer = setTimeout(lockKeyring, Math.max(0, deadline - Date.now()));
 }
+
 function clearVault(clearPendingValues) {
     clearTimeout(relockTimer);
     relockTimer = null;
@@ -363,6 +375,7 @@ function recordKeyringEvent(type, identifier = "") {
     });
     dispatchKeyringEvent(type, identifier);
 }
+
 function persistRecordedEvent() {
     void persistVault().catch(() => undefined);
 }
@@ -429,6 +442,7 @@ async function activateVault(
     scheduleRelock({ resetDeadline: !preserveRelockDeadline });
     return true;
 }
+
 export async function unlockKeyring(password) {
     const normalizedPassword = String(password ?? "");
     if (!normalizedPassword) return false;
