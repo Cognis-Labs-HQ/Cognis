@@ -11,3 +11,7 @@ Changing the profile banner height now repaints the banner before the preference
 ## Composer-wide live refresh
 
 Page Composer refreshes now re-render existing cards by default, eliminating stale content across ordinary pages. Stateful meeting embeds continue to opt into DOM parking.
+
+## Reliable component resources
+
+The profile page now owns the messages used by its messaging actions instead of requesting resources from an independently disabled adapter. Browser-path checks now validate static and dynamic imports, served language paths, disabled-adapter boundaries, and relative paths within adapter UI packages.

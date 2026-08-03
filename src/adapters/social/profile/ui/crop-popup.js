@@ -8,7 +8,7 @@ import {
     createInitialCropSelection,
     getCropOutputDimensions,
     panCropSourceRect,
-} from "/static/adapters/social/profile/image-crop.js";
+} from "./image-crop.js";
 
 const POPUP_VIEWPORT_MAX_WIDTH = "95vw";
 const POPUP_MAX_WIDTH_PX = 1400;

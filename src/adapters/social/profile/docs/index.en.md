@@ -122,3 +122,5 @@ registering routes or contributing capabilities.
 Saved profile details are shown immediately. Follower and following totals and their user cards refresh automatically. Profile image selectors accept one active selection or upload at a time.
 
 Follow changes and banner-height selections repaint immediately while their background synchronization completes.
+
+Profile messaging feedback is loaded from profile-owned language resources, so profile rendering does not depend on the Messages adapter being enabled.

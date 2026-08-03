@@ -1,8 +1,8 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
-import { openImageCropPopup } from "/static/adapters/social/profile/crop-popup.js";
-import { sourceRectToCoverObjectPositionPercent } from "/static/adapters/social/profile/image-crop.js";
+import { openImageCropPopup } from "./crop-popup.js";
+import { sourceRectToCoverObjectPositionPercent } from "./image-crop.js";
 
 function clampBannerPanPercent(value) {
     return Math.min(100, Math.max(0, Number(value) || 0));

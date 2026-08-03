@@ -11,3 +11,7 @@ Eine Änderung der Profilbannerhöhe zeichnet das Banner nun neu, bevor das Spei
 ## Composer-weite Live-Aktualisierung
 
 Page-Composer-Aktualisierungen rendern vorhandene Karten nun standardmäßig neu und beseitigen veraltete Inhalte auf normalen Seiten. Zustandsbehaftete Meeting-Einbettungen verwenden weiterhin gezielt DOM-Parking.
+
+## Zuverlässige Komponentenressourcen
+
+Die Profilseite besitzt nun die Texte ihrer Nachrichtenaktionen selbst, statt Ressourcen von einem unabhängig deaktivierbaren Adapter anzufordern. Prüfungen für Browserpfade validieren jetzt statische und dynamische Importe, bereitgestellte Sprachpfade, Grenzen deaktivierbarer Adapter und relative Pfade innerhalb der UI-Pakete von Adaptern.

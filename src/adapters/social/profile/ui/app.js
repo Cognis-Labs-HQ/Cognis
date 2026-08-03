@@ -771,10 +771,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     root = rootEl;
     i18n = await createI18n({
-        componentStringBaseUrls: [
-            "/static/adapters/social/profile/languages",
-            "/static/adapters/social/messages/languages",
-        ],
+        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
     applyDocumentTitle(i18n, "ui.page.title.profile");
 

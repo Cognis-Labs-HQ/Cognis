@@ -283,7 +283,7 @@ export function createProfilePostActions({
                 body: JSON.stringify({ handles: [profile.handle] }),
             });
             if (!response.ok) {
-                showToast(i18n.t("module.social.messages.start_failed"), {
+                showToast(i18n.t("ui.app.profile.message_start_failed"), {
                     variant: "error",
                 });
                 return;
@@ -291,7 +291,7 @@ export function createProfilePostActions({
             const payload = await response.json();
             const roomId = payload?.data?.id;
             if (!roomId && payload?.data?.requiresApproval) {
-                showToast(i18n.t("module.social.messages.request_sent"), {
+                showToast(i18n.t("ui.app.profile.message_request_sent"), {
                     variant: "info",
                 });
                 return;
@@ -299,7 +299,7 @@ export function createProfilePostActions({
             if (!roomId) return;
             await navigateTo(`/messages/${encodeURIComponent(roomId)}`);
         } catch {
-            showToast(i18n.t("module.social.messages.start_failed"), {
+            showToast(i18n.t("ui.app.profile.message_start_failed"), {
                 variant: "error",
             });
         }
