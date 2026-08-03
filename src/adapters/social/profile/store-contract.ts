@@ -112,12 +112,6 @@ export function visibilityRank(v: AccountVisibility): number {
     return VISIBILITY_RANK[v] ?? 0;
 }
 
-function defaultVisibilityForRole(role: AccountRole): AccountVisibility {
-    return role === "teacher" || role === "admin" || role === "owner"
-        ? "friends"
-        : "hidden";
-}
-
 /**
  * In-memory implementation of ProfileStore for use in tests.
  * No persistence — state resets on every instantiation.
@@ -152,7 +146,7 @@ export class VolatileProfileStore implements ProfileStore {
             website: null,
             avatarKey: null,
             bannerKey: null,
-            visibility: defaultVisibilityForRole(role),
+            visibility: "friends",
             lifecycleState: "active",
             createdAt: now,
             updatedAt: now,
