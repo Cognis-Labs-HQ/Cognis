@@ -35,3 +35,7 @@ Erstellung und Zerstörung des Schlüsselbunds verwenden nun getrennte Erfolgs- 
 ## Beabsichtigte Abstände und Dokumentation wiederherstellen
 
 Bestehende Quellabstände in den Schlüsselbund-, Kalender- und Whiteboard-Komponenten sowie die Vertragsdokumentation zum Einbinden der Meetings-Seite wurden wiederhergestellt, damit die Regressionskorrekturen auf Verhaltensänderungen beschränkt bleiben.
+
+## Raumschlüssel und Besprechungskennwörter bleiben bis zur sicheren Speicherung wiederherstellbar
+
+Fehlende Raumschlüssel werden für migrierte Unterhaltungen erzeugt. Übermittelte Raumschlüssel und Besprechungskennwörter bleiben für einen erneuten Versuch verfügbar, bis der Client die erfolgreiche Speicherung im Schlüsselbund bestätigt.

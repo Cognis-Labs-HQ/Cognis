@@ -35,3 +35,7 @@ Pembuatan dan penghancuran keyring kini menggunakan notifikasi sukses dan pering
 ## Pulihkan spasi dan dokumentasi yang disengaja
 
 Spasi sumber yang sudah ada pada komponen gantungan kunci, kalender, dan papan tulis serta dokumentasi kontrak pemasangan halaman Rapat dipulihkan agar perbaikan regresi tetap berfokus pada perubahan perilaku.
+
+## Kunci ruang dan kata sandi rapat tetap dapat dipulihkan hingga tersimpan dengan aman
+
+Kunci ruang yang hilang dibuat untuk percakapan hasil migrasi, sedangkan kunci ruang dan kata sandi rapat yang dikirim tetap tersedia untuk dicoba kembali hingga klien mengonfirmasi penyimpanan yang berhasil di gantungan kunci.

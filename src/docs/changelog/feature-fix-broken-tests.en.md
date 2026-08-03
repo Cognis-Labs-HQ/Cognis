@@ -35,3 +35,7 @@ Keyring creation and destruction now use separate success and warning notificati
 ## Restore intentional spacing and documentation
 
 Restored existing source spacing in the keyring, calendar, and whiteboard components and retained the Meetings page mount contract documentation so the regression fixes remain focused on behavioral changes.
+
+## Room keys and meeting passwords remain recoverable until safely stored
+
+Missing room keys are generated for migrated conversations, and delivered room keys and meeting passwords remain available for retry until the client confirms successful keyring storage.
