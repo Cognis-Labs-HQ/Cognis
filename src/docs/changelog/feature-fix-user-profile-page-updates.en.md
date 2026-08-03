@@ -27,3 +27,11 @@ Page Composer refreshes now re-render existing cards by default, eliminating sta
 ## Reliable component resources
 
 The profile page now owns the messages used by its messaging actions instead of requesting resources from an independently disabled adapter. Browser-path checks now validate static and dynamic imports, served language paths, disabled-adapter boundaries, and relative paths within adapter UI packages.
+
+## Profile cards stay interactive
+
+Targeted profile updates now run through the page composer, preserving unrelated embedded media while restoring form and card interactions after a repaint.
+
+## Follow totals update immediately
+
+Following a viewed profile now adds the current account to the optimistic follower list before the server reconciliation completes.
