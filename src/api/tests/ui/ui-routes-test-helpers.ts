@@ -1,11 +1,13 @@
 export function createResponseRecorder() {
     let status = 0;
     let headers: Record<string, string> = {};
+    let writeHeadCalls = 0;
     const chunks: string[] = [];
     return {
         res: {
             setHeader() {},
             writeHead(code: number, nextHeaders: Record<string, string>) {
+                writeHeadCalls += 1;
                 status = code;
                 headers = nextHeaders ?? {};
             },
@@ -21,6 +23,9 @@ export function createResponseRecorder() {
         },
         get body() {
             return chunks.join("");
+        },
+        get writeHeadCalls() {
+            return writeHeadCalls;
         },
     };
 }
