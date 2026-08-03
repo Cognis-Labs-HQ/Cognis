@@ -138,6 +138,32 @@ export function registerMeetingLifecycleRoutes({
     );
 
     router.post(
+        "/api/v1/modules/jitsi-meet/meetings/password/acknowledge",
+        async (req, res) => {
+            await store.ensureSchema();
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return;
+            const body = await readJson(req);
+            const resolved = await resolveMeetingPayload({
+                body,
+                profileStore,
+                store,
+                claims,
+                res,
+                listClassroomParticipantHandles,
+                requesterAccountId: claims.sub,
+            });
+            if (!resolved) return;
+            await store.acknowledgeMeetingPassword(
+                resolved.meeting.id,
+                resolved.requesterUsername,
+            );
+            sendJson(res, 204, {});
+        },
+        { access: { minRole: "user" } },
+    );
+
+    router.post(
         "/api/v1/modules/jitsi-meet/meetings/join",
         async (req, res) => {
             await store.ensureSchema();

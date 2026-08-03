@@ -171,6 +171,11 @@ uiCtx.extendFlow(
             stageContext.data.keyContribution,
         );
         if (contributed) {
+            const response = await apiFetch(
+                `/api/v1/social/messages/rooms/${encodeURIComponent(stageContext.input.roomId)}/key-contribution/acknowledge`,
+                { method: "POST" },
+            );
+            if (!response.ok) return;
             stageContext.data.roomKey = await roomKeys.getRoomKey(
                 stageContext.input.roomId,
             );

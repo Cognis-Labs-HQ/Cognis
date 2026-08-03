@@ -13,7 +13,7 @@ function makeReq(method: string, token: string) {
 
 test("POST /messages/rooms/:id/key-contribution explicitly contributes a room key to members", async () => {
     const token = issueAccessToken("alice", "user", 60);
-    let contributionAvailable = true;
+    let contributionAcknowledged = false;
     const messagesStore = {
         async getRoom() {
             return { id: "room-1", kind: "dm", title: null, avatarKey: null };
@@ -46,9 +46,11 @@ test("POST /messages/rooms/:id/key-contribution explicitly contributes a room ke
             ];
         },
         async claimRoomKeyContribution() {
-            if (!contributionAvailable) return null;
-            contributionAvailable = false;
+            if (contributionAcknowledged) return null;
             return "generated-room-key";
+        },
+        async acknowledgeRoomKeyContribution() {
+            contributionAcknowledged = true;
         },
     };
     const profileStore = {
@@ -88,6 +90,19 @@ test("POST /messages/rooms/:id/key-contribution explicitly contributes a room ke
         value: "generated-room-key",
         metadata: { label: "Chat room-1" },
     });
+
+    await route(
+        makeReq("POST", token),
+        {
+            writeHead(statusCode: number) {
+                assert.equal(statusCode, 204);
+            },
+            end() {},
+        } as any,
+        new URL(
+            "http://localhost/api/v1/social/messages/rooms/room-1/key-contribution/acknowledge",
+        ),
+    );
 
     responseBody = "";
     await route(

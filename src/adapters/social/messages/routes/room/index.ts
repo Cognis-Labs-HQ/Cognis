@@ -175,7 +175,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                   accountId,
               );
 
-        if (sub === "key-contribution" && req.method === "POST") {
+        if (sub === "key-contribution" && !subArg && req.method === "POST") {
             if (incomingPendingRoomRequest) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
@@ -210,6 +210,20 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     },
                 }),
             );
+            return true;
+        }
+
+        if (
+            sub === "key-contribution" &&
+            subArg === "acknowledge" &&
+            req.method === "POST"
+        ) {
+            await messagesStore.acknowledgeRoomKeyContribution(
+                roomId,
+                accountId,
+            );
+            res.writeHead(204);
+            res.end();
             return true;
         }
 

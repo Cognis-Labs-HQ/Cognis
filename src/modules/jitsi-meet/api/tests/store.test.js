@@ -216,6 +216,11 @@ test("jitsi store meeting creation uses the modern column set", async () => {
     );
     assert.equal(
         await store.claimMeetingPassword(createdMeeting.id, "alice"),
+        createdMeeting.meetingPassword,
+    );
+    await store.acknowledgeMeetingPassword(createdMeeting.id, "alice");
+    assert.equal(
+        await store.claimMeetingPassword(createdMeeting.id, "alice"),
         null,
     );
 });

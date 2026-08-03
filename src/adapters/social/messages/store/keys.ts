@@ -80,8 +80,19 @@ export async function claimRoomKeyContribution(
         if (!membership.rows?.[0] || membership.rows[0].key_delivered_at) {
             return null;
         }
-        const roomKey = await getUnwrappedRoomKey(executor, roomId);
-        if (!roomKey) return null;
+        const roomKey =
+            (await getUnwrappedRoomKey(executor, roomId)) ??
+            (await generateAndStoreRoomKey(executor, roomId));
+        return roomKey;
+    });
+}
+
+export async function acknowledgeRoomKeyContribution(
+    db: DbExecutor,
+    roomId: string,
+    accountId: string,
+): Promise<void> {
+    await db.transaction(async (executor) => {
         await executor.executeCommand({
             option: "UPDATE",
             table: "chatroom_members",
@@ -92,6 +103,5 @@ export async function claimRoomKeyContribution(
                 { column: "key_delivered_at", value: null },
             ],
         });
-        return roomKey;
     });
 }

@@ -525,17 +525,20 @@ export class JitsiMeetStore {
                       String(meeting.meeting_password),
                   )
                 : String(meeting.meeting_password);
-            await executor.executeCommand({
-                option: "UPDATE",
-                table: "jitsi_meeting_participants",
-                set: { password_delivered_at: new Date().toISOString() },
-                where: [
-                    { column: "meeting_id", value: meetingId },
-                    { column: "username", value: username },
-                    { column: "password_delivered_at", value: null },
-                ],
-            });
             return meetingPassword;
+        });
+    }
+
+    async acknowledgeMeetingPassword(meetingId, username) {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "jitsi_meeting_participants",
+            set: { password_delivered_at: new Date().toISOString() },
+            where: [
+                { column: "meeting_id", value: meetingId },
+                { column: "username", value: username },
+                { column: "password_delivered_at", value: null },
+            ],
         });
     }
 
