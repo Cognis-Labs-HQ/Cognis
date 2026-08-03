@@ -9,6 +9,7 @@ export function createProfilePostActions({
     setState,
     refreshPage,
     refreshProfileHero = refreshPage,
+    refreshProfileCards = refreshPage,
     i18n,
     loadOwnPosts,
     loadFollowers,
@@ -128,16 +129,31 @@ export function createProfilePostActions({
             );
 
             if (response.ok) {
+                const currentState = getState();
+                const matchingUser = [
+                    ...(currentState.followers ?? []),
+                    ...(currentState.following ?? []),
+                ].find((user) => user.handle === handle);
+                const nextFollowers = isFollowingTarget
+                    ? currentState.followers.filter(
+                          (user) => user.handle !== currentState.ownAccount,
+                      )
+                    : currentState.followers;
+                const nextFollowing = isFollowingTarget
+                    ? currentState.following
+                    : matchingUser
+                      ? [...currentState.following, matchingUser]
+                      : currentState.following;
                 setState({
                     relationship: {
                         ...(relationship ?? {}),
                         following: !isFollowingTarget,
                     },
+                    followers: nextFollowers,
+                    following: nextFollowing,
                 });
-                // Paint the interaction result immediately. Connection-list
-                // refreshes are independent network requests and should not
-                // hold the follow button's visual state hostage.
                 refreshProfileHero();
+                refreshProfileCards(["followers", "following", "suggested"]);
                 showToast(
                     i18n.t(
                         isFollowingTarget

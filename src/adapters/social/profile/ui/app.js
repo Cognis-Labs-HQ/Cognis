@@ -626,12 +626,12 @@ function bindProfileHeroEvents() {
                         bannerMenuCloseHandler,
                         true,
                     );
+                    refreshProfileHero();
                     await saveBannerLayoutPreference({
                         height: bannerHeight,
                         panX: bannerPanX,
                         panY: bannerPanY,
                     });
-                    composer.refresh(elements);
                 });
             },
         );
@@ -793,6 +793,10 @@ export async function mount(rootEl, { signal } = {}) {
         setState,
         refreshPage,
         refreshProfileHero,
+        refreshProfileCards: (cardIds) => {
+            refreshProfileCards(cardIds);
+            bindSocialCardEvents();
+        },
         i18n,
         loadOwnPosts,
         loadFollowers,

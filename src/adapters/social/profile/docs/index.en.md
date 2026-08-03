@@ -120,3 +120,5 @@ registering routes or contributing capabilities.
 ## Live profile updates
 
 Saved profile details are shown immediately. Follower and following totals and their user cards refresh automatically. Profile image selectors accept one active selection or upload at a time.
+
+Follow changes and banner-height selections repaint immediately while their background synchronization completes.

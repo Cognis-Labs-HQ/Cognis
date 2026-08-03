@@ -35,3 +35,5 @@ Gateway Profil memiliki profil pengguna, grafik sosial, postingan, dan manajemen
 ## Pembaruan profil langsung
 
 Informasi profil yang disimpan langsung ditampilkan. Jumlah dan kartu pengguna pengikut serta yang diikuti diperbarui secara otomatis. Pemilih gambar profil hanya menerima satu pilihan atau unggahan aktif pada satu waktu.
+
+Perubahan mengikuti dan pilihan tinggi banner langsung ditampilkan sementara sinkronisasi latar belakang diselesaikan.

@@ -43,11 +43,11 @@ test("successful uploads refresh local blob state before follow-up requests", ()
 test("successful uploads do not fail on optional follow-up data", () => {
     assert.match(
         PROFILE_UPLOAD_SOURCE,
-        /try \{\s*responseData = \(await response\.json\(\)\)\?\.data \?\? \{\};\s*\} catch \{/,
+        /try \{\s*responseData = \(await response\.json\(\)\)\?\.data \?\? \{\};\s*\} catch \(error\) \{/,
     );
     assert.match(
         PROFILE_UPLOAD_SOURCE,
-        /try \{\s*await saveBannerLayoutPreference\([\s\S]+?\);\s*\} catch \{/,
+        /try \{\s*await saveBannerLayoutPreference\([\s\S]+?\);\s*\} catch \(error\) \{/,
     );
 });
 
