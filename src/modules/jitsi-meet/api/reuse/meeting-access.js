@@ -216,10 +216,12 @@ export async function createMeetingPayload({
     requesterUsername,
     chatUrl,
     requiresReclaim,
+    meetingPassword = "",
 }) {
     return store.buildMeetingPayload(meeting, participants, state, {
         chatUrl,
         requiresReclaim,
+        meetingPassword,
         canAuthenticate:
             store.canCurrentUserInitiateAuth(state, requesterUsername) === true,
         waitingForAuthentication:

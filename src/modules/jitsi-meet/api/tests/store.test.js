@@ -37,6 +37,25 @@ function createMockJitsiDb({
             }
 
             if (
+                command.option === "UPDATE" &&
+                command.table === "jitsi_meeting_participants"
+            ) {
+                const meetingId = command.where?.find(
+                    (whereEntry) => whereEntry.column === "meeting_id",
+                )?.value;
+                const username = command.where?.find(
+                    (whereEntry) => whereEntry.column === "username",
+                )?.value;
+                const participantRow = storedParticipantRows.find(
+                    (row) =>
+                        row.meeting_id === meetingId &&
+                        row.username === username,
+                );
+                Object.assign(participantRow ?? {}, command.set);
+                return { rows: [] };
+            }
+
+            if (
                 command.option === "SELECT" &&
                 command.table === "jitsi_meetings" &&
                 !command.where
@@ -90,9 +109,7 @@ function createMockJitsiDb({
                             (participantRow) =>
                                 participantRow.meeting_id === meetingId,
                         )
-                        .map((participantRow) => ({
-                            username: participantRow.username,
-                        })),
+                        .map((participantRow) => ({ ...participantRow })),
                 };
             }
 
@@ -172,6 +189,11 @@ test("jitsi store meeting creation uses the modern column set", async () => {
     assert.ok(mockDb.insertedMeetingRows[0].participant_key);
     assert.ok(mockDb.insertedMeetingRows[0].meeting_url);
     assert.ok(mockDb.insertedMeetingRows[0].room_slug);
+    assert.ok(mockDb.insertedMeetingRows[0].meeting_password_iv);
+    assert.notEqual(
+        mockDb.insertedMeetingRows[0].meeting_password,
+        createdMeeting?.meetingPassword,
+    );
     assert.equal(
         mockDb.insertedMeetingRows[0].scheduled_at,
         "2026-08-01T09:30:00.000Z",
@@ -188,6 +210,19 @@ test("jitsi store meeting creation uses the modern column set", async () => {
         true,
     );
     assert.equal(createdMeeting?.reused, false);
+    assert.equal(
+        await store.claimMeetingPassword(createdMeeting.id, "alice"),
+        createdMeeting.meetingPassword,
+    );
+    assert.equal(
+        await store.claimMeetingPassword(createdMeeting.id, "alice"),
+        createdMeeting.meetingPassword,
+    );
+    await store.acknowledgeMeetingPassword(createdMeeting.id, "alice");
+    assert.equal(
+        await store.claimMeetingPassword(createdMeeting.id, "alice"),
+        null,
+    );
 });
 
 test("jitsi store meeting creation falls back to a readable default slug", async () => {

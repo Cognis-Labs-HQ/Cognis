@@ -12,6 +12,8 @@
   <string name="adapter.auth.keyring.setup_placeholder">Schlüsselbundpasswort (optional)</string>
   <string name="adapter.auth.keyring.setup_hint">Leer lassen, um dein Kontopasswort zu verwenden.</string>
   <string name="adapter.auth.keyring.setup_action">Schlüsselbund einrichten</string>
+  <string name="adapter.auth.keyring.created">Schlüsselbund erstellt.</string>
+  <string name="adapter.auth.keyring.destroyed">Schlüsselbund zerstört. Seine Geheimnisse können nicht mehr automatisch wiederhergestellt werden.</string>
   <string name="adapter.auth.keyring.request_component">Authentifizierung</string>
   <string name="adapter.auth.keyring.request_action_unlock">entsperren</string>
   <string name="adapter.auth.keyring.request_process_session">den Schlüsselbund für diese Sitzung</string>

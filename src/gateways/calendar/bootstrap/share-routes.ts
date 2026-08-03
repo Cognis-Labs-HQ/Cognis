@@ -325,14 +325,13 @@ export async function handleCalendarShareRoutes(input: {
         );
         return true;
     }
-    let recipientCalendarId = (
+    const existingShare = (
         await input.shareRegistry.listCalendarUserShares(
             input.claims.sub,
             ownerCalendarId,
         )
-    ).find(
-        (share) => share.recipientAccountId === recipientAccountId,
-    )?.recipientCalendarId;
+    ).find((share) => share.recipientAccountId === recipientAccountId);
+    let recipientCalendarId = existingShare?.recipientCalendarId;
     if (!recipientCalendarId) {
         const createdCalendar = input.gateway.createCalendar({
             ownerAccountId: recipientAccountId,
@@ -360,10 +359,10 @@ export async function handleCalendarShareRoutes(input: {
                 typeof body.recipientAvatarKey === "string"
                     ? body.recipientAvatarKey
                     : null,
-            permission: "read",
+            permission: existingShare?.permission ?? "read",
             expiresAt:
                 body.expiresInHours === undefined
-                    ? ""
+                    ? (existingShare?.expiresAt ?? "")
                     : resolveShareExpiry(body.expiresInHours),
         });
         if (input.dispatchNotification) {

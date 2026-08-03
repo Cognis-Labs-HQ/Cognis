@@ -129,6 +129,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             isAllowedShareGuest &&
             !(
                 (!sub && req.method === "GET") ||
+                (sub === "key-contribution" &&
+                    req.method === "POST" &&
+                    hasMeetingChatAccess("chat:read")) ||
                 (sub === "messages" &&
                     !subArg &&
                     (req.method === "GET" || req.method === "POST"))
@@ -172,20 +175,60 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                   accountId,
               );
 
-        if (!sub && req.method === "GET") {
-            const resolveRoomKey = async () => {
-                if (incomingPendingRoomRequest) {
-                    return null;
-                }
-                return (
-                    (await messagesStore.getUnwrappedRoomKey(roomId)) ??
-                    messagesStore.generateAndStoreRoomKey(roomId)
+        if (sub === "key-contribution" && !subArg && req.method === "POST") {
+            if (incomingPendingRoomRequest) {
+                res.writeHead(403, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "message_request_pending" },
+                    }),
                 );
-            };
-            const [members, roomKey] = await Promise.all([
-                messagesStore.listMembers(roomId),
-                resolveRoomKey(),
-            ]);
+                return true;
+            }
+            const roomKey = await messagesStore.claimRoomKeyContribution(
+                roomId,
+                accountId,
+            );
+            if (!roomKey) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "room_key_already_delivered" },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: {
+                        keyContribution: {
+                            id: `chatroom:${roomId}:key`,
+                            value: roomKey,
+                            metadata: { label: `Chat ${roomId}` },
+                        },
+                    },
+                }),
+            );
+            return true;
+        }
+
+        if (
+            sub === "key-contribution" &&
+            subArg === "acknowledge" &&
+            req.method === "POST"
+        ) {
+            await messagesStore.acknowledgeRoomKeyContribution(
+                roomId,
+                accountId,
+            );
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
+
+        if (!sub && req.method === "GET") {
+            const members = await messagesStore.listMembers(roomId);
             const enrichedMembers = await enrichMembersWithProfiles(
                 members,
                 profileStore,
@@ -201,17 +244,6 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                             (isAllowedShareGuest || !member?.archived) &&
                             !(room.kind === "dm" && members.length < 2),
                         pendingRequest: pendingRequestSummary,
-                        ...(roomKey
-                            ? {
-                                  keyContribution: {
-                                      id: `chatroom:${roomId}:key`,
-                                      value: roomKey,
-                                      metadata: {
-                                          label: `Chat ${roomId}`,
-                                      },
-                                  },
-                              }
-                            : {}),
                     },
                 }),
             );

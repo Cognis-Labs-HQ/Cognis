@@ -20,7 +20,7 @@ test("all chat consumers use the adapter-owned key loading flow", () => {
     const source = readMessagesUiBundle();
     assert.match(source, /registerFlow\(FLOW_ID/);
     assert.match(source, /"resolve-keyring"/);
-    assert.match(source, /"load-key-contribution"/);
+    assert.match(source, /"request-key-contribution"/);
     assert.match(source, /"persist-key-contribution"/);
     assert.match(source, /social:messages:loadChatRoomKey/);
     assert.doesNotMatch(source, /adapters\/auth\/keyring\/keyring\.js/);
@@ -416,11 +416,49 @@ test("server room key contributions are validated and saved to the keyring", asy
     assert.equal(await requireRoomKey("room-1"), imported);
 });
 
+test("destroying the keyring clears cached room keys", async () => {
+    const imported = { type: "secret" };
+    const store = createRoomKeyStore({
+        importKey: async () => imported,
+        contributeSecret: async () => undefined,
+    });
+    await store.contributeRoomKey("room-1", {
+        id: "chatroom:room-1:key",
+        value: "generated-room-key",
+    });
+
+    store.clearRoomKeys();
+
+    await assert.rejects(
+        () => store.requireRoomKey("room-1"),
+        (error) => error.code === "missing_keyring_secret",
+    );
+});
+
+test("missing previously delivered room keys fall through to manual entry", async () => {
+    const store = createRoomKeyStore({
+        importKey: async (value) => value,
+        resolveSecret: async (_id, options) => options.prompt?.(),
+        promptSecret: async () => "manually-supplied-key",
+    });
+
+    assert.equal(await store.getRoomKey("room-1"), null);
+    assert.equal(
+        await store.getRoomKey("room-1", null, true),
+        "manually-supplied-key",
+    );
+});
+
 test("messages unlock the keyring before accepting a delivered room key", () => {
     const source = readMessagesUiBundle();
 
-    assert.match(source, /acceptRoomKeyContribution/);
-    assert.match(source, /getMessagesKeyring\(\)\?\.requestUnlock/);
+    assert.match(source, /"resolve-keyring"/);
+    assert.match(source, /"request-key-contribution"/);
+    assert.match(source, /keyring:isUnlocked/);
+    assert.match(source, /recoverMissing !== true/);
+    assert.match(source, /\/key-contribution/);
+    assert.match(source, /event\.detail\?\.type !== "destroy"/);
+    assert.match(source, /roomKeys\.clearRoomKeys\(\)/);
     assert.match(source, /keyringScopeFactory\?\.\("Social Messages"\)/);
     assert.match(source, /roomKeys\.contributeRoomKey/);
     assert.doesNotMatch(source, /auth:createRepromptGuard/);
@@ -431,6 +469,8 @@ test("messages refresh encrypted previews after a contextual keyring unlock", ()
 
     assert.match(source, /"cognis:keyring-event"/);
     assert.match(source, /event\.detail\?\.type === "unlock"/);
+    assert.match(source, /event\.detail\?\.type === "write"/);
+    assert.match(source, /\.startsWith\("chatroom:"\)/);
     assert.match(source, /await roomState\.reloadRoomsList\(\)/);
     assert.match(source, /await roomState\.refreshActiveConversation\(\)/);
 });
@@ -532,7 +572,8 @@ test("messages serialize concurrent room-key loads during SPA mounting", () => {
         source,
         /const existingLoad = pendingRoomKeyLoads\.get\(loadId\)/,
     );
-    assert.match(source, /if \(existingKey \|\| !options\.keyContribution\)/);
+    assert.match(source, /recoverMissing \? "recover" : "local"/);
+    assert.match(source, /if \(existingLoad\) \{\s*return existingLoad;/);
 });
 
 test("keyring reset preserves message-room membership", () => {

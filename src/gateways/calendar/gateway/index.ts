@@ -38,14 +38,19 @@ import {
     exportCalendarAsIcs as buildCalendarIcs,
     getAdapterConfig as getAdapterConfigHelper,
     importIcs as importCalendarIcs,
+    isCalendarAdapterEnabled,
+    listCalendarAdapters,
+    saveCalendarAdapterConfig,
 } from "./adapter-helpers.js";
 import { moveOwnedEvents } from "./move-owned-events.js";
 import { removeDeclinedAttendee as removeDeclinedAttendeeHelper } from "./attendee-management.js";
+import { removeCalendarAccountActivity } from "./account-activity.js";
 import {
     buildEventResponses,
     moveEventRecord as moveEventRecordHelper,
     removeEventRecord as removeEventRecordHelper,
     setResponseRecord as setResponseRecordHelper,
+    synchronizeAttendeeResponses,
     upsertCalendarRecord as upsertCalendarRecordHelper,
     upsertEventRecord as upsertEventRecordHelper,
 } from "./event-record-ops.js";
@@ -121,41 +126,13 @@ export class CoreCalendarGateway {
     async deleteAccountActivity(accountId: string): Promise<void> {
         await this.flushStore();
         await this.store?.deleteAccountActivity(accountId);
-        const ownedCalendarIds = new Set(
-            this.calendarIdsByOwner.get(accountId) ?? [],
-        );
-        this.calendarIdsByOwner.delete(accountId);
-        for (const calendarId of ownedCalendarIds) {
-            this.calendarsById.delete(calendarId);
-            this.eventsByCalendar.delete(calendarId);
-        }
-        for (const [calendarId, events] of this.eventsByCalendar) {
-            const retainedEvents = events
-                .filter((event) => event.createdBy !== accountId)
-                .map((event) => ({
-                    ...event,
-                    attendees: event.attendees.filter(
-                        (attendee) => attendee !== accountId,
-                    ),
-                }));
-            if (retainedEvents.length > 0) {
-                this.eventsByCalendar.set(calendarId, retainedEvents);
-            } else {
-                this.eventsByCalendar.delete(calendarId);
-            }
-        }
-        const retainedEventIds = new Set(
-            Array.from(this.eventsByCalendar.values())
-                .flat()
-                .flatMap((event) => [event.id, event.sourceEventId])
-                .filter((eventId): eventId is string => Boolean(eventId)),
-        );
-        for (const [rootEventId, responses] of this.responsesByRootEvent) {
-            responses.delete(accountId);
-            if (responses.size === 0 || !retainedEventIds.has(rootEventId)) {
-                this.responsesByRootEvent.delete(rootEventId);
-            }
-        }
+        removeCalendarAccountActivity({
+            accountId,
+            calendarsById: this.calendarsById,
+            calendarIdsByOwner: this.calendarIdsByOwner,
+            eventsByCalendar: this.eventsByCalendar,
+            responsesByRootEvent: this.responsesByRootEvent,
+        });
     }
 
     registerAdapter(adapter: CalendarAdapter, requires?: string[]): void {
@@ -167,30 +144,19 @@ export class CoreCalendarGateway {
     }
 
     listAdapters(): CalendarAdapterInfo[] {
-        return Array.from(this.registeredAdapters.values()).map((adapter) => {
-            const requires = this.adapterRequires.get(adapter.adapterId);
-            return {
-                id: adapter.adapterId,
-                name: adapter.adapterName,
-                ...(adapter.version ? { version: adapter.version } : {}),
-                ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
-                active:
-                    !this.disabledAdapters.has(adapter.adapterId) &&
-                    (typeof adapter.isConfigured === "function"
-                        ? adapter.isConfigured()
-                        : true),
-                ...(requires?.length ? { requires } : {}),
-            };
-        });
+        return listCalendarAdapters(
+            this.registeredAdapters,
+            this.adapterRequires,
+            this.disabledAdapters,
+        );
     }
 
     isAdapterEnabled(adapterId: string): boolean {
-        const adapter = this.registeredAdapters.get(adapterId);
-        if (!adapter || this.disabledAdapters.has(adapterId)) return false;
-        if (typeof adapter.isConfigured === "function") {
-            return adapter.isConfigured();
-        }
-        return true;
+        return isCalendarAdapterEnabled(
+            this.registeredAdapters,
+            this.disabledAdapters,
+            adapterId,
+        );
     }
 
     getAdapter(adapterId: string): CalendarAdapter | undefined {
@@ -209,17 +175,12 @@ export class CoreCalendarGateway {
         adapterId: string,
         config: Record<string, unknown>,
     ): Promise<void> {
-        const adapter = this.registeredAdapters.get(adapterId);
-        if (!adapter) return;
-        const { enabled, ...adapterConfig } = config;
-        if (enabled === false || enabled === "false") {
-            this.disabledAdapters.add(adapterId);
-        } else {
-            this.disabledAdapters.delete(adapterId);
-        }
-        if (typeof adapter.setConfig === "function") {
-            adapter.setConfig(adapterConfig);
-        }
+        saveCalendarAdapterConfig(
+            this.registeredAdapters,
+            this.disabledAdapters,
+            adapterId,
+            config,
+        );
     }
 
     async enableAdapter(adapterId: string): Promise<void> {
@@ -1001,36 +962,20 @@ export class CoreCalendarGateway {
         acceptedAccountId: string | null = null,
     ): void {
         const normalizedAttendees = normalizeAttendeeList(attendees);
-        const existingResponses =
-            this.responsesByRootEvent.get(rootEventId) ?? new Map();
-        const currentAccountIds = new Set(existingResponses.keys());
-        const nextAccountIds = new Set(normalizedAttendees);
-        for (const attendee of normalizedAttendees) {
-            if (existingResponses.has(attendee)) continue;
-            const now = new Date().toISOString();
-            const response: CalendarEventResponseRecord = {
-                rootEventId,
-                accountId: attendee,
-                response:
-                    attendee === acceptedAccountId ? "accepted" : "pending",
-                createdAt: now,
-                updatedAt: now,
-            };
-            existingResponses.set(attendee, response);
-            this.scheduleStoreWrite(() => this.store?.saveResponse(response));
-        }
-        for (const accountId of currentAccountIds) {
-            if (nextAccountIds.has(accountId)) continue;
-            existingResponses.delete(accountId);
-            this.scheduleStoreWrite(() =>
-                this.store?.deleteResponse(rootEventId, accountId),
-            );
-        }
-        if (existingResponses.size > 0) {
-            this.responsesByRootEvent.set(rootEventId, existingResponses);
-        } else {
-            this.responsesByRootEvent.delete(rootEventId);
-        }
+        synchronizeAttendeeResponses({
+            responsesByRootEvent: this.responsesByRootEvent,
+            rootEventId,
+            attendees: normalizedAttendees,
+            acceptedAccountId,
+            saveResponse: (response) =>
+                this.scheduleStoreWrite(() =>
+                    this.store?.saveResponse(response),
+                ),
+            deleteResponse: (accountId) =>
+                this.scheduleStoreWrite(() =>
+                    this.store?.deleteResponse(rootEventId, accountId),
+                ),
+        });
         this.refreshResponsesForRootEvent(rootEventId);
     }
 
