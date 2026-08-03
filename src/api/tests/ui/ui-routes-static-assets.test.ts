@@ -5,6 +5,24 @@ import { createUiRoutes } from "../../routes/ui/index.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
 
+test("GET /static/reuse/ rejects directories before committing a response", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/reuse/"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 404);
+    assert.equal(recorder.writeHeadCalls, 1);
+    assert.deepEqual(JSON.parse(recorder.body), {
+        error: { code: "not_found", message: "Asset not found." },
+    });
+});
+
 test("GET /static/gateways/:id/:file serves file from registered static dir", async () => {
     const uiRegistry = new UIRegistry();
     const authUiDir = path.resolve(

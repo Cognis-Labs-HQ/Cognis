@@ -19,7 +19,7 @@
  * asset list so existing clients pick up the new worker on next visit.
  */
 
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v4";
 const SHELL_CACHE = `cognis-shell-${CACHE_VERSION}`;
 const ASSET_CACHE = `cognis-assets-${CACHE_VERSION}`;
 const APP_CACHE = `cognis-app-${CACHE_VERSION}`;
@@ -167,10 +167,13 @@ self.addEventListener("fetch", (event) => {
         url.pathname.startsWith("/static/") ||
         url.pathname === "/manifest.webmanifest"
     ) {
-        if (url.pathname.startsWith("/static/assets/")) {
+        if (
+            url.searchParams.has("v") ||
+            url.pathname.startsWith("/static/assets/")
+        ) {
             event.respondWith(staleWhileRevalidate(request));
-        } else {
-            event.respondWith(networkFirstAsset(request));
+            return;
         }
+        event.respondWith(networkFirstAsset(request));
     }
 });

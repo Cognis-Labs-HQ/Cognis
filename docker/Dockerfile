@@ -1,4 +1,5 @@
 FROM node:22 AS base
+ARG COGNIS_ASSET_VERSION=development
 WORKDIR /app
 
 # Root-only setup: create the non-root user, runtime directories, and system-wide scripts.
@@ -23,6 +24,7 @@ RUN npm ci --ignore-scripts
 EXPOSE 3000
 
 ENV NODE_ENV=production
+ENV COGNIS_ASSET_VERSION=${COGNIS_ASSET_VERSION}
 ENV COGNIS_UI_DEMO_MODE=0
 ENV DB_TYPE=postgresql
 ENV DATABASE_URL=

@@ -32,7 +32,7 @@ test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authen
     assert.equal(payload.data.length, 1);
     assert.equal(
         payload.data[0].scriptUrl,
-        "/static/gateways/profile/navbar.js",
+        "/static/gateways/profile/navbar.js?v=development",
     );
 });
 
@@ -121,7 +121,7 @@ test("GET /api/v1/ui/navbar-plugins filters disabled navbar plugins", async () =
     const payload = JSON.parse(recorder.body);
     assert.deepEqual(
         payload.data.map((plugin: { scriptUrl: string }) => plugin.scriptUrl),
-        ["/static/gateways/enabled/navbar.js"],
+        ["/static/gateways/enabled/navbar.js?v=development"],
     );
 });
 
@@ -158,7 +158,7 @@ test("GET /api/v1/ui/navbar-plugins filters plugins by access policy", async () 
         adminPayload.data.map(
             (plugin: { scriptUrl: string }) => plugin.scriptUrl,
         ),
-        ["/static/gateways/user/navbar.js", "/static/gateways/admin/navbar.js"],
+        ["/static/gateways/user/navbar.js?v=development", "/static/gateways/admin/navbar.js?v=development"],
     );
 
     const ownerToken = issueAccessToken("u2", "owner", 60);
@@ -180,9 +180,9 @@ test("GET /api/v1/ui/navbar-plugins filters plugins by access policy", async () 
             (plugin: { scriptUrl: string }) => plugin.scriptUrl,
         ),
         [
-            "/static/gateways/user/navbar.js",
-            "/static/gateways/admin/navbar.js",
-            "/static/gateways/owner/navbar.js",
+            "/static/gateways/user/navbar.js?v=development",
+            "/static/gateways/admin/navbar.js?v=development",
+            "/static/gateways/owner/navbar.js?v=development",
         ],
     );
 });
@@ -306,6 +306,7 @@ test("GET /api/v1/ui/settings-sections returns registered sections for authentic
         id: "study",
         label: "Study",
         scriptUrl: "/static/gateways/study/study-prefs.js",
+        stringsBaseUrl: "/static/gateways/study/languages",
     });
     const route = createUiRoutes(undefined, uiRegistry);
 
@@ -328,6 +329,14 @@ test("GET /api/v1/ui/settings-sections returns registered sections for authentic
     const payload = JSON.parse(recorder.body);
     assert.equal(payload.data.length, 1);
     assert.equal(payload.data[0].id, "study");
+    assert.equal(
+        payload.data[0].scriptUrl,
+        "/static/gateways/study/study-prefs.js?v=development",
+    );
+    assert.equal(
+        payload.data[0].stringsBaseUrl,
+        "/static/gateways/study/languages",
+    );
 });
 
 test("GET /api/v1/ui/settings-sections filters disabled settings sections", async () => {
