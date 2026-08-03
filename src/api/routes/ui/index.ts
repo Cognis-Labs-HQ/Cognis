@@ -84,6 +84,9 @@ async function serveStaticAsset(
 ) {
     try {
         const metadata = await stat(filePath);
+        if (!metadata.isFile()) {
+            throw new Error("Asset path is not a file.");
+        }
         const etag = `W/\"${metadata.size.toString(16)}-${Math.trunc(metadata.mtimeMs).toString(16)}\"`;
         const headers = {
             "content-type": contentType,
@@ -103,11 +106,12 @@ async function serveStaticAsset(
             res.end();
             return;
         }
+        const file = await readFile(filePath);
         res.writeHead(200, {
             ...headers,
-            "content-length": metadata.size,
+            "content-length": file.length,
         });
-        res.end(await readFile(filePath));
+        res.end(file);
     } catch (error) {
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
