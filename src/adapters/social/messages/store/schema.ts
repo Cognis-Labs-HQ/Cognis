@@ -37,6 +37,7 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
                 default: "now",
             },
             { name: "last_read_at", type: "timestamp" },
+            { name: "key_delivered_at", type: "timestamp" },
             { name: "muted", type: "integer", notNull: true, default: 0 },
             {
                 name: "archived",

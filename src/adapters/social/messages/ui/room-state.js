@@ -34,7 +34,6 @@ export function createMessagesRoomState({
     getRoomKey,
     requireRoomKey,
     resolveThreadRoomKey,
-    acceptRoomKeyContribution = async () => true,
     onRoomOpened = async () => {},
     lastOpenedRoomKey = "messages:last-opened-room",
     typingTtlSeconds = 8,
@@ -245,15 +244,6 @@ export function createMessagesRoomState({
         }
         syncComposerAvailability(room);
         syncPendingRequestBanner(room?.pendingRequest ?? null);
-        if (
-            room?.keyContribution &&
-            !(await acceptRoomKeyContribution(room.id, room.keyContribution))
-        ) {
-            threadList.textContent = i18n.t(
-                "adapter.social.messages.keyring_unlock_required",
-            );
-            return;
-        }
         await onRoomOpened(room ?? null);
         const key = await resolveThreadRoomKey(room, roomId);
         const threadResult = await renderThread(

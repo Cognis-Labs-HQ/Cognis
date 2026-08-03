@@ -8,6 +8,55 @@ import type {
     CalendarEventRecord,
 } from "./utils.js";
 
+export function listCalendarAdapters(
+    registeredAdapters: Map<string, CalendarAdapter>,
+    adapterRequires: Map<string, string[]>,
+    disabledAdapters: Set<string>,
+): CalendarAdapterInfo[] {
+    return Array.from(registeredAdapters.values()).map((adapter) => {
+        const requires = adapterRequires.get(adapter.adapterId);
+        return {
+            id: adapter.adapterId,
+            name: adapter.adapterName,
+            ...(adapter.version ? { version: adapter.version } : {}),
+            ...(adapter.publisher ? { publisher: adapter.publisher } : {}),
+            active:
+                !disabledAdapters.has(adapter.adapterId) &&
+                (typeof adapter.isConfigured === "function"
+                    ? adapter.isConfigured()
+                    : true),
+            ...(requires?.length ? { requires } : {}),
+        };
+    });
+}
+
+export function isCalendarAdapterEnabled(
+    registeredAdapters: Map<string, CalendarAdapter>,
+    disabledAdapters: Set<string>,
+    adapterId: string,
+): boolean {
+    const adapter = registeredAdapters.get(adapterId);
+    if (!adapter || disabledAdapters.has(adapterId)) return false;
+    return adapter.isConfigured?.() ?? true;
+}
+
+export function saveCalendarAdapterConfig(
+    registeredAdapters: Map<string, CalendarAdapter>,
+    disabledAdapters: Set<string>,
+    adapterId: string,
+    config: Record<string, unknown>,
+): void {
+    const adapter = registeredAdapters.get(adapterId);
+    if (!adapter) return;
+    const { enabled, ...adapterConfig } = config;
+    if (enabled === false || enabled === "false") {
+        disabledAdapters.add(adapterId);
+    } else {
+        disabledAdapters.delete(adapterId);
+    }
+    adapter.setConfig?.(adapterConfig);
+}
+
 export function getAdapterConfig(
     registeredAdapters: Map<string, CalendarAdapter>,
     disabledAdapters: Set<string>,

@@ -74,6 +74,25 @@ test("messages schema includes portable integer archived member flag", async () 
     assert.equal(archivedCol.notNull, true);
 });
 
+test("messages schema records one-time room-key delivery per member", async () => {
+    const { db, tableDefs } = createRecordingExecutor();
+    const store = new DbMessagesStore(db);
+
+    await store.ensureSchema();
+
+    const membersTableDef = tableDefs.find(
+        (definition) => definition.name === "chatroom_members",
+    );
+    assert.ok(membersTableDef);
+    const deliveryColumn = membersTableDef.columns.find(
+        (column) => column.name === "key_delivered_at",
+    );
+    assert.deepEqual(deliveryColumn, {
+        name: "key_delivered_at",
+        type: "timestamp",
+    });
+});
+
 test("messages schema includes request typing and reaction tables", async () => {
     const { db, tableDefs } = createRecordingExecutor();
     const store = new DbMessagesStore(db);

@@ -45,7 +45,7 @@ Saat `subPageNavigation: true`, hanya satu elemen yang terlihat pada satu waktu.
 
 ### Parkir DOM
 
-Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada page composer hanya ketika DOM media harus bertahan selama perenderan ulang composer. Saat aktif, kartu yang berisi iframe atau media lain diparkir dan dipulihkan sebagai DOM yang tetap utuh; fitur ini ditujukan untuk sematan berstatus seperti Jitsi Meet. Halaman biasa sebaiknya mengandalkan perenderan baru dan pemulihan status formulir sementara agar konten yang diperbarui tidak tertutup oleh pohon terparkir yang usang.
+Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada page composer hanya ketika DOM media harus bertahan selama perenderan ulang composer. Saat aktif, kartu yang berisi iframe atau media lain diparkir dan dipulihkan sebagai DOM yang tetap utuh; fitur ini ditujukan untuk sematan berstatus seperti Jitsi Meet. Halaman biasa sebaiknya mengandalkan perenderan baru dan pemulihan status formulir sementara agar konten yang diperbarui tidak tertutup oleh pohon terparkir yang usang. Setiap pemanggilan `refresh()` secara bawaan merender ulang semua kartu terlihat yang sudah ada agar perubahan status tampil tanpa penggantian DOM khusus halaman.
 
 ### Persistensi
 

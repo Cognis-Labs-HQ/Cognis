@@ -1,6 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerAvatarProvider } from "/static/layouts/dashboard-layout.js";
-import { fetchProfileAvatarBlobUrl } from "/static/adapters/social/profile/profile-avatar.js";
+import { fetchProfileAvatarBlobUrl } from "./profile-avatar.js";
 import { registerSearchIndexing } from "./search/index.js";
 
 registerAvatarProvider(async function profileAvatarProvider() {

@@ -11,6 +11,7 @@ import {
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
     errorMessage,
+    includeSharedAudienceAttendees,
     normalizeAttendeesForOwner,
     normalizeReminderOffsets,
     normalizeStringList,
@@ -550,6 +551,14 @@ export function createCalendarCoreRoutes({
                     claims.sub,
                     resolveAccountId,
                 );
+                const sharedAudienceAttendees = shared
+                    ? await includeSharedAudienceAttendees(
+                          attendees,
+                          shareRegistry,
+                          shared.ownerAccountId,
+                          shared.ownerCalendarId,
+                      )
+                    : attendees;
                 const createdEvent = shared
                     ? gateway.addEventToCalendar({
                           calendarId: targetCalendarId,
@@ -561,7 +570,7 @@ export function createCalendarCoreRoutes({
                           startAt,
                           endAt,
                           createdBy: claims.sub,
-                          attendees,
+                          attendees: sharedAudienceAttendees,
                           inviteEmails,
                           reminderOffsetsMinutes,
                           meetingUrl:
@@ -587,7 +596,7 @@ export function createCalendarCoreRoutes({
                                   : null,
                           startAt,
                           endAt,
-                          attendees,
+                          attendees: sharedAudienceAttendees,
                           inviteEmails,
                           reminderOffsetsMinutes,
                           meetingUrl:

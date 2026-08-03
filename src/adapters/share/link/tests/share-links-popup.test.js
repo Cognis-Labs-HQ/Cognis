@@ -6,6 +6,10 @@ const IMPLEMENTATION_URL = new URL(
     "../ui/share-links-popup/implementation.js",
     import.meta.url,
 );
+const POPUP_ENTRY_URL = new URL(
+    "../ui/share-links-popup/index.js",
+    import.meta.url,
+);
 const STYLESHEET_URL = new URL(
     "../ui/share-links-popup/index.css",
     import.meta.url,
@@ -22,6 +26,15 @@ test("share popup keeps the active adapter page and history rendering separate",
     assert.match(source, /window\.setInterval\(/);
     assert.doesNotMatch(source, /captureFocusableTarget/);
     assert.doesNotMatch(source, /restoreFocusableTarget/);
+});
+
+test("share popup loads callbacks from the gateway-owned static asset", () => {
+    const source = readFileSync(POPUP_ENTRY_URL, "utf8");
+
+    assert.match(
+        source,
+        /from "\/static\/gateways\/share\/ui\/reuse\/share-api\.js"/,
+    );
 });
 
 test("share links popup renders existing links as an icon-only copy button", () => {

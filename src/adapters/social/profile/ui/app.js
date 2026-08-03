@@ -35,6 +35,7 @@ import {
     renderFollowRequests,
 } from "./profile-render.js";
 import { createProfileImageUploadActions } from "./profile-image-upload.js";
+import { createProfileImageSelection } from "./profile-image-selection.js";
 import { resolveBannerCropAspectRatio } from "./image-crop.js";
 import { createProfilePostActions } from "./profile-post-actions.js";
 
@@ -171,11 +172,11 @@ function refreshPage() {
 }
 
 function refreshProfileHero() {
-    const heroElement = elements.find((element) => element.id === "hero");
-    const heroHost = root.querySelector('[data-composer-element="hero"]');
-    if (!heroElement || !(heroHost instanceof HTMLElement)) return;
-    heroHost.innerHTML = heroElement.render();
-    bindProfileHeroEvents();
+    composer?.refreshElements(["hero"]);
+}
+
+function refreshProfileCards(cardIds) {
+    composer?.refreshElements(cardIds);
 }
 
 async function loadSocialConnectionList(profileHandle, connectionKind) {
@@ -206,7 +207,14 @@ async function refreshFollowerCounts() {
     if (!followersChanged && !followingChanged) return false;
     followers = latestFollowers;
     following = latestFollowing;
-    refreshPage();
+    refreshProfileCards([
+        "hero",
+        ...(followersChanged ? ["followers"] : []),
+        ...(followingChanged ? ["following"] : []),
+        "suggested",
+    ]);
+    bindProfileHeroEvents();
+    bindSocialCardEvents();
     return true;
 }
 
@@ -232,17 +240,12 @@ function startFollowerCountPoller(signal) {
     followerCountPoller.start();
 }
 
-const avatarFileInput = document.createElement("input");
-avatarFileInput.type = "file";
-avatarFileInput.accept = "image/*";
-avatarFileInput.hidden = true;
-document.body.appendChild(avatarFileInput);
-
-const bannerFileInput = document.createElement("input");
-bannerFileInput.type = "file";
-bannerFileInput.accept = "image/*";
-bannerFileInput.hidden = true;
-document.body.appendChild(bannerFileInput);
+const {
+    avatarFileInput,
+    bannerFileInput,
+    clearPendingSelection,
+    requestSelection,
+} = createProfileImageSelection();
 
 async function openEditPopup() {
     const currentBio = profile?.bio ?? "";
@@ -413,9 +416,11 @@ async function openEditPopup() {
                     i18n.t("ui.app.profile.save_failed");
                 throw new Error(responseMessage);
             }
+            const responseBody = await response.json();
             localStorage.setItem("cognis_display_name", displayName);
-            setState({ profile: await loadOwnProfile() });
-            refreshPage();
+            setState({ profile: responseBody.data });
+            refreshProfileCards(["hero", "social-links", "posts-new"]);
+            bindProfileHeroEvents();
             updateNavbarAvatar().catch(() => {});
             showToast(i18n.t("ui.app.profile.saved"), { variant: "success" });
         } catch (error) {
@@ -435,6 +440,7 @@ avatarFileInput.addEventListener("change", async () => {
     const file = avatarFileInput.files?.[0];
     if (!file) {
         avatarFileInput.value = "";
+        clearPendingSelection("avatar");
         return;
     }
     try {
@@ -447,12 +453,14 @@ avatarFileInput.addEventListener("change", async () => {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
     }
     avatarFileInput.value = "";
+    clearPendingSelection("avatar");
 });
 
 bannerFileInput.addEventListener("change", async () => {
     const file = bannerFileInput.files?.[0];
     if (!file) {
         bannerFileInput.value = "";
+        clearPendingSelection("banner");
         return;
     }
     try {
@@ -465,6 +473,7 @@ bannerFileInput.addEventListener("change", async () => {
         showToast(i18n.t("ui.app.profile.upload_failed"), { variant: "error" });
     }
     bannerFileInput.value = "";
+    clearPendingSelection("banner");
 });
 
 function bindFollowButtonHover(button) {
@@ -517,13 +526,13 @@ function bindProfileHeroEvents() {
                 bannerHeight,
                 bannerRect,
             );
-            bannerFileInput.click();
+            requestSelection("banner", bannerFileInput);
         },
     );
     root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
         "click",
         () => {
-            avatarFileInput.click();
+            requestSelection("avatar", avatarFileInput);
         },
     );
     root.querySelector(".profile-avatar-remove-btn")?.addEventListener(
@@ -588,12 +597,12 @@ function bindProfileHeroEvents() {
                         bannerMenuCloseHandler,
                         true,
                     );
+                    refreshProfileHero();
                     await saveBannerLayoutPreference({
                         height: bannerHeight,
                         panX: bannerPanX,
                         panY: bannerPanY,
                     });
-                    composer.refresh(elements);
                 });
             },
         );
@@ -612,6 +621,18 @@ function bindProfileHeroEvents() {
             },
         );
     }
+}
+
+function bindSocialCardEvents() {
+    root.querySelectorAll(".profile-follow-btn[data-handle]").forEach(
+        (button) => {
+            if (button.dataset.followActionBound === "true") return;
+            button.dataset.followActionBound = "true";
+            button.addEventListener("click", () =>
+                postActions?.doFollowUser(button.dataset.handle),
+            );
+        },
+    );
 }
 
 function bindPageEvents() {
@@ -705,13 +726,7 @@ function bindPageEvents() {
             );
         },
     );
-    root.querySelectorAll(".profile-follow-btn[data-handle]").forEach(
-        (button) => {
-            button.addEventListener("click", () =>
-                postActions?.doFollowUser(button.dataset.handle),
-            );
-        },
-    );
+    bindSocialCardEvents();
 }
 
 export async function mount(rootEl, { signal } = {}) {
@@ -727,10 +742,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     root = rootEl;
     i18n = await createI18n({
-        componentStringBaseUrls: [
-            "/static/adapters/social/profile/languages",
-            "/static/adapters/social/messages/languages",
-        ],
+        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
     applyDocumentTitle(i18n, "ui.page.title.profile");
 
@@ -749,6 +761,10 @@ export async function mount(rootEl, { signal } = {}) {
         setState,
         refreshPage,
         refreshProfileHero,
+        refreshProfileCards: (cardIds) => {
+            refreshProfileCards(cardIds);
+            bindSocialCardEvents();
+        },
         i18n,
         loadOwnPosts,
         loadFollowers,

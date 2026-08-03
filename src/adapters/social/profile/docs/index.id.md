@@ -31,3 +31,11 @@ Gateway Profil memiliki profil pengguna, grafik sosial, postingan, dan manajemen
 | `src/gateways/profile/routes/social.ts`  | Route follow, block, follower                |
 | `src/gateways/profile/routes/posts.ts`   | Pembuatan, daftar, dan penghapusan postingan |
 | `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — semua operasi SQL profil  |
+
+## Pembaruan profil langsung
+
+Informasi profil yang disimpan langsung ditampilkan. Jumlah dan kartu pengguna pengikut serta yang diikuti diperbarui secara otomatis. Pemilih gambar profil hanya menerima satu pilihan atau unggahan aktif pada satu waktu.
+
+Perubahan mengikuti dan pilihan tinggi banner langsung ditampilkan sementara sinkronisasi latar belakang diselesaikan.
+
+Umpan balik tindakan pesan dimuat dari sumber bahasa milik profil sehingga perenderan profil tidak bergantung pada adapter Pesan yang aktif.

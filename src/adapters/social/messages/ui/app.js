@@ -123,12 +123,6 @@ export async function mount(root, { signal } = {}) {
         getRoomKey,
         requireRoomKey,
         resolveThreadRoomKey,
-        acceptRoomKeyContribution: async (roomId, keyContribution) =>
-            Boolean(
-                await loadChatRoomKey(roomId, {
-                    keyContribution,
-                }),
-            ),
         lastOpenedRoomKey: LAST_OPENED_ROOM_KEY,
         typingTtlSeconds: TYPING_TTL_SECONDS,
         typingIdleResetMs: TYPING_IDLE_RESET_MS,
@@ -174,7 +168,11 @@ export async function mount(root, { signal } = {}) {
     window.addEventListener(
         "cognis:keyring-event",
         (event) => {
-            if (event.detail?.type === "unlock") {
+            const refreshAfterUnlock = event.detail?.type === "unlock";
+            const refreshAfterRoomKeyWrite =
+                event.detail?.type === "write" &&
+                String(event.detail?.identifier ?? "").startsWith("chatroom:");
+            if (refreshAfterUnlock || refreshAfterRoomKeyWrite) {
                 void refreshDecryptedContent();
             }
         },

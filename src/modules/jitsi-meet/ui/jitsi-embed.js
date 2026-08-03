@@ -75,6 +75,22 @@ export function createEmbedHandlers({
                 },
             })) || suppliedMeetingPassword,
         ).trim();
+        if (meetingKeyring && suppliedMeetingPassword && meetingPassword) {
+            const acknowledgeResponse = await apiFetch(
+                "/api/v1/modules/jitsi-meet/meetings/password/acknowledge",
+                {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ meetingId: state.meeting.id }),
+                },
+            );
+            if (!acknowledgeResponse.ok) {
+                showToast(i18n.t("module.jitsi_meet.overlay.join_failed"), {
+                    variant: "error",
+                });
+                return;
+            }
+        }
         let submittedStoredPassword = false;
         const themeMode = resolveThemeMode();
         const defaultBackground = resolveJitsiDefaultBackground(themeMode);

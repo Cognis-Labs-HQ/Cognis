@@ -101,7 +101,7 @@
  * @returns {Promise<void>}
  */
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { buildShareTokenCallbacks } from "../reuse/share-api.js";
+import { buildShareTokenCallbacks } from "/static/gateways/share/ui/reuse/share-api.js";
 import { openShareLinksPopup } from "./implementation.js";
 
 export { openShareLinksPopup };

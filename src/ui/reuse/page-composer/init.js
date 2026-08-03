@@ -39,7 +39,7 @@
  *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string) },
  *   pageManifest?: { features?: { pointerTracking?: boolean } },
  * }} options
- * @returns {{ init(): Promise<void>, refresh(elements: Array): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
+ * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
@@ -975,9 +975,15 @@ export function createPageComposer(
         restoreWindowScrollPosition(previousScrollLeft, previousScrollTop);
     }
 
+    function refreshElements(elementIds) {
+        renderer.refreshElements(elementIds);
+        onRender?.();
+    }
+
     return {
         init,
         refresh,
+        refreshElements,
         getFloatingSlot,
         showToast,
         refreshPresence: () => activePresenceTracker?.refresh(),

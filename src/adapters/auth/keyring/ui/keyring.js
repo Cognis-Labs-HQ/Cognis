@@ -1,3 +1,8 @@
+import {
+    dispatchKeyringEvent,
+    showKeyringLifecycleToast,
+} from "./lifecycle-notifications.js";
+
 const keyringApiModule = await import(
     typeof window === "undefined"
         ? "../../../../ui/reuse/api-client.js"
@@ -368,16 +373,7 @@ function recordKeyringEvent(type, identifier = "") {
         identifier: String(identifier),
         timestamp: new Date().toISOString(),
     });
-    if (typeof window !== "undefined") {
-        window.dispatchEvent(
-            new CustomEvent("cognis:keyring-event", {
-                detail: {
-                    type: String(type),
-                    identifier: String(identifier),
-                },
-            }),
-        );
-    }
+    dispatchKeyringEvent(type, identifier);
 }
 
 function persistRecordedEvent() {
@@ -469,7 +465,22 @@ export async function unlockKeyring(password) {
             DEFAULT_ITERATIONS,
     );
     const key = await deriveKey(normalizedPassword, salt, iterations);
-    return activateVault(key, stored, remoteState, salt, iterations);
+    const unlocked = await activateVault(
+        key,
+        stored,
+        remoteState,
+        salt,
+        iterations,
+    );
+    if (unlocked && !stored) {
+        await showKeyringLifecycleToast(
+            "adapter.auth.keyring.created",
+            "success",
+            loadKeyringI18n,
+        );
+        dispatchKeyringEvent("created");
+    }
+    return unlocked;
 }
 
 async function restoreSessionUnlock(stored, remoteState) {
@@ -732,14 +743,16 @@ export async function setupKeyringAfterLogin(
 ) {
     const localEnvelope = loadLocalEnvelope();
     const remoteState = await loadRemoteEnvelope();
+    accountInstanceId =
+        remoteState.accountInstanceId ||
+        String(localEnvelope?.accountInstanceId ?? "");
+    clearVault(false);
+    await clearSessionUnlockKey();
     const storedEnvelope = selectKeyringEnvelope(localEnvelope, remoteState);
     if (remoteState.resolved && localEnvelope && !storedEnvelope) {
         removeLocalEnvelope();
     }
     if (storedEnvelope) {
-        if (await restoreSessionUnlock(storedEnvelope, remoteState)) {
-            return { setup: false, unlocked: true, restored: true };
-        }
         if (accountPassword && (await unlockKeyring(accountPassword))) {
             return { setup: false, unlocked: true };
         }
@@ -864,11 +877,18 @@ export async function clearKeyringValues() {
 export async function destroyKeyring({
     requestSetupPassword = requestKeyringSetup,
 } = {}) {
+    await persistenceQueue;
     const response = await apiFetch(KEYRING_API, { method: "DELETE" });
     if (!response.ok) return false;
     clearVault(true);
     removeLocalEnvelope();
     await clearSessionUnlockKey();
+    dispatchKeyringEvent("destroy");
+    await showKeyringLifecycleToast(
+        "adapter.auth.keyring.destroyed",
+        "warning",
+        loadKeyringI18n,
+    );
     const password = await requestSetupPassword("");
     const recreated = password ? await unlockKeyring(password) : false;
     if (recreated) resumeKeyringAccess();
