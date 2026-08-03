@@ -47,6 +47,23 @@ test("page composer invokes element-level onRender callbacks", () => {
     assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
+test("page composer refreshes only explicitly selected card content", () => {
+    const source = readPageComposerBundle();
+
+    assert.match(
+        source,
+        /function refreshElements\(elementIds\) \{[\s\S]*?CSS\.escape\(elementId\)[\s\S]*?renderElementContent\(host, element\);/m,
+    );
+    assert.doesNotMatch(
+        source,
+        /\} else if \(!isMissing\) \{\s*renderElementContent\(card, element\);/m,
+    );
+    assert.match(
+        source,
+        /renderer\.refreshElements\(elementIds\);\s*onRender\?\.\(\);/,
+    );
+});
+
 test("page composer parks media DOM only when explicitly enabled", () => {
     const source = readPageComposerBundle();
     const composerStyles = readFileSync(

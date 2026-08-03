@@ -50,8 +50,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.7`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.23` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.30` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.27` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.31` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.10` |
 | User Share            | `src/adapters/share/user/`          | `1.1.11` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
@@ -73,7 +73,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/` | `1.1.12` |
 | Logging               | `src/gateways/logging/`      | `1.5.3`  |
 | Study                 | `src/gateways/study/`        | `1.5.8`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.43` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.44` |
 
 ## Kernverträge
 
@@ -92,7 +92,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.52` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.29` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.53` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.30` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

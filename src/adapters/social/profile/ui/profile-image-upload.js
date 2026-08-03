@@ -1,8 +1,8 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
-import { openImageCropPopup } from "/static/adapters/social/profile/crop-popup.js";
-import { sourceRectToCoverObjectPositionPercent } from "/static/adapters/social/profile/image-crop.js";
+import { openImageCropPopup } from "./crop-popup.js";
+import { sourceRectToCoverObjectPositionPercent } from "./image-crop.js";
 
 function clampBannerPanPercent(value) {
     return Math.min(100, Math.max(0, Number(value) || 0));
@@ -55,6 +55,8 @@ export function createProfileImageUploadActions({
     i18n,
     openPopup,
 }) {
+    const pendingUploads = new Set();
+
     async function doRemoveAvatar() {
         await apiFetch("/api/v1/social/profile/avatar", { method: "DELETE" });
         const currentState = getState();
@@ -91,101 +93,117 @@ export function createProfileImageUploadActions({
     }
 
     async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-        const preserveOriginalGif = shouldPreserveOriginalGif(kind, file);
-        const cropResult = await openImageCropPopup({
-            file,
-            kind,
-            aspectRatio,
-            outputMode: preserveOriginalGif ? "sourceRect" : "blob",
-            openPopupDialog: openPopup,
-            translate: (key) => i18n.t(key),
-            escapeHtmlText: escapeHtml,
-        });
-        if (!cropResult) return false;
-        const uploadBlob = preserveOriginalGif ? file : cropResult;
-        if (!(uploadBlob instanceof Blob)) return false;
-        const endpoint =
-            kind === "avatar"
-                ? "/api/v1/social/profile/avatar"
-                : "/api/v1/social/profile/banner";
-        const contentType = preserveOriginalGif
-            ? file.type || "application/octet-stream"
-            : "image/png";
-        const response = await apiFetch(endpoint, {
-            method: "PUT",
-            headers: { "content-type": contentType },
-            body: await uploadBlob.arrayBuffer(),
-        });
-        if (!response.ok) {
-            showToast(i18n.t("ui.app.profile.upload_failed"), {
-                variant: "error",
-            });
-            return false;
-        }
-        // The media write is complete once the server returns a successful
-        // status. Treat the response payload as optional so an empty or
-        // otherwise unreadable success response cannot turn that completed
-        // upload into an error toast in the file-input handler.
-        let responseData = {};
+        if (pendingUploads.has(kind)) return false;
+        pendingUploads.add(kind);
         try {
-            responseData = (await response.json())?.data ?? {};
-        } catch {
-            // Keep the local preview when the optional response body is absent.
-        }
-
-        const currentState = getState();
-        if (kind === "avatar") {
-            if (currentState.avatarBlobUrl) {
-                URL.revokeObjectURL(currentState.avatarBlobUrl);
-            }
-            setState({
-                avatarBlobUrl: URL.createObjectURL(uploadBlob),
-                profile: responseData.profile ?? currentState.profile,
+            const preserveOriginalGif = shouldPreserveOriginalGif(kind, file);
+            const cropResult = await openImageCropPopup({
+                file,
+                kind,
+                aspectRatio,
+                outputMode: preserveOriginalGif ? "sourceRect" : "blob",
+                openPopupDialog: openPopup,
+                translate: (key) => i18n.t(key),
+                escapeHtmlText: escapeHtml,
             });
-        } else {
-            if (currentState.bannerBlobUrl) {
-                URL.revokeObjectURL(currentState.bannerBlobUrl);
-            }
-            let nextBannerPanX = 50;
-            let nextBannerPanY = 50;
-            if (preserveOriginalGif && isCropResultWithSourceRect(cropResult)) {
-                const panPosition = sourceRectToPanPercent(
-                    cropResult.sourceRect,
-                    cropResult.imageWidth,
-                    cropResult.imageHeight,
-                );
-                nextBannerPanX = panPosition.panX;
-                nextBannerPanY = panPosition.panY;
-            }
-            setState({
-                bannerBlobUrl: URL.createObjectURL(uploadBlob),
-                bannerPanX: nextBannerPanX,
-                bannerPanY: nextBannerPanY,
-                profile: responseData.profile ?? currentState.profile,
+            if (!cropResult) return false;
+            const uploadBlob = preserveOriginalGif ? file : cropResult;
+            if (!(uploadBlob instanceof Blob)) return false;
+            const endpoint =
+                kind === "avatar"
+                    ? "/api/v1/social/profile/avatar"
+                    : "/api/v1/social/profile/banner";
+            const contentType = preserveOriginalGif
+                ? file.type || "application/octet-stream"
+                : "image/png";
+            const response = await apiFetch(endpoint, {
+                method: "PUT",
+                headers: { "content-type": contentType },
+                body: await uploadBlob.arrayBuffer(),
             });
-        }
-
-        // Render the local blob before any follow-up request so a slow or
-        // failed preference/profile refresh cannot hide a successful upload.
-        refreshPage();
-        if (kind === "banner") {
-            try {
-                await saveBannerLayoutPreference({
-                    height:
-                        currentState.bannerHeight === "full" ? "full" : "half",
-                    panX: nextBannerPanX,
-                    panY: nextBannerPanY,
+            if (!response.ok) {
+                showToast(i18n.t("ui.app.profile.upload_failed"), {
+                    variant: "error",
                 });
-            } catch {
-                // The banner upload already succeeded. Preference persistence
-                // must not make the caller report the upload itself as failed.
+                return false;
             }
-        }
+            let responseData = {};
+            try {
+                responseData = (await response.json())?.data ?? {};
+            } catch (error) {
+                console.error(
+                    "[profile] unable to read optional upload response",
+                    {
+                        component: "social-profile",
+                        operation: "read-profile-image-upload-response",
+                        kind,
+                        error,
+                    },
+                );
+            }
 
-        if (kind === "avatar") {
-            updateNavbarAvatar().catch(() => {});
+            const currentState = getState();
+            if (kind === "avatar") {
+                if (currentState.avatarBlobUrl) {
+                    URL.revokeObjectURL(currentState.avatarBlobUrl);
+                }
+                setState({
+                    avatarBlobUrl: URL.createObjectURL(uploadBlob),
+                    profile: responseData.profile ?? currentState.profile,
+                });
+            } else {
+                if (currentState.bannerBlobUrl) {
+                    URL.revokeObjectURL(currentState.bannerBlobUrl);
+                }
+                let nextBannerPanX = 50;
+                let nextBannerPanY = 50;
+                if (
+                    preserveOriginalGif &&
+                    isCropResultWithSourceRect(cropResult)
+                ) {
+                    const panPosition = sourceRectToPanPercent(
+                        cropResult.sourceRect,
+                        cropResult.imageWidth,
+                        cropResult.imageHeight,
+                    );
+                    nextBannerPanX = panPosition.panX;
+                    nextBannerPanY = panPosition.panY;
+                }
+                setState({
+                    bannerBlobUrl: URL.createObjectURL(uploadBlob),
+                    bannerPanX: nextBannerPanX,
+                    bannerPanY: nextBannerPanY,
+                    profile: responseData.profile ?? currentState.profile,
+                });
+            }
+
+            refreshPage();
+            if (kind === "banner") {
+                try {
+                    await saveBannerLayoutPreference({
+                        height:
+                            currentState.bannerHeight === "full"
+                                ? "full"
+                                : "half",
+                        panX: nextBannerPanX,
+                        panY: nextBannerPanY,
+                    });
+                } catch (error) {
+                    console.error("[profile] unable to save banner layout", {
+                        component: "social-profile",
+                        operation: "save-banner-layout",
+                        error,
+                    });
+                }
+            }
+
+            if (kind === "avatar") {
+                updateNavbarAvatar().catch(() => {});
+            }
+            return true;
+        } finally {
+            pendingUploads.delete(kind);
         }
-        return true;
     }
 
     return {

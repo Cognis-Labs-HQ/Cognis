@@ -116,3 +116,11 @@ registering routes or contributing capabilities.
 | `DELETE` | `/api/v1/files/:bucket/:key`                 | Delete file                   | Admin  |
 | `GET`    | `/api/v1/social/admin/file-limits`           | List per-category size limits | Admin  |
 | `PUT`    | `/api/v1/social/admin/file-limits/:category` | Set a size limit              | Admin  |
+
+## Live profile updates
+
+Saved profile details are shown immediately. Follower and following totals and their user cards refresh automatically. Profile image selectors accept one active selection or upload at a time.
+
+Follow changes and banner-height selections repaint immediately while their background synchronization completes.
+
+Profile messaging feedback is loaded from profile-owned language resources, so profile rendering does not depend on the Messages adapter being enabled.

@@ -41,3 +41,11 @@ Beitrags-Sichtbarkeit (`only_me | private | friends | community`) ist immer durc
 | `src/gateways/profile/routes/social.ts`  | Folgen, Blockieren, Follower-Routen            |
 | `src/gateways/profile/routes/posts.ts`   | Beitrags-Erstellung, -Auflistung und -Löschung |
 | `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — alle Profil-SQL-Operationen |
+
+## Direkte Profilaktualisierungen
+
+Gespeicherte Profildaten werden sofort angezeigt. Die Zahlen und Benutzerkarten für Follower und Gefolgte werden automatisch aktualisiert. Für Profilbilder ist jeweils nur eine aktive Auswahl oder ein Upload möglich.
+
+Änderungen beim Folgen und die Auswahl der Bannerhöhe werden sofort angezeigt, während die Synchronisierung im Hintergrund abgeschlossen wird.
+
+Rückmeldungen zu Nachrichtenaktionen werden aus profileigenen Sprachressourcen geladen, sodass die Profildarstellung nicht von einem aktivierten Nachrichtenadapter abhängt.

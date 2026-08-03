@@ -9,6 +9,7 @@ export function createProfilePostActions({
     setState,
     refreshPage,
     refreshProfileHero = refreshPage,
+    refreshProfileCards = refreshPage,
     i18n,
     loadOwnPosts,
     loadFollowers,
@@ -128,16 +129,38 @@ export function createProfilePostActions({
             );
 
             if (response.ok) {
+                const currentState = getState();
+                const matchingUser = [
+                    ...(currentState.followers ?? []),
+                    ...(currentState.following ?? []),
+                ].find((user) => user.handle === handle);
+                const nextFollowers = isFollowingTarget
+                    ? currentState.followers.filter(
+                          (user) => user.handle !== currentState.ownAccount,
+                      )
+                    : currentState.followers.some(
+                            (user) => user.handle === currentState.ownAccount,
+                        )
+                      ? currentState.followers
+                      : [
+                            ...currentState.followers,
+                            { handle: currentState.ownAccount },
+                        ];
+                const nextFollowing = isFollowingTarget
+                    ? currentState.following
+                    : matchingUser
+                      ? [...currentState.following, matchingUser]
+                      : currentState.following;
                 setState({
                     relationship: {
                         ...(relationship ?? {}),
                         following: !isFollowingTarget,
                     },
+                    followers: nextFollowers,
+                    following: nextFollowing,
                 });
-                // Paint the interaction result immediately. Connection-list
-                // refreshes are independent network requests and should not
-                // hold the follow button's visual state hostage.
                 refreshProfileHero();
+                refreshProfileCards(["followers", "following", "suggested"]);
                 showToast(
                     i18n.t(
                         isFollowingTarget
@@ -267,7 +290,7 @@ export function createProfilePostActions({
                 body: JSON.stringify({ handles: [profile.handle] }),
             });
             if (!response.ok) {
-                showToast(i18n.t("module.social.messages.start_failed"), {
+                showToast(i18n.t("ui.app.profile.message_start_failed"), {
                     variant: "error",
                 });
                 return;
@@ -275,7 +298,7 @@ export function createProfilePostActions({
             const payload = await response.json();
             const roomId = payload?.data?.id;
             if (!roomId && payload?.data?.requiresApproval) {
-                showToast(i18n.t("module.social.messages.request_sent"), {
+                showToast(i18n.t("ui.app.profile.message_request_sent"), {
                     variant: "info",
                 });
                 return;
@@ -283,7 +306,7 @@ export function createProfilePostActions({
             if (!roomId) return;
             await navigateTo(`/messages/${encodeURIComponent(roomId)}`);
         } catch {
-            showToast(i18n.t("module.social.messages.start_failed"), {
+            showToast(i18n.t("ui.app.profile.message_start_failed"), {
                 variant: "error",
             });
         }

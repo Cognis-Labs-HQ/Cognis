@@ -122,6 +122,19 @@ export function createComposerRenderer({
         }
         host.innerHTML = html;
     }
+    function refreshElements(elementIds) {
+        for (const elementId of elementIds) {
+            const element = state.elements.find(
+                (candidateElement) => candidateElement.id === elementId,
+            );
+            const host = state.contentGrid?.querySelector(
+                `[data-composer-element="${CSS.escape(elementId)}"]`,
+            );
+            if (element && host instanceof HTMLElement) {
+                renderElementContent(host, element);
+            }
+        }
+    }
     function repackPlacementsIntoColumns(
         sortedVisible,
         maxCols,
@@ -988,6 +1001,7 @@ export function createComposerRenderer({
     }
 
     return {
+        refreshElements,
         render,
         renderGridComposer,
         computeSubViewPlacements,

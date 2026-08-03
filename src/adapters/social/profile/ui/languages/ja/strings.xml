@@ -5,4 +5,6 @@
   <string name="ui.app.profile.crop_grid_expand">ガイドグリッドを拡張</string>
   <string name="ui.app.profile.crop_grid_collapse">ガイドグリッドを縮小</string>
   <string name="ui.app.profile.archived_banner">このプロフィールはアーカイブされています。このユーザーとのやり取りは無効です。</string>
+  <string name="ui.app.profile.message_start_failed">会話を開始できませんでした。</string>
+  <string name="ui.app.profile.message_request_sent">メッセージリクエストを送信しました。</string>
 </resources>
