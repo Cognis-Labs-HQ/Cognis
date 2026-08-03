@@ -78,7 +78,7 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
                 name: "visibility",
                 type: "text",
                 notNull: true,
-                default: "hidden",
+                default: "friends",
             },
             {
                 name: "account_lifecycle_state",
@@ -205,12 +205,7 @@ export class DbProfileStore implements ProfileCreateStore {
                     account_id: accountId,
                     handle,
                     role,
-                    visibility:
-                        role === "teacher" ||
-                        role === "admin" ||
-                        role === "owner"
-                            ? "friends"
-                            : "hidden",
+                    visibility: "friends",
                     account_lifecycle_state: "active",
                 },
                 conflict: { action: "ignore" },

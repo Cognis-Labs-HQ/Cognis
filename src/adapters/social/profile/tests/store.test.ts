@@ -4,7 +4,13 @@ import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-te
 import { DbProfileStore } from "../store.js";
 import { VolatileProfileStore } from "../store-contract.js";
 
-for (const role of ["teacher", "admin", "owner"] as const) {
+for (const role of [
+    "user",
+    "moderator",
+    "teacher",
+    "admin",
+    "owner",
+] as const) {
     test(`${role} profiles default to friends visibility`, async () => {
         const stores = [
             new VolatileProfileStore(),
@@ -18,6 +24,28 @@ for (const role of ["teacher", "admin", "owner"] as const) {
         }
     });
 
+    if (role === "user" || role === "moderator") {
+        test(`${role} profiles can be changed to private or hidden`, async () => {
+            const stores = [
+                new VolatileProfileStore(),
+                new DbProfileStore(new InMemoryTestExecutor()),
+            ];
+
+            for (const store of stores) {
+                if (store instanceof DbProfileStore) await store.ensureSchema();
+                await store.createProfile(role, role, role);
+
+                for (const visibility of ["private", "hidden"] as const) {
+                    const profile = await store.updateProfile(role, {
+                        visibility,
+                    });
+                    assert.equal(profile?.visibility, visibility);
+                }
+            }
+        });
+    }
+
+    if (role === "user" || role === "moderator") continue;
     test(`${role} role updates set profile visibility to friends`, async () => {
         const stores = [
             new VolatileProfileStore(),
