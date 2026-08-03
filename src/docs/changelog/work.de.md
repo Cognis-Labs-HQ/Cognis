@@ -7,3 +7,7 @@ Folgen und Entfolgen aktualisiert nun die sichtbaren Profilzähler und zugehöri
 ## Sofortiges Bannerlayout
 
 Eine Änderung der Profilbannerhöhe zeichnet das Banner nun neu, bevor das Speichern der Einstellung abgeschlossen ist.
+
+## Composer-weite Live-Aktualisierung
+
+Page-Composer-Aktualisierungen rendern vorhandene Karten nun standardmäßig neu und beseitigen veraltete Inhalte auf normalen Seiten. Zustandsbehaftete Meeting-Einbettungen verwenden weiterhin gezielt DOM-Parking.

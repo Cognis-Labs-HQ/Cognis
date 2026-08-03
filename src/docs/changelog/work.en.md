@@ -7,3 +7,7 @@ Following and unfollowing now updates the visible profile totals and related soc
 ## Immediate banner layout
 
 Changing the profile banner height now repaints the banner before the preference save request finishes.
+
+## Composer-wide live refresh
+
+Page Composer refreshes now re-render existing cards by default, eliminating stale content across ordinary pages. Stateful meeting embeds continue to opt into DOM parking.

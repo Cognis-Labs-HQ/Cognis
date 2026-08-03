@@ -47,6 +47,15 @@ test("page composer invokes element-level onRender callbacks", () => {
     assert.match(source, /element\?\.onRender\?\.\(\);/);
 });
 
+test("page composer refreshes existing card content by default", () => {
+    const source = readPageComposerBundle();
+
+    assert.match(
+        source,
+        /if \(!card\) \{[\s\S]*?renderElementContent\(card, element\);[\s\S]*?\} else if \(!isMissing\) \{\s*renderElementContent\(card, element\);\s*\}/m,
+    );
+});
+
 test("page composer parks media DOM only when explicitly enabled", () => {
     const source = readPageComposerBundle();
     const composerStyles = readFileSync(

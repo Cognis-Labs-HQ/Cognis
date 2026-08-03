@@ -678,6 +678,8 @@ export function createComposerRenderer({
                 } else {
                     renderElementContent(card, element);
                 }
+            } else if (!isMissing) {
+                renderElementContent(card, element);
             }
             card.className = isMissing
                 ? "widget-card widget-card--missing"
