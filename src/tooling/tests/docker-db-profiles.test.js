@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
 import { readFile, readlink } from "node:fs/promises";
 import test from "node:test";
+import { promisify } from "node:util";
+
+const execFileAsync = promisify(execFile);
 
 const profiles = [
     {
@@ -9,7 +13,6 @@ const profiles = [
         setupEnv: "docker/env/postgres-production.env",
         image: "postgres:17-alpine",
         dbType: "postgresql",
-        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set in docker/env/postgres.env}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in docker/env/postgres-production.env}@${POSTGRES_HOST:?POSTGRES_HOST must be set in docker/env/postgres.env}:${POSTGRES_PORT:?POSTGRES_PORT must be set in docker/env/postgres.env}/${POSTGRES_DB:?POSTGRES_DB must be set in docker/env/postgres.env}",
     },
     {
         compose: "docker-compose.postgres.dev.yaml",
@@ -17,7 +20,6 @@ const profiles = [
         setupEnv: "docker/env/postgres-development.env",
         image: "postgres:17-alpine",
         dbType: "postgresql",
-        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set in docker/env/postgres.env}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in docker/env/postgres-development.env}@${POSTGRES_HOST:?POSTGRES_HOST must be set in docker/env/postgres.env}:${POSTGRES_PORT:?POSTGRES_PORT must be set in docker/env/postgres.env}/${POSTGRES_DB:?POSTGRES_DB must be set in docker/env/postgres.env}",
     },
     {
         compose: "docker-compose.mariadb.yaml",
@@ -25,7 +27,6 @@ const profiles = [
         setupEnv: "docker/env/mariadb-production.env",
         image: "mariadb:11",
         dbType: "mariadb",
-        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set in docker/env/mariadb.env}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set in docker/env/mariadb-production.env}@${MARIADB_HOST:?MARIADB_HOST must be set in docker/env/mariadb.env}:${MARIADB_PORT:?MARIADB_PORT must be set in docker/env/mariadb.env}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set in docker/env/mariadb.env}",
     },
     {
         compose: "docker-compose.mariadb.dev.yaml",
@@ -33,7 +34,6 @@ const profiles = [
         setupEnv: "docker/env/mariadb-development.env",
         image: "mariadb:11",
         dbType: "mariadb",
-        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set in docker/env/mariadb.env}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set in docker/env/mariadb-development.env}@${MARIADB_HOST:?MARIADB_HOST must be set in docker/env/mariadb.env}:${MARIADB_PORT:?MARIADB_PORT must be set in docker/env/mariadb.env}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set in docker/env/mariadb.env}",
     },
 ];
 
@@ -59,44 +59,97 @@ test("Docker Compose files do not interpolate database pool settings", async () 
     }
 });
 
-test("Docker database profiles construct URLs from required engine settings", async () => {
-    for (const profile of profiles) {
-        const compose = await readFile(profile.compose, "utf8");
-        assert.ok(compose.includes(`DATABASE_URL: ${profile.url}`));
+test("Docker entrypoint constructs URLs from engine profile values", async () => {
+    const runs = [
+        {
+            environment: {
+                DB_TYPE: "postgresql",
+                POSTGRES_HOST: "db",
+                POSTGRES_PORT: "5432",
+                POSTGRES_DB: "cognis",
+                POSTGRES_USER: "cognis",
+                POSTGRES_PASSWORD: "secret",
+            },
+            expectedUrl: "postgresql://cognis:secret@db:5432/cognis",
+        },
+        {
+            environment: {
+                DB_TYPE: "mariadb",
+                MARIADB_HOST: "db",
+                MARIADB_PORT: "3306",
+                MARIADB_DATABASE: "cognis",
+                MARIADB_USER: "cognis",
+                MARIADB_PASSWORD: "secret",
+            },
+            expectedUrl: "mysql://cognis:secret@db:3306/cognis",
+        },
+    ];
+    for (const run of runs) {
+        const { stdout } = await execFileAsync(
+            "bash",
+            [
+                "docker/entrypoint.sh",
+                "bash",
+                "-c",
+                'printf "%s" "$DATABASE_URL"',
+            ],
+            {
+                env: {
+                    ...process.env,
+                    ...run.environment,
+                    NODE_ENV: "development",
+                    DATA_ENCRYPTION_KEY: "development-only",
+                    LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+                },
+            },
+        );
+        assert.ok(stdout.startsWith(run.expectedUrl));
     }
 });
 
-test("production database profiles direct missing secrets to setup files", async () => {
-    const postgresCompose = await readFile(
-        "docker-compose.postgres.yaml",
-        "utf8",
+test("Docker entrypoint identifies the profile for missing values", async () => {
+    await assert.rejects(
+        execFileAsync("bash", ["docker/entrypoint.sh", "true"], {
+            env: {
+                ...process.env,
+                DB_TYPE: "postgresql",
+                NODE_ENV: "development",
+                POSTGRES_HOST: "db",
+                POSTGRES_PORT: "5432",
+                POSTGRES_DB: "cognis",
+                POSTGRES_PASSWORD: "secret",
+                LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+            },
+        }),
+        (error) => {
+            assert.match(
+                error.stdout,
+                /POSTGRES_USER must be set in docker\/env\/postgres\.env/,
+            );
+            return true;
+        },
     );
-    const mariaDbCompose = await readFile(
-        "docker-compose.mariadb.yaml",
-        "utf8",
-    );
+});
 
-    for (const [requiredVariable, setupFile] of [
-        ["POSTGRES_PASSWORD", "docker/env/postgres-production.env"],
-        ["DATA_ENCRYPTION_KEY", "docker/env/production.env"],
-    ]) {
-        assert.ok(
-            postgresCompose.includes(
-                `\${${requiredVariable}:?${requiredVariable} must be set in ${setupFile}}`,
-            ),
-        );
-    }
-    for (const [requiredVariable, setupFile] of [
-        ["MARIADB_PASSWORD", "docker/env/mariadb-production.env"],
-        ["MARIADB_ROOT_PASSWORD", "docker/env/mariadb-production.env"],
-        ["DATA_ENCRYPTION_KEY", "docker/env/production.env"],
-    ]) {
-        assert.ok(
-            mariaDbCompose.includes(
-                `\${${requiredVariable}:?${requiredVariable} must be set in ${setupFile}}`,
-            ),
-        );
-    }
+test("production entrypoint identifies the shared secret profile", async () => {
+    await assert.rejects(
+        execFileAsync("bash", ["docker/entrypoint.sh", "true"], {
+            env: {
+                ...process.env,
+                DB_TYPE: "postgresql",
+                NODE_ENV: "production",
+                DATA_ENCRYPTION_KEY: "",
+                LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+            },
+        }),
+        (error) => {
+            assert.match(
+                error.stdout,
+                /DATA_ENCRYPTION_KEY must be set in docker\/env\/production\.env/,
+            );
+            return true;
+        },
+    );
 });
 
 test("default Docker links select shared defaults and PostgreSQL", async () => {

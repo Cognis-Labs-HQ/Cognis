@@ -31,29 +31,29 @@ CMD ["node", "src/api/main.js"]
 
 ### 環境プロファイル
 
-Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeは選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを必須とし、それらから `DATABASE_URL` を構築します。本番プロファイルでは `DATA_ENCRYPTION_KEY` も必須のため、不完全な設定ではコンテナを作成できません。 本番用の秘密情報ファイルはGitの追跡対象外です。追跡されている `.example` テンプレートをコピーして、コピー先を編集してください。変数不足のエラーには、値を設定する正確なファイル名が表示されます。
+Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeがこれらをコンテナに読み込み、エントリポイントが選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを検証してから `DATABASE_URL` を構築します。本番では `DATA_ENCRYPTION_KEY` も必須です。本番用の秘密情報ファイルはGitの追跡対象外です。追跡されている `.example` テンプレートをコピーして編集してください。変数不足のエラーには、値を設定する正確なファイル名が表示されます。
 
 ```sh
 cp docker/env/production.env.example docker/env/production.env
 cp docker/env/postgres-production.env.example docker/env/postgres-production.env
 cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
-docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
-docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
-docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up
-docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/development.env --env-file docker/env/mariadb-development.env -f docker-compose.mariadb.dev.yaml up
+docker compose -f docker-compose.postgres.yaml up
+docker compose -f docker-compose.mariadb.yaml up
+docker compose -f docker-compose.postgres.dev.yaml up
+docker compose -f docker-compose.mariadb.dev.yaml up
 ```
 
 ## 設定
 
-| 変数                   | デフォルト   | 説明                                                    |
-| ---------------------- | ------------ | ------------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb` |
-| `DATABASE_URL`         | —            | 選択したエンジン設定からComposeが構築                   |
-| `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター              |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション    |
-| `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数              |
-| `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮              |
-| `PORT`                 | `3000`       | HTTPポート                                              |
-| `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                  |
+| 変数                   | デフォルト   | 説明                                                     |
+| ---------------------- | ------------ | -------------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb`  |
+| `DATABASE_URL`         | —            | 選択したエンジン設定からコンテナのエントリポイントが構築 |
+| `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター               |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション     |
+| `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数               |
+| `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮               |
+| `PORT`                 | `3000`       | HTTPポート                                               |
+| `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                   |
 
 有効なDockerデフォルト値とセットアップ上書き値は、`docker/env/` 配下のEnvファイルに直接記載されています。

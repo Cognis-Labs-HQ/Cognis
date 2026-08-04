@@ -29,8 +29,6 @@ services:
             - docker/env/postgres.env
             - docker/env/development.env
             - docker/env/postgres-development.env
-        environment:
-            DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER must be set in docker/env/postgres.env}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in docker/env/postgres-development.env}@${POSTGRES_HOST:?POSTGRES_HOST must be set in docker/env/postgres.env}:${POSTGRES_PORT:?POSTGRES_PORT must be set in docker/env/postgres.env}/${POSTGRES_DB:?POSTGRES_DB must be set in docker/env/postgres.env}
         ports:
             - "3000:3000"
         volumes:

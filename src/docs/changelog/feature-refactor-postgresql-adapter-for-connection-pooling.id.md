@@ -22,15 +22,15 @@ PostgreSQL dan MariaDB kini memiliki file Compose dan lingkungan produksi serta 
 
 ## Container produksi memerlukan rahasia sebelum dimulai
 
-Profil Compose produksi PostgreSQL dan MariaDB kini menolak kata sandi database, URL koneksi, dan kunci enkripsi data yang belum diberikan sebelum container dibuat.
+Entrypoint container PostgreSQL dan MariaDB kini segera menolak pengaturan database dan kunci enkripsi data yang belum diberikan serta menyebutkan file env untuk setiap nilai yang hilang.
 
 ## Profil lingkungan menggantikan contoh lama
 
 Contoh lingkungan lama di root repositori telah dihapus. File yang dipilih di bawah `docker/env/` dan panduan DevOps yang diterjemahkan kini menjadi referensi penyiapan lengkap.
 
-## Compose membangun URL koneksi database
+## Container membangun URL koneksi database
 
-Setiap profil database kini mewajibkan host, port, database, nama pengguna, dan kata sandi khusus mesinnya lalu membangun `DATABASE_URL` dari nilai tersebut. `.env` di root tertaut ke profil default bersama, sedangkan tautan Compose default memilih deployment PostgreSQL yang paling didukung.
+Setiap profil database memberikan host, port, database, nama pengguna, dan kata sandi khusus mesinnya kepada entrypoint container, yang memvalidasi nilai tersebut dan membangun `DATABASE_URL` tanpa interpolasi Compose. `.env` di root tertaut ke profil default bersama, sedangkan tautan Compose default memilih deployment PostgreSQL yang paling didukung.
 
 ## Nilai default driver dipisahkan berdasarkan mesin
 

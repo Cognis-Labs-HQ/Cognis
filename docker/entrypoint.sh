@@ -44,6 +44,50 @@ shutdown() {
 trap 'shutdown TERM' TERM
 trap 'shutdown INT' INT
 
+require_environment_value() {
+  local variable_name="$1"
+  local setup_file="$2"
+
+  if [[ -z "${!variable_name:-}" ]]; then
+    app_log "error" "${variable_name} must be set in ${setup_file}."
+    exit 1
+  fi
+}
+
+construct_database_url() {
+  local environment_profile="production"
+  if [[ "${NODE_ENV:-production}" == "development" ]]; then
+    environment_profile="development"
+  else
+    require_environment_value DATA_ENCRYPTION_KEY docker/env/production.env
+  fi
+
+  case "${DB_TYPE:-}" in
+    postgresql)
+      require_environment_value POSTGRES_HOST docker/env/postgres.env
+      require_environment_value POSTGRES_PORT docker/env/postgres.env
+      require_environment_value POSTGRES_DB docker/env/postgres.env
+      require_environment_value POSTGRES_USER docker/env/postgres.env
+      require_environment_value POSTGRES_PASSWORD "docker/env/postgres-${environment_profile}.env"
+      export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+      ;;
+    mariadb)
+      require_environment_value MARIADB_HOST docker/env/mariadb.env
+      require_environment_value MARIADB_PORT docker/env/mariadb.env
+      require_environment_value MARIADB_DATABASE docker/env/mariadb.env
+      require_environment_value MARIADB_USER docker/env/mariadb.env
+      require_environment_value MARIADB_PASSWORD "docker/env/mariadb-${environment_profile}.env"
+      export DATABASE_URL="mysql://${MARIADB_USER}:${MARIADB_PASSWORD}@${MARIADB_HOST}:${MARIADB_PORT}/${MARIADB_DATABASE}"
+      ;;
+    *)
+      app_log "error" "DB_TYPE must be set to postgresql in docker/env/postgres.env or mariadb in docker/env/mariadb.env."
+      exit 1
+      ;;
+  esac
+}
+
+construct_database_url
+
 if [[ "${DATA_ENCRYPTION_KEY:-}" == "${DEFAULT_DATA_ENCRYPTION_KEY}" ]]; then
   app_log "warn" "DATA_ENCRYPTION_KEY is using the default insecure value. Set a unique key outside local development."
 fi

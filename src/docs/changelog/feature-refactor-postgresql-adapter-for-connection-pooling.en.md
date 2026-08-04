@@ -22,15 +22,15 @@ PostgreSQL and MariaDB now have separate production and development Compose and 
 
 ## Production containers require secrets before startup
 
-The PostgreSQL and MariaDB production Compose profiles now reject missing database passwords, connection URLs, and data-encryption keys before any container is created.
+The PostgreSQL and MariaDB container entrypoint now rejects missing database settings and data-encryption keys immediately, identifying the env file that needs each value.
 
 ## Environment profiles replace the obsolete example
 
 The obsolete root environment example has been removed. The selected files under `docker/env/` and the translated DevOps guide now provide the complete setup reference.
 
-## Compose constructs database connection URLs
+## The container constructs database connection URLs
 
-Every database profile now requires its engine-specific host, port, database, username, and password values and constructs `DATABASE_URL` from them. The root `.env` links to the shared default profile, while the default Compose link selects the best-supported PostgreSQL deployment.
+Every database profile supplies its engine-specific host, port, database, username, and password values to the container entrypoint, which validates them and constructs `DATABASE_URL` without relying on Compose interpolation. The root `.env` links to the shared default profile, while the default Compose link selects the best-supported PostgreSQL deployment.
 
 ## Driver defaults are isolated by engine
 
