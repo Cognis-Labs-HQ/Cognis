@@ -72,7 +72,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | File Storage (files)  | `src/gateways/files/`        | `2.1.3`    |
 | Registration          | `src/gateways/registration/` | `1.1.12`   |
 | Logging               | `src/gateways/logging/`      | `1.5.3`    |
-| Study                 | `src/gateways/study/`        | `1.5.9`    |
+| Study                 | `src/gateways/study/`        | `1.5.10`    |
 | Calendar              | `src/gateways/calendar/`     | `1.4.44`   |
 
 ## コア契約
@@ -85,7 +85,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.2.0`    |
+| API Server     | `src/api/` | `0.2.1`    |
 
 ## モジュール
 

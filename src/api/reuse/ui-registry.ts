@@ -4,25 +4,25 @@
  * never reads gateway-specific content — it only knows the section IDs,
  * labels, and script URLs returned here.
  */
-import type { RoleAccessPolicy } from "@cognis/core";
-import { readFileSync } from "node:fs";
-import path from "node:path";
+import type { RoleAccessPolicy } from '@cognis/core';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
 export interface AdminSection {
-    id: string;
-    label: string;
-    /** Browser-absolute URL of the ES module to dynamically import. */
-    scriptUrl: string;
-    /** Optional role access policy for this section. */
-    access?: RoleAccessPolicy;
-    /** Optional runtime predicate used to hide sections while their owner is disabled. */
-    isEnabled?: () => boolean;
-    /**
-     * Optional base URL for component-specific locale strings.
-     * The admin page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
-     * and merge those strings into the i18n instance passed to this section.
-     */
-    stringsBaseUrl?: string | string[];
+  id: string;
+  label: string;
+  /** Browser-absolute URL of the ES module to dynamically import. */
+  scriptUrl: string;
+  /** Optional role access policy for this section. */
+  access?: RoleAccessPolicy;
+  /** Optional runtime predicate used to hide sections while their owner is disabled. */
+  isEnabled?: () => boolean;
+  /**
+   * Optional base URL for component-specific locale strings.
+   * The admin page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
+   * and merge those strings into the i18n instance passed to this section.
+   */
+  stringsBaseUrl?: string | string[];
 }
 
 /**
@@ -31,14 +31,14 @@ export interface AdminSection {
  * function to the page composer.
  */
 export interface PageElement {
-    id: string;
-    label: string;
-    /** Browser-absolute URL of the ES module to dynamically import. */
-    scriptUrl: string;
-    /** Optional role access policy for this extension. */
-    access?: RoleAccessPolicy;
-    /** Optional runtime predicate used to hide extensions while their owner is disabled. */
-    isEnabled?: () => boolean;
+  id: string;
+  label: string;
+  /** Browser-absolute URL of the ES module to dynamically import. */
+  scriptUrl: string;
+  /** Optional role access policy for this extension. */
+  access?: RoleAccessPolicy;
+  /** Optional runtime predicate used to hide extensions while their owner is disabled. */
+  isEnabled?: () => boolean;
 }
 
 /**
@@ -48,12 +48,12 @@ export interface PageElement {
  * the layout) to supply gateway-specific avatar and profile-link logic.
  */
 export interface NavbarPlugin {
-    /** Browser-absolute URL of the ES module to dynamically import. */
-    scriptUrl: string;
-    /** Optional role access policy for this plugin. */
-    access?: RoleAccessPolicy;
-    /** Optional runtime predicate used to hide plugins while their owner is disabled. */
-    isEnabled?: () => boolean;
+  /** Browser-absolute URL of the ES module to dynamically import. */
+  scriptUrl: string;
+  /** Optional role access policy for this plugin. */
+  access?: RoleAccessPolicy;
+  /** Optional runtime predicate used to hide plugins while their owner is disabled. */
+  isEnabled?: () => boolean;
 }
 
 /**
@@ -62,29 +62,29 @@ export interface NavbarPlugin {
  * matching path is navigated to.
  */
 export interface SpaRoute {
-    /** Stable route identifier for diagnostics and test assertions. */
-    id: string;
-    /** Regex source string, e.g. "^/messages(?:/[^/]+)?$". */
-    pattern: string;
-    /** Base route used by the app router to track section transitions. */
-    base: string;
-    /** Browser-absolute URL of the ES module to dynamically import. */
-    scriptUrl: string;
-    /** Optional stylesheet URLs to ensure before mount. */
-    stylesheets?: string[];
-    /** Optional role access policy for this route. */
-    access?: RoleAccessPolicy;
-    /** Optional runtime predicate used to hide routes while owner is disabled. */
-    isEnabled?: () => boolean;
+  /** Stable route identifier for diagnostics and test assertions. */
+  id: string;
+  /** Regex source string, e.g. "^/messages(?:/[^/]+)?$". */
+  pattern: string;
+  /** Base route used by the app router to track section transitions. */
+  base: string;
+  /** Browser-absolute URL of the ES module to dynamically import. */
+  scriptUrl: string;
+  /** Optional stylesheet URLs to ensure before mount. */
+  stylesheets?: string[];
+  /** Optional role access policy for this route. */
+  access?: RoleAccessPolicy;
+  /** Optional runtime predicate used to hide routes while owner is disabled. */
+  isEnabled?: () => boolean;
 }
 
 export interface AuthTypingMessage {
-    id: string;
-    textKey: string;
-    ownerType?: "gateway" | "adapter" | "module" | "core";
-    ownerId?: string;
-    access?: RoleAccessPolicy;
-    isEnabled?: () => boolean;
+  id: string;
+  textKey: string;
+  ownerType?: 'gateway' | 'adapter' | 'module' | 'core';
+  ownerId?: string;
+  access?: RoleAccessPolicy;
+  isEnabled?: () => boolean;
 }
 
 /**
@@ -93,203 +93,202 @@ export interface AuthTypingMessage {
  * `createSettingsSection({ i18n, root, markDirty })` to build the section.
  */
 export interface SettingsSection {
-    id: string;
-    label: string;
-    /** Browser-absolute URL of the ES module to dynamically import. */
-    scriptUrl: string;
-    /** Optional role access policy for this section. */
-    access?: RoleAccessPolicy;
-    /**
-     * Optional base URL for component-specific locale strings.
-     * The settings page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
-     * and merge those strings into the i18n instance passed to this section.
-     */
-    stringsBaseUrl?: string | string[];
-    /** Optional runtime predicate used to hide sections while their owner is disabled. */
-    isEnabled?: () => boolean;
+  id: string;
+  label: string;
+  /** Browser-absolute URL of the ES module to dynamically import. */
+  scriptUrl: string;
+  /** Optional role access policy for this section. */
+  access?: RoleAccessPolicy;
+  /**
+   * Optional base URL for component-specific locale strings.
+   * The settings page will fetch `{stringsBaseUrl}/{locale}/strings.xml`
+   * and merge those strings into the i18n instance passed to this section.
+   */
+  stringsBaseUrl?: string | string[];
+  /** Optional runtime predicate used to hide sections while their owner is disabled. */
+  isEnabled?: () => boolean;
 }
 
 export class UIRegistry {
-    private readonly assetManifest: Record<string, string>;
-    private readonly sections = new Map<string, AdminSection>();
-    private readonly staticDirs = new Map<string, string>();
-    private readonly adapterStaticDirs = new Map<string, string>();
-    private readonly moduleStaticDirs = new Map<string, string>();
-    private readonly pageExtensions = new Map<string, PageElement[]>();
-    private readonly navbarPlugins: NavbarPlugin[] = [];
-    private readonly spaRoutes: SpaRoute[] = [];
-    private readonly authTypingMessages: AuthTypingMessage[] = [];
-    private readonly settingsSections: SettingsSection[] = [];
+  private readonly assetManifest: Record<string, string>;
+  private readonly sections = new Map<string, AdminSection>();
+  private readonly staticDirs = new Map<string, string>();
+  private readonly adapterStaticDirs = new Map<string, string>();
+  private readonly moduleStaticDirs = new Map<string, string>();
+  private readonly pageExtensions = new Map<string, PageElement[]>();
+  private readonly navbarPlugins: NavbarPlugin[] = [];
+  private readonly spaRoutes: SpaRoute[] = [];
+  private readonly authTypingMessages: AuthTypingMessage[] = [];
+  private readonly settingsSections: SettingsSection[] = [];
 
-    constructor(manifestPath = process.env.COGNIS_UI_ASSET_MANIFEST) {
-        this.assetManifest = manifestPath
-            ? (JSON.parse(
-                  readFileSync(path.resolve(manifestPath), "utf8"),
-              ) as Record<string, string>)
-            : {};
+  constructor(manifestPath = process.env.COGNIS_UI_ASSET_MANIFEST) {
+    this.assetManifest = manifestPath
+      ? (JSON.parse(readFileSync(path.resolve(manifestPath), 'utf8')) as Record<
+          string,
+          string
+        >)
+      : {};
+  }
+
+  resolveAssetUrl(assetUrl: string): string {
+    return this.assetManifest[assetUrl] ?? assetUrl;
+  }
+
+  listAssetManifest(): Record<string, string> {
+    return { ...this.assetManifest };
+  }
+
+  private resolveDescriptor<T>(descriptor: T): T {
+    if (Array.isArray(descriptor)) {
+      return descriptor.map((value) => this.resolveDescriptor(value)) as T;
     }
-
-    resolveAssetUrl(assetUrl: string): string {
-        return this.assetManifest[assetUrl] ?? assetUrl;
+    if (descriptor && typeof descriptor === 'object') {
+      return Object.fromEntries(
+        Object.entries(descriptor).map(([key, value]) => [
+          key,
+          typeof value === 'string'
+            ? this.resolveAssetUrl(value)
+            : this.resolveDescriptor(value),
+        ]),
+      ) as T;
     }
+    return descriptor;
+  }
 
-    listAssetManifest(): Record<string, string> {
-        return { ...this.assetManifest };
-    }
+  registerAdminSection(section: AdminSection): void {
+    this.sections.set(section.id, section);
+  }
 
-    private resolveDescriptor<T>(descriptor: T): T {
-        if (Array.isArray(descriptor)) {
-            return descriptor.map((value) =>
-                this.resolveDescriptor(value),
-            ) as T;
+  /**
+   * Maps a URL prefix segment (gatewayId) to an absolute filesystem path.
+   * Registered directories are served under /static/gateways/:gatewayId/.
+   */
+  registerStaticDir(gatewayId: string, absoluteDir: string): void {
+    this.staticDirs.set(gatewayId, absoluteDir);
+  }
+
+  /**
+   * Maps a `<gatewayId>/<adapterId>` pair to an absolute filesystem path.
+   * Registered directories are served under
+   * `/static/adapters/<gatewayId>/<adapterId>/`. Adapter-owned UI assets
+   * (navbar plugins, page scripts, styles) should live next to the adapter
+   * code on disk and be exposed via this method.
+   */
+  registerAdapterStaticDir(
+    gatewayId: string,
+    adapterId: string,
+    absoluteDir: string,
+  ): void {
+    this.adapterStaticDirs.set(`${gatewayId}/${adapterId}`, absoluteDir);
+  }
+
+  /**
+   * Registers a UI element to be injected into a named core page.
+   * The page ID is a stable string agreed on by convention (e.g. "dashboard",
+   * "settings"). The element's `scriptUrl` points to a browser ES module that
+   * exports a `createPageElement(deps)` factory function.
+   */
+  registerPageExtension(pageId: string, element: PageElement): void {
+    const existing = this.pageExtensions.get(pageId) ?? [];
+    existing.push(element);
+    this.pageExtensions.set(pageId, existing);
+  }
+
+  /**
+   * Registers a navbar plugin that the dashboard layout will dynamically
+   * import on every page. The plugin module should call
+   * `registerAvatarProvider` (exported from dashboard-layout.js) to supply
+   * avatar and profile-link update logic.
+   */
+  registerNavbarPlugin(plugin: NavbarPlugin): void {
+    this.navbarPlugins.push(plugin);
+  }
+
+  registerSpaRoute(route: SpaRoute): void {
+    this.spaRoutes.push(route);
+  }
+
+  registerAuthTypingMessage(message: AuthTypingMessage): void {
+    this.authTypingMessages.push(message);
+  }
+
+  registerSettingsSection(section: SettingsSection): void {
+    this.settingsSections.push(section);
+  }
+
+  listAdminSections(): AdminSection[] {
+    return this.resolveDescriptor(Array.from(this.sections.values()));
+  }
+
+  getStaticDir(gatewayId: string): string | undefined {
+    return this.staticDirs.get(gatewayId);
+  }
+
+  getAdapterStaticDir(
+    gatewayId: string,
+    adapterId: string,
+  ): string | undefined {
+    return this.adapterStaticDirs.get(`${gatewayId}/${adapterId}`);
+  }
+
+  /**
+   * Registers a URL prefix under /static/modules/ that the server serves
+   * from the given absolute filesystem directory. Modules call this via the
+   * `registerStaticDir` hook on their bootstrap context (the gateway routes
+   * prefixes that start with "modules/" here instead of to staticDirs).
+   */
+  registerModuleStaticDir(urlPrefix: string, absoluteDir: string): void {
+    this.moduleStaticDirs.set(urlPrefix, absoluteDir);
+  }
+
+  /**
+   * Given the path portion after /static/modules/ (e.g.
+   * "study/languages/ja/components/hiragana-alphabet/app.js"), finds the
+   * longest registered module URL prefix and returns the directory and the
+   * relative file path within it. Returns undefined when no prefix matches.
+   */
+  resolveModulePath(
+    urlPath: string,
+  ): { dir: string; relPath: string } | undefined {
+    let bestPrefix = '';
+    let bestDir: string | undefined;
+    for (const [prefix, dir] of this.moduleStaticDirs) {
+      if (urlPath === prefix || urlPath.startsWith(prefix + '/')) {
+        if (prefix.length > bestPrefix.length) {
+          bestPrefix = prefix;
+          bestDir = dir;
         }
-        if (descriptor && typeof descriptor === "object") {
-            return Object.fromEntries(
-                Object.entries(descriptor).map(([key, value]) => [
-                    key,
-                    typeof value === "string"
-                        ? this.resolveAssetUrl(value)
-                        : this.resolveDescriptor(value),
-                ]),
-            ) as T;
-        }
-        return descriptor;
+      }
     }
+    if (!bestDir) return undefined;
+    const relPath =
+      urlPath.length > bestPrefix.length
+        ? urlPath.slice(bestPrefix.length + 1)
+        : '';
+    return { dir: bestDir, relPath };
+  }
 
-    registerAdminSection(section: AdminSection): void {
-        this.sections.set(section.id, section);
-    }
+  /**
+   * Returns all UI elements registered for the given page ID. Returns an
+   * empty array when no extensions have been registered for that page.
+   */
+  listPageExtensions(pageId: string): PageElement[] {
+    return this.resolveDescriptor(this.pageExtensions.get(pageId) ?? []);
+  }
 
-    /**
-     * Maps a URL prefix segment (gatewayId) to an absolute filesystem path.
-     * Registered directories are served under /static/gateways/:gatewayId/.
-     */
-    registerStaticDir(gatewayId: string, absoluteDir: string): void {
-        this.staticDirs.set(gatewayId, absoluteDir);
-    }
+  listNavbarPlugins(): NavbarPlugin[] {
+    return this.resolveDescriptor([...this.navbarPlugins]);
+  }
 
-    /**
-     * Maps a `<gatewayId>/<adapterId>` pair to an absolute filesystem path.
-     * Registered directories are served under
-     * `/static/adapters/<gatewayId>/<adapterId>/`. Adapter-owned UI assets
-     * (navbar plugins, page scripts, styles) should live next to the adapter
-     * code on disk and be exposed via this method.
-     */
-    registerAdapterStaticDir(
-        gatewayId: string,
-        adapterId: string,
-        absoluteDir: string,
-    ): void {
-        this.adapterStaticDirs.set(`${gatewayId}/${adapterId}`, absoluteDir);
-    }
+  listSpaRoutes(): SpaRoute[] {
+    return this.resolveDescriptor([...this.spaRoutes]);
+  }
 
-    /**
-     * Registers a UI element to be injected into a named core page.
-     * The page ID is a stable string agreed on by convention (e.g. "dashboard",
-     * "settings"). The element's `scriptUrl` points to a browser ES module that
-     * exports a `createPageElement(deps)` factory function.
-     */
-    registerPageExtension(pageId: string, element: PageElement): void {
-        const existing = this.pageExtensions.get(pageId) ?? [];
-        existing.push(element);
-        this.pageExtensions.set(pageId, existing);
-    }
+  listAuthTypingMessages(): AuthTypingMessage[] {
+    return [...this.authTypingMessages];
+  }
 
-    /**
-     * Registers a navbar plugin that the dashboard layout will dynamically
-     * import on every page. The plugin module should call
-     * `registerAvatarProvider` (exported from dashboard-layout.js) to supply
-     * avatar and profile-link update logic.
-     */
-    registerNavbarPlugin(plugin: NavbarPlugin): void {
-        this.navbarPlugins.push(plugin);
-    }
-
-    registerSpaRoute(route: SpaRoute): void {
-        this.spaRoutes.push(route);
-    }
-
-    registerAuthTypingMessage(message: AuthTypingMessage): void {
-        this.authTypingMessages.push(message);
-    }
-
-    registerSettingsSection(section: SettingsSection): void {
-        this.settingsSections.push(section);
-    }
-
-    listAdminSections(): AdminSection[] {
-        return this.resolveDescriptor(Array.from(this.sections.values()));
-    }
-
-    getStaticDir(gatewayId: string): string | undefined {
-        return this.staticDirs.get(gatewayId);
-    }
-
-    getAdapterStaticDir(
-        gatewayId: string,
-        adapterId: string,
-    ): string | undefined {
-        return this.adapterStaticDirs.get(`${gatewayId}/${adapterId}`);
-    }
-
-    /**
-     * Registers a URL prefix under /static/modules/ that the server serves
-     * from the given absolute filesystem directory. Modules call this via the
-     * `registerStaticDir` hook on their bootstrap context (the gateway routes
-     * prefixes that start with "modules/" here instead of to staticDirs).
-     */
-    registerModuleStaticDir(urlPrefix: string, absoluteDir: string): void {
-        this.moduleStaticDirs.set(urlPrefix, absoluteDir);
-    }
-
-    /**
-     * Given the path portion after /static/modules/ (e.g.
-     * "study/languages/ja/components/hiragana-alphabet/app.js"), finds the
-     * longest registered module URL prefix and returns the directory and the
-     * relative file path within it. Returns undefined when no prefix matches.
-     */
-    resolveModulePath(
-        urlPath: string,
-    ): { dir: string; relPath: string } | undefined {
-        let bestPrefix = "";
-        let bestDir: string | undefined;
-        for (const [prefix, dir] of this.moduleStaticDirs) {
-            if (urlPath === prefix || urlPath.startsWith(prefix + "/")) {
-                if (prefix.length > bestPrefix.length) {
-                    bestPrefix = prefix;
-                    bestDir = dir;
-                }
-            }
-        }
-        if (!bestDir) return undefined;
-        const relPath =
-            urlPath.length > bestPrefix.length
-                ? urlPath.slice(bestPrefix.length + 1)
-                : "";
-        return { dir: bestDir, relPath };
-    }
-
-    /**
-     * Returns all UI elements registered for the given page ID. Returns an
-     * empty array when no extensions have been registered for that page.
-     */
-    listPageExtensions(pageId: string): PageElement[] {
-        return this.resolveDescriptor(this.pageExtensions.get(pageId) ?? []);
-    }
-
-    listNavbarPlugins(): NavbarPlugin[] {
-        return this.resolveDescriptor([...this.navbarPlugins]);
-    }
-
-    listSpaRoutes(): SpaRoute[] {
-        return this.resolveDescriptor([...this.spaRoutes]);
-    }
-
-    listAuthTypingMessages(): AuthTypingMessage[] {
-        return [...this.authTypingMessages];
-    }
-
-    listSettingsSections(): SettingsSection[] {
-        return this.resolveDescriptor([...this.settingsSections]);
-    }
+  listSettingsSections(): SettingsSection[] {
+    return this.resolveDescriptor([...this.settingsSections]);
+  }
 }

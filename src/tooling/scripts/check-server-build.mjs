@@ -1,60 +1,57 @@
-import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
-import path from "node:path";
+import assert from 'node:assert/strict';
+import { access, readFile, readdir } from 'node:fs/promises';
+import path from 'node:path';
 
-const serverRoot = path.resolve("dist/server");
+const serverRoot = path.resolve('dist/server');
 async function walk(directory) {
-    const entries = await readdir(directory, { withFileTypes: true });
-    return (
-        await Promise.all(
-            entries.map((entry) => {
-                const entryPath = path.join(directory, entry.name);
-                return entry.isDirectory() ? walk(entryPath) : [entryPath];
-            }),
-        )
-    ).flat();
+  const entries = await readdir(directory, { withFileTypes: true });
+  return (
+    await Promise.all(
+      entries.map((entry) => {
+        const entryPath = path.join(directory, entry.name);
+        return entry.isDirectory() ? walk(entryPath) : [entryPath];
+      }),
+    )
+  ).flat();
 }
 
 const expectedEntrypoints = [
-    "src/api/main.js",
-    "src/core/services/gateway-service.js",
-    "src/gateways/auth/bootstrap/index.js",
-    "src/gateways/db/executor.js",
-    "src/gateways/files/bootstrap.js",
-    "src/gateways/logging/bootstrap.js",
+  'src/api/main.js',
+  'src/core/services/gateway-service.js',
+  'src/gateways/auth/bootstrap/index.js',
+  'src/gateways/db/executor.js',
+  'src/gateways/files/bootstrap.js',
+  'src/gateways/logging/bootstrap.js',
 ];
 await Promise.all(
-    expectedEntrypoints.map((entrypoint) =>
-        access(path.join(serverRoot, entrypoint)),
-    ),
+  expectedEntrypoints.map((entrypoint) =>
+    access(path.join(serverRoot, entrypoint)),
+  ),
 );
 
 const dynamicLoaderFiles = expectedEntrypoints.slice(1, 5);
 for (const relativePath of dynamicLoaderFiles) {
-    const contents = await readFile(
-        path.join(serverRoot, relativePath),
-        "utf8",
-    );
-    assert.doesNotMatch(
-        contents,
-        /["'](?:bootstrap|index)\.ts["']/,
-        `${relativePath} must load compiled JavaScript entrypoints`,
-    );
+  const contents = await readFile(path.join(serverRoot, relativePath), 'utf8');
+  assert.doesNotMatch(
+    contents,
+    /["'](?:bootstrap|index)\.ts["']/,
+    `${relativePath} must load compiled JavaScript entrypoints`,
+  );
 }
 
 const gatewayService = await readFile(
-    path.join(serverRoot, "src/core/services/gateway-service.js"),
-    "utf8",
+  path.join(serverRoot, 'src/core/services/gateway-service.js'),
+  'utf8',
 );
 assert.match(gatewayService, /bootstrap\.js/);
-for (const emittedPath of (await walk(path.join(serverRoot, "src"))).filter(
-    (filePath) => filePath.endsWith(".js"),
+for (const emittedPath of (await walk(path.join(serverRoot, 'src'))).filter(
+  (filePath) => filePath.endsWith('.js'),
 )) {
-    const contents = await readFile(emittedPath, "utf8");
-    assert.doesNotMatch(
-        contents,
-        /["'][^"'\n]*\.ts["']/,
-        `${path.relative(serverRoot, emittedPath)} retains a TypeScript runtime specifier`,
-    );
+  const contents = await readFile(emittedPath, 'utf8');
+  assert.doesNotMatch(
+    contents,
+    /["'][^"'\n]*\.ts["']/,
+    `${path.relative(serverRoot, emittedPath)} retains a TypeScript runtime specifier`,
+  );
 }
-console.log("Validated compiled server entrypoints and dynamic imports.");
+console.log('Validated compiled server entrypoints and dynamic imports.');

@@ -15,24 +15,24 @@
  */
 
 export const BROWSER_FLOW_CONTRACTS = Object.freeze({
-    "authenticate-session": Object.freeze([
-        "validate-stored-token",
-        "apply-alternate-auth",
-        "enforce-setup-requirements",
-        "resolve-session",
-    ]),
-    "navigate-to": Object.freeze([
-        "resolve-route",
-        "authenticate",
-        "prepare-assets",
-        "mount-page",
-    ]),
-    "load-page": Object.freeze(["authenticate", "mount-page"]),
-    "defer-page-action": Object.freeze(["schedule"]),
-    "complete-login": Object.freeze(["setup-account-services"]),
-    search: Object.freeze([
-        "visible-indexes",
-        "component-indexes",
-        "settings-index",
-    ]),
+  'authenticate-session': Object.freeze([
+    'validate-stored-token',
+    'apply-alternate-auth',
+    'enforce-setup-requirements',
+    'resolve-session',
+  ]),
+  'navigate-to': Object.freeze([
+    'resolve-route',
+    'authenticate',
+    'prepare-assets',
+    'mount-page',
+  ]),
+  'load-page': Object.freeze(['authenticate', 'mount-page']),
+  'defer-page-action': Object.freeze(['schedule']),
+  'complete-login': Object.freeze(['setup-account-services']),
+  search: Object.freeze([
+    'visible-indexes',
+    'component-indexes',
+    'settings-index',
+  ]),
 });

@@ -36,15 +36,15 @@
  *   session persistence and before navigation. Stages: setup-account-services
  */
 
-import { uiCtx } from "./ui-ctx.js";
+import { uiCtx } from './ui-ctx.js';
 uiCtx.extendFlow(
-    "defer-page-action",
-    "schedule",
-    { id: "ui:defer-page-action" },
-    (stageCtx) => {
-        const action = stageCtx.input?.action;
-        if (typeof action !== "function") return { scheduled: false };
-        setTimeout(() => void action(), 0);
-        return { scheduled: true };
-    },
+  'defer-page-action',
+  'schedule',
+  { id: 'ui:defer-page-action' },
+  (stageCtx) => {
+    const action = stageCtx.input?.action;
+    if (typeof action !== 'function') return { scheduled: false };
+    setTimeout(() => void action(), 0);
+    return { scheduled: true };
+  },
 );
