@@ -59,6 +59,23 @@ test("versioned text assets negotiate Brotli with MIME and immutable caching", a
     }
 });
 
+test("source assets use identity encoding when precompressed files are absent", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+    await route(
+        { headers: { "accept-encoding": "br, gzip" } } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/reuse/escape-html.js"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.equal(recorder.headers["content-encoding"], undefined);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+});
+
 test("GET /static/gateways/:id/:file serves file from registered static dir", async () => {
     const uiRegistry = new UIRegistry();
     const authUiDir = path.resolve(

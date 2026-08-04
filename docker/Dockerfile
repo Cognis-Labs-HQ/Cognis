@@ -20,7 +20,7 @@ USER cognis
 COPY --chown=cognis:cognis package.json package-lock.json tsconfig.json tsconfig.base.json ./
 COPY --chown=cognis:cognis src ./src
 RUN npm ci --ignore-scripts
-RUN npm run build && npm run check:ui-build
+RUN npm run build && npm run check:ui-build && npm run check:server-build
 
 EXPOSE 3000
 
@@ -48,5 +48,6 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["/usr/local/bin/healthcheck.sh"]
 
 STOPSIGNAL SIGTERM
+WORKDIR /app/dist/server
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["node", "/app/dist/server/src/api/main.js"]
+CMD ["node", "src/api/main.js"]

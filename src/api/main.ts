@@ -211,6 +211,7 @@ const requiredGatewayIds = await gatewayService.bootstrap(gatewaysRoot, {
     capabilities,
     uiRegistry,
     flow: systemCtx.flow,
+    log: bootstrapLog,
 });
 
 const contributedLog = capabilities.get<BootstrapLog>("logging:log");

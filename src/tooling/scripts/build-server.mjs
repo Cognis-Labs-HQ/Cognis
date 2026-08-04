@@ -13,6 +13,19 @@ async function walk(directory) {
     return nested.flat();
 }
 
+const compiledModuleSpecifiersPlugin = {
+    name: "compiled-module-specifiers",
+    setup(buildContext) {
+        buildContext.onLoad({ filter: /\.ts$/ }, async (args) => ({
+            contents: (await readFile(args.path, "utf8")).replace(
+                /(["'])(bootstrap|index)\.ts\1/g,
+                "$1$2.js$1",
+            ),
+            loader: "ts",
+        }));
+    },
+};
+
 const outputRoot = path.resolve("dist/server");
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
@@ -31,6 +44,7 @@ await build({
     format: "esm",
     target: "node22",
     logLevel: "info",
+    plugins: [compiledModuleSpecifiersPlugin],
 });
 await build({
     entryPoints: {
@@ -43,6 +57,7 @@ await build({
     format: "esm",
     target: "node22",
     external: ["mysql2", "pg"],
+    plugins: [compiledModuleSpecifiersPlugin],
 });
 await mkdir(path.join(outputRoot, "node_modules/@cognis/core"), {
     recursive: true,

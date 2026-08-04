@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { existsSync } from "node:fs";
 import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import type { BootstrapLog } from "@cognis/core";
@@ -31,13 +32,18 @@ export async function serveStaticAsset(
 ): Promise<void> {
     try {
         const acceptedEncoding = req.headers["accept-encoding"] ?? "";
-        const encoding = acceptedEncoding.includes("br")
-            ? "br"
-            : acceptedEncoding.includes("gzip")
-              ? "gzip"
-              : undefined;
+        const brotliPath = `${filePath}.br`;
+        const gzipPath = `${filePath}.gz`;
+        const encoding =
+            acceptedEncoding.includes("br") && existsSync(brotliPath)
+                ? "br"
+                : acceptedEncoding.includes("gzip") && existsSync(gzipPath)
+                  ? "gzip"
+                  : undefined;
         const compressedPath = encoding
-            ? `${filePath}.${encoding === "br" ? "br" : "gz"}`
+            ? encoding === "br"
+                ? brotliPath
+                : gzipPath
             : filePath;
         const metadata = await stat(compressedPath);
         if (!metadata.isFile()) throw new Error("Asset path is not a file.");
