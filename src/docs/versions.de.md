@@ -64,7 +64,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                         | Version  |
 | --------------------- | ---------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`           | `1.3.1`  |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.40` |
+| Authentication (auth) | `src/gateways/auth/`         | `1.7.41` |
 | Share                 | `src/gateways/share/`        | `1.6.44` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.12` |
 | Notification (notify) | `src/gateways/notify/`       | `1.5.3`  |
@@ -73,7 +73,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/` | `1.1.12` |
 | Logging               | `src/gateways/logging/`      | `1.5.3`  |
 | Study                 | `src/gateways/study/`        | `1.5.9`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.44` |
+| Calendar              | `src/gateways/calendar/`     | `1.4.47` |
 
 ## Kernverträge
 

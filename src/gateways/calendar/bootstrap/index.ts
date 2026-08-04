@@ -42,6 +42,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    if (systemCtx && !systemCtx.hasFlow("calendar-upcoming-events")) {
+        systemCtx.registerFlow({
+            id: "calendar-upcoming-events",
+            stages: ["project-events"],
+        });
+    }
+    systemCtx?.flow.extend(
+        "calendar-upcoming-events",
+        "project-events",
+        { id: "calendar-gateway:project-upcoming-events" },
+        (stageCtx) => {
+            const input = stageCtx.input as {
+                accountId: string;
+                limit?: number;
+            };
+            return gateway.listUpcomingEvents(input.accountId, input.limit);
+        },
+    );
     // Calendar currently bootstraps before Share. Registering the shared flow
     // contracts here makes the facilitator hooks below independent of gateway
     // discovery order; Share's later registration is intentionally idempotent.
@@ -844,6 +862,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 notificationResolver.ensureCategory(),
             getCapability: <T>(capabilityId: string) =>
                 ctx.capabilities.get<T>(capabilityId),
+            runUpcomingEventsFlow: async (input) => {
+                if (!systemCtx?.flow.exists("calendar-upcoming-events")) {
+                    return [
+                        gateway.listUpcomingEvents(
+                            input.accountId,
+                            input.limit,
+                        ),
+                    ];
+                }
+                const result = await systemCtx.flow.run(
+                    "calendar-upcoming-events",
+                    input,
+                );
+                return result.stageResults["project-events"] ?? [];
+            },
         }),
         "calendar",
     );
@@ -904,7 +937,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.4.31",
+        version: "1.4.47",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

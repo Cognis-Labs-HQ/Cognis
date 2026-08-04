@@ -1,4 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
+import { fetchUpcomingEvents } from "/static/gateways/calendar/calendar-api.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -12,9 +13,14 @@ import {
 } from "../../reuse/clock-display.js";
 import { getRoleLabel } from "../../reuse/access-role.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 
 async function loadAccountInfo(account) {
     if (!account) return null;
+    const cachedAccountInfo = uiCtx.capabilities.get(
+        "session:getAccountInfo",
+    )?.(account);
+    if (cachedAccountInfo) return cachedAccountInfo;
     try {
         const response = await apiFetch(
             `/api/v1/users/${encodeURIComponent(account)}/info`,
@@ -46,53 +52,7 @@ async function loadDashboardExtensions({ i18n, account, role }) {
     }
 }
 
-async function loadUpcomingCalendarEvents() {
-    try {
-        const [calendarsResponse, invitationsResponse] = await Promise.all([
-            apiFetch("/api/v1/calendar/calendars"),
-            apiFetch("/api/v1/calendar/invitations"),
-        ]);
-        if (!calendarsResponse.ok) return [];
-        const calendarsPayload = await calendarsResponse.json();
-        const calendars = Array.isArray(calendarsPayload?.data)
-            ? calendarsPayload.data
-            : [];
-        const eventLists = await Promise.all(
-            calendars.map(async (calendar) => {
-                const eventsResponse = await apiFetch(
-                    `/api/v1/calendar/calendars/${encodeURIComponent(calendar.id)}/events`,
-                );
-                if (!eventsResponse.ok) return [];
-                const eventsPayload = await eventsResponse.json();
-                const events = Array.isArray(eventsPayload?.data?.events)
-                    ? eventsPayload.data.events
-                    : [];
-                return events.map((event) => ({
-                    ...event,
-                    calendarName: calendar.name,
-                }));
-            }),
-        );
-        const invitationEvents = invitationsResponse.ok
-            ? ((await invitationsResponse.json())?.data ?? []).filter(Boolean)
-            : [];
-        const now = Date.now();
-        return [
-            ...eventLists.flat(),
-            ...invitationEvents.map((event) => ({
-                ...event,
-                calendarName: null,
-            })),
-        ]
-            .filter((event) => new Date(event.endAt).getTime() >= now)
-            .sort((left, right) => left.startAt.localeCompare(right.startAt))
-            .slice(0, 5);
-    } catch {
-        return [];
-    }
-}
-
-export async function mount(root) {
+export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
 
@@ -100,8 +60,15 @@ export async function mount(root) {
     const displayName = localStorage.getItem("cognis_display_name") ?? account;
     const role = localStorage.getItem("cognis_role") ?? "user";
 
-    const info = await loadAccountInfo(account);
-    const upcomingCalendarEvents = await loadUpcomingCalendarEvents();
+    let info = null;
+    let upcomingCalendarEvents = null;
+    const accountInfoPromise = loadAccountInfo(account);
+    const upcomingEventsPromise = fetchUpcomingEvents(5);
+    const extensionElementsPromise = loadDashboardExtensions({
+        i18n,
+        account,
+        role,
+    });
     const { formatDateValue, formatDateTimeValue } = createDateTimeFormatters({
         dateFallback: i18n.t("ui.app.dashboard.never"),
         dateTimeFallback: i18n.t("ui.app.dashboard.never"),
@@ -139,7 +106,7 @@ export async function mount(root) {
         <dt>${i18n.t("ui.app.dashboard.role")}</dt>
         <dd>${escapeHtml(i18n.t(`ui.reuse.role_${role}`) || role)}</dd>
         <dt>${i18n.t("ui.app.dashboard.member_since")}</dt>
-        <dd>${formatDateValue(info?.createdAt ?? null)}</dd>
+        <dd>${info === null ? "…" : formatDateValue(info?.createdAt ?? null)}</dd>
       </dl>
     `,
         },
@@ -150,7 +117,7 @@ export async function mount(root) {
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.last_login.label")}</h3>
       <p class="dashboard-last-seen">
-        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${formatDateTimeValue(info?.lastLogin ?? null)}</strong>
+        ${i18n.t("ui.app.dashboard.last_seen")}: <strong>${info === null ? "…" : formatDateTimeValue(info?.lastLogin ?? null)}</strong>
       </p>
     `,
         },
@@ -197,30 +164,25 @@ export async function mount(root) {
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.calendar_upcoming.label")}</h3>
       ${
-          upcomingCalendarEvents.length > 0
-              ? `<ul class="dashboard-info-list">${upcomingCalendarEvents
-                    .map(
-                        (event) => `<li>
+          upcomingCalendarEvents === null
+              ? `<p aria-busy="true">…</p>`
+              : upcomingCalendarEvents.length > 0
+                ? `<ul class="dashboard-info-list">${upcomingCalendarEvents
+                      .map(
+                          (event) => `<li>
             <a href="/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}" class="dashboard-upcoming-event-link">
               <strong>${escapeHtml(event.title)}</strong>
               <span>${escapeHtml(formatDateTime(event.startAt))}</span>
               ${event.calendarName ? `<span>${escapeHtml(String(event.calendarName))}</span>` : ""}
             </a>
           </li>`,
-                    )
-                    .join("")}</ul>`
-              : `<p>${escapeHtml(i18n.t("ui.app.dashboard.element.calendar_upcoming.empty"))}</p>`
+                      )
+                      .join("")}</ul>`
+                : `<p>${escapeHtml(i18n.t("ui.app.dashboard.element.calendar_upcoming.empty"))}</p>`
       }
     `,
         },
     ];
-
-    const extensionElements = await loadDashboardExtensions({
-        i18n,
-        account,
-        role,
-    });
-    elements.push(...extensionElements);
 
     const composer = createPageComposer(root, {
         allowCustomization: true,
@@ -234,6 +196,28 @@ export async function mount(root) {
     });
 
     await composer.init();
+
+    void accountInfoPromise.then((accountInfo) => {
+        if (signal?.aborted) return;
+        info = accountInfo ?? {};
+        composer.refreshElements(["account-info", "last-login"]);
+    });
+    void upcomingEventsPromise
+        .then((events) => {
+            if (signal?.aborted) return;
+            upcomingCalendarEvents = events;
+            composer.refreshElements(["calendar-upcoming"]);
+        })
+        .catch(() => {
+            if (signal?.aborted) return;
+            upcomingCalendarEvents = [];
+            composer.refreshElements(["calendar-upcoming"]);
+        });
+    void extensionElementsPromise.then((extensionElements) => {
+        if (signal?.aborted || extensionElements.length === 0) return;
+        elements.push(...extensionElements);
+        composer.refresh(elements);
+    });
 }
 
 await mountWhenDirect(mount);

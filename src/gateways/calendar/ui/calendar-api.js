@@ -86,6 +86,15 @@ async function fetchInvitations() {
     return Array.isArray(payload?.data) ? payload.data : [];
 }
 
+async function fetchUpcomingEvents(limit) {
+    const query =
+        limit === undefined ? "" : `?limit=${encodeURIComponent(limit)}`;
+    const response = await apiFetch(`/api/v1/calendar/upcoming-events${query}`);
+    if (!response.ok) throw new Error("upcoming_events_unavailable");
+    const payload = await response.json();
+    return Array.isArray(payload?.data) ? payload.data : [];
+}
+
 async function fetchEvent(calendarId, eventId) {
     const response = await requestCalendarResource(calendarId, (password) =>
         apiFetch(
@@ -203,6 +212,7 @@ export {
     fetchCalendarState,
     fetchEvents,
     fetchInvitations,
+    fetchUpcomingEvents,
     fetchEvent,
     createEvent,
     updateEvent,
