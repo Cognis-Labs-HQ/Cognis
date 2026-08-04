@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
+import { brotliCompressSync } from "node:zlib";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
@@ -21,6 +23,40 @@ test("GET /static/reuse/ rejects directories before committing a response", asyn
     assert.deepEqual(JSON.parse(recorder.body), {
         error: { code: "not_found", message: "Asset not found." },
     });
+});
+
+test("versioned text assets negotiate Brotli with MIME and immutable caching", async () => {
+    const sourcePath = path.resolve("src/ui/reuse/api-client.js");
+    const compressedPath = `${sourcePath}.br`;
+    await writeFile(
+        compressedPath,
+        brotliCompressSync(await readFile(sourcePath)),
+    );
+    try {
+        const route = createUiRoutes();
+        const recorder = createResponseRecorder();
+        await route(
+            { headers: { "accept-encoding": "br, gzip" } } as any,
+            recorder.res as any,
+            new URL(
+                "http://localhost/static/reuse/api-client.js?v=development",
+            ),
+        );
+
+        assert.equal(recorder.status, 200);
+        assert.equal(recorder.headers["content-encoding"], "br");
+        assert.equal(recorder.headers.vary, "Accept-Encoding");
+        assert.equal(
+            recorder.headers["content-type"],
+            "text/javascript; charset=utf-8",
+        );
+        assert.equal(
+            recorder.headers["cache-control"],
+            "public, max-age=31536000, immutable",
+        );
+    } finally {
+        await rm(compressedPath, { force: true });
+    }
 });
 
 test("GET /static/gateways/:id/:file serves file from registered static dir", async () => {

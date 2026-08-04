@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
     isRoleAllowed,
@@ -18,10 +18,26 @@ import {
     type ModuleUiRouteRule,
     type SettingsSectionVisibilityCheck,
 } from "./route-rules.js";
+import {
+    resolveContentType,
+    serveStaticAsset,
+} from "../../reuse/static-asset-response.js";
+import {
+    serveHtmlPage,
+    serveHtmlPageWithReplacements,
+} from "../../reuse/html-response.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
 const PUBLIC_ROOT = path.join(UI_ROOT, "public");
+const PRODUCTION_UI_ROOT = path.resolve(
+    process.env.COGNIS_UI_DIST_ROOT ?? path.join(process.cwd(), "dist", "ui"),
+);
+const PRODUCTION_PUBLIC_ROOT = path.join(PRODUCTION_UI_ROOT, "public");
+const IS_PRODUCTION_BUILD = Boolean(process.env.COGNIS_UI_ASSET_MANIFEST);
+const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
+    ? PRODUCTION_PUBLIC_ROOT
+    : PUBLIC_ROOT;
 const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
     path.resolve(process.cwd(), "src", "modules");
@@ -30,6 +46,7 @@ const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
 
 function versionAssetUrl(assetUrl: string): string {
+    if (assetUrl.startsWith("/assets/")) return assetUrl;
     if (!assetUrl.startsWith("/static/") && !assetUrl.startsWith("/assets/")) {
         return assetUrl;
     }
@@ -58,76 +75,6 @@ function versionDescriptor<T>(descriptor: T): T {
     return descriptor;
 }
 
-function resolveContentType(filePath: string) {
-    const ext = path.extname(filePath);
-    if (ext === ".css") return "text/css; charset=utf-8";
-    if (ext === ".js" || ext === ".mjs")
-        return "text/javascript; charset=utf-8";
-    if (ext === ".webp") return "image/webp";
-    if (ext === ".html") return "text/html; charset=utf-8";
-    if (ext === ".xml") return "application/xml; charset=utf-8";
-    if (ext === ".svg") return "image/svg+xml; charset=utf-8";
-    if (ext === ".webmanifest")
-        return "application/manifest+json; charset=utf-8";
-    if (ext === ".json") return "application/json; charset=utf-8";
-    return "image/png";
-}
-
-async function serveStaticAsset(
-    req: IncomingMessage,
-    res: ServerResponse,
-    filePath: string,
-    contentType: string,
-    log?: BootstrapLog,
-    logMeta?: Record<string, unknown>,
-    cacheControl: string = "no-store",
-) {
-    try {
-        const metadata = await stat(filePath);
-        if (!metadata.isFile()) {
-            throw new Error("Asset path is not a file.");
-        }
-        const etag = `W/\"${metadata.size.toString(16)}-${Math.trunc(metadata.mtimeMs).toString(16)}\"`;
-        const headers = {
-            "content-type": contentType,
-            "cache-control": cacheControl,
-            etag,
-            "last-modified": metadata.mtime.toUTCString(),
-            "x-content-type-options": "nosniff",
-        };
-        if (
-            req.headers["if-none-match"] === etag ||
-            (!req.headers["if-none-match"] &&
-                req.headers["if-modified-since"] &&
-                Date.parse(req.headers["if-modified-since"]) >=
-                    Math.trunc(metadata.mtimeMs / 1000) * 1000)
-        ) {
-            res.writeHead(304, headers);
-            res.end();
-            return;
-        }
-        const file = await readFile(filePath);
-        res.writeHead(200, {
-            ...headers,
-            "content-length": file.length,
-        });
-        res.end(file);
-    } catch (error) {
-        log?.("error", "Failed to serve UI asset.", {
-            component: "api-ui",
-            filePath,
-            ...(logMeta ?? {}),
-            error: error instanceof Error ? error.message : String(error),
-        });
-        res.writeHead(404, { "content-type": "application/json" });
-        res.end(
-            JSON.stringify({
-                error: { code: "not_found", message: "Asset not found." },
-            }),
-        );
-    }
-}
-
 async function serveVersionedAsset(
     req: IncomingMessage,
     res: ServerResponse,
@@ -147,92 +94,6 @@ async function serveVersionedAsset(
         undefined,
         isVersioned ? IMMUTABLE_CACHE_CONTROL : REVALIDATED_CACHE_CONTROL,
     );
-}
-
-async function serveFile(
-    res: ServerResponse,
-    filePath: string,
-    contentType: string,
-    log?: BootstrapLog,
-    logMeta?: Record<string, unknown>,
-    routeContext?: RouteContext,
-) {
-    try {
-        const file = await readFile(filePath);
-        routeContext?.setPageSecurityHeaders(res);
-        res.writeHead(200, {
-            "content-type": contentType,
-            "cache-control": "no-store",
-        });
-        res.end(file);
-    } catch (error) {
-        log?.("error", "Failed to serve UI asset.", {
-            component: "api-ui",
-            filePath,
-            ...(logMeta ?? {}),
-            error: error instanceof Error ? error.message : String(error),
-        });
-        res.writeHead(404, { "content-type": "application/json" });
-        res.end(
-            JSON.stringify({
-                error: { code: "not_found", message: "Asset not found." },
-            }),
-        );
-    }
-}
-
-async function serveHtmlPage(
-    res: ServerResponse,
-    filePath: string,
-    log?: BootstrapLog,
-    logMeta?: Record<string, unknown>,
-    routeContext?: RouteContext,
-) {
-    await serveFile(
-        res,
-        filePath,
-        "text/html; charset=utf-8",
-        log,
-        logMeta,
-        routeContext,
-    );
-}
-
-async function serveHtmlPageWithReplacements(
-    res: ServerResponse,
-    filePath: string,
-    replacements: Array<{ from: string; to: string }>,
-    log?: BootstrapLog,
-    logMeta?: Record<string, unknown>,
-    routeContext?: RouteContext,
-) {
-    try {
-        let html = await readFile(filePath, "utf8");
-        // Replacements are literal string substitutions (no regex semantics).
-        // Keep replacement "from" values non-overlapping to avoid cascading
-        // substitutions across sequential replaceAll() calls. This list is
-        // intentionally small (route-specific boilerplate adjustments only).
-        for (const replacement of replacements) {
-            html = html.replaceAll(replacement.from, replacement.to);
-        }
-        routeContext?.setPageSecurityHeaders(res);
-        res.writeHead(200, {
-            "content-type": "text/html; charset=utf-8",
-            "cache-control": "no-store",
-        });
-        res.end(html);
-    } catch (error) {
-        log?.("error", "Failed to serve UI asset.", {
-            component: "api-ui",
-            filePath,
-            ...(logMeta ?? {}),
-            error: error instanceof Error ? error.message : String(error),
-        });
-        res.writeHead(404, { "content-type": "text/html; charset=utf-8" });
-        res.end(
-            "<!doctype html><html><body><h1>Not found</h1><p>Asset not found.</p></body></html>",
-        );
-    }
 }
 
 function getCookieAccessToken(req: IncomingMessage): string | null {
@@ -352,6 +213,7 @@ export function createUiRoutes(
                         version: ASSET_VERSION,
                         queryParameter: "v",
                         immutableCacheControl: IMMUTABLE_CACHE_CONTROL,
+                        assets: uiRegistry?.listAssetManifest() ?? {},
                     },
                 }),
             );
@@ -362,7 +224,7 @@ export function createUiRoutes(
             await serveStaticAsset(
                 req,
                 res,
-                path.join(PUBLIC_ROOT, "manifest.webmanifest"),
+                path.join(SERVED_PUBLIC_ROOT, "manifest.webmanifest"),
                 "application/manifest+json; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method },
@@ -377,7 +239,9 @@ export function createUiRoutes(
 
         if (url.pathname === "/sw.js" && req.method === "GET") {
             try {
-                const file = await readFile(path.join(PUBLIC_ROOT, "sw.js"));
+                const file = await readFile(
+                    path.join(SERVED_PUBLIC_ROOT, "sw.js"),
+                );
                 res.writeHead(200, {
                     "content-type": "text/javascript; charset=utf-8",
                     "cache-control": "no-cache",
@@ -420,7 +284,7 @@ export function createUiRoutes(
 
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "index.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "index.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -431,7 +295,7 @@ export function createUiRoutes(
         if (url.pathname === "/login") {
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "login.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "login.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -454,7 +318,7 @@ export function createUiRoutes(
 
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "settings.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "settings.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -486,7 +350,7 @@ export function createUiRoutes(
 
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "administration.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "administration.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -521,7 +385,7 @@ export function createUiRoutes(
             }
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "users.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "users.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -587,7 +451,7 @@ export function createUiRoutes(
             }
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "invite.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "invite.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -610,7 +474,7 @@ export function createUiRoutes(
 
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "docs.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "docs.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -633,15 +497,21 @@ export function createUiRoutes(
 
             await serveHtmlPageWithReplacements(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "docs.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "docs.html"),
                 [
                     {
                         from: "{{ui.page.title.docs}}",
                         to: "{{ui.page.title.changelogs}}",
                     },
                     {
-                        from: "/static/app/docs/index.js",
-                        to: "/static/app/changelogs/index.js",
+                        from:
+                            uiRegistry?.resolveAssetUrl(
+                                "/static/app/docs/index.js",
+                            ) ?? "/static/app/docs/index.js",
+                        to:
+                            uiRegistry?.resolveAssetUrl(
+                                "/static/app/changelogs/index.js",
+                            ) ?? "/static/app/changelogs/index.js",
                     },
                 ],
                 log,
@@ -666,7 +536,7 @@ export function createUiRoutes(
 
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "license.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "license.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -677,7 +547,7 @@ export function createUiRoutes(
         if (url.pathname === "/error") {
             await serveHtmlPage(
                 res,
-                path.join(PUBLIC_ROOT, "pages", "error.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", "error.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -1038,6 +908,25 @@ export function createUiRoutes(
             return true;
         }
 
+        if (IS_PRODUCTION_BUILD && url.pathname.startsWith("/assets/")) {
+            const relativeAssetPath = url.pathname.slice(1);
+            if (
+                /^[a-zA-Z0-9_./-]+$/.test(relativeAssetPath) &&
+                !relativeAssetPath.includes("..")
+            ) {
+                await serveStaticAsset(
+                    req,
+                    res,
+                    path.join(PRODUCTION_UI_ROOT, relativeAssetPath),
+                    resolveContentType(relativeAssetPath),
+                    log,
+                    { path: url.pathname, method: req.method },
+                    IMMUTABLE_CACHE_CONTROL,
+                );
+                return true;
+            }
+        }
+
         let relative: string | null = null;
 
         if (url.pathname.startsWith("/assets/")) {
@@ -1076,7 +965,7 @@ export function createUiRoutes(
 
         const filePath =
             relative.startsWith("assets/") || relative.startsWith("templates/")
-                ? path.join(PUBLIC_ROOT, relative)
+                ? path.join(SERVED_PUBLIC_ROOT, relative)
                 : path.join(STATIC_ROOT, relative);
 
         await serveVersionedAsset(
