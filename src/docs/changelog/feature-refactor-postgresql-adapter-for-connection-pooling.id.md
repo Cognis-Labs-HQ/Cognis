@@ -51,3 +51,15 @@ Path runtime internal container tetap absolut ketika lokasinya diketahui. Impor 
 ## Identitas deployment publik diwajibkan
 
 Penyiapan kini meminta host layanan Cognis, URL publik, dan email kontak. Docker memvalidasi ketiganya, aplikasi juga mewajibkan URL publik dan email kontak, sedangkan path tata letak image ditetapkan oleh entrypoint dan tidak diekspos sebagai konfigurasi env.
+
+## Pertahankan versi aset rilis
+
+Image Docker kini mempertahankan versi aset yang diberikan saat build agar penerapan yang ditingkatkan membatalkan sumber daya statis dalam cache.
+
+## Susun URL basis data dengan aman
+
+Entrypoint kontainer melakukan pengodean persen pada kredensial PostgreSQL dan MariaDB sebelum menempatkannya dalam URL koneksi.
+
+## Jaga isolasi dan versi komponen basis data
+
+Validasi pengaturan pool kini dimiliki masing-masing adapter basis data, sedangkan versi workspace adapter dan gateway serta batas atas dependensinya telah diselaraskan.

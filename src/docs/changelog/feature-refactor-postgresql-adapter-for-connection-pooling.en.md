@@ -51,3 +51,15 @@ The new `setup.sh` guides users through deployment and database choices, generat
 ## Public deployment identity is required
 
 Setup now collects the Cognis service host, public URL, and contact email. Docker validates all three, the application also requires the public URL and contact email, and image-layout paths are fixed by the entrypoint instead of exposed as env configuration.
+
+## Preserve release asset versions
+
+Docker images now retain the build-provided asset version so upgraded deployments invalidate cached static resources.
+
+## Safely construct database URLs
+
+The container entrypoint percent-encodes PostgreSQL and MariaDB credentials before placing them in connection URLs.
+
+## Keep database components isolated and versioned
+
+Pool setting validation now belongs to each database adapter, and the adapter and gateway workspace versions and dependency ceilings are synchronized.

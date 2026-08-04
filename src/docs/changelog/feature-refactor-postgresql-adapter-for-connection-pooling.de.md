@@ -51,3 +51,15 @@ Das neue `setup.sh` führt durch die Auswahl von Bereitstellung und Datenbank, e
 ## Öffentliche Bereitstellungsidentität ist erforderlich
 
 Die Einrichtung erfasst nun den Cognis-Service-Host, die öffentliche URL und die Kontaktadresse. Docker prüft alle drei Werte, die Anwendung verlangt zusätzlich URL und Kontaktadresse, und Image-Pfade werden vom Entrypoint festgelegt statt als Env-Konfiguration angeboten.
+
+## Versionen von Release-Ressourcen beibehalten
+
+Docker-Images behalten jetzt die beim Build übergebene Ressourcenversion, damit aktualisierte Bereitstellungen zwischengespeicherte statische Ressourcen ungültig machen.
+
+## Datenbank-URLs sicher erstellen
+
+Der Container-Einstiegspunkt kodiert PostgreSQL- und MariaDB-Zugangsdaten prozentual, bevor er sie in Verbindungs-URLs einfügt.
+
+## Datenbankkomponenten isoliert und versioniert halten
+
+Die Validierung der Pool-Einstellungen gehört jetzt zum jeweiligen Datenbankadapter; außerdem sind Adapter- und Gateway-Arbeitsbereichsversionen sowie Abhängigkeitsobergrenzen synchronisiert.
