@@ -31,3 +31,7 @@ Contoh lingkungan lama di root repositori telah dihapus. File yang dipilih di ba
 ## Compose membangun URL koneksi database
 
 Setiap profil database kini mewajibkan host, port, database, nama pengguna, dan kata sandi khusus mesinnya lalu membangun `DATABASE_URL` dari nilai tersebut. `.env` di root tertaut ke profil default bersama, sedangkan tautan Compose default memilih deployment PostgreSQL yang paling didukung.
+
+## Nilai default driver dipisahkan berdasarkan mesin
+
+Nilai default host, port, database, nama pengguna, dan pool PostgreSQL serta MariaDB kini hanya berada dalam profil env drivernya masing-masing. Profil default bersama hanya berisi pengaturan aplikasi yang netral terhadap mesin.

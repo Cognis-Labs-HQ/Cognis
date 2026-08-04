@@ -106,3 +106,27 @@ test("default Docker links select shared defaults and PostgreSQL", async () => {
         "docker-compose.postgres.yaml",
     );
 });
+
+test("database driver defaults stay inside their engine profiles", async () => {
+    const [sharedDefaults, postgresDefaults, mariaDbDefaults] =
+        await Promise.all([
+            readFile("docker/env/default.env", "utf8"),
+            readFile("docker/env/postgres.env", "utf8"),
+            readFile("docker/env/mariadb.env", "utf8"),
+        ]);
+    const readKeys = (contents) =>
+        new Set(
+            contents
+                .split("\n")
+                .filter(Boolean)
+                .map((line) => line.slice(0, line.indexOf("="))),
+        );
+    const sharedKeys = readKeys(sharedDefaults);
+    const postgresKeys = readKeys(postgresDefaults);
+    const mariaDbKeys = readKeys(mariaDbDefaults);
+
+    assert.ok([...postgresKeys].every((key) => !sharedKeys.has(key)));
+    assert.ok([...mariaDbKeys].every((key) => !sharedKeys.has(key)));
+    assert.ok(postgresKeys.has("POSTGRES_POOL_MAX"));
+    assert.ok(mariaDbKeys.has("MARIADB_POOL_MAX"));
+});

@@ -31,3 +31,7 @@ The obsolete root environment example has been removed. The selected files under
 ## Compose constructs database connection URLs
 
 Every database profile now requires its engine-specific host, port, database, username, and password values and constructs `DATABASE_URL` from them. The root `.env` links to the shared default profile, while the default Compose link selects the best-supported PostgreSQL deployment.
+
+## Driver defaults are isolated by engine
+
+PostgreSQL and MariaDB host, port, database, username, and pool defaults now live exclusively in their respective driver env profiles. The shared default profile contains only engine-neutral application settings.

@@ -31,3 +31,7 @@ Das veraltete Umgebungsbeispiel im Repository-Stamm wurde entfernt. Die ausgewä
 ## Compose erstellt Datenbank-Verbindungs-URLs
 
 Jedes Datenbankprofil verlangt nun die systemspezifischen Werte für Host, Port, Datenbank, Benutzername und Passwort und erstellt daraus `DATABASE_URL`. Die `.env` im Repository-Stamm verweist auf das gemeinsame Standardprofil, während der standardmäßige Compose-Link die bestunterstützte PostgreSQL-Bereitstellung auswählt.
+
+## Treiberstandardwerte sind nach System getrennt
+
+Die Standardwerte für Host, Port, Datenbank, Benutzername und Pool von PostgreSQL und MariaDB befinden sich nun ausschließlich in den jeweiligen Treiber-Env-Profilen. Das gemeinsame Standardprofil enthält nur systemneutrale Anwendungseinstellungen.
