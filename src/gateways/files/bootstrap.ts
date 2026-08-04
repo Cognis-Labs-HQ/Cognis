@@ -197,7 +197,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",
-        version: "2.1.3",
+        version: "2.1.4",
         required: true,
         description:
             "Provides namespaced, ACL- and quota-enforced file storage for uploads, plus local file logging helpers.",
