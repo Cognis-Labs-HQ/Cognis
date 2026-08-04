@@ -27,8 +27,8 @@ API-Handler definieren, **was** zu tun ist. Gateways/Adapter entscheiden, **wie*
 
 ## Container-Orchestrierung
 
-- `docker-compose.postgres.yaml` und `docker-compose.mariadb.yaml`: Produktionsprofile für PostgreSQL und MariaDB.
-- `docker-compose.postgres.dev.yaml` und `docker-compose.mariadb.dev.yaml`: Entwicklungs-/Demo-Profile mit Bind-Mounts für laufende UI/API-Änderungen.
+- `docker-compose.postgres.yaml` und `docker-compose.mariadb.yaml`: Compose-Definitionen für PostgreSQL und MariaDB.
+- Führen Sie `./setup.sh` aus, um PostgreSQL oder MariaDB auszuwählen und die lokale Laufzeitumgebung interaktiv einzurichten.
 
 ## AI-Hinweise
 

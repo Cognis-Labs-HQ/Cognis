@@ -43,3 +43,7 @@ Production secret env files are now ignored by Git and have tracked `.example` t
 ## Compose env imports stay repository-relative
 
 Container-internal runtime paths remain absolute where their locations are known. Compose env-file and Dockerfile imports now use explicit repository-relative paths so checkouts reached through symlinked working directories do not depend on a host absolute path.
+
+## Interactive setup replaces profile sprawl
+
+The new `setup.sh` guides users through deployment and database choices, generates secrets, writes one ignored runtime env file, and selects the matching Compose driver. Separate development, production, driver, and example env profiles are no longer required.

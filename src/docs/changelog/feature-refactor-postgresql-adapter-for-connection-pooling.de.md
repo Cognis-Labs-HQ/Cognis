@@ -43,3 +43,7 @@ Produktions-Env-Dateien mit Geheimnissen werden nun von Git ignoriert und besitz
 ## Compose-Env-Importe bleiben repository-relativ
 
 Containerinterne Laufzeitpfade bleiben absolut, wenn ihre Speicherorte bekannt sind. Compose-Env-Dateien und Dockerfile-Importe verwenden nun ausdrückliche repository-relative Pfade, damit über Symlinks erreichte Arbeitsverzeichnisse nicht von einem absoluten Hostpfad abhängen.
+
+## Interaktive Einrichtung ersetzt die Profilvielfalt
+
+Das neue `setup.sh` führt durch die Auswahl von Bereitstellung und Datenbank, erzeugt Geheimnisse, schreibt eine einzige von Git ignorierte Laufzeit-Env-Datei und wählt den passenden Compose-Treiber. Getrennte Entwicklungs-, Produktions-, Treiber- und Beispielprofile sind nicht mehr erforderlich.

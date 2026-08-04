@@ -31,16 +31,11 @@ CMD ["node", "src/api/main.js"]
 
 ### 環境プロファイル
 
-Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeがこれらをコンテナに読み込み、エントリポイントが選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを検証してから `DATABASE_URL` を構築します。本番では `DATA_ENCRYPTION_KEY` も必須です。本番用の秘密情報ファイルはGitの追跡対象外です。追跡されている `.example` テンプレートをコピーして編集してください。変数不足のエラーには、値を設定する正確なファイル名が表示されます。 ComposeはすべてのEnvファイルを明示的なリポジトリ相対パス `./docker/env/...` で読み込みます。作業ディレクトリにシンボリックリンクが含まれていても、ホスト固有の絶対チェックアウトパスを前提にしません。
+Dockerのデフォルト値は、追跡対象の `docker/env/default.env` に保持されます。`./setup.sh` を実行してPostgreSQLまたはMariaDB、開発または本番を選び、接続設定を入力します。スクリプトはユーザー固有の値をGitで無視される単一の `docker/env/runtime.env` に書き込み、空欄の秘密情報を生成し、選択したドライバーを使うよう `docker-compose.yaml` を更新します。Composeは両方のEnvファイルを明示的なリポジトリ相対パスで読み込みます。コンテナのエントリポイントは生成された設定を検証し、`DATABASE_URL` を構築します。
 
 ```sh
-cp docker/env/production.env.example docker/env/production.env
-cp docker/env/postgres-production.env.example docker/env/postgres-production.env
-cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
-docker compose -f docker-compose.postgres.yaml up
-docker compose -f docker-compose.mariadb.yaml up
-docker compose -f docker-compose.postgres.dev.yaml up
-docker compose -f docker-compose.mariadb.dev.yaml up
+./setup.sh
+docker compose up --build
 ```
 
 ## 設定

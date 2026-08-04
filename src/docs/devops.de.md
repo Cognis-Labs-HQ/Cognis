@@ -32,16 +32,11 @@ CMD ["node", "src/api/main.js"]
 
 ### Umgebungsprofile
 
-Docker-Standardwerte liegen außerhalb des Images in `docker/env/default.env`, das mit der `.env` im Repository-Stamm verknüpft ist. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien. Compose lädt diese Dateien in den Container; der Entrypoint verlangt Host, Port, Datenbank, Benutzername und Passwort des ausgewählten Systems, bevor er daraus `DATABASE_URL` erstellt. In der Produktion ist zusätzlich `DATA_ENCRYPTION_KEY` erforderlich. Die Produktionsdateien mit Geheimnissen werden von Git ignoriert; kopieren Sie die versionierten `.example`-Vorlagen und bearbeiten Sie die Kopien. Fehlermeldungen nennen die genaue Datei für den fehlenden Wert. Compose importiert jede Env-Datei über einen ausdrücklichen, repository-relativen Pfad `./docker/env/...`, sodass bei Symlinks im Arbeitsverzeichnis kein hostspezifischer absoluter Checkout-Pfad vorausgesetzt wird.
+Docker-Standardwerte verbleiben in der versionierten Datei `docker/env/default.env`. Führen Sie `./setup.sh` aus, um PostgreSQL oder MariaDB sowie Entwicklung oder Produktion auszuwählen und die Verbindungsdaten einzugeben. Das Skript schreibt alle benutzerspezifischen Werte in die einzige von Git ignorierte Datei `docker/env/runtime.env`, erzeugt bei leeren Eingaben sichere Geheimnisse und stellt `docker-compose.yaml` auf den gewählten Treiber um. Compose importiert beide Env-Dateien über ausdrückliche repository-relative Pfade. Der Container-Entrypoint prüft die erzeugten Einstellungen und erstellt `DATABASE_URL`.
 
 ```sh
-cp docker/env/production.env.example docker/env/production.env
-cp docker/env/postgres-production.env.example docker/env/postgres-production.env
-cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
-docker compose -f docker-compose.postgres.yaml up
-docker compose -f docker-compose.mariadb.yaml up
-docker compose -f docker-compose.postgres.dev.yaml up
-docker compose -f docker-compose.mariadb.dev.yaml up
+./setup.sh
+docker compose up --build
 ```
 
 ### GitHub Actions

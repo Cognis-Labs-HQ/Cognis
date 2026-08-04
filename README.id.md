@@ -27,8 +27,8 @@ Handler API mendefinisikan **apa** yang harus dilakukan. Gateway/adapter menentu
 
 ## Orkestrasi container
 
-- `docker-compose.postgres.yaml` dan `docker-compose.mariadb.yaml`: profil produksi untuk PostgreSQL dan MariaDB.
-- `docker-compose.postgres.dev.yaml` dan `docker-compose.mariadb.dev.yaml`: profil pengembangan/demo dengan bind mount untuk perubahan UI/API yang sedang berjalan.
+- `docker-compose.postgres.yaml` dan `docker-compose.mariadb.yaml`: definisi Compose untuk PostgreSQL dan MariaDB.
+- Jalankan `./setup.sh` untuk memilih PostgreSQL atau MariaDB dan membuat lingkungan runtime lokal secara interaktif.
 
 ## Panduan AI
 

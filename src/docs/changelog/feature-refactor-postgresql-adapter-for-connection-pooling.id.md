@@ -43,3 +43,7 @@ File env rahasia produksi kini diabaikan oleh Git dan memiliki template `.exampl
 ## Impor env Compose tetap relatif terhadap repositori
 
 Path runtime internal container tetap absolut ketika lokasinya diketahui. Impor file env Compose dan Dockerfile kini menggunakan path relatif repositori yang eksplisit agar direktori kerja yang dicapai melalui symlink tidak bergantung pada path host absolut.
+
+## Penyiapan interaktif menggantikan banyak profil
+
+`setup.sh` baru memandu pilihan deployment dan database, membuat rahasia, menulis satu file env runtime yang diabaikan Git, dan memilih driver Compose yang sesuai. Profil env pengembangan, produksi, driver, dan contoh yang terpisah tidak lagi diperlukan.

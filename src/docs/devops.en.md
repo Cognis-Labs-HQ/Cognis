@@ -36,16 +36,11 @@ CMD ["node", "src/api/main.js"]
 
 ### Environment profiles
 
-Docker defaults are kept outside the image in `docker/env/default.env`, which is linked to the root `.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files. Compose loads those files into the container, and the entrypoint requires the selected engine's host, port, database, username, and password before constructing `DATABASE_URL`. Production also requires `DATA_ENCRYPTION_KEY`. The production secret files are ignored by Git; copy their tracked `.example` templates and edit the copies. Missing-variable errors name the exact file that needs the value. Compose imports every env file through an explicit `./docker/env/...` repository-relative path, so no host-specific absolute checkout path is assumed when the working directory contains symlinks.
+Docker defaults remain in the tracked `docker/env/default.env`. Run `./setup.sh` to choose PostgreSQL or MariaDB, select development or production, and enter the connection settings. The script writes every user-specific value to the single ignored `docker/env/runtime.env` file, generates secrets when values are left blank, and updates `docker-compose.yaml` to select the chosen driver. Compose imports both env files through explicit repository-relative paths. The container entrypoint validates the generated settings and constructs `DATABASE_URL`.
 
 ```sh
-cp docker/env/production.env.example docker/env/production.env
-cp docker/env/postgres-production.env.example docker/env/postgres-production.env
-cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
-docker compose -f docker-compose.postgres.yaml up
-docker compose -f docker-compose.mariadb.yaml up
-docker compose -f docker-compose.postgres.dev.yaml up
-docker compose -f docker-compose.mariadb.dev.yaml up
+./setup.sh
+docker compose up --build
 ```
 
 ### GitHub Actions

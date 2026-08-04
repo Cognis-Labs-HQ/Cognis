@@ -31,16 +31,11 @@ CMD ["node", "src/api/main.js"]
 
 ### Profil lingkungan
 
-Nilai default Docker disimpan di luar image dalam `docker/env/default.env`, yang ditautkan ke `.env` di root repositori. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah. Compose memuat file tersebut ke container, lalu entrypoint mewajibkan host, port, database, nama pengguna, dan kata sandi mesin yang dipilih sebelum membangun `DATABASE_URL`. Produksi juga mewajibkan `DATA_ENCRYPTION_KEY`. File rahasia produksi diabaikan oleh Git; salin template `.example` yang terlacak lalu ubah salinannya. Pesan variabel yang hilang menyebutkan file persis yang harus diisi. Compose mengimpor setiap file env melalui path relatif repositori `./docker/env/...` yang eksplisit sehingga tidak mengasumsikan path checkout host absolut ketika direktori kerja memuat symlink.
+Nilai default Docker tetap berada di `docker/env/default.env` yang terlacak. Jalankan `./setup.sh` untuk memilih PostgreSQL atau MariaDB, memilih pengembangan atau produksi, dan memasukkan pengaturan koneksi. Skrip menulis semua nilai khusus pengguna ke satu file `docker/env/runtime.env` yang diabaikan Git, membuat rahasia saat input dibiarkan kosong, dan memperbarui `docker-compose.yaml` untuk memilih driver tersebut. Compose mengimpor kedua file env melalui path relatif repositori yang eksplisit. Entrypoint container memvalidasi pengaturan yang dibuat dan membangun `DATABASE_URL`.
 
 ```sh
-cp docker/env/production.env.example docker/env/production.env
-cp docker/env/postgres-production.env.example docker/env/postgres-production.env
-cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
-docker compose -f docker-compose.postgres.yaml up
-docker compose -f docker-compose.mariadb.yaml up
-docker compose -f docker-compose.postgres.dev.yaml up
-docker compose -f docker-compose.mariadb.dev.yaml up
+./setup.sh
+docker compose up --build
 ```
 
 ## Konfigurasi

@@ -27,8 +27,8 @@ API ハンドラーは**何を**するかを定義し、ゲートウェイ/ア�
 
 ## コンテナオーケストレーション
 
-- `docker-compose.postgres.yaml` と `docker-compose.mariadb.yaml`: PostgreSQLおよびMariaDB用の本番プロファイル。
-- `docker-compose.postgres.dev.yaml` と `docker-compose.mariadb.dev.yaml`: 開発中のUI/API編集をバインドマウントする開発/デモ用プロファイル。
+- `docker-compose.postgres.yaml` と `docker-compose.mariadb.yaml`: PostgreSQLおよびMariaDB用のCompose定義。
+- `./setup.sh` を実行し、PostgreSQLまたはMariaDBを選択してローカル実行環境を対話形式で作成します。
 
 ## AI ガイダンス
 
