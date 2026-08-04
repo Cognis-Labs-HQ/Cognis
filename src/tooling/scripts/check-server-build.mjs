@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 
 const serverRoot = path.resolve("dist/server");
 async function walk(directory) {
@@ -47,6 +48,32 @@ const gatewayService = await readFile(
     "utf8",
 );
 assert.match(gatewayService, /bootstrap\.js/);
+
+const adaptersRoot = path.join(serverRoot, "src/adapters");
+for (const adapterFamily of await readdir(adaptersRoot, {
+    withFileTypes: true,
+})) {
+    if (!adapterFamily.isDirectory()) continue;
+    const adapterFamilyRoot = path.join(adaptersRoot, adapterFamily.name);
+    for (const adapter of await readdir(adapterFamilyRoot, {
+        withFileTypes: true,
+    })) {
+        if (!adapter.isDirectory()) continue;
+        const adapterRoot = path.join(adapterFamilyRoot, adapter.name);
+        const packageManifest = JSON.parse(
+            await readFile(path.join(adapterRoot, "package.json"), "utf8"),
+        );
+        assert.equal(
+            typeof packageManifest.main,
+            "string",
+            `${adapterFamily.name}/${adapter.name} must declare a package entrypoint`,
+        );
+        await import(
+            pathToFileURL(path.join(adapterRoot, packageManifest.main)).href
+        );
+    }
+}
+
 for (const emittedPath of (await walk(path.join(serverRoot, "src"))).filter(
     (filePath) => filePath.endsWith(".js"),
 )) {

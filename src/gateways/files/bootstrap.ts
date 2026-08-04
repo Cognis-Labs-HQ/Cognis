@@ -21,11 +21,10 @@ import {
 
 async function loadLocalFileGateway(
     fileStorePath: string,
+    adaptersRoot: string,
 ): Promise<FileStorageGateway> {
     const localAdapterPath = path.resolve(
-        process.cwd(),
-        "src",
-        "adapters",
+        adaptersRoot,
         "file",
         "local",
         "index.ts",
@@ -44,11 +43,10 @@ async function loadLocalFileGateway(
 
 async function loadQuotaStore(
     getDb: () => DbExecutor | undefined,
+    adaptersRoot: string,
 ): Promise<FileQuotaStore> {
     const quotaAdapterPath = path.resolve(
-        process.cwd(),
-        "src",
-        "adapters",
+        adaptersRoot,
         "file",
         "quota",
         "index.ts",
@@ -94,9 +92,11 @@ async function loadQuotaStore(
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const mediaLocation = process.env.MEDIA_LOCATION ?? "/app/media";
     const fileStorePath = `${mediaLocation}/uploads`;
-    const rawGateway = await loadLocalFileGateway(fileStorePath);
+    const adaptersRoot =
+        ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
+    const rawGateway = await loadLocalFileGateway(fileStorePath, adaptersRoot);
     const getDb = () => ctx.capabilities.get<DbExecutor>("db:executor");
-    const quotaStore = await loadQuotaStore(getDb);
+    const quotaStore = await loadQuotaStore(getDb, adaptersRoot);
     const objectStore = new DbFileObjectStore(getDb);
     const registry = new NamespaceRegistry();
     const service = new NamespaceFileService(
@@ -187,10 +187,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         createFileRoutes(service, routeContext),
         "files",
     );
-    const adapterCatalog = await loadAdapterAdminCatalog(
-        ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters"),
-        "file",
-    );
+    const adapterCatalog = await loadAdapterAdminCatalog(adaptersRoot, "file");
     ctx.routeRegistry.register(
         createLockedAdapterAdminRoutes("files", adapterCatalog, routeContext),
         "files",

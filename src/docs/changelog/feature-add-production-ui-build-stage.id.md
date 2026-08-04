@@ -27,3 +27,7 @@ Perintah mulai produksi kini mengatur manifes UI yang dihasilkan serta lokasi ga
 ## Pengodean konten mengikuti preferensi kualitas klien
 
 Negosiasi aset statis kini mengecualikan pengodean yang ditolak dengan nilai kualitas nol dan memilih representasi Brotli atau gzip yang tersedia dengan kualitas penerimaan tertinggi.
+
+## Registrasi komponen kini divalidasi
+
+Build produksi kini memverifikasi setiap titik masuk adapter terkompilasi. Manifes basis data dan file lokal mengarah ke modul masuk yang sebenarnya, gateway file menyelesaikan adapter dari lokasi terkompilasi yang dikonfigurasi, dan adapter Pesan memuat kontribusi kunci ruang dari modul penyimpanan yang benar.

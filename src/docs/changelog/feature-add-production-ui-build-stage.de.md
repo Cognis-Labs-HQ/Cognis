@@ -27,3 +27,7 @@ Der Produktionsstartbefehl konfiguriert nun das erzeugte UI-Manifest sowie die k
 ## Inhaltskodierung berücksichtigt Qualitätspräferenzen
 
 Die Aushandlung statischer Assets schließt nun mit Qualitätswert null abgelehnte Kodierungen aus und wählt die verfügbare Brotli- oder gzip-Darstellung mit der höchsten akzeptierten Qualität.
+
+## Komponentenregistrierung wird validiert
+
+Produktions-Builds prüfen nun jeden kompilierten Adapter-Einstiegspunkt. Datenbank- und lokale Dateimanifeste verweisen auf ihre tatsächlichen Einstiegsmodule, das Datei-Gateway löst Adapter aus dem konfigurierten kompilierten Stammverzeichnis auf und der Nachrichtenadapter lädt seinen Raum-Schlüsselbeitrag aus dem richtigen Speichermodul.

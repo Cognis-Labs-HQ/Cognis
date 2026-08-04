@@ -1,9 +1,9 @@
 {
     "name": "@cognis/adapter-db-memory",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "private": true,
     "type": "module",
-    "main": "memory-db-gateway.ts",
+    "main": "index.ts",
     "dependencies": {
         "@cognis/core": "<=0.3.5"
     }

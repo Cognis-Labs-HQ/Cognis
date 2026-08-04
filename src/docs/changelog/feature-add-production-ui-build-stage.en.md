@@ -27,3 +27,7 @@ The production start command now configures the generated UI manifest and compil
 ## Content encoding follows client quality preferences
 
 Static asset negotiation now excludes encodings rejected with a zero quality value and selects the available Brotli or gzip representation with the highest accepted quality.
+
+## Component registration is validated
+
+Production builds now verify every compiled adapter entrypoint. Database and local-file manifests point to their actual entry modules, the files gateway resolves adapters from the configured compiled root, and the Messages adapter loads its room-key contribution from the correct store module.

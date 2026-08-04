@@ -1,6 +1,5 @@
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
-    acknowledgeRoomKeyContribution,
     appendMessage,
     appendRoomEvent,
     getMessage,
@@ -12,6 +11,7 @@ import {
     insertRoomEvent,
 } from "./messages.js";
 import {
+    acknowledgeRoomKeyContribution,
     claimRoomKeyContribution,
     generateAndStoreRoomKey,
     getUnwrappedRoomKey,
