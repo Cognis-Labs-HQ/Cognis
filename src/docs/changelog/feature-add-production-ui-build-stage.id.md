@@ -15,3 +15,7 @@ Build Docker mengompilasi TypeScript dan menjalankan JavaScript secara langsung 
 ## Startup komponen terkompilasi
 
 Pemuat gateway dan adapter produksi kini memetakan setiap titik masuk sumber TypeScript ke keluaran JavaScript terkompilasi, serta memberikan API alur platform kepada adapter Study saat startup.
+
+## Alur browser deterministik
+
+Kontrak alur browser bawaan kini diinisialisasi bersama konteks UI bersama sebelum hook gateway dalam bundel dapat memperluasnya.

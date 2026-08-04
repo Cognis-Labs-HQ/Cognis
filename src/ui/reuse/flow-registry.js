@@ -37,24 +37,6 @@
  */
 
 import { uiCtx } from "./ui-ctx.js";
-
-uiCtx.registerFlow("authenticate-session", [
-    "validate-stored-token",
-    "apply-alternate-auth",
-    "enforce-setup-requirements",
-    "resolve-session",
-]);
-
-uiCtx.registerFlow("navigate-to", [
-    "resolve-route",
-    "authenticate",
-    "prepare-assets",
-    "mount-page",
-]);
-
-uiCtx.registerFlow("load-page", ["authenticate", "mount-page"]);
-
-uiCtx.registerFlow("defer-page-action", ["schedule"]);
 uiCtx.extendFlow(
     "defer-page-action",
     "schedule",
@@ -66,11 +48,3 @@ uiCtx.extendFlow(
         return { scheduled: true };
     },
 );
-
-uiCtx.registerFlow("complete-login", ["setup-account-services"]);
-
-uiCtx.registerFlow("search", [
-    "visible-indexes",
-    "component-indexes",
-    "settings-index",
-]);

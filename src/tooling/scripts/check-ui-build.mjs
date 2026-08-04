@@ -3,6 +3,18 @@ import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 
 const outputRoot = path.resolve("dist/ui");
+async function walk(directory) {
+    const entries = await readdir(directory, { withFileTypes: true });
+    return (
+        await Promise.all(
+            entries.map((entry) => {
+                const entryPath = path.join(directory, entry.name);
+                return entry.isDirectory() ? walk(entryPath) : [entryPath];
+            }),
+        )
+    ).flat();
+}
+
 const manifest = JSON.parse(
     await readFile(path.join(outputRoot, "asset-manifest.json"), "utf8"),
 );
@@ -30,6 +42,20 @@ for (const pageName of publicPages.filter((name) => name.endsWith(".html"))) {
         /(?:src|href)="(\/assets\/[^"?]+)"/g,
     )) {
         await access(path.join(outputRoot, matchedUrl[1]));
+    }
+}
+for (const sourcePath of (await walk(path.resolve("src"))).filter(
+    (filePath) =>
+        /\.(?:js|ts)$/.test(filePath) && !filePath.includes("/tests/"),
+)) {
+    const contents = await readFile(sourcePath, "utf8");
+    for (const match of contents.matchAll(
+        /scriptUrl\s*:\s*["'](\/static\/[^"']+\.js)["']/g,
+    )) {
+        assert.ok(
+            manifest[match[1]],
+            `${path.relative(process.cwd(), sourcePath)} contributes unresolved asset ${match[1]}`,
+        );
     }
 }
 console.log(

@@ -15,3 +15,7 @@ The Docker build compiles TypeScript and starts JavaScript directly without the 
 ## Compiled component startup
 
 Production gateway and adapter loaders now resolve every TypeScript source entrypoint to its compiled JavaScript output, and Study adapters receive the platform flow API during bootstrap.
+
+## Deterministic browser flows
+
+Built-in browser flow contracts now initialize with the shared UI context, before any bundled gateway hook can extend them.

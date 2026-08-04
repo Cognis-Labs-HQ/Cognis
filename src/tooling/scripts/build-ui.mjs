@@ -56,9 +56,6 @@ const sourceFiles = (await walk(path.join(repositoryRoot, "src")))
             (/\/src\/(?:gateways|adapters|modules)\//.test(filePath) &&
                 filePath.includes("/ui/")),
     );
-const entryPoints = Object.fromEntries(
-    sourceFiles.map((filePath, index) => [`entry-${index}`, filePath]),
-);
 const resolvableFiles = await walk(path.join(repositoryRoot, "src"));
 const logicalSourcePaths = new Map();
 for (const filePath of resolvableFiles) {
@@ -74,6 +71,54 @@ for (const filePath of await walk(
         .join("/");
     logicalSourcePaths.set(`/static/${publicRelativePath}`, filePath);
 }
+const importedSourcePaths = new Set();
+for (const sourcePath of sourceFiles) {
+    const contents = await readFile(sourcePath, "utf8");
+    for (const match of contents.matchAll(
+        /(?:\bfrom\s*|\bimport\s*\(|\bimport\s*|@import\s+(?:url\()?)["']([^"']+)["']/g,
+    )) {
+        const specifier = match[1];
+        const importedPath = specifier.startsWith("/static/")
+            ? logicalSourcePaths.get(specifier)
+            : specifier.startsWith(".")
+              ? path.resolve(path.dirname(sourcePath), specifier)
+              : undefined;
+        if (importedPath) importedSourcePaths.add(importedPath);
+    }
+}
+const forcedEntryPaths = new Set();
+for (const htmlPath of (await walk(path.join(repositoryRoot, "src"))).filter(
+    (filePath) => filePath.endsWith(".html"),
+)) {
+    const html = await readFile(htmlPath, "utf8");
+    for (const match of html.matchAll(
+        /(?:src|href)=["'](\/static\/[^"']+)["']/g,
+    )) {
+        const sourcePath = logicalSourcePaths.get(match[1]);
+        if (sourcePath && /\.(?:css|js)$/.test(sourcePath)) {
+            forcedEntryPaths.add(sourcePath);
+        }
+    }
+}
+for (const descriptorPath of resolvableFiles.filter(
+    (filePath) =>
+        /\.(?:js|ts)$/.test(filePath) && !filePath.includes("/tests/"),
+)) {
+    const contents = await readFile(descriptorPath, "utf8");
+    for (const match of contents.matchAll(
+        /scriptUrl\s*:\s*["'](\/static\/[^"']+\.js)["']/g,
+    )) {
+        const sourcePath = logicalSourcePaths.get(match[1]);
+        if (sourcePath) forcedEntryPaths.add(sourcePath);
+    }
+}
+const entrySourcePaths = sourceFiles.filter(
+    (filePath) =>
+        forcedEntryPaths.has(filePath) || !importedSourcePaths.has(filePath),
+);
+const entryPoints = Object.fromEntries(
+    entrySourcePaths.map((filePath, index) => [`entry-${index}`, filePath]),
+);
 const result = await build({
     entryPoints,
     outdir: assetRoot,

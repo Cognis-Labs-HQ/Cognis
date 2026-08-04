@@ -16,7 +16,11 @@ function loadUiCtxForTests() {
         .replace(/^import .*;\n/gm, "")
         .replace(/\bexport\s+/g, "");
 
-    const context = { console, __testExports: {} };
+    const context = {
+        console,
+        BROWSER_FLOW_CONTRACTS: {},
+        __testExports: {},
+    };
     vm.runInNewContext(
         testableSource +
             "\nglobalThis.__testExports = { createFlowEngine, uiCtx };\n",
@@ -31,6 +35,12 @@ test("createFlowEngine — registerFlow and flowExists", () => {
     assert.equal(engine.flowExists("my-flow"), false);
     engine.registerFlow("my-flow", ["stage-a", "stage-b"]);
     assert.equal(engine.flowExists("my-flow"), true);
+});
+
+test("uiCtx initializes built-in flows before hook modules can extend them", async () => {
+    const { uiCtx } = await import("../ui-ctx.js");
+    assert.equal(uiCtx.flowExists("authenticate-session"), true);
+    assert.equal(uiCtx.flowExists("load-page"), true);
 });
 
 test("createFlowEngine — registering the same flow twice throws", () => {
