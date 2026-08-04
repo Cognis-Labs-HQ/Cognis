@@ -611,3 +611,25 @@ test("calendar gateway removeDeclinedAttendee with removeAll removes attendee fr
         ),
     );
 });
+
+test("upcoming event projection returns every match unless caller supplies a limit", () => {
+    const gateway = new CoreCalendarGateway();
+    const calendar = gateway.createCalendar({
+        ownerAccountId: "alice",
+        name: "Alice",
+        color: "#1f8ceb",
+        isDefault: true,
+    });
+    for (const day of [10, 11, 12]) {
+        gateway.addEvent({
+            ownerAccountId: "alice",
+            calendarId: calendar.id,
+            title: `Event ${day}`,
+            startAt: `2099-06-${day}T09:00:00.000Z`,
+            endAt: `2099-06-${day}T09:30:00.000Z`,
+        });
+    }
+
+    assert.equal(gateway.listUpcomingEvents("alice").length, 3);
+    assert.equal(gateway.listUpcomingEvents("alice", 2).length, 2);
+});

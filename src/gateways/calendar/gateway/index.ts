@@ -447,7 +447,7 @@ export class CoreCalendarGateway {
 
     listUpcomingEvents(
         accountId: string,
-        limit: number,
+        limit?: number,
         now = new Date(),
     ): Array<CalendarEventRecord & { calendarName: string | null }> {
         const calendarEvents = this.listCalendars(accountId).flatMap(
@@ -466,12 +466,14 @@ export class CoreCalendarGateway {
                 event,
             ]),
         );
-        return [...eventsById.values()]
+        const upcomingEvents = [...eventsById.values()]
             .filter((event) => new Date(event.endAt).getTime() >= now.getTime())
             .sort((leftEvent, rightEvent) =>
                 leftEvent.startAt.localeCompare(rightEvent.startAt),
-            )
-            .slice(0, limit);
+            );
+        return limit === undefined
+            ? upcomingEvents
+            : upcomingEvents.slice(0, limit);
     }
 
     getEvent(calendarId: string, eventId: string): CalendarEventRecord | null {

@@ -16,6 +16,14 @@ Do this before exploration, implementation, linting, or testing so the required 
 
 ## Architecture
 
+### API result limits are caller-controlled
+
+API endpoints must not impose arbitrary default or maximum result limits in
+their route definitions. Filtering or limiting results is applied only when
+the caller explicitly sends the corresponding parameter. When no limit value
+is supplied, return every matching result. Validate an explicitly supplied
+limit, but do not silently replace, clamp, or default it in the endpoint.
+
 ### User-specific secrets belong in the keyring
 
 Use `src/adapters/auth/keyring/ui/keyring.js` as the canonical storage and retrieval surface

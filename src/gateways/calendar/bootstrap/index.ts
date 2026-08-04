@@ -55,7 +55,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         (stageCtx) => {
             const input = stageCtx.input as {
                 accountId: string;
-                limit: number;
+                limit?: number;
             };
             return gateway.listUpcomingEvents(input.accountId, input.limit);
         },
@@ -937,7 +937,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.4.45",
+        version: "1.4.46",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

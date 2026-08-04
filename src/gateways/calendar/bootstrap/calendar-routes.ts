@@ -76,7 +76,7 @@ export function createCalendarCoreRoutes({
     getCapability: <T>(capabilityId: string) => T | undefined;
     runUpcomingEventsFlow: (input: {
         accountId: string;
-        limit: number;
+        limit?: number;
     }) => Promise<unknown[]>;
 }): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(routeContext);
@@ -114,10 +114,21 @@ export function createCalendarCoreRoutes({
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const requestedLimit = Number(url.searchParams.get("limit") ?? 5);
-            const limit = Number.isFinite(requestedLimit)
-                ? Math.min(50, Math.max(1, Math.trunc(requestedLimit)))
-                : 5;
+            const limitParameter = url.searchParams.get("limit");
+            const limit =
+                limitParameter === null ? undefined : Number(limitParameter);
+            if (
+                limit !== undefined &&
+                (!Number.isSafeInteger(limit) || limit < 1)
+            ) {
+                sendCalendarError(
+                    res,
+                    "bad_request",
+                    "The limit parameter must be a positive integer.",
+                    400,
+                );
+                return true;
+            }
             const results = await runUpcomingEventsFlow({
                 accountId: claims.sub,
                 limit,

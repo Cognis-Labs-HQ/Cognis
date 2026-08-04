@@ -1,4 +1,4 @@
-# Schnellerer, robuster Dashboard-Start
+# Schneller Dashboard-Start
 
 ## Dashboard-Karten werden unabhängig geladen
 
@@ -6,4 +6,4 @@ Das Dashboard zeigt sein Grundlayout sofort an und lädt Kontodetails, bevorsteh
 
 ## Bevorstehende Termine benötigen nur eine begrenzte Anfrage
 
-Ein Calendar-Gateway-Flow stellt zugängliche Kalendertermine und Einladungen über einen authentifizierten Endpunkt mit begrenztem Ergebnislimit bereit.
+Ein Calendar-Gateway-Flow stellt zugängliche Kalendertermine und Einladungen über einen authentifizierten Endpunkt mit dem vom Aufrufer angeforderten Ergebnislimit bereit.

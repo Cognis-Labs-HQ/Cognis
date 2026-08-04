@@ -1,4 +1,4 @@
-# Awal dashboard lebih cepat dan tangguh
+# Dashboard Lebih Cepat
 
 ## Kartu dashboard dimuat secara independen
 
@@ -6,4 +6,4 @@ Dashboard langsung menampilkan tata letak dasar lalu memuat detail akun, acara m
 
 ## Acara mendatang memakai satu permintaan terbatas
 
-Flow gateway kalender kini memproyeksikan acara kalender yang dapat diakses dan undangan melalui satu endpoint terautentikasi dengan batas hasil.
+Flow gateway kalender kini memproyeksikan acara kalender yang dapat diakses dan undangan melalui satu endpoint terautentikasi dengan batas hasil yang diminta pemanggil.

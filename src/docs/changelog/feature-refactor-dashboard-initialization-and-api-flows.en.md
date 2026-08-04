@@ -1,4 +1,4 @@
-# Faster, resilient dashboard startup
+# Faster Dashboard Startup
 
 ## Dashboard cards now load independently
 
@@ -6,4 +6,4 @@ The dashboard renders its base layout immediately and hydrates account details, 
 
 ## Upcoming events use one bounded request
 
-A calendar gateway flow now projects accessible calendar events and invitations through one authenticated endpoint with a bounded limit.
+A calendar gateway flow now projects accessible calendar events and invitations through one authenticated endpoint with the caller-requested limit.
