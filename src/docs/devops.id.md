@@ -31,24 +31,26 @@ CMD ["node", "src/api/main.js"]
 
 ### Profil lingkungan
 
-Nilai default Docker disimpan di luar image dalam `docker/env/defaults.env`. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah, yang dipilih melalui `docker-compose.<driver>.yaml` atau `docker-compose.<driver>.dev.yaml`. Isi kredensial produksi khusus driver dan kunci enkripsi yang kosong sebelum deployment. File Compose produksi menggunakan ekspresi variabel wajib untuk kata sandi database, `DATABASE_URL`, dan `DATA_ENCRYPTION_KEY`, sehingga Compose menolak membuat container sampai semua nilai diberikan.
+Nilai default Docker disimpan di luar image dalam `docker/env/default.env`, yang ditautkan ke `.env` di root repositori. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah. Compose mewajibkan host, port, database, nama pengguna, dan kata sandi mesin yang dipilih lalu membangun `DATABASE_URL` dari nilai tersebut. Profil produksi juga mewajibkan `DATA_ENCRYPTION_KEY` sehingga container tidak dapat dibuat dengan pengaturan yang belum lengkap.
 
 ```sh
-docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
-docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/development.env --env-file docker/env/mariadb-development.env -f docker-compose.mariadb.dev.yaml up
 ```
 
 ## Konfigurasi
 
-| Variabel               | Default      | Keterangan                                            |
-| ---------------------- | ------------ | ----------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | Backend database: `postgresql` atau `mariadb`         |
-| `DATABASE_URL`         | —            | String koneksi untuk PostgreSQL atau MariaDB          |
-| `LOG_LEVEL`            | `info`       | Verbositas stream log runtime                         |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte) |
-| `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan           |
-| `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)          |
-| `PORT`                 | `3000`       | Port HTTP                                             |
-| `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                  |
+| Variabel               | Default      | Keterangan                                               |
+| ---------------------- | ------------ | -------------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | Backend database: `postgresql` atau `mariadb`            |
+| `DATABASE_URL`         | —            | Dibangun oleh Compose dari pengaturan mesin yang dipilih |
+| `LOG_LEVEL`            | `info`       | Verbositas stream log runtime                            |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte)    |
+| `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan              |
+| `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)             |
+| `PORT`                 | `3000`       | Port HTTP                                                |
+| `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                     |
 
 Nilai default Docker dan penggantian penyiapan aktif tercantum langsung dalam file env di bawah `docker/env/`.

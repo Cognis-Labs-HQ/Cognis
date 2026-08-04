@@ -27,3 +27,7 @@ Die PostgreSQL- und MariaDB-Produktionsprofile für Compose weisen fehlende Date
 ## Umgebungsprofile ersetzen das veraltete Beispiel
 
 Das veraltete Umgebungsbeispiel im Repository-Stamm wurde entfernt. Die ausgewählten Dateien unter `docker/env/` und der übersetzte DevOps-Leitfaden bilden nun die vollständige Einrichtungsreferenz.
+
+## Compose erstellt Datenbank-Verbindungs-URLs
+
+Jedes Datenbankprofil verlangt nun die systemspezifischen Werte für Host, Port, Datenbank, Benutzername und Passwort und erstellt daraus `DATABASE_URL`. Die `.env` im Repository-Stamm verweist auf das gemeinsame Standardprofil, während der standardmäßige Compose-Link die bestunterstützte PostgreSQL-Bereitstellung auswählt.

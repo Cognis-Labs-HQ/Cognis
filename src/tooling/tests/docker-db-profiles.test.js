@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readlink } from "node:fs/promises";
 import test from "node:test";
 
 const profiles = [
@@ -9,6 +9,7 @@ const profiles = [
         setupEnv: "docker/env/postgres-production.env",
         image: "postgres:17-alpine",
         dbType: "postgresql",
+        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@${POSTGRES_HOST:?POSTGRES_HOST must be set}:${POSTGRES_PORT:?POSTGRES_PORT must be set}/${POSTGRES_DB:?POSTGRES_DB must be set}",
     },
     {
         compose: "docker-compose.postgres.dev.yaml",
@@ -16,6 +17,7 @@ const profiles = [
         setupEnv: "docker/env/postgres-development.env",
         image: "postgres:17-alpine",
         dbType: "postgresql",
+        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@${POSTGRES_HOST:?POSTGRES_HOST must be set}:${POSTGRES_PORT:?POSTGRES_PORT must be set}/${POSTGRES_DB:?POSTGRES_DB must be set}",
     },
     {
         compose: "docker-compose.mariadb.yaml",
@@ -23,6 +25,7 @@ const profiles = [
         setupEnv: "docker/env/mariadb-production.env",
         image: "mariadb:11",
         dbType: "mariadb",
+        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set}@${MARIADB_HOST:?MARIADB_HOST must be set}:${MARIADB_PORT:?MARIADB_PORT must be set}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set}",
     },
     {
         compose: "docker-compose.mariadb.dev.yaml",
@@ -30,6 +33,7 @@ const profiles = [
         setupEnv: "docker/env/mariadb-development.env",
         image: "mariadb:11",
         dbType: "mariadb",
+        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set}@${MARIADB_HOST:?MARIADB_HOST must be set}:${MARIADB_PORT:?MARIADB_PORT must be set}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set}",
     },
 ];
 
@@ -55,6 +59,13 @@ test("Docker Compose files do not interpolate database pool settings", async () 
     }
 });
 
+test("Docker database profiles construct URLs from required engine settings", async () => {
+    for (const profile of profiles) {
+        const compose = await readFile(profile.compose, "utf8");
+        assert.ok(compose.includes(`DATABASE_URL: ${profile.url}`));
+    }
+});
+
 test("production database profiles reject missing secrets", async () => {
     const postgresCompose = await readFile(
         "docker-compose.postgres.yaml",
@@ -67,7 +78,6 @@ test("production database profiles reject missing secrets", async () => {
 
     for (const requiredVariable of [
         "POSTGRES_PASSWORD",
-        "DATABASE_URL",
         "DATA_ENCRYPTION_KEY",
     ]) {
         assert.ok(
@@ -79,7 +89,6 @@ test("production database profiles reject missing secrets", async () => {
     for (const requiredVariable of [
         "MARIADB_PASSWORD",
         "MARIADB_ROOT_PASSWORD",
-        "DATABASE_URL",
         "DATA_ENCRYPTION_KEY",
     ]) {
         assert.ok(
@@ -88,4 +97,12 @@ test("production database profiles reject missing secrets", async () => {
             ),
         );
     }
+});
+
+test("default Docker links select shared defaults and PostgreSQL", async () => {
+    assert.equal(await readlink(".env"), "docker/env/default.env");
+    assert.equal(
+        await readlink("docker-compose.yaml"),
+        "docker-compose.postgres.yaml",
+    );
 });

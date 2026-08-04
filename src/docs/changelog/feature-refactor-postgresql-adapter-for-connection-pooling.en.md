@@ -27,3 +27,7 @@ The PostgreSQL and MariaDB production Compose profiles now reject missing databa
 ## Environment profiles replace the obsolete example
 
 The obsolete root environment example has been removed. The selected files under `docker/env/` and the translated DevOps guide now provide the complete setup reference.
+
+## Compose constructs database connection URLs
+
+Every database profile now requires its engine-specific host, port, database, username, and password values and constructs `DATABASE_URL` from them. The root `.env` links to the shared default profile, while the default Compose link selects the best-supported PostgreSQL deployment.

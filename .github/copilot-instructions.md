@@ -440,7 +440,7 @@ API sanity and security are paramount.
 
 ## Docker environment variables
 
-Application container defaults belong in the versioned files under `docker/env/`, not in `docker/Dockerfile` or inline Docker Compose fallback expressions. Keep common defaults in `defaults.env` and put environment-specific overrides in the corresponding setup file. Docker Compose files select the required env files through `env_file`.
+Application container defaults belong in the versioned files under `docker/env/`, not in `docker/Dockerfile` or inline Docker Compose fallback expressions. Keep common defaults in `default.env` and put environment-specific overrides in the corresponding setup file. Docker Compose files select the required env files through `env_file`.
 Every Docker environment-variable addition, removal, or rename must be synchronized with the Dockerfile, every Docker Compose file, and every applicable setup env file in the same change.
 
 ## Logging coverage requirements

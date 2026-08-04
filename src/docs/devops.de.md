@@ -32,11 +32,13 @@ CMD ["node", "src/api/main.js"]
 
 ### Umgebungsprofile
 
-Docker-Standardwerte liegen außerhalb des Images in `docker/env/defaults.env`. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien, die über `docker-compose.<treiber>.yaml` oder `docker-compose.<treiber>.dev.yaml` ausgewählt werden. Vor der Bereitstellung müssen die leeren treiberspezifischen Produktionszugangsdaten und der Verschlüsselungsschlüssel ausgefüllt werden. Die Produktions-Compose-Dateien verwenden Pflichtvariablen-Ausdrücke für Datenbankpasswörter, `DATABASE_URL` und `DATA_ENCRYPTION_KEY`, sodass Compose die Container erst erstellt, wenn alle Werte angegeben sind.
+Docker-Standardwerte liegen außerhalb des Images in `docker/env/default.env`, das mit der `.env` im Repository-Stamm verknüpft ist. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien. Compose verlangt Host, Port, Datenbank, Benutzername und Passwort des ausgewählten Systems und erstellt daraus `DATABASE_URL`. Produktionsprofile verlangen zusätzlich `DATA_ENCRYPTION_KEY`, sodass Container mit unvollständigen Einstellungen nicht erstellt werden.
 
 ```sh
-docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
-docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/development.env --env-file docker/env/mariadb-development.env -f docker-compose.mariadb.dev.yaml up
 ```
 
 ### GitHub Actions
@@ -47,15 +49,15 @@ docker compose --env-file docker/env/production.env --env-file docker/env/mariad
 
 ## Konfiguration
 
-| Variable               | Standard     | Beschreibung                                        |
-| ---------------------- | ------------ | --------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`      |
-| `DATABASE_URL`         | —            | Verbindungszeichenkette für PostgreSQL oder MariaDB |
-| `LOG_LEVEL`            | `info`       | Ausführlichkeit des Laufzeit-Logstreams             |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotiert die aktive Logdatei ab dieser Größe (Bytes) |
-| `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive    |
-| `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)          |
-| `PORT`                 | `3000`       | HTTP-Port                                           |
-| `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                |
+| Variable               | Standard     | Beschreibung                                                          |
+| ---------------------- | ------------ | --------------------------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                        |
+| `DATABASE_URL`         | —            | Wird von Compose aus den Einstellungen des gewählten Systems erstellt |
+| `LOG_LEVEL`            | `info`       | Ausführlichkeit des Laufzeit-Logstreams                               |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotiert die aktive Logdatei ab dieser Größe (Bytes)                   |
+| `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive                      |
+| `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)                            |
+| `PORT`                 | `3000`       | HTTP-Port                                                             |
+| `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                                  |
 
 Die aktiven Docker-Standardwerte und Einrichtungsüberschreibungen stehen direkt in den Env-Dateien unter `docker/env/`.

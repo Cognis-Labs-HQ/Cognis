@@ -31,11 +31,13 @@ CMD ["node", "src/api/main.js"]
 
 ### 環境プロファイル
 
-Dockerのデフォルト値はイメージ外の `docker/env/defaults.env` に保存されます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあり、対応する `docker-compose.<driver>.yaml` または `docker-compose.<driver>.dev.yaml` で選択します。デプロイ前に空のドライバー固有本番認証情報と暗号化キーを設定してください。 本番用Composeファイルでは、データベースパスワード、`DATABASE_URL`、`DATA_ENCRYPTION_KEY` に必須変数式を使用するため、すべての値を指定するまでComposeはコンテナを作成しません。
+Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeは選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを必須とし、それらから `DATABASE_URL` を構築します。本番プロファイルでは `DATA_ENCRYPTION_KEY` も必須のため、不完全な設定ではコンテナを作成できません。
 
 ```sh
-docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
-docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/development.env --env-file docker/env/mariadb-development.env -f docker-compose.mariadb.dev.yaml up
 ```
 
 ## 設定
@@ -43,7 +45,7 @@ docker compose --env-file docker/env/production.env --env-file docker/env/mariad
 | 変数                   | デフォルト   | 説明                                                    |
 | ---------------------- | ------------ | ------------------------------------------------------- |
 | `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb` |
-| `DATABASE_URL`         | —            | PostgreSQLまたはMariaDBの接続文字列                     |
+| `DATABASE_URL`         | —            | 選択したエンジン設定からComposeが構築                   |
 | `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター              |
 | `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション    |
 | `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数              |

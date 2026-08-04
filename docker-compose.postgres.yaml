@@ -25,12 +25,12 @@ services:
             dockerfile: docker/Dockerfile
         image: cognis:prod
         env_file:
-            - docker/env/defaults.env
+            - docker/env/default.env
             - docker/env/postgres.env
             - docker/env/production.env
             - docker/env/postgres-production.env
         environment:
-            DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+            DATABASE_URL: postgresql://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@${POSTGRES_HOST:?POSTGRES_HOST must be set}:${POSTGRES_PORT:?POSTGRES_PORT must be set}/${POSTGRES_DB:?POSTGRES_DB must be set}
             DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?DATA_ENCRYPTION_KEY must be set}
         volumes:
             - applogs:/app/logs

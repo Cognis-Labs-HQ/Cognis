@@ -36,11 +36,13 @@ CMD ["node", "src/api/main.js"]
 
 ### Environment profiles
 
-Docker defaults are kept outside the image in `docker/env/defaults.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files, selected by their corresponding `docker-compose.<driver>.yaml` or `docker-compose.<driver>.dev.yaml` file. Fill in the blank driver-specific production credentials and encryption key before deployment. Production Compose files use required-variable expressions for database passwords, `DATABASE_URL`, and `DATA_ENCRYPTION_KEY`, so Compose refuses to create the containers until every value is supplied.
+Docker defaults are kept outside the image in `docker/env/default.env`, which is linked to the root `.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files. Compose requires the selected engine's host, port, database, username, and password variables and constructs `DATABASE_URL` from them. Production profiles also require `DATA_ENCRYPTION_KEY`, so containers cannot be created with incomplete settings.
 
 ```sh
-docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
-docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up
+docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/development.env --env-file docker/env/mariadb-development.env -f docker-compose.mariadb.dev.yaml up
 ```
 
 ### GitHub Actions
@@ -77,7 +79,7 @@ Environment variables needed to run the application:
 | Variable                          | Default                        | Description                                                    |
 | --------------------------------- | ------------------------------ | -------------------------------------------------------------- |
 | `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb`                    |
-| `DATABASE_URL`                    | —                              | Connection string for PostgreSQL or MariaDB                    |
+| `DATABASE_URL`                    | —                              | Constructed by Compose from the selected engine settings       |
 | `MEDIA_LOCATION`                  | `/app/media`                   | Root directory for file uploads                                |
 | `LOG_LEVEL`                       | `info`                         | Runtime log-stream verbosity: `debug`, `info`, `warn`, `error` |
 | `LOG_FILE`                        | `/app/logs/app.log`            | Log file path inside the container                             |
