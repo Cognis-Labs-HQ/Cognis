@@ -38,4 +38,8 @@ Die Standardwerte für Host, Port, Datenbank, Benutzername und Pool von PostgreS
 
 ## Benutzerverwaltete Geheimnisdateien bleiben unversioniert
 
-Produktions-Env-Dateien mit Geheimnissen werden nun von Git ignoriert und besitzen versionierte `.example`-Vorlagen. Compose-Validierungsfehler nennen die genaue Profildatei, in der jeder fehlende Wert eingetragen werden muss.
+Produktions-Env-Dateien mit Geheimnissen werden nun von Git ignoriert und besitzen versionierte `.example`-Vorlagen. Validierungsfehler des Entrypoints nennen die genaue Profildatei, in der jeder fehlende Wert eingetragen werden muss.
+
+## Docker-Repository-Pfade sind relativ
+
+Zum Repository gehörende Docker-Laufzeitpfade werden nun relativ zum Arbeitsbaum des Images aufgelöst. Absolute Pfade bleiben nur dort bestehen, wo Docker Einhängeziele oder Speicherorte systemweit installierter Befehle verlangt.

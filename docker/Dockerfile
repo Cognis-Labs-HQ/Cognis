@@ -6,8 +6,8 @@ WORKDIR /app
 # Everything that requires root is done here so subsequent layers run as cognis.
 RUN groupadd --system cognis \
   && useradd --system --gid cognis --home-dir /home/cognis --create-home cognis \
-  && mkdir -p /app/logs /app/data /app/config /app/media/uploads \
-  && chown -R cognis:cognis /app
+  && mkdir -p logs data config media/uploads \
+  && chown -R cognis:cognis .
 
 # Install the entrypoint script, the cognisctl wrapper, and the healthcheck into PATH while still root.
 COPY --chmod=755 docker/cognisctl /usr/local/bin/cognisctl
@@ -30,6 +30,5 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["/usr/local/bin/healthcheck.sh"]
 
 STOPSIGNAL SIGTERM
-WORKDIR /app/dist/server
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD ["node", "src/api/main.js"]
+CMD ["node", "dist/server/src/api/main.js"]

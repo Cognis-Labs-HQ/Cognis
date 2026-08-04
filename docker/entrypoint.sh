@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-LOG_FILE_PATH="${LOG_FILE:-/app/logs/app.log}"
+LOG_FILE_PATH="${LOG_FILE:-logs/app.log}"
 SHUTDOWN_TIMEOUT_SECONDS=25
 DEFAULT_DATA_ENCRYPTION_KEY="not-secure-change-me"
 
