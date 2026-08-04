@@ -26,6 +26,8 @@
  * ```
  */
 
+import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
+
 function sortHooks(hooks) {
     return [...hooks].sort((left, right) => {
         const orderDiff = (left.order ?? 0) - (right.order ?? 0);
@@ -139,5 +141,9 @@ function createFlowEngine() {
 }
 
 export const uiCtx = createFlowEngine();
+
+for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
+    uiCtx.registerFlow(flowId, stages);
+}
 
 export const { registerFlow, extendFlow, runFlow, flowExists } = uiCtx;

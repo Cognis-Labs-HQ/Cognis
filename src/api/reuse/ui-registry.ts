@@ -5,6 +5,8 @@
  * labels, and script URLs returned here.
  */
 import type { RoleAccessPolicy } from "@cognis/core";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 export interface AdminSection {
     id: string;
@@ -108,6 +110,7 @@ export interface SettingsSection {
 }
 
 export class UIRegistry {
+    private readonly assetManifest: Record<string, string>;
     private readonly sections = new Map<string, AdminSection>();
     private readonly staticDirs = new Map<string, string>();
     private readonly adapterStaticDirs = new Map<string, string>();
@@ -117,6 +120,41 @@ export class UIRegistry {
     private readonly spaRoutes: SpaRoute[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
     private readonly settingsSections: SettingsSection[] = [];
+
+    constructor(manifestPath = process.env.COGNIS_UI_ASSET_MANIFEST) {
+        this.assetManifest = manifestPath
+            ? (JSON.parse(
+                  readFileSync(path.resolve(manifestPath), "utf8"),
+              ) as Record<string, string>)
+            : {};
+    }
+
+    resolveAssetUrl(assetUrl: string): string {
+        return this.assetManifest[assetUrl] ?? assetUrl;
+    }
+
+    listAssetManifest(): Record<string, string> {
+        return { ...this.assetManifest };
+    }
+
+    private resolveDescriptor<T>(descriptor: T): T {
+        if (Array.isArray(descriptor)) {
+            return descriptor.map((value) =>
+                this.resolveDescriptor(value),
+            ) as T;
+        }
+        if (descriptor && typeof descriptor === "object") {
+            return Object.fromEntries(
+                Object.entries(descriptor).map(([key, value]) => [
+                    key,
+                    typeof value === "string"
+                        ? this.resolveAssetUrl(value)
+                        : this.resolveDescriptor(value),
+                ]),
+            ) as T;
+        }
+        return descriptor;
+    }
 
     registerAdminSection(section: AdminSection): void {
         this.sections.set(section.id, section);
@@ -180,7 +218,7 @@ export class UIRegistry {
     }
 
     listAdminSections(): AdminSection[] {
-        return Array.from(this.sections.values());
+        return this.resolveDescriptor(Array.from(this.sections.values()));
     }
 
     getStaticDir(gatewayId: string): string | undefined {
@@ -236,15 +274,15 @@ export class UIRegistry {
      * empty array when no extensions have been registered for that page.
      */
     listPageExtensions(pageId: string): PageElement[] {
-        return this.pageExtensions.get(pageId) ?? [];
+        return this.resolveDescriptor(this.pageExtensions.get(pageId) ?? []);
     }
 
     listNavbarPlugins(): NavbarPlugin[] {
-        return [...this.navbarPlugins];
+        return this.resolveDescriptor([...this.navbarPlugins]);
     }
 
     listSpaRoutes(): SpaRoute[] {
-        return [...this.spaRoutes];
+        return this.resolveDescriptor([...this.spaRoutes]);
     }
 
     listAuthTypingMessages(): AuthTypingMessage[] {
@@ -252,6 +290,6 @@ export class UIRegistry {
     }
 
     listSettingsSections(): SettingsSection[] {
-        return [...this.settingsSections];
+        return this.resolveDescriptor([...this.settingsSections]);
     }
 }

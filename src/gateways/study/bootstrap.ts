@@ -255,6 +255,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             gateway,
             capabilities: ctx.capabilities,
             gatewayRegistry: ctx.gatewayRegistry,
+            flow: ctx.flow,
             registerRoute: (handler, gatewayId) =>
                 ctx.routeRegistry.register(handler, gatewayId ?? "study"),
             registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
@@ -382,7 +383,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.5.7",
+        version: "1.5.9",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs HQ",

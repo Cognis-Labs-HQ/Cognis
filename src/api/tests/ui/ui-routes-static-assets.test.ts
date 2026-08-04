@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
+import { brotliCompressSync, gzipSync } from "node:zlib";
+import { readFile, rm, writeFile } from "node:fs/promises";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
@@ -20,6 +22,110 @@ test("GET /static/reuse/ rejects directories before committing a response", asyn
     assert.equal(recorder.writeHeadCalls, 1);
     assert.deepEqual(JSON.parse(recorder.body), {
         error: { code: "not_found", message: "Asset not found." },
+    });
+});
+
+test("versioned text assets negotiate Brotli with MIME and immutable caching", async () => {
+    const sourcePath = path.resolve("src/ui/reuse/api-client.js");
+    const compressedPath = `${sourcePath}.br`;
+    await writeFile(
+        compressedPath,
+        brotliCompressSync(await readFile(sourcePath)),
+    );
+    try {
+        const route = createUiRoutes();
+        const recorder = createResponseRecorder();
+        await route(
+            { headers: { "accept-encoding": "br, gzip" } } as any,
+            recorder.res as any,
+            new URL(
+                "http://localhost/static/reuse/api-client.js?v=development",
+            ),
+        );
+
+        assert.equal(recorder.status, 200);
+        assert.equal(recorder.headers["content-encoding"], "br");
+        assert.equal(recorder.headers.vary, "Accept-Encoding");
+        assert.equal(
+            recorder.headers["content-type"],
+            "text/javascript; charset=utf-8",
+        );
+        assert.equal(
+            recorder.headers["cache-control"],
+            "public, max-age=31536000, immutable",
+        );
+    } finally {
+        await rm(compressedPath, { force: true });
+    }
+});
+
+test("precompressed assets exclude encodings with a zero quality value", async () => {
+    const sourcePath = path.resolve("src/ui/reuse/api-client.js");
+    const brotliPath = `${sourcePath}.br`;
+    const gzipPath = `${sourcePath}.gz`;
+    const source = await readFile(sourcePath);
+    await Promise.all([
+        writeFile(brotliPath, brotliCompressSync(source)),
+        writeFile(gzipPath, gzipSync(source)),
+    ]);
+    try {
+        const route = createUiRoutes();
+        const recorder = createResponseRecorder();
+        await route(
+            { headers: { "accept-encoding": "br;q=0, gzip;q=0.5" } } as any,
+            recorder.res as any,
+            new URL(
+                "http://localhost/static/reuse/api-client.js?v=development",
+            ),
+        );
+
+        assert.equal(recorder.status, 200);
+        assert.equal(recorder.headers["content-encoding"], "gzip");
+    } finally {
+        await Promise.all([
+            rm(brotliPath, { force: true }),
+            rm(gzipPath, { force: true }),
+        ]);
+    }
+});
+
+test("source assets use identity encoding when precompressed files are absent", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+    await route(
+        { headers: { "accept-encoding": "br, gzip" } } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/reuse/escape-html.js"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.equal(recorder.headers["content-encoding"], undefined);
+    assert.equal(
+        recorder.headers["content-type"],
+        "text/javascript; charset=utf-8",
+    );
+});
+
+test("source assets reject requests that exclude every available encoding", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+    await route(
+        {
+            headers: {
+                "accept-encoding": "identity;q=0, br;q=0, gzip;q=0",
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/reuse/escape-html.js"),
+    );
+
+    assert.equal(recorder.status, 406);
+    assert.equal(recorder.headers.vary, "Accept-Encoding");
+    assert.deepEqual(JSON.parse(recorder.body), {
+        error: {
+            code: "not_acceptable",
+            message: "No acceptable asset encoding is available.",
+        },
     });
 });
 

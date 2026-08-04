@@ -6,7 +6,7 @@ import { readFileSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-const FLOW_REGISTRY_PATH = resolve(ROOT, "src/ui/reuse/flow-registry.js");
+const FLOW_REGISTRY_PATH = resolve(ROOT, "src/ui/reuse/flow-contracts.js");
 const CATALOG_PATH = resolve(ROOT, "src/ui/reuse/page-flow-catalog.js");
 const AUTH_HOOKS_PATH = resolve(
     ROOT,
@@ -17,12 +17,12 @@ const SHARE_HOOKS_PATH = resolve(
     "src/gateways/share/ui/session-flow-hooks.js",
 );
 
-test("flow-registry.js declares authenticate-session with the required stages", () => {
+test("flow-contracts.js declares authenticate-session with the required stages", () => {
     const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
         src,
-        /registerFlow\(["']authenticate-session["']/,
-        "flow-registry.js must register the authenticate-session flow",
+        /["']authenticate-session["']\s*:/,
+        "flow-contracts.js must declare the authenticate-session flow",
     );
     assert.match(
         src,
@@ -46,12 +46,12 @@ test("flow-registry.js declares authenticate-session with the required stages", 
     );
 });
 
-test("flow-registry.js declares navigate-to with the required stages", () => {
+test("flow-contracts.js declares navigate-to with the required stages", () => {
     const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
         src,
-        /registerFlow\(["']navigate-to["']/,
-        "flow-registry.js must register the navigate-to flow",
+        /["']navigate-to["']\s*:/,
+        "flow-contracts.js must declare the navigate-to flow",
     );
     assert.match(
         src,
@@ -70,12 +70,12 @@ test("flow-registry.js declares navigate-to with the required stages", () => {
     );
 });
 
-test("flow-registry.js declares load-page with the required stages", () => {
+test("flow-contracts.js declares load-page with the required stages", () => {
     const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
         src,
-        /registerFlow\(["']load-page["']/,
-        "flow-registry.js must register the load-page flow",
+        /["']load-page["']\s*:/,
+        "flow-contracts.js must declare the load-page flow",
     );
     assert.match(
         src,
@@ -85,17 +85,17 @@ test("flow-registry.js declares load-page with the required stages", () => {
     assert.match(src, /mount-page/, "load-page must include mount-page stage");
 });
 
-test("flow-registry.js declares the post-login account setup flow", () => {
+test("flow-contracts.js declares the post-login account setup flow", () => {
     const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     assert.match(
         src,
-        /uiCtx\.registerFlow\("complete-login", \["setup-account-services"\]\)/,
+        /["']complete-login["']\s*:\s*Object\.freeze\(\["setup-account-services"\]\)/,
     );
 });
 
-test("flow-registry.js declares search with component and settings index stages", () => {
+test("flow-contracts.js declares search with component and settings index stages", () => {
     const src = readFileSync(FLOW_REGISTRY_PATH, "utf8");
-    assert.match(src, /registerFlow\(["']search["']/);
+    assert.match(src, /search\s*:\s*Object\.freeze/);
     assert.match(src, /visible-indexes/);
     assert.match(src, /component-indexes/);
     assert.match(src, /settings-index/);
@@ -247,10 +247,11 @@ test("share session-flow-hooks.js defaults guest share chrome to hidden", () => 
 });
 
 test("page actions can defer popup work until mounting has completed", () => {
+    const contractsSource = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     const registrySource = readFileSync(
         resolve(ROOT, "src/ui/reuse/flow-registry.js"),
         "utf8",
     );
-    assert.match(registrySource, /registerFlow\("defer-page-action"/);
+    assert.match(contractsSource, /["']defer-page-action["']\s*:/);
     assert.match(registrySource, /setTimeout\(\(\) => void action\(\), 0\)/);
 });

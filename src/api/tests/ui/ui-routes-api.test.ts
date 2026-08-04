@@ -158,7 +158,10 @@ test("GET /api/v1/ui/navbar-plugins filters plugins by access policy", async () 
         adminPayload.data.map(
             (plugin: { scriptUrl: string }) => plugin.scriptUrl,
         ),
-        ["/static/gateways/user/navbar.js?v=development", "/static/gateways/admin/navbar.js?v=development"],
+        [
+            "/static/gateways/user/navbar.js?v=development",
+            "/static/gateways/admin/navbar.js?v=development",
+        ],
     );
 
     const ownerToken = issueAccessToken("u2", "owner", 60);
