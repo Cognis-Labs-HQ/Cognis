@@ -24,6 +24,10 @@ services:
         image: cognis:prod
         environment:
             - DATABASE_URL=postgresql://${POSTGRES_USER:-cognis}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@db:5432/${POSTGRES_DB:-cognis}
+            - POSTGRES_POOL_MAX=${POSTGRES_POOL_MAX}
+            - POSTGRES_POOL_IDLE_TIMEOUT_MS=${POSTGRES_POOL_IDLE_TIMEOUT_MS}
+            - POSTGRES_POOL_CONNECTION_TIMEOUT_MS=${POSTGRES_POOL_CONNECTION_TIMEOUT_MS}
+            - POSTGRES_POOL_STATEMENT_TIMEOUT_MS=${POSTGRES_POOL_STATEMENT_TIMEOUT_MS}
             - DATA_ENCRYPTION_KEY
             - HOST
             - EXTERNAL_HOST

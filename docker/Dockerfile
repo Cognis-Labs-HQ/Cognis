@@ -24,6 +24,7 @@ RUN npm run build && npm run check:ui-build && npm run check:server-build
 
 EXPOSE 3000
 
+# Keep environment-variable changes synchronized with every Docker Compose file.
 ENV NODE_ENV=production
 ENV COGNIS_ASSET_VERSION=${COGNIS_ASSET_VERSION}
 ENV COGNIS_UI_ASSET_MANIFEST=/app/dist/ui/asset-manifest.json

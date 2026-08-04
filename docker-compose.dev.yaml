@@ -28,6 +28,10 @@ services:
             - NODE_ENV=development
             - COGNIS_UI_DEMO_MODE=1
             - DATABASE_URL=postgresql://${POSTGRES_USER:-cognis}:${POSTGRES_PASSWORD:-cognis}@db:5432/${POSTGRES_DB:-cognis}
+            - POSTGRES_POOL_MAX=${POSTGRES_POOL_MAX}
+            - POSTGRES_POOL_IDLE_TIMEOUT_MS=${POSTGRES_POOL_IDLE_TIMEOUT_MS}
+            - POSTGRES_POOL_CONNECTION_TIMEOUT_MS=${POSTGRES_POOL_CONNECTION_TIMEOUT_MS}
+            - POSTGRES_POOL_STATEMENT_TIMEOUT_MS=${POSTGRES_POOL_STATEMENT_TIMEOUT_MS}
             # Required in dev too; define it in .env (see env.example).
             - DATA_ENCRYPTION_KEY
             - HOST
