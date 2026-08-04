@@ -50,3 +50,5 @@ docker compose --env-file docker/env/production.env --env-file docker/env/mariad
 | `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮              |
 | `PORT`                 | `3000`       | HTTPポート                                              |
 | `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                  |
+
+有効なDockerデフォルト値とセットアップ上書き値は、`docker/env/` 配下のEnvファイルに直接記載されています。

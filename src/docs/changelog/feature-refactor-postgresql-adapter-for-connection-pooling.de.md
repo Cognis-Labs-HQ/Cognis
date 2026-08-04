@@ -23,3 +23,7 @@ PostgreSQL und MariaDB besitzen nun getrennte Produktions- und Entwicklungsdatei
 ## Produktionscontainer benötigen Geheimnisse vor dem Start
 
 Die PostgreSQL- und MariaDB-Produktionsprofile für Compose weisen fehlende Datenbankpasswörter, Verbindungs-URLs und Datenverschlüsselungsschlüssel zurück, bevor ein Container erstellt wird.
+
+## Umgebungsprofile ersetzen das veraltete Beispiel
+
+Das veraltete Umgebungsbeispiel im Repository-Stamm wurde entfernt. Die ausgewählten Dateien unter `docker/env/` und der übersetzte DevOps-Leitfaden bilden nun die vollständige Einrichtungsreferenz.

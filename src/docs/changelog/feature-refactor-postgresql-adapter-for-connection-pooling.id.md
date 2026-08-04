@@ -23,3 +23,7 @@ PostgreSQL dan MariaDB kini memiliki file Compose dan lingkungan produksi serta 
 ## Container produksi memerlukan rahasia sebelum dimulai
 
 Profil Compose produksi PostgreSQL dan MariaDB kini menolak kata sandi database, URL koneksi, dan kunci enkripsi data yang belum diberikan sebelum container dibuat.
+
+## Profil lingkungan menggantikan contoh lama
+
+Contoh lingkungan lama di root repositori telah dihapus. File yang dipilih di bawah `docker/env/` dan panduan DevOps yang diterjemahkan kini menjadi referensi penyiapan lengkap.

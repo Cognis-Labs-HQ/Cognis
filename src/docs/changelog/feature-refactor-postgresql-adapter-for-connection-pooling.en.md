@@ -23,3 +23,7 @@ PostgreSQL and MariaDB now have separate production and development Compose and 
 ## Production containers require secrets before startup
 
 The PostgreSQL and MariaDB production Compose profiles now reject missing database passwords, connection URLs, and data-encryption keys before any container is created.
+
+## Environment profiles replace the obsolete example
+
+The obsolete root environment example has been removed. The selected files under `docker/env/` and the translated DevOps guide now provide the complete setup reference.

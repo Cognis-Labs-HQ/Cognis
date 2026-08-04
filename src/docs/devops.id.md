@@ -50,3 +50,5 @@ docker compose --env-file docker/env/production.env --env-file docker/env/mariad
 | `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)          |
 | `PORT`                 | `3000`       | Port HTTP                                             |
 | `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                  |
+
+Nilai default Docker dan penggantian penyiapan aktif tercantum langsung dalam file env di bawah `docker/env/`.

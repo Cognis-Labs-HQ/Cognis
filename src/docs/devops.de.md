@@ -57,3 +57,5 @@ docker compose --env-file docker/env/production.env --env-file docker/env/mariad
 | `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)          |
 | `PORT`                 | `3000`       | HTTP-Port                                           |
 | `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                |
+
+Die aktiven Docker-Standardwerte und Einrichtungsüberschreibungen stehen direkt in den Env-Dateien unter `docker/env/`.

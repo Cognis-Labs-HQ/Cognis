@@ -95,4 +95,4 @@ Environment variables needed to run the application:
 | `COGNIS_SMTP_HOST`                | —                              | SMTP server hostname; enables the SMTP notification adapter    |
 | `COGNIS_UI_DEMO_MODE`             | `0`                            | Set to `1` to enable pre-populated example data                |
 
-The active Docker defaults and setup overrides are listed in the env files under `docker/env/`; `env.example` explains how those profiles are selected.
+The active Docker defaults and setup overrides are listed directly in the env files under `docker/env/`.
