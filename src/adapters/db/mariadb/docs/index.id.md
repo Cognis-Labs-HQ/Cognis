@@ -2,7 +2,7 @@
 
 ## Ikhtisar
 
-Adapter MariaDB menghubungkan Cognis ke server database MariaDB (atau MySQL), cocok untuk deployment multi-server atau ketersediaan tinggi. Adapter ini menggunakan driver npm `mariadb` dan connection pooling. Diaktifkan dengan `DB_TYPE=mariadb`.
+Adapter MariaDB menghubungkan Cognis ke server database MariaDB (atau MySQL), cocok untuk deployment multi-server atau ketersediaan tinggi. Adapter ini menggunakan driver npm `mysql2` dan connection pooling. Diaktifkan dengan `DB_TYPE=mariadb`.
 
 ## Tanggung Jawab
 
@@ -12,7 +12,7 @@ Adapter MariaDB menghubungkan Cognis ke server database MariaDB (atau MySQL), co
 
 ## Arsitektur
 
-`MariaDbGateway` di `src/adapters/db/mariadb/adapter.ts` membuat connection pool saat startup.
+`MariaDbGateway` di `src/adapters/db/mariadb/index.ts` memiliki promise pool `mysql2`. Kueri biasa dijalankan langsung melalui pool. Transaksi mencadangkan satu koneksi untuk callback, melakukan commit atau rollback pada koneksi tersebut, lalu melepaskannya dalam blok `finally`. Adapter mendaftarkan pengosongan pool melalui kapabilitas ctx `system:lifecycle`.
 
 ### Sintaks Placeholder
 
@@ -22,7 +22,10 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 
 ## Konfigurasi
 
-| Variabel       | Default | Keterangan                                                       |
-| -------------- | ------- | ---------------------------------------------------------------- |
-| `DB_TYPE`      | —       | Harus `mariadb` untuk mengaktifkan adapter ini                   |
-| `DATABASE_URL` | —       | URL koneksi MariaDB, mis. `mariadb://user:pass@host:3306/cognis` |
+| Variabel                             | Default | Keterangan                                                       |
+| ------------------------------------ | ------- | ---------------------------------------------------------------- |
+| `DB_TYPE`                            | —       | Harus `mariadb` untuk mengaktifkan adapter ini                   |
+| `DATABASE_URL`                       | —       | URL koneksi MariaDB, mis. `mariadb://user:pass@host:3306/cognis` |
+| `MARIADB_POOL_MAX`                   | `10`    | Ukuran maksimum pool (1–100)                                     |
+| `MARIADB_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu koneksi menganggur dalam milidetik (1.000–600.000)   |
+| `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                |

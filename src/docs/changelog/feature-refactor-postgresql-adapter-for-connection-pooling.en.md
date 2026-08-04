@@ -11,3 +11,7 @@ The PostgreSQL adapter registers pool shutdown through the ctx lifecycle capabil
 ## Docker setups now use explicit environment profiles
 
 Shared, PostgreSQL, development, and production env files now carry container defaults. Compose selects the appropriate profiles without interpolating unset pool variables, eliminating blank-variable warnings.
+
+## MariaDB now uses equivalent connection pooling
+
+The MariaDB adapter now uses a bounded `mysql2` pool for concurrent queries, pins transactions to one connection, drains during lifecycle shutdown, and supports bounded maximum-size, idle-timeout, and connection-timeout settings.

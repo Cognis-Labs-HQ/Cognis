@@ -3,6 +3,7 @@ import type { BootstrapLog } from "@cognis/core";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import { readBoundedEnvironmentInteger } from "../../../gateways/db/reuse/pool-settings.js";
 import {
     buildDbErrorMeta,
     summarizeStatement,
@@ -44,39 +45,22 @@ export interface PostgresPoolSettings {
     statement_timeout?: number;
 }
 
-function readBoundedInteger(
-    name: string,
-    defaultValue: number,
-    minimum: number,
-    maximum: number,
-): number {
-    const rawValue = process.env[name];
-    if (rawValue === undefined || rawValue === "") return defaultValue;
-    const value = Number(rawValue);
-    if (!Number.isInteger(value) || value < minimum || value > maximum) {
-        throw new Error(
-            `${name} must be an integer between ${minimum} and ${maximum}`,
-        );
-    }
-    return value;
-}
-
 export function readPostgresPoolSettings(): PostgresPoolSettings {
-    const statementTimeout = readBoundedInteger(
+    const statementTimeout = readBoundedEnvironmentInteger(
         "POSTGRES_POOL_STATEMENT_TIMEOUT_MS",
         0,
         0,
         3_600_000,
     );
     return {
-        max: readBoundedInteger("POSTGRES_POOL_MAX", 10, 1, 100),
-        idleTimeoutMillis: readBoundedInteger(
+        max: readBoundedEnvironmentInteger("POSTGRES_POOL_MAX", 10, 1, 100),
+        idleTimeoutMillis: readBoundedEnvironmentInteger(
             "POSTGRES_POOL_IDLE_TIMEOUT_MS",
             30_000,
             1_000,
             600_000,
         ),
-        connectionTimeoutMillis: readBoundedInteger(
+        connectionTimeoutMillis: readBoundedEnvironmentInteger(
             "POSTGRES_POOL_CONNECTION_TIMEOUT_MS",
             5_000,
             100,

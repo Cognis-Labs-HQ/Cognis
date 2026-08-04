@@ -11,3 +11,7 @@ Adapter PostgreSQL mendaftarkan penutupan pool melalui kapabilitas siklus hidup 
 ## Penyiapan Docker kini memakai profil lingkungan yang jelas
 
 File env bersama, PostgreSQL, pengembangan, dan produksi kini menyimpan nilai default container. Compose memilih profil yang sesuai tanpa menginterpolasi variabel pool yang belum diatur sehingga peringatan variabel kosong hilang.
+
+## MariaDB kini menggunakan connection pooling yang setara
+
+Adapter MariaDB kini menggunakan pool `mysql2` terbatas untuk kueri serentak, mengikat transaksi ke satu koneksi, mengosongkan pool saat penghentian, dan mendukung pengaturan terbatas untuk ukuran maksimum serta batas waktu menganggur dan koneksi.
