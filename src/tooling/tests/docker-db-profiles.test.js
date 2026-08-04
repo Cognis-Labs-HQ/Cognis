@@ -54,3 +54,38 @@ test("Docker Compose files do not interpolate database pool settings", async () 
         assert.doesNotMatch(compose, /\$\{(?:POSTGRES|MARIADB)_POOL_/);
     }
 });
+
+test("production database profiles reject missing secrets", async () => {
+    const postgresCompose = await readFile(
+        "docker-compose.postgres.yaml",
+        "utf8",
+    );
+    const mariaDbCompose = await readFile(
+        "docker-compose.mariadb.yaml",
+        "utf8",
+    );
+
+    for (const requiredVariable of [
+        "POSTGRES_PASSWORD",
+        "DATABASE_URL",
+        "DATA_ENCRYPTION_KEY",
+    ]) {
+        assert.ok(
+            postgresCompose.includes(
+                `\${${requiredVariable}:?${requiredVariable} must be set}`,
+            ),
+        );
+    }
+    for (const requiredVariable of [
+        "MARIADB_PASSWORD",
+        "MARIADB_ROOT_PASSWORD",
+        "DATABASE_URL",
+        "DATA_ENCRYPTION_KEY",
+    ]) {
+        assert.ok(
+            mariaDbCompose.includes(
+                `\${${requiredVariable}:?${requiredVariable} must be set}`,
+            ),
+        );
+    }
+});

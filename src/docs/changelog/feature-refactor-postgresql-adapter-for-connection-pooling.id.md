@@ -19,3 +19,7 @@ Adapter MariaDB kini menggunakan pool `mysql2` terbatas untuk kueri serentak, me
 ## Profil Docker kini memilih driver database
 
 PostgreSQL dan MariaDB kini memiliki file Compose dan lingkungan produksi serta pengembangan yang terpisah. Administrasi hanya menandai adapter database yang dikonfigurasi sebagai aktif, mengunci semua tombol driver, dan menjelaskan pengelolaan Docker pada judul gateway database.
+
+## Container produksi memerlukan rahasia sebelum dimulai
+
+Profil Compose produksi PostgreSQL dan MariaDB kini menolak kata sandi database, URL koneksi, dan kunci enkripsi data yang belum diberikan sebelum container dibuat.

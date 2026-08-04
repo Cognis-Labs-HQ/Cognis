@@ -31,7 +31,12 @@ CMD ["node", "src/api/main.js"]
 
 ### 環境プロファイル
 
-Dockerのデフォルト値はイメージ外の `docker/env/defaults.env` に保存されます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあり、対応する `docker-compose.<driver>.yaml` または `docker-compose.<driver>.dev.yaml` で選択します。デプロイ前に空のドライバー固有本番認証情報と暗号化キーを設定してください。
+Dockerのデフォルト値はイメージ外の `docker/env/defaults.env` に保存されます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあり、対応する `docker-compose.<driver>.yaml` または `docker-compose.<driver>.dev.yaml` で選択します。デプロイ前に空のドライバー固有本番認証情報と暗号化キーを設定してください。 本番用Composeファイルでは、データベースパスワード、`DATABASE_URL`、`DATA_ENCRYPTION_KEY` に必須変数式を使用するため、すべての値を指定するまでComposeはコンテナを作成しません。
+
+```sh
+docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+```
 
 ## 設定
 

@@ -19,3 +19,7 @@ The MariaDB adapter now uses a bounded `mysql2` pool for concurrent queries, pin
 ## Docker profiles now select the database driver
 
 PostgreSQL and MariaDB now have separate production and development Compose and env files. Administration marks only the configured database adapter active, locks every driver toggle, and explains Docker ownership in the database gateway heading.
+
+## Production containers require secrets before startup
+
+The PostgreSQL and MariaDB production Compose profiles now reject missing database passwords, connection URLs, and data-encryption keys before any container is created.

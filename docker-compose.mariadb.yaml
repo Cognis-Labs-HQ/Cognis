@@ -5,6 +5,9 @@ services:
             - docker/env/mariadb.env
             - docker/env/production.env
             - docker/env/mariadb-production.env
+        environment:
+            MARIADB_PASSWORD: ${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set}
+            MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?MARIADB_ROOT_PASSWORD must be set}
         volumes:
             - mariadb-data:/var/lib/mysql
         healthcheck:
@@ -23,6 +26,9 @@ services:
             - docker/env/mariadb.env
             - docker/env/production.env
             - docker/env/mariadb-production.env
+        environment:
+            DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set}
+            DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?DATA_ENCRYPTION_KEY must be set}
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config

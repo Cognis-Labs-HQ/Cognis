@@ -32,7 +32,12 @@ CMD ["node", "src/api/main.js"]
 
 ### Umgebungsprofile
 
-Docker-Standardwerte liegen außerhalb des Images in `docker/env/defaults.env`. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien, die über `docker-compose.<treiber>.yaml` oder `docker-compose.<treiber>.dev.yaml` ausgewählt werden. Vor der Bereitstellung müssen die leeren treiberspezifischen Produktionszugangsdaten und der Verschlüsselungsschlüssel ausgefüllt werden.
+Docker-Standardwerte liegen außerhalb des Images in `docker/env/defaults.env`. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien, die über `docker-compose.<treiber>.yaml` oder `docker-compose.<treiber>.dev.yaml` ausgewählt werden. Vor der Bereitstellung müssen die leeren treiberspezifischen Produktionszugangsdaten und der Verschlüsselungsschlüssel ausgefüllt werden. Die Produktions-Compose-Dateien verwenden Pflichtvariablen-Ausdrücke für Datenbankpasswörter, `DATABASE_URL` und `DATA_ENCRYPTION_KEY`, sodass Compose die Container erst erstellt, wenn alle Werte angegeben sind.
+
+```sh
+docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+```
 
 ### GitHub Actions
 

@@ -19,3 +19,7 @@ Der MariaDB-Adapter verwendet nun einen begrenzten `mysql2`-Pool für gleichzeit
 ## Docker-Profile wählen jetzt den Datenbanktreiber
 
 PostgreSQL und MariaDB besitzen nun getrennte Produktions- und Entwicklungsdateien für Compose und Umgebungsvariablen. Die Administration markiert nur den konfigurierten Datenbankadapter als aktiv, sperrt alle Treiberschalter und erklärt die Docker-Zuständigkeit in der Überschrift des Datenbank-Gateways.
+
+## Produktionscontainer benötigen Geheimnisse vor dem Start
+
+Die PostgreSQL- und MariaDB-Produktionsprofile für Compose weisen fehlende Datenbankpasswörter, Verbindungs-URLs und Datenverschlüsselungsschlüssel zurück, bevor ein Container erstellt wird.

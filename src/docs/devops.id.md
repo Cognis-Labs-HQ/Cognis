@@ -31,7 +31,12 @@ CMD ["node", "src/api/main.js"]
 
 ### Profil lingkungan
 
-Nilai default Docker disimpan di luar image dalam `docker/env/defaults.env`. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah, yang dipilih melalui `docker-compose.<driver>.yaml` atau `docker-compose.<driver>.dev.yaml`. Isi kredensial produksi khusus driver dan kunci enkripsi yang kosong sebelum deployment.
+Nilai default Docker disimpan di luar image dalam `docker/env/defaults.env`. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah, yang dipilih melalui `docker-compose.<driver>.yaml` atau `docker-compose.<driver>.dev.yaml`. Isi kredensial produksi khusus driver dan kunci enkripsi yang kosong sebelum deployment. File Compose produksi menggunakan ekspresi variabel wajib untuk kata sandi database, `DATABASE_URL`, dan `DATA_ENCRYPTION_KEY`, sehingga Compose menolak membuat container sampai semua nilai diberikan.
+
+```sh
+docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+```
 
 ## Konfigurasi
 

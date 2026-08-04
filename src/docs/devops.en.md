@@ -36,7 +36,12 @@ CMD ["node", "src/api/main.js"]
 
 ### Environment profiles
 
-Docker defaults are kept outside the image in `docker/env/defaults.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files, selected by their corresponding `docker-compose.<driver>.yaml` or `docker-compose.<driver>.dev.yaml` file. Fill in the blank driver-specific production credentials and encryption key before deployment.
+Docker defaults are kept outside the image in `docker/env/defaults.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files, selected by their corresponding `docker-compose.<driver>.yaml` or `docker-compose.<driver>.dev.yaml` file. Fill in the blank driver-specific production credentials and encryption key before deployment. Production Compose files use required-variable expressions for database passwords, `DATABASE_URL`, and `DATA_ENCRYPTION_KEY`, so Compose refuses to create the containers until every value is supplied.
+
+```sh
+docker compose --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
+docker compose --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
+```
 
 ### GitHub Actions
 
