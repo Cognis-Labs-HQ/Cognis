@@ -25,6 +25,67 @@ export interface PostgresClient {
         sql: string,
         params?: unknown[],
     ): Promise<PostgresQueryResult<Row>>;
+    release(): void;
+}
+
+export interface PostgresPool {
+    query<Row = Record<string, unknown>>(
+        sql: string,
+        params?: unknown[],
+    ): Promise<PostgresQueryResult<Row>>;
+    connect(): Promise<PostgresClient>;
+    end(): Promise<void>;
+}
+
+export interface PostgresPoolSettings {
+    max: number;
+    idleTimeoutMillis: number;
+    connectionTimeoutMillis: number;
+    statement_timeout?: number;
+}
+
+function readBoundedInteger(
+    name: string,
+    defaultValue: number,
+    minimum: number,
+    maximum: number,
+): number {
+    const rawValue = process.env[name];
+    if (rawValue === undefined || rawValue === "") return defaultValue;
+    const value = Number(rawValue);
+    if (!Number.isInteger(value) || value < minimum || value > maximum) {
+        throw new Error(
+            `${name} must be an integer between ${minimum} and ${maximum}`,
+        );
+    }
+    return value;
+}
+
+export function readPostgresPoolSettings(): PostgresPoolSettings {
+    const statementTimeout = readBoundedInteger(
+        "POSTGRES_POOL_STATEMENT_TIMEOUT_MS",
+        0,
+        0,
+        3_600_000,
+    );
+    return {
+        max: readBoundedInteger("POSTGRES_POOL_MAX", 10, 1, 100),
+        idleTimeoutMillis: readBoundedInteger(
+            "POSTGRES_POOL_IDLE_TIMEOUT_MS",
+            30_000,
+            1_000,
+            600_000,
+        ),
+        connectionTimeoutMillis: readBoundedInteger(
+            "POSTGRES_POOL_CONNECTION_TIMEOUT_MS",
+            5_000,
+            100,
+            120_000,
+        ),
+        ...(statementTimeout > 0
+            ? { statement_timeout: statementTimeout }
+            : {}),
+    };
 }
 
 const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
@@ -58,7 +119,10 @@ const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
 };
 
 export class PostgresDbGateway implements DatabaseGateway {
-    constructor(private readonly client: PostgresClient) {}
+    constructor(
+        private readonly pool: PostgresPool,
+        private readonly log?: BootstrapLog,
+    ) {}
 
     async executeCommand<Row = Record<string, unknown>>(
         command: StructuredDbCommand,
@@ -67,7 +131,7 @@ export class PostgresDbGateway implements DatabaseGateway {
             command,
             POSTGRESQL_STRUCTURED_DB_DIALECT,
         );
-        const result = await this.client.query<Row>(
+        const result = await this.pool.query<Row>(
             statement.sql,
             statement.params,
         );
@@ -78,7 +142,7 @@ export class PostgresDbGateway implements DatabaseGateway {
         statement: string,
         params?: unknown[],
     ): Promise<QueryResult<Row>> {
-        const result = await this.client.query<Row>(statement, params);
+        const result = await this.pool.query<Row>(statement, params);
         return { rows: result.rows, rowCount: result.rowCount };
     }
 
@@ -86,71 +150,66 @@ export class PostgresDbGateway implements DatabaseGateway {
         statement: string,
         params?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        const result = await this.client.query(statement, params);
+        const result = await this.pool.query(statement, params);
         return { affectedRows: result.rowCount ?? 0 };
     }
 
     async transaction<T>(
         callback: (db: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
-        await this.client.query("BEGIN");
+        const client = await this.pool.connect();
+        const transactionGateway = new PostgresDbGateway(
+            {
+                query: client.query.bind(client),
+                connect: async () => client,
+                end: async () => undefined,
+            },
+            this.log,
+        );
         try {
-            const result = await callback(this);
-            await this.client.query("COMMIT");
+            await client.query("BEGIN");
+            const result = await callback(transactionGateway);
+            await client.query("COMMIT");
             return result;
         } catch (error) {
-            await this.client.query("ROLLBACK");
+            writeDbLog(this.log, "error", "PostgreSQL transaction failed.", {
+                component: "db",
+                provider: "postgresql",
+                ...buildDbErrorMeta(error),
+            });
+            try {
+                await client.query("ROLLBACK");
+            } catch (rollbackError) {
+                writeDbLog(this.log, "error", "PostgreSQL rollback failed.", {
+                    component: "db",
+                    provider: "postgresql",
+                    ...buildDbErrorMeta(rollbackError),
+                });
+            }
             throw error;
+        } finally {
+            client.release();
         }
     }
 }
 
 class PostgresExecutor implements RawDbExecutor {
-    private clientPromise: Promise<PostgresClient> | null = null;
-
     constructor(
-        private readonly databaseUrl: string,
+        private readonly pool: PostgresPool,
         private readonly log?: BootstrapLog,
     ) {}
 
-    private async getClient(): Promise<PostgresClient> {
-        if (!this.clientPromise) {
-            this.clientPromise = (async () => {
-                const { Client } = await import("pg");
-                const client = new Client({
-                    connectionString: this.databaseUrl,
-                });
-                client.on("error", (error: Error) => {
-                    writeDbLog(
-                        this.log,
-                        "warn",
-                        "Database client emitted error event.",
-                        {
-                            component: "db",
-                            provider: "postgresql",
-                            ...buildDbErrorMeta(error),
-                        },
-                    );
-                });
-                await client.connect();
-                return client as PostgresClient;
-            })();
-        }
-        return this.clientPromise;
-    }
-
     async execute(sql: string, params: unknown[] = []) {
-        let paramIndex = 1;
-        const normalizedSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
+        let parameterIndex = 1;
+        const normalizedSql = sql.replace(/\?/g, () => `$${parameterIndex++}`);
         writeDbLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "postgresql",
             statement: summarizeStatement(normalizedSql),
             parameterCount: params.length,
         });
-        const client = await this.getClient();
         try {
-            const result = await client.query(normalizedSql, params);
+            const result = await this.pool.query(normalizedSql, params);
             return { rows: result.rows, rowCount: result.rowCount };
         } catch (error) {
             writeDbLog(this.log, "warn", "SQL execution failed.", {
@@ -167,21 +226,44 @@ class PostgresExecutor implements RawDbExecutor {
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult> {
-        const gateway = new PostgresDbGateway(await this.getClient());
-        return gateway.executeCommand(command);
+        return new PostgresDbGateway(this.pool).executeCommand(command);
     }
 
     async transaction<T>(
         callback: (executor: RawDbExecutor) => Promise<T>,
     ): Promise<T> {
-        await this.execute("BEGIN");
+        const client = await this.pool.connect();
+        const transactionExecutor = new PostgresExecutor(
+            {
+                query: client.query.bind(client),
+                connect: async () => client,
+                end: async () => undefined,
+            },
+            this.log,
+        );
         try {
-            const result = await callback(this);
-            await this.execute("COMMIT");
+            await client.query("BEGIN");
+            const result = await callback(transactionExecutor);
+            await client.query("COMMIT");
             return result;
         } catch (error) {
-            await this.execute("ROLLBACK").catch(() => undefined);
+            writeDbLog(this.log, "error", "PostgreSQL transaction failed.", {
+                component: "db",
+                provider: "postgresql",
+                ...buildDbErrorMeta(error),
+            });
+            try {
+                await client.query("ROLLBACK");
+            } catch (rollbackError) {
+                writeDbLog(this.log, "error", "PostgreSQL rollback failed.", {
+                    component: "db",
+                    provider: "postgresql",
+                    ...buildDbErrorMeta(rollbackError),
+                });
+            }
             throw error;
+        } finally {
+            client.release();
         }
     }
 
@@ -303,6 +385,36 @@ export function canHandleDbProvider(providerId: DbProviderId): boolean {
 export async function createDbExecutor(args: {
     databaseUrl: string;
     log?: BootstrapLog;
+    lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
+    pool?: PostgresPool;
 }): Promise<RawDbExecutor> {
-    return new PostgresExecutor(args.databaseUrl, args.log);
+    const pool =
+        args.pool ?? (await createPostgresPool(args.databaseUrl, args.log));
+    args.lifecycle?.registerShutdown(async () => {
+        await pool.end();
+        writeDbLog(args.log, "info", "PostgreSQL connection pool drained.", {
+            component: "db",
+            provider: "postgresql",
+        });
+    });
+    return new PostgresExecutor(pool, args.log);
+}
+
+async function createPostgresPool(
+    databaseUrl: string,
+    log?: BootstrapLog,
+): Promise<PostgresPool> {
+    const { Pool } = await import("pg");
+    const pool = new Pool({
+        connectionString: databaseUrl,
+        ...readPostgresPoolSettings(),
+    });
+    pool.on("error", (error: Error) => {
+        writeDbLog(log, "error", "Idle PostgreSQL pool client failed.", {
+            component: "db",
+            provider: "postgresql",
+            ...buildDbErrorMeta(error),
+        });
+    });
+    return pool as PostgresPool;
 }

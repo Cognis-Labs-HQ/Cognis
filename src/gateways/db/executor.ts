@@ -21,6 +21,9 @@ interface DbExecutorFactoryModule {
     createDbExecutor?: (args: {
         databaseUrl: string;
         log?: BootstrapLog;
+        lifecycle?: {
+            registerShutdown(handler: () => Promise<void>): void;
+        };
     }) => Promise<DbExecutor> | DbExecutor;
 }
 
@@ -53,6 +56,7 @@ export async function createDbExecutor(
     dbType: DbProviderId,
     log?: BootstrapLog,
     adaptersRoot?: string,
+    lifecycle?: { registerShutdown(handler: () => Promise<void>): void },
 ): Promise<DbExecutor> {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
@@ -77,6 +81,7 @@ export async function createDbExecutor(
         return adapterModule.createDbExecutor({
             databaseUrl,
             log,
+            lifecycle,
         });
     }
 

@@ -12,7 +12,7 @@ Adapter PostgreSQL menghubungkan Cognis ke server database PostgreSQL. Adapter i
 
 ## Arsitektur
 
-`PostgresDbGateway` di `src/adapters/db/postgres/adapter.ts` membuat `pg.Pool` saat startup.
+`PostgresDbGateway` di `src/adapters/db/postgres/index.ts` memiliki `pg.Pool`. Kueri biasa dijalankan langsung melalui pool. Transaksi mencadangkan satu klien untuk `BEGIN`, semua pernyataan callback, serta `COMMIT` atau `ROLLBACK`, lalu melepaskannya. Adapter mendaftarkan pengosongan pool melalui kapabilitas ctx `system:lifecycle` agar penghentian server berhenti menerima pekerjaan sebelum menutup koneksi.
 
 ### Sintaks Placeholder
 
@@ -24,7 +24,11 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 
 ## Konfigurasi
 
-| Variabel       | Default | Keterangan                                                             |
-| -------------- | ------- | ---------------------------------------------------------------------- |
-| `DB_TYPE`      | —       | Harus `postgresql` untuk mengaktifkan adapter ini                      |
-| `DATABASE_URL` | —       | URL koneksi PostgreSQL, mis. `postgresql://user:pass@host:5432/cognis` |
+| Variabel                              | Default | Keterangan                                                             |
+| ------------------------------------- | ------- | ---------------------------------------------------------------------- |
+| `DB_TYPE`                             | —       | Harus `postgresql` untuk mengaktifkan adapter ini                      |
+| `DATABASE_URL`                        | —       | URL koneksi PostgreSQL, mis. `postgresql://user:pass@host:5432/cognis` |
+| `POSTGRES_POOL_MAX`                   | `10`    | Ukuran maksimum pool (1–100)                                           |
+| `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Batas waktu klien menganggur dalam milidetik (1.000–600.000)           |
+| `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Batas waktu koneksi dalam milidetik (100–120.000)                      |
+| `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Batas waktu pernyataan opsional dalam milidetik (1–3.600.000)          |

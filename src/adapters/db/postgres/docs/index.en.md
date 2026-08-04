@@ -15,7 +15,7 @@ Not responsible for: managing the database schema or migrations (each gateway ru
 
 ## Architecture
 
-`PostgresDbGateway` in `src/adapters/db/postgres/adapter.ts` creates a `pg.Pool` on startup from `DATABASE_URL`. Every `query()` and `execute()` call acquires a client from the pool, runs the statement, and releases the client. `transaction(fn)` acquires a dedicated client, issues `BEGIN`, runs the callback, and commits or rolls back depending on whether the callback throws.
+`PostgresDbGateway` in `src/adapters/db/postgres/index.ts` owns a `pg.Pool`. Ordinary queries use the pool directly. Transactions reserve one client for `BEGIN`, all callback statements, and `COMMIT` or `ROLLBACK`, then release it. The adapter registers pool drainage with the `system:lifecycle` ctx capability so termination stops accepting work before closing pooled connections.
 
 ### Placeholder syntax
 
@@ -29,7 +29,11 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 
 ## Configuration
 
-| Variable       | Default | Description                                                               |
-| -------------- | ------- | ------------------------------------------------------------------------- |
-| `DB_TYPE`      | —       | Must be `postgresql` to activate this adapter                             |
-| `DATABASE_URL` | —       | PostgreSQL connection URL, e.g. `postgresql://user:pass@host:5432/cognis` |
+| Variable                              | Default | Description                                                               |
+| ------------------------------------- | ------- | ------------------------------------------------------------------------- |
+| `DB_TYPE`                             | —       | Must be `postgresql` to activate this adapter                             |
+| `DATABASE_URL`                        | —       | PostgreSQL connection URL, e.g. `postgresql://user:pass@host:5432/cognis` |
+| `POSTGRES_POOL_MAX`                   | `10`    | Maximum pool size (1–100)                                                 |
+| `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000` | Idle-client timeout in milliseconds (1,000–600,000)                       |
+| `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                          |
+| `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —       | Optional statement timeout in milliseconds (1–3,600,000)                  |

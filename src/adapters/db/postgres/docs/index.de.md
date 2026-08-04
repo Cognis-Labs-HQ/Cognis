@@ -12,7 +12,7 @@ Der PostgreSQL-Adapter verbindet Cognis mit einem PostgreSQL-Datenbankserver. Er
 
 ## Architektur
 
-`PostgresDbGateway` in `src/adapters/db/postgres/adapter.ts` erstellt beim Start einen `pg.Pool`.
+`PostgresDbGateway` in `src/adapters/db/postgres/index.ts` besitzt einen `pg.Pool`. Normale Abfragen laufen direkt über den Pool. Transaktionen reservieren einen Client für `BEGIN`, alle Callback-Anweisungen und `COMMIT` oder `ROLLBACK` und geben ihn anschließend frei. Der Adapter registriert das Leeren des Pools über die ctx-Fähigkeit `system:lifecycle`, damit beim Beenden keine Arbeit mehr angenommen wird, bevor die Verbindungen geschlossen werden.
 
 ### Platzhalter-Syntax
 
@@ -24,7 +24,11 @@ INSERT INTO accounts (id, email) VALUES ($1, $2)
 
 ## Konfiguration
 
-| Variable       | Standard | Beschreibung                                                               |
-| -------------- | -------- | -------------------------------------------------------------------------- |
-| `DB_TYPE`      | —        | Muss `postgresql` sein, um diesen Adapter zu aktivieren                    |
-| `DATABASE_URL` | —        | PostgreSQL-Verbindungs-URL, z.B. `postgresql://user:pass@host:5432/cognis` |
+| Variable                              | Standard | Beschreibung                                                               |
+| ------------------------------------- | -------- | -------------------------------------------------------------------------- |
+| `DB_TYPE`                             | —        | Muss `postgresql` sein, um diesen Adapter zu aktivieren                    |
+| `DATABASE_URL`                        | —        | PostgreSQL-Verbindungs-URL, z.B. `postgresql://user:pass@host:5432/cognis` |
+| `POSTGRES_POOL_MAX`                   | `10`     | Maximale Poolgröße (1–100)                                                 |
+| `POSTGRES_POOL_IDLE_TIMEOUT_MS`       | `30000`  | Leerlaufzeitlimit in Millisekunden (1.000–600.000)                         |
+| `POSTGRES_POOL_CONNECTION_TIMEOUT_MS` | `5000`   | Verbindungszeitlimit in Millisekunden (100–120.000)                        |
+| `POSTGRES_POOL_STATEMENT_TIMEOUT_MS`  | —        | Optionales Anweisungszeitlimit in Millisekunden (1–3.600.000)              |

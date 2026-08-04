@@ -73,7 +73,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const adaptersRoot =
         ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
 
-    const executor = await createDbExecutor(dbType, ctx.log, adaptersRoot);
+    const lifecycle = ctx.capabilities.get<{
+        registerShutdown(handler: () => Promise<void>): void;
+    }>("system:lifecycle");
+    const executor = await createDbExecutor(
+        dbType,
+        ctx.log,
+        adaptersRoot,
+        lifecycle,
+    );
     const logger = {
         info: (msg: string, meta?: Record<string, unknown>) => {
             void ctx.log?.("info", msg, meta);
@@ -103,7 +111,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.3.1",
+        version: "1.3.2",
         required: true,
         description:
             "Core relational database layer for persistent application data.",
