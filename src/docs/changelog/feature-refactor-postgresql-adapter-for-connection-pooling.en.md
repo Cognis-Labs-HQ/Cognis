@@ -15,3 +15,7 @@ Shared, PostgreSQL, development, and production env files now carry container de
 ## MariaDB now uses equivalent connection pooling
 
 The MariaDB adapter now uses a bounded `mysql2` pool for concurrent queries, pins transactions to one connection, drains during lifecycle shutdown, and supports bounded maximum-size, idle-timeout, and connection-timeout settings.
+
+## Docker profiles now select the database driver
+
+PostgreSQL and MariaDB now have separate production and development Compose and env files. Administration marks only the configured database adapter active, locks every driver toggle, and explains Docker ownership in the database gateway heading.

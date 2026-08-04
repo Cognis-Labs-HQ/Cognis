@@ -670,4 +670,5 @@
   <string name="ui.reuse.load_failed">Die Konfiguration konnte nicht geladen werden. Bitte versuche es erneut.</string>
   <string name="ui.reuse.core">Kern</string>
   <string name="ui.app.users.external_password_managed">Passwörter externer Benutzer werden von ihrem Authentifizierungsanbieter verwaltet.</string>
+  <string name="ui.app.admin.db_managed_by_docker">Von Docker verwaltet</string>
 </resources>

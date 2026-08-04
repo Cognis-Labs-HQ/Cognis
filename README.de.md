@@ -27,8 +27,8 @@ API-Handler definieren, **was** zu tun ist. Gateways/Adapter entscheiden, **wie*
 
 ## Container-Orchestrierung
 
-- `docker-compose.yml`: produktionsnahes Profil (`NODE_ENV=production`, `COGNIS_UI_DEMO_MODE=0`).
-- `docker-compose.dev.yaml`: Entwicklungs-/Demo-Profil (`NODE_ENV=development`, `COGNIS_UI_DEMO_MODE=1`) mit Bind-Mounts für laufende UI/API-Änderungen.
+- `docker-compose.postgres.yaml` und `docker-compose.mariadb.yaml`: Produktionsprofile für PostgreSQL und MariaDB.
+- `docker-compose.postgres.dev.yaml` und `docker-compose.mariadb.dev.yaml`: Entwicklungs-/Demo-Profile mit Bind-Mounts für laufende UI/API-Änderungen.
 
 ## AI-Hinweise
 

@@ -77,6 +77,10 @@ Key source locations:
 | `src/gateways/db/bootstrap.ts`         | Bootstrap entry point; `DbDialectHelper`                  |
 | `src/gateways/db/reuse/db-executor.ts` | Abstract `DbExecutor` interface                           |
 
+## Administration
+
+Administration marks only the adapter selected by `DB_TYPE` as active. Every database adapter is locked because its state is managed by the selected Docker Compose driver profile rather than an in-app toggle. The database gateway heading displays this ownership in an information tooltip.
+
 ## Configuration
 
 | Variable       | Default      | Description                                               |

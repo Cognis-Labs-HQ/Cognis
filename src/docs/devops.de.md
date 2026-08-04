@@ -11,7 +11,7 @@ Das Image ist absichtlich minimal: Es installiert nur Produktionsabhängigkeiten
 - Ein lauffähiges, nicht-root Node 22 Docker-Image aus dem Repository-Quellcode erstellen.
 - Installation, Typprüfung und Tests bei jedem Push und Pull Request ausführen (CI).
 - Das Image bei Release an eine Container-Registry bauen und pushen (CD).
-- `docker-compose.yaml` für die lokale Entwicklung mit einer PostgreSQL-Datenbank bereitstellen.
+- Datenbankspezifische Produktions- und Entwicklungs-Compose-Dateien für PostgreSQL und MariaDB bereitstellen.
 
 ## Architektur
 
@@ -32,7 +32,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Umgebungsprofile
 
-Docker-Standardwerte liegen außerhalb des Images in `docker/env/defaults.env`. `docker-compose.yaml` ergänzt `postgres.env` und `production.env`; `docker-compose.dev.yaml` ergänzt `postgres.env` und `development.env`. Vor der Bereitstellung müssen die PostgreSQL-Zugangsdaten und der Produktions-Verschlüsselungsschlüssel geändert werden. Die Env-Dateien verhindern Warnungen über leere Variablen und machen jede Einrichtung eindeutig.
+Docker-Standardwerte liegen außerhalb des Images in `docker/env/defaults.env`. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien, die über `docker-compose.<treiber>.yaml` oder `docker-compose.<treiber>.dev.yaml` ausgewählt werden. Vor der Bereitstellung müssen die leeren treiberspezifischen Produktionszugangsdaten und der Verschlüsselungsschlüssel ausgefüllt werden.
 
 ### GitHub Actions
 

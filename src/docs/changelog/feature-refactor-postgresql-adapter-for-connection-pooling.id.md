@@ -15,3 +15,7 @@ File env bersama, PostgreSQL, pengembangan, dan produksi kini menyimpan nilai de
 ## MariaDB kini menggunakan connection pooling yang setara
 
 Adapter MariaDB kini menggunakan pool `mysql2` terbatas untuk kueri serentak, mengikat transaksi ke satu koneksi, mengosongkan pool saat penghentian, dan mendukung pengaturan terbatas untuk ukuran maksimum serta batas waktu menganggur dan koneksi.
+
+## Profil Docker kini memilih driver database
+
+PostgreSQL dan MariaDB kini memiliki file Compose dan lingkungan produksi serta pengembangan yang terpisah. Administrasi hanya menandai adapter database yang dikonfigurasi sebagai aktif, mengunci semua tombol driver, dan menjelaskan pengelolaan Docker pada judul gateway database.

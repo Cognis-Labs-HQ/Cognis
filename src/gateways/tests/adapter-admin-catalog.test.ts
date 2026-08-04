@@ -63,3 +63,45 @@ test("locked adapter catalogs expose file, database, and logging adapters", asyn
         "/api/v1/gateways/logging/adapters/console/config",
     );
 });
+
+test("database adapter catalog only marks the configured provider active", async () => {
+    const adapters = await loadAdapterAdminCatalog(
+        path.resolve(process.cwd(), "src", "adapters"),
+        "db",
+    );
+    const route = createLockedAdapterAdminRoutes(
+        "db",
+        adapters,
+        { requireAuth: () => ({ sub: "admin" }) } as never,
+        "mariadb",
+    );
+    let payload = "";
+
+    await route(
+        { method: "GET" } as never,
+        {
+            writeHead() {},
+            end(body: string) {
+                payload = body;
+            },
+        } as never,
+        new URL("http://localhost/api/v1/gateways/db/adapters"),
+    );
+
+    const response = JSON.parse(payload) as {
+        data: Array<{ id: string; active: boolean; locked: boolean }>;
+    };
+    assert.deepEqual(
+        response.data.map(({ id, active, locked }) => ({
+            id,
+            active,
+            locked,
+        })),
+        [
+            { id: "memory", active: false, locked: true },
+            { id: "mariadb", active: true, locked: true },
+            { id: "postgres", active: false, locked: true },
+            { id: "sqlite", active: false, locked: true },
+        ],
+    );
+});

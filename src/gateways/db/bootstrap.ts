@@ -1,6 +1,6 @@
 import path from "node:path";
 import { createDbExecutor } from "./executor.js";
-import { initializeDatabaseSchema } from "./init.js";
+import { initializeDatabaseSchema, resolveDbProviderDir } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { DbExecutor } from "./reuse/db-executor.js";
 import type {
@@ -104,14 +104,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     ctx.routeRegistry.register(
-        createLockedAdapterAdminRoutes("db", adapterCatalog, routeContext),
+        createLockedAdapterAdminRoutes(
+            "db",
+            adapterCatalog,
+            routeContext,
+            resolveDbProviderDir(dbType),
+        ),
         "db",
     );
 
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.3.3",
+        version: "1.3.4",
         required: true,
         description:
             "Core relational database layer for persistent application data.",

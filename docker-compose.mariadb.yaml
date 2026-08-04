@@ -1,17 +1,14 @@
 services:
     db:
-        image: postgres:17-alpine
+        image: mariadb:11
         env_file:
-            - docker/env/postgres.env
+            - docker/env/mariadb.env
             - docker/env/production.env
+            - docker/env/mariadb-production.env
         volumes:
-            - pgdata:/var/lib/postgresql/data
+            - mariadb-data:/var/lib/mysql
         healthcheck:
-            test:
-                [
-                    "CMD-SHELL",
-                    "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}",
-                ]
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
             interval: 10s
             timeout: 5s
             retries: 5
@@ -23,8 +20,9 @@ services:
         image: cognis:prod
         env_file:
             - docker/env/defaults.env
-            - docker/env/postgres.env
+            - docker/env/mariadb.env
             - docker/env/production.env
+            - docker/env/mariadb-production.env
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config
@@ -37,7 +35,7 @@ services:
         restart: unless-stopped
 
 volumes:
-    pgdata:
+    mariadb-data:
     applogs:
     appconfig:
     appmedia:

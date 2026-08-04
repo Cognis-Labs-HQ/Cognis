@@ -11,7 +11,7 @@ Image sengaja dibuat minimal: hanya menginstal dependensi produksi, berjalan seb
 - Membangun image Docker Node 22 yang dapat dijalankan dan non-root dari sumber repositori.
 - Menjalankan instalasi, pengecekan tipe, dan pengujian pada setiap push dan pull request (CI).
 - Membangun dan mendorong image ke container registry saat rilis (CD).
-- Menyediakan `docker-compose.yaml` untuk pengembangan lokal dengan database PostgreSQL.
+- Menyediakan file Compose produksi dan pengembangan khusus database untuk PostgreSQL dan MariaDB.
 
 ## Arsitektur
 
@@ -31,7 +31,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Profil lingkungan
 
-Nilai default Docker disimpan di luar image dalam `docker/env/defaults.env`. `docker-compose.yaml` menambahkan `postgres.env` dan `production.env`; `docker-compose.dev.yaml` menambahkan `postgres.env` dan `development.env`. Ubah kredensial PostgreSQL dan kunci enkripsi produksi sebelum deployment. File env mencegah peringatan interpolasi variabel kosong dan membuat setiap penyiapan menjadi jelas.
+Nilai default Docker disimpan di luar image dalam `docker/env/defaults.env`. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah, yang dipilih melalui `docker-compose.<driver>.yaml` atau `docker-compose.<driver>.dev.yaml`. Isi kredensial produksi khusus driver dan kunci enkripsi yang kosong sebelum deployment.
 
 ## Konfigurasi
 

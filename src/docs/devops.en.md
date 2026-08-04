@@ -11,7 +11,7 @@ The image is intentionally minimal: it installs only production dependencies, ru
 - Build a runnable, non-root Node 22 Docker image from the repository source.
 - Run install, typecheck, and tests on every push and pull request (CI).
 - Build and push the image to a container registry on release (CD).
-- Provide `docker-compose.yaml` for local development with a PostgreSQL database.
+- Provide database-specific production and development Compose files for PostgreSQL and MariaDB.
 
 Not responsible for: infrastructure provisioning, secrets management beyond env var documentation, or deployment orchestration beyond the image itself.
 
@@ -36,7 +36,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Environment profiles
 
-Docker defaults are kept outside the image in `docker/env/defaults.env`. `docker-compose.yaml` adds `postgres.env` and `production.env`; `docker-compose.dev.yaml` adds `postgres.env` and `development.env`. Edit the PostgreSQL credentials and production encryption key before deployment. Keeping these values in env files avoids blank-variable interpolation warnings and makes each setup explicit.
+Docker defaults are kept outside the image in `docker/env/defaults.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files, selected by their corresponding `docker-compose.<driver>.yaml` or `docker-compose.<driver>.dev.yaml` file. Fill in the blank driver-specific production credentials and encryption key before deployment.
 
 ### GitHub Actions
 

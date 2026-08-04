@@ -3,11 +3,10 @@ services:
         image: postgres:17-alpine
         env_file:
             - docker/env/postgres.env
-            - docker/env/development.env
-        ports:
-            - "5432:5432"
+            - docker/env/production.env
+            - docker/env/postgres-production.env
         volumes:
-            - pgdata-dev:/var/lib/postgresql/data
+            - pgdata:/var/lib/postgresql/data
         healthcheck:
             test:
                 [
@@ -18,29 +17,29 @@ services:
             timeout: 5s
             retries: 5
 
-    cognis-dev:
+    cognis:
         build:
             context: .
             dockerfile: docker/Dockerfile
-        image: cognis:dev
+        image: cognis:prod
         env_file:
             - docker/env/defaults.env
             - docker/env/postgres.env
-            - docker/env/development.env
+            - docker/env/production.env
+            - docker/env/postgres-production.env
+        volumes:
+            - applogs:/app/logs
+            - appconfig:/app/config
+            - appmedia:/app/media
         ports:
             - "3000:3000"
-        volumes:
-            - ./:/app
-            - node_modules_dev:/app/node_modules
-            - applogs-dev:/app/logs
-            - appconfig-dev:/app/config
-        command: sh -c "npm ci --ignore-scripts && npm run start"
         depends_on:
             db:
                 condition: service_healthy
+        restart: unless-stopped
 
 volumes:
-    pgdata-dev:
-    node_modules_dev:
-    applogs-dev:
-    appconfig-dev:
+    pgdata:
+    applogs:
+    appconfig:
+    appmedia:

@@ -670,4 +670,5 @@
   <string name="ui.reuse.load_failed">設定を読み込めませんでした。もう一度お試しください。</string>
   <string name="ui.reuse.core">コア</string>
   <string name="ui.app.users.external_password_managed">外部ユーザーのパスワードは認証プロバイダーによって管理されます。</string>
+  <string name="ui.app.admin.db_managed_by_docker">Dockerによって管理</string>
 </resources>

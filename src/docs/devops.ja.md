@@ -11,7 +11,7 @@ CognisはNode 22をベースにした単一のDockerイメージとして提供�
 - リポジトリソースから実行可能な非rootのNode 22 Dockerイメージをビルドする。
 - すべてのプッシュとプルリクエストでインストール、型チェック、テストを実行する（CI）。
 - リリース時にコンテナレジストリにイメージをビルドしてプッシュする（CD）。
-- PostgreSQLデータベースでのローカル開発用に `docker-compose.yaml` を提供する。
+- PostgreSQLとMariaDB向けにデータベース固有の本番および開発用Composeファイルを提供する。
 
 ## アーキテクチャ
 
@@ -31,7 +31,7 @@ CMD ["node", "src/api/main.js"]
 
 ### 環境プロファイル
 
-Dockerのデフォルト値はイメージ外の `docker/env/defaults.env` に保存されます。`docker-compose.yaml` は `postgres.env` と `production.env` を、`docker-compose.dev.yaml` は `postgres.env` と `development.env` を追加します。デプロイ前にPostgreSQL認証情報と本番用暗号化キーを変更してください。Envファイルにより空変数の補間警告を防ぎ、各セットアップを明確にします。
+Dockerのデフォルト値はイメージ外の `docker/env/defaults.env` に保存されます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあり、対応する `docker-compose.<driver>.yaml` または `docker-compose.<driver>.dev.yaml` で選択します。デプロイ前に空のドライバー固有本番認証情報と暗号化キーを設定してください。
 
 ## 設定
 

@@ -52,6 +52,10 @@ export interface DbDialectHelper {
 | `src/gateways/db/init.ts`      | `initializeDatabaseSchema`               |
 | `src/gateways/db/bootstrap.ts` | Titik masuk bootstrap; `DbDialectHelper` |
 
+## Administrasi
+
+Administrasi hanya menandai adapter yang dipilih oleh `DB_TYPE` sebagai aktif. Setiap adapter database dikunci karena statusnya dikelola oleh profil driver Docker Compose yang dipilih, bukan melalui tombol di aplikasi. Judul gateway database menampilkan kepemilikan ini melalui tooltip informasi.
+
 ## Konfigurasi
 
 | Variabel       | Default      | Keterangan                                                   |

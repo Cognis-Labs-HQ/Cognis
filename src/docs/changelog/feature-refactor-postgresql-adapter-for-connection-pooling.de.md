@@ -15,3 +15,7 @@ Gemeinsame, PostgreSQL-, Entwicklungs- und Produktions-Env-Dateien enthalten nun
 ## MariaDB verwendet jetzt gleichwertiges Connection-Pooling
 
 Der MariaDB-Adapter verwendet nun einen begrenzten `mysql2`-Pool für gleichzeitige Abfragen, bindet Transaktionen an eine Verbindung, leert den Pool beim Herunterfahren und unterstützt begrenzte Einstellungen für Maximalgröße, Leerlauf- und Verbindungszeitlimit.
+
+## Docker-Profile wählen jetzt den Datenbanktreiber
+
+PostgreSQL und MariaDB besitzen nun getrennte Produktions- und Entwicklungsdateien für Compose und Umgebungsvariablen. Die Administration markiert nur den konfigurierten Datenbankadapter als aktiv, sperrt alle Treiberschalter und erklärt die Docker-Zuständigkeit in der Überschrift des Datenbank-Gateways.

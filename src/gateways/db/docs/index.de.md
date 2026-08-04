@@ -54,6 +54,10 @@ export interface DbDialectHelper {
 | `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                  |
 | `src/gateways/db/bootstrap.ts` | Bootstrap-Einstiegspunkt; `DbDialectHelper` |
 
+## Administration
+
+Die Administration markiert nur den durch `DB_TYPE` ausgewählten Adapter als aktiv. Jeder Datenbankadapter ist gesperrt, da sein Zustand durch das ausgewählte Docker-Compose-Treiberprofil statt durch einen Schalter in der Anwendung verwaltet wird. Die Überschrift des Datenbank-Gateways zeigt diese Zuständigkeit in einem Informationstooltip an.
+
 ## Konfiguration
 
 | Variable       | Standard     | Beschreibung                                                          |

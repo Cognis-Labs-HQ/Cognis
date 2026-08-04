@@ -27,8 +27,8 @@ API ハンドラーは**何を**するかを定義し、ゲートウェイ/ア�
 
 ## コンテナオーケストレーション
 
-- `docker-compose.yml`: 本番相当プロファイル（`NODE_ENV=production`, `COGNIS_UI_DEMO_MODE=0`）。
-- `docker-compose.dev.yaml`: 開発/デモ用プロファイル（`NODE_ENV=development`, `COGNIS_UI_DEMO_MODE=1`）。進行中の UI/API 編集のためにバインドマウントを有効化。
+- `docker-compose.postgres.yaml` と `docker-compose.mariadb.yaml`: PostgreSQLおよびMariaDB用の本番プロファイル。
+- `docker-compose.postgres.dev.yaml` と `docker-compose.mariadb.dev.yaml`: 開発中のUI/API編集をバインドマウントする開発/デモ用プロファイル。
 
 ## AI ガイダンス
 

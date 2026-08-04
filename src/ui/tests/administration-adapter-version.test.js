@@ -57,6 +57,23 @@ test("administration adapters expose version metadata in details", () => {
     );
 });
 
+test("database gateway heading explains that Docker manages its driver", () => {
+    const html = renderComponentsContent(
+        [],
+        [{ id: "db", name: "Database", status: "active" }],
+        [],
+        { i18n, escapeHtml, healthStatus: { contributions: [] } },
+    );
+
+    assert.match(html, /db-gateway-managed-by-docker/);
+    assert.match(html, /info-tooltip__btn/);
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/render-components.js"),
+        "utf8",
+    );
+    assert.match(source, /ui\.app\.admin\.db_managed_by_docker/);
+});
+
 test("active components use health lights and disabled adapters reserve the slot", () => {
     const i18n = { t: (key) => key };
     const html = renderComponentsContent(
