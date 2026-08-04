@@ -3,7 +3,7 @@ import type { BootstrapLog } from "@cognis/core";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
-import { readBoundedEnvironmentInteger } from "../../../gateways/db/reuse/pool-settings.js";
+import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
     buildDbErrorMeta,
     summarizeStatement,

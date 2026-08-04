@@ -61,6 +61,10 @@ require_environment_value() {
   fi
 }
 
+encode_url_component() {
+  node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$1"
+}
+
 construct_database_url() {
   require_environment_value HOST docker/env/runtime.env
   require_environment_value EXTERNAL_HOST docker/env/runtime.env
@@ -74,7 +78,10 @@ construct_database_url() {
       require_environment_value POSTGRES_DB docker/env/runtime.env
       require_environment_value POSTGRES_USER docker/env/runtime.env
       require_environment_value POSTGRES_PASSWORD docker/env/runtime.env
-      export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+      local postgres_user postgres_password
+      postgres_user="$(encode_url_component "${POSTGRES_USER}")"
+      postgres_password="$(encode_url_component "${POSTGRES_PASSWORD}")"
+      export DATABASE_URL="postgresql://${postgres_user}:${postgres_password}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
       ;;
     mariadb)
       require_environment_value MARIADB_HOST docker/env/runtime.env
@@ -82,7 +89,10 @@ construct_database_url() {
       require_environment_value MARIADB_DATABASE docker/env/runtime.env
       require_environment_value MARIADB_USER docker/env/runtime.env
       require_environment_value MARIADB_PASSWORD docker/env/runtime.env
-      export DATABASE_URL="mysql://${MARIADB_USER}:${MARIADB_PASSWORD}@${MARIADB_HOST}:${MARIADB_PORT}/${MARIADB_DATABASE}"
+      local mariadb_user mariadb_password
+      mariadb_user="$(encode_url_component "${MARIADB_USER}")"
+      mariadb_password="$(encode_url_component "${MARIADB_PASSWORD}")"
+      export DATABASE_URL="mysql://${mariadb_user}:${mariadb_password}@${MARIADB_HOST}:${MARIADB_PORT}/${MARIADB_DATABASE}"
       ;;
     *)
       app_log "error" "DB_TYPE must be set to postgresql or mariadb in docker/env/runtime.env. Run ./setup.sh to configure Cognis."

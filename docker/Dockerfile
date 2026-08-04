@@ -1,5 +1,6 @@
 FROM node:22 AS base
 ARG COGNIS_ASSET_VERSION=development
+ENV COGNIS_ASSET_VERSION=${COGNIS_ASSET_VERSION}
 WORKDIR /app
 
 # Root-only setup: create the non-root user, runtime directories, and system-wide scripts.

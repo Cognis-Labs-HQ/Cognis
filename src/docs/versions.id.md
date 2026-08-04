@@ -43,8 +43,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.15` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.8`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.1`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.0`  |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.2`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.1`  |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.7`  |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.5`  |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.7`  |

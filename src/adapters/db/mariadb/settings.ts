@@ -5,7 +5,9 @@ export function readBoundedEnvironmentInteger(
     maximum: number,
 ): number {
     const rawValue = process.env[name];
-    if (rawValue === undefined || rawValue === "") return defaultValue;
+    if (rawValue === undefined || rawValue === "") {
+        return defaultValue;
+    }
     const value = Number(rawValue);
     if (!Number.isInteger(value) || value < minimum || value > maximum) {
         throw new Error(

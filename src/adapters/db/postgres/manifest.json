@@ -1,6 +1,6 @@
 {
     "id": "postgres",
     "name": "PostgreSQL Database",
-    "version": "0.5.1",
+    "version": "0.5.2",
     "publisher": "Cognis Labs HQ"
 }

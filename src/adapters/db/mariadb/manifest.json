@@ -1,6 +1,6 @@
 {
     "id": "mariadb",
     "name": "MariaDB Database",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "publisher": "Cognis Labs HQ"
 }

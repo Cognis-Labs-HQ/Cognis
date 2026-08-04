@@ -72,18 +72,20 @@ test("Docker entrypoint constructs URLs from generated values", async () => {
             POSTGRES_HOST: "db",
             POSTGRES_PORT: "5432",
             POSTGRES_DB: "cognis",
-            POSTGRES_USER: "cognis",
-            POSTGRES_PASSWORD: "secret",
-            expected: "postgresql://cognis:secret@db:5432/cognis",
+            POSTGRES_USER: "cognis@example.com",
+            POSTGRES_PASSWORD: "secret:/%#",
+            expected:
+                "postgresql://cognis%40example.com:secret%3A%2F%25%23@db:5432/cognis",
         },
         {
             DB_TYPE: "mariadb",
             MARIADB_HOST: "db",
             MARIADB_PORT: "3306",
             MARIADB_DATABASE: "cognis",
-            MARIADB_USER: "cognis",
-            MARIADB_PASSWORD: "secret",
-            expected: "mysql://cognis:secret@db:3306/cognis",
+            MARIADB_USER: "cognis@example.com",
+            MARIADB_PASSWORD: "secret:/%#",
+            expected:
+                "mysql://cognis%40example.com:secret%3A%2F%25%23@db:3306/cognis",
         },
     ];
     for (const { expected, ...environment } of runs) {
@@ -182,6 +184,13 @@ test("Docker entrypoint owns image paths and requires public settings", async ()
 });
 
 test("default Docker links select shared defaults and PostgreSQL", async () => {
+    const dockerfile = await readFile("docker/Dockerfile", "utf8");
+    const defaultEnvironment = await readFile("docker/env/default.env", "utf8");
+    assert.match(
+        dockerfile,
+        /ENV COGNIS_ASSET_VERSION=\$\{COGNIS_ASSET_VERSION\}/,
+    );
+    assert.doesNotMatch(defaultEnvironment, /^COGNIS_ASSET_VERSION=/m);
     assert.equal(await readlink(".env"), "docker/env/default.env");
     assert.equal(
         await readlink("docker-compose.yaml"),
