@@ -13,13 +13,16 @@ async function walk(directory) {
     return nested.flat();
 }
 
+function rewriteRuntimeSpecifiers(contents) {
+    return contents.replace(/(["'])([^"'\n]*?)\.ts\1/g, "$1$2.js$1");
+}
+
 const compiledModuleSpecifiersPlugin = {
     name: "compiled-module-specifiers",
     setup(buildContext) {
         buildContext.onLoad({ filter: /\.ts$/ }, async (args) => ({
-            contents: (await readFile(args.path, "utf8")).replace(
-                /(["'])(bootstrap|index)\.ts\1/g,
-                "$1$2.js$1",
+            contents: rewriteRuntimeSpecifiers(
+                await readFile(args.path, "utf8"),
             ),
             loader: "ts",
         }));
@@ -78,6 +81,12 @@ await cp("src", path.join(outputRoot, "src"), {
         );
     },
 });
+for (const emittedPath of (await walk(path.join(outputRoot, "src"))).filter(
+    (filePath) => filePath.endsWith(".js"),
+)) {
+    const contents = await readFile(emittedPath, "utf8");
+    await writeFile(emittedPath, rewriteRuntimeSpecifiers(contents));
+}
 const uiManifest = JSON.parse(
     await readFile("dist/ui/asset-manifest.json", "utf8"),
 );

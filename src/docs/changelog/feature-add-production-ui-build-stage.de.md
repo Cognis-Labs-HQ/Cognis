@@ -11,3 +11,7 @@ Textdateien werden als Brotli- und gzip-Varianten erzeugt und von der neutralen 
 ## Kompilierte Serverlaufzeit
 
 Der Docker-Build kompiliert TypeScript und startet JavaScript direkt ohne den Entwicklungs-Loader `tsx`.
+
+## Start kompilierter Komponenten
+
+Produktions-Loader für Gateways und Adapter lösen nun jeden TypeScript-Quelleneinstieg in die kompilierte JavaScript-Ausgabe auf, und Study-Adapter erhalten beim Start die Flow-API der Plattform.

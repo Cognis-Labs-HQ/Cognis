@@ -11,3 +11,7 @@ Text assets are emitted with Brotli and gzip variants and negotiated by the neut
 ## Compiled server runtime
 
 The Docker build compiles TypeScript and starts JavaScript directly without the development `tsx` loader.
+
+## Compiled component startup
+
+Production gateway and adapter loaders now resolve every TypeScript source entrypoint to its compiled JavaScript output, and Study adapters receive the platform flow API during bootstrap.

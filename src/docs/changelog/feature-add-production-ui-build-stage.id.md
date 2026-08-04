@@ -11,3 +11,7 @@ Aset teks dihasilkan dalam varian Brotli dan gzip, lalu dinegosiasikan oleh rute
 ## Runtime server terkompilasi
 
 Build Docker mengompilasi TypeScript dan menjalankan JavaScript secara langsung tanpa pemuat pengembangan `tsx`.
+
+## Startup komponen terkompilasi
+
+Pemuat gateway dan adapter produksi kini memetakan setiap titik masuk sumber TypeScript ke keluaran JavaScript terkompilasi, serta memberikan API alur platform kepada adapter Study saat startup.

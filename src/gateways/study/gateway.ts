@@ -3,6 +3,7 @@ import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
     CapabilityStore,
+    FlowApi,
     GatewayRegistry,
     AccessRole,
 } from "@cognis/core";
@@ -124,6 +125,7 @@ export interface StudyAdapterBootstrapCtx {
     adapterRoot: string;
     capabilities: CapabilityStore;
     gatewayRegistry: GatewayRegistry;
+    flow: FlowApi;
     registerRoute(
         handler: (
             req: IncomingMessage,
