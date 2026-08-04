@@ -24,30 +24,7 @@ RUN npm run build && npm run check:ui-build && npm run check:server-build
 
 EXPOSE 3000
 
-# Keep environment-variable changes synchronized with every Docker Compose file.
-ENV NODE_ENV=production
-ENV COGNIS_ASSET_VERSION=${COGNIS_ASSET_VERSION}
-ENV COGNIS_UI_ASSET_MANIFEST=/app/dist/ui/asset-manifest.json
-ENV COGNIS_UI_DIST_ROOT=/app/dist/ui
-ENV COGNIS_UI_DEMO_MODE=0
-ENV DB_TYPE=postgresql
-ENV DATABASE_URL=
-ENV POSTGRES_POOL_MAX=10
-ENV POSTGRES_POOL_IDLE_TIMEOUT_MS=30000
-ENV POSTGRES_POOL_CONNECTION_TIMEOUT_MS=5000
-ENV POSTGRES_POOL_STATEMENT_TIMEOUT_MS=
-ENV LOG_LEVEL=info
-ENV LOG_FILE=/app/logs/app.log
-ENV COGNIS_ACCESS_TOKEN_TTL_SECONDS=43200
-ENV COGNIS_MODULES_ROOT=/app/dist/server/src/modules
-ENV COGNIS_GATEWAYS_ROOT=/app/dist/server/src/gateways
-ENV COGNIS_ADAPTERS_ROOT=/app/dist/server/src/adapters
-ENV COGNIS_CLI_TOKEN_PATH=/app/config/cli-access.token
-ENV MEDIA_LOCATION=/app/media
-ENV HOST=cognis
-ENV EXTERNAL_HOST=
-ENV CONTACT_EMAIL=
-ENV DATA_ENCRYPTION_KEY=not-secure-change-me
+# Runtime defaults live in docker/env and are selected by Docker Compose.
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["/usr/local/bin/healthcheck.sh"]

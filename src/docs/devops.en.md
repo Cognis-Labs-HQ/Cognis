@@ -26,16 +26,17 @@ The Dockerfile at `docker/Dockerfile` uses a single `FROM node:22` stage. Key pr
 - Copies `docker/cognisctl` (the CLI wrapper), `docker/entrypoint.sh`, and `docker/healthcheck.sh` into `/usr/local/bin/` as root before switching to the `cognis` user.
 - Copies source and runs `npm ci --ignore-scripts` as the non-root user.
 - Exposes port `3000`.
-- Runs `node --import tsx /app/src/api/main.ts` as the default command.
+- Runs the compiled API server through the container entrypoint as the default command.
 - Includes a `HEALTHCHECK` that calls `/usr/local/bin/healthcheck.sh` every 30 seconds with a 5-second timeout.
 
 ```dockerfile
 EXPOSE 3000
-ENV NODE_ENV=production
-ENV DB_TYPE=postgresql
-ENV LOG_LEVEL=info
-CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
+CMD ["node", "src/api/main.js"]
 ```
+
+### Environment profiles
+
+Docker defaults are kept outside the image in `docker/env/defaults.env`. `docker-compose.yaml` adds `postgres.env` and `production.env`; `docker-compose.dev.yaml` adds `postgres.env` and `development.env`. Edit the PostgreSQL credentials and production encryption key before deployment. Keeping these values in env files avoids blank-variable interpolation warnings and makes each setup explicit.
 
 ### GitHub Actions
 
@@ -89,4 +90,4 @@ Environment variables needed to run the application:
 | `COGNIS_SMTP_HOST`                | —                              | SMTP server hostname; enables the SMTP notification adapter    |
 | `COGNIS_UI_DEMO_MODE`             | `0`                            | Set to `1` to enable pre-populated example data                |
 
-A full reference with comments is in `env.example` at the repository root.
+The active Docker defaults and setup overrides are listed in the env files under `docker/env/`; `env.example` explains how those profiles are selected.

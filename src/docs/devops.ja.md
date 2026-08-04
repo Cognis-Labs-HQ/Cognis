@@ -26,10 +26,12 @@ CognisはNode 22をベースにした単一のDockerイメージとして提供�
 
 ```dockerfile
 EXPOSE 3000
-ENV NODE_ENV=production
-ENV DB_TYPE=postgresql
-CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
+CMD ["node", "src/api/main.js"]
 ```
+
+### 環境プロファイル
+
+Dockerのデフォルト値はイメージ外の `docker/env/defaults.env` に保存されます。`docker-compose.yaml` は `postgres.env` と `production.env` を、`docker-compose.dev.yaml` は `postgres.env` と `development.env` を追加します。デプロイ前にPostgreSQL認証情報と本番用暗号化キーを変更してください。Envファイルにより空変数の補間警告を防ぎ、各セットアップを明確にします。
 
 ## 設定
 

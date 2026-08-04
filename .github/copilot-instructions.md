@@ -440,8 +440,8 @@ API sanity and security are paramount.
 
 ## Docker environment variables
 
-All environment variables consumed by the application container must be declared with their default value in `docker/Dockerfile` using `ENV KEY=value`. Docker Compose files must never set a default via the `${VAR:-default}` fallback syntax for application-layer variables — they should reference `${VAR}` or `${VAR:?error}` only. Defaults belong exclusively in the Dockerfile so there is one canonical source of truth for the container's runtime configuration.
-Every Dockerfile environment-variable addition, removal, or rename must be synchronized with every Docker Compose file in the same change.
+Application container defaults belong in the versioned files under `docker/env/`, not in `docker/Dockerfile` or inline Docker Compose fallback expressions. Keep common defaults in `defaults.env` and put environment-specific overrides in the corresponding setup file. Docker Compose files select the required env files through `env_file`.
+Every Docker environment-variable addition, removal, or rename must be synchronized with the Dockerfile, every Docker Compose file, and every applicable setup env file in the same change.
 
 ## Logging coverage requirements
 

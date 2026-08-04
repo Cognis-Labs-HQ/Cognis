@@ -27,10 +27,12 @@ Das Dockerfile unter `docker/Dockerfile` verwendet eine einzelne `FROM node:22`-
 
 ```dockerfile
 EXPOSE 3000
-ENV NODE_ENV=production
-ENV DB_TYPE=postgresql
-CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
+CMD ["node", "src/api/main.js"]
 ```
+
+### Umgebungsprofile
+
+Docker-Standardwerte liegen außerhalb des Images in `docker/env/defaults.env`. `docker-compose.yaml` ergänzt `postgres.env` und `production.env`; `docker-compose.dev.yaml` ergänzt `postgres.env` und `development.env`. Vor der Bereitstellung müssen die PostgreSQL-Zugangsdaten und der Produktions-Verschlüsselungsschlüssel geändert werden. Die Env-Dateien verhindern Warnungen über leere Variablen und machen jede Einrichtung eindeutig.
 
 ### GitHub Actions
 

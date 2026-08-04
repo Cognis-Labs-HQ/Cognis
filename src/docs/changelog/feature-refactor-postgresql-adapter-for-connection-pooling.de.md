@@ -7,3 +7,7 @@ Normale Datenbankoperationen können gleichzeitig über `pg.Pool` laufen, währe
 ## Beim Herunterfahren werden Datenbankverbindungen geleert
 
 Der PostgreSQL-Adapter registriert das Schließen des Pools über die ctx-Lebenszyklusfähigkeit, damit der Server keine neuen Anfragen annimmt und den Pool sauber leert.
+
+## Docker-Einrichtungen verwenden jetzt eindeutige Umgebungsprofile
+
+Gemeinsame, PostgreSQL-, Entwicklungs- und Produktions-Env-Dateien enthalten nun die Container-Standardwerte. Compose wählt die passenden Profile ohne Interpolation nicht gesetzter Poolvariablen aus und beseitigt dadurch Warnungen über leere Variablen.

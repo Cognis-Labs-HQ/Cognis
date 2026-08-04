@@ -26,10 +26,12 @@ Dockerfile di `docker/Dockerfile` menggunakan satu stage `FROM node:22`:
 
 ```dockerfile
 EXPOSE 3000
-ENV NODE_ENV=production
-ENV DB_TYPE=postgresql
-CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
+CMD ["node", "src/api/main.js"]
 ```
+
+### Profil lingkungan
+
+Nilai default Docker disimpan di luar image dalam `docker/env/defaults.env`. `docker-compose.yaml` menambahkan `postgres.env` dan `production.env`; `docker-compose.dev.yaml` menambahkan `postgres.env` dan `development.env`. Ubah kredensial PostgreSQL dan kunci enkripsi produksi sebelum deployment. File env mencegah peringatan interpolasi variabel kosong dan membuat setiap penyiapan menjadi jelas.
 
 ## Konfigurasi
 
