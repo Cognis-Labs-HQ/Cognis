@@ -44,9 +44,10 @@ test("Docker database profiles select one driver and its setup env", async () =>
             readFile(profile.driverEnv, "utf8"),
         ]);
         assert.match(compose, new RegExp(`image: ${profile.image}`));
-        assert.ok(compose.includes(`- ${profile.driverEnv}`));
-        assert.ok(compose.includes(`- ${profile.setupEnv}`));
+        assert.ok(compose.includes(`- ./${profile.driverEnv}`));
+        assert.ok(compose.includes(`- ./${profile.setupEnv}`));
         assert.ok(driverEnv.includes(`DB_TYPE=${profile.dbType}`));
+        assert.match(compose, /dockerfile: \.\/docker\/Dockerfile/);
     }
 });
 
@@ -195,28 +196,4 @@ test("production setup templates declare every user-managed secret", async () =>
     assert.match(postgresTemplate, /^POSTGRES_PASSWORD=/m);
     assert.match(mariaDbTemplate, /^MARIADB_PASSWORD=/m);
     assert.match(mariaDbTemplate, /^MARIADB_ROOT_PASSWORD=/m);
-});
-
-test("Docker repository paths resolve relative to the image worktree", async () => {
-    const [dockerfile, defaults, entrypoint, healthcheck] = await Promise.all([
-        readFile("docker/Dockerfile", "utf8"),
-        readFile("docker/env/default.env", "utf8"),
-        readFile("docker/entrypoint.sh", "utf8"),
-        readFile("docker/healthcheck.sh", "utf8"),
-    ]);
-
-    assert.match(dockerfile, /WORKDIR \/app/);
-    assert.match(dockerfile, /mkdir -p logs data config media\/uploads/);
-    assert.match(
-        dockerfile,
-        /CMD \["node", "dist\/server\/src\/api\/main\.js"\]/,
-    );
-    assert.match(defaults, /^COGNIS_UI_DIST_ROOT=dist\/ui$/m);
-    assert.match(defaults, /^LOG_FILE=logs\/app\.log$/m);
-    assert.match(defaults, /^MEDIA_LOCATION=media$/m);
-    assert.match(entrypoint, /LOG_FILE:-logs\/app\.log/);
-    assert.match(
-        healthcheck,
-        /exec node src\/tooling\/scripts\/healthcheck\.mjs/,
-    );
 });

@@ -27,12 +27,12 @@ Das Dockerfile unter `docker/Dockerfile` verwendet eine einzelne `FROM node:22`-
 
 ```dockerfile
 EXPOSE 3000
-CMD ["node", "dist/server/src/api/main.js"]
+CMD ["node", "src/api/main.js"]
 ```
 
 ### Umgebungsprofile
 
-Docker-Standardwerte liegen außerhalb des Images in `docker/env/default.env`, das mit der `.env` im Repository-Stamm verknüpft ist. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien. Compose lädt diese Dateien in den Container; der Entrypoint verlangt Host, Port, Datenbank, Benutzername und Passwort des ausgewählten Systems, bevor er daraus `DATABASE_URL` erstellt. In der Produktion ist zusätzlich `DATA_ENCRYPTION_KEY` erforderlich. Die Produktionsdateien mit Geheimnissen werden von Git ignoriert; kopieren Sie die versionierten `.example`-Vorlagen und bearbeiten Sie die Kopien. Fehlermeldungen nennen die genaue Datei für den fehlenden Wert. Zum Repository gehörende Laufzeitpfade sind relativ zum Arbeitsbaum des Images; absolute Pfade bleiben nur für systemweit installierte Befehle und Einhängepunkte von Container-Volumes bestehen.
+Docker-Standardwerte liegen außerhalb des Images in `docker/env/default.env`, das mit der `.env` im Repository-Stamm verknüpft ist. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien. Compose lädt diese Dateien in den Container; der Entrypoint verlangt Host, Port, Datenbank, Benutzername und Passwort des ausgewählten Systems, bevor er daraus `DATABASE_URL` erstellt. In der Produktion ist zusätzlich `DATA_ENCRYPTION_KEY` erforderlich. Die Produktionsdateien mit Geheimnissen werden von Git ignoriert; kopieren Sie die versionierten `.example`-Vorlagen und bearbeiten Sie die Kopien. Fehlermeldungen nennen die genaue Datei für den fehlenden Wert. Compose importiert jede Env-Datei über einen ausdrücklichen, repository-relativen Pfad `./docker/env/...`, sodass bei Symlinks im Arbeitsverzeichnis kein hostspezifischer absoluter Checkout-Pfad vorausgesetzt wird.
 
 ```sh
 cp docker/env/production.env.example docker/env/production.env

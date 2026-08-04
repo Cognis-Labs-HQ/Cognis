@@ -2,9 +2,9 @@ services:
     db:
         image: postgres:17-alpine
         env_file:
-            - docker/env/postgres.env
-            - docker/env/production.env
-            - docker/env/postgres-production.env
+            - ./docker/env/postgres.env
+            - ./docker/env/production.env
+            - ./docker/env/postgres-production.env
         volumes:
             - pgdata:/var/lib/postgresql/data
         healthcheck:
@@ -20,13 +20,13 @@ services:
     cognis:
         build:
             context: .
-            dockerfile: docker/Dockerfile
+            dockerfile: ./docker/Dockerfile
         image: cognis:prod
         env_file:
-            - docker/env/default.env
-            - docker/env/postgres.env
-            - docker/env/production.env
-            - docker/env/postgres-production.env
+            - ./docker/env/default.env
+            - ./docker/env/postgres.env
+            - ./docker/env/production.env
+            - ./docker/env/postgres-production.env
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config

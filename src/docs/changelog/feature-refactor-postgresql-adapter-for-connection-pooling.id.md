@@ -38,8 +38,8 @@ Nilai default host, port, database, nama pengguna, dan pool PostgreSQL serta Mar
 
 ## File rahasia yang dikelola pengguna tidak dilacak
 
-File env rahasia produksi kini diabaikan oleh Git dan memiliki template `.example` yang terlacak. Kesalahan validasi entrypoint menyebutkan file profil persis tempat setiap nilai yang hilang harus diisi.
+File env rahasia produksi kini diabaikan oleh Git dan memiliki template `.example` yang terlacak. Kesalahan validasi Compose menyebutkan file profil persis tempat setiap nilai yang hilang harus diisi.
 
-## Path repositori Docker bersifat relatif
+## Impor env Compose tetap relatif terhadap repositori
 
-Path runtime Docker milik repositori kini diselesaikan secara relatif terhadap pohon kerja image. Path absolut hanya dipertahankan saat Docker memerlukan target mount container atau lokasi perintah yang dipasang pada sistem.
+Path runtime internal container tetap absolut ketika lokasinya diketahui. Impor file env Compose dan Dockerfile kini menggunakan path relatif repositori yang eksplisit agar direktori kerja yang dicapai melalui symlink tidak bergantung pada path host absolut.

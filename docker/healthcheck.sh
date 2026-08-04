@@ -14,5 +14,5 @@ if command -v wget >/dev/null 2>&1; then
 elif command -v curl >/dev/null 2>&1; then
   curl -sf --max-time 4 "$URL" >/dev/null
 else
-  exec node src/tooling/scripts/healthcheck.mjs
+  exec node /app/src/tooling/scripts/healthcheck.mjs
 fi

@@ -38,8 +38,8 @@ PostgreSQL and MariaDB host, port, database, username, and pool defaults now liv
 
 ## User-managed secret files stay untracked
 
-Production secret env files are now ignored by Git and have tracked `.example` templates. Entrypoint validation errors identify the exact profile file where each missing value must be set.
+Production secret env files are now ignored by Git and have tracked `.example` templates. Compose validation errors identify the exact profile file where each missing value must be set.
 
-## Docker repository paths are relative
+## Compose env imports stay repository-relative
 
-Repository-owned Docker runtime paths now resolve relative to the image worktree. Absolute paths remain only where Docker requires container mount targets or system-installed command locations.
+Container-internal runtime paths remain absolute where their locations are known. Compose env-file and Dockerfile imports now use explicit repository-relative paths so checkouts reached through symlinked working directories do not depend on a host absolute path.

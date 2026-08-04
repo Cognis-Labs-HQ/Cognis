@@ -22,7 +22,7 @@ Not responsible for: infrastructure provisioning, secrets management beyond env 
 The Dockerfile at `docker/Dockerfile` uses a single `FROM node:22` stage. Key properties:
 
 - Creates a non-root `cognis` system user and group.
-- Creates repository-local runtime directories `logs`, `data`, `config`, and `media/uploads` with correct ownership before switching user.
+- Creates runtime directories `/app/logs`, `/app/data`, `/app/config`, and `/app/media/uploads` with correct ownership before switching user.
 - Copies `docker/cognisctl` (the CLI wrapper), `docker/entrypoint.sh`, and `docker/healthcheck.sh` into `/usr/local/bin/` as root before switching to the `cognis` user.
 - Copies source and runs `npm ci --ignore-scripts` as the non-root user.
 - Exposes port `3000`.
@@ -31,12 +31,12 @@ The Dockerfile at `docker/Dockerfile` uses a single `FROM node:22` stage. Key pr
 
 ```dockerfile
 EXPOSE 3000
-CMD ["node", "dist/server/src/api/main.js"]
+CMD ["node", "src/api/main.js"]
 ```
 
 ### Environment profiles
 
-Docker defaults are kept outside the image in `docker/env/default.env`, which is linked to the root `.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files. Compose loads those files into the container, and the entrypoint requires the selected engine's host, port, database, username, and password before constructing `DATABASE_URL`. Production also requires `DATA_ENCRYPTION_KEY`. The production secret files are ignored by Git; copy their tracked `.example` templates and edit the copies. Missing-variable errors name the exact file that needs the value. Repository-owned runtime paths are relative to the image worktree; absolute paths remain only for system-installed commands and container volume mount points.
+Docker defaults are kept outside the image in `docker/env/default.env`, which is linked to the root `.env`. PostgreSQL and MariaDB each have separate driver, development, and production env files. Compose loads those files into the container, and the entrypoint requires the selected engine's host, port, database, username, and password before constructing `DATABASE_URL`. Production also requires `DATA_ENCRYPTION_KEY`. The production secret files are ignored by Git; copy their tracked `.example` templates and edit the copies. Missing-variable errors name the exact file that needs the value. Compose imports every env file through an explicit `./docker/env/...` repository-relative path, so no host-specific absolute checkout path is assumed when the working directory contains symlinks.
 
 ```sh
 cp docker/env/production.env.example docker/env/production.env
@@ -79,25 +79,25 @@ npm ci && npm run ci:test
 
 Environment variables needed to run the application:
 
-| Variable                          | Default                    | Description                                                    |
-| --------------------------------- | -------------------------- | -------------------------------------------------------------- |
-| `DB_TYPE`                         | `postgresql`               | Database backend: `postgresql` or `mariadb`                    |
-| `DATABASE_URL`                    | —                          | Constructed by the container entrypoint from engine settings   |
-| `MEDIA_LOCATION`                  | `media`                    | Root directory for file uploads                                |
-| `LOG_LEVEL`                       | `info`                     | Runtime log-stream verbosity: `debug`, `info`, `warn`, `error` |
-| `LOG_FILE`                        | `logs/app.log`             | Log file path inside the container                             |
-| `LOG_ROTATE_MAX_BYTES`            | `10485760`                 | Rotate active log file when size reaches this many bytes       |
-| `LOG_ROTATE_MAX_FILES`            | `10`                       | Number of rotated log archives to keep (`0` keeps none)        |
-| `LOG_ROTATE_COMPRESS`             | `true`                     | Compress rotated logs with gzip (`.gz`) when enabled           |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                    | Bearer token lifetime in seconds                               |
-| `COGNIS_CLI_TOKEN_PATH`           | `config/cli-access.token`  | Path for the CLI bootstrap token                               |
-| `COGNIS_MODULES_ROOT`             | `dist/server/src/modules`  | Root directory for module discovery                            |
-| `COGNIS_GATEWAYS_ROOT`            | `dist/server/src/gateways` | Root directory for gateway discovery                           |
-| `COGNIS_ADAPTERS_ROOT`            | `dist/server/src/adapters` | Root directory for adapter discovery                           |
-| `PORT`                            | `3000`                     | HTTP port                                                      |
-| `HOST`                            | `cognis`                   | Internal service hostname                                      |
-| `EXTERNAL_HOST`                   | —                          | Publicly reachable URL for email links                         |
-| `COGNIS_SMTP_HOST`                | —                          | SMTP server hostname; enables the SMTP notification adapter    |
-| `COGNIS_UI_DEMO_MODE`             | `0`                        | Set to `1` to enable pre-populated example data                |
+| Variable                          | Default                        | Description                                                    |
+| --------------------------------- | ------------------------------ | -------------------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb`                    |
+| `DATABASE_URL`                    | —                              | Constructed by the container entrypoint from engine settings   |
+| `MEDIA_LOCATION`                  | `/app/media`                   | Root directory for file uploads                                |
+| `LOG_LEVEL`                       | `info`                         | Runtime log-stream verbosity: `debug`, `info`, `warn`, `error` |
+| `LOG_FILE`                        | `/app/logs/app.log`            | Log file path inside the container                             |
+| `LOG_ROTATE_MAX_BYTES`            | `10485760`                     | Rotate active log file when size reaches this many bytes       |
+| `LOG_ROTATE_MAX_FILES`            | `10`                           | Number of rotated log archives to keep (`0` keeps none)        |
+| `LOG_ROTATE_COMPRESS`             | `true`                         | Compress rotated logs with gzip (`.gz`) when enabled           |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds                               |
+| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token                               |
+| `COGNIS_MODULES_ROOT`             | `/app/src/modules`             | Root directory for module discovery                            |
+| `COGNIS_GATEWAYS_ROOT`            | `/app/src/gateways`            | Root directory for gateway discovery                           |
+| `COGNIS_ADAPTERS_ROOT`            | `/app/src/adapters`            | Root directory for adapter discovery                           |
+| `PORT`                            | `3000`                         | HTTP port                                                      |
+| `HOST`                            | `cognis`                       | Internal service hostname                                      |
+| `EXTERNAL_HOST`                   | —                              | Publicly reachable URL for email links                         |
+| `COGNIS_SMTP_HOST`                | —                              | SMTP server hostname; enables the SMTP notification adapter    |
+| `COGNIS_UI_DEMO_MODE`             | `0`                            | Set to `1` to enable pre-populated example data                |
 
 The active Docker defaults and setup overrides are listed directly in the env files under `docker/env/`.

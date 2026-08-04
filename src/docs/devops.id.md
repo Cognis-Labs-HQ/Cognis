@@ -26,12 +26,12 @@ Dockerfile di `docker/Dockerfile` menggunakan satu stage `FROM node:22`:
 
 ```dockerfile
 EXPOSE 3000
-CMD ["node", "dist/server/src/api/main.js"]
+CMD ["node", "src/api/main.js"]
 ```
 
 ### Profil lingkungan
 
-Nilai default Docker disimpan di luar image dalam `docker/env/default.env`, yang ditautkan ke `.env` di root repositori. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah. Compose memuat file tersebut ke container, lalu entrypoint mewajibkan host, port, database, nama pengguna, dan kata sandi mesin yang dipilih sebelum membangun `DATABASE_URL`. Produksi juga mewajibkan `DATA_ENCRYPTION_KEY`. File rahasia produksi diabaikan oleh Git; salin template `.example` yang terlacak lalu ubah salinannya. Pesan variabel yang hilang menyebutkan file persis yang harus diisi. Path runtime milik repositori bersifat relatif terhadap pohon kerja image; path absolut hanya digunakan untuk perintah yang dipasang pada sistem dan titik mount volume container.
+Nilai default Docker disimpan di luar image dalam `docker/env/default.env`, yang ditautkan ke `.env` di root repositori. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah. Compose memuat file tersebut ke container, lalu entrypoint mewajibkan host, port, database, nama pengguna, dan kata sandi mesin yang dipilih sebelum membangun `DATABASE_URL`. Produksi juga mewajibkan `DATA_ENCRYPTION_KEY`. File rahasia produksi diabaikan oleh Git; salin template `.example` yang terlacak lalu ubah salinannya. Pesan variabel yang hilang menyebutkan file persis yang harus diisi. Compose mengimpor setiap file env melalui path relatif repositori `./docker/env/...` yang eksplisit sehingga tidak mengasumsikan path checkout host absolut ketika direktori kerja memuat symlink.
 
 ```sh
 cp docker/env/production.env.example docker/env/production.env

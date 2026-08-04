@@ -26,12 +26,12 @@ CognisはNode 22をベースにした単一のDockerイメージとして提供�
 
 ```dockerfile
 EXPOSE 3000
-CMD ["node", "dist/server/src/api/main.js"]
+CMD ["node", "src/api/main.js"]
 ```
 
 ### 環境プロファイル
 
-Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeがこれらをコンテナに読み込み、エントリポイントが選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを検証してから `DATABASE_URL` を構築します。本番では `DATA_ENCRYPTION_KEY` も必須です。本番用の秘密情報ファイルはGitの追跡対象外です。追跡されている `.example` テンプレートをコピーして編集してください。変数不足のエラーには、値を設定する正確なファイル名が表示されます。 リポジトリが所有するランタイムパスはイメージの作業ツリーからの相対パスです。絶対パスは、システムにインストールするコマンドとコンテナボリュームのマウント先にのみ使用します。
+Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeがこれらをコンテナに読み込み、エントリポイントが選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを検証してから `DATABASE_URL` を構築します。本番では `DATA_ENCRYPTION_KEY` も必須です。本番用の秘密情報ファイルはGitの追跡対象外です。追跡されている `.example` テンプレートをコピーして編集してください。変数不足のエラーには、値を設定する正確なファイル名が表示されます。 ComposeはすべてのEnvファイルを明示的なリポジトリ相対パス `./docker/env/...` で読み込みます。作業ディレクトリにシンボリックリンクが含まれていても、ホスト固有の絶対チェックアウトパスを前提にしません。
 
 ```sh
 cp docker/env/production.env.example docker/env/production.env
