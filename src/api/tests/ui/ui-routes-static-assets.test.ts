@@ -106,6 +106,29 @@ test("source assets use identity encoding when precompressed files are absent", 
     );
 });
 
+test("source assets reject requests that exclude every available encoding", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+    await route(
+        {
+            headers: {
+                "accept-encoding": "identity;q=0, br;q=0, gzip;q=0",
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/reuse/escape-html.js"),
+    );
+
+    assert.equal(recorder.status, 406);
+    assert.equal(recorder.headers.vary, "Accept-Encoding");
+    assert.deepEqual(JSON.parse(recorder.body), {
+        error: {
+            code: "not_acceptable",
+            message: "No acceptable asset encoding is available.",
+        },
+    });
+});
+
 test("GET /static/gateways/:id/:file serves file from registered static dir", async () => {
     const uiRegistry = new UIRegistry();
     const authUiDir = path.resolve(

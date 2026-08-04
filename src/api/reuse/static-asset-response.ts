@@ -41,7 +41,11 @@ function acceptedEncodingQuality(header: string, encoding: string): number {
                 : 0,
         );
     }
-    return qualityByEncoding.get(encoding) ?? qualityByEncoding.get("*") ?? 0;
+    return (
+        qualityByEncoding.get(encoding) ??
+        qualityByEncoding.get("*") ??
+        (encoding === "identity" ? 1 : 0)
+    );
 }
 
 export async function serveStaticAsset(
@@ -72,6 +76,24 @@ export async function serveStaticAsset(
                     acceptedEncodingQuality(acceptedEncoding, left.name),
             );
         const encoding = availableEncodings[0]?.name;
+        if (
+            !encoding &&
+            acceptedEncodingQuality(acceptedEncoding, "identity") === 0
+        ) {
+            res.writeHead(406, {
+                "content-type": "application/json",
+                vary: "Accept-Encoding",
+            });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "not_acceptable",
+                        message: "No acceptable asset encoding is available.",
+                    },
+                }),
+            );
+            return;
+        }
         const compressedPath = encoding
             ? encoding === "br"
                 ? brotliPath
