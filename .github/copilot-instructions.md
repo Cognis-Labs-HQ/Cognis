@@ -16,6 +16,13 @@ Do this before exploration, implementation, linting, or testing so the required 
 
 ## Architecture
 
+### UI consumers use gateway client functions
+
+When browser code needs data owned by a gateway, export the request function
+from that gateway's UI client module and consume that function instead of
+issuing a gateway API request directly from another page or module. This keeps
+endpoint knowledge and response handling within the owning gateway.
+
 ### API result limits are caller-controlled
 
 API endpoints must not impose arbitrary default or maximum result limits in

@@ -1,4 +1,5 @@
 import { apiFetch } from "../../reuse/api-client.js";
+import { fetchUpcomingEvents } from "/static/gateways/calendar/calendar-api.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -51,13 +52,6 @@ async function loadDashboardExtensions({ i18n, account, role }) {
     }
 }
 
-async function loadUpcomingCalendarEvents() {
-    const response = await apiFetch("/api/v1/calendar/upcoming-events?limit=5");
-    if (!response.ok) throw new Error("upcoming_events_unavailable");
-    const payload = await response.json();
-    return Array.isArray(payload?.data) ? payload.data : [];
-}
-
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
@@ -69,7 +63,7 @@ export async function mount(root, { signal } = {}) {
     let info = null;
     let upcomingCalendarEvents = null;
     const accountInfoPromise = loadAccountInfo(account);
-    const upcomingEventsPromise = loadUpcomingCalendarEvents();
+    const upcomingEventsPromise = fetchUpcomingEvents(5);
     const extensionElementsPromise = loadDashboardExtensions({
         i18n,
         account,
@@ -203,28 +197,27 @@ export async function mount(root, { signal } = {}) {
 
     await composer.init();
 
-    const hydrationTasks = [
-        accountInfoPromise.then((accountInfo) => {
-            if (signal?.aborted) return;
-            info = accountInfo ?? {};
-            composer.refreshElements(["account-info", "last-login"]);
-        }),
-        upcomingEventsPromise.then((events) => {
+    void accountInfoPromise.then((accountInfo) => {
+        if (signal?.aborted) return;
+        info = accountInfo ?? {};
+        composer.refreshElements(["account-info", "last-login"]);
+    });
+    void upcomingEventsPromise
+        .then((events) => {
             if (signal?.aborted) return;
             upcomingCalendarEvents = events;
             composer.refreshElements(["calendar-upcoming"]);
-        }),
-        extensionElementsPromise.then((extensionElements) => {
-            if (signal?.aborted || extensionElements.length === 0) return;
-            elements.push(...extensionElements);
-            composer.refresh(elements);
-        }),
-    ];
-    await Promise.allSettled(hydrationTasks);
-    if (upcomingCalendarEvents === null && !signal?.aborted) {
-        upcomingCalendarEvents = [];
-        composer.refreshElements(["calendar-upcoming"]);
-    }
+        })
+        .catch(() => {
+            if (signal?.aborted) return;
+            upcomingCalendarEvents = [];
+            composer.refreshElements(["calendar-upcoming"]);
+        });
+    void extensionElementsPromise.then((extensionElements) => {
+        if (signal?.aborted || extensionElements.length === 0) return;
+        elements.push(...extensionElements);
+        composer.refresh(elements);
+    });
 }
 
 await mountWhenDirect(mount);
