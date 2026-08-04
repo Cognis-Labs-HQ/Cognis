@@ -35,3 +35,7 @@ Every database profile now requires its engine-specific host, port, database, us
 ## Driver defaults are isolated by engine
 
 PostgreSQL and MariaDB host, port, database, username, and pool defaults now live exclusively in their respective driver env profiles. The shared default profile contains only engine-neutral application settings.
+
+## User-managed secret files stay untracked
+
+Production secret env files are now ignored by Git and have tracked `.example` templates. Compose validation errors identify the exact profile file where each missing value must be set.

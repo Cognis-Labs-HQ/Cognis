@@ -35,3 +35,7 @@ Setiap profil database kini mewajibkan host, port, database, nama pengguna, dan 
 ## Nilai default driver dipisahkan berdasarkan mesin
 
 Nilai default host, port, database, nama pengguna, dan pool PostgreSQL serta MariaDB kini hanya berada dalam profil env drivernya masing-masing. Profil default bersama hanya berisi pengaturan aplikasi yang netral terhadap mesin.
+
+## File rahasia yang dikelola pengguna tidak dilacak
+
+File env rahasia produksi kini diabaikan oleh Git dan memiliki template `.example` yang terlacak. Kesalahan validasi Compose menyebutkan file profil persis tempat setiap nilai yang hilang harus diisi.

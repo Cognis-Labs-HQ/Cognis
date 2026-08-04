@@ -32,9 +32,12 @@ CMD ["node", "src/api/main.js"]
 
 ### Umgebungsprofile
 
-Docker-Standardwerte liegen außerhalb des Images in `docker/env/default.env`, das mit der `.env` im Repository-Stamm verknüpft ist. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien. Compose verlangt Host, Port, Datenbank, Benutzername und Passwort des ausgewählten Systems und erstellt daraus `DATABASE_URL`. Produktionsprofile verlangen zusätzlich `DATA_ENCRYPTION_KEY`, sodass Container mit unvollständigen Einstellungen nicht erstellt werden.
+Docker-Standardwerte liegen außerhalb des Images in `docker/env/default.env`, das mit der `.env` im Repository-Stamm verknüpft ist. PostgreSQL und MariaDB besitzen getrennte Treiber-, Entwicklungs- und Produktions-Env-Dateien. Compose verlangt Host, Port, Datenbank, Benutzername und Passwort des ausgewählten Systems und erstellt daraus `DATABASE_URL`. Produktionsprofile verlangen zusätzlich `DATA_ENCRYPTION_KEY`, sodass Container mit unvollständigen Einstellungen nicht erstellt werden. Die Produktionsdateien mit Geheimnissen werden von Git ignoriert; kopieren Sie die versionierten `.example`-Vorlagen und bearbeiten Sie die Kopien. Fehlermeldungen zu Variablen nennen die genaue Datei, in der der Wert eingetragen werden muss.
 
 ```sh
+cp docker/env/production.env.example docker/env/production.env
+cp docker/env/postgres-production.env.example docker/env/postgres-production.env
+cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
 docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
 docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
 docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up

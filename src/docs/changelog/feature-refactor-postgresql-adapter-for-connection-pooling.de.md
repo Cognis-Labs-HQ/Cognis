@@ -35,3 +35,7 @@ Jedes Datenbankprofil verlangt nun die systemspezifischen Werte für Host, Port,
 ## Treiberstandardwerte sind nach System getrennt
 
 Die Standardwerte für Host, Port, Datenbank, Benutzername und Pool von PostgreSQL und MariaDB befinden sich nun ausschließlich in den jeweiligen Treiber-Env-Profilen. Das gemeinsame Standardprofil enthält nur systemneutrale Anwendungseinstellungen.
+
+## Benutzerverwaltete Geheimnisdateien bleiben unversioniert
+
+Produktions-Env-Dateien mit Geheimnissen werden nun von Git ignoriert und besitzen versionierte `.example`-Vorlagen. Compose-Validierungsfehler nennen die genaue Profildatei, in der jeder fehlende Wert eingetragen werden muss.

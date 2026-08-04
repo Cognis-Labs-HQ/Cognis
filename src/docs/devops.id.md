@@ -31,9 +31,12 @@ CMD ["node", "src/api/main.js"]
 
 ### Profil lingkungan
 
-Nilai default Docker disimpan di luar image dalam `docker/env/default.env`, yang ditautkan ke `.env` di root repositori. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah. Compose mewajibkan host, port, database, nama pengguna, dan kata sandi mesin yang dipilih lalu membangun `DATABASE_URL` dari nilai tersebut. Profil produksi juga mewajibkan `DATA_ENCRYPTION_KEY` sehingga container tidak dapat dibuat dengan pengaturan yang belum lengkap.
+Nilai default Docker disimpan di luar image dalam `docker/env/default.env`, yang ditautkan ke `.env` di root repositori. PostgreSQL dan MariaDB memiliki file env driver, pengembangan, dan produksi yang terpisah. Compose mewajibkan host, port, database, nama pengguna, dan kata sandi mesin yang dipilih lalu membangun `DATABASE_URL` dari nilai tersebut. Profil produksi juga mewajibkan `DATA_ENCRYPTION_KEY` sehingga container tidak dapat dibuat dengan pengaturan yang belum lengkap. File rahasia produksi diabaikan oleh Git; salin template `.example` yang terlacak lalu ubah salinannya. Pesan variabel yang hilang menyebutkan file persis yang harus diisi.
 
 ```sh
+cp docker/env/production.env.example docker/env/production.env
+cp docker/env/postgres-production.env.example docker/env/postgres-production.env
+cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
 docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
 docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
 docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up

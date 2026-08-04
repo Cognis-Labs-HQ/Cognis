@@ -31,9 +31,12 @@ CMD ["node", "src/api/main.js"]
 
 ### 環境プロファイル
 
-Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeは選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを必須とし、それらから `DATABASE_URL` を構築します。本番プロファイルでは `DATA_ENCRYPTION_KEY` も必須のため、不完全な設定ではコンテナを作成できません。
+Dockerのデフォルト値はイメージ外の `docker/env/default.env` に保存され、リポジトリルートの `.env` にリンクされます。PostgreSQLとMariaDBには個別のドライバー、開発、本番用Envファイルがあります。Composeは選択したエンジンのホスト、ポート、データベース、ユーザー名、パスワードを必須とし、それらから `DATABASE_URL` を構築します。本番プロファイルでは `DATA_ENCRYPTION_KEY` も必須のため、不完全な設定ではコンテナを作成できません。 本番用の秘密情報ファイルはGitの追跡対象外です。追跡されている `.example` テンプレートをコピーして、コピー先を編集してください。変数不足のエラーには、値を設定する正確なファイル名が表示されます。
 
 ```sh
+cp docker/env/production.env.example docker/env/production.env
+cp docker/env/postgres-production.env.example docker/env/postgres-production.env
+cp docker/env/mariadb-production.env.example docker/env/mariadb-production.env
 docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/production.env --env-file docker/env/postgres-production.env -f docker-compose.postgres.yaml up
 docker compose --env-file docker/env/default.env --env-file docker/env/mariadb.env --env-file docker/env/production.env --env-file docker/env/mariadb-production.env -f docker-compose.mariadb.yaml up
 docker compose --env-file docker/env/default.env --env-file docker/env/postgres.env --env-file docker/env/development.env --env-file docker/env/postgres-development.env -f docker-compose.postgres.dev.yaml up

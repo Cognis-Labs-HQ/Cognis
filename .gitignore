@@ -2,3 +2,8 @@ node_modules/
 dist/
 .env
 .DS_Store
+
+# Deployment-specific Docker secrets (copy from the tracked .example files).
+docker/env/production.env
+docker/env/postgres-production.env
+docker/env/mariadb-production.env

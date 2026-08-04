@@ -26,7 +26,7 @@ services:
             - docker/env/development.env
             - docker/env/mariadb-development.env
         environment:
-            DATABASE_URL: mysql://${MARIADB_USER:?MARIADB_USER must be set}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set}@${MARIADB_HOST:?MARIADB_HOST must be set}:${MARIADB_PORT:?MARIADB_PORT must be set}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set}
+            DATABASE_URL: mysql://${MARIADB_USER:?MARIADB_USER must be set in docker/env/mariadb.env}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set in docker/env/mariadb-development.env}@${MARIADB_HOST:?MARIADB_HOST must be set in docker/env/mariadb.env}:${MARIADB_PORT:?MARIADB_PORT must be set in docker/env/mariadb.env}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set in docker/env/mariadb.env}
         ports:
             - "3000:3000"
         volumes:

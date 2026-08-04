@@ -9,7 +9,7 @@ const profiles = [
         setupEnv: "docker/env/postgres-production.env",
         image: "postgres:17-alpine",
         dbType: "postgresql",
-        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@${POSTGRES_HOST:?POSTGRES_HOST must be set}:${POSTGRES_PORT:?POSTGRES_PORT must be set}/${POSTGRES_DB:?POSTGRES_DB must be set}",
+        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set in docker/env/postgres.env}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in docker/env/postgres-production.env}@${POSTGRES_HOST:?POSTGRES_HOST must be set in docker/env/postgres.env}:${POSTGRES_PORT:?POSTGRES_PORT must be set in docker/env/postgres.env}/${POSTGRES_DB:?POSTGRES_DB must be set in docker/env/postgres.env}",
     },
     {
         compose: "docker-compose.postgres.dev.yaml",
@@ -17,7 +17,7 @@ const profiles = [
         setupEnv: "docker/env/postgres-development.env",
         image: "postgres:17-alpine",
         dbType: "postgresql",
-        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@${POSTGRES_HOST:?POSTGRES_HOST must be set}:${POSTGRES_PORT:?POSTGRES_PORT must be set}/${POSTGRES_DB:?POSTGRES_DB must be set}",
+        url: "postgresql://${POSTGRES_USER:?POSTGRES_USER must be set in docker/env/postgres.env}:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in docker/env/postgres-development.env}@${POSTGRES_HOST:?POSTGRES_HOST must be set in docker/env/postgres.env}:${POSTGRES_PORT:?POSTGRES_PORT must be set in docker/env/postgres.env}/${POSTGRES_DB:?POSTGRES_DB must be set in docker/env/postgres.env}",
     },
     {
         compose: "docker-compose.mariadb.yaml",
@@ -25,7 +25,7 @@ const profiles = [
         setupEnv: "docker/env/mariadb-production.env",
         image: "mariadb:11",
         dbType: "mariadb",
-        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set}@${MARIADB_HOST:?MARIADB_HOST must be set}:${MARIADB_PORT:?MARIADB_PORT must be set}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set}",
+        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set in docker/env/mariadb.env}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set in docker/env/mariadb-production.env}@${MARIADB_HOST:?MARIADB_HOST must be set in docker/env/mariadb.env}:${MARIADB_PORT:?MARIADB_PORT must be set in docker/env/mariadb.env}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set in docker/env/mariadb.env}",
     },
     {
         compose: "docker-compose.mariadb.dev.yaml",
@@ -33,7 +33,7 @@ const profiles = [
         setupEnv: "docker/env/mariadb-development.env",
         image: "mariadb:11",
         dbType: "mariadb",
-        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set}@${MARIADB_HOST:?MARIADB_HOST must be set}:${MARIADB_PORT:?MARIADB_PORT must be set}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set}",
+        url: "mysql://${MARIADB_USER:?MARIADB_USER must be set in docker/env/mariadb.env}:${MARIADB_PASSWORD:?MARIADB_PASSWORD must be set in docker/env/mariadb-development.env}@${MARIADB_HOST:?MARIADB_HOST must be set in docker/env/mariadb.env}:${MARIADB_PORT:?MARIADB_PORT must be set in docker/env/mariadb.env}/${MARIADB_DATABASE:?MARIADB_DATABASE must be set in docker/env/mariadb.env}",
     },
 ];
 
@@ -66,7 +66,7 @@ test("Docker database profiles construct URLs from required engine settings", as
     }
 });
 
-test("production database profiles reject missing secrets", async () => {
+test("production database profiles direct missing secrets to setup files", async () => {
     const postgresCompose = await readFile(
         "docker-compose.postgres.yaml",
         "utf8",
@@ -76,24 +76,24 @@ test("production database profiles reject missing secrets", async () => {
         "utf8",
     );
 
-    for (const requiredVariable of [
-        "POSTGRES_PASSWORD",
-        "DATA_ENCRYPTION_KEY",
+    for (const [requiredVariable, setupFile] of [
+        ["POSTGRES_PASSWORD", "docker/env/postgres-production.env"],
+        ["DATA_ENCRYPTION_KEY", "docker/env/production.env"],
     ]) {
         assert.ok(
             postgresCompose.includes(
-                `\${${requiredVariable}:?${requiredVariable} must be set}`,
+                `\${${requiredVariable}:?${requiredVariable} must be set in ${setupFile}}`,
             ),
         );
     }
-    for (const requiredVariable of [
-        "MARIADB_PASSWORD",
-        "MARIADB_ROOT_PASSWORD",
-        "DATA_ENCRYPTION_KEY",
+    for (const [requiredVariable, setupFile] of [
+        ["MARIADB_PASSWORD", "docker/env/mariadb-production.env"],
+        ["MARIADB_ROOT_PASSWORD", "docker/env/mariadb-production.env"],
+        ["DATA_ENCRYPTION_KEY", "docker/env/production.env"],
     ]) {
         assert.ok(
             mariaDbCompose.includes(
-                `\${${requiredVariable}:?${requiredVariable} must be set}`,
+                `\${${requiredVariable}:?${requiredVariable} must be set in ${setupFile}}`,
             ),
         );
     }
@@ -129,4 +129,17 @@ test("database driver defaults stay inside their engine profiles", async () => {
     assert.ok([...mariaDbKeys].every((key) => !sharedKeys.has(key)));
     assert.ok(postgresKeys.has("POSTGRES_POOL_MAX"));
     assert.ok(mariaDbKeys.has("MARIADB_POOL_MAX"));
+});
+
+test("production setup templates declare every user-managed secret", async () => {
+    const [sharedTemplate, postgresTemplate, mariaDbTemplate] =
+        await Promise.all([
+            readFile("docker/env/production.env.example", "utf8"),
+            readFile("docker/env/postgres-production.env.example", "utf8"),
+            readFile("docker/env/mariadb-production.env.example", "utf8"),
+        ]);
+    assert.match(sharedTemplate, /^DATA_ENCRYPTION_KEY=/m);
+    assert.match(postgresTemplate, /^POSTGRES_PASSWORD=/m);
+    assert.match(mariaDbTemplate, /^MARIADB_PASSWORD=/m);
+    assert.match(mariaDbTemplate, /^MARIADB_ROOT_PASSWORD=/m);
 });
