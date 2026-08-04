@@ -445,6 +445,35 @@ export class CoreCalendarGateway {
         );
     }
 
+    listUpcomingEvents(
+        accountId: string,
+        limit: number,
+        now = new Date(),
+    ): Array<CalendarEventRecord & { calendarName: string | null }> {
+        const calendarEvents = this.listCalendars(accountId).flatMap(
+            (calendar) =>
+                this.listEvents(calendar.id).map((event) => ({
+                    ...event,
+                    calendarName: calendar.name,
+                })),
+        );
+        const invitationEvents = this.listInvitedPendingEvents(accountId).map(
+            (event) => ({ ...event, calendarName: null }),
+        );
+        const eventsById = new Map(
+            [...calendarEvents, ...invitationEvents].map((event) => [
+                `${event.calendarId}:${event.id}`,
+                event,
+            ]),
+        );
+        return [...eventsById.values()]
+            .filter((event) => new Date(event.endAt).getTime() >= now.getTime())
+            .sort((leftEvent, rightEvent) =>
+                leftEvent.startAt.localeCompare(rightEvent.startAt),
+            )
+            .slice(0, limit);
+    }
+
     getEvent(calendarId: string, eventId: string): CalendarEventRecord | null {
         return (
             this.eventsByCalendar

@@ -35,6 +35,12 @@ import { apiFetch } from "/static/reuse/api-client.js";
 const AUTH_SETUP_CACHE_TTL_MS = 5_000;
 let authSetupCacheExpiresAt = 0;
 let authSetupRequiredCached = false;
+const accountInfoByAccount = new Map();
+
+uiCtx.capabilities.contribute(
+    "session:getAccountInfo",
+    (accountId) => accountInfoByAccount.get(accountId) ?? null,
+);
 
 function getFirstResult(stageResults, stageId) {
     return (stageResults[stageId] ?? [])[0] ?? null;
@@ -74,6 +80,9 @@ uiCtx.extendFlow(
             );
             if (response.ok) {
                 const payload = await response.json().catch(() => null);
+                if (payload?.data) {
+                    accountInfoByAccount.set(account, payload.data);
+                }
                 if (payload?.data?.enabled === false) {
                     clearStoredSession();
                     return { valid: false, reason: "account_disabled" };

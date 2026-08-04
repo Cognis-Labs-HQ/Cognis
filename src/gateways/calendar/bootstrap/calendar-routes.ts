@@ -50,6 +50,7 @@ export function createCalendarCoreRoutes({
     getDispatchNotification,
     ensureNotificationCategory,
     getCapability,
+    runUpcomingEventsFlow,
 }: {
     gateway: CoreCalendarGateway;
     shareRegistry: CalendarShareRegistry;
@@ -73,6 +74,10 @@ export function createCalendarCoreRoutes({
     getDispatchNotification: () => NotificationDispatcher | null;
     ensureNotificationCategory: () => void;
     getCapability: <T>(capabilityId: string) => T | undefined;
+    runUpcomingEventsFlow: (input: {
+        accountId: string;
+        limit: number;
+    }) => Promise<unknown[]>;
 }): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(routeContext);
     const externalHost =
@@ -103,6 +108,23 @@ export function createCalendarCoreRoutes({
     ): Promise<boolean> => {
         ensureNotificationCategory();
         const dispatchNotification = getDispatchNotification();
+        if (
+            url.pathname === "/api/v1/calendar/upcoming-events" &&
+            req.method === "GET"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const requestedLimit = Number(url.searchParams.get("limit") ?? 5);
+            const limit = Number.isFinite(requestedLimit)
+                ? Math.min(50, Math.max(1, Math.trunc(requestedLimit)))
+                : 5;
+            const results = await runUpcomingEventsFlow({
+                accountId: claims.sub,
+                limit,
+            });
+            sendJson(res, 200, { data: results[0] ?? [] });
+            return true;
+        }
         const sharedEventsMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/shared\/([^/]+)\/events$/,
         );
