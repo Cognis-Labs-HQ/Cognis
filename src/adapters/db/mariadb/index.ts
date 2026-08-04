@@ -3,6 +3,7 @@ import type { BootstrapLog } from "@cognis/core";
 import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
     buildDbErrorMeta,
     summarizeStatement,
@@ -16,13 +17,66 @@ import {
 } from "../../../gateways/db/reuse/db-command.js";
 
 export interface MariaDbClient {
-    query(
-        sql: string,
-        params?: unknown[],
-    ): Promise<[unknown[], { affectedRows?: number }]>;
+    query(sql: string, params?: unknown[]): Promise<[unknown, unknown]>;
     beginTransaction(): Promise<void>;
     commit(): Promise<void>;
     rollback(): Promise<void>;
+    release(): void;
+}
+
+export interface MariaDbPool {
+    query(sql: string, params?: unknown[]): Promise<[unknown, unknown]>;
+    getConnection(): Promise<MariaDbClient>;
+    end(): Promise<void>;
+    on?(event: "error", handler: (error: Error) => void): void;
+}
+
+export interface MariaDbPoolSettings {
+    waitForConnections: true;
+    connectionLimit: number;
+    maxIdle: number;
+    idleTimeout: number;
+    connectTimeout: number;
+    queueLimit: number;
+}
+
+export function readMariaDbPoolSettings(): MariaDbPoolSettings {
+    const connectionLimit = readBoundedEnvironmentInteger(
+        "MARIADB_POOL_MAX",
+        10,
+        1,
+        100,
+    );
+    return {
+        waitForConnections: true,
+        connectionLimit,
+        maxIdle: connectionLimit,
+        idleTimeout: readBoundedEnvironmentInteger(
+            "MARIADB_POOL_IDLE_TIMEOUT_MS",
+            30_000,
+            1_000,
+            600_000,
+        ),
+        connectTimeout: readBoundedEnvironmentInteger(
+            "MARIADB_POOL_CONNECTION_TIMEOUT_MS",
+            5_000,
+            100,
+            120_000,
+        ),
+        queueLimit: 0,
+    };
+}
+
+function readAffectedRows(result: unknown): number {
+    if (
+        typeof result === "object" &&
+        result !== null &&
+        "affectedRows" in result &&
+        typeof result.affectedRows === "number"
+    ) {
+        return result.affectedRows;
+    }
+    return 0;
 }
 
 const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
@@ -54,7 +108,16 @@ const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
 };
 
 export class MariaDbGateway implements DatabaseGateway {
-    constructor(private readonly client: MariaDbClient) {}
+    private readonly pool?: MariaDbPool;
+
+    constructor(
+        private readonly queryTarget: Pick<MariaDbPool, "query">,
+        private readonly log?: BootstrapLog,
+    ) {
+        if ("getConnection" in queryTarget) {
+            this.pool = queryTarget as MariaDbPool;
+        }
+    }
 
     async executeCommand<Row = Record<string, unknown>>(
         command: StructuredDbCommand,
@@ -63,73 +126,79 @@ export class MariaDbGateway implements DatabaseGateway {
             command,
             MARIADB_STRUCTURED_DB_DIALECT,
         );
-        const [rows, meta] = await this.client.query(
+        const [result] = await this.queryTarget.query(
             statement.sql,
             statement.params,
         );
         if (statement.returnsRows) {
-            if (!Array.isArray(rows)) {
+            if (!Array.isArray(result)) {
                 throw new Error(
                     "MariaDB structured SELECT commands must return a row array.",
                 );
             }
-            const typedRows = rows as Row[];
-            return { rows: typedRows, rowCount: typedRows.length };
+            const rows = result as Row[];
+            return { rows, rowCount: rows.length };
         }
-        return { rowCount: meta.affectedRows ?? 0 };
+        return { rowCount: readAffectedRows(result) };
     }
 
     async query<Row = Record<string, unknown>>(
         statement: string,
         params?: unknown[],
     ): Promise<QueryResult<Row>> {
-        const [rows] = await this.client.query(statement, params);
-        const typedRows = rows as Row[];
-        return { rows: typedRows, rowCount: typedRows.length };
+        const [result] = await this.queryTarget.query(statement, params);
+        const rows = result as Row[];
+        return { rows, rowCount: rows.length };
     }
 
     async execute(
         statement: string,
         params?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        const [, meta] = await this.client.query(statement, params);
-        return { affectedRows: meta.affectedRows ?? 0 };
+        const [result] = await this.queryTarget.query(statement, params);
+        return { affectedRows: readAffectedRows(result) };
     }
 
     async transaction<T>(
         callback: (db: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
-        await this.client.beginTransaction();
+        if (!this.pool) {
+            throw new Error("MariaDB transactions require a connection pool.");
+        }
+        const client = await this.pool.getConnection();
+        const transactionGateway = new MariaDbGateway(client, this.log);
         try {
-            const result = await callback(this);
-            await this.client.commit();
+            await client.beginTransaction();
+            const result = await callback(transactionGateway);
+            await client.commit();
             return result;
         } catch (error) {
-            await this.client.rollback();
+            writeDbLog(this.log, "error", "MariaDB transaction failed.", {
+                component: "db",
+                provider: "mariadb",
+                ...buildDbErrorMeta(error),
+            });
+            try {
+                await client.rollback();
+            } catch (rollbackError) {
+                writeDbLog(this.log, "error", "MariaDB rollback failed.", {
+                    component: "db",
+                    provider: "mariadb",
+                    ...buildDbErrorMeta(rollbackError),
+                });
+            }
             throw error;
+        } finally {
+            client.release();
         }
     }
 }
 
 class MariaDbExecutor implements RawDbExecutor {
-    private connectionPromise: Promise<MariaDbClient> | null = null;
-
     constructor(
-        private readonly databaseUrl: string,
+        private readonly pool: MariaDbPool,
         private readonly log?: BootstrapLog,
     ) {}
-
-    private async getClient(): Promise<MariaDbClient> {
-        if (!this.connectionPromise) {
-            this.connectionPromise = (async () => {
-                const mariadb = await import("mysql2/promise");
-                return (await mariadb.createConnection(
-                    this.databaseUrl,
-                )) as MariaDbClient;
-            })();
-        }
-        return this.connectionPromise;
-    }
 
     async execute(sql: string, params: unknown[] = []) {
         writeDbLog(this.log, "debug", "Executing SQL statement.", {
@@ -138,15 +207,12 @@ class MariaDbExecutor implements RawDbExecutor {
             statement: summarizeStatement(sql),
             parameterCount: params.length,
         });
-        const client = await this.getClient();
         try {
-            const [rows] = await client.query(sql, params);
-            if (Array.isArray(rows)) {
-                return { rows, rowCount: rows.length };
+            const [result] = await this.pool.query(sql, params);
+            if (Array.isArray(result)) {
+                return { rows: result, rowCount: result.length };
             }
-            return {
-                rowCount: (rows as { affectedRows?: number }).affectedRows ?? 0,
-            };
+            return { rowCount: readAffectedRows(result) };
         } catch (error) {
             writeDbLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
@@ -162,22 +228,44 @@ class MariaDbExecutor implements RawDbExecutor {
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult> {
-        const gateway = new MariaDbGateway(await this.getClient());
-        return gateway.executeCommand(command);
+        return new MariaDbGateway(this.pool, this.log).executeCommand(command);
     }
 
     async transaction<T>(
         callback: (executor: RawDbExecutor) => Promise<T>,
     ): Promise<T> {
-        const client = await this.getClient();
-        await client.beginTransaction();
+        const client = await this.pool.getConnection();
+        const transactionExecutor = new MariaDbExecutor(
+            {
+                query: client.query.bind(client),
+                getConnection: async () => client,
+                end: async () => undefined,
+            },
+            this.log,
+        );
         try {
-            const result = await callback(this);
+            await client.beginTransaction();
+            const result = await callback(transactionExecutor);
             await client.commit();
             return result;
         } catch (error) {
-            await client.rollback().catch(() => undefined);
+            writeDbLog(this.log, "error", "MariaDB transaction failed.", {
+                component: "db",
+                provider: "mariadb",
+                ...buildDbErrorMeta(error),
+            });
+            try {
+                await client.rollback();
+            } catch (rollbackError) {
+                writeDbLog(this.log, "error", "MariaDB rollback failed.", {
+                    component: "db",
+                    provider: "mariadb",
+                    ...buildDbErrorMeta(rollbackError),
+                });
+            }
             throw error;
+        } finally {
+            client.release();
         }
     }
 
@@ -305,6 +393,36 @@ export function canHandleDbProvider(providerId: DbProviderId): boolean {
 export async function createDbExecutor(args: {
     databaseUrl: string;
     log?: BootstrapLog;
+    lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
+    pool?: MariaDbPool;
 }): Promise<RawDbExecutor> {
-    return new MariaDbExecutor(args.databaseUrl, args.log);
+    const pool =
+        args.pool ?? (await createMariaDbPool(args.databaseUrl, args.log));
+    args.lifecycle?.registerShutdown(async () => {
+        await pool.end();
+        writeDbLog(args.log, "info", "MariaDB connection pool drained.", {
+            component: "db",
+            provider: "mariadb",
+        });
+    });
+    return new MariaDbExecutor(pool, args.log);
+}
+
+async function createMariaDbPool(
+    databaseUrl: string,
+    log?: BootstrapLog,
+): Promise<MariaDbPool> {
+    const mariadb = await import("mysql2/promise");
+    const pool = mariadb.createPool({
+        uri: databaseUrl,
+        ...readMariaDbPoolSettings(),
+    });
+    pool.on("error", (error: Error) => {
+        writeDbLog(log, "error", "Idle MariaDB pool connection failed.", {
+            component: "db",
+            provider: "mariadb",
+            ...buildDbErrorMeta(error),
+        });
+    });
+    return pool as MariaDbPool;
 }

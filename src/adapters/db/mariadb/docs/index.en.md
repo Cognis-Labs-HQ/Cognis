@@ -2,7 +2,7 @@
 
 ## Overview
 
-The MariaDB adapter connects Cognis to a MariaDB (or MySQL) database server, making it suitable for multi-server or high-availability deployments. It uses the `mariadb` npm driver and connection pooling, and is selected when `DB_TYPE=mariadb`.
+The MariaDB adapter connects Cognis to a MariaDB (or MySQL) database server, making it suitable for multi-server or high-availability deployments. It uses the `mysql2` npm driver and connection pooling, and is selected when `DB_TYPE=mariadb`.
 
 ## Responsibilities
 
@@ -15,7 +15,7 @@ Not responsible for: choosing the database or schema name (use the `DATABASE_URL
 
 ## Architecture
 
-`MariaDbGateway` in `src/adapters/db/mariadb/adapter.ts` creates a connection pool on startup via `mariadb.createPool(connectionString)`. Every call to `query()` and `execute()` acquires a connection from the pool, runs the statement, and releases the connection back. `transaction(fn)` acquires a dedicated connection, calls `BEGIN`, invokes the callback, and commits or rolls back depending on whether the callback throws.
+`MariaDbGateway` in `src/adapters/db/mariadb/index.ts` owns a `mysql2` promise pool. Ordinary queries execute directly through the pool. Transactions reserve one connection for the callback, commit or roll back on that connection, and release it in a `finally` block. The adapter registers pool drainage with the `system:lifecycle` ctx capability.
 
 ### Placeholder syntax
 
@@ -29,7 +29,10 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 
 ## Configuration
 
-| Variable       | Default | Description                                                         |
-| -------------- | ------- | ------------------------------------------------------------------- |
-| `DB_TYPE`      | —       | Must be `mariadb` to activate this adapter                          |
-| `DATABASE_URL` | —       | MariaDB connection URL, e.g. `mariadb://user:pass@host:3306/cognis` |
+| Variable                             | Default | Description                                                         |
+| ------------------------------------ | ------- | ------------------------------------------------------------------- |
+| `DB_TYPE`                            | —       | Must be `mariadb` to activate this adapter                          |
+| `DATABASE_URL`                       | —       | MariaDB connection URL, e.g. `mariadb://user:pass@host:3306/cognis` |
+| `MARIADB_POOL_MAX`                   | `10`    | Maximum pool size (1–100)                                           |
+| `MARIADB_POOL_IDLE_TIMEOUT_MS`       | `30000` | Idle-connection timeout in milliseconds (1,000–600,000)             |
+| `MARIADB_POOL_CONNECTION_TIMEOUT_MS` | `5000`  | Connection timeout in milliseconds (100–120,000)                    |

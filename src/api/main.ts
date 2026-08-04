@@ -24,6 +24,9 @@ import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
+import { requirePublicEnvironment } from "./reuse/environment.js";
+
+requirePublicEnvironment();
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];
@@ -191,6 +194,32 @@ const gatewayService = new GatewayService(gatewayRegistry);
 // as ctx.flow — no capability unwrapping required.
 const systemCtx = createCtx();
 capabilities.contribute("system:ctx", systemCtx);
+const shutdownHandlers = new Set<() => Promise<void>>();
+let shutdownPromise: Promise<void> | undefined;
+const lifecycle = {
+    registerShutdown(handler: () => Promise<void>): void {
+        shutdownHandlers.add(handler);
+    },
+    shutdown(): Promise<void> {
+        shutdownPromise ??= Promise.allSettled(
+            Array.from(shutdownHandlers, (handler) => handler()),
+        ).then((results) => {
+            for (const result of results) {
+                if (result.status === "rejected") {
+                    bootstrapLog("error", "Shutdown handler failed.", {
+                        component: "api-runtime",
+                        error:
+                            result.reason instanceof Error
+                                ? result.reason.message
+                                : String(result.reason),
+                    });
+                }
+            }
+        });
+        return shutdownPromise;
+    },
+};
+capabilities.contribute("system:lifecycle", lifecycle);
 capabilities.contribute(
     "system:health:contribute",
     healthService.contribute.bind(healthService),
@@ -523,3 +552,27 @@ const server = buildServer({
 server.listen(port, host, () => {
     void log("info", "Cognis API listening.", { host, port });
 });
+
+for (const signal of ["SIGINT", "SIGTERM"] as const) {
+    process.once(signal, () => {
+        void (async () => {
+            await log("info", "Server shutdown requested.", { signal });
+            await new Promise<void>((resolve, reject) => {
+                server.close((error) => {
+                    if (error) reject(error);
+                    else resolve();
+                });
+            });
+            await lifecycle.shutdown();
+            process.exit(0);
+        })().catch((error) => {
+            log("error", "Graceful server shutdown failed.", {
+                component: "api-runtime",
+                fatal: true,
+                signal,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            process.exit(1);
+        });
+    });
+}

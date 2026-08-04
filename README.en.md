@@ -27,8 +27,8 @@ API handlers define **what** to do. Gateways/adapters decide **how** to execute 
 
 ## Container orchestration
 
-- `docker-compose.yml`: production-like run profile (`NODE_ENV=production`, `COGNIS_UI_DEMO_MODE=0`).
-- `docker-compose.dev.yaml`: development/demo profile (`NODE_ENV=development`, `COGNIS_UI_DEMO_MODE=1`) with bind mounts for in-flight UI/API edits.
+- `docker-compose.postgres.yaml` and `docker-compose.mariadb.yaml`: Compose definitions for PostgreSQL and MariaDB.
+- Run `./setup.sh` to choose PostgreSQL or MariaDB and create the local runtime environment interactively.
 
 ## AI guidance
 

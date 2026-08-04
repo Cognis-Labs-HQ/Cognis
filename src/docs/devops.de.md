@@ -11,7 +11,7 @@ Das Image ist absichtlich minimal: Es installiert nur Produktionsabhängigkeiten
 - Ein lauffähiges, nicht-root Node 22 Docker-Image aus dem Repository-Quellcode erstellen.
 - Installation, Typprüfung und Tests bei jedem Push und Pull Request ausführen (CI).
 - Das Image bei Release an eine Container-Registry bauen und pushen (CD).
-- `docker-compose.yaml` für die lokale Entwicklung mit einer PostgreSQL-Datenbank bereitstellen.
+- Datenbankspezifische Produktions- und Entwicklungs-Compose-Dateien für PostgreSQL und MariaDB bereitstellen.
 
 ## Architektur
 
@@ -27,9 +27,16 @@ Das Dockerfile unter `docker/Dockerfile` verwendet eine einzelne `FROM node:22`-
 
 ```dockerfile
 EXPOSE 3000
-ENV NODE_ENV=production
-ENV DB_TYPE=postgresql
-CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
+CMD ["node", "src/api/main.js"]
+```
+
+### Umgebungsprofile
+
+Docker-Standardwerte verbleiben in der versionierten Datei `docker/env/default.env`. Führen Sie `./setup.sh` aus, um PostgreSQL oder MariaDB sowie Entwicklung oder Produktion auszuwählen und die Verbindungsdaten einzugeben. Das Skript schreibt alle benutzerspezifischen Werte in die einzige von Git ignorierte Datei `docker/env/runtime.env`, erzeugt bei leeren Eingaben sichere Geheimnisse und stellt `docker-compose.yaml` auf den gewählten Treiber um. Compose importiert beide Env-Dateien über ausdrückliche repository-relative Pfade. Der Container-Entrypoint prüft die erzeugten Einstellungen und erstellt `DATABASE_URL`. Die Einrichtung verlangt außerdem den internen `HOST`, den öffentlichen `EXTERNAL_HOST` und die öffentliche `CONTACT_EMAIL`; der Container prüft alle drei Werte, und die Anwendung weist fehlende öffentliche Host- oder Kontaktdaten zusätzlich selbst zurück.
+
+```sh
+./setup.sh
+docker compose up --build
 ```
 
 ### GitHub Actions
@@ -40,13 +47,18 @@ CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
 
 ## Konfiguration
 
-| Variable               | Standard     | Beschreibung                                        |
-| ---------------------- | ------------ | --------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`      |
-| `DATABASE_URL`         | —            | Verbindungszeichenkette für PostgreSQL oder MariaDB |
-| `LOG_LEVEL`            | `info`       | Ausführlichkeit des Laufzeit-Logstreams             |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotiert die aktive Logdatei ab dieser Größe (Bytes) |
-| `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive    |
-| `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)          |
-| `PORT`                 | `3000`       | HTTP-Port                                           |
-| `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                |
+| Variable               | Standard     | Beschreibung                                                       |
+| ---------------------- | ------------ | ------------------------------------------------------------------ |
+| `DB_TYPE`              | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                     |
+| `DATABASE_URL`         | —            | Wird vom Container-Entrypoint aus den Systemeinstellungen erstellt |
+| `LOG_LEVEL`            | `info`       | Ausführlichkeit des Laufzeit-Logstreams                            |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotiert die aktive Logdatei ab dieser Größe (Bytes)                |
+| `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive                   |
+| `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)                         |
+| `PORT`                 | `3000`       | HTTP-Port                                                          |
+| `HOST`                 | —            | Erforderlicher interner Service-Hostname                           |
+| `EXTERNAL_HOST`        | —            | Erforderliche öffentlich erreichbare URL                           |
+| `CONTACT_EMAIL`        | —            | Erforderliche öffentliche Kontaktadresse                           |
+| `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                               |
+
+Die aktiven Docker-Standardwerte und Einrichtungsüberschreibungen stehen direkt in den Env-Dateien unter `docker/env/`.

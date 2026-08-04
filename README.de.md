@@ -27,8 +27,8 @@ API-Handler definieren, **was** zu tun ist. Gateways/Adapter entscheiden, **wie*
 
 ## Container-Orchestrierung
 
-- `docker-compose.yml`: produktionsnahes Profil (`NODE_ENV=production`, `COGNIS_UI_DEMO_MODE=0`).
-- `docker-compose.dev.yaml`: Entwicklungs-/Demo-Profil (`NODE_ENV=development`, `COGNIS_UI_DEMO_MODE=1`) mit Bind-Mounts für laufende UI/API-Änderungen.
+- `docker-compose.postgres.yaml` und `docker-compose.mariadb.yaml`: Compose-Definitionen für PostgreSQL und MariaDB.
+- Führen Sie `./setup.sh` aus, um PostgreSQL oder MariaDB auszuwählen und die lokale Laufzeitumgebung interaktiv einzurichten.
 
 ## AI-Hinweise
 

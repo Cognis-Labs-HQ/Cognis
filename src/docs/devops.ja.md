@@ -11,7 +11,7 @@ CognisはNode 22をベースにした単一のDockerイメージとして提供�
 - リポジトリソースから実行可能な非rootのNode 22 Dockerイメージをビルドする。
 - すべてのプッシュとプルリクエストでインストール、型チェック、テストを実行する（CI）。
 - リリース時にコンテナレジストリにイメージをビルドしてプッシュする（CD）。
-- PostgreSQLデータベースでのローカル開発用に `docker-compose.yaml` を提供する。
+- PostgreSQLとMariaDB向けにデータベース固有の本番および開発用Composeファイルを提供する。
 
 ## アーキテクチャ
 
@@ -26,20 +26,32 @@ CognisはNode 22をベースにした単一のDockerイメージとして提供�
 
 ```dockerfile
 EXPOSE 3000
-ENV NODE_ENV=production
-ENV DB_TYPE=postgresql
-CMD ["node", "--import", "tsx", "/app/src/api/main.ts"]
+CMD ["node", "src/api/main.js"]
+```
+
+### 環境プロファイル
+
+Dockerのデフォルト値は、追跡対象の `docker/env/default.env` に保持されます。`./setup.sh` を実行してPostgreSQLまたはMariaDB、開発または本番を選び、接続設定を入力します。スクリプトはユーザー固有の値をGitで無視される単一の `docker/env/runtime.env` に書き込み、空欄の秘密情報を生成し、選択したドライバーを使うよう `docker-compose.yaml` を更新します。Composeは両方のEnvファイルを明示的なリポジトリ相対パスで読み込みます。コンテナのエントリポイントは生成された設定を検証し、`DATABASE_URL` を構築します。 セットアップでは内部 `HOST`、公開 `EXTERNAL_HOST`、公開 `CONTACT_EMAIL` も必須です。コンテナは3項目すべてを検証し、アプリケーションも公開ホストまたは連絡先がない場合は独立して起動を拒否します。
+
+```sh
+./setup.sh
+docker compose up --build
 ```
 
 ## 設定
 
-| 変数                   | デフォルト   | 説明                                                    |
-| ---------------------- | ------------ | ------------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb` |
-| `DATABASE_URL`         | —            | PostgreSQLまたはMariaDBの接続文字列                     |
-| `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター              |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション    |
-| `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数              |
-| `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮              |
-| `PORT`                 | `3000`       | HTTPポート                                              |
-| `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                  |
+| 変数                   | デフォルト   | 説明                                                     |
+| ---------------------- | ------------ | -------------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb`  |
+| `DATABASE_URL`         | —            | 選択したエンジン設定からコンテナのエントリポイントが構築 |
+| `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター               |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション     |
+| `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数               |
+| `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮               |
+| `PORT`                 | `3000`       | HTTPポート                                               |
+| `HOST`                 | —            | 必須の内部サービスホスト名                               |
+| `EXTERNAL_HOST`        | —            | 必須の公開アクセスURL                                    |
+| `CONTACT_EMAIL`        | —            | 必須の公開連絡先                                         |
+| `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                   |
+
+有効なDockerデフォルト値とセットアップ上書き値は、`docker/env/` 配下のEnvファイルに直接記載されています。

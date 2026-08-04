@@ -1,0 +1,37 @@
+services:
+    db:
+        image: mariadb:11
+        env_file:
+            - ./docker/env/runtime.env
+        volumes:
+            - mariadb-data:/var/lib/mysql
+        healthcheck:
+            test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    cognis:
+        build:
+            context: .
+            dockerfile: ./docker/Dockerfile
+        image: cognis:prod
+        env_file:
+            - ./docker/env/default.env
+            - ./docker/env/runtime.env
+        volumes:
+            - applogs:/app/logs
+            - appconfig:/app/config
+            - appmedia:/app/media
+        ports:
+            - "3000:3000"
+        depends_on:
+            db:
+                condition: service_healthy
+        restart: unless-stopped
+
+volumes:
+    mariadb-data:
+    applogs:
+    appconfig:
+    appmedia:

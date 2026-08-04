@@ -52,6 +52,10 @@ export interface DbDialectHelper {
 | `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                          |
 | `src/gateways/db/bootstrap.ts` | ブートストラップエントリポイント; `DbDialectHelper` |
 
+## 管理
+
+管理画面では `DB_TYPE` で選択されたアダプターだけが有効として表示されます。各データベースアダプターの状態はアプリ内の切り替えではなく、選択したDocker Composeドライバープロファイルで管理されるためロックされます。データベースゲートウェイの見出しには、この管理元を情報ツールチップで表示します。
+
 ## 設定
 
 | 変数           | デフォルト   | 説明                                                    |

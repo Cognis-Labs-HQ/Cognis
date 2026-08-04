@@ -27,8 +27,8 @@ Handler API mendefinisikan **apa** yang harus dilakukan. Gateway/adapter menentu
 
 ## Orkestrasi container
 
-- `docker-compose.yml`: profil mirip produksi (`NODE_ENV=production`, `COGNIS_UI_DEMO_MODE=0`).
-- `docker-compose.dev.yaml`: profil pengembangan/demo (`NODE_ENV=development`, `COGNIS_UI_DEMO_MODE=1`) dengan bind mount untuk perubahan UI/API yang sedang berjalan.
+- `docker-compose.postgres.yaml` dan `docker-compose.mariadb.yaml`: definisi Compose untuk PostgreSQL dan MariaDB.
+- Jalankan `./setup.sh` untuk memilih PostgreSQL atau MariaDB dan membuat lingkungan runtime lokal secara interaktif.
 
 ## Panduan AI
 

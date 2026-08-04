@@ -43,8 +43,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.15` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.8`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.4.7`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.4.7`  |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.2`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.1`  |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.7`  |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.5`  |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.7`  |
@@ -63,7 +63,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen              | Jalur                        | Versi    |
 | --------------------- | ---------------------------- | -------- |
-| Database (db)         | `src/gateways/db/`           | `1.3.1`  |
+| Database (db)         | `src/gateways/db/`           | `1.3.4`  |
 | Authentication (auth) | `src/gateways/auth/`         | `1.7.41` |
 | Share                 | `src/gateways/share/`        | `1.6.44` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.12` |
@@ -85,7 +85,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi   |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.2.1` |
+| API Server | `src/api/` | `0.2.3` |
 
 ## Modul
 

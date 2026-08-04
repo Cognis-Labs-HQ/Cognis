@@ -36,6 +36,7 @@ export function createLockedAdapterAdminRoutes(
     gatewayId: string,
     adapters: AdapterManifest[],
     routeContext?: RouteContext,
+    activeAdapterId?: string,
 ) {
     const ctx = resolveRouteContext(routeContext);
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
@@ -52,7 +53,9 @@ export function createLockedAdapterAdminRoutes(
                 JSON.stringify({
                     data: adapters.map((adapter) => ({
                         ...adapter,
-                        active: true,
+                        active:
+                            activeAdapterId === undefined ||
+                            adapter.id === activeAdapterId,
                         locked: true,
                         config: {},
                         schema: [],

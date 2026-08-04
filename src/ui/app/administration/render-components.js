@@ -1,3 +1,5 @@
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
+
 function resolveAdapterId(adapter) {
     return adapter.senderId ?? adapter.id;
 }
@@ -352,11 +354,19 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
                 isEnabled,
                 escapeHtml,
             );
+            const managedTooltip =
+                gateway.id === "db"
+                    ? renderInfoTooltip(
+                          i18n.t("ui.app.admin.db_managed_by_docker"),
+                          i18n.t("ui.reuse.more_information"),
+                          "db-gateway-managed-by-docker",
+                      )
+                    : "";
 
             return `
         <details class="module-row" data-gateway="${escapeHtml(gateway.id)}">
           <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${escapeHtml(gateway.name)}</strong></span>
+            <span class="module-row-title"><strong>${escapeHtml(gateway.name)}</strong>${managedTooltip}</span>
             <div class="module-row-controls">
               <span class="state-pill ${pill.className}">${pill.label}</span>
               ${healthLight}

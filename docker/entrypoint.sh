@@ -5,6 +5,13 @@ LOG_FILE_PATH="${LOG_FILE:-/app/logs/app.log}"
 SHUTDOWN_TIMEOUT_SECONDS=25
 DEFAULT_DATA_ENCRYPTION_KEY="not-secure-change-me"
 
+# These paths are properties of the image layout, not deployment configuration.
+export COGNIS_MODULES_ROOT="/app/dist/server/src/modules"
+export COGNIS_GATEWAYS_ROOT="/app/dist/server/src/gateways"
+export COGNIS_ADAPTERS_ROOT="/app/dist/server/src/adapters"
+export COGNIS_CLI_TOKEN_PATH="/app/config/cli-access.token"
+readonly COGNIS_MODULES_ROOT COGNIS_GATEWAYS_ROOT COGNIS_ADAPTERS_ROOT COGNIS_CLI_TOKEN_PATH
+
 app_log() {
   local level="$1"
   local message="$2"
@@ -43,6 +50,58 @@ shutdown() {
 
 trap 'shutdown TERM' TERM
 trap 'shutdown INT' INT
+
+require_environment_value() {
+  local variable_name="$1"
+  local setup_file="$2"
+
+  if [[ -z "${!variable_name:-}" ]]; then
+    app_log "error" "${variable_name} must be set in ${setup_file}. Run ./setup.sh from the repository root to configure Cognis."
+    exit 1
+  fi
+}
+
+encode_url_component() {
+  node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$1"
+}
+
+construct_database_url() {
+  require_environment_value HOST docker/env/runtime.env
+  require_environment_value EXTERNAL_HOST docker/env/runtime.env
+  require_environment_value CONTACT_EMAIL docker/env/runtime.env
+  require_environment_value DATA_ENCRYPTION_KEY docker/env/runtime.env
+
+  case "${DB_TYPE:-}" in
+    postgresql)
+      require_environment_value POSTGRES_HOST docker/env/runtime.env
+      require_environment_value POSTGRES_PORT docker/env/runtime.env
+      require_environment_value POSTGRES_DB docker/env/runtime.env
+      require_environment_value POSTGRES_USER docker/env/runtime.env
+      require_environment_value POSTGRES_PASSWORD docker/env/runtime.env
+      local postgres_user postgres_password
+      postgres_user="$(encode_url_component "${POSTGRES_USER}")"
+      postgres_password="$(encode_url_component "${POSTGRES_PASSWORD}")"
+      export DATABASE_URL="postgresql://${postgres_user}:${postgres_password}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+      ;;
+    mariadb)
+      require_environment_value MARIADB_HOST docker/env/runtime.env
+      require_environment_value MARIADB_PORT docker/env/runtime.env
+      require_environment_value MARIADB_DATABASE docker/env/runtime.env
+      require_environment_value MARIADB_USER docker/env/runtime.env
+      require_environment_value MARIADB_PASSWORD docker/env/runtime.env
+      local mariadb_user mariadb_password
+      mariadb_user="$(encode_url_component "${MARIADB_USER}")"
+      mariadb_password="$(encode_url_component "${MARIADB_PASSWORD}")"
+      export DATABASE_URL="mysql://${mariadb_user}:${mariadb_password}@${MARIADB_HOST}:${MARIADB_PORT}/${MARIADB_DATABASE}"
+      ;;
+    *)
+      app_log "error" "DB_TYPE must be set to postgresql or mariadb in docker/env/runtime.env. Run ./setup.sh to configure Cognis."
+      exit 1
+      ;;
+  esac
+}
+
+construct_database_url
 
 if [[ "${DATA_ENCRYPTION_KEY:-}" == "${DEFAULT_DATA_ENCRYPTION_KEY}" ]]; then
   app_log "warn" "DATA_ENCRYPTION_KEY is using the default insecure value. Set a unique key outside local development."
