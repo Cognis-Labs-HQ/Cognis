@@ -43,7 +43,7 @@ test("setup creates a private MariaDB runtime environment", async (context) => {
     );
     await execFileAsync("bash", [
         "-c",
-        "printf 'development\\nmariadb\\ndb\\n3306\\ncognis\\ncognis\\n\\n\\n' | bash \"$1\"",
+        "printf 'development\\nmariadb\\ndb\\n3306\\ncognis\\ncognis\\ncognis\\nhttps://cognis.example.com\\nadmin@example.com\\n\\n\\n' | bash \"$1\"",
         "setup-test",
         join(temporaryRoot, "setup.sh"),
     ]);
@@ -56,6 +56,9 @@ test("setup creates a private MariaDB runtime environment", async (context) => {
     assert.match(runtime, /^DB_TYPE=mariadb$/m);
     assert.match(runtime, /^MARIADB_PASSWORD=\S+$/m);
     assert.match(runtime, /^DATA_ENCRYPTION_KEY=\S+$/m);
+    assert.match(runtime, /^HOST=cognis$/m);
+    assert.match(runtime, /^EXTERNAL_HOST=https:\/\/cognis\.example\.com$/m);
+    assert.match(runtime, /^CONTACT_EMAIL=admin@example\.com$/m);
     assert.equal(
         await readlink(join(temporaryRoot, "docker-compose.yaml")),
         "docker-compose.mariadb.yaml",
@@ -96,6 +99,9 @@ test("Docker entrypoint constructs URLs from generated values", async () => {
                 env: {
                     ...process.env,
                     ...environment,
+                    HOST: "cognis",
+                    EXTERNAL_HOST: "https://cognis.example.com",
+                    CONTACT_EMAIL: "admin@example.com",
                     DATA_ENCRYPTION_KEY: "test-key",
                     LOG_FILE: "/tmp/cognis-docker-profile-test.log",
                 },
@@ -111,6 +117,9 @@ test("Docker entrypoint directs missing values to setup", async () => {
             env: {
                 ...process.env,
                 DB_TYPE: "postgresql",
+                HOST: "cognis",
+                EXTERNAL_HOST: "https://cognis.example.com",
+                CONTACT_EMAIL: "admin@example.com",
                 DATA_ENCRYPTION_KEY: "test-key",
                 LOG_FILE: "/tmp/cognis-docker-profile-test.log",
             },
@@ -123,6 +132,53 @@ test("Docker entrypoint directs missing values to setup", async () => {
             return true;
         },
     );
+});
+
+test("Docker entrypoint owns image paths and requires public settings", async () => {
+    await assert.rejects(
+        execFileAsync("bash", ["docker/entrypoint.sh", "true"], {
+            env: {
+                ...process.env,
+                DB_TYPE: "postgresql",
+                DATA_ENCRYPTION_KEY: "test-key",
+                LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+            },
+        }),
+        (error) => {
+            assert.match(
+                error.stdout,
+                /HOST must be set in docker\/env\/runtime\.env/,
+            );
+            return true;
+        },
+    );
+
+    const environment = {
+        ...process.env,
+        HOST: "cognis",
+        EXTERNAL_HOST: "https://cognis.example.com",
+        CONTACT_EMAIL: "admin@example.com",
+        DATA_ENCRYPTION_KEY: "test-key",
+        DB_TYPE: "postgresql",
+        POSTGRES_HOST: "db",
+        POSTGRES_PORT: "5432",
+        POSTGRES_DB: "cognis",
+        POSTGRES_USER: "cognis",
+        POSTGRES_PASSWORD: "secret",
+        COGNIS_MODULES_ROOT: "/overridden",
+        LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+    };
+    const { stdout } = await execFileAsync(
+        "bash",
+        [
+            "docker/entrypoint.sh",
+            "bash",
+            "-c",
+            'printf "%s" "$COGNIS_MODULES_ROOT"',
+        ],
+        { env: environment },
+    );
+    assert.ok(stdout.startsWith("/app/dist/server/src/modules"));
 });
 
 test("default Docker links select shared defaults and PostgreSQL", async () => {

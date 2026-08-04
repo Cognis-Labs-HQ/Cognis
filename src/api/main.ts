@@ -24,6 +24,9 @@ import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
+import { requirePublicEnvironment } from "./reuse/environment.js";
+
+requirePublicEnvironment();
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
     private readonly manifests: ModuleManifest[];

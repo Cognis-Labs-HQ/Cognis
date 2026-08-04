@@ -5,6 +5,13 @@ LOG_FILE_PATH="${LOG_FILE:-/app/logs/app.log}"
 SHUTDOWN_TIMEOUT_SECONDS=25
 DEFAULT_DATA_ENCRYPTION_KEY="not-secure-change-me"
 
+# These paths are properties of the image layout, not deployment configuration.
+export COGNIS_MODULES_ROOT="/app/dist/server/src/modules"
+export COGNIS_GATEWAYS_ROOT="/app/dist/server/src/gateways"
+export COGNIS_ADAPTERS_ROOT="/app/dist/server/src/adapters"
+export COGNIS_CLI_TOKEN_PATH="/app/config/cli-access.token"
+readonly COGNIS_MODULES_ROOT COGNIS_GATEWAYS_ROOT COGNIS_ADAPTERS_ROOT COGNIS_CLI_TOKEN_PATH
+
 app_log() {
   local level="$1"
   local message="$2"
@@ -55,6 +62,9 @@ require_environment_value() {
 }
 
 construct_database_url() {
+  require_environment_value HOST docker/env/runtime.env
+  require_environment_value EXTERNAL_HOST docker/env/runtime.env
+  require_environment_value CONTACT_EMAIL docker/env/runtime.env
   require_environment_value DATA_ENCRYPTION_KEY docker/env/runtime.env
 
   case "${DB_TYPE:-}" in

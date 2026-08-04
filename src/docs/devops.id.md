@@ -31,7 +31,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Profil lingkungan
 
-Nilai default Docker tetap berada di `docker/env/default.env` yang terlacak. Jalankan `./setup.sh` untuk memilih PostgreSQL atau MariaDB, memilih pengembangan atau produksi, dan memasukkan pengaturan koneksi. Skrip menulis semua nilai khusus pengguna ke satu file `docker/env/runtime.env` yang diabaikan Git, membuat rahasia saat input dibiarkan kosong, dan memperbarui `docker-compose.yaml` untuk memilih driver tersebut. Compose mengimpor kedua file env melalui path relatif repositori yang eksplisit. Entrypoint container memvalidasi pengaturan yang dibuat dan membangun `DATABASE_URL`.
+Nilai default Docker tetap berada di `docker/env/default.env` yang terlacak. Jalankan `./setup.sh` untuk memilih PostgreSQL atau MariaDB, memilih pengembangan atau produksi, dan memasukkan pengaturan koneksi. Skrip menulis semua nilai khusus pengguna ke satu file `docker/env/runtime.env` yang diabaikan Git, membuat rahasia saat input dibiarkan kosong, dan memperbarui `docker-compose.yaml` untuk memilih driver tersebut. Compose mengimpor kedua file env melalui path relatif repositori yang eksplisit. Entrypoint container memvalidasi pengaturan yang dibuat dan membangun `DATABASE_URL`. Penyiapan juga mewajibkan `HOST` internal, `EXTERNAL_HOST` publik, dan `CONTACT_EMAIL` publik; container memvalidasi ketiganya, dan aplikasi secara mandiri menolak host publik atau kontak yang tidak ada.
 
 ```sh
 ./setup.sh
@@ -49,6 +49,9 @@ docker compose up --build
 | `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan              |
 | `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)             |
 | `PORT`                 | `3000`       | Port HTTP                                                |
+| `HOST`                 | —            | Hostname layanan internal yang wajib                     |
+| `EXTERNAL_HOST`        | —            | URL publik yang wajib dan dapat dijangkau                |
+| `CONTACT_EMAIL`        | —            | Alamat kontak publik yang wajib                          |
 | `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                     |
 
 Nilai default Docker dan penggantian penyiapan aktif tercantum langsung dalam file env di bawah `docker/env/`.

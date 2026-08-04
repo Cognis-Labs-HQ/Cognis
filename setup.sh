@@ -19,6 +19,17 @@ prompt() {
   printf -v "${variable_name}" '%s' "${value}"
 }
 
+prompt_required() {
+  local variable_name="$1"
+  local message="$2"
+  local value=""
+
+  while [[ -z "${value}" ]]; do
+    read -r -p "${message}: " value
+  done
+  printf -v "${variable_name}" '%s' "${value}"
+}
+
 prompt_secret() {
   local variable_name="$1"
   local message="$2"
@@ -70,6 +81,9 @@ prompt database_host "Database host" "db"
 prompt database_port "Database port" "${database_port_default}"
 prompt database_name "Database name" "cognis"
 prompt database_user "Database user" "cognis"
+prompt cognis_host "Cognis service hostname" "cognis"
+prompt_required external_host "Public Cognis URL (for example, https://cognis.example.com)"
+prompt_required contact_email "Contact email"
 prompt_secret database_password "Database password" "$(random_secret)"
 prompt_secret encryption_key "Data encryption key" "$(random_secret)"
 
@@ -78,6 +92,9 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
 {
   printf 'NODE_ENV=%s\n' "${deployment}"
   printf 'DB_TYPE=%s\n' "${database_driver}"
+  printf 'HOST=%s\n' "${cognis_host}"
+  printf 'EXTERNAL_HOST=%s\n' "${external_host}"
+  printf 'CONTACT_EMAIL=%s\n' "${contact_email}"
   printf 'DATA_ENCRYPTION_KEY=%s\n' "${encryption_key}"
   if [[ "${database_driver}" == "postgresql" ]]; then
     printf 'POSTGRES_HOST=%s\n' "${database_host}"

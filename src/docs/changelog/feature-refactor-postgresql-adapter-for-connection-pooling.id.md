@@ -47,3 +47,7 @@ Path runtime internal container tetap absolut ketika lokasinya diketahui. Impor 
 ## Penyiapan interaktif menggantikan banyak profil
 
 `setup.sh` baru memandu pilihan deployment dan database, membuat rahasia, menulis satu file env runtime yang diabaikan Git, dan memilih driver Compose yang sesuai. Profil env pengembangan, produksi, driver, dan contoh yang terpisah tidak lagi diperlukan.
+
+## Identitas deployment publik diwajibkan
+
+Penyiapan kini meminta host layanan Cognis, URL publik, dan email kontak. Docker memvalidasi ketiganya, aplikasi juga mewajibkan URL publik dan email kontak, sedangkan path tata letak image ditetapkan oleh entrypoint dan tidak diekspos sebagai konfigurasi env.

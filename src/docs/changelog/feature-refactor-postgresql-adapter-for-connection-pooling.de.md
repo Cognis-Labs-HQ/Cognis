@@ -47,3 +47,7 @@ Containerinterne Laufzeitpfade bleiben absolut, wenn ihre Speicherorte bekannt s
 ## Interaktive Einrichtung ersetzt die Profilvielfalt
 
 Das neue `setup.sh` führt durch die Auswahl von Bereitstellung und Datenbank, erzeugt Geheimnisse, schreibt eine einzige von Git ignorierte Laufzeit-Env-Datei und wählt den passenden Compose-Treiber. Getrennte Entwicklungs-, Produktions-, Treiber- und Beispielprofile sind nicht mehr erforderlich.
+
+## Öffentliche Bereitstellungsidentität ist erforderlich
+
+Die Einrichtung erfasst nun den Cognis-Service-Host, die öffentliche URL und die Kontaktadresse. Docker prüft alle drei Werte, die Anwendung verlangt zusätzlich URL und Kontaktadresse, und Image-Pfade werden vom Entrypoint festgelegt statt als Env-Konfiguration angeboten.

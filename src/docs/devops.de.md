@@ -32,7 +32,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Umgebungsprofile
 
-Docker-Standardwerte verbleiben in der versionierten Datei `docker/env/default.env`. Führen Sie `./setup.sh` aus, um PostgreSQL oder MariaDB sowie Entwicklung oder Produktion auszuwählen und die Verbindungsdaten einzugeben. Das Skript schreibt alle benutzerspezifischen Werte in die einzige von Git ignorierte Datei `docker/env/runtime.env`, erzeugt bei leeren Eingaben sichere Geheimnisse und stellt `docker-compose.yaml` auf den gewählten Treiber um. Compose importiert beide Env-Dateien über ausdrückliche repository-relative Pfade. Der Container-Entrypoint prüft die erzeugten Einstellungen und erstellt `DATABASE_URL`.
+Docker-Standardwerte verbleiben in der versionierten Datei `docker/env/default.env`. Führen Sie `./setup.sh` aus, um PostgreSQL oder MariaDB sowie Entwicklung oder Produktion auszuwählen und die Verbindungsdaten einzugeben. Das Skript schreibt alle benutzerspezifischen Werte in die einzige von Git ignorierte Datei `docker/env/runtime.env`, erzeugt bei leeren Eingaben sichere Geheimnisse und stellt `docker-compose.yaml` auf den gewählten Treiber um. Compose importiert beide Env-Dateien über ausdrückliche repository-relative Pfade. Der Container-Entrypoint prüft die erzeugten Einstellungen und erstellt `DATABASE_URL`. Die Einrichtung verlangt außerdem den internen `HOST`, den öffentlichen `EXTERNAL_HOST` und die öffentliche `CONTACT_EMAIL`; der Container prüft alle drei Werte, und die Anwendung weist fehlende öffentliche Host- oder Kontaktdaten zusätzlich selbst zurück.
 
 ```sh
 ./setup.sh
@@ -56,6 +56,9 @@ docker compose up --build
 | `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive                   |
 | `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)                         |
 | `PORT`                 | `3000`       | HTTP-Port                                                          |
+| `HOST`                 | —            | Erforderlicher interner Service-Hostname                           |
+| `EXTERNAL_HOST`        | —            | Erforderliche öffentlich erreichbare URL                           |
+| `CONTACT_EMAIL`        | —            | Erforderliche öffentliche Kontaktadresse                           |
 | `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                               |
 
 Die aktiven Docker-Standardwerte und Einrichtungsüberschreibungen stehen direkt in den Env-Dateien unter `docker/env/`.

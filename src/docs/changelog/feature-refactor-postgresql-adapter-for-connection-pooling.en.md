@@ -47,3 +47,7 @@ Container-internal runtime paths remain absolute where their locations are known
 ## Interactive setup replaces profile sprawl
 
 The new `setup.sh` guides users through deployment and database choices, generates secrets, writes one ignored runtime env file, and selects the matching Compose driver. Separate development, production, driver, and example env profiles are no longer required.
+
+## Public deployment identity is required
+
+Setup now collects the Cognis service host, public URL, and contact email. Docker validates all three, the application also requires the public URL and contact email, and image-layout paths are fixed by the entrypoint instead of exposed as env configuration.

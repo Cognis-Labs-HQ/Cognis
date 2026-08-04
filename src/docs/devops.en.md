@@ -36,7 +36,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Environment profiles
 
-Docker defaults remain in the tracked `docker/env/default.env`. Run `./setup.sh` to choose PostgreSQL or MariaDB, select development or production, and enter the connection settings. The script writes every user-specific value to the single ignored `docker/env/runtime.env` file, generates secrets when values are left blank, and updates `docker-compose.yaml` to select the chosen driver. Compose imports both env files through explicit repository-relative paths. The container entrypoint validates the generated settings and constructs `DATABASE_URL`.
+Docker defaults remain in the tracked `docker/env/default.env`. Run `./setup.sh` to choose PostgreSQL or MariaDB, select development or production, and enter the connection settings. The script writes every user-specific value to the single ignored `docker/env/runtime.env` file, generates secrets when values are left blank, and updates `docker-compose.yaml` to select the chosen driver. Compose imports both env files through explicit repository-relative paths. The container entrypoint validates the generated settings and constructs `DATABASE_URL`. The setup also requires the internal `HOST`, public `EXTERNAL_HOST`, and public `CONTACT_EMAIL`; the container validates all three, and the application independently rejects missing public host or contact values.
 
 ```sh
 ./setup.sh
@@ -74,25 +74,22 @@ npm ci && npm run ci:test
 
 Environment variables needed to run the application:
 
-| Variable                          | Default                        | Description                                                    |
-| --------------------------------- | ------------------------------ | -------------------------------------------------------------- |
-| `DB_TYPE`                         | `postgresql`                   | Database backend: `postgresql` or `mariadb`                    |
-| `DATABASE_URL`                    | —                              | Constructed by the container entrypoint from engine settings   |
-| `MEDIA_LOCATION`                  | `/app/media`                   | Root directory for file uploads                                |
-| `LOG_LEVEL`                       | `info`                         | Runtime log-stream verbosity: `debug`, `info`, `warn`, `error` |
-| `LOG_FILE`                        | `/app/logs/app.log`            | Log file path inside the container                             |
-| `LOG_ROTATE_MAX_BYTES`            | `10485760`                     | Rotate active log file when size reaches this many bytes       |
-| `LOG_ROTATE_MAX_FILES`            | `10`                           | Number of rotated log archives to keep (`0` keeps none)        |
-| `LOG_ROTATE_COMPRESS`             | `true`                         | Compress rotated logs with gzip (`.gz`) when enabled           |
-| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`                        | Bearer token lifetime in seconds                               |
-| `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token                               |
-| `COGNIS_MODULES_ROOT`             | `/app/src/modules`             | Root directory for module discovery                            |
-| `COGNIS_GATEWAYS_ROOT`            | `/app/src/gateways`            | Root directory for gateway discovery                           |
-| `COGNIS_ADAPTERS_ROOT`            | `/app/src/adapters`            | Root directory for adapter discovery                           |
-| `PORT`                            | `3000`                         | HTTP port                                                      |
-| `HOST`                            | `cognis`                       | Internal service hostname                                      |
-| `EXTERNAL_HOST`                   | —                              | Publicly reachable URL for email links                         |
-| `COGNIS_SMTP_HOST`                | —                              | SMTP server hostname; enables the SMTP notification adapter    |
-| `COGNIS_UI_DEMO_MODE`             | `0`                            | Set to `1` to enable pre-populated example data                |
+| Variable                          | Default             | Description                                                    |
+| --------------------------------- | ------------------- | -------------------------------------------------------------- |
+| `DB_TYPE`                         | `postgresql`        | Database backend: `postgresql` or `mariadb`                    |
+| `DATABASE_URL`                    | —                   | Constructed by the container entrypoint from engine settings   |
+| `MEDIA_LOCATION`                  | `/app/media`        | Root directory for file uploads                                |
+| `LOG_LEVEL`                       | `info`              | Runtime log-stream verbosity: `debug`, `info`, `warn`, `error` |
+| `LOG_FILE`                        | `/app/logs/app.log` | Log file path inside the container                             |
+| `LOG_ROTATE_MAX_BYTES`            | `10485760`          | Rotate active log file when size reaches this many bytes       |
+| `LOG_ROTATE_MAX_FILES`            | `10`                | Number of rotated log archives to keep (`0` keeps none)        |
+| `LOG_ROTATE_COMPRESS`             | `true`              | Compress rotated logs with gzip (`.gz`) when enabled           |
+| `COGNIS_ACCESS_TOKEN_TTL_SECONDS` | `43200`             | Bearer token lifetime in seconds                               |
+| `PORT`                            | `3000`              | HTTP port                                                      |
+| `HOST`                            | —                   | Required internal service hostname                             |
+| `EXTERNAL_HOST`                   | —                   | Required publicly reachable URL for links                      |
+| `CONTACT_EMAIL`                   | —                   | Required public support contact                                |
+| `COGNIS_SMTP_HOST`                | —                   | SMTP server hostname; enables the SMTP notification adapter    |
+| `COGNIS_UI_DEMO_MODE`             | `0`                 | Set to `1` to enable pre-populated example data                |
 
 The active Docker defaults and setup overrides are listed directly in the env files under `docker/env/`.
