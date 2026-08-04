@@ -19,3 +19,11 @@ Production gateway and adapter loaders now resolve every TypeScript source entry
 ## Deterministic browser flows
 
 Built-in browser flow contracts now initialize with the shared UI context, before any bundled gateway hook can extend them.
+
+## Production startup uses compiled assets
+
+The production start command now configures the generated UI manifest and compiled gateway, adapter, and module roots before launching the compiled server.
+
+## Content encoding follows client quality preferences
+
+Static asset negotiation now excludes encodings rejected with a zero quality value and selects the available Brotli or gzip representation with the highest accepted quality.
