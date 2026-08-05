@@ -1,4 +1,4 @@
-FROM nginx:1.27-alpine
+FROM nginx:1.26.3-alpine
 
 RUN apk add --no-cache nginx-mod-http-brotli \
   && rm -f /etc/nginx/conf.d/default.conf
