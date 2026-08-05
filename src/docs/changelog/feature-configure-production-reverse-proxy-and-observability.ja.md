@@ -2,7 +2,7 @@
 
 ## 安全でキャッシュを考慮した本番エッジ
 
-HTTP/2 TLS エッジに接続再利用、Brotli/gzip 圧縮、ハッシュ付きアセットの immutable キャッシュ、HTML 再検証、信頼済み転送ヘッダー、非公開 API 応答を追加しました。Composeではエッジを `cognis-web` と命名し、GitLab CIが公開します。パッケージ化されたBrotliモジュールと互換性のあるNginx Alpineリリースを使い、TLSを上流で終端する場合は `COGNIS_EDGE_TLS_MODE=deferred` でHTTPのみとして実行できます。
+HTTP/2 TLS エッジに接続再利用、Brotli/gzip 圧縮、ハッシュ付きアセットの immutable キャッシュ、HTML 再検証、信頼済み転送ヘッダー、非公開 API 応答を追加しました。すべてのComposeファイルでエッジサービスとイメージを `cognis-web` と命名し、GitLab CIが公開します。パッケージ化されたBrotliモジュールと互換性のあるNginx Alpineリリースでビルドされ、TLSを上流で終端する場合は `COGNIS_EDGE_TLS_MODE=deferred` でHTTPのみとして実行できます。
 
 ## ベンダー中立なパフォーマンステレメトリ
 

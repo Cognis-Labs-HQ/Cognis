@@ -23,11 +23,26 @@ services:
             - applogs:/app/logs
             - appconfig:/app/config
             - appmedia:/app/media
-        ports:
-            - "3000:3000"
+        expose:
+            - "3000"
         depends_on:
             db:
                 condition: service_healthy
+        restart: unless-stopped
+
+    cognis-web:
+        build:
+            context: ./docker/edge
+        image: cognis-web
+        environment:
+            COGNIS_EDGE_TLS_MODE: ${COGNIS_EDGE_TLS_MODE:-terminate}
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ./docker/tls:/etc/nginx/tls:ro
+        depends_on:
+            - cognis
         restart: unless-stopped
 
 volumes:

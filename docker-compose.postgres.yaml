@@ -34,7 +34,7 @@ services:
                 condition: service_healthy
         restart: unless-stopped
 
-    edge:
+    cognis-web:
         build:
             context: ./docker/edge
         image: cognis-web
