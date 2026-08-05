@@ -2,7 +2,7 @@
 
 ## Sichere, cachebewusste Produktionskante
 
-Eine HTTP/2-TLS-Kante bietet Verbindungswiederverwendung, Brotli/gzip-Komprimierung, unveränderliche gehashte Assets, HTML-Revalidierung, vertrauenswürdige Weiterleitungsheader und private API-Antworten. Der Kantenservice und das Image heißen in jeder Compose-Datei `cognis-web`, werden von GitLab CI veröffentlicht, installieren Brotli über Alpines natives Nginx-Modulpaket, überschreiben beim Start den standardmäßigen Server-Slot `default.conf` und können mit `COGNIS_EDGE_TLS_MODE=deferred` nur über HTTP laufen, wenn TLS vorgelagert terminiert. Compose wartet nun auf den `cognis`-Healthcheck, bevor `cognis-web` startet; die erzeugte Nginx-Konfiguration vermeidet doppelte HTML-MIME-Warnungen, veraltete HTTP/2-Listen-Syntax und ungequotetes Regex-Parsing für gehashte Assets.
+Eine HTTP/2-TLS-Kante bietet Verbindungswiederverwendung, Brotli/gzip-Komprimierung, unveränderliche gehashte Assets, HTML-Revalidierung, vertrauenswürdige Weiterleitungsheader und private API-Antworten. Der Kantenservice und das Image heißen in jeder Compose-Datei `cognis-web`, werden von GitLab CI veröffentlicht, installieren Brotli über Alpines natives Nginx-Modulpaket, überschreiben beim Start den standardmäßigen Server-Slot `default.conf` und können mit `COGNIS_EDGE_TLS_MODE=deferred` nur über HTTP laufen, wenn TLS vorgelagert terminiert; die Einrichtung fragt nun nach einem vorgelagerten Reverse Proxy und schreibt diesen Modus automatisch. Compose wartet nun auf den `cognis`-Healthcheck, bevor `cognis-web` startet; die erzeugte Nginx-Konfiguration vermeidet doppelte HTML-MIME-Warnungen, veraltete HTTP/2-Listen-Syntax und ungequotetes Regex-Parsing für gehashte Assets.
 
 ## Herstellerneutrale Leistungsmetrik
 

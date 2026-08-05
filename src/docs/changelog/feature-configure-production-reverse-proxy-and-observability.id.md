@@ -2,7 +2,7 @@
 
 ## Edge produksi aman dan sadar cache
 
-Edge TLS HTTP/2 kini menyediakan penggunaan ulang koneksi, kompresi Brotli/gzip, aset hash yang immutable, validasi ulang HTML, header proxy tepercaya, dan respons API privat. Layanan edge dan image dinamai `cognis-web` di setiap file Compose, diterbitkan oleh GitLab CI, memasang Brotli melalui paket modul Nginx native Alpine, menimpa slot server standar `default.conf` saat startup, dan dapat berjalan hanya HTTP dengan `COGNIS_EDGE_TLS_MODE=deferred` saat TLS diterminasi di hulu. Compose kini menunggu healthcheck `cognis` sebelum memulai `cognis-web`, dan konfigurasi Nginx yang dihasilkan menghindari peringatan MIME HTML ganda, sintaks listen HTTP/2 lama, serta parsing regex aset hash tanpa kutip.
+Edge TLS HTTP/2 kini menyediakan penggunaan ulang koneksi, kompresi Brotli/gzip, aset hash yang immutable, validasi ulang HTML, header proxy tepercaya, dan respons API privat. Layanan edge dan image dinamai `cognis-web` di setiap file Compose, diterbitkan oleh GitLab CI, memasang Brotli melalui paket modul Nginx native Alpine, menimpa slot server standar `default.conf` saat startup, dan dapat berjalan hanya HTTP dengan `COGNIS_EDGE_TLS_MODE=deferred` saat TLS diterminasi di hulu; penyiapan kini menanyakan reverse proxy hulu dan menulis mode tersebut otomatis. Compose kini menunggu healthcheck `cognis` sebelum memulai `cognis-web`, dan konfigurasi Nginx yang dihasilkan menghindari peringatan MIME HTML ganda, sintaks listen HTTP/2 lama, serta parsing regex aset hash tanpa kutip.
 
 ## Telemetri kinerja netral-vendor
 

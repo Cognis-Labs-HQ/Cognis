@@ -84,6 +84,13 @@ prompt database_user "Database user" "cognis"
 prompt cognis_host "Cognis service hostname" "cognis"
 prompt_required external_host "Public Cognis URL (for example, https://cognis.example.com)"
 prompt_required contact_email "Contact email"
+
+prompt reverse_proxy "Will a separate reverse proxy or CDN terminate HTTPS before cognis-web? (yes/no)" "no"
+case "${reverse_proxy}" in
+  yes|y|true|1) edge_tls_mode="deferred" ;;
+  no|n|false|0) edge_tls_mode="terminate" ;;
+  *) echo "Reverse proxy answer must be yes or no." >&2; exit 1 ;;
+esac
 prompt_secret database_password "Database password" "$(random_secret)"
 prompt_secret encryption_key "Data encryption key" "$(random_secret)"
 
@@ -96,6 +103,7 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
   printf 'EXTERNAL_HOST=%s\n' "${external_host}"
   printf 'CONTACT_EMAIL=%s\n' "${contact_email}"
   printf 'DATA_ENCRYPTION_KEY=%s\n' "${encryption_key}"
+  printf 'COGNIS_EDGE_TLS_MODE=%s\n' "${edge_tls_mode}"
   if [[ "${database_driver}" == "postgresql" ]]; then
     printf 'POSTGRES_HOST=%s\n' "${database_host}"
     printf 'POSTGRES_PORT=%s\n' "${database_port}"
