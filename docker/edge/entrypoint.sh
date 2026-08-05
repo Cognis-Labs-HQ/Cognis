@@ -11,7 +11,7 @@ case "$mode" in
 esac
 
 if [ "$mode" = "terminate" ]; then
-  cat > /etc/nginx/conf.d/cognis-edge.conf <<'TERMINATE'
+  cat > /etc/nginx/conf.d/default.conf <<'TERMINATE'
 server {
     listen 80;
     return 308 https://$host$request_uri;
@@ -66,7 +66,7 @@ server {
 }
 TERMINATE
 else
-  cat > /etc/nginx/conf.d/cognis-edge.conf <<'DEFERRED'
+  cat > /etc/nginx/conf.d/default.conf <<'DEFERRED'
 server {
     listen 80;
     server_name _;
