@@ -18,12 +18,13 @@ server {
 }
 
 server {
-    listen 443 ssl http2;
+    listen 443 ssl;
+    http2 on;
     server_name _;
     ssl_certificate /etc/nginx/tls/fullchain.pem;
     ssl_certificate_key /etc/nginx/tls/privkey.pem;
 
-    location ~* ^/(?:static|assets)/.*[.-][0-9a-f]{8,}[.-] {
+    location ~* "^/(?:static|assets)/.*[.-][0-9a-f]{8,}[.-]" {
         proxy_pass http://cognis_app;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
@@ -71,7 +72,7 @@ server {
     listen 80;
     server_name _;
 
-    location ~* ^/(?:static|assets)/.*[.-][0-9a-f]{8,}[.-] {
+    location ~* "^/(?:static|assets)/.*[.-][0-9a-f]{8,}[.-]" {
         proxy_pass http://cognis_app;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
