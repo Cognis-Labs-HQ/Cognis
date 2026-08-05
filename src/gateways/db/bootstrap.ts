@@ -2,7 +2,7 @@ import path from "node:path";
 import { createDbExecutor } from "./executor.js";
 import { initializeDatabaseSchema, resolveDbProviderDir } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor } from "./reuse/db-executor.js";
+import type { DbExecutor, RawDbExecutor } from "./reuse/db-executor.js";
 import type {
     StructuredDbCommand,
     StructuredDbCommandResult,
@@ -94,18 +94,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 ?.record("db.duration_ms", performance.now() - startedAt);
         }
     };
-    const executor: DbExecutor = {
+    const createTimedExecutor = (
+        rawExecutor: RawDbExecutor,
+    ): RawDbExecutor => ({
+        execute: (sql, params) => timed(() => rawExecutor.execute(sql, params)),
         executeCommand: (command) =>
-            timed(() => providerExecutor.executeCommand(command)),
+            timed(() => rawExecutor.executeCommand(command)),
         ensureTable: (definition) =>
-            timed(() => providerExecutor.ensureTable(definition)),
+            timed(() => rawExecutor.ensureTable(definition)),
         transaction: (callback) =>
             timed(() =>
-                providerExecutor.transaction(async (transactionExecutor) =>
-                    callback(transactionExecutor),
+                rawExecutor.transaction(async (transactionExecutor) =>
+                    callback(createTimedExecutor(transactionExecutor)),
                 ),
             ),
-    };
+    });
+    const executor = createTimedExecutor(providerExecutor);
     const logger = {
         info: (msg: string, meta?: Record<string, unknown>) => {
             void ctx.log?.("info", msg, meta);
@@ -140,7 +144,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.3.5",
+        version: "1.3.6",
         required: true,
         description:
             "Core relational database layer for persistent application data.",

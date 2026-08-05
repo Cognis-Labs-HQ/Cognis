@@ -9,10 +9,10 @@
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type { BootstrapLog } from "@cognis/core";
-import type { DbExecutor } from "./reuse/db-executor.js";
+import type { RawDbExecutor } from "./reuse/db-executor.js";
 import type { DbProviderId } from "./reuse/provider-id.js";
 
-export type { DbExecutor } from "./reuse/db-executor.js";
+export type { DbExecutor, RawDbExecutor } from "./reuse/db-executor.js";
 export type { DbProviderId } from "./reuse/provider-id.js";
 export type SupportedDbType = DbProviderId;
 
@@ -24,7 +24,7 @@ interface DbExecutorFactoryModule {
         lifecycle?: {
             registerShutdown(handler: () => Promise<void>): void;
         };
-    }) => Promise<DbExecutor> | DbExecutor;
+    }) => Promise<RawDbExecutor> | RawDbExecutor;
 }
 
 async function listDbAdapterDirs(adaptersRoot: string): Promise<string[]> {
@@ -57,7 +57,7 @@ export async function createDbExecutor(
     log?: BootstrapLog,
     adaptersRoot?: string,
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void },
-): Promise<DbExecutor> {
+): Promise<RawDbExecutor> {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
         throw new Error(`DATABASE_URL is required for DB_TYPE=${dbType}`);

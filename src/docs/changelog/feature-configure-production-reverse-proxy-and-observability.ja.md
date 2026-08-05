@@ -2,11 +2,11 @@
 
 ## 安全でキャッシュを考慮した本番エッジ
 
-HTTP/2 TLS エッジに接続再利用、Brotli/gzip 圧縮、ハッシュ付きアセットの immutable キャッシュ、HTML 再検証、信頼済み転送ヘッダー、非公開 API 応答を追加しました。すべてのComposeファイルでエッジサービスとイメージを `cognis-web` と命名し、GitLab CIが公開します。AlpineのネイティブNginxモジュールパッケージでBrotliをインストールし、起動時に標準の `default.conf` サーバースロットを上書きし、TLSを上流で終端する場合は `COGNIS_EDGE_TLS_MODE=deferred` でHTTPのみとして実行できます。
+HTTP/2 TLS エッジに接続再利用、Brotli/gzip 圧縮、ハッシュ付きアセットの immutable キャッシュ、HTML 再検証、信頼済み転送ヘッダー、非公開 API 応答を追加しました。すべてのComposeファイルでエッジサービスとイメージを `cognis-web` と命名し、GitLab CIが公開します。AlpineのネイティブNginxモジュールパッケージでBrotliをインストールし、起動時に標準の `default.conf` サーバースロットを上書きし、TLSを上流で終端する場合は `COGNIS_EDGE_TLS_MODE=deferred` でHTTPのみとして実行できます。Composeは `cognis-web` を開始する前に `cognis` の healthcheck を待機します。
 
 ## ベンダー中立なパフォーマンステレメトリ
 
-ctx ベースでサーバー、データベース、キャッシュ、イベントループ、Web Vitals、転送量、SPA マウントを、制限されたラベルとサンプリングで計測します。
+ctx ベースでサーバー、データベース、キャッシュ、イベントループ、Web Vitals、転送量、SPA マウントを、制限されたラベルとサンプリングで計測します。DB タイミングは、スキーマ初期化で使う生の executor サーフェスを保持するようになりました。
 
 ## 測定可能なパフォーマンス予算
 
