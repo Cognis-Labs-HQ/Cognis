@@ -48,18 +48,19 @@ docker compose up --build
 
 ## Konfiguration
 
-| Variable               | Standard     | Beschreibung                                                       |
-| ---------------------- | ------------ | ------------------------------------------------------------------ |
-| `DB_TYPE`              | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                     |
-| `DATABASE_URL`         | —            | Wird vom Container-Entrypoint aus den Systemeinstellungen erstellt |
-| `LOG_LEVEL`            | `info`       | Ausführlichkeit des Laufzeit-Logstreams                            |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotiert die aktive Logdatei ab dieser Größe (Bytes)                |
-| `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive                   |
-| `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)                         |
-| `PORT`                 | `3000`       | HTTP-Port                                                          |
-| `HOST`                 | —            | Erforderlicher interner Service-Hostname                           |
-| `EXTERNAL_HOST`        | —            | Erforderliche öffentlich erreichbare URL                           |
-| `CONTACT_EMAIL`        | —            | Erforderliche öffentliche Kontaktadresse                           |
-| `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                               |
+| Variable               | Standard     | Beschreibung                                                                                                          |
+| ---------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `DB_TYPE`              | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                                                                        |
+| `DATABASE_URL`         | —            | Wird vom Container-Entrypoint aus den Systemeinstellungen erstellt                                                    |
+| `LOG_LEVEL`            | `info`       | Ausführlichkeit des Laufzeit-Logstreams                                                                               |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotiert die aktive Logdatei ab dieser Größe (Bytes)                                                                   |
+| `LOG_ROTATE_MAX_FILES` | `10`         | Anzahl der aufzubewahrenden rotierten Logarchive                                                                      |
+| `LOG_ROTATE_COMPRESS`  | `true`       | Komprimiert rotierte Logs als gzip (`.gz`)                                                                            |
+| `PORT`                 | `3000`       | HTTP-Port                                                                                                             |
+| `COGNIS_EDGE_TLS_MODE` | `terminate`  | Edge-TLS-Modus: `terminate` für lokales HTTPS oder `deferred` für HTTP hinter einem vertrauenswürdigen TLS-Terminator |
+| `HOST`                 | —            | Erforderlicher interner Service-Hostname                                                                              |
+| `EXTERNAL_HOST`        | —            | Erforderliche öffentlich erreichbare URL                                                                              |
+| `CONTACT_EMAIL`        | —            | Erforderliche öffentliche Kontaktadresse                                                                              |
+| `COGNIS_SMTP_HOST`     | —            | SMTP-Server-Hostname                                                                                                  |
 
 Die aktiven Docker-Standardwerte und Einrichtungsüberschreibungen stehen direkt in den Env-Dateien unter `docker/env/`.

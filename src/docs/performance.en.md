@@ -1,6 +1,6 @@
 # Performance baselines and budgets
 
-Production traffic terminates at the `cognis-web` edge proxy built from `docker/edge` and published by GitLab CI as `$CI_REGISTRY_IMAGE/cognis-web`. Supply the TLS certificate as `docker/tls/fullchain.pem` and key as `docker/tls/privkey.pem`; managed CDNs may implement the same cache and forwarding policy instead. Only the edge is published, so its replacement of forwarded headers establishes the trust boundary.
+Production traffic terminates at the `cognis-web` edge proxy built from `docker/edge` and published by GitLab CI as `$CI_REGISTRY_IMAGE/cognis-web`. By default, `COGNIS_EDGE_TLS_MODE=terminate` enables the local HTTPS listener and requires the TLS certificate as `docker/tls/fullchain.pem` and key as `docker/tls/privkey.pem`. Set `COGNIS_EDGE_TLS_MODE=deferred` only behind a trusted upstream TLS terminator; Nginx then listens on HTTP only, preserves the same cache policy, and forwards the trusted upstream protocol header when present. Managed CDNs may implement the same cache and forwarding policy instead. Only the edge is published, so its replacement of forwarding headers establishes the trust boundary.
 
 ## Hosted baseline protocol
 

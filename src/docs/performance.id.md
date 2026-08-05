@@ -1,6 +1,6 @@
 # Baseline dan anggaran kinerja
 
-Trafik produksi berakhir di proxy edge `cognis-web` yang dibangun dari `docker/edge` dan diterbitkan oleh GitLab CI sebagai `$CI_REGISTRY_IMAGE/cognis-web`. Sediakan sertifikat TLS sebagai `docker/tls/fullchain.pem` dan kunci sebagai `docker/tls/privkey.pem`; CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya edge yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
+Trafik produksi berakhir di proxy edge `cognis-web` yang dibangun dari `docker/edge` dan diterbitkan oleh GitLab CI sebagai `$CI_REGISTRY_IMAGE/cognis-web`. Secara default, `COGNIS_EDGE_TLS_MODE=terminate` mengaktifkan listener HTTPS lokal dan membutuhkan sertifikat TLS sebagai `docker/tls/fullchain.pem` serta kunci sebagai `docker/tls/privkey.pem`. Gunakan `COGNIS_EDGE_TLS_MODE=deferred` hanya di belakang terminator TLS hulu yang tepercaya; Nginx kemudian hanya mendengarkan HTTP, mempertahankan kebijakan cache yang sama, dan meneruskan header protokol hulu tepercaya jika tersedia. CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya edge yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
 
 ## Protokol baseline hosted
 

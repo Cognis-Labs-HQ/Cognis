@@ -41,18 +41,19 @@ docker compose up --build
 
 ## Konfigurasi
 
-| Variabel               | Default      | Keterangan                                               |
-| ---------------------- | ------------ | -------------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | Backend database: `postgresql` atau `mariadb`            |
-| `DATABASE_URL`         | —            | Dibangun oleh entrypoint container dari pengaturan mesin |
-| `LOG_LEVEL`            | `info`       | Verbositas stream log runtime                            |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte)    |
-| `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan              |
-| `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)             |
-| `PORT`                 | `3000`       | Port HTTP                                                |
-| `HOST`                 | —            | Hostname layanan internal yang wajib                     |
-| `EXTERNAL_HOST`        | —            | URL publik yang wajib dan dapat dijangkau                |
-| `CONTACT_EMAIL`        | —            | Alamat kontak publik yang wajib                          |
-| `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                     |
+| Variabel               | Default      | Keterangan                                                                                                   |
+| ---------------------- | ------------ | ------------------------------------------------------------------------------------------------------------ |
+| `DB_TYPE`              | `postgresql` | Backend database: `postgresql` atau `mariadb`                                                                |
+| `DATABASE_URL`         | —            | Dibangun oleh entrypoint container dari pengaturan mesin                                                     |
+| `LOG_LEVEL`            | `info`       | Verbositas stream log runtime                                                                                |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte)                                                        |
+| `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan                                                                  |
+| `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)                                                                 |
+| `PORT`                 | `3000`       | Port HTTP                                                                                                    |
+| `COGNIS_EDGE_TLS_MODE` | `terminate`  | Mode TLS edge: `terminate` untuk HTTPS lokal atau `deferred` untuk HTTP di belakang terminator TLS tepercaya |
+| `HOST`                 | —            | Hostname layanan internal yang wajib                                                                         |
+| `EXTERNAL_HOST`        | —            | URL publik yang wajib dan dapat dijangkau                                                                    |
+| `CONTACT_EMAIL`        | —            | Alamat kontak publik yang wajib                                                                              |
+| `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                                                                         |
 
 Nilai default Docker dan penggantian penyiapan aktif tercantum langsung dalam file env di bawah `docker/env/`.

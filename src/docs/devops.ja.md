@@ -41,18 +41,19 @@ docker compose up --build
 
 ## 設定
 
-| 変数                   | デフォルト   | 説明                                                     |
-| ---------------------- | ------------ | -------------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb`  |
-| `DATABASE_URL`         | —            | 選択したエンジン設定からコンテナのエントリポイントが構築 |
-| `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター               |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション     |
-| `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数               |
-| `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮               |
-| `PORT`                 | `3000`       | HTTPポート                                               |
-| `HOST`                 | —            | 必須の内部サービスホスト名                               |
-| `EXTERNAL_HOST`        | —            | 必須の公開アクセスURL                                    |
-| `CONTACT_EMAIL`        | —            | 必須の公開連絡先                                         |
-| `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                   |
+| 変数                   | デフォルト   | 説明                                                                                             |
+| ---------------------- | ------------ | ------------------------------------------------------------------------------------------------ |
+| `DB_TYPE`              | `postgresql` | データベースバックエンド: `postgresql` または `mariadb`                                          |
+| `DATABASE_URL`         | —            | 選択したエンジン設定からコンテナのエントリポイントが構築                                         |
+| `LOG_LEVEL`            | `info`       | ランタイムログストリームの詳細度フィルター                                                       |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`   | このサイズ（バイト）でアクティブログをローテーション                                             |
+| `LOG_ROTATE_MAX_FILES` | `10`         | 保持するローテーション済みログアーカイブ数                                                       |
+| `LOG_ROTATE_COMPRESS`  | `true`       | ローテーション済みログを gzip（`.gz`）圧縮                                                       |
+| `PORT`                 | `3000`       | HTTPポート                                                                                       |
+| `COGNIS_EDGE_TLS_MODE` | `terminate`  | エッジTLSモード: ローカルHTTPSは `terminate`、信頼済みTLS終端の背後でHTTPのみの場合は `deferred` |
+| `HOST`                 | —            | 必須の内部サービスホスト名                                                                       |
+| `EXTERNAL_HOST`        | —            | 必須の公開アクセスURL                                                                            |
+| `CONTACT_EMAIL`        | —            | 必須の公開連絡先                                                                                 |
+| `COGNIS_SMTP_HOST`     | —            | SMTPサーバーのホスト名                                                                           |
 
 有効なDockerデフォルト値とセットアップ上書き値は、`docker/env/` 配下のEnvファイルに直接記載されています。
