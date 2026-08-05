@@ -61,19 +61,20 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 ## ゲートウェイ
 
-| コンポーネント        | パス                         | バージョン |
-| --------------------- | ---------------------------- | ---------- |
-| Database (db)         | `src/gateways/db/`           | `1.3.4`    |
-| Authentication (auth) | `src/gateways/auth/`         | `1.7.41`   |
-| Share                 | `src/gateways/share/`        | `1.6.44`   |
-| Two-Factor (tfa)      | `src/gateways/tfa/`          | `1.1.12`   |
-| Notification (notify) | `src/gateways/notify/`       | `1.5.3`    |
-| Social                | `src/gateways/social/`       | `1.2.10`   |
-| File Storage (files)  | `src/gateways/files/`        | `2.1.4`    |
-| Registration          | `src/gateways/registration/` | `1.1.12`   |
-| Logging               | `src/gateways/logging/`      | `1.5.3`    |
-| Study                 | `src/gateways/study/`        | `1.5.9`    |
-| Calendar              | `src/gateways/calendar/`     | `1.4.47`   |
+| コンポーネント        | パス                          | バージョン |
+| --------------------- | ----------------------------- | ---------- |
+| Database (db)         | `src/gateways/db/`            | `1.3.5`    |
+| Authentication (auth) | `src/gateways/auth/`          | `1.7.41`   |
+| Share                 | `src/gateways/share/`         | `1.6.44`   |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.12`   |
+| Notification (notify) | `src/gateways/notify/`        | `1.5.3`    |
+| Social                | `src/gateways/social/`        | `1.2.10`   |
+| File Storage (files)  | `src/gateways/files/`         | `2.1.4`    |
+| Registration          | `src/gateways/registration/`  | `1.1.12`   |
+| Logging               | `src/gateways/logging/`       | `1.5.3`    |
+| Observability         | `src/gateways/observability/` | `1.0.0`    |
+| Study                 | `src/gateways/study/`         | `1.5.9`    |
+| Calendar              | `src/gateways/calendar/`      | `1.4.47`   |
 
 ## コア契約
 

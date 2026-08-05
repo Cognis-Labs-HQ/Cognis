@@ -76,12 +76,36 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const lifecycle = ctx.capabilities.get<{
         registerShutdown(handler: () => Promise<void>): void;
     }>("system:lifecycle");
-    const executor = await createDbExecutor(
+    const providerExecutor = await createDbExecutor(
         dbType,
         ctx.log,
         adaptersRoot,
         lifecycle,
     );
+    const timed = async <Result>(operation: () => Promise<Result>) => {
+        const startedAt = performance.now();
+        try {
+            return await operation();
+        } finally {
+            ctx.capabilities
+                .get<{
+                    record(name: string, value: number): void;
+                }>("observability:metrics")
+                ?.record("db.duration_ms", performance.now() - startedAt);
+        }
+    };
+    const executor: DbExecutor = {
+        executeCommand: (command) =>
+            timed(() => providerExecutor.executeCommand(command)),
+        ensureTable: (definition) =>
+            timed(() => providerExecutor.ensureTable(definition)),
+        transaction: (callback) =>
+            timed(() =>
+                providerExecutor.transaction(async (transactionExecutor) =>
+                    callback(transactionExecutor),
+                ),
+            ),
+    };
     const logger = {
         info: (msg: string, meta?: Record<string, unknown>) => {
             void ctx.log?.("info", msg, meta);
@@ -116,7 +140,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.3.4",
+        version: "1.3.5",
         required: true,
         description:
             "Core relational database layer for persistent application data.",

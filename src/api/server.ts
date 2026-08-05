@@ -88,6 +88,13 @@ export interface ApiDependencies {
         enabled: boolean,
     ) => Promise<void> | void;
     routeContext?: RouteContext;
+    observability?: {
+        record(
+            name: string,
+            value: number,
+            labels?: Record<string, string>,
+        ): void;
+    };
 }
 
 /**
@@ -262,7 +269,55 @@ export function buildServer(deps: ApiDependencies) {
     return createServer(async (req, res) => {
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
-        log("info", "Incoming API request.", {
+        let responseBytes = 0;
+        const originalWrite = res.write.bind(res);
+        const originalEnd = res.end.bind(res);
+        res.write = ((chunk: unknown, ...args: unknown[]) => {
+            if (chunk) responseBytes += Buffer.byteLength(chunk as string);
+            return originalWrite(chunk as never, ...(args as never[]));
+        }) as typeof res.write;
+        res.end = ((chunk?: unknown, ...args: unknown[]) => {
+            if (chunk) responseBytes += Buffer.byteLength(chunk as string);
+            return originalEnd(chunk as never, ...(args as never[]));
+        }) as typeof res.end;
+        res.once("finish", () => {
+            const pathSegments = url.pathname.split("/").filter(Boolean);
+            const route = url.pathname.startsWith("/api/")
+                ? `/${pathSegments.slice(0, 3).join("/")}`
+                : `/${pathSegments[0] ?? "root"}`;
+            const cacheHeader = String(
+                res.getHeader("cache-status") ?? "",
+            ).toLowerCase();
+            const cache = cacheHeader.includes("hit")
+                ? "hit"
+                : cacheHeader.includes("miss")
+                  ? "miss"
+                  : cacheHeader.includes("bypass")
+                    ? "bypass"
+                    : "none";
+            const labels = {
+                method: req.method ?? "GET",
+                route,
+                status_class: `${Math.floor(res.statusCode / 100)}xx`,
+                cache,
+            };
+            deps.observability?.record(
+                "http.server.duration_ms",
+                Date.now() - startedAt,
+                labels,
+            );
+            deps.observability?.record(
+                "http.server.response_bytes",
+                responseBytes,
+                labels,
+            );
+            deps.observability?.record(
+                "cache.outcome",
+                labels.cache === "none" ? 0 : 1,
+                labels,
+            );
+        });
+        log("debug", "Incoming API request.", {
             method: req.method ?? "GET",
             path: url.pathname,
         });
@@ -283,7 +338,7 @@ export function buildServer(deps: ApiDependencies) {
                         },
                     }),
                 );
-                log("info", "Request blocked: gateway disabled.", {
+                log("debug", "Request blocked: gateway disabled.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     gatewayId: owner.gatewayId,
@@ -294,7 +349,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledByModule = await moduleRoutes(req, res, url);
             if (handledByModule) {
-                log("info", "Request handled by module routes.", {
+                log("debug", "Request handled by module routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -304,7 +359,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledBySystem = await systemRoutes(req, res, url);
             if (handledBySystem) {
-                log("info", "Request handled by system routes.", {
+                log("debug", "Request handled by system routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -315,7 +370,7 @@ export function buildServer(deps: ApiDependencies) {
             if (userRoutes) {
                 const handledByUsers = await userRoutes(req, res, url);
                 if (handledByUsers) {
-                    log("info", "Request handled by user routes.", {
+                    log("debug", "Request handled by user routes.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
@@ -327,7 +382,7 @@ export function buildServer(deps: ApiDependencies) {
             if (gatewayRoutes) {
                 const handledByGateways = await gatewayRoutes(req, res, url);
                 if (handledByGateways) {
-                    log("info", "Request handled by gateway routes.", {
+                    log("debug", "Request handled by gateway routes.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
@@ -339,7 +394,7 @@ export function buildServer(deps: ApiDependencies) {
             if (isUiStaticAssetRequest(url.pathname)) {
                 const handledByUiStatic = await uiRoutes(req, res, url);
                 if (handledByUiStatic) {
-                    log("info", "Static request handled by UI routes.", {
+                    log("debug", "Static request handled by UI routes.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
@@ -350,7 +405,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledBySearch = await searchRoutes(req, res, url);
             if (handledBySearch) {
-                log("info", "Request handled by search routes.", {
+                log("debug", "Request handled by search routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -372,7 +427,7 @@ export function buildServer(deps: ApiDependencies) {
                 }
                 const handledByRegistry = await entry.handler(req, res, url);
                 if (handledByRegistry) {
-                    log("info", "Request handled by registered route.", {
+                    log("debug", "Request handled by registered route.", {
                         method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
@@ -387,7 +442,7 @@ export function buildServer(deps: ApiDependencies) {
                 url,
             );
             if (handledByExtensions) {
-                log("info", "Request handled by module extension routes.", {
+                log("debug", "Request handled by module extension routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -397,7 +452,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledByDocs = await docsRoutes(req, res, url);
             if (handledByDocs) {
-                log("info", "Request handled by docs routes.", {
+                log("debug", "Request handled by docs routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
@@ -407,7 +462,7 @@ export function buildServer(deps: ApiDependencies) {
 
             const handledByUi = await uiRoutes(req, res, url);
             if (handledByUi) {
-                log("info", "Request handled by UI routes.", {
+                log("debug", "Request handled by UI routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
