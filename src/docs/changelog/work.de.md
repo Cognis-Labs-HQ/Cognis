@@ -2,7 +2,7 @@
 
 ## Sichere, cachebewusste Produktionskante
 
-Eine HTTP/2-TLS-Kante bietet Verbindungswiederverwendung, Brotli/gzip-Komprimierung, unveränderliche gehashte Assets, HTML-Revalidierung, vertrauenswürdige Weiterleitungsheader und private API-Antworten.
+Eine HTTP/2-TLS-Kante bietet Verbindungswiederverwendung, Brotli/gzip-Komprimierung, unveränderliche gehashte Assets, HTML-Revalidierung, vertrauenswürdige Weiterleitungsheader und private API-Antworten. Die Kante heißt in Compose `cognis-web` und wird von GitLab CI veröffentlicht.
 
 ## Herstellerneutrale Leistungsmetrik
 

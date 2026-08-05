@@ -2,15 +2,16 @@
 
 ## Overview
 
-Cognis ships as a single Docker image built from Node 22. The CI/CD pipeline covers automated testing on every push or pull request and automated image delivery to a container registry on release. Both GitHub Actions and GitLab CI configurations are included in the repository.
+Cognis ships as a Node 22 application Docker image plus a `cognis-web` Nginx edge image. The CI/CD pipeline covers automated testing on every push or pull request and automated image delivery to a container registry on release. Both GitHub Actions and GitLab CI configurations are included in the repository.
 
-The image is intentionally minimal: it installs only production dependencies, runs as a non-root `cognis` user, and exposes a single port. All runtime behaviour is controlled by environment variables, making the image reusable across development, staging, and production environments without rebuilding.
+The application image is intentionally minimal: it installs only production dependencies, runs as a non-root `cognis` user, and exposes a single internal port. Production Compose places the `cognis-web` edge image in front of it; GitLab CI publishes the same edge artifact as `$CI_REGISTRY_IMAGE/cognis-web:<ref>` and `:sha-<commit>`. All runtime behaviour is controlled by environment variables, making the images reusable across development, staging, and production environments without rebuilding.
 
 ## Responsibilities
 
-- Build a runnable, non-root Node 22 Docker image from the repository source.
+- Build a runnable, non-root Node 22 application image from the repository source.
+- Build a `cognis-web` edge image from `docker/edge` for published TLS traffic.
 - Run install, typecheck, and tests on every push and pull request (CI).
-- Build and push the image to a container registry on release (CD).
+- Build and push both the application and `cognis-web` images to a container registry on release (CD).
 - Provide database-specific production and development Compose files for PostgreSQL and MariaDB.
 
 Not responsible for: infrastructure provisioning, secrets management beyond env var documentation, or deployment orchestration beyond the image itself.
@@ -60,15 +61,17 @@ Two workflows live in `.github/workflows/`:
 
 ### GitLab CI
 
-`.gitlab-ci.yml` defines two stages:
+`.gitlab-ci.yml` defines two jobs:
 
 **`test`** — Runs on every branch commit and tag using `node:22-alpine`:
 
 ```
-npm ci && npm run ci:test
+apk add ripgrep python3 build-base
+npm ci
+npm test
 ```
 
-**`docker-build`** — Runs on tag releases and manual web-triggered pipelines using `docker:27` with DinD. Builds and pushes to `registry.gitlab.firehawk-systems.com/firehawk/cognis:<sha>`.
+**`publish`** — Runs with `docker:27` and DinD. It builds the application image from `docker/Dockerfile` and the edge image from `docker/edge/Dockerfile`, then publishes `$CI_REGISTRY_IMAGE:<ref>`, `$CI_REGISTRY_IMAGE:sha-<commit>`, `$CI_REGISTRY_IMAGE/cognis-web:<ref>`, and `$CI_REGISTRY_IMAGE/cognis-web:sha-<commit>`. On `master`, it also publishes `latest` for both images.
 
 ## Configuration
 

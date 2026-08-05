@@ -1,6 +1,6 @@
 # パフォーマンスのベースラインと予算
 
-本番トラフィックは `docker/edge` のエッジプロキシで終端します。TLS 証明書を `docker/tls/fullchain.pem`、鍵を `docker/tls/privkey.pem` として用意してください。マネージド CDN でも同じキャッシュおよび転送ポリシーを実装できます。公開されるのはエッジのみであり、転送ヘッダーの置換が信頼境界を確立します。
+本番トラフィックは `docker/edge` からビルドされ、GitLab CIで `$CI_REGISTRY_IMAGE/cognis-web` として公開される `cognis-web` エッジプロキシで終端します。TLS 証明書を `docker/tls/fullchain.pem`、鍵を `docker/tls/privkey.pem` として用意してください。マネージド CDN でも同じキャッシュおよび転送ポリシーを実装できます。公開されるのはエッジのみであり、転送ヘッダーの置換が信頼境界を確立します。
 
 ## ホスト環境ベースラインの手順
 

@@ -2,15 +2,16 @@
 
 ## Überblick
 
-Cognis wird als einzelnes Docker-Image ausgeliefert, das auf Node 22 basiert. Die CI/CD-Pipeline deckt automatisierte Tests bei jedem Push oder Pull Request und automatische Image-Lieferung an eine Container-Registry bei Releases ab.
+Cognis wird als Node-22-Anwendungs-Image plus `cognis-web`-Nginx-Edge-Image ausgeliefert. Die CI/CD-Pipeline deckt automatisierte Tests bei jedem Push oder Pull Request und automatische Image-Lieferung an eine Container-Registry bei Releases ab.
 
-Das Image ist absichtlich minimal: Es installiert nur Produktionsabhängigkeiten, läuft als nicht-root `cognis`-Benutzer und exponiert einen einzigen Port.
+Das Anwendungs-Image ist absichtlich minimal: Es installiert nur Produktionsabhängigkeiten, läuft als nicht-root `cognis`-Benutzer und exponiert einen einzigen internen Port. Production Compose stellt das Edge-Image `cognis-web` davor; GitLab CI veröffentlicht dasselbe Edge-Artefakt als `$CI_REGISTRY_IMAGE/cognis-web:<ref>` und `:sha-<commit>`.
 
 ## Verantwortlichkeiten
 
-- Ein lauffähiges, nicht-root Node 22 Docker-Image aus dem Repository-Quellcode erstellen.
+- Ein lauffähiges, nicht-root Node-22-Anwendungs-Image aus dem Repository-Quellcode erstellen.
+- Ein `cognis-web`-Edge-Image aus `docker/edge` für veröffentlichten TLS-Verkehr erstellen.
 - Installation, Typprüfung und Tests bei jedem Push und Pull Request ausführen (CI).
-- Das Image bei Release an eine Container-Registry bauen und pushen (CD).
+- Das Anwendungs- und das `cognis-web`-Image bei Release an eine Container-Registry bauen und pushen (CD).
 - Datenbankspezifische Produktions- und Entwicklungs-Compose-Dateien für PostgreSQL und MariaDB bereitstellen.
 
 ## Architektur

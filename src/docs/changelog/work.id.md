@@ -2,7 +2,7 @@
 
 ## Edge produksi aman dan sadar cache
 
-Edge TLS HTTP/2 kini menyediakan penggunaan ulang koneksi, kompresi Brotli/gzip, aset hash yang immutable, validasi ulang HTML, header proxy tepercaya, dan respons API privat.
+Edge TLS HTTP/2 kini menyediakan penggunaan ulang koneksi, kompresi Brotli/gzip, aset hash yang immutable, validasi ulang HTML, header proxy tepercaya, dan respons API privat. Edge dinamai `cognis-web` di Compose dan diterbitkan oleh GitLab CI.
 
 ## Telemetri kinerja netral-vendor
 

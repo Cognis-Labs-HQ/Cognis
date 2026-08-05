@@ -1,6 +1,6 @@
 # Baseline dan anggaran kinerja
 
-Trafik produksi berakhir di proxy edge dalam `docker/edge`. Sediakan sertifikat TLS sebagai `docker/tls/fullchain.pem` dan kunci sebagai `docker/tls/privkey.pem`; CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya edge yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
+Trafik produksi berakhir di proxy edge `cognis-web` yang dibangun dari `docker/edge` dan diterbitkan oleh GitLab CI sebagai `$CI_REGISTRY_IMAGE/cognis-web`. Sediakan sertifikat TLS sebagai `docker/tls/fullchain.pem` dan kunci sebagai `docker/tls/privkey.pem`; CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya edge yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
 
 ## Protokol baseline hosted
 

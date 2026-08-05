@@ -37,6 +37,7 @@ services:
     edge:
         build:
             context: ./docker/edge
+        image: cognis-web
         ports:
             - "80:80"
             - "443:443"

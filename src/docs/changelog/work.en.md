@@ -2,7 +2,7 @@
 
 ## Secure, cache-aware production edge
 
-Added an HTTP/2 TLS edge with connection reuse, Brotli/gzip compression, immutable hashed assets, HTML revalidation, trusted forwarding headers, and private API responses.
+Added an HTTP/2 TLS edge with connection reuse, Brotli/gzip compression, immutable hashed assets, HTML revalidation, trusted forwarding headers, and private API responses. The edge is named `cognis-web` in Compose and is published by GitLab CI.
 
 ## Vendor-neutral performance telemetry
 

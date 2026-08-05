@@ -1,6 +1,6 @@
 # Performance baselines and budgets
 
-Production traffic terminates at the edge proxy in `docker/edge`. Supply the TLS certificate as `docker/tls/fullchain.pem` and key as `docker/tls/privkey.pem`; managed CDNs may implement the same cache and forwarding policy instead. Only the edge is published, so its replacement of forwarded headers establishes the trust boundary.
+Production traffic terminates at the `cognis-web` edge proxy built from `docker/edge` and published by GitLab CI as `$CI_REGISTRY_IMAGE/cognis-web`. Supply the TLS certificate as `docker/tls/fullchain.pem` and key as `docker/tls/privkey.pem`; managed CDNs may implement the same cache and forwarding policy instead. Only the edge is published, so its replacement of forwarded headers establishes the trust boundary.
 
 ## Hosted baseline protocol
 

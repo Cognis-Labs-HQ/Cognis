@@ -2,15 +2,16 @@
 
 ## Ikhtisar
 
-Cognis dikirimkan sebagai satu image Docker yang dibangun dari Node 22. Pipeline CI/CD mencakup pengujian otomatis pada setiap push atau pull request dan pengiriman image otomatis ke container registry saat rilis.
+Cognis dikirimkan sebagai image aplikasi Node 22 ditambah image edge Nginx `cognis-web`. Pipeline CI/CD mencakup pengujian otomatis pada setiap push atau pull request dan pengiriman image otomatis ke container registry saat rilis.
 
-Image sengaja dibuat minimal: hanya menginstal dependensi produksi, berjalan sebagai pengguna `cognis` non-root, dan mengekspos satu port.
+Image aplikasi sengaja dibuat minimal: hanya menginstal dependensi produksi, berjalan sebagai pengguna `cognis` non-root, dan mengekspos satu port internal. Compose produksi menempatkan image edge `cognis-web` di depannya; GitLab CI menerbitkan artefak edge yang sama sebagai `$CI_REGISTRY_IMAGE/cognis-web:<ref>` dan `:sha-<commit>`.
 
 ## Tanggung Jawab
 
-- Membangun image Docker Node 22 yang dapat dijalankan dan non-root dari sumber repositori.
+- Membangun image aplikasi Node 22 yang dapat dijalankan dan non-root dari sumber repositori.
+- Membangun image edge `cognis-web` dari `docker/edge` untuk trafik TLS yang dipublikasikan.
 - Menjalankan instalasi, pengecekan tipe, dan pengujian pada setiap push dan pull request (CI).
-- Membangun dan mendorong image ke container registry saat rilis (CD).
+- Membangun dan mendorong image aplikasi serta `cognis-web` ke container registry saat rilis (CD).
 - Menyediakan file Compose produksi dan pengembangan khusus database untuk PostgreSQL dan MariaDB.
 
 ## Arsitektur
