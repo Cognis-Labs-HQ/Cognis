@@ -11,3 +11,7 @@ Pengujian profil Docker kini menemukan Bash melalui jalur absolut yang didukung 
 ## Pengujian tema SMTP memakai penerima terisolasi
 
 Pengujian surel tema bawaan kini memakai identitas penerima tersendiri agar pembatasan laju penerima dari pengujian SMTP di sekitarnya tidak menyebabkan kegagalan berkala pada seluruh rangkaian pengujian.
+
+## Pengujian keyring tetap terisolasi per komponen
+
+Impor langsung yang tidak digunakan terhadap singleton konteks UI dihapus dari penyiapan pengujian keyring sehingga pengujian adapter memeriksa permukaan keyring tanpa bergantung pada bentuk ekspor internal komponen lain.

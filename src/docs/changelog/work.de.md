@@ -11,3 +11,7 @@ Docker-Profiltests erkennen Bash über unterstützte absolute Pfade und überspr
 ## SMTP-Theme-Tests verwenden isolierte Empfänger
 
 Der E-Mail-Test für das Standard-Theme verwendet nun eine eigene Empfängeridentität, damit die Empfänger-Ratenbegrenzung benachbarter SMTP-Tests nicht zu sporadischen Fehlern der vollständigen Testsuite führt.
+
+## Keyring-Tests bleiben komponentenisoliert
+
+Ein ungenutzter direkter Import des UI-Kontext-Singletons wurde aus der Keyring-Testeinrichtung entfernt, sodass die Adaptertests die Keyring-Oberfläche ohne Abhängigkeit von der internen Exportstruktur einer anderen Komponente prüfen.

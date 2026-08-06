@@ -8,6 +8,6 @@
     "dependencies": {
         "@cognis/adapter-social-profile": "<=1.1.28",
         "@cognis/gateways": "<=0.1.5",
-        "@cognis/adapter-auth-keyring": "<=1.0.27"
+        "@cognis/adapter-auth-keyring": "<=1.0.28"
     }
 }

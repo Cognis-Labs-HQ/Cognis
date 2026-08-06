@@ -11,3 +11,7 @@ Docker profile tests now discover Bash from supported absolute paths and explici
 ## SMTP theme tests use isolated recipients
 
 The default-theme email test now uses its own recipient identity so recipient rate limiting from adjacent SMTP tests cannot make the full suite fail intermittently.
+
+## Keyring tests remain component-isolated
+
+Removed an unused direct import of the UI context singleton from the keyring test setup, so the adapter tests exercise the keyring surface without depending on another component's internal export shape.

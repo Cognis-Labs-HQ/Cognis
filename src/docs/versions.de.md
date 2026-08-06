@@ -37,7 +37,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.7`  |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.5`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.27` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.28` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.7`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
