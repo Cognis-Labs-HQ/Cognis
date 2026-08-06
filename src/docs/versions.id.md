@@ -34,19 +34,19 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.14` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.15` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.6`  |
-| Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.4`  |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.7`  |
+| Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.5`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.26` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.7`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.25` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.15` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.8`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.2`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.1`  |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.7`  |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.5`  |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.3`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.2`  |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.8`  |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.6`  |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.7`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |

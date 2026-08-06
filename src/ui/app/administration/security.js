@@ -63,7 +63,7 @@ const POLICY_FIELDS = [
  *
  * @param {Element} root
  * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
- * @returns {{ init: () => Promise<void>, refresh: () => void, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
+ * @returns {{ init: () => Promise<void>, refresh: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
@@ -318,11 +318,12 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             initialized = true;
         },
 
-        refresh() {
+        async refresh() {
             if (!initialized) {
-                void this.init();
+                await this.init();
                 return;
             }
+            const smtpActive = await isSmtpAdapterActive(apiFetch);
             bindSecurityInputs(
                 {
                     trustedDomains: originalDomains,
@@ -332,7 +333,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                     enforceTfaForAllUsers: originalEnforceTfaForAllUsers,
                 },
                 originalPasswordPolicy,
-                smtpAdapterActive,
+                smtpActive,
             );
         },
 

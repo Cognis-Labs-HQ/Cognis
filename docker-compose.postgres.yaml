@@ -47,8 +47,8 @@ services:
         env_file:
             - ./docker/env/cognis-web.env
         ports:
-            - "${COGNIS_WEB_BIND_ADDRESS:-127.0.0.1}:80:80"
-            - "${COGNIS_WEB_BIND_ADDRESS:-127.0.0.1}:443:443"
+            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:80:80"
+            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:443:443"
         volumes:
             - ./docker/tls:/etc/nginx/tls:ro
         depends_on:

@@ -4,6 +4,7 @@ set -Eeuo pipefail
 REPOSITORY_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 RUNTIME_ENV_FILE="${REPOSITORY_ROOT}/docker/env/runtime.env"
 WEB_ENV_FILE="${REPOSITORY_ROOT}/docker/env/cognis-web.env"
+COMPOSE_ENV_FILE="${REPOSITORY_ROOT}/.env"
 
 prompt() {
   local variable_name="$1"
@@ -88,8 +89,8 @@ prompt_required contact_email "Contact email"
 
 prompt reverse_proxy "Will a separate reverse proxy or CDN terminate HTTPS before cognis-web? (yes/no)" "no"
 case "${reverse_proxy}" in
-  yes|y|true|1) web_tls_mode="deferred" ;;
-  no|n|false|0) web_tls_mode="terminate" ;;
+  yes|y|true|1) web_tls_mode="deferred"; web_bind_address="127.0.0.1" ;;
+  no|n|false|0) web_tls_mode="terminate"; web_bind_address="0.0.0.0" ;;
   *) echo "Reverse proxy answer must be yes or no." >&2; exit 1 ;;
 esac
 prompt_secret database_password "Database password" "$(random_secret)"
@@ -129,6 +130,10 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
   printf 'COGNIS_WEB_TLS_CERTIFICATE=/etc/nginx/tls/fullchain.pem\n'
   printf 'COGNIS_WEB_TLS_CERTIFICATE_KEY=/etc/nginx/tls/privkey.pem\n'
 } > "${WEB_ENV_FILE}"
+
+touch "${COMPOSE_ENV_FILE}"
+sed -i '/^COGNIS_WEB_BIND_ADDRESS=/d' "${COMPOSE_ENV_FILE}"
+printf 'COGNIS_WEB_BIND_ADDRESS=%s\n' "${web_bind_address}" >> "${COMPOSE_ENV_FILE}"
 
 if [[ "${web_tls_mode}" == "terminate" ]]; then
   tls_directory="${REPOSITORY_ROOT}/docker/tls"
