@@ -18,6 +18,8 @@ import { uiCtx } from "../../reuse/ui-ctx.js";
 import "../../reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 
+const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
+
 /**
  * Mounts the login page into the provided root element.
  *
@@ -177,6 +179,16 @@ export async function mount(root) {
                 (method) => method.id !== "local" && method.credential !== true,
             );
 
+            const updateSignupCallout = (method) => {
+                const signupCallout = document.querySelector(
+                    "#login-signup-callout",
+                );
+                if (signupCallout instanceof HTMLElement) {
+                    signupCallout.hidden =
+                        isPasswordResetMode || method?.id !== "local";
+                }
+            };
+
             const renderProviderActions = (method) => {
                 const actions = document.querySelector(
                     "#login-provider-actions",
@@ -201,7 +213,9 @@ export async function mount(root) {
                 const methodButtons = new Map();
                 const selectCredentialProvider = (method) => {
                     if (providerInput) providerInput.value = method.id;
+                    localStorage.setItem(AUTH_SOURCE_PREFERENCE_KEY, method.id);
                     renderProviderActions(method);
+                    updateSignupCallout(method);
                     methodButtons.forEach((button, methodId) => {
                         const active = methodId === method.id;
                         button.classList.toggle(
@@ -214,6 +228,7 @@ export async function mount(root) {
                 credentialProviders.forEach((method) => {
                     const btn = document.createElement("button");
                     btn.type = "button";
+                    btn.dataset.loginProviderId = method.id;
                     if (method.id === "local" || method.id === "ldap") {
                         const methodLabelKey = `ui.app.login.provider.${method.id}`;
                         const translatedMethodName = i18n.t(methodLabelKey);
@@ -325,13 +340,35 @@ export async function mount(root) {
                     toggleContainer,
                 );
             }
+            const preferredProviderId = localStorage.getItem(
+                AUTH_SOURCE_PREFERENCE_KEY,
+            );
             const initialProvider =
+                credentialProviders.find(
+                    (method) => method.id === preferredProviderId,
+                ) ??
                 credentialProviders.find((method) => method.id === "local") ??
                 credentialProviders[0];
             if (providerInput && initialProvider) {
                 providerInput.value = initialProvider.id;
             }
             renderProviderActions(initialProvider);
+            updateSignupCallout(initialProvider);
+
+            if (credentialProviders.length > 1 && initialProvider) {
+                document
+                    .querySelectorAll(".auth-provider-btn")
+                    .forEach((button) => {
+                        const active =
+                            button.dataset.loginProviderId ===
+                            initialProvider.id;
+                        button.classList.toggle(
+                            "auth-provider-btn--active",
+                            active,
+                        );
+                        button.setAttribute("aria-pressed", String(active));
+                    });
+            }
 
             if (ssoProviders.length > 0 && ssoContainer) {
                 ssoProviders.forEach((method) => {
