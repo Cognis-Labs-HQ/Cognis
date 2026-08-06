@@ -36,6 +36,13 @@ Nilai default Docker tetap berada di `docker/env/default.env`. `./setup.sh` menu
 
 File env hanyalah kemudahan untuk Compose, bukan persyaratan runtime. Orkestrator seperti Kubernetes dapat menyuntikkan nilai yang sama langsung ke container. Orkestrator dapat memberikan `DB_TYPE` beserta variabel koneksi khusus penyedia, atau memberikan `DATABASE_URL` secara langsung. Jika `DB_TYPE` tidak diberikan, entrypoint menentukan tipenya dari skema URL PostgreSQL atau MySQL/MariaDB.
 
+Saat Traefik atau reverse proxy lain mengakhiri TLS, hubungkan upstream-nya ke
+port HTTP 80 `cognis-web` dan gunakan `COGNIS_WEB_TLS_MODE=deferred`. Image hanya
+mengiklankan port 80 untuk penemuan layanan container otomatis agar proxy tidak
+keliru memilih listener TLS pada port 443 dan mengembalikan HTTP 421. Port 443
+tetap tersedia melalui publikasi Compose eksplisit ketika `cognis-web`
+mengakhiri TLS sendiri.
+
 ```sh
 ./setup.sh
 docker compose up --build

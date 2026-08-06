@@ -118,6 +118,13 @@ test("web entrypoint only requires certificates when terminating TLS", async () 
     );
 });
 
+test("web image advertises only its reverse-proxy HTTP endpoint", async () => {
+    const source = await readFile("docker/cognis-web/Dockerfile", "utf8");
+
+    assert.match(source, /^EXPOSE 80$/m);
+    assert.doesNotMatch(source, /^EXPOSE[^\n]*\b443\b/m);
+});
+
 test(
     "Docker entrypoint constructs URLs from generated values",
     bashTestOptions,

@@ -36,6 +36,13 @@ Dockerのデフォルト値は `docker/env/default.env` に保持されます。
 
 envファイルはCompose向けの便宜的な手段であり、実行時の必須要件ではありません。Kubernetesなどのオーケストレーターは、同じ値をコンテナへ直接注入できます。`DB_TYPE` とプロバイダー固有の接続変数を指定する方法と、`DATABASE_URL` を直接指定する方法のどちらも利用できます。`DB_TYPE` を省略すると、エントリポイントはPostgreSQLまたはMySQL/MariaDBのURLスキームから種類を判定します。
 
+TraefikなどのリバースプロキシでTLSを終端する場合は、
+`COGNIS_WEB_TLS_MODE=deferred`を使用し、`cognis-web`のHTTPポート80へ
+アップストリーム接続してください。コンテナの自動サービス検出でプロキシが
+誤ってポート443のTLSリスナーを選択し、HTTP 421を返すことがないよう、
+イメージが公開するポートは80だけです。`cognis-web`自身でTLSを終端する場合、
+ポート443はComposeの明示的な公開設定を通して引き続き利用できます。
+
 ```sh
 ./setup.sh
 docker compose up --build

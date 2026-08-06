@@ -37,6 +37,13 @@ Docker-Standardwerte verbleiben in der versionierten Datei `docker/env/default.e
 
 Env-Dateien sind eine Annehmlichkeit für Compose und keine Laufzeitanforderung. Orchestratoren wie Kubernetes können dieselben Werte direkt in den Container einspeisen. Sie können entweder `DB_TYPE` und die providerspezifischen Verbindungsvariablen oder direkt `DATABASE_URL` bereitstellen. Wenn `DB_TYPE` fehlt, leitet der Entrypoint den Typ aus einem PostgreSQL- oder MySQL/MariaDB-URL-Schema ab.
 
+Wenn Traefik oder ein anderer Reverse-Proxy TLS beendet, muss sein Upstream
+Port 80 von `cognis-web` über HTTP mit `COGNIS_WEB_TLS_MODE=deferred` verwenden.
+Das Image veröffentlicht für die automatische Container-Diensterkennung nur
+Port 80, damit ein Proxy nicht versehentlich den TLS-Listener auf Port 443
+auswählt und HTTP 421 zurückgibt. Port 443 bleibt über die explizite
+Compose-Veröffentlichung verfügbar, wenn `cognis-web` TLS selbst beendet.
+
 ```sh
 ./setup.sh
 docker compose up --build
