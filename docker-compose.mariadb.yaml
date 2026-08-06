@@ -41,7 +41,7 @@ services:
             context: ./docker/edge
         image: cognis-web
         env_file:
-            - ./docker/env/runtime.env
+            - ./docker/env/edge.env
         ports:
             - "80:80"
             - "443:443"

@@ -19,12 +19,14 @@ const profiles = [
     ["docker-compose.mariadb.yaml", "mariadb:11"],
 ];
 
-test("Docker database profiles share one generated runtime env", async () => {
+test("Docker profiles isolate application and edge environments", async () => {
     for (const [composePath, image] of profiles) {
         const compose = await readFile(composePath, "utf8");
         assert.match(compose, new RegExp(`image: ${image}`));
         assert.match(compose, /- \.\/docker\/env\/runtime\.env/);
-        assert.match(compose, /cognis-web:[\s\S]*env_file:[\s\S]*runtime\.env/);
+        assert.match(compose, /cognis-web:[\s\S]*env_file:[\s\S]*edge\.env/);
+        const webService = compose.split(/\n    cognis-web:/)[1];
+        assert.doesNotMatch(webService, /runtime\.env/);
         assert.match(compose, /dockerfile: \.\/docker\/Dockerfile/);
         assert.doesNotMatch(
             compose,
@@ -53,6 +55,10 @@ test("setup creates a private MariaDB runtime environment", async (context) => {
         join(temporaryRoot, "docker", "env", "runtime.env"),
         "utf8",
     );
+    const edge = await readFile(
+        join(temporaryRoot, "docker", "env", "edge.env"),
+        "utf8",
+    );
     assert.match(runtime, /^NODE_ENV=development$/m);
     assert.match(runtime, /^DB_TYPE=mariadb$/m);
     assert.match(runtime, /^MARIADB_PASSWORD=\S+$/m);
@@ -60,7 +66,17 @@ test("setup creates a private MariaDB runtime environment", async (context) => {
     assert.match(runtime, /^HOST=cognis$/m);
     assert.match(runtime, /^EXTERNAL_HOST=https:\/\/cognis\.example\.com$/m);
     assert.match(runtime, /^CONTACT_EMAIL=admin@example\.com$/m);
-    assert.match(runtime, /^COGNIS_EDGE_TLS_MODE=terminate$/m);
+    assert.doesNotMatch(runtime, /^COGNIS_EDGE_/m);
+    assert.match(edge, /^COGNIS_EDGE_TLS_MODE=terminate$/m);
+    assert.match(
+        edge,
+        /^COGNIS_EDGE_TLS_CERTIFICATE=\/etc\/nginx\/tls\/fullchain\.pem$/m,
+    );
+    assert.match(
+        edge,
+        /^COGNIS_EDGE_TLS_CERTIFICATE_KEY=\/etc\/nginx\/tls\/privkey\.pem$/m,
+    );
+    assert.doesNotMatch(edge, /DATA_ENCRYPTION_KEY|PASSWORD/);
     assert.equal(
         await readlink(join(temporaryRoot, "docker-compose.yaml")),
         "docker-compose.mariadb.yaml",

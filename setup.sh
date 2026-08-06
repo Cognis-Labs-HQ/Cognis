@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 REPOSITORY_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 RUNTIME_ENV_FILE="${REPOSITORY_ROOT}/docker/env/runtime.env"
+EDGE_ENV_FILE="${REPOSITORY_ROOT}/docker/env/edge.env"
 
 prompt() {
   local variable_name="$1"
@@ -56,7 +57,7 @@ random_secret() {
 }
 
 echo "Cognis environment setup"
-echo "This creates docker/env/runtime.env and selects the default Compose database."
+echo "This creates isolated application and edge env files and selects the default Compose database."
 
 prompt deployment "Deployment type (development/production)" "production"
 case "${deployment}" in
@@ -103,7 +104,6 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
   printf 'EXTERNAL_HOST=%s\n' "${external_host}"
   printf 'CONTACT_EMAIL=%s\n' "${contact_email}"
   printf 'DATA_ENCRYPTION_KEY=%s\n' "${encryption_key}"
-  printf 'COGNIS_EDGE_TLS_MODE=%s\n' "${edge_tls_mode}"
   if [[ "${database_driver}" == "postgresql" ]]; then
     printf 'POSTGRES_HOST=%s\n' "${database_host}"
     printf 'POSTGRES_PORT=%s\n' "${database_port}"
@@ -124,8 +124,14 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
   fi
 } > "${RUNTIME_ENV_FILE}"
 
+{
+  printf 'COGNIS_EDGE_TLS_MODE=%s\n' "${edge_tls_mode}"
+  printf 'COGNIS_EDGE_TLS_CERTIFICATE=/etc/nginx/tls/fullchain.pem\n'
+  printf 'COGNIS_EDGE_TLS_CERTIFICATE_KEY=/etc/nginx/tls/privkey.pem\n'
+} > "${EDGE_ENV_FILE}"
+
 ln -sfn "${compose_target}" "${REPOSITORY_ROOT}/docker-compose.yaml"
 
-echo "Configuration written to docker/env/runtime.env."
+echo "Configuration written to docker/env/runtime.env and docker/env/edge.env."
 echo "docker-compose.yaml now selects ${database_driver}."
 echo "Start Cognis with: docker compose up --build"
