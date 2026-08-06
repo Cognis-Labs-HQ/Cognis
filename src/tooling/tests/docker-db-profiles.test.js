@@ -171,7 +171,7 @@ test(
 );
 
 test(
-    "Docker entrypoint directs missing values to setup",
+    "Docker entrypoint identifies missing container environment values",
     bashTestOptions,
     async () => {
         await assert.rejects(
@@ -193,11 +193,41 @@ test(
             (error) => {
                 assert.match(
                     error.stdout,
-                    /POSTGRES_HOST must be set in docker\/env\/runtime\.env/,
+                    /POSTGRES_HOST must be set in the container environment/,
                 );
                 return true;
             },
         );
+    },
+);
+
+test(
+    "Docker entrypoint accepts an injected DATABASE_URL without env files",
+    bashTestOptions,
+    async () => {
+        const databaseUrl = "mysql://cognis:secret@database:3306/cognis";
+        const { stdout } = await execFileAsync(
+            bashPath,
+            [
+                "docker/entrypoint.sh",
+                bashPath,
+                "-c",
+                'printf "%s|%s" "$DATABASE_URL" "$DB_TYPE"',
+            ],
+            {
+                env: {
+                    HOST: "cognis",
+                    EXTERNAL_HOST: "https://cognis.example.com",
+                    CONTACT_EMAIL: "admin@example.com",
+                    DATA_ENCRYPTION_KEY: "test-key",
+                    DATABASE_URL: databaseUrl,
+                    LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+                    PATH: process.env.PATH,
+                },
+            },
+        );
+
+        assert.ok(stdout.startsWith(`${databaseUrl}|mariadb`));
     },
 );
 
@@ -221,7 +251,7 @@ test(
             (error) => {
                 assert.match(
                     error.stdout,
-                    /HOST must be set in docker\/env\/runtime\.env/,
+                    /HOST must be set in the container environment/,
                 );
                 return true;
             },

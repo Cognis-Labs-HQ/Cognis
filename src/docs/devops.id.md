@@ -34,6 +34,8 @@ CMD ["node", "src/api/main.js"]
 
 Nilai default Docker tetap berada di `docker/env/default.env`. `./setup.sh` menulis nilai aplikasi dan basis data ke `docker/env/runtime.env`, serta hanya pengaturan TLS web ke `docker/env/cognis-web.env`. Compose hanya memberikan file web kepada `cognis-web`, sehingga container itu tidak dapat membaca kunci enkripsi Cognis atau kredensial basis data. Penyiapan menanyakan apakah reverse proxy atau CDN terpisah menghentikan HTTPS sebelum `cognis-web`; jawaban ya menulis `COGNIS_WEB_TLS_MODE=deferred`, sedangkan tidak mempertahankan terminasi TLS lokal dengan `terminate`.
 
+File env hanyalah kemudahan untuk Compose, bukan persyaratan runtime. Orkestrator seperti Kubernetes dapat menyuntikkan nilai yang sama langsung ke container. Orkestrator dapat memberikan `DB_TYPE` beserta variabel koneksi khusus penyedia, atau memberikan `DATABASE_URL` secara langsung. Jika `DB_TYPE` tidak diberikan, entrypoint menentukan tipenya dari skema URL PostgreSQL atau MySQL/MariaDB.
+
 ```sh
 ./setup.sh
 docker compose up --build

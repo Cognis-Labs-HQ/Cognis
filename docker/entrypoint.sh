@@ -53,10 +53,9 @@ trap 'shutdown INT' INT
 
 require_environment_value() {
   local variable_name="$1"
-  local setup_file="$2"
 
   if [[ -z "${!variable_name:-}" ]]; then
-    app_log "error" "${variable_name} must be set in ${setup_file}. Run ./setup.sh from the repository root to configure Cognis."
+    app_log "error" "${variable_name} must be set in the container environment. Compose users can run ./setup.sh from the repository root to generate env files."
     exit 1
   fi
 }
@@ -66,36 +65,50 @@ encode_url_component() {
 }
 
 construct_database_url() {
-  require_environment_value HOST docker/env/runtime.env
-  require_environment_value EXTERNAL_HOST docker/env/runtime.env
-  require_environment_value CONTACT_EMAIL docker/env/runtime.env
-  require_environment_value DATA_ENCRYPTION_KEY docker/env/runtime.env
+  require_environment_value HOST
+  require_environment_value EXTERNAL_HOST
+  require_environment_value CONTACT_EMAIL
+  require_environment_value DATA_ENCRYPTION_KEY
+
+  if [[ -n "${DATABASE_URL:-}" ]]; then
+    if [[ -z "${DB_TYPE:-}" ]]; then
+      case "${DATABASE_URL}" in
+        postgres://*|postgresql://*) export DB_TYPE="postgresql" ;;
+        mariadb://*|mysql://*) export DB_TYPE="mariadb" ;;
+        *)
+          app_log "error" "DB_TYPE must be set to postgresql or mariadb when DATABASE_URL uses an unrecognized scheme."
+          exit 1
+          ;;
+      esac
+    fi
+    return
+  fi
 
   case "${DB_TYPE:-}" in
     postgresql)
-      require_environment_value POSTGRES_HOST docker/env/runtime.env
-      require_environment_value POSTGRES_PORT docker/env/runtime.env
-      require_environment_value POSTGRES_DB docker/env/runtime.env
-      require_environment_value POSTGRES_USER docker/env/runtime.env
-      require_environment_value POSTGRES_PASSWORD docker/env/runtime.env
+      require_environment_value POSTGRES_HOST
+      require_environment_value POSTGRES_PORT
+      require_environment_value POSTGRES_DB
+      require_environment_value POSTGRES_USER
+      require_environment_value POSTGRES_PASSWORD
       local postgres_user postgres_password
       postgres_user="$(encode_url_component "${POSTGRES_USER}")"
       postgres_password="$(encode_url_component "${POSTGRES_PASSWORD}")"
       export DATABASE_URL="postgresql://${postgres_user}:${postgres_password}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
       ;;
     mariadb)
-      require_environment_value MARIADB_HOST docker/env/runtime.env
-      require_environment_value MARIADB_PORT docker/env/runtime.env
-      require_environment_value MARIADB_DATABASE docker/env/runtime.env
-      require_environment_value MARIADB_USER docker/env/runtime.env
-      require_environment_value MARIADB_PASSWORD docker/env/runtime.env
+      require_environment_value MARIADB_HOST
+      require_environment_value MARIADB_PORT
+      require_environment_value MARIADB_DATABASE
+      require_environment_value MARIADB_USER
+      require_environment_value MARIADB_PASSWORD
       local mariadb_user mariadb_password
       mariadb_user="$(encode_url_component "${MARIADB_USER}")"
       mariadb_password="$(encode_url_component "${MARIADB_PASSWORD}")"
       export DATABASE_URL="mysql://${mariadb_user}:${mariadb_password}@${MARIADB_HOST}:${MARIADB_PORT}/${MARIADB_DATABASE}"
       ;;
     *)
-      app_log "error" "DB_TYPE must be set to postgresql or mariadb in docker/env/runtime.env. Run ./setup.sh to configure Cognis."
+      app_log "error" "Set DATABASE_URL, or set DB_TYPE to postgresql or mariadb with the corresponding database environment variables."
       exit 1
       ;;
   esac
