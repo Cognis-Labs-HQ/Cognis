@@ -3,7 +3,6 @@ import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 
 const values = new Map();
 const sessionValues = new Map();
@@ -68,16 +67,8 @@ globalThis.indexedDB = {
         return request;
     },
 };
-let confirmationInvalidations = 0;
 let unlockPromptCount = 0;
 let lastUnlockPrompt = null;
-uiCtx.capabilities.contribute(
-    "auth:invalidatePasswordConfirmation",
-    async () => {
-        confirmationInvalidations += 1;
-        return true;
-    },
-);
 
 async function testPasswordPrompt(prompt) {
     unlockPromptCount += 1;
@@ -522,7 +513,7 @@ test("new keyring setup can be deferred until the dashboard is visible", async (
         }),
         { setup: false, unlocked: false, deferred: true },
     );
-    assert.equal(uiCtx.capabilities.get("keyring:hasDeferredSetup")?.(), true);
+    assert.equal(sessionValues.get("cognis_keyring_setup_pending"), "1");
 
     assert.deepEqual(
         await keyring.setupKeyringAfterLogin("", {
@@ -530,7 +521,7 @@ test("new keyring setup can be deferred until the dashboard is visible", async (
         }),
         { setup: true, unlocked: true },
     );
-    assert.equal(uiCtx.capabilities.get("keyring:hasDeferredSetup")?.(), false);
+    assert.equal(sessionValues.has("cognis_keyring_setup_pending"), false);
     await keyring.lockKeyring();
     localStorage.removeItem("cognis_account");
 });

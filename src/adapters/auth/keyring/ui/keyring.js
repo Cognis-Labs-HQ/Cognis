@@ -2,6 +2,7 @@ import {
     dispatchKeyringEvent,
     showKeyringLifecycleToast,
 } from "./lifecycle-notifications.js";
+import { createSessionUnlockStore } from "./session-unlock-store.js";
 
 const keyringApiModule = await import(
     typeof window === "undefined"
@@ -24,10 +25,6 @@ const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
 const DEFAULT_ITERATIONS = 310_000;
 const DEFERRED_SETUP_KEY = "cognis_keyring_setup_pending";
-const SESSION_UNLOCK_DATABASE = "cognis-keyring-session";
-const SESSION_UNLOCK_STORE = "keys";
-const SESSION_UNLOCK_MARKER = "cognis_keyring_session_unlocked";
-const SESSION_UNLOCK_EXPIRES_AT = "cognis_keyring_session_expires_at";
 let vaultKey = null;
 let vaultData = null;
 let vaultSalt = null;
@@ -95,100 +92,15 @@ function sessionUnlockId() {
     return keyringStorageKey();
 }
 
-function sessionUnlockMarkerKey() {
-    return `${SESSION_UNLOCK_MARKER}:${encodeURIComponent(sessionUnlockId())}`;
-}
-
-function sessionUnlockExpiryKey() {
-    return `${SESSION_UNLOCK_EXPIRES_AT}:${encodeURIComponent(sessionUnlockId())}`;
-}
-
-function openSessionUnlockDatabase() {
-    if (typeof indexedDB === "undefined") return Promise.resolve(null);
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(SESSION_UNLOCK_DATABASE, 1);
-        request.onupgradeneeded = () => {
-            if (
-                !request.result.objectStoreNames.contains(SESSION_UNLOCK_STORE)
-            ) {
-                request.result.createObjectStore(SESSION_UNLOCK_STORE, {
-                    keyPath: "id",
-                });
-            }
-        };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-async function writeSessionUnlockKey(key) {
-    if (temporaryKeyringAccountId) return;
-    const database = await openSessionUnlockDatabase().catch(() => null);
-    if (!database) return;
-    const written = await new Promise((resolve, reject) => {
-        const transaction = database.transaction(
-            SESSION_UNLOCK_STORE,
-            "readwrite",
-        );
-        transaction.objectStore(SESSION_UNLOCK_STORE).put({
-            id: sessionUnlockId(),
-            key,
-            accountInstanceId,
-        });
-        transaction.oncomplete = () => resolve(true);
-        transaction.onerror = () => reject(transaction.error);
-    }).catch(() => false);
-    database.close();
-    if (written) sessionStorage.setItem(sessionUnlockMarkerKey(), "1");
-}
-
-async function readSessionUnlockKey() {
-    if (temporaryKeyringAccountId) return null;
-    if (sessionStorage.getItem(sessionUnlockMarkerKey()) !== "1") {
-        await clearSessionUnlockKey();
-        return null;
-    }
-    const database = await openSessionUnlockDatabase().catch(() => null);
-    if (!database) return null;
-    const record = await new Promise((resolve, reject) => {
-        const transaction = database.transaction(
-            SESSION_UNLOCK_STORE,
-            "readonly",
-        );
-        const request = transaction
-            .objectStore(SESSION_UNLOCK_STORE)
-            .get(sessionUnlockId());
-        request.onsuccess = () => resolve(request.result ?? null);
-        request.onerror = () => reject(request.error);
-    }).catch(() => null);
-    database.close();
-    if (
-        record?.accountInstanceId &&
-        accountInstanceId &&
-        record.accountInstanceId !== accountInstanceId
-    ) {
-        await clearSessionUnlockKey();
-        return null;
-    }
-    return record?.key ?? null;
-}
-
-async function clearSessionUnlockKey() {
-    sessionStorage.removeItem(sessionUnlockMarkerKey());
-    sessionStorage.removeItem(sessionUnlockExpiryKey());
-    const database = await openSessionUnlockDatabase().catch(() => null);
-    if (!database) return;
-    await new Promise((resolve) => {
-        const transaction = database.transaction(
-            SESSION_UNLOCK_STORE,
-            "readwrite",
-        );
-        transaction.objectStore(SESSION_UNLOCK_STORE).delete(sessionUnlockId());
-        transaction.oncomplete = resolve;
-        transaction.onerror = resolve;
-    });
-    database.close();
-}
+const sessionUnlockStore = createSessionUnlockStore({
+    getAccountInstanceId: () => accountInstanceId,
+    getSessionUnlockId: sessionUnlockId,
+    isTemporaryKeyring: () => Boolean(temporaryKeyringAccountId),
+});
+const clearSessionUnlockKey = sessionUnlockStore.clear;
+const readSessionUnlockKey = sessionUnlockStore.read;
+const sessionUnlockExpiryKey = sessionUnlockStore.expiryKey;
+const writeSessionUnlockKey = sessionUnlockStore.write;
 
 function normalizeEntry(value, id) {
     if (value && typeof value === "object" && "value" in value) {

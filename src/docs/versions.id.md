@@ -32,12 +32,12 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.14` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.15` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.15` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.7`  |
 | Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.5`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.5`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.26` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.28` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.7`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
@@ -74,7 +74,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Logging               | `src/gateways/logging/`       | `1.5.3`  |
 | Observability         | `src/gateways/observability/` | `1.0.2`  |
 | Study                 | `src/gateways/study/`         | `1.5.9`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.48` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.49` |
 
 ## Kontrak inti
 
@@ -93,7 +93,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.54` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.31` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.55` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.32` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

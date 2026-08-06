@@ -7,6 +7,8 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 import { confirmClearCanvas } from "./clear-canvas.js";
+import { createWhiteboardSearchCollector } from "./search-index.js";
+import { createWhiteboardStatusController } from "./status.js";
 import { renderCanvasElement as renderWhiteboardCanvasElement } from "./render.js";
 import {
     API_BASE,
@@ -51,95 +53,28 @@ let savedElements = [];
 let preflightStatus = "idle";
 let lastConnectionToast = "";
 let imageUploadMaxBytes = 1048576;
-let syncStatus = "idle";
-let syncStatusMessage = "";
 let integrationCanvasMode = false;
-function collectWhiteboardSearchGroups() {
-    const items = [];
-    for (const board of boards ?? []) {
-        const title = String(board?.title ?? board?.id ?? "").trim();
-        if (!title) continue;
-        items.push({
-            id: `whiteboard:${board.id ?? title}`,
-            label: title,
-            showDescription: false,
-            showMatchSnippet: false,
-            url: `/whiteboard?id=${encodeURIComponent(board.id ?? "")}`,
-            resultClass: "page",
-            searchText: [
-                title,
-                board?.externalPath,
-                board?.createdBy,
-                board?.updatedAt,
-            ]
-                .filter(Boolean)
-                .join(" "),
-        });
-    }
-    const elementText = JSON.stringify(savedElements ?? []);
-    if (activeBoard?.id && elementText && elementText !== "[]") {
-        items.push({
-            id: `whiteboard:${activeBoard.id}:contents`,
-            label:
-                activeBoard.title ||
-                translateModuleString(
-                    "module.nextcloud_whiteboard.canvas_window",
-                ),
-            showDescription: false,
-            showMatchSnippet: false,
-            url: `/whiteboard?id=${encodeURIComponent(activeBoard.id)}`,
-            resultClass: "text",
-            searchText: elementText,
-        });
-    }
-    return [{ category: "Whiteboards", items }];
-}
-function translateModuleString(key) {
-    return i18n?.t(key) ?? key;
-}
-function reportClientError(error, fallbackKey) {
-    console.error("[nextcloud-whiteboard] client error:", error);
-    showToast(error?.message || translateModuleString(fallbackKey), {
-        variant: "error",
-    });
-}
-function sharePageFlag(name, fallback) {
-    if (!activeShareContext?.page) return fallback;
-    return activeShareContext.page[name] !== undefined
-        ? Boolean(activeShareContext.page[name])
-        : fallback;
-}
-function canManageShares() {
-    return (
-        !integrationCanvasMode &&
-        sharePageFlag("showShareControls", !activeShareContext)
-    );
-}
-function updateSyncStatusBox() {
-    const statusBox = document.getElementById("whiteboard-sync-status");
-    if (!statusBox) return;
-    statusBox.dataset.status = syncStatus;
-    statusBox.title =
-        syncStatusMessage ||
-        translateModuleString("module.nextcloud_whiteboard.status_idle");
-}
-function setSyncStatus(status, messageKey) {
-    syncStatus = status;
-    syncStatusMessage = translateModuleString(messageKey);
-    updateSyncStatusBox();
-}
-function buildConnectionErrorMessage(error, serverUrl) {
-    const rawMessage = String(error?.message ?? "").trim();
-    const genericSocketFailure = /^(websocket error|xhr poll error)$/i.test(
-        rawMessage,
-    );
-    if (!rawMessage || genericSocketFailure) {
-        return translateModuleString(
-            "module.nextcloud_whiteboard.connection_failed",
-        ).replace("{server_url}", serverUrl);
-    }
-    return `${translateModuleString("module.nextcloud_whiteboard.connect_error")}: ${rawMessage}`;
-}
+const {
+    buildConnectionErrorMessage,
+    canManageShares,
+    reportClientError,
+    setSyncStatus,
+    sharePageFlag,
+    translate: translateModuleString,
+    updateSyncStatusBox,
+} = createWhiteboardStatusController({
+    getI18n: () => i18n,
+    getIntegrationCanvasMode: () => integrationCanvasMode,
+    getShareContext: () => activeShareContext,
+    showToast,
+});
+const collectWhiteboardSearchGroups = createWhiteboardSearchCollector({
+    getActiveBoard: () => activeBoard,
+    getBoards: () => boards,
+    getSavedElements: () => savedElements,
+    translate: translateModuleString,
+});
+
 async function loadBoards() {
     boards = await fetchWhiteboardList();
 }

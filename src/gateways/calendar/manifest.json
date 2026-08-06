@@ -1,7 +1,7 @@
 {
     "id": "calendar",
     "name": "Calendar Gateway",
-    "version": "1.4.48",
+    "version": "1.4.49",
     "required": false,
     "requires": ["auth", "social"],
     "hasAdapters": true,

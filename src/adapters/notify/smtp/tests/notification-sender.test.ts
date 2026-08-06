@@ -771,8 +771,8 @@ test("SmtpNotificationSender email defaults to light theme when metadata.theme i
         );
         await sender.send({
             category: "test",
-            recipientUsername: "alice",
-            recipientEmail: "alice@example.com",
+            recipientUsername: "default-theme-recipient",
+            recipientEmail: "default-theme-recipient@example.com",
             subject: "Default Theme",
             body: "Test body",
         });
