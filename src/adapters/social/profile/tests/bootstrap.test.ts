@@ -157,8 +157,8 @@ test("profile adapter bootstrap registers static dir and navbar.js exists on dis
     const navbarSource = readFileSync(navbarPath, "utf8");
     assert.match(
         navbarSource,
-        /from ["']\/static\/adapters\/social\/profile\/profile-avatar\.js["']/,
-        "navbar avatar import must use the registered adapter static path",
+        /from ["']\.\/profile-avatar\.js["']/,
+        "navbar avatar import must use a package-local path",
     );
     assert.doesNotMatch(
         navbarSource,

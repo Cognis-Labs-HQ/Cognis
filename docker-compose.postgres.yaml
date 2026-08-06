@@ -44,8 +44,8 @@ services:
         build:
             context: ./docker/edge
         image: cognis-web
-        environment:
-            COGNIS_EDGE_TLS_MODE: ${COGNIS_EDGE_TLS_MODE:-terminate}
+        env_file:
+            - ./docker/env/runtime.env
         ports:
             - "80:80"
             - "443:443"

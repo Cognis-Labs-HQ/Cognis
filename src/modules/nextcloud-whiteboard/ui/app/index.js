@@ -527,7 +527,6 @@ async function bindShareButton(toolbar) {
         onClick: () => void openSharePopup(),
     });
 }
-
 async function openSharePopup() {
     if (!activeBoard?.id || !canManageShares()) return;
     try {

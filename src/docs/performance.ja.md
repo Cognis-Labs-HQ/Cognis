@@ -1,4 +1,4 @@
-# パフォーマンスのベースラインと予算
+# パフォーマンス予算
 
 本番トラフィックは `docker/edge` からビルドされ、GitLab CIで `$CI_REGISTRY_IMAGE/cognis-web` として公開される `cognis-web` エッジプロキシで終端します。既定では `COGNIS_EDGE_TLS_MODE=terminate` がローカルHTTPSリスナーを有効にし、TLS 証明書を `docker/tls/fullchain.pem`、鍵を `docker/tls/privkey.pem` として必要とします。信頼済みの上流TLS終端の背後でのみ `COGNIS_EDGE_TLS_MODE=deferred` を設定してください。その場合、NginxはHTTPのみで待ち受け、同じキャッシュポリシーを維持し、存在する場合は信頼済み上流のプロトコルヘッダーを転送します。マネージド CDN でも同じキャッシュおよび転送ポリシーを実装できます。公開されるのはエッジのみであり、転送ヘッダーの置換が信頼境界を確立します。
 

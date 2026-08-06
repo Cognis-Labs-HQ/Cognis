@@ -74,11 +74,9 @@ async function setupUser(
     visibility = "hidden",
 ) {
     await profileStore.createProfile(username, username);
-    if (visibility !== "hidden") {
-        await profileStore.updateProfile(username, {
-            visibility: visibility as any,
-        });
-    }
+    await profileStore.updateProfile(username, {
+        visibility: visibility as any,
+    });
 }
 
 test("profile routes - get own profile auto-creates profile when none exists", async () => {
@@ -143,7 +141,7 @@ test("profile routes - get own profile returns data after creation", async () =>
     assert.equal(status, 200);
     const parsed = JSON.parse(body);
     assert.equal(parsed.data.handle, "alice");
-    assert.equal(parsed.data.visibility, "hidden");
+    assert.equal(parsed.data.visibility, "friends");
     assert.equal(parsed.data.role, "user");
 });
 
@@ -309,7 +307,7 @@ test("profile routes - PATCH rejects invalid visibility", async () => {
 
 test("profile routes - hidden profile not visible to other users", async () => {
     const profileStore = new VolatileProfileStore();
-    await profileStore.createProfile("dave", "dave");
+    await setupUser(profileStore, "dave", "hidden");
     const eveToken = issueAccessToken("eve", "user", 60);
     const route = createProfileRoutes(profileStore, fakeFileGateway());
     let status = 0;

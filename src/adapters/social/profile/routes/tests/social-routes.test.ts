@@ -100,6 +100,7 @@ test("social routes - follow recreates a missing requester profile", async () =>
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("alice", { visibility: "hidden" });
         await profileStore.updateProfile("bob", { visibility: "community" });
         await executor.executeCommand({
             option: "DELETE",
@@ -173,6 +174,7 @@ test("social routes - cannot follow hidden user", async () => {
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUsers(executor, "alice", "hidden");
+        await profileStore.updateProfile("hidden", { visibility: "hidden" });
         const route = createSocialRoutes(profileStore);
         const aliceToken = issueAccessToken("alice", "user", 60);
         let status = 0;
@@ -197,6 +199,7 @@ test("social routes - hidden requester cannot follow visible user", async () => 
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("alice", { visibility: "hidden" });
         await profileStore.updateProfile("bob", { visibility: "community" });
         const route = createSocialRoutes(profileStore);
         const aliceToken = issueAccessToken("alice", "user", 60);
@@ -252,6 +255,7 @@ test("social routes - unauthenticated follow request returns 401", async () => {
     const { dir, executor } = makeTempDb();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
+        await profileStore.updateProfile("alice", { visibility: "hidden" });
         await profileStore.updateProfile("bob", { visibility: "community" });
         const route = createSocialRoutes(profileStore);
         let status = 0;
