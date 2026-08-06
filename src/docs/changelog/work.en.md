@@ -6,4 +6,8 @@ Split session-unlock persistence, calendar detail styling, meeting page elements
 
 ## Docker profile tests run with restricted paths
 
-Docker profile tests now invoke required system executables by absolute path, preventing unrelated or restricted `PATH` settings from causing misleading spawn failures.
+Docker profile tests now discover Bash from supported absolute paths and explicitly skip shell-execution checks when a minimal CI image does not install Bash, rather than failing with a misleading spawn error.
+
+## SMTP theme tests use isolated recipients
+
+The default-theme email test now uses its own recipient identity so recipient rate limiting from adjacent SMTP tests cannot make the full suite fail intermittently.

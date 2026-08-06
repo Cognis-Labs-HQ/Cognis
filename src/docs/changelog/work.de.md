@@ -6,4 +6,8 @@ Die Sitzungsentsperrung, Kalenderdetail-Stile, Besprechungsseitenelemente, White
 
 ## Docker-Profiltests funktionieren mit eingeschränkten Pfaden
 
-Docker-Profiltests rufen erforderliche Systemprogramme nun über absolute Pfade auf, damit fremde oder eingeschränkte `PATH`-Einstellungen keine irreführenden Startfehler verursachen.
+Docker-Profiltests erkennen Bash über unterstützte absolute Pfade und überspringen Shell-Ausführungsprüfungen ausdrücklich, wenn ein minimales CI-Image Bash nicht installiert, anstatt mit einem irreführenden Startfehler abzubrechen.
+
+## SMTP-Theme-Tests verwenden isolierte Empfänger
+
+Der E-Mail-Test für das Standard-Theme verwendet nun eine eigene Empfängeridentität, damit die Empfänger-Ratenbegrenzung benachbarter SMTP-Tests nicht zu sporadischen Fehlern der vollständigen Testsuite führt.

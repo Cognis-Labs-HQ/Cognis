@@ -6,4 +6,8 @@ Persistensi pembukaan kunci sesi, gaya detail kalender, elemen halaman rapat, pe
 
 ## Pengujian profil Docker berjalan dengan jalur terbatas
 
-Pengujian profil Docker kini menjalankan program sistem yang diperlukan melalui jalur absolut sehingga pengaturan `PATH` yang terbatas atau tidak terkait tidak menimbulkan kegagalan proses yang menyesatkan.
+Pengujian profil Docker kini menemukan Bash melalui jalur absolut yang didukung dan secara eksplisit melewati pemeriksaan eksekusi shell ketika citra CI minimal tidak memasang Bash, alih-alih gagal dengan kesalahan proses yang menyesatkan.
+
+## Pengujian tema SMTP memakai penerima terisolasi
+
+Pengujian surel tema bawaan kini memakai identitas penerima tersendiri agar pembatasan laju penerima dari pengujian SMTP di sekitarnya tidak menyebabkan kegagalan berkala pada seluruh rangkaian pengujian.

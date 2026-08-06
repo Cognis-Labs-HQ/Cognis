@@ -7,6 +7,6 @@
     "dependencies": {
         "@cognis/core": "<=0.3.6",
         "@cognis/gateways": "<=0.1.5",
-        "@cognis/adapter-notify-smtp": "<=0.2.14"
+        "@cognis/adapter-notify-smtp": "<=0.2.15"
     }
 }
