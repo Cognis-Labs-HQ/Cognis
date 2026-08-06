@@ -13,8 +13,6 @@ import {
     resolveReminderOffsets,
     shiftDateByRecurrence,
     type CaldavTokenRecord,
-    type CalendarAdapter,
-    type CalendarAdapterInfo,
     type CalendarBootstrapBaseCtx,
     type CalendarEventRecord,
     type CalendarEventRecurrence,
@@ -36,13 +34,10 @@ import {
     bootstrapAdapters as bootstrapCalendarAdapters,
     discoverAdapters as discoverCalendarAdapters,
     exportCalendarAsIcs as buildCalendarIcs,
-    getAdapterConfig as getAdapterConfigHelper,
     importIcs as importCalendarIcs,
-    isCalendarAdapterEnabled,
-    listCalendarAdapters,
-    saveCalendarAdapterConfig,
 } from "./adapter-helpers.js";
 import { moveOwnedEvents } from "./move-owned-events.js";
+import { CalendarAdapterRegistry } from "./adapter-registry.js";
 import { removeDeclinedAttendee as removeDeclinedAttendeeHelper } from "./attendee-management.js";
 import { removeCalendarAccountActivity } from "./account-activity.js";
 import {
@@ -61,7 +56,6 @@ import {
     listOwnedEventsByRecurrenceId,
 } from "./recurrence-event-queries.js";
 import { listInvitedPendingEvents } from "./invitation-queries.js";
-
 export class CoreCalendarGateway {
     private readonly calendarsById = new Map<string, CalendarRecord>();
     private readonly calendarIdsByOwner = new Map<string, Set<string>>();
@@ -70,9 +64,7 @@ export class CoreCalendarGateway {
         CalendarEventRecord[]
     >();
     private readonly tokenStore = new CalendarTokenStore();
-    private readonly registeredAdapters = new Map<string, CalendarAdapter>();
-    private readonly adapterRequires = new Map<string, string[]>();
-    private readonly disabledAdapters = new Set<string>();
+    private readonly adapters = new CalendarAdapterRegistry();
     private readonly responsesByRootEvent = new Map<
         string,
         Map<string, CalendarEventResponseRecord>
@@ -135,61 +127,28 @@ export class CoreCalendarGateway {
         });
     }
 
-    registerAdapter(adapter: CalendarAdapter, requires?: string[]): void {
-        this.registeredAdapters.set(adapter.adapterId, adapter);
-        const effectiveRequires = requires ?? adapter.requires;
-        if (effectiveRequires && effectiveRequires.length > 0) {
-            this.adapterRequires.set(adapter.adapterId, effectiveRequires);
-        }
-    }
-
-    listAdapters(): CalendarAdapterInfo[] {
-        return listCalendarAdapters(
-            this.registeredAdapters,
-            this.adapterRequires,
-            this.disabledAdapters,
-        );
-    }
-
-    isAdapterEnabled(adapterId: string): boolean {
-        return isCalendarAdapterEnabled(
-            this.registeredAdapters,
-            this.disabledAdapters,
-            adapterId,
-        );
-    }
-
-    getAdapter(adapterId: string): CalendarAdapter | undefined {
-        return this.registeredAdapters.get(adapterId);
-    }
-
-    getAdapterConfig(adapterId: string): Record<string, unknown> | null {
-        return getAdapterConfigHelper(
-            this.registeredAdapters,
-            this.disabledAdapters,
-            adapterId,
-        );
-    }
-
-    async saveAdapterConfig(
-        adapterId: string,
-        config: Record<string, unknown>,
-    ): Promise<void> {
-        saveCalendarAdapterConfig(
-            this.registeredAdapters,
-            this.disabledAdapters,
-            adapterId,
-            config,
-        );
-    }
-
-    async enableAdapter(adapterId: string): Promise<void> {
-        this.disabledAdapters.delete(adapterId);
-    }
-
-    async disableAdapter(adapterId: string): Promise<void> {
-        this.disabledAdapters.add(adapterId);
-    }
+    readonly registerAdapter = this.adapters.registerAdapter.bind(
+        this.adapters,
+    );
+    readonly listAdapters = this.adapters.listAdapters.bind(this.adapters);
+    readonly isAdapterEnabled = this.adapters.isAdapterEnabled.bind(
+        this.adapters,
+    );
+    readonly getAdapter = this.adapters.getAdapter.bind(this.adapters);
+    readonly getAdapterConfig = this.adapters.getAdapterConfig.bind(
+        this.adapters,
+    );
+    readonly saveAdapterConfig = async (
+        ...args: Parameters<CalendarAdapterRegistry["saveAdapterConfig"]>
+    ) => {
+        this.adapters.saveAdapterConfig(...args);
+    };
+    readonly enableAdapter = async (adapterId: string) => {
+        this.adapters.enableAdapter(adapterId);
+    };
+    readonly disableAdapter = async (adapterId: string) => {
+        this.adapters.disableAdapter(adapterId);
+    };
 
     createCalendar(input: CreateCalendarInput): CalendarRecord {
         const now = new Date().toISOString();

@@ -3,6 +3,8 @@ set -Eeuo pipefail
 
 REPOSITORY_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 RUNTIME_ENV_FILE="${REPOSITORY_ROOT}/docker/env/runtime.env"
+WEB_ENV_FILE="${REPOSITORY_ROOT}/docker/env/cognis-web.env"
+COMPOSE_ENV_FILE="${REPOSITORY_ROOT}/.env"
 
 prompt() {
   local variable_name="$1"
@@ -56,7 +58,7 @@ random_secret() {
 }
 
 echo "Cognis environment setup"
-echo "This creates docker/env/runtime.env and selects the default Compose database."
+echo "This creates isolated application and web env files and selects the default Compose database."
 
 prompt deployment "Deployment type (development/production)" "production"
 case "${deployment}" in
@@ -84,6 +86,13 @@ prompt database_user "Database user" "cognis"
 prompt cognis_host "Cognis service hostname" "cognis"
 prompt_required external_host "Public Cognis URL (for example, https://cognis.example.com)"
 prompt_required contact_email "Contact email"
+
+prompt reverse_proxy "Will a separate reverse proxy or CDN terminate HTTPS before cognis-web? (yes/no)" "no"
+case "${reverse_proxy}" in
+  yes|y|true|1) web_tls_mode="deferred"; web_bind_address="127.0.0.1" ;;
+  no|n|false|0) web_tls_mode="terminate"; web_bind_address="0.0.0.0" ;;
+  *) echo "Reverse proxy answer must be yes or no." >&2; exit 1 ;;
+esac
 prompt_secret database_password "Database password" "$(random_secret)"
 prompt_secret encryption_key "Data encryption key" "$(random_secret)"
 
@@ -116,8 +125,38 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
   fi
 } > "${RUNTIME_ENV_FILE}"
 
+{
+  printf 'COGNIS_WEB_TLS_MODE=%s\n' "${web_tls_mode}"
+  printf 'COGNIS_WEB_TLS_CERTIFICATE=/etc/nginx/tls/fullchain.pem\n'
+  printf 'COGNIS_WEB_TLS_CERTIFICATE_KEY=/etc/nginx/tls/privkey.pem\n'
+} > "${WEB_ENV_FILE}"
+
+touch "${COMPOSE_ENV_FILE}"
+sed -i '/^COGNIS_WEB_BIND_ADDRESS=/d' "${COMPOSE_ENV_FILE}"
+printf 'COGNIS_WEB_BIND_ADDRESS=%s\n' "${web_bind_address}" >> "${COMPOSE_ENV_FILE}"
+
+if [[ "${web_tls_mode}" == "terminate" ]]; then
+  tls_directory="${REPOSITORY_ROOT}/docker/tls"
+  mkdir -p "${tls_directory}"
+  if [[ ! -f "${tls_directory}/fullchain.pem" || ! -f "${tls_directory}/privkey.pem" ]]; then
+    command -v openssl >/dev/null || {
+      echo "OpenSSL is required to provision the initial TLS certificate." >&2
+      exit 1
+    }
+    tls_hostname="${external_host#*://}"
+    tls_hostname="${tls_hostname%%/*}"
+    tls_hostname="${tls_hostname%%:*}"
+    openssl req -x509 -newkey rsa:2048 -nodes -days 30 \
+      -subj "/CN=${tls_hostname}" \
+      -addext "subjectAltName=DNS:${tls_hostname}" \
+      -keyout "${tls_directory}/privkey.pem" \
+      -out "${tls_directory}/fullchain.pem" >/dev/null 2>&1
+    echo "Provisioned a 30-day self-signed TLS certificate in docker/tls. Replace it with a trusted certificate before public deployment."
+  fi
+fi
+
 ln -sfn "${compose_target}" "${REPOSITORY_ROOT}/docker-compose.yaml"
 
-echo "Configuration written to docker/env/runtime.env."
+echo "Configuration written to docker/env/runtime.env and docker/env/cognis-web.env."
 echo "docker-compose.yaml now selects ${database_driver}."
 echo "Start Cognis with: docker compose up --build"

@@ -2,7 +2,7 @@ import path from "node:path";
 import { createDbExecutor } from "./executor.js";
 import { initializeDatabaseSchema, resolveDbProviderDir } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor } from "./reuse/db-executor.js";
+import type { DbExecutor, RawDbExecutor } from "./reuse/db-executor.js";
 import type {
     StructuredDbCommand,
     StructuredDbCommandResult,
@@ -76,12 +76,40 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const lifecycle = ctx.capabilities.get<{
         registerShutdown(handler: () => Promise<void>): void;
     }>("system:lifecycle");
-    const executor = await createDbExecutor(
+    const providerExecutor = await createDbExecutor(
         dbType,
         ctx.log,
         adaptersRoot,
         lifecycle,
     );
+    const timed = async <Result>(operation: () => Promise<Result>) => {
+        const startedAt = performance.now();
+        try {
+            return await operation();
+        } finally {
+            ctx.capabilities
+                .get<{
+                    record(name: string, value: number): void;
+                }>("observability:metrics")
+                ?.record("db.duration_ms", performance.now() - startedAt);
+        }
+    };
+    const createTimedExecutor = (
+        rawExecutor: RawDbExecutor,
+    ): RawDbExecutor => ({
+        execute: (sql, params) => timed(() => rawExecutor.execute(sql, params)),
+        executeCommand: (command) =>
+            timed(() => rawExecutor.executeCommand(command)),
+        ensureTable: (definition) =>
+            timed(() => rawExecutor.ensureTable(definition)),
+        transaction: (callback) =>
+            timed(() =>
+                rawExecutor.transaction(async (transactionExecutor) =>
+                    callback(createTimedExecutor(transactionExecutor)),
+                ),
+            ),
+    });
+    const executor = createTimedExecutor(providerExecutor);
     const logger = {
         info: (msg: string, meta?: Record<string, unknown>) => {
             void ctx.log?.("info", msg, meta);
@@ -116,7 +144,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "db",
         name: "Database Gateway",
-        version: "1.3.4",
+        version: "1.3.6",
         required: true,
         description:
             "Core relational database layer for persistent application data.",

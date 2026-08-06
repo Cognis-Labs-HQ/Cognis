@@ -23,10 +23,32 @@ services:
             - applogs:/app/logs
             - appconfig:/app/config
             - appmedia:/app/media
-        ports:
-            - "3000:3000"
+        expose:
+            - "3000"
         depends_on:
             db:
+                condition: service_healthy
+        healthcheck:
+            test: ["CMD", "/usr/local/bin/healthcheck.sh"]
+            interval: 10s
+            timeout: 5s
+            retries: 6
+            start_period: 20s
+        restart: unless-stopped
+
+    cognis-web:
+        build:
+            context: ./docker/cognis-web
+        image: cognis-web
+        env_file:
+            - ./docker/env/cognis-web.env
+        ports:
+            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:80:80"
+            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:443:443"
+        volumes:
+            - ./docker/tls:/etc/nginx/tls:ro
+        depends_on:
+            cognis:
                 condition: service_healthy
         restart: unless-stopped
 

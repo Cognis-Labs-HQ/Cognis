@@ -308,7 +308,14 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
     try {
         const root = document.querySelector(rootSelector);
         if (uiCtx.flowExists("load-page")) {
-            await uiCtx.runFlow("load-page", { mount, root });
+            const flowResult = await uiCtx.runFlow("load-page", {
+                mount,
+                root,
+            });
+            const mountResults = flowResult?.stageResults?.["mount-page"] ?? [];
+            if (mountResults.length === 0) {
+                await mount(root);
+            }
         } else {
             await mount(root);
         }

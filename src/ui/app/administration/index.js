@@ -893,7 +893,7 @@ export async function mount(rootEl, { signal } = {}) {
                     ...securityOwnedElements,
                 ],
                 onRender: () => {
-                    securitySection.init();
+                    securitySection.refresh();
                     securityOwnedGatewaySections.forEach((section) => {
                         section.subComposerOptions?.onRender?.(root);
                     });
@@ -969,7 +969,7 @@ export async function mount(rootEl, { signal } = {}) {
                 await securitySection.save();
                 changesBar.markDirty("security", false);
                 await reloadGatewaysAndAdapters();
-                composer.refresh(elements);
+                syncRuntimeToggleControls();
                 showToast(i18n.t("ui.app.admin.settings_saved"), {
                     variant: "success",
                 });
