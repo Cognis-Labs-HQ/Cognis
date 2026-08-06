@@ -7,7 +7,6 @@ on:
 
 env:
     IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/cognis
-    WEB_IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/cognis-web
 
 jobs:
     docker:
@@ -51,21 +50,3 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
-
-            - name: Extract web metadata
-              id: web-meta
-              uses: docker/metadata-action@v5
-              with:
-                  images: ${{ env.WEB_IMAGE_NAME }}
-                  tags: |
-                      type=raw,value=latest,enable=${{ github.event_name == 'workflow_dispatch' }}
-                      type=ref,event=tag
-                      type=sha
-
-            - name: Build and push web
-              uses: docker/build-push-action@v6
-              with:
-                  context: docker/cognis-web
-                  push: true
-                  tags: ${{ steps.web-meta.outputs.tags }}
-                  labels: ${{ steps.web-meta.outputs.labels }}

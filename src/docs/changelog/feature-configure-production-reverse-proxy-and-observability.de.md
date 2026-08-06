@@ -4,7 +4,7 @@
 
 Eine HTTP/2-TLS-Kante bietet Verbindungswiederverwendung, Brotli/gzip-Komprimierung, unveränderliche gehashte Assets, HTML-Revalidierung, vertrauenswürdige Weiterleitungsheader und private API-Antworten. `cognis-web` kann mit `COGNIS_WEB_TLS_MODE=deferred` nur über HTTP laufen, wenn TLS vorgelagert terminiert. Die Einrichtung schreibt Modus und konfigurierbare Zertifikatspfade in eine isolierte Web-Env-Datei; dadurch kann `cognis-web` weder Cognis-Verschlüsselungsschlüssel noch Datenbankzugangsdaten lesen. Compose wartet auf die Healthchecks der Datenbank und von Cognis. Aktualisierungen der Modulrouten initialisieren Nextcloud-Whiteboard-Runtime-Ressourcen nur einmal, Observability deklariert ausdrücklich, dass es keine Adapter besitzt, und gespeicherte Sicherheitseinstellungen bleiben während der Aktualisierung der Komponentenmetadaten sichtbar, statt kurz leere Standardwerte zu zeigen.
 
-Nachgelagerte Ursprungsserver binden standardmäßig an Loopback, während lokal terminiertes TLS öffentlich gebunden wird. Die Einrichtung erzeugt ein erstes selbstsigniertes Zertifikat, gehashte Assets verwenden das vollständige esbuild-Hashalphabet, und GitHub-Releases veröffentlichen das erforderliche `cognis-web`-Image.
+Nachgelagerte Ursprungsserver binden standardmäßig an Loopback, während lokal terminiertes TLS öffentlich gebunden wird. Die Einrichtung erzeugt ein erstes selbstsigniertes Zertifikat und gehashte Assets verwenden das vollständige esbuild-Hashalphabet.
 
 ## Herstellerneutrale Leistungsmetrik
 
