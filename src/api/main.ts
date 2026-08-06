@@ -439,6 +439,7 @@ const server = buildServer({
     uiRegistry,
     healthService,
     log,
+    observability: capabilities.get("observability:metrics"),
     createProfile,
     setProfileRole: capabilities.get<
         (handle: string, role: string) => Promise<void>

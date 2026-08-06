@@ -287,8 +287,20 @@ export class GatewayService {
                 if (typeof mod.bootstrap === "function") {
                     await mod.bootstrap(ctx);
                 }
-            } catch {
-                // Bootstrap failure — required check will surface this as an error.
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : String(error);
+                void ctx.log?.("error", "Gateway bootstrap failed.", {
+                    gatewayId,
+                    required: manifest.required === true,
+                    error: message,
+                });
+                if (manifest.required === true) {
+                    throw new Error(
+                        `Required gateway "${gatewayId}" failed during bootstrap: ${message}`,
+                        { cause: error },
+                    );
+                }
             }
 
             const manifestRequires = Array.isArray(manifest.requires)

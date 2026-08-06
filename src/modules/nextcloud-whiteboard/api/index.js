@@ -15,6 +15,7 @@ import {
 
 const LIVENESS_TIMEOUT_MS = 5000;
 const PRESENCE_ACTIVE_WINDOW_MS = 15_000;
+const initializedRuntimeContexts = new WeakSet();
 
 const MODULE_ID = "nextcloud-whiteboard";
 const WHITEBOARD_STYLESHEETS = [
@@ -202,11 +203,19 @@ export function registerApiRoutes(router, ctx) {
         { access: { minRole: "admin" }, allowWhenDisabled: true },
     );
 
-    registerNamespace?.({
-        id: "whiteboards",
-        ownerComponent: "nextcloud-whiteboard",
-        acl: { visibility: "private-group" },
-    });
+    const runtimeContext = systemCtx ?? ctx;
+    const shouldInitializeRuntime =
+        typeof runtimeContext === "object" &&
+        runtimeContext !== null &&
+        !initializedRuntimeContexts.has(runtimeContext);
+    if (shouldInitializeRuntime) {
+        registerNamespace?.({
+            id: "whiteboards",
+            ownerComponent: "nextcloud-whiteboard",
+            acl: { visibility: "private-group" },
+        });
+        initializedRuntimeContexts.add(runtimeContext);
+    }
     const whiteboardFiles = createNamespaceClient?.({
         namespaceId: "whiteboards",
         callerComponent: "nextcloud-whiteboard",
@@ -221,8 +230,10 @@ export function registerApiRoutes(router, ctx) {
             resolveShareGuestId,
             whiteboardStylesheets: WHITEBOARD_STYLESHEETS,
         });
-    ensureShareFlowHooks();
-    void registerStoredOrigin({ store, registerScriptOrigins, log });
+    if (shouldInitializeRuntime) {
+        ensureShareFlowHooks();
+        void registerStoredOrigin({ store, registerScriptOrigins, log });
+    }
 
     const moduleApi = {
         async spawnWhiteboardWindow(options = {}) {

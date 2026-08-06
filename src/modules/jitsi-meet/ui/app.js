@@ -13,11 +13,7 @@ import {
 } from "/static/reuse/auth-session.js";
 import { ensureSessionId } from "./session.js";
 import { buildMeetingJoinUrl, resolveThemeMode } from "./meeting-embed.js";
-import {
-    buildChatMarkup,
-    buildParticipantsMarkup,
-    buildStageMarkup,
-} from "./markup.js";
+import { createMeetingPageElements } from "./page-elements.js";
 import {
     ensureStylesheetLoaded,
     fetchCurrentProfile,
@@ -898,48 +894,8 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         renderParticipants();
         void updateNativeChat();
     }
-    const elements = [
-        // Share-link guests have no account and cannot search for or start
-        // meetings with other participants, so the participant-management
-        // panel (participant search, active-meeting list) is guest-facing
-        // clutter that doesn't apply to them — it is omitted entirely below
-        // rather than rendered empty.
-        ...(inShareView
-            ? []
-            : [
-                  {
-                      id: "jitsi-participants",
-                      label: i18n.t("module.jitsi_meet.participants.heading"),
-                      pinned: true,
-                      gridSize: {
-                          default: [12, 2],
-                          min: [8, 2],
-                          max: "full",
-                      },
-                      render: () => buildParticipantsMarkup(i18n),
-                  },
-              ]),
-        {
-            id: "jitsi-stage",
-            label: i18n.t("module.jitsi_meet.overlay.title"),
-            pinned: true,
-            gridSize: {
-                default: [7, 5],
-                min: [6, 4],
-            },
-            render: () => buildStageMarkup(i18n),
-        },
-        {
-            id: "jitsi-chat",
-            label: i18n.t("module.jitsi_meet.chat.heading"),
-            pinned: true,
-            gridSize: {
-                default: [3, 5],
-                min: [3, 4],
-            },
-            render: () => buildChatMarkup(i18n),
-        },
-    ];
+    const elements = createMeetingPageElements(i18n, inShareView);
+
     const [allParticipants, currentProfile] = await Promise.all([
         fetchParticipants(""),
         fetchCurrentProfile(),

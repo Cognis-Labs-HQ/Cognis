@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 import { registerApiRoutes } from "../api/index.js";
@@ -667,4 +668,21 @@ test("nextcloud whiteboard elements persist through session reload", async () =>
 
     assert.equal(sessionRes.statusCode, 200);
     assert.deepEqual(sessionRes.json().data.elements, elements);
+});
+
+test("nextcloud whiteboard initializes runtime-owned resources once across route refreshes", () => {
+    const source = readFileSync(
+        new URL("../api/index.js", import.meta.url),
+        "utf8",
+    );
+
+    assert.match(source, /const initializedRuntimeContexts = new WeakSet\(\)/);
+    assert.match(
+        source,
+        /if \(shouldInitializeRuntime\) \{[\s\S]*registerNamespace/,
+    );
+    assert.match(
+        source,
+        /if \(shouldInitializeRuntime\) \{[\s\S]*registerStoredOrigin/,
+    );
 });

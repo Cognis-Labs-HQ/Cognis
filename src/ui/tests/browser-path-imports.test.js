@@ -2,8 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const ROOT = resolve(import.meta.dirname, "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const SOURCE_ROOTS = ["src/ui", "src/gateways", "src/adapters", "src/modules"];
 const IMPORT_PATTERN =
     /^\s*(?:import|export)\s+(?:[^"']*?\s+from\s+)?["']([^"']+)["']/gm;

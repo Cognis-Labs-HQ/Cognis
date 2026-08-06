@@ -54,6 +54,12 @@ import {
 } from "./guest-blocked-popup.js";
 import "./page-flow-catalog.js";
 import { uiCtx } from "./ui-ctx.js";
+import {
+    observePerformance,
+    recordRouteMount,
+} from "./performance-telemetry.js";
+
+observePerformance();
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -361,6 +367,7 @@ let _mountController = null;
 let _initialized = false;
 
 async function loadRoute(path) {
+    const routeMountStartedAt = performance.now();
     const route = await resolveRoute(path);
     if (!route) return false;
 
@@ -419,6 +426,7 @@ async function loadRoute(path) {
             const routeRoot = resolveRouterRoot();
             if (!routeRoot) return false;
             await mod.mount(routeRoot, { signal });
+            recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {
                 console.error("[router] mount() error for", path, error);

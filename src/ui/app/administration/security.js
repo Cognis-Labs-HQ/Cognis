@@ -63,7 +63,7 @@ const POLICY_FIELDS = [
  *
  * @param {Element} root
  * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
- * @returns {{ init: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
+ * @returns {{ init: () => Promise<void>, refresh: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
  */
 export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalDomains = [];
@@ -74,6 +74,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let originalEnforceTfaForAllUsers = false;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
     let smtpAdapterActive = false;
+    let initialized = false;
 
     async function loadSettings() {
         const response = await apiFetch("/api/v1/system/security");
@@ -314,6 +315,26 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             ]);
             settings.registrationsEnabled = publicRegistrationEnabled;
             bindSecurityInputs(settings, passwordPolicy, smtpActive);
+            initialized = true;
+        },
+
+        async refresh() {
+            if (!initialized) {
+                await this.init();
+                return;
+            }
+            const smtpActive = await isSmtpAdapterActive(apiFetch);
+            bindSecurityInputs(
+                {
+                    trustedDomains: originalDomains,
+                    registrationsEnabled: currentPublicRegistrationEnabled,
+                    userValidationMode: originalUserValidationMode,
+                    requireTeacherManualApproval: originalTeacherManualApproval,
+                    enforceTfaForAllUsers: originalEnforceTfaForAllUsers,
+                },
+                originalPasswordPolicy,
+                smtpActive,
+            );
         },
 
         async save() {

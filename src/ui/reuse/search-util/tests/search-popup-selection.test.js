@@ -232,10 +232,17 @@ test("docs search indexes navigation titles and document contents", () => {
 });
 
 test("whiteboard search indexes board filenames and stored canvas contents", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/modules/nextcloud-whiteboard/ui/app/index.js"),
-        "utf8",
-    );
+    const source = ["index.js", "search-index.js"]
+        .map((fileName) =>
+            readFileSync(
+                resolve(
+                    ROOT,
+                    `src/modules/nextcloud-whiteboard/ui/app/${fileName}`,
+                ),
+                "utf8",
+            ),
+        )
+        .join("\n");
     const navbarSource = readFileSync(
         resolve(ROOT, "src/modules/nextcloud-whiteboard/ui/navbar.js"),
         "utf8",
@@ -247,7 +254,7 @@ test("whiteboard search indexes board filenames and stored canvas contents", () 
     assert.match(source, /resultClass: "text"/);
     assert.match(source, /showDescription: false/);
     assert.match(source, /showMatchSnippet: false/);
-    assert.match(source, /JSON\.stringify\(savedElements/);
+    assert.match(source, /JSON\.stringify\(getSavedElements\(\)/);
     assert.match(
         navbarSource,
         /registerSearchIndex\(\s*"nextcloud-whiteboard-navbar"/,

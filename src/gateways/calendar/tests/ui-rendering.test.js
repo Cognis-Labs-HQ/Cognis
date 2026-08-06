@@ -101,10 +101,14 @@ const POPUP_REMINDERS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/app/popup-manager-reminders.js"),
     "utf8",
 );
-const CSS_SOURCE = readFileSync(
-    resolve(ROOT, "src/gateways/calendar/ui/calendar.css"),
-    "utf8",
-);
+const CSS_SOURCE = ["calendar.css", "calendar-event-details.css"]
+    .map((fileName) =>
+        readFileSync(
+            resolve(ROOT, `src/gateways/calendar/ui/${fileName}`),
+            "utf8",
+        ),
+    )
+    .join("\n");
 const TIMED_GRID_CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.css"),
     "utf8",
