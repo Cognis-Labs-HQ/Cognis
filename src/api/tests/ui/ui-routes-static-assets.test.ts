@@ -20,6 +20,8 @@ test("GET /static/reuse/ rejects directories before committing a response", asyn
     assert.ok(handled);
     assert.equal(recorder.status, 404);
     assert.equal(recorder.writeHeadCalls, 1);
+    assert.equal(recorder.headers["cache-control"], "no-store");
+    assert.equal(recorder.headers["x-content-type-options"], "nosniff");
     assert.deepEqual(JSON.parse(recorder.body), {
         error: { code: "not_found", message: "Asset not found." },
     });

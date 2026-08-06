@@ -132,7 +132,11 @@ export async function serveStaticAsset(
             ...(logMeta ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
-        res.writeHead(404, { "content-type": "application/json" });
+        res.writeHead(404, {
+            "content-type": "application/json",
+            "cache-control": "no-store",
+            "x-content-type-options": "nosniff",
+        });
         res.end(
             JSON.stringify({
                 error: { code: "not_found", message: "Asset not found." },

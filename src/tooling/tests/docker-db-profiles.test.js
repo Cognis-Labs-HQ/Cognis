@@ -116,6 +116,17 @@ test("web entrypoint only requires certificates when terminating TLS", async () 
         /DEFERRED[\\s\\S]*ssl_certificate/,
         "deferred mode must not render ssl_certificate directives",
     );
+    assert.equal(
+        source.match(
+            /add_header Cache-Control "public, max-age=31536000, immutable";/g,
+        )?.length,
+        2,
+    );
+    assert.doesNotMatch(
+        source,
+        /add_header Cache-Control "public, max-age=31536000, immutable" always;/,
+        "nginx must not mark upstream error responses as immutable",
+    );
 });
 
 test(
