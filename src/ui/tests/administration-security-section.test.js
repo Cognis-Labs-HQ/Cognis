@@ -50,3 +50,21 @@ test("administration dependency links scroll centered after expanding target gat
     assert.match(source, /block: "center"/);
     assert.match(source, /inline: "nearest"/);
 });
+
+test("saved security settings stay visible while component state refreshes", () => {
+    const securitySource = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/security.js"),
+        "utf8",
+    );
+    const administrationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/index.js"),
+        "utf8",
+    );
+
+    assert.match(securitySource, /refresh\(\) \{[\s\S]*if \(!initialized\)/);
+    assert.match(administrationSource, /securitySection\.refresh\(\)/);
+    assert.doesNotMatch(
+        administrationSource,
+        /await reloadGatewaysAndAdapters\(\);\s*composer\.refresh\(elements\);\s*showToast/,
+    );
+});

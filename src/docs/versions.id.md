@@ -72,7 +72,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | File Storage (files)  | `src/gateways/files/`         | `2.1.4`  |
 | Registration          | `src/gateways/registration/`  | `1.1.12` |
 | Logging               | `src/gateways/logging/`       | `1.5.3`  |
-| Observability         | `src/gateways/observability/` | `1.0.0`  |
+| Observability         | `src/gateways/observability/` | `1.0.1`  |
 | Study                 | `src/gateways/study/`         | `1.5.9`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.48` |
 
@@ -94,6 +94,6 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.54` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.30` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.31` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |

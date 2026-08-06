@@ -100,8 +100,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "observability",
         name: "Observability Gateway",
-        version: "1.0.0",
+        version: "1.0.1",
         required: true,
+        hasAdapters: false,
         description:
             "Vendor-neutral runtime and browser performance telemetry.",
         publisher: "Cognis Labs HQ",
