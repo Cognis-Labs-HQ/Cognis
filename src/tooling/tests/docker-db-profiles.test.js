@@ -14,6 +14,8 @@ import test from "node:test";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
+const bashPath = "/bin/bash";
+const truePath = "/usr/bin/true";
 const profiles = [
     ["docker-compose.postgres.yaml", "postgres:17-alpine"],
     ["docker-compose.mariadb.yaml", "mariadb:11"],
@@ -44,9 +46,9 @@ test("setup creates a private MariaDB runtime environment", async (context) => {
         await readFile("setup.sh", "utf8"),
         { mode: 0o755 },
     );
-    await execFileAsync("bash", [
+    await execFileAsync(bashPath, [
         "-c",
-        "printf 'development\\nmariadb\\ndb\\n3306\\ncognis\\ncognis\\ncognis\\nhttps://cognis.example.com\\nadmin@example.com\\nno\\n\\n\\n' | bash \"$1\"",
+        "printf 'development\\nmariadb\\ndb\\n3306\\ncognis\\ncognis\\ncognis\\nhttps://cognis.example.com\\nadmin@example.com\\nno\\n\\n\\n' | /bin/bash \"$1\"",
         "setup-test",
         join(temporaryRoot, "setup.sh"),
     ]);
@@ -126,10 +128,10 @@ test("Docker entrypoint constructs URLs from generated values", async () => {
     ];
     for (const { expected, ...environment } of runs) {
         const { stdout } = await execFileAsync(
-            "bash",
+            bashPath,
             [
                 "docker/entrypoint.sh",
-                "bash",
+                bashPath,
                 "-c",
                 'printf "%s" "$DATABASE_URL"',
             ],
@@ -151,7 +153,7 @@ test("Docker entrypoint constructs URLs from generated values", async () => {
 
 test("Docker entrypoint directs missing values to setup", async () => {
     await assert.rejects(
-        execFileAsync("bash", ["docker/entrypoint.sh", "true"], {
+        execFileAsync(bashPath, ["docker/entrypoint.sh", truePath], {
             env: {
                 ...process.env,
                 DB_TYPE: "postgresql",
@@ -174,7 +176,7 @@ test("Docker entrypoint directs missing values to setup", async () => {
 
 test("Docker entrypoint owns image paths and requires public settings", async () => {
     await assert.rejects(
-        execFileAsync("bash", ["docker/entrypoint.sh", "true"], {
+        execFileAsync(bashPath, ["docker/entrypoint.sh", truePath], {
             env: {
                 ...process.env,
                 DB_TYPE: "postgresql",
@@ -207,10 +209,10 @@ test("Docker entrypoint owns image paths and requires public settings", async ()
         LOG_FILE: "/tmp/cognis-docker-profile-test.log",
     };
     const { stdout } = await execFileAsync(
-        "bash",
+        bashPath,
         [
             "docker/entrypoint.sh",
-            "bash",
+            bashPath,
             "-c",
             'printf "%s" "$COGNIS_MODULES_ROOT"',
         ],
