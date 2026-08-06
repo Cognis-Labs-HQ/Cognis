@@ -34,6 +34,8 @@ CMD ["node", "src/api/main.js"]
 
 Dockerのデフォルト値は `docker/env/default.env` に保持されます。`./setup.sh` はアプリケーションとデータベースの値を `docker/env/runtime.env` に、エッジTLS設定だけを `docker/env/cognis-web.env` に書き込みます。Composeは `cognis-web` にWebファイルのみを渡すため、Cognisの暗号化キーやデータベース認証情報を読み取れません。セットアップは、別のリバースプロキシまたはCDNがHTTPSを終端するか確認し、はいなら `deferred`、いいえなら `terminate` を書き込みます。
 
+envファイルはCompose向けの便宜的な手段であり、実行時の必須要件ではありません。Kubernetesなどのオーケストレーターは、同じ値をコンテナへ直接注入できます。`DB_TYPE` とプロバイダー固有の接続変数を指定する方法と、`DATABASE_URL` を直接指定する方法のどちらも利用できます。`DB_TYPE` を省略すると、エントリポイントはPostgreSQLまたはMySQL/MariaDBのURLスキームから種類を判定します。
+
 ```sh
 ./setup.sh
 docker compose up --build

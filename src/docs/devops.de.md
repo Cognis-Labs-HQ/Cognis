@@ -35,6 +35,8 @@ CMD ["node", "src/api/main.js"]
 
 Docker-Standardwerte verbleiben in der versionierten Datei `docker/env/default.env`. `./setup.sh` schreibt Anwendungs- und Datenbankwerte in `docker/env/runtime.env` und ausschließlich Web-TLS-Einstellungen in `docker/env/cognis-web.env`. Compose stellt `cognis-web` nur die Web-Datei bereit, sodass der Container weder Cognis-Verschlüsselungsschlüssel noch Datenbankzugangsdaten lesen kann. Die Einrichtung fragt, ob ein separater Reverse Proxy oder CDN HTTPS vor `cognis-web` terminiert; Ja schreibt `COGNIS_WEB_TLS_MODE=deferred`, Nein behält lokale TLS-Terminierung mit `terminate` bei.
 
+Env-Dateien sind eine Annehmlichkeit für Compose und keine Laufzeitanforderung. Orchestratoren wie Kubernetes können dieselben Werte direkt in den Container einspeisen. Sie können entweder `DB_TYPE` und die providerspezifischen Verbindungsvariablen oder direkt `DATABASE_URL` bereitstellen. Wenn `DB_TYPE` fehlt, leitet der Entrypoint den Typ aus einem PostgreSQL- oder MySQL/MariaDB-URL-Schema ab.
+
 ```sh
 ./setup.sh
 docker compose up --build

@@ -39,6 +39,8 @@ CMD ["node", "src/api/main.js"]
 
 Docker defaults remain in the tracked `docker/env/default.env`. Run `./setup.sh` to choose PostgreSQL or MariaDB, select development or production, and enter the connection settings. The script writes application and database values to the ignored `docker/env/runtime.env`, writes only web TLS settings to `docker/env/cognis-web.env`, generates secrets when values are left blank, and updates `docker-compose.yaml` to select the chosen driver. Compose gives `cognis-web` only the web file, so it cannot read Cognis encryption keys or database credentials. The application entrypoint validates its generated settings and constructs `DATABASE_URL`. The setup also requires the internal `HOST`, public `EXTERNAL_HOST`, and public `CONTACT_EMAIL`; the application container validates all three. The setup asks whether a separate reverse proxy or CDN terminates HTTPS before `cognis-web`; answering yes writes `COGNIS_WEB_TLS_MODE=deferred`, while no keeps local TLS termination with `terminate`.
 
+Env files are a convenience for Compose, not a runtime requirement. Orchestrators such as Kubernetes may inject the same values directly into the container. They may either provide `DB_TYPE` and the provider-specific connection variables, or provide `DATABASE_URL` directly; when `DB_TYPE` is omitted, the entrypoint derives it from a PostgreSQL or MySQL/MariaDB URL scheme.
+
 ```sh
 ./setup.sh
 docker compose up --build
