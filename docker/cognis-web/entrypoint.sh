@@ -1,20 +1,20 @@
 #!/bin/sh
 set -eu
 
-mode="${COGNIS_EDGE_TLS_MODE:-terminate}"
-tls_certificate_path="${COGNIS_EDGE_TLS_CERTIFICATE:-/etc/nginx/tls/fullchain.pem}"
-tls_certificate_key_path="${COGNIS_EDGE_TLS_CERTIFICATE_KEY:-/etc/nginx/tls/privkey.pem}"
+mode="${COGNIS_WEB_TLS_MODE:-terminate}"
+tls_certificate_path="${COGNIS_WEB_TLS_CERTIFICATE:-/etc/nginx/tls/fullchain.pem}"
+tls_certificate_key_path="${COGNIS_WEB_TLS_CERTIFICATE_KEY:-/etc/nginx/tls/privkey.pem}"
 case "$mode" in
   terminate|deferred) ;;
   *)
-    echo "COGNIS_EDGE_TLS_MODE must be 'terminate' or 'deferred'" >&2
+    echo "COGNIS_WEB_TLS_MODE must be 'terminate' or 'deferred'" >&2
     exit 1
     ;;
 esac
 
 if [ "$mode" = "terminate" ]; then
   if [ ! -r "$tls_certificate_path" ] || [ ! -r "$tls_certificate_key_path" ]; then
-    echo "TLS termination requires readable certificate and key files. Set COGNIS_EDGE_TLS_MODE=deferred when HTTPS terminates at an upstream reverse proxy or CDN." >&2
+    echo "TLS termination requires readable certificate and key files. Set COGNIS_WEB_TLS_MODE=deferred when HTTPS terminates at an upstream reverse proxy or CDN." >&2
     echo "Missing or unreadable: $tls_certificate_path $tls_certificate_key_path" >&2
     exit 1
   fi

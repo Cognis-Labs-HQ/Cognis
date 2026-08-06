@@ -2,7 +2,7 @@
 
 ## 安全でキャッシュを考慮した本番エッジ
 
-HTTP/2 TLSエッジに接続再利用、Brotli/gzip圧縮、ハッシュ付きアセットのimmutableキャッシュ、HTML再検証、信頼済み転送ヘッダー、非公開API応答を追加しました。TLSを上流で終端する場合、`cognis-web` は `COGNIS_EDGE_TLS_MODE=deferred` でHTTPのみとして実行できます。セットアップはモードと設定可能な証明書パスを隔離されたEdge Envファイルへ書き込むため、`cognis-web` はCognisの暗号化キーやデータベース認証情報を読み取れません。ComposeはデータベースとCognisのhealthcheckを待機します。
+HTTP/2 TLSエッジに接続再利用、Brotli/gzip圧縮、ハッシュ付きアセットのimmutableキャッシュ、HTML再検証、信頼済み転送ヘッダー、非公開API応答を追加しました。TLSを上流で終端する場合、`cognis-web` は `COGNIS_WEB_TLS_MODE=deferred` でHTTPのみとして実行できます。セットアップはモードと設定可能な証明書パスを隔離されたWeb Envファイルへ書き込むため、`cognis-web` はCognisの暗号化キーやデータベース認証情報を読み取れません。ComposeはデータベースとCognisのhealthcheckを待機します。
 
 ## ベンダー中立なパフォーマンステレメトリ
 

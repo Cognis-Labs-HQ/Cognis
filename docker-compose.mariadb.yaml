@@ -38,10 +38,10 @@ services:
 
     cognis-web:
         build:
-            context: ./docker/edge
+            context: ./docker/cognis-web
         image: cognis-web
         env_file:
-            - ./docker/env/edge.env
+            - ./docker/env/cognis-web.env
         ports:
             - "80:80"
             - "443:443"

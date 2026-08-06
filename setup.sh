@@ -3,7 +3,7 @@ set -Eeuo pipefail
 
 REPOSITORY_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 RUNTIME_ENV_FILE="${REPOSITORY_ROOT}/docker/env/runtime.env"
-EDGE_ENV_FILE="${REPOSITORY_ROOT}/docker/env/edge.env"
+WEB_ENV_FILE="${REPOSITORY_ROOT}/docker/env/cognis-web.env"
 
 prompt() {
   local variable_name="$1"
@@ -57,7 +57,7 @@ random_secret() {
 }
 
 echo "Cognis environment setup"
-echo "This creates isolated application and edge env files and selects the default Compose database."
+echo "This creates isolated application and web env files and selects the default Compose database."
 
 prompt deployment "Deployment type (development/production)" "production"
 case "${deployment}" in
@@ -88,8 +88,8 @@ prompt_required contact_email "Contact email"
 
 prompt reverse_proxy "Will a separate reverse proxy or CDN terminate HTTPS before cognis-web? (yes/no)" "no"
 case "${reverse_proxy}" in
-  yes|y|true|1) edge_tls_mode="deferred" ;;
-  no|n|false|0) edge_tls_mode="terminate" ;;
+  yes|y|true|1) web_tls_mode="deferred" ;;
+  no|n|false|0) web_tls_mode="terminate" ;;
   *) echo "Reverse proxy answer must be yes or no." >&2; exit 1 ;;
 esac
 prompt_secret database_password "Database password" "$(random_secret)"
@@ -125,13 +125,13 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
 } > "${RUNTIME_ENV_FILE}"
 
 {
-  printf 'COGNIS_EDGE_TLS_MODE=%s\n' "${edge_tls_mode}"
-  printf 'COGNIS_EDGE_TLS_CERTIFICATE=/etc/nginx/tls/fullchain.pem\n'
-  printf 'COGNIS_EDGE_TLS_CERTIFICATE_KEY=/etc/nginx/tls/privkey.pem\n'
-} > "${EDGE_ENV_FILE}"
+  printf 'COGNIS_WEB_TLS_MODE=%s\n' "${web_tls_mode}"
+  printf 'COGNIS_WEB_TLS_CERTIFICATE=/etc/nginx/tls/fullchain.pem\n'
+  printf 'COGNIS_WEB_TLS_CERTIFICATE_KEY=/etc/nginx/tls/privkey.pem\n'
+} > "${WEB_ENV_FILE}"
 
 ln -sfn "${compose_target}" "${REPOSITORY_ROOT}/docker-compose.yaml"
 
-echo "Configuration written to docker/env/runtime.env and docker/env/edge.env."
+echo "Configuration written to docker/env/runtime.env and docker/env/cognis-web.env."
 echo "docker-compose.yaml now selects ${database_driver}."
 echo "Start Cognis with: docker compose up --build"

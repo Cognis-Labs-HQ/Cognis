@@ -1,6 +1,6 @@
 # Leistungsbudgets
 
-Produktionsverkehr endet am Edge-Proxy `cognis-web`, der aus `docker/edge` gebaut und von GitLab CI als `$CI_REGISTRY_IMAGE/cognis-web` veröffentlicht wird. Standardmäßig aktiviert `COGNIS_EDGE_TLS_MODE=terminate` den lokalen HTTPS-Listener und benötigt das TLS-Zertifikat unter `docker/tls/fullchain.pem` sowie den Schlüssel unter `docker/tls/privkey.pem`. Setzen Sie `COGNIS_EDGE_TLS_MODE=deferred` nur hinter einem vertrauenswürdigen vorgelagerten TLS-Terminator; Nginx lauscht dann nur auf HTTP, behält dieselbe Cache-Richtlinie bei und leitet den vertrauenswürdigen vorgelagerten Protokoll-Header weiter, wenn er vorhanden ist. Verwaltete CDNs können dieselbe Cache- und Weiterleitungsrichtlinie umsetzen. Nur die Kante wird veröffentlicht, daher bildet ihr Ersetzen der Weiterleitungsheader die Vertrauensgrenze.
+Produktionsverkehr endet am Web-Proxy `cognis-web`, der aus `docker/cognis-web` gebaut und von GitLab CI als `$CI_REGISTRY_IMAGE/cognis-web` veröffentlicht wird. Standardmäßig aktiviert `COGNIS_WEB_TLS_MODE=terminate` den lokalen HTTPS-Listener und benötigt das TLS-Zertifikat unter `docker/tls/fullchain.pem` sowie den Schlüssel unter `docker/tls/privkey.pem`. Setzen Sie `COGNIS_WEB_TLS_MODE=deferred` nur hinter einem vertrauenswürdigen vorgelagerten TLS-Terminator; Nginx lauscht dann nur auf HTTP, behält dieselbe Cache-Richtlinie bei und leitet den vertrauenswürdigen vorgelagerten Protokoll-Header weiter, wenn er vorhanden ist. Verwaltete CDNs können dieselbe Cache- und Weiterleitungsrichtlinie umsetzen. Nur die Kante wird veröffentlicht, daher bildet ihr Ersetzen der Weiterleitungsheader die Vertrauensgrenze.
 
 ## Protokoll für gehostete Basiswerte
 
@@ -14,4 +14,4 @@ Führen Sie drei Lighthouse-Messungen einer gehosteten Version aus und bewahren 
 | Warmstart      |       15 |                  150 KiB | 1.800 ms |  300 ms |
 | SPA-Navigation |       10 |                  100 KiB | 1.500 ms |  250 ms |
 
-Eine Optimierung wird erst akzeptiert, wenn dasselbe gehostete Protokoll keine Budgetverschlechterung gegenüber dem gespeicherten Basiswert zeigt. Untersuchen Sie zuerst Datenbankabfragen, Nutzdaten, Cache-Richtlinien und Anwendungsarbeit. Führen Sie Redis nur ein, wenn diese Messungen einen dauerhaften cachebaren Engpass belegen, den In-Process- und Edge-Caches nicht lösen können.
+Eine Optimierung wird erst akzeptiert, wenn dasselbe gehostete Protokoll keine Budgetverschlechterung gegenüber dem gespeicherten Basiswert zeigt. Untersuchen Sie zuerst Datenbankabfragen, Nutzdaten, Cache-Richtlinien und Anwendungsarbeit. Führen Sie Redis nur ein, wenn diese Messungen einen dauerhaften cachebaren Engpass belegen, den In-Process- und Web-Caches nicht lösen können.

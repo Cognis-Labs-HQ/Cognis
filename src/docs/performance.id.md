@@ -1,6 +1,6 @@
 # Anggaran kinerja
 
-Trafik produksi berakhir di proxy edge `cognis-web` yang dibangun dari `docker/edge` dan diterbitkan oleh GitLab CI sebagai `$CI_REGISTRY_IMAGE/cognis-web`. Secara default, `COGNIS_EDGE_TLS_MODE=terminate` mengaktifkan listener HTTPS lokal dan membutuhkan sertifikat TLS sebagai `docker/tls/fullchain.pem` serta kunci sebagai `docker/tls/privkey.pem`. Gunakan `COGNIS_EDGE_TLS_MODE=deferred` hanya di belakang terminator TLS hulu yang tepercaya; Nginx kemudian hanya mendengarkan HTTP, mempertahankan kebijakan cache yang sama, dan meneruskan header protokol hulu tepercaya jika tersedia. CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya edge yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
+Trafik produksi berakhir di proxy web `cognis-web` yang dibangun dari `docker/cognis-web` dan diterbitkan oleh GitLab CI sebagai `$CI_REGISTRY_IMAGE/cognis-web`. Secara default, `COGNIS_WEB_TLS_MODE=terminate` mengaktifkan listener HTTPS lokal dan membutuhkan sertifikat TLS sebagai `docker/tls/fullchain.pem` serta kunci sebagai `docker/tls/privkey.pem`. Gunakan `COGNIS_WEB_TLS_MODE=deferred` hanya di belakang terminator TLS hulu yang tepercaya; Nginx kemudian hanya mendengarkan HTTP, mempertahankan kebijakan cache yang sama, dan meneruskan header protokol hulu tepercaya jika tersedia. CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya web yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
 
 ## Protokol baseline hosted
 
@@ -14,4 +14,4 @@ Jalankan tiga sampel Lighthouse terhadap rilis hosted dan simpan artefak median 
 | Pemuatan hangat |      15 |              150 KiB | 1.800 ms |  300 ms |
 | Navigasi SPA    |      10 |              100 KiB | 1.500 ms |  250 ms |
 
-Optimasi hanya diterima setelah protokol hosted yang sama menunjukkan tidak ada regresi anggaran terhadap baseline tersimpan. Selidiki kueri basis data, payload, kebijakan cache, dan pekerjaan aplikasi terlebih dahulu. Tambahkan Redis hanya jika pengukuran ini membuktikan bottleneck cache persisten yang tidak dapat diatasi cache dalam proses dan edge.
+Optimasi hanya diterima setelah protokol hosted yang sama menunjukkan tidak ada regresi anggaran terhadap baseline tersimpan. Selidiki kueri basis data, payload, kebijakan cache, dan pekerjaan aplikasi terlebih dahulu. Tambahkan Redis hanya jika pengukuran ini membuktikan bottleneck cache persisten yang tidak dapat diatasi cache dalam proses dan web.

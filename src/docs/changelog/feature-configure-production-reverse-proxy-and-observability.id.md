@@ -1,8 +1,8 @@
 # Kinerja produksi dan observabilitas
 
-## Edge produksi aman dan sadar cache
+## Web produksi aman dan sadar cache
 
-Edge TLS HTTP/2 menyediakan penggunaan ulang koneksi, kompresi Brotli/gzip, cache aset hash immutable, validasi ulang HTML, header proxy tepercaya, dan respons API privat. `cognis-web` dapat berjalan hanya dengan HTTP melalui `COGNIS_EDGE_TLS_MODE=deferred` ketika TLS diterminasi di hulu. Penyiapan menulis mode dan path sertifikat yang dapat dikonfigurasi ke file env edge terisolasi; karena itu `cognis-web` tidak dapat membaca kunci enkripsi Cognis atau kredensial basis data. Compose menunggu healthcheck basis data dan Cognis.
+Web TLS HTTP/2 menyediakan penggunaan ulang koneksi, kompresi Brotli/gzip, cache aset hash immutable, validasi ulang HTML, header proxy tepercaya, dan respons API privat. `cognis-web` dapat berjalan hanya dengan HTTP melalui `COGNIS_WEB_TLS_MODE=deferred` ketika TLS diterminasi di hulu. Penyiapan menulis mode dan path sertifikat yang dapat dikonfigurasi ke file env web terisolasi; karena itu `cognis-web` tidak dapat membaca kunci enkripsi Cognis atau kredensial basis data. Compose menunggu healthcheck basis data dan Cognis.
 
 ## Telemetri kinerja netral-vendor
 

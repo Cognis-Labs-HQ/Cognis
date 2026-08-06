@@ -42,10 +42,10 @@ publish:
               -t "$APP_IMAGE_SHA" \
               .
 
-            docker build -f docker/edge/Dockerfile \
+            docker build -f docker/cognis-web/Dockerfile \
               -t "$WEB_IMAGE_NAME:$REF_TAG" \
               -t "$WEB_IMAGE_SHA" \
-              docker/edge
+              docker/cognis-web
 
             docker push "$CI_REGISTRY_IMAGE:$REF_TAG"
             docker push "$APP_IMAGE_SHA"

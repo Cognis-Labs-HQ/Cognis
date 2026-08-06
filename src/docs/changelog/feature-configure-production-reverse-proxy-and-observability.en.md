@@ -1,8 +1,8 @@
 # Production performance and observability
 
-## Secure, cache-aware production edge
+## Secure, cache-aware production web
 
-Added an HTTP/2 TLS edge with connection reuse, Brotli/gzip compression, immutable hashed assets, HTML revalidation, trusted forwarding headers, and private API responses. The edge service and image are named `cognis-web` in every Compose file, published by GitLab CI, installs Brotli through Alpine's native Nginx module package, overwrites the standard `default.conf` server slot at startup, and can run HTTP-only with `COGNIS_EDGE_TLS_MODE=deferred` when TLS terminates upstream. Setup writes mode and configurable certificate paths to an isolated edge env file; `cognis-web` therefore cannot read Cognis encryption keys or database credentials. Compose uses an authenticated PostgreSQL healthcheck before starting Cognis and waits for the `cognis` healthcheck before starting `cognis-web`.
+Added an HTTP/2 TLS web with connection reuse, Brotli/gzip compression, immutable hashed assets, HTML revalidation, trusted forwarding headers, and private API responses. The web service and image are named `cognis-web` in every Compose file, published by GitLab CI, installs Brotli through Alpine's native Nginx module package, overwrites the standard `default.conf` server slot at startup, and can run HTTP-only with `COGNIS_WEB_TLS_MODE=deferred` when TLS terminates upstream. Setup writes mode and configurable certificate paths to an isolated web env file; `cognis-web` therefore cannot read Cognis encryption keys or database credentials. Compose uses an authenticated PostgreSQL healthcheck before starting Cognis and waits for the `cognis` healthcheck before starting `cognis-web`.
 
 ## Vendor-neutral performance telemetry
 

@@ -19,12 +19,12 @@ const profiles = [
     ["docker-compose.mariadb.yaml", "mariadb:11"],
 ];
 
-test("Docker profiles isolate application and edge environments", async () => {
+test("Docker profiles isolate application and web environments", async () => {
     for (const [composePath, image] of profiles) {
         const compose = await readFile(composePath, "utf8");
         assert.match(compose, new RegExp(`image: ${image}`));
         assert.match(compose, /- \.\/docker\/env\/runtime\.env/);
-        assert.match(compose, /cognis-web:[\s\S]*env_file:[\s\S]*edge\.env/);
+        assert.match(compose, /cognis-web:[\s\S]*env_file:[\s\S]*web\.env/);
         const webService = compose.split(/\n    cognis-web:/)[1];
         assert.doesNotMatch(webService, /runtime\.env/);
         assert.match(compose, /dockerfile: \.\/docker\/Dockerfile/);
@@ -55,8 +55,8 @@ test("setup creates a private MariaDB runtime environment", async (context) => {
         join(temporaryRoot, "docker", "env", "runtime.env"),
         "utf8",
     );
-    const edge = await readFile(
-        join(temporaryRoot, "docker", "env", "edge.env"),
+    const web = await readFile(
+        join(temporaryRoot, "docker", "env", "cognis-web.env"),
         "utf8",
     );
     assert.match(runtime, /^NODE_ENV=development$/m);
@@ -66,33 +66,33 @@ test("setup creates a private MariaDB runtime environment", async (context) => {
     assert.match(runtime, /^HOST=cognis$/m);
     assert.match(runtime, /^EXTERNAL_HOST=https:\/\/cognis\.example\.com$/m);
     assert.match(runtime, /^CONTACT_EMAIL=admin@example\.com$/m);
-    assert.doesNotMatch(runtime, /^COGNIS_EDGE_/m);
-    assert.match(edge, /^COGNIS_EDGE_TLS_MODE=terminate$/m);
+    assert.doesNotMatch(runtime, /^COGNIS_WEB_/m);
+    assert.match(web, /^COGNIS_WEB_TLS_MODE=terminate$/m);
     assert.match(
-        edge,
-        /^COGNIS_EDGE_TLS_CERTIFICATE=\/etc\/nginx\/tls\/fullchain\.pem$/m,
+        web,
+        /^COGNIS_WEB_TLS_CERTIFICATE=\/etc\/nginx\/tls\/fullchain\.pem$/m,
     );
     assert.match(
-        edge,
-        /^COGNIS_EDGE_TLS_CERTIFICATE_KEY=\/etc\/nginx\/tls\/privkey\.pem$/m,
+        web,
+        /^COGNIS_WEB_TLS_CERTIFICATE_KEY=\/etc\/nginx\/tls\/privkey\.pem$/m,
     );
-    assert.doesNotMatch(edge, /DATA_ENCRYPTION_KEY|PASSWORD/);
+    assert.doesNotMatch(web, /DATA_ENCRYPTION_KEY|PASSWORD/);
     assert.equal(
         await readlink(join(temporaryRoot, "docker-compose.yaml")),
         "docker-compose.mariadb.yaml",
     );
 });
 
-test("edge entrypoint only requires certificates when terminating TLS", async () => {
-    const source = await readFile("docker/edge/entrypoint.sh", "utf8");
+test("web entrypoint only requires certificates when terminating TLS", async () => {
+    const source = await readFile("docker/cognis-web/entrypoint.sh", "utf8");
 
-    assert.match(source, /COGNIS_EDGE_TLS_MODE:-terminate/);
-    assert.match(source, /COGNIS_EDGE_TLS_CERTIFICATE/);
-    assert.match(source, /COGNIS_EDGE_TLS_CERTIFICATE_KEY/);
+    assert.match(source, /COGNIS_WEB_TLS_MODE:-terminate/);
+    assert.match(source, /COGNIS_WEB_TLS_CERTIFICATE/);
+    assert.match(source, /COGNIS_WEB_TLS_CERTIFICATE_KEY/);
     assert.match(source, /if \[ "\$mode" = "terminate" \]/);
     assert.match(
         source,
-        /Set COGNIS_EDGE_TLS_MODE=deferred when HTTPS terminates at an upstream reverse proxy or CDN/,
+        /Set COGNIS_WEB_TLS_MODE=deferred when HTTPS terminates at an upstream reverse proxy or CDN/,
     );
     assert.doesNotMatch(
         source,
