@@ -130,6 +130,26 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
   printf 'COGNIS_WEB_TLS_CERTIFICATE_KEY=/etc/nginx/tls/privkey.pem\n'
 } > "${WEB_ENV_FILE}"
 
+if [[ "${web_tls_mode}" == "terminate" ]]; then
+  tls_directory="${REPOSITORY_ROOT}/docker/tls"
+  mkdir -p "${tls_directory}"
+  if [[ ! -f "${tls_directory}/fullchain.pem" || ! -f "${tls_directory}/privkey.pem" ]]; then
+    command -v openssl >/dev/null || {
+      echo "OpenSSL is required to provision the initial TLS certificate." >&2
+      exit 1
+    }
+    tls_hostname="${external_host#*://}"
+    tls_hostname="${tls_hostname%%/*}"
+    tls_hostname="${tls_hostname%%:*}"
+    openssl req -x509 -newkey rsa:2048 -nodes -days 30 \
+      -subj "/CN=${tls_hostname}" \
+      -addext "subjectAltName=DNS:${tls_hostname}" \
+      -keyout "${tls_directory}/privkey.pem" \
+      -out "${tls_directory}/fullchain.pem" >/dev/null 2>&1
+    echo "Provisioned a 30-day self-signed TLS certificate in docker/tls. Replace it with a trusted certificate before public deployment."
+  fi
+fi
+
 ln -sfn "${compose_target}" "${REPOSITORY_ROOT}/docker-compose.yaml"
 
 echo "Configuration written to docker/env/runtime.env and docker/env/cognis-web.env."

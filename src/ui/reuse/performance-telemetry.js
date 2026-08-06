@@ -16,11 +16,22 @@
 
 const SAMPLE_RATE = 0.1;
 const sampled = Math.random() < SAMPLE_RATE;
-const metrics = new Map();
+const documentMetrics = new Map();
 let installed = false;
 
-function send(navigation) {
+function send(navigation, metrics) {
     if (!sampled || metrics.size === 0) return;
+    if (navigation === "document") {
+        const resources = performance.getEntriesByType("resource");
+        metrics.set("web.resource_count", resources.length);
+        metrics.set(
+            "web.transfer_bytes",
+            resources.reduce(
+                (total, resource) => total + (resource.transferSize || 0),
+                0,
+            ),
+        );
+    }
     const payload = JSON.stringify({
         navigation,
         metrics: Array.from(metrics, ([name, value]) => ({ name, value })),
@@ -43,35 +54,43 @@ export function observePerformance() {
     if (!sampled || installed || !("PerformanceObserver" in window)) return;
     installed = true;
     const navigation = performance.getEntriesByType("navigation")[0];
-    if (navigation) metrics.set("web.ttfb_ms", navigation.responseStart);
-    const resources = performance.getEntriesByType("resource");
-    metrics.set("web.resource_count", resources.length);
-    metrics.set(
-        "web.transfer_bytes",
-        resources.reduce(
-            (total, resource) => total + (resource.transferSize || 0),
-            0,
-        ),
-    );
-    let cls = 0;
-    for (const [type, callback] of [
+    if (navigation)
+        documentMetrics.set("web.ttfb_ms", navigation.responseStart);
+    let clsMaximum = 0;
+    let clsWindowValue = 0;
+    let clsWindowStartedAt = 0;
+    let clsPreviousShiftAt = 0;
+    observerTypes: for (const [type, callback] of [
         [
             "largest-contentful-paint",
-            (entry) => metrics.set("web.lcp_ms", entry.startTime),
+            (entry) => documentMetrics.set("web.lcp_ms", entry.startTime),
         ],
         [
             "event",
             (entry) =>
-                metrics.set(
+                documentMetrics.set(
                     "web.inp_ms",
-                    Math.max(metrics.get("web.inp_ms") || 0, entry.duration),
+                    Math.max(
+                        documentMetrics.get("web.inp_ms") || 0,
+                        entry.duration,
+                    ),
                 ),
         ],
         [
             "layout-shift",
             (entry) => {
-                if (!entry.hadRecentInput) cls += entry.value;
-                metrics.set("web.cls", cls);
+                if (entry.hadRecentInput) return;
+                if (
+                    entry.startTime - clsPreviousShiftAt > 1_000 ||
+                    entry.startTime - clsWindowStartedAt > 5_000
+                ) {
+                    clsWindowStartedAt = entry.startTime;
+                    clsWindowValue = 0;
+                }
+                clsPreviousShiftAt = entry.startTime;
+                clsWindowValue += entry.value;
+                clsMaximum = Math.max(clsMaximum, clsWindowValue);
+                documentMetrics.set("web.cls", clsMaximum);
             },
         ],
     ]) {
@@ -84,14 +103,20 @@ export function observePerformance() {
                 durationThreshold: type === "event" ? 40 : undefined,
             });
         } catch {
-            // Continue with the next observer type in the loop above.
+            // Alternate flow: observerTypes continues at its next iteration.
+            continue observerTypes;
         }
     }
-    window.addEventListener("pagehide", () => send("document"), { once: true });
+    window.addEventListener(
+        "pagehide",
+        () => send("document", documentMetrics),
+        {
+            once: true,
+        },
+    );
 }
 
 export function recordRouteMount(_route, durationMs) {
     if (!sampled) return;
-    metrics.set("web.route_mount_ms", durationMs);
-    send("spa");
+    send("spa", new Map([["web.route_mount_ms", durationMs]]));
 }

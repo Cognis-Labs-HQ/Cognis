@@ -1,6 +1,12 @@
 /**
  * Rendering helpers for page composer grid and sub-page views.
- * Public exports: createComposerRenderer(deps) returns layout and render helpers; example: createComposerRenderer(deps).render().
+ *
+ * Public exports:
+ *   createComposerRenderer(deps) — returns the layout normalization and
+ *     render helpers for the main composer and sub-page mode.
+ *
+ * Usage:
+ *   const renderer = createComposerRenderer({ state, UNIT, i18n, escapeHtml, getGridSize, renderMissingElementContent, createGridOverlay, createCell, createMissingCell, createElementsPanel, syncEditToggle, mountSubComposer, unmountSubComposer, captureFormState, restoreFormState, mergeFormStateSnapshots, loadPersistedFormState, bindFormDraftPersistence });
  *
  * @param {object} deps
  * @returns {object}
@@ -916,6 +922,7 @@ export function createComposerRenderer({
                     renderSubPageComposer();
                 });
             });
+
         state.contentGrid
             .querySelectorAll("[data-composer-element][draggable]")
             .forEach((card) => {
@@ -924,6 +931,7 @@ export function createComposerRenderer({
                     card.classList.add("composer-dragging");
                     event.dataTransfer.effectAllowed = "move";
                 });
+
                 card.addEventListener("dragend", () => {
                     card.classList.remove("composer-dragging");
                     state.contentGrid
@@ -933,6 +941,7 @@ export function createComposerRenderer({
                         });
                     state.dragSourceId = null;
                 });
+
                 card.addEventListener("dragover", (event) => {
                     event.preventDefault();
                     event.dataTransfer.dropEffect = "move";
@@ -945,12 +954,14 @@ export function createComposerRenderer({
                         card.classList.add("composer-drag-over");
                     }
                 });
+
                 card.addEventListener("drop", async (event) => {
                     event.preventDefault();
                     card.classList.remove("composer-drag-over");
                     const targetId = card.dataset.composerElement;
                     if (!state.dragSourceId || state.dragSourceId === targetId)
                         return;
+
                     const effective = getEffectiveLayout();
                     const visibleOrder = effective.order.filter(
                         (id) => !effective.hidden.includes(id),
@@ -958,6 +969,7 @@ export function createComposerRenderer({
                     const sourceIdx = visibleOrder.indexOf(state.dragSourceId);
                     const targetIdx = visibleOrder.indexOf(targetId);
                     if (sourceIdx === -1 || targetIdx === -1) return;
+
                     visibleOrder.splice(sourceIdx, 1);
                     // Removing source shifts all subsequent indices by -1; adjust targetIdx when source precedes target.
                     const insertIdx =

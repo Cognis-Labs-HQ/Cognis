@@ -41,7 +41,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.7`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.5`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.5`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.15` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.25` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.8`  |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.2`  |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.1`  |
@@ -72,7 +72,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | File Storage (files)  | `src/gateways/files/`         | `2.1.4`  |
 | Registration          | `src/gateways/registration/`  | `1.1.12` |
 | Logging               | `src/gateways/logging/`       | `1.5.3`  |
-| Observability         | `src/gateways/observability/` | `1.0.1`  |
+| Observability         | `src/gateways/observability/` | `1.0.2`  |
 | Study                 | `src/gateways/study/`         | `1.5.9`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.48` |
 

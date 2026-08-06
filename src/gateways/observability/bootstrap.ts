@@ -1,5 +1,6 @@
 import { monitorEventLoopDelay } from "node:perf_hooks";
 import type { GatewayBootstrapContext } from "../shared.js";
+import type { RouteContext } from "../../api/reuse/route-context.js";
 
 export type MetricLabels = Record<string, string>;
 
@@ -11,7 +12,6 @@ const ALLOWED_METRICS = new Set([
     "http.server.duration_ms",
     "http.server.response_bytes",
     "db.duration_ms",
-    "cache.outcome",
     "event_loop.delay_ms",
     "web.lcp_ms",
     "web.inp_ms",
@@ -39,6 +39,12 @@ function boundedLabels(labels: MetricLabels = {}): MetricLabels {
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const routeContext =
+        ctx.capabilities.get<RouteContext>("auth:routeContext");
+    const clientSubmissions = new Map<
+        string,
+        { count: number; resetAt: number }
+    >();
     const record = (name: string, value: number, labels?: MetricLabels) => {
         if (!ALLOWED_METRICS.has(name) || !Number.isFinite(value)) return;
         ctx.log?.("debug", "Performance metric recorded.", {
@@ -74,6 +80,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ) {
             return false;
         }
+        const claims = routeContext?.requireAuth(req, res, "user");
+        if (!claims) return true;
+        const accountId = String(claims.sub);
+        const now = Date.now();
+        const submission = clientSubmissions.get(accountId);
+        if (submission && submission.resetAt > now && submission.count >= 6) {
+            res.writeHead(429, {
+                "cache-control": "private, no-store",
+                "retry-after": String(
+                    Math.ceil((submission.resetAt - now) / 1_000),
+                ),
+            });
+            res.end();
+            return true;
+        }
+        clientSubmissions.set(accountId, {
+            count:
+                submission && submission.resetAt > now
+                    ? submission.count + 1
+                    : 1,
+            resetAt:
+                submission && submission.resetAt > now
+                    ? submission.resetAt
+                    : now + 60_000,
+        });
         let body = "";
         for await (const chunk of req) {
             body += chunk;
@@ -83,10 +114,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 return true;
             }
         }
-        const payload = JSON.parse(body) as {
+        let payload: {
             metrics?: Array<{ name?: string; value?: number }>;
             navigation?: string;
         };
+        try {
+            payload = JSON.parse(body) as typeof payload;
+        } catch {
+            res.writeHead(400, { "cache-control": "private, no-store" });
+            res.end();
+            return true;
+        }
+        if (!Array.isArray(payload.metrics) || payload.metrics.length > 16) {
+            res.writeHead(400, { "cache-control": "private, no-store" });
+            res.end();
+            return true;
+        }
         for (const metric of payload.metrics ?? []) {
             record(String(metric.name), Number(metric.value), {
                 navigation: payload.navigation === "spa" ? "spa" : "document",
@@ -100,7 +143,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "observability",
         name: "Observability Gateway",
-        version: "1.0.1",
+        version: "1.0.2",
         required: true,
         hasAdapters: false,
         description:

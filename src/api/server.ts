@@ -285,21 +285,10 @@ export function buildServer(deps: ApiDependencies) {
             const route = url.pathname.startsWith("/api/")
                 ? `/${pathSegments.slice(0, 3).join("/")}`
                 : `/${pathSegments[0] ?? "root"}`;
-            const cacheHeader = String(
-                res.getHeader("cache-status") ?? "",
-            ).toLowerCase();
-            const cache = cacheHeader.includes("hit")
-                ? "hit"
-                : cacheHeader.includes("miss")
-                  ? "miss"
-                  : cacheHeader.includes("bypass")
-                    ? "bypass"
-                    : "none";
             const labels = {
                 method: req.method ?? "GET",
                 route,
                 status_class: `${Math.floor(res.statusCode / 100)}xx`,
-                cache,
             };
             deps.observability?.record(
                 "http.server.duration_ms",
@@ -309,11 +298,6 @@ export function buildServer(deps: ApiDependencies) {
             deps.observability?.record(
                 "http.server.response_bytes",
                 responseBytes,
-                labels,
-            );
-            deps.observability?.record(
-                "cache.outcome",
-                labels.cache === "none" ? 0 : 1,
                 labels,
             );
         });

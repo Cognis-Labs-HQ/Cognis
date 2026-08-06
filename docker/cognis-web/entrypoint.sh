@@ -32,7 +32,7 @@ server {
     ssl_certificate __COGNIS_TLS_CERTIFICATE__;
     ssl_certificate_key __COGNIS_TLS_CERTIFICATE_KEY__;
 
-    location ~* "^/(?:static|assets)/.*[.-][0-9a-f]{8,}[.-]" {
+    location ~* "^/(?:static|assets)/.*[.-][A-Za-z0-9_-]{8,}[.-]" {
         proxy_pass http://cognis_app;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
@@ -84,13 +84,13 @@ server {
     listen 80;
     server_name _;
 
-    location ~* "^/(?:static|assets)/.*[.-][0-9a-f]{8,}[.-]" {
+    location ~* "^/(?:static|assets)/.*[.-][A-Za-z0-9_-]{8,}[.-]" {
         proxy_pass http://cognis_app;
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $http_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $http_x_forwarded_for;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Proto $cognis_forwarded_proto;
         proxy_hide_header Set-Cookie;
@@ -102,8 +102,8 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $http_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $http_x_forwarded_for;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Proto $cognis_forwarded_proto;
         proxy_no_cache 1;
@@ -117,8 +117,8 @@ server {
         proxy_http_version 1.1;
         proxy_set_header Connection "";
         proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Real-IP $http_x_forwarded_for;
+        proxy_set_header X-Forwarded-For $http_x_forwarded_for;
         proxy_set_header X-Forwarded-Host $host;
         proxy_set_header X-Forwarded-Proto $cognis_forwarded_proto;
         proxy_hide_header Cache-Control;

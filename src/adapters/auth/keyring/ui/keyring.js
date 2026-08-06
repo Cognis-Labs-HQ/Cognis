@@ -2,6 +2,7 @@ import {
     dispatchKeyringEvent,
     showKeyringLifecycleToast,
 } from "./lifecycle-notifications.js";
+
 const keyringApiModule = await import(
     typeof window === "undefined"
         ? "../../../../ui/reuse/api-client.js"
@@ -17,6 +18,7 @@ const { uiCtx } = keyringContextModule;
 if (typeof window !== "undefined") {
     await import("/static/reuse/flow-registry.js");
 }
+
 const STORAGE_KEY = "cognis_secure_keyring";
 const RELOCK_STORAGE_KEY = "cognis_secure_keyring_relock_minutes";
 const KEYRING_API = "/api/v1/auth/keyring";
@@ -39,6 +41,7 @@ let keyringAccessSuppressed = false;
 let keyringI18nPromise = null;
 let persistenceQueue = Promise.resolve();
 const pendingValues = new Map();
+
 function loadKeyringI18n() {
     keyringI18nPromise ??= import("/static/reuse/i18n.js").then(
         ({ createI18n }) =>
@@ -50,6 +53,7 @@ function loadKeyringI18n() {
     );
     return keyringI18nPromise;
 }
+
 function keyringStorageKey() {
     const accountId = String(
         localStorage.getItem("cognis_account") ?? "",
@@ -58,9 +62,11 @@ function keyringStorageKey() {
         ? `${STORAGE_KEY}:${encodeURIComponent(accountId)}`
         : STORAGE_KEY;
 }
+
 function keyringStorage() {
     return temporaryKeyringAccountId ? sessionStorage : localStorage;
 }
+
 function relockStorageKey() {
     const accountId = String(
         localStorage.getItem("cognis_account") ?? "",
@@ -69,6 +75,7 @@ function relockStorageKey() {
         ? `${RELOCK_STORAGE_KEY}:${encodeURIComponent(accountId)}`
         : RELOCK_STORAGE_KEY;
 }
+
 function encodeBytes(bytes) {
     const chunkSize = 32_768;
     let binary = "";
@@ -79,18 +86,23 @@ function encodeBytes(bytes) {
     }
     return btoa(binary);
 }
+
 function decodeBytes(value) {
     return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
 }
+
 function sessionUnlockId() {
     return keyringStorageKey();
 }
+
 function sessionUnlockMarkerKey() {
     return `${SESSION_UNLOCK_MARKER}:${encodeURIComponent(sessionUnlockId())}`;
 }
+
 function sessionUnlockExpiryKey() {
     return `${SESSION_UNLOCK_EXPIRES_AT}:${encodeURIComponent(sessionUnlockId())}`;
 }
+
 function openSessionUnlockDatabase() {
     if (typeof indexedDB === "undefined") return Promise.resolve(null);
     return new Promise((resolve, reject) => {
@@ -108,6 +120,7 @@ function openSessionUnlockDatabase() {
         request.onerror = () => reject(request.error);
     });
 }
+
 async function writeSessionUnlockKey(key) {
     if (temporaryKeyringAccountId) return;
     const database = await openSessionUnlockDatabase().catch(() => null);
@@ -128,6 +141,7 @@ async function writeSessionUnlockKey(key) {
     database.close();
     if (written) sessionStorage.setItem(sessionUnlockMarkerKey(), "1");
 }
+
 async function readSessionUnlockKey() {
     if (temporaryKeyringAccountId) return null;
     if (sessionStorage.getItem(sessionUnlockMarkerKey()) !== "1") {
