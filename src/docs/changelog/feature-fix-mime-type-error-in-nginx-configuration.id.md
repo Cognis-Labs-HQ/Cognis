@@ -11,3 +11,5 @@ Penyusun halaman kini menyediakan perender elemennya ke setiap jalur tata letak 
 ## Proksi web mengikuti penggantian kontainer aplikasi
 
 Nginx kini menemukan resolver DNS milik lingkungan kontainer yang aktif dan menggunakannya untuk memperbarui alamat aplikasi Cognis. Permintaan publik tidak lagi tetap terhubung ke kontainer aplikasi yang telah diganti, baik Cognis dijalankan dengan Docker, Kubernetes, Podman, maupun platform kontainer lainnya.
+
+Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap layanan selalu bernama `cognis`. Hal ini mencegah kumpulan upstream kosong pada penerapan yang menggunakan nama layanan berbeda.

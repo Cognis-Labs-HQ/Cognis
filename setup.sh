@@ -126,6 +126,7 @@ mkdir -p "$(dirname -- "${RUNTIME_ENV_FILE}")"
 } > "${RUNTIME_ENV_FILE}"
 
 {
+  printf 'HOST=%s\n' "${cognis_host}"
   printf 'COGNIS_WEB_TLS_MODE=%s\n' "${web_tls_mode}"
   printf 'COGNIS_WEB_TLS_CERTIFICATE=/etc/nginx/tls/fullchain.pem\n'
   printf 'COGNIS_WEB_TLS_CERTIFICATE_KEY=/etc/nginx/tls/privkey.pem\n'

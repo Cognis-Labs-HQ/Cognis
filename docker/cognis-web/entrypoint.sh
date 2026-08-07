@@ -9,7 +9,16 @@ case "$resolver_address" in
     ;;
   *:*) resolver_address="[$resolver_address]" ;;
 esac
-printf 'resolver %s valid=10s;\nresolver_timeout 5s;\n' "$resolver_address" \
+upstream_host="${HOST:-}"
+case "$upstream_host" in
+  ""|*[!A-Za-z0-9._:-]*)
+    echo "HOST must contain a valid application service hostname or address." >&2
+    exit 1
+    ;;
+  *:*) upstream_host="[$upstream_host]" ;;
+esac
+printf 'resolver %s valid=10s;\nresolver_timeout 5s;\n\nupstream cognis_app {\n    zone cognis_app 64k;\n    server %s:3000 resolve;\n    keepalive 64;\n}\n' \
+  "$resolver_address" "$upstream_host" \
   > /etc/nginx/conf.d/00-resolver.conf
 
 mode="${COGNIS_WEB_TLS_MODE:-terminate}"
