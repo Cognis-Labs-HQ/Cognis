@@ -8,8 +8,8 @@ The web proxy and API now prevent missing fingerprinted JavaScript and CSS respo
 
 The page composer now supplies its element renderer to every layout path, preventing the login page from failing with a `renderElementContent is not defined` error before its styles and content finish loading.
 
-## The web proxy follows app container replacements
+## The web proxy resolves runtime service names
 
-Nginx now discovers the active container runtime's DNS resolver and uses it to refresh the Cognis application address. Public requests no longer remain connected to a replaced application container, whether Cognis runs with Docker, Kubernetes, Podman, or another container platform.
+Nginx now resolves the Cognis application service through the container environment's standard hostname resolution. This supports the same search domains and host mappings used by other tools in Docker, Kubernetes, Podman, and other container platforms, avoiding `no live upstreams` errors when the hostname works elsewhere in the web container.
 
 The web proxy takes the application service hostname from `HOST` instead of assuming that the service is named `cognis`. Namespace-qualified names containing periods, such as `cognis.cognis`, are supported to prevent an empty upstream pool in Kubernetes and other deployments that use scoped service names.

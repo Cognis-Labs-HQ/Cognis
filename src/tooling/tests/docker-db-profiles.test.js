@@ -130,20 +130,22 @@ test("web entrypoint only requires certificates when terminating TLS", async () 
     );
 });
 
-test("web proxy refreshes the application container address", async () => {
+test("web proxy resolves the configured application service", async () => {
     const nginxSource = await readFile("docker/cognis-web/nginx.conf", "utf8");
     const entrypointSource = await readFile(
         "docker/cognis-web/entrypoint.sh",
         "utf8",
     );
 
-    assert.match(entrypointSource, /nameserver.*\/etc\/resolv\.conf/);
-    assert.match(entrypointSource, /00-resolver\.conf/);
-    assert.doesNotMatch(entrypointSource, /127\.0\.0\.11/);
+    assert.match(entrypointSource, /00-upstream\.conf/);
     assert.match(entrypointSource, /upstream_host="\$\{HOST:-\}"/);
     assert.match(entrypointSource, /\[!A-Za-z0-9\._:-\]/);
-    assert.match(entrypointSource, /server %s:3000 resolve;/);
-    assert.match(entrypointSource, /"\$resolver_address" "\$upstream_host"/);
+    assert.match(entrypointSource, /server %s:3000;/);
+    assert.doesNotMatch(entrypointSource, /server %s:3000 resolve;/);
+    assert.doesNotMatch(
+        entrypointSource,
+        /resolver_address|\/etc\/resolv\.conf/,
+    );
     assert.doesNotMatch(nginxSource, /server cognis:3000/);
 });
 

@@ -1,14 +1,6 @@
 #!/bin/sh
 set -eu
 
-resolver_address="$(awk '$1 == "nameserver" { print $2; exit }' /etc/resolv.conf)"
-case "$resolver_address" in
-  ""|*[!0-9A-Fa-f:.]*)
-    echo "A valid nameserver address is required in /etc/resolv.conf." >&2
-    exit 1
-    ;;
-  *:*) resolver_address="[$resolver_address]" ;;
-esac
 upstream_host="${HOST:-}"
 case "$upstream_host" in
   ""|*[!A-Za-z0-9._:-]*)
@@ -17,9 +9,8 @@ case "$upstream_host" in
     ;;
   *:*) upstream_host="[$upstream_host]" ;;
 esac
-printf 'resolver %s valid=10s;\nresolver_timeout 5s;\n\nupstream cognis_app {\n    zone cognis_app 64k;\n    server %s:3000 resolve;\n    keepalive 64;\n}\n' \
-  "$resolver_address" "$upstream_host" \
-  > /etc/nginx/conf.d/00-resolver.conf
+printf 'upstream cognis_app {\n    server %s:3000;\n    keepalive 64;\n}\n' \
+  "$upstream_host" > /etc/nginx/conf.d/00-upstream.conf
 
 mode="${COGNIS_WEB_TLS_MODE:-terminate}"
 tls_certificate_path="${COGNIS_WEB_TLS_CERTIFICATE:-/etc/nginx/tls/fullchain.pem}"

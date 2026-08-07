@@ -8,8 +8,8 @@ Web-Proxy und API verhindern nun, dass Antworten für fehlende versionierte Java
 
 Der Seiten-Composer stellt seinen Element-Renderer nun für jeden Layout-Pfad bereit. Dadurch schlägt die Anmeldeseite nicht mehr mit dem Fehler `renderElementContent is not defined` fehl, bevor ihre Stile und Inhalte vollständig geladen sind.
 
-## Web-Proxy folgt ersetzten App-Containern
+## Web-Proxy löst Laufzeit-Dienstnamen auf
 
-Nginx erkennt nun den DNS-Resolver der aktiven Container-Laufzeit und aktualisiert damit die Adresse der Cognis-Anwendung. Öffentliche Anfragen bleiben nicht mehr mit einem ersetzten Anwendungscontainer verbunden, unabhängig davon, ob Cognis mit Docker, Kubernetes, Podman oder einer anderen Container-Plattform ausgeführt wird.
+Nginx löst den Cognis-Anwendungsdienst nun über die standardmäßige Hostnamenauflösung der Container-Umgebung auf. Dadurch werden dieselben Suchdomänen und Hostzuordnungen wie bei anderen Werkzeugen in Docker, Kubernetes, Podman und weiteren Container-Plattformen verwendet. Fehler mit `no live upstreams` werden vermieden, wenn der Hostname an anderer Stelle im Web-Container funktioniert.
 
 Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt den Dienstnamen `cognis` vorauszusetzen. Namespace-qualifizierte Namen mit Punkten wie `cognis.cognis` werden unterstützt, damit der Upstream-Pool in Kubernetes und anderen Bereitstellungen mit abgegrenzten Dienstnamen verfügbar bleibt.
