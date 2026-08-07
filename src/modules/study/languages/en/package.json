@@ -1,10 +1,10 @@
 {
     "name": "@cognis/study-language-en",
-    "version": "1.2.4",
+    "version": "1.2.5",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/gateways": "<=0.1.5"
+        "@cognis/gateways": "<=0.1.6"
     }
 }

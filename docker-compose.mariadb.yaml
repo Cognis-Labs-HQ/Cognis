@@ -1,8 +1,11 @@
 services:
     db:
         image: mariadb:11
-        env_file:
-            - ./docker/env/runtime.env
+        environment:
+            MARIADB_DATABASE: cognis
+            MARIADB_USER: cognis
+            MARIADB_PASSWORD: ${MARIADB_PASSWORD:?Set MARIADB_PASSWORD}
+            MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Set MARIADB_ROOT_PASSWORD}
         volumes:
             - mariadb-data:/var/lib/mysql
         healthcheck:
@@ -16,9 +19,15 @@ services:
             context: .
             dockerfile: ./docker/Dockerfile
         image: cognis:prod
-        env_file:
-            - ./docker/env/default.env
-            - ./docker/env/runtime.env
+        environment:
+            DB_TYPE: mariadb
+            MARIADB_HOST: db
+            MARIADB_PORT: "3306"
+            MARIADB_DATABASE: cognis
+            MARIADB_USER: cognis
+            MARIADB_PASSWORD: ${MARIADB_PASSWORD:?Set MARIADB_PASSWORD}
+            DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Set DATA_ENCRYPTION_KEY}
+            EXTERNAL_HOST: ${EXTERNAL_HOST:?Set EXTERNAL_HOST to the public Cognis URL}
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config
@@ -37,16 +46,13 @@ services:
         restart: unless-stopped
 
     cognis-web:
-        build:
-            context: ./docker/cognis-web
-        image: cognis-web
-        env_file:
-            - ./docker/env/cognis-web.env
+        image: nginx:stable-alpine
+        environment:
+            HOST: cognis
         ports:
-            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:80:80"
-            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:443:443"
+            - "80:80"
         volumes:
-            - ./docker/tls:/etc/nginx/tls:ro
+            - ./docker/cognis-web/default.conf.template:/etc/nginx/templates/default.conf.template:ro
         depends_on:
             cognis:
                 condition: service_healthy

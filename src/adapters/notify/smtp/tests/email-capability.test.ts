@@ -56,8 +56,7 @@ test("SMTP sends a component-contributed email template generically", async () =
 test("SMTP adapter owns its authenticated test route", async () => {
     const capabilities = new CapabilityStore();
     let registeredRoute:
-        | ((req: never, res: never, url: URL) => Promise<boolean>)
-        | undefined;
+        ((req: never, res: never, url: URL) => Promise<boolean>) | undefined;
     const tested: Array<Record<string, unknown>> = [];
     await bootstrapNotifyAdapter({
         capabilities,

@@ -36,51 +36,25 @@ if (failed) process.exit(1);
 // Preserve visual boundaries in the large classes where accidental whitespace
 // churn previously obscured reviews. Prettier keeps blank lines but does not
 // create them, so this guard supplies the missing structural guarantee.
-const typescript = await import("typescript");
 const structuredClassFiles = [
     "src/adapters/notify/smtp/notification-sender.ts",
     "src/gateways/calendar/gateway/index.ts",
 ];
 
 for (const file of structuredClassFiles) {
-    const text = readFileSync(file, "utf8");
-    const sourceFile = typescript.createSourceFile(
-        file,
-        text,
-        typescript.ScriptTarget.Latest,
-        true,
-        typescript.ScriptKind.TS,
-    );
-    const isCallableMember = (member) =>
-        typescript.isConstructorDeclaration(member) ||
-        typescript.isMethodDeclaration(member) ||
-        typescript.isGetAccessorDeclaration(member) ||
-        typescript.isSetAccessorDeclaration(member);
-    const visit = (node) => {
-        if (typescript.isClassLike(node)) {
-            for (let index = 1; index < node.members.length; index += 1) {
-                const previousMember = node.members[index - 1];
-                const member = node.members[index];
-                if (!isCallableMember(member)) continue;
-                const boundary = text.slice(
-                    previousMember.end,
-                    member.getStart(sourceFile),
-                );
-                if (!/\n\s*\n/.test(boundary)) {
-                    const line =
-                        sourceFile.getLineAndCharacterOfPosition(
-                            member.getStart(sourceFile),
-                        ).line + 1;
-                    console.error(
-                        `Readability lint failed (class methods require a blank-line boundary): ${file}:${line}`,
-                    );
-                    failed = true;
-                }
-            }
+    const lines = readFileSync(file, "utf8").split("\n");
+    const callableMemberPattern =
+        /^    (?!(?:if|for|while|switch|catch|function)\b)(?:(?:public|private|protected|static|abstract|override|async|get|set)\s+)*(?:constructor|[#A-Za-z_$][\w$]*)\s*(?:<[^>]+>)?\s*\(/;
+    for (let index = 1; index < lines.length; index += 1) {
+        if (!callableMemberPattern.test(lines[index])) continue;
+        const previousLine = lines[index - 1].trim();
+        if (previousLine && !/(?:^|\s)(?:class|{)$/.test(previousLine)) {
+            console.error(
+                `Readability lint failed (class methods require a blank-line boundary): ${file}:${index + 1}`,
+            );
+            failed = true;
         }
-        typescript.forEachChild(node, visit);
-    };
-    visit(sourceFile);
+    }
 }
 
 const jitsiApp = readFileSync("src/modules/jitsi-meet/ui/app.js", "utf8");

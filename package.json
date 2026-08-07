@@ -1,7 +1,7 @@
 {
     "name": "cognis",
     "private": true,
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Cognis monorepo scaffold",
     "workspaces": [
         "src/api",
@@ -26,9 +26,13 @@
         "cli": "node --import tsx src/tooling/cli/index.ts"
     },
     "devDependencies": {
-        "esbuild": "^0.25.0",
-        "prettier": "^3.8.3",
-        "tsx": "^4.21.0",
-        "typescript": "^5.9.3"
+        "esbuild": "^0.28.1",
+        "prettier": "^3.9.6",
+        "tsx": "^4.23.10",
+        "typescript": "^7.0.2"
+    },
+    "type": "module",
+    "engines": {
+        "node": ">=24"
     }
 }

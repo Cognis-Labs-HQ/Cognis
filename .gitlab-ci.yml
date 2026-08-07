@@ -4,8 +4,6 @@ workflow:
 
 variables:
     APP_IMAGE_SHA: "$CI_REGISTRY_IMAGE:sha-$CI_COMMIT_SHORT_SHA"
-    WEB_IMAGE_NAME: "$CI_REGISTRY_IMAGE/cognis-web"
-    WEB_IMAGE_SHA: "$CI_REGISTRY_IMAGE/cognis-web:sha-$CI_COMMIT_SHORT_SHA"
 
 cache:
     key: ${CI_COMMIT_REF_SLUG}
@@ -13,7 +11,7 @@ cache:
         - node_modules/
 
 test:
-    image: node:22-alpine
+    image: node:24-alpine
     script:
         - apk add ripgrep python3 build-base
         - npm ci
@@ -25,6 +23,9 @@ test:
         - if: $CI_COMMIT_TAG
 
 publish:
+    needs:
+        - job: test
+          artifacts: false
     image: docker:27
     services:
         - docker:27-dind
@@ -42,21 +43,12 @@ publish:
               -t "$APP_IMAGE_SHA" \
               .
 
-            docker build -f docker/cognis-web/Dockerfile \
-              -t "$WEB_IMAGE_NAME:$REF_TAG" \
-              -t "$WEB_IMAGE_SHA" \
-              docker/cognis-web
-
             docker push "$CI_REGISTRY_IMAGE:$REF_TAG"
             docker push "$APP_IMAGE_SHA"
-            docker push "$WEB_IMAGE_NAME:$REF_TAG"
-            docker push "$WEB_IMAGE_SHA"
 
             if [ "$CI_COMMIT_BRANCH" = "master" ]; then
               docker tag "$APP_IMAGE_SHA" "$CI_REGISTRY_IMAGE:latest"
-              docker tag "$WEB_IMAGE_SHA" "$WEB_IMAGE_NAME:latest"
               docker push "$CI_REGISTRY_IMAGE:latest"
-              docker push "$WEB_IMAGE_NAME:latest"
             fi
     tags:
         - shared

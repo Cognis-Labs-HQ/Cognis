@@ -181,8 +181,7 @@ export function createUserRoutes(
         const callerIsOwner = callerClaims?.role === "owner";
         const callerIsAdmin = callerClaims?.role === "admin";
         let targetInfoCache:
-            | Awaited<ReturnType<LocalAccountStore["getInfo"]>>
-            | undefined;
+            Awaited<ReturnType<LocalAccountStore["getInfo"]>> | undefined;
 
         async function getTargetInfo() {
             if (targetInfoCache !== undefined) return targetInfoCache;
@@ -354,8 +353,7 @@ export function createUserRoutes(
             });
             const emitResult = (result.data["emit-events"] ??
                 (result.stageResults["emit-events"] ?? [])[0]) as
-                | { emitted?: boolean; accountId?: string }
-                | undefined;
+                { emitted?: boolean; accountId?: string } | undefined;
             const persistResult = (result.stageResults["persist-account"] ??
                 [])[0] as
                 | {
@@ -545,8 +543,7 @@ export function createUserRoutes(
             const authorizeResult = (disableResult.stageResults[
                 "authorize-request"
             ] ?? [])[0] as
-                | { authorized?: boolean; reason?: string }
-                | undefined;
+                { authorized?: boolean; reason?: string } | undefined;
             if (authorizeResult?.authorized === false) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
@@ -658,8 +655,7 @@ export function createUserRoutes(
             const authorizeDeleteResult = (deleteResult.stageResults[
                 "authorize-request"
             ] ?? [])[0] as
-                | { authorized?: boolean; reason?: string }
-                | undefined;
+                { authorized?: boolean; reason?: string } | undefined;
             if (authorizeDeleteResult?.authorized === false) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(

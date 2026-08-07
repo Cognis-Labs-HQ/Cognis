@@ -56,8 +56,7 @@ export function createCalendarCoreRoutes({
     shareRegistry: CalendarShareRegistry;
     routeContext?: RouteContext;
     resolveMeetingsProviderAvailability:
-        | ((providerId: string) => Promise<boolean> | boolean)
-        | null;
+        ((providerId: string) => Promise<boolean> | boolean) | null;
     resolveShareableUsers:
         | ((input: { ownerAccountId: string; query: string }) => Promise<
               Array<{

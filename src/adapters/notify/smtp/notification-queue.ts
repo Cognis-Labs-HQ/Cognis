@@ -17,7 +17,11 @@ export class SmtpRateLimiter {
     }
 
     isThrottled(recipient: string): boolean {
-        return this.now() < this.nextAvailableAt(recipient);
+        const lastSentAt = this.lastSent.get(recipient);
+        return (
+            lastSentAt !== undefined &&
+            this.now() < lastSentAt + this.minIntervalMs
+        );
     }
 
     record(recipient: string, sentAt: number = this.now()): void {
@@ -26,11 +30,7 @@ export class SmtpRateLimiter {
 }
 
 type SmtpQueueStatus =
-    | "queued"
-    | "waiting_rate_limit"
-    | "sending"
-    | "sent"
-    | "failed";
+    "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
 interface SmtpQueueEntry extends NotificationSenderQueueEntry {
     status: SmtpQueueStatus;

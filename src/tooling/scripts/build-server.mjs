@@ -45,7 +45,7 @@ await build({
     bundle: false,
     platform: "node",
     format: "esm",
-    target: "node22",
+    target: "node24",
     logLevel: "info",
     plugins: [compiledModuleSpecifiersPlugin],
 });
@@ -58,7 +58,7 @@ await build({
     bundle: true,
     platform: "node",
     format: "esm",
-    target: "node22",
+    target: "node24",
     external: ["mysql2", "pg"],
     plugins: [compiledModuleSpecifiersPlugin],
 });

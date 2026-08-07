@@ -105,8 +105,7 @@ export async function loadNotificationStores(
             | undefined;
     const NotificationPreferenceStoreClass =
         notificationStoreModule.DbNotificationPreferenceStore as
-            | NotificationPreferenceStoreCtor
-            | undefined;
+            NotificationPreferenceStoreCtor | undefined;
     if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
         throw new Error("notification_store_gateway_exports_missing");
     }

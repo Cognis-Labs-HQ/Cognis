@@ -1,6 +1,6 @@
 # パフォーマンス予算
 
-本番トラフィックは `docker/cognis-web` からビルドされ、GitLab CIで `$CI_REGISTRY_IMAGE/cognis-web` として公開される `cognis-web` エッジプロキシで終端します。既定では `COGNIS_WEB_TLS_MODE=terminate` がローカルHTTPSリスナーを有効にし、TLS 証明書を `docker/tls/fullchain.pem`、鍵を `docker/tls/privkey.pem` として必要とします。信頼済みの上流TLS終端の背後でのみ `COGNIS_WEB_TLS_MODE=deferred` を設定してください。その場合、NginxはHTTPのみで待ち受け、同じキャッシュポリシーを維持し、存在する場合は信頼済み上流のプロトコルヘッダーを転送します。マネージド CDN でも同じキャッシュおよび転送ポリシーを実装できます。公開されるのはエッジのみであり、転送ヘッダーの置換が信頼境界を確立します。
+本番トラフィックは、`docker/cognis-web/default.conf.template` をマウントした汎用 `nginx:stable-alpine` イメージを通過します。テンプレートは nginx 標準の環境変数置換を通じて HTTP キャッシュとプロキシヘッダーを管理します。TLS はデプロイ側の責務です。追加の標準 nginx TLS 設定をマウントするか、Kubernetes Ingress、外部プロキシ、CDN で TLS を終端します。
 
 ## ホスト環境ベースラインの手順
 

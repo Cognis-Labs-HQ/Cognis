@@ -32,11 +32,7 @@ import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 export type LibraryLayerName =
-    | "characters"
-    | "alt_characters"
-    | "definitions"
-    | "words"
-    | "sentences";
+    "characters" | "alt_characters" | "definitions" | "words" | "sentences";
 
 export interface CharacterRecord {
     id: string;

@@ -15,6 +15,11 @@ import {
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
+import { createLoginIntegrationLoader } from "./integrations.js";
+import {
+    clearLoginSession,
+    persistLoginSession as persistSession,
+} from "./session.js";
 import "../../reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 
@@ -34,9 +39,12 @@ export async function mount(root) {
     let lastTfaPayload = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
-    let loginUiConfigLoadPromise = null;
     let passwordResetTokenHandled = false;
     let submitPasswordReset = null;
+    const {
+        loadConfig: loadLoginUiConfig,
+        loadClient: loadLoginIntegrationClient,
+    } = createLoginIntegrationLoader();
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -75,64 +83,12 @@ export async function mount(root) {
         });
     }
 
-    async function loadLoginUiConfig() {
-        if (!loginUiConfigLoadPromise) {
-            loginUiConfigLoadPromise = fetch("/api/v1/auth/login-ui")
-                .then(async (response) => {
-                    if (!response.ok) {
-                        throw new Error("login_ui_unavailable");
-                    }
-                    const payload = await response.json().catch(() => null);
-                    const data = payload?.data ?? {};
-                    const methods = Array.isArray(data.methods)
-                        ? data.methods
-                        : [];
-                    const integrations = Array.isArray(data.integrations)
-                        ? data.integrations
-                        : [];
-                    return { methods, integrations };
-                })
-                .catch(() => ({
-                    methods: [],
-                    integrations: [],
-                }));
-        }
-        return loginUiConfigLoadPromise;
-    }
-
-    async function resolveLoginIntegration(id) {
-        const config = await loadLoginUiConfig();
-        return (
-            config.integrations.find(
-                (integration) =>
-                    integration &&
-                    integration.id === id &&
-                    typeof integration.scriptUrl === "string" &&
-                    integration.scriptUrl.trim().length > 0,
-            ) ?? null
-        );
-    }
-
-    function loadLoginIntegrationClient(integrationId, createClient) {
-        return resolveLoginIntegration(integrationId)
-            .then((integration) => {
-                if (!integration) {
-                    return null;
-                }
-                return import(integration.scriptUrl).then((mod) =>
-                    createClient(mod),
-                );
-            })
-            .catch((error) => {
-                console.error(error);
-                return null;
-            });
-    }
-
     async function loadTfaLoginClient() {
         if (!tfaLoginClientPromise) {
-            tfaLoginClientPromise = loadLoginIntegrationClient("tfa", (mod) =>
-                mod.createTfaLoginClient({ baseI18n: i18n, root }),
+            tfaLoginClientPromise = loadLoginIntegrationClient(
+                "tfa",
+                (module) =>
+                    module.createTfaLoginClient({ baseI18n: i18n, root }),
             );
         }
         return tfaLoginClientPromise;
@@ -142,7 +98,7 @@ export async function mount(root) {
         if (!requiredEmailEnforcementClientPromise) {
             requiredEmailEnforcementClientPromise = loadLoginIntegrationClient(
                 "required-email-enforcement",
-                (mod) => mod.createRequiredEmailEnforcementClient(),
+                (module) => module.createRequiredEmailEnforcementClient(),
             );
         }
         return requiredEmailEnforcementClientPromise;
@@ -390,40 +346,6 @@ export async function mount(root) {
         }
     }
 
-    function persistSession(data) {
-        localStorage.setItem("cognis_access_token", data.token);
-        localStorage.setItem("cognis_account", data.accountId);
-        localStorage.setItem(
-            "cognis_display_name",
-            data.displayName || data.accountId,
-        );
-        localStorage.setItem("cognis_role", data.role || "user");
-        localStorage.setItem(
-            "cognis_provider_id",
-            data.providerId || data.provider || "local",
-        );
-        localStorage.setItem(
-            "cognis_is_founder",
-            data.isFounder ? "true" : "false",
-        );
-        localStorage.setItem("cognis_login_time", new Date().toISOString());
-        localStorage.setItem(
-            "cognis_user_validation_mode",
-            data.userValidationMode || "none",
-        );
-    }
-
-    function clearPersistedSession() {
-        localStorage.removeItem("cognis_access_token");
-        localStorage.removeItem("cognis_account");
-        localStorage.removeItem("cognis_display_name");
-        localStorage.removeItem("cognis_role");
-        localStorage.removeItem("cognis_provider_id");
-        localStorage.removeItem("cognis_is_founder");
-        localStorage.removeItem("cognis_login_time");
-        localStorage.removeItem("cognis_user_validation_mode");
-    }
-
     async function finalizeAuthenticatedSession(data, password = "") {
         persistSession(data);
         await uiCtx.runFlow("complete-login", {
@@ -442,7 +364,7 @@ export async function mount(root) {
                     i18n,
                 });
             } catch {
-                clearPersistedSession();
+                clearLoginSession();
                 return;
             }
         }

@@ -244,8 +244,7 @@ export class StandardLdapClient implements LdapClient {
                         timeLimit: 10,
                     });
                     const userVisibleEntry = result.searchEntries[0] as
-                        | LdapEntry
-                        | undefined;
+                        LdapEntry | undefined;
                     return {
                         ...entry,
                         ...(userVisibleEntry ?? {}),

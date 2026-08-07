@@ -23,6 +23,7 @@ const expectedEntrypoints = [
     "src/gateways/db/executor.js",
     "src/gateways/files/bootstrap.js",
     "src/gateways/logging/bootstrap.js",
+    "src/tooling/cli/index.js",
 ];
 await Promise.all(
     expectedEntrypoints.map((entrypoint) =>

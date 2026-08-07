@@ -64,6 +64,19 @@ test("page composer refreshes only explicitly selected card content", () => {
     );
 });
 
+test("page composer renderer receives the element content renderer", () => {
+    const source = readPageComposerBundle();
+
+    assert.match(
+        source,
+        /return \{\s*parkPreservedElementNodes,\s*renderElementContent,\s*refreshElements,\s*\};/m,
+    );
+    assert.match(
+        source,
+        /const \{[^}]*renderElementContent[^}]*\}\s*=\s*createDomPreservation\(state\);/m,
+    );
+});
+
 test("page composer parks media DOM only when explicitly enabled", () => {
     const source = readPageComposerBundle();
     const composerStyles = readFileSync(

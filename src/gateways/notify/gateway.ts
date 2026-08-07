@@ -64,11 +64,7 @@ export interface NotificationSenderInfo {
 }
 
 export type NotificationQueueStatus =
-    | "queued"
-    | "waiting_rate_limit"
-    | "sending"
-    | "sent"
-    | "failed";
+    "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
 export interface NotificationSenderQueueEntry {
     notificationId: string;

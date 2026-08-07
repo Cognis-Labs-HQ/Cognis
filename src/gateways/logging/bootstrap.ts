@@ -333,11 +333,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const level =
         (process.env.LOG_LEVEL as
-            | "debug"
-            | "info"
-            | "warn"
-            | "error"
-            | undefined) ?? "info";
+            "debug" | "info" | "warn" | "error" | undefined) ?? "info";
     const filePath = process.env.LOG_FILE ?? "/app/logs/app.log";
     const consoleFormat = process.env.LOG_FORMAT === "json" ? "json" : "pretty";
     const parsedRotateMaxBytes = Number.parseInt(

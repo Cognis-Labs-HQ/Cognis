@@ -41,9 +41,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const hasShareCapability = ctx.getCapability<
             (
                 tokenRecord:
-                    | { grantedCapabilities?: string[] }
-                    | null
-                    | undefined,
+                    { grantedCapabilities?: string[] } | null | undefined,
                 requiredCapability: string,
             ) => boolean
         >("share:hasCapability");

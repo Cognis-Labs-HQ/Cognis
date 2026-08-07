@@ -740,8 +740,7 @@ export function createUiRoutes(
                     },
                 );
                 const flowSections = result.data["sections"] as
-                    | unknown[]
-                    | undefined;
+                    unknown[] | undefined;
                 sections = (flowSections ?? []).filter((section) =>
                     isSettingsSectionVisible(
                         section as {
