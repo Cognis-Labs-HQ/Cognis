@@ -10,10 +10,14 @@ test("nginx preserves an incoming HTTPS forwarding scheme", async () => {
         "docker/cognis-web/default.conf.template",
     );
 
-    assert.match(configuration, /~\*\^https\$ https;/);
+    assert.match(
+        configuration,
+        /map \$http_x_forwarded_proto \$cognis_forwarded_proto \{/,
+    );
+    assert.match(configuration, /~\*\^https\$ https;\s+default \$scheme;/);
     assert.equal(
         configuration.match(
-            /proxy_set_header X-Forwarded-Proto \$forwarded_proto;/g,
+            /proxy_set_header X-Forwarded-Proto \$cognis_forwarded_proto;/g,
         )?.length,
         3,
     );

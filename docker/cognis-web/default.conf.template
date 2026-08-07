@@ -1,4 +1,4 @@
-map $http_x_forwarded_proto $forwarded_proto {
+map $http_x_forwarded_proto $cognis_forwarded_proto {
     ~*^https$ https;
     default $scheme;
 }
@@ -15,7 +15,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        proxy_set_header X-Forwarded-Proto $cognis_forwarded_proto;
         proxy_hide_header Set-Cookie;
         add_header Cache-Control "public, max-age=31536000, immutable";
     }
@@ -28,7 +28,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        proxy_set_header X-Forwarded-Proto $cognis_forwarded_proto;
         proxy_no_cache 1;
         proxy_cache_bypass 1;
         proxy_hide_header Cache-Control;
@@ -43,7 +43,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Proto $forwarded_proto;
+        proxy_set_header X-Forwarded-Proto $cognis_forwarded_proto;
         proxy_hide_header Cache-Control;
         add_header Cache-Control "no-cache, must-revalidate" always;
     }

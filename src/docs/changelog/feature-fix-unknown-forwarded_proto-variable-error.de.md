@@ -2,4 +2,4 @@
 
 ## nginx-Variablen schützen
 
-Der Webcontainer beschränkt die Vorlagensubstitution nun auf den Cognis-Upstream-Host. Native nginx-Variablen, einschließlich der Zuordnung des weitergeleiteten Protokolls, bleiben selbst bei ähnlich benannten Umgebungsvariablen der Bereitstellung erhalten.
+Der Webcontainer beschränkt die Vorlagensubstitution nun auf den Cognis-Upstream-Host und verwendet eine Cognis-namensraumspezifische Weiterleitungsvariable. Anfragen über einen TLS-terminierenden Proxy behalten HTTPS bei, während direkte Anfragen ohne weitergeleitetes Protokoll sicher auf das nginx-Verbindungsschema zurückfallen.
