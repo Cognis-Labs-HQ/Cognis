@@ -1,5 +1,4 @@
 node_modules/
 dist/
 .env
-docker/env/runtime.env
 .DS_Store

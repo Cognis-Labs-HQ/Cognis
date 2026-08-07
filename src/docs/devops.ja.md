@@ -35,14 +35,15 @@ CMD ["node", "src/api/main.js"]
 
 Web プロファイルは未変更の `nginx:stable-alpine` イメージを使用し、`docker/cognis-web/default.conf.template` を nginx 標準のテンプレートディレクトリにマウントします。専用の Web イメージやエントリポイントなしで HTTP キャッシュとプロキシヘッダーを提供します。nginx で TLS を終端するデプロイは独自の標準 nginx TLS 設定をマウントでき、Kubernetes Ingress や外部プロキシも Cognis イメージを変更せずに TLS を終端できます。
 
-`./setup.sh` は、強力なデータベースパスワードとデータ暗号化キーを含む非公開の `docker/env/runtime.env` を生成します。Compose を初めて起動する前に一度実行してください。既存の秘密ファイルは上書きしません。
-
-初回起動前にデプロイ用の秘密情報を準備します。
+Compose は必須の秘密情報をプロセス環境から読み取り、値が不足している場合は明確なエラーで停止します。PostgreSQL プロファイルを起動する前に、デプロイ環境で管理された値を設定してください。
 
 ```sh
-./setup.sh
+export POSTGRES_PASSWORD='<データベースパスワード>'
+export DATA_ENCRYPTION_KEY='<64 文字の暗号化キー>'
 docker compose up --build
 ```
+
+MariaDB の場合は、代わりに `MARIADB_PASSWORD` と `MARIADB_ROOT_PASSWORD` を設定し、`docker-compose.mariadb.yaml` を起動します。Kubernetes などのオーケストレーターは標準の秘密情報管理機能を通じて値を注入するため、リポジトリのセットアップスクリプトは不要です。
 
 ## 設定
 

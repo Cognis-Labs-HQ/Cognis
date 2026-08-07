@@ -54,6 +54,6 @@ Redundant tooling tests that duplicated container configuration text have been r
 
 The web proxy now preserves an incoming HTTPS scheme so authentication cookies remain secure behind a TLS terminator.
 
-## Generate deployment secrets
+## Require deployment secrets
 
-The setup command now provisions private database passwords and a data-encryption key before Compose starts.
+Compose now requires deployment-managed database passwords and a data-encryption key, while Kubernetes and other orchestrators can continue using their native secret facilities.

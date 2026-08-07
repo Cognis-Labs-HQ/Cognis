@@ -20,12 +20,16 @@ test("nginx preserves an incoming HTTPS forwarding scheme", async () => {
 });
 
 for (const profile of ["postgres", "mariadb"]) {
-    test(`${profile} Compose profile loads generated secrets`, async () => {
+    test(`${profile} Compose profile requires deployment secrets`, async () => {
         const configuration = await readRepositoryFile(
             `docker-compose.${profile}.yaml`,
         );
 
-        assert.match(configuration, /\.\/docker\/env\/runtime\.env/);
         assert.match(configuration, /\.\/docker\/env\/default\.env/);
+        assert.match(
+            configuration,
+            /DATA_ENCRYPTION_KEY: \$\{DATA_ENCRYPTION_KEY:\?/,
+        );
+        assert.match(configuration, /PASSWORD: \$\{[A-Z_]+PASSWORD:\?/);
     });
 }

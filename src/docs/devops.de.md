@@ -36,14 +36,15 @@ Ausführbare Standardwerte verbleiben im Anwendungs-Image, während Datenbankzug
 
 Das Web-Profil verwendet das unveränderte Image `nginx:stable-alpine` und bindet `docker/cognis-web/default.conf.template` in das native Vorlagenverzeichnis von nginx ein. Caching und Proxy-Header benötigen weder ein eigenes Web-Image noch einen eigenen Einstieg. Bereitstellungen können für TLS eine eigene native nginx-Konfiguration einbinden; Kubernetes-Ingress-Controller und externe Proxys können TLS ohne Änderungen am Cognis-Image terminieren.
 
-`./setup.sh` erzeugt eine private Datei `docker/env/runtime.env` mit starken Datenbankkennwörtern und einem Datenverschlüsselungsschlüssel. Das Skript muss vor dem ersten Compose-Start einmal ausgeführt werden und überschreibt keine vorhandene Geheimnisdatei.
-
-Bereitstellungsgeheimnisse vor dem ersten Start vorbereiten:
+Compose liest erforderliche Geheimnisse aus seiner Prozessumgebung und bricht bei fehlenden Werten mit einer eindeutigen Fehlermeldung ab. Vor dem Start des PostgreSQL-Profils müssen verwaltete Bereitstellungswerte gesetzt werden:
 
 ```sh
-./setup.sh
+export POSTGRES_PASSWORD='<Datenbankkennwort>'
+export DATA_ENCRYPTION_KEY='<64-stelliger Verschlüsselungsschlüssel>'
 docker compose up --build
 ```
+
+Für MariaDB sind stattdessen `MARIADB_PASSWORD` und `MARIADB_ROOT_PASSWORD` zu setzen und `docker-compose.mariadb.yaml` zu starten. Orchestratoren wie Kubernetes sollten diese Werte über ihre native Geheimnisverwaltung einbinden; sie benötigen kein Einrichtungsskript aus dem Repository.
 
 ### GitHub Actions
 

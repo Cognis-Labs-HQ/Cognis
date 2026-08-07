@@ -54,6 +54,6 @@ Pengujian tooling berlebihan yang hanya mengulang teks konfigurasi kontainer tel
 
 Proksi web kini mempertahankan skema HTTPS yang masuk agar kuki autentikasi tetap aman di belakang terminator TLS.
 
-## Buat rahasia penerapan
+## Wajibkan rahasia penerapan
 
-Perintah penyiapan kini menyediakan kata sandi basis data privat dan kunci enkripsi data sebelum Compose dimulai.
+Compose kini mewajibkan kata sandi basis data dan kunci enkripsi data yang dikelola penerapan, sedangkan Kubernetes dan orkestrator lain tetap dapat memakai fasilitas rahasia native.
