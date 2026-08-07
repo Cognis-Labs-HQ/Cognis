@@ -16,4 +16,4 @@ Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt 
 
 ## Neutraler Containerstart
 
-Der Containerstart wurde auf die Ausführung des Anwendungsbefehls reduziert. Ausführbare Standardwerte befinden sich nun im Image, erzeugte Umgebungsdateien und `setup.sh` wurden entfernt, und Bereitstellungen können Variablen über ihren nativen Umgebungsmechanismus überschreiben. Der Web-Proxy aktiviert TLS nur dann automatisch, wenn beide konfigurierten Zertifikatdateien lesbar sind; eine TLS-Modusvariable wird nicht verwendet.
+Der Anwendungseinstieg stellt die strukturierte Protokollierung und die optionale Erzeugung von `DATABASE_URL` aus providerspezifischen Feldern wieder her, bevor Cognis ausgeführt wird. Sensible Werte wie `DATABASE_URL` und `DATA_ENCRYPTION_KEY` besitzen keine Image-Standardwerte mehr und müssen aus der Bereitstellungsumgebung stammen. Das Web-Profil verwendet nun das generische nginx-Image und dessen native Vorlage mit Umgebungsersetzung, statt ein Cognis-spezifisches nginx-Image zu bauen.

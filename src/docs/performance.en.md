@@ -1,6 +1,6 @@
 # Performance budgets
 
-Production traffic terminates at the `cognis-web` proxy. It always listens on HTTP and opportunistically enables HTTPS, with an HTTP-to-HTTPS redirect, when both configured TLS certificate files exist and are readable. Without usable certificates it remains HTTP-only for operation behind a reverse proxy or CDN. The same cache policy applies in either case.
+Production traffic passes through the generic `nginx:stable-alpine` image using the mounted `docker/cognis-web/default.conf.template`. The template owns HTTP cache and proxy-header behavior through nginx native environment substitution. TLS is intentionally deployment-owned: mount an additional native nginx TLS configuration, use a Kubernetes ingress controller, or terminate TLS at an external proxy or CDN.
 
 ## Hosted baseline protocol
 

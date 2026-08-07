@@ -1,6 +1,6 @@
 # Anggaran kinerja
 
-Trafik produksi berakhir di proksi `cognis-web`. Proksi selalu mendengarkan HTTP dan mengaktifkan HTTPS beserta pengalihan HTTP ke HTTPS secara oportunistik ketika kedua file sertifikat TLS yang dikonfigurasi tersedia dan dapat dibaca. Tanpa sertifikat yang dapat digunakan, proksi tetap hanya menggunakan HTTP untuk pengoperasian di belakang proksi balik atau CDN. Kebijakan cache yang sama berlaku dalam kedua keadaan.
+Trafik produksi melewati image generik `nginx:stable-alpine` dengan `docker/cognis-web/default.conf.template` yang dipasang. Templat mengatur cache HTTP dan header proksi melalui substitusi lingkungan native nginx. TLS sengaja dimiliki oleh penerapan: pasang konfigurasi TLS nginx native tambahan, gunakan ingress Kubernetes, atau hentikan TLS pada proksi eksternal maupun CDN.
 
 ## Protokol baseline hosted
 

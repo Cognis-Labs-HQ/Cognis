@@ -4,7 +4,7 @@ services:
         environment:
             POSTGRES_DB: cognis
             POSTGRES_USER: cognis
-            POSTGRES_PASSWORD: cognis
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         volumes:
             - pgdata:/var/lib/postgresql/data
         healthcheck:
@@ -22,6 +22,9 @@ services:
             context: .
             dockerfile: ./docker/Dockerfile
         image: cognis:prod
+        environment:
+            DATABASE_URL: ${DATABASE_URL}
+            DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY}
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config
@@ -40,14 +43,13 @@ services:
         restart: unless-stopped
 
     cognis-web:
-        build:
-            context: ./docker/cognis-web
-        image: cognis-web
+        image: nginx:stable-alpine
+        environment:
+            HOST: cognis
         ports:
             - "80:80"
-            - "443:443"
         volumes:
-            - ./docker/tls:/etc/nginx/tls:ro
+            - ./docker/cognis-web/default.conf.template:/etc/nginx/templates/default.conf.template:ro
         depends_on:
             cognis:
                 condition: service_healthy

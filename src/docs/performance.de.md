@@ -1,6 +1,6 @@
 # Leistungsbudgets
 
-Produktionsverkehr endet am Proxy `cognis-web`. Er lauscht immer auf HTTP und aktiviert HTTPS einschließlich der Umleitung von HTTP zu HTTPS, wenn beide konfigurierten TLS-Zertifikatdateien vorhanden und lesbar sind. Ohne verwendbare Zertifikate bleibt er für den Betrieb hinter einem Reverse Proxy oder CDN auf HTTP beschränkt. In beiden Fällen gilt dieselbe Cache-Richtlinie.
+Produktionsverkehr läuft durch das generische Image `nginx:stable-alpine` mit der eingebundenen Datei `docker/cognis-web/default.conf.template`. Die Vorlage steuert HTTP-Cache und Proxy-Header über die native Umgebungsersetzung von nginx. TLS liegt bewusst in der Verantwortung der Bereitstellung: Binden Sie eine zusätzliche native nginx-TLS-Konfiguration ein oder terminieren Sie TLS an einem Kubernetes-Ingress-Controller, externen Proxy oder CDN.
 
 ## Protokoll für gehostete Basiswerte
 

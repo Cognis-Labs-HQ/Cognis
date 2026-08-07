@@ -1,18 +1,30 @@
 import assert from "node:assert/strict";
+import { execFile } from "node:child_process";
+import { existsSync } from "node:fs";
 import { readFile, readlink } from "node:fs/promises";
 import test from "node:test";
+import { promisify } from "node:util";
 
+const execFileAsync = promisify(execFile);
+const bashPath = [process.env.BASH, "/bin/bash", "/usr/bin/bash"].find(
+    (candidatePath) =>
+        candidatePath?.startsWith("/") && existsSync(candidatePath),
+);
+const bashTestOptions = bashPath
+    ? {}
+    : { skip: "Bash is not installed in this test environment" };
 const profiles = [
     ["docker-compose.postgres.yaml", "postgres:17-alpine"],
     ["docker-compose.mariadb.yaml", "mariadb:11"],
 ];
 
-test("Docker profiles run without generated environment files", async () => {
+test("Docker profiles use native environment injection", async () => {
     for (const [composePath, databaseImage] of profiles) {
         const compose = await readFile(composePath, "utf8");
         assert.match(compose, new RegExp(`image: ${databaseImage}`));
+        assert.match(compose, /DATABASE_URL: \$\{DATABASE_URL\}/);
+        assert.match(compose, /DATA_ENCRYPTION_KEY: \$\{DATA_ENCRYPTION_KEY\}/);
         assert.doesNotMatch(compose, /env_file:|setup\.sh|docker\/env\//);
-        assert.match(compose, /cognis-web:[\s\S]*- "80:80"[\s\S]*- "443:443"/);
     }
     assert.equal(
         await readlink("docker-compose.yaml"),
@@ -20,53 +32,62 @@ test("Docker profiles run without generated environment files", async () => {
     );
 });
 
-test("application image owns runnable defaults and a minimal entrypoint", async () => {
+test("application image excludes sensitive environment defaults", async () => {
     const dockerfile = await readFile("docker/Dockerfile", "utf8");
-    const entrypoint = await readFile("docker/entrypoint.sh", "utf8");
 
-    for (const variableName of [
-        "NODE_ENV",
-        "DB_TYPE",
-        "DATABASE_URL",
-        "HOST",
-        "EXTERNAL_HOST",
-        "CONTACT_EMAIL",
-        "DATA_ENCRYPTION_KEY",
-        "COGNIS_UI_DIST_ROOT",
-    ]) {
-        assert.match(dockerfile, new RegExp(`\\b${variableName}=`));
+    assert.doesNotMatch(dockerfile, /\bDATABASE_URL=/);
+    assert.doesNotMatch(dockerfile, /\bDATA_ENCRYPTION_KEY=/);
+    assert.match(dockerfile, /\bCOGNIS_UI_DIST_ROOT=/);
+});
+
+test(
+    "application entrypoint compiles split database settings",
+    bashTestOptions,
+    async () => {
+        const { stdout } = await execFileAsync(
+            bashPath,
+            [
+                "docker/entrypoint.sh",
+                bashPath,
+                "-c",
+                'printf "%s" "$DATABASE_URL"',
+            ],
+            {
+                env: {
+                    DB_TYPE: "postgresql",
+                    POSTGRES_HOST: "db",
+                    POSTGRES_PORT: "5432",
+                    POSTGRES_DB: "cognis",
+                    POSTGRES_USER: "cognis@example.com",
+                    POSTGRES_PASSWORD: "secret:/%#",
+                    LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+                    PATH: process.env.PATH,
+                },
+            },
+        );
+
+        assert.ok(
+            stdout.includes(
+                "postgresql://cognis%40example.com:secret%3A%2F%25%23@db:5432/cognis",
+            ),
+        );
+    },
+);
+
+test("web profile uses the generic nginx image and native template", async () => {
+    const template = await readFile(
+        "docker/cognis-web/default.conf.template",
+        "utf8",
+    );
+    for (const [composePath] of profiles) {
+        const compose = await readFile(composePath, "utf8");
+        assert.match(compose, /cognis-web:[\s\S]*image: nginx:stable-alpine/);
+        assert.match(
+            compose,
+            /default\.conf\.template:\/etc\/nginx\/templates\/default\.conf\.template:ro/,
+        );
+        assert.doesNotMatch(compose, /dockerfile:.*cognis-web|"443:443"/);
     }
-    assert.equal(entrypoint, '#!/bin/sh\nset -eu\n\nexec "$@"\n');
-});
-
-test("web image enables TLS only when certificate files are usable", async () => {
-    const dockerfile = await readFile("docker/cognis-web/Dockerfile", "utf8");
-    const entrypoint = await readFile(
-        "docker/cognis-web/entrypoint.sh",
-        "utf8",
-    );
-
-    assert.match(
-        dockerfile,
-        /COGNIS_WEB_TLS_CERTIFICATE=\/etc\/nginx\/tls\/fullchain\.pem/,
-    );
-    assert.match(
-        dockerfile,
-        /COGNIS_WEB_TLS_CERTIFICATE_KEY=\/etc\/nginx\/tls\/privkey\.pem/,
-    );
-    assert.doesNotMatch(entrypoint, /COGNIS_WEB_TLS_MODE/);
-    assert.match(entrypoint, /\[ -r "\$tls_certificate_path" \]/);
-    assert.match(entrypoint, /\[ -r "\$tls_certificate_key_path" \]/);
-});
-
-test("web image builds its upstream from HOST", async () => {
-    const nginxSource = await readFile("docker/cognis-web/nginx.conf", "utf8");
-    const entrypointSource = await readFile(
-        "docker/cognis-web/entrypoint.sh",
-        "utf8",
-    );
-
-    assert.match(entrypointSource, /upstream_host="\$\{HOST:-\}"/);
-    assert.match(entrypointSource, /server %s:3000;/);
-    assert.doesNotMatch(nginxSource, /server cognis:3000/);
+    assert.match(template, /proxy_pass http:\/\/\$\{HOST\}:3000;/);
+    assert.match(template, /max-age=31536000, immutable/);
 });

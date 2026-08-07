@@ -16,4 +16,4 @@ Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap
 
 ## Proses awal kontainer tetap netral
 
-Proses awal kontainer disederhanakan menjadi sekadar menjalankan perintah aplikasi. Default yang dapat dijalankan kini berada dalam image, file lingkungan buatan dan `setup.sh` dihapus, dan penerapan dapat mengganti variabel melalui mekanisme lingkungan bawaannya. Proksi web mengaktifkan TLS secara otomatis hanya ketika kedua file sertifikat yang dikonfigurasi dapat dibaca; tidak ada variabel mode TLS.
+Entrypoint aplikasi memulihkan pencatatan terstruktur dan penyusunan opsional `DATABASE_URL` dari field khusus penyedia sebelum menjalankan Cognis. Nilai sensitif seperti `DATABASE_URL` dan `DATA_ENCRYPTION_KEY` tidak lagi memiliki default image dan harus berasal dari lingkungan penerapan. Profil web kini menggunakan image nginx generik dan templat konfigurasi native dengan substitusi lingkungan alih-alih membangun image nginx khusus Cognis.
