@@ -48,4 +48,4 @@ Pembatas laju SMTP kini memeriksa apakah penerima memiliki catatan pengiriman se
 
 ## Publikasi memerlukan pengujian yang berhasil
 
-Pipeline GitLab kini menempatkan pengujian dan publikasi dalam tahap yang eksplisit serta menetapkan job pengujian sebagai dependensi wajib bagi publikasi. Image kontainer tidak dapat dibangun atau dikirim ketika job pengujian gagal atau belum selesai.
+Job publikasi GitLab kini menetapkan job pengujian sebagai dependensi wajib tanpa menambahkan tahap pipeline khusus. Image kontainer tidak dapat dibangun atau dikirim ketika job pengujian gagal atau belum selesai.

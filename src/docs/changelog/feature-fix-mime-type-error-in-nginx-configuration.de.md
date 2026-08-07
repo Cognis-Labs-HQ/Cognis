@@ -48,4 +48,4 @@ Der SMTP-Ratenbegrenzer prüft nun vor dem Lesen der Uhr, ob für einen Empfäng
 
 ## Veröffentlichung erfordert erfolgreiche Tests
 
-Die GitLab-Pipeline ordnet Tests und Veröffentlichung nun ausdrücklichen Phasen zu und erklärt den Testauftrag zur erforderlichen Abhängigkeit der Veröffentlichung. Container-Images können nicht gebaut oder übertragen werden, wenn der Testauftrag fehlschlägt oder nicht abgeschlossen wird.
+Der GitLab-Veröffentlichungsauftrag erklärt den Testauftrag nun ohne zusätzliche benutzerdefinierte Pipeline-Phasen zur erforderlichen Abhängigkeit. Container-Images können nicht gebaut oder übertragen werden, wenn der Testauftrag fehlschlägt oder nicht abgeschlossen wird.

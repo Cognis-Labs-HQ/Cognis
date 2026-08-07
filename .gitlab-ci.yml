@@ -5,17 +5,12 @@ workflow:
 variables:
     APP_IMAGE_SHA: "$CI_REGISTRY_IMAGE:sha-$CI_COMMIT_SHORT_SHA"
 
-stages:
-    - test
-    - publish
-
 cache:
     key: ${CI_COMMIT_REF_SLUG}
     paths:
         - node_modules/
 
 test:
-    stage: test
     image: node:24-alpine
     script:
         - apk add ripgrep python3 build-base
@@ -28,7 +23,6 @@ test:
         - if: $CI_COMMIT_TAG
 
 publish:
-    stage: publish
     needs:
         - job: test
           artifacts: false

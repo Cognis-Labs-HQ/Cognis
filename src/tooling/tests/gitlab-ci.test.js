@@ -4,10 +4,8 @@ import test from "node:test";
 
 test("GitLab publish waits for the test job", async () => {
     const configuration = await readFile(".gitlab-ci.yml", "utf8");
-    assert.match(configuration, /stages:\s+- test\s+- publish/);
-    assert.match(configuration, /test:\s+stage: test/);
     assert.match(
         configuration,
-        /publish:\s+stage: publish\s+needs:\s+- job: test\s+artifacts: false/,
+        /publish:\s+needs:\s+- job: test\s+artifacts: false/,
     );
 });

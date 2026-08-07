@@ -48,4 +48,4 @@ The SMTP rate limiter now checks whether a recipient has a recorded send before 
 
 ## Publishing requires successful tests
 
-The GitLab pipeline now places testing and publishing in explicit stages and declares the test job as a required dependency of publish. Container images cannot be built or pushed when the test job fails or does not complete.
+The GitLab publish job now declares the test job as a required dependency without adding custom pipeline stages. Container images cannot be built or pushed when the test job fails or does not complete.
