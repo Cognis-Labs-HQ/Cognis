@@ -666,7 +666,7 @@ export async function mount(root, { signal } = {}) {
     async function openCreateCalendarPopup() {
         let popupNameValue = "";
         let popupVisibilityValue = "private";
-        let popupColorValue = "#1f8ceb";
+        let popupColorValue = calendarUi.createRandomCalendarColor();
         await openPopup({
             title: i18n.t("gateway.calendar.create_calendar"),
             body: () => `

@@ -5,7 +5,6 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import { normalizeCalendarColor } from "../color.js";
 import { CoreCalendarGateway } from "../gateway/index.js";
 import {
     dispatchCancellationNotifications,
@@ -393,7 +392,10 @@ export function createCalendarCoreRoutes({
                     ownerAccountId: targetAccountId,
                     name,
                     visibility: normalizeVisibility(body?.visibility),
-                    color: normalizeCalendarColor(body?.color),
+                    color:
+                        body?.color === undefined
+                            ? undefined
+                            : String(body.color),
                     defaultReminderOffsetsMinutes: normalizeReminderOffsets(
                         body?.defaultReminderOffsetsMinutes,
                     ),

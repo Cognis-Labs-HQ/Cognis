@@ -1,7 +1,10 @@
 import { formatDateTime, formatTime } from "/static/reuse/timestamp.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { normalizeCalendarColor } from "/static/gateways/calendar/color.js";
+import {
+    normalizeCalendarColor,
+    randomCalendarColor,
+} from "/static/gateways/calendar/color.js";
 import {
     renderTimeAxisRows,
     renderTimedEventLayer,
@@ -78,6 +81,9 @@ function toDateTimeLocalValue(value) {
 }
 function normalizeHexColor(value) {
     return normalizeCalendarColor(value);
+}
+function createRandomCalendarColor() {
+    return randomCalendarColor();
 }
 function splitHandles(value) {
     return Array.from(
@@ -967,6 +973,7 @@ export {
     addDays,
     toDateTimeLocalValue,
     normalizeHexColor,
+    createRandomCalendarColor,
     splitHandles,
     splitInviteEmails,
     matchesEmailPattern,
