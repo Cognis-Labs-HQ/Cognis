@@ -32,4 +32,12 @@ for (const profile of ["postgres", "mariadb"]) {
         assert.match(configuration, /EXTERNAL_HOST: \$\{EXTERNAL_HOST:\?/);
         assert.match(configuration, /PASSWORD: \$\{[A-Z_]+PASSWORD:\?/);
     });
+
+    test(`${profile} nginx only substitutes its upstream host`, async () => {
+        const configuration = await readRepositoryFile(
+            `docker-compose.${profile}.yaml`,
+        );
+
+        assert.match(configuration, /NGINX_ENVSUBST_FILTER: "\^\(HOST\)\$"/);
+    });
 }

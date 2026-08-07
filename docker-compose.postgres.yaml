@@ -52,6 +52,7 @@ services:
         image: nginx:stable-alpine
         environment:
             HOST: cognis
+            NGINX_ENVSUBST_FILTER: "^(HOST)$"
         ports:
             - "80:80"
         volumes:
