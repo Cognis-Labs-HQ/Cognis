@@ -215,7 +215,6 @@
   <string name="ui.app.admin.toggle_gateway">Gateway-Zustand umschalten</string>
   <string name="ui.app.admin.toggle_adapter">Adapter-Zustand umschalten</string>
   <string name="ui.app.admin.setup_required">Diese Komponente muss zuerst eingerichtet werden, bevor sie aktiviert werden kann.</string>
-  <string name="ui.app.admin.synced_to">Mit {module} synchronisiert</string>
   <string name="ui.app.admin.checking">Prüfe...</string>
   <string name="ui.app.admin.components">Komponenten</string>
   <string name="ui.app.admin.gateways">Gateways</string>

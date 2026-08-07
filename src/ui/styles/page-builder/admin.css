@@ -178,11 +178,7 @@
 
 .adapter-inline-controls {
     flex: 0 0 auto;
-    grid-template-columns: minmax(0, auto) 100px 10px 52px 32px;
-}
-
-.adapter-sync-slot {
-    min-width: 0;
+    grid-template-columns: 100px 10px 52px 32px;
 }
 
 .adapter-inline-meta {
@@ -398,19 +394,6 @@ body[data-theme="light"] .slider::before {
 .pill-disabled {
     background: rgba(239, 68, 68, 0.24);
     color: #ef4444;
-}
-
-.pill-synced {
-    background: rgba(249, 115, 22, 0.24);
-    color: #fb923c;
-}
-
-.synced-pill-link {
-    text-decoration: none;
-}
-
-.synced-pill-link:hover {
-    text-decoration: underline;
 }
 
 @media (max-width: 640px) {
