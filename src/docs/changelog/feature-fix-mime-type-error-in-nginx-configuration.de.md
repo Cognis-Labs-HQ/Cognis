@@ -49,3 +49,11 @@ Der SMTP-Ratenbegrenzer prüft nun vor dem Lesen der Uhr, ob für einen Empfäng
 ## Container-Prüfungen bleiben ergebnisorientiert
 
 Redundante Werkzeugtests, die lediglich Texte der Containerkonfiguration wiederholten, wurden entfernt. Container-Build und Anwendungstests bleiben die maßgeblichen Prüfungen, sodass die Wartung auf die Funktionsfähigkeit der gebauten Anwendung statt auf nebensächliche Formatierungsdetails ausgerichtet bleibt.
+
+## HTTPS-Weiterleitung bewahren
+
+Der Web-Proxy bewahrt nun ein eingehendes HTTPS-Schema, damit Authentifizierungs-Cookies hinter einer TLS-Terminierung sicher bleiben.
+
+## Geheimnisse erzeugen
+
+Der Einrichtungsbefehl stellt nun vor dem Compose-Start private Datenbankkennwörter und einen Datenverschlüsselungsschlüssel bereit.

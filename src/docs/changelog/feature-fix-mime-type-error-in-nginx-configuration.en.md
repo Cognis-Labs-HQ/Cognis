@@ -49,3 +49,11 @@ The SMTP rate limiter now checks whether a recipient has a recorded send before 
 ## Container checks stay outcome-focused
 
 Redundant tooling tests that duplicated container configuration text have been removed. The container build and application test suite remain the acceptance checks, keeping maintenance focused on whether the built application works rather than on incidental configuration formatting.
+
+## Preserve HTTPS forwarding
+
+The web proxy now preserves an incoming HTTPS scheme so authentication cookies remain secure behind a TLS terminator.
+
+## Generate deployment secrets
+
+The setup command now provisions private database passwords and a data-encryption key before Compose starts.

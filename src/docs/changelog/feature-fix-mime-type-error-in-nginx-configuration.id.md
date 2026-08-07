@@ -49,3 +49,11 @@ Pembatas laju SMTP kini memeriksa apakah penerima memiliki catatan pengiriman se
 ## Pemeriksaan kontainer tetap berfokus pada hasil
 
 Pengujian tooling berlebihan yang hanya mengulang teks konfigurasi kontainer telah dihapus. Build kontainer dan rangkaian pengujian aplikasi tetap menjadi pemeriksaan penerimaan sehingga pemeliharaan berfokus pada berfungsinya aplikasi hasil build, bukan rincian format konfigurasi yang tidak penting.
+
+## Pertahankan penerusan HTTPS
+
+Proksi web kini mempertahankan skema HTTPS yang masuk agar kuki autentikasi tetap aman di belakang terminator TLS.
+
+## Buat rahasia penerapan
+
+Perintah penyiapan kini menyediakan kata sandi basis data privat dan kunci enkripsi data sebelum Compose dimulai.
