@@ -45,3 +45,7 @@ Login integration discovery and authenticated-session storage now live in dedica
 ## SMTP first-send checks are deterministic
 
 The SMTP rate limiter now checks whether a recipient has a recorded send before reading the clock. A new recipient is never throttled merely because the system clock moves backwards between reads, eliminating the intermittent Node.js 24 CI failure while preserving configured rate-limit windows for recorded sends.
+
+## Publishing requires successful tests
+
+The GitLab pipeline now places testing and publishing in explicit stages and declares the test job as a required dependency of publish. Container images cannot be built or pushed when the test job fails or does not complete.

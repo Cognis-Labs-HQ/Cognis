@@ -45,3 +45,7 @@ Die Ermittlung von Anmeldeintegrationen und die Speicherung authentifizierter Si
 ## SMTP-Prüfungen beim ersten Versand sind deterministisch
 
 Der SMTP-Ratenbegrenzer prüft nun vor dem Lesen der Uhr, ob für einen Empfänger bereits ein Versand gespeichert ist. Ein neuer Empfänger wird nicht mehr fälschlich begrenzt, wenn sich die Systemzeit zwischen zwei Lesevorgängen rückwärts bewegt. Dadurch entfällt der sporadische CI-Fehler unter Node.js 24, während konfigurierte Begrenzungszeiträume für gespeicherte Versandvorgänge erhalten bleiben.
+
+## Veröffentlichung erfordert erfolgreiche Tests
+
+Die GitLab-Pipeline ordnet Tests und Veröffentlichung nun ausdrücklichen Phasen zu und erklärt den Testauftrag zur erforderlichen Abhängigkeit der Veröffentlichung. Container-Images können nicht gebaut oder übertragen werden, wenn der Testauftrag fehlschlägt oder nicht abgeschlossen wird.

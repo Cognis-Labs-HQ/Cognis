@@ -45,3 +45,7 @@ Penemuan integrasi login dan penyimpanan sesi terautentikasi kini berada dalam m
 ## Pemeriksaan pengiriman pertama SMTP bersifat deterministik
 
 Pembatas laju SMTP kini memeriksa apakah penerima memiliki catatan pengiriman sebelum membaca waktu. Penerima baru tidak akan dibatasi hanya karena waktu sistem bergerak mundur di antara pembacaan, sehingga kegagalan CI Node.js 24 yang sporadis hilang tanpa mengubah jendela pembatasan untuk pengiriman yang tercatat.
+
+## Publikasi memerlukan pengujian yang berhasil
+
+Pipeline GitLab kini menempatkan pengujian dan publikasi dalam tahap yang eksplisit serta menetapkan job pengujian sebagai dependensi wajib bagi publikasi. Image kontainer tidak dapat dibangun atau dikirim ketika job pengujian gagal atau belum selesai.
