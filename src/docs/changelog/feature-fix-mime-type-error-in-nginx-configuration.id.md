@@ -14,8 +14,6 @@ Nginx kini mengurai layanan aplikasi Cognis melalui penguraian nama host standar
 
 Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap layanan selalu bernama `cognis`. Nama berkualifikasi namespace yang mengandung titik, seperti `cognis.cognis`, didukung untuk mencegah kumpulan upstream kosong pada Kubernetes dan penerapan lain yang menggunakan nama layanan tercakup.
 
-## Galat lingkungan Kubernetes lebih jelas
+## Proses awal kontainer tetap netral
 
-Proses awal kontainer kini membaca pengaturan wajib langsung dari lingkungan proses yang diekspor dan menyebutkan kontainer aplikasi Cognis dalam galat pengaturan yang hilang. Penerapan Kubernetes harus menetapkan `CONTACT_EMAIL` pada kontainer aplikasi; menetapkannya hanya pada sidecar `cognis-web` tidak membagikannya antar kontainer.
-
-Log awal kini melaporkan apakah setiap pengaturan publik wajib terlihat tanpa mengungkap nilainya. Panduan Kubernetes memperjelas bahwa membuat ConfigMap saja tidak cukup: kontainer aplikasi harus merujuknya melalui `envFrom` atau `env.valueFrom`.
+Entrypoint aplikasi tidak lagi melakukan pravalidasi atau menyaring pengaturan publik seperti `CONTACT_EMAIL`. Variabel lingkungan diteruskan langsung ke Cognis tanpa bergantung pada Docker Compose, Kubernetes, Podman, atau sistem penerapan lain yang menyediakannya. Entrypoint hanya membentuk `DATABASE_URL` ketika field basis data terpisah digunakan, lalu menggantikan dirinya dengan proses aplikasi agar Cognis menangani validasi dan penghentian yang baik.

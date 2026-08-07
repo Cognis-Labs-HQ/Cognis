@@ -14,8 +14,6 @@ Nginx löst den Cognis-Anwendungsdienst nun über die standardmäßige Hostnamen
 
 Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt den Dienstnamen `cognis` vorauszusetzen. Namespace-qualifizierte Namen mit Punkten wie `cognis.cognis` werden unterstützt, damit der Upstream-Pool in Kubernetes und anderen Bereitstellungen mit abgegrenzten Dienstnamen verfügbar bleibt.
 
-## Klarere Kubernetes-Umgebungsfehler
+## Neutraler Containerstart
 
-Beim Containerstart werden erforderliche Einstellungen nun direkt aus der exportierten Prozessumgebung gelesen, und Fehlermeldungen zu fehlenden Einstellungen nennen ausdrücklich den Cognis-Anwendungscontainer. Kubernetes-Bereitstellungen müssen `CONTACT_EMAIL` am Anwendungscontainer setzen; eine Einstellung nur im Sidecar `cognis-web` wird nicht zwischen Containern geteilt.
-
-Startprotokolle zeigen nun ohne Offenlegung der Werte an, ob jede erforderliche öffentliche Einstellung sichtbar ist. Die Kubernetes-Hinweise verdeutlichen, dass das Erstellen einer ConfigMap allein nicht genügt: Der Anwendungscontainer muss sie über `envFrom` oder `env.valueFrom` referenzieren.
+Der Anwendungseinstieg prüft oder filtert öffentliche Einstellungen wie `CONTACT_EMAIL` nicht mehr vorab. Umgebungsvariablen werden unabhängig davon, ob Docker Compose, Kubernetes, Podman oder ein anderes Bereitstellungssystem sie liefert, direkt an Cognis weitergegeben. Der Einstieg leitet nur dann `DATABASE_URL` ab, wenn getrennte Datenbankfelder verwendet werden, und ersetzt sich anschließend durch den Anwendungsprozess, damit Cognis die Validierung und das ordnungsgemäße Herunterfahren übernimmt.

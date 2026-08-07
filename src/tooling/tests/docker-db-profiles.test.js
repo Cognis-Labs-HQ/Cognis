@@ -188,10 +188,6 @@ test(
                     env: {
                         ...process.env,
                         ...environment,
-                        HOST: "cognis",
-                        EXTERNAL_HOST: "https://cognis.example.com",
-                        CONTACT_EMAIL: "admin@example.com",
-                        DATA_ENCRYPTION_KEY: "test-key",
                         LOG_FILE: "/tmp/cognis-docker-profile-test.log",
                     },
                 },
@@ -224,7 +220,7 @@ test(
             (error) => {
                 assert.match(
                     error.stdout,
-                    /POSTGRES_HOST is absent or empty in the Cognis application process environment/,
+                    /POSTGRES_HOST is required to construct DATABASE_URL for DB_TYPE=postgresql/,
                 );
                 return true;
             },
@@ -247,10 +243,6 @@ test(
             ],
             {
                 env: {
-                    HOST: "cognis",
-                    EXTERNAL_HOST: "https://cognis.example.com",
-                    CONTACT_EMAIL: "admin@example.com",
-                    DATA_ENCRYPTION_KEY: "test-key",
                     DATABASE_URL: databaseUrl,
                     LOG_FILE: "/tmp/cognis-docker-profile-test.log",
                     PATH: process.env.PATH,
@@ -259,51 +251,17 @@ test(
         );
 
         assert.ok(stdout.includes(`${databaseUrl}|mariadb`));
-        assert.match(
-            stdout,
-            /HOST=set, EXTERNAL_HOST=set, CONTACT_EMAIL=set, DATA_ENCRYPTION_KEY=set/,
-        );
     },
 );
 
 test(
-    "Docker entrypoint owns image paths and requires public settings",
+    "Docker entrypoint owns image paths without filtering deployment settings",
     bashTestOptions,
     async () => {
-        await assert.rejects(
-            execFileAsync(
-                bashPath,
-                ["docker/entrypoint.sh", process.execPath],
-                {
-                    env: {
-                        ...process.env,
-                        DB_TYPE: "postgresql",
-                        DATA_ENCRYPTION_KEY: "test-key",
-                        LOG_FILE: "/tmp/cognis-docker-profile-test.log",
-                    },
-                },
-            ),
-            (error) => {
-                assert.match(
-                    error.stdout,
-                    /HOST is absent or empty in the Cognis application process environment/,
-                );
-                return true;
-            },
-        );
-
         const environment = {
             ...process.env,
-            HOST: "cognis",
-            EXTERNAL_HOST: "https://cognis.example.com",
             CONTACT_EMAIL: "admin@example.com",
-            DATA_ENCRYPTION_KEY: "test-key",
-            DB_TYPE: "postgresql",
-            POSTGRES_HOST: "db",
-            POSTGRES_PORT: "5432",
-            POSTGRES_DB: "cognis",
-            POSTGRES_USER: "cognis",
-            POSTGRES_PASSWORD: "secret",
+            DATABASE_URL: "postgresql://cognis:secret@db:5432/cognis",
             COGNIS_MODULES_ROOT: "/overridden",
             LOG_FILE: "/tmp/cognis-docker-profile-test.log",
         };
@@ -313,11 +271,13 @@ test(
                 "docker/entrypoint.sh",
                 bashPath,
                 "-c",
-                'printf "%s" "$COGNIS_MODULES_ROOT"',
+                'printf "%s|%s" "$COGNIS_MODULES_ROOT" "$CONTACT_EMAIL"',
             ],
             { env: environment },
         );
-        assert.ok(stdout.includes("/app/dist/server/src/modules"));
+        assert.ok(
+            stdout.includes("/app/dist/server/src/modules|admin@example.com"),
+        );
     },
 );
 

@@ -2,8 +2,6 @@
 set -Eeuo pipefail
 
 LOG_FILE_PATH="${LOG_FILE:-/app/logs/app.log}"
-SHUTDOWN_TIMEOUT_SECONDS=25
-DEFAULT_DATA_ENCRYPTION_KEY="not-secure-change-me"
 
 # These paths are properties of the image layout, not deployment configuration.
 export COGNIS_MODULES_ROOT="/app/dist/server/src/modules"
@@ -25,53 +23,13 @@ app_log() {
   fi
 }
 
-shutdown() {
-  local signal="$1"
-
-  if [[ -z "${child_pid:-}" ]]; then
-    return 0
-  fi
-
-  app_log "info" "Entrypoint received ${signal}; forwarding signal to app process ${child_pid}."
-  kill -"${signal}" "${child_pid}" 2>/dev/null || true
-
-  local waited=0
-  while kill -0 "${child_pid}" 2>/dev/null; do
-    if (( waited >= SHUTDOWN_TIMEOUT_SECONDS )); then
-      app_log "warn" "Graceful shutdown timeout reached after ${SHUTDOWN_TIMEOUT_SECONDS}s; sending SIGKILL to app process ${child_pid}."
-      kill -KILL "${child_pid}" 2>/dev/null || true
-      break
-    fi
-
-    sleep 1
-    waited=$((waited + 1))
-  done
-}
-
-trap 'shutdown TERM' TERM
-trap 'shutdown INT' INT
-
 require_environment_value() {
   local variable_name="$1"
-  local environment_value
-  environment_value="$(printenv "${variable_name}" 2>/dev/null || true)"
 
-  if [[ -z "${environment_value}" ]]; then
-    app_log "error" "${variable_name} is absent or empty in the Cognis application process environment. Defining a Kubernetes ConfigMap does not inject it by itself; reference the ConfigMap from this container with envFrom or env.valueFrom. Compose users can run ./setup.sh from the repository root to generate env files."
+  if [[ -z "${!variable_name:-}" ]]; then
+    app_log "error" "${variable_name} is required to construct DATABASE_URL for DB_TYPE=${DB_TYPE:-unset}."
     exit 1
   fi
-}
-
-log_public_environment_presence() {
-  local variable_name environment_status presence_summary=""
-  for variable_name in HOST EXTERNAL_HOST CONTACT_EMAIL DATA_ENCRYPTION_KEY; do
-    environment_status="missing"
-    if [[ -n "$(printenv "${variable_name}" 2>/dev/null || true)" ]]; then
-      environment_status="set"
-    fi
-    presence_summary="${presence_summary}${presence_summary:+, }${variable_name}=${environment_status}"
-  done
-  app_log "info" "Application process environment visibility: ${presence_summary}. Values are not logged."
 }
 
 encode_url_component() {
@@ -79,11 +37,6 @@ encode_url_component() {
 }
 
 construct_database_url() {
-  require_environment_value HOST
-  require_environment_value EXTERNAL_HOST
-  require_environment_value CONTACT_EMAIL
-  require_environment_value DATA_ENCRYPTION_KEY
-
   if [[ -n "${DATABASE_URL:-}" ]]; then
     if [[ -z "${DB_TYPE:-}" ]]; then
       case "${DATABASE_URL}" in
@@ -128,18 +81,5 @@ construct_database_url() {
   esac
 }
 
-log_public_environment_presence
 construct_database_url
-
-if [[ "${DATA_ENCRYPTION_KEY:-}" == "${DEFAULT_DATA_ENCRYPTION_KEY}" ]]; then
-  app_log "warn" "DATA_ENCRYPTION_KEY is using the default insecure value. Set a unique key outside local development."
-fi
-
-"$@" &
-child_pid=$!
-
-set +e
-wait "${child_pid}"
-exit_code=$?
-app_log "info" "App process exited with status ${exit_code}."
-exit "${exit_code}"
+exec "$@"

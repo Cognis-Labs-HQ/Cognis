@@ -14,8 +14,6 @@ Nginx now resolves the Cognis application service through the container environm
 
 The web proxy takes the application service hostname from `HOST` instead of assuming that the service is named `cognis`. Namespace-qualified names containing periods, such as `cognis.cognis`, are supported to prevent an empty upstream pool in Kubernetes and other deployments that use scoped service names.
 
-## Kubernetes environment errors are clearer
+## Container startup stays deployment-neutral
 
-Container startup now reads required settings directly from the exported process environment and identifies the Cognis application container in missing-setting errors. Kubernetes deployments must set `CONTACT_EMAIL` on the application container; setting it only on the `cognis-web` sidecar does not share it between containers.
-
-Startup logs now report whether each required public setting is visible without exposing its value. Kubernetes guidance clarifies that creating a ConfigMap is not sufficient by itself: the application container must reference it through `envFrom` or `env.valueFrom`.
+The application entrypoint no longer pre-validates or filters public settings such as `CONTACT_EMAIL`. Environment variables pass directly to Cognis regardless of whether Docker Compose, Kubernetes, Podman, or another deployment system provides them. The entrypoint only derives `DATABASE_URL` when separate database fields are used, then replaces itself with the application process so Cognis owns validation and graceful shutdown.
