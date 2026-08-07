@@ -41,3 +41,7 @@ Image aplikasi dan CI kini menggunakan lini Node.js 24 LTS terbaru. Alat build, 
 ## Tanggung jawab login dibagi ke modul terfokus
 
 Penemuan integrasi login dan penyimpanan sesi terautentikasi kini berada dalam modul khusus milik halaman login. Entrypoint login tetap berada di bawah batas ukuran berkas sumber dengan perilaku sesi yang sama, disertai cakupan regresi langsung untuk menyimpan dan menghapus status autentikasi.
+
+## Pemeriksaan pengiriman pertama SMTP bersifat deterministik
+
+Pembatas laju SMTP kini memeriksa apakah penerima memiliki catatan pengiriman sebelum membaca waktu. Penerima baru tidak akan dibatasi hanya karena waktu sistem bergerak mundur di antara pembacaan, sehingga kegagalan CI Node.js 24 yang sporadis hilang tanpa mengubah jendela pembatasan untuk pengiriman yang tercatat.

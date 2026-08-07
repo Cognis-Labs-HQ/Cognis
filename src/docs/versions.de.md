@@ -32,7 +32,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.16` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.17` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.16` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.8`  |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.6`  |
@@ -41,7 +41,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.8`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.6`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.16` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.17` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.9`  |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.4`  |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.3`  |

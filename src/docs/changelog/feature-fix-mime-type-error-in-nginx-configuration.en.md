@@ -41,3 +41,7 @@ The application image and CI now use the latest Node.js 24 LTS release line. Bui
 ## Login responsibilities are split into focused modules
 
 Login integration discovery and authenticated-session storage now live in dedicated page-owned modules. The login entrypoint stays below the source-file size guardrail while retaining the same session behavior, with direct regression coverage for storing and clearing authentication state.
+
+## SMTP first-send checks are deterministic
+
+The SMTP rate limiter now checks whether a recipient has a recorded send before reading the clock. A new recipient is never throttled merely because the system clock moves backwards between reads, eliminating the intermittent Node.js 24 CI failure while preserving configured rate-limit windows for recorded sends.

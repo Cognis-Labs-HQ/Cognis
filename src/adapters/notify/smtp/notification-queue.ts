@@ -17,7 +17,11 @@ export class SmtpRateLimiter {
     }
 
     isThrottled(recipient: string): boolean {
-        return this.now() < this.nextAvailableAt(recipient);
+        const lastSentAt = this.lastSent.get(recipient);
+        return (
+            lastSentAt !== undefined &&
+            this.now() < lastSentAt + this.minIntervalMs
+        );
     }
 
     record(recipient: string, sentAt: number = this.now()): void {

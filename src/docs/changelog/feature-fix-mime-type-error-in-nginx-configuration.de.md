@@ -41,3 +41,7 @@ Anwendungs-Image und CI verwenden nun die aktuelle Node.js-24-LTS-Versionslinie.
 ## Anmeldeaufgaben sind auf fokussierte Module verteilt
 
 Die Ermittlung von Anmeldeintegrationen und die Speicherung authentifizierter Sitzungen liegen nun in eigenen, der Anmeldeseite zugeordneten Modulen. Der Einstieg der Anmeldeseite bleibt unter der Größenbegrenzung für Quelldateien und behält dasselbe Sitzungsverhalten bei; das Speichern und Löschen des Authentifizierungszustands wird direkt durch Regressionstests abgedeckt.
+
+## SMTP-Prüfungen beim ersten Versand sind deterministisch
+
+Der SMTP-Ratenbegrenzer prüft nun vor dem Lesen der Uhr, ob für einen Empfänger bereits ein Versand gespeichert ist. Ein neuer Empfänger wird nicht mehr fälschlich begrenzt, wenn sich die Systemzeit zwischen zwei Lesevorgängen rückwärts bewegt. Dadurch entfällt der sporadische CI-Fehler unter Node.js 24, während konfigurierte Begrenzungszeiträume für gespeicherte Versandvorgänge erhalten bleiben.

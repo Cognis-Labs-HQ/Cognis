@@ -7,6 +7,12 @@ test("SmtpRateLimiter allows first send", () => {
     assert.equal(limiter.isThrottled("test@example.com"), false);
 });
 
+test("SmtpRateLimiter allows first send when the clock moves backwards", () => {
+    let now = 2;
+    const limiter = new SmtpRateLimiter(60_000, () => now--);
+    assert.equal(limiter.isThrottled("test@example.com"), false);
+});
+
 test("SmtpRateLimiter throttles sends within the window", () => {
     let now = 1000;
     const limiter = new SmtpRateLimiter(60_000, () => now);
