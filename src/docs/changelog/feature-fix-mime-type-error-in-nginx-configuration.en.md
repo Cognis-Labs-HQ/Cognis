@@ -37,3 +37,7 @@ The container wrapper now starts the compiled Cognis CLI directly instead of loa
 ## Runtime and dependencies are current
 
 The application image and CI now use the latest Node.js 24 LTS release line. Build tooling, TypeScript, database clients, and the LDAP client have been updated to their latest stable releases, and Docker build commands suppress the deprecated npm `http-proxy` configuration warning. Every component version and internal tested-ceiling dependency has been advanced and synchronized across manifests, the lockfile, and translated version indexes.
+
+## Login responsibilities are split into focused modules
+
+Login integration discovery and authenticated-session storage now live in dedicated page-owned modules. The login entrypoint stays below the source-file size guardrail while retaining the same session behavior, with direct regression coverage for storing and clearing authentication state.

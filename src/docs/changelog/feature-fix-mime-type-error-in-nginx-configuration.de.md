@@ -37,3 +37,7 @@ Das Container-Skript startet nun direkt die kompilierte Cognis-CLI, statt ihren 
 ## Laufzeit und Abhängigkeiten sind aktuell
 
 Anwendungs-Image und CI verwenden nun die aktuelle Node.js-24-LTS-Versionslinie. Build-Werkzeuge, TypeScript, Datenbankclients und LDAP-Client wurden auf ihre neuesten stabilen Versionen aktualisiert; Docker-Buildbefehle unterdrücken außerdem die veraltete npm-Konfigurationswarnung zu `http-proxy`. Alle Komponentenversionen und internen Abhängigkeiten mit geprüfter Obergrenze wurden erhöht und zwischen Manifesten, Sperrdatei und übersetzten Versionsverzeichnissen synchronisiert.
+
+## Anmeldeaufgaben sind auf fokussierte Module verteilt
+
+Die Ermittlung von Anmeldeintegrationen und die Speicherung authentifizierter Sitzungen liegen nun in eigenen, der Anmeldeseite zugeordneten Modulen. Der Einstieg der Anmeldeseite bleibt unter der Größenbegrenzung für Quelldateien und behält dasselbe Sitzungsverhalten bei; das Speichern und Löschen des Authentifizierungszustands wird direkt durch Regressionstests abgedeckt.

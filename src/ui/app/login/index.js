@@ -16,6 +16,10 @@ import {
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
+import {
+    clearLoginSession,
+    persistLoginSession as persistSession,
+} from "./session.js";
 import "../../reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 
@@ -342,40 +346,6 @@ export async function mount(root) {
         }
     }
 
-    function persistSession(data) {
-        localStorage.setItem("cognis_access_token", data.token);
-        localStorage.setItem("cognis_account", data.accountId);
-        localStorage.setItem(
-            "cognis_display_name",
-            data.displayName || data.accountId,
-        );
-        localStorage.setItem("cognis_role", data.role || "user");
-        localStorage.setItem(
-            "cognis_provider_id",
-            data.providerId || data.provider || "local",
-        );
-        localStorage.setItem(
-            "cognis_is_founder",
-            data.isFounder ? "true" : "false",
-        );
-        localStorage.setItem("cognis_login_time", new Date().toISOString());
-        localStorage.setItem(
-            "cognis_user_validation_mode",
-            data.userValidationMode || "none",
-        );
-    }
-
-    function clearPersistedSession() {
-        localStorage.removeItem("cognis_access_token");
-        localStorage.removeItem("cognis_account");
-        localStorage.removeItem("cognis_display_name");
-        localStorage.removeItem("cognis_role");
-        localStorage.removeItem("cognis_provider_id");
-        localStorage.removeItem("cognis_is_founder");
-        localStorage.removeItem("cognis_login_time");
-        localStorage.removeItem("cognis_user_validation_mode");
-    }
-
     async function finalizeAuthenticatedSession(data, password = "") {
         persistSession(data);
         await uiCtx.runFlow("complete-login", {
@@ -394,7 +364,7 @@ export async function mount(root) {
                     i18n,
                 });
             } catch {
-                clearPersistedSession();
+                clearLoginSession();
                 return;
             }
         }

@@ -37,3 +37,7 @@ Skrip kontainer kini menjalankan CLI Cognis hasil kompilasi secara langsung alih
 ## Runtime dan dependensi telah diperbarui
 
 Image aplikasi dan CI kini menggunakan lini Node.js 24 LTS terbaru. Alat build, TypeScript, klien basis data, dan klien LDAP telah diperbarui ke rilis stabil terbaru, sedangkan perintah build Docker membisukan peringatan konfigurasi npm `http-proxy` yang usang. Semua versi komponen dan batas atas dependensi internal yang teruji telah dinaikkan serta diselaraskan pada manifest, lockfile, dan indeks versi terjemahan.
+
+## Tanggung jawab login dibagi ke modul terfokus
+
+Penemuan integrasi login dan penyimpanan sesi terautentikasi kini berada dalam modul khusus milik halaman login. Entrypoint login tetap berada di bawah batas ukuran berkas sumber dengan perilaku sesi yang sama, disertai cakupan regresi langsung untuk menyimpan dan menghapus status autentikasi.
