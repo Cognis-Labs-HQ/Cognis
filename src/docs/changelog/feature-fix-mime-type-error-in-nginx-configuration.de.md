@@ -21,3 +21,7 @@ Die nginx-Vorlage weist `/assets/` nun einen eigenen Präfix-Standort zu und lei
 ## Neutraler Containerstart
 
 Der Anwendungseinstieg stellt die strukturierte Protokollierung und die optionale Erzeugung von `DATABASE_URL` aus providerspezifischen Feldern wieder her, bevor Cognis ausgeführt wird. Sensible Werte wie `DATABASE_URL` und `DATA_ENCRYPTION_KEY` besitzen keine Image-Standardwerte mehr und müssen aus der Bereitstellungsumgebung stammen. Das Web-Profil verwendet nun das generische nginx-Image und dessen native Vorlage mit Umgebungsersetzung, statt ein Cognis-spezifisches nginx-Image zu bauen.
+
+## Produktions-Images enthalten Build-Werkzeuge nur beim Erstellen
+
+Das Anwendungs-Image installiert Entwicklungsabhängigkeiten ausdrücklich für seine Build-Phase. Dadurch sind Werkzeuge wie esbuild auch mit `NODE_ENV=production` verfügbar. Nach der Prüfung der kompilierten UI und des Servers werden ausschließlich für die Entwicklung benötigte Pakete entfernt und gelangen nicht in das Laufzeit-Image.

@@ -21,3 +21,7 @@ The nginx template now gives `/assets/` its own prefix location and proxies it w
 ## Container startup stays deployment-neutral
 
 The application entrypoint restores structured logging and optional `DATABASE_URL` compilation from provider-specific fields before executing Cognis. Sensitive values such as `DATABASE_URL` and `DATA_ENCRYPTION_KEY` no longer have image defaults and must come from the deployment environment. The web profile now uses the generic nginx image and its native environment-substituted configuration template instead of building a Cognis-specific nginx image.
+
+## Production images include build tools only while building
+
+The application image explicitly installs development dependencies for its build stage, ensuring tools such as esbuild are available even though `NODE_ENV` is `production`. Development-only packages are pruned after the compiled UI and server have been verified, keeping them out of the runtime image.

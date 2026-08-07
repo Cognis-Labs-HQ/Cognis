@@ -21,3 +21,7 @@ Templat nginx kini memberikan lokasi prefiks khusus untuk `/assets/` dan menerus
 ## Proses awal kontainer tetap netral
 
 Entrypoint aplikasi memulihkan pencatatan terstruktur dan penyusunan opsional `DATABASE_URL` dari field khusus penyedia sebelum menjalankan Cognis. Nilai sensitif seperti `DATABASE_URL` dan `DATA_ENCRYPTION_KEY` tidak lagi memiliki default image dan harus berasal dari lingkungan penerapan. Profil web kini menggunakan image nginx generik dan templat konfigurasi native dengan substitusi lingkungan alih-alih membangun image nginx khusus Cognis.
+
+## Image produksi hanya memuat alat build saat pembangunan
+
+Image aplikasi secara eksplisit memasang dependensi pengembangan untuk tahap build sehingga alat seperti esbuild tersedia meskipun `NODE_ENV` bernilai `production`. Paket khusus pengembangan dihapus setelah UI dan server hasil kompilasi diverifikasi sehingga paket tersebut tidak masuk ke image runtime.

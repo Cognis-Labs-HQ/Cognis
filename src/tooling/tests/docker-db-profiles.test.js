@@ -38,6 +38,8 @@ test("application image excludes sensitive environment defaults", async () => {
     assert.doesNotMatch(dockerfile, /\bDATABASE_URL=/);
     assert.doesNotMatch(dockerfile, /\bDATA_ENCRYPTION_KEY=/);
     assert.match(dockerfile, /\bCOGNIS_UI_DIST_ROOT=/);
+    assert.match(dockerfile, /npm ci --ignore-scripts --include=dev/);
+    assert.match(dockerfile, /npm prune --ignore-scripts --omit=dev/);
 });
 
 test(
