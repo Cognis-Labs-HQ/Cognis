@@ -25,7 +25,6 @@ for (const profile of ["postgres", "mariadb"]) {
             `docker-compose.${profile}.yaml`,
         );
 
-        assert.match(configuration, /\.\/docker\/env\/default\.env/);
         assert.match(
             configuration,
             /DATA_ENCRYPTION_KEY: \$\{DATA_ENCRYPTION_KEY:\?/,

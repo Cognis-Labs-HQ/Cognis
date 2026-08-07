@@ -22,8 +22,6 @@ services:
             context: .
             dockerfile: ./docker/Dockerfile
         image: cognis:prod
-        env_file:
-            - ./docker/env/default.env
         environment:
             DB_TYPE: postgresql
             POSTGRES_HOST: db
