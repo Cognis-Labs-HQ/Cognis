@@ -40,7 +40,12 @@ Runnable defaults remain in the application image, while database credentials an
 
 The web profile uses the unmodified `nginx:stable-alpine` image with `docker/cognis-web/default.conf.template` mounted into nginx's native template directory. It provides HTTP caching and proxy headers without a custom web image or entrypoint. Deployments that terminate TLS in nginx can mount their own native nginx TLS configuration; Kubernetes ingress controllers and external proxies can terminate TLS without changing the Cognis image.
 
+./setup.sh generates a private `docker/env/runtime.env` file containing strong database passwords and a data-encryption key. Run it once before starting Compose; an existing secrets file is never overwritten.
+
+Prepare deployment secrets before the first start:
+
 ```sh
+./setup.sh
 docker compose up --build
 ```
 

@@ -35,7 +35,12 @@ CMD ["node", "src/api/main.js"]
 
 Web プロファイルは未変更の `nginx:stable-alpine` イメージを使用し、`docker/cognis-web/default.conf.template` を nginx 標準のテンプレートディレクトリにマウントします。専用の Web イメージやエントリポイントなしで HTTP キャッシュとプロキシヘッダーを提供します。nginx で TLS を終端するデプロイは独自の標準 nginx TLS 設定をマウントでき、Kubernetes Ingress や外部プロキシも Cognis イメージを変更せずに TLS を終端できます。
 
+`./setup.sh` は、強力なデータベースパスワードとデータ暗号化キーを含む非公開の `docker/env/runtime.env` を生成します。Compose を初めて起動する前に一度実行してください。既存の秘密ファイルは上書きしません。
+
+初回起動前にデプロイ用の秘密情報を準備します。
+
 ```sh
+./setup.sh
 docker compose up --build
 ```
 

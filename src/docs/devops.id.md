@@ -35,7 +35,12 @@ Default yang dapat dijalankan tetap berada dalam image aplikasi, sedangkan krede
 
 Profil web menggunakan image `nginx:stable-alpine` tanpa modifikasi dengan `docker/cognis-web/default.conf.template` yang dipasang ke direktori templat native nginx. Caching HTTP dan header proksi tidak memerlukan image web atau entrypoint khusus. Penerapan yang menghentikan TLS di nginx dapat memasang konfigurasi TLS nginx native sendiri; ingress Kubernetes dan proksi eksternal dapat menghentikan TLS tanpa mengubah image Cognis.
 
+`./setup.sh` membuat file privat `docker/env/runtime.env` yang berisi kata sandi basis data kuat dan kunci enkripsi data. Jalankan sekali sebelum memulai Compose; file rahasia yang sudah ada tidak akan ditimpa.
+
+Siapkan rahasia penerapan sebelum proses pertama dijalankan:
+
 ```sh
+./setup.sh
 docker compose up --build
 ```
 

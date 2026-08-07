@@ -1,10 +1,11 @@
 services:
     db:
         image: postgres:17-alpine
+        env_file:
+            - ./docker/env/runtime.env
         environment:
             POSTGRES_DB: cognis
             POSTGRES_USER: cognis
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
         volumes:
             - pgdata:/var/lib/postgresql/data
         healthcheck:
@@ -22,14 +23,15 @@ services:
             context: .
             dockerfile: ./docker/Dockerfile
         image: cognis:prod
+        env_file:
+            - ./docker/env/default.env
+            - ./docker/env/runtime.env
         environment:
             DB_TYPE: postgresql
             POSTGRES_HOST: db
             POSTGRES_PORT: "5432"
             POSTGRES_DB: cognis
             POSTGRES_USER: cognis
-            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-            DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY}
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config
