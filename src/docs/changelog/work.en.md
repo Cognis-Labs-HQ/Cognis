@@ -7,3 +7,7 @@ The profile menu now opens on hover or click and stays visible until the user cl
 ## Status details wherever they are needed
 
 Hovering an avatar status light now reveals its status. Components can also query calendar-aware user availability through a ctx capability.
+
+## Status options no longer move the menu
+
+Opening the status selector now displays its choices to the left of the profile menu, keeping the profile actions below it in place.

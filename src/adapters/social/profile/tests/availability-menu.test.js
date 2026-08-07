@@ -34,3 +34,19 @@ test("availability menu uses borderless controls and hover outlines", () => {
         /\.availability-menu-option:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
     );
 });
+
+test("availability options open beside the profile menu", () => {
+    const styles = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.css"),
+        "utf8",
+    );
+
+    assert.match(
+        styles,
+        /\.availability-menu-options \{[\s\S]+position: absolute;[\s\S]+right: calc\(100% \+ 8px\);/,
+    );
+    assert.match(
+        styles,
+        /\.dropdown:has\(\.availability-menu-item\) \{[\s\S]+overflow: visible;/,
+    );
+});

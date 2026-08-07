@@ -7,3 +7,7 @@ Das Profilmenü öffnet sich jetzt beim Darüberfahren oder Anklicken und bleibt
 ## Statusdetails überall verfügbar
 
 Beim Darüberfahren über die Statusleuchte eines Avatars wird der Status angezeigt. Komponenten können die kalenderabhängige Verfügbarkeit eines Benutzers außerdem über eine ctx-Fähigkeit abfragen.
+
+## Statusoptionen verschieben das Menü nicht mehr
+
+Beim Öffnen der Statusauswahl erscheinen die Optionen jetzt links neben dem Profilmenü, sodass die darunterliegenden Profilaktionen an ihrer Position bleiben.
