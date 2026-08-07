@@ -75,6 +75,29 @@ test("profile store resolves handles case-insensitively", async () => {
     assert.equal(profile?.handle, "AliceUser");
 });
 
+test("profile stores persist manual availability overrides", async () => {
+    const stores = [
+        new VolatileProfileStore(),
+        new DbProfileStore(new InMemoryTestExecutor()),
+    ];
+
+    for (const store of stores) {
+        if (store instanceof DbProfileStore) await store.ensureSchema();
+        await store.createProfile("available-account", "available-user");
+
+        const busyProfile = await store.updateProfile("available-account", {
+            availabilityOverride: "busy",
+        });
+        assert.equal(busyProfile?.availabilityOverride, "busy");
+
+        const automaticProfile = await store.updateProfile(
+            "available-account",
+            { availabilityOverride: null },
+        );
+        assert.equal(automaticProfile?.availabilityOverride, null);
+    }
+});
+
 test("profile store search can require a follow relationship", async () => {
     const databaseExecutor = new InMemoryTestExecutor();
     const store = new DbProfileStore(databaseExecutor);

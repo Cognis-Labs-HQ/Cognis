@@ -671,4 +671,10 @@
   <string name="ui.reuse.core">Kern</string>
   <string name="ui.app.users.external_password_managed">Passwörter externer Benutzer werden von ihrem Authentifizierungsanbieter verwaltet.</string>
   <string name="ui.app.admin.db_managed_by_docker">Von Docker verwaltet</string>
+  <string name="ui.reuse.availability">Verfügbarkeit</string>
+  <string name="ui.reuse.availability_override_description">Wählen Sie einen manuellen Verfügbarkeitsstatus oder lassen Sie ihn automatisch durch Kalenderereignisse festlegen.</string>
+  <string name="ui.reuse.availability_available">Verfügbar</string>
+  <string name="ui.reuse.availability_busy">Beschäftigt</string>
+  <string name="ui.reuse.availability_tentative">Vorläufig</string>
+  <string name="ui.reuse.availability_automatic">Automatisch</string>
 </resources>

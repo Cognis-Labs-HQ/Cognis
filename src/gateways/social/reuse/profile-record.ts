@@ -19,6 +19,7 @@ export interface SocialProfileRecord {
     bannerKey: string | null;
     visibility: SocialProfileVisibility;
     lifecycleState: SocialProfileLifecycleState;
+    availabilityOverride: "available" | "busy" | "tentative" | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -41,6 +42,12 @@ export function rowToProfile(row: any): SocialProfileRecord {
                 : row.account_lifecycle_state === "deactivated"
                   ? "deactivated"
                   : "active",
+        availabilityOverride:
+            row.availability_override === "busy" ||
+            row.availability_override === "tentative" ||
+            row.availability_override === "available"
+                ? row.availability_override
+                : null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
     };

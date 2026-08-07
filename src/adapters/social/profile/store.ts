@@ -59,6 +59,10 @@ const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
     },
     { col: "account_profiles.created_at", as: "created_at" },
     { col: "account_profiles.updated_at", as: "updated_at" },
+    {
+        col: "account_profiles.availability_override",
+        as: "availability_override",
+    },
 ];
 
 const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
@@ -86,6 +90,7 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
                 notNull: true,
                 default: "active",
             },
+            { name: "availability_override", type: "text" },
             {
                 name: "created_at",
                 type: "timestamp",
@@ -394,6 +399,7 @@ export class DbProfileStore implements ProfileCreateStore {
                 | "bannerKey"
                 | "displayName"
                 | "lifecycleState"
+                | "availabilityOverride"
             >
         >,
     ): Promise<AccountProfile | null> {
@@ -406,6 +412,7 @@ export class DbProfileStore implements ProfileCreateStore {
             bannerKey: "banner_key",
             displayName: "display_name",
             lifecycleState: "account_lifecycle_state",
+            availabilityOverride: "availability_override",
         };
 
         const setRecord: Record<string, unknown> = {};

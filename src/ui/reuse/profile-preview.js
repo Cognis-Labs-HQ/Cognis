@@ -132,7 +132,7 @@ async function showPreview(link) {
 
     preview.innerHTML = `
         <div class="profile-mini-preview__header">
-            <div class="profile-mini-preview__avatar">${renderAvatar(profile, avatarUrl)}</div>
+            <div class="profile-mini-preview__avatar">${renderAvatar(profile, avatarUrl)}<span class="profile-availability" data-availability="${escapeHtml(profile.availability ?? "available")}" aria-hidden="true"></span></div>
             <div class="profile-mini-preview__identity">
                 <strong>${escapeHtml(name)}</strong>
                 <span>@${escapeHtml(handleText)}</span>

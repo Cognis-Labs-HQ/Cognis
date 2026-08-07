@@ -671,4 +671,10 @@
   <string name="ui.reuse.core">コア</string>
   <string name="ui.app.users.external_password_managed">外部ユーザーのパスワードは認証プロバイダーによって管理されます。</string>
   <string name="ui.app.admin.db_managed_by_docker">Dockerによって管理</string>
+  <string name="ui.reuse.availability">空き状況</string>
+  <string name="ui.reuse.availability_override_description">空き状況を手動で選ぶか、カレンダーの予定に合わせて自動的に設定します。</string>
+  <string name="ui.reuse.availability_available">対応可能</string>
+  <string name="ui.reuse.availability_busy">予定あり</string>
+  <string name="ui.reuse.availability_tentative">仮予定</string>
+  <string name="ui.reuse.availability_automatic">自動</string>
 </resources>

@@ -269,12 +269,14 @@ export async function updateNavbarAvatar() {
 
     let profileAvailable = false;
     let avatarBlobUrl = null;
+    let availability = "available";
 
     if (_avatarProvider) {
         try {
             const result = await _avatarProvider();
             profileAvailable = result?.profileAvailable ?? false;
             avatarBlobUrl = result?.avatarBlobUrl ?? null;
+            availability = result?.availability ?? "available";
         } catch {
             profileAvailable = false;
         }
@@ -283,6 +285,22 @@ export async function updateNavbarAvatar() {
     if (profileLink) {
         profileLink.closest("li")?.toggleAttribute("hidden", !profileAvailable);
     }
+
+    let statusButton = document.querySelector(".avatar-status");
+    if (!statusButton) {
+        statusButton = document.createElement("button");
+        statusButton.type = "button";
+        statusButton.className = "avatar-status";
+        statusButton.addEventListener("click", (event) => {
+            event.stopPropagation();
+            window.dispatchEvent(
+                new CustomEvent("cognis:availability-override-request"),
+            );
+        });
+        avatarBtn.parentElement?.appendChild(statusButton);
+    }
+    statusButton.dataset.availability = availability;
+    statusButton.setAttribute("aria-label", availability);
 
     if (avatarBlobUrl) {
         const img = document.createElement("img");

@@ -379,6 +379,14 @@ export async function bootstrapSocialAdapter(
             ctx.log,
             onMessagesProfileChanged ?? undefined,
             routeContext,
+            async (accountId) => {
+                const resolver = ctx.capabilities.get<
+                    (
+                        targetAccountId: string,
+                    ) => Promise<"available" | "busy" | "tentative" | null>
+                >("calendar:resolveAvailability");
+                return resolver ? resolver(accountId) : null;
+            },
         ),
         "social",
     );

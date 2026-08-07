@@ -825,6 +825,38 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("calendar:listEvents", (calendarId: string) =>
         gateway.listEvents(calendarId),
     );
+    ctx.capabilities.contribute(
+        "calendar:resolveAvailability",
+        (accountId: string): "available" | "busy" | "tentative" | null => {
+            const now = Date.now();
+            const activeEvents = gateway
+                .listUpcomingEvents(accountId, undefined, new Date(now))
+                .filter(
+                    (event) =>
+                        new Date(event.startAt).getTime() <= now &&
+                        new Date(event.endAt).getTime() >= now,
+                );
+            if (activeEvents.some((event) => event.status === "busy")) {
+                const hasConfirmedBusyEvent = activeEvents.some(
+                    (event) =>
+                        event.status === "busy" &&
+                        gateway.getEventResponse(event.id, accountId) !==
+                            "tentative",
+                );
+                if (hasConfirmedBusyEvent) return "busy";
+            }
+            if (
+                activeEvents.some(
+                    (event) =>
+                        gateway.getEventResponse(event.id, accountId) ===
+                        "tentative",
+                )
+            ) {
+                return "tentative";
+            }
+            return activeEvents.length > 0 ? "available" : null;
+        },
+    );
     ctx.capabilities.contribute("calendar:exportIcs", (calendarId: string) =>
         gateway.exportCalendarAsIcs(calendarId),
     );

@@ -208,11 +208,15 @@ export function buildProfileAvatarMarkup({
           )}`
         : "";
     if (profileLink) {
-        const classes = [avatarClass, linkClass].filter(Boolean).join(" ");
+        const classes = [avatarClass, linkClass, "profile-avatar-with-status"]
+            .filter(Boolean)
+            .join(" ");
         return (
             `<a class="${escapeHtml(classes)}"` +
+            ` data-availability-handle="${escapeHtml(String(profileHandle).replace(/^@/, ""))}"` +
             ` href="${escapeHtml(profileLink)}"` +
-            ` aria-label="${escapeHtml(label)}">${avatarContent}</a>`
+            ` aria-label="${escapeHtml(label)}">${avatarContent}` +
+            `<span class="profile-availability" aria-hidden="true"></span></a>`
         );
     }
     return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
@@ -243,6 +247,24 @@ export async function hydrateProfileAvatars(container) {
             }
             if (!placeholder.isConnected) return;
             replaceAvatarPlaceholder(placeholder, blobUrl);
+        }),
+    );
+    const availabilityLinks = Array.from(
+        container.querySelectorAll("[data-availability-handle]"),
+    );
+    await Promise.all(
+        availabilityLinks.map(async (link) => {
+            const handle = link.dataset.availabilityHandle;
+            if (!handle) return;
+            const response = await apiFetch(
+                `/api/v1/social/users/${encodeURIComponent(handle)}/profile`,
+            ).catch(() => null);
+            if (!response?.ok || !link.isConnected) return;
+            const payload = await response.json();
+            link.querySelector(".profile-availability")?.setAttribute(
+                "data-availability",
+                payload?.data?.availability ?? "available",
+            );
         }),
     );
 }

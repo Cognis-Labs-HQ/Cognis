@@ -324,6 +324,38 @@
 .profile-menu {
     position: relative;
 }
+.avatar-status,
+.profile-availability {
+    background: var(--availability-color, #3ca66b);
+    border: 2px solid var(--surface-1);
+    border-radius: 999px;
+    box-sizing: border-box;
+    display: block;
+    height: 12px;
+    width: 12px;
+}
+.avatar-status {
+    bottom: -1px;
+    cursor: pointer;
+    padding: 0;
+    position: absolute;
+    right: -1px;
+    z-index: 2;
+}
+[data-availability="busy"] {
+    --availability-color: #d84a4a;
+}
+[data-availability="tentative"] {
+    --availability-color: #d99b22;
+}
+.profile-avatar-with-status {
+    position: relative;
+}
+.profile-avatar-with-status > .profile-availability {
+    bottom: 0;
+    position: absolute;
+    right: 0;
+}
 .avatar-button {
     border-radius: 999px;
     width: 38px;
@@ -655,6 +687,14 @@ button.dropdown-item {
     border-radius: 999px;
     overflow: hidden;
     flex: 0 0 auto;
+}
+.profile-mini-preview__avatar {
+    position: relative;
+}
+.profile-mini-preview__avatar > .profile-availability {
+    bottom: 0;
+    position: absolute;
+    right: 0;
 }
 .profile-mini-preview__avatar-img,
 .profile-mini-preview__avatar-initials {

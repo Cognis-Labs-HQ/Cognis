@@ -671,4 +671,10 @@
   <string name="ui.reuse.core">Inti</string>
   <string name="ui.app.users.external_password_managed">Kata sandi pengguna eksternal dikelola oleh penyedia autentikasi mereka.</string>
   <string name="ui.app.admin.db_managed_by_docker">Dikelola oleh Docker</string>
+  <string name="ui.reuse.availability">Ketersediaan</string>
+  <string name="ui.reuse.availability_override_description">Pilih status ketersediaan manual, atau biarkan acara kalender mengaturnya secara otomatis.</string>
+  <string name="ui.reuse.availability_available">Tersedia</string>
+  <string name="ui.reuse.availability_busy">Sibuk</string>
+  <string name="ui.reuse.availability_tentative">Sementara</string>
+  <string name="ui.reuse.availability_automatic">Otomatis</string>
 </resources>

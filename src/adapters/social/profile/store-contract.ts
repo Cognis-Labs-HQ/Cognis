@@ -18,6 +18,7 @@ export type AccountRole = "user" | "teacher" | "moderator" | "admin" | "owner";
 export type AccountVisibility = "hidden" | "private" | "friends" | "community";
 export type PostVisibility = "only_me" | "private" | "friends" | "community";
 export type AccountLifecycleState = "active" | "deactivated" | "archived";
+export type AvailabilityStatus = "available" | "busy" | "tentative";
 
 export interface AccountProfile {
     accountId: string;
@@ -31,6 +32,7 @@ export interface AccountProfile {
     bannerKey: string | null;
     visibility: AccountVisibility;
     lifecycleState: AccountLifecycleState;
+    availabilityOverride: AvailabilityStatus | null;
     createdAt: string;
     updatedAt: string;
 }
@@ -82,6 +84,7 @@ export interface ProfileStore extends ProfileCreateStore {
                 | "bannerKey"
                 | "displayName"
                 | "lifecycleState"
+                | "availabilityOverride"
             >
         >,
     ): Promise<AccountProfile | null>;
@@ -148,6 +151,7 @@ export class VolatileProfileStore implements ProfileStore {
             bannerKey: null,
             visibility: "friends",
             lifecycleState: "active",
+            availabilityOverride: null,
             createdAt: now,
             updatedAt: now,
         };
@@ -191,6 +195,7 @@ export class VolatileProfileStore implements ProfileStore {
                 | "bannerKey"
                 | "displayName"
                 | "lifecycleState"
+                | "availabilityOverride"
             >
         >,
     ): Promise<AccountProfile | null> {

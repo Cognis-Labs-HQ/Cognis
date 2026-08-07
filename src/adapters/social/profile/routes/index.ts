@@ -10,6 +10,7 @@ import type {
     AccountProfile,
     AccountVisibility,
     AccountRole,
+    AvailabilityStatus,
 } from "../store-contract.js";
 import { readRawBody, readJson } from "../../../../api/reuse/read-json.js";
 import {
@@ -23,6 +24,11 @@ const VALID_VISIBILITY = new Set<AccountVisibility>([
     "private",
     "friends",
     "community",
+]);
+const VALID_AVAILABILITY = new Set<AvailabilityStatus>([
+    "available",
+    "busy",
+    "tentative",
 ]);
 
 const AVATAR_ALLOWED_MIME = new Set([
@@ -46,6 +52,7 @@ function profileResponse(
     followerCount: number | null,
     followingCount: number | null,
     postCount: number | null,
+    calendarAvailability: AvailabilityStatus | null = null,
 ) {
     return {
         accountId: profile.accountId,
@@ -59,6 +66,9 @@ function profileResponse(
         bannerKey: profile.bannerKey,
         visibility: profile.visibility,
         lifecycleState: profile.lifecycleState,
+        availability:
+            calendarAvailability ?? profile.availabilityOverride ?? "available",
+        availabilityOverride: profile.availabilityOverride,
         followerCount,
         followingCount,
         postCount,
@@ -150,6 +160,9 @@ export function createProfileRoutes(
         avatarChanged?: boolean;
     }) => Promise<void>,
     routeContext?: RouteContext,
+    resolveCalendarAvailability?: (
+        accountId: string,
+    ) => Promise<AvailabilityStatus | null> | AvailabilityStatus | null,
 ) {
     const ctx = resolveRouteContext(routeContext);
     const flowApi = ctx.flow;
@@ -229,6 +242,9 @@ export function createProfileRoutes(
                 profileStore.getFollowingCount(profile.accountId),
                 profileStore.getPostsByAccount(profile.accountId),
             ]);
+            const calendarAvailability =
+                (await resolveCalendarAvailability?.(profile.accountId)) ??
+                null;
             log?.("debug", "Read own profile.", {
                 ...logMeta,
                 targetAccountId: profile.accountId,
@@ -241,6 +257,7 @@ export function createProfileRoutes(
                         followerCount,
                         followingCount,
                         posts.length,
+                        calendarAvailability,
                     ),
                 }),
             );
@@ -309,6 +326,30 @@ export function createProfileRoutes(
                     return true;
                 }
                 updates.visibility = visibility as AccountVisibility;
+            }
+            if ("availabilityOverride" in body) {
+                const availabilityOverride = body.availabilityOverride;
+                if (
+                    availabilityOverride !== null &&
+                    !VALID_AVAILABILITY.has(
+                        String(availabilityOverride) as AvailabilityStatus,
+                    )
+                ) {
+                    res.writeHead(400, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "bad_request",
+                                message: "Invalid availability override",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+                updates.availabilityOverride =
+                    availabilityOverride === null
+                        ? null
+                        : (String(availabilityOverride) as AvailabilityStatus);
             }
             const updated = await profileStore.updateProfile(
                 claims!.sub,
@@ -953,6 +994,9 @@ export function createProfileRoutes(
                               followerCount,
                               followingCount,
                               posts.length,
+                              (await resolveCalendarAvailability?.(
+                                  target.accountId,
+                              )) ?? null,
                           )
                         : minimalProfileResponse(target),
                 }),

@@ -50,8 +50,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.7`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.6`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.4`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.28` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.32` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.2.0`  |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.33` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.10` |
 | User Share            | `src/adapters/share/user/`          | `1.1.11` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.8`  |
@@ -73,7 +73,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/` | `1.1.12` |
 | Logging               | `src/gateways/logging/`      | `1.5.3`  |
 | Study                 | `src/gateways/study/`        | `1.5.9`  |
-| Calendar              | `src/gateways/calendar/`     | `1.4.47` |
+| Calendar              | `src/gateways/calendar/`     | `1.5.0`  |
 
 ## Core contracts
 
@@ -92,7 +92,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.4`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.54` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.30` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.55` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.31` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.6`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.4`  |
