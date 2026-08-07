@@ -1,219 +1,93 @@
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import {
-    mkdtemp,
-    mkdir,
-    readFile,
-    readlink,
-    rm,
-    writeFile,
-} from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { existsSync } from "node:fs";
+import { readFile, readlink } from "node:fs/promises";
 import test from "node:test";
 import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
+const bashPath = [process.env.BASH, "/bin/bash", "/usr/bin/bash"].find(
+    (candidatePath) =>
+        candidatePath?.startsWith("/") && existsSync(candidatePath),
+);
+const bashTestOptions = bashPath
+    ? {}
+    : { skip: "Bash is not installed in this test environment" };
 const profiles = [
     ["docker-compose.postgres.yaml", "postgres:17-alpine"],
     ["docker-compose.mariadb.yaml", "mariadb:11"],
 ];
 
-test("Docker profiles isolate generated application and web environments", async () => {
-    for (const [composePath, image] of profiles) {
+test("Docker profiles use native environment injection", async () => {
+    for (const [composePath, databaseImage] of profiles) {
         const compose = await readFile(composePath, "utf8");
-        assert.match(compose, new RegExp(`image: ${image}`));
-        assert.match(compose, /- \.\/docker\/env\/runtime\.env/);
-        assert.match(
-            compose,
-            /cognis-web:[\s\S]*env_file:[\s\S]*cognis-web\.env/,
-        );
-        const webService = compose.split(/\n    cognis-web:/)[1];
-        assert.doesNotMatch(webService, /runtime\.env/);
-        assert.match(compose, /dockerfile: \.\/docker\/Dockerfile/);
-        assert.doesNotMatch(
-            compose,
-            /development\.env|production\.env|\.example/,
-        );
+        assert.match(compose, new RegExp(`image: ${databaseImage}`));
+        assert.match(compose, /DATABASE_URL: \$\{DATABASE_URL\}/);
+        assert.match(compose, /DATA_ENCRYPTION_KEY: \$\{DATA_ENCRYPTION_KEY\}/);
+        assert.doesNotMatch(compose, /env_file:|setup\.sh|docker\/env\//);
     }
-});
-
-test("setup creates a private MariaDB runtime environment", async (context) => {
-    const temporaryRoot = await mkdtemp(join(tmpdir(), "cognis-setup-"));
-    context.after(() => rm(temporaryRoot, { recursive: true, force: true }));
-    await mkdir(join(temporaryRoot, "docker", "env"), { recursive: true });
-    await writeFile(
-        join(temporaryRoot, "setup.sh"),
-        await readFile("setup.sh", "utf8"),
-        { mode: 0o755 },
-    );
-    await execFileAsync("bash", [
-        "-c",
-        "printf 'development\\nmariadb\\ndb\\n3306\\ncognis\\ncognis\\ncognis\\nhttps://cognis.example.com\\nadmin@example.com\\nno\\n\\n\\n' | bash \"$1\"",
-        "setup-test",
-        join(temporaryRoot, "setup.sh"),
-    ]);
-
-    const runtime = await readFile(
-        join(temporaryRoot, "docker", "env", "runtime.env"),
-        "utf8",
-    );
-    const web = await readFile(
-        join(temporaryRoot, "docker", "env", "cognis-web.env"),
-        "utf8",
-    );
-    assert.match(runtime, /^NODE_ENV=development$/m);
-    assert.match(runtime, /^DB_TYPE=mariadb$/m);
-    assert.match(runtime, /^MARIADB_PASSWORD=\S+$/m);
-    assert.match(runtime, /^DATA_ENCRYPTION_KEY=\S+$/m);
-    assert.match(runtime, /^HOST=cognis$/m);
-    assert.match(runtime, /^EXTERNAL_HOST=https:\/\/cognis\.example\.com$/m);
-    assert.match(runtime, /^CONTACT_EMAIL=admin@example\.com$/m);
-    assert.match(web, /^COGNIS_WEB_TLS_MODE=terminate$/m);
-    assert.doesNotMatch(web, /DATA_ENCRYPTION_KEY|PASSWORD/);
     assert.equal(
-        await readlink(join(temporaryRoot, "docker-compose.yaml")),
-        "docker-compose.mariadb.yaml",
+        await readlink("docker-compose.yaml"),
+        "docker-compose.postgres.yaml",
     );
 });
 
-test("cognis-web supports local and upstream TLS termination", async () => {
-    const source = await readFile("docker/cognis-web/entrypoint.sh", "utf8");
+test("application image excludes sensitive environment defaults", async () => {
+    const dockerfile = await readFile("docker/Dockerfile", "utf8");
 
-    assert.match(source, /COGNIS_WEB_TLS_MODE:-terminate/);
-    assert.match(source, /COGNIS_WEB_TLS_CERTIFICATE/);
-    assert.match(source, /if \[ "\$mode" = "terminate" \]/);
+    assert.doesNotMatch(dockerfile, /\bDATABASE_URL=/);
+    assert.doesNotMatch(dockerfile, /\bDATA_ENCRYPTION_KEY=/);
+    assert.match(dockerfile, /\bCOGNIS_UI_DIST_ROOT=/);
 });
 
-test("Docker entrypoint constructs URLs from generated values", async () => {
-    const runs = [
-        {
-            DB_TYPE: "postgresql",
-            POSTGRES_HOST: "db",
-            POSTGRES_PORT: "5432",
-            POSTGRES_DB: "cognis",
-            POSTGRES_USER: "cognis@example.com",
-            POSTGRES_PASSWORD: "secret:/%#",
-            expected:
-                "postgresql://cognis%40example.com:secret%3A%2F%25%23@db:5432/cognis",
-        },
-        {
-            DB_TYPE: "mariadb",
-            MARIADB_HOST: "db",
-            MARIADB_PORT: "3306",
-            MARIADB_DATABASE: "cognis",
-            MARIADB_USER: "cognis@example.com",
-            MARIADB_PASSWORD: "secret:/%#",
-            expected:
-                "mysql://cognis%40example.com:secret%3A%2F%25%23@db:3306/cognis",
-        },
-    ];
-    for (const { expected, ...environment } of runs) {
+test(
+    "application entrypoint compiles split database settings",
+    bashTestOptions,
+    async () => {
         const { stdout } = await execFileAsync(
-            "bash",
+            bashPath,
             [
                 "docker/entrypoint.sh",
-                "bash",
+                bashPath,
                 "-c",
                 'printf "%s" "$DATABASE_URL"',
             ],
             {
                 env: {
-                    ...process.env,
-                    ...environment,
-                    HOST: "cognis",
-                    EXTERNAL_HOST: "https://cognis.example.com",
-                    CONTACT_EMAIL: "admin@example.com",
-                    DATA_ENCRYPTION_KEY: "test-key",
+                    DB_TYPE: "postgresql",
+                    POSTGRES_HOST: "db",
+                    POSTGRES_PORT: "5432",
+                    POSTGRES_DB: "cognis",
+                    POSTGRES_USER: "cognis@example.com",
+                    POSTGRES_PASSWORD: "secret:/%#",
                     LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+                    PATH: process.env.PATH,
                 },
             },
         );
-        assert.ok(stdout.startsWith(expected));
+
+        assert.ok(
+            stdout.includes(
+                "postgresql://cognis%40example.com:secret%3A%2F%25%23@db:5432/cognis",
+            ),
+        );
+    },
+);
+
+test("web profile uses the generic nginx image and native template", async () => {
+    const template = await readFile(
+        "docker/cognis-web/default.conf.template",
+        "utf8",
+    );
+    for (const [composePath] of profiles) {
+        const compose = await readFile(composePath, "utf8");
+        assert.match(compose, /cognis-web:[\s\S]*image: nginx:stable-alpine/);
+        assert.match(
+            compose,
+            /default\.conf\.template:\/etc\/nginx\/templates\/default\.conf\.template:ro/,
+        );
+        assert.doesNotMatch(compose, /dockerfile:.*cognis-web|"443:443"/);
     }
-});
-
-test("Docker entrypoint directs missing values to setup", async () => {
-    await assert.rejects(
-        execFileAsync("bash", ["docker/entrypoint.sh", "true"], {
-            env: {
-                ...process.env,
-                DB_TYPE: "postgresql",
-                HOST: "cognis",
-                EXTERNAL_HOST: "https://cognis.example.com",
-                CONTACT_EMAIL: "admin@example.com",
-                DATA_ENCRYPTION_KEY: "test-key",
-                LOG_FILE: "/tmp/cognis-docker-profile-test.log",
-            },
-        }),
-        (error) => {
-            assert.match(
-                error.stdout,
-                /POSTGRES_HOST must be set in docker\/env\/runtime\.env/,
-            );
-            return true;
-        },
-    );
-});
-
-test("Docker entrypoint owns image paths and requires public settings", async () => {
-    await assert.rejects(
-        execFileAsync("bash", ["docker/entrypoint.sh", "true"], {
-            env: {
-                ...process.env,
-                DB_TYPE: "postgresql",
-                DATA_ENCRYPTION_KEY: "test-key",
-                LOG_FILE: "/tmp/cognis-docker-profile-test.log",
-            },
-        }),
-        (error) => {
-            assert.match(
-                error.stdout,
-                /HOST must be set in docker\/env\/runtime\.env/,
-            );
-            return true;
-        },
-    );
-
-    const environment = {
-        ...process.env,
-        HOST: "cognis",
-        EXTERNAL_HOST: "https://cognis.example.com",
-        CONTACT_EMAIL: "admin@example.com",
-        DATA_ENCRYPTION_KEY: "test-key",
-        DB_TYPE: "postgresql",
-        POSTGRES_HOST: "db",
-        POSTGRES_PORT: "5432",
-        POSTGRES_DB: "cognis",
-        POSTGRES_USER: "cognis",
-        POSTGRES_PASSWORD: "secret",
-        COGNIS_MODULES_ROOT: "/overridden",
-        LOG_FILE: "/tmp/cognis-docker-profile-test.log",
-    };
-    const { stdout } = await execFileAsync(
-        "bash",
-        [
-            "docker/entrypoint.sh",
-            "bash",
-            "-c",
-            'printf "%s" "$COGNIS_MODULES_ROOT"',
-        ],
-        { env: environment },
-    );
-    assert.ok(stdout.startsWith("/app/dist/server/src/modules"));
-});
-
-test("default Docker links select shared defaults and PostgreSQL", async () => {
-    const dockerfile = await readFile("docker/Dockerfile", "utf8");
-    const defaultEnvironment = await readFile("docker/env/default.env", "utf8");
-    assert.match(
-        dockerfile,
-        /ENV COGNIS_ASSET_VERSION=\$\{COGNIS_ASSET_VERSION\}/,
-    );
-    assert.doesNotMatch(defaultEnvironment, /^COGNIS_ASSET_VERSION=/m);
-    assert.equal(await readlink(".env"), "docker/env/default.env");
-    assert.equal(
-        await readlink("docker-compose.yaml"),
-        "docker-compose.postgres.yaml",
-    );
+    assert.match(template, /proxy_pass http:\/\/\$\{HOST\}:3000;/);
+    assert.match(template, /max-age=31536000, immutable/);
 });

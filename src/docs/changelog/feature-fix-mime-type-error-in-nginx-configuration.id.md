@@ -8,6 +8,12 @@ Proksi web dan API kini mencegah respons JavaScript dan CSS beridentitas versi y
 
 Penyusun halaman kini menyediakan perender elemennya ke setiap jalur tata letak sehingga halaman masuk tidak lagi gagal dengan galat `renderElementContent is not defined` sebelum gaya dan kontennya selesai dimuat.
 
-## Proses awal kontainer stabil dipulihkan
+## Proksi web mengurai nama layanan lingkungan
 
-Alur Docker yang telah terbukti dipulihkan: `setup.sh` membuat file lingkungan aplikasi dan web yang terpisah, entrypoint Cognis memvalidasi konfigurasi, menyusun `DATABASE_URL`, mencatat peristiwa siklus hidup, dan meneruskan sinyal penghentian. Image `cognis-web` tetap tersedia sebagai batas cache dan TLS terpisah tanpa mengubah kontrak awal aplikasi yang telah mapan.
+Nginx kini mengurai layanan aplikasi Cognis melalui penguraian nama host standar lingkungan kontainer. Cara ini mendukung domain pencarian dan pemetaan host yang sama dengan alat lain di Docker, Kubernetes, Podman, dan platform kontainer lainnya, sehingga mencegah galat `no live upstreams` ketika nama host berfungsi di tempat lain dalam kontainer web.
+
+Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap layanan selalu bernama `cognis`. Nama berkualifikasi namespace yang mengandung titik, seperti `cognis.cognis`, didukung untuk mencegah kumpulan upstream kosong pada Kubernetes dan penerapan lain yang menggunakan nama layanan tercakup.
+
+## Proses awal kontainer tetap netral
+
+Entrypoint aplikasi memulihkan pencatatan terstruktur dan penyusunan opsional `DATABASE_URL` dari field khusus penyedia sebelum menjalankan Cognis. Nilai sensitif seperti `DATABASE_URL` dan `DATA_ENCRYPTION_KEY` tidak lagi memiliki default image dan harus berasal dari lingkungan penerapan. Profil web kini menggunakan image nginx generik dan templat konfigurasi native dengan substitusi lingkungan alih-alih membangun image nginx khusus Cognis.

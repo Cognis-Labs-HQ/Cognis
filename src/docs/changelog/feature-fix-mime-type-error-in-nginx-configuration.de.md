@@ -8,6 +8,12 @@ Web-Proxy und API verhindern nun, dass Antworten für fehlende versionierte Java
 
 Der Seiten-Composer stellt seinen Element-Renderer nun für jeden Layout-Pfad bereit. Dadurch schlägt die Anmeldeseite nicht mehr mit dem Fehler `renderElementContent is not defined` fehl, bevor ihre Stile und Inhalte vollständig geladen sind.
 
-## Stabiler Containerstart wiederhergestellt
+## Web-Proxy löst Laufzeit-Dienstnamen auf
 
-Der bewährte Docker-Ablauf ist wiederhergestellt: `setup.sh` erzeugt getrennte Umgebungsdateien für Anwendung und Web, der Cognis-Einstieg prüft die Konfiguration, erzeugt `DATABASE_URL`, protokolliert Lebenszyklusereignisse und leitet Beendigungssignale weiter. Das Image `cognis-web` bleibt als getrennte Cache- und TLS-Grenze verfügbar, ohne den etablierten Anwendungsstart zu verändern.
+Nginx löst den Cognis-Anwendungsdienst nun über die standardmäßige Hostnamenauflösung der Container-Umgebung auf. Dadurch werden dieselben Suchdomänen und Hostzuordnungen wie bei anderen Werkzeugen in Docker, Kubernetes, Podman und weiteren Container-Plattformen verwendet. Fehler mit `no live upstreams` werden vermieden, wenn der Hostname an anderer Stelle im Web-Container funktioniert.
+
+Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt den Dienstnamen `cognis` vorauszusetzen. Namespace-qualifizierte Namen mit Punkten wie `cognis.cognis` werden unterstützt, damit der Upstream-Pool in Kubernetes und anderen Bereitstellungen mit abgegrenzten Dienstnamen verfügbar bleibt.
+
+## Neutraler Containerstart
+
+Der Anwendungseinstieg stellt die strukturierte Protokollierung und die optionale Erzeugung von `DATABASE_URL` aus providerspezifischen Feldern wieder her, bevor Cognis ausgeführt wird. Sensible Werte wie `DATABASE_URL` und `DATA_ENCRYPTION_KEY` besitzen keine Image-Standardwerte mehr und müssen aus der Bereitstellungsumgebung stammen. Das Web-Profil verwendet nun das generische nginx-Image und dessen native Vorlage mit Umgebungsersetzung, statt ein Cognis-spezifisches nginx-Image zu bauen.

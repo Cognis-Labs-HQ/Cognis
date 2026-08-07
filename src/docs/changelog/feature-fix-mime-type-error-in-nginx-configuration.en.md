@@ -8,6 +8,12 @@ The web proxy and API now prevent missing fingerprinted JavaScript and CSS respo
 
 The page composer now supplies its element renderer to every layout path, preventing the login page from failing with a `renderElementContent is not defined` error before its styles and content finish loading.
 
-## Stable container startup is restored
+## The web proxy resolves runtime service names
 
-The proven Docker workflow is restored: `setup.sh` generates isolated application and web environment files, the Cognis entrypoint validates configuration, compiles `DATABASE_URL`, logs lifecycle events, and forwards shutdown signals. The `cognis-web` image remains available as a separate cache and TLS boundary without changing the established application startup contract.
+Nginx now resolves the Cognis application service through the container environment's standard hostname resolution. This supports the same search domains and host mappings used by other tools in Docker, Kubernetes, Podman, and other container platforms, avoiding `no live upstreams` errors when the hostname works elsewhere in the web container.
+
+The web proxy takes the application service hostname from `HOST` instead of assuming that the service is named `cognis`. Namespace-qualified names containing periods, such as `cognis.cognis`, are supported to prevent an empty upstream pool in Kubernetes and other deployments that use scoped service names.
+
+## Container startup stays deployment-neutral
+
+The application entrypoint restores structured logging and optional `DATABASE_URL` compilation from provider-specific fields before executing Cognis. Sensitive values such as `DATABASE_URL` and `DATA_ENCRYPTION_KEY` no longer have image defaults and must come from the deployment environment. The web profile now uses the generic nginx image and its native environment-substituted configuration template instead of building a Cognis-specific nginx image.
