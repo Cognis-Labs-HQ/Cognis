@@ -7,4 +7,7 @@
   <string name="ui.app.profile.archived_banner">Dieses Profil ist archiviert. Interaktionen mit diesem Benutzer sind deaktiviert.</string>
   <string name="ui.app.profile.message_start_failed">Konversation konnte nicht gestartet werden.</string>
   <string name="ui.app.profile.message_request_sent">Nachrichtenanfrage gesendet.</string>
+  <string name="ui.app.profile.availability.free">Frei</string>
+  <string name="ui.app.profile.availability.busy">Beschäftigt</string>
+  <string name="ui.app.profile.availability.tentative">Vorläufig</string>
 </resources>

@@ -133,8 +133,6 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
     });
 }
 
-const PROFILE_MENU_CLOSE_DELAY_MS = 300;
-
 function bindTopbarActions() {
     const toggle = document.querySelector("#profile-toggle");
     const dropdown = document.querySelector("#profile-dropdown");
@@ -186,33 +184,26 @@ function bindTopbarActions() {
         }
     })();
 
-    let closeTimeout = null;
-
     const openMenu = () => {
-        if (closeTimeout) {
-            clearTimeout(closeTimeout);
-            closeTimeout = null;
-        }
         dropdown?.classList.remove("hidden");
         profileMenu?.classList.add("open");
+        toggle?.setAttribute("aria-expanded", "true");
     };
 
     const closeMenu = () => {
-        closeTimeout = setTimeout(() => {
-            dropdown?.classList.add("hidden");
-            profileMenu?.classList.remove("open");
-            closeTimeout = null;
-        }, PROFILE_MENU_CLOSE_DELAY_MS);
+        dropdown?.classList.add("hidden");
+        profileMenu?.classList.remove("open");
+        toggle?.setAttribute("aria-expanded", "false");
     };
 
+    toggle?.setAttribute("aria-expanded", "false");
     toggle?.addEventListener("mouseenter", openMenu);
-    profileMenu?.addEventListener("mouseleave", closeMenu);
-
-    document.addEventListener("click", (event) => {
-        if (!profileMenu?.contains(event.target)) closeMenu();
+    toggle?.addEventListener("click", (event) => {
+        event.stopPropagation();
+        openMenu();
     });
 
-    document.addEventListener("focusin", (event) => {
+    document.addEventListener("click", (event) => {
         if (!profileMenu?.contains(event.target)) closeMenu();
     });
 

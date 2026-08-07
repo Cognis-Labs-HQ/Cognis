@@ -1,5 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerAvatarProvider } from "/static/layouts/dashboard-layout.js";
+import { applyStaticTranslations, createI18n } from "/static/reuse/i18n.js";
 import { fetchProfileAvatarBlobUrl } from "./profile-avatar.js";
 import { registerSearchIndexing } from "./search/index.js";
 import {
@@ -9,29 +10,62 @@ import {
     STATUS_OPTIONS,
 } from "./availability.js";
 
+const availabilityStylesheet = document.createElement("link");
+availabilityStylesheet.rel = "stylesheet";
+availabilityStylesheet.href =
+    "/static/adapters/social/profile/availability.css";
+document.head.append(availabilityStylesheet);
+
 async function mountAvailabilityControl() {
     const button = document.querySelector(".avatar-button");
-    if (!button || button.querySelector(".availability-indicator")) return;
-    button.insertAdjacentHTML("beforeend", availabilityIndicatorMarkup(""));
-    const indicator = button.querySelector(".availability-indicator");
-    const availability = await fetchAvailability();
-    if (availability?.status) {
-        indicator.dataset.availabilityStatus = availability.status;
+    const dropdown = document.querySelector("#profile-dropdown");
+    if (!button || !dropdown) return;
+
+    if (!button.querySelector(".availability-indicator")) {
+        button.insertAdjacentHTML("beforeend", availabilityIndicatorMarkup(""));
     }
-    indicator.addEventListener("click", async (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        const currentIndex = STATUS_OPTIONS.indexOf(
-            indicator.dataset.availabilityStatus,
-        );
-        const nextStatus =
-            STATUS_OPTIONS[(currentIndex + 1) % STATUS_OPTIONS.length];
-        if (await setManualAvailability(nextStatus)) {
+    const indicator = button.querySelector(".availability-indicator");
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
+    });
+    const statusItem = document.createElement("li");
+    statusItem.className = "availability-menu-item";
+    statusItem.innerHTML = `
+        <label class="availability-menu-label" for="availability-status">
+            <span data-i18n="ui.reuse.status"></span>:
+            <select id="availability-status" class="availability-menu-select">
+                ${STATUS_OPTIONS.map(
+                    (status) =>
+                        `<option value="${status}" data-i18n="ui.app.profile.availability.${status}"></option>`,
+                ).join("")}
+            </select>
+        </label>`;
+    dropdown.prepend(statusItem);
+    applyStaticTranslations(i18n, statusItem);
+
+    const select = statusItem.querySelector("#availability-status");
+    const availability = await fetchAvailability();
+    const status = availability?.status ?? "free";
+    select.value = status;
+    updateAvailabilityIndicator(indicator, status, i18n);
+
+    select.addEventListener("change", async () => {
+        const selectedStatus = select.value;
+        if (await setManualAvailability(selectedStatus)) {
             const updatedAvailability = await fetchAvailability();
-            indicator.dataset.availabilityStatus =
-                updatedAvailability?.status ?? nextStatus;
+            const resolvedStatus =
+                updatedAvailability?.status ?? selectedStatus;
+            select.value = resolvedStatus;
+            updateAvailabilityIndicator(indicator, resolvedStatus, i18n);
         }
     });
+}
+
+function updateAvailabilityIndicator(indicator, status, i18n) {
+    const label = i18n.t(`ui.app.profile.availability.${status}`);
+    indicator.dataset.availabilityStatus = status;
+    indicator.title = label;
+    indicator.setAttribute("aria-label", label);
 }
 
 registerAvatarProvider(async function profileAvatarProvider() {

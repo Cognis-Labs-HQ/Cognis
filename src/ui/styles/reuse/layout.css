@@ -657,27 +657,6 @@ button.dropdown-item {
     position: relative;
     flex: 0 0 auto;
 }
-.availability-indicator {
-    position: absolute;
-    right: -1px;
-    bottom: -1px;
-    width: 12px;
-    height: 12px;
-    border: 2px solid var(--surface, var(--background));
-    border-radius: 999px;
-    background: #2eaf62;
-    box-sizing: border-box;
-    z-index: 2;
-}
-.availability-avatar {
-    position: relative;
-}
-.availability-indicator[data-availability-status="busy"] {
-    background: #d94b4b;
-}
-.availability-indicator[data-availability-status="tentative"] {
-    background: #e6a52f;
-}
 .profile-mini-preview__avatar-img,
 .profile-mini-preview__avatar-initials {
     display: flex;

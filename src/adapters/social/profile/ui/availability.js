@@ -1,6 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { createI18n } from "/static/reuse/i18n.js";
 
 const availabilityCache = new Map();
 const STATUS_OPTIONS = ["free", "busy", "tentative"];
@@ -26,6 +27,9 @@ export function availabilityIndicatorMarkup(handle, label = "") {
 }
 
 export async function hydrateAvailabilityIndicators(container = document) {
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
+    });
     const indicators = Array.from(
         container.querySelectorAll("[data-availability-handle]"),
     );
@@ -35,7 +39,12 @@ export async function hydrateAvailabilityIndicators(container = document) {
                 indicator.dataset.availabilityHandle,
             );
             if (availability?.status) {
+                const label = i18n.t(
+                    `ui.app.profile.availability.${availability.status}`,
+                );
                 indicator.dataset.availabilityStatus = availability.status;
+                indicator.title = label;
+                indicator.setAttribute("aria-label", label);
             }
         }),
     );

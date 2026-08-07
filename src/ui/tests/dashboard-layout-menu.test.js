@@ -160,3 +160,20 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
         "dashboard layout should unhide the existing theme toggle when the page enables it",
     );
 });
+
+test("profile dropdown opens on hover or click and closes only on click away", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(layoutSource, /addEventListener\("mouseenter", openMenu\)/);
+    assert.match(layoutSource, /addEventListener\("click", \(event\) => \{/);
+    assert.doesNotMatch(
+        layoutSource,
+        /addEventListener\("mouseleave", closeMenu\)/,
+    );
+    assert.match(
+        layoutSource,
+        /if \(!profileMenu\?\.contains\(event.target\)\) closeMenu\(\)/,
+    );
+});

@@ -12,6 +12,7 @@ import { createFileLimitRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import {
     createAvailabilityRoutes,
+    readManualStatus,
     type AvailabilityStatus,
 } from "./routes/availability.js";
 import type { AccountLifecycleState, AccountRole } from "./store.js";
@@ -234,6 +235,28 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    ctx.capabilities.contribute(
+        "social:getUserAvailability",
+        async (accountId: string) => {
+            const profile = await profileStore.getProfile(accountId);
+            if (!profile) return null;
+            const calendarResolver = ctx.capabilities.get<
+                (targetAccountId: string) => Promise<AvailabilityStatus | null>
+            >("calendar:getCurrentAvailability");
+            const calendarStatus = calendarResolver
+                ? await calendarResolver(accountId)
+                : null;
+            const manualStatus = readManualStatus(
+                await prefStore.get(accountId, "availability"),
+            );
+            return {
+                handle: profile.handle,
+                status: calendarStatus ?? manualStatus,
+                manualStatus,
+                source: calendarStatus ? "calendar" : "manual",
+            };
+        },
+    );
     /**
      * social:profileLifecycle — profile-owned lifecycle boundary for account
      * archive/deactivate/reactivate transitions consumed by auth and admin

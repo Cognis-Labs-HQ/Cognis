@@ -16,7 +16,7 @@ const VALID_STATUSES = new Set<AvailabilityStatus>([
     "tentative",
 ]);
 
-function readManualStatus(value: string | null): AvailabilityStatus {
+export function readManualStatus(value: string | null): AvailabilityStatus {
     if (!value) return "free";
     try {
         const status = JSON.parse(value)?.status;
