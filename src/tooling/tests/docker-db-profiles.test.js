@@ -196,7 +196,7 @@ test(
                     },
                 },
             );
-            assert.ok(stdout.startsWith(expected));
+            assert.ok(stdout.includes(expected));
         }
     },
 );
@@ -224,7 +224,7 @@ test(
             (error) => {
                 assert.match(
                     error.stdout,
-                    /POSTGRES_HOST must be set and non-empty on the Cognis application container/,
+                    /POSTGRES_HOST is absent or empty in the Cognis application process environment/,
                 );
                 return true;
             },
@@ -258,7 +258,11 @@ test(
             },
         );
 
-        assert.ok(stdout.startsWith(`${databaseUrl}|mariadb`));
+        assert.ok(stdout.includes(`${databaseUrl}|mariadb`));
+        assert.match(
+            stdout,
+            /HOST=set, EXTERNAL_HOST=set, CONTACT_EMAIL=set, DATA_ENCRYPTION_KEY=set/,
+        );
     },
 );
 
@@ -282,7 +286,7 @@ test(
             (error) => {
                 assert.match(
                     error.stdout,
-                    /HOST must be set and non-empty on the Cognis application container/,
+                    /HOST is absent or empty in the Cognis application process environment/,
                 );
                 return true;
             },
@@ -313,7 +317,7 @@ test(
             ],
             { env: environment },
         );
-        assert.ok(stdout.startsWith("/app/dist/server/src/modules"));
+        assert.ok(stdout.includes("/app/dist/server/src/modules"));
     },
 );
 

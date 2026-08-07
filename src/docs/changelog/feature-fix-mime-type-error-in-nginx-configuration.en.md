@@ -17,3 +17,5 @@ The web proxy takes the application service hostname from `HOST` instead of assu
 ## Kubernetes environment errors are clearer
 
 Container startup now reads required settings directly from the exported process environment and identifies the Cognis application container in missing-setting errors. Kubernetes deployments must set `CONTACT_EMAIL` on the application container; setting it only on the `cognis-web` sidecar does not share it between containers.
+
+Startup logs now report whether each required public setting is visible without exposing its value. Kubernetes guidance clarifies that creating a ConfigMap is not sufficient by itself: the application container must reference it through `envFrom` or `env.valueFrom`.

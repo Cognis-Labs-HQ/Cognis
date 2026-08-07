@@ -57,9 +57,21 @@ require_environment_value() {
   environment_value="$(printenv "${variable_name}" 2>/dev/null || true)"
 
   if [[ -z "${environment_value}" ]]; then
-    app_log "error" "${variable_name} must be set and non-empty on the Cognis application container. Setting it only on the cognis-web container does not pass it to the application process. Compose users can run ./setup.sh from the repository root to generate env files."
+    app_log "error" "${variable_name} is absent or empty in the Cognis application process environment. Defining a Kubernetes ConfigMap does not inject it by itself; reference the ConfigMap from this container with envFrom or env.valueFrom. Compose users can run ./setup.sh from the repository root to generate env files."
     exit 1
   fi
+}
+
+log_public_environment_presence() {
+  local variable_name environment_status presence_summary=""
+  for variable_name in HOST EXTERNAL_HOST CONTACT_EMAIL DATA_ENCRYPTION_KEY; do
+    environment_status="missing"
+    if [[ -n "$(printenv "${variable_name}" 2>/dev/null || true)" ]]; then
+      environment_status="set"
+    fi
+    presence_summary="${presence_summary}${presence_summary:+, }${variable_name}=${environment_status}"
+  done
+  app_log "info" "Application process environment visibility: ${presence_summary}. Values are not logged."
 }
 
 encode_url_component() {
@@ -116,6 +128,7 @@ construct_database_url() {
   esac
 }
 
+log_public_environment_presence
 construct_database_url
 
 if [[ "${DATA_ENCRYPTION_KEY:-}" == "${DEFAULT_DATA_ENCRYPTION_KEY}" ]]; then

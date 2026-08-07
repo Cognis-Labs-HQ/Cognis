@@ -17,3 +17,5 @@ Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt 
 ## Klarere Kubernetes-Umgebungsfehler
 
 Beim Containerstart werden erforderliche Einstellungen nun direkt aus der exportierten Prozessumgebung gelesen, und Fehlermeldungen zu fehlenden Einstellungen nennen ausdrücklich den Cognis-Anwendungscontainer. Kubernetes-Bereitstellungen müssen `CONTACT_EMAIL` am Anwendungscontainer setzen; eine Einstellung nur im Sidecar `cognis-web` wird nicht zwischen Containern geteilt.
+
+Startprotokolle zeigen nun ohne Offenlegung der Werte an, ob jede erforderliche öffentliche Einstellung sichtbar ist. Die Kubernetes-Hinweise verdeutlichen, dass das Erstellen einer ConfigMap allein nicht genügt: Der Anwendungscontainer muss sie über `envFrom` oder `env.valueFrom` referenzieren.

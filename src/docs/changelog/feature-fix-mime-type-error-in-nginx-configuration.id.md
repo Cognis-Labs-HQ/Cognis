@@ -17,3 +17,5 @@ Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap
 ## Galat lingkungan Kubernetes lebih jelas
 
 Proses awal kontainer kini membaca pengaturan wajib langsung dari lingkungan proses yang diekspor dan menyebutkan kontainer aplikasi Cognis dalam galat pengaturan yang hilang. Penerapan Kubernetes harus menetapkan `CONTACT_EMAIL` pada kontainer aplikasi; menetapkannya hanya pada sidecar `cognis-web` tidak membagikannya antar kontainer.
+
+Log awal kini melaporkan apakah setiap pengaturan publik wajib terlihat tanpa mengungkap nilainya. Panduan Kubernetes memperjelas bahwa membuat ConfigMap saja tidak cukup: kontainer aplikasi harus merujuknya melalui `envFrom` atau `env.valueFrom`.
