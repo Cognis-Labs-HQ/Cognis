@@ -189,7 +189,7 @@ export function createFormBuilder(ctx, options) {
 
         const inputMarkup =
             type === "select"
-                ? `<select id="${escapeHtml(inputId)}" name="${escapeHtml(fieldName)}" class="form-builder-input"${attributes.join("")}>
+                ? `<select id="${escapeHtml(inputId)}" name="${escapeHtml(fieldName)}" class="form-builder-input theme-select"${attributes.join("")}>
             ${(Array.isArray(fieldConfig.options) ? fieldConfig.options : [])
                 .map((optionConfig) => {
                     const optionValue = String(optionConfig?.value ?? "");

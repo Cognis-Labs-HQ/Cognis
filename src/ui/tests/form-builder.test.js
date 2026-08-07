@@ -21,6 +21,29 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /aria-hidden="true"/);
 });
 
+test("form builder applies theme styling to every select control", () => {
+    const builder = createFormBuilder(
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => String(value),
+        },
+        {
+            formId: "theme-form",
+            submitLabelKey: "submit",
+            fields: [
+                {
+                    name: "visibility",
+                    labelKey: "visibility",
+                    type: "select",
+                    options: [{ value: "friends", label: "Friends" }],
+                },
+            ],
+        },
+    );
+
+    assert.match(builder.render(), /class="form-builder-input theme-select"/);
+});
+
 test("adapter config form updates required title markers when requirements change", () => {
     const source = read("src/ui/app/administration/adapter-config-popup.js");
     const styles = read("src/ui/styles/reuse/page-sections.css");
