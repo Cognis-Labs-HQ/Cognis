@@ -12,4 +12,4 @@ The page composer now supplies its element renderer to every layout path, preven
 
 Nginx now discovers the active container runtime's DNS resolver and uses it to refresh the Cognis application address. Public requests no longer remain connected to a replaced application container, whether Cognis runs with Docker, Kubernetes, Podman, or another container platform.
 
-The web proxy takes the application service hostname from `HOST` instead of assuming that the service is named `cognis`, preventing an empty upstream pool in deployments that use a different service name.
+The web proxy takes the application service hostname from `HOST` instead of assuming that the service is named `cognis`. Namespace-qualified names containing periods, such as `cognis.cognis`, are supported to prevent an empty upstream pool in Kubernetes and other deployments that use scoped service names.

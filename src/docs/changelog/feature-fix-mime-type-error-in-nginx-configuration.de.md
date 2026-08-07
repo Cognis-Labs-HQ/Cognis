@@ -12,4 +12,4 @@ Der Seiten-Composer stellt seinen Element-Renderer nun für jeden Layout-Pfad be
 
 Nginx erkennt nun den DNS-Resolver der aktiven Container-Laufzeit und aktualisiert damit die Adresse der Cognis-Anwendung. Öffentliche Anfragen bleiben nicht mehr mit einem ersetzten Anwendungscontainer verbunden, unabhängig davon, ob Cognis mit Docker, Kubernetes, Podman oder einer anderen Container-Plattform ausgeführt wird.
 
-Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt den Dienstnamen `cognis` vorauszusetzen. Dadurch bleibt der Upstream-Pool bei Bereitstellungen mit einem anderen Dienstnamen verfügbar.
+Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt den Dienstnamen `cognis` vorauszusetzen. Namespace-qualifizierte Namen mit Punkten wie `cognis.cognis` werden unterstützt, damit der Upstream-Pool in Kubernetes und anderen Bereitstellungen mit abgegrenzten Dienstnamen verfügbar bleibt.

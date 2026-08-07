@@ -59,7 +59,7 @@ test(
         );
         await execFileAsync(bashPath, [
             "-c",
-            `printf 'development\\nmariadb\\ndb\\n3306\\ncognis\\ncognis\\ncognis\\nhttps://cognis.example.com\\nadmin@example.com\\nno\\n\\n\\n' | "${bashPath}" "$1"`,
+            `printf 'development\\nmariadb\\ndb\\n3306\\ncognis\\ncognis\\ncognis.cognis\\nhttps://cognis.example.com\\nadmin@example.com\\nno\\n\\n\\n' | "${bashPath}" "$1"`,
             "setup-test",
             join(temporaryRoot, "setup.sh"),
         ]);
@@ -76,7 +76,7 @@ test(
         assert.match(runtime, /^DB_TYPE=mariadb$/m);
         assert.match(runtime, /^MARIADB_PASSWORD=\S+$/m);
         assert.match(runtime, /^DATA_ENCRYPTION_KEY=\S+$/m);
-        assert.match(runtime, /^HOST=cognis$/m);
+        assert.match(runtime, /^HOST=cognis\.cognis$/m);
         assert.match(
             runtime,
             /^EXTERNAL_HOST=https:\/\/cognis\.example\.com$/m,
@@ -84,7 +84,7 @@ test(
         assert.match(runtime, /^CONTACT_EMAIL=admin@example\.com$/m);
         assert.doesNotMatch(runtime, /^COGNIS_WEB_/m);
         assert.match(web, /^COGNIS_WEB_TLS_MODE=terminate$/m);
-        assert.match(web, /^HOST=cognis$/m);
+        assert.match(web, /^HOST=cognis\.cognis$/m);
         assert.match(
             web,
             /^COGNIS_WEB_TLS_CERTIFICATE=\/etc\/nginx\/tls\/fullchain\.pem$/m,
@@ -141,6 +141,7 @@ test("web proxy refreshes the application container address", async () => {
     assert.match(entrypointSource, /00-resolver\.conf/);
     assert.doesNotMatch(entrypointSource, /127\.0\.0\.11/);
     assert.match(entrypointSource, /upstream_host="\$\{HOST:-\}"/);
+    assert.match(entrypointSource, /\[!A-Za-z0-9\._:-\]/);
     assert.match(entrypointSource, /server %s:3000 resolve;/);
     assert.match(entrypointSource, /"\$resolver_address" "\$upstream_host"/);
     assert.doesNotMatch(nginxSource, /server cognis:3000/);

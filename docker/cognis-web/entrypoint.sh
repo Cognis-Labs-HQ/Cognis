@@ -12,7 +12,7 @@ esac
 upstream_host="${HOST:-}"
 case "$upstream_host" in
   ""|*[!A-Za-z0-9._:-]*)
-    echo "HOST must contain a valid application service hostname or address." >&2
+    echo "HOST must contain a valid application service hostname, including any namespace, or an address." >&2
     exit 1
     ;;
   *:*) upstream_host="[$upstream_host]" ;;
