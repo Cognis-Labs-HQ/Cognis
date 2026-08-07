@@ -172,6 +172,8 @@
   <string name="ui.app.settings.preferences_acknowledgement_error">Could not remember your acknowledgement. Editing remains locked.</string>
 
   <string name="ui.app.docs.page_subtitle">Developer documentation.</string>
+  <string name="ui.app.docs.version.label">Document versions</string>
+  <string name="ui.app.docs.version.latest">Latest</string>
   <string name="ui.app.docs.group.platform">Platform</string>
   <string name="ui.app.docs.group.gateways">Gateways</string>
   <string name="ui.app.docs.group.adapters_auth">Auth Adapters</string>

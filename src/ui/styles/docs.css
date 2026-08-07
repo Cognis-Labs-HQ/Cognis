@@ -15,6 +15,39 @@
     text-align: left;
 }
 
+.docs-version-bar {
+    display: flex;
+    gap: 8px;
+    margin: 0 28px 8px;
+    padding: 4px 0 10px;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--border, var(--color-border));
+    scrollbar-width: thin;
+}
+
+.docs-version-link {
+    flex: 0 0 auto;
+    padding: 6px 12px;
+    border: 1px solid var(--border, var(--color-border));
+    border-radius: 999px;
+    color: var(--text-muted, var(--color-text-muted));
+    font-size: 0.875rem;
+    font-weight: 650;
+    text-decoration: none;
+}
+
+.docs-version-link:hover,
+.docs-version-link:focus-visible,
+.docs-version-link.active {
+    border-color: var(--accent, var(--color-accent));
+    background: color-mix(
+        in srgb,
+        var(--accent, var(--color-accent)) 12%,
+        transparent
+    );
+    color: var(--accent, var(--color-accent));
+}
+
 .changelog-content-panel > ul {
     display: grid;
     gap: 12px;

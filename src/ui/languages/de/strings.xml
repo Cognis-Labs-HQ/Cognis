@@ -172,6 +172,8 @@
   <string name="ui.app.settings.preferences_acknowledgement_error">Deine Bestätigung konnte nicht gespeichert werden. Die Bearbeitung bleibt gesperrt.</string>
 
   <string name="ui.app.docs.page_subtitle">Entwicklerdokumentation.</string>
+  <string name="ui.app.docs.version.label">Dokumentversionen</string>
+  <string name="ui.app.docs.version.latest">Neueste</string>
   <string name="ui.app.docs.group.platform">Plattform</string>
   <string name="ui.app.docs.group.gateways">Gateways</string>
   <string name="ui.app.docs.group.adapters_auth">Auth-Adapter</string>

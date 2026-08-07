@@ -132,8 +132,37 @@ function normalizeDocSlug(href) {
         .replace(/^\//, "")
         .replace(/^docs\/?/, "")
         .replace(/^api\/v1\/docs\/?/, "")
+        .replace(/^(?:latest|\d+\.\d+\.\d+)\//, "")
         .replace(/\.[a-z]{2}(?:-[a-z]{2})?\.md$/i, "")
         .replace(/\.md$/i, "");
+}
+
+function docsRoute(version, slug) {
+    return `/docs/${version}/${slug}`;
+}
+
+function parseDocsPath(pathname) {
+    const segments = pathname.replace(/^\/docs\/?/, "").split("/");
+    const hasVersion =
+        segments[0] === "latest" || /^\d+\.\d+\.\d+$/.test(segments[0]);
+    return {
+        version: hasVersion ? segments.shift() : "latest",
+        slug: segments.join("/"),
+    };
+}
+
+function renderVersionBar(i18n, item, selectedVersion) {
+    if (!item) return "";
+    const versions = ["latest", ...(item.versions ?? [])];
+    const links = versions.map((version) => {
+        const label =
+            version === "latest"
+                ? i18n.t("ui.app.docs.version.latest")
+                : `v${version}`;
+        const active = version === selectedVersion;
+        return `<a class="docs-version-link${active ? " active" : ""}" href="${docsRoute(version, item.slug)}" data-doc-version="${version}"${active ? ' aria-current="page"' : ""}>${label}</a>`;
+    });
+    return `<nav class="docs-version-bar" aria-label="${i18n.t("ui.app.docs.version.label")}">${links.join("")}</nav>`;
 }
 
 function isChangelogDoc(item) {
@@ -185,19 +214,25 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "ui.page.title.docs");
 
     let activeHtml = null;
+    let activeVersionBar = "";
     const docsSearchContent = new Map();
 
     function renderActiveDoc() {
         const docEl = root.querySelector("#doc");
         if (!docEl || activeHtml === null) return;
-        docEl.innerHTML = activeHtml;
+        docEl.innerHTML = `${activeVersionBar}${activeHtml}`;
     }
 
-    async function showDoc(slug, { pushHistory = true, signal } = {}) {
+    async function showDoc(
+        slug,
+        { pushHistory = true, signal, version = "latest" } = {},
+    ) {
         const langs = readPreferredLanguages().join(",");
+        const item = navigationDocs.find((doc) => doc.slug === slug);
+        if (!item) return;
         try {
             activeHtml = await loadMarkdownDocumentHtml(
-                `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
+                `/api/v1/docs/${version}/${slug}?langs=${encodeURIComponent(langs)}`,
             );
         } catch {
             return;
@@ -205,13 +240,22 @@ export async function mount(root, { signal } = {}) {
         // If the page was navigated away from while the fetch was in flight,
         // bail out before touching the DOM or history (fall through to nothing).
         if (signal?.aborted) return;
+        activeVersionBar = renderVersionBar(i18n, item, version);
         docsSearchContent.set(slug, htmlToSearchText(activeHtml));
         renderActiveDoc();
 
         if (pushHistory) {
-            window.history.pushState({ slug }, "", `/docs/${slug}`);
+            window.history.pushState(
+                { slug, version },
+                "",
+                docsRoute(version, slug),
+            );
         } else {
-            window.history.replaceState({ slug }, "", `/docs/${slug}`);
+            window.history.replaceState(
+                { slug, version },
+                "",
+                docsRoute(version, slug),
+            );
         }
 
         root.querySelectorAll("[data-slug]").forEach((button) => {
@@ -298,6 +342,19 @@ export async function mount(root, { signal } = {}) {
                 return;
             }
 
+            if (link.matches("[data-doc-version]")) {
+                event.preventDefault();
+                await showDoc(
+                    link.closest("#doc") ? normalizeDocSlug(href) : "",
+                    {
+                        pushHistory: true,
+                        signal,
+                        version: link.dataset.docVersion,
+                    },
+                );
+                return;
+            }
+
             const slug = normalizeDocSlug(href);
             if (!slug) return;
             if (isChangelogSlug(slug)) {
@@ -317,24 +374,33 @@ export async function mount(root, { signal } = {}) {
         (event) => {
             const slug = event.state?.slug;
             if (slug) {
-                showDoc(slug, { pushHistory: false });
+                showDoc(slug, {
+                    pushHistory: false,
+                    version: event.state?.version ?? "latest",
+                });
             } else {
-                const subpath = window.location.pathname.replace(
-                    /^\/docs\/?/,
-                    "",
-                );
-                const fallback = resolveDefaultSlug(subpath, navigationDocs);
-                if (fallback) showDoc(fallback, { pushHistory: false });
+                const route = parseDocsPath(window.location.pathname);
+                const fallback = resolveDefaultSlug(route.slug, navigationDocs);
+                if (fallback) {
+                    showDoc(fallback, {
+                        pushHistory: false,
+                        version: route.version,
+                    });
+                }
             }
         },
         { signal },
     );
 
-    const defaultDoc = (() => {
-        const subpath = window.location.pathname.replace(/^\/docs\/?/, "");
-        return resolveDefaultSlug(subpath, navigationDocs);
-    })();
-    if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });
+    const initialRoute = parseDocsPath(window.location.pathname);
+    const subpath = initialRoute.slug;
+    const defaultDoc = resolveDefaultSlug(subpath, navigationDocs);
+    if (defaultDoc) {
+        await showDoc(defaultDoc, {
+            pushHistory: false,
+            version: initialRoute.version,
+        });
+    }
 }
 
 await mountWhenDirect(mount);

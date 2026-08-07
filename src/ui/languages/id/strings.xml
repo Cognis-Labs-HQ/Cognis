@@ -172,6 +172,8 @@
   <string name="ui.app.settings.preferences_acknowledgement_error">Persetujuan Anda tidak dapat disimpan. Penyuntingan tetap terkunci.</string>
 
   <string name="ui.app.docs.page_subtitle">Dokumentasi pengembang.</string>
+  <string name="ui.app.docs.version.label">Versi dokumen</string>
+  <string name="ui.app.docs.version.latest">Terbaru</string>
   <string name="ui.app.docs.group.platform">Platform</string>
   <string name="ui.app.docs.group.gateways">Gateway</string>
   <string name="ui.app.docs.group.adapters_auth">Adapter Autentikasi</string>
