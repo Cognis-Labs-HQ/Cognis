@@ -7,3 +7,7 @@ The web proxy and API now prevent missing fingerprinted JavaScript and CSS respo
 ## Login page rendering is restored
 
 The page composer now supplies its element renderer to every layout path, preventing the login page from failing with a `renderElementContent is not defined` error before its styles and content finish loading.
+
+## The web proxy follows app container replacements
+
+Nginx now refreshes the Cognis application container address through Docker's internal DNS. Public requests no longer remain connected to a replaced application container that does not contain the assets served by the current container.

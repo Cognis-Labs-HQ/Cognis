@@ -7,3 +7,7 @@ Proksi web dan API kini mencegah respons JavaScript dan CSS beridentitas versi y
 ## Perenderan halaman masuk dipulihkan
 
 Penyusun halaman kini menyediakan perender elemennya ke setiap jalur tata letak sehingga halaman masuk tidak lagi gagal dengan galat `renderElementContent is not defined` sebelum gaya dan kontennya selesai dimuat.
+
+## Proksi web mengikuti penggantian kontainer aplikasi
+
+Nginx kini memperbarui alamat kontainer aplikasi Cognis melalui DNS internal Docker. Permintaan publik tidak lagi tetap terhubung ke kontainer aplikasi yang telah diganti dan tidak memiliki aset yang disediakan oleh kontainer saat ini.
