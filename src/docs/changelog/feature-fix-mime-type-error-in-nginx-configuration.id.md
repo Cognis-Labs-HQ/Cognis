@@ -10,4 +10,4 @@ Penyusun halaman kini menyediakan perender elemennya ke setiap jalur tata letak 
 
 ## Proksi web mengikuti penggantian kontainer aplikasi
 
-Nginx kini memperbarui alamat kontainer aplikasi Cognis melalui DNS internal Docker. Permintaan publik tidak lagi tetap terhubung ke kontainer aplikasi yang telah diganti dan tidak memiliki aset yang disediakan oleh kontainer saat ini.
+Nginx kini menemukan resolver DNS milik lingkungan kontainer yang aktif dan menggunakannya untuk memperbarui alamat aplikasi Cognis. Permintaan publik tidak lagi tetap terhubung ke kontainer aplikasi yang telah diganti, baik Cognis dijalankan dengan Docker, Kubernetes, Podman, maupun platform kontainer lainnya.

@@ -1,6 +1,17 @@
 #!/bin/sh
 set -eu
 
+resolver_address="$(awk '$1 == "nameserver" { print $2; exit }' /etc/resolv.conf)"
+case "$resolver_address" in
+  ""|*[!0-9A-Fa-f:.]*)
+    echo "A valid nameserver address is required in /etc/resolv.conf." >&2
+    exit 1
+    ;;
+  *:*) resolver_address="[$resolver_address]" ;;
+esac
+printf 'resolver %s valid=10s;\nresolver_timeout 5s;\n' "$resolver_address" \
+  > /etc/nginx/conf.d/00-resolver.conf
+
 mode="${COGNIS_WEB_TLS_MODE:-terminate}"
 tls_certificate_path="${COGNIS_WEB_TLS_CERTIFICATE:-/etc/nginx/tls/fullchain.pem}"
 tls_certificate_key_path="${COGNIS_WEB_TLS_CERTIFICATE_KEY:-/etc/nginx/tls/privkey.pem}"

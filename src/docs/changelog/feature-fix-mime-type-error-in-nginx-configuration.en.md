@@ -10,4 +10,4 @@ The page composer now supplies its element renderer to every layout path, preven
 
 ## The web proxy follows app container replacements
 
-Nginx now refreshes the Cognis application container address through Docker's internal DNS. Public requests no longer remain connected to a replaced application container that does not contain the assets served by the current container.
+Nginx now discovers the active container runtime's DNS resolver and uses it to refresh the Cognis application address. Public requests no longer remain connected to a replaced application container, whether Cognis runs with Docker, Kubernetes, Podman, or another container platform.

@@ -10,4 +10,4 @@ Der Seiten-Composer stellt seinen Element-Renderer nun für jeden Layout-Pfad be
 
 ## Web-Proxy folgt ersetzten App-Containern
 
-Nginx aktualisiert nun die Adresse des Cognis-Anwendungscontainers über das interne DNS von Docker. Öffentliche Anfragen bleiben nicht mehr mit einem ersetzten Anwendungscontainer verbunden, der die vom aktuellen Container bereitgestellten Ressourcen nicht enthält.
+Nginx erkennt nun den DNS-Resolver der aktiven Container-Laufzeit und aktualisiert damit die Adresse der Cognis-Anwendung. Öffentliche Anfragen bleiben nicht mehr mit einem ersetzten Anwendungscontainer verbunden, unabhängig davon, ob Cognis mit Docker, Kubernetes, Podman oder einer anderen Container-Plattform ausgeführt wird.
