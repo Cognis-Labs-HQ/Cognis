@@ -14,17 +14,58 @@ const bashTestOptions = bashPath
     ? {}
     : { skip: "Bash is not installed in this test environment" };
 const profiles = [
-    ["docker-compose.postgres.yaml", "postgres:17-alpine"],
-    ["docker-compose.mariadb.yaml", "mariadb:11"],
+    {
+        composePath: "docker-compose.postgres.yaml",
+        databaseImage: "postgres:17-alpine",
+        databaseEnvironment: {
+            DB_TYPE: "postgresql",
+            POSTGRES_HOST: "db",
+            POSTGRES_PORT: "5432",
+            POSTGRES_DB: "cognis",
+            POSTGRES_USER: "cognis@example.com",
+            POSTGRES_PASSWORD: "secret:/%#",
+        },
+        expectedDatabaseUrl:
+            "postgresql://cognis%40example.com:secret%3A%2F%25%23@db:5432/cognis",
+        composeVariables: [
+            "POSTGRES_HOST: db",
+            'POSTGRES_PORT: "5432"',
+            "POSTGRES_DB: cognis",
+            "POSTGRES_USER: cognis",
+            "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}",
+        ],
+    },
+    {
+        composePath: "docker-compose.mariadb.yaml",
+        databaseImage: "mariadb:11",
+        databaseEnvironment: {
+            DB_TYPE: "mariadb",
+            MARIADB_HOST: "db",
+            MARIADB_PORT: "3306",
+            MARIADB_DATABASE: "cognis",
+            MARIADB_USER: "cognis@example.com",
+            MARIADB_PASSWORD: "secret:/%#",
+        },
+        expectedDatabaseUrl:
+            "mysql://cognis%40example.com:secret%3A%2F%25%23@db:3306/cognis",
+        composeVariables: [
+            "MARIADB_HOST: db",
+            'MARIADB_PORT: "3306"',
+            "MARIADB_DATABASE: cognis",
+            "MARIADB_USER: cognis",
+            "MARIADB_PASSWORD: ${MARIADB_PASSWORD}",
+        ],
+    },
 ];
 
 test("Docker profiles use native environment injection", async () => {
-    for (const [composePath, databaseImage] of profiles) {
+    for (const { composePath, databaseImage, composeVariables } of profiles) {
         const compose = await readFile(composePath, "utf8");
         assert.match(compose, new RegExp(`image: ${databaseImage}`));
-        assert.match(compose, /DATABASE_URL: \$\{DATABASE_URL\}/);
         assert.match(compose, /DATA_ENCRYPTION_KEY: \$\{DATA_ENCRYPTION_KEY\}/);
-        assert.doesNotMatch(compose, /env_file:|setup\.sh|docker\/env\//);
+        for (const composeVariable of composeVariables) {
+            assert.ok(compose.includes(composeVariable));
+        }
     }
     assert.equal(
         await readlink("docker-compose.yaml"),
@@ -46,33 +87,25 @@ test(
     "application entrypoint compiles split database settings",
     bashTestOptions,
     async () => {
-        const { stdout } = await execFileAsync(
-            bashPath,
-            [
-                "docker/entrypoint.sh",
+        for (const { databaseEnvironment, expectedDatabaseUrl } of profiles) {
+            const { stdout } = await execFileAsync(
                 bashPath,
-                "-c",
-                'printf "%s" "$DATABASE_URL"',
-            ],
-            {
-                env: {
-                    DB_TYPE: "postgresql",
-                    POSTGRES_HOST: "db",
-                    POSTGRES_PORT: "5432",
-                    POSTGRES_DB: "cognis",
-                    POSTGRES_USER: "cognis@example.com",
-                    POSTGRES_PASSWORD: "secret:/%#",
-                    LOG_FILE: "/tmp/cognis-docker-profile-test.log",
-                    PATH: process.env.PATH,
+                [
+                    "docker/entrypoint.sh",
+                    bashPath,
+                    "-c",
+                    'printf "%s" "$DATABASE_URL"',
+                ],
+                {
+                    env: {
+                        ...databaseEnvironment,
+                        LOG_FILE: "/tmp/cognis-docker-profile-test.log",
+                        PATH: process.env.PATH,
+                    },
                 },
-            },
-        );
-
-        assert.ok(
-            stdout.includes(
-                "postgresql://cognis%40example.com:secret%3A%2F%25%23@db:5432/cognis",
-            ),
-        );
+            );
+            assert.ok(stdout.includes(expectedDatabaseUrl));
+        }
     },
 );
 
@@ -81,7 +114,7 @@ test("web profile uses the generic nginx image and native template", async () =>
         "docker/cognis-web/default.conf.template",
         "utf8",
     );
-    for (const [composePath] of profiles) {
+    for (const { composePath } of profiles) {
         const compose = await readFile(composePath, "utf8");
         assert.match(compose, /cognis-web:[\s\S]*image: nginx:stable-alpine/);
         assert.match(

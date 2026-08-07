@@ -21,7 +21,11 @@ services:
         image: cognis:prod
         environment:
             DB_TYPE: mariadb
-            DATABASE_URL: ${DATABASE_URL}
+            MARIADB_HOST: db
+            MARIADB_PORT: "3306"
+            MARIADB_DATABASE: cognis
+            MARIADB_USER: cognis
+            MARIADB_PASSWORD: ${MARIADB_PASSWORD}
             DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY}
         volumes:
             - applogs:/app/logs

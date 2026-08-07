@@ -22,7 +22,7 @@ Dockerfile di `docker/Dockerfile` menggunakan satu stage `FROM node:22`:
 - Membuat pengguna dan grup sistem `cognis` non-root.
 - Membuat direktori runtime dengan kepemilikan yang benar.
 - Menyalin `docker/cognisctl`, `docker/entrypoint.sh`, dan `docker/healthcheck.sh`.
-- Menginstal dependensi dengan `npm ci --ignore-scripts` sebagai pengguna non-root.
+- Menyalin sumber, memasang dependensi build, memverifikasi kedua build, dan menghapus paket khusus pengembangan sebagai pengguna non-root.
 
 ```dockerfile
 EXPOSE 3000
@@ -31,7 +31,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Default kontainer
 
-Default yang dapat dijalankan tetap berada dalam image aplikasi, sedangkan nilai sensitif seperti `DATABASE_URL` dan `DATA_ENCRYPTION_KEY` harus disediakan oleh lingkungan penerapan. Entrypoint aplikasi mencatat kegagalan konfigurasi basis data dan dapat menyusun `DATABASE_URL` dari field khusus penyedia sebelum menjalankan Cognis. Compose meneruskan nilai sensitif melalui interpolasi lingkungan native.
+Default yang dapat dijalankan tetap berada dalam image aplikasi, sedangkan kredensial basis data dan `DATA_ENCRYPTION_KEY` harus disediakan oleh lingkungan penerapan. Setiap profil Compose meneruskan field koneksi PostgreSQL atau MariaDB yang sesuai ke kontainer aplikasi, lalu entrypoint menyusunnya menjadi `DATABASE_URL`. Penerapan lain dapat menyediakan field khusus penyedia yang sama atau `DATABASE_URL` lengkap.
 
 Profil web menggunakan image `nginx:stable-alpine` tanpa modifikasi dengan `docker/cognis-web/default.conf.template` yang dipasang ke direktori templat native nginx. Caching HTTP dan header proksi tidak memerlukan image web atau entrypoint khusus. Penerapan yang menghentikan TLS di nginx dapat memasang konfigurasi TLS nginx native sendiri; ingress Kubernetes dan proksi eksternal dapat menghentikan TLS tanpa mengubah image Cognis.
 
@@ -41,18 +41,23 @@ docker compose up --build
 
 ## Konfigurasi
 
-| Variabel               | Default      | Keterangan                                                |
-| ---------------------- | ------------ | --------------------------------------------------------- |
-| `DB_TYPE`              | `postgresql` | Backend database: `postgresql` atau `mariadb`             |
-| `DATABASE_URL`         | —            | URL koneksi basis data; ganti untuk penyedia yang dipilih |
-| `LOG_LEVEL`            | `info`       | Verbositas stream log runtime                             |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte)     |
-| `LOG_ROTATE_MAX_FILES` | `10`         | Jumlah arsip log hasil rotasi yang disimpan               |
-| `LOG_ROTATE_COMPRESS`  | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)              |
-| `PORT`                 | `3000`       | Port HTTP                                                 |
-| `HOST`                 | —            | Hostname layanan internal yang wajib                      |
-| `EXTERNAL_HOST`        | —            | URL publik yang wajib dan dapat dijangkau                 |
-| `CONTACT_EMAIL`        | —            | Alamat kontak publik yang wajib                           |
-| `COGNIS_SMTP_HOST`     | —            | Hostname server SMTP                                      |
+| Variabel                                 | Default      | Keterangan                                            |
+| ---------------------------------------- | ------------ | ----------------------------------------------------- |
+| `DB_TYPE`                                | `postgresql` | Backend database: `postgresql` atau `mariadb`         |
+| `DATABASE_URL`                           | —            | URL koneksi lengkap sebagai alternatif field penyedia |
+| `POSTGRES_HOST` / `MARIADB_HOST`         | —            | Nama host layanan basis data                          |
+| `POSTGRES_PORT` / `MARIADB_PORT`         | —            | Port layanan basis data                               |
+| `POSTGRES_DB` / `MARIADB_DATABASE`       | —            | Nama basis data                                       |
+| `POSTGRES_USER` / `MARIADB_USER`         | —            | Akun basis data                                       |
+| `POSTGRES_PASSWORD` / `MARIADB_PASSWORD` | —            | Kata sandi akun basis data                            |
+| `LOG_LEVEL`                              | `info`       | Verbositas stream log runtime                         |
+| `LOG_ROTATE_MAX_BYTES`                   | `10485760`   | Rotasi file log aktif saat ukuran ini tercapai (byte) |
+| `LOG_ROTATE_MAX_FILES`                   | `10`         | Jumlah arsip log hasil rotasi yang disimpan           |
+| `LOG_ROTATE_COMPRESS`                    | `true`       | Kompres log hasil rotasi dengan gzip (`.gz`)          |
+| `PORT`                                   | `3000`       | Port HTTP                                             |
+| `HOST`                                   | —            | Hostname layanan internal yang wajib                  |
+| `EXTERNAL_HOST`                          | —            | URL publik yang wajib dan dapat dijangkau             |
+| `CONTACT_EMAIL`                          | —            | Alamat kontak publik yang wajib                       |
+| `COGNIS_SMTP_HOST`                       | —            | Hostname server SMTP                                  |
 
 Default aplikasi dideklarasikan dalam `docker/Dockerfile`; perilaku proksi nginx dideklarasikan dalam `docker/cognis-web/default.conf.template`.

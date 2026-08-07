@@ -25,3 +25,7 @@ Entrypoint aplikasi memulihkan pencatatan terstruktur dan penyusunan opsional `D
 ## Image produksi hanya memuat alat build saat pembangunan
 
 Image aplikasi secara eksplisit memasang dependensi pengembangan untuk tahap build sehingga alat seperti esbuild tersedia meskipun `NODE_ENV` bernilai `production`. Paket khusus pengembangan dihapus setelah UI dan server hasil kompilasi diverifikasi sehingga paket tersebut tidak masuk ke image runtime.
+
+## Pengaturan basis data Compose selaras dengan entrypoint
+
+Profil Compose PostgreSQL dan MariaDB kini meneruskan field host, port, basis data, akun, dan kata sandi khusus penyedia yang digunakan entrypoint aplikasi. Cognis menyusun `DATABASE_URL` secara konsisten tanpa memerlukan URL rakitan yang berlebihan.

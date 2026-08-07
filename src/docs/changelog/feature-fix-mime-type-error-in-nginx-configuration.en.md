@@ -25,3 +25,7 @@ The application entrypoint restores structured logging and optional `DATABASE_UR
 ## Production images include build tools only while building
 
 The application image explicitly installs development dependencies for its build stage, ensuring tools such as esbuild are available even though `NODE_ENV` is `production`. Development-only packages are pruned after the compiled UI and server have been verified, keeping them out of the runtime image.
+
+## Compose database settings match the entrypoint
+
+The PostgreSQL and MariaDB Compose profiles now pass the exact provider-specific host, port, database, account, and password fields consumed by the application entrypoint. Cognis constructs `DATABASE_URL` consistently without requiring a redundant preassembled URL.

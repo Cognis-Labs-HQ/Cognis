@@ -22,7 +22,7 @@ Das Dockerfile unter `docker/Dockerfile` verwendet eine einzelne `FROM node:22`-
 - Erstellt einen nicht-root `cognis`-System-Benutzer und -Gruppe.
 - Erstellt Laufzeit-Verzeichnisse mit korrekten Besitzrechten.
 - Kopiert `docker/cognisctl`, `docker/entrypoint.sh` und `docker/healthcheck.sh`.
-- Installiert Abhängigkeiten mit `npm ci --ignore-scripts` als nicht-root-Benutzer.
+- Kopiert den Quellcode, installiert Build-Abhängigkeiten, prüft beide Builds und entfernt reine Entwicklungsabhängigkeiten als Nicht-root-Benutzer.
 - Exponiert Port `3000`.
 
 ```dockerfile
@@ -32,7 +32,7 @@ CMD ["node", "src/api/main.js"]
 
 ### Container-Standardwerte
 
-Ausführbare Standardwerte verbleiben im Anwendungs-Image, während sensible Werte wie `DATABASE_URL` und `DATA_ENCRYPTION_KEY` von der Bereitstellungsumgebung geliefert werden müssen. Der Anwendungseinstieg protokolliert Fehler der Datenbankkonfiguration und kann `DATABASE_URL` aus providerspezifischen Feldern erzeugen, bevor Cognis ausgeführt wird. Compose reicht sensible Werte über die native Umgebungsinterpolation weiter.
+Ausführbare Standardwerte verbleiben im Anwendungs-Image, während Datenbankzugangsdaten und `DATA_ENCRYPTION_KEY` von der Bereitstellungsumgebung geliefert werden müssen. Jedes Compose-Profil reicht die passenden PostgreSQL- oder MariaDB-Verbindungsfelder an den Anwendungscontainer weiter; der Einstieg erzeugt daraus `DATABASE_URL`. Andere Bereitstellungen können dieselben providerspezifischen Felder oder eine vollständige `DATABASE_URL` bereitstellen.
 
 Das Web-Profil verwendet das unveränderte Image `nginx:stable-alpine` und bindet `docker/cognis-web/default.conf.template` in das native Vorlagenverzeichnis von nginx ein. Caching und Proxy-Header benötigen weder ein eigenes Web-Image noch einen eigenen Einstieg. Bereitstellungen können für TLS eine eigene native nginx-Konfiguration einbinden; Kubernetes-Ingress-Controller und externe Proxys können TLS ohne Änderungen am Cognis-Image terminieren.
 
@@ -48,18 +48,23 @@ docker compose up --build
 
 ## Konfiguration
 
-| Variable               | Standard          | Beschreibung                                                       |
-| ---------------------- | ----------------- | ------------------------------------------------------------------ |
-| `DB_TYPE`              | `postgresql`      | Datenbank-Backend: `postgresql` oder `mariadb`                     |
-| `DATABASE_URL`         | —                 | Datenbankverbindungs-URL; für den gewählten Provider überschreiben |
-| `LOG_LEVEL`            | `info`            | Ausführlichkeit des Laufzeit-Logstreams                            |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`        | Rotiert die aktive Logdatei ab dieser Größe (Bytes)                |
-| `LOG_ROTATE_MAX_FILES` | `10`              | Anzahl der aufzubewahrenden rotierten Logarchive                   |
-| `LOG_ROTATE_COMPRESS`  | `true`            | Komprimiert rotierte Logs als gzip (`.gz`)                         |
-| `PORT`                 | `3000`            | HTTP-Port                                                          |
-| `HOST`                 | —                 | Erforderlicher interner Service-Hostname                           |
-| `EXTERNAL_HOST`        | —                 | Erforderliche öffentlich erreichbare URL                           |
-| `CONTACT_EMAIL`        | `admin@localhost` | Öffentliche Kontaktadresse                                         |
-| `COGNIS_SMTP_HOST`     | —                 | SMTP-Server-Hostname                                               |
+| Variable                                 | Standard          | Beschreibung                                                    |
+| ---------------------------------------- | ----------------- | --------------------------------------------------------------- |
+| `DB_TYPE`                                | `postgresql`      | Datenbank-Backend: `postgresql` oder `mariadb`                  |
+| `DATABASE_URL`                           | —                 | Vollständige Verbindungs-URL als Alternative zu Providerfeldern |
+| `POSTGRES_HOST` / `MARIADB_HOST`         | —                 | Hostname des Datenbankdienstes                                  |
+| `POSTGRES_PORT` / `MARIADB_PORT`         | —                 | Port des Datenbankdienstes                                      |
+| `POSTGRES_DB` / `MARIADB_DATABASE`       | —                 | Datenbankname                                                   |
+| `POSTGRES_USER` / `MARIADB_USER`         | —                 | Datenbankkonto                                                  |
+| `POSTGRES_PASSWORD` / `MARIADB_PASSWORD` | —                 | Kennwort des Datenbankkontos                                    |
+| `LOG_LEVEL`                              | `info`            | Ausführlichkeit des Laufzeit-Logstreams                         |
+| `LOG_ROTATE_MAX_BYTES`                   | `10485760`        | Rotiert die aktive Logdatei ab dieser Größe (Bytes)             |
+| `LOG_ROTATE_MAX_FILES`                   | `10`              | Anzahl der aufzubewahrenden rotierten Logarchive                |
+| `LOG_ROTATE_COMPRESS`                    | `true`            | Komprimiert rotierte Logs als gzip (`.gz`)                      |
+| `PORT`                                   | `3000`            | HTTP-Port                                                       |
+| `HOST`                                   | —                 | Erforderlicher interner Service-Hostname                        |
+| `EXTERNAL_HOST`                          | —                 | Erforderliche öffentlich erreichbare URL                        |
+| `CONTACT_EMAIL`                          | `admin@localhost` | Öffentliche Kontaktadresse                                      |
+| `COGNIS_SMTP_HOST`                       | —                 | SMTP-Server-Hostname                                            |
 
 Anwendungsstandardwerte sind in `docker/Dockerfile` deklariert; das nginx-Proxyverhalten steht in `docker/cognis-web/default.conf.template`.

@@ -25,3 +25,7 @@ Der Anwendungseinstieg stellt die strukturierte Protokollierung und die optional
 ## Produktions-Images enthalten Build-Werkzeuge nur beim Erstellen
 
 Das Anwendungs-Image installiert Entwicklungsabhängigkeiten ausdrücklich für seine Build-Phase. Dadurch sind Werkzeuge wie esbuild auch mit `NODE_ENV=production` verfügbar. Nach der Prüfung der kompilierten UI und des Servers werden ausschließlich für die Entwicklung benötigte Pakete entfernt und gelangen nicht in das Laufzeit-Image.
+
+## Compose-Datenbankwerte entsprechen dem Einstieg
+
+Die Compose-Profile für PostgreSQL und MariaDB reichen nun genau die providerspezifischen Felder für Host, Port, Datenbank, Konto und Kennwort weiter, die der Anwendungseinstieg verwendet. Cognis erzeugt `DATABASE_URL` einheitlich, ohne eine zusätzlich vormontierte URL zu verlangen.
