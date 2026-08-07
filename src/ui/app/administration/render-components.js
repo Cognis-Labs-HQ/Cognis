@@ -228,8 +228,6 @@ function renderInlineAdapters(
     adapters,
     gatewayId,
     isGatewayDisabled,
-    gatewayById,
-    adapterByCompositeKey,
     i18n,
     escapeHtml,
     healthStatus,
@@ -240,47 +238,6 @@ function renderInlineAdapters(
             const adapterId = resolveAdapterId(adapter);
             const isActive = isAdapterEnabled(adapter);
             const isLocked = Boolean(adapter.locked);
-            const syncedTo = adapter.syncedTo;
-            const syncTargetGatewayId = syncedTo?.gatewayId;
-            const syncTargetAdapterId = syncedTo?.adapterId;
-            const syncTargetGateway = syncTargetGatewayId
-                ? gatewayById.get(syncTargetGatewayId)
-                : null;
-            const syncTargetAdapter =
-                syncTargetGatewayId && syncTargetAdapterId
-                    ? adapterByCompositeKey.get(
-                          `${syncTargetGatewayId}:${syncTargetAdapterId}`,
-                      )
-                    : null;
-            const syncTargetName = syncTargetAdapter?.name
-                ? escapeHtml(syncTargetAdapter.name)
-                : syncTargetGateway?.name
-                  ? escapeHtml(syncTargetGateway.name)
-                  : syncTargetAdapterId
-                    ? escapeHtml(syncTargetAdapterId)
-                    : syncTargetGatewayId
-                      ? escapeHtml(syncTargetGatewayId)
-                      : "";
-            const syncedToTemplate = escapeHtml(
-                i18n.t("ui.app.admin.synced_to"),
-            );
-            const syncedPillLabel =
-                syncTargetName.length > 0
-                    ? syncedToTemplate.includes("{module}")
-                        ? syncedToTemplate
-                              .split("{module}")
-                              .join(syncTargetName)
-                        : `${syncedToTemplate} ${syncTargetName}`
-                    : "";
-            const syncedPill =
-                syncTargetGatewayId && syncTargetName.length > 0
-                    ? `<a class="state-pill pill-synced synced-pill-link" href="#" data-scroll-to="${escapeHtml(
-                          buildScrollTargetId(
-                              syncTargetGatewayId,
-                              syncTargetAdapterId,
-                          ),
-                      )}">${syncedPillLabel}</a>`
-                    : "";
             return `
         <details class="module-row adapter-inline-row"
           data-adapter-id="${escapeHtml(adapterId)}"
@@ -288,7 +245,6 @@ function renderInlineAdapters(
           <summary class="adapter-inline-summary">
             <span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>
             <div class="module-row-controls adapter-inline-controls">
-              <span class="adapter-sync-slot">${syncedPill}</span>
               <span class="state-pill ${isActive ? "pill-active" : "pill-disabled"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.disabled")}</span>
               ${renderHealthLight(resolveComponentHealth(healthStatus, "adapter", `${gatewayId}:${adapterId}`) ?? resolveComponentHealth(healthStatus, "adapter", adapterId) ?? (isActive ? { status: "ok" } : null), isActive, escapeHtml)}
               <label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
@@ -331,16 +287,6 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
         }
         adaptersByGatewayId.get(gatewayId).push(adapter);
     }
-    const gatewayById = new Map(
-        gateways.map((gateway) => [gateway.id, gateway]),
-    );
-    const adapterByCompositeKey = new Map(
-        allAdapters.map((adapter) => [
-            `${adapter._gatewayId}:${resolveAdapterId(adapter)}`,
-            adapter,
-        ]),
-    );
-
     return gateways
         .map((gateway) => {
             const pill = getStatePill(gateway.status ?? "active", i18n);
@@ -379,7 +325,7 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
           </summary>
           <div class="module-meta">
             <ul class="module-details">${renderGatewayDetailsList(gateway, gateways, healthStatus, i18n, escapeHtml)}</ul>
-            ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, gatewayById, adapterByCompositeKey, i18n, escapeHtml, healthStatus)}
+            ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, i18n, escapeHtml, healthStatus)}
           </div>
         </details>
       `;
