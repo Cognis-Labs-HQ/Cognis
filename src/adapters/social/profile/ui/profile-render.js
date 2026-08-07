@@ -17,6 +17,10 @@ const PROFILE_ROLE_ICON_PATHS = {
 };
 const PROFILE_ROLE_ICON_ROLES = new Set(["owner", "admin", "teacher"]);
 
+export function getDefaultPostVisibility(profileVisibility) {
+    return profileVisibility === "hidden" ? "only_me" : profileVisibility;
+}
+
 function renderRoleIconMarkup(normalizedRole, iconClassName) {
     if (normalizedRole === "teacher") return "&#128218;";
     const iconPath = PROFILE_ROLE_ICON_PATHS[normalizedRole];
@@ -24,7 +28,13 @@ function renderRoleIconMarkup(normalizedRole, iconClassName) {
     return `<img src="${iconPath}" alt="" class="${iconClassName}" />`;
 }
 
-function createPostFormBuilder(canFollowers, canFriends, canEveryone, i18n) {
+function createPostFormBuilder(
+    profileVisibility,
+    canFollowers,
+    canFriends,
+    canEveryone,
+    i18n,
+) {
     return createFormBuilder(
         { i18n, escapeHtml },
         {
@@ -58,6 +68,8 @@ function createPostFormBuilder(canFollowers, canFriends, canEveryone, i18n) {
                     name: "visibility",
                     labelKey: "ui.app.profile.visibility",
                     type: "select",
+                    value: getDefaultPostVisibility(profileVisibility),
+                    controlClassName: "theme-select",
                     attributes: {
                         id: "post-visibility",
                     },
@@ -122,7 +134,13 @@ export function getPostVisibilityCapabilities(profileVisibility) {
 export function createPostFormBuilderForVisibility(profileVisibility, i18n) {
     const { canFollowers, canFriends, canEveryone } =
         getPostVisibilityCapabilities(profileVisibility);
-    return createPostFormBuilder(canFollowers, canFriends, canEveryone, i18n);
+    return createPostFormBuilder(
+        profileVisibility,
+        canFollowers,
+        canFriends,
+        canEveryone,
+        i18n,
+    );
 }
 
 export function renderComposerMarkdownPreview(content, emptyMessage) {

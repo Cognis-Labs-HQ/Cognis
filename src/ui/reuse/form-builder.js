@@ -57,6 +57,7 @@ const NEAR_LIMIT_THRESHOLD = 0.1;
  *     value?: string,
  *     maxCharacters?: number,
  *     className?: string,
+ *     controlClassName?: string,
  *     options?: Array<{ value: string, label: string, selected?: boolean, disabled?: boolean, title?: string, attributes?: Record<string, string|number|boolean> }>,
  *     floatingTitleKey?: string,
  *     attributes?: Record<string, string|number|boolean>,
@@ -127,6 +128,12 @@ export function createFormBuilder(ctx, options) {
         const value =
             fieldConfig.value == null ? "" : String(fieldConfig.value);
         const className = String(fieldConfig.className ?? "").trim();
+        const controlClassName = String(
+            fieldConfig.controlClassName ?? "",
+        ).trim();
+        const inputClassName = controlClassName
+            ? `form-builder-input ${controlClassName}`
+            : "form-builder-input";
         const fieldClassName = className
             ? `form-builder-field ${className}`
             : "form-builder-field";
@@ -189,7 +196,7 @@ export function createFormBuilder(ctx, options) {
 
         const inputMarkup =
             type === "select"
-                ? `<select id="${escapeHtml(inputId)}" name="${escapeHtml(fieldName)}" class="form-builder-input"${attributes.join("")}>
+                ? `<select id="${escapeHtml(inputId)}" name="${escapeHtml(fieldName)}" class="${escapeHtml(inputClassName)}"${attributes.join("")}>
             ${(Array.isArray(fieldConfig.options) ? fieldConfig.options : [])
                 .map((optionConfig) => {
                     const optionValue = String(optionConfig?.value ?? "");
@@ -224,13 +231,13 @@ export function createFormBuilder(ctx, options) {
                   ? `<textarea
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
-          class="form-builder-input"${attributes.join("")}
+          class="${escapeHtml(inputClassName)}"${attributes.join("")}
         >${escapeHtml(value)}</textarea>`
                   : `<input
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
           type="${escapeHtml(type)}"
-          class="form-builder-input"
+          class="${escapeHtml(inputClassName)}"
           value="${escapeHtml(value)}"${attributes.join("")}
         />`;
         const counterMarkup = hasMaxCharacters
