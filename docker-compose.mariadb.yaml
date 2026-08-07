@@ -1,11 +1,8 @@
 services:
     db:
         image: mariadb:11
-        environment:
-            MARIADB_DATABASE: cognis
-            MARIADB_USER: cognis
-            MARIADB_PASSWORD: ${MARIADB_PASSWORD}
-            MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+        env_file:
+            - ./docker/env/runtime.env
         volumes:
             - mariadb-data:/var/lib/mysql
         healthcheck:
@@ -19,10 +16,9 @@ services:
             context: .
             dockerfile: ./docker/Dockerfile
         image: cognis:prod
-        environment:
-            DB_TYPE: mariadb
-            DATABASE_URL: ${DATABASE_URL}
-            DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY}
+        env_file:
+            - ./docker/env/default.env
+            - ./docker/env/runtime.env
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config
@@ -41,13 +37,16 @@ services:
         restart: unless-stopped
 
     cognis-web:
-        image: nginx:stable-alpine
-        environment:
-            HOST: cognis
+        build:
+            context: ./docker/cognis-web
+        image: cognis-web
+        env_file:
+            - ./docker/env/cognis-web.env
         ports:
-            - "80:80"
+            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:80:80"
+            - "${COGNIS_WEB_BIND_ADDRESS:-0.0.0.0}:443:443"
         volumes:
-            - ./docker/cognis-web/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+            - ./docker/tls:/etc/nginx/tls:ro
         depends_on:
             cognis:
                 condition: service_healthy

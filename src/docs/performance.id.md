@@ -1,6 +1,6 @@
 # Anggaran kinerja
 
-Trafik produksi melewati image generik `nginx:stable-alpine` dengan `docker/cognis-web/default.conf.template` yang dipasang. Templat mengatur cache HTTP dan header proksi melalui substitusi lingkungan native nginx. TLS sengaja dimiliki oleh penerapan: pasang konfigurasi TLS nginx native tambahan, gunakan ingress Kubernetes, atau hentikan TLS pada proksi eksternal maupun CDN.
+Trafik produksi berakhir di proxy web `cognis-web` yang dibangun dari `docker/cognis-web` dan diterbitkan oleh GitLab CI sebagai `$CI_REGISTRY_IMAGE/cognis-web`. Secara default, `COGNIS_WEB_TLS_MODE=terminate` mengaktifkan listener HTTPS lokal dan membutuhkan sertifikat TLS sebagai `docker/tls/fullchain.pem` serta kunci sebagai `docker/tls/privkey.pem`. Gunakan `COGNIS_WEB_TLS_MODE=deferred` hanya di belakang terminator TLS hulu yang tepercaya; Nginx kemudian hanya mendengarkan HTTP, mempertahankan kebijakan cache yang sama, dan meneruskan header protokol hulu tepercaya jika tersedia. CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya web yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
 
 ## Protokol baseline hosted
 

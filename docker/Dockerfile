@@ -1,22 +1,6 @@
 FROM node:22 AS base
 ARG COGNIS_ASSET_VERSION=development
 ENV COGNIS_ASSET_VERSION=${COGNIS_ASSET_VERSION}
-ENV NODE_ENV=production \
-  DB_TYPE=postgresql \
-  HOST=cognis \
-  EXTERNAL_HOST=http://localhost \
-  CONTACT_EMAIL=admin@localhost \
-  COGNIS_UI_ASSET_MANIFEST=/app/dist/ui/asset-manifest.json \
-  COGNIS_UI_DIST_ROOT=/app/dist/ui \
-  COGNIS_UI_DEMO_MODE=0 \
-  LOG_LEVEL=info \
-  LOG_FILE=/app/logs/app.log \
-  COGNIS_ACCESS_TOKEN_TTL_SECONDS=43200 \
-  MEDIA_LOCATION=/app/media \
-  COGNIS_MODULES_ROOT=/app/dist/server/src/modules \
-  COGNIS_GATEWAYS_ROOT=/app/dist/server/src/gateways \
-  COGNIS_ADAPTERS_ROOT=/app/dist/server/src/adapters \
-  COGNIS_CLI_TOKEN_PATH=/app/config/cli-access.token
 WORKDIR /app
 
 # Root-only setup: create the non-root user, runtime directories, and system-wide scripts.

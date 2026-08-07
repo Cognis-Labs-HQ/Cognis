@@ -1,6 +1,6 @@
 # Performance budgets
 
-Production traffic passes through the generic `nginx:stable-alpine` image using the mounted `docker/cognis-web/default.conf.template`. The template owns HTTP cache and proxy-header behavior through nginx native environment substitution. TLS is intentionally deployment-owned: mount an additional native nginx TLS configuration, use a Kubernetes ingress controller, or terminate TLS at an external proxy or CDN.
+Production traffic terminates at the `cognis-web` web proxy built from `docker/cognis-web` and published by GitLab CI as `$CI_REGISTRY_IMAGE/cognis-web`. By default, `COGNIS_WEB_TLS_MODE=terminate` enables the local HTTPS listener and requires the TLS certificate as `docker/tls/fullchain.pem` and key as `docker/tls/privkey.pem`. Set `COGNIS_WEB_TLS_MODE=deferred` only behind a trusted upstream TLS terminator; Nginx then listens on HTTP only, preserves the same cache policy, and forwards the trusted upstream protocol header when present. Managed CDNs may implement the same cache and forwarding policy instead. Only the web is published, so its replacement of forwarding headers establishes the trust boundary.
 
 ## Hosted baseline protocol
 

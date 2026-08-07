@@ -1,6 +1,6 @@
 # Leistungsbudgets
 
-Produktionsverkehr läuft durch das generische Image `nginx:stable-alpine` mit der eingebundenen Datei `docker/cognis-web/default.conf.template`. Die Vorlage steuert HTTP-Cache und Proxy-Header über die native Umgebungsersetzung von nginx. TLS liegt bewusst in der Verantwortung der Bereitstellung: Binden Sie eine zusätzliche native nginx-TLS-Konfiguration ein oder terminieren Sie TLS an einem Kubernetes-Ingress-Controller, externen Proxy oder CDN.
+Produktionsverkehr endet am Web-Proxy `cognis-web`, der aus `docker/cognis-web` gebaut und von GitLab CI als `$CI_REGISTRY_IMAGE/cognis-web` veröffentlicht wird. Standardmäßig aktiviert `COGNIS_WEB_TLS_MODE=terminate` den lokalen HTTPS-Listener und benötigt das TLS-Zertifikat unter `docker/tls/fullchain.pem` sowie den Schlüssel unter `docker/tls/privkey.pem`. Setzen Sie `COGNIS_WEB_TLS_MODE=deferred` nur hinter einem vertrauenswürdigen vorgelagerten TLS-Terminator; Nginx lauscht dann nur auf HTTP, behält dieselbe Cache-Richtlinie bei und leitet den vertrauenswürdigen vorgelagerten Protokoll-Header weiter, wenn er vorhanden ist. Verwaltete CDNs können dieselbe Cache- und Weiterleitungsrichtlinie umsetzen. Nur die Kante wird veröffentlicht, daher bildet ihr Ersetzen der Weiterleitungsheader die Vertrauensgrenze.
 
 ## Protokoll für gehostete Basiswerte
 

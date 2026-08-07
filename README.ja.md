@@ -28,7 +28,7 @@ API ハンドラーは**何を**するかを定義し、ゲートウェイ/ア�
 ## コンテナオーケストレーション
 
 - `docker-compose.postgres.yaml` と `docker-compose.mariadb.yaml`: PostgreSQLおよびMariaDB用のCompose定義。
-- 既定の PostgreSQL スタックは `docker compose up --build` で起動し、MariaDB を使う場合は対応する Compose ファイルを明示的に選択します。
+- `./setup.sh` を実行し、PostgreSQLまたはMariaDBを選択してローカル実行環境を対話形式で作成します。
 
 ## AI ガイダンス
 
