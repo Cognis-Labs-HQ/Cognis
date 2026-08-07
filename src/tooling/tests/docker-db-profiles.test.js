@@ -224,7 +224,7 @@ test(
             (error) => {
                 assert.match(
                     error.stdout,
-                    /POSTGRES_HOST must be set in the container environment/,
+                    /POSTGRES_HOST must be set and non-empty on the Cognis application container/,
                 );
                 return true;
             },
@@ -282,7 +282,7 @@ test(
             (error) => {
                 assert.match(
                     error.stdout,
-                    /HOST must be set in the container environment/,
+                    /HOST must be set and non-empty on the Cognis application container/,
                 );
                 return true;
             },

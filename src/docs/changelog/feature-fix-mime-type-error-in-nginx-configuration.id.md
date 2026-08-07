@@ -13,3 +13,7 @@ Penyusun halaman kini menyediakan perender elemennya ke setiap jalur tata letak 
 Nginx kini mengurai layanan aplikasi Cognis melalui penguraian nama host standar lingkungan kontainer. Cara ini mendukung domain pencarian dan pemetaan host yang sama dengan alat lain di Docker, Kubernetes, Podman, dan platform kontainer lainnya, sehingga mencegah galat `no live upstreams` ketika nama host berfungsi di tempat lain dalam kontainer web.
 
 Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap layanan selalu bernama `cognis`. Nama berkualifikasi namespace yang mengandung titik, seperti `cognis.cognis`, didukung untuk mencegah kumpulan upstream kosong pada Kubernetes dan penerapan lain yang menggunakan nama layanan tercakup.
+
+## Galat lingkungan Kubernetes lebih jelas
+
+Proses awal kontainer kini membaca pengaturan wajib langsung dari lingkungan proses yang diekspor dan menyebutkan kontainer aplikasi Cognis dalam galat pengaturan yang hilang. Penerapan Kubernetes harus menetapkan `CONTACT_EMAIL` pada kontainer aplikasi; menetapkannya hanya pada sidecar `cognis-web` tidak membagikannya antar kontainer.

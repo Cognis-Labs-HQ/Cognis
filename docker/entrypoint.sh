@@ -53,9 +53,11 @@ trap 'shutdown INT' INT
 
 require_environment_value() {
   local variable_name="$1"
+  local environment_value
+  environment_value="$(printenv "${variable_name}" 2>/dev/null || true)"
 
-  if [[ -z "${!variable_name:-}" ]]; then
-    app_log "error" "${variable_name} must be set in the container environment. Compose users can run ./setup.sh from the repository root to generate env files."
+  if [[ -z "${environment_value}" ]]; then
+    app_log "error" "${variable_name} must be set and non-empty on the Cognis application container. Setting it only on the cognis-web container does not pass it to the application process. Compose users can run ./setup.sh from the repository root to generate env files."
     exit 1
   fi
 }
