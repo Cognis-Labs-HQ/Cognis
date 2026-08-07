@@ -69,7 +69,6 @@ function createPostFormBuilder(
                     labelKey: "ui.app.profile.visibility",
                     type: "select",
                     value: getDefaultPostVisibility(profileVisibility),
-                    controlClassName: "theme-select",
                     attributes: {
                         id: "post-visibility",
                     },

@@ -21,7 +21,7 @@ test("form builder reuse utility exports createFormBuilder", () => {
     assert.match(source, /aria-hidden="true"/);
 });
 
-test("form builder applies custom classes to form controls", () => {
+test("form builder applies theme styling to every select control", () => {
     const builder = createFormBuilder(
         {
             i18n: { t: (key) => key },
@@ -35,7 +35,6 @@ test("form builder applies custom classes to form controls", () => {
                     name: "visibility",
                     labelKey: "visibility",
                     type: "select",
-                    controlClassName: "theme-select",
                     options: [{ value: "friends", label: "Friends" }],
                 },
             ],

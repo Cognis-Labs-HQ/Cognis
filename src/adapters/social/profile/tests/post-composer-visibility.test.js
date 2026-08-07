@@ -8,10 +8,6 @@ const PROFILE_RENDER_SOURCE = readFileSync(
     "utf8",
 );
 
-test("post composer themes its visibility control", () => {
-    assert.match(PROFILE_RENDER_SOURCE, /controlClassName: "theme-select"/);
-});
-
 test("post composer defaults visibility to the profile visibility", () => {
     assert.match(
         PROFILE_RENDER_SOURCE,
