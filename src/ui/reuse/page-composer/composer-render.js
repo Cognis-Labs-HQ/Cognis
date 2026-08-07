@@ -46,7 +46,7 @@ export function createComposerRenderer({
     loadPersistedFormState,
     bindFormDraftPersistence,
 }) {
-    const { parkPreservedElementNodes, refreshElements } =
+    const { parkPreservedElementNodes, renderElementContent, refreshElements } =
         createDomPreservation(state);
 
     function repackPlacementsIntoColumns(
