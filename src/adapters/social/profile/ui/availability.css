@@ -22,20 +22,72 @@
 .availability-menu-item {
     border-bottom: 1px solid var(--border);
 }
-.availability-menu-label {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: center;
-    gap: 4px;
+.availability-menu-control {
+    position: relative;
     width: 100%;
-    font-weight: 600;
 }
-.availability-menu-select {
-    min-width: 0;
-    padding: 6px;
+.availability-menu-toggle,
+.availability-menu-option {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
     color: var(--text);
-    background: var(--surface-2);
-    border: 1px solid var(--border);
+    background: transparent;
+    border: 0;
     border-radius: 6px;
     font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+.availability-menu-toggle:hover,
+.availability-menu-toggle:focus-visible,
+.availability-menu-option:hover,
+.availability-menu-option:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+    background: var(--surface-soft);
+}
+.availability-menu-chevron {
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.16s ease;
+}
+.availability-menu-toggle[aria-expanded="true"] .availability-menu-chevron {
+    transform: translateY(2px) rotate(225deg);
+}
+.availability-menu-options {
+    display: grid;
+    gap: 2px;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px solid var(--border);
+}
+.availability-menu-options[hidden] {
+    display: none;
+}
+.availability-menu-option {
+    grid-template-columns: 12px 1fr;
+    font-weight: 500;
+}
+.availability-menu-option[aria-selected="true"] {
+    background: var(--surface-soft);
+}
+.availability-menu-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #2eaf62;
+}
+.availability-menu-dot[data-availability-status="busy"] {
+    background: #d94b4b;
+}
+.availability-menu-dot[data-availability-status="tentative"] {
+    background: #e6a52f;
 }

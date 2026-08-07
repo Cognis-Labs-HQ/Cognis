@@ -50,7 +50,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.31` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.32` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.34` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.11` |
 | User Share            | `src/adapters/share/user/`          | `1.1.12` |

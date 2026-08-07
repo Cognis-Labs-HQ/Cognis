@@ -409,8 +409,11 @@
         background 0.15s ease,
         transform 0.15s ease;
 }
-.dropdown-item:hover {
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
     background: var(--surface-soft);
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
     transform: translateX(3px);
 }
 .hidden {

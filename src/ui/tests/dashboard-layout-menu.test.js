@@ -177,3 +177,14 @@ test("profile dropdown opens on hover or click and closes only on click away", (
         /if \(!profileMenu\?\.contains\(event.target\)\) closeMenu\(\)/,
     );
 });
+
+test("user menu entries gain an outline on hover", () => {
+    const styles = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/layout.css"),
+        "utf8",
+    );
+    assert.match(
+        styles,
+        /\.dropdown-item:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
+    );
+});

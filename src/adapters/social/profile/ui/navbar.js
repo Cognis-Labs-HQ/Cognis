@@ -7,7 +7,6 @@ import {
     availabilityIndicatorMarkup,
     fetchAvailability,
     setManualAvailability,
-    STATUS_OPTIONS,
 } from "./availability.js";
 
 const availabilityStylesheet = document.createElement("link");
@@ -30,39 +29,67 @@ async function mountAvailabilityControl() {
     });
     const statusItem = document.createElement("li");
     statusItem.className = "availability-menu-item";
-    statusItem.innerHTML = `
-        <label class="availability-menu-label" for="availability-status">
-            <span data-i18n="ui.reuse.status"></span>:
-            <select id="availability-status" class="availability-menu-select">
-                ${STATUS_OPTIONS.map(
-                    (status) =>
-                        `<option value="${status}" data-i18n="ui.app.profile.availability.${status}"></option>`,
-                ).join("")}
-            </select>
-        </label>`;
+    const menuTemplateResponse = await fetch(
+        "/static/adapters/social/profile/availability-menu.html",
+    );
+    statusItem.innerHTML = await menuTemplateResponse.text();
     dropdown.prepend(statusItem);
     applyStaticTranslations(i18n, statusItem);
 
-    const select = statusItem.querySelector("#availability-status");
+    const statusToggle = statusItem.querySelector(".availability-menu-toggle");
+    const statusOptions = statusItem.querySelector(
+        ".availability-menu-options",
+    );
     const availability = await fetchAvailability();
-    const status = availability?.status ?? "free";
-    select.value = status;
-    updateAvailabilityIndicator(indicator, status, i18n);
+    updateAvailabilitySelection(
+        statusItem,
+        indicator,
+        availability?.status ?? "free",
+        i18n,
+    );
 
-    select.addEventListener("change", async () => {
-        const selectedStatus = select.value;
-        if (await setManualAvailability(selectedStatus)) {
-            const updatedAvailability = await fetchAvailability();
-            const resolvedStatus =
-                updatedAvailability?.status ?? selectedStatus;
-            select.value = resolvedStatus;
-            updateAvailabilityIndicator(indicator, resolvedStatus, i18n);
-        }
+    statusToggle.addEventListener("click", () => {
+        const shouldOpen = statusOptions.hidden;
+        statusOptions.hidden = !shouldOpen;
+        statusToggle.setAttribute("aria-expanded", String(shouldOpen));
     });
+
+    statusItem
+        .querySelectorAll("[data-availability-option]")
+        .forEach((option) => {
+            option.addEventListener("click", async () => {
+                const selectedStatus = option.dataset.availabilityOption;
+                if (await setManualAvailability(selectedStatus)) {
+                    const updatedAvailability = await fetchAvailability();
+                    updateAvailabilitySelection(
+                        statusItem,
+                        indicator,
+                        updatedAvailability?.status ?? selectedStatus,
+                        i18n,
+                    );
+                    statusOptions.hidden = true;
+                    statusToggle.setAttribute("aria-expanded", "false");
+                }
+            });
+        });
 }
 
-function updateAvailabilityIndicator(indicator, status, i18n) {
+function updateAvailabilitySelection(container, indicator, status, i18n) {
     const label = i18n.t(`ui.app.profile.availability.${status}`);
+    const value = container.querySelector(".availability-menu-value");
+    const currentDot = container.querySelector(
+        ".availability-menu-toggle .availability-menu-dot",
+    );
+    value.textContent = label;
+    currentDot.dataset.availabilityStatus = status;
+    container
+        .querySelectorAll("[data-availability-option]")
+        .forEach((option) => {
+            option.setAttribute(
+                "aria-selected",
+                String(option.dataset.availabilityOption === status),
+            );
+        });
     indicator.dataset.availabilityStatus = status;
     indicator.title = label;
     indicator.setAttribute("aria-label", label);

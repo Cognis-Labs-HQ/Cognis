@@ -2,7 +2,7 @@
 
 ## Verfügbarkeit im Profilmenü steuern
 
-Das Profilmenü öffnet sich jetzt beim Darüberfahren oder Anklicken und bleibt sichtbar, bis Benutzer an eine andere Stelle klicken. In der ersten Zeile steht der aktuelle Status als Auswahlliste mit Frei, Beschäftigt und Vorläufig.
+Das Profilmenü öffnet sich jetzt beim Darüberfahren oder Anklicken und bleibt sichtbar, bis Benutzer an eine andere Stelle klicken. Die erste Zeile ist eine rahmenlose Statusauswahl mit passenden Farbpunkten für Frei, Beschäftigt und Vorläufig; Umrisse beim Darüberfahren erleichtern das Verfolgen jedes Menüeintrags.
 
 ## Statusdetails überall verfügbar
 
