@@ -14,6 +14,10 @@ Nginx now resolves the Cognis application service through the container environm
 
 The web proxy takes the application service hostname from `HOST` instead of assuming that the service is named `cognis`. Namespace-qualified names containing periods, such as `cognis.cognis`, are supported to prevent an empty upstream pool in Kubernetes and other deployments that use scoped service names.
 
+## Asset request paths reach Cognis unchanged
+
+The nginx template now gives `/assets/` its own prefix location and proxies it without rewriting the URI. Fingerprinted JavaScript and CSS requests therefore reach the Cognis asset handler at exactly the requested path instead of depending on a filename-pattern match.
+
 ## Container startup stays deployment-neutral
 
 The application entrypoint restores structured logging and optional `DATABASE_URL` compilation from provider-specific fields before executing Cognis. Sensitive values such as `DATABASE_URL` and `DATA_ENCRYPTION_KEY` no longer have image defaults and must come from the deployment environment. The web profile now uses the generic nginx image and its native environment-substituted configuration template instead of building a Cognis-specific nginx image.

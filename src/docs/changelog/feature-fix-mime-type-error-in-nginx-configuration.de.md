@@ -14,6 +14,10 @@ Nginx löst den Cognis-Anwendungsdienst nun über die standardmäßige Hostnamen
 
 Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt den Dienstnamen `cognis` vorauszusetzen. Namespace-qualifizierte Namen mit Punkten wie `cognis.cognis` werden unterstützt, damit der Upstream-Pool in Kubernetes und anderen Bereitstellungen mit abgegrenzten Dienstnamen verfügbar bleibt.
 
+## Ressourcenpfade erreichen Cognis unverändert
+
+Die nginx-Vorlage weist `/assets/` nun einen eigenen Präfix-Standort zu und leitet ihn ohne Umschreiben des URI weiter. Anfragen für JavaScript- und CSS-Dateien mit Fingerabdruck erreichen dadurch den Cognis-Ressourcenhandler genau unter dem angeforderten Pfad, ohne von einem Dateinamensmuster abhängig zu sein.
+
 ## Neutraler Containerstart
 
 Der Anwendungseinstieg stellt die strukturierte Protokollierung und die optionale Erzeugung von `DATABASE_URL` aus providerspezifischen Feldern wieder her, bevor Cognis ausgeführt wird. Sensible Werte wie `DATABASE_URL` und `DATA_ENCRYPTION_KEY` besitzen keine Image-Standardwerte mehr und müssen aus der Bereitstellungsumgebung stammen. Das Web-Profil verwendet nun das generische nginx-Image und dessen native Vorlage mit Umgebungsersetzung, statt ein Cognis-spezifisches nginx-Image zu bauen.

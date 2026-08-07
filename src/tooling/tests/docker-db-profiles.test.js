@@ -88,6 +88,10 @@ test("web profile uses the generic nginx image and native template", async () =>
         );
         assert.doesNotMatch(compose, /dockerfile:.*cognis-web|"443:443"/);
     }
-    assert.match(template, /proxy_pass http:\/\/\$\{HOST\}:3000;/);
+    assert.match(template, /location \^~ \/assets\/ \{/);
+    assert.equal(
+        template.match(/proxy_pass http:\/\/\$\{HOST\}:3000;/g)?.length,
+        3,
+    );
     assert.match(template, /max-age=31536000, immutable/);
 });

@@ -14,6 +14,10 @@ Nginx kini mengurai layanan aplikasi Cognis melalui penguraian nama host standar
 
 Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap layanan selalu bernama `cognis`. Nama berkualifikasi namespace yang mengandung titik, seperti `cognis.cognis`, didukung untuk mencegah kumpulan upstream kosong pada Kubernetes dan penerapan lain yang menggunakan nama layanan tercakup.
 
+## Jalur permintaan aset diteruskan tanpa perubahan
+
+Templat nginx kini memberikan lokasi prefiks khusus untuk `/assets/` dan meneruskannya tanpa menulis ulang URI. Permintaan JavaScript dan CSS beridentitas mencapai penangan aset Cognis tepat pada jalur yang diminta tanpa bergantung pada pencocokan pola nama berkas.
+
 ## Proses awal kontainer tetap netral
 
 Entrypoint aplikasi memulihkan pencatatan terstruktur dan penyusunan opsional `DATABASE_URL` dari field khusus penyedia sebelum menjalankan Cognis. Nilai sensitif seperti `DATABASE_URL` dan `DATA_ENCRYPTION_KEY` tidak lagi memiliki default image dan harus berasal dari lingkungan penerapan. Profil web kini menggunakan image nginx generik dan templat konfigurasi native dengan substitusi lingkungan alih-alih membangun image nginx khusus Cognis.
