@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { normalizeCalendarColor } from "../color.js";
+import { normalizeCalendarColor, randomCalendarColor } from "../color.js";
 import type { CalendarStore } from "../store.js";
 import { CalendarTokenStore } from "./token-store.js";
 import {
@@ -175,7 +175,10 @@ export class CoreCalendarGateway {
             ownerAccountId: input.ownerAccountId,
             name: normalizedName,
             visibility: input.visibility ?? "private",
-            color: normalizeCalendarColor(input.color),
+            color:
+                input.color === undefined
+                    ? randomCalendarColor()
+                    : normalizeCalendarColor(input.color),
             defaultReminderOffsetsMinutes: resolveReminderOffsets(
                 input.defaultReminderOffsetsMinutes,
             ),

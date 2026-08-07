@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CoreCalendarGateway } from "../gateway/index.js";
+import { CALENDAR_COLOR_PALETTE, randomCalendarColor } from "../color.js";
 import type { CalendarStore } from "../store.js";
 import type { CalendarRecord } from "../gateway/utils.js";
 
@@ -21,9 +22,14 @@ test("calendar gateway supports multiple calendars per user", () => {
     assert.equal(calendars.length, 3);
     assert.equal(calendars[0]?.id, defaultCalendar.id);
     assert.equal(calendars[0]?.isDefault, true);
-    assert.equal(calendars[0]?.color, "#1f8ceb");
+    assert.ok(CALENDAR_COLOR_PALETTE.includes(calendars[0]?.color ?? ""));
     assert.ok(calendars.some((calendar) => calendar.id === first.id));
     assert.ok(calendars.some((calendar) => calendar.id === second.id));
+});
+
+test("calendar colors are selected across the available palette", () => {
+    assert.equal(randomCalendarColor(0), CALENDAR_COLOR_PALETTE[0]);
+    assert.equal(randomCalendarColor(0.999999), CALENDAR_COLOR_PALETTE.at(-1));
 });
 
 test("calendar gateway normalizes custom calendar colors", () => {
