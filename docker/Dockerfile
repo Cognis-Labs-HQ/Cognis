@@ -4,7 +4,6 @@ ENV COGNIS_ASSET_VERSION=${COGNIS_ASSET_VERSION}
 ENV NODE_ENV=production \
   DB_TYPE=postgresql \
   HOST=cognis \
-  EXTERNAL_HOST=http://localhost \
   CONTACT_EMAIL=admin@localhost \
   COGNIS_UI_ASSET_MANIFEST=/app/dist/ui/asset-manifest.json \
   COGNIS_UI_DIST_ROOT=/app/dist/ui \

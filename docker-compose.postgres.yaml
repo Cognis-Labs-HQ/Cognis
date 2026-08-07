@@ -30,6 +30,7 @@ services:
             POSTGRES_USER: cognis
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
             DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Set DATA_ENCRYPTION_KEY}
+            EXTERNAL_HOST: ${EXTERNAL_HOST:?Set EXTERNAL_HOST to the public Cognis URL}
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config

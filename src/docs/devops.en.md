@@ -101,7 +101,7 @@ Environment variables needed to run the application:
 | `COGNIS_ACCESS_TOKEN_TTL_SECONDS`        | `43200`             | Bearer token lifetime in seconds                               |
 | `PORT`                                   | `3000`              | HTTP port                                                      |
 | `HOST`                                   | `cognis`            | Internal application service hostname                          |
-| `EXTERNAL_HOST`                          | `http://localhost`  | Publicly reachable URL for links                               |
+| `EXTERNAL_HOST`                          | —                   | Required publicly reachable URL for links                      |
 | `CONTACT_EMAIL`                          | `admin@localhost`   | Public support contact                                         |
 | `COGNIS_SMTP_HOST`                       | —                   | SMTP server hostname; enables the SMTP notification adapter    |
 | `COGNIS_UI_DEMO_MODE`                    | `0`                 | Set to `1` to enable pre-populated example data                |
