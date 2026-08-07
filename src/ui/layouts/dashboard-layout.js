@@ -265,6 +265,9 @@ export async function updateNavbarAvatar() {
     const handle = localStorage.getItem("cognis_account") ?? "";
 
     const prevImg = avatarBtn.querySelector("img.avatar-image");
+    const availabilityIndicator = avatarBtn.querySelector(
+        ".availability-indicator",
+    );
     const prevBlobSrc = prevImg?.src?.startsWith("blob:") ? prevImg.src : null;
 
     let profileAvailable = false;
@@ -290,6 +293,7 @@ export async function updateNavbarAvatar() {
         img.alt = "";
         img.src = avatarBlobUrl;
         avatarBtn.replaceChildren(img);
+        if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
         if (prevBlobSrc && prevBlobSrc !== avatarBlobUrl)
             URL.revokeObjectURL(prevBlobSrc);
         return;
@@ -301,6 +305,7 @@ export async function updateNavbarAvatar() {
     initialsEl.textContent = getInitialsText(handle);
     initialsEl.style.background = pickInitialsColor(handle);
     avatarBtn.replaceChildren(initialsEl);
+    if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
 }
 
 let navbarPluginsLoaded = false;

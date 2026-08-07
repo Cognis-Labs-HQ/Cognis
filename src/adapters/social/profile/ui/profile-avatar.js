@@ -55,6 +55,10 @@ import {
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import {
+    availabilityIndicatorMarkup,
+    hydrateAvailabilityIndicators,
+} from "./availability.js";
 
 const unavailableAvatarKeys = new Set();
 const avatarBlobUrlCache = new Map();
@@ -208,11 +212,14 @@ export function buildProfileAvatarMarkup({
           )}`
         : "";
     if (profileLink) {
-        const classes = [avatarClass, linkClass].filter(Boolean).join(" ");
+        const classes = [avatarClass, linkClass, "availability-avatar"]
+            .filter(Boolean)
+            .join(" ");
         return (
             `<a class="${escapeHtml(classes)}"` +
             ` href="${escapeHtml(profileLink)}"` +
-            ` aria-label="${escapeHtml(label)}">${avatarContent}</a>`
+            ` aria-label="${escapeHtml(label)}">${avatarContent}` +
+            `${availabilityIndicatorMarkup(profileHandle)}</a>`
         );
     }
     return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
@@ -245,6 +252,7 @@ export async function hydrateProfileAvatars(container) {
             replaceAvatarPlaceholder(placeholder, blobUrl);
         }),
     );
+    await hydrateAvailabilityIndicators(container);
 }
 
 uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {

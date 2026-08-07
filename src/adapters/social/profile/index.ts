@@ -10,6 +10,10 @@ import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileLimitRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
+import {
+    createAvailabilityRoutes,
+    type AvailabilityStatus,
+} from "./routes/availability.js";
 import type { AccountLifecycleState, AccountRole } from "./store.js";
 import type {
     SocialAdapter,
@@ -408,6 +412,22 @@ export async function bootstrapSocialAdapter(
     ctx.registerRoute(createPostRoutes(profileStore, routeContext), "social");
     ctx.registerRoute(
         createPreferencesRoutes(prefStore, routeContext),
+        "social",
+    );
+    ctx.registerRoute(
+        createAvailabilityRoutes(
+            profileStore,
+            prefStore,
+            async (accountId) => {
+                const resolver = ctx.capabilities.get<
+                    (
+                        targetAccountId: string,
+                    ) => Promise<AvailabilityStatus | null>
+                >("calendar:getCurrentAvailability");
+                return resolver ? resolver(accountId) : null;
+            },
+            routeContext,
+        ),
         "social",
     );
     ctx.log?.("info", "Profile adapter routes registered.", {

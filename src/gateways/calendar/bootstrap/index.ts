@@ -825,6 +825,32 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("calendar:listEvents", (calendarId: string) =>
         gateway.listEvents(calendarId),
     );
+    ctx.capabilities.contribute(
+        "calendar:getCurrentAvailability",
+        async (
+            accountId: string,
+        ): Promise<"free" | "busy" | "tentative" | null> => {
+            const now = Date.now();
+            const activeEvents = gateway
+                .listCalendars(accountId)
+                .flatMap((calendar) => gateway.listEvents(calendar.id))
+                .filter(
+                    (event) =>
+                        new Date(event.startAt).getTime() <= now &&
+                        new Date(event.endAt).getTime() > now,
+                );
+            if (
+                activeEvents.some(
+                    (event) => event.responses[accountId] === "tentative",
+                )
+            ) {
+                return "tentative";
+            }
+            if (activeEvents.some((event) => event.status === "busy"))
+                return "busy";
+            return activeEvents.length ? "free" : null;
+        },
+    );
     ctx.capabilities.contribute("calendar:exportIcs", (calendarId: string) =>
         gateway.exportCalendarAsIcs(calendarId),
     );
