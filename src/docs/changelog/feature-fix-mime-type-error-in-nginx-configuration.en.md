@@ -46,6 +46,6 @@ Login integration discovery and authenticated-session storage now live in dedica
 
 The SMTP rate limiter now checks whether a recipient has a recorded send before reading the clock. A new recipient is never throttled merely because the system clock moves backwards between reads, eliminating the intermittent Node.js 24 CI failure while preserving configured rate-limit windows for recorded sends.
 
-## Publishing requires successful tests
+## Container checks stay outcome-focused
 
-The GitLab publish job now declares the test job as a required dependency without adding custom pipeline stages. Container images cannot be built or pushed when the test job fails or does not complete.
+Redundant tooling tests that duplicated container configuration text have been removed. The container build and application test suite remain the acceptance checks, keeping maintenance focused on whether the built application works rather than on incidental configuration formatting.

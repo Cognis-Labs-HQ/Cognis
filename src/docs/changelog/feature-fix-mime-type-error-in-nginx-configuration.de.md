@@ -46,6 +46,6 @@ Die Ermittlung von Anmeldeintegrationen und die Speicherung authentifizierter Si
 
 Der SMTP-Ratenbegrenzer prüft nun vor dem Lesen der Uhr, ob für einen Empfänger bereits ein Versand gespeichert ist. Ein neuer Empfänger wird nicht mehr fälschlich begrenzt, wenn sich die Systemzeit zwischen zwei Lesevorgängen rückwärts bewegt. Dadurch entfällt der sporadische CI-Fehler unter Node.js 24, während konfigurierte Begrenzungszeiträume für gespeicherte Versandvorgänge erhalten bleiben.
 
-## Veröffentlichung erfordert erfolgreiche Tests
+## Container-Prüfungen bleiben ergebnisorientiert
 
-Der GitLab-Veröffentlichungsauftrag erklärt den Testauftrag nun ohne zusätzliche benutzerdefinierte Pipeline-Phasen zur erforderlichen Abhängigkeit. Container-Images können nicht gebaut oder übertragen werden, wenn der Testauftrag fehlschlägt oder nicht abgeschlossen wird.
+Redundante Werkzeugtests, die lediglich Texte der Containerkonfiguration wiederholten, wurden entfernt. Container-Build und Anwendungstests bleiben die maßgeblichen Prüfungen, sodass die Wartung auf die Funktionsfähigkeit der gebauten Anwendung statt auf nebensächliche Formatierungsdetails ausgerichtet bleibt.

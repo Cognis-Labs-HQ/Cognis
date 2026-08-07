@@ -46,6 +46,6 @@ Penemuan integrasi login dan penyimpanan sesi terautentikasi kini berada dalam m
 
 Pembatas laju SMTP kini memeriksa apakah penerima memiliki catatan pengiriman sebelum membaca waktu. Penerima baru tidak akan dibatasi hanya karena waktu sistem bergerak mundur di antara pembacaan, sehingga kegagalan CI Node.js 24 yang sporadis hilang tanpa mengubah jendela pembatasan untuk pengiriman yang tercatat.
 
-## Publikasi memerlukan pengujian yang berhasil
+## Pemeriksaan kontainer tetap berfokus pada hasil
 
-Job publikasi GitLab kini menetapkan job pengujian sebagai dependensi wajib tanpa menambahkan tahap pipeline khusus. Image kontainer tidak dapat dibangun atau dikirim ketika job pengujian gagal atau belum selesai.
+Pengujian tooling berlebihan yang hanya mengulang teks konfigurasi kontainer telah dihapus. Build kontainer dan rangkaian pengujian aplikasi tetap menjadi pemeriksaan penerimaan sehingga pemeliharaan berfokus pada berfungsinya aplikasi hasil build, bukan rincian format konfigurasi yang tidak penting.
