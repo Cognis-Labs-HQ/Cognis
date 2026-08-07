@@ -57,3 +57,7 @@ The web proxy now preserves an incoming HTTPS scheme so authentication cookies r
 ## Require deployment secrets
 
 Compose now requires deployment-managed database passwords and a data-encryption key, while Kubernetes and other orchestrators can continue using their native secret facilities.
+
+## Compose now requires the deployment URL
+
+The application image no longer supplies localhost as its public host. Both database Compose profiles require `EXTERNAL_HOST`, preventing authentication, invitation, and notification links from pointing to each recipient's local machine.

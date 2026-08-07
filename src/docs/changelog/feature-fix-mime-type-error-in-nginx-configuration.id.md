@@ -57,3 +57,7 @@ Proksi web kini mempertahankan skema HTTPS yang masuk agar kuki autentikasi teta
 ## Wajibkan rahasia penerapan
 
 Compose kini mewajibkan kata sandi basis data dan kunci enkripsi data yang dikelola penerapan, sedangkan Kubernetes dan orkestrator lain tetap dapat memakai fasilitas rahasia native.
+
+## Compose kini mewajibkan URL penerapan
+
+Image aplikasi tidak lagi menetapkan localhost sebagai host publik. Kedua profil basis data Compose mewajibkan `EXTERNAL_HOST`, sehingga tautan autentikasi, undangan, dan pemberitahuan tidak mengarah ke komputer lokal setiap penerima.

@@ -57,3 +57,7 @@ Der Web-Proxy bewahrt nun ein eingehendes HTTPS-Schema, damit Authentifizierungs
 ## Bereitstellungsgeheimnisse verlangen
 
 Compose verlangt nun bereitstellungsverwaltete Datenbankkennwörter und einen Datenverschlüsselungsschlüssel, während Kubernetes und andere Orchestratoren weiterhin ihre native Geheimnisverwaltung verwenden können.
+
+## Compose verlangt die Bereitstellungs-URL
+
+Das Anwendungsabbild gibt localhost nicht mehr als öffentlichen Host vor. Beide Datenbankprofile für Compose verlangen `EXTERNAL_HOST`, damit Authentifizierungs-, Einladungs- und Benachrichtigungslinks nicht auf den lokalen Rechner des jeweiligen Empfängers verweisen.
