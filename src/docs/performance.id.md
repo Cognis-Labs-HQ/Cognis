@@ -1,6 +1,6 @@
 # Anggaran kinerja
 
-Trafik produksi berakhir di proxy web `cognis-web` yang dibangun dari `docker/cognis-web` dan diterbitkan oleh GitLab CI sebagai `$CI_REGISTRY_IMAGE/cognis-web`. Secara default, `COGNIS_WEB_TLS_MODE=terminate` mengaktifkan listener HTTPS lokal dan membutuhkan sertifikat TLS sebagai `docker/tls/fullchain.pem` serta kunci sebagai `docker/tls/privkey.pem`. Gunakan `COGNIS_WEB_TLS_MODE=deferred` hanya di belakang terminator TLS hulu yang tepercaya; Nginx kemudian hanya mendengarkan HTTP, mempertahankan kebijakan cache yang sama, dan meneruskan header protokol hulu tepercaya jika tersedia. CDN terkelola dapat menerapkan kebijakan cache dan penerusan yang sama. Hanya web yang dipublikasikan sehingga penggantian header penerusan olehnya menetapkan batas kepercayaan.
+Trafik produksi berakhir di proksi `cognis-web`. Proksi selalu mendengarkan HTTP dan mengaktifkan HTTPS beserta pengalihan HTTP ke HTTPS secara oportunistik ketika kedua file sertifikat TLS yang dikonfigurasi tersedia dan dapat dibaca. Tanpa sertifikat yang dapat digunakan, proksi tetap hanya menggunakan HTTP untuk pengoperasian di belakang proksi balik atau CDN. Kebijakan cache yang sama berlaku dalam kedua keadaan.
 
 ## Protokol baseline hosted
 

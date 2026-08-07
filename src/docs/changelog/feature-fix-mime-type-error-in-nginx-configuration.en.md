@@ -16,4 +16,4 @@ The web proxy takes the application service hostname from `HOST` instead of assu
 
 ## Container startup stays deployment-neutral
 
-The application entrypoint no longer pre-validates or filters public settings such as `CONTACT_EMAIL`. Environment variables pass directly to Cognis regardless of whether Docker Compose, Kubernetes, Podman, or another deployment system provides them. The entrypoint only derives `DATABASE_URL` when separate database fields are used, then replaces itself with the application process so Cognis owns validation and graceful shutdown.
+Container startup is reduced to executing the application command. Runnable defaults now live in the image, generated environment files and `setup.sh` are removed, and deployments can override variables through their native environment mechanism. The web proxy enables TLS automatically only when both configured certificate files are readable; no TLS mode variable is used.

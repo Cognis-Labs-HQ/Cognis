@@ -30,34 +30,32 @@ EXPOSE 3000
 CMD ["node", "src/api/main.js"]
 ```
 
-### Profil lingkungan
+### Default kontainer
 
-Nilai default Docker tetap berada di `docker/env/default.env`. `./setup.sh` menulis nilai aplikasi dan basis data ke `docker/env/runtime.env`, serta hanya pengaturan TLS web ke `docker/env/cognis-web.env`. Compose hanya memberikan file web kepada `cognis-web`, sehingga container itu tidak dapat membaca kunci enkripsi Cognis atau kredensial basis data. Penyiapan menanyakan apakah reverse proxy atau CDN terpisah menghentikan HTTPS sebelum `cognis-web`; jawaban ya menulis `COGNIS_WEB_TLS_MODE=deferred`, sedangkan tidak mempertahankan terminasi TLS lokal dengan `terminate`.
+Default yang dapat dijalankan tertanam langsung dalam image aplikasi dan web. `docker compose up --build` menjalankan stack PostgreSQL tanpa file lingkungan yang dibuat; gunakan `docker compose -f docker-compose.mariadb.yaml up --build` untuk MariaDB. Penerapan dapat mengganti default image melalui konfigurasi lingkungan normalnya. Entrypoint aplikasi hanya menjalankan perintah yang dikonfigurasi.
 
-File env hanyalah kemudahan untuk Compose, bukan persyaratan runtime. Orkestrator seperti Kubernetes dapat menyuntikkan nilai yang sama langsung ke container. Orkestrator dapat memberikan `DB_TYPE` beserta variabel koneksi khusus penyedia, atau memberikan `DATABASE_URL` secara langsung. Jika `DB_TYPE` tidak diberikan, entrypoint menentukan tipenya dari skema URL PostgreSQL atau MySQL/MariaDB.
+Image web mendengarkan HTTP secara default. HTTPS dan pengalihan HTTP ke HTTPS juga diaktifkan ketika kedua path sertifikat yang dikonfigurasi tersedia dan dapat dibaca. Variabel mode TLS tidak diperlukan.
 
 ```sh
-./setup.sh
 docker compose up --build
 ```
 
 ## Konfigurasi
 
-| Variabel                         | Default                        | Keterangan                                                                                                  |
-| -------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `DB_TYPE`                        | `postgresql`                   | Backend database: `postgresql` atau `mariadb`                                                               |
-| `DATABASE_URL`                   | —                              | Dibangun oleh entrypoint container dari pengaturan mesin                                                    |
-| `LOG_LEVEL`                      | `info`                         | Verbositas stream log runtime                                                                               |
-| `LOG_ROTATE_MAX_BYTES`           | `10485760`                     | Rotasi file log aktif saat ukuran ini tercapai (byte)                                                       |
-| `LOG_ROTATE_MAX_FILES`           | `10`                           | Jumlah arsip log hasil rotasi yang disimpan                                                                 |
-| `LOG_ROTATE_COMPRESS`            | `true`                         | Kompres log hasil rotasi dengan gzip (`.gz`)                                                                |
-| `PORT`                           | `3000`                         | Port HTTP                                                                                                   |
-| `COGNIS_WEB_TLS_MODE`            | `terminate`                    | Mode TLS web: `terminate` untuk HTTPS lokal atau `deferred` untuk HTTP di belakang terminator TLS tepercaya |
-| `COGNIS_WEB_TLS_CERTIFICATE`     | `/etc/nginx/tls/fullchain.pem` | Path sertifikat di `cognis-web`; hanya dibaca dalam mode `terminate`                                        |
-| `COGNIS_WEB_TLS_CERTIFICATE_KEY` | `/etc/nginx/tls/privkey.pem`   | Path kunci privat; hanya dibaca dalam mode `terminate`                                                      |
-| `HOST`                           | —                              | Hostname layanan internal yang wajib                                                                        |
-| `EXTERNAL_HOST`                  | —                              | URL publik yang wajib dan dapat dijangkau                                                                   |
-| `CONTACT_EMAIL`                  | —                              | Alamat kontak publik yang wajib                                                                             |
-| `COGNIS_SMTP_HOST`               | —                              | Hostname server SMTP                                                                                        |
+| Variabel                         | Default                        | Keterangan                                                                        |
+| -------------------------------- | ------------------------------ | --------------------------------------------------------------------------------- |
+| `DB_TYPE`                        | `postgresql`                   | Backend database: `postgresql` atau `mariadb`                                     |
+| `DATABASE_URL`                   | —                              | URL koneksi basis data; ganti untuk penyedia yang dipilih                         |
+| `LOG_LEVEL`                      | `info`                         | Verbositas stream log runtime                                                     |
+| `LOG_ROTATE_MAX_BYTES`           | `10485760`                     | Rotasi file log aktif saat ukuran ini tercapai (byte)                             |
+| `LOG_ROTATE_MAX_FILES`           | `10`                           | Jumlah arsip log hasil rotasi yang disimpan                                       |
+| `LOG_ROTATE_COMPRESS`            | `true`                         | Kompres log hasil rotasi dengan gzip (`.gz`)                                      |
+| `PORT`                           | `3000`                         | Port HTTP                                                                         |
+| `COGNIS_WEB_TLS_CERTIFICATE`     | `/etc/nginx/tls/fullchain.pem` | Path sertifikat; file sertifikat dan kunci yang dapat dibaca mengaktifkan HTTPS   |
+| `COGNIS_WEB_TLS_CERTIFICATE_KEY` | `/etc/nginx/tls/privkey.pem`   | Path kunci privat; file sertifikat dan kunci yang dapat dibaca mengaktifkan HTTPS |
+| `HOST`                           | —                              | Hostname layanan internal yang wajib                                              |
+| `EXTERNAL_HOST`                  | —                              | URL publik yang wajib dan dapat dijangkau                                         |
+| `CONTACT_EMAIL`                  | —                              | Alamat kontak publik yang wajib                                                   |
+| `COGNIS_SMTP_HOST`               | —                              | Hostname server SMTP                                                              |
 
-Nilai default Docker dan penggantian penyiapan aktif tercantum langsung dalam file env di bawah `docker/env/`.
+Default aplikasi dideklarasikan dalam `docker/Dockerfile`; default web dideklarasikan dalam `docker/cognis-web/Dockerfile`.

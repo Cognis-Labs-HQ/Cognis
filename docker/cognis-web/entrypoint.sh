@@ -12,24 +12,11 @@ esac
 printf 'upstream cognis_app {\n    server %s:3000;\n    keepalive 64;\n}\n' \
   "$upstream_host" > /etc/nginx/conf.d/00-upstream.conf
 
-mode="${COGNIS_WEB_TLS_MODE:-terminate}"
-tls_certificate_path="${COGNIS_WEB_TLS_CERTIFICATE:-/etc/nginx/tls/fullchain.pem}"
-tls_certificate_key_path="${COGNIS_WEB_TLS_CERTIFICATE_KEY:-/etc/nginx/tls/privkey.pem}"
-case "$mode" in
-  terminate|deferred) ;;
-  *)
-    echo "COGNIS_WEB_TLS_MODE must be 'terminate' or 'deferred'" >&2
-    exit 1
-    ;;
-esac
+tls_certificate_path="${COGNIS_WEB_TLS_CERTIFICATE:-}"
+tls_certificate_key_path="${COGNIS_WEB_TLS_CERTIFICATE_KEY:-}"
 
-if [ "$mode" = "terminate" ]; then
-  if [ ! -r "$tls_certificate_path" ] || [ ! -r "$tls_certificate_key_path" ]; then
-    echo "TLS termination requires readable certificate and key files. Set COGNIS_WEB_TLS_MODE=deferred when HTTPS terminates at an upstream reverse proxy or CDN." >&2
-    echo "Missing or unreadable: $tls_certificate_path $tls_certificate_key_path" >&2
-    exit 1
-  fi
-
+if [ -n "$tls_certificate_path" ] && [ -n "$tls_certificate_key_path" ] && \
+   [ -r "$tls_certificate_path" ] && [ -r "$tls_certificate_key_path" ]; then
   cat > /etc/nginx/conf.d/default.conf <<'TERMINATE'
 server {
     listen 80;

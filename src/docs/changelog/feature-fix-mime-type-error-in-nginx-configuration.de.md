@@ -16,4 +16,4 @@ Der Web-Proxy übernimmt den Hostnamen des Anwendungsdienstes aus `HOST`, statt 
 
 ## Neutraler Containerstart
 
-Der Anwendungseinstieg prüft oder filtert öffentliche Einstellungen wie `CONTACT_EMAIL` nicht mehr vorab. Umgebungsvariablen werden unabhängig davon, ob Docker Compose, Kubernetes, Podman oder ein anderes Bereitstellungssystem sie liefert, direkt an Cognis weitergegeben. Der Einstieg leitet nur dann `DATABASE_URL` ab, wenn getrennte Datenbankfelder verwendet werden, und ersetzt sich anschließend durch den Anwendungsprozess, damit Cognis die Validierung und das ordnungsgemäße Herunterfahren übernimmt.
+Der Containerstart wurde auf die Ausführung des Anwendungsbefehls reduziert. Ausführbare Standardwerte befinden sich nun im Image, erzeugte Umgebungsdateien und `setup.sh` wurden entfernt, und Bereitstellungen können Variablen über ihren nativen Umgebungsmechanismus überschreiben. Der Web-Proxy aktiviert TLS nur dann automatisch, wenn beide konfigurierten Zertifikatdateien lesbar sind; eine TLS-Modusvariable wird nicht verwendet.

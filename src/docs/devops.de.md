@@ -31,14 +31,13 @@ EXPOSE 3000
 CMD ["node", "src/api/main.js"]
 ```
 
-### Umgebungsprofile
+### Container-Standardwerte
 
-Docker-Standardwerte verbleiben in der versionierten Datei `docker/env/default.env`. `./setup.sh` schreibt Anwendungs- und Datenbankwerte in `docker/env/runtime.env` und ausschließlich Web-TLS-Einstellungen in `docker/env/cognis-web.env`. Compose stellt `cognis-web` nur die Web-Datei bereit, sodass der Container weder Cognis-Verschlüsselungsschlüssel noch Datenbankzugangsdaten lesen kann. Die Einrichtung fragt, ob ein separater Reverse Proxy oder CDN HTTPS vor `cognis-web` terminiert; Ja schreibt `COGNIS_WEB_TLS_MODE=deferred`, Nein behält lokale TLS-Terminierung mit `terminate` bei.
+Ausführbare Standardwerte sind direkt in den Anwendungs- und Web-Images enthalten. `docker compose up --build` startet den PostgreSQL-Stack ohne erzeugte Umgebungsdateien; für MariaDB verwenden Sie `docker compose -f docker-compose.mariadb.yaml up --build`. Bereitstellungen können die Image-Standardwerte über ihre normale Umgebungskonfiguration überschreiben. Der Anwendungseinstieg führt nur den konfigurierten Befehl aus.
 
-Env-Dateien sind eine Annehmlichkeit für Compose und keine Laufzeitanforderung. Orchestratoren wie Kubernetes können dieselben Werte direkt in den Container einspeisen. Sie können entweder `DB_TYPE` und die providerspezifischen Verbindungsvariablen oder direkt `DATABASE_URL` bereitstellen. Wenn `DB_TYPE` fehlt, leitet der Entrypoint den Typ aus einem PostgreSQL- oder MySQL/MariaDB-URL-Schema ab.
+Das Web-Image lauscht standardmäßig auf HTTP. HTTPS und die Umleitung von HTTP zu HTTPS werden zusätzlich aktiviert, wenn beide konfigurierten Zertifikatspfade vorhanden und lesbar sind. Eine TLS-Modusvariable ist nicht erforderlich.
 
 ```sh
-./setup.sh
 docker compose up --build
 ```
 
@@ -50,21 +49,20 @@ docker compose up --build
 
 ## Konfiguration
 
-| Variable                         | Standard                       | Beschreibung                                                                                                         |
-| -------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
-| `DB_TYPE`                        | `postgresql`                   | Datenbank-Backend: `postgresql` oder `mariadb`                                                                       |
-| `DATABASE_URL`                   | —                              | Wird vom Container-Entrypoint aus den Systemeinstellungen erstellt                                                   |
-| `LOG_LEVEL`                      | `info`                         | Ausführlichkeit des Laufzeit-Logstreams                                                                              |
-| `LOG_ROTATE_MAX_BYTES`           | `10485760`                     | Rotiert die aktive Logdatei ab dieser Größe (Bytes)                                                                  |
-| `LOG_ROTATE_MAX_FILES`           | `10`                           | Anzahl der aufzubewahrenden rotierten Logarchive                                                                     |
-| `LOG_ROTATE_COMPRESS`            | `true`                         | Komprimiert rotierte Logs als gzip (`.gz`)                                                                           |
-| `PORT`                           | `3000`                         | HTTP-Port                                                                                                            |
-| `COGNIS_WEB_TLS_MODE`            | `terminate`                    | Web-TLS-Modus: `terminate` für lokales HTTPS oder `deferred` für HTTP hinter einem vertrauenswürdigen TLS-Terminator |
-| `COGNIS_WEB_TLS_CERTIFICATE`     | `/etc/nginx/tls/fullchain.pem` | Zertifikatspfad in `cognis-web`; nur im Modus `terminate` gelesen                                                    |
-| `COGNIS_WEB_TLS_CERTIFICATE_KEY` | `/etc/nginx/tls/privkey.pem`   | Pfad zum privaten Schlüssel; nur im Modus `terminate` gelesen                                                        |
-| `HOST`                           | —                              | Erforderlicher interner Service-Hostname                                                                             |
-| `EXTERNAL_HOST`                  | —                              | Erforderliche öffentlich erreichbare URL                                                                             |
-| `CONTACT_EMAIL`                  | —                              | Erforderliche öffentliche Kontaktadresse                                                                             |
-| `COGNIS_SMTP_HOST`               | —                              | SMTP-Server-Hostname                                                                                                 |
+| Variable                         | Standard                       | Beschreibung                                                               |
+| -------------------------------- | ------------------------------ | -------------------------------------------------------------------------- |
+| `DB_TYPE`                        | `postgresql`                   | Datenbank-Backend: `postgresql` oder `mariadb`                             |
+| `DATABASE_URL`                   | —                              | Datenbankverbindungs-URL; für den gewählten Provider überschreiben         |
+| `LOG_LEVEL`                      | `info`                         | Ausführlichkeit des Laufzeit-Logstreams                                    |
+| `LOG_ROTATE_MAX_BYTES`           | `10485760`                     | Rotiert die aktive Logdatei ab dieser Größe (Bytes)                        |
+| `LOG_ROTATE_MAX_FILES`           | `10`                           | Anzahl der aufzubewahrenden rotierten Logarchive                           |
+| `LOG_ROTATE_COMPRESS`            | `true`                         | Komprimiert rotierte Logs als gzip (`.gz`)                                 |
+| `PORT`                           | `3000`                         | HTTP-Port                                                                  |
+| `COGNIS_WEB_TLS_CERTIFICATE`     | `/etc/nginx/tls/fullchain.pem` | Zertifikatspfad; lesbare Zertifikat- und Schlüsseldateien aktivieren HTTPS |
+| `COGNIS_WEB_TLS_CERTIFICATE_KEY` | `/etc/nginx/tls/privkey.pem`   | Schlüsselpfad; lesbare Zertifikat- und Schlüsseldateien aktivieren HTTPS   |
+| `HOST`                           | —                              | Erforderlicher interner Service-Hostname                                   |
+| `EXTERNAL_HOST`                  | —                              | Erforderliche öffentlich erreichbare URL                                   |
+| `CONTACT_EMAIL`                  | `admin@localhost`              | Öffentliche Kontaktadresse                                                 |
+| `COGNIS_SMTP_HOST`               | —                              | SMTP-Server-Hostname                                                       |
 
-Die aktiven Docker-Standardwerte und Einrichtungsüberschreibungen stehen direkt in den Env-Dateien unter `docker/env/`.
+Anwendungsstandardwerte sind in `docker/Dockerfile` deklariert; Web-Standardwerte stehen in `docker/cognis-web/Dockerfile`.

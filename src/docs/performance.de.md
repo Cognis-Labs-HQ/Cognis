@@ -1,6 +1,6 @@
 # Leistungsbudgets
 
-Produktionsverkehr endet am Web-Proxy `cognis-web`, der aus `docker/cognis-web` gebaut und von GitLab CI als `$CI_REGISTRY_IMAGE/cognis-web` veröffentlicht wird. Standardmäßig aktiviert `COGNIS_WEB_TLS_MODE=terminate` den lokalen HTTPS-Listener und benötigt das TLS-Zertifikat unter `docker/tls/fullchain.pem` sowie den Schlüssel unter `docker/tls/privkey.pem`. Setzen Sie `COGNIS_WEB_TLS_MODE=deferred` nur hinter einem vertrauenswürdigen vorgelagerten TLS-Terminator; Nginx lauscht dann nur auf HTTP, behält dieselbe Cache-Richtlinie bei und leitet den vertrauenswürdigen vorgelagerten Protokoll-Header weiter, wenn er vorhanden ist. Verwaltete CDNs können dieselbe Cache- und Weiterleitungsrichtlinie umsetzen. Nur die Kante wird veröffentlicht, daher bildet ihr Ersetzen der Weiterleitungsheader die Vertrauensgrenze.
+Produktionsverkehr endet am Proxy `cognis-web`. Er lauscht immer auf HTTP und aktiviert HTTPS einschließlich der Umleitung von HTTP zu HTTPS, wenn beide konfigurierten TLS-Zertifikatdateien vorhanden und lesbar sind. Ohne verwendbare Zertifikate bleibt er für den Betrieb hinter einem Reverse Proxy oder CDN auf HTTP beschränkt. In beiden Fällen gilt dieselbe Cache-Richtlinie.
 
 ## Protokoll für gehostete Basiswerte
 

@@ -30,34 +30,32 @@ EXPOSE 3000
 CMD ["node", "src/api/main.js"]
 ```
 
-### 環境プロファイル
+### コンテナの既定値
 
-Dockerのデフォルト値は `docker/env/default.env` に保持されます。`./setup.sh` はアプリケーションとデータベースの値を `docker/env/runtime.env` に、エッジTLS設定だけを `docker/env/cognis-web.env` に書き込みます。Composeは `cognis-web` にWebファイルのみを渡すため、Cognisの暗号化キーやデータベース認証情報を読み取れません。セットアップは、別のリバースプロキシまたはCDNがHTTPSを終端するか確認し、はいなら `deferred`、いいえなら `terminate` を書き込みます。
+実行可能な既定値はアプリケーションと Web の各イメージに組み込まれています。`docker compose up --build` は生成済み環境ファイルなしで PostgreSQL スタックを起動します。MariaDB には `docker compose -f docker-compose.mariadb.yaml up --build` を使用します。デプロイは通常の環境設定でイメージの既定値を上書きできます。アプリケーションのエントリポイントは設定されたコマンドを実行するだけです。
 
-envファイルはCompose向けの便宜的な手段であり、実行時の必須要件ではありません。Kubernetesなどのオーケストレーターは、同じ値をコンテナへ直接注入できます。`DB_TYPE` とプロバイダー固有の接続変数を指定する方法と、`DATABASE_URL` を直接指定する方法のどちらも利用できます。`DB_TYPE` を省略すると、エントリポイントはPostgreSQLまたはMySQL/MariaDBのURLスキームから種類を判定します。
+Web イメージは既定で HTTP を待ち受けます。設定された両方の証明書パスが存在して読み取り可能な場合は、HTTPS と HTTP から HTTPS へのリダイレクトも有効になります。TLS モード変数は不要です。
 
 ```sh
-./setup.sh
 docker compose up --build
 ```
 
 ## 設定
 
-| 変数                             | デフォルト                     | 説明                                                                                             |
-| -------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `DB_TYPE`                        | `postgresql`                   | データベースバックエンド: `postgresql` または `mariadb`                                          |
-| `DATABASE_URL`                   | —                              | 選択したエンジン設定からコンテナのエントリポイントが構築                                         |
-| `LOG_LEVEL`                      | `info`                         | ランタイムログストリームの詳細度フィルター                                                       |
-| `LOG_ROTATE_MAX_BYTES`           | `10485760`                     | このサイズ（バイト）でアクティブログをローテーション                                             |
-| `LOG_ROTATE_MAX_FILES`           | `10`                           | 保持するローテーション済みログアーカイブ数                                                       |
-| `LOG_ROTATE_COMPRESS`            | `true`                         | ローテーション済みログを gzip（`.gz`）圧縮                                                       |
-| `PORT`                           | `3000`                         | HTTPポート                                                                                       |
-| `COGNIS_WEB_TLS_MODE`            | `terminate`                    | エッジTLSモード: ローカルHTTPSは `terminate`、信頼済みTLS終端の背後でHTTPのみの場合は `deferred` |
-| `COGNIS_WEB_TLS_CERTIFICATE`     | `/etc/nginx/tls/fullchain.pem` | `cognis-web` 内の証明書パス。`terminate` モードでのみ読み込みます                                |
-| `COGNIS_WEB_TLS_CERTIFICATE_KEY` | `/etc/nginx/tls/privkey.pem`   | 秘密鍵パス。`terminate` モードでのみ読み込みます                                                 |
-| `HOST`                           | —                              | 必須の内部サービスホスト名                                                                       |
-| `EXTERNAL_HOST`                  | —                              | 必須の公開アクセスURL                                                                            |
-| `CONTACT_EMAIL`                  | —                              | 必須の公開連絡先                                                                                 |
-| `COGNIS_SMTP_HOST`               | —                              | SMTPサーバーのホスト名                                                                           |
+| 変数                             | デフォルト                     | 説明                                                              |
+| -------------------------------- | ------------------------------ | ----------------------------------------------------------------- |
+| `DB_TYPE`                        | `postgresql`                   | データベースバックエンド: `postgresql` または `mariadb`           |
+| `DATABASE_URL`                   | —                              | データベース接続 URL。選択したプロバイダーに合わせて上書き        |
+| `LOG_LEVEL`                      | `info`                         | ランタイムログストリームの詳細度フィルター                        |
+| `LOG_ROTATE_MAX_BYTES`           | `10485760`                     | このサイズ（バイト）でアクティブログをローテーション              |
+| `LOG_ROTATE_MAX_FILES`           | `10`                           | 保持するローテーション済みログアーカイブ数                        |
+| `LOG_ROTATE_COMPRESS`            | `true`                         | ローテーション済みログを gzip（`.gz`）圧縮                        |
+| `PORT`                           | `3000`                         | HTTPポート                                                        |
+| `COGNIS_WEB_TLS_CERTIFICATE`     | `/etc/nginx/tls/fullchain.pem` | 証明書パス。証明書と鍵の両方が読み取り可能な場合に HTTPS を有効化 |
+| `COGNIS_WEB_TLS_CERTIFICATE_KEY` | `/etc/nginx/tls/privkey.pem`   | 秘密鍵パス。証明書と鍵の両方が読み取り可能な場合に HTTPS を有効化 |
+| `HOST`                           | —                              | 必須の内部サービスホスト名                                        |
+| `EXTERNAL_HOST`                  | —                              | 必須の公開アクセスURL                                             |
+| `CONTACT_EMAIL`                  | —                              | 必須の公開連絡先                                                  |
+| `COGNIS_SMTP_HOST`               | —                              | SMTPサーバーのホスト名                                            |
 
-有効なDockerデフォルト値とセットアップ上書き値は、`docker/env/` 配下のEnvファイルに直接記載されています。
+アプリケーションの既定値は `docker/Dockerfile` に、Web の既定値は `docker/cognis-web/Dockerfile` に定義されています。

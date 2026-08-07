@@ -16,4 +16,4 @@ Proksi web mengambil nama host layanan aplikasi dari `HOST` alih-alih menganggap
 
 ## Proses awal kontainer tetap netral
 
-Entrypoint aplikasi tidak lagi melakukan pravalidasi atau menyaring pengaturan publik seperti `CONTACT_EMAIL`. Variabel lingkungan diteruskan langsung ke Cognis tanpa bergantung pada Docker Compose, Kubernetes, Podman, atau sistem penerapan lain yang menyediakannya. Entrypoint hanya membentuk `DATABASE_URL` ketika field basis data terpisah digunakan, lalu menggantikan dirinya dengan proses aplikasi agar Cognis menangani validasi dan penghentian yang baik.
+Proses awal kontainer disederhanakan menjadi sekadar menjalankan perintah aplikasi. Default yang dapat dijalankan kini berada dalam image, file lingkungan buatan dan `setup.sh` dihapus, dan penerapan dapat mengganti variabel melalui mekanisme lingkungan bawaannya. Proksi web mengaktifkan TLS secara otomatis hanya ketika kedua file sertifikat yang dikonfigurasi dapat dibaca; tidak ada variabel mode TLS.
