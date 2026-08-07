@@ -2,13 +2,13 @@
 
 ## Overview
 
-Cognis ships a Node 22 application image and composes it with the upstream `nginx:stable-alpine` image. The CI/CD pipeline covers automated testing on every push or pull request and automated image delivery to a container registry on release. Both GitHub Actions and GitLab CI configurations are included in the repository.
+Cognis ships a Node 24 application image and composes it with the upstream `nginx:stable-alpine` image. The CI/CD pipeline covers automated testing on every push or pull request and automated image delivery to a container registry on release. Both GitHub Actions and GitLab CI configurations are included in the repository.
 
 The application image installs production dependencies, runs as the non-root `cognis` user, and exposes one internal port. Compose places generic nginx in front of it with a mounted native configuration template. Runtime behaviour is controlled through environment variables and mounted configuration files.
 
 ## Responsibilities
 
-- Build a runnable, non-root Node 22 application image from the repository source.
+- Build a runnable, non-root Node 24 application image from the repository source.
 - Run install, typecheck, and tests on every push and pull request (CI).
 - Build and push the application image to a container registry on release (CD).
 - Provide database-specific production and development Compose files for PostgreSQL and MariaDB.
@@ -19,7 +19,7 @@ Not responsible for: infrastructure provisioning, secrets management beyond env 
 
 ### Dockerfile
 
-The Dockerfile at `docker/Dockerfile` uses a single `FROM node:22` stage. Key properties:
+The Dockerfile at `docker/Dockerfile` uses a single `FROM node:24` stage. Key properties:
 
 - Creates a non-root `cognis` system user and group.
 - Creates runtime directories `/app/logs`, `/app/data`, `/app/config`, and `/app/media/uploads` with correct ownership before switching user.
@@ -63,7 +63,7 @@ Two workflows live in `.github/workflows/`:
 
 `.gitlab-ci.yml` defines two jobs:
 
-**`test`** — Runs on every branch commit and tag using `node:22-alpine`:
+**`test`** — Runs on every branch commit and tag using `node:24-alpine`:
 
 ```
 apk add ripgrep python3 build-base

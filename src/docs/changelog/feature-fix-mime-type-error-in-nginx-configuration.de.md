@@ -29,3 +29,11 @@ Das Anwendungs-Image installiert Entwicklungsabhängigkeiten ausdrücklich für 
 ## Compose-Datenbankwerte entsprechen dem Einstieg
 
 Die Compose-Profile für PostgreSQL und MariaDB reichen nun genau die providerspezifischen Felder für Host, Port, Datenbank, Konto und Kennwort weiter, die der Anwendungseinstieg verwendet. Cognis erzeugt `DATABASE_URL` einheitlich, ohne eine zusätzlich vormontierte URL zu verlangen.
+
+## cognisctl läuft ohne Entwicklungsabhängigkeiten
+
+Das Container-Skript startet nun direkt die kompilierte Cognis-CLI, statt ihren TypeScript-Quellcode über tsx zu laden. Die CLI bleibt dadurch verfügbar, nachdem reine Entwicklungsabhängigkeiten aus dem Produktions-Image entfernt wurden.
+
+## Laufzeit und Abhängigkeiten sind aktuell
+
+Anwendungs-Image und CI verwenden nun die aktuelle Node.js-24-LTS-Versionslinie. Build-Werkzeuge, TypeScript, Datenbankclients und LDAP-Client wurden auf ihre neuesten stabilen Versionen aktualisiert; Docker-Buildbefehle unterdrücken außerdem die veraltete npm-Konfigurationswarnung zu `http-proxy`. Alle Komponentenversionen und internen Abhängigkeiten mit geprüfter Obergrenze wurden erhöht und zwischen Manifesten, Sperrdatei und übersetzten Versionsverzeichnissen synchronisiert.

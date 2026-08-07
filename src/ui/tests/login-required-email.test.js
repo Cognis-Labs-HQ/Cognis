@@ -15,16 +15,20 @@ test("login required-email enforcement resolves helper from flow-provided integr
         resolve(ROOT, "src/ui/app/login/index.js"),
         "utf8",
     );
+    const integrationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/login/integrations.js"),
+        "utf8",
+    );
     assert.match(
         source,
         /loadLoginIntegrationClient\(\s*"required-email-enforcement"/,
     );
-    assert.match(source, /function loadLoginIntegrationClient\(/);
     assert.match(
         source,
-        /loadLoginIntegrationClient\(\s*"required-email-enforcement",\s*\(mod\)\s*=>\s*mod\.createRequiredEmailEnforcementClient\(\)/,
+        /loadLoginIntegrationClient\(\s*"required-email-enforcement",\s*\(module\)\s*=>\s*module\.createRequiredEmailEnforcementClient\(\)/,
     );
-    assert.match(source, /fetch\("\/api\/v1\/auth\/login-ui"\)/);
+    assert.match(integrationSource, /async function loadClient\(/);
+    assert.match(integrationSource, /fetch\("\/api\/v1\/auth\/login-ui"\)/);
     assert.match(source, /requiredEmailClient\?\.enforceRequiredEmailSetup/);
     assert.doesNotMatch(source, /\/api\/v1\/users\/\$\{encodeURIComponent/);
 });

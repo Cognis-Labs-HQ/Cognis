@@ -15,6 +15,7 @@ import {
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
+import { createLoginIntegrationLoader } from "./integrations.js";
 import "../../reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 
@@ -34,9 +35,12 @@ export async function mount(root) {
     let lastTfaPayload = null;
     let tfaLoginClientPromise = null;
     let requiredEmailEnforcementClientPromise = null;
-    let loginUiConfigLoadPromise = null;
     let passwordResetTokenHandled = false;
     let submitPasswordReset = null;
+    const {
+        loadConfig: loadLoginUiConfig,
+        loadClient: loadLoginIntegrationClient,
+    } = createLoginIntegrationLoader();
 
     const typingSamples = await loadAuthTypingSamples(i18n);
     const loginReason = new URL(window.location.href).searchParams.get(
@@ -75,64 +79,12 @@ export async function mount(root) {
         });
     }
 
-    async function loadLoginUiConfig() {
-        if (!loginUiConfigLoadPromise) {
-            loginUiConfigLoadPromise = fetch("/api/v1/auth/login-ui")
-                .then(async (response) => {
-                    if (!response.ok) {
-                        throw new Error("login_ui_unavailable");
-                    }
-                    const payload = await response.json().catch(() => null);
-                    const data = payload?.data ?? {};
-                    const methods = Array.isArray(data.methods)
-                        ? data.methods
-                        : [];
-                    const integrations = Array.isArray(data.integrations)
-                        ? data.integrations
-                        : [];
-                    return { methods, integrations };
-                })
-                .catch(() => ({
-                    methods: [],
-                    integrations: [],
-                }));
-        }
-        return loginUiConfigLoadPromise;
-    }
-
-    async function resolveLoginIntegration(id) {
-        const config = await loadLoginUiConfig();
-        return (
-            config.integrations.find(
-                (integration) =>
-                    integration &&
-                    integration.id === id &&
-                    typeof integration.scriptUrl === "string" &&
-                    integration.scriptUrl.trim().length > 0,
-            ) ?? null
-        );
-    }
-
-    function loadLoginIntegrationClient(integrationId, createClient) {
-        return resolveLoginIntegration(integrationId)
-            .then((integration) => {
-                if (!integration) {
-                    return null;
-                }
-                return import(integration.scriptUrl).then((mod) =>
-                    createClient(mod),
-                );
-            })
-            .catch((error) => {
-                console.error(error);
-                return null;
-            });
-    }
-
     async function loadTfaLoginClient() {
         if (!tfaLoginClientPromise) {
-            tfaLoginClientPromise = loadLoginIntegrationClient("tfa", (mod) =>
-                mod.createTfaLoginClient({ baseI18n: i18n, root }),
+            tfaLoginClientPromise = loadLoginIntegrationClient(
+                "tfa",
+                (module) =>
+                    module.createTfaLoginClient({ baseI18n: i18n, root }),
             );
         }
         return tfaLoginClientPromise;
@@ -142,7 +94,7 @@ export async function mount(root) {
         if (!requiredEmailEnforcementClientPromise) {
             requiredEmailEnforcementClientPromise = loadLoginIntegrationClient(
                 "required-email-enforcement",
-                (mod) => mod.createRequiredEmailEnforcementClient(),
+                (module) => module.createRequiredEmailEnforcementClient(),
             );
         }
         return requiredEmailEnforcementClientPromise;

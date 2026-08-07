@@ -29,3 +29,11 @@ The application image explicitly installs development dependencies for its build
 ## Compose database settings match the entrypoint
 
 The PostgreSQL and MariaDB Compose profiles now pass the exact provider-specific host, port, database, account, and password fields consumed by the application entrypoint. Cognis constructs `DATABASE_URL` consistently without requiring a redundant preassembled URL.
+
+## cognisctl runs without development dependencies
+
+The container wrapper now starts the compiled Cognis CLI directly instead of loading its TypeScript source through tsx. The CLI therefore remains available after development-only packages are pruned from the production image.
+
+## Runtime and dependencies are current
+
+The application image and CI now use the latest Node.js 24 LTS release line. Build tooling, TypeScript, database clients, and the LDAP client have been updated to their latest stable releases, and Docker build commands suppress the deprecated npm `http-proxy` configuration warning. Every component version and internal tested-ceiling dependency has been advanced and synchronized across manifests, the lockfile, and translated version indexes.

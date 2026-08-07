@@ -11,7 +11,7 @@ cache:
         - node_modules/
 
 test:
-    image: node:22-alpine
+    image: node:24-alpine
     script:
         - apk add ripgrep python3 build-base
         - npm ci

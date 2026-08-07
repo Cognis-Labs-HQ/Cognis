@@ -2,13 +2,13 @@
 
 ## Ikhtisar
 
-Cognis mengirimkan image aplikasi Node 22 dan menggabungkannya dengan image `nginx:stable-alpine` tanpa modifikasi. Pipeline CI/CD mencakup pengujian otomatis pada setiap push atau pull request dan pengiriman image otomatis ke container registry saat rilis.
+Cognis mengirimkan image aplikasi Node 24 dan menggabungkannya dengan image `nginx:stable-alpine` tanpa modifikasi. Pipeline CI/CD mencakup pengujian otomatis pada setiap push atau pull request dan pengiriman image otomatis ke container registry saat rilis.
 
 Image aplikasi menginstal dependensi produksi, berjalan sebagai pengguna `cognis` non-root, dan mengekspos satu port internal. Compose menempatkan nginx generik di depannya dengan templat konfigurasi native yang dipasang.
 
 ## Tanggung Jawab
 
-- Membangun image aplikasi Node 22 yang dapat dijalankan dan non-root dari sumber repositori.
+- Membangun image aplikasi Node 24 yang dapat dijalankan dan non-root dari sumber repositori.
 - Menjalankan instalasi, pengecekan tipe, dan pengujian pada setiap push dan pull request (CI).
 - Membangun dan mendorong image aplikasi ke container registry saat rilis (CD).
 - Menyediakan file Compose produksi dan pengembangan khusus database untuk PostgreSQL dan MariaDB.
@@ -17,7 +17,7 @@ Image aplikasi menginstal dependensi produksi, berjalan sebagai pengguna `cognis
 
 ### Dockerfile
 
-Dockerfile di `docker/Dockerfile` menggunakan satu stage `FROM node:22`:
+Dockerfile di `docker/Dockerfile` menggunakan satu stage `FROM node:24`:
 
 - Membuat pengguna dan grup sistem `cognis` non-root.
 - Membuat direktori runtime dengan kepemilikan yang benar.

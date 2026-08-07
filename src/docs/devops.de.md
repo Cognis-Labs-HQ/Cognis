@@ -17,7 +17,7 @@ Das Anwendungs-Image installiert Produktionsabhängigkeiten, läuft als nicht-ro
 
 ### Dockerfile
 
-Das Dockerfile unter `docker/Dockerfile` verwendet eine einzelne `FROM node:22`-Stage:
+Das Dockerfile unter `docker/Dockerfile` verwendet eine einzelne `FROM node:24`-Stage:
 
 - Erstellt einen nicht-root `cognis`-System-Benutzer und -Gruppe.
 - Erstellt Laufzeit-Verzeichnisse mit korrekten Besitzrechten.

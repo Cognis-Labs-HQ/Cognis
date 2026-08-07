@@ -33,8 +33,7 @@ async function loadLocalFileGateway(
         `${localAdapterPath}?t=${Date.now()}`
     );
     const LocalAdapterGatewayClass = localAdapterModule.LocalFileGateway as
-        | (new (rootPath: string) => FileStorageGateway)
-        | undefined;
+        (new (rootPath: string) => FileStorageGateway) | undefined;
     if (!LocalAdapterGatewayClass) {
         throw new Error("local_file_adapter_missing_gateway_class");
     }

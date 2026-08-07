@@ -29,3 +29,11 @@ Image aplikasi secara eksplisit memasang dependensi pengembangan untuk tahap bui
 ## Pengaturan basis data Compose selaras dengan entrypoint
 
 Profil Compose PostgreSQL dan MariaDB kini meneruskan field host, port, basis data, akun, dan kata sandi khusus penyedia yang digunakan entrypoint aplikasi. Cognis menyusun `DATABASE_URL` secara konsisten tanpa memerlukan URL rakitan yang berlebihan.
+
+## cognisctl berjalan tanpa dependensi pengembangan
+
+Skrip kontainer kini menjalankan CLI Cognis hasil kompilasi secara langsung alih-alih memuat sumber TypeScript melalui tsx. Dengan demikian, CLI tetap tersedia setelah paket khusus pengembangan dihapus dari image produksi.
+
+## Runtime dan dependensi telah diperbarui
+
+Image aplikasi dan CI kini menggunakan lini Node.js 24 LTS terbaru. Alat build, TypeScript, klien basis data, dan klien LDAP telah diperbarui ke rilis stabil terbaru, sedangkan perintah build Docker membisukan peringatan konfigurasi npm `http-proxy` yang usang. Semua versi komponen dan batas atas dependensi internal yang teruji telah dinaikkan serta diselaraskan pada manifest, lockfile, dan indeks versi terjemahan.

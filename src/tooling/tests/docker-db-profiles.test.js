@@ -75,12 +75,19 @@ test("Docker profiles use native environment injection", async () => {
 
 test("application image excludes sensitive environment defaults", async () => {
     const dockerfile = await readFile("docker/Dockerfile", "utf8");
+    const cognisctl = await readFile("docker/cognisctl", "utf8");
 
+    assert.match(dockerfile, /^FROM node:24 AS base/m);
     assert.doesNotMatch(dockerfile, /\bDATABASE_URL=/);
     assert.doesNotMatch(dockerfile, /\bDATA_ENCRYPTION_KEY=/);
     assert.match(dockerfile, /\bCOGNIS_UI_DIST_ROOT=/);
     assert.match(dockerfile, /npm ci --ignore-scripts --include=dev/);
     assert.match(dockerfile, /npm prune --ignore-scripts --omit=dev/);
+    assert.equal(dockerfile.match(/npm_config_http_proxy= npm/g)?.length, 5);
+    assert.match(
+        cognisctl,
+        /exec node \/app\/dist\/server\/src\/tooling\/cli\/index\.js "\$@"/,
+    );
 });
 
 test(

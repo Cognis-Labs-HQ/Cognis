@@ -165,8 +165,7 @@ export function createSessionRoutes({
             index -= 1
         ) {
             const stageResult = establishStageResults[index] as
-                | { sessionResult?: unknown }
-                | undefined;
+                { sessionResult?: unknown } | undefined;
             if (
                 stageResult?.sessionResult &&
                 typeof stageResult.sessionResult === "object"

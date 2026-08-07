@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Lightweight healthcheck for the Cognis API.
 #
-# Prefers wget (available in node:22/Debian) for a low-overhead HTTP probe.
+# Prefers wget (available in the Node Debian image) for a low-overhead HTTP probe.
 # Falls back to curl, then to the Node.js implementation as a last resort.
 # Exits 0 when the API returns HTTP 200, non-zero otherwise.
 set -eo pipefail

@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-node --import tsx /app/src/tooling/cli/index.ts "$@"
+exec node /app/dist/server/src/tooling/cli/index.js "$@"

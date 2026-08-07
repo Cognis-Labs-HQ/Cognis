@@ -1,7 +1,7 @@
 {
     "id": "files",
     "name": "File Storage Gateway",
-    "version": "2.1.4",
+    "version": "2.1.5",
     "required": true,
     "description": "Provides namespaced, ACL- and quota-enforced file storage for uploads and application logging.",
     "publisher": "Cognis Labs HQ",
