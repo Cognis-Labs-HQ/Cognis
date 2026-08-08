@@ -57,7 +57,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.0`  |
-| File Logging          | `src/adapters/logging/file/`        | `1.1.0`  |
+| File Logging          | `src/adapters/logging/file/`        | `1.1.1`  |
 
 ## Gateways
 

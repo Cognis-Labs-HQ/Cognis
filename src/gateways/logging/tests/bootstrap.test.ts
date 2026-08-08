@@ -97,6 +97,24 @@ test("logging adapter level overrides reconfigure the running logger immediately
         const adapterHandler = ctx.routeRegistry.getHandlers()[1];
         const token = issueAccessToken("admin-test", "admin", 300);
 
+        const fileConfigRequest = new RequestRecorder("GET", token);
+        const fileConfigResponse = new ResponseRecorder();
+        await adapterHandler(
+            fileConfigRequest as any,
+            fileConfigResponse as any,
+            new URL(
+                "/api/v1/gateways/logging/adapters/file/config",
+                "http://localhost",
+            ),
+        );
+        const fileConfigPayload = JSON.parse(fileConfigResponse.payload);
+        assert.equal(
+            fileConfigPayload.schema.find(
+                (field: { key: string }) => field.key === "rotateCompress",
+            )?.label,
+            "Log Compression",
+        );
+
         const updateAdapter = async (
             adapterId: "console" | "file",
             config: Record<string, unknown>,

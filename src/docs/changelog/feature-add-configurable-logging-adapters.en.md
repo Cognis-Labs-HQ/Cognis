@@ -15,3 +15,7 @@ The Console Logging and File Logging rows now open their settings popup even tho
 ## Synchronized live output
 
 The configured severity and format now replace the early bootstrap logger for all subsequently loaded gateways, so Docker output immediately follows console changes. Environment-override warnings now appear in orange beside their field headings.
+
+## Clearer configuration labels
+
+Override warnings now read “Overriding env variable”, and the file adapter’s compression option is named “Log Compression”.

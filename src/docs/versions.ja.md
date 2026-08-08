@@ -57,7 +57,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`    |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`    |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.0`    |
-| File Logging          | `src/adapters/logging/file/`        | `1.1.0`    |
+| File Logging          | `src/adapters/logging/file/`        | `1.1.1`    |
 
 ## ゲートウェイ
 

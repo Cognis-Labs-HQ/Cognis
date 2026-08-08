@@ -64,6 +64,7 @@ test("adapter config form updates required title markers when requirements chang
 test("adapter environment warnings render beside headings in orange", () => {
     const source = read("src/ui/app/administration/adapter-config-popup.js");
     const styles = read("src/ui/styles/reuse/page-sections.css");
+    const englishStrings = read("src/ui/languages/en/strings.xml");
 
     assert.match(
         source,
@@ -72,6 +73,10 @@ test("adapter environment warnings render beside headings in orange", () => {
     assert.match(
         styles,
         /\.provider-field-env-warning\s*\{[^}]*color: var\(--color-warning-outline-text, #f59e0b\)/,
+    );
+    assert.match(
+        englishStrings,
+        /name="ui\.app\.admin\.notif\.field_env_conflict">Overriding env variable</,
     );
 });
 

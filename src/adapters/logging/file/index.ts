@@ -22,7 +22,7 @@ export function createLoggingAdapter(supportedLevels: readonly string[]) {
             },
             {
                 key: "rotateCompress",
-                label: "Compress rotated files",
+                label: "Log Compression",
                 type: "boolean",
             },
         ],

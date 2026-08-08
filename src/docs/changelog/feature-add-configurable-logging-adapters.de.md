@@ -15,3 +15,7 @@ Die Zeilen „Console Logging“ und „File Logging“ öffnen nun ihr Einstell
 ## Synchronisierte Live-Ausgabe
 
 Die konfigurierte Protokollstufe und das Format ersetzen nun den frühen Bootstrap-Logger für alle danach geladenen Gateways, sodass die Docker-Ausgabe Konsolenänderungen sofort übernimmt. Warnungen zu überschriebenen Umgebungswerten stehen nun orange neben der jeweiligen Feldüberschrift.
+
+## Klarere Konfigurationsbezeichnungen
+
+Warnungen bei Überschreibungen lauten nun „Umgebungsvariable wird überschrieben“, und die Kompressionsoption des Dateiadapters heißt „Log Compression“.

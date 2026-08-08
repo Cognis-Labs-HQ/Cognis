@@ -15,3 +15,7 @@ Baris Console Logging dan File Logging kini membuka popup pengaturannya meskipun
 ## Keluaran langsung yang tersinkronisasi
 
 Tingkat keparahan dan format yang dikonfigurasi kini menggantikan logger bootstrap awal untuk semua gateway yang dimuat setelahnya, sehingga keluaran Docker langsung mengikuti perubahan konsol. Peringatan penggantian nilai lingkungan kini tampil berwarna oranye di samping judul bidangnya.
+
+## Label konfigurasi yang lebih jelas
+
+Peringatan penggantian kini berbunyi “Mengganti variabel lingkungan”, dan opsi kompresi adapter berkas diberi nama “Log Compression”.
