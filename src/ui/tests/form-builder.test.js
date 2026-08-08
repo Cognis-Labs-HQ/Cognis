@@ -80,6 +80,21 @@ test("adapter environment warnings render beside headings in orange", () => {
     );
 });
 
+test("adapter reset stages environment values until settings are saved", () => {
+    const source = read("src/ui/app/administration/adapter-config-popup.js");
+
+    assert.match(source, /loadConfigIntoForm\(popupFormEl, envData\)/);
+    assert.match(source, /resetPending = true/);
+    assert.match(
+        source,
+        /resetPending\s*\? \{ method: "DELETE" \}\s*: \{\s*method: "PUT"/,
+    );
+    assert.doesNotMatch(
+        source,
+        /if \(action === "reset"\) \{[\s\S]{0,300}apiFetch\(configUrl/,
+    );
+});
+
 test("register page uses form builder instead of hardcoded maxlength for username", () => {
     const source = read("src/gateways/auth/ui/register.js");
     assert.match(

@@ -6,7 +6,7 @@ Administrators can now select separate severity thresholds for console and file 
 
 ## Runtime overrides with environment reset
 
-Logging adapter settings can override Docker environment values at runtime, including console format and rotation behavior, and can be reset to the environment configuration. The environment continues to own the log file path. Overrides are stored in the database and restored after container restarts.
+Logging adapter settings can override Docker environment values at runtime, including console format and rotation behavior, and can be reset to the environment configuration. The Reset action previews environment values in the form; administrators must select Save Settings to commit the reset. The environment continues to own the log file path. Overrides are stored in the database and restored after container restarts.
 
 ## Settings for always-on adapters
 

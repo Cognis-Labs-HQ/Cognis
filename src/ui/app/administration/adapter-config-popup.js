@@ -275,6 +275,24 @@ export function createAdapterConfigPopup({
         return config;
     }
 
+    function loadConfigIntoForm(popupFormEl, config) {
+        for (const [fieldName, value] of Object.entries(config)) {
+            const field = popupFormEl.querySelector(
+                `[name="${CSS.escape(fieldName)}"]`,
+            );
+            if (field instanceof HTMLInputElement) {
+                if (field.type === "checkbox") {
+                    field.checked = value === true || value === "true";
+                } else {
+                    field.value = value == null ? "" : String(value);
+                }
+            } else if (field instanceof HTMLSelectElement) {
+                field.value = value == null ? "" : String(value);
+            }
+        }
+        popupFormEl.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     return {
         async openAdapterConfig(name, { configUrl, testUrl, onSaved } = {}) {
             if (!configUrl) return;
@@ -369,6 +387,7 @@ export function createAdapterConfigPopup({
             }
 
             let popupFormEl = null;
+            let resetPending = false;
 
             function currentRequiredFields() {
                 const authDisabledInput = popupFormEl?.querySelector(
@@ -482,20 +501,10 @@ export function createAdapterConfigPopup({
                 ],
                 onAction: async (action, overlay) => {
                     if (action === "reset") {
-                        const resetResponse = await apiFetch(configUrl, {
-                            method: "DELETE",
-                        });
-                        if (!resetResponse.ok) {
-                            showToast(i18n.t("ui.reuse.save_failed"), {
-                                variant: "error",
-                            });
-                            return false;
-                        }
-                        await onSaved?.();
-                        showToast(i18n.t("ui.app.admin.settings_saved"), {
-                            variant: "success",
-                        });
-                        return true;
+                        if (!(popupFormEl instanceof HTMLElement)) return false;
+                        loadConfigIntoForm(popupFormEl, envData);
+                        resetPending = true;
+                        return false;
                     }
                     if (action !== "save") return true;
                     if (!(popupFormEl instanceof HTMLElement)) return false;
@@ -515,11 +524,18 @@ export function createAdapterConfigPopup({
                         return false;
                     }
                     const config = buildConfigPayload(popupFormEl);
-                    const saveResponse = await apiFetch(configUrl, {
-                        method: "PUT",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify(config),
-                    });
+                    const saveResponse = await apiFetch(
+                        configUrl,
+                        resetPending
+                            ? { method: "DELETE" }
+                            : {
+                                  method: "PUT",
+                                  headers: {
+                                      "content-type": "application/json",
+                                  },
+                                  body: JSON.stringify(config),
+                              },
+                    );
                     const savePayload = await (typeof saveResponse.clone ===
                     "function"
                         ? saveResponse
@@ -580,6 +596,7 @@ export function createAdapterConfigPopup({
                     syncToggle();
 
                     popupFormEl.addEventListener("input", () => {
+                        resetPending = false;
                         updateRequiredHighlights();
                         syncToggle();
                     });

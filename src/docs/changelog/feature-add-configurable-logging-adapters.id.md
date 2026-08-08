@@ -6,7 +6,7 @@ Administrator kini dapat memilih ambang tingkat keparahan terpisah untuk pencata
 
 ## Penggantian saat berjalan dengan reset ke lingkungan
 
-Pengaturan adapter pencatatan dapat menggantikan nilai lingkungan Docker saat berjalan, termasuk format konsol dan rotasi, lalu direset ke konfigurasi lingkungan. Jalur berkas log tetap dimiliki oleh lingkungan. Penggantian disimpan dalam basis data dan dipulihkan setelah kontainer dimulai ulang.
+Pengaturan adapter pencatatan dapat menggantikan nilai lingkungan Docker saat berjalan, termasuk format konsol dan rotasi, lalu direset ke konfigurasi lingkungan. Tindakan Reset terlebih dahulu menampilkan nilai lingkungan di formulir; administrator harus memilih Simpan Pengaturan untuk menerapkan reset. Jalur berkas log tetap dimiliki oleh lingkungan. Penggantian disimpan dalam basis data dan dipulihkan setelah kontainer dimulai ulang.
 
 ## Pengaturan untuk adapter yang selalu aktif
 

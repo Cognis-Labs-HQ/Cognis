@@ -6,7 +6,7 @@ Administratoren können nun getrennte Schweregradschwellen für die Konsolen- un
 
 ## Laufzeitüberschreibungen mit Zurücksetzen auf Umgebungswerte
 
-Einstellungen der Logging-Adapter können Docker-Umgebungswerte zur Laufzeit überschreiben, einschließlich Konsolenformat und Rotation, und auf die Umgebungskonfiguration zurückgesetzt werden. Der Protokolldateipfad bleibt durch die Umgebung festgelegt. Überschreibungen werden in der Datenbank gespeichert und nach Container-Neustarts wiederhergestellt.
+Einstellungen der Logging-Adapter können Docker-Umgebungswerte zur Laufzeit überschreiben, einschließlich Konsolenformat und Rotation, und auf die Umgebungskonfiguration zurückgesetzt werden. Die Aktion „Zurücksetzen“ zeigt zunächst die Umgebungswerte im Formular; Administratoren müssen „Einstellungen speichern“ auswählen, um das Zurücksetzen zu übernehmen. Der Protokolldateipfad bleibt durch die Umgebung festgelegt. Überschreibungen werden in der Datenbank gespeichert und nach Container-Neustarts wiederhergestellt.
 
 ## Einstellungen für dauerhaft aktive Adapter
 
