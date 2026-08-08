@@ -44,6 +44,19 @@ test("notification actions can be handled without leaving the dashboard", () => 
     );
 });
 
+test("arrival notifications are suppressed on their owning page", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+        "utf8",
+    );
+    assert.match(source, /function isNotificationOwnedByCurrentPage/);
+    assert.match(source, /actionPage === currentPage/);
+    assert.match(
+        source,
+        /!notif\.read && !isNotificationOwnedByCurrentPage\(notif\)/,
+    );
+});
+
 class FakeElement {
     constructor(tagName, ownerDocument) {
         this.tagName = String(tagName).toUpperCase();
