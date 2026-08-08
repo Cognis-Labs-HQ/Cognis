@@ -302,6 +302,13 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     );
 });
 
+test("successful event updates refresh availability through ui ctx", () => {
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /async function updateEvent[\s\S]*response\.ok[\s\S]*ui:availabilityRenderer[\s\S]*\.refresh\?\.\(document\)/,
+    );
+});
+
 test("calendar upcoming events moved to toolbar", () => {
     assert.match(APP_SOURCE, /id:\s*"upcoming-events"/);
     assert.match(APP_SOURCE, /renderToolbarSummary[\s\S]*allUpcomingEvents/);

@@ -59,3 +59,7 @@ Kalenderstatus-Hintergründe setzen sich nun ausdrücklich gegen allgemeine Scha
 ## Zuverlässige Aktualisierung von Teilnehmern
 
 PATCH-Anfragen für Kalendertermine können Teilnehmerlisten wieder aktualisieren. Die Terminroute importiert nun ausdrücklich die zuständige Kalender-Normalisierungsfunktion. Dadurch wird der Serverfehler wegen der fehlenden Funktion verhindert und die Teilnahme des Besitzers bleibt erhalten.
+
+## Statusanzeigen werden nach Kalenderaktualisierungen erneuert
+
+Erfolgreiche Aktualisierungen von Kalenderterminen rufen nun den Verfügbarkeits-Renderer des Profiladapters über den UI-ctx auf. Der Renderer leert den Verfügbarkeits-Cache und zeichnet sichtbare Benutzerstatusanzeigen sofort neu, ohne dass die Seite aktualisiert werden muss.

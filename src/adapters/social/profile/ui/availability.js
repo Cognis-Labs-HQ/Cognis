@@ -110,6 +110,7 @@ export async function setManualAvailability(status) {
 uiCtx.capabilities.contribute("ui:availabilityRenderer", {
     buildMarkup: availabilityIndicatorMarkup,
     hydrate: hydrateAvailabilityIndicators,
+    refresh: refreshAvailabilityIndicators,
 });
 
 subscribePresenceActivity(async ({ active }) => {

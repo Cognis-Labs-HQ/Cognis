@@ -84,3 +84,15 @@ test("profile heroes render and hydrate visibility-aware status lights", () => {
     );
     assert.match(app, /hydrateAvailabilityIndicators\(root\)/);
 });
+
+test("availability renderer exposes immediate ctx refresh", () => {
+    const availability = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.js"),
+        "utf8",
+    );
+
+    assert.match(
+        availability,
+        /ui:availabilityRenderer[\s\S]*refresh:\s*refreshAvailabilityIndicators/,
+    );
+});

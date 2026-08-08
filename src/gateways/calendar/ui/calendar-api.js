@@ -145,7 +145,7 @@ async function createEvent(calendarId, payload) {
 }
 
 async function updateEvent(calendarId, eventId, payload) {
-    return requestCalendarResource(calendarId, (password) =>
+    const response = await requestCalendarResource(calendarId, (password) =>
         apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
             {
@@ -160,6 +160,12 @@ async function updateEvent(calendarId, eventId, payload) {
             },
         ),
     );
+    if (response.ok) {
+        await uiCtx.capabilities
+            .get("ui:availabilityRenderer")
+            ?.refresh?.(document);
+    }
+    return response;
 }
 
 async function deleteEvent(calendarId, eventId, { deleteAll = false } = {}) {

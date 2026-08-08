@@ -59,3 +59,7 @@ Calendar status backgrounds now explicitly resist generic button-hover backgroun
 ## Reliable attendee updates
 
 Calendar event PATCH requests can update attendee lists again. The event route now imports the owning Calendar normalization function explicitly, preventing the missing-function server error while preserving owner attendance.
+
+## Status indicators refresh after calendar updates
+
+Successful Calendar event updates now invoke the profile adapter's availability renderer through UI ctx. The renderer clears cached availability and immediately repaints visible user status lights without requiring a page refresh.

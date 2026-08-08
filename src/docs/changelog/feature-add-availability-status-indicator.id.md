@@ -59,3 +59,7 @@ Latar status Kalender kini secara eksplisit mempertahankan diri dari latar hover
 ## Pembaruan peserta yang andal
 
 Permintaan PATCH acara Kalender kini dapat memperbarui daftar peserta lagi. Rute acara sekarang mengimpor fungsi normalisasi Kalender yang berwenang secara eksplisit, mencegah kesalahan server akibat fungsi yang hilang sekaligus mempertahankan kehadiran pemilik.
+
+## Indikator status diperbarui setelah perubahan kalender
+
+Pembaruan acara Kalender yang berhasil kini memanggil perender ketersediaan adapter profil melalui UI ctx. Perender menghapus cache ketersediaan dan langsung menggambar ulang lampu status pengguna yang terlihat tanpa memerlukan penyegaran halaman.
