@@ -4,6 +4,14 @@ import path from "node:path";
 import { pathToFileURL } from "node:url";
 
 const serverRoot = path.resolve("dist/server");
+const serverManifest = JSON.parse(
+    await readFile(path.join(serverRoot, "package.json"), "utf8"),
+);
+assert.equal(
+    typeof serverManifest.version,
+    "string",
+    "compiled server must include the platform manifest for root documentation versioning",
+);
 async function walk(directory) {
     const entries = await readdir(directory, { withFileTypes: true });
     return (

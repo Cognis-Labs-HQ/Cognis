@@ -1,6 +1,6 @@
 {
     "name": "@cognis/api",
-    "version": "0.2.5",
+    "version": "0.3.2",
     "private": true,
     "type": "module",
     "main": "server.ts",

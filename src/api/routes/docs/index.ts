@@ -1,104 +1,33 @@
-import { readFile, readdir } from "node:fs/promises";
-import { join, relative, resolve } from "node:path";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveLangs } from "../../reuse/preferred-languages.js";
+import {
+    initializeDocsStore,
+    readStoredMarkdown,
+    type StoredDoc,
+} from "./store.js";
 
 const SRC_ROOT = join(process.cwd(), "src");
-const ROOT_DOCS_DIR = join(SRC_ROOT, "docs");
-const DEFAULT_LANG = "en";
+export function resolveDocsArchiveRoot(
+    environment: NodeJS.ProcessEnv = process.env,
+    userHome = homedir(),
+): string {
+    if (environment.COGNIS_DOCS_ARCHIVE_DIR) {
+        return environment.COGNIS_DOCS_ARCHIVE_DIR;
+    }
+    if (environment.COGNIS_CLI_TOKEN_PATH) {
+        return join(dirname(environment.COGNIS_CLI_TOKEN_PATH), "docs-archive");
+    }
+    return join(userHome, ".cognis", "docs-archive");
+}
 
-interface DocEntry {
+interface DocEntry extends StoredDoc {
     slug: string;
     path: string;
     group: string;
     title: string;
-    fileStem: string;
     generatedMarkdown?: string;
-}
-
-async function findDocsDirs(
-    dir: string,
-    results: string[] = [],
-): Promise<string[]> {
-    let entries;
-    try {
-        entries = await readdir(dir, { withFileTypes: true });
-    } catch {
-        return results;
-    }
-    for (const entry of entries) {
-        if (!entry.isDirectory()) continue;
-        if (entry.name === "node_modules" || entry.name === "dist") continue;
-        const fullPath = join(dir, entry.name);
-        if (entry.name === "docs") {
-            results.push(fullPath);
-        } else {
-            await findDocsDirs(fullPath, results);
-        }
-    }
-    return results;
-}
-
-async function collectMdFiles(
-    dir: string,
-    results: string[] = [],
-): Promise<string[]> {
-    let entries;
-    try {
-        entries = await readdir(dir, { withFileTypes: true });
-    } catch {
-        return results;
-    }
-    for (const entry of entries) {
-        const fullPath = join(dir, entry.name);
-        if (entry.isDirectory()) {
-            await collectMdFiles(fullPath, results);
-        } else if (entry.isFile() && entry.name.endsWith(".md")) {
-            results.push(fullPath);
-        }
-    }
-    return results;
-}
-
-async function extractTitle(fileStem: string): Promise<string> {
-    for (const suffix of [`.${DEFAULT_LANG}.md`, ".md"]) {
-        try {
-            const text = await readFile(`${fileStem}${suffix}`, "utf-8");
-            const match = text.match(/^#\s+(.+)$/m);
-            if (match) return match[1].trim();
-        } catch {
-            continue;
-        }
-    }
-    return "";
-}
-
-function buildLogicalSlug(relFromSrc: string): string {
-    let slug = relFromSrc
-        .replace(/^docs\//, "")
-        .replace(/\/docs\//g, "/")
-        .replace(/\/docs$/, "");
-    slug = slug.replace(/\/index$/, "") || slug;
-    return slug || "index";
-}
-
-function computeGroup(slug: string, isRootDocs: boolean): string {
-    if (isRootDocs) {
-        const rootSegments = slug.split("/");
-        // Root docs with nested paths stay grouped under their top-level segment
-        // so related docs remain together in one section. Top-level root docs use
-        // platform to avoid creating singleton groups for each standalone page.
-        // Changelog rendering is handled separately by the changelogs UI route.
-        if (rootSegments.length > 1) return rootSegments[0];
-        return "platform";
-    }
-    const parts = slug.split("/");
-    const first = parts[0];
-    if (parts.length === 1) return first;
-    if (first === "adapters" && parts.length >= 3) {
-        return `${parts[0]}/${parts[1]}`;
-    }
-    return first;
 }
 
 function changelogBranchFromSlug(slug: string): string {
@@ -130,36 +59,16 @@ function buildChangelogIndexMarkdown(entries: DocEntry[]): string {
     return ["# Changelogs", "", ...links].join("\n");
 }
 
-async function collectDocIndex(): Promise<Map<string, DocEntry>> {
-    const docsDirs = await findDocsDirs(SRC_ROOT);
+async function collectDocIndex(
+    storedDocsPromise: Promise<Map<string, StoredDoc>>,
+): Promise<Map<string, DocEntry>> {
+    const storedDocs = await storedDocsPromise;
     const bySlug = new Map<string, DocEntry>();
-
-    for (const dir of docsDirs) {
-        const isRootDocs = dir === ROOT_DOCS_DIR;
-        const files = await collectMdFiles(dir);
-
-        for (const absPath of files) {
-            const fileStem = absPath
-                .replace(/\.[a-z]{2}(?:-[a-z]{2})?\.md$/i, "")
-                .replace(/\.md$/, "");
-            const relFromSrc = relative(SRC_ROOT, fileStem).replace(/\\/g, "/");
-            const slug = buildLogicalSlug(relFromSrc);
-
-            if (bySlug.has(slug)) continue;
-
-            if (!resolve(fileStem).startsWith(SRC_ROOT)) continue;
-
-            const title = await extractTitle(fileStem);
-            const group = computeGroup(slug, isRootDocs);
-
-            bySlug.set(slug, {
-                slug,
-                path: `/api/v1/docs/${slug}`,
-                group,
-                title,
-                fileStem,
-            });
-        }
+    for (const [slug, doc] of storedDocs) {
+        bySlug.set(slug, {
+            ...doc,
+            path: `/api/v1/docs/latest/${slug}`,
+        });
     }
 
     const changelogEntries = [...bySlug.values()].filter((entry) =>
@@ -172,6 +81,8 @@ async function collectDocIndex(): Promise<Map<string, DocEntry>> {
             group: "changelog",
             title: "Changelogs",
             fileStem: "",
+            version: "latest",
+            versions: ["latest"],
             generatedMarkdown: buildChangelogIndexMarkdown(changelogEntries),
         });
     }
@@ -183,7 +94,17 @@ const NOT_FOUND_BODY = JSON.stringify({
     error: { code: "not_found", message: "Documentation not found" },
 });
 
-export function createDocsRoutes() {
+export function createDocsRoutes(
+    options: {
+        sourceRoot?: string;
+        archiveRoot?: string;
+    } = {},
+) {
+    const archiveRoot = options.archiveRoot ?? resolveDocsArchiveRoot();
+    const storedDocsPromise = initializeDocsStore(
+        options.sourceRoot ?? SRC_ROOT,
+        archiveRoot,
+    );
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -192,13 +113,15 @@ export function createDocsRoutes() {
         if (req.method !== "GET") return false;
 
         if (url.pathname === "/api/v1/docs") {
-            const index = await collectDocIndex();
+            const index = await collectDocIndex(storedDocsPromise);
             const data = [...index.values()].map(
-                ({ slug, path, group, title }) => ({
+                ({ slug, path, group, title, version, versions }) => ({
                     slug,
                     path,
                     group,
                     title,
+                    version,
+                    versions,
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });
@@ -206,13 +129,21 @@ export function createDocsRoutes() {
             return true;
         }
 
-        const match = url.pathname.match(/^\/api\/v1\/docs\/([a-z0-9/_-]+)$/i);
-        if (!match) return false;
+        const match = url.pathname.match(
+            /^\/api\/v1\/docs\/(latest|\d+\.\d+\.\d+)\/([a-z0-9/_-]+)$/i,
+        );
+        const legacyMatch = url.pathname.match(
+            /^\/api\/v1\/docs\/([a-z0-9][a-z0-9/_-]*)$/i,
+        );
+        if (!match && !legacyMatch) return false;
 
-        const rawSlug = match[1].replace(/\.\./g, "").replace(/\/+/g, "/");
+        const requestedVersion = match?.[1] ?? "latest";
+        const rawSlug = (match?.[2] ?? legacyMatch?.[1] ?? "")
+            .replace(/\.\./g, "")
+            .replace(/\/+/g, "/");
         const langs = resolveLangs(url);
 
-        const index = await collectDocIndex();
+        const index = await collectDocIndex(storedDocsPromise);
         const entry = index.get(rawSlug);
 
         if (!entry) {
@@ -221,23 +152,14 @@ export function createDocsRoutes() {
             return true;
         }
 
-        let content: string | undefined = entry.generatedMarkdown;
-        for (const lang of langs) {
-            try {
-                content = await readFile(
-                    `${entry.fileStem}.${lang}.md`,
-                    "utf-8",
-                );
-                break;
-            } catch {
-                continue;
-            }
-        }
-        if (content === undefined) {
-            try {
-                content = await readFile(`${entry.fileStem}.md`, "utf-8");
-            } catch {}
-        }
+        const content =
+            entry.generatedMarkdown ??
+            (await readStoredMarkdown(
+                archiveRoot,
+                entry,
+                requestedVersion,
+                langs,
+            ));
 
         if (content === undefined) {
             res.writeHead(404, { "content-type": "application/json" });
@@ -248,7 +170,18 @@ export function createDocsRoutes() {
         const markdown = withChangelogBranch(content, rawSlug);
 
         res.writeHead(200, { "content-type": "application/json" });
-        res.end(JSON.stringify({ data: { slug: rawSlug, markdown } }));
+        res.end(
+            JSON.stringify({
+                data: {
+                    slug: rawSlug,
+                    version:
+                        requestedVersion === "latest"
+                            ? entry.version
+                            : requestedVersion,
+                    markdown,
+                },
+            }),
+        );
         return true;
     };
 }
