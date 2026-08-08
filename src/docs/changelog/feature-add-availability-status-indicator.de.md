@@ -55,3 +55,7 @@ Bei bevorstehenden Terminen wird der Statushintergrund nun auf die umrandete Ter
 ## Hover hebt nur den Terminakzent hervor
 
 Kalenderstatus-Hintergründe setzen sich nun ausdrücklich gegen allgemeine Schaltflächen-Hover-Hintergründe durch. Beim Darüberfahren bleiben Kartenhintergrund und äußerer Rahmen unverändert; nur der senkrechte Balken in der Kalenderfarbe wird hervorgehoben.
+
+## Zuverlässige Aktualisierung von Teilnehmern
+
+PATCH-Anfragen für Kalendertermine können Teilnehmerlisten wieder aktualisieren. Die Terminroute importiert nun ausdrücklich die zuständige Kalender-Normalisierungsfunktion. Dadurch wird der Serverfehler wegen der fehlenden Funktion verhindert und die Teilnahme des Besitzers bleibt erhalten.

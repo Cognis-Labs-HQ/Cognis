@@ -151,6 +151,17 @@ test("shared recipients control local color while writable shares control events
     );
     assert.equal(ownerEvent.statusCode, 201);
     const ownerEventId = String(ownerEvent.body.data.id ?? "");
+    const ownerParticipantUpdate = await dispatchJson(
+        "PATCH",
+        aliceToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(ownerCalendarId)}/events/${encodeURIComponent(ownerEventId)}`,
+        { attendees: ["bob"] },
+    );
+    assert.equal(ownerParticipantUpdate.statusCode, 200);
+    assert.deepEqual(ownerParticipantUpdate.body.data.attendees, [
+        "bob",
+        "alice",
+    ]);
     const sharedEventDetails = await dispatchJson(
         "GET",
         bobToken,

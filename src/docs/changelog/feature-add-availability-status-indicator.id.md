@@ -55,3 +55,7 @@ Acara Mendatang kini menerapkan latar status pada tombol acara berbatas, bukan p
 ## Hover hanya menyorot aksen acara
 
 Latar status Kalender kini secara eksplisit mempertahankan diri dari latar hover tombol umum. Saat diarahkan, latar kartu dan bingkai luar tetap sama; hanya bilah vertikal berwarna kalender yang disorot.
+
+## Pembaruan peserta yang andal
+
+Permintaan PATCH acara Kalender kini dapat memperbarui daftar peserta lagi. Rute acara sekarang mengimpor fungsi normalisasi Kalender yang berwenang secara eksplisit, mencegah kesalahan server akibat fungsi yang hilang sekaligus mempertahankan kehadiran pemilik.

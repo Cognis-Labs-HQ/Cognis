@@ -8,6 +8,7 @@ import {
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
     errorMessage,
+    normalizeAttendeesForOwner,
     normalizeReminderOffsets,
     normalizeStringList,
     requireOrganizerOwnedSourceEvent,

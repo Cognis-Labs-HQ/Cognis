@@ -55,3 +55,7 @@ Upcoming Events now apply status backgrounds to the bordered event button instea
 ## Hover highlights only the event accent
 
 Calendar status backgrounds now explicitly resist generic button-hover backgrounds. Hover feedback keeps the card background and outer border unchanged, highlighting only the vertical calendar-color bar.
+
+## Reliable attendee updates
+
+Calendar event PATCH requests can update attendee lists again. The event route now imports the owning Calendar normalization function explicitly, preventing the missing-function server error while preserving owner attendance.
