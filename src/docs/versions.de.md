@@ -41,7 +41,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.8`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.6`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.17` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.18` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.9`  |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.4`  |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.3`  |
@@ -51,7 +51,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.30` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.33` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.34` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.11` |
 | User Share            | `src/adapters/share/user/`          | `1.1.12` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -86,7 +86,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.3.2` |
+| API Server | `src/api/` | `0.3.3` |
 
 ## Werkzeuge
 
@@ -99,7 +99,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.56` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.57` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.34` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |
