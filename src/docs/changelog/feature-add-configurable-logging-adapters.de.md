@@ -39,3 +39,7 @@ Validierungsfehler zur Laufzeit werden nun übersetzt, jeder erkannte Logging-Ad
 ## Konsolenaktualisierungen zur Laufzeit
 
 Änderungen an der Konsolenkonfiguration aktualisieren nun dieselbe Laufzeit-Protokollfunktion, die von der Anwendung und den Konfigurations-Audit-Ereignissen verwendet wird. Neue Stufen und Formate werden dadurch sofort wirksam.
+
+## Docker-Konsolenschwelle
+
+Die frühe Bootstrap-Protokollierung wendet `LOG_LEVEL` nun vor dem Start des Logging-Gateways an, sodass der Docker-Standardwert `info` Debug-Ausgaben während des gesamten Starts unterdrückt.

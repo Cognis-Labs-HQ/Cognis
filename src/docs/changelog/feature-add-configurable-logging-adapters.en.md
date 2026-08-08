@@ -39,3 +39,7 @@ Runtime validation errors are now localized, every discovered logging adapter re
 ## Runtime console updates
 
 Console configuration changes now update the same runtime logging function used by the application and by configuration audit events, so new levels and formats take effect immediately.
+
+## Docker console threshold
+
+Early bootstrap logging now applies `LOG_LEVEL` before the logging gateway starts, so the Docker default of `info` suppresses debug output throughout startup.

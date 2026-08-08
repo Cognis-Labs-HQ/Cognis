@@ -39,3 +39,7 @@ Kesalahan validasi waktu proses kini diterjemahkan, setiap adapter pencatatan ya
 ## Pembaruan konsol waktu proses
 
 Perubahan konfigurasi konsol kini memperbarui fungsi pencatatan waktu proses yang sama dengan yang digunakan aplikasi dan peristiwa audit konfigurasi, sehingga tingkat dan format baru langsung berlaku.
+
+## Ambang konsol Docker
+
+Pencatatan bootstrap awal kini menerapkan `LOG_LEVEL` sebelum gateway pencatatan dimulai, sehingga nilai bawaan Docker `info` menyembunyikan keluaran debug selama seluruh proses awal.
