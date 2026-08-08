@@ -38,6 +38,14 @@ export interface LoggerRotationOptions {
     compressRotated?: boolean;
 }
 
+export interface LoggerConfiguration {
+    consoleLevel: LogLevel;
+    fileLevel: LogLevel;
+    filePath: string;
+    consoleFormat: ConsoleLogFormat;
+    rotation: Required<LoggerRotationOptions>;
+}
+
 const defaultFileAppend: FileAppend = async (filePath, content) => {
     await mkdir(path.dirname(filePath), { recursive: true });
     await appendFile(filePath, content, "utf8");
@@ -131,11 +139,12 @@ export class Logger {
     private writeQueue: Promise<void> = Promise.resolve();
 
     constructor(
-        private readonly level: LogLevel = "info",
-        private readonly filePath = "/tmp/cognis.log",
+        private consoleLevel: LogLevel = "info",
+        private filePath = "/tmp/cognis.log",
         fileAppend?: FileAppend,
-        private readonly consoleFormat: ConsoleLogFormat = "pretty",
+        private consoleFormat: ConsoleLogFormat = "pretty",
         rotationOptions?: LoggerRotationOptions,
+        private fileLevel: LogLevel = "debug",
     ) {
         this.fileAppend = fileAppend ?? defaultFileAppend;
         this.rotationOptions = {
@@ -153,6 +162,24 @@ export class Logger {
         };
     }
 
+    configure(configuration: Partial<LoggerConfiguration>): void {
+        this.consoleLevel = configuration.consoleLevel ?? this.consoleLevel;
+        this.fileLevel = configuration.fileLevel ?? this.fileLevel;
+        this.filePath = configuration.filePath ?? this.filePath;
+        this.consoleFormat = configuration.consoleFormat ?? this.consoleFormat;
+        Object.assign(this.rotationOptions, configuration.rotation ?? {});
+    }
+
+    getConfiguration(): LoggerConfiguration {
+        return {
+            consoleLevel: this.consoleLevel,
+            fileLevel: this.fileLevel,
+            filePath: this.filePath,
+            consoleFormat: this.consoleFormat,
+            rotation: { ...this.rotationOptions },
+        };
+    }
+
     async log(
         level: LogLevel,
         message: string,
@@ -160,8 +187,11 @@ export class Logger {
     ): Promise<void> {
         const entry = createLogEntry(level, message, meta);
         const line = `${serializeLogEntry(entry)}\n`;
-        if (priorities[level] >= priorities[this.level]) {
+        if (priorities[level] >= priorities[this.consoleLevel]) {
             writeConsoleLog(level, message, meta, this.consoleFormat);
+        }
+        if (priorities[level] < priorities[this.fileLevel]) {
+            return;
         }
         const appendLogEntry = async () => {
             await this.rotateIfNeeded(Buffer.byteLength(line, "utf8"));

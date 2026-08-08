@@ -36,7 +36,7 @@ export class Logger {
 }
 ```
 
-Standardmäßig schreibt der Logger Konsolenausgaben und speichert weiterhin JSON-Zeilen in der persistenten Protokolldatei. `LOG_LEVEL` wirkt als Filter für den Laufzeit-Log-Stream (stdout/stderr); die Datei enthält weiterhin alle Log-Level.
+Standardmäßig schreibt der Logger Konsolenausgaben und speichert weiterhin JSON-Zeilen in der persistenten Protokolldatei. `LOG_LEVEL` filtert stdout/stderr und `LOG_FILE_LEVEL` filtert unabhängig die persistenten Dateieinträge. Administratoren können beide Adapterkonfigurationen zur Laufzeit überschreiben und auf die Umgebungswerte zurücksetzen. Überschreibungen werden in der Datenbank gespeichert und beim Start des Gateways wiederhergestellt, sodass sie Container-Neustarts überstehen.
 
 Jede persistente Protokollzeile ist ein JSON-Objekt:
 
@@ -58,11 +58,12 @@ Jede persistente Protokollzeile ist ein JSON-Objekt:
 
 Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokollieren jedoch nur zusammengefasste Metadaten (`provider`, SQL-Anweisungstyp, Parameteranzahl, Fehlername/-code). Rohmeldungen der Datenbank werden nicht wörtlich weitergereicht, da der Datenbank-Container sie bereits selbst protokolliert.
 
-| Variable               | Standard            | Beschreibung                                                       |
-| ---------------------- | ------------------- | ------------------------------------------------------------------ |
-| `LOG_LEVEL`            | `info`              | Laufzeit-Logstream-Filter: `debug`, `info`, `warn`, `error`        |
-| `LOG_FILE`             | `/app/logs/app.log` | Absoluter Pfad für die persistente Protokolldatei                  |
-| `LOG_FORMAT`           | `pretty`            | Konsolenformat: `pretty` für lesbare Logs oder `json` für Roh-JSON |
-| `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotiert die aktive Logdatei bei Erreichen dieser Größe (Bytes)     |
-| `LOG_ROTATE_MAX_FILES` | `10`                | Anzahl aufbewahrter rotierter Logarchive (`0` = keine)             |
-| `LOG_ROTATE_COMPRESS`  | `true`              | Wenn `true`, werden rotierte Logs als gzip (`.gz`) komprimiert     |
+| Variable               | Standard            | Beschreibung                                                           |
+| ---------------------- | ------------------- | ---------------------------------------------------------------------- |
+| `LOG_LEVEL`            | `info`              | Laufzeit-Logstream-Filter: `debug`, `info`, `warn`, `error`            |
+| `LOG_FILE_LEVEL`       | `debug`             | Filter für persistente Dateieinträge: `debug`, `info`, `warn`, `error` |
+| `LOG_FILE`             | `/app/logs/app.log` | Absoluter Pfad für die persistente Protokolldatei                      |
+| `LOG_FORMAT`           | `pretty`            | Konsolenformat: `pretty` für lesbare Logs oder `json` für Roh-JSON     |
+| `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotiert die aktive Logdatei bei Erreichen dieser Größe (Bytes)         |
+| `LOG_ROTATE_MAX_FILES` | `10`                | Anzahl aufbewahrter rotierter Logarchive (`0` = keine)                 |
+| `LOG_ROTATE_COMPRESS`  | `true`              | Wenn `true`, werden rotierte Logs als gzip (`.gz`) komprimiert         |

@@ -1,4 +1,78 @@
-export const loggingAdapter = {
-    id: "file",
-    name: "File Logging",
-} as const;
+export function createLoggingAdapter(supportedLevels: readonly string[]) {
+    return {
+        id: "file",
+        name: "File Logging",
+        stringsBaseUrl: "/static/adapters/logging/file/languages",
+        schema: [
+            {
+                key: "level",
+                labelKey: "adapter.logging.file.level",
+                type: "select",
+                options: [...supportedLevels],
+            },
+            {
+                key: "rotateMaxBytes",
+                labelKey: "adapter.logging.file.rotate_max_bytes",
+                type: "number",
+            },
+            {
+                key: "rotateMaxFiles",
+                labelKey: "adapter.logging.file.rotate_max_files",
+                type: "number",
+            },
+            {
+                key: "rotateCompress",
+                labelKey: "adapter.logging.file.rotate_compress",
+                type: "boolean",
+            },
+        ],
+        validateConfig(config: Record<string, unknown>) {
+            if (
+                typeof config.level !== "string" ||
+                !supportedLevels.includes(config.level)
+            ) {
+                return {
+                    field: "level",
+                    messageKey: "adapter.logging.file.error.level",
+                };
+            }
+            if (
+                typeof config.rotateMaxBytes !== "number" ||
+                !Number.isFinite(config.rotateMaxBytes) ||
+                config.rotateMaxBytes <= 0
+            ) {
+                return {
+                    field: "rotateMaxBytes",
+                    messageKey: "adapter.logging.file.error.rotate_max_bytes",
+                };
+            }
+            if (
+                typeof config.rotateMaxFiles !== "number" ||
+                !Number.isInteger(config.rotateMaxFiles) ||
+                config.rotateMaxFiles < 0
+            ) {
+                return {
+                    field: "rotateMaxFiles",
+                    messageKey: "adapter.logging.file.error.rotate_max_files",
+                };
+            }
+            if (typeof config.rotateCompress !== "boolean") {
+                return {
+                    field: "rotateCompress",
+                    messageKey: "adapter.logging.file.error.rotate_compress",
+                };
+            }
+            return null;
+        },
+        toLoggerConfiguration(config: Record<string, unknown>) {
+            return {
+                fileLevel: config.level,
+                rotation: {
+                    maxBytes: config.rotateMaxBytes,
+                    maxFiles: config.rotateMaxFiles,
+                    compressRotated: config.rotateCompress,
+                },
+            };
+        },
+    } as const;
+}

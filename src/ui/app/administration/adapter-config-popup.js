@@ -64,7 +64,7 @@ export function createAdapterConfigPopup({
             const conflictWarning = hasConflict
                 ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
                 : "";
-            return `<label class="provider-popup-field${requiredClass}"${labelTitle}><span class="provider-field-title">${escapeHtml(labelText)}${requiredMarker}</span>${inputHtml}${conflictWarning}</label>`;
+            return `<label class="provider-popup-field${requiredClass}"${labelTitle}><span class="provider-field-title">${escapeHtml(labelText)}${requiredMarker}${conflictWarning}</span>${inputHtml}</label>`;
         }
 
         const fieldKeys = Object.keys(descriptors).filter(
@@ -158,17 +158,23 @@ export function createAdapterConfigPopup({
                 const isPort =
                     name === "port" || name.toLowerCase().endsWith("port");
                 const isNumber = isPort || name === "codeLength";
+                const usesNumberInput =
+                    isNumber || descriptor?.schemaType === "number";
 
                 let inputHtml;
                 if (isPassword) {
                     inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="password" value="" />`;
-                } else if (isNumber) {
+                } else if (usesNumberInput) {
                     inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="number" value="${value}" />`;
                 } else {
                     inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="text" value="${value}" />`;
                 }
 
-                return fieldLabel(name, fieldNameToLabel(name), inputHtml);
+                return fieldLabel(
+                    name,
+                    descriptor?.schemaLabel ?? fieldNameToLabel(name),
+                    inputHtml,
+                );
             })
             .join("");
 
@@ -198,8 +204,11 @@ export function createAdapterConfigPopup({
                               ? " checked"
                               : "";
                       const isAuthDisabled = name === "authDisabled";
+                      const label =
+                          descriptors[name]?.schemaLabel ??
+                          fieldNameToLabel(name);
                       return `<div class="provider-option-row${isAuthDisabled ? " provider-auth-toggle-row" : ""}">
-          <span class="provider-option-label">${escapeHtml(fieldNameToLabel(name))}</span>
+          <span class="provider-option-label">${escapeHtml(label)}</span>
           <label class="switch">
             <input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="checkbox"${checked} />
             <span class="slider"></span>
@@ -256,9 +265,7 @@ export function createAdapterConfigPopup({
                     return;
                 }
                 config[field.name] =
-                    field.name === "port" || field.name === "codeLength"
-                        ? Number(field.value)
-                        : field.value;
+                    field.type === "number" ? Number(field.value) : field.value;
                 return;
             }
             if (field instanceof HTMLSelectElement) {
@@ -266,6 +273,24 @@ export function createAdapterConfigPopup({
             }
         });
         return config;
+    }
+
+    function loadConfigIntoForm(popupFormEl, config) {
+        for (const [fieldName, value] of Object.entries(config)) {
+            const field = popupFormEl.querySelector(
+                `[name="${CSS.escape(fieldName)}"]`,
+            );
+            if (field instanceof HTMLInputElement) {
+                if (field.type === "checkbox") {
+                    field.checked = value === true || value === "true";
+                } else {
+                    field.value = value == null ? "" : String(value);
+                }
+            } else if (field instanceof HTMLSelectElement) {
+                field.value = value == null ? "" : String(value);
+            }
+        }
+        popupFormEl.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
     return {
@@ -307,6 +332,7 @@ export function createAdapterConfigPopup({
                 ? payload.requiredFields
                 : [];
             const supportsTest = payload.supportsTest === true;
+            const supportsReset = payload.supportsReset === true;
             const schemaFields = Array.isArray(payload.schema)
                 ? payload.schema
                 : [];
@@ -353,12 +379,15 @@ export function createAdapterConfigPopup({
                         dbValue !== envValue,
                     required: requiredFields.includes(field),
                     schemaType: schemaEntry?.type ?? null,
-                    schemaLabel: schemaEntry?.label ?? null,
+                    schemaLabel: schemaEntry?.labelKey
+                        ? i18n.t(schemaEntry.labelKey)
+                        : null,
                     schemaOptions: schemaEntry?.options ?? null,
                 };
             }
 
             let popupFormEl = null;
+            let resetPending = false;
 
             function currentRequiredFields() {
                 const authDisabledInput = popupFormEl?.querySelector(
@@ -455,6 +484,15 @@ export function createAdapterConfigPopup({
                         label: i18n.t("ui.app.admin.notif.save_settings"),
                         variant: "confirm",
                     },
+                    ...(supportsReset
+                        ? [
+                              {
+                                  id: "reset",
+                                  label: i18n.t("ui.reuse.reset"),
+                                  variant: "danger",
+                              },
+                          ]
+                        : []),
                     {
                         id: "cancel",
                         label: i18n.t("ui.reuse.cancel"),
@@ -462,6 +500,12 @@ export function createAdapterConfigPopup({
                     },
                 ],
                 onAction: async (action, overlay) => {
+                    if (action === "reset") {
+                        if (!(popupFormEl instanceof HTMLElement)) return false;
+                        loadConfigIntoForm(popupFormEl, envData);
+                        resetPending = true;
+                        return false;
+                    }
                     if (action !== "save") return true;
                     if (!(popupFormEl instanceof HTMLElement)) return false;
                     updateRequiredHighlights();
@@ -480,11 +524,18 @@ export function createAdapterConfigPopup({
                         return false;
                     }
                     const config = buildConfigPayload(popupFormEl);
-                    const saveResponse = await apiFetch(configUrl, {
-                        method: "PUT",
-                        headers: { "content-type": "application/json" },
-                        body: JSON.stringify(config),
-                    });
+                    const saveResponse = await apiFetch(
+                        configUrl,
+                        resetPending
+                            ? { method: "DELETE" }
+                            : {
+                                  method: "PUT",
+                                  headers: {
+                                      "content-type": "application/json",
+                                  },
+                                  body: JSON.stringify(config),
+                              },
+                    );
                     const savePayload = await (typeof saveResponse.clone ===
                     "function"
                         ? saveResponse
@@ -493,9 +544,10 @@ export function createAdapterConfigPopup({
                               .catch(() => ({}))
                         : saveResponse.json().catch(() => ({})));
                     if (!saveResponse.ok) {
-                        const message =
-                            savePayload?.error?.message ??
-                            i18n.t("ui.reuse.save_failed");
+                        const messageKey = savePayload?.error?.messageKey;
+                        const message = messageKey
+                            ? i18n.t(messageKey)
+                            : i18n.t("ui.reuse.save_failed");
                         if (saveResponse.status === 400) {
                             const fieldId = resolveFieldErrorId(savePayload);
                             if (
@@ -545,6 +597,7 @@ export function createAdapterConfigPopup({
                     syncToggle();
 
                     popupFormEl.addEventListener("input", () => {
+                        resetPending = false;
                         updateRequiredHighlights();
                         syncToggle();
                     });
