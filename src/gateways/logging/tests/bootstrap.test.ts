@@ -9,6 +9,7 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
+import type { Logger } from "../logger.js";
 
 class ResponseRecorder extends EventEmitter {
     statusCode = 0;
@@ -38,11 +39,17 @@ class ResponseRecorder extends EventEmitter {
 class RequestRecorder extends EventEmitter {
     method: string;
     headers: Record<string, string>;
+    body: string;
 
-    constructor(method: string, token?: string) {
+    constructor(method: string, token?: string, body = "") {
         super();
         this.method = method;
         this.headers = token ? { authorization: `Bearer ${token}` } : {};
+        this.body = body;
+    }
+
+    async *[Symbol.asyncIterator]() {
+        if (this.body) yield Buffer.from(this.body);
     }
 }
 
@@ -74,6 +81,63 @@ test("logging gateway bootstrap registers admin logs section and static UI scrip
     await assert.doesNotReject(
         access(path.join(staticDir!, "admin-section.js")),
     );
+});
+
+test("logging adapter level overrides reconfigure the running logger immediately", async () => {
+    const previousConsoleLevel = process.env.LOG_LEVEL;
+    const previousFileLevel = process.env.LOG_FILE_LEVEL;
+    process.env.LOG_LEVEL = "error";
+    process.env.LOG_FILE_LEVEL = "error";
+
+    try {
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+        const logger = ctx.capabilities.get<Logger>("logging:logger");
+        assert.ok(logger);
+        const adapterHandler = ctx.routeRegistry.getHandlers()[1];
+        const token = issueAccessToken("admin-test", "admin", 300);
+
+        const updateAdapter = async (
+            adapterId: "console" | "file",
+            config: Record<string, unknown>,
+        ) => {
+            const req = new RequestRecorder(
+                "PUT",
+                token,
+                JSON.stringify(config),
+            );
+            const res = new ResponseRecorder();
+            const handled = await adapterHandler(
+                req as any,
+                res as any,
+                new URL(
+                    `/api/v1/gateways/logging/adapters/${adapterId}/config`,
+                    "http://localhost",
+                ),
+            );
+            assert.equal(handled, true);
+            assert.equal(res.statusCode, 200);
+        };
+
+        await updateAdapter("console", { level: "debug", format: "json" });
+        assert.equal(logger.getConfiguration().consoleLevel, "debug");
+        assert.equal(logger.getConfiguration().consoleFormat, "json");
+
+        const fileConfiguration = logger.getConfiguration();
+        await updateAdapter("file", {
+            level: "info",
+            path: fileConfiguration.filePath,
+            rotateMaxBytes: fileConfiguration.rotation.maxBytes,
+            rotateMaxFiles: fileConfiguration.rotation.maxFiles,
+            rotateCompress: fileConfiguration.rotation.compressRotated,
+        });
+        assert.equal(logger.getConfiguration().fileLevel, "info");
+    } finally {
+        if (previousConsoleLevel === undefined) delete process.env.LOG_LEVEL;
+        else process.env.LOG_LEVEL = previousConsoleLevel;
+        if (previousFileLevel === undefined) delete process.env.LOG_FILE_LEVEL;
+        else process.env.LOG_FILE_LEVEL = previousFileLevel;
+    }
 });
 
 test("logging stream route requires admin auth", async () => {
