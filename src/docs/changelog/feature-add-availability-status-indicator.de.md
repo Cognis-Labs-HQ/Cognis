@@ -51,3 +51,7 @@ Beim Darüberfahren über Kalenderterminkarten wird der Hintergrund für „Besc
 ## Kompakte bevorstehende Termine und Kalenderüberschrift
 
 Bei bevorstehenden Terminen wird der Statushintergrund nun auf die umrandete Terminschaltfläche statt auf den übergroßen Listencontainer angewendet; statusspezifische Hover-Hintergründe überschreiben den allgemeinen Toolbar-Hover. Die Überschrift „Meine Kalender“ reserviert nun eine eigene Spalte für die Schaltfläche „Neu“, sodass sich die Steuerelemente nicht mehr überlagern.
+
+## Hover hebt nur den Terminakzent hervor
+
+Kalenderstatus-Hintergründe setzen sich nun ausdrücklich gegen allgemeine Schaltflächen-Hover-Hintergründe durch. Beim Darüberfahren bleiben Kartenhintergrund und äußerer Rahmen unverändert; nur der senkrechte Balken in der Kalenderfarbe wird hervorgehoben.

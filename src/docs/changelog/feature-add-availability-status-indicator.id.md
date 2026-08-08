@@ -51,3 +51,7 @@ Mengarahkan penunjuk ke kartu acara Kalender tidak lagi mengganti latar Sibuk, L
 ## Kartu acara mendatang dan judul kalender yang ringkas
 
 Acara Mendatang kini menerapkan latar status pada tombol acara berbatas, bukan pada wadah daftar yang terlalu besar, dan latar hover khusus status mengesampingkan hover bilah alat umum. Judul Kalender Saya kini menyediakan kolom khusus untuk tombol Baru sehingga kontrol tidak lagi bertumpuk.
+
+## Hover hanya menyorot aksen acara
+
+Latar status Kalender kini secara eksplisit mempertahankan diri dari latar hover tombol umum. Saat diarahkan, latar kartu dan bingkai luar tetap sama; hanya bilah vertikal berwarna kalender yang disorot.

@@ -51,3 +51,7 @@ Hovering Calendar event cards no longer replaces their busy, free, or tentative 
 ## Compact upcoming cards and calendar heading
 
 Upcoming Events now apply status backgrounds to the bordered event button instead of its oversized list container, and state-specific hover backgrounds override the generic toolbar hover. The My Calendars heading now reserves a dedicated column for the New button so the controls no longer overlap.
+
+## Hover highlights only the event accent
+
+Calendar status backgrounds now explicitly resist generic button-hover backgrounds. Hover feedback keeps the card background and outer border unchanged, highlighting only the vertical calendar-color bar.

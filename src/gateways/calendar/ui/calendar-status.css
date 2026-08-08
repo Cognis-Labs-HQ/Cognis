@@ -4,12 +4,12 @@
         in srgb,
         var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
         var(--surface, transparent)
-    );
+    ) !important;
 }
 
 .calendar-view-canvas .calendar-event-status--free,
 .app-shell .calendar-view-canvas .calendar-event-status--free:hover {
-    background: transparent;
+    background: transparent !important;
     opacity: 0.78;
 }
 
@@ -30,7 +30,23 @@
                 0 8px,
             transparent 8px 16px
         ),
-        var(--surface, transparent);
+        var(--surface, transparent) !important;
+}
+
+.app-shell
+    .calendar-view-canvas
+    .calendar-slot-event.calendar-event-status:hover {
+    border-color: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 40%,
+        var(--field-border)
+    ) !important;
+    border-left-color: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 75%,
+        white
+    ) !important;
+    transform: none;
 }
 
 .calendar-events-list .calendar-event-status--tentative,
@@ -53,7 +69,7 @@
                 0 8px,
             transparent 8px 16px
         ),
-        var(--surface, transparent);
+        var(--surface, transparent) !important;
 }
 
 .calendar-events-list .calendar-event-status--busy,
@@ -65,7 +81,7 @@
         in srgb,
         var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
         var(--surface, transparent)
-    );
+    ) !important;
 }
 
 .calendar-events-list .calendar-event-status--free,
@@ -73,7 +89,7 @@
     .calendar-events-list
     .calendar-upcoming-button.calendar-event-status--free:hover,
 .dashboard-upcoming-event-link.calendar-event-status--free {
-    background: transparent;
+    background: transparent !important;
 }
 
 .calendar-events-list .calendar-upcoming-item {
@@ -95,7 +111,12 @@
 .app-shell
     .calendar-events-list
     .calendar-upcoming-button.calendar-event-status:hover {
-    border-color: var(--accent-2, var(--accent));
+    border-color: var(--field-border) !important;
+    border-left-color: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 75%,
+        white
+    ) !important;
     transform: none;
 }
 

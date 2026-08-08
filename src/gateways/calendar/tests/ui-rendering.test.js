@@ -261,7 +261,7 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     }
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*background:\s*transparent;/,
+        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*background:\s*transparent !important;/,
     );
     assert.match(
         STATUS_CSS_SOURCE,
@@ -291,6 +291,14 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     assert.match(
         STATUS_CSS_SOURCE,
         /calendar-upcoming-button\.calendar-event-status\s*\{[\s\S]*border-radius:\s*10px;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-slot-event\.calendar-event-status:hover\s*\{[\s\S]*border-color:[\s\S]*field-border[\s\S]*border-left-color:[\s\S]*75%[\s\S]*transform:\s*none;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-upcoming-button\.calendar-event-status:hover\s*\{[\s\S]*border-color:\s*var\(--field-border\)[\s\S]*border-left-color:[\s\S]*75%[\s\S]*transform:\s*none;/,
     );
 });
 
