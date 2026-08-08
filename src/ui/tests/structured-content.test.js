@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 
 import { renderStructuredContent } from "../reuse/structured-content.js";
@@ -39,4 +40,14 @@ test("structured content ignores unknown item types", () => {
     ]);
 
     assert.doesNotMatch(markup, /unsafe/);
+});
+
+test("structured content dividers use the softened border tint", () => {
+    const styles = readFileSync(
+        new URL("../styles/reuse/structured-content.css", import.meta.url),
+        "utf8",
+    );
+
+    assert.match(styles, /structured-content__divider[\s\S]*color-mix\(/);
+    assert.match(styles, /color-border[^;]*55%/);
 });

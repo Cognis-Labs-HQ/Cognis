@@ -103,3 +103,7 @@ Pembaruan Status Kalender kini memiliki jendela informasi yang menjelaskan penga
 ## Kontribusi pengaturan terstruktur
 
 Pengaturan Pengguna dan Administrasi kini menerima grup konten deklaratif untuk judul, subjudul, teks penjelasan, tombol, sakelar, dan pemisah. Halaman merender struktur tersebut, memisahkan grup kontribusi secara otomatis, mengamankan teks, dan menerapkan satu kumpulan kelas tata letak yang baku. Pengaturan status Kalender dan administrasi TFA kini memakai kontrak ini sebagai pengganti HTML mentah.
+
+## Struktur Pengaturan yang lebih lembut dan lengkap
+
+Pemisah konten terstruktur kini menggunakan warna dengan kontras lebih rendah. Seluruh kontribusi Keamanan, termasuk konten kata sandi, autentikasi dua faktor, dan kode pemulihan, kini mengikuti struktur bagian, judul, isi, subjudul, dan teks kanonis yang sama tanpa menyisakan markup judul lama.

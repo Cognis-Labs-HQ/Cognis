@@ -103,3 +103,7 @@ Calendar Status Updates now includes an information popup explaining how events 
 ## Structured settings contributions
 
 User Settings and Administration now accept declarative content groups for titles, subheadings, explanatory text, buttons, toggles, and dividers. The pages render the structure themselves, automatically separate contributed groups, escape text, and apply one canonical set of layout classes. Calendar status and TFA administration settings now use this contract instead of supplying raw HTML.
+
+## Softer, complete Settings structure
+
+Structured-content dividers now use a lower-contrast tint. The complete Security contribution, including password, two-factor, and recovery-code content, now follows the same canonical section, heading, body, subheading, and text structure without retaining legacy heading markup.

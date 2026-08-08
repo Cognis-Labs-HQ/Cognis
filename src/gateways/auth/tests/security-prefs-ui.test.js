@@ -23,6 +23,9 @@ const KEYRING_SETTINGS_STYLES = readFileSync(
 );
 
 test("auth security preferences disable password reset for external users", () => {
+    assert.match(SOURCE, /class="components-section"/);
+    assert.match(SOURCE, /class="components-section-heading"/);
+    assert.match(SOURCE, /class="components-section-body"/);
     assert.match(SOURCE, /settings-auth-password-reset/);
     assert.match(SOURCE, /settings-reset-password-btn/);
     assert.doesNotMatch(SOURCE, /settings-auth-recovery-codes/);

@@ -103,3 +103,7 @@ Die Kalender-Statusaktualisierungen enthalten jetzt ein Informationsfenster, das
 ## Strukturierte Einstellungsbeiträge
 
 Benutzereinstellungen und Administration akzeptieren jetzt deklarative Inhaltsgruppen für Titel, Unterüberschriften, Erklärungstexte, Schaltflächen, Umschalter und Trennlinien. Die Seiten rendern diese Struktur selbst, trennen beigesteuerte Gruppen automatisch, maskieren Text und wenden einheitliche Layoutklassen an. Kalenderstatus- und TFA-Administrationseinstellungen verwenden nun diesen Vertrag statt rohem HTML.
+
+## Dezentere, vollständige Einstellungsstruktur
+
+Trennlinien für strukturierte Inhalte verwenden jetzt einen kontrastärmeren Farbton. Der vollständige Sicherheitsbeitrag einschließlich Passwort-, Zwei-Faktor- und Wiederherstellungscode-Inhalten folgt nun derselben kanonischen Struktur für Abschnitte, Überschriften, Inhalte, Unterüberschriften und Texte, ohne veraltetes Überschriften-Markup beizubehalten.

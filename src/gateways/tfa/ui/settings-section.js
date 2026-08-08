@@ -710,25 +710,24 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         );
         return `
       <div class="settings-auth-tfa">
-        <h3>${i18n.t("gateway.tfa.settings.section_title")}</h3>
         <div class="sub-composer-inner content-grid--two-column">
           <div class="widget-card">
             <div class="settings-language-heading-row">
-              <h3>${i18n.t("gateway.tfa.settings.available_methods")}</h3>
+              <h4 class="structured-content__subheading">${i18n.t("gateway.tfa.settings.available_methods")}</h4>
             </div>
             <table id="available-tfa-methods" class="language-table">${renderTfaRows(available, false)}</table>
           </div>
           <div class="widget-card">
             <div class="settings-language-heading-row">
-              <h3>${i18n.t("gateway.tfa.settings.preferred_methods")}</h3>
+              <h4 class="structured-content__subheading">${i18n.t("gateway.tfa.settings.preferred_methods")}</h4>
             </div>
             <table id="preferred-tfa-methods" class="language-table">${renderTfaRows(preferred, true)}</table>
           </div>
         </div>
       </div>
       <div class="settings-auth-recovery-codes">
-        <h3>${i18n.t("gateway.tfa.settings.recovery_codes_title")}${recoveryCodesHint}</h3>
-        <p>${i18n.t(hasRecoveryCodes ? "gateway.tfa.settings.recovery_codes_ready" : "gateway.tfa.settings.recovery_codes_missing")} ${i18n.t("gateway.tfa.settings.recovery_codes_remaining_label").replace("{count}", String(recoveryCodesStatus.remainingCount))}</p>
+        <h4 class="structured-content__subheading">${i18n.t("gateway.tfa.settings.recovery_codes_title")}${recoveryCodesHint}</h4>
+        <p class="structured-content__text">${i18n.t(hasRecoveryCodes ? "gateway.tfa.settings.recovery_codes_ready" : "gateway.tfa.settings.recovery_codes_missing")} ${i18n.t("gateway.tfa.settings.recovery_codes_remaining_label").replace("{count}", String(recoveryCodesStatus.remainingCount))}</p>
         <div class="settings-auth-recovery-actions">
           <button class="btn-animated" type="button" id="settings-recovery-codes-btn">${i18n.t(hasRecoveryCodes ? "gateway.tfa.settings.recovery_codes_action" : "gateway.tfa.settings.recovery_codes_create_action")}</button>
           <button class="btn-animated" type="button" id="settings-recovery-codes-toggle-btn" ${generatedRecoveryCodes.length === 0 ? "disabled" : ""}>${i18n.t(recoveryCodesVisible ? "gateway.tfa.settings.recovery_codes_hide" : "gateway.tfa.settings.recovery_codes_reveal")}</button>
