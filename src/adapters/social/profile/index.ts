@@ -11,8 +11,9 @@ import { createPostRoutes } from "./routes/posts.js";
 import { createFileLimitRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import {
+    AVAILABILITY_STATUSES,
     createAvailabilityRoutes,
-    readManualStatus,
+    readStoredManualStatus,
     type AvailabilityStatus,
 } from "./routes/availability.js";
 import type { AccountLifecycleState, AccountRole } from "./store.js";
@@ -235,6 +236,9 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    ctx.capabilities.contribute("social:getAvailabilityStatuses", () => [
+        ...AVAILABILITY_STATUSES,
+    ]);
     ctx.capabilities.contribute(
         "social:getUserAvailability",
         async (accountId: string) => {
@@ -246,14 +250,18 @@ export async function bootstrapSocialAdapter(
             const calendarStatus = calendarResolver
                 ? await calendarResolver(accountId)
                 : null;
-            const manualStatus = readManualStatus(
+            const storedManualStatus = readStoredManualStatus(
                 await prefStore.get(accountId, "availability"),
             );
             return {
                 handle: profile.handle,
-                status: calendarStatus ?? manualStatus,
-                manualStatus,
-                source: calendarStatus ? "calendar" : "manual",
+                status: storedManualStatus ?? calendarStatus ?? "free",
+                manualStatus: storedManualStatus ?? "free",
+                source: storedManualStatus
+                    ? "manual"
+                    : calendarStatus
+                      ? "calendar"
+                      : "manual",
             };
         },
     );

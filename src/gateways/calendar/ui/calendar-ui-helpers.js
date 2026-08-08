@@ -37,6 +37,14 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[a-zA-Z0-9]{2,}$/;
 const TIMESLOT_EVENT_PREVIEW_LIMIT = 2;
 const MONTH_EVENT_PREVIEW_LIMIT = 3;
 const DAY_PALETTE_SEGMENT_OPACITY = 62;
+function setEventStatusOptions(statuses) {
+    if (!Array.isArray(statuses) || statuses.length === 0) return;
+    EVENT_STATUS_OPTIONS.splice(
+        0,
+        EVENT_STATUS_OPTIONS.length,
+        ...new Set(statuses.map(String)),
+    );
+}
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
     return query.get("calendarId");
@@ -297,9 +305,9 @@ function visibilityIcon(visibility, sharedPermission = null, i18n) {
     return `<span class="calendar-visibility-icon calendar-visibility-icon--public" role="img" aria-label="${publicLabel}" title="${publicLabel}"></span>`;
 }
 function getStatusLabelKey(status) {
-    return status === "free"
-        ? "gateway.calendar.status_free"
-        : "gateway.calendar.status_busy";
+    if (status === "free") return "gateway.calendar.status_free";
+    if (status === "tentative") return "gateway.calendar.response_tentative";
+    return "gateway.calendar.status_busy";
 }
 function getRecurrenceLabelKey(recurrence) {
     return `gateway.calendar.recurrence_${EVENT_RECURRENCE_OPTIONS.includes(recurrence) ? recurrence : "none"}`;
@@ -395,7 +403,7 @@ function renderEventButton(
         currentAccountId &&
         event.createdBy !== currentAccountId &&
         String(event.responses?.[currentAccountId] ?? "pending") === "pending";
-    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${isPending ? " calendar-slot-event--pending" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([searchTimeLabel, event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, searchTimeLabel, event.calendarName, event.location, event.description].filter(Boolean).join(" "))}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}" aria-label="${escapeHtml(eventAriaLabel)}">
+    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${event.status === "tentative" ? " calendar-slot-event--tentative" : ""}${isPending ? " calendar-slot-event--pending" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([searchTimeLabel, event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, searchTimeLabel, event.calendarName, event.location, event.description].filter(Boolean).join(" "))}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}" aria-label="${escapeHtml(eventAriaLabel)}">
       ${timeLabel ? `<span class="calendar-slot-event-time">${escapeHtml(timeLabel)}</span>` : ""}
       <strong class="calendar-slot-event-title">${meetingIcon}${escapeHtml(event.title)}</strong>
     </button>`;
@@ -968,6 +976,7 @@ export {
     EVENT_RECURRENCE_OPTIONS,
     EVENT_RESPONSE_OPTIONS,
     EVENT_STATUS_OPTIONS,
+    setEventStatusOptions,
     parseCalendarSelection,
     parseEventSelection,
     addDays,

@@ -279,6 +279,13 @@ export function createCalendarCoreRoutes({
                 resolveMeetingsProviderAvailability,
                 log,
             );
+            const resolveAvailabilityStatuses = getCapability<
+                () => readonly string[]
+            >("social:getAvailabilityStatuses");
+            const availabilityStatuses = resolveAvailabilityStatuses?.() ?? [
+                "busy",
+                "free",
+            ];
             const validatedCalendars = await validateSharedCalendars(
                 gateway.listCalendars(targetAccountId),
                 targetAccountId,
@@ -315,6 +322,7 @@ export function createCalendarCoreRoutes({
                     currentAccountId: targetAccountId,
                     requestedByAccountId: claims.sub,
                     jitsiAvailable,
+                    availabilityStatuses,
                 },
             });
             return true;
@@ -611,7 +619,11 @@ export function createCalendarCoreRoutes({
                               typeof body.meetingUrl === "string"
                                   ? body.meetingUrl
                                   : null,
-                          status: body.status === "free" ? "free" : "busy",
+                          status:
+                              body.status === "free" ||
+                              body.status === "tentative"
+                                  ? body.status
+                                  : "busy",
                           recurrence:
                               body.recurrence === "daily" ||
                               body.recurrence === "weekly" ||
@@ -637,7 +649,11 @@ export function createCalendarCoreRoutes({
                               typeof body.meetingUrl === "string"
                                   ? body.meetingUrl
                                   : null,
-                          status: body.status === "free" ? "free" : "busy",
+                          status:
+                              body.status === "free" ||
+                              body.status === "tentative"
+                                  ? body.status
+                                  : "busy",
                           recurrence:
                               body.recurrence === "daily" ||
                               body.recurrence === "weekly" ||

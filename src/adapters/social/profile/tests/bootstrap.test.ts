@@ -222,6 +222,12 @@ test("user availability capability resolves calendar-aware status", async () => 
         >("social:getUserAvailability");
         assert.ok(profileStore);
         assert.ok(getUserAvailability);
+        assert.deepEqual(
+            capabilities.get<() => string[]>(
+                "social:getAvailabilityStatuses",
+            )?.(),
+            ["free", "busy", "tentative"],
+        );
         await profileStore.createProfile("availability-user", "available");
 
         assert.equal(

@@ -110,6 +110,9 @@ export async function mount(root, { signal } = {}) {
 
     async function reloadState() {
         const calendarState = await calendarUi.fetchCalendarState();
+        calendarUi.setEventStatusOptions(
+            calendarState.meta.availabilityStatuses,
+        );
         calendars = calendarState.calendars;
         canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
         currentAccountId = String(calendarState.meta?.currentAccountId ?? "");

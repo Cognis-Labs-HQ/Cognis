@@ -10,20 +10,27 @@ import type { ProfileStore } from "../store-contract.js";
 export type AvailabilityStatus = "free" | "busy" | "tentative";
 
 const AVAILABILITY_PREFERENCE = "availability";
-const VALID_STATUSES = new Set<AvailabilityStatus>([
+export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
     "free",
     "busy",
     "tentative",
-]);
+];
+const VALID_STATUSES = new Set(AVAILABILITY_STATUSES);
 
-export function readManualStatus(value: string | null): AvailabilityStatus {
-    if (!value) return "free";
+export function readStoredManualStatus(
+    value: string | null,
+): AvailabilityStatus | null {
+    if (!value) return null;
     try {
         const status = JSON.parse(value)?.status;
-        return VALID_STATUSES.has(status) ? status : "free";
+        return VALID_STATUSES.has(status) ? status : null;
     } catch {
-        return "free";
+        return null;
     }
+}
+
+export function readManualStatus(value: string | null): AvailabilityStatus {
+    return readStoredManualStatus(value) ?? "free";
 }
 
 export function createAvailabilityRoutes(
@@ -63,7 +70,7 @@ export function createAvailabilityRoutes(
             const calendarStatus = await resolveCalendarStatus(
                 profile.accountId,
             );
-            const manualStatus = readManualStatus(
+            const storedManualStatus = readStoredManualStatus(
                 await preferenceStore.get(
                     profile.accountId,
                     AVAILABILITY_PREFERENCE,
@@ -74,9 +81,13 @@ export function createAvailabilityRoutes(
                 JSON.stringify({
                     data: {
                         handle: profile.handle,
-                        status: calendarStatus ?? manualStatus,
-                        manualStatus,
-                        source: calendarStatus ? "calendar" : "manual",
+                        status: storedManualStatus ?? calendarStatus ?? "free",
+                        manualStatus: storedManualStatus ?? "free",
+                        source: storedManualStatus
+                            ? "manual"
+                            : calendarStatus
+                              ? "calendar"
+                              : "manual",
                     },
                 }),
             );

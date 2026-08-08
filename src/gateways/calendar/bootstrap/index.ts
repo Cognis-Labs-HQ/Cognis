@@ -818,7 +818,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             inviteEmails?: string[];
             reminderOffsetsMinutes?: number[];
             meetingUrl?: string | null;
-            status?: "busy" | "free";
+            status?: "busy" | "free" | "tentative";
             recurrence?: "none" | "daily" | "weekly" | "monthly" | "yearly";
         }) => gateway.addEvent(input),
     );
@@ -963,7 +963,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.4.48",
+        version: "1.4.52",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

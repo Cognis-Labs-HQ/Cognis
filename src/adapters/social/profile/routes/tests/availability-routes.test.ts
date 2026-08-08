@@ -37,7 +37,7 @@ function responseCapture() {
     };
 }
 
-test("calendar availability temporarily supersedes a manual override", async () => {
+test("manual availability overrides an active calendar event", async () => {
     const preferences = new VolatileUserPreferenceStore();
     const profileStore = {
         getProfile: async () => profile,
@@ -64,7 +64,7 @@ test("calendar availability temporarily supersedes a manual override", async () 
         new URL("http://localhost/api/v1/social/availability/alice"),
     );
     const payload = JSON.parse(loaded.capture.body);
-    assert.equal(payload.data.status, "tentative");
+    assert.equal(payload.data.status, "busy");
     assert.equal(payload.data.manualStatus, "busy");
-    assert.equal(payload.data.source, "calendar");
+    assert.equal(payload.data.source, "manual");
 });

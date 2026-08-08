@@ -4,7 +4,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 
 const availabilityCache = new Map();
-const STATUS_OPTIONS = ["free", "busy", "tentative"];
+export const STATUS_OPTIONS = Object.freeze(["free", "busy", "tentative"]);
 
 export async function fetchAvailability(handle = "") {
     const normalizedHandle = String(handle).replace(/^@/, "");
@@ -61,8 +61,6 @@ export async function setManualAvailability(status) {
     availabilityCache.clear();
     return true;
 }
-
-export { STATUS_OPTIONS };
 
 uiCtx.capabilities.contribute("ui:availabilityRenderer", {
     buildMarkup: availabilityIndicatorMarkup,

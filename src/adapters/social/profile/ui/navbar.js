@@ -7,6 +7,7 @@ import {
     availabilityIndicatorMarkup,
     fetchAvailability,
     setManualAvailability,
+    STATUS_OPTIONS,
 } from "./availability.js";
 
 const availabilityStylesheet = document.createElement("link");
@@ -40,6 +41,22 @@ async function mountAvailabilityControl() {
     const statusOptions = statusItem.querySelector(
         ".availability-menu-options",
     );
+    const optionTemplate = statusOptions.querySelector(
+        "[data-availability-option-template]",
+    );
+    for (const status of STATUS_OPTIONS) {
+        const fragment = optionTemplate.content.cloneNode(true);
+        const option = fragment.querySelector(".availability-menu-option");
+        option.dataset.availabilityOption = status;
+        option.querySelector(
+            ".availability-menu-dot",
+        ).dataset.availabilityStatus = status;
+        option.querySelector("[data-availability-label]").textContent = i18n.t(
+            `ui.app.profile.availability.${status}`,
+        );
+        statusOptions.append(fragment);
+    }
+    optionTemplate.remove();
     const availability = await fetchAvailability();
     updateAvailabilitySelection(
         statusItem,

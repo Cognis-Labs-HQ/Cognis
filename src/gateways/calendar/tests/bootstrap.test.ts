@@ -274,6 +274,11 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
     );
     capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("auth:routeContext", authContext);
+    capabilities.contribute("social:getAvailabilityStatuses", () => [
+        "free",
+        "busy",
+        "tentative",
+    ]);
 
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -293,6 +298,11 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
 
     assert.equal(calendarsResponse.statusCode, 200);
     assert.equal(calendarsResponse.body.meta.jitsiAvailable, true);
+    assert.deepEqual(calendarsResponse.body.meta.availabilityStatuses, [
+        "free",
+        "busy",
+        "tentative",
+    ]);
 });
 
 test("calendar invitations endpoint returns pending invited events for attendee", async () => {

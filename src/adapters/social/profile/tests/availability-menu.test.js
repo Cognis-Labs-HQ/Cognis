@@ -11,15 +11,11 @@ test("availability menu presents every status with a matching dot", () => {
         resolve(PROFILE_ROOT, "ui/availability-menu.html"),
         "utf8",
     );
+    const navbar = readFileSync(resolve(PROFILE_ROOT, "ui/navbar.js"), "utf8");
 
-    for (const status of ["free", "busy", "tentative"]) {
-        assert.match(
-            template,
-            new RegExp(
-                `data-availability-option="${status}"[\\s\\S]+data-availability-status="${status}"`,
-            ),
-        );
-    }
+    assert.match(template, /data-availability-option-template/);
+    assert.match(navbar, /for \(const status of STATUS_OPTIONS\)/);
+    assert.doesNotMatch(template, /data-availability-option="/);
 });
 
 test("availability menu uses borderless controls and hover outlines", () => {

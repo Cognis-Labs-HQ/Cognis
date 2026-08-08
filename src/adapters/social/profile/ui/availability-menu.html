@@ -10,44 +10,16 @@
         <span class="availability-menu-chevron" aria-hidden="true"></span>
     </button>
     <div class="availability-menu-options" role="listbox" hidden>
-        <button
-            type="button"
-            class="availability-menu-option"
-            data-availability-option="free"
-            role="option"
-            aria-selected="false"
-        >
-            <span
-                class="availability-menu-dot"
-                data-availability-status="free"
-            ></span>
-            <span data-i18n="ui.app.profile.availability.free"></span>
-        </button>
-        <button
-            type="button"
-            class="availability-menu-option"
-            data-availability-option="busy"
-            role="option"
-            aria-selected="false"
-        >
-            <span
-                class="availability-menu-dot"
-                data-availability-status="busy"
-            ></span>
-            <span data-i18n="ui.app.profile.availability.busy"></span>
-        </button>
-        <button
-            type="button"
-            class="availability-menu-option"
-            data-availability-option="tentative"
-            role="option"
-            aria-selected="false"
-        >
-            <span
-                class="availability-menu-dot"
-                data-availability-status="tentative"
-            ></span>
-            <span data-i18n="ui.app.profile.availability.tentative"></span>
-        </button>
+        <template data-availability-option-template>
+            <button
+                type="button"
+                class="availability-menu-option"
+                role="option"
+                aria-selected="false"
+            >
+                <span class="availability-menu-dot"></span>
+                <span data-availability-label></span>
+            </button>
+        </template>
     </div>
 </div>

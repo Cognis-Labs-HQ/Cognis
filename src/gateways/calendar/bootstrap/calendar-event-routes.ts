@@ -249,7 +249,9 @@ export async function handleCalendarEventRoutes({
                         ? body.meetingUrl
                         : undefined,
                 status:
-                    body.status === "free" || body.status === "busy"
+                    body.status === "free" ||
+                    body.status === "busy" ||
+                    body.status === "tentative"
                         ? body.status
                         : undefined,
                 recurrence:

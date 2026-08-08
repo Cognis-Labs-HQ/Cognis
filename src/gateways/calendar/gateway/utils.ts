@@ -3,7 +3,7 @@ import type { CapabilityStore, GatewayRegistry } from "@cognis/core";
 import type { CoreCalendarGateway } from "./index.js";
 
 export type CalendarVisibility = "private" | "public" | "shared";
-export type CalendarEventStatus = "busy" | "free";
+export type CalendarEventStatus = "busy" | "free" | "tentative";
 export type CalendarEventRecurrence =
     "none" | "daily" | "weekly" | "monthly" | "yearly";
 export type CalendarEventResponse =
@@ -303,7 +303,7 @@ export function resolveReminderOffsets(
 }
 
 export function normalizeEventStatus(value: unknown): CalendarEventStatus {
-    return value === "free" ? "free" : "busy";
+    return value === "free" || value === "tentative" ? value : "busy";
 }
 
 export function normalizeEventRecurrence(
