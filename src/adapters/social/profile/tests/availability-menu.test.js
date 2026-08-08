@@ -95,4 +95,23 @@ test("availability renderer exposes immediate ctx refresh", () => {
         availability,
         /ui:availabilityRenderer[\s\S]*refresh:\s*refreshAvailabilityIndicators/,
     );
+    assert.match(
+        availability,
+        /notifyAvailabilitySubscribers\(displayedAvailability\)/,
+    );
+});
+
+test("navbar tracks refreshed status and deselects options for idle", () => {
+    const navbar = readFileSync(resolve(PROFILE_ROOT, "ui/navbar.js"), "utf8");
+
+    assert.match(navbar, /subscribeAvailabilityUpdates/);
+    assert.match(navbar, /updatedAvailability\.status/);
+    assert.match(
+        navbar,
+        /String\(option\.dataset\.availabilityOption === status\)/,
+    );
+    assert.match(
+        navbar,
+        /if \(STATUS_OPTIONS\.includes\(status\)\)[\s\S]*indicator\.dataset\.availableStatus = status/,
+    );
 });

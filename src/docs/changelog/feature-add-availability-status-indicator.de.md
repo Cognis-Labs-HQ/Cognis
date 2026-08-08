@@ -63,3 +63,7 @@ PATCH-Anfragen für Kalendertermine können Teilnehmerlisten wieder aktualisiere
 ## Statusanzeigen werden nach Kalenderaktualisierungen erneuert
 
 Erfolgreiche Aktualisierungen von Kalenderterminen rufen nun den Verfügbarkeits-Renderer des Profiladapters über den UI-ctx auf. Der Renderer leert den Verfügbarkeits-Cache und zeichnet sichtbare Benutzerstatusanzeigen sofort neu, ohne dass die Seite aktualisiert werden muss.
+
+## Profilmenü folgt dem wirksamen Status
+
+Aktualisierungen der Verfügbarkeit benachrichtigen nun neben den Avataranzeigen auch das Profilmenü. Das Menü verschiebt seine aktive Auswahl sofort, wenn der Kalender den wirksamen Status ändert. Der automatische Status „Inaktiv“ hebt alle auswählbaren Optionen auf und zeigt eine graue Zusammenfassung an.

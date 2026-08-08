@@ -6,7 +6,9 @@ import { registerSearchIndexing } from "./search/index.js";
 import {
     availabilityIndicatorMarkup,
     fetchAvailability,
+    refreshAvailabilityIndicators,
     setManualAvailability,
+    subscribeAvailabilityUpdates,
     STATUS_OPTIONS,
 } from "./availability.js";
 
@@ -64,6 +66,15 @@ async function mountAvailabilityControl() {
         availability?.status ?? "free",
         i18n,
     );
+    subscribeAvailabilityUpdates((updatedAvailability) => {
+        if (!updatedAvailability?.status) return;
+        updateAvailabilitySelection(
+            statusItem,
+            indicator,
+            updatedAvailability.status,
+            i18n,
+        );
+    });
 
     statusToggle.addEventListener("click", () => {
         const shouldOpen = statusOptions.hidden;
@@ -77,13 +88,7 @@ async function mountAvailabilityControl() {
             option.addEventListener("click", async () => {
                 const selectedStatus = option.dataset.availabilityOption;
                 if (await setManualAvailability(selectedStatus)) {
-                    const updatedAvailability = await fetchAvailability();
-                    updateAvailabilitySelection(
-                        statusItem,
-                        indicator,
-                        updatedAvailability?.status ?? selectedStatus,
-                        i18n,
-                    );
+                    await refreshAvailabilityIndicators();
                     statusOptions.hidden = true;
                     statusToggle.setAttribute("aria-expanded", "false");
                 }
@@ -108,7 +113,9 @@ function updateAvailabilitySelection(container, indicator, status, i18n) {
             );
         });
     indicator.dataset.availabilityStatus = status;
-    indicator.dataset.availableStatus = status;
+    if (STATUS_OPTIONS.includes(status)) {
+        indicator.dataset.availableStatus = status;
+    }
     indicator.title = label;
     indicator.setAttribute("aria-label", label);
 }

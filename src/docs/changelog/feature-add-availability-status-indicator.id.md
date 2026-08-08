@@ -63,3 +63,7 @@ Permintaan PATCH acara Kalender kini dapat memperbarui daftar peserta lagi. Rute
 ## Indikator status diperbarui setelah perubahan kalender
 
 Pembaruan acara Kalender yang berhasil kini memanggil perender ketersediaan adapter profil melalui UI ctx. Perender menghapus cache ketersediaan dan langsung menggambar ulang lampu status pengguna yang terlihat tanpa memerlukan penyegaran halaman.
+
+## Menu profil mengikuti status efektif
+
+Penyegaran ketersediaan kini memberi tahu menu profil serta lampu avatar. Menu langsung memindahkan pilihan aktif ketika Kalender mengubah status efektif, sedangkan status Tidak aktif otomatis menghapus pilihan dari semua opsi yang dapat dipilih dan menampilkan ringkasan abu-abu.

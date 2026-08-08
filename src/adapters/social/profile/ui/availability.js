@@ -5,12 +5,24 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { subscribePresenceActivity } from "/static/reuse/page-composer/presence-tracker.js";
 
 const availabilityCache = new Map();
+const availabilitySubscribers = new Set();
 export const STATUS_OPTIONS = Object.freeze(["free", "busy", "tentative"]);
 const AVAILABILITY_REFRESH_INTERVAL_MS = 30_000;
 const PRESENCE_HEARTBEAT_INTERVAL_MS = 15_000;
 const PRESENCE_SESSION_KEY = "cognis_availability_presence_session";
 let locallyIdle = false;
 let locallyActive = true;
+
+function notifyAvailabilitySubscribers(availability) {
+    for (const subscriber of availabilitySubscribers) {
+        subscriber(availability);
+    }
+}
+
+export function subscribeAvailabilityUpdates(subscriber) {
+    availabilitySubscribers.add(subscriber);
+    return () => availabilitySubscribers.delete(subscriber);
+}
 
 function getPresenceSessionId() {
     const storedSessionId = window.sessionStorage.getItem(PRESENCE_SESSION_KEY);
@@ -93,6 +105,16 @@ export async function hydrateAvailabilityIndicators(container = document) {
 export async function refreshAvailabilityIndicators(container = document) {
     availabilityCache.clear();
     await hydrateAvailabilityIndicators(container);
+    const availability = await fetchAvailability();
+    if (availability?.status) {
+        const displayedAvailability = {
+            ...availability,
+            status: locallyIdle ? "idle" : availability.status,
+        };
+        notifyAvailabilitySubscribers(displayedAvailability);
+        return displayedAvailability;
+    }
+    return availability;
 }
 
 export async function setManualAvailability(status) {
@@ -116,7 +138,12 @@ uiCtx.capabilities.contribute("ui:availabilityRenderer", {
 subscribePresenceActivity(async ({ active }) => {
     locallyActive = active;
     locallyIdle = !active;
-    void reportPresenceActivity(active);
+    await reportPresenceActivity(active);
+    if (active) {
+        await refreshAvailabilityIndicators();
+        return;
+    }
+    notifyAvailabilitySubscribers({ status: "idle", source: "presence" });
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });

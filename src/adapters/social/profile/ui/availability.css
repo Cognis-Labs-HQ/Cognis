@@ -105,3 +105,7 @@
 .availability-menu-dot[data-availability-status="tentative"] {
     background: #e6a52f;
 }
+.availability-menu-dot[data-availability-status="idle"] {
+    background: #8a929c;
+    filter: grayscale(1);
+}

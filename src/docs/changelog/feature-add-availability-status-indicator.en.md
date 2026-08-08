@@ -63,3 +63,7 @@ Calendar event PATCH requests can update attendee lists again. The event route n
 ## Status indicators refresh after calendar updates
 
 Successful Calendar event updates now invoke the profile adapter's availability renderer through UI ctx. The renderer clears cached availability and immediately repaints visible user status lights without requiring a page refresh.
+
+## Profile menu follows effective status
+
+Availability refreshes now notify the profile menu as well as avatar lights. The menu immediately moves its active selection when Calendar changes the effective status, and automatic Idle clears every selectable option while showing a grey Idle summary.
