@@ -6,7 +6,7 @@
     "main": "index.ts",
     "private": true,
     "dependencies": {
-        "@cognis/adapter-social-profile": "<=1.1.47",
+        "@cognis/adapter-social-profile": "<=1.1.48",
         "@cognis/gateways": "<=0.1.6",
         "@cognis/adapter-auth-keyring": "<=1.0.30"
     }
