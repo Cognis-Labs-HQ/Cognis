@@ -54,6 +54,10 @@ test("unread chats expose an animated alert state and complete title", () => {
     assert.match(renderSource, /messages-room--unread/);
     assert.match(renderSource, /title=\"\$\{escapeHtml\(titleSource\)\}\"/);
     assert.match(styleSource, /@keyframes messages-room-unread-pulse/);
+    assert.match(
+        styleSource,
+        /\.messages-room--unread[\s\S]*border-radius: 0\.35rem/,
+    );
     assert.match(styleSource, /prefers-reduced-motion: reduce/);
     assert.match(
         styleSource,
@@ -91,6 +95,7 @@ test("room leave controls use explicit destructive button styling", () => {
     );
     assert.match(englishStrings, />Leave Room</);
     assert.doesNotMatch(englishStrings, /Conversation/i);
+});
 
 test("messages omits availability lights from primary chat avatars", () => {
     const roomRenderSource = readFileSync(

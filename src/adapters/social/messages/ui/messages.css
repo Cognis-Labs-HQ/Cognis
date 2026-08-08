@@ -152,6 +152,7 @@
 
 .messages-room--unread {
     z-index: 0;
+    border-radius: 0.35rem;
     animation: messages-room-unread-pulse 2.4s ease-in-out infinite;
 }
 
