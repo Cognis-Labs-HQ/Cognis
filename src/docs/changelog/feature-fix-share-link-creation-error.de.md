@@ -1,11 +1,9 @@
-# Teilen-Formulare repariert
+# Teilen-Popups repariert
 
-## Teilen-Formulare laden produktiv
+## Einheitliches Teilen-Popup
 
-Der produktive UI-Build enthält nun die von Adaptern bereitgestellten Seitenmodule für Teilen-Methoden. Dadurch zeigen sowohl Link- als auch Benutzer-Teilen-Popups wieder ihre Formulare anstelle einer Fehlermeldung an.
+Whiteboards öffnen nun das direkt einsetzbare Popup des Teilen-Gateways mit ihrer Ressourcenkennung und ihren Fähigkeiten und folgen damit derselben Gateway-Integration wie andere Komponenten. Das Gateway bleibt für Teilen-Methoden und Token-Anfragen verantwortlich.
 
-## Einheitliches Teilen von Whiteboards
+## Anwesenheitsavatare bleiben platziert
 
-Das Whiteboard öffnet nun dasselbe vom Gateway bereitgestellte, direkt einsetzbare Teilen-Popup wie andere Seiten, einschließlich Link- und Benutzerfreigaben. Anwesenheitsavatare bleiben auf die Werkzeugleiste begrenzt und können die Zeichenfläche nicht mehr überdecken.
-
-Das Profilbildelement der Seitenanwesenheit erhält seine Darstellung nun direkt aus dem gemeinsamen Anwesenheits-Stylesheet. Dadurch bleibt es ein Avatar in der Werkzeugleiste, statt als unformatiertes Bild über der Whiteboard-Zeichenfläche zu erscheinen.
+Profilbilder der Seitenanwesenheit erhalten ihre Darstellung nun aus dem gemeinsamen Anwesenheits-Stylesheet. Dadurch bleiben sie Avatare in der Werkzeugleiste, statt als unformatierte Bildebenen über der Whiteboard-Zeichenfläche zu erscheinen.

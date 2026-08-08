@@ -521,41 +521,9 @@ async function openSharePopup() {
                 generateLink: translateModuleString(
                     "module.nextcloud_whiteboard.share_generate_link",
                 ),
-                createLinkShare: translateModuleString(
-                    "module.nextcloud_whiteboard.share_generate_link",
-                ),
-                updateLinkShare: translateModuleString(
-                    "module.nextcloud_whiteboard.share_update_link",
-                ),
-                updateUserShare: translateModuleString(
-                    "module.nextcloud_whiteboard.share_update_user",
-                ),
-                shareWithPrefix: translateModuleString(
-                    "module.nextcloud_whiteboard.share_with_prefix",
-                ),
-                usersCountLabel: translateModuleString("ui.reuse.users"),
-                users: translateModuleString("ui.reuse.users"),
-                userEmpty: translateModuleString(
-                    "module.nextcloud_whiteboard.share_user_empty",
-                ),
-                userSearchPlaceholder: translateModuleString(
-                    "module.nextcloud_whiteboard.share_user_search",
-                ),
-                permission: translateModuleString(
-                    "module.nextcloud_whiteboard.share_permission",
-                ),
-                readPermission: translateModuleString(
-                    "module.nextcloud_whiteboard.share_permission_read",
-                ),
-                writePermission: translateModuleString(
-                    "module.nextcloud_whiteboard.share_permission_write",
-                ),
                 done: translateModuleString("ui.reuse.done"),
                 createFailed: translateModuleString(
                     "module.nextcloud_whiteboard.share_create_failed",
-                ),
-                duplicateUserShare: translateModuleString(
-                    "module.nextcloud_whiteboard.share_user_duplicate",
                 ),
                 copySuccess: translateModuleString(
                     "module.nextcloud_whiteboard.share_copy_success",
@@ -566,7 +534,6 @@ async function openSharePopup() {
                 deleteFailed: translateModuleString(
                     "module.nextcloud_whiteboard.share_delete_failed",
                 ),
-                cancel: translateModuleString("ui.reuse.cancel"),
             },
         });
     } catch (error) {

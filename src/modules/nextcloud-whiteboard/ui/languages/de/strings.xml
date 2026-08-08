@@ -90,17 +90,9 @@
   <string name="module.nextcloud_whiteboard.share_copy_success">Freigabelink kopiert.</string>
   <string name="module.nextcloud_whiteboard.share_copy_failed">Freigabelink konnte nicht kopiert werden.</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">Freigabelink konnte nicht widerrufen werden.</string>
-  <string name="module.nextcloud_whiteboard.share_update_link">Linkfreigabe aktualisieren</string>
-  <string name="module.nextcloud_whiteboard.share_update_user">Benutzerfreigabe aktualisieren</string>
-  <string name="module.nextcloud_whiteboard.share_with_prefix">Teilen mit</string>
-  <string name="module.nextcloud_whiteboard.share_user_empty">Noch keine Benutzerfreigaben.</string>
-  <string name="module.nextcloud_whiteboard.share_user_search">Benutzer suchen…</string>
-  <string name="module.nextcloud_whiteboard.share_permission">Berechtigung</string>
-  <string name="module.nextcloud_whiteboard.share_permission_read">Lesen</string>
-  <string name="module.nextcloud_whiteboard.share_permission_write">Schreiben</string>
-  <string name="module.nextcloud_whiteboard.share_user_duplicate">Dieses Whiteboard ist bereits mit diesem Benutzer geteilt.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Dadurch werden alle Elemente auf dem aktuellen Whiteboard dauerhaft gelöscht. Fortfahren?</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard muss die Serverprüfung bestehen, bevor es aktiviert werden kann.</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">Der Whiteboard-Server hat die WebSocket-Authentifizierung abgelehnt. Prüfe die API-Schlüssel-Konfiguration.</string>
   <string name="module.nextcloud_whiteboard.tool_lock">Aktuelles Zeichenwerkzeug nach dem Erstellen eines Objekts aktiv lassen</string>
 </resources>
+

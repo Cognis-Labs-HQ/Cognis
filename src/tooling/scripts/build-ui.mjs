@@ -106,22 +106,16 @@ for (const descriptorPath of resolvableFiles.filter(
 )) {
     const contents = await readFile(descriptorPath, "utf8");
     for (const match of contents.matchAll(
-        /(?:scriptUrl|pageModuleUrl)\s*:\s*["'](\/static\/[^"']+\.js)["']/g,
+        /scriptUrl\s*:\s*["'](\/static\/[^"']+\.js)["']/g,
     )) {
         const sourcePath = logicalSourcePaths.get(match[1]);
         if (sourcePath) forcedEntryPaths.add(sourcePath);
     }
 }
-const entrySourcePaths = [
-    ...new Set([
-        ...sourceFiles.filter(
-            (filePath) =>
-                forcedEntryPaths.has(filePath) ||
-                !importedSourcePaths.has(filePath),
-        ),
-        ...forcedEntryPaths,
-    ]),
-];
+const entrySourcePaths = sourceFiles.filter(
+    (filePath) =>
+        forcedEntryPaths.has(filePath) || !importedSourcePaths.has(filePath),
+);
 const entryPoints = Object.fromEntries(
     entrySourcePaths.map((filePath, index) => [`entry-${index}`, filePath]),
 );

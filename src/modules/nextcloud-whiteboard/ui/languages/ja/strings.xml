@@ -90,17 +90,9 @@
   <string name="module.nextcloud_whiteboard.share_copy_success">共有リンクをコピーしました。</string>
   <string name="module.nextcloud_whiteboard.share_copy_failed">共有リンクをコピーできませんでした。</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">共有リンクを取り消せませんでした。</string>
-  <string name="module.nextcloud_whiteboard.share_update_link">リンク共有を更新</string>
-  <string name="module.nextcloud_whiteboard.share_update_user">ユーザー共有を更新</string>
-  <string name="module.nextcloud_whiteboard.share_with_prefix">共有相手</string>
-  <string name="module.nextcloud_whiteboard.share_user_empty">ユーザー共有はまだありません。</string>
-  <string name="module.nextcloud_whiteboard.share_user_search">ユーザーを検索…</string>
-  <string name="module.nextcloud_whiteboard.share_permission">権限</string>
-  <string name="module.nextcloud_whiteboard.share_permission_read">読み取り</string>
-  <string name="module.nextcloud_whiteboard.share_permission_write">書き込み</string>
-  <string name="module.nextcloud_whiteboard.share_user_duplicate">このホワイトボードはすでにそのユーザーと共有されています。</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">現在のホワイトボード上のすべての項目を完全に削除します。続行しますか？</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">ホワイトボードサーバーが WebSocket 認証を拒否しました。API キー設定を確認してください。</string>
   <string name="module.nextcloud_whiteboard.tool_lock">オブジェクト作成後も現在の描画ツールを維持</string>
 </resources>
+

@@ -50,7 +50,7 @@ for (const sourcePath of (await walk(path.resolve("src"))).filter(
 )) {
     const contents = await readFile(sourcePath, "utf8");
     for (const match of contents.matchAll(
-        /(?:scriptUrl|pageModuleUrl)\s*:\s*["'](\/static\/[^"']+\.js)["']/g,
+        /scriptUrl\s*:\s*["'](\/static\/[^"']+\.js)["']/g,
     )) {
         assert.ok(
             manifest[match[1]],

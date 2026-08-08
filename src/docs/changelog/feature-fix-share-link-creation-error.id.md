@@ -1,11 +1,9 @@
-# Formulir Berbagi Dipulihkan
+# Popup Berbagi Dipulihkan
 
-## Formulir berbagi dimuat di produksi
+## Popup berbagi yang konsisten
 
-Build UI produksi kini menyertakan modul halaman metode berbagi yang disediakan adaptor, sehingga popup berbagi melalui tautan dan pengguna menampilkan formulirnya, bukan pesan kesalahan metode yang tidak tersedia.
+Papan tulis kini membuka popup siap pakai milik gateway Berbagi dengan pengenal sumber daya dan kapabilitasnya, mengikuti integrasi gateway yang sama dengan komponen lain. Gateway tetap bertanggung jawab atas metode berbagi dan permintaan token.
 
-## Berbagi papan tulis yang konsisten
+## Avatar kehadiran tetap di tempat
 
-Papan tulis kini membuka popup berbagi siap pakai milik gateway yang sama dengan halaman lain, termasuk berbagi melalui tautan dan pengguna. Avatar kehadiran dibatasi pada bilah alat sehingga gambar profil tidak lagi menutupi kanvas gambar.
-
-Elemen gambar profil untuk kehadiran halaman kini memperoleh tampilannya langsung dari stylesheet kehadiran bersama. Dengan demikian, elemen tersebut tetap menjadi avatar di bilah alat dan tidak muncul sebagai lapisan gambar tanpa gaya di atas kanvas papan tulis.
+Gambar profil kehadiran halaman kini memperoleh tampilannya dari stylesheet kehadiran bersama, sehingga tetap menjadi avatar bilah alat dan tidak muncul sebagai lapisan gambar tanpa gaya di atas kanvas papan tulis.
