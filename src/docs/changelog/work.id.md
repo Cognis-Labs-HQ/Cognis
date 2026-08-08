@@ -7,3 +7,5 @@ Build UI produksi kini menyertakan modul halaman metode berbagi yang disediakan 
 ## Berbagi papan tulis yang konsisten
 
 Papan tulis kini membuka popup berbagi siap pakai milik gateway yang sama dengan halaman lain, termasuk berbagi melalui tautan dan pengguna. Avatar kehadiran dibatasi pada bilah alat sehingga gambar profil tidak lagi menutupi kanvas gambar.
+
+Elemen gambar profil untuk kehadiran halaman kini memperoleh tampilannya langsung dari stylesheet kehadiran bersama. Dengan demikian, elemen tersebut tetap menjadi avatar di bilah alat dan tidak muncul sebagai lapisan gambar tanpa gaya di atas kanvas papan tulis.

@@ -7,3 +7,5 @@ Der produktive UI-Build enthält nun die von Adaptern bereitgestellten Seitenmod
 ## Einheitliches Teilen von Whiteboards
 
 Das Whiteboard öffnet nun dasselbe vom Gateway bereitgestellte, direkt einsetzbare Teilen-Popup wie andere Seiten, einschließlich Link- und Benutzerfreigaben. Anwesenheitsavatare bleiben auf die Werkzeugleiste begrenzt und können die Zeichenfläche nicht mehr überdecken.
+
+Das Profilbildelement der Seitenanwesenheit erhält seine Darstellung nun direkt aus dem gemeinsamen Anwesenheits-Stylesheet. Dadurch bleibt es ein Avatar in der Werkzeugleiste, statt als unformatiertes Bild über der Whiteboard-Zeichenfläche zu erscheinen.
