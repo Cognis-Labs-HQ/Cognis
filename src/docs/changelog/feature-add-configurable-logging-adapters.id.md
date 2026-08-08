@@ -27,3 +27,7 @@ Adapter konsol dan berkas kini memiliki validasi konfigurasi serta pemetaan logg
 ## Pengaturan pencatatan yang diterjemahkan
 
 Label bidang kini menggunakan sumber daya bahasa Jerman, Inggris, Indonesia, dan Jepang milik adapter, yang dimuat Administrasi sebelum merender formulir konfigurasi.
+
+## Pemulaian gateway yang memahami dependensi
+
+Bootstrap gateway kini mendahulukan dependensi yang dideklarasikan sebelum pengurutan prioritas, sehingga preferensi log berbasis basis data tersedia sebelum gateway pencatatan dimulai.

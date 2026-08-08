@@ -27,3 +27,7 @@ Console and file adapters now own their configuration validation and logger mapp
 ## Translated logging settings
 
 Logging field labels now use adapter-owned German, English, Indonesian, and Japanese resources, which Administration loads before rendering the configuration form.
+
+## Dependency-aware gateway startup
+
+Gateway bootstrap now honors declared dependencies before priority ordering, ensuring database-backed logging preferences are available before the logging gateway starts.

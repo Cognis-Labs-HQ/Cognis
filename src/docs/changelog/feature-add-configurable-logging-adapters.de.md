@@ -27,3 +27,7 @@ Konsolen- und Dateiadapter besitzen nun ihre Konfigurationsvalidierung und Zuord
 ## Übersetzte Protokolleinstellungen
 
 Feldbeschriftungen verwenden nun adaptereigene deutsche, englische, indonesische und japanische Ressourcen, die die Administration vor der Darstellung des Konfigurationsformulars lädt.
+
+## Abhängigkeitsbewusster Gateway-Start
+
+Der Gateway-Bootstrap berücksichtigt nun deklarierte Abhängigkeiten vor der Prioritätssortierung, damit datenbankgestützte Protokolleinstellungen vor dem Start des Logging-Gateways verfügbar sind.

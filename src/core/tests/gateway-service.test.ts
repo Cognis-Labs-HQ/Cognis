@@ -137,3 +137,47 @@ test("logging capability replaces the bootstrap logger for later gateways", asyn
     );
     assert.deepEqual(bootstrapMessages, []);
 });
+
+test("gateway bootstrap initializes declared dependencies first", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
+    const gatewaysRoot = path.join(root, "gateways");
+    for (const gatewayId of ["logging", "db"]) {
+        const gatewayRoot = path.join(gatewaysRoot, gatewayId);
+        await mkdir(gatewayRoot, { recursive: true });
+        await writeFile(
+            path.join(gatewayRoot, "manifest.json"),
+            JSON.stringify({
+                id: gatewayId,
+                required: true,
+                requires: gatewayId === "logging" ? ["db"] : [],
+            }),
+        );
+        await writeFile(
+            path.join(gatewayRoot, "bootstrap.ts"),
+            `export async function bootstrap(ctx) {
+                const order = ctx.capabilities.get("test:bootstrap-order") ?? [];
+                order.push("${gatewayId}");
+                ctx.capabilities.contribute("test:bootstrap-order", order);
+                ctx.gatewayRegistry.register({
+                    id: "${gatewayId}",
+                    name: "${gatewayId}",
+                    version: "1.0.0",
+                });
+            }`,
+        );
+    }
+    const registry = new GatewayRegistry();
+    const capabilities = new CapabilityStore();
+    const service = new GatewayService(registry);
+
+    await service.bootstrap(gatewaysRoot, {
+        gatewayRegistry: registry,
+        capabilities,
+        flow: {} as never,
+    });
+
+    assert.deepEqual(capabilities.get("test:bootstrap-order"), [
+        "db",
+        "logging",
+    ]);
+});
