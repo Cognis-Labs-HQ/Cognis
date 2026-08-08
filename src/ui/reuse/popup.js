@@ -90,6 +90,7 @@ import { createI18n } from "./i18n.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
 
 let stylesheetReady = null;
+let stylesheetRefresh = null;
 let i18nReady = null;
 
 const POPUP_STYLESHEET_URL = "/static/styles/popup.css";
@@ -146,8 +147,38 @@ async function getPopupStylesheetCache() {
     if (typeof globalThis.caches === "undefined") return null;
     try {
         return await globalThis.caches.open(POPUP_STYLESHEET_CACHE);
-    } catch {
+    } catch (error) {
+        console.error(
+            `[popup] Failed to open stylesheet cache "${POPUP_STYLESHEET_CACHE}":`,
+            error,
+        );
         return null;
+    }
+}
+
+async function refreshPopupStylesheet() {
+    const stylesheetCache = await getPopupStylesheetCache();
+    if (!stylesheetCache || typeof globalThis.fetch !== "function") return;
+
+    try {
+        const response = await globalThis.fetch(POPUP_STYLESHEET_URL, {
+            cache: "no-cache",
+            credentials: "same-origin",
+        });
+        if (!response.ok) return;
+
+        await stylesheetCache.put(POPUP_STYLESHEET_URL, response.clone());
+        const installedStylesheet = globalThis.document?.querySelector(
+            `#${CACHED_STYLESHEET_ID}`,
+        );
+        if (installedStylesheet) {
+            installedStylesheet.textContent = await response.text();
+        }
+    } catch (error) {
+        console.error(
+            `[popup] Failed to refresh stylesheet cache for "${POPUP_STYLESHEET_URL}":`,
+            error,
+        );
     }
 }
 
@@ -156,20 +187,13 @@ async function getPopupStylesheetCache() {
  *
  * @returns {Promise<void>}
  */
-export async function primePopupStylesheet() {
-    const stylesheetCache = await getPopupStylesheetCache();
-    if (!stylesheetCache || typeof globalThis.fetch !== "function") return;
-    try {
-        const response = await globalThis.fetch(POPUP_STYLESHEET_URL, {
-            cache: "no-cache",
-            credentials: "same-origin",
+export function primePopupStylesheet() {
+    if (!stylesheetRefresh) {
+        stylesheetRefresh = refreshPopupStylesheet().finally(() => {
+            stylesheetRefresh = null;
         });
-        if (response.ok) {
-            await stylesheetCache.put(POPUP_STYLESHEET_URL, response.clone());
-        }
-    } catch {
-        return;
     }
+    return stylesheetRefresh;
 }
 
 async function installCachedStylesheet() {
@@ -210,6 +234,7 @@ function ensureStylesheet() {
         return stylesheetReady;
     }
     stylesheetReady = (async () => {
+        await stylesheetRefresh;
         if (await installCachedStylesheet()) return;
         await installNetworkStylesheet();
     })();

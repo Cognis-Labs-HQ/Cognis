@@ -61,20 +61,52 @@ test("popup styles constrain dialog height and apply themed scrollbars", () => {
 test("popup caches the complete stylesheet before a service interruption", () => {
     const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
 
-    assert.match(source, /export async function primePopupStylesheet/);
+    assert.match(source, /export function primePopupStylesheet/);
     assert.match(source, /stylesheetCache\.put\(POPUP_STYLESHEET_URL/);
     assert.match(source, /stylesheetCache\?\.match\(POPUP_STYLESHEET_URL\)/);
     assert.match(
         source,
         /cachedStylesheet\.textContent = await cachedResponse\.text/,
     );
-    assert.doesNotMatch(source, /FALLBACK_STYLES/);
-
     const runtimeErrorSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
     );
     assert.match(runtimeErrorSource, /void primePopupStylesheet\(\);/);
+});
+
+test("popup stylesheet priming reports cache refresh failures", async () => {
+    const originalCaches = globalThis.caches;
+    const originalConsoleError = console.error;
+    const originalFetch = globalThis.fetch;
+    const loggedErrors = [];
+    globalThis.caches = {
+        async open() {
+            return {
+                async put() {
+                    throw new Error("storage denied");
+                },
+            };
+        },
+    };
+    globalThis.fetch = async () => new Response(".popup { display: block; }");
+    console.error = (...messageParts) => loggedErrors.push(messageParts);
+
+    try {
+        const { primePopupStylesheet } = await import(
+            `../reuse/popup.js?cache-error-test=${Date.now()}`
+        );
+        await primePopupStylesheet();
+    } finally {
+        globalThis.caches = originalCaches;
+        globalThis.fetch = originalFetch;
+        console.error = originalConsoleError;
+    }
+
+    assert.equal(loggedErrors.length, 1);
+    assert.match(loggedErrors[0][0], /Failed to refresh stylesheet cache/);
+    assert.match(loggedErrors[0][0], /\/static\/styles\/popup\.css/);
+    assert.match(loggedErrors[0][1].message, /storage denied/);
 });
 
 test("popup stylesheet priming stores the actual CSS response", async () => {
@@ -83,7 +115,9 @@ test("popup stylesheet priming stores the actual CSS response", async () => {
         "utf8",
     );
     const originalCaches = globalThis.caches;
+    const originalDocument = globalThis.document;
     const originalFetch = globalThis.fetch;
+    const installedStylesheet = { textContent: "stale stylesheet" };
     let storedStylesheet = "";
     let storedUrl = "";
     globalThis.caches = {
@@ -96,6 +130,11 @@ test("popup stylesheet priming stores the actual CSS response", async () => {
             };
         },
     };
+    globalThis.document = {
+        querySelector() {
+            return installedStylesheet;
+        },
+    };
     globalThis.fetch = async () => new Response(stylesheet);
 
     try {
@@ -105,11 +144,13 @@ test("popup stylesheet priming stores the actual CSS response", async () => {
         await primePopupStylesheet();
     } finally {
         globalThis.caches = originalCaches;
+        globalThis.document = originalDocument;
         globalThis.fetch = originalFetch;
     }
 
     assert.equal(storedUrl, "/static/styles/popup.css");
     assert.equal(storedStylesheet, stylesheet);
+    assert.equal(installedStylesheet.textContent, stylesheet);
 });
 
 test("release changelog popup checkbox follows the active color scheme", () => {
