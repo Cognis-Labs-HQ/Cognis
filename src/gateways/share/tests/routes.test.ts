@@ -577,6 +577,14 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(bobRestrictedResponse.statusCode, 200);
     assert.equal(
+        JSON.parse(bobRestrictedResponse.payload).data.directAccess,
+        true,
+    );
+    assert.equal(
+        JSON.parse(bobRestrictedResponse.payload).data.guestAccessToken,
+        "",
+    );
+    assert.equal(
         JSON.parse(bobRestrictedResponse.payload).data.navigationUrl,
         "/meetings/shared",
     );

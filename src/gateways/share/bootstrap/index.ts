@@ -84,6 +84,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.listByResource.bind(gateway),
     );
     ctx.capabilities.contribute(
+        "share:resolveUserAccess",
+        gateway.resolveUserAccess.bind(gateway),
+    );
+    ctx.capabilities.contribute(
         "share:deleteToken",
         gateway.deleteToken.bind(gateway),
     );
@@ -208,7 +212,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.6.48",
+        version: "1.6.49",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

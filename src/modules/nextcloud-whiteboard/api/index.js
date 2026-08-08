@@ -79,6 +79,7 @@ export function registerApiRoutes(router, ctx) {
     const resolveShareGuestAccess = ctx.getCapability(
         "share:resolveGuestAccess",
     );
+    const resolveShareUserAccess = ctx.getCapability("share:resolveUserAccess");
     const resolveShareGuestId = ctx.getCapability("share:resolveGuestId");
     const listSharesByResource = ctx.getCapability("share:listByResource");
     const systemCtx = ctx.getCapability("system:ctx");
@@ -393,6 +394,7 @@ export function registerApiRoutes(router, ctx) {
         store,
         profileStore,
         resolveShareGuestAccess,
+        resolveShareUserAccess,
         resolveWhiteboardUserAccess,
         whiteboardFiles,
     });
@@ -416,6 +418,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -479,6 +482,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -513,6 +517,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -586,6 +591,7 @@ export function registerApiRoutes(router, ctx) {
                     store,
                     whiteboardId: whiteboard.id,
                     resolveShareGuestAccess,
+                    resolveShareUserAccess,
                     requireWrite: true,
                 });
                 if (!access.authorized) {
@@ -712,6 +718,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -838,6 +845,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {

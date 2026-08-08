@@ -3,6 +3,39 @@ import test from "node:test";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 import { registerApiRoutes } from "../api/index.js";
 import { NextcloudWhiteboardStore } from "../api/store.js";
+import { resolveWhiteboardUserAccess } from "../api/access.js";
+
+test("user-share recipients keep their account identity for whiteboard access", async () => {
+    let nativeAccessChecked = false;
+    const access = await resolveWhiteboardUserAccess({
+        claims: { sub: "bob" },
+        profileStore: {
+            async getProfile(accountId) {
+                assert.equal(accountId, "bob");
+                return { handle: "bob" };
+            },
+        },
+        store: {
+            async canAccessWhiteboard() {
+                nativeAccessChecked = true;
+                return false;
+            },
+        },
+        whiteboardId: "board-1",
+        resolveShareUserAccess: async (request) => {
+            assert.deepEqual(request, {
+                accountId: "bob",
+                resourceType: "whiteboard",
+                resourceId: "board-1",
+                requiredCapability: "whiteboard:read",
+            });
+            return { authorized: true, shareId: "share-1" };
+        },
+    });
+
+    assert.deepEqual(access, { authorized: true, username: "bob" });
+    assert.equal(nativeAccessChecked, false);
+});
 
 function createMemoryDb() {
     const tables = new Map();

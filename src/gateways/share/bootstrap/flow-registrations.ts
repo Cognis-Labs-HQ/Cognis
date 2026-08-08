@@ -59,6 +59,42 @@ export async function registerShareBootstrapHooks(input: {
             },
         ) => string
     >("auth:issueAccessToken");
+
+    input.ctx.flow.extend(
+        "resolve-share-token",
+        "check-access",
+        { id: "share-gateway:user-recipient-access" },
+        (stageCtx) => {
+            const tokenResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-token",
+            ) as {
+                valid?: boolean;
+                tokenRecord?: {
+                    accessControls?: { recipients?: unknown };
+                };
+            } | null;
+            const requesterAccountId = String(
+                stageCtx.input?.requesterClaims?.sub ?? "",
+            ).trim();
+            const recipients =
+                tokenResult?.tokenRecord?.accessControls?.recipients;
+            const isUserRecipient =
+                tokenResult?.valid === true &&
+                requesterAccountId.length > 0 &&
+                Array.isArray(recipients) &&
+                recipients.some(
+                    (recipient) =>
+                        recipient &&
+                        typeof recipient === "object" &&
+                        String(recipient.type ?? "") === "user" &&
+                        String(recipient.id ?? "") === requesterAccountId,
+                );
+            return isUserRecipient
+                ? { allowed: true, directAccess: true }
+                : null;
+        },
+    );
     const systemCtx = input.ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     if (systemCtx) {
         for (const flow of SHARE_FLOW_CATALOG) {

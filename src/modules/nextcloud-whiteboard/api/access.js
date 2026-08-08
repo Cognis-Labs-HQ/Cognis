@@ -76,6 +76,7 @@ export async function resolveWhiteboardUserAccess({
     store,
     whiteboardId,
     resolveShareGuestAccess,
+    resolveShareUserAccess,
     requireWrite = false,
 }) {
     if (typeof resolveShareGuestAccess === "function") {
@@ -100,6 +101,31 @@ export async function resolveWhiteboardUserAccess({
                       code: "forbidden",
                       message:
                           "This share link cannot access the requested whiteboard.",
+                  };
+        }
+    }
+    if (typeof resolveShareUserAccess === "function") {
+        const userShareAccess = await resolveShareUserAccess({
+            accountId: claims.sub,
+            resourceType: "whiteboard",
+            resourceId: whiteboardId,
+            requiredCapability: requireWrite
+                ? "whiteboard:write"
+                : "whiteboard:read",
+        }).catch(() => null);
+        if (userShareAccess?.authorized) {
+            const username = await resolveRequesterUsername(
+                profileStore,
+                claims.sub,
+            ).catch(() => "");
+            return username
+                ? { authorized: true, username }
+                : {
+                      authorized: false,
+                      status: 409,
+                      code: "profile_required",
+                      message:
+                          "A visible profile handle is required to use Whiteboards.",
                   };
         }
     }

@@ -379,6 +379,34 @@ export class CoreShareGateway {
         );
     }
 
+    async resolveUserAccess(input: {
+        accountId: string;
+        resourceType: string;
+        resourceId: string;
+        requiredCapability: string;
+    }): Promise<{ authorized: boolean; shareId?: string }> {
+        const accountId = input.accountId.trim();
+        if (!accountId || accountId.startsWith("share:")) {
+            return { authorized: false };
+        }
+        const records = await this.store.listByResource({
+            resourceType: input.resourceType,
+            resourceId: input.resourceId,
+        });
+        const matchingRecord = records.find(
+            (record) =>
+                !isExpired(record) &&
+                record.grantedCapabilities.includes(input.requiredCapability) &&
+                record.accessControls.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" && recipient.id === accountId,
+                ),
+        );
+        return matchingRecord
+            ? { authorized: true, shareId: matchingRecord.id }
+            : { authorized: false };
+    }
+
     async deleteToken(input: {
         shareId: string;
         ownerAccountId?: string;
