@@ -100,6 +100,6 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
 | Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.56` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.33` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.34` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |
