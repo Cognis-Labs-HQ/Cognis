@@ -92,6 +92,11 @@ class RequestRecorder extends EventEmitter {
 
 async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
     const capabilities = new CapabilityStore();
+    const logEvents: Array<{
+        level: string;
+        message: string;
+        meta?: Record<string, unknown>;
+    }> = [];
     capabilities.contribute("db:executor", dbExecutor);
     return {
         gatewayRegistry: new GatewayRegistry(),
@@ -99,6 +104,12 @@ async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
         capabilities,
         uiRegistry: new UIRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        log: (
+            level: string,
+            message: string,
+            meta?: Record<string, unknown>,
+        ) => logEvents.push({ level, message, meta }),
+        logEvents,
     };
 }
 
@@ -271,8 +282,21 @@ test("logging adapter level overrides reconfigure the running logger immediately
         );
         assert.equal(invalidRotationResponse.statusCode, 400);
         assert.equal(
+            JSON.parse(invalidRotationResponse.payload).error.messageKey,
+            "adapter.logging.file.error.rotate_max_bytes",
+        );
+        assert.equal(
             JSON.parse(invalidRotationResponse.payload).error.field,
             "rotateMaxBytes",
+        );
+        assert.ok(
+            ctx.logEvents.some(
+                ({ meta }) =>
+                    meta?.operation === "adapter_config_update" &&
+                    meta?.accountId === "admin-test" &&
+                    meta?.adapterId === "file" &&
+                    Array.isArray(meta?.changedFields),
+            ),
         );
     } finally {
         if (previousConsoleLevel === undefined) delete process.env.LOG_LEVEL;
@@ -323,6 +347,14 @@ test("logging adapter overrides survive a gateway restart", async () => {
     );
     assert.equal(resetResponse.statusCode, 204);
     assert.equal(dbExecutor.preferences.has("console"), false);
+    assert.ok(
+        restartedContext.logEvents.some(
+            ({ meta }) =>
+                meta?.operation === "adapter_config_reset" &&
+                meta?.accountId === "admin-test" &&
+                meta?.adapterId === "console",
+        ),
+    );
 
     const resetContext = await makeContext(dbExecutor);
     await bootstrap(resetContext as any);

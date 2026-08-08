@@ -3,4 +3,8 @@
   <string name="adapter.logging.file.rotate_max_bytes">ローテーションサイズ（バイト）</string>
   <string name="adapter.logging.file.rotate_max_files">保持するローテーション済みファイル数</string>
   <string name="adapter.logging.file.rotate_compress">ローテーション済みログを圧縮</string>
+  <string name="adapter.logging.file.error.level">サポートされていないログレベルです</string>
+  <string name="adapter.logging.file.error.rotate_max_bytes">ローテーションサイズは正の数である必要があります</string>
+  <string name="adapter.logging.file.error.rotate_max_files">ローテーション済みファイル数は0以上の整数である必要があります</string>
+  <string name="adapter.logging.file.error.rotate_compress">圧縮設定は真偽値である必要があります</string>
 </resources>

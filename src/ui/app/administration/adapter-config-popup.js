@@ -544,9 +544,10 @@ export function createAdapterConfigPopup({
                               .catch(() => ({}))
                         : saveResponse.json().catch(() => ({})));
                     if (!saveResponse.ok) {
-                        const message =
-                            savePayload?.error?.message ??
-                            i18n.t("ui.reuse.save_failed");
+                        const messageKey = savePayload?.error?.messageKey;
+                        const message = messageKey
+                            ? i18n.t(messageKey)
+                            : i18n.t("ui.reuse.save_failed");
                         if (saveResponse.status === 400) {
                             const fieldId = resolveFieldErrorId(savePayload);
                             if (

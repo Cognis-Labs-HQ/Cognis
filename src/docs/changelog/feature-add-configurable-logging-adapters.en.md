@@ -31,3 +31,7 @@ Logging field labels now use adapter-owned German, English, Indonesian, and Japa
 ## Dependency-aware gateway startup
 
 Gateway bootstrap now honors declared dependencies before priority ordering, ensuring database-backed logging preferences are available before the logging gateway starts.
+
+## Auditable, extensible configuration
+
+Runtime validation errors are now localized, every discovered logging adapter receives its own effective configuration, and configuration updates and resets emit structured audit events.

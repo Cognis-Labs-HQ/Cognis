@@ -31,3 +31,7 @@ Label bidang kini menggunakan sumber daya bahasa Jerman, Inggris, Indonesia, dan
 ## Pemulaian gateway yang memahami dependensi
 
 Bootstrap gateway kini mendahulukan dependensi yang dideklarasikan sebelum pengurutan prioritas, sehingga preferensi log berbasis basis data tersedia sebelum gateway pencatatan dimulai.
+
+## Konfigurasi yang dapat diaudit dan diperluas
+
+Kesalahan validasi waktu proses kini diterjemahkan, setiap adapter pencatatan yang ditemukan menerima konfigurasi efektifnya sendiri, serta pembaruan dan pengaturan ulang konfigurasi menghasilkan peristiwa audit terstruktur.

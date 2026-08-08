@@ -22,12 +22,15 @@ export function createLoggingAdapter(supportedLevels: readonly string[]) {
                 typeof config.level !== "string" ||
                 !supportedLevels.includes(config.level)
             ) {
-                return { field: "level", message: "Unsupported log level" };
+                return {
+                    field: "level",
+                    messageKey: "adapter.logging.console.error.level",
+                };
             }
             if (config.format !== "pretty" && config.format !== "json") {
                 return {
                     field: "format",
-                    message: "Unsupported output format",
+                    messageKey: "adapter.logging.console.error.format",
                 };
             }
             return null;

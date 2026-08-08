@@ -31,7 +31,10 @@ export function createLoggingAdapter(supportedLevels: readonly string[]) {
                 typeof config.level !== "string" ||
                 !supportedLevels.includes(config.level)
             ) {
-                return { field: "level", message: "Unsupported log level" };
+                return {
+                    field: "level",
+                    messageKey: "adapter.logging.file.error.level",
+                };
             }
             if (
                 typeof config.rotateMaxBytes !== "number" ||
@@ -40,7 +43,7 @@ export function createLoggingAdapter(supportedLevels: readonly string[]) {
             ) {
                 return {
                     field: "rotateMaxBytes",
-                    message: "Rotation size must be a positive number",
+                    messageKey: "adapter.logging.file.error.rotate_max_bytes",
                 };
             }
             if (
@@ -50,14 +53,13 @@ export function createLoggingAdapter(supportedLevels: readonly string[]) {
             ) {
                 return {
                     field: "rotateMaxFiles",
-                    message:
-                        "Rotated file count must be a non-negative integer",
+                    messageKey: "adapter.logging.file.error.rotate_max_files",
                 };
             }
             if (typeof config.rotateCompress !== "boolean") {
                 return {
                     field: "rotateCompress",
-                    message: "Compression setting must be a boolean",
+                    messageKey: "adapter.logging.file.error.rotate_compress",
                 };
             }
             return null;

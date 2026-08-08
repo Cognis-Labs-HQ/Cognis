@@ -319,7 +319,7 @@ function createLoggingRoutes(
 
 type ConfigValue = LoggingPreferenceValue;
 type LoggingAdapterContract = {
-    id: "console" | "file";
+    id: string;
     name: string;
     stringsBaseUrl: string;
     schema: Array<{
@@ -330,7 +330,7 @@ type LoggingAdapterContract = {
     }>;
     validateConfig(config: Record<string, unknown>): {
         field: string;
-        message: string;
+        messageKey: string;
     } | null;
     toLoggerConfiguration(
         config: Record<string, unknown>,
@@ -365,6 +365,7 @@ function createLoggingAdapterRoutes(
     environmentConfig: Record<string, Record<string, ConfigValue>>,
     preferenceStore: LoggingPreferenceStore,
     persistedOverrides: Map<string, Record<string, ConfigValue>>,
+    log?: BootstrapLog,
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
@@ -372,21 +373,18 @@ function createLoggingAdapterRoutes(
     const overrides = persistedOverrides;
 
     const applyConfiguration = () => {
-        const consoleConfig = {
-            ...environmentConfig.console,
-            ...overrides.get("console"),
-        };
-        const fileConfig = {
-            ...environmentConfig.file,
-            ...overrides.get("file"),
-        };
-        const configurations = { console: consoleConfig, file: fileConfig };
         logger.configure(
             Object.assign(
                 {},
-                ...adapters.map((adapter) =>
-                    adapter.toLoggerConfiguration(configurations[adapter.id]),
-                ),
+                ...adapters.map((adapter) => {
+                    const effectiveConfiguration = {
+                        ...(environmentConfig[adapter.id] ?? {}),
+                        ...(overrides.get(adapter.id) ?? {}),
+                    };
+                    return adapter.toLoggerConfiguration(
+                        effectiveConfiguration,
+                    );
+                }),
             ),
         );
     };
@@ -394,7 +392,8 @@ function createLoggingAdapterRoutes(
 
     return async (req: IncomingMessage, res: ServerResponse, url: URL) => {
         if (!url.pathname.startsWith(base)) return false;
-        if (!ctx.requireAuth(req, res, "admin")) return true;
+        const claims = ctx.requireAuth(req, res, "admin");
+        if (!claims) return true;
         if (url.pathname === base && req.method === "GET") {
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
@@ -454,6 +453,12 @@ function createLoggingAdapterRoutes(
             await preferenceStore.delete(adapter.id);
             overrides.delete(adapter.id);
             applyConfiguration();
+            log?.("info", "Reset logging adapter configuration.", {
+                component: "logging-gateway",
+                operation: "adapter_config_reset",
+                accountId: claims.sub,
+                adapterId: adapter.id,
+            });
             res.writeHead(204);
             res.end();
             return true;
@@ -472,7 +477,7 @@ function createLoggingAdapterRoutes(
                         error: {
                             code: "invalid_config",
                             field: validationError.field,
-                            message: validationError.message,
+                            messageKey: validationError.messageKey,
                         },
                     }),
                 );
@@ -481,6 +486,13 @@ function createLoggingAdapterRoutes(
             await preferenceStore.set(adapter.id, config);
             overrides.set(adapter.id, config);
             applyConfiguration();
+            log?.("info", "Updated logging adapter configuration.", {
+                component: "logging-gateway",
+                operation: "adapter_config_update",
+                accountId: claims.sub,
+                adapterId: adapter.id,
+                changedFields: Object.keys(config).sort(),
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));
             return true;
@@ -613,6 +625,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
             preferenceStore,
             persistedOverrides,
+            log,
             routeContext,
         ),
         "logging",
@@ -636,7 +649,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.9",
+        version: "1.5.10",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

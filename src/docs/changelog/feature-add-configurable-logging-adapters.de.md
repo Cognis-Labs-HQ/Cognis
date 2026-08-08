@@ -31,3 +31,7 @@ Feldbeschriftungen verwenden nun adaptereigene deutsche, englische, indonesische
 ## Abhängigkeitsbewusster Gateway-Start
 
 Der Gateway-Bootstrap berücksichtigt nun deklarierte Abhängigkeiten vor der Prioritätssortierung, damit datenbankgestützte Protokolleinstellungen vor dem Start des Logging-Gateways verfügbar sind.
+
+## Überprüfbare, erweiterbare Konfiguration
+
+Validierungsfehler zur Laufzeit werden nun übersetzt, jeder erkannte Logging-Adapter erhält seine eigene wirksame Konfiguration, und Aktualisierungen sowie Zurücksetzungen erzeugen strukturierte Audit-Ereignisse.
