@@ -98,7 +98,15 @@ test("messages avatars fall back after failed image loads", () => {
 
     assert.match(
         gatewayExportSource,
-        /static\/adapters\/social\/profile\/profile-avatar\.js/,
+        /uiCtx\.capabilities\.get\("ui:profileAvatarRenderer"\)/,
+    );
+    assert.doesNotMatch(
+        gatewayExportSource,
+        /static\/adapters\/social\/profile/,
+    );
+    assert.match(
+        sharedSource,
+        /uiCtx\.capabilities\.contribute\("ui:profileAvatarRenderer"/,
     );
     assert.match(sharedSource, /const unavailableAvatarKeys = new Set\(\)/);
     assert.match(sharedSource, /unavailableAvatarKeys\.add\(avatarKey\)/);

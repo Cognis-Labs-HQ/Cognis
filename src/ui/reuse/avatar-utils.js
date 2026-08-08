@@ -1,5 +1,5 @@
 /**
- * Avatar utilities: initials-based fallback avatar generation.
+ * CTX-backed access to profile-owned initials avatar generation.
  *
  * Public exports:
  *   getInitialsText(label) — returns a 1-2 letter initials string for the given profile label.
@@ -15,21 +15,22 @@
  * @param {string} label — the user's profile name or handle (leading '@' is stripped automatically).
  */
 
+import { uiCtx } from "./ui-ctx.js";
+
+function getProfileAvatarRenderer() {
+    const renderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!renderer) {
+        throw new Error("The profile avatar capability is unavailable.");
+    }
+    return renderer;
+}
+
 export function getInitialsText(label) {
-    if (!label) return "?";
-    const clean = label.replace(/^@/, "").trim();
-    const parts = clean.split(/[\s._-]+/).filter(Boolean);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return (parts[0]?.[0] ?? clean[0] ?? "?").toUpperCase();
+    return getProfileAvatarRenderer().getInitialsText(label);
 }
 
 export function pickInitialsColor(handle) {
-    let hash = 0;
-    for (const char of handle ?? "") {
-        hash = (hash * 31 + char.charCodeAt(0)) | 0;
-    }
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 55%, 42%)`;
+    return getProfileAvatarRenderer().pickInitialsColor(handle);
 }
 
 export function generateInitialsDataUrl(handle, size = 64) {

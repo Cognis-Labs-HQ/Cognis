@@ -50,10 +50,6 @@
  */
 
 import { apiFetch } from "/static/reuse/api-client.js";
-import {
-    getInitialsText,
-    pickInitialsColor,
-} from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
@@ -63,6 +59,22 @@ import {
 
 const unavailableAvatarKeys = new Set();
 const avatarBlobUrlCache = new Map();
+
+export function getInitialsText(label) {
+    if (!label) return "?";
+    const clean = String(label).replace(/^@/, "").trim();
+    const parts = clean.split(/[\s._-]+/).filter(Boolean);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return (parts[0]?.[0] ?? clean[0] ?? "?").toUpperCase();
+}
+
+export function pickInitialsColor(handle) {
+    let hash = 0;
+    for (const character of String(handle ?? "")) {
+        hash = (hash * 31 + character.charCodeAt(0)) | 0;
+    }
+    return `hsl(${Math.abs(hash) % 360}, 55%, 42%)`;
+}
 
 /**
  * Builds the authenticated API URL for a stored file by key. Room/chatroom
@@ -264,7 +276,12 @@ export async function hydrateProfileAvatars(container) {
 
 uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
     buildMarkup: buildProfileAvatarMarkup,
+    fetchBlobUrl: fetchProfileAvatarBlobUrl,
+    getInitialsText,
+    handleError: handleProfileAvatarError,
     hydrate: hydrateProfileAvatars,
+    isUnavailable: isProfileAvatarUnavailable,
+    pickInitialsColor,
 });
 
 /**

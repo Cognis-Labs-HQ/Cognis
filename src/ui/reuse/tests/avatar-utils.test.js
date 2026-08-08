@@ -2,10 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { getInitialsText } from "../avatar-utils.js";
+import { uiCtx } from "../ui-ctx.js";
 
-test("getInitialsText uses profile names and supports single-word initials", () => {
-    assert.equal(getInitialsText("Alice Smith"), "AS");
-    assert.equal(getInitialsText("Prince"), "P");
-    assert.equal(getInitialsText("@alice_smith"), "AS");
-    assert.equal(getInitialsText(""), "?");
+uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
+    getInitialsText(label) {
+        return `profile:${label}`;
+    },
+});
+
+test("getInitialsText delegates to the profile avatar CTX capability", () => {
+    assert.equal(getInitialsText("Alice Smith"), "profile:Alice Smith");
 });

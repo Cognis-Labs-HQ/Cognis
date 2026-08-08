@@ -50,8 +50,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.48` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.42` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.49` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.43` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.11` |
 | User Share            | `src/adapters/share/user/`          | `1.1.12` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -68,7 +68,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Share                 | `src/gateways/share/`         | `1.6.45` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
-| Social                | `src/gateways/social/`        | `1.2.11` |
+| Social                | `src/gateways/social/`        | `1.2.12` |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.5`  |
 | Registration          | `src/gateways/registration/`  | `1.1.13` |
 | Logging               | `src/gateways/logging/`       | `1.5.11` |
