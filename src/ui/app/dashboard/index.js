@@ -1,5 +1,8 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { fetchUpcomingEvents } from "/static/gateways/calendar/calendar-api.js";
+import {
+    calendarEventStatusClasses,
+    fetchUpcomingEvents,
+} from "/static/gateways/calendar/calendar-api.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -170,7 +173,7 @@ export async function mount(root, { signal } = {}) {
                 ? `<ul class="dashboard-info-list">${upcomingCalendarEvents
                       .map(
                           (event) => `<li>
-            <a href="/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}" class="dashboard-upcoming-event-link">
+            <a href="/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}" class="dashboard-upcoming-event-link ${calendarEventStatusClasses(event.status)}" style="--calendar-event-stripe:${escapeHtml(String(event.calendarColor ?? "#1f8ceb"))}">
               <strong>${escapeHtml(event.title)}</strong>
               <span>${escapeHtml(formatDateTime(event.startAt))}</span>
               ${event.calendarName ? `<span>${escapeHtml(String(event.calendarName))}</span>` : ""}

@@ -1,6 +1,17 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
+const statusStylesheet = document.createElement("link");
+statusStylesheet.rel = "stylesheet";
+statusStylesheet.href = "/static/gateways/calendar/calendar-status.css";
+document.head.append(statusStylesheet);
+
+export function calendarEventStatusClasses(status) {
+    const visualStatus =
+        status === "free" || status === "tentative" ? status : "busy";
+    return `calendar-event-status calendar-event-status--${visualStatus}`;
+}
+
 const shareAccessByCalendarId = new Map();
 
 function refusedSecretError() {

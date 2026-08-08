@@ -1,0 +1,62 @@
+.calendar-view-canvas .calendar-event-status--busy {
+    background: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
+        var(--surface, transparent)
+    );
+}
+
+.calendar-view-canvas .calendar-event-status--free {
+    background: transparent;
+    opacity: 0.78;
+}
+
+.calendar-view-canvas .calendar-event-status--tentative {
+    background: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 12%,
+        var(--surface, transparent)
+    );
+    border-style: dashed;
+}
+
+.calendar-events-list .calendar-event-status--busy,
+.dashboard-upcoming-event-link.calendar-event-status--busy {
+    background: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
+        var(--surface, transparent)
+    );
+}
+
+.calendar-events-list .calendar-event-status--free,
+.dashboard-upcoming-event-link.calendar-event-status--free {
+    background: transparent;
+}
+
+.calendar-events-list .calendar-event-status--tentative,
+.dashboard-upcoming-event-link.calendar-event-status--tentative {
+    background: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 12%,
+        var(--surface, transparent)
+    );
+    border-style: dashed;
+}
+
+.dashboard-upcoming-event-link.calendar-event-status {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 40%,
+            var(--field-border)
+        );
+    border-left: 4px solid
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb));
+    border-radius: 10px;
+}
+
+.dashboard-upcoming-event-link.calendar-event-status--tentative {
+    border-style: dashed;
+}

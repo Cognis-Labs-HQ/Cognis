@@ -19,6 +19,7 @@ import {
     deleteEvent,
     respondToEvent,
     createJitsiMeeting,
+    calendarEventStatusClasses,
 } from "./calendar-api.js";
 import { createRenderPendingEvents } from "./calendar-pending-render.js";
 const HALF_HOUR_MS = 30 * 60 * 1000;
@@ -403,7 +404,7 @@ function renderEventButton(
         currentAccountId &&
         event.createdBy !== currentAccountId &&
         String(event.responses?.[currentAccountId] ?? "pending") === "pending";
-    return `<button type="button" class="calendar-slot-event${event.status === "free" ? " calendar-slot-event--free" : ""}${event.status === "tentative" ? " calendar-slot-event--tentative" : ""}${isPending ? " calendar-slot-event--pending" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([searchTimeLabel, event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, searchTimeLabel, event.calendarName, event.location, event.description].filter(Boolean).join(" "))}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}" aria-label="${escapeHtml(eventAriaLabel)}">
+    return `<button type="button" class="calendar-slot-event ${calendarEventStatusClasses(event.status)}${isPending ? " calendar-slot-event--pending" : ""}${compact ? " calendar-slot-event--compact" : ""}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([searchTimeLabel, event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, searchTimeLabel, event.calendarName, event.location, event.description].filter(Boolean).join(" "))}" style="--calendar-event-stripe:${escapeHtml(event.calendarColor ?? "#1f8ceb")}" title="${escapeHtml(event.title)}" aria-label="${escapeHtml(eventAriaLabel)}">
       ${timeLabel ? `<span class="calendar-slot-event-time">${escapeHtml(timeLabel)}</span>` : ""}
       <strong class="calendar-slot-event-title">${meetingIcon}${escapeHtml(event.title)}</strong>
     </button>`;
@@ -414,6 +415,7 @@ const renderPendingEvents = createRenderPendingEvents({
     normalizeHexColor,
     EVENT_RESPONSE_OPTIONS,
     getResponseActionLabelKey,
+    calendarEventStatusClasses,
 });
 function renderToolbarSummary(summary, pendingEvents, i18n) {
     const pendingMarkup = renderPendingEvents(pendingEvents, i18n);
@@ -425,7 +427,7 @@ function renderToolbarSummary(summary, pendingEvents, i18n) {
               .map(
                   (
                       event,
-                  ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
+                  ) => `<li class="calendar-upcoming-item ${calendarEventStatusClasses(event.status)}" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
           <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([formatDateTime(event.startAt), event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, formatDateTime(event.startAt), event.calendarName, event.location, event.description].filter(Boolean).join(" "))}">
             <strong>${escapeHtml(event.title)}</strong>
             <div>${formatDateTime(event.startAt)}</div>
@@ -445,7 +447,7 @@ function renderUpcomingEvents(events, i18n) {
         .map(
             (
                 event,
-            ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
+            ) => `<li class="calendar-upcoming-item ${calendarEventStatusClasses(event.status)}" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
         <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([formatDateTime(event.startAt), event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, formatDateTime(event.startAt), event.calendarName, event.location, event.description].filter(Boolean).join(" "))}" aria-label="${escapeHtml(event.meetingUrl ? `${event.title} — ${i18n.t("gateway.calendar.event_meeting_link")}` : event.title)}">
           <strong>${event.meetingUrl ? `<span class="calendar-slot-event-video-icon" title="${escapeHtml(i18n.t("gateway.calendar.event_meeting_link"))}" aria-hidden="true">🎥</span>` : ""}${escapeHtml(event.title)}</strong>
           <div>${formatDateTime(event.startAt)} - ${formatDateTime(event.endAt)}</div>

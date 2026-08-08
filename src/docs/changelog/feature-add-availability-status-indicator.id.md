@@ -31,3 +31,7 @@ Adapter profil kini mengubah lampu status pengguna saat ini menjadi abu-abu keti
 ## Status bersama sesuai visibilitas
 
 Halaman dan pratinjau profil kini menampilkan status pengguna lain sesuai visibilitas profilnya: komunitas dapat dilihat semua orang, teman hanya oleh pengikut, dan privat hanya oleh orang yang diikuti pengguna tersebut. Kehilangan fokus browser langsung melaporkan Tidak aktif, sesi aktif mengirim sinyal berkala, dan avatar pratinjau tetap membulat di bawah lampu status.
+
+## Latar status kalender yang konsisten
+
+Latar Sibuk, Luang, dan Tentatif kini diterapkan secara konsisten pada kartu acara di semua tampilan Kalender, daftar acara mendatang, ringkasan tertunda, serta ringkasan acara mendatang di Dasbor. Kartu Luang tetap transparan, sedangkan kartu Tentatif tetap menggunakan garis putus-putus.

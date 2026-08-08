@@ -31,3 +31,7 @@ The profile adapter now greys out the current user's status light when the prese
 ## Visibility-aware shared status
 
 Profile pages and previews now show another user's status according to that user's profile visibility: community status is visible to everyone, friends status to followers, and private status to people the user follows. Losing browser focus now reports Idle immediately, active sessions send heartbeats, and preview avatars retain rounded corners beneath the status light.
+
+## Consistent calendar status backgrounds
+
+Busy, free, and tentative backgrounds now apply consistently to event cards in every Calendar view, Calendar upcoming-event lists, pending summaries, and Dashboard upcoming-event summaries. Free cards remain transparent, while tentative cards retain their dashed treatment.

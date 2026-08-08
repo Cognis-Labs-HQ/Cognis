@@ -31,3 +31,7 @@ Der Profiladapter stellt die Statusanzeige des aktuellen Benutzers grau dar, wen
 ## Sichtbarkeitsabhängig geteilter Status
 
 Profilseiten und Vorschauen zeigen den Status anderer Benutzer nun gemäß deren Profilsichtbarkeit: In der Community ist er für alle sichtbar, bei „Freunde“ für Follower und bei „Privat“ für Personen, denen der Benutzer folgt. Beim Verlust des Browserfokus wird sofort „Inaktiv“ gemeldet, aktive Sitzungen senden regelmäßige Signale und Vorschauavatare bleiben unter der Statusleuchte abgerundet.
+
+## Einheitliche Hintergründe für Kalenderstatus
+
+Die Hintergründe für „Beschäftigt“, „Frei“ und „Vorläufig“ gelten nun einheitlich für Terminkarten in allen Kalenderansichten, bevorstehende Kalendertermine, ausstehende Zusammenfassungen und bevorstehende Termine im Dashboard. Freie Karten bleiben transparent, während vorläufige Karten weiterhin gestrichelt dargestellt werden.

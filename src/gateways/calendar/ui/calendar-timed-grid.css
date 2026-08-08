@@ -237,15 +237,6 @@
     cursor: pointer;
 }
 
-.calendar-slot-event--free {
-    opacity: 0.78;
-    background: transparent;
-}
-
-.calendar-slot-event--tentative {
-    border-style: dashed;
-}
-
 .calendar-slot-event--compact {
     padding: 0.22rem 0.38rem;
     border-radius: 8px;

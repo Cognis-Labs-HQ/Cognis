@@ -113,6 +113,14 @@ const TIMED_GRID_CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.css"),
     "utf8",
 );
+const STATUS_CSS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-status.css"),
+    "utf8",
+);
+const DASHBOARD_SOURCE = readFileSync(
+    resolve(ROOT, "src/ui/app/dashboard/index.js"),
+    "utf8",
+);
 const SHARE_REMINDER_CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-share-reminder.css"),
     "utf8",
@@ -214,6 +222,40 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     assert.match(
         CSS_SOURCE,
         /\.calendar-month-table\s*\{[\s\S]*table-layout:\s*fixed;/s,
+    );
+});
+
+test("event status backgrounds cover calendar cards and dashboard summaries", () => {
+    assert.match(CALENDAR_API_SOURCE, /calendarEventStatusClasses/);
+    assert.match(
+        HELPERS_SOURCE,
+        /calendar-slot-event \$\{calendarEventStatusClasses\(event\.status\)\}/,
+    );
+    assert.match(
+        HELPERS_SOURCE,
+        /calendar-upcoming-item \$\{calendarEventStatusClasses\(event\.status\)\}/,
+    );
+    assert.match(
+        PENDING_RENDER_SOURCE,
+        /calendar-upcoming-item \$\{calendarEventStatusClasses\(event\.status\)\}/,
+    );
+    assert.match(
+        DASHBOARD_SOURCE,
+        /calendarEventStatusClasses\(event\.status\)/,
+    );
+    for (const status of ["busy", "free", "tentative"]) {
+        assert.match(
+            STATUS_CSS_SOURCE,
+            new RegExp(`calendar-event-status--${status}`),
+        );
+    }
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-view-canvas \.calendar-event-status--free\s*\{[\s\S]*background:\s*transparent;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-view-canvas \.calendar-event-status--tentative\s*\{[\s\S]*border-style:\s*dashed;/,
     );
 });
 
