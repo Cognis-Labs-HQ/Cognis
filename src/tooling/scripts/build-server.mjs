@@ -32,6 +32,7 @@ const compiledModuleSpecifiersPlugin = {
 const outputRoot = path.resolve("dist/server");
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
+await cp("package.json", path.join(outputRoot, "package.json"));
 const sourceFiles = (await walk(path.resolve("src"))).filter(
     (filePath) =>
         filePath.endsWith(".ts") &&

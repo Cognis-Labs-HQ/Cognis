@@ -1,4 +1,4 @@
-import { apiFetch } from "../../reuse/api-client.js";
+import { loadDocsIndex } from "../../reuse/docs-client.js";
 import {
     applyDocumentTitle,
     createI18n,
@@ -31,12 +31,6 @@ function groupLabel(i18n, group) {
         .split("/")
         .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
         .join(" › ");
-}
-
-async function loadDocsIndex() {
-    const response = await apiFetch("/api/v1/docs");
-    const payload = await response.json();
-    return payload.data;
 }
 
 function docTitle(item) {
