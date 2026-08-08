@@ -111,10 +111,9 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         /componentStringBaseUrls:\s*\[\s*"\/static\/modules\/nextcloud-whiteboard\/languages"/,
     );
     assert.doesNotMatch(source, /whiteboard-connection-status/);
-    assert.match(
-        source,
-        /\/static\/modules\/nextcloud-whiteboard\/share-adapter\.js/,
-    );
+    assert.match(source, /uiCtx\.capabilities\.get\("share:openPopup"\)/);
+    assert.match(source, /resourceType:\s*"whiteboard"/);
+    assert.match(source, /resourceId:\s*activeBoard\.id/);
     assert.match(
         source,
         /\/static\/gateways\/share\/ui\/reuse\/share-button\.js/,
@@ -180,8 +179,12 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         /#page-presence-section\s*\{[^}]*justify-content:\s*flex-start;/s,
     );
     assert.match(styles, /#page-presence-section\s*\{[^}]*margin-left:\s*0;/s);
+    assert.match(
+        styles,
+        /#page-presence-section \.page-presence__avatar-img\s*\{[^}]*height:\s*2rem;[^}]*object-fit:\s*cover;[^}]*width:\s*2rem;/s,
+    );
     assert.match(styles, /\.whiteboard-text-menu/);
-    assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
+    assert.doesNotMatch(source, /share-adapter\.js/);
 });
 
 test("nextcloud whiteboard canvas deletes selected objects via keyboard", async () => {

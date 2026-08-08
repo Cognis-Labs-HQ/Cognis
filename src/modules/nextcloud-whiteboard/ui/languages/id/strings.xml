@@ -90,9 +90,17 @@
   <string name="module.nextcloud_whiteboard.share_copy_success">Tautan berbagi disalin.</string>
   <string name="module.nextcloud_whiteboard.share_copy_failed">Tidak dapat menyalin tautan berbagi.</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">Tidak dapat mencabut tautan berbagi.</string>
+  <string name="module.nextcloud_whiteboard.share_update_link">Perbarui Berbagi Tautan</string>
+  <string name="module.nextcloud_whiteboard.share_update_user">Perbarui Berbagi Pengguna</string>
+  <string name="module.nextcloud_whiteboard.share_with_prefix">Bagikan dengan</string>
+  <string name="module.nextcloud_whiteboard.share_user_empty">Belum ada berbagi pengguna.</string>
+  <string name="module.nextcloud_whiteboard.share_user_search">Cari pengguna…</string>
+  <string name="module.nextcloud_whiteboard.share_permission">Izin</string>
+  <string name="module.nextcloud_whiteboard.share_permission_read">Baca</string>
+  <string name="module.nextcloud_whiteboard.share_permission_write">Tulis</string>
+  <string name="module.nextcloud_whiteboard.share_user_duplicate">Papan tulis ini sudah dibagikan dengan pengguna tersebut.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">Ini akan menghapus permanen semua item di papan tulis saat ini. Lanjutkan?</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard harus lulus pemeriksaan server sebelum dapat diaktifkan.</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">Server whiteboard menolak autentikasi websocket. Periksa konfigurasi kunci API.</string>
   <string name="module.nextcloud_whiteboard.tool_lock">Pertahankan alat gambar saat ini setelah membuat objek</string>
 </resources>
-

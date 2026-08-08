@@ -90,9 +90,17 @@
   <string name="module.nextcloud_whiteboard.share_copy_success">Share link copied.</string>
   <string name="module.nextcloud_whiteboard.share_copy_failed">Could not copy share link.</string>
   <string name="module.nextcloud_whiteboard.share_delete_failed">Could not revoke share link.</string>
+  <string name="module.nextcloud_whiteboard.share_update_link">Update Link Share</string>
+  <string name="module.nextcloud_whiteboard.share_update_user">Update User Share</string>
+  <string name="module.nextcloud_whiteboard.share_with_prefix">Share with</string>
+  <string name="module.nextcloud_whiteboard.share_user_empty">No user shares yet.</string>
+  <string name="module.nextcloud_whiteboard.share_user_search">Search users…</string>
+  <string name="module.nextcloud_whiteboard.share_permission">Permission</string>
+  <string name="module.nextcloud_whiteboard.share_permission_read">Read</string>
+  <string name="module.nextcloud_whiteboard.share_permission_write">Write</string>
+  <string name="module.nextcloud_whiteboard.share_user_duplicate">This whiteboard is already shared with that user.</string>
   <string name="module.nextcloud_whiteboard.clear_confirm">This permanently clears every item on the current whiteboard. Continue?</string>
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard must pass its server check before it can be enabled.</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">The whiteboard server rejected websocket authentication. Check the API key configuration.</string>
   <string name="module.nextcloud_whiteboard.tool_lock">Keep the current drawing tool active after creating an object</string>
 </resources>
-
