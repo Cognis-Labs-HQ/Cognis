@@ -11,3 +11,7 @@ Pengembangan lokal kini menyimpan snapshot di direktori Cognis milik pengguna sa
 ## Penjelajah versi
 
 Pembaca dokumentasi kini menampilkan bilah versi horizontal yang dapat digulir di atas judul dokumen agar pembaca dapat beralih antara konten terbaru dan historis.
+
+## Dokumen yang dihapus tetap tersedia
+
+Indeks dokumentasi kini tetap memuat dokumen yang telah diarsipkan meskipun berkas sumbernya diganti nama atau dihapus, sehingga setiap versi yang tersimpan tetap dapat dijelajahi.

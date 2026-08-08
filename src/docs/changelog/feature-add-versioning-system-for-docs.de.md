@@ -11,3 +11,7 @@ In der lokalen Entwicklung werden Snapshots nun im Cognis-Verzeichnis des aktuel
 ## Versionsauswahl
 
 Die Dokumentationsansicht zeigt nun über jedem Dokumenttitel eine horizontal scrollbare Versionsleiste, über die aktuelle und ältere Inhalte ausgewählt werden können.
+
+## Entfernte Dokumente bleiben verfügbar
+
+Der Dokumentationsindex enthält nun archivierte Dokumente auch dann, wenn ihre Quelldatei umbenannt oder entfernt wurde. Dadurch bleiben alle gespeicherten Versionen durchsuchbar.

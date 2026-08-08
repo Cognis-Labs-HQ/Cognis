@@ -11,3 +11,7 @@ Local development stores snapshots in the current user's Cognis directory, while
 ## Version browser
 
 The documentation reader now shows a horizontally scrollable version bar above each document title so readers can switch between current and historical content.
+
+## Keep removed documents available
+
+The documentation index now includes archived documents even after their source file is renamed or removed, so every preserved version remains browsable.
