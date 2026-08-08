@@ -72,6 +72,27 @@ function parseRoomId(actionUrl) {
     return match ? decodeURIComponent(match[1]) : null;
 }
 
+function isNotificationOwnedByCurrentPage(notification) {
+    const currentPage = window.location.pathname.split("/").filter(Boolean)[0];
+    if (!currentPage) return false;
+
+    if (notification.actionUrl) {
+        try {
+            const actionPage = new URL(
+                notification.actionUrl,
+                window.location.origin,
+            ).pathname
+                .split("/")
+                .filter(Boolean)[0];
+            if (actionPage === currentPage) return true;
+        } catch {
+            // Malformed actions are handled by navigateNotif (lines 42-60 above).
+        }
+    }
+
+    return notification.category === currentPage;
+}
+
 async function decryptRoomMessage(roomId) {
     const roomKey = await getRoomKey(roomId);
     if (!roomKey) return null;
@@ -596,7 +617,7 @@ async function checkForNew(i18n) {
     const arrivals = notifs.filter((n) => !seenIds.has(n.id));
     for (const notif of arrivals) {
         seenIds.add(notif.id);
-        if (!notif.read) {
+        if (!notif.read && !isNotificationOwnedByCurrentPage(notif)) {
             void showArrivalToast(notif, i18n);
         }
     }

@@ -198,12 +198,7 @@ export function renderThreadHeader(room, currentAccountId, i18n) {
         ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
         ${
             leaveHandle
-                ? `<button id="messages-room-leave-btn" class="messages-room-leave-btn" type="button" data-leave-handle="${escapeHtml(leaveHandle)}" aria-label="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}" title="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z" fill="currentColor" />
-              <path d="M0 2L1.38281e-06 14H2L2 2L0 2Z" fill="currentColor" />
-            </svg>
-          </button>`
+                ? `<button id="messages-room-leave-btn" class="messages-room-leave-btn btn-cancel" type="button" data-leave-handle="${escapeHtml(leaveHandle)}">${escapeHtml(i18n.t("module.social.messages.leave_room"))}</button>`
                 : ""
         }
       </div>
@@ -249,6 +244,7 @@ export function renderRoomList({
                     room.unread > 0 && !isActive
                         ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
                         : "";
+                const unreadClass = unreadBadge ? " messages-room--unread" : "";
                 const archivedClass = room.isArchived
                     ? " messages-room--archived"
                     : "";
@@ -256,10 +252,10 @@ export function renderRoomList({
                     ? `<span class="messages-room-archived-hint">${escapeHtml(i18n.t("module.social.messages.archived_locked"))}</span>`
                     : "";
                 return `
-          <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}" data-chat-id="${escapeHtml(room.id)}" data-room-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
+          <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}${unreadClass}" data-chat-id="${escapeHtml(room.id)}" data-room-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
             ${avatar}
             <span class="messages-room-meta">
-              <span class="messages-room-title">${escapeHtml(titleSource)}</span>
+              <span class="messages-room-title" title="${escapeHtml(titleSource)}">${escapeHtml(titleSource)}</span>
               <span class="messages-room-preview">${escapeHtml(preview)}</span>
               ${archivedHint}
             </span>

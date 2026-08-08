@@ -41,6 +41,62 @@ test("messages sidebar separates pending requests from conversations", () => {
     assert.match(source, /!room\.pendingRequest/);
 });
 
+test("unread chats expose an animated alert state and complete title", () => {
+    const renderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+        "utf8",
+    );
+    const styleSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
+        "utf8",
+    );
+
+    assert.match(renderSource, /messages-room--unread/);
+    assert.match(renderSource, /title=\"\$\{escapeHtml\(titleSource\)\}\"/);
+    assert.match(styleSource, /@keyframes messages-room-unread-pulse/);
+    assert.match(
+        styleSource,
+        /\.messages-room--unread[\s\S]*border-radius: 0\.35rem/,
+    );
+    assert.match(styleSource, /prefers-reduced-motion: reduce/);
+    assert.match(
+        styleSource,
+        /\.messages-room-title[\s\S]*text-overflow: ellipsis/,
+    );
+    assert.match(styleSource, /\.messages-unread-badge[\s\S]*--color-danger/);
+});
+
+test("room leave controls use explicit destructive button styling", () => {
+    const renderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+        "utf8",
+    );
+    const roomStateSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-state.js"),
+        "utf8",
+    );
+    const englishStrings = readFileSync(
+        resolve(
+            ROOT,
+            "src/adapters/social/messages/ui/languages/en/strings.xml",
+        ),
+        "utf8",
+    );
+
+    assert.match(renderSource, /messages-room-leave-btn btn-cancel/);
+    const leaveButtonMarkup = renderSource.match(
+        /<button id=\"messages-room-leave-btn\"[\s\S]*?<\/button>/,
+    )?.[0];
+    assert.ok(leaveButtonMarkup);
+    assert.doesNotMatch(leaveButtonMarkup, /<svg/);
+    assert.match(
+        roomStateSource,
+        /id: "confirm",[\s\S]*leave_room[\s\S]*variant: "cancel"/,
+    );
+    assert.match(englishStrings, />Leave Room</);
+    assert.doesNotMatch(englishStrings, /Conversation/i);
+});
+
 test("messages omits availability lights from primary chat avatars", () => {
     const roomRenderSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
