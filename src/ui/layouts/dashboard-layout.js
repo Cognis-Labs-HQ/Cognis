@@ -52,7 +52,7 @@ function getDisplayName() {
 
 function isGuestSession() {
     return (
-        sessionStorage.getItem("cognis_share_guest_active") === "1" ||
+        uiCtx.capabilities.get("session:isGuest")?.() === true ||
         !localStorage.getItem("cognis_account")
     );
 }

@@ -192,6 +192,10 @@ test("logged-in share recipients keep their account session", () => {
 });
 
 test("anonymous share guests activate a temporary unlocked keyring", () => {
+    assert.match(
+        sessionFlowSource,
+        /capabilities\.contribute\("session:isGuest", isViewingAsGuest\)/,
+    );
     assert.match(sessionFlowSource, /guestKeyring: shareData\.guestKeyring/);
     assert.match(sessionFlowSource, /keyring:activateTemporary/);
     assert.match(sessionFlowSource, /await activateGuestToken/);

@@ -160,6 +160,12 @@ test("auth session-flow-hooks.js registers a validate-stored-token hook", () => 
     );
 });
 
+test("auth defers stored-account validation for alternate guest sessions", () => {
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    assert.match(src, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(src, /if \(usesAlternateSession\)/);
+});
+
 test("auth session-flow-hooks.js registers an enforce-setup-requirements hook", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(

@@ -96,6 +96,15 @@ test("dashboard logout requests server revocation before clearing local token", 
     );
 });
 
+test("dashboard resolves guest sessions through the session capability", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
+    assert.doesNotMatch(layoutSource, /cognis_share_guest_active/);
+});
+
 test("dashboard layout refreshes the greeting from the profile display name", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),

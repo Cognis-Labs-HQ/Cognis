@@ -65,6 +65,11 @@ uiCtx.extendFlow(
     async () => {
         const token = localStorage.getItem("cognis_access_token");
         const account = localStorage.getItem("cognis_account");
+        const usesAlternateSession =
+            uiCtx.capabilities.get("session:isGuest")?.() === true;
+        if (usesAlternateSession) {
+            return { valid: false, reason: "session_expired" };
+        }
         if (!token || !account) {
             if (!token) {
                 // No token at all — full clear to ensure no partial stale state.

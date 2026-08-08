@@ -53,6 +53,8 @@ const GUEST_TOKEN_ACTIVE_KEY = GUEST_SESSION_ACTIVE_STORAGE_KEY;
 const DISPLAY_NAME_KEY = "cognis_display_name";
 const ACCOUNT_KEY = "cognis_account";
 
+uiCtx.capabilities.contribute("session:isGuest", isViewingAsGuest);
+
 const SHARE_GUEST_PAGE_DEFAULTS = Object.freeze({
     showNavbar: false,
     showShareControls: false,
