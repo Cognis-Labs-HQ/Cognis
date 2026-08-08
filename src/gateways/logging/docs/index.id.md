@@ -35,7 +35,7 @@ export class Logger {
 }
 ```
 
-Secara default logger menulis keluaran konsol dan file log persisten tetap menyimpan baris JSON. `LOG_LEVEL` diterapkan sebagai filter stream log runtime (stdout/stderr), sedangkan file log tetap menyimpan semua level.
+Secara default logger menulis keluaran konsol dan file log persisten tetap menyimpan baris JSON. `LOG_LEVEL` memfilter stdout/stderr dan `LOG_FILE_LEVEL` secara independen memfilter penulisan file persisten. Administrator dapat mengganti konfigurasi kedua adapter saat berjalan dan meresetnya ke nilai lingkungan. Penggantian disimpan dalam basis data dan dipulihkan saat gateway dimulai, sehingga tetap berlaku setelah kontainer dimulai ulang.
 
 Setiap baris log persisten adalah objek JSON:
 
@@ -60,6 +60,7 @@ Peristiwa pada gateway DB juga memakai logger bersama, tetapi hanya mencatat met
 | Variabel               | Default             | Keterangan                                                                      |
 | ---------------------- | ------------------- | ------------------------------------------------------------------------------- |
 | `LOG_LEVEL`            | `info`              | Filter verbositas stream log runtime: `debug`, `info`, `warn`, `error`          |
+| `LOG_FILE_LEVEL`       | `debug`             | Filter verbositas file persisten: `debug`, `info`, `warn`, `error`              |
 | `LOG_FILE`             | `/app/logs/app.log` | Path absolut untuk file log persisten                                           |
 | `LOG_FORMAT`           | `pretty`            | Format keluaran konsol: `pretty` untuk log yang mudah dibaca atau `json`        |
 | `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotasi file log aktif saat ukuran mencapai batas ini (byte)                     |

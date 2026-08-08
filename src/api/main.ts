@@ -18,7 +18,11 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { RouteRegistry } from "./reuse/route-registry.js";
 import { UIRegistry } from "./reuse/ui-registry.js";
-import { setAppLogger, writeConsoleLog } from "./reuse/logger.js";
+import {
+    createConsoleLog,
+    setAppLogger,
+    writeConsoleLog,
+} from "./reuse/logger.js";
 import type { LocalAccountStore } from "../gateways/auth/reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
@@ -154,13 +158,12 @@ const adaptersRoot =
     process.env.COGNIS_ADAPTERS_ROOT ??
     path.resolve(process.cwd(), "src", "adapters");
 
-function bootstrapLog(
-    level: "debug" | "info" | "warn" | "error",
-    message: string,
-    meta?: Record<string, unknown>,
-) {
-    writeConsoleLog(level, message, meta);
-}
+const configuredBootstrapLevel = ["debug", "info", "warn", "error"].includes(
+    process.env.LOG_LEVEL ?? "",
+)
+    ? (process.env.LOG_LEVEL as "debug" | "info" | "warn" | "error")
+    : "info";
+const bootstrapLog = createConsoleLog(configuredBootstrapLevel);
 
 type ModuleEnableTest = () => Promise<{ ok?: boolean; message?: string }>;
 

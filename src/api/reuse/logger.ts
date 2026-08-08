@@ -21,16 +21,26 @@ export type AppLog = (
     meta?: Record<string, unknown>,
 ) => void;
 
-let appLogger: AppLog = (level, message, meta) => {
-    writeConsoleLog(level, message, meta);
+const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
+    debug: 10,
+    info: 20,
+    warn: 30,
+    error: 40,
 };
 
+export function createConsoleLog(minimumLevel: LogLevel = "info"): AppLog {
+    return (level, message, meta) => {
+        if (LOG_LEVEL_PRIORITY[level] < LOG_LEVEL_PRIORITY[minimumLevel]) {
+            return;
+        }
+        writeConsoleLog(level, message, meta);
+    };
+}
+
+let appLogger: AppLog = createConsoleLog();
+
 export function setAppLogger(log?: AppLog): void {
-    appLogger =
-        log ??
-        ((level, message, meta) => {
-            writeConsoleLog(level, message, meta);
-        });
+    appLogger = log ?? createConsoleLog();
 }
 
 export function logAppEvent(
