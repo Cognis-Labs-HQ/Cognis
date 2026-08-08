@@ -166,6 +166,7 @@ export async function handleCalendarEventRoutes({
             activeSharedCalendar?.ownerAccountId ?? claims.sub;
         const sourceCalendarId =
             activeSharedCalendar?.ownerCalendarId ?? calendarId;
+        const existingEvent = gateway.getEvent(sourceCalendarId, eventId);
         const body = (await readJson(req)) as Record<string, unknown>;
         if (
             activeSharedCalendar &&
@@ -255,7 +256,7 @@ export async function handleCalendarEventRoutes({
                         : resolveAvailabilityStatus(
                               body.status,
                               getCapability,
-                              String(event.status),
+                              existingEvent?.status ?? "busy",
                           ),
                 recurrence:
                     body.recurrence === "daily" ||

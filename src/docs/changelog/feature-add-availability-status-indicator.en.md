@@ -34,7 +34,11 @@ Profile pages and previews now show another user's status according to that user
 
 ## Consistent calendar status backgrounds
 
-Busy, free, and tentative backgrounds now apply consistently to event cards in every Calendar view, Calendar upcoming-event lists, pending summaries, and Dashboard upcoming-event summaries. Free cards remain transparent, while tentative cards retain their dashed treatment.
+Busy, free, and tentative backgrounds now apply consistently to event cards in every Calendar view, Calendar upcoming-event lists, pending summaries, and Dashboard upcoming-event summaries. Free cards remain transparent, while tentative cards use a striped background without changing their borders.
+
+## Reliable event status updates
+
+Updating an existing Calendar event's status now resolves the fallback from that event rather than referencing unavailable route state, preventing the status-only PATCH request from returning an internal server error.
 
 ## Calendar styles load only where needed
 

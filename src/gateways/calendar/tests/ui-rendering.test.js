@@ -265,8 +265,9 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     );
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-view-canvas \.calendar-event-status--tentative\s*\{[\s\S]*border-style:\s*dashed;/,
+        /calendar-view-canvas \.calendar-event-status--tentative\s*\{[\s\S]*repeating-linear-gradient\(/,
     );
+    assert.doesNotMatch(STATUS_CSS_SOURCE, /border-style:\s*dashed/);
 });
 
 test("calendar upcoming events moved to toolbar", () => {

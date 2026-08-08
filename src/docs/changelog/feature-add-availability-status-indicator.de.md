@@ -34,7 +34,11 @@ Profilseiten und Vorschauen zeigen den Status anderer Benutzer nun gemäß deren
 
 ## Einheitliche Hintergründe für Kalenderstatus
 
-Die Hintergründe für „Beschäftigt“, „Frei“ und „Vorläufig“ gelten nun einheitlich für Terminkarten in allen Kalenderansichten, bevorstehende Kalendertermine, ausstehende Zusammenfassungen und bevorstehende Termine im Dashboard. Freie Karten bleiben transparent, während vorläufige Karten weiterhin gestrichelt dargestellt werden.
+Die Hintergründe für „Beschäftigt“, „Frei“ und „Vorläufig“ gelten nun einheitlich für Terminkarten in allen Kalenderansichten, bevorstehende Kalendertermine, ausstehende Zusammenfassungen und bevorstehende Termine im Dashboard. Freie Karten bleiben transparent, während vorläufige Karten einen gestreiften Hintergrund erhalten, ohne ihren Rahmen zu verändern.
+
+## Zuverlässige Aktualisierung des Terminstatus
+
+Beim Aktualisieren des Status eines bestehenden Kalendertermins wird der Rückfallwert nun aus diesem Termin ermittelt, statt auf einen nicht verfügbaren Routenzustand zuzugreifen. Dadurch führt eine reine Status-PATCH-Anfrage nicht mehr zu einem internen Serverfehler.
 
 ## Kalenderstile werden nur bei Bedarf geladen
 

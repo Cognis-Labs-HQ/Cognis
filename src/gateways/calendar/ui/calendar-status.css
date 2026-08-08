@@ -12,12 +12,42 @@
 }
 
 .calendar-view-canvas .calendar-event-status--tentative {
-    background: color-mix(
-        in srgb,
-        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 12%,
-        var(--surface, transparent)
-    );
-    border-style: dashed;
+    background:
+        repeating-linear-gradient(
+            135deg,
+            color-mix(
+                    in srgb,
+                    var(
+                            --calendar-event-stripe,
+                            var(--calendar-accent, #1f8ceb)
+                        )
+                        18%,
+                    transparent
+                )
+                0 8px,
+            transparent 8px 16px
+        ),
+        var(--surface, transparent);
+}
+
+.calendar-events-list .calendar-event-status--tentative,
+.dashboard-upcoming-event-link.calendar-event-status--tentative {
+    background:
+        repeating-linear-gradient(
+            135deg,
+            color-mix(
+                    in srgb,
+                    var(
+                            --calendar-event-stripe,
+                            var(--calendar-accent, #1f8ceb)
+                        )
+                        18%,
+                    transparent
+                )
+                0 8px,
+            transparent 8px 16px
+        ),
+        var(--surface, transparent);
 }
 
 .calendar-events-list .calendar-event-status--busy,
@@ -34,16 +64,6 @@
     background: transparent;
 }
 
-.calendar-events-list .calendar-event-status--tentative,
-.dashboard-upcoming-event-link.calendar-event-status--tentative {
-    background: color-mix(
-        in srgb,
-        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 12%,
-        var(--surface, transparent)
-    );
-    border-style: dashed;
-}
-
 .dashboard-upcoming-event-link.calendar-event-status {
     padding: 0.4rem 0.5rem;
     border: 1px solid
@@ -55,8 +75,4 @@
     border-left: 4px solid
         var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb));
     border-radius: 10px;
-}
-
-.dashboard-upcoming-event-link.calendar-event-status--tentative {
-    border-style: dashed;
 }

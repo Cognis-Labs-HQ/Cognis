@@ -27,6 +27,11 @@ async function createDispatchJson(
         "auth:routeContext",
         createAuthContext(claimsByToken),
     );
+    capabilities.contribute("social:getAvailabilityStatuses", () => [
+        "busy",
+        "free",
+        "tentative",
+    ]);
     capabilities.contribute("share:removeUserRecipient", async (input) => {
         hooks.removedRecipients?.push(input as Record<string, string>);
         return "updated";
@@ -171,9 +176,13 @@ test("shared recipients control local color while writable shares control events
         "PATCH",
         bobToken,
         `/api/v1/calendar/calendars/${encodeURIComponent(sharedCalendarId)}/events/${encodeURIComponent(ownerEventId)}`,
-        { title: "Owner event updated by recipient" },
+        {
+            title: "Owner event updated by recipient",
+            status: "tentative",
+        },
     );
     assert.equal(editOwnerEvent.statusCode, 200);
+    assert.equal(editOwnerEvent.body.data.status, "tentative");
     const deleteOwnerEvent = await dispatchJson(
         "DELETE",
         bobToken,
