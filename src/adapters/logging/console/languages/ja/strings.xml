@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.logging.console.level">ログレベル</string>
+  <string name="adapter.logging.console.format">出力形式</string>
+</resources>

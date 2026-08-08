@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.logging.console.level">Protokollstufe</string>
+  <string name="adapter.logging.console.format">Ausgabeformat</string>
+</resources>

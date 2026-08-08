@@ -1,7 +1,7 @@
 {
     "id": "logging",
     "name": "Logging Gateway",
-    "version": "1.5.5",
+    "version": "1.5.6",
     "required": true,
     "requires": ["files"],
     "description": "Structured application logging to stdout/stderr and file.",

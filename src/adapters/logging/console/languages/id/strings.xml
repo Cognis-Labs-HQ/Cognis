@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.logging.console.level">Tingkat log</string>
+  <string name="adapter.logging.console.format">Format keluaran</string>
+</resources>

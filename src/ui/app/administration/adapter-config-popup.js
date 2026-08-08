@@ -170,7 +170,11 @@ export function createAdapterConfigPopup({
                     inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="text" value="${value}" />`;
                 }
 
-                return fieldLabel(name, fieldNameToLabel(name), inputHtml);
+                return fieldLabel(
+                    name,
+                    descriptor?.schemaLabel ?? fieldNameToLabel(name),
+                    inputHtml,
+                );
             })
             .join("");
 
@@ -200,8 +204,11 @@ export function createAdapterConfigPopup({
                               ? " checked"
                               : "";
                       const isAuthDisabled = name === "authDisabled";
+                      const label =
+                          descriptors[name]?.schemaLabel ??
+                          fieldNameToLabel(name);
                       return `<div class="provider-option-row${isAuthDisabled ? " provider-auth-toggle-row" : ""}">
-          <span class="provider-option-label">${escapeHtml(fieldNameToLabel(name))}</span>
+          <span class="provider-option-label">${escapeHtml(label)}</span>
           <label class="switch">
             <input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="checkbox"${checked} />
             <span class="slider"></span>
@@ -354,7 +361,9 @@ export function createAdapterConfigPopup({
                         dbValue !== envValue,
                     required: requiredFields.includes(field),
                     schemaType: schemaEntry?.type ?? null,
-                    schemaLabel: schemaEntry?.label ?? null,
+                    schemaLabel: schemaEntry?.labelKey
+                        ? i18n.t(schemaEntry.labelKey)
+                        : null,
                     schemaOptions: schemaEntry?.options ?? null,
                 };
             }

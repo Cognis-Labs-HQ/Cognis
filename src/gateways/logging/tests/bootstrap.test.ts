@@ -111,9 +111,16 @@ test("logging adapter level overrides reconfigure the running logger immediately
         assert.equal(
             fileConfigPayload.schema.find(
                 (field: { key: string }) => field.key === "rotateCompress",
-            )?.label,
-            "Log Compression",
+            )?.labelKey,
+            "adapter.logging.file.rotate_compress",
         );
+        assert.equal(
+            fileConfigPayload.schema.some(
+                (field: { key: string }) => field.key === "path",
+            ),
+            false,
+        );
+        assert.equal("path" in fileConfigPayload.envValues, false);
 
         const updateAdapter = async (
             adapterId: "console" | "file",
@@ -159,12 +166,36 @@ test("logging adapter level overrides reconfigure the running logger immediately
         const fileConfiguration = logger.getConfiguration();
         await updateAdapter("file", {
             level: "info",
-            path: fileConfiguration.filePath,
             rotateMaxBytes: fileConfiguration.rotation.maxBytes,
             rotateMaxFiles: fileConfiguration.rotation.maxFiles,
             rotateCompress: fileConfiguration.rotation.compressRotated,
         });
         assert.equal(logger.getConfiguration().fileLevel, "info");
+
+        const invalidRotationRequest = new RequestRecorder(
+            "PUT",
+            token,
+            JSON.stringify({
+                level: "info",
+                rotateMaxBytes: 0,
+                rotateMaxFiles: -1,
+                rotateCompress: true,
+            }),
+        );
+        const invalidRotationResponse = new ResponseRecorder();
+        await adapterHandler(
+            invalidRotationRequest as any,
+            invalidRotationResponse as any,
+            new URL(
+                "/api/v1/gateways/logging/adapters/file/config",
+                "http://localhost",
+            ),
+        );
+        assert.equal(invalidRotationResponse.statusCode, 400);
+        assert.equal(
+            JSON.parse(invalidRotationResponse.payload).error.field,
+            "rotateMaxBytes",
+        );
     } finally {
         if (previousConsoleLevel === undefined) delete process.env.LOG_LEVEL;
         else process.env.LOG_LEVEL = previousConsoleLevel;

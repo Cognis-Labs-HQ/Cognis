@@ -1,0 +1,4 @@
+<resources>
+  <string name="adapter.logging.console.level">Log level</string>
+  <string name="adapter.logging.console.format">Output format</string>
+</resources>

@@ -318,10 +318,17 @@ type LoggingAdapterContract = {
     name: string;
     schema: Array<{
         key: string;
-        label: string;
+        labelKey: string;
         type: "select" | "text" | "number" | "boolean";
         options?: string[];
     }>;
+    validateConfig(config: Record<string, unknown>): {
+        field: string;
+        message: string;
+    } | null;
+    toLoggerConfiguration(
+        config: Record<string, unknown>,
+    ): Record<string, unknown>;
 };
 
 async function loadLoggingAdapterContracts(
@@ -365,17 +372,15 @@ function createLoggingAdapterRoutes(
             ...environmentConfig.file,
             ...overrides.get("file"),
         };
-        logger.configure({
-            consoleLevel: consoleConfig.level as LogLevel,
-            consoleFormat: consoleConfig.format as "pretty" | "json",
-            fileLevel: fileConfig.level as LogLevel,
-            filePath: String(fileConfig.path),
-            rotation: {
-                maxBytes: Number(fileConfig.rotateMaxBytes),
-                maxFiles: Number(fileConfig.rotateMaxFiles),
-                compressRotated: Boolean(fileConfig.rotateCompress),
-            },
-        });
+        const configurations = { console: consoleConfig, file: fileConfig };
+        logger.configure(
+            Object.assign(
+                {},
+                ...adapters.map((adapter) =>
+                    adapter.toLoggerConfiguration(configurations[adapter.id]),
+                ),
+            ),
+        );
     };
 
     return async (req: IncomingMessage, res: ServerResponse, url: URL) => {
@@ -430,17 +435,15 @@ function createLoggingAdapterRoutes(
             const config = Object.fromEntries(
                 Object.entries(body).filter(([key]) => allowedKeys.has(key)),
             ) as Record<string, ConfigValue>;
-            if (
-                typeof config.level !== "string" ||
-                !ALLOWED_LEVELS.has(config.level as LogLevel)
-            ) {
+            const validationError = adapter.validateConfig(config);
+            if (validationError) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_config",
-                            field: "level",
-                            message: "Unsupported log level",
+                            field: validationError.field,
+                            message: validationError.message,
                         },
                     }),
                 );
@@ -555,7 +558,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 console: { level, format: consoleFormat },
                 file: {
                     level: fileLevel,
-                    path: filePath,
                     rotateMaxBytes,
                     rotateMaxFiles,
                     rotateCompress,
@@ -584,7 +586,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.5",
+        version: "1.5.6",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

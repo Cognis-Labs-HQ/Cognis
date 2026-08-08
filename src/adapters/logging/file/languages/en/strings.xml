@@ -1,0 +1,6 @@
+<resources>
+  <string name="adapter.logging.file.level">Log level</string>
+  <string name="adapter.logging.file.rotate_max_bytes">Rotation size (bytes)</string>
+  <string name="adapter.logging.file.rotate_max_files">Rotated files to keep</string>
+  <string name="adapter.logging.file.rotate_compress">Compress rotated logs</string>
+</resources>
