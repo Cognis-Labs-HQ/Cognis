@@ -99,7 +99,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.64` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.65` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.41` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

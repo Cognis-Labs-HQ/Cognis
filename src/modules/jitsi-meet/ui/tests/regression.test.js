@@ -91,7 +91,10 @@ test("jitsi chat loads room keys through the messages adapter loading flow", () 
         resolve(ROOT, "src/modules/jitsi-meet/api/ui-resources.js"),
         "utf8",
     );
-    assert.match(chatSource, /await loadChatRoomKey\(roomId\)/);
+    assert.match(
+        chatSource,
+        /await loadChatRoomKey\(roomId,\s*\{\s*recoverMissing:\s*true,?\s*\}\)/,
+    );
     assert.doesNotMatch(chatSource, /adapters\/auth\/keyring/);
     assert.match(resourcesSource, /chatLoadingModuleUrl/);
 });
