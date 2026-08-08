@@ -386,7 +386,7 @@ function scheduleNavbarEnhancements() {
 }
 
 function ensureReleaseChangelogPopupChecked(i18n) {
-    if (releaseChangelogPopupChecked) return;
+    if (releaseChangelogPopupChecked || isGuestSession()) return;
     releaseChangelogPopupChecked = true;
     maybeShowReleaseChangelogPopup(i18n).catch(() => {});
 }
@@ -612,7 +612,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".main-window") ?? existingShell,
         );
         applyActiveNavigation();
-        if (showTopbar || showNavbar) {
+        if ((showTopbar || showNavbar) && !isGuestSession()) {
             updateNavbarAvatar().catch((error) => {
                 console.warn(
                     "[dashboard-layout]:initial-navbar-avatar-render-failed",
@@ -663,7 +663,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
-    if (showTopbar || showNavbar) {
+    if ((showTopbar || showNavbar) && !isGuestSession()) {
         bindTopbarActions();
         updateNavbarAvatar().catch((error) => {
             console.warn(

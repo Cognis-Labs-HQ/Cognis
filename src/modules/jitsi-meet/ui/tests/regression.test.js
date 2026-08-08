@@ -115,6 +115,7 @@ test("jitsi meeting window has light-theme overlay overrides", () => {
 test("meetings page composer uses a dedicated layout preference key", () => {
     const source = readJitsiUiBundle();
     assert.match(source, /preferenceKey:\s*"meetings-layout-v3"/);
+    assert.match(source, /requireAccountSession:\s*!inShareView/);
 });
 
 test("jitsi meetings embed gates privileged settings by local moderator role and uses reduced toolbar", () => {

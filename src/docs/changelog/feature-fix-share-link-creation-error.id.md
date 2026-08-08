@@ -15,3 +15,7 @@ Membuka tautan berbagi papan tulis kini mempertahankan sesi tamu terbatasnya. Co
 ## Memuat data dasbor yang menyadari sesi tamu
 
 Halaman bersama kini menggunakan kapabilitas sesi tamu milik gateway Share saat memilih permintaan profil dan dasbor, sehingga permintaan khusus akun yang tidak relevan tidak lagi gagal ketika papan tulis dibuka.
+
+## Berbagi terlindungi mempertahankan keyring tamu
+
+Halaman bersama kini menggunakan kembali satu sesi tamu yang telah diresolusi selama seluruh siklus hidupnya, alih-alih meresolusi identitas tamu baru ketika komponen yang dipasang diinisialisasi. Keyring tamu tetap terbatas pada sesi, mempertahankan kredensial rapat terlindungi, serta tidak lagi memanggil API keyring akun atau catatan rilis.

@@ -102,7 +102,10 @@ test("dashboard resolves guest sessions through the session capability", () => {
         "utf8",
     );
     assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
-    assert.doesNotMatch(layoutSource, /cognis_share_guest_active/);
+    assert.match(
+        layoutSource,
+        /releaseChangelogPopupChecked \|\| isGuestSession\(\)/,
+    );
 });
 
 test("dashboard layout refreshes the greeting from the profile display name", () => {

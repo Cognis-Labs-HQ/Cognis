@@ -922,6 +922,7 @@ export async function mount(root, { signal, shareContext } = {}) {
         showTopbar: sharePageFlag("showTopbar", true),
         showFooter: sharePageFlag("showFooter", true),
         showThemeToggle: sharePageFlag("showThemeToggle", true),
+        requireAccountSession: !activeShareContext,
     });
     await composer.init();
 

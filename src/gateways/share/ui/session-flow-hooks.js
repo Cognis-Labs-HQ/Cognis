@@ -52,6 +52,7 @@ const PREV_DISPLAY_NAME_KEY = "cognis_prev_display_name";
 const GUEST_TOKEN_ACTIVE_KEY = GUEST_SESSION_ACTIVE_STORAGE_KEY;
 const DISPLAY_NAME_KEY = "cognis_display_name";
 const ACCOUNT_KEY = "cognis_account";
+let activeGuestSession = null;
 
 uiCtx.capabilities.contribute("session:isGuest", isViewingAsGuest);
 
@@ -75,23 +76,26 @@ async function activateGuestToken(
 ) {
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
-    const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
-    const priorAccount = localStorage.getItem(ACCOUNT_KEY);
-    const priorDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
-    if (prior) {
-        sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
-    } else {
-        sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
-    }
-    if (priorAccount) {
-        sessionStorage.setItem(PREV_ACCOUNT_KEY, priorAccount);
-    } else {
-        sessionStorage.removeItem(PREV_ACCOUNT_KEY);
-    }
-    if (priorDisplayName) {
-        sessionStorage.setItem(PREV_DISPLAY_NAME_KEY, priorDisplayName);
-    } else {
-        sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+    const guestSessionAlreadyActive = isViewingAsGuest();
+    if (!guestSessionAlreadyActive) {
+        const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const priorAccount = localStorage.getItem(ACCOUNT_KEY);
+        const priorDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
+        if (prior) {
+            sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
+        } else {
+            sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
+        }
+        if (priorAccount) {
+            sessionStorage.setItem(PREV_ACCOUNT_KEY, priorAccount);
+        } else {
+            sessionStorage.removeItem(PREV_ACCOUNT_KEY);
+        }
+        if (priorDisplayName) {
+            sessionStorage.setItem(PREV_DISPLAY_NAME_KEY, priorDisplayName);
+        } else {
+            sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+        }
     }
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
@@ -142,6 +146,7 @@ function restoreGuestToken() {
     sessionStorage.removeItem(PREV_ACCOUNT_KEY);
     sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
+    activeGuestSession = null;
 }
 
 uiCtx.extendFlow(
@@ -166,6 +171,13 @@ uiCtx.extendFlow(
                 };
             }
             return null;
+        }
+
+        if (
+            isViewingAsGuest() &&
+            activeGuestSession?.shareToken === shareToken
+        ) {
+            return activeGuestSession.session;
         }
 
         // If the visitor already has a valid full-account session, send
@@ -263,12 +275,14 @@ uiCtx.extendFlow(
             });
         }
 
-        return {
+        const guestSession = {
             authenticated: true,
             accountId: null,
             role: "user",
             isGuestSession: true,
             shareContext,
         };
+        activeGuestSession = { shareToken, session: guestSession };
+        return guestSession;
     },
 );

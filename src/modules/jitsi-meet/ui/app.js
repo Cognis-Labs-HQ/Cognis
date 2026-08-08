@@ -928,6 +928,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         showNavbar: !inShareView,
         showFooter: true,
         showThemeToggle: true,
+        requireAccountSession: !inShareView,
         persistLayoutPreferences: !inShareView,
         frameless: false,
         onRender: (...args) => {

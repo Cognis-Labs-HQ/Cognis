@@ -166,6 +166,14 @@ function clearVault(clearPendingValues) {
 }
 
 async function loadRemoteEnvelope() {
+    if (temporaryKeyringAccountId) {
+        return {
+            resolved: true,
+            envelope: null,
+            accountInstanceId: temporaryKeyringAccountId,
+            derivationIterations: DEFAULT_ITERATIONS,
+        };
+    }
     try {
         const response = await apiFetch(KEYRING_API);
         if (!response.ok) return { resolved: false, envelope: null };
@@ -230,6 +238,7 @@ export function selectKeyringEnvelope(localEnvelope, remoteState) {
 }
 
 async function syncEnvelope(envelope) {
+    if (temporaryKeyringAccountId) return;
     let response;
     try {
         response = await apiFetch(KEYRING_API, {
