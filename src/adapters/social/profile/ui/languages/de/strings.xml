@@ -11,4 +11,5 @@
   <string name="ui.app.profile.availability.busy">Beschäftigt</string>
   <string name="ui.app.profile.availability.tentative">Vorläufig</string>
   <string name="ui.app.profile.availability.idle">Inaktiv</string>
+  <string name="ui.app.profile.availability.unknown">Unbekannt</string>
 </resources>

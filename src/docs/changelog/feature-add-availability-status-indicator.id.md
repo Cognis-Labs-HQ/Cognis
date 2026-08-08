@@ -75,3 +75,7 @@ Membuat acara Kalender yang sudah aktif kini langsung menyegarkan ketersediaan. 
 ## Integrasi ketersediaan tetap andal
 
 Kalender kini mengambil preferensi yang dimulai belakangan saat digunakan, memakai konteks UI untuk data acara Dasbor, dan mempertahankan perilaku acara bebas ketika Social dinonaktifkan. Sesi kehadiran kedaluwarsa dan dibatasi per akun agar memori server tidak bertambah tanpa batas.
+
+## Ketersediaan tak diketahui bersifat netral
+
+Indikator status kini berwarna abu-abu dengan label Tidak diketahui ketika ketersediaan tidak dapat dimuat, alih-alih keliru menunjukkan pengguna sedang luang sebelum visibilitas profil mengizinkan akses.

@@ -101,6 +101,24 @@ test("availability renderer exposes immediate ctx refresh", () => {
     );
 });
 
+test("unavailable statuses render as unknown instead of free", () => {
+    const availability = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.js"),
+        "utf8",
+    );
+    const styles = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.css"),
+        "utf8",
+    );
+
+    assert.match(availability, /data-availability-status="unknown"/);
+    assert.match(availability, /availability\?\.status \?\? "unknown"/);
+    assert.match(
+        styles,
+        /data-availability-status="unknown"[\s\S]+background: #8a929c;/,
+    );
+});
+
 test("navbar tracks refreshed status and deselects options for idle", () => {
     const navbar = readFileSync(resolve(PROFILE_ROOT, "ui/navbar.js"), "utf8");
 

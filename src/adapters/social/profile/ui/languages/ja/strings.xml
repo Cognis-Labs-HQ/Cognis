@@ -11,4 +11,5 @@
   <string name="ui.app.profile.availability.busy">取り込み中</string>
   <string name="ui.app.profile.availability.tentative">仮予定</string>
   <string name="ui.app.profile.availability.idle">離席中</string>
+  <string name="ui.app.profile.availability.unknown">不明</string>
 </resources>

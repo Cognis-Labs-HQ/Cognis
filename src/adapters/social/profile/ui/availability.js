@@ -76,7 +76,7 @@ export async function fetchAvailability(handle = "") {
 }
 
 export function availabilityIndicatorMarkup(handle, label = "") {
-    return `<span class="availability-indicator" data-availability-handle="${escapeHtml(handle)}" data-availability-status="free" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"></span>`;
+    return `<span class="availability-indicator" data-availability-handle="${escapeHtml(handle)}" data-availability-status="unknown" title="${escapeHtml(label)}" aria-label="${escapeHtml(label)}"></span>`;
 }
 
 export async function hydrateAvailabilityIndicators(container = document) {
@@ -91,13 +91,11 @@ export async function hydrateAvailabilityIndicators(container = document) {
             const availability = await fetchAvailability(
                 indicator.dataset.availabilityHandle,
             );
-            if (availability?.status) {
-                await applyIndicatorStatus(
-                    indicator,
-                    availability.status,
-                    i18n,
-                );
-            }
+            await applyIndicatorStatus(
+                indicator,
+                availability?.status ?? "unknown",
+                i18n,
+            );
         }),
     );
 }

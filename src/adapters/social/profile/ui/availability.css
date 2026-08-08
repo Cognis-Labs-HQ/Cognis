@@ -23,6 +23,9 @@
     background: #8a929c;
     filter: grayscale(1);
 }
+.availability-indicator[data-availability-status="unknown"] {
+    background: #8a929c;
+}
 .availability-menu-item {
     border-bottom: 1px solid var(--border);
 }

@@ -75,3 +75,7 @@ Creating a Calendar event that is already active now refreshes availability imme
 ## Availability integrations remain reliable
 
 Calendar now resolves late-bootstrapped preferences when they are used, uses UI ctx for Dashboard event data, and retains free-event behavior when Social is disabled. Presence sessions are expired and bounded per account to prevent unbounded server memory use.
+
+## Unknown availability is neutral
+
+Status indicators now appear grey with an Unknown label when availability cannot be loaded, rather than incorrectly suggesting that a user is free before profile visibility permits access.

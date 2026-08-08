@@ -75,3 +75,7 @@ Beim Erstellen eines bereits aktiven Kalendertermins wird die Verfügbarkeit sof
 ## Verfügbarkeitsintegrationen bleiben zuverlässig
 
 Der Kalender löst spät gestartete Einstellungen nun bei ihrer Verwendung auf, nutzt den UI-Kontext für Ereignisdaten im Dashboard und behält das Verhalten freier Ereignisse bei deaktivierter Social-Komponente bei. Anwesenheitssitzungen laufen ab und sind pro Konto begrenzt, damit der Serverspeicher nicht unbegrenzt wächst.
+
+## Unbekannte Verfügbarkeit ist neutral
+
+Statusanzeigen erscheinen nun grau mit der Bezeichnung „Unbekannt“, wenn die Verfügbarkeit nicht geladen werden kann, statt fälschlich freie Verfügbarkeit anzuzeigen, bevor die Profilsichtbarkeit den Zugriff erlaubt.
