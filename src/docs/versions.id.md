@@ -56,8 +56,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | User Share            | `src/adapters/share/user/`          | `1.1.12` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
-| Console Logging       | `src/adapters/logging/console/`     | `1.0.1`  |
-| File Logging          | `src/adapters/logging/file/`        | `1.0.1`  |
+| Console Logging       | `src/adapters/logging/console/`     | `1.1.3`  |
+| File Logging          | `src/adapters/logging/file/`        | `1.1.4`  |
 
 ## Gerbang
 
@@ -71,7 +71,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Social                | `src/gateways/social/`        | `1.2.11` |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.5`  |
 | Registration          | `src/gateways/registration/`  | `1.1.13` |
-| Logging               | `src/gateways/logging/`       | `1.5.4`  |
+| Logging               | `src/gateways/logging/`       | `1.5.11` |
 | Observability         | `src/gateways/observability/` | `1.0.4`  |
 | Study                 | `src/gateways/study/`         | `1.5.10` |
 | Calendar              | `src/gateways/calendar/`      | `1.4.51` |
@@ -80,13 +80,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen     | Jalur       | Versi   |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.3.7` |
+| Core Package | `src/core/` | `0.3.9` |
 
 ## API
 
 | Komponen   | Jalur      | Versi   |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.3.3` |
+| API Server | `src/api/` | `0.3.4` |
 
 ## Peralatan
 

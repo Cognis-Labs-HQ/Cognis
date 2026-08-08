@@ -9,6 +9,44 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
+import type { Logger } from "../logger.js";
+import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { StructuredDbCommand } from "../../db/reuse/db-command.js";
+
+class PreferenceDb implements DbExecutor {
+    readonly preferences = new Map<string, string>();
+
+    async ensureTable() {}
+
+    async executeCommand(command: StructuredDbCommand) {
+        if (command.option === "SELECT") {
+            return {
+                rows: [...this.preferences].map(
+                    ([adapter_id, config_json]) => ({
+                        adapter_id,
+                        config_json,
+                    }),
+                ),
+            };
+        }
+        if (command.option === "INSERT") {
+            this.preferences.set(
+                String(command.values.adapter_id),
+                String(command.values.config_json),
+            );
+        }
+        if (command.option === "DELETE") {
+            this.preferences.delete(String(command.where?.[0]?.value));
+        }
+        return { rowCount: 1 };
+    }
+
+    async transaction<Result>(
+        callback: (executor: DbExecutor) => Promise<Result>,
+    ): Promise<Result> {
+        return callback(this);
+    }
+}
 
 class ResponseRecorder extends EventEmitter {
     statusCode = 0;
@@ -38,19 +76,28 @@ class ResponseRecorder extends EventEmitter {
 class RequestRecorder extends EventEmitter {
     method: string;
     headers: Record<string, string>;
+    body: string;
 
-    constructor(method: string, token?: string) {
+    constructor(method: string, token?: string, body = "") {
         super();
         this.method = method;
         this.headers = token ? { authorization: `Bearer ${token}` } : {};
+        this.body = body;
+    }
+
+    async *[Symbol.asyncIterator]() {
+        if (this.body) yield Buffer.from(this.body);
     }
 }
 
-async function makeContext() {
+async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("db:executor", dbExecutor);
+    capabilities.contribute("file:append", async () => undefined);
     return {
         gatewayRegistry: new GatewayRegistry(),
         routeRegistry: new RouteRegistry(),
-        capabilities: new CapabilityStore(),
+        capabilities,
         uiRegistry: new UIRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
     };
@@ -74,6 +121,238 @@ test("logging gateway bootstrap registers admin logs section and static UI scrip
     await assert.doesNotReject(
         access(path.join(staticDir!, "admin-section.js")),
     );
+    assert.equal(
+        ctx.uiRegistry.getAdapterStaticDir("logging", "console"),
+        path.resolve(process.cwd(), "src", "adapters", "logging", "console"),
+    );
+    assert.equal(
+        ctx.uiRegistry.getAdapterStaticDir("logging", "file"),
+        path.resolve(process.cwd(), "src", "adapters", "logging", "file"),
+    );
+});
+
+test("logging adapter level overrides reconfigure the running logger immediately", async () => {
+    const previousConsoleLevel = process.env.LOG_LEVEL;
+    const previousFileLevel = process.env.LOG_FILE_LEVEL;
+    process.env.LOG_LEVEL = "error";
+    process.env.LOG_FILE_LEVEL = "error";
+
+    try {
+        const ctx = await makeContext();
+        await bootstrap(ctx as any);
+        const logger = ctx.capabilities.get<Logger>("logging:logger");
+        assert.ok(logger);
+        const adapterHandler = ctx.routeRegistry.getHandlers()[1];
+        const token = issueAccessToken("admin-test", "admin", 300);
+
+        const fileConfigRequest = new RequestRecorder("GET", token);
+        const fileConfigResponse = new ResponseRecorder();
+        await adapterHandler(
+            fileConfigRequest as any,
+            fileConfigResponse as any,
+            new URL(
+                "/api/v1/gateways/logging/adapters/file/config",
+                "http://localhost",
+            ),
+        );
+        const fileConfigPayload = JSON.parse(fileConfigResponse.payload);
+        assert.equal(
+            fileConfigPayload.schema.find(
+                (field: { key: string }) => field.key === "rotateCompress",
+            )?.labelKey,
+            "adapter.logging.file.rotate_compress",
+        );
+        assert.equal(
+            fileConfigPayload.schema.some(
+                (field: { key: string }) => field.key === "path",
+            ),
+            false,
+        );
+        assert.equal("path" in fileConfigPayload.envValues, false);
+
+        const catalogRequest = new RequestRecorder("GET", token);
+        const catalogResponse = new ResponseRecorder();
+        await adapterHandler(
+            catalogRequest as any,
+            catalogResponse as any,
+            new URL("/api/v1/gateways/logging/adapters", "http://localhost"),
+        );
+        const fileAdapter = JSON.parse(catalogResponse.payload).data.find(
+            (adapter: { id: string }) => adapter.id === "file",
+        );
+        assert.equal(
+            fileAdapter.stringsBaseUrl,
+            "/static/adapters/logging/file/languages",
+        );
+
+        for (const action of ["enable", "disable"]) {
+            const toggleRequest = new RequestRecorder("POST", token);
+            const toggleResponse = new ResponseRecorder();
+            const handled = await adapterHandler(
+                toggleRequest as any,
+                toggleResponse as any,
+                new URL(fileAdapter.controls[action], "http://localhost"),
+            );
+            assert.equal(handled, true);
+            assert.equal(toggleResponse.statusCode, 409);
+            assert.equal(
+                JSON.parse(toggleResponse.payload).error.code,
+                "adapter_locked",
+            );
+        }
+
+        const updateAdapter = async (
+            adapterId: "console" | "file",
+            config: Record<string, unknown>,
+        ) => {
+            const req = new RequestRecorder(
+                "PUT",
+                token,
+                JSON.stringify(config),
+            );
+            const res = new ResponseRecorder();
+            const handled = await adapterHandler(
+                req as any,
+                res as any,
+                new URL(
+                    `/api/v1/gateways/logging/adapters/${adapterId}/config`,
+                    "http://localhost",
+                ),
+            );
+            assert.equal(handled, true);
+            assert.equal(res.statusCode, 200);
+        };
+
+        await updateAdapter("console", { level: "debug", format: "json" });
+        assert.equal(logger.getConfiguration().consoleLevel, "debug");
+        assert.equal(logger.getConfiguration().consoleFormat, "json");
+        const runtimeLog =
+            ctx.capabilities.get<
+                (
+                    level: "debug" | "info" | "warn" | "error",
+                    message: string,
+                ) => void
+            >("logging:log");
+        const consoleWrites: string[] = [];
+        const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+        process.stdout.write = ((chunk: string | Uint8Array) => {
+            consoleWrites.push(String(chunk));
+            return true;
+        }) as typeof process.stdout.write;
+        try {
+            runtimeLog?.("debug", "Live console configuration applied.");
+        } finally {
+            process.stdout.write = originalStdoutWrite;
+        }
+        const writtenEntries = consoleWrites
+            .join("")
+            .trim()
+            .split("\n")
+            .map((line) => JSON.parse(line));
+        assert.equal(
+            writtenEntries.at(-1)?.message,
+            "Live console configuration applied.",
+        );
+
+        const fileConfiguration = logger.getConfiguration();
+        await updateAdapter("file", {
+            level: "info",
+            rotateMaxBytes: fileConfiguration.rotation.maxBytes,
+            rotateMaxFiles: fileConfiguration.rotation.maxFiles,
+            rotateCompress: fileConfiguration.rotation.compressRotated,
+        });
+        assert.equal(logger.getConfiguration().fileLevel, "info");
+
+        const invalidRotationRequest = new RequestRecorder(
+            "PUT",
+            token,
+            JSON.stringify({
+                level: "info",
+                rotateMaxBytes: 0,
+                rotateMaxFiles: -1,
+                rotateCompress: true,
+            }),
+        );
+        const invalidRotationResponse = new ResponseRecorder();
+        await adapterHandler(
+            invalidRotationRequest as any,
+            invalidRotationResponse as any,
+            new URL(
+                "/api/v1/gateways/logging/adapters/file/config",
+                "http://localhost",
+            ),
+        );
+        assert.equal(invalidRotationResponse.statusCode, 400);
+        assert.equal(
+            JSON.parse(invalidRotationResponse.payload).error.messageKey,
+            "adapter.logging.file.error.rotate_max_bytes",
+        );
+        assert.equal(
+            JSON.parse(invalidRotationResponse.payload).error.field,
+            "rotateMaxBytes",
+        );
+    } finally {
+        if (previousConsoleLevel === undefined) delete process.env.LOG_LEVEL;
+        else process.env.LOG_LEVEL = previousConsoleLevel;
+        if (previousFileLevel === undefined) delete process.env.LOG_FILE_LEVEL;
+        else process.env.LOG_FILE_LEVEL = previousFileLevel;
+    }
+});
+
+test("logging adapter overrides survive a gateway restart", async () => {
+    const dbExecutor = new PreferenceDb();
+    const firstContext = await makeContext(dbExecutor);
+    await bootstrap(firstContext as any);
+    const adapterHandler = firstContext.routeRegistry.getHandlers()[1];
+    const token = issueAccessToken("admin-test", "admin", 300);
+    const updateRequest = new RequestRecorder(
+        "PUT",
+        token,
+        JSON.stringify({ level: "error", format: "json" }),
+    );
+    const updateResponse = new ResponseRecorder();
+    await adapterHandler(
+        updateRequest as any,
+        updateResponse as any,
+        new URL(
+            "/api/v1/gateways/logging/adapters/console/config",
+            "http://localhost",
+        ),
+    );
+    assert.equal(updateResponse.statusCode, 200);
+
+    const restartedContext = await makeContext(dbExecutor);
+    await bootstrap(restartedContext as any);
+    const restartedLogger =
+        restartedContext.capabilities.get<Logger>("logging:logger");
+    assert.equal(restartedLogger?.getConfiguration().consoleLevel, "error");
+    assert.equal(restartedLogger?.getConfiguration().consoleFormat, "json");
+
+    const resetRequest = new RequestRecorder("DELETE", token);
+    const resetResponse = new ResponseRecorder();
+    await restartedContext.routeRegistry.getHandlers()[1](
+        resetRequest as any,
+        resetResponse as any,
+        new URL(
+            "/api/v1/gateways/logging/adapters/console/config",
+            "http://localhost",
+        ),
+    );
+    assert.equal(resetResponse.statusCode, 204);
+    assert.equal(dbExecutor.preferences.has("console"), false);
+
+    const resetContext = await makeContext(dbExecutor);
+    await bootstrap(resetContext as any);
+    const resetLogger = resetContext.capabilities.get<Logger>("logging:logger");
+    const expectedLevel = ["debug", "info", "warn", "error"].includes(
+        process.env.LOG_LEVEL ?? "",
+    )
+        ? process.env.LOG_LEVEL
+        : "info";
+    const expectedFormat =
+        process.env.LOG_FORMAT === "json" ? "json" : "pretty";
+    assert.equal(resetLogger?.getConfiguration().consoleLevel, expectedLevel);
+    assert.equal(resetLogger?.getConfiguration().consoleFormat, expectedFormat);
 });
 
 test("logging stream route requires admin auth", async () => {

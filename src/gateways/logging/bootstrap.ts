@@ -1,18 +1,26 @@
 import { open, readFile, stat } from "node:fs/promises";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { Logger } from "./logger.js";
-import { type BootstrapLog, type GatewayBootstrapContext } from "../shared.js";
+import {
+    readJson,
+    type BootstrapLog,
+    type GatewayBootstrapContext,
+} from "../shared.js";
 import {
     resolveRouteContext,
     type RouteContext,
 } from "../../api/reuse/route-context.js";
+import { loadAdapterAdminCatalog } from "../reuse/adapter-admin-catalog.js";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
 import {
-    createLockedAdapterAdminRoutes,
-    loadAdapterAdminCatalog,
-} from "../reuse/adapter-admin-catalog.js";
+    LoggingPreferenceStore,
+    type LoggingPreferenceValue,
+} from "./preference-store.js";
 
-type LogLevel = "debug" | "info" | "warn" | "error";
+export const SUPPORTED_LOG_LEVELS = ["debug", "info", "warn", "error"] as const;
+type LogLevel = (typeof SUPPORTED_LOG_LEVELS)[number];
 
 const ALLOWED_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
 const DEFAULT_ROTATE_MAX_BYTES = 10 * 1024 * 1024;
@@ -136,7 +144,7 @@ async function readFileChunk(
 }
 
 function createLoggingRoutes(
-    filePath: string,
+    getFilePath: () => string,
     log?: BootstrapLog,
     routeContext?: RouteContext,
 ) {
@@ -152,6 +160,7 @@ function createLoggingRoutes(
 
         const claims = ctx.requireAuth(req, res, "admin");
         if (!claims) return true;
+        const filePath = getFilePath();
 
         const severityThreshold = parseSeverityThreshold(
             url.searchParams.get("severity"),
@@ -308,6 +317,190 @@ function createLoggingRoutes(
     };
 }
 
+type ConfigValue = LoggingPreferenceValue;
+type LoggingAdapterContract = {
+    id: string;
+    name: string;
+    stringsBaseUrl: string;
+    schema: Array<{
+        key: string;
+        labelKey: string;
+        type: "select" | "text" | "number" | "boolean";
+        options?: string[];
+    }>;
+    validateConfig(config: Record<string, unknown>): {
+        field: string;
+        messageKey: string;
+    } | null;
+    toLoggerConfiguration(
+        config: Record<string, unknown>,
+    ): Record<string, unknown>;
+};
+
+async function loadLoggingAdapterContracts(
+    adaptersRoot: string,
+): Promise<LoggingAdapterContract[]> {
+    const manifests = await loadAdapterAdminCatalog(adaptersRoot, "logging");
+    return Promise.all(
+        manifests.map(async (manifest) => {
+            const moduleUrl = pathToFileURL(
+                path.join(adaptersRoot, "logging", manifest.id, "index.ts"),
+            ).href;
+            const adapterModule = (await import(moduleUrl)) as {
+                createLoggingAdapter(
+                    levels: readonly string[],
+                ): LoggingAdapterContract;
+            };
+            return {
+                ...manifest,
+                ...adapterModule.createLoggingAdapter(SUPPORTED_LOG_LEVELS),
+            };
+        }),
+    );
+}
+
+function createLoggingAdapterRoutes(
+    adapters: LoggingAdapterContract[],
+    logger: Logger,
+    environmentConfig: Record<string, Record<string, ConfigValue>>,
+    preferenceStore: LoggingPreferenceStore,
+    persistedOverrides: Map<string, Record<string, ConfigValue>>,
+    log?: BootstrapLog,
+    routeContext?: RouteContext,
+) {
+    const ctx = resolveRouteContext(routeContext);
+    const base = "/api/v1/gateways/logging/adapters";
+    const overrides = persistedOverrides;
+
+    const applyConfiguration = () => {
+        logger.configure(
+            Object.assign(
+                {},
+                ...adapters.map((adapter) => {
+                    const effectiveConfiguration = {
+                        ...(environmentConfig[adapter.id] ?? {}),
+                        ...(overrides.get(adapter.id) ?? {}),
+                    };
+                    return adapter.toLoggerConfiguration(
+                        effectiveConfiguration,
+                    );
+                }),
+            ),
+        );
+    };
+    applyConfiguration();
+
+    return async (req: IncomingMessage, res: ServerResponse, url: URL) => {
+        if (!url.pathname.startsWith(base)) return false;
+        const claims = ctx.requireAuth(req, res, "admin");
+        if (!claims) return true;
+        if (url.pathname === base && req.method === "GET") {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: adapters.map((adapter) => ({
+                        ...adapter,
+                        active: true,
+                        locked: true,
+                        config: overrides.get(adapter.id) ?? {},
+                        controls: {
+                            config: `${base}/${adapter.id}/config`,
+                            enable: `${base}/${adapter.id}/enable`,
+                            disable: `${base}/${adapter.id}/disable`,
+                        },
+                    })),
+                }),
+            );
+            return true;
+        }
+        const toggleMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
+        );
+        if (
+            toggleMatch &&
+            req.method === "POST" &&
+            adapters.some(({ id }) => id === toggleMatch[1])
+        ) {
+            res.writeHead(409, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "adapter_locked",
+                        message: "Adapter is managed by its gateway",
+                    },
+                }),
+            );
+            return true;
+        }
+        const match = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/config$`),
+        );
+        const adapter = adapters.find(({ id }) => id === match?.[1]);
+        if (!adapter) return false;
+        if (req.method === "GET") {
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    data: overrides.get(adapter.id) ?? {},
+                    envValues: environmentConfig[adapter.id],
+                    schema: adapter.schema,
+                    supportsReset: true,
+                }),
+            );
+            return true;
+        }
+        if (req.method === "DELETE") {
+            await preferenceStore.delete(adapter.id);
+            overrides.delete(adapter.id);
+            applyConfiguration();
+            log?.("info", "Reset logging adapter configuration.", {
+                component: "logging-gateway",
+                operation: "adapter_config_reset",
+                accountId: claims.sub,
+                adapterId: adapter.id,
+            });
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
+        if (req.method === "PUT") {
+            const body = (await readJson(req)) as Record<string, unknown>;
+            const allowedKeys = new Set(adapter.schema.map(({ key }) => key));
+            const config = Object.fromEntries(
+                Object.entries(body).filter(([key]) => allowedKeys.has(key)),
+            ) as Record<string, ConfigValue>;
+            const validationError = adapter.validateConfig(config);
+            if (validationError) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_config",
+                            field: validationError.field,
+                            messageKey: validationError.messageKey,
+                        },
+                    }),
+                );
+                return true;
+            }
+            await preferenceStore.set(adapter.id, config);
+            overrides.set(adapter.id, config);
+            applyConfiguration();
+            log?.("info", "Updated logging adapter configuration.", {
+                component: "logging-gateway",
+                operation: "adapter_config_update",
+                accountId: claims.sub,
+                adapterId: adapter.id,
+                changedFields: Object.keys(config).sort(),
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
+            return true;
+        }
+        return false;
+    };
+}
+
 /**
  * Standard gateway bootstrap entry point for structured application logging.
  * Reads the file:append capability contributed by the files gateway and passes
@@ -323,17 +516,23 @@ function createLoggingRoutes(
  *                     gateway initializes
  *
  * This gateway is marked required: true in its manifest so core refuses to
- * start if it fails to initialize. It declares a dependency on the files
- * gateway (requires: ["files"] in manifest.json) so the files gateway always
- * bootstraps first.
+ * start if it fails to initialize. Its manifest declares database and file
+ * gateway dependencies so persistent preferences and file output are available
+ * before logging bootstraps.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const log = ctx.log;
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const level =
-        (process.env.LOG_LEVEL as
-            "debug" | "info" | "warn" | "error" | undefined) ?? "info";
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
+    const preferenceStore = new LoggingPreferenceStore(dbExecutor);
+    await preferenceStore.ensureSchema();
+    const level = ALLOWED_LEVELS.has(process.env.LOG_LEVEL as LogLevel)
+        ? (process.env.LOG_LEVEL as LogLevel)
+        : "info";
+    const fileLevel = ALLOWED_LEVELS.has(process.env.LOG_FILE_LEVEL as LogLevel)
+        ? (process.env.LOG_FILE_LEVEL as LogLevel)
+        : "debug";
     const filePath = process.env.LOG_FILE ?? "/app/logs/app.log";
     const consoleFormat = process.env.LOG_FORMAT === "json" ? "json" : "pretty";
     const parsedRotateMaxBytes = Number.parseInt(
@@ -361,33 +560,68 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "file:append",
         );
 
-    const logger = new Logger(level, filePath, fileAppend, consoleFormat, {
-        maxBytes: rotateMaxBytes,
-        maxFiles: rotateMaxFiles,
-        compressRotated: rotateCompress,
-    });
+    const logger = new Logger(
+        level,
+        filePath,
+        fileAppend,
+        consoleFormat,
+        {
+            maxBytes: rotateMaxBytes,
+            maxFiles: rotateMaxFiles,
+            compressRotated: rotateCompress,
+        },
+        fileLevel,
+    );
+    const runtimeLog: BootstrapLog = (logLevel, message, meta) => {
+        void logger.log(logLevel, message, meta);
+    };
 
     ctx.capabilities.contribute("logging:logger", logger);
-    ctx.capabilities.contribute(
-        "logging:log",
-        (
-            logLevel: "debug" | "info" | "warn" | "error",
-            message: string,
-            meta?: Record<string, unknown>,
-        ) => {
-            void logger.log(logLevel, message, meta);
-        },
-    );
+    ctx.capabilities.contribute("logging:log", runtimeLog);
     ctx.routeRegistry.register(
-        createLoggingRoutes(filePath, log, routeContext),
+        createLoggingRoutes(
+            () => logger.getConfiguration().filePath,
+            runtimeLog,
+            routeContext,
+        ),
         "logging",
     );
-    const adapterCatalog = await loadAdapterAdminCatalog(
-        ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters"),
-        "logging",
-    );
+    const adaptersRoot =
+        ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
+    const adapterCatalog = await loadLoggingAdapterContracts(adaptersRoot);
+    const storedPreferences = await preferenceStore.getAll();
+    const persistedOverrides = new Map<string, Record<string, ConfigValue>>();
+    for (const adapter of adapterCatalog) {
+        const storedConfig = storedPreferences.get(adapter.id);
+        if (storedConfig && !adapter.validateConfig(storedConfig)) {
+            persistedOverrides.set(adapter.id, storedConfig);
+        }
+    }
+    for (const adapter of adapterCatalog) {
+        ctx.uiRegistry?.registerAdapterStaticDir(
+            "logging",
+            adapter.id,
+            path.join(adaptersRoot, "logging", adapter.id),
+        );
+    }
     ctx.routeRegistry.register(
-        createLockedAdapterAdminRoutes("logging", adapterCatalog, routeContext),
+        createLoggingAdapterRoutes(
+            adapterCatalog,
+            logger,
+            {
+                console: { level, format: consoleFormat },
+                file: {
+                    level: fileLevel,
+                    rotateMaxBytes,
+                    rotateMaxFiles,
+                    rotateCompress,
+                },
+            },
+            preferenceStore,
+            persistedOverrides,
+            runtimeLog,
+            routeContext,
+        ),
         "logging",
     );
 
@@ -409,7 +643,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.3",
+        version: "1.5.11",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",
@@ -422,6 +656,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         operation: "bootstrap",
         filePath,
         level,
+        fileLevel,
         consoleFormat,
         rotateMaxBytes,
         rotateMaxFiles,

@@ -162,7 +162,7 @@ test("component detail arrows use an independent details hitbox", () => {
     assert.match(source, /adapter:\$\{adapterGatewayId\}:\$\{adapterId\}/);
 });
 
-test("configured adapter rows use the component click behavior", () => {
+test("configured adapter rows use the component click behavior even when locked", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/administration/index.js"),
         "utf8",
@@ -171,9 +171,25 @@ test("configured adapter rows use the component click behavior", () => {
         source,
         /Array\.isArray\(adapter\?\.schema\) && adapter\.schema\.length > 0/,
     );
-    assert.match(source, /adapter\.locked \|\| !adapterHasConfig\(adapter\)/);
+    assert.match(source, /if \(!adapterHasConfig\(adapter\)\) return/);
+    assert.doesNotMatch(
+        source,
+        /adapter\.locked \|\| !adapterHasConfig\(adapter\)/,
+    );
     assert.match(source, /e\.target\.closest\?\.\("\[data-details-toggle\]"\)/);
     assert.match(source, /row\.querySelector\("\.switch--inline"\)/);
     assert.match(source, /row\.addEventListener\("click", handleOpen\)/);
     assert.match(source, /row\.addEventListener\("keydown"/);
+});
+
+test("adapter configuration popups load adapter-owned translations", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /extendI18n\(i18n, adapterOverride\?\.stringsBaseUrl\)/,
+    );
+    assert.match(source, /i18n: adapterI18n/);
 });

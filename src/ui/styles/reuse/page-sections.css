@@ -125,10 +125,9 @@
 }
 
 .provider-field-env-warning {
-    display: block;
-    color: var(--warning);
-    font-size: 0.8em;
-    margin-top: 2px;
+    color: var(--color-warning-outline-text, #f59e0b);
+    font-size: 0.9em;
+    line-height: 1;
 }
 
 .provider-auth-fields {

@@ -61,6 +61,40 @@ test("adapter config form updates required title markers when requirements chang
     );
 });
 
+test("adapter environment warnings render beside headings in orange", () => {
+    const source = read("src/ui/app/administration/adapter-config-popup.js");
+    const styles = read("src/ui/styles/reuse/page-sections.css");
+    const englishStrings = read("src/ui/languages/en/strings.xml");
+
+    assert.match(
+        source,
+        /provider-field-title[^`]*\$\{requiredMarker\}\$\{conflictWarning\}<\/span>\$\{inputHtml\}/,
+    );
+    assert.match(
+        styles,
+        /\.provider-field-env-warning\s*\{[^}]*color: var\(--color-warning-outline-text, #f59e0b\)/,
+    );
+    assert.match(
+        englishStrings,
+        /name="ui\.app\.admin\.notif\.field_env_conflict">Overriding env variable</,
+    );
+});
+
+test("adapter reset stages environment values until settings are saved", () => {
+    const source = read("src/ui/app/administration/adapter-config-popup.js");
+
+    assert.match(source, /loadConfigIntoForm\(popupFormEl, envData\)/);
+    assert.match(source, /resetPending = true/);
+    assert.match(
+        source,
+        /resetPending\s*\? \{ method: "DELETE" \}\s*: \{\s*method: "PUT"/,
+    );
+    assert.doesNotMatch(
+        source,
+        /if \(action === "reset"\) \{[\s\S]{0,300}apiFetch\(configUrl/,
+    );
+});
+
 test("register page uses form builder instead of hardcoded maxlength for username", () => {
     const source = read("src/gateways/auth/ui/register.js");
     assert.match(

@@ -172,11 +172,10 @@ export class GatewayService {
      * directory's `manifest.json` to determine which gateways are required, then
      * dynamically imports and calls each gateway's `bootstrap(ctx)` function.
      *
-     * The files gateway is bootstrapped first so its `file:append` capability
-     * is available when the logging gateway initializes. The logging gateway is
-     * bootstrapped second so that its contributed `logging:log` capability
-     * becomes available to all subsequent gateways via `ctx.log`. The db
-     * gateway is bootstrapped third as many other gateways depend on it.
+     * Gateways are bootstrapped after every dependency declared in `requires`.
+     * Among otherwise-ready gateways, files and logging retain priority so the
+     * configured logger becomes available to later gateways as early as their
+     * dependency graph permits.
      *
      * Returns the list of gateway IDs declared as `required: true` in their
      * manifests. The caller should verify all returned IDs appear in the gateway
@@ -239,8 +238,22 @@ export class GatewayService {
             string,
             { required: boolean; requires: string[] }
         >();
-
-        entries.sort((a, b) => {
+        const directoryManifests = new Map<string, GatewayDirectoryManifest>();
+        for (const entry of entries) {
+            try {
+                const raw = await readFile(
+                    path.join(gatewaysRoot, entry, "manifest.json"),
+                    "utf8",
+                );
+                directoryManifests.set(
+                    entry,
+                    JSON.parse(raw) as GatewayDirectoryManifest,
+                );
+            } catch {
+                directoryManifests.set(entry, {});
+            }
+        }
+        const compareBootstrapPriority = (a: string, b: string) => {
             if (a === "files") return -1;
             if (b === "files") return 1;
             if (a === "logging") return -1;
@@ -248,21 +261,43 @@ export class GatewayService {
             if (a === "db") return -1;
             if (b === "db") return 1;
             return a.localeCompare(b);
-        });
-
-        for (const entry of entries) {
-            const gatewayDir = path.join(gatewaysRoot, entry);
-
-            let manifest: GatewayDirectoryManifest = {};
-            try {
-                const raw = await readFile(
-                    path.join(gatewayDir, "manifest.json"),
-                    "utf8",
+        };
+        const directoryByGatewayId = new Map(
+            entries.map((entry) => [
+                directoryManifests.get(entry)?.id ?? entry,
+                entry,
+            ]),
+        );
+        const pendingEntries = new Set(entries);
+        const orderedEntries: string[] = [];
+        while (pendingEntries.size > 0) {
+            const readyEntries = [...pendingEntries]
+                .filter((entry) =>
+                    (directoryManifests.get(entry)?.requires ?? []).every(
+                        (dependencyId) => {
+                            const dependencyDirectory =
+                                directoryByGatewayId.get(dependencyId);
+                            return (
+                                dependencyDirectory === undefined ||
+                                !pendingEntries.has(dependencyDirectory)
+                            );
+                        },
+                    ),
+                )
+                .sort(compareBootstrapPriority);
+            if (readyEntries.length === 0) {
+                throw new Error(
+                    `Gateway dependency cycle detected: ${[...pendingEntries].sort().join(", ")}`,
                 );
-                manifest = JSON.parse(raw) as GatewayDirectoryManifest;
-            } catch {
-                // No manifest — gateway is treated as optional with no dependencies
             }
+            const nextEntry = readyEntries[0];
+            pendingEntries.delete(nextEntry);
+            orderedEntries.push(nextEntry);
+        }
+
+        for (const entry of orderedEntries) {
+            const gatewayDir = path.join(gatewaysRoot, entry);
+            const manifest = directoryManifests.get(entry) ?? {};
 
             const gatewayId = manifest.id ?? entry;
             if (manifest.required === true) {
@@ -320,7 +355,7 @@ export class GatewayService {
 
             // After the logging gateway runs, pull the contributed log function
             // into the context so all subsequent gateways can use it.
-            if (gatewayId === "logging" && !ctx.log) {
+            if (gatewayId === "logging") {
                 const contributed =
                     ctx.capabilities.get<BootstrapLog>("logging:log");
                 if (contributed) {

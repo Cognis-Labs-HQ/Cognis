@@ -139,6 +139,37 @@ test("Logger filters console by LOG_LEVEL while persisting all levels to file", 
     assert.equal(debugEntry.message, "Background detail.");
 });
 
+test("Logger applies independent console and file severity thresholds", async () => {
+    const stdoutWrites: string[] = [];
+    const fileWrites: string[] = [];
+    const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+        stdoutWrites.push(String(chunk));
+        return true;
+    }) as typeof process.stdout.write;
+
+    try {
+        const logger = new Logger(
+            "debug",
+            path.join(tmpdir(), "cognis-logger-levels-test.log"),
+            async (_filePath, content) => {
+                fileWrites.push(content);
+            },
+            "pretty",
+            undefined,
+            "error",
+        );
+        await logger.debug("Console detail only.");
+        await logger.error("Console and file error.");
+    } finally {
+        process.stdout.write = originalStdoutWrite;
+    }
+
+    assert.match(stdoutWrites.join(""), /DEBUG\s+Console detail only\./);
+    assert.equal(fileWrites.length, 1);
+    assert.equal(JSON.parse(fileWrites[0]).level, "error");
+});
+
 test("Logger rotates and compresses old log files", async () => {
     const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logger-"));
     const logPath = path.join(tempRoot, "app.log");
