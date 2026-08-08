@@ -13,6 +13,11 @@ import {
     type RouteContext,
 } from "../../api/reuse/route-context.js";
 import { loadAdapterAdminCatalog } from "../reuse/adapter-admin-catalog.js";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
+import {
+    LoggingPreferenceStore,
+    type LoggingPreferenceValue,
+} from "./preference-store.js";
 
 export const SUPPORTED_LOG_LEVELS = ["debug", "info", "warn", "error"] as const;
 type LogLevel = (typeof SUPPORTED_LOG_LEVELS)[number];
@@ -312,7 +317,7 @@ function createLoggingRoutes(
     };
 }
 
-type ConfigValue = string | number | boolean;
+type ConfigValue = LoggingPreferenceValue;
 type LoggingAdapterContract = {
     id: "console" | "file";
     name: string;
@@ -358,11 +363,13 @@ function createLoggingAdapterRoutes(
     adapters: LoggingAdapterContract[],
     logger: Logger,
     environmentConfig: Record<string, Record<string, ConfigValue>>,
+    preferenceStore: LoggingPreferenceStore,
+    persistedOverrides: Map<string, Record<string, ConfigValue>>,
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
     const base = "/api/v1/gateways/logging/adapters";
-    const overrides = new Map<string, Record<string, ConfigValue>>();
+    const overrides = persistedOverrides;
 
     const applyConfiguration = () => {
         const consoleConfig = {
@@ -383,6 +390,7 @@ function createLoggingAdapterRoutes(
             ),
         );
     };
+    applyConfiguration();
 
     return async (req: IncomingMessage, res: ServerResponse, url: URL) => {
         if (!url.pathname.startsWith(base)) return false;
@@ -443,6 +451,7 @@ function createLoggingAdapterRoutes(
             return true;
         }
         if (req.method === "DELETE") {
+            await preferenceStore.delete(adapter.id);
             overrides.delete(adapter.id);
             applyConfiguration();
             res.writeHead(204);
@@ -469,6 +478,7 @@ function createLoggingAdapterRoutes(
                 );
                 return true;
             }
+            await preferenceStore.set(adapter.id, config);
             overrides.set(adapter.id, config);
             applyConfiguration();
             res.writeHead(200, { "content-type": "application/json" });
@@ -494,14 +504,17 @@ function createLoggingAdapterRoutes(
  *                     gateway initializes
  *
  * This gateway is marked required: true in its manifest so core refuses to
- * start if it fails to initialize. It declares a dependency on the files
- * gateway (requires: ["files"] in manifest.json) so the files gateway always
- * bootstraps first.
+ * start if it fails to initialize. Its manifest declares database and file
+ * gateway dependencies so persistent preferences and file output are available
+ * before logging bootstraps.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const log = ctx.log;
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
+    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
+    const preferenceStore = new LoggingPreferenceStore(dbExecutor);
+    await preferenceStore.ensureSchema();
     const level = ALLOWED_LEVELS.has(process.env.LOG_LEVEL as LogLevel)
         ? (process.env.LOG_LEVEL as LogLevel)
         : "info";
@@ -570,6 +583,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const adaptersRoot =
         ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
     const adapterCatalog = await loadLoggingAdapterContracts(adaptersRoot);
+    const storedPreferences = await preferenceStore.getAll();
+    const persistedOverrides = new Map<string, Record<string, ConfigValue>>();
+    for (const adapter of adapterCatalog) {
+        const storedConfig = storedPreferences.get(adapter.id);
+        if (storedConfig && !adapter.validateConfig(storedConfig)) {
+            persistedOverrides.set(adapter.id, storedConfig);
+        }
+    }
     for (const adapter of adapterCatalog) {
         ctx.uiRegistry?.registerAdapterStaticDir(
             "logging",
@@ -590,6 +611,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     rotateCompress,
                 },
             },
+            preferenceStore,
+            persistedOverrides,
             routeContext,
         ),
         "logging",
@@ -613,7 +636,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.7",
+        version: "1.5.9",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

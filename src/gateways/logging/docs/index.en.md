@@ -45,7 +45,7 @@ export class Logger {
 }
 ```
 
-Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (40). `LOG_LEVEL` filters stdout/stderr and `LOG_FILE_LEVEL` independently filters persistent file writes. Administrators can override either adapter configuration at runtime and reset it to the environment values.
+Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (40). `LOG_LEVEL` filters stdout/stderr and `LOG_FILE_LEVEL` independently filters persistent file writes. Administrators can override either adapter configuration at runtime and reset it to the environment values. Overrides are stored in the database and restored when the gateway starts, so they survive container restarts.
 
 Persistent log lines remain JSON objects:
 

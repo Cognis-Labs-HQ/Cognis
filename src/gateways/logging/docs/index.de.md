@@ -36,7 +36,7 @@ export class Logger {
 }
 ```
 
-Standardmäßig schreibt der Logger Konsolenausgaben und speichert weiterhin JSON-Zeilen in der persistenten Protokolldatei. `LOG_LEVEL` filtert stdout/stderr und `LOG_FILE_LEVEL` filtert unabhängig die persistenten Dateieinträge. Administratoren können beide Adapterkonfigurationen zur Laufzeit überschreiben und auf die Umgebungswerte zurücksetzen.
+Standardmäßig schreibt der Logger Konsolenausgaben und speichert weiterhin JSON-Zeilen in der persistenten Protokolldatei. `LOG_LEVEL` filtert stdout/stderr und `LOG_FILE_LEVEL` filtert unabhängig die persistenten Dateieinträge. Administratoren können beide Adapterkonfigurationen zur Laufzeit überschreiben und auf die Umgebungswerte zurücksetzen. Überschreibungen werden in der Datenbank gespeichert und beim Start des Gateways wiederhergestellt, sodass sie Container-Neustarts überstehen.
 
 Jede persistente Protokollzeile ist ein JSON-Objekt:
 

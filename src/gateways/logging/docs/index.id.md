@@ -35,7 +35,7 @@ export class Logger {
 }
 ```
 
-Secara default logger menulis keluaran konsol dan file log persisten tetap menyimpan baris JSON. `LOG_LEVEL` memfilter stdout/stderr dan `LOG_FILE_LEVEL` secara independen memfilter penulisan file persisten. Administrator dapat mengganti konfigurasi kedua adapter saat berjalan dan meresetnya ke nilai lingkungan.
+Secara default logger menulis keluaran konsol dan file log persisten tetap menyimpan baris JSON. `LOG_LEVEL` memfilter stdout/stderr dan `LOG_FILE_LEVEL` secara independen memfilter penulisan file persisten. Administrator dapat mengganti konfigurasi kedua adapter saat berjalan dan meresetnya ke nilai lingkungan. Penggantian disimpan dalam basis data dan dipulihkan saat gateway dimulai, sehingga tetap berlaku setelah kontainer dimulai ulang.
 
 Setiap baris log persisten adalah objek JSON:
 

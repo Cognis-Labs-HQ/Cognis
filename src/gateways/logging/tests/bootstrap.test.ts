@@ -10,6 +10,43 @@ import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 import type { Logger } from "../logger.js";
+import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { StructuredDbCommand } from "../../db/reuse/db-command.js";
+
+class PreferenceDb implements DbExecutor {
+    readonly preferences = new Map<string, string>();
+
+    async ensureTable() {}
+
+    async executeCommand(command: StructuredDbCommand) {
+        if (command.option === "SELECT") {
+            return {
+                rows: [...this.preferences].map(
+                    ([adapter_id, config_json]) => ({
+                        adapter_id,
+                        config_json,
+                    }),
+                ),
+            };
+        }
+        if (command.option === "INSERT") {
+            this.preferences.set(
+                String(command.values.adapter_id),
+                String(command.values.config_json),
+            );
+        }
+        if (command.option === "DELETE") {
+            this.preferences.delete(String(command.where?.[0]?.value));
+        }
+        return { rowCount: 1 };
+    }
+
+    async transaction<Result>(
+        callback: (executor: DbExecutor) => Promise<Result>,
+    ): Promise<Result> {
+        return callback(this);
+    }
+}
 
 class ResponseRecorder extends EventEmitter {
     statusCode = 0;
@@ -53,11 +90,13 @@ class RequestRecorder extends EventEmitter {
     }
 }
 
-async function makeContext() {
+async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("db:executor", dbExecutor);
     return {
         gatewayRegistry: new GatewayRegistry(),
         routeRegistry: new RouteRegistry(),
-        capabilities: new CapabilityStore(),
+        capabilities,
         uiRegistry: new UIRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
     };
@@ -241,6 +280,62 @@ test("logging adapter level overrides reconfigure the running logger immediately
         if (previousFileLevel === undefined) delete process.env.LOG_FILE_LEVEL;
         else process.env.LOG_FILE_LEVEL = previousFileLevel;
     }
+});
+
+test("logging adapter overrides survive a gateway restart", async () => {
+    const dbExecutor = new PreferenceDb();
+    const firstContext = await makeContext(dbExecutor);
+    await bootstrap(firstContext as any);
+    const adapterHandler = firstContext.routeRegistry.getHandlers()[1];
+    const token = issueAccessToken("admin-test", "admin", 300);
+    const updateRequest = new RequestRecorder(
+        "PUT",
+        token,
+        JSON.stringify({ level: "error", format: "json" }),
+    );
+    const updateResponse = new ResponseRecorder();
+    await adapterHandler(
+        updateRequest as any,
+        updateResponse as any,
+        new URL(
+            "/api/v1/gateways/logging/adapters/console/config",
+            "http://localhost",
+        ),
+    );
+    assert.equal(updateResponse.statusCode, 200);
+
+    const restartedContext = await makeContext(dbExecutor);
+    await bootstrap(restartedContext as any);
+    const restartedLogger =
+        restartedContext.capabilities.get<Logger>("logging:logger");
+    assert.equal(restartedLogger?.getConfiguration().consoleLevel, "error");
+    assert.equal(restartedLogger?.getConfiguration().consoleFormat, "json");
+
+    const resetRequest = new RequestRecorder("DELETE", token);
+    const resetResponse = new ResponseRecorder();
+    await restartedContext.routeRegistry.getHandlers()[1](
+        resetRequest as any,
+        resetResponse as any,
+        new URL(
+            "/api/v1/gateways/logging/adapters/console/config",
+            "http://localhost",
+        ),
+    );
+    assert.equal(resetResponse.statusCode, 204);
+    assert.equal(dbExecutor.preferences.has("console"), false);
+
+    const resetContext = await makeContext(dbExecutor);
+    await bootstrap(resetContext as any);
+    const resetLogger = resetContext.capabilities.get<Logger>("logging:logger");
+    const expectedLevel = ["debug", "info", "warn", "error"].includes(
+        process.env.LOG_LEVEL ?? "",
+    )
+        ? process.env.LOG_LEVEL
+        : "info";
+    const expectedFormat =
+        process.env.LOG_FORMAT === "json" ? "json" : "pretty";
+    assert.equal(resetLogger?.getConfiguration().consoleLevel, expectedLevel);
+    assert.equal(resetLogger?.getConfiguration().consoleFormat, expectedFormat);
 });
 
 test("logging stream route requires admin auth", async () => {
