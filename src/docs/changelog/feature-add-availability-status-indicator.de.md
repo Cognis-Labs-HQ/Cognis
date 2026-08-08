@@ -43,3 +43,7 @@ Beim Aktualisieren des Status eines bestehenden Kalendertermins wird der Rückfa
 ## Kalenderstile werden nur bei Bedarf geladen
 
 Kalenderstatus-Stile werden nun über das Stylesheet der Kalenderseite oder durch eine ausdrückliche Dashboard-Anfrage geladen. Nicht verwandte Seiten wie die Administration fordern über den globalen Kalender-Navigationsclient keine Kalenderstatus-CSS mehr an.
+
+## Statushintergründe bleiben beim Darüberfahren erhalten
+
+Beim Darüberfahren über Kalenderterminkarten wird der Hintergrund für „Beschäftigt“, „Frei“ oder „Vorläufig“ nicht mehr ersetzt. Bei bevorstehenden Terminen bleibt der Statuseffekt innerhalb der abgerundeten Terminkarte, während die Rückmeldung beim Darüberfahren auf deren Rahmen beschränkt ist.

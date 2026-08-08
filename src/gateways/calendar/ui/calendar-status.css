@@ -1,4 +1,5 @@
-.calendar-view-canvas .calendar-event-status--busy {
+.calendar-view-canvas .calendar-event-status--busy,
+.app-shell .calendar-view-canvas .calendar-event-status--busy:hover {
     background: color-mix(
         in srgb,
         var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
@@ -6,12 +7,14 @@
     );
 }
 
-.calendar-view-canvas .calendar-event-status--free {
+.calendar-view-canvas .calendar-event-status--free,
+.app-shell .calendar-view-canvas .calendar-event-status--free:hover {
     background: transparent;
     opacity: 0.78;
 }
 
-.calendar-view-canvas .calendar-event-status--tentative {
+.calendar-view-canvas .calendar-event-status--tentative,
+.app-shell .calendar-view-canvas .calendar-event-status--tentative:hover {
     background:
         repeating-linear-gradient(
             135deg,
@@ -62,6 +65,15 @@
 .calendar-events-list .calendar-event-status--free,
 .dashboard-upcoming-event-link.calendar-event-status--free {
     background: transparent;
+}
+
+.app-shell .calendar-upcoming-item > .calendar-upcoming-button:hover {
+    background: transparent;
+    transform: none;
+}
+
+.calendar-upcoming-item:has(> .calendar-upcoming-button:hover) {
+    border-color: var(--accent-2, var(--accent));
 }
 
 .dashboard-upcoming-event-link.calendar-event-status {

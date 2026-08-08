@@ -43,3 +43,7 @@ Saat memperbarui status acara Kalender yang ada, nilai cadangan kini diambil dar
 ## Gaya Kalender hanya dimuat saat diperlukan
 
 Gaya status Kalender kini dimuat melalui lembar gaya halaman Kalender atau permintaan Dasbor yang eksplisit. Halaman yang tidak terkait seperti Administrasi tidak lagi meminta CSS status Kalender melalui klien navigasi Kalender global.
+
+## Latar status tetap saat diarahkan
+
+Mengarahkan penunjuk ke kartu acara Kalender tidak lagi mengganti latar Sibuk, Luang, atau Tentatif. Acara Mendatang mempertahankan efek status di dalam kartu acara yang membulat, sedangkan umpan balik saat diarahkan dibatasi pada bingkainya.

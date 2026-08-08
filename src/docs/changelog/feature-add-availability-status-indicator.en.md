@@ -43,3 +43,7 @@ Updating an existing Calendar event's status now resolves the fallback from that
 ## Calendar styles load only where needed
 
 Calendar status styles now load through the Calendar page stylesheet or an explicit Dashboard request. Unrelated pages such as Administration no longer request Calendar status CSS through the global Calendar navigation client.
+
+## Status backgrounds persist on hover
+
+Hovering Calendar event cards no longer replaces their busy, free, or tentative background. Upcoming Events keep the status effect inside the rounded event card while hover feedback is limited to its border.

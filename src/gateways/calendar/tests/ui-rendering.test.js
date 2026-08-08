@@ -261,13 +261,29 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     }
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-view-canvas \.calendar-event-status--free\s*\{[\s\S]*background:\s*transparent;/,
+        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*background:\s*transparent;/,
     );
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-view-canvas \.calendar-event-status--tentative\s*\{[\s\S]*repeating-linear-gradient\(/,
+        /calendar-view-canvas \.calendar-event-status--tentative,[\s\S]*repeating-linear-gradient\(/,
     );
     assert.doesNotMatch(STATUS_CSS_SOURCE, /border-style:\s*dashed/);
+    for (const status of ["busy", "free", "tentative"]) {
+        assert.match(
+            STATUS_CSS_SOURCE,
+            new RegExp(
+                `app-shell \\.calendar-view-canvas \\.calendar-event-status--${status}:hover`,
+            ),
+        );
+    }
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-upcoming-item > \.calendar-upcoming-button:hover\s*\{[\s\S]*background:\s*transparent;[\s\S]*transform:\s*none;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-upcoming-item:has\(> \.calendar-upcoming-button:hover\)\s*\{[\s\S]*border-color:/,
+    );
 });
 
 test("calendar upcoming events moved to toolbar", () => {
