@@ -11,15 +11,13 @@ stylesheet.href = "/static/gateways/calendar/ui/status-prefs.css";
 document.head.append(stylesheet);
 
 export function createSettingsSection({ i18n, root, markDirty }) {
-    let savedPreference = false;
-    let pendingPreference = false;
-    const preferenceId = "calendar-prevent-status-updates";
+    let savedAllowed = true;
+    let pendingAllowed = true;
+    const preferenceId = "calendar-allow-status-updates";
 
     function updateSelection() {
-        const selectedValue = String(pendingPreference);
-        root.querySelectorAll(`[name="${preferenceId}"]`).forEach((input) => {
-            input.checked = input.value === selectedValue;
-        });
+        const input = root.querySelector(`#${preferenceId}`);
+        if (input) input.checked = pendingAllowed;
     }
 
     return {
@@ -27,20 +25,16 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         targetSectionId: "general",
         label: i18n.t("gateway.calendar.status_updates_title"),
         renderContent: () => `
-          <fieldset class="settings-radio-group">
-            <legend>${escapeHtml(i18n.t("gateway.calendar.status_updates_title"))}</legend>
-            <label>
-              <input type="radio" name="${preferenceId}" value="false" />
-              ${escapeHtml(i18n.t("gateway.calendar.status_updates_allow"))}
-            </label>
-            <label>
-              <input type="radio" name="${preferenceId}" value="true" />
-              ${escapeHtml(i18n.t("gateway.calendar.status_updates_prevent"))}
-            </label>
-          </fieldset>`,
+          <label class="calendar-status-preference">
+            <span>${escapeHtml(i18n.t("gateway.calendar.status_updates_allow"))}</span>
+            <span class="switch switch--inline">
+              <input id="${preferenceId}" type="checkbox" checked />
+              <span class="slider"></span>
+            </span>
+          </label>`,
         async onRender() {
             try {
-                savedPreference = await fetchStatusPreference();
+                savedAllowed = !(await fetchStatusPreference());
             } catch (error) {
                 showToast(
                     i18n.t("gateway.calendar.status_updates_load_failed"),
@@ -48,24 +42,20 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 );
                 throw error;
             }
-            pendingPreference = savedPreference;
+            pendingAllowed = savedAllowed;
             updateSelection();
-            root.querySelectorAll(`[name="${preferenceId}"]`).forEach(
-                (input) => {
-                    input.addEventListener("change", () => {
-                        pendingPreference = input.value === "true";
-                        markDirty(
-                            preferenceId,
-                            pendingPreference !== savedPreference,
-                        );
-                    });
+            root.querySelector(`#${preferenceId}`)?.addEventListener(
+                "change",
+                (event) => {
+                    pendingAllowed = event.currentTarget.checked;
+                    markDirty(preferenceId, pendingAllowed !== savedAllowed);
                 },
             );
         },
-        isDirty: () => pendingPreference !== savedPreference,
+        isDirty: () => pendingAllowed !== savedAllowed,
         async save() {
             try {
-                await saveStatusPreference(pendingPreference);
+                await saveStatusPreference(!pendingAllowed);
             } catch (error) {
                 showToast(
                     i18n.t("gateway.calendar.status_updates_save_failed"),
@@ -75,10 +65,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             }
         },
         commit: () => {
-            savedPreference = pendingPreference;
+            savedAllowed = pendingAllowed;
         },
         discard: () => {
-            pendingPreference = savedPreference;
+            pendingAllowed = savedAllowed;
             updateSelection();
             markDirty(preferenceId, false);
         },

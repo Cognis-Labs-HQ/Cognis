@@ -87,3 +87,7 @@ Ketersediaan pengguna lain kini diperbarui setiap sepuluh detik selama indikator
 ## Keandalan integrasi ketersediaan
 
 Kalender kini menangani penyimpanan preferensi yang tidak tersedia tanpa galat, klien UI-nya memiliki permintaan preferensi, indikator status pengguna sendiri tetap mutakhir, dan langganan kehadiran yang dapat digunakan kembali telah didokumentasikan sepenuhnya.
+
+## Kontrol pembaruan status kalender yang jelas
+
+Pembaruan Status Kalender kini menggunakan tombol geser yang aktif secara bawaan dan ditampilkan sebelum Zona Berbahaya, yang tetap menjadi bagian terakhir di pengaturan Umum.

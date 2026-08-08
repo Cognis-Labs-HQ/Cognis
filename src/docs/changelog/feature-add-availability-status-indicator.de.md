@@ -87,3 +87,7 @@ Die Verfügbarkeit anderer Benutzer wird nun alle zehn Sekunden aktualisiert, so
 ## Zuverlässige Verfügbarkeitsintegration
 
 Der Kalender behandelt nun einen nicht verfügbaren Einstellungsspeicher ohne Fehler, sein UI-Client verwaltet Einstellungsanfragen, eigene Statusanzeigen bleiben aktuell und das wiederverwendbare Anwesenheitsabonnement ist vollständig dokumentiert.
+
+## Klare Steuerung der Kalenderstatusaktualisierung
+
+Kalender-Statusaktualisierungen verwenden jetzt einen standardmäßig aktivierten Schieberegler und erscheinen vor dem Gefahrenbereich, der weiterhin der letzte Abschnitt in den allgemeinen Einstellungen ist.

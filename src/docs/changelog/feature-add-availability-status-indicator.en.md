@@ -87,3 +87,7 @@ Availability for other users now refreshes every ten seconds while their indicat
 ## Availability integration reliability
 
 Calendar now handles unavailable preference storage without errors, its UI client owns preference requests, self status indicators stay fresh, and the reusable presence subscription is fully documented.
+
+## Clear calendar status control
+
+Calendar Status Updates now uses an enabled-by-default slider and appears before the Danger Zone, which remains the final section in General settings.
