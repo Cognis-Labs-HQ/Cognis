@@ -597,7 +597,7 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        if (adapter.locked || !adapterHasConfig(adapter)) return;
+        if (!adapterHasConfig(adapter)) return;
 
         async function handleOpen(e) {
             if (e.target.closest?.("[data-details-toggle]")) return;

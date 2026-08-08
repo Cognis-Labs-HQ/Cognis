@@ -7,3 +7,7 @@ Administrator kini dapat memilih ambang tingkat keparahan terpisah untuk pencata
 ## Penggantian saat berjalan dengan reset ke lingkungan
 
 Pengaturan adapter pencatatan dapat menggantikan nilai lingkungan Docker saat berjalan, termasuk format konsol, jalur berkas, dan rotasi, lalu direset ke konfigurasi lingkungan.
+
+## Pengaturan untuk adapter yang selalu aktif
+
+Baris Console Logging dan File Logging kini membuka popup pengaturannya meskipun adapter wajib ini tidak dapat dinonaktifkan.
