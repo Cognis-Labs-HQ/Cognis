@@ -22,7 +22,7 @@ export function resolveAvailabilityStatus(
     const resolveStatuses = getCapability<() => readonly string[]>(
         "social:getAvailabilityStatuses",
     );
-    const supportedStatuses = resolveStatuses?.() ?? [];
+    const supportedStatuses = resolveStatuses?.() ?? ["busy", "free"];
     return typeof value === "string" && supportedStatuses.includes(value)
         ? value
         : fallback;

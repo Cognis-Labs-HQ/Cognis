@@ -46,39 +46,47 @@ function setEventStatusOptions(statuses) {
         ...new Set(statuses.map(String)),
     );
 }
+
 function parseCalendarSelection() {
     const query = new URLSearchParams(window.location.search);
     return query.get("calendarId");
 }
+
 function parseEventSelection() {
     const query = new URLSearchParams(window.location.search);
     return query.get("eventId");
 }
+
 function startOfDay(value) {
     const date = new Date(value);
     date.setHours(0, 0, 0, 0);
     return date;
 }
+
 function startOfWeek(value) {
     const date = startOfDay(value);
     date.setDate(date.getDate() - date.getDay());
     return date;
 }
+
 function startOfMonth(value) {
     const date = startOfDay(value);
     date.setDate(1);
     return date;
 }
+
 function startOfYear(value) {
     const date = startOfDay(value);
     date.setMonth(0, 1);
     return date;
 }
+
 function addDays(value, days) {
     const date = new Date(value);
     date.setDate(date.getDate() + days);
     return date;
 }
+
 function toDateTimeLocalValue(value) {
     const date = new Date(value);
     const year = String(date.getFullYear());
@@ -88,12 +96,15 @@ function toDateTimeLocalValue(value) {
     const minutes = String(date.getMinutes()).padStart(2, "0");
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
+
 function normalizeHexColor(value) {
     return normalizeCalendarColor(value);
 }
+
 function createRandomCalendarColor() {
     return randomCalendarColor();
 }
+
 function splitHandles(value) {
     return Array.from(
         new Set(
@@ -104,6 +115,7 @@ function splitHandles(value) {
         ),
     );
 }
+
 function splitInviteEmails(value) {
     return Array.from(
         new Set(
@@ -114,9 +126,11 @@ function splitInviteEmails(value) {
         ),
     );
 }
+
 function matchesEmailPattern(value) {
     return EMAIL_PATTERN.test(String(value ?? "").trim());
 }
+
 function listEventsInWindow(events, startDate, endDate) {
     const startTime = startDate.getTime();
     const endTime = endDate.getTime();
@@ -165,6 +179,7 @@ function buildDayPaletteGradient(palette) {
     });
     return `conic-gradient(${segments.join(",")})`;
 }
+
 function collectUpcomingEvents(
     eventsByCalendar,
     calendars,
@@ -281,6 +296,7 @@ function collectPendingEvents(
         a.startAt.localeCompare(b.startAt),
     );
 }
+
 function visibilityIcon(visibility, sharedPermission = null, i18n) {
     if (visibility === "shared" && sharedPermission === "read") {
         const readOnlyLabel = escapeHtml(
@@ -305,20 +321,25 @@ function visibilityIcon(visibility, sharedPermission = null, i18n) {
     );
     return `<span class="calendar-visibility-icon calendar-visibility-icon--public" role="img" aria-label="${publicLabel}" title="${publicLabel}"></span>`;
 }
+
 function getStatusLabelKey(status) {
     if (status === "free") return "gateway.calendar.status_free";
     if (status === "tentative") return "gateway.calendar.response_tentative";
     return "gateway.calendar.status_busy";
 }
+
 function getRecurrenceLabelKey(recurrence) {
     return `gateway.calendar.recurrence_${EVENT_RECURRENCE_OPTIONS.includes(recurrence) ? recurrence : "none"}`;
 }
+
 function getResponseLabelKey(response) {
     return `gateway.calendar.response_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
+
 function getResponseActionLabelKey(response) {
     return `gateway.calendar.response_action_${EVENT_RESPONSE_OPTIONS.includes(response) ? response : "pending"}`;
 }
+
 function formatEventTimeLabel(event, { allDayLabel = "" } = {}) {
     if (isAllDayEvent(event)) {
         return allDayLabel;
@@ -331,6 +352,7 @@ function formatEventTimeLabel(event, { allDayLabel = "" } = {}) {
     }
     return `${startLabel} – ${endLabel}`;
 }
+
 function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
     if (!calendars.length) {
         return `<p class="calendar-empty">${i18n.t("gateway.calendar.no_calendars")}</p>`;
@@ -347,6 +369,7 @@ function renderCalendarToolbarList(calendars, selectedCalendarId, i18n) {
         )
         .join("")}</ul>`;
 }
+
 function renderEventBadges(event, i18n) {
     const badges = [
         `<span class="calendar-event-badge calendar-event-badge--status">${escapeHtml(i18n.t(getStatusLabelKey(event.status)))}</span>`,
@@ -358,6 +381,7 @@ function renderEventBadges(event, i18n) {
     }
     return badges.join("");
 }
+
 function renderResponseSummary(event, i18n, participantDirectory = null) {
     const responseEntries = Object.entries(event.responses ?? {});
     if (!responseEntries.length) return "";
@@ -376,6 +400,7 @@ function renderResponseSummary(event, i18n, participantDirectory = null) {
         )
         .join("")}</ul>`;
 }
+
 function renderEventButton(
     event,
     {

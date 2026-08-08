@@ -309,7 +309,6 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
 test("current events drive availability unless the user prevents updates", async () => {
     const capabilities = new CapabilityStore();
     const preferences = new VolatileUserPreferenceStore();
-    capabilities.contribute("preferences:store", preferences);
     capabilities.contribute("social:getAvailabilityStatuses", () => [
         "busy",
         "focused",
@@ -322,6 +321,7 @@ test("current events drive availability unless the user prevents updates", async
         uiRegistry: new UIRegistry(),
         flow: createCtx().flow,
     } as any);
+    capabilities.contribute("preferences:store", preferences);
 
     const createCalendar = capabilities.get<
         (accountId: string, name: string) => { id: string }

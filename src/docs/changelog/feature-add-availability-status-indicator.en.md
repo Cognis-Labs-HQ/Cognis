@@ -71,3 +71,7 @@ Availability refreshes now notify the profile menu as well as avatar lights. The
 ## Availability follows active event boundaries
 
 Creating a Calendar event that is already active now refreshes availability immediately. The Calendar page also schedules ctx-backed refreshes at event start and end boundaries, so status lights and the profile menu change when an event begins or finishes without a page reload.
+
+## Availability integrations remain reliable
+
+Calendar now resolves late-bootstrapped preferences when they are used, uses UI ctx for Dashboard event data, and retains free-event behavior when Social is disabled. Presence sessions are expired and bounded per account to prevent unbounded server memory use.

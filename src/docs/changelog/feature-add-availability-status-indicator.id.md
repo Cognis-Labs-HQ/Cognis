@@ -71,3 +71,7 @@ Penyegaran ketersediaan kini memberi tahu menu profil serta lampu avatar. Menu l
 ## Ketersediaan mengikuti batas acara aktif
 
 Membuat acara Kalender yang sudah aktif kini langsung menyegarkan ketersediaan. Halaman Kalender juga menjadwalkan penyegaran berbasis ctx pada waktu mulai dan berakhir acara, sehingga lampu status dan menu profil berubah tanpa memuat ulang halaman.
+
+## Integrasi ketersediaan tetap andal
+
+Kalender kini mengambil preferensi yang dimulai belakangan saat digunakan, memakai konteks UI untuk data acara Dasbor, dan mempertahankan perilaku acara bebas ketika Social dinonaktifkan. Sesi kehadiran kedaluwarsa dan dibatasi per akun agar memori server tidak bertambah tanpa batas.

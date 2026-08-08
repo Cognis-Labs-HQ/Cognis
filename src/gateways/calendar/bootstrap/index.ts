@@ -43,7 +43,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
-    const preferenceStore =
+    const getPreferenceStore = () =>
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     if (systemCtx && !systemCtx.hasFlow("calendar-upcoming-events")) {
@@ -838,7 +838,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             effectiveSince: string;
         } | null> => {
             const preventsCalendarStatus =
-                (await preferenceStore?.get(
+                (await getPreferenceStore()?.get(
                     accountId,
                     "calendar-prevent-status-updates",
                 )) === "true";
@@ -910,26 +910,29 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     });
 
-    if (preferenceStore) {
-        ctx.routeRegistry.register(
-            createStatusPreferenceRoutes({
-                routeContext,
-                getPreference: (accountId) =>
-                    preferenceStore.get(
-                        accountId,
-                        "calendar-prevent-status-updates",
-                    ),
-                setPreference: (accountId, prevented) =>
-                    preferenceStore.set(
-                        accountId,
-                        "calendar-prevent-status-updates",
-                        String(prevented),
-                    ),
-                log: ctx.log,
-            }),
-            "calendar",
-        );
-    }
+    ctx.routeRegistry.register(
+        createStatusPreferenceRoutes({
+            routeContext,
+            getPreference: (accountId) =>
+                getPreferenceStore()?.get(
+                    accountId,
+                    "calendar-prevent-status-updates",
+                ) ?? Promise.resolve(null),
+            setPreference: (accountId, prevented) => {
+                const preferenceStore = getPreferenceStore();
+                if (!preferenceStore) {
+                    throw new Error("preferences_store_unavailable");
+                }
+                return preferenceStore.set(
+                    accountId,
+                    "calendar-prevent-status-updates",
+                    String(prevented),
+                );
+            },
+            log: ctx.log,
+        }),
+        "calendar",
+    );
     ctx.routeRegistry.register(
         createCalendarCoreRoutes({
             gateway,
@@ -1004,7 +1007,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/gateways/calendar/ui/navbar.js",
         () => ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     );
-    if (preferenceStore && ctx.flow.exists("construct-settings-ui")) {
+    if (ctx.flow.exists("construct-settings-ui")) {
         ctx.flow.extend(
             "construct-settings-ui",
             "augment-sections",

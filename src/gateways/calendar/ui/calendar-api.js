@@ -244,6 +244,12 @@ async function createJitsiMeeting(attendees, { scheduledAt = null } = {}) {
     return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
 }
 
+uiCtx.capabilities.contribute("calendar:dashboardEvents", {
+    fetchUpcomingEvents,
+    loadEventStatusStyles: loadCalendarEventStatusStyles,
+    eventStatusClasses: calendarEventStatusClasses,
+});
+
 export {
     fetchCalendarState,
     fetchEvents,

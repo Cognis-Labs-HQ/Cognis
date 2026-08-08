@@ -117,6 +117,21 @@ test("presence reports idle only after every active session expires", () => {
     assert.equal(presence.isIdle("alice", 50_000), true);
 });
 
+test("presence bounds the sessions retained for each account", () => {
+    const presence = new AvailabilityPresenceStore();
+    presence.update("alice", "old-active-session", true, 1_000);
+    for (let sessionIndex = 1; sessionIndex <= 8; sessionIndex += 1) {
+        presence.update(
+            "alice",
+            `inactive-${sessionIndex}`,
+            false,
+            1_000 + sessionIndex,
+        );
+    }
+
+    assert.equal(presence.isIdle("alice", 10_000), true);
+});
+
 test("availability visibility follows community, friends, and private relationships", async () => {
     const preferences = new VolatileUserPreferenceStore();
     const profiles = new Map([

@@ -27,6 +27,7 @@ export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
 ];
 const VALID_STATUSES = new Set(AVAILABILITY_STATUSES);
 const ACTIVE_PRESENCE_TTL_MS = 45_000;
+const MAX_PRESENCE_SESSIONS_PER_ACCOUNT = 8;
 
 export class AvailabilityPresenceStore {
     private readonly sessionsByAccount = new Map<
@@ -43,18 +44,35 @@ export class AvailabilityPresenceStore {
         const sessions =
             this.sessionsByAccount.get(accountId) ??
             new Map<string, { active: boolean; updatedAt: number }>();
+        this.pruneExpiredSessions(sessions, updatedAt);
         sessions.set(sessionId, { active, updatedAt });
+        while (sessions.size > MAX_PRESENCE_SESSIONS_PER_ACCOUNT) {
+            const oldestSessionId = Array.from(sessions.entries()).sort(
+                ([, first], [, second]) => first.updatedAt - second.updatedAt,
+            )[0]?.[0];
+            if (!oldestSessionId) break;
+            sessions.delete(oldestSessionId);
+        }
         this.sessionsByAccount.set(accountId, sessions);
     }
 
     isIdle(accountId: string, now = Date.now()): boolean {
         const sessions = this.sessionsByAccount.get(accountId);
-        if (!sessions?.size) return false;
-        return !Array.from(sessions.values()).some(
-            (session) =>
-                session.active &&
-                now - session.updatedAt <= ACTIVE_PRESENCE_TTL_MS,
-        );
+        if (!sessions) return false;
+        this.pruneExpiredSessions(sessions, now);
+        if (!sessions.size) return true;
+        return !Array.from(sessions.values()).some((session) => session.active);
+    }
+
+    private pruneExpiredSessions(
+        sessions: Map<string, { active: boolean; updatedAt: number }>,
+        now: number,
+    ): void {
+        for (const [sessionId, session] of sessions) {
+            if (now - session.updatedAt > ACTIVE_PRESENCE_TTL_MS) {
+                sessions.delete(sessionId);
+            }
+        }
     }
 }
 

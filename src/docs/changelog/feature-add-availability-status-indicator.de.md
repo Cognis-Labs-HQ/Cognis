@@ -71,3 +71,7 @@ Aktualisierungen der Verfügbarkeit benachrichtigen nun neben den Avataranzeigen
 ## Verfügbarkeit folgt aktiven Termingrenzen
 
 Beim Erstellen eines bereits aktiven Kalendertermins wird die Verfügbarkeit sofort aktualisiert. Die Kalenderseite plant außerdem ctx-gestützte Aktualisierungen für Beginn und Ende von Terminen, sodass Statusanzeigen und Profilmenü ohne Neuladen der Seite reagieren.
+
+## Verfügbarkeitsintegrationen bleiben zuverlässig
+
+Der Kalender löst spät gestartete Einstellungen nun bei ihrer Verwendung auf, nutzt den UI-Kontext für Ereignisdaten im Dashboard und behält das Verhalten freier Ereignisse bei deaktivierter Social-Komponente bei. Anwesenheitssitzungen laufen ab und sind pro Konto begrenzt, damit der Serverspeicher nicht unbegrenzt wächst.
