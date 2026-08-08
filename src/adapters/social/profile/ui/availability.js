@@ -5,6 +5,7 @@ import { createI18n } from "/static/reuse/i18n.js";
 
 const availabilityCache = new Map();
 export const STATUS_OPTIONS = Object.freeze(["free", "busy", "tentative"]);
+const AVAILABILITY_REFRESH_INTERVAL_MS = 30_000;
 
 export async function fetchAvailability(handle = "") {
     const normalizedHandle = String(handle).replace(/^@/, "");
@@ -50,6 +51,11 @@ export async function hydrateAvailabilityIndicators(container = document) {
     );
 }
 
+export async function refreshAvailabilityIndicators(container = document) {
+    availabilityCache.clear();
+    await hydrateAvailabilityIndicators(container);
+}
+
 export async function setManualAvailability(status) {
     if (!STATUS_OPTIONS.includes(status)) return false;
     const response = await apiFetch("/api/v1/social/availability", {
@@ -66,3 +72,7 @@ uiCtx.capabilities.contribute("ui:availabilityRenderer", {
     buildMarkup: availabilityIndicatorMarkup,
     hydrate: hydrateAvailabilityIndicators,
 });
+
+window.setInterval(() => {
+    void refreshAvailabilityIndicators();
+}, AVAILABILITY_REFRESH_INTERVAL_MS);

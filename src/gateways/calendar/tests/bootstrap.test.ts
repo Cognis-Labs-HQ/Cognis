@@ -12,6 +12,7 @@ import {
     ResponseRecorder,
 } from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
+import { VolatileUserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import { bootstrap } from "../bootstrap.js";
 
 test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
@@ -303,6 +304,55 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
         "busy",
         "tentative",
     ]);
+});
+
+test("current events drive availability unless the user prevents updates", async () => {
+    const capabilities = new CapabilityStore();
+    const preferences = new VolatileUserPreferenceStore();
+    capabilities.contribute("preferences:store", preferences);
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry: new RouteRegistry(),
+        gatewayRegistry: new GatewayRegistry(),
+        capabilities,
+        uiRegistry: new UIRegistry(),
+        flow: createCtx().flow,
+    } as any);
+
+    const createCalendar = capabilities.get<
+        (accountId: string, name: string) => { id: string }
+    >("calendar:createCalendar");
+    const addEvent =
+        capabilities.get<
+            (input: {
+                ownerAccountId: string;
+                calendarId: string;
+                title: string;
+                startAt: string;
+                endAt: string;
+                status: "busy";
+            }) => unknown
+        >("calendar:addEvent");
+    const getCurrentAvailability = capabilities.get<
+        (accountId: string) => Promise<{ status: string } | null>
+    >("calendar:getCurrentAvailability");
+    assert.ok(createCalendar);
+    assert.ok(addEvent);
+    assert.ok(getCurrentAvailability);
+    const calendarId = createCalendar("alice", "Primary").id;
+    const now = Date.now();
+    addEvent({
+        ownerAccountId: "alice",
+        calendarId,
+        title: "Current focus",
+        startAt: new Date(now - 60_000).toISOString(),
+        endAt: new Date(now + 60_000).toISOString(),
+        status: "busy",
+    });
+    assert.equal((await getCurrentAvailability("alice"))?.status, "busy");
+
+    await preferences.set("alice", "calendar-prevent-status-updates", "true");
+    assert.equal(await getCurrentAvailability("alice"), null);
 });
 
 test("calendar invitations endpoint returns pending invited events for attendee", async () => {

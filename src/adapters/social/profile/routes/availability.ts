@@ -8,6 +8,15 @@ import type { UserPreferenceStore } from "../../../../api/reuse/preference-store
 import type { ProfileStore } from "../store-contract.js";
 
 export type AvailabilityStatus = "free" | "busy" | "tentative";
+export interface CalendarAvailability {
+    status: AvailabilityStatus;
+    effectiveSince: string;
+}
+
+interface ManualAvailability {
+    status: AvailabilityStatus;
+    updatedAt: string;
+}
 
 const AVAILABILITY_PREFERENCE = "availability";
 export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
@@ -17,20 +26,44 @@ export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
 ];
 const VALID_STATUSES = new Set(AVAILABILITY_STATUSES);
 
-export function readStoredManualStatus(
+export function readStoredManualAvailability(
     value: string | null,
-): AvailabilityStatus | null {
+): ManualAvailability | null {
     if (!value) return null;
     try {
-        const status = JSON.parse(value)?.status;
-        return VALID_STATUSES.has(status) ? status : null;
+        const parsed = JSON.parse(value);
+        const status = parsed?.status;
+        const updatedAt = parsed?.updatedAt;
+        return VALID_STATUSES.has(status) &&
+            typeof updatedAt === "string" &&
+            Number.isFinite(Date.parse(updatedAt))
+            ? { status, updatedAt }
+            : null;
     } catch {
         return null;
     }
 }
 
 export function readManualStatus(value: string | null): AvailabilityStatus {
-    return readStoredManualStatus(value) ?? "free";
+    return readStoredManualAvailability(value)?.status ?? "free";
+}
+
+export function resolveEffectiveAvailability(
+    manualAvailability: ManualAvailability | null,
+    calendarAvailability: CalendarAvailability | null,
+): { status: AvailabilityStatus; source: "manual" | "calendar" } {
+    if (
+        calendarAvailability &&
+        (!manualAvailability ||
+            Date.parse(calendarAvailability.effectiveSince) >
+                Date.parse(manualAvailability.updatedAt))
+    ) {
+        return { status: calendarAvailability.status, source: "calendar" };
+    }
+    return {
+        status: manualAvailability?.status ?? "free",
+        source: "manual",
+    };
 }
 
 export function createAvailabilityRoutes(
@@ -38,7 +71,7 @@ export function createAvailabilityRoutes(
     preferenceStore: UserPreferenceStore,
     resolveCalendarStatus: (
         accountId: string,
-    ) => Promise<AvailabilityStatus | null>,
+    ) => Promise<CalendarAvailability | null>,
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
@@ -67,27 +100,27 @@ export function createAvailabilityRoutes(
         }
 
         if (req.method === "GET") {
-            const calendarStatus = await resolveCalendarStatus(
+            const calendarAvailability = await resolveCalendarStatus(
                 profile.accountId,
             );
-            const storedManualStatus = readStoredManualStatus(
+            const manualAvailability = readStoredManualAvailability(
                 await preferenceStore.get(
                     profile.accountId,
                     AVAILABILITY_PREFERENCE,
                 ),
+            );
+            const effectiveAvailability = resolveEffectiveAvailability(
+                manualAvailability,
+                calendarAvailability,
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
                         handle: profile.handle,
-                        status: storedManualStatus ?? calendarStatus ?? "free",
-                        manualStatus: storedManualStatus ?? "free",
-                        source: storedManualStatus
-                            ? "manual"
-                            : calendarStatus
-                              ? "calendar"
-                              : "manual",
+                        status: effectiveAvailability.status,
+                        manualStatus: manualAvailability?.status ?? "free",
+                        source: effectiveAvailability.source,
                     },
                 }),
             );
@@ -111,7 +144,10 @@ export function createAvailabilityRoutes(
             await preferenceStore.set(
                 profile.accountId,
                 AVAILABILITY_PREFERENCE,
-                JSON.stringify({ status: body.status }),
+                JSON.stringify({
+                    status: body.status,
+                    updatedAt: new Date().toISOString(),
+                }),
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { saved: true } }));

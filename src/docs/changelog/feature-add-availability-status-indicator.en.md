@@ -6,7 +6,7 @@ Avatars now show free, busy, or tentative status in the navigation toolbar, prof
 
 ## Override your status
 
-Select the status control in your profile menu to change your manual availability. An explicit manual choice overrides calendar-derived availability.
+Calendar events set your status when they begin or are created during the current timeslot. You can override the active event afterward from the profile menu.
 
 ## Availability controls in the profile menu
 
@@ -19,3 +19,7 @@ Hovering an avatar status light now reveals its status. Components can also quer
 ## Status options no longer move the menu
 
 Opening the status selector now displays its choices to the left of the profile menu, keeping the profile actions below it in place.
+
+## Calendar status control
+
+User Settings now includes a General option to prevent calendar events from changing availability.

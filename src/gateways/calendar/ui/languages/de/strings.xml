@@ -184,4 +184,9 @@
   <string name="gateway.calendar.share_import_success">Geteilter Kalender hinzugefügt.</string>
   <string name="gateway.calendar.share_no_events">Dieser Kalender enthält keine Ereignisse.</string>
   <string name="gateway.calendar.new_calendar_short">+ Neu</string>
+  <string name="gateway.calendar.status_updates_title">Kalender-Statusaktualisierungen</string>
+  <string name="gateway.calendar.status_updates_allow">Kalendertermine dürfen meinen Status setzen</string>
+  <string name="gateway.calendar.status_updates_prevent">Verhindern, dass Kalendertermine den Status setzen</string>
+  <string name="gateway.calendar.status_updates_load_failed">Die Kalenderstatuseinstellung konnte nicht geladen werden.</string>
+  <string name="gateway.calendar.status_updates_save_failed">Die Kalenderstatuseinstellung konnte nicht gespeichert werden.</string>
 </resources>

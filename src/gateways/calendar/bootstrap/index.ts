@@ -13,6 +13,7 @@ import {
 } from "../../../api/reuse/route-context.js";
 import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import { DbCalendarStore } from "../store.js";
 import { normalizeCalendarColor } from "../color.js";
@@ -25,6 +26,7 @@ import { createCalendarCoreRoutes } from "./calendar-routes.js";
 import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
 import { CalendarShareRegistry } from "./share-registry.js";
+import { createStatusPreferenceRoutes } from "./status-preference/index.js";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -41,6 +43,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const preferenceStore =
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     if (systemCtx && !systemCtx.hasFlow("calendar-upcoming-events")) {
         systemCtx.registerFlow({
@@ -829,7 +833,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "calendar:getCurrentAvailability",
         async (
             accountId: string,
-        ): Promise<"free" | "busy" | "tentative" | null> => {
+        ): Promise<{
+            status: "free" | "busy" | "tentative";
+            effectiveSince: string;
+        } | null> => {
+            const preventsCalendarStatus =
+                (await preferenceStore?.get(
+                    accountId,
+                    "calendar-prevent-status-updates",
+                )) === "true";
+            if (preventsCalendarStatus) return null;
             const now = Date.now();
             const activeEvents = gateway
                 .listCalendars(accountId)
@@ -838,17 +851,28 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     (event) =>
                         new Date(event.startAt).getTime() <= now &&
                         new Date(event.endAt).getTime() > now,
-                );
-            if (
-                activeEvents.some(
-                    (event) => event.responses[accountId] === "tentative",
                 )
-            ) {
-                return "tentative";
-            }
-            if (activeEvents.some((event) => event.status === "busy"))
-                return "busy";
-            return activeEvents.length ? "free" : null;
+                .map((event) => ({
+                    event,
+                    effectiveSince: new Date(
+                        Math.max(
+                            new Date(event.startAt).getTime(),
+                            new Date(event.createdAt).getTime(),
+                        ),
+                    ).toISOString(),
+                }))
+                .sort((first, second) =>
+                    second.effectiveSince.localeCompare(first.effectiveSince),
+                );
+            const activeEvent = activeEvents[0];
+            if (!activeEvent) return null;
+            return {
+                status:
+                    activeEvent.event.responses[accountId] === "tentative"
+                        ? "tentative"
+                        : activeEvent.event.status,
+                effectiveSince: activeEvent.effectiveSince,
+            };
         },
     );
     ctx.capabilities.contribute("calendar:exportIcs", (calendarId: string) =>
@@ -871,6 +895,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     });
 
+    if (preferenceStore) {
+        ctx.routeRegistry.register(
+            createStatusPreferenceRoutes({
+                routeContext,
+                getPreference: (accountId) =>
+                    preferenceStore.get(
+                        accountId,
+                        "calendar-prevent-status-updates",
+                    ),
+                setPreference: (accountId, prevented) =>
+                    preferenceStore.set(
+                        accountId,
+                        "calendar-prevent-status-updates",
+                        String(prevented),
+                    ),
+                log: ctx.log,
+            }),
+            "calendar",
+        );
+    }
     ctx.routeRegistry.register(
         createCalendarCoreRoutes({
             gateway,
@@ -945,6 +989,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/gateways/calendar/ui/navbar.js",
         () => ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     );
+    if (preferenceStore && ctx.flow.exists("construct-settings-ui")) {
+        ctx.flow.extend(
+            "construct-settings-ui",
+            "augment-sections",
+            { id: "calendar-gateway:status-preference" },
+            () => ({
+                gatewayId: "calendar",
+                sectionId: "calendar-status-preference",
+                targetSectionId: "general",
+                scriptUrl: "/static/gateways/calendar/ui/status-prefs.js",
+                stringsBaseUrl: "/static/gateways/calendar/ui/languages",
+            }),
+        );
+    }
     uiHooks.registerSpaRoute({
         id: "calendar-page",
         pattern: "^/calendar$",
@@ -963,7 +1021,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.4.52",
+        version: "1.4.53",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

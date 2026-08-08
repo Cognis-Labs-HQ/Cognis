@@ -15,3 +15,7 @@ The signed-in Calendar page delegates view, period, and timeslot actions from it
 ## Share shell integration
 
 Calendar follows the proven meeting-share lifecycle: Share clears its loading composer and passes the page root, resolved context, translations, and abort signal to Calendar. Calendar then owns a full `createPageComposer` page with the standard header, theme control, and footer but no account navigation. Its single calendar element imports form, popup, timestamp, and view dependencies directly, while event mutations authenticate with the supplied scoped guest token.
+
+## Availability status
+
+Calendar events update a user’s availability when they start or when an event is created over the current timeslot. A manual status selected after that activation takes precedence until another event starts. Users can disable calendar-driven status updates under User Settings → General.

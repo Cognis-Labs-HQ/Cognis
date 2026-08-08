@@ -413,6 +413,12 @@ export async function mount(root, { signal } = {}) {
         console.warn(`[settings] sections-load-failed:`, error);
         contributedSections = [];
     }
+    const generalContributions = contributedSections.filter(
+        (section) => section.targetSectionId === "general",
+    );
+    const standaloneContributions = contributedSections.filter(
+        (section) => section.targetSectionId !== "general",
+    );
 
     function initThemePrefs({ onDirtyChange }) {
         let currentMode = savedMode;
@@ -538,6 +544,11 @@ export async function mount(root, { signal } = {}) {
           `;
                         },
                     },
+                    ...generalContributions.map((section) => ({
+                        id: `${section.id}-content`,
+                        label: section.label,
+                        render: () => section.renderContent(),
+                    })),
                 ],
                 onRender: () => {
                     const account =
@@ -559,6 +570,9 @@ export async function mount(root, { signal } = {}) {
                         });
                     } else {
                         releaseNotesPrefs.refresh();
+                    }
+                    for (const section of generalContributions) {
+                        section.onRender();
                     }
                 },
             },
@@ -684,7 +698,7 @@ export async function mount(root, { signal } = {}) {
                 },
             },
         },
-        ...contributedSections.map((section) => ({
+        ...standaloneContributions.map((section) => ({
             id: section.id,
             label: section.label,
             subComposerOptions: {
@@ -810,7 +824,7 @@ export async function mount(root, { signal } = {}) {
         <li><button data-composer-scroll="general">${i18n.t("ui.app.settings.general")}</button></li>
         <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>
         <li><button data-composer-scroll="language">${i18n.t("ui.reuse.language")}</button></li>
-        ${contributedSections
+        ${standaloneContributions
             .map(
                 (section) =>
                     `<li><button data-composer-scroll="${escapeHtml(section.id)}">${section.label}</button></li>`,

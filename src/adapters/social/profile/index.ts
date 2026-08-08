@@ -13,8 +13,9 @@ import { createPreferencesRoutes } from "./routes/preferences.js";
 import {
     AVAILABILITY_STATUSES,
     createAvailabilityRoutes,
-    readStoredManualStatus,
-    type AvailabilityStatus,
+    readStoredManualAvailability,
+    resolveEffectiveAvailability,
+    type CalendarAvailability,
 } from "./routes/availability.js";
 import type { AccountLifecycleState, AccountRole } from "./store.js";
 import type {
@@ -245,23 +246,25 @@ export async function bootstrapSocialAdapter(
             const profile = await profileStore.getProfile(accountId);
             if (!profile) return null;
             const calendarResolver = ctx.capabilities.get<
-                (targetAccountId: string) => Promise<AvailabilityStatus | null>
+                (
+                    targetAccountId: string,
+                ) => Promise<CalendarAvailability | null>
             >("calendar:getCurrentAvailability");
-            const calendarStatus = calendarResolver
+            const calendarAvailability = calendarResolver
                 ? await calendarResolver(accountId)
                 : null;
-            const storedManualStatus = readStoredManualStatus(
+            const manualAvailability = readStoredManualAvailability(
                 await prefStore.get(accountId, "availability"),
+            );
+            const effectiveAvailability = resolveEffectiveAvailability(
+                manualAvailability,
+                calendarAvailability,
             );
             return {
                 handle: profile.handle,
-                status: storedManualStatus ?? calendarStatus ?? "free",
-                manualStatus: storedManualStatus ?? "free",
-                source: storedManualStatus
-                    ? "manual"
-                    : calendarStatus
-                      ? "calendar"
-                      : "manual",
+                status: effectiveAvailability.status,
+                manualStatus: manualAvailability?.status ?? "free",
+                source: effectiveAvailability.source,
             };
         },
     );
@@ -453,7 +456,7 @@ export async function bootstrapSocialAdapter(
                 const resolver = ctx.capabilities.get<
                     (
                         targetAccountId: string,
-                    ) => Promise<AvailabilityStatus | null>
+                    ) => Promise<CalendarAvailability | null>
                 >("calendar:getCurrentAvailability");
                 return resolver ? resolver(accountId) : null;
             },

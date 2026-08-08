@@ -50,7 +50,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.34` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.35` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.34` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.11` |
 | User Share            | `src/adapters/share/user/`          | `1.1.12` |
@@ -64,7 +64,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi    |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`  |
-| Authentication (auth) | `src/gateways/auth/`          | `1.7.42` |
+| Authentication (auth) | `src/gateways/auth/`          | `1.7.43` |
 | Share                 | `src/gateways/share/`         | `1.6.45` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.13` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
@@ -74,7 +74,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Logging               | `src/gateways/logging/`       | `1.5.4`  |
 | Observability         | `src/gateways/observability/` | `1.0.3`  |
 | Study                 | `src/gateways/study/`         | `1.5.10` |
-| Calendar              | `src/gateways/calendar/`      | `1.4.52` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.53` |
 
 ## Kontrak inti
 

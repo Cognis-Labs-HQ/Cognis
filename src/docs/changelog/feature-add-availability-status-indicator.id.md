@@ -6,7 +6,7 @@ Avatar kini menampilkan status kosong, sibuk, atau sementara di bilah navigasi, 
 
 ## Atur status secara manual
 
-Pilih kontrol status di menu profil untuk mengubah ketersediaan manual. Pilihan manual yang eksplisit mengesampingkan ketersediaan dari kalender.
+Acara kalender mengatur status saat dimulai atau dibuat pada rentang waktu saat ini. Setelah itu, acara aktif dapat dikesampingkan melalui menu profil.
 
 ## Kontrol ketersediaan di menu profil
 
@@ -19,3 +19,7 @@ Mengarahkan penunjuk ke lampu status avatar kini menampilkan statusnya. Komponen
 ## Opsi status tidak lagi menggeser menu
 
 Saat pemilih status dibuka, pilihannya kini tampil di sebelah kiri menu profil sehingga tindakan profil di bawahnya tetap berada di tempatnya.
+
+## Kontrol status kalender
+
+Pengaturan Pengguna kini memiliki opsi Umum untuk mencegah acara kalender mengubah ketersediaan.

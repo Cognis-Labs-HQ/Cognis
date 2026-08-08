@@ -6,7 +6,7 @@ Avatare zeigen jetzt in der Navigationsleiste, in Profilvorschauen, Nachrichten 
 
 ## Status manuell festlegen
 
-Wähle die Statusauswahl im Profilmenü, um deine Verfügbarkeit zu ändern. Eine ausdrückliche manuelle Auswahl hat Vorrang vor der kalenderbasierten Verfügbarkeit.
+Kalendertermine setzen deinen Status, wenn sie beginnen oder im aktuellen Zeitraum erstellt werden. Danach kannst du den aktiven Termin im Profilmenü übersteuern.
 
 ## Verfügbarkeit im Profilmenü steuern
 
@@ -19,3 +19,7 @@ Beim Darüberfahren über die Statusleuchte eines Avatars wird der Status angeze
 ## Statusoptionen verschieben das Menü nicht mehr
 
 Beim Öffnen der Statusauswahl erscheinen die Optionen jetzt links neben dem Profilmenü, sodass die darunterliegenden Profilaktionen an ihrer Position bleiben.
+
+## Kalenderstatus steuern
+
+In den Benutzereinstellungen gibt es unter „Allgemein“ jetzt eine Option, die verhindert, dass Kalendertermine die Verfügbarkeit ändern.

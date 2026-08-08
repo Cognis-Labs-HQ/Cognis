@@ -209,7 +209,12 @@ test("user availability capability resolves calendar-aware status", async () => 
         capabilities.contribute(
             "calendar:getCurrentAvailability",
             async (accountId: string) =>
-                accountId === "availability-user" ? "busy" : null,
+                accountId === "availability-user"
+                    ? {
+                          status: "busy",
+                          effectiveSince: "2030-01-01T00:00:00.000Z",
+                      }
+                    : null,
         );
         const { ctx } = makeAdapterCtx({ capabilities });
         await bootstrapSocialAdapter(ctx);

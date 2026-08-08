@@ -1,0 +1,19 @@
+.settings-radio-group {
+    display: grid;
+    gap: 0.65rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.settings-radio-group legend {
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+}
+
+.settings-radio-group label {
+    display: flex;
+    gap: 0.55rem;
+    align-items: center;
+    cursor: pointer;
+}

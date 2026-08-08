@@ -2,7 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { VolatileUserPreferenceStore } from "../preferences.js";
-import { createAvailabilityRoutes } from "../availability.js";
+import {
+    createAvailabilityRoutes,
+    resolveEffectiveAvailability,
+} from "../availability.js";
 
 const profile = {
     accountId: "alice",
@@ -46,7 +49,10 @@ test("manual availability overrides an active calendar event", async () => {
     const route = createAvailabilityRoutes(
         profileStore,
         preferences,
-        async () => "tentative",
+        async () => ({
+            status: "tentative",
+            effectiveSince: "2020-01-01T00:00:00.000Z",
+        }),
     );
 
     const saved = responseCapture();
@@ -67,4 +73,36 @@ test("manual availability overrides an active calendar event", async () => {
     assert.equal(payload.data.status, "busy");
     assert.equal(payload.data.manualStatus, "busy");
     assert.equal(payload.data.source, "manual");
+});
+
+test("a newly effective calendar event supersedes an older manual status", () => {
+    assert.deepEqual(
+        resolveEffectiveAvailability(
+            {
+                status: "free",
+                updatedAt: "2030-01-01T09:00:00.000Z",
+            },
+            {
+                status: "busy",
+                effectiveSince: "2030-01-01T10:00:00.000Z",
+            },
+        ),
+        { status: "busy", source: "calendar" },
+    );
+});
+
+test("a manual update made during an event supersedes that event", () => {
+    assert.deepEqual(
+        resolveEffectiveAvailability(
+            {
+                status: "free",
+                updatedAt: "2030-01-01T10:05:00.000Z",
+            },
+            {
+                status: "busy",
+                effectiveSince: "2030-01-01T10:00:00.000Z",
+            },
+        ),
+        { status: "free", source: "manual" },
+    );
 });
