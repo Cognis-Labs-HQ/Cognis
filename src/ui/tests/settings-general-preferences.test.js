@@ -18,15 +18,16 @@ test("adding a blank email displays a warning toast", () => {
     );
 });
 
-test("the danger zone follows every General settings contribution", () => {
+test("General settings remain continuous with the danger zone last", () => {
     const contributionsPosition = settingsSource.indexOf(
-        "...generalContributions.map",
+        "generalContributions.map((section) => section.renderContent())",
     );
     const dangerZonePosition = settingsSource.indexOf(
-        'id: "danger-zone"',
+        '<section class="settings-danger-zone"',
         contributionsPosition,
     );
 
     assert.ok(contributionsPosition >= 0);
     assert.ok(dangerZonePosition > contributionsPosition);
+    assert.doesNotMatch(settingsSource, /id: "danger-zone"/);
 });

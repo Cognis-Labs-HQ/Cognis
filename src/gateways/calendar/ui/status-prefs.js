@@ -5,11 +5,6 @@ import {
     saveStatusPreference,
 } from "/static/gateways/calendar/ui/calendar-api.js";
 
-const stylesheet = document.createElement("link");
-stylesheet.rel = "stylesheet";
-stylesheet.href = "/static/gateways/calendar/ui/status-prefs.css";
-document.head.append(stylesheet);
-
 export function createSettingsSection({ i18n, root, markDirty }) {
     let savedAllowed = true;
     let pendingAllowed = true;
@@ -25,13 +20,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         targetSectionId: "general",
         label: i18n.t("gateway.calendar.status_updates_title"),
         renderContent: () => `
-          <label class="calendar-status-preference">
-            <span>${escapeHtml(i18n.t("gateway.calendar.status_updates_allow"))}</span>
-            <span class="switch switch--inline">
+          <h3>${escapeHtml(i18n.t("gateway.calendar.status_updates_title"))}</h3>
+          <div>
+            <label class="switch" aria-label="${escapeHtml(i18n.t("gateway.calendar.status_updates_allow"))}">
               <input id="${preferenceId}" type="checkbox" checked />
               <span class="slider"></span>
-            </span>
-          </label>`,
+            </label>
+          </div>`,
         async onRender() {
             try {
                 savedAllowed = !(await fetchStatusPreference());

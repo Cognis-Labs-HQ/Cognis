@@ -85,20 +85,6 @@ function renderAccountOperationButton(i18n, action, labelKey, descriptionKey) {
     `;
 }
 
-function renderDangerZone(i18n) {
-    return `
-      <section class="settings-danger-zone" aria-labelledby="settings-danger-zone-title">
-        <h3 id="settings-danger-zone-title">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
-        <p>${escapeHtml(i18n.t("ui.app.settings.danger_zone_body"))}</p>
-        <div class="settings-danger-actions">
-          ${renderAccountOperationButton(i18n, "archive", "ui.app.settings.danger_archive", "ui.app.settings.danger_archive_warning")}
-          ${renderAccountOperationButton(i18n, "deactivate", "ui.app.settings.danger_deactivate", "ui.app.settings.danger_deactivate_warning")}
-          ${renderAccountOperationButton(i18n, "delete", "ui.app.settings.danger_delete", "ui.app.settings.danger_delete_warning")}
-        </div>
-      </section>
-    `;
-}
-
 function formatPreferenceLabel(key) {
     return String(key ?? "")
         .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -546,18 +532,18 @@ export async function mount(root, { signal } = {}) {
                 <span class="slider"></span>
               </label>
             </div>
+            ${generalContributions.map((section) => section.renderContent()).join("")}
+            <section class="settings-danger-zone" aria-labelledby="settings-danger-zone-title">
+              <h3 id="settings-danger-zone-title">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
+              <p>${escapeHtml(i18n.t("ui.app.settings.danger_zone_body"))}</p>
+              <div class="settings-danger-actions">
+                ${renderAccountOperationButton(i18n, "archive", "ui.app.settings.danger_archive", "ui.app.settings.danger_archive_warning")}
+                ${renderAccountOperationButton(i18n, "deactivate", "ui.app.settings.danger_deactivate", "ui.app.settings.danger_deactivate_warning")}
+                ${renderAccountOperationButton(i18n, "delete", "ui.app.settings.danger_delete", "ui.app.settings.danger_delete_warning")}
+              </div>
+            </section>
           `;
                         },
-                    },
-                    ...generalContributions.map((section) => ({
-                        id: `${section.id}-content`,
-                        label: section.label,
-                        render: () => section.renderContent(),
-                    })),
-                    {
-                        id: "danger-zone",
-                        label: i18n.t("ui.app.settings.danger_zone"),
-                        render: () => renderDangerZone(i18n),
                     },
                 ],
                 onRender: () => {

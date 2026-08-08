@@ -91,3 +91,7 @@ Kalender kini menangani penyimpanan preferensi yang tidak tersedia tanpa galat, 
 ## Kontrol pembaruan status kalender yang jelas
 
 Pembaruan Status Kalender kini menggunakan tombol geser yang aktif secara bawaan dan ditampilkan sebelum Zona Berbahaya, yang tetap menjadi bagian terakhir di pengaturan Umum.
+
+## Pengaturan Umum yang berkelanjutan
+
+Pembaruan Status Kalender kini tetap berada dalam kartu pengaturan Umum yang berkelanjutan, menggunakan tata letak judul dan tombol geser yang sama seperti Tampilkan Catatan Perubahan, serta berada tepat di atas Zona Berbahaya terakhir.

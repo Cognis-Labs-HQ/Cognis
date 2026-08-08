@@ -91,3 +91,7 @@ Calendar now handles unavailable preference storage without errors, its UI clien
 ## Clear calendar status control
 
 Calendar Status Updates now uses an enabled-by-default slider and appears before the Danger Zone, which remains the final section in General settings.
+
+## Continuous General settings
+
+Calendar Status Updates now remains in the continuous General settings card, uses the same heading and slider layout as Show Changelogs, and stays immediately above the final Danger Zone.

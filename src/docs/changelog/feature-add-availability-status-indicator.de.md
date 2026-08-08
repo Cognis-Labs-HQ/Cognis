@@ -91,3 +91,7 @@ Der Kalender behandelt nun einen nicht verfügbaren Einstellungsspeicher ohne Fe
 ## Klare Steuerung der Kalenderstatusaktualisierung
 
 Kalender-Statusaktualisierungen verwenden jetzt einen standardmäßig aktivierten Schieberegler und erscheinen vor dem Gefahrenbereich, der weiterhin der letzte Abschnitt in den allgemeinen Einstellungen ist.
+
+## Durchgehende allgemeine Einstellungen
+
+Kalender-Statusaktualisierungen bleiben jetzt in der durchgehenden Karte für allgemeine Einstellungen, verwenden dieselbe Überschriften- und Schieberegleranordnung wie Änderungsprotokolle anzeigen und stehen direkt über dem abschließenden Gefahrenbereich.
