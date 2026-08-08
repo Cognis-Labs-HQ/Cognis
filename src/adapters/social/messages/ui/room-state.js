@@ -750,12 +750,12 @@ export function createMessagesRoomState({
                 {
                     id: "cancel",
                     label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
+                    variant: "confirm",
                 },
                 {
                     id: "confirm",
-                    label: i18n.t("module.social.messages.leave_conversation"),
-                    variant: "confirm",
+                    label: i18n.t("module.social.messages.leave_room"),
+                    variant: "cancel",
                 },
             ],
         });

@@ -196,12 +196,7 @@ export function renderThreadHeader(room, currentAccountId, i18n) {
         ${canSetAvatar ? `<label class="messages-room-avatar-btn">${escapeHtml(i18n.t("module.social.messages.set_avatar"))}<input id="messages-room-avatar-input" type="file" accept="image/*" hidden /></label>` : ""}
         ${
             leaveHandle
-                ? `<button id="messages-room-leave-btn" class="messages-room-leave-btn" type="button" data-leave-handle="${escapeHtml(leaveHandle)}" aria-label="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}" title="${escapeHtml(i18n.t("module.social.messages.leave_conversation"))}">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-              <path d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z" fill="currentColor" />
-              <path d="M0 2L1.38281e-06 14H2L2 2L0 2Z" fill="currentColor" />
-            </svg>
-          </button>`
+                ? `<button id="messages-room-leave-btn" class="messages-room-leave-btn btn-cancel" type="button" data-leave-handle="${escapeHtml(leaveHandle)}">${escapeHtml(i18n.t("module.social.messages.leave_room"))}</button>`
                 : ""
         }
       </div>
