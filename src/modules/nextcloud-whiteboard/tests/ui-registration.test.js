@@ -130,6 +130,10 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     );
     assert.match(source, /showNavbar:\s*sharePageFlag\("showNavbar",\s*true\)/);
     assert.match(source, /requireAccountSession:\s*!activeShareContext/);
+    assert.match(
+        source,
+        /requireAccountSession:\s*!activeShareContext,\s*signal/,
+    );
     assert.match(source, /pageManifest:\s*\{/);
     assert.match(source, /pointerTracking:\s*true/);
     assert.match(

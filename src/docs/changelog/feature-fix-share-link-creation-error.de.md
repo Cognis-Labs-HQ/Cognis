@@ -18,4 +18,4 @@ Geteilte Seiten verwenden nun die Gastsitzungsfunktion des Share-Gateways, wenn 
 
 ## Geschützte Freigaben behalten ihren Gastschlüsselbund
 
-Geteilte Seiten verwenden nun während ihres gesamten Lebenszyklus dieselbe aufgelöste Gastsitzung, statt beim Initialisieren einer eingebundenen Komponente eine neue Gastidentität aufzulösen. Gastschlüsselbunde bleiben auf die Sitzung beschränkt, bewahren Zugangsdaten geschützter Besprechungen und rufen weder Konto-Schlüsselbund- noch Versionshinweis-APIs auf.
+Geteilte Seiten verwenden nun während ihres gesamten Lebenszyklus dieselbe aufgelöste Gastsitzung, statt beim Initialisieren einer eingebundenen Komponente eine neue Gastidentität aufzulösen. Gastschlüsselbunde bleiben auf die Sitzung beschränkt, bewahren Zugangsdaten geschützter Besprechungen und rufen weder Konto-Schlüsselbund- noch Versionshinweis-APIs auf. Steuerelemente für den Zeigerstil werden bei der SPA-Navigation ebenfalls entfernt, sofern die Zielseite die Zeigerverfolgung nicht in ihrem Composer-Manifest aktiviert.

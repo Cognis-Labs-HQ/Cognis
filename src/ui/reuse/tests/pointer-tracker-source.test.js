@@ -64,6 +64,14 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
         composerSource,
         /pageManifest\?: \{ features\?: \{ pointerTracking\?: boolean \} \}/,
     );
+    assert.match(
+        composerSource,
+        /signal\?\.addEventListener\("abort", destroy/,
+    );
+    assert.match(
+        composerSource,
+        /function destroy\(\)[\s\S]*activePresenceTracker\?\.destroy\(\)/,
+    );
     assert.ok(
         composerSource.indexOf("render();") <
             composerSource.indexOf("activePresenceTracker.mount(mainWindow)"),

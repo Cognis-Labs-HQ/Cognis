@@ -923,6 +923,7 @@ export async function mount(root, { signal, shareContext } = {}) {
         showFooter: sharePageFlag("showFooter", true),
         showThemeToggle: sharePageFlag("showThemeToggle", true),
         requireAccountSession: !activeShareContext,
+        signal,
     });
     await composer.init();
 

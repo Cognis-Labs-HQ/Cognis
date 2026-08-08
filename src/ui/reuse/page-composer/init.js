@@ -38,6 +38,7 @@
  *   requireAccountSession?: boolean,
  *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string) },
  *   pageManifest?: { features?: { pointerTracking?: boolean } },
+ *   signal?: AbortSignal,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
@@ -88,6 +89,7 @@ export function createPageComposer(
         requireAccountSession = showTopbar || showNavbar,
         presenceTracker = null,
         pageManifest = null,
+        signal,
     },
 ) {
     function escapeHtml(value) {
@@ -113,6 +115,19 @@ export function createPageComposer(
     let editToggleAbortController = null;
     let layoutProfiles = { layoutsByGrid: {} };
     let activePresenceTracker = null;
+    let composerDestroyed = false;
+
+    function destroy() {
+        if (composerDestroyed) return;
+        composerDestroyed = true;
+        activePresenceTracker?.destroy();
+        activePresenceTracker = null;
+        resizeObserver?.disconnect();
+        resizeObserver = null;
+    }
+
+    if (signal?.aborted) destroy();
+    else signal?.addEventListener("abort", destroy, { once: true });
 
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
@@ -619,6 +634,7 @@ export function createPageComposer(
     }
 
     async function init() {
+        if (composerDestroyed) return;
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
         configureConnectionRecoveryPrompt(
             i18n.t("ui.reuse.connection_lost_refresh_prompt"),
@@ -987,6 +1003,6 @@ export function createPageComposer(
         getFloatingSlot,
         showToast,
         refreshPresence: () => activePresenceTracker?.refresh(),
-        destroy: () => activePresenceTracker?.destroy(),
+        destroy,
     };
 }
