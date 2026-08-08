@@ -572,22 +572,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
         fileLevel,
     );
+    const runtimeLog: BootstrapLog = (logLevel, message, meta) => {
+        void logger.log(logLevel, message, meta);
+    };
 
     ctx.capabilities.contribute("logging:logger", logger);
-    ctx.capabilities.contribute(
-        "logging:log",
-        (
-            logLevel: "debug" | "info" | "warn" | "error",
-            message: string,
-            meta?: Record<string, unknown>,
-        ) => {
-            void logger.log(logLevel, message, meta);
-        },
-    );
+    ctx.capabilities.contribute("logging:log", runtimeLog);
     ctx.routeRegistry.register(
         createLoggingRoutes(
             () => logger.getConfiguration().filePath,
-            log,
+            runtimeLog,
             routeContext,
         ),
         "logging",
@@ -625,7 +619,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
             preferenceStore,
             persistedOverrides,
-            log,
+            runtimeLog,
             routeContext,
         ),
         "logging",
@@ -649,7 +643,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.10",
+        version: "1.5.11",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

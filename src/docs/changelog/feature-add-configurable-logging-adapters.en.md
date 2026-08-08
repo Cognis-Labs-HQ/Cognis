@@ -35,3 +35,7 @@ Gateway bootstrap now honors declared dependencies before priority ordering, ens
 ## Auditable, extensible configuration
 
 Runtime validation errors are now localized, every discovered logging adapter receives its own effective configuration, and configuration updates and resets emit structured audit events.
+
+## Runtime console updates
+
+Console configuration changes now update the same runtime logging function used by the application and by configuration audit events, so new levels and formats take effect immediately.

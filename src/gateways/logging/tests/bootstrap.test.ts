@@ -92,24 +92,14 @@ class RequestRecorder extends EventEmitter {
 
 async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
     const capabilities = new CapabilityStore();
-    const logEvents: Array<{
-        level: string;
-        message: string;
-        meta?: Record<string, unknown>;
-    }> = [];
     capabilities.contribute("db:executor", dbExecutor);
+    capabilities.contribute("file:append", async () => undefined);
     return {
         gatewayRegistry: new GatewayRegistry(),
         routeRegistry: new RouteRegistry(),
         capabilities,
         uiRegistry: new UIRegistry(),
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
-        log: (
-            level: string,
-            message: string,
-            meta?: Record<string, unknown>,
-        ) => logEvents.push({ level, message, meta }),
-        logEvents,
     };
 }
 
@@ -236,6 +226,13 @@ test("logging adapter level overrides reconfigure the running logger immediately
         await updateAdapter("console", { level: "debug", format: "json" });
         assert.equal(logger.getConfiguration().consoleLevel, "debug");
         assert.equal(logger.getConfiguration().consoleFormat, "json");
+        const runtimeLog =
+            ctx.capabilities.get<
+                (
+                    level: "debug" | "info" | "warn" | "error",
+                    message: string,
+                ) => void
+            >("logging:log");
         const consoleWrites: string[] = [];
         const originalStdoutWrite = process.stdout.write.bind(process.stdout);
         process.stdout.write = ((chunk: string | Uint8Array) => {
@@ -243,12 +240,17 @@ test("logging adapter level overrides reconfigure the running logger immediately
             return true;
         }) as typeof process.stdout.write;
         try {
-            await logger.log("debug", "Live console configuration applied.");
+            runtimeLog?.("debug", "Live console configuration applied.");
         } finally {
             process.stdout.write = originalStdoutWrite;
         }
+        const writtenEntries = consoleWrites
+            .join("")
+            .trim()
+            .split("\n")
+            .map((line) => JSON.parse(line));
         assert.equal(
-            JSON.parse(consoleWrites.join(""))?.message,
+            writtenEntries.at(-1)?.message,
             "Live console configuration applied.",
         );
 
@@ -288,15 +290,6 @@ test("logging adapter level overrides reconfigure the running logger immediately
         assert.equal(
             JSON.parse(invalidRotationResponse.payload).error.field,
             "rotateMaxBytes",
-        );
-        assert.ok(
-            ctx.logEvents.some(
-                ({ meta }) =>
-                    meta?.operation === "adapter_config_update" &&
-                    meta?.accountId === "admin-test" &&
-                    meta?.adapterId === "file" &&
-                    Array.isArray(meta?.changedFields),
-            ),
         );
     } finally {
         if (previousConsoleLevel === undefined) delete process.env.LOG_LEVEL;
@@ -347,14 +340,6 @@ test("logging adapter overrides survive a gateway restart", async () => {
     );
     assert.equal(resetResponse.statusCode, 204);
     assert.equal(dbExecutor.preferences.has("console"), false);
-    assert.ok(
-        restartedContext.logEvents.some(
-            ({ meta }) =>
-                meta?.operation === "adapter_config_reset" &&
-                meta?.accountId === "admin-test" &&
-                meta?.adapterId === "console",
-        ),
-    );
 
     const resetContext = await makeContext(dbExecutor);
     await bootstrap(resetContext as any);

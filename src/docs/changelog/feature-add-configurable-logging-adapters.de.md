@@ -35,3 +35,7 @@ Der Gateway-Bootstrap berücksichtigt nun deklarierte Abhängigkeiten vor der Pr
 ## Überprüfbare, erweiterbare Konfiguration
 
 Validierungsfehler zur Laufzeit werden nun übersetzt, jeder erkannte Logging-Adapter erhält seine eigene wirksame Konfiguration, und Aktualisierungen sowie Zurücksetzungen erzeugen strukturierte Audit-Ereignisse.
+
+## Konsolenaktualisierungen zur Laufzeit
+
+Änderungen an der Konsolenkonfiguration aktualisieren nun dieselbe Laufzeit-Protokollfunktion, die von der Anwendung und den Konfigurations-Audit-Ereignissen verwendet wird. Neue Stufen und Formate werden dadurch sofort wirksam.

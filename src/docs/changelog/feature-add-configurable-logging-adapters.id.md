@@ -35,3 +35,7 @@ Bootstrap gateway kini mendahulukan dependensi yang dideklarasikan sebelum pengu
 ## Konfigurasi yang dapat diaudit dan diperluas
 
 Kesalahan validasi waktu proses kini diterjemahkan, setiap adapter pencatatan yang ditemukan menerima konfigurasi efektifnya sendiri, serta pembaruan dan pengaturan ulang konfigurasi menghasilkan peristiwa audit terstruktur.
+
+## Pembaruan konsol waktu proses
+
+Perubahan konfigurasi konsol kini memperbarui fungsi pencatatan waktu proses yang sama dengan yang digunakan aplikasi dan peristiwa audit konfigurasi, sehingga tingkat dan format baru langsung berlaku.
