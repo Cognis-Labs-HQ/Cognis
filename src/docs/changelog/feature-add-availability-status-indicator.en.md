@@ -79,3 +79,7 @@ Calendar now resolves late-bootstrapped preferences when they are used, uses UI 
 ## Unknown availability is neutral
 
 Status indicators now appear grey with an Unknown label when availability cannot be loaded, rather than incorrectly suggesting that a user is free before profile visibility permits access.
+
+## Visible statuses stay current
+
+Availability for other users now refreshes every ten seconds while their indicators are visible across profile previews, meetings, whiteboards, and other surfaces. The Profile hero no longer overlays an availability light on its avatar, leaving the role badge unobstructed.

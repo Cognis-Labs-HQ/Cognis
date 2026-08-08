@@ -4,7 +4,7 @@
     "private": true,
     "type": "module",
     "dependencies": {
-        "@cognis/adapter-social-profile": "<=1.1.41",
+        "@cognis/adapter-social-profile": "<=1.1.42",
         "@cognis/gateway-share": "<=1.6.45",
         "@cognis/gateways": "<=0.1.6",
         "@cognis/adapter-social-messages": "<=2.0.38"

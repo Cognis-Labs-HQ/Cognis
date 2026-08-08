@@ -79,3 +79,7 @@ Der Kalender löst spät gestartete Einstellungen nun bei ihrer Verwendung auf, 
 ## Unbekannte Verfügbarkeit ist neutral
 
 Statusanzeigen erscheinen nun grau mit der Bezeichnung „Unbekannt“, wenn die Verfügbarkeit nicht geladen werden kann, statt fälschlich freie Verfügbarkeit anzuzeigen, bevor die Profilsichtbarkeit den Zugriff erlaubt.
+
+## Sichtbare Status bleiben aktuell
+
+Die Verfügbarkeit anderer Benutzer wird nun alle zehn Sekunden aktualisiert, solange ihre Anzeigen in Profilvorschauen, Besprechungen, Whiteboards oder anderen Ansichten sichtbar sind. Im Profilkopf überlagert keine Verfügbarkeitsanzeige mehr den Avatar, sodass das Rollenabzeichen frei bleibt.

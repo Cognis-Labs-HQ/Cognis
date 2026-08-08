@@ -79,3 +79,7 @@ Kalender kini mengambil preferensi yang dimulai belakangan saat digunakan, memak
 ## Ketersediaan tak diketahui bersifat netral
 
 Indikator status kini berwarna abu-abu dengan label Tidak diketahui ketika ketersediaan tidak dapat dimuat, alih-alih keliru menunjukkan pengguna sedang luang sebelum visibilitas profil mengizinkan akses.
+
+## Status yang terlihat tetap terkini
+
+Ketersediaan pengguna lain kini diperbarui setiap sepuluh detik selama indikator mereka terlihat di pratinjau profil, rapat, papan tulis, dan permukaan lain. Hero Profil tidak lagi menumpuk lampu ketersediaan pada avatar sehingga lencana peran tidak terhalang.

@@ -70,19 +70,28 @@ test("idle status is detector-controlled and not manually selectable", () => {
     );
 });
 
-test("profile heroes render and hydrate visibility-aware status lights", () => {
+test("profile heroes keep status lights clear of role badges", () => {
     const renderer = readFileSync(
         resolve(PROFILE_ROOT, "ui/profile-render.js"),
         "utf8",
     );
     const app = readFileSync(resolve(PROFILE_ROOT, "ui/app.js"), "utf8");
 
-    assert.match(renderer, /availabilityIndicatorMarkup\(""\)/);
-    assert.match(
-        renderer,
-        /availabilityIndicatorMarkup\(profile\?\.handle \?\? ""\)/,
-    );
+    assert.doesNotMatch(renderer, /availabilityIndicatorMarkup/);
     assert.match(app, /hydrateAvailabilityIndicators\(root\)/);
+});
+
+test("visible user statuses are polled every ten seconds", () => {
+    const availability = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.js"),
+        "utf8",
+    );
+
+    assert.match(availability, /AVAILABILITY_REFRESH_INTERVAL_MS = 10_000/);
+    assert.match(
+        availability,
+        /data-availability-handle[^\n]+:not\([^\n]+\)[\s\S]+refreshAvailabilityIndicators/,
+    );
 });
 
 test("availability renderer exposes immediate ctx refresh", () => {

@@ -7,7 +7,7 @@ import { subscribePresenceActivity } from "/static/reuse/page-composer/presence-
 const availabilityCache = new Map();
 const availabilitySubscribers = new Set();
 export const STATUS_OPTIONS = Object.freeze(["free", "busy", "tentative"]);
-const AVAILABILITY_REFRESH_INTERVAL_MS = 30_000;
+const AVAILABILITY_REFRESH_INTERVAL_MS = 10_000;
 const PRESENCE_HEARTBEAT_INTERVAL_MS = 15_000;
 const PRESENCE_SESSION_KEY = "cognis_availability_presence_session";
 let locallyIdle = false;
@@ -165,5 +165,10 @@ window.setInterval(() => {
 }, PRESENCE_HEARTBEAT_INTERVAL_MS);
 
 window.setInterval(() => {
-    void refreshAvailabilityIndicators();
+    const hasVisibleUserAvailability = document.querySelector(
+        '[data-availability-handle]:not([data-availability-handle=""])',
+    );
+    if (hasVisibleUserAvailability) {
+        void refreshAvailabilityIndicators();
+    }
 }, AVAILABILITY_REFRESH_INTERVAL_MS);

@@ -8,7 +8,6 @@ import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
-import { availabilityIndicatorMarkup } from "./availability.js";
 
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
@@ -305,7 +304,6 @@ export function renderHero({
           type="button"
           aria-label="${escapeHtml(i18n.t("ui.app.profile.change_avatar"))}"
         >${renderAvatarContent({ avatarBlobUrl, profile, i18n })}</button>
-        ${availabilityIndicatorMarkup("")}
         ${renderAvatarBadge(profile?.role, i18n)}
         ${
             avatarBlobUrl
@@ -323,7 +321,6 @@ export function renderHero({
         : `
       <div class="profile-avatar-wrap">
         <div class="profile-hero-avatar-display">${renderAvatarContent({ avatarBlobUrl, profile, i18n })}</div>
-        ${availabilityIndicatorMarkup(profile?.handle ?? "")}
         ${renderAvatarBadge(profile?.role, i18n)}
       </div>
     `;
