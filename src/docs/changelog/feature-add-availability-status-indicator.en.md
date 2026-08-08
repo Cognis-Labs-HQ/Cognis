@@ -27,3 +27,7 @@ User Settings now includes a General option to prevent calendar events from chan
 ## Idle presence and extensible calendar statuses
 
 The profile adapter now greys out the current user's status light when the presence detector reports inactivity and restores it as soon as activity resumes. Idle is automatic and cannot be selected manually. Calendar event statuses are resolved from the profile adapter's ctx capability, and free events use a transparent background.
+
+## Visibility-aware shared status
+
+Profile pages and previews now show another user's status according to that user's profile visibility: community status is visible to everyone, friends status to followers, and private status to people the user follows. Losing browser focus now reports Idle immediately, active sessions send heartbeats, and preview avatars retain rounded corners beneath the status light.

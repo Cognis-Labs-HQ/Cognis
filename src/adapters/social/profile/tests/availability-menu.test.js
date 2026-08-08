@@ -57,7 +57,8 @@ test("idle status is detector-controlled and not manually selectable", () => {
         "utf8",
     );
 
-    assert.match(availability, /PRESENCE_ACTIVITY_EVENT/);
+    assert.match(availability, /subscribePresenceActivity/);
+    assert.match(availability, /availability\/presence/);
     assert.match(availability, /locallyIdle[\s\S]+"idle"/);
     assert.match(
         availability,
@@ -67,4 +68,19 @@ test("idle status is detector-controlled and not manually selectable", () => {
         styles,
         /data-availability-status="idle"[\s\S]+filter: grayscale\(1\);/,
     );
+});
+
+test("profile heroes render and hydrate visibility-aware status lights", () => {
+    const renderer = readFileSync(
+        resolve(PROFILE_ROOT, "ui/profile-render.js"),
+        "utf8",
+    );
+    const app = readFileSync(resolve(PROFILE_ROOT, "ui/app.js"), "utf8");
+
+    assert.match(renderer, /availabilityIndicatorMarkup\(""\)/);
+    assert.match(
+        renderer,
+        /availabilityIndicatorMarkup\(profile\?\.handle \?\? ""\)/,
+    );
+    assert.match(app, /hydrateAvailabilityIndicators\(root\)/);
 });

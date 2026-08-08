@@ -2,12 +2,35 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
-import { PRESENCE_ACTIVITY_EVENT } from "/static/reuse/page-composer/presence-tracker.js";
+import { subscribePresenceActivity } from "/static/reuse/page-composer/presence-tracker.js";
 
 const availabilityCache = new Map();
 export const STATUS_OPTIONS = Object.freeze(["free", "busy", "tentative"]);
 const AVAILABILITY_REFRESH_INTERVAL_MS = 30_000;
+const PRESENCE_HEARTBEAT_INTERVAL_MS = 15_000;
+const PRESENCE_SESSION_KEY = "cognis_availability_presence_session";
 let locallyIdle = false;
+let locallyActive = true;
+
+function getPresenceSessionId() {
+    const storedSessionId = window.sessionStorage.getItem(PRESENCE_SESSION_KEY);
+    if (storedSessionId) return storedSessionId;
+    const sessionId = window.crypto.randomUUID();
+    window.sessionStorage.setItem(PRESENCE_SESSION_KEY, sessionId);
+    return sessionId;
+}
+
+function reportPresenceActivity(active, keepalive = false) {
+    return apiFetch("/api/v1/social/availability/presence", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+            active,
+            sessionId: getPresenceSessionId(),
+        }),
+        keepalive,
+    }).catch(() => null);
+}
 
 function displayedStatus(indicator, status) {
     return locallyIdle && !indicator.dataset.availabilityHandle
@@ -89,8 +112,10 @@ uiCtx.capabilities.contribute("ui:availabilityRenderer", {
     hydrate: hydrateAvailabilityIndicators,
 });
 
-window.addEventListener(PRESENCE_ACTIVITY_EVENT, async (event) => {
-    locallyIdle = event.detail?.active === false;
+subscribePresenceActivity(async ({ active }) => {
+    locallyActive = active;
+    locallyIdle = !active;
+    void reportPresenceActivity(active);
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
@@ -104,6 +129,14 @@ window.addEventListener(PRESENCE_ACTIVITY_EVENT, async (event) => {
         );
     }
 });
+
+window.addEventListener("pagehide", () => {
+    void reportPresenceActivity(false, true);
+});
+
+window.setInterval(() => {
+    void reportPresenceActivity(locallyActive);
+}, PRESENCE_HEARTBEAT_INTERVAL_MS);
 
 window.setInterval(() => {
     void refreshAvailabilityIndicators();

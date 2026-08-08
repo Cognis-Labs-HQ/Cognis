@@ -8,6 +8,7 @@ import type { UserPreferenceStore } from "../../../../api/reuse/preference-store
 import type { ProfileStore } from "../store-contract.js";
 
 export type AvailabilityStatus = "free" | "busy" | "tentative";
+export type EffectiveAvailabilityStatus = AvailabilityStatus | "idle";
 export interface CalendarAvailability {
     status: AvailabilityStatus;
     effectiveSince: string;
@@ -25,6 +26,54 @@ export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
     "tentative",
 ];
 const VALID_STATUSES = new Set(AVAILABILITY_STATUSES);
+const ACTIVE_PRESENCE_TTL_MS = 45_000;
+
+export class AvailabilityPresenceStore {
+    private readonly sessionsByAccount = new Map<
+        string,
+        Map<string, { active: boolean; updatedAt: number }>
+    >();
+
+    update(
+        accountId: string,
+        sessionId: string,
+        active: boolean,
+        updatedAt = Date.now(),
+    ): void {
+        const sessions =
+            this.sessionsByAccount.get(accountId) ??
+            new Map<string, { active: boolean; updatedAt: number }>();
+        sessions.set(sessionId, { active, updatedAt });
+        this.sessionsByAccount.set(accountId, sessions);
+    }
+
+    isIdle(accountId: string, now = Date.now()): boolean {
+        const sessions = this.sessionsByAccount.get(accountId);
+        if (!sessions?.size) return false;
+        return !Array.from(sessions.values()).some(
+            (session) =>
+                session.active &&
+                now - session.updatedAt <= ACTIVE_PRESENCE_TTL_MS,
+        );
+    }
+}
+
+async function canViewAvailability(
+    requesterId: string,
+    target: Awaited<ReturnType<ProfileStore["getProfile"]>>,
+    profileStore: ProfileStore,
+): Promise<boolean> {
+    if (!target) return false;
+    if (requesterId === target.accountId) return true;
+    if (target.visibility === "community") return true;
+    if (target.visibility === "friends") {
+        return profileStore.isFollowing(requesterId, target.accountId);
+    }
+    if (target.visibility === "private") {
+        return profileStore.isFollowing(target.accountId, requesterId);
+    }
+    return false;
+}
 
 export function readStoredManualAvailability(
     value: string | null,
@@ -73,6 +122,7 @@ export function createAvailabilityRoutes(
         accountId: string,
     ) => Promise<CalendarAvailability | null>,
     routeContext?: RouteContext,
+    presenceStore = new AvailabilityPresenceStore(),
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -80,6 +130,27 @@ export function createAvailabilityRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        if (
+            url.pathname === "/api/v1/social/availability/presence" &&
+            req.method === "PUT"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const sessionId = String(body.sessionId ?? "").trim();
+            if (!sessionId || typeof body.active !== "boolean") {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({ error: { code: "invalid_presence" } }),
+                );
+                return true;
+            }
+            presenceStore.update(claims.sub, sessionId, body.active);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { saved: true } }));
+            return true;
+        }
+
         const match = url.pathname.match(
             /^\/api\/v1\/social\/availability(?:\/([^/]+))?$/,
         );
@@ -100,6 +171,13 @@ export function createAvailabilityRoutes(
         }
 
         if (req.method === "GET") {
+            if (
+                !(await canViewAvailability(claims.sub, profile, profileStore))
+            ) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(JSON.stringify({ error: { code: "not_found" } }));
+                return true;
+            }
             const calendarAvailability = await resolveCalendarStatus(
                 profile.accountId,
             );
@@ -113,14 +191,17 @@ export function createAvailabilityRoutes(
                 manualAvailability,
                 calendarAvailability,
             );
+            const idle = presenceStore.isIdle(profile.accountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
                     data: {
                         handle: profile.handle,
-                        status: effectiveAvailability.status,
+                        status: idle ? "idle" : effectiveAvailability.status,
                         manualStatus: manualAvailability?.status ?? "free",
-                        source: effectiveAvailability.source,
+                        source: idle
+                            ? "presence"
+                            : effectiveAvailability.source,
                     },
                 }),
             );

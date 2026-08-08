@@ -27,3 +27,7 @@ In den Benutzereinstellungen gibt es unter „Allgemein“ jetzt eine Option, di
 ## Inaktivität und erweiterbare Kalenderstatus
 
 Der Profiladapter stellt die Statusanzeige des aktuellen Benutzers grau dar, wenn die Anwesenheitserkennung Inaktivität meldet, und stellt sie bei neuer Aktivität sofort wieder her. „Inaktiv“ wird automatisch vergeben und kann nicht manuell ausgewählt werden. Kalenderstatus stammen aus der ctx-Fähigkeit des Profiladapters; freie Termine haben einen transparenten Hintergrund.
+
+## Sichtbarkeitsabhängig geteilter Status
+
+Profilseiten und Vorschauen zeigen den Status anderer Benutzer nun gemäß deren Profilsichtbarkeit: In der Community ist er für alle sichtbar, bei „Freunde“ für Follower und bei „Privat“ für Personen, denen der Benutzer folgt. Beim Verlust des Browserfokus wird sofort „Inaktiv“ gemeldet, aktive Sitzungen senden regelmäßige Signale und Vorschauavatare bleiben unter der Statusleuchte abgerundet.

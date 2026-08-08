@@ -13,6 +13,7 @@ import { createPreferencesRoutes } from "./routes/preferences.js";
 import {
     AVAILABILITY_STATUSES,
     createAvailabilityRoutes,
+    AvailabilityPresenceStore,
     readStoredManualAvailability,
     resolveEffectiveAvailability,
     type CalendarAvailability,
@@ -227,6 +228,7 @@ export async function bootstrapSocialAdapter(
 
     const prefStore = new DbUserPreferenceStore(dbExecutor);
     await prefStore.ensureSchema();
+    const availabilityPresenceStore = new AvailabilityPresenceStore();
     /**
      * preferences:store — per-user settings persistence consumed by shared UI
      * and gateways.
@@ -260,11 +262,12 @@ export async function bootstrapSocialAdapter(
                 manualAvailability,
                 calendarAvailability,
             );
+            const idle = availabilityPresenceStore.isIdle(accountId);
             return {
                 handle: profile.handle,
-                status: effectiveAvailability.status,
+                status: idle ? "idle" : effectiveAvailability.status,
                 manualStatus: manualAvailability?.status ?? "free",
-                source: effectiveAvailability.source,
+                source: idle ? "presence" : effectiveAvailability.source,
             };
         },
     );
@@ -461,6 +464,7 @@ export async function bootstrapSocialAdapter(
                 return resolver ? resolver(accountId) : null;
             },
             routeContext,
+            availabilityPresenceStore,
         ),
         "social",
     );

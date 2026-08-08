@@ -27,3 +27,7 @@ Pengaturan Pengguna kini memiliki opsi Umum untuk mencegah acara kalender mengub
 ## Kehadiran tidak aktif dan status kalender yang dapat diperluas
 
 Adapter profil kini mengubah lampu status pengguna saat ini menjadi abu-abu ketika pendeteksi kehadiran melaporkan ketidakaktifan dan langsung memulihkannya saat aktivitas berlanjut. Status Tidak aktif diterapkan otomatis dan tidak dapat dipilih secara manual. Status acara kalender diperoleh dari kapabilitas ctx adapter profil, dan acara bebas menggunakan latar transparan.
+
+## Status bersama sesuai visibilitas
+
+Halaman dan pratinjau profil kini menampilkan status pengguna lain sesuai visibilitas profilnya: komunitas dapat dilihat semua orang, teman hanya oleh pengikut, dan privat hanya oleh orang yang diikuti pengguna tersebut. Kehilangan fokus browser langsung melaporkan Tidak aktif, sesi aktif mengirim sinyal berkala, dan avatar pratinjau tetap membulat di bawah lampu status.

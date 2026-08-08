@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { VolatileUserPreferenceStore } from "../preferences.js";
 import {
+    AvailabilityPresenceStore,
     createAvailabilityRoutes,
     resolveEffectiveAvailability,
 } from "../availability.js";
@@ -13,11 +14,11 @@ const profile = {
     displayName: "Alice",
 };
 
-function request(method: string, body?: string) {
+function request(method: string, body?: string, accountId = "alice") {
     return {
         method,
         headers: {
-            authorization: `Bearer ${issueAccessToken("alice", "user", 60)}`,
+            authorization: `Bearer ${issueAccessToken(accountId, "user", 60)}`,
         },
         [Symbol.asyncIterator]: async function* () {
             if (body) yield Buffer.from(body);
@@ -105,4 +106,74 @@ test("a manual update made during an event supersedes that event", () => {
         ),
         { status: "free", source: "manual" },
     );
+});
+
+test("presence reports idle only after every active session expires", () => {
+    const presence = new AvailabilityPresenceStore();
+    presence.update("alice", "desktop", true, 1_000);
+    presence.update("alice", "mobile", false, 20_000);
+
+    assert.equal(presence.isIdle("alice", 30_000), false);
+    assert.equal(presence.isIdle("alice", 50_000), true);
+});
+
+test("availability visibility follows community, friends, and private relationships", async () => {
+    const preferences = new VolatileUserPreferenceStore();
+    const profiles = new Map([
+        ["alice", { ...profile, visibility: "community" }],
+        [
+            "bob",
+            {
+                ...profile,
+                accountId: "bob",
+                handle: "bob",
+                visibility: "community",
+            },
+        ],
+    ]);
+    const follows = new Set<string>();
+    const profileStore = {
+        getProfile: async (accountId: string) => profiles.get(accountId),
+        getProfileByHandle: async (handle: string) => profiles.get(handle),
+        isFollowing: async (followerId: string, followingId: string) =>
+            follows.has(`${followerId}:${followingId}`),
+    } as any;
+    const presence = new AvailabilityPresenceStore();
+    const route = createAvailabilityRoutes(
+        profileStore,
+        preferences,
+        async () => null,
+        undefined,
+        presence,
+    );
+    const presenceResponse = responseCapture();
+    await route(
+        request("PUT", JSON.stringify({ sessionId: "browser", active: false })),
+        presenceResponse.response,
+        new URL("http://localhost/api/v1/social/availability/presence"),
+    );
+    assert.equal(presenceResponse.capture.status, 200);
+
+    async function readAsBob() {
+        const capture = responseCapture();
+        await route(
+            request("GET", undefined, "bob"),
+            capture.response,
+            new URL("http://localhost/api/v1/social/availability/alice"),
+        );
+        return capture.capture;
+    }
+
+    assert.equal((await readAsBob()).status, 200);
+    assert.equal(JSON.parse((await readAsBob()).body).data.status, "idle");
+
+    profiles.set("alice", { ...profiles.get("alice")!, visibility: "friends" });
+    assert.equal((await readAsBob()).status, 404);
+    follows.add("bob:alice");
+    assert.equal((await readAsBob()).status, 200);
+
+    profiles.set("alice", { ...profiles.get("alice")!, visibility: "private" });
+    assert.equal((await readAsBob()).status, 404);
+    follows.add("alice:bob");
+    assert.equal((await readAsBob()).status, 200);
 });

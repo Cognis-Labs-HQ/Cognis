@@ -38,6 +38,7 @@ import { createProfileImageUploadActions } from "./profile-image-upload.js";
 import { createProfileImageSelection } from "./profile-image-selection.js";
 import { resolveBannerCropAspectRatio } from "./image-crop.js";
 import { createProfilePostActions } from "./profile-post-actions.js";
+import { hydrateAvailabilityIndicators } from "./availability.js";
 
 let root = null;
 let i18n = null;
@@ -637,6 +638,7 @@ function bindSocialCardEvents() {
 
 function bindPageEvents() {
     bindProfileHeroEvents();
+    void hydrateAvailabilityIndicators(root);
     const postFormElement = root.querySelector("#new-post-form");
     if (postFormElement instanceof HTMLFormElement) {
         const profileVis = profile?.visibility ?? "hidden";

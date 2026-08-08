@@ -671,6 +671,7 @@ button.dropdown-item {
     background: var(--initials-bg, var(--accent));
     color: #fff;
     font-weight: 700;
+    border-radius: inherit;
 }
 .profile-mini-preview__identity {
     display: grid;
