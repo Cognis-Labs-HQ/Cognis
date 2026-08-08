@@ -158,11 +158,13 @@ export function createAdapterConfigPopup({
                 const isPort =
                     name === "port" || name.toLowerCase().endsWith("port");
                 const isNumber = isPort || name === "codeLength";
+                const usesNumberInput =
+                    isNumber || descriptor?.schemaType === "number";
 
                 let inputHtml;
                 if (isPassword) {
                     inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="password" value="" />`;
-                } else if (isNumber) {
+                } else if (usesNumberInput) {
                     inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="number" value="${value}" />`;
                 } else {
                     inputHtml = `<input id="${escapeHtml(name)}" name="${escapeHtml(name)}" type="text" value="${value}" />`;
@@ -256,9 +258,7 @@ export function createAdapterConfigPopup({
                     return;
                 }
                 config[field.name] =
-                    field.name === "port" || field.name === "codeLength"
-                        ? Number(field.value)
-                        : field.value;
+                    field.type === "number" ? Number(field.value) : field.value;
                 return;
             }
             if (field instanceof HTMLSelectElement) {
@@ -307,6 +307,7 @@ export function createAdapterConfigPopup({
                 ? payload.requiredFields
                 : [];
             const supportsTest = payload.supportsTest === true;
+            const supportsReset = payload.supportsReset === true;
             const schemaFields = Array.isArray(payload.schema)
                 ? payload.schema
                 : [];
@@ -455,6 +456,15 @@ export function createAdapterConfigPopup({
                         label: i18n.t("ui.app.admin.notif.save_settings"),
                         variant: "confirm",
                     },
+                    ...(supportsReset
+                        ? [
+                              {
+                                  id: "reset",
+                                  label: i18n.t("ui.reuse.reset"),
+                                  variant: "danger",
+                              },
+                          ]
+                        : []),
                     {
                         id: "cancel",
                         label: i18n.t("ui.reuse.cancel"),
@@ -462,6 +472,22 @@ export function createAdapterConfigPopup({
                     },
                 ],
                 onAction: async (action, overlay) => {
+                    if (action === "reset") {
+                        const resetResponse = await apiFetch(configUrl, {
+                            method: "DELETE",
+                        });
+                        if (!resetResponse.ok) {
+                            showToast(i18n.t("ui.reuse.save_failed"), {
+                                variant: "error",
+                            });
+                            return false;
+                        }
+                        await onSaved?.();
+                        showToast(i18n.t("ui.app.admin.settings_saved"), {
+                            variant: "success",
+                        });
+                        return true;
+                    }
                     if (action !== "save") return true;
                     if (!(popupFormEl instanceof HTMLElement)) return false;
                     updateRequiredHighlights();

@@ -45,7 +45,7 @@ export class Logger {
 }
 ```
 
-Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (40). `LOG_LEVEL` filters the runtime log stream output (stdout/stderr); persistent log-file writes always include all levels.
+Log levels in priority order: `debug` (10), `info` (20), `warn` (30), `error` (40). `LOG_LEVEL` filters stdout/stderr and `LOG_FILE_LEVEL` independently filters persistent file writes. Administrators can override either adapter configuration at runtime and reset it to the environment values.
 
 Persistent log lines remain JSON objects:
 
@@ -91,6 +91,7 @@ The DB gateway uses the shared logger for its own events but records only summar
 | Variable               | Default             | Description                                                              |
 | ---------------------- | ------------------- | ------------------------------------------------------------------------ |
 | `LOG_LEVEL`            | `info`              | Runtime log-stream verbosity filter: `debug`, `info`, `warn`, `error`    |
+| `LOG_FILE_LEVEL`       | `debug`             | Persistent file verbosity filter: `debug`, `info`, `warn`, `error`       |
 | `LOG_FILE`             | `/app/logs/app.log` | Absolute path for the persistent log file                                |
 | `LOG_FORMAT`           | `pretty`            | Console output format: `pretty` for readable logs or `json` for raw JSON |
 | `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotate the active log file when it reaches this size (bytes)             |
