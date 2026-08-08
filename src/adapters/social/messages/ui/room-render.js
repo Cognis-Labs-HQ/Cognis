@@ -147,6 +147,7 @@ function renderRoomAvatar(room, currentAccountId) {
                 avatarClass: "messages-thread-avatar",
                 imageClass: "messages-thread-avatar-img",
                 fallbackClass: "messages-thread-initials",
+                showAvailability: false,
             });
         }
         const picked = randomSample(members, 4);
@@ -170,6 +171,7 @@ function renderRoomAvatar(room, currentAccountId) {
         fallbackClass: "messages-thread-initials",
         profileHandle: other?.handle || null,
         linkClass: "messages-avatar-link",
+        showAvailability: false,
     });
 }
 

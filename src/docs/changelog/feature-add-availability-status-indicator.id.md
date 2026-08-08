@@ -115,3 +115,7 @@ Pemisah Pengaturan kini memakai warna garis abu-abu redup dari tema dalam mode g
 ## Privasi ketersediaan dan integritas status
 
 Ketersediaan kini menghormati pemblokiran profil sebelum menampilkan status langsung. Kalender mempertahankan status acara khusus yang disetujui capability setelah mulai ulang, dan versi runtime serta dependensi kini sesuai dengan manifes komponennya. Rute ketersediaan dan pengujian terisolasinya juga mengikuti persyaratan organisasi rute dan isolasi komponen.
+
+## Avatar Pesan yang lebih bersih
+
+Bilah samping Pesan, gambar percakapan aktif, dan avatar pengirim tidak lagi menampilkan lampu ketersediaan. Tautan profil tetap dipertahankan.

@@ -41,6 +41,7 @@
  *     fallbackClass: 'my-avatar-initials',
  *     profileHandle: member.handle,
  *     linkClass: 'my-avatar-link',
+ *     showAvailability: false,
  *   });
  *   await hydrateProfileAvatars(container);
  *
@@ -186,6 +187,7 @@ export function isProfileAvatarUnavailable(avatarKey) {
  * @param {string} params.fallbackClass
  * @param {string|null} [params.profileHandle]
  * @param {string} [params.linkClass]
+ * @param {boolean} [params.showAvailability=true]
  * @returns {string}
  */
 export function buildProfileAvatarMarkup({
@@ -197,6 +199,7 @@ export function buildProfileAvatarMarkup({
     fallbackClass,
     profileHandle = null,
     linkClass = "",
+    showAvailability = true,
 }) {
     const safeColorSeed = colorSeed || label;
     const canHydrate = avatarKey && !unavailableAvatarKeys.has(avatarKey);
@@ -212,14 +215,18 @@ export function buildProfileAvatarMarkup({
           )}`
         : "";
     if (profileLink) {
-        const classes = [avatarClass, linkClass, "availability-avatar"]
+        const classes = [
+            avatarClass,
+            linkClass,
+            showAvailability && "availability-avatar",
+        ]
             .filter(Boolean)
             .join(" ");
         return (
             `<a class="${escapeHtml(classes)}"` +
             ` href="${escapeHtml(profileLink)}"` +
             ` aria-label="${escapeHtml(label)}">${avatarContent}` +
-            `${availabilityIndicatorMarkup(profileHandle)}</a>`
+            `${showAvailability ? availabilityIndicatorMarkup(profileHandle) : ""}</a>`
         );
     }
     return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;

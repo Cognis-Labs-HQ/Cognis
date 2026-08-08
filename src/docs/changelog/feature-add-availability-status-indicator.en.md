@@ -115,3 +115,7 @@ Settings dividers now use the theme's muted grey border in dark and light modes.
 ## Availability privacy and status integrity
 
 Availability now respects profile blocking before exposing live status. Calendar preserves capability-approved custom event statuses across restarts, and runtime and dependency versions now match their component manifests. The availability route and isolated tests also follow component route organization and isolation requirements.
+
+## Cleaner Messages avatars
+
+The Messages sidebar, active chat picture, and sender avatars no longer display availability lights, keeping presence indicators out of conversation artwork while retaining profile links.

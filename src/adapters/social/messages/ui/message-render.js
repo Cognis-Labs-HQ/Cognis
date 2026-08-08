@@ -648,6 +648,7 @@ export function formatRoomListAvatar(room, displayedMember, titleSource) {
         fallbackClass: "messages-room-avatar-fallback",
         profileHandle: displayedMember?.handle || null,
         linkClass: "messages-avatar-link",
+        showAvailability: false,
     });
 }
 
@@ -713,6 +714,7 @@ function formatMessageAvatar(message) {
         fallbackClass: "messages-message-avatar-fallback",
         profileHandle: message.senderHandle || null,
         linkClass: "messages-avatar-link",
+        showAvailability: false,
     });
 }
 
@@ -728,6 +730,7 @@ function formatMessageBubbleAvatar(message) {
         fallbackClass: "messages-message-bubble-avatar-fallback",
         profileHandle: message.senderHandle || null,
         linkClass: "messages-avatar-link",
+        showAvailability: false,
     });
 }
 
