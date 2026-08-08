@@ -6,7 +6,7 @@ New notification popups are suppressed while the user is already viewing the pag
 
 ## More visible unread chats
 
-Unread rooms now pulse gently in the Messages side menu, use a red unread counter, and keep long chat names to one line with the complete name available on hover.
+Unread rooms now pulse gently with a subtly rounded outline in the Messages side menu, use a red unread counter, and keep long chat names to one line with the complete name available on hover.
 
 ## Explicit room exit controls
 

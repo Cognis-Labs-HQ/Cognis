@@ -6,7 +6,7 @@ Popup notifikasi baru kini disembunyikan ketika pengguna sedang membuka halaman 
 
 ## Chat belum dibaca lebih mudah terlihat
 
-Ruang yang belum dibaca kini berdenyut lembut di menu samping Pesan, memakai penghitung merah, dan membatasi nama chat panjang menjadi satu baris dengan nama lengkap ditampilkan saat penunjuk diarahkan.
+Ruang yang belum dibaca kini berdenyut lembut dengan garis tepi yang sedikit membulat di menu samping Pesan, memakai penghitung merah, dan membatasi nama chat panjang menjadi satu baris dengan nama lengkap ditampilkan saat penunjuk diarahkan.
 
 ## Kontrol keluar ruang yang jelas
 

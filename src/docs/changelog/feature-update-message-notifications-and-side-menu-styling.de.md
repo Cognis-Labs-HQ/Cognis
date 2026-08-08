@@ -6,7 +6,7 @@ Neue Benachrichtigungs-Popups werden unterdrückt, wenn bereits die zugehörige 
 
 ## Besser sichtbare ungelesene Chats
 
-Ungelesene Räume pulsieren nun dezent im Seitenmenü der Nachrichtenseite, zeigen einen roten Zähler und begrenzen lange Chatnamen auf eine Zeile. Beim Darüberfahren wird der vollständige Name angezeigt.
+Ungelesene Räume pulsieren nun mit einer leicht abgerundeten Kontur dezent im Seitenmenü der Nachrichtenseite, zeigen einen roten Zähler und begrenzen lange Chatnamen auf eine Zeile. Beim Darüberfahren wird der vollständige Name angezeigt.
 
 ## Eindeutige Schaltfläche zum Verlassen
 
