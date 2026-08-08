@@ -344,3 +344,11 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         /window\.history\.replaceState\(null, "", nextUrl\)/,
     );
 });
+test("nextcloud whiteboard crafts account-only user-share destinations", async () => {
+    const bootstrapSource = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../bootstrap.js", import.meta.url), "utf8"),
+    );
+    assert.match(bootstrapSource, /"share:buildUserShareUrl:whiteboard"/);
+    assert.match(bootstrapSource, /userShare: shareId/);
+    assert.match(bootstrapSource, /id: resourceId/);
+});

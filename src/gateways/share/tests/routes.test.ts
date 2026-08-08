@@ -105,6 +105,15 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 `${String(input.label ?? "")}\n${input.shareUrl}`,
             )}`) as never,
     );
+    capabilities.contribute(
+        "share:buildUserShareUrl:meeting",
+        ((input: {
+            shareId: string;
+            resourceId: string;
+            recipientAccountId: string;
+        }) =>
+            `/meetings?shared=${encodeURIComponent(input.shareId)}&recipient=${encodeURIComponent(input.recipientAccountId)}`) as never,
+    );
     const shareEmailRecipients: string[] = [];
     const shareEmailVariables: Array<Record<string, string>> = [];
     const userShareNotifications: Array<Record<string, unknown>> = [];
@@ -546,7 +555,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(userShareNotifications[0]?.category, "share");
     assert.equal(
         userShareNotifications[0]?.actionUrl,
-        restrictedCreateResponse.body.data.shareUrl,
+        `/meetings?shared=${encodeURIComponent(restrictedCreateResponse.body.data.id)}&recipient=bob`,
     );
     const restrictedToken = encodeURIComponent(
         restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],

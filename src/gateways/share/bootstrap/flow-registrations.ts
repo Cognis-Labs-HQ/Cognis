@@ -397,6 +397,13 @@ export async function registerShareBootstrapHooks(input: {
                 >("notify:dispatch");
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
+                const buildUserShareUrl = input.gateway.getCapability<
+                    (share: {
+                        shareId: string;
+                        resourceId: string;
+                        recipientAccountId: string;
+                    }) => string | null
+                >(`share:buildUserShareUrl:${shareRecord?.resourceType ?? ""}`);
                 await Promise.allSettled(
                     userRecipients.map((recipientUsername) =>
                         dispatch({
@@ -404,7 +411,17 @@ export async function registerShareBootstrapHooks(input: {
                             recipientUsername,
                             subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
                             body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
-                            actionUrl: shareRecord?.shareUrl,
+                            actionUrl:
+                                buildUserShareUrl?.({
+                                    shareId: String(
+                                        (shareRecord as { id?: string })?.id ??
+                                            "",
+                                    ),
+                                    resourceId: String(
+                                        shareRecord?.resourceId ?? "",
+                                    ),
+                                    recipientAccountId: recipientUsername,
+                                }) ?? undefined,
                             senderName: "Cognis Share",
                             metadata: {
                                 shareId: (shareRecord as { id?: string })?.id,
