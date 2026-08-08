@@ -2,6 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { submitClientMetrics } from "../ui/client.js";
+import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
+
+test("client telemetry registers its ctx capability", () => {
+    assert.equal(
+        uiCtx.capabilities.get("observability:submitClientMetrics"),
+        submitClientMetrics,
+    );
+});
 
 test("client telemetry retries once when authentication changes in flight", async () => {
     let accessToken = "initial-token";

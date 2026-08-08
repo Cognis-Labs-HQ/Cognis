@@ -12,6 +12,7 @@
  */
 
 import { apiFetch } from "../../../ui/reuse/api-client.js";
+import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 
 export async function submitClientMetrics(payload) {
     const requestToken = localStorage.getItem("cognis_access_token");
@@ -40,3 +41,8 @@ export async function submitClientMetrics(payload) {
 
     return apiFetch("/api/v1/observability/client", requestOptions);
 }
+
+uiCtx.capabilities.contribute(
+    "observability:submitClientMetrics",
+    submitClientMetrics,
+);

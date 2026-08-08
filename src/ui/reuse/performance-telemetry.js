@@ -14,7 +14,7 @@
  * @returns {void}
  */
 
-import { submitClientMetrics } from "../../gateways/observability/ui/client.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const SAMPLE_RATE = 0.1;
 const sampled = Math.random() < SAMPLE_RATE;
@@ -39,7 +39,10 @@ function send(navigation, metrics) {
         metrics: Array.from(metrics, ([name, value]) => ({ name, value })),
     };
     metrics.clear();
-    void submitClientMetrics(payload).catch(() => {});
+    const submitClientMetrics = uiCtx.capabilities.get(
+        "observability:submitClientMetrics",
+    );
+    void submitClientMetrics?.(payload).catch(() => {});
 }
 
 export function observePerformance() {
