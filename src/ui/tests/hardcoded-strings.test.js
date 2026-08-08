@@ -31,6 +31,7 @@ function isAllowed(value) {
     if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)+$/.test(v)) return true;
     if (v.includes("${")) return true;
     if (v.startsWith(".")) return true;
+    if (/^aria-[a-z-]+="[a-z-]+"$/.test(v)) return true;
     if (v.includes("#") && v.includes(",")) return true;
     if (
         /^(none|fade|float|dark|admin|user|enabled|disabled|available|ok|core|page|active)$/.test(

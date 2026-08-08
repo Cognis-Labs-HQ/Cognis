@@ -16,7 +16,9 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
         "src/ui/reuse/page-composer/presence-tracker.js",
     );
     const composerSource = readSource("src/ui/reuse/page-composer/init.js");
-    const layoutCssSource = readSource("src/ui/styles/reuse/layout.css");
+    const layoutCssSource = ["layout.css", "presence.css"]
+        .map((fileName) => readSource(`src/ui/styles/reuse/${fileName}`))
+        .join("\n");
 
     assert.match(pointerSource, /export function createPointerTracker/);
     assert.match(pointerSource, /from "\.\/escape-html\.js"/);

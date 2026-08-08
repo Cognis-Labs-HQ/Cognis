@@ -1,5 +1,3 @@
-import { readFile } from "node:fs/promises";
-import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -11,7 +9,6 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import type { GatewayBootstrapContext } from "../shared.js";
@@ -27,6 +24,9 @@ import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
 import { CalendarShareRegistry } from "./share-registry.js";
 import { createStatusPreferenceRoutes } from "./status-preference/index.js";
+import { registerCalendarUi } from "./ui-registration.js";
+import { registerCalendarComponent } from "./component-registration.js";
+import { createCalendarHtmlRoute } from "./html-route.js";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -971,28 +971,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "calendar",
     );
 
-    const serveCalendarHtml = async (
-        req: IncomingMessage,
-        res: ServerResponse,
-        url: URL,
-    ): Promise<boolean> => {
-        if (req.method !== "GET" || url.pathname !== "/calendar") return false;
-        if (!routeHelpers.getCookieSession(req)) {
-            res.writeHead(302, { location: "/login" });
-            res.end();
-            return true;
-        }
-        routeHelpers.setPageSecurityHeaders(res);
-        const html = await readFile(
-            path.join(GATEWAY_ROOT, "ui", "index.html"),
-            "utf8",
-        );
-        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(html);
-        return true;
-    };
-
-    ctx.routeRegistry.register(serveCalendarHtml, "calendar");
+    ctx.routeRegistry.register(
+        createCalendarHtmlRoute(GATEWAY_ROOT, routeHelpers),
+        "calendar",
+    );
     ctx.routeRegistry.register(
         createCalendarAdapterRoutes(
             "calendar",
@@ -1003,57 +985,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "calendar",
     );
 
-    const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "calendar");
-    uiHooks.registerStaticDir("calendar", GATEWAY_ROOT);
-    uiHooks.registerNavbarPlugin(
-        "/static/gateways/calendar/ui/navbar.js",
-        () => ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
-    );
-    if (ctx.flow.exists("construct-settings-ui")) {
-        ctx.flow.extend(
-            "construct-settings-ui",
-            "augment-sections",
-            { id: "calendar-gateway:status-preference" },
-            () => ({
-                gatewayId: "calendar",
-                sectionId: "calendar-status-preference",
-                targetSectionId: "general",
-                scriptUrl: "/static/gateways/calendar/ui/status-prefs.js",
-                stringsBaseUrl: "/static/gateways/calendar/ui/languages",
-            }),
-        );
-    }
-    uiHooks.registerSpaRoute({
-        id: "calendar-page",
-        pattern: "^/calendar$",
-        base: "/calendar",
-        scriptUrl: "/static/gateways/calendar/ui/app.js",
-        stylesheets: [
-            "/static/styles/page-builder.css",
-            "/static/styles/reuse/page-sections.css",
-            "/static/gateways/calendar/ui/calendar.css",
-        ],
-        isEnabled: () =>
-            ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
-    });
-
-    ctx.routeRegistry.registerPrefix("/api/v1/calendar", "calendar");
-    ctx.gatewayRegistry.register({
-        id: "calendar",
-        name: "Calendar Gateway",
-        version: "1.4.73",
-        description:
-            "Internal calendar management with pluggable CalDAV and ICS adapters.",
-        publisher: "Cognis Labs HQ",
-        hasAdapters: true,
-    });
-
-    if (ctx.flow.exists("bootstrap-platform")) {
-        ctx.flow.extend(
-            "bootstrap-platform",
-            "register-flows",
-            { id: "calendar-gateway:bootstrap-registration" },
-            () => ({ gatewayId: "calendar", registeredFlowIds: [] }),
-        );
-    }
+    registerCalendarUi(ctx, GATEWAY_ROOT);
+    registerCalendarComponent(ctx);
 }

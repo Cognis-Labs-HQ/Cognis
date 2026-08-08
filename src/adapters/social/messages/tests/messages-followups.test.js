@@ -16,6 +16,13 @@ function readMessagesUiBundle() {
         .join("\n");
 }
 
+function readMessagesCssBundle() {
+    const uiDir = resolve(ROOT, "src/adapters/social/messages/ui");
+    return ["messages.css", "thread.css"]
+        .map((entry) => readFileSync(join(uiDir, entry), "utf8"))
+        .join("\n");
+}
+
 test("all chat consumers use the adapter-owned key loading flow", () => {
     const source = readMessagesUiBundle();
     assert.match(source, /registerFlow\(FLOW_ID/);
@@ -46,10 +53,7 @@ test("unread chats expose an animated alert state and complete title", () => {
         resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
         "utf8",
     );
-    const styleSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
-        "utf8",
-    );
+    const styleSource = readMessagesCssBundle();
 
     assert.match(renderSource, /messages-room--unread/);
     assert.match(renderSource, /title=\"\$\{escapeHtml\(titleSource\)\}\"/);
@@ -147,10 +151,7 @@ test("messages member count control opens local member summary without jitsi cal
 });
 
 test("messages IRC layout keeps read receipts inline and centered", () => {
-    const messagesCssSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
-        "utf8",
-    );
+    const messagesCssSource = readMessagesCssBundle();
     const variantsCssSource = readFileSync(
         resolve(
             ROOT,
@@ -216,10 +217,7 @@ test("messages speech bubbles remove tails and overlay avatars", () => {
 
 test("messages reactions and receipts include advanced interaction safeguards", () => {
     const appSource = readMessagesUiBundle();
-    const messagesCssSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
-        "utf8",
-    );
+    const messagesCssSource = readMessagesCssBundle();
     const sharedCssSource = readFileSync(
         resolve(
             ROOT,
@@ -293,10 +291,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
 
 test("messages templates are opened from sidebar in a popup", () => {
     const appSource = readMessagesUiBundle();
-    const messagesCssSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
-        "utf8",
-    );
+    const messagesCssSource = readMessagesCssBundle();
     const templatesCssSource = readFileSync(
         resolve(
             ROOT,
