@@ -20,7 +20,7 @@ test("adding a blank email displays a warning toast", () => {
 
 test("General settings remain continuous with the danger zone last", () => {
     const contributionsPosition = settingsSource.indexOf(
-        "generalContributions.map((section) => section.renderContent())",
+        "renderContributedSections(generalContributions)",
     );
     const dangerZonePosition = settingsSource.indexOf(
         '<section class="settings-danger-zone"',

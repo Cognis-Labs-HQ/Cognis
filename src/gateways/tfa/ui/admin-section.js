@@ -1,4 +1,4 @@
-export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
+export function createAdminSection({ i18n, apiFetch, showToast }) {
     let enforceAllUsers = false;
 
     const dataReady = apiFetch("/api/v1/system/security")
@@ -14,26 +14,36 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             enforceAllUsers = false;
         });
 
-    function renderContent() {
-        return `
-      <div class="security-settings-form">
-        <div class="components-section">
-          <h3 class="components-section-heading">
-          ${escapeHtml(i18n.t("ui.app.admin.security.tfa_enforce_all_users_label"))}
-          </h3>
-        <p>${escapeHtml(i18n.t("ui.app.admin.security.tfa_enforce_all_users_hint"))}</p>
-          <div class="security-field-row">
-            <label class="switch">
-              <input id="tfa-admin-enforce-all-users" type="checkbox" ${enforceAllUsers ? "checked" : ""} />
-              <span class="slider"></span>
-            </label>
-          </div>
-          <div class="security-field-row">
-            <button class="btn-animated" type="button" id="tfa-admin-save-btn">${escapeHtml(i18n.t("ui.reuse.save"))}</button>
-          </div>
-        </div>
-      </div>
-    `;
+    function buildContent() {
+        return [
+            {
+                id: "tfa-enforcement",
+                items: [
+                    {
+                        type: "title",
+                        text: i18n.t(
+                            "ui.app.admin.security.tfa_enforce_all_users_label",
+                        ),
+                    },
+                    {
+                        type: "text",
+                        text: i18n.t(
+                            "ui.app.admin.security.tfa_enforce_all_users_hint",
+                        ),
+                    },
+                    {
+                        type: "toggle",
+                        id: "tfa-admin-enforce-all-users",
+                        checked: enforceAllUsers,
+                    },
+                    {
+                        type: "button",
+                        id: "tfa-admin-save-btn",
+                        text: i18n.t("ui.reuse.save"),
+                    },
+                ],
+            },
+        ];
     }
 
     function bindInteractions(rootElement) {
@@ -69,21 +79,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         label: i18n.t("gateway.tfa.settings.section_title"),
         parentSectionId: "security",
         dataReady,
-        subComposerOptions: {
-            allowCustomization: false,
-            preferenceKey: "administration-tfa-layout",
-            heading: i18n.t("gateway.tfa.settings.section_title"),
-            elements: [
-                {
-                    id: "tfa-administration-enforcement",
-                    label: i18n.t("gateway.tfa.settings.section_title"),
-                    pinned: true,
-                    render: () => renderContent(),
-                },
-            ],
-            onRender: (rootElement) => {
-                bindInteractions(rootElement);
-            },
+        get content() {
+            return buildContent();
+        },
+        onRender: (rootElement) => {
+            bindInteractions(rootElement);
         },
     };
 }

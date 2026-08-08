@@ -66,7 +66,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Database (db)         | `src/gateways/db/`            | `1.3.7`    |
 | Authentication (auth) | `src/gateways/auth/`          | `1.7.43`   |
 | Share                 | `src/gateways/share/`         | `1.6.45`   |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.13`   |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.14`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`    |
 | Social                | `src/gateways/social/`        | `1.2.11`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.5`    |
@@ -74,7 +74,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Logging               | `src/gateways/logging/`       | `1.5.11`   |
 | Observability         | `src/gateways/observability/` | `1.0.3`    |
 | Study                 | `src/gateways/study/`         | `1.5.10`   |
-| Calendar              | `src/gateways/calendar/`      | `1.4.70`   |
+| Calendar              | `src/gateways/calendar/`      | `1.4.71`   |
 
 ## コア契約
 

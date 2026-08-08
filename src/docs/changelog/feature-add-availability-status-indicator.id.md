@@ -99,3 +99,7 @@ Pembaruan Status Kalender kini tetap berada dalam kartu pengaturan Umum yang ber
 ## Pengaturan status yang lebih jelas dan konsisten
 
 Pembaruan Status Kalender kini memiliki jendela informasi yang menjelaskan pengaruh acara terhadap ketersediaan. Pengaturan Pengguna kini memakai struktur judul bagian, isi, jarak, dan ukuran yang sama dengan Administrasi.
+
+## Kontribusi pengaturan terstruktur
+
+Pengaturan Pengguna dan Administrasi kini menerima grup konten deklaratif untuk judul, subjudul, teks penjelasan, tombol, sakelar, dan pemisah. Halaman merender struktur tersebut, memisahkan grup kontribusi secara otomatis, mengamankan teks, dan menerapkan satu kumpulan kelas tata letak yang baku. Pengaturan status Kalender dan administrasi TFA kini memakai kontrak ini sebagai pengganti HTML mentah.

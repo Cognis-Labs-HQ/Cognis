@@ -99,3 +99,7 @@ Kalender-Statusaktualisierungen bleiben jetzt in der durchgehenden Karte für al
 ## Verständlichere, einheitliche Statuseinstellungen
 
 Die Kalender-Statusaktualisierungen enthalten jetzt ein Informationsfenster, das erklärt, wie Termine die Verfügbarkeit beeinflussen. Die Benutzereinstellungen verwenden nun dieselbe Struktur für Abschnittsüberschriften, Inhalte, Abstände und Größen wie die Administration.
+
+## Strukturierte Einstellungsbeiträge
+
+Benutzereinstellungen und Administration akzeptieren jetzt deklarative Inhaltsgruppen für Titel, Unterüberschriften, Erklärungstexte, Schaltflächen, Umschalter und Trennlinien. Die Seiten rendern diese Struktur selbst, trennen beigesteuerte Gruppen automatisch, maskieren Text und wenden einheitliche Layoutklassen an. Kalenderstatus- und TFA-Administrationseinstellungen verwenden nun diesen Vertrag statt rohem HTML.

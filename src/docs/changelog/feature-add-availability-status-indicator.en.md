@@ -99,3 +99,7 @@ Calendar Status Updates now remains in the continuous General settings card, use
 ## Clearer, consistent status settings
 
 Calendar Status Updates now includes an information popup explaining how events affect availability. User Settings now uses the same section heading, body, spacing, and sizing structure as Administration for a more consistent experience.
+
+## Structured settings contributions
+
+User Settings and Administration now accept declarative content groups for titles, subheadings, explanatory text, buttons, toggles, and dividers. The pages render the structure themselves, automatically separate contributed groups, escape text, and apply one canonical set of layout classes. Calendar status and TFA administration settings now use this contract instead of supplying raw HTML.

@@ -50,6 +50,7 @@ import {
     normalizeMessageStyle,
 } from "../../reuse/message-style-options.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
+import { renderStructuredContent } from "../../reuse/structured-content.js";
 import {
     getSettingsShellOptions,
     resolveSettingsSetupRedirect,
@@ -420,6 +421,25 @@ export async function mount(root, { signal } = {}) {
         (section) => section.targetSectionId !== "general",
     );
 
+    function renderContributedSection(section) {
+        if (Array.isArray(section.content)) {
+            return renderStructuredContent(section.content);
+        }
+        return section.renderContent?.() ?? "";
+    }
+
+    function renderContributedSections(sections) {
+        return sections
+            .map((section, sectionIndex) => {
+                const divider =
+                    sectionIndex === 0
+                        ? ""
+                        : '<hr class="structured-content__divider" />';
+                return `${divider}${renderContributedSection(section)}`;
+            })
+            .join("");
+    }
+
     function initThemePrefs({ onDirtyChange }) {
         let currentMode = savedMode;
 
@@ -538,7 +558,7 @@ export async function mount(root, { signal } = {}) {
                 </label>
               </div>
             </div>
-            ${generalContributions.map((section) => section.renderContent()).join("")}
+            ${renderContributedSections(generalContributions)}
             <section class="settings-danger-zone" aria-labelledby="settings-danger-zone-title">
               <h3 id="settings-danger-zone-title" class="components-section-heading">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
               <p>${escapeHtml(i18n.t("ui.app.settings.danger_zone_body"))}</p>
@@ -715,7 +735,7 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: `${section.id}-content`,
                         label: section.label,
-                        render: () => section.renderContent(),
+                        render: () => renderContributedSection(section),
                     },
                 ],
                 onRender: () => section.onRender(),

@@ -1,0 +1,40 @@
+.structured-content__group {
+    display: grid;
+    gap: 10px;
+}
+
+.structured-content__title,
+.structured-content__subheading,
+.structured-content__text {
+    margin: 0;
+}
+
+.structured-content__title {
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--color-border, #e2e8f0);
+    font-size: 1em;
+    font-weight: 700;
+}
+
+.structured-content__subheading {
+    font-size: 0.95em;
+    font-weight: 650;
+}
+
+.structured-content__text {
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+.structured-content__button,
+.structured-content__control {
+    justify-self: start;
+}
+
+.structured-content__divider {
+    width: 100%;
+    height: 1px;
+    margin: 20px 0;
+    border: 0;
+    background: var(--color-border, #e2e8f0);
+}

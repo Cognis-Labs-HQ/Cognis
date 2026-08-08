@@ -1,5 +1,3 @@
-import { escapeHtml } from "/static/reuse/escape-html.js";
-import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     fetchStatusPreference,
@@ -10,6 +8,26 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     let savedAllowed = true;
     let pendingAllowed = true;
     const preferenceId = "calendar-allow-status-updates";
+    const content = [
+        {
+            id: "calendar-status-updates",
+            items: [
+                {
+                    type: "title",
+                    id: "calendar-status-updates-title",
+                    text: i18n.t("gateway.calendar.status_updates_title"),
+                    hint: i18n.t("gateway.calendar.status_updates_hint"),
+                    hintAriaLabel: i18n.t("ui.reuse.more_information"),
+                },
+                {
+                    type: "toggle",
+                    id: preferenceId,
+                    checked: true,
+                    label: i18n.t("gateway.calendar.status_updates_allow"),
+                },
+            ],
+        },
+    ];
 
     function updateSelection() {
         const input = root.querySelector(`#${preferenceId}`);
@@ -20,22 +38,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         id: "calendar-status-preference",
         targetSectionId: "general",
         label: i18n.t("gateway.calendar.status_updates_title"),
-        renderContent: () => {
-            const tooltipAria = i18n.t("ui.reuse.more_information");
-            return `
-          <div class="components-section">
-            <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("gateway.calendar.status_updates_title"))}
-              ${renderInfoTooltip(i18n.t("gateway.calendar.status_updates_hint"), tooltipAria, "calendar-status-updates")}
-            </h3>
-            <div class="components-section-body">
-            <label class="switch" aria-label="${escapeHtml(i18n.t("gateway.calendar.status_updates_allow"))}">
-              <input id="${preferenceId}" type="checkbox" checked />
-              <span class="slider"></span>
-            </label>
-            </div>
-          </div>`;
-        },
+        content,
         async onRender() {
             try {
                 savedAllowed = !(await fetchStatusPreference());
