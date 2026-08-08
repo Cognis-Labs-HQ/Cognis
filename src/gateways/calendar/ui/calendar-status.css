@@ -34,6 +34,9 @@
 }
 
 .calendar-events-list .calendar-event-status--tentative,
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status--tentative:hover,
 .dashboard-upcoming-event-link.calendar-event-status--tentative {
     background:
         repeating-linear-gradient(
@@ -54,6 +57,9 @@
 }
 
 .calendar-events-list .calendar-event-status--busy,
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status--busy:hover,
 .dashboard-upcoming-event-link.calendar-event-status--busy {
     background: color-mix(
         in srgb,
@@ -63,17 +69,34 @@
 }
 
 .calendar-events-list .calendar-event-status--free,
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status--free:hover,
 .dashboard-upcoming-event-link.calendar-event-status--free {
     background: transparent;
 }
 
-.app-shell .calendar-upcoming-item > .calendar-upcoming-button:hover {
+.calendar-events-list .calendar-upcoming-item {
+    padding: 0;
+    border: 0;
     background: transparent;
-    transform: none;
 }
 
-.calendar-upcoming-item:has(> .calendar-upcoming-button:hover) {
+.toolbar .calendar-upcoming-button.calendar-event-status {
+    min-width: 0;
+    min-height: 0;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--field-border);
+    border-left: 4px solid
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb));
+    border-radius: 10px;
+}
+
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status:hover {
     border-color: var(--accent-2, var(--accent));
+    transform: none;
 }
 
 .dashboard-upcoming-event-link.calendar-event-status {

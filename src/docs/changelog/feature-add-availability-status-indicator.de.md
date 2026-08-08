@@ -47,3 +47,7 @@ Kalenderstatus-Stile werden nun über das Stylesheet der Kalenderseite oder durc
 ## Statushintergründe bleiben beim Darüberfahren erhalten
 
 Beim Darüberfahren über Kalenderterminkarten wird der Hintergrund für „Beschäftigt“, „Frei“ oder „Vorläufig“ nicht mehr ersetzt. Bei bevorstehenden Terminen bleibt der Statuseffekt innerhalb der abgerundeten Terminkarte, während die Rückmeldung beim Darüberfahren auf deren Rahmen beschränkt ist.
+
+## Kompakte bevorstehende Termine und Kalenderüberschrift
+
+Bei bevorstehenden Terminen wird der Statushintergrund nun auf die umrandete Terminschaltfläche statt auf den übergroßen Listencontainer angewendet; statusspezifische Hover-Hintergründe überschreiben den allgemeinen Toolbar-Hover. Die Überschrift „Meine Kalender“ reserviert nun eine eigene Spalte für die Schaltfläche „Neu“, sodass sich die Steuerelemente nicht mehr überlagern.

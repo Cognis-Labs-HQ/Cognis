@@ -280,11 +280,6 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     font-weight: 700;
 }
 
-.calendar-upcoming-item {
-    border-left: 4px solid
-        var(--calendar-event-stripe, var(--btn-confirm-bg, #1f8ceb));
-}
-
 .calendar-empty {
     opacity: 0.75;
 }
@@ -320,17 +315,15 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .calendar-toolbar-heading {
-    position: relative;
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: center;
     gap: 0.6rem;
 }
 
 .calendar-toolbar-heading h3 {
     text-align: center;
     margin: 0;
-    flex: 1 1 auto;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -338,15 +331,13 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .toolbar .calendar-toolbar-add {
-    position: absolute;
-    inset-inline-end: 0;
     border: 1px solid var(--field-border);
     border-radius: 8px;
     background: transparent;
     color: inherit;
     width: auto;
     height: 2.25rem;
-    min-width: 2.25rem;
+    min-width: max-content;
     min-height: 2.25rem;
     padding: 0 0.65rem;
     font-size: 1rem;

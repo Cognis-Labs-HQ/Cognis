@@ -242,11 +242,11 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     );
     assert.match(
         HELPERS_SOURCE,
-        /calendar-upcoming-item \$\{calendarEventStatusClasses\(event\.status\)\}/,
+        /calendar-upcoming-button \$\{calendarEventStatusClasses\(event\.status\)\}/,
     );
     assert.match(
         PENDING_RENDER_SOURCE,
-        /calendar-upcoming-item \$\{calendarEventStatusClasses\(event\.status\)\}/,
+        /calendar-upcoming-button \$\{calendarEventStatusClasses\(event\.status\)\}/,
     );
     assert.match(
         DASHBOARD_SOURCE,
@@ -276,13 +276,21 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
             ),
         );
     }
+    for (const status of ["busy", "free", "tentative"]) {
+        assert.match(
+            STATUS_CSS_SOURCE,
+            new RegExp(
+                `calendar-upcoming-button\\.calendar-event-status--${status}:hover`,
+            ),
+        );
+    }
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-upcoming-item > \.calendar-upcoming-button:hover\s*\{[\s\S]*background:\s*transparent;[\s\S]*transform:\s*none;/,
+        /calendar-events-list \.calendar-upcoming-item\s*\{[\s\S]*padding:\s*0;[\s\S]*border:\s*0;[\s\S]*background:\s*transparent;/,
     );
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-upcoming-item:has\(> \.calendar-upcoming-button:hover\)\s*\{[\s\S]*border-color:/,
+        /calendar-upcoming-button\.calendar-event-status\s*\{[\s\S]*border-radius:\s*10px;/,
     );
 });
 
@@ -639,6 +647,14 @@ test("shared events stay visible in Upcoming and calendar layout is fixed", () =
     assert.match(
         CSS_SOURCE,
         /\.calendar-toolbar-heading h3\s*\{[\s\S]*text-align:\s*center/,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-heading\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) auto/,
+    );
+    assert.doesNotMatch(
+        CSS_SOURCE,
+        /\.toolbar \.calendar-toolbar-add\s*\{[^}]*position:\s*absolute/,
     );
     assert.match(
         CSS_SOURCE,

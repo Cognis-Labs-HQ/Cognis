@@ -47,3 +47,7 @@ Calendar status styles now load through the Calendar page stylesheet or an expli
 ## Status backgrounds persist on hover
 
 Hovering Calendar event cards no longer replaces their busy, free, or tentative background. Upcoming Events keep the status effect inside the rounded event card while hover feedback is limited to its border.
+
+## Compact upcoming cards and calendar heading
+
+Upcoming Events now apply status backgrounds to the bordered event button instead of its oversized list container, and state-specific hover backgrounds override the generic toolbar hover. The My Calendars heading now reserves a dedicated column for the New button so the controls no longer overlap.

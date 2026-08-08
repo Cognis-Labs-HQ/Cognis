@@ -427,8 +427,8 @@ function renderToolbarSummary(summary, pendingEvents, i18n) {
               .map(
                   (
                       event,
-                  ) => `<li class="calendar-upcoming-item ${calendarEventStatusClasses(event.status)}" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-          <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([formatDateTime(event.startAt), event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, formatDateTime(event.startAt), event.calendarName, event.location, event.description].filter(Boolean).join(" "))}">
+                  ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
+          <button type="button" class="calendar-upcoming-button ${calendarEventStatusClasses(event.status)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([formatDateTime(event.startAt), event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, formatDateTime(event.startAt), event.calendarName, event.location, event.description].filter(Boolean).join(" "))}">
             <strong>${escapeHtml(event.title)}</strong>
             <div>${formatDateTime(event.startAt)}</div>
           </button>
@@ -447,8 +447,8 @@ function renderUpcomingEvents(events, i18n) {
         .map(
             (
                 event,
-            ) => `<li class="calendar-upcoming-item ${calendarEventStatusClasses(event.status)}" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-        <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([formatDateTime(event.startAt), event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, formatDateTime(event.startAt), event.calendarName, event.location, event.description].filter(Boolean).join(" "))}" aria-label="${escapeHtml(event.meetingUrl ? `${event.title} — ${i18n.t("gateway.calendar.event_meeting_link")}` : event.title)}">
+            ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
+        <button type="button" class="calendar-upcoming-button ${calendarEventStatusClasses(event.status)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}" data-search-category="Calendar Events" data-search-label="${escapeHtml(event.title)}" data-search-description="${escapeHtml([formatDateTime(event.startAt), event.calendarName].filter(Boolean).join(" · "))}" data-search-text="${escapeHtml([event.title, formatDateTime(event.startAt), event.calendarName, event.location, event.description].filter(Boolean).join(" "))}" aria-label="${escapeHtml(event.meetingUrl ? `${event.title} — ${i18n.t("gateway.calendar.event_meeting_link")}` : event.title)}">
           <strong>${event.meetingUrl ? `<span class="calendar-slot-event-video-icon" title="${escapeHtml(i18n.t("gateway.calendar.event_meeting_link"))}" aria-hidden="true">🎥</span>` : ""}${escapeHtml(event.title)}</strong>
           <div>${formatDateTime(event.startAt)} - ${formatDateTime(event.endAt)}</div>
           <div>${renderEventBadges(event, i18n)}</div>

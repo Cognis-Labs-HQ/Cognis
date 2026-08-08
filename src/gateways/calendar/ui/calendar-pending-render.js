@@ -30,8 +30,8 @@ export function createRenderPendingEvents({
           .map(
               (
                   event,
-              ) => `<li class="calendar-upcoming-item ${calendarEventStatusClasses(event.status)}" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-          <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
+              ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
+          <button type="button" class="calendar-upcoming-button ${calendarEventStatusClasses(event.status)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
             <strong>${escapeHtml(event.title)}</strong>
             <div>${formatDateTime(event.startAt)}</div>
           </button>

@@ -47,3 +47,7 @@ Gaya status Kalender kini dimuat melalui lembar gaya halaman Kalender atau permi
 ## Latar status tetap saat diarahkan
 
 Mengarahkan penunjuk ke kartu acara Kalender tidak lagi mengganti latar Sibuk, Luang, atau Tentatif. Acara Mendatang mempertahankan efek status di dalam kartu acara yang membulat, sedangkan umpan balik saat diarahkan dibatasi pada bingkainya.
+
+## Kartu acara mendatang dan judul kalender yang ringkas
+
+Acara Mendatang kini menerapkan latar status pada tombol acara berbatas, bukan pada wadah daftar yang terlalu besar, dan latar hover khusus status mengesampingkan hover bilah alat umum. Judul Kalender Saya kini menyediakan kolom khusus untuk tombol Baru sehingga kontrol tidak lagi bertumpuk.
