@@ -95,6 +95,23 @@ test("visible statuses, including the signed-in user, are polled", () => {
     assert.doesNotMatch(availability, /data-availability-handle[^\n]+:not\(/);
 });
 
+test("guest sessions do not poll account availability", () => {
+    const availability = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.js"),
+        "utf8",
+    );
+
+    assert.match(availability, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(
+        availability,
+        /function reportPresenceActivity[\s\S]*if \(isGuestSession\(\)\)/,
+    );
+    assert.match(
+        availability,
+        /function fetchAvailability[\s\S]*if \(isGuestSession\(\)\)/,
+    );
+});
+
 test("availability renderer exposes immediate ctx refresh", () => {
     const availability = readFileSync(
         resolve(PROFILE_ROOT, "ui/availability.js"),

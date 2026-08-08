@@ -42,8 +42,12 @@ window.addEventListener("cognis:notification-action", (event) => {
             if (!response.ok || !payload?.data) {
                 throw new Error("share_resolution_failed");
             }
+            const sharePath = new URL(actionUrl, window.location.origin)
+                .pathname;
             const navigationUrl = String(
-                payload.data.navigationUrl ?? "",
+                payload.data.guestAccessToken
+                    ? sharePath
+                    : payload.data.navigationUrl || sharePath,
             ).trim();
             if (!navigationUrl) {
                 throw new Error("share_delivery_unavailable");

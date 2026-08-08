@@ -13,6 +13,10 @@ const PRESENCE_SESSION_KEY = "cognis_availability_presence_session";
 let locallyIdle = false;
 let locallyActive = true;
 
+function isGuestSession() {
+    return uiCtx.capabilities.get("session:isGuest")?.() === true;
+}
+
 function notifyAvailabilitySubscribers(availability) {
     for (const subscriber of availabilitySubscribers) {
         subscriber(availability);
@@ -33,6 +37,7 @@ function getPresenceSessionId() {
 }
 
 function reportPresenceActivity(active, keepalive = false) {
+    if (isGuestSession()) return Promise.resolve(null);
     return apiFetch("/api/v1/social/availability/presence", {
         method: "PUT",
         headers: { "content-type": "application/json" },
@@ -60,6 +65,7 @@ async function applyIndicatorStatus(indicator, status, i18n) {
 }
 
 export async function fetchAvailability(handle = "") {
+    if (isGuestSession()) return null;
     const normalizedHandle = String(handle).replace(/^@/, "");
     const cacheKey = normalizedHandle || "self";
     if (availabilityCache.has(cacheKey)) return availabilityCache.get(cacheKey);
@@ -80,6 +86,7 @@ export function availabilityIndicatorMarkup(handle, label = "") {
 }
 
 export async function hydrateAvailabilityIndicators(container = document) {
+    if (isGuestSession()) return;
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
@@ -101,6 +108,7 @@ export async function hydrateAvailabilityIndicators(container = document) {
 }
 
 export async function refreshAvailabilityIndicators(container = document) {
+    if (isGuestSession()) return null;
     availabilityCache.clear();
     await hydrateAvailabilityIndicators(container);
     const availability = await fetchAvailability();

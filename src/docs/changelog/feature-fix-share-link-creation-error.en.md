@@ -18,4 +18,4 @@ Shared pages now use the Share gateway's guest-session capability when choosing 
 
 ## Protected shares keep their guest keyring
 
-Shared pages now reuse one resolved guest session for their full lifecycle instead of resolving a new guest identity when a mounted component initializes. Guest keyrings remain session-only, retain protected meeting credentials, and no longer call account keyring or release-changelog APIs. Pointer-style controls are also removed during SPA navigation unless the destination page enables pointer tracking in its composer manifest.
+Shared pages now reuse one resolved guest session for their full lifecycle instead of resolving a new guest identity when a mounted component initializes. Guest keyrings remain session-only, retain protected meeting credentials, and no longer call account keyring or release-changelog APIs. Pointer-style controls are also removed during SPA navigation unless the destination page enables pointer tracking in its composer manifest. User-share notifications now open the canonical Share gateway page, and guest identities no longer run account validation or Social availability requests.

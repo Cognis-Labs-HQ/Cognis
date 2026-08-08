@@ -274,6 +274,21 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             ?.endsWith("src/adapters/share/user"),
         true,
     );
+    assert.deepEqual(
+        uiRegistry.listSpaRoutes().find((route) => route.id === "share-view"),
+        {
+            id: "share-view",
+            pattern: "^/share/[^/]+$",
+            base: "/share",
+            scriptUrl: "/static/gateways/share/ui/app/index.js",
+            stylesheets: [
+                "/static/styles/page-builder.css",
+                "/static/styles/reuse/layout.css",
+                "/static/styles/reuse/page-sections.css",
+                "/static/gateways/share/ui/app/share-layout.css",
+            ],
+        },
+    );
 
     const response = new ResponseRecorder();
     await dispatchRoute(

@@ -246,7 +246,7 @@ uiCtx.extendFlow(
             guestKeyring: shareData.guestKeyring ?? null,
         };
 
-        if (hasValidatedAccountSession) {
+        if (hasValidatedAccountSession && shareData.directAccess === true) {
             // Logged-in recipients retain their full account session. The
             // renderer receives the scoped guest token separately for
             // share-only API calls, so notification navigation never swaps

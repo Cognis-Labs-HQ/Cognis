@@ -55,7 +55,13 @@ const GUEST_SESSION_ACTIVE_STORAGE_KEY = "cognis_share_guest_token_active";
  */
 export function isViewingAsGuest() {
     if (typeof sessionStorage === "undefined") return false;
-    return sessionStorage.getItem(GUEST_SESSION_ACTIVE_STORAGE_KEY) === "1";
+    const accountId = String(
+        globalThis.localStorage?.getItem("cognis_account") ?? "",
+    ).trim();
+    return (
+        sessionStorage.getItem(GUEST_SESSION_ACTIVE_STORAGE_KEY) === "1" ||
+        accountId.startsWith("share:")
+    );
 }
 
 export function mountShareButton({

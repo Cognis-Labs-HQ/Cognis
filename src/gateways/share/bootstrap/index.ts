@@ -176,6 +176,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
 
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "share");
     uiHooks.registerStaticDir("share", GATEWAY_ROOT);
+    uiHooks.registerSpaRoute({
+        id: "share-view",
+        pattern: "^/share/[^/]+$",
+        base: "/share",
+        scriptUrl: "/static/gateways/share/ui/app/index.js",
+        stylesheets: [
+            "/static/styles/page-builder.css",
+            "/static/styles/reuse/layout.css",
+            "/static/styles/reuse/page-sections.css",
+            "/static/gateways/share/ui/app/share-layout.css",
+        ],
+    });
     for (const adapter of gateway.listAdapters()) {
         uiHooks.registerAdapterStaticDir(
             adapter.id,
@@ -196,7 +208,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.6.44",
+        version: "1.6.48",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

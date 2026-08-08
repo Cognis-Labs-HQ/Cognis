@@ -41,6 +41,10 @@ const shareAppSource = await readFile(
     new URL("../ui/app/index.js", import.meta.url),
     "utf8",
 );
+const shareButtonSource = await readFile(
+    new URL("../ui/reuse/share-button.js", import.meta.url),
+    "utf8",
+);
 
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
@@ -180,15 +184,16 @@ test("selected recipient badges track the pending permission", () => {
 });
 
 test("logged-in share recipients keep their account session", () => {
-    assert.match(sessionFlowSource, /if \(hasValidatedAccountSession\)/);
+    assert.match(
+        sessionFlowSource,
+        /hasValidatedAccountSession &&\s*shareData\.directAccess === true/,
+    );
     assert.match(
         sessionFlowSource,
         /guestAccessToken: shareData\.guestAccessToken/,
     );
-    assert.doesNotMatch(
-        sessionFlowSource,
-        /priorSessionResult\?\.valid && shareData\.directAccess === true/,
-    );
+    assert.match(shareAppSource, /import "\.\.\/session-flow-hooks\.js"/);
+    assert.match(shareButtonSource, /accountId\.startsWith\("share:"\)/);
 });
 
 test("anonymous share guests activate a temporary unlocked keyring", () => {
@@ -231,6 +236,8 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareActionSource, /resolveReceivedShare/);
     assert.match(receivedShareActionSource, /useAccountKeyring/);
     assert.match(receivedShareActionSource, /payload\.data\.navigationUrl/);
+    assert.match(receivedShareActionSource, /payload\.data\.guestAccessToken/);
+    assert.match(receivedShareActionSource, /\? sharePath/);
     assert.match(
         receivedShareActionSource,
         /await navigateTo\(navigationUrl\)/,

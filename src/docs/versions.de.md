@@ -50,8 +50,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.48` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.43` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.49` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.44` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.11` |
 | User Share            | `src/adapters/share/user/`          | `1.1.12` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -65,7 +65,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`  |
 | Authentication (auth) | `src/gateways/auth/`          | `1.7.45` |
-| Share                 | `src/gateways/share/`         | `1.6.47` |
+| Share                 | `src/gateways/share/`         | `1.6.48` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
 | Social                | `src/gateways/social/`        | `1.2.11` |
@@ -74,7 +74,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Logging               | `src/gateways/logging/`       | `1.5.11` |
 | Observability         | `src/gateways/observability/` | `1.0.5`  |
 | Study                 | `src/gateways/study/`         | `1.5.10` |
-| Calendar              | `src/gateways/calendar/`      | `1.4.74` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.75` |
 
 ## Kernverträge
 
@@ -99,7 +99,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.67` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.44` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.68` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.45` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

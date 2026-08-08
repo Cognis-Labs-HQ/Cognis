@@ -1,3 +1,4 @@
+import "../session-flow-hooks.js";
 import {
     applyDocumentTitle,
     createI18n,
