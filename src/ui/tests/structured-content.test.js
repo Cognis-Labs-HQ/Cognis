@@ -42,12 +42,14 @@ test("structured content ignores unknown item types", () => {
     assert.doesNotMatch(markup, /unsafe/);
 });
 
-test("structured content dividers use the softened border tint", () => {
+test("structured content dividers use the theme's muted border", () => {
     const styles = readFileSync(
         new URL("../styles/reuse/structured-content.css", import.meta.url),
         "utf8",
     );
 
-    assert.match(styles, /structured-content__divider[\s\S]*color-mix\(/);
-    assert.match(styles, /color-border[^;]*55%/);
+    assert.match(
+        styles,
+        /structured-content__divider[\s\S]*background: var\(--border\)/,
+    );
 });

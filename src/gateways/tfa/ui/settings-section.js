@@ -711,29 +711,31 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         return `
       <div class="settings-auth-tfa">
         <div class="sub-composer-inner content-grid--two-column">
-          <div class="widget-card">
-            <div class="settings-language-heading-row">
-              <h4 class="structured-content__subheading">${i18n.t("gateway.tfa.settings.available_methods")}</h4>
+          <section class="components-section">
+            <h3 class="components-section-heading">${i18n.t("gateway.tfa.settings.available_methods")}</h3>
+            <div class="components-section-body">
+              <table id="available-tfa-methods" class="language-table">${renderTfaRows(available, false)}</table>
             </div>
-            <table id="available-tfa-methods" class="language-table">${renderTfaRows(available, false)}</table>
-          </div>
-          <div class="widget-card">
-            <div class="settings-language-heading-row">
-              <h4 class="structured-content__subheading">${i18n.t("gateway.tfa.settings.preferred_methods")}</h4>
+          </section>
+          <section class="components-section">
+            <h3 class="components-section-heading">${i18n.t("gateway.tfa.settings.preferred_methods")}</h3>
+            <div class="components-section-body">
+              <table id="preferred-tfa-methods" class="language-table">${renderTfaRows(preferred, true)}</table>
             </div>
-            <table id="preferred-tfa-methods" class="language-table">${renderTfaRows(preferred, true)}</table>
-          </div>
+          </section>
         </div>
       </div>
-      <div class="settings-auth-recovery-codes">
-        <h4 class="structured-content__subheading">${i18n.t("gateway.tfa.settings.recovery_codes_title")}${recoveryCodesHint}</h4>
-        <p class="structured-content__text">${i18n.t(hasRecoveryCodes ? "gateway.tfa.settings.recovery_codes_ready" : "gateway.tfa.settings.recovery_codes_missing")} ${i18n.t("gateway.tfa.settings.recovery_codes_remaining_label").replace("{count}", String(recoveryCodesStatus.remainingCount))}</p>
-        <div class="settings-auth-recovery-actions">
-          <button class="btn-animated" type="button" id="settings-recovery-codes-btn">${i18n.t(hasRecoveryCodes ? "gateway.tfa.settings.recovery_codes_action" : "gateway.tfa.settings.recovery_codes_create_action")}</button>
-          <button class="btn-animated" type="button" id="settings-recovery-codes-toggle-btn" ${generatedRecoveryCodes.length === 0 ? "disabled" : ""}>${i18n.t(recoveryCodesVisible ? "gateway.tfa.settings.recovery_codes_hide" : "gateway.tfa.settings.recovery_codes_reveal")}</button>
+      <section class="components-section settings-auth-recovery-codes">
+        <h3 class="components-section-heading">${i18n.t("gateway.tfa.settings.recovery_codes_title")}${recoveryCodesHint}</h3>
+        <div class="components-section-body">
+          <p class="structured-content__text">${i18n.t(hasRecoveryCodes ? "gateway.tfa.settings.recovery_codes_ready" : "gateway.tfa.settings.recovery_codes_missing")} ${i18n.t("gateway.tfa.settings.recovery_codes_remaining_label").replace("{count}", String(recoveryCodesStatus.remainingCount))}</p>
+          <div class="settings-auth-recovery-actions">
+            <button class="btn-animated" type="button" id="settings-recovery-codes-btn">${i18n.t(hasRecoveryCodes ? "gateway.tfa.settings.recovery_codes_action" : "gateway.tfa.settings.recovery_codes_create_action")}</button>
+            <button class="btn-animated" type="button" id="settings-recovery-codes-toggle-btn" ${generatedRecoveryCodes.length === 0 ? "disabled" : ""}>${i18n.t(recoveryCodesVisible ? "gateway.tfa.settings.recovery_codes_hide" : "gateway.tfa.settings.recovery_codes_reveal")}</button>
+          </div>
+          <table id="settings-recovery-codes-table" class="language-table">${renderRecoveryCodesRows()}</table>
         </div>
-        <table id="settings-recovery-codes-table" class="language-table">${renderRecoveryCodesRows()}</table>
-      </div>
+      </section>
     `;
     }
 

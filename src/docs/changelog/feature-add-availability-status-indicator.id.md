@@ -107,3 +107,7 @@ Pengaturan Pengguna dan Administrasi kini menerima grup konten deklaratif untuk 
 ## Struktur Pengaturan yang lebih lembut dan lengkap
 
 Pemisah konten terstruktur kini menggunakan warna dengan kontras lebih rendah. Seluruh kontribusi Keamanan, termasuk konten kata sandi, autentikasi dua faktor, dan kode pemulihan, kini mengikuti struktur bagian, judul, isi, subjudul, dan teks kanonis yang sama tanpa menyisakan markup judul lama.
+
+## Tata letak Pengaturan yang seimbang
+
+Pemisah Pengaturan kini memakai warna garis abu-abu redup dari tema dalam mode gelap maupun terang. Judul metode autentikasi dua faktor tidak lagi memiliki jarak berlebih, Kode Pemulihan memiliki pemisah yang semestinya, grup Tanggal & Waktu terpisah dengan jelas, Keyring memakai struktur bagian kanonis, dan tindakan sinkronisasi browser tidak lagi mengubah ukuran judul bahasa.

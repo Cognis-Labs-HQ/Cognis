@@ -13,7 +13,7 @@ const SOURCE = readFileSync(
 test("tfa settings render recovery codes as a separate section", () => {
     assert.match(
         SOURCE,
-        /<div class="settings-auth-recovery-codes">[\s\S]*id="settings-recovery-codes-btn"/,
+        /<section class="components-section settings-auth-recovery-codes">[\s\S]*id="settings-recovery-codes-btn"/,
     );
     assert.match(SOURCE, /id="settings-recovery-codes-toggle-btn"/);
     assert.match(SOURCE, /id="settings-recovery-codes-table"/);
@@ -23,12 +23,9 @@ test("tfa settings render recovery codes as a separate section", () => {
     );
     assert.match(SOURCE, /class="language-table"/);
     assert.match(SOURCE, /class="drag-handle"/);
-    assert.match(SOURCE, /structured-content__subheading/);
+    assert.match(SOURCE, /components-section-heading/);
+    assert.match(SOURCE, /components-section-body/);
     assert.match(SOURCE, /structured-content__text/);
-    assert.doesNotMatch(
-        SOURCE,
-        /<h3>\$\{i18n\.t\("gateway\.tfa\.settings\.section_title"\)\}<\/h3>/,
-    );
 });
 
 test("tfa settings drag and drop uses dirty tracker", () => {

@@ -107,3 +107,7 @@ User Settings and Administration now accept declarative content groups for title
 ## Softer, complete Settings structure
 
 Structured-content dividers now use a lower-contrast tint. The complete Security contribution, including password, two-factor, and recovery-code content, now follows the same canonical section, heading, body, subheading, and text structure without retaining legacy heading markup.
+
+## Balanced Settings layout
+
+Settings dividers now use the theme's muted grey border in dark and light modes. Two-factor method headings no longer carry redundant spacing, Recovery Codes has its expected divider, Date & Time groups have clear separation, Keyring uses the canonical section structure, and the browser-sync action can no longer distort the language headings.

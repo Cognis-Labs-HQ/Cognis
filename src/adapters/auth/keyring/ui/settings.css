@@ -1,6 +1,4 @@
 .settings-keyring-manager {
-    display: grid;
-    gap: 1.5rem;
     min-width: 0;
 }
 
@@ -9,9 +7,7 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem;
-    border: 1px solid var(--border-color, currentColor);
-    border-radius: 0.75rem;
+    margin-bottom: 1.5rem;
 }
 
 .settings-keyring-status {
@@ -23,12 +19,12 @@
 }
 
 .settings-keyring-timeout {
-    display: grid;
-    grid-template-columns: minmax(10rem, 1fr) minmax(10rem, 16rem);
-    align-items: center;
-    gap: 1rem;
-    padding: 0 0.25rem;
-    max-width: 34rem;
+    display: block;
+    max-width: 24rem;
+}
+
+.settings-keyring-timeout select {
+    width: 100%;
 }
 
 .settings-keyring-table {
@@ -89,7 +85,7 @@
     gap: 0.75rem;
 }
 
-.settings-keyring-log h3 {
+.settings-keyring-log h4 {
     margin: 0;
 }
 
@@ -100,7 +96,6 @@
 
 .settings-keyring-section > summary {
     cursor: pointer;
-    font-weight: 700;
 }
 
 .settings-keyring-pagination {
@@ -120,10 +115,6 @@
         order: -1;
         margin-right: 0;
         text-align: center;
-    }
-
-    .settings-keyring-timeout {
-        grid-template-columns: 1fr;
     }
 
     .settings-keyring-table th:nth-child(3),

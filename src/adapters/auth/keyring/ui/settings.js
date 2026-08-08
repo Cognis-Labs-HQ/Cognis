@@ -91,7 +91,7 @@ export function createSettingsSection({ i18n, root }) {
     function renderManager() {
         const unlocked = isKeyringUnlocked();
         const timeout = getKeyringRelockMinutes();
-        return `<div class="settings-keyring-toolbar">
+        return `<div class="components-section-body settings-keyring-toolbar">
           ${renderInfoTooltip(i18n.t("gateway.auth.keyring.description"), i18n.t("gateway.auth.keyring.info"), "settings-keyring-info")}
           <span class="settings-keyring-status" role="status">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.unlocked" : "gateway.auth.keyring.locked"))}</span>
           <button id="settings-keyring-toggle" type="button" class="${unlocked ? "btn-cancel" : "btn-confirm"}">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.lock" : "gateway.auth.keyring.unlock"))}</button>
@@ -99,33 +99,38 @@ export function createSettingsSection({ i18n, root }) {
           <button id="settings-keyring-change-password" type="button"${unlocked ? "" : " disabled"}>${escapeHtml(i18n.t("gateway.auth.keyring.change_password"))}</button>
           <button id="settings-keyring-clear" type="button" class="btn-cancel">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.clear" : "gateway.auth.keyring.destroy"))}</button>
         </div>
-        <label class="settings-keyring-timeout"><span>${escapeHtml(i18n.t("gateway.auth.keyring.relock"))}</span>
-          <select id="settings-keyring-relock" class="theme-select">
-            <option value="0"${timeout === 0 ? " selected" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.logout"))}</option>
-            ${[
-                [5, "5_minutes"],
-                [15, "15_minutes"],
-                [30, "30_minutes"],
-                [60, "1_hour"],
-                [360, "6_hours"],
-                [720, "12_hours"],
-                [1440, "1_day"],
-                [10080, "1_week"],
-            ]
-                .map(
-                    ([minutes, label]) =>
-                        `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${escapeHtml(i18n.t(`gateway.auth.keyring.timeout_${label}`))}</option>`,
-                )
-                .join("")}
-          </select>
-        </label>
-        <details class="settings-keyring-section" data-keyring-section="keys"${keysExpanded ? " open" : ""}>
-          <summary>${escapeHtml(i18n.t("gateway.auth.keyring.keys"))}</summary>
-          <div id="settings-keyring-entries">${renderEntries(unlocked)}</div>
+        <section class="components-section">
+          <h3 class="components-section-heading">${escapeHtml(i18n.t("gateway.auth.keyring.relock"))}</h3>
+          <div class="components-section-body">
+            <label class="settings-keyring-timeout">
+              <select id="settings-keyring-relock" class="theme-select">
+                <option value="0"${timeout === 0 ? " selected" : ""}>${escapeHtml(i18n.t("gateway.auth.keyring.logout"))}</option>
+                ${[
+                    [5, "5_minutes"],
+                    [15, "15_minutes"],
+                    [30, "30_minutes"],
+                    [60, "1_hour"],
+                    [360, "6_hours"],
+                    [720, "12_hours"],
+                    [1440, "1_day"],
+                    [10080, "1_week"],
+                ]
+                    .map(
+                        ([minutes, label]) =>
+                            `<option value="${minutes}"${timeout === minutes ? " selected" : ""}>${escapeHtml(i18n.t(`gateway.auth.keyring.timeout_${label}`))}</option>`,
+                    )
+                    .join("")}
+              </select>
+            </label>
+          </div>
+        </section>
+        <details class="components-section settings-keyring-section" data-keyring-section="keys"${keysExpanded ? " open" : ""}>
+          <summary class="components-section-heading">${escapeHtml(i18n.t("gateway.auth.keyring.keys"))}</summary>
+          <div id="settings-keyring-entries" class="components-section-body">${renderEntries(unlocked)}</div>
         </details>
-        <details class="settings-keyring-section" data-keyring-section="logs"${logsExpanded ? " open" : ""}>
-          <summary>${escapeHtml(i18n.t("gateway.auth.keyring.logs"))}</summary>
-          ${renderEventLog(unlocked)}
+        <details class="components-section settings-keyring-section" data-keyring-section="logs"${logsExpanded ? " open" : ""}>
+          <summary class="components-section-heading">${escapeHtml(i18n.t("gateway.auth.keyring.logs"))}</summary>
+          <div class="components-section-body">${renderEventLog(unlocked)}</div>
         </details>`;
     }
 
@@ -149,7 +154,7 @@ export function createSettingsSection({ i18n, root }) {
                   .join("")
             : `<tr><td colspan="3" class="profile-empty">${escapeHtml(i18n.t(unlocked ? "gateway.auth.keyring.event_empty" : "gateway.auth.keyring.event_locked"))}</td></tr>`;
         return `<section class="settings-keyring-log" aria-labelledby="settings-keyring-log-title">
-          <h3 id="settings-keyring-log-title">${escapeHtml(i18n.t("gateway.auth.keyring.event_log"))}</h3>
+          <h4 id="settings-keyring-log-title" class="structured-content__subheading">${escapeHtml(i18n.t("gateway.auth.keyring.event_log"))}</h4>
           <div class="settings-table-wrap"><table class="settings-keyring-table">
             <thead><tr><th>${escapeHtml(i18n.t("gateway.auth.keyring.event"))}</th><th>${escapeHtml(i18n.t("gateway.auth.keyring.identifier"))}</th><th>${escapeHtml(i18n.t("gateway.auth.keyring.updated"))}</th></tr></thead>
             <tbody>${rows}</tbody>

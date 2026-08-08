@@ -107,3 +107,7 @@ Benutzereinstellungen und Administration akzeptieren jetzt deklarative Inhaltsgr
 ## Dezentere, vollständige Einstellungsstruktur
 
 Trennlinien für strukturierte Inhalte verwenden jetzt einen kontrastärmeren Farbton. Der vollständige Sicherheitsbeitrag einschließlich Passwort-, Zwei-Faktor- und Wiederherstellungscode-Inhalten folgt nun derselben kanonischen Struktur für Abschnitte, Überschriften, Inhalte, Unterüberschriften und Texte, ohne veraltetes Überschriften-Markup beizubehalten.
+
+## Ausgewogenes Einstellungslayout
+
+Trennlinien in den Einstellungen verwenden jetzt in dunklen und hellen Designs die gedämpfte graue Rahmenfarbe des Designs. Überschriften für Zwei-Faktor-Methoden haben keine überflüssigen Abstände mehr, Wiederherstellungscodes besitzen die erwartete Trennlinie, Datums- und Zeitgruppen sind klar getrennt, der Schlüsselbund verwendet die kanonische Abschnittsstruktur und die Browser-Synchronisierung kann die Sprachüberschriften nicht mehr verzerren.

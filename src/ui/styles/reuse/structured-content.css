@@ -11,8 +11,7 @@
 
 .structured-content__title {
     padding-bottom: 6px;
-    border-bottom: 1px solid
-        color-mix(in srgb, var(--color-border, #e2e8f0) 55%, transparent);
+    border-bottom: 1px solid var(--border);
     font-size: 1em;
     font-weight: 700;
 }
@@ -37,9 +36,5 @@
     height: 1px;
     margin: 20px 0;
     border: 0;
-    background: color-mix(
-        in srgb,
-        var(--color-border, #e2e8f0) 55%,
-        transparent
-    );
+    background: var(--border);
 }

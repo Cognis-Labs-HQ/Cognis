@@ -682,9 +682,9 @@ export async function mount(root, { signal } = {}) {
                         id: "available-languages",
                         label: i18n.t("ui.app.settings.available_languages"),
                         render: () => `
-            <h3 class="settings-language-heading-row components-section-heading">
-              ${i18n.t("ui.app.settings.available_languages")}
-            </h3>
+            <div class="settings-language-heading-row components-section-heading">
+              <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+            </div>
             <table id="available-languages" class="language-table"></table>
           `,
                     },
@@ -692,10 +692,10 @@ export async function mount(root, { signal } = {}) {
                         id: "preferred-languages",
                         label: i18n.t("ui.app.settings.preferred_languages"),
                         render: () => `
-            <h3 class="settings-language-heading-row components-section-heading">
-              ${i18n.t("ui.app.settings.preferred_languages")}
+            <div class="settings-language-heading-row components-section-heading">
+              <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
               <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
-            </h3>
+            </div>
             <table id="preferred-languages" class="language-table"></table>
           `,
                     },
@@ -753,16 +753,24 @@ export async function mount(root, { signal } = {}) {
                         id: "datetime-prefs",
                         label: i18n.t("ui.app.settings.datetime"),
                         render: () => `
-            <h3 class="components-section-heading">${i18n.t("ui.app.settings.datetime_tz_heading")}</h3>
-            <label class="timezone-label">
-              ${i18n.t("ui.app.settings.datetime_tz_label")}
-              <select id="pref-timezone-select" class="theme-select"></select>
-            </label>
-            <h3 class="components-section-heading">${i18n.t("ui.app.settings.datetime_time_format_heading")}</h3>
-            <label class="timezone-label">
-              ${i18n.t("ui.app.settings.datetime_time_format_label")}
-              <select id="pref-time-format-select" class="theme-select"></select>
-            </label>
+            <section class="components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.datetime_tz_heading")}</h3>
+              <div class="components-section-body">
+                <label class="timezone-label">
+                  ${i18n.t("ui.app.settings.datetime_tz_label")}
+                  <select id="pref-timezone-select" class="theme-select"></select>
+                </label>
+              </div>
+            </section>
+            <section class="components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.datetime_time_format_heading")}</h3>
+              <div class="components-section-body">
+                <label class="timezone-label">
+                  ${i18n.t("ui.app.settings.datetime_time_format_label")}
+                  <select id="pref-time-format-select" class="theme-select"></select>
+                </label>
+              </div>
+            </section>
           `,
                     },
                 ],
