@@ -130,10 +130,10 @@ export function createDocsRoutes(
         }
 
         const match = url.pathname.match(
-            /^\/api\/v1\/docs\/(latest|\d+\.\d+\.\d+)\/([a-z0-9/_-]+)$/i,
+            /^\/api\/v1\/docs\/(latest|\d+\.\d+\.\d+)\/([a-z0-9/_.-]+)$/i,
         );
         const legacyMatch = url.pathname.match(
-            /^\/api\/v1\/docs\/([a-z0-9][a-z0-9/_-]*)$/i,
+            /^\/api\/v1\/docs\/([a-z0-9][a-z0-9/_.-]*)$/i,
         );
         if (!match && !legacyMatch) return false;
 
