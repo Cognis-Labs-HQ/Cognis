@@ -145,6 +145,22 @@ test("logging adapter level overrides reconfigure the running logger immediately
             "/static/adapters/logging/file/languages",
         );
 
+        for (const action of ["enable", "disable"]) {
+            const toggleRequest = new RequestRecorder("POST", token);
+            const toggleResponse = new ResponseRecorder();
+            const handled = await adapterHandler(
+                toggleRequest as any,
+                toggleResponse as any,
+                new URL(fileAdapter.controls[action], "http://localhost"),
+            );
+            assert.equal(handled, true);
+            assert.equal(toggleResponse.statusCode, 409);
+            assert.equal(
+                JSON.parse(toggleResponse.payload).error.code,
+                "adapter_locked",
+            );
+        }
+
         const updateAdapter = async (
             adapterId: "console" | "file",
             config: Record<string, unknown>,

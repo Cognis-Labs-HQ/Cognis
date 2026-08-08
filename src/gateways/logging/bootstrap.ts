@@ -406,6 +406,25 @@ function createLoggingAdapterRoutes(
             );
             return true;
         }
+        const toggleMatch = url.pathname.match(
+            new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
+        );
+        if (
+            toggleMatch &&
+            req.method === "POST" &&
+            adapters.some(({ id }) => id === toggleMatch[1])
+        ) {
+            res.writeHead(409, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "adapter_locked",
+                        message: "Adapter is managed by its gateway",
+                    },
+                }),
+            );
+            return true;
+        }
         const match = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/config$`),
         );

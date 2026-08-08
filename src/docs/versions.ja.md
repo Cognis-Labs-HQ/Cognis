@@ -71,7 +71,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Social                | `src/gateways/social/`        | `1.2.11`   |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.5`    |
 | Registration          | `src/gateways/registration/`  | `1.1.13`   |
-| Logging               | `src/gateways/logging/`       | `1.5.7`    |
+| Logging               | `src/gateways/logging/`       | `1.5.8`    |
 | Observability         | `src/gateways/observability/` | `1.0.3`    |
 | Study                 | `src/gateways/study/`         | `1.5.10`   |
 | Calendar              | `src/gateways/calendar/`      | `1.4.51`   |

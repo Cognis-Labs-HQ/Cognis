@@ -6,7 +6,7 @@ Administrators can now select separate severity thresholds for console and file 
 
 ## Runtime overrides with environment reset
 
-Logging adapter settings can override Docker environment values at runtime, including console format, file path, and rotation behavior, and can be reset to the environment configuration.
+Logging adapter settings can override Docker environment values at runtime, including console format and rotation behavior, and can be reset to the environment configuration. The environment continues to own the log file path.
 
 ## Settings for always-on adapters
 
@@ -19,3 +19,11 @@ The configured severity and format now replace the early bootstrap logger for al
 ## Clearer configuration labels
 
 Override warnings now read “Overriding env variable”, and the file adapter’s compression option is named “Log Compression”.
+
+## Adapter-owned, validated configuration
+
+Console and file adapters now own their configuration validation and logger mapping. File overrides reject unsafe rotation sizes and retention counts before they are applied.
+
+## Translated logging settings
+
+Logging field labels now use adapter-owned German, English, Indonesian, and Japanese resources, which Administration loads before rendering the configuration form.

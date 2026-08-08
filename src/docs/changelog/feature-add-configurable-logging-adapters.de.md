@@ -6,7 +6,7 @@ Administratoren können nun getrennte Schweregradschwellen für die Konsolen- un
 
 ## Laufzeitüberschreibungen mit Zurücksetzen auf Umgebungswerte
 
-Einstellungen der Logging-Adapter können Docker-Umgebungswerte zur Laufzeit überschreiben, einschließlich Konsolenformat, Dateipfad und Rotation, und auf die Umgebungskonfiguration zurückgesetzt werden.
+Einstellungen der Logging-Adapter können Docker-Umgebungswerte zur Laufzeit überschreiben, einschließlich Konsolenformat und Rotation, und auf die Umgebungskonfiguration zurückgesetzt werden. Der Protokolldateipfad bleibt durch die Umgebung festgelegt.
 
 ## Einstellungen für dauerhaft aktive Adapter
 
@@ -19,3 +19,11 @@ Die konfigurierte Protokollstufe und das Format ersetzen nun den frühen Bootstr
 ## Klarere Konfigurationsbezeichnungen
 
 Warnungen bei Überschreibungen lauten nun „Umgebungsvariable wird überschrieben“, und die Kompressionsoption des Dateiadapters heißt „Log Compression“.
+
+## Adaptereigene, validierte Konfiguration
+
+Konsolen- und Dateiadapter besitzen nun ihre Konfigurationsvalidierung und Zuordnung zur Protokollkonfiguration. Dateiüberschreibungen lehnen unsichere Rotationsgrößen und Aufbewahrungszahlen vor der Anwendung ab.
+
+## Übersetzte Protokolleinstellungen
+
+Feldbeschriftungen verwenden nun adaptereigene deutsche, englische, indonesische und japanische Ressourcen, die die Administration vor der Darstellung des Konfigurationsformulars lädt.
