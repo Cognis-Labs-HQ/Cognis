@@ -217,7 +217,6 @@
   <string name="ui.app.admin.toggle_gateway">Toggle gateway enabled state</string>
   <string name="ui.app.admin.toggle_adapter">Toggle adapter enabled state</string>
   <string name="ui.app.admin.setup_required">This component must first be set up before it can be enabled.</string>
-  <string name="ui.app.admin.synced_to">Synced to {module}</string>
   <string name="ui.app.admin.checking">Checking...</string>
   <string name="ui.app.admin.components">Components</string>
   <string name="ui.app.admin.gateways">Gateways</string>

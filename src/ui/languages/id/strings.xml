@@ -217,7 +217,6 @@
   <string name="ui.app.admin.toggle_gateway">Alihkan status gateway</string>
   <string name="ui.app.admin.toggle_adapter">Alihkan status adaptor</string>
   <string name="ui.app.admin.setup_required">Komponen ini harus disiapkan terlebih dahulu sebelum dapat diaktifkan.</string>
-  <string name="ui.app.admin.synced_to">Tersinkron ke {module}</string>
   <string name="ui.app.admin.checking">Memeriksa...</string>
   <string name="ui.app.admin.components">Komponen</string>
   <string name="ui.app.admin.gateways">Gateway</string>
