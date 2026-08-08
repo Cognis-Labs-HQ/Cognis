@@ -6,6 +6,8 @@ Cognis kini mengarsipkan dokumentasi setiap komponen saat aplikasi dimulai denga
 
 Pembaca dokumentasi dan catatan perubahan kini menangani indeks dokumentasi yang tidak tersedia atau tidak valid tanpa menggagalkan pemuatan halaman.
 
+Pengembangan lokal kini menyimpan snapshot di direktori Cognis milik pengguna saat ini, sedangkan server terpaket menyertakan manifest platform yang diperlukan untuk memberi versi pada dokumentasi akar. Hal ini mencegah API docs mengembalikan respons `400` ketika tata letak runtime berbeda dari pohon sumber.
+
 ## Penjelajah versi
 
 Pembaca dokumentasi kini menampilkan bilah versi horizontal yang dapat digulir di atas judul dokumen agar pembaca dapat beralih antara konten terbaru dan historis.

@@ -3,7 +3,30 @@ import assert from "node:assert/strict";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { createDocsRoutes } from "../../routes/docs/index.js";
+import {
+    createDocsRoutes,
+    resolveDocsArchiveRoot,
+} from "../../routes/docs/index.js";
+
+test("docs archive defaults to a writable user path outside containers", () => {
+    assert.equal(
+        resolveDocsArchiveRoot({}, "/home/example"),
+        "/home/example/.cognis/docs-archive",
+    );
+    assert.equal(
+        resolveDocsArchiveRoot({
+            COGNIS_CLI_TOKEN_PATH: "/app/config/cli-access.token",
+        }),
+        "/app/config/docs-archive",
+    );
+    assert.equal(
+        resolveDocsArchiveRoot({
+            COGNIS_DOCS_ARCHIVE_DIR: "/mnt/docs",
+            COGNIS_CLI_TOKEN_PATH: "/app/config/cli-access.token",
+        }),
+        "/mnt/docs",
+    );
+});
 
 async function request(
     route: ReturnType<typeof createDocsRoutes>,

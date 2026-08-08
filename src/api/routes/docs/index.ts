@@ -1,4 +1,5 @@
-import { join } from "node:path";
+import { homedir } from "node:os";
+import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { resolveLangs } from "../../reuse/preferred-languages.js";
 import {
@@ -8,9 +9,18 @@ import {
 } from "./store.js";
 
 const SRC_ROOT = join(process.cwd(), "src");
-const DOCS_ARCHIVE_ROOT =
-    process.env.COGNIS_DOCS_ARCHIVE_DIR ??
-    join("/app", "config", "docs-archive");
+export function resolveDocsArchiveRoot(
+    environment: NodeJS.ProcessEnv = process.env,
+    userHome = homedir(),
+): string {
+    if (environment.COGNIS_DOCS_ARCHIVE_DIR) {
+        return environment.COGNIS_DOCS_ARCHIVE_DIR;
+    }
+    if (environment.COGNIS_CLI_TOKEN_PATH) {
+        return join(dirname(environment.COGNIS_CLI_TOKEN_PATH), "docs-archive");
+    }
+    return join(userHome, ".cognis", "docs-archive");
+}
 
 interface DocEntry extends StoredDoc {
     slug: string;
@@ -90,7 +100,7 @@ export function createDocsRoutes(
         archiveRoot?: string;
     } = {},
 ) {
-    const archiveRoot = options.archiveRoot ?? DOCS_ARCHIVE_ROOT;
+    const archiveRoot = options.archiveRoot ?? resolveDocsArchiveRoot();
     const storedDocsPromise = initializeDocsStore(
         options.sourceRoot ?? SRC_ROOT,
         archiveRoot,
