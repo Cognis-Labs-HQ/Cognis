@@ -247,6 +247,7 @@ export function renderRoomList({
                     room.unread > 0 && !isActive
                         ? `<span class="messages-unread-badge">${escapeHtml(String(room.unread))}</span>`
                         : "";
+                const unreadClass = unreadBadge ? " messages-room--unread" : "";
                 const archivedClass = room.isArchived
                     ? " messages-room--archived"
                     : "";
@@ -254,10 +255,10 @@ export function renderRoomList({
                     ? `<span class="messages-room-archived-hint">${escapeHtml(i18n.t("module.social.messages.archived_locked"))}</span>`
                     : "";
                 return `
-          <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}" data-chat-id="${escapeHtml(room.id)}" data-room-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
+          <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}${unreadClass}" data-chat-id="${escapeHtml(room.id)}" data-room-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
             ${avatar}
             <span class="messages-room-meta">
-              <span class="messages-room-title">${escapeHtml(titleSource)}</span>
+              <span class="messages-room-title" title="${escapeHtml(titleSource)}">${escapeHtml(titleSource)}</span>
               <span class="messages-room-preview">${escapeHtml(preview)}</span>
               ${archivedHint}
             </span>

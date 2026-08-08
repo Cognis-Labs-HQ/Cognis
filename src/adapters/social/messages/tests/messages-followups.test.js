@@ -41,6 +41,27 @@ test("messages sidebar separates pending requests from conversations", () => {
     assert.match(source, /!room\.pendingRequest/);
 });
 
+test("unread chats expose an animated alert state and complete title", () => {
+    const renderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+        "utf8",
+    );
+    const styleSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/messages.css"),
+        "utf8",
+    );
+
+    assert.match(renderSource, /messages-room--unread/);
+    assert.match(renderSource, /title=\"\$\{escapeHtml\(titleSource\)\}\"/);
+    assert.match(styleSource, /@keyframes messages-room-unread-pulse/);
+    assert.match(styleSource, /prefers-reduced-motion: reduce/);
+    assert.match(
+        styleSource,
+        /\.messages-room-title[\s\S]*text-overflow: ellipsis/,
+    );
+    assert.match(styleSource, /\.messages-unread-badge[\s\S]*--color-danger/);
+});
+
 test("rejecting a request navigates away from the removed room", () => {
     const source = readMessagesUiBundle();
     assert.match(

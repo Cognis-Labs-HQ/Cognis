@@ -85,6 +85,9 @@
 .messages-room-title {
     font-weight: 500;
     display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .messages-room-meta {
@@ -140,10 +143,36 @@
     min-width: 1.5em;
     padding: 0.1em 0.5em;
     border-radius: 1em;
-    background: var(--color-accent);
-    color: var(--color-accent-contrast);
+    border: 1px solid var(--color-danger-outline-text, #dc2626);
+    background: var(--color-danger, #ef4444);
+    color: var(--color-danger-text, #fff);
     font-size: 0.75rem;
     text-align: center;
+}
+
+.messages-room--unread {
+    z-index: 0;
+    animation: messages-room-unread-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes messages-room-unread-pulse {
+    0%,
+    100% {
+        box-shadow: inset 0 0 0 1px transparent;
+    }
+
+    50% {
+        box-shadow:
+            inset 0 0 0 1px var(--color-danger-outline-text, #dc2626),
+            0 0 0.55rem var(--color-danger-border, rgba(239, 68, 68, 0.4));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .messages-room--unread {
+        animation: none;
+        box-shadow: inset 0 0 0 1px var(--color-danger-outline-text, #dc2626);
+    }
 }
 
 .messages-empty {
