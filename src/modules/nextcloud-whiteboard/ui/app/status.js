@@ -48,6 +48,19 @@ export function createWhiteboardStatusController({
         updateSyncStatusBox();
     }
 
+    function setSyncStatusMessage(status, message) {
+        syncStatus = status;
+        syncStatusMessage = message;
+        updateSyncStatusBox();
+    }
+
+    function getSyncStatus() {
+        return {
+            status: syncStatus,
+            message: syncStatusMessage,
+        };
+    }
+
     function buildConnectionErrorMessage(error, serverUrl) {
         const rawMessage = String(error?.message ?? "").trim();
         const genericSocketFailure = /^(websocket error|xhr poll error)$/i.test(
@@ -64,8 +77,10 @@ export function createWhiteboardStatusController({
     return {
         buildConnectionErrorMessage,
         canManageShares,
+        getSyncStatus,
         reportClientError,
         setSyncStatus,
+        setSyncStatusMessage,
         sharePageFlag,
         translate,
         updateSyncStatusBox,

@@ -57,11 +57,12 @@ let integrationCanvasMode = false;
 const {
     buildConnectionErrorMessage,
     canManageShares,
+    getSyncStatus,
     reportClientError,
     setSyncStatus,
+    setSyncStatusMessage,
     sharePageFlag,
     translate: translateModuleString,
-    updateSyncStatusBox,
 } = createWhiteboardStatusController({
     getI18n: () => i18n,
     getIntegrationCanvasMode: () => integrationCanvasMode,
@@ -243,9 +244,7 @@ function connectSocket(io, session, canvas) {
     });
     socket.on("connect_error", (error) => {
         const message = buildConnectionErrorMessage(error, serverUrl);
-        syncStatus = "error";
-        syncStatusMessage = message;
-        updateSyncStatusBox();
+        setSyncStatusMessage("error", message);
         if (message !== lastConnectionToast) {
             lastConnectionToast = message;
             showToast(message, { variant: "error" });
@@ -787,6 +786,7 @@ async function openBoard(board) {
 }
 
 function renderCanvasElement() {
+    const syncState = getSyncStatus();
     return renderWhiteboardCanvasElement({
         activeBoard,
         activeSession,
@@ -794,8 +794,8 @@ function renderCanvasElement() {
         canManageShares,
         canRenameActiveBoard,
         preflightStatus,
-        syncStatus,
-        syncStatusMessage,
+        syncStatus: syncState.status,
+        syncStatusMessage: syncState.message,
         translate: translateModuleString,
         integrationCanvasMode,
     });
