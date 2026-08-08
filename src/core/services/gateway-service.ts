@@ -320,7 +320,7 @@ export class GatewayService {
 
             // After the logging gateway runs, pull the contributed log function
             // into the context so all subsequent gateways can use it.
-            if (gatewayId === "logging" && !ctx.log) {
+            if (gatewayId === "logging") {
                 const contributed =
                     ctx.capabilities.get<BootstrapLog>("logging:log");
                 if (contributed) {

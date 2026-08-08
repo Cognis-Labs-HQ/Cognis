@@ -122,6 +122,21 @@ test("logging adapter level overrides reconfigure the running logger immediately
         await updateAdapter("console", { level: "debug", format: "json" });
         assert.equal(logger.getConfiguration().consoleLevel, "debug");
         assert.equal(logger.getConfiguration().consoleFormat, "json");
+        const consoleWrites: string[] = [];
+        const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+        process.stdout.write = ((chunk: string | Uint8Array) => {
+            consoleWrites.push(String(chunk));
+            return true;
+        }) as typeof process.stdout.write;
+        try {
+            await logger.log("debug", "Live console configuration applied.");
+        } finally {
+            process.stdout.write = originalStdoutWrite;
+        }
+        assert.equal(
+            JSON.parse(consoleWrites.join(""))?.message,
+            "Live console configuration applied.",
+        );
 
         const fileConfiguration = logger.getConfiguration();
         await updateAdapter("file", {

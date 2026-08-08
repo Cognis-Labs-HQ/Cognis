@@ -64,7 +64,7 @@ export function createAdapterConfigPopup({
             const conflictWarning = hasConflict
                 ? `<span class="provider-field-env-warning" title="${conflictTitle}">⚠</span>`
                 : "";
-            return `<label class="provider-popup-field${requiredClass}"${labelTitle}><span class="provider-field-title">${escapeHtml(labelText)}${requiredMarker}</span>${inputHtml}${conflictWarning}</label>`;
+            return `<label class="provider-popup-field${requiredClass}"${labelTitle}><span class="provider-field-title">${escapeHtml(labelText)}${requiredMarker}${conflictWarning}</span>${inputHtml}</label>`;
         }
 
         const fieldKeys = Object.keys(descriptors).filter(

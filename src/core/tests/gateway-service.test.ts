@@ -89,3 +89,51 @@ test("gateway bootstrap reports the root error when a required gateway fails", a
     ]);
     assert.equal(registry.get("db"), undefined);
 });
+
+test("logging capability replaces the bootstrap logger for later gateways", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
+    const gatewaysRoot = path.join(root, "gateways");
+    const loggingRoot = path.join(gatewaysRoot, "logging");
+    const exampleRoot = path.join(gatewaysRoot, "example");
+    await mkdir(loggingRoot, { recursive: true });
+    await mkdir(exampleRoot, { recursive: true });
+    await writeFile(
+        path.join(loggingRoot, "manifest.json"),
+        JSON.stringify({ id: "logging", required: true }),
+    );
+    await writeFile(
+        path.join(loggingRoot, "bootstrap.ts"),
+        `export async function bootstrap(ctx) {
+            ctx.capabilities.contribute("logging:log", (_level, message) => {
+                ctx.capabilities.contribute("test:logged-message", message);
+            });
+        }`,
+    );
+    await writeFile(
+        path.join(exampleRoot, "manifest.json"),
+        JSON.stringify({ id: "example", required: false }),
+    );
+    await writeFile(
+        path.join(exampleRoot, "bootstrap.ts"),
+        `export async function bootstrap(ctx) {
+            ctx.log("debug", "debug from configured logger");
+        }`,
+    );
+    const registry = new GatewayRegistry();
+    const capabilities = new CapabilityStore();
+    const service = new GatewayService(registry);
+    const bootstrapMessages: string[] = [];
+
+    await service.bootstrap(gatewaysRoot, {
+        gatewayRegistry: registry,
+        capabilities,
+        flow: {} as never,
+        log: (_level, message) => bootstrapMessages.push(message),
+    });
+
+    assert.equal(
+        capabilities.get("test:logged-message"),
+        "debug from configured logger",
+    );
+    assert.deepEqual(bootstrapMessages, []);
+});

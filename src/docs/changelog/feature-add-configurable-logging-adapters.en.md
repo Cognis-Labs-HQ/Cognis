@@ -11,3 +11,7 @@ Logging adapter settings can override Docker environment values at runtime, incl
 ## Settings for always-on adapters
 
 The Console Logging and File Logging rows now open their settings popup even though these required adapters cannot be disabled.
+
+## Synchronized live output
+
+The configured severity and format now replace the early bootstrap logger for all subsequently loaded gateways, so Docker output immediately follows console changes. Environment-override warnings now appear in orange beside their field headings.

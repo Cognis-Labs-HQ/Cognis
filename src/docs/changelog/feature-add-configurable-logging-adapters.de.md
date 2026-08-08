@@ -11,3 +11,7 @@ Einstellungen der Logging-Adapter können Docker-Umgebungswerte zur Laufzeit üb
 ## Einstellungen für dauerhaft aktive Adapter
 
 Die Zeilen „Console Logging“ und „File Logging“ öffnen nun ihr Einstellungsfenster, obwohl diese erforderlichen Adapter nicht deaktiviert werden können.
+
+## Synchronisierte Live-Ausgabe
+
+Die konfigurierte Protokollstufe und das Format ersetzen nun den frühen Bootstrap-Logger für alle danach geladenen Gateways, sodass die Docker-Ausgabe Konsolenänderungen sofort übernimmt. Warnungen zu überschriebenen Umgebungswerten stehen nun orange neben der jeweiligen Feldüberschrift.

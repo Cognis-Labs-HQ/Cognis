@@ -11,3 +11,7 @@ Pengaturan adapter pencatatan dapat menggantikan nilai lingkungan Docker saat be
 ## Pengaturan untuk adapter yang selalu aktif
 
 Baris Console Logging dan File Logging kini membuka popup pengaturannya meskipun adapter wajib ini tidak dapat dinonaktifkan.
+
+## Keluaran langsung yang tersinkronisasi
+
+Tingkat keparahan dan format yang dikonfigurasi kini menggantikan logger bootstrap awal untuk semua gateway yang dimuat setelahnya, sehingga keluaran Docker langsung mengikuti perubahan konsol. Peringatan penggantian nilai lingkungan kini tampil berwarna oranye di samping judul bidangnya.
