@@ -58,6 +58,60 @@ test("popup styles constrain dialog height and apply themed scrollbars", () => {
     assert.match(source, /\/static\/assets\/reuse\/clipboard\.svg/);
 });
 
+test("popup caches the complete stylesheet before a service interruption", () => {
+    const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+
+    assert.match(source, /export async function primePopupStylesheet/);
+    assert.match(source, /stylesheetCache\.put\(POPUP_STYLESHEET_URL/);
+    assert.match(source, /stylesheetCache\?\.match\(POPUP_STYLESHEET_URL\)/);
+    assert.match(
+        source,
+        /cachedStylesheet\.textContent = await cachedResponse\.text/,
+    );
+    assert.doesNotMatch(source, /FALLBACK_STYLES/);
+
+    const runtimeErrorSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    assert.match(runtimeErrorSource, /void primePopupStylesheet\(\);/);
+});
+
+test("popup stylesheet priming stores the actual CSS response", async () => {
+    const stylesheet = readFileSync(
+        resolve(ROOT, "src/ui/styles/popup.css"),
+        "utf8",
+    );
+    const originalCaches = globalThis.caches;
+    const originalFetch = globalThis.fetch;
+    let storedStylesheet = "";
+    let storedUrl = "";
+    globalThis.caches = {
+        async open() {
+            return {
+                async put(url, response) {
+                    storedUrl = url;
+                    storedStylesheet = await response.text();
+                },
+            };
+        },
+    };
+    globalThis.fetch = async () => new Response(stylesheet);
+
+    try {
+        const { primePopupStylesheet } = await import(
+            `../reuse/popup.js?cache-test=${Date.now()}`
+        );
+        await primePopupStylesheet();
+    } finally {
+        globalThis.caches = originalCaches;
+        globalThis.fetch = originalFetch;
+    }
+
+    assert.equal(storedUrl, "/static/styles/popup.css");
+    assert.equal(storedStylesheet, stylesheet);
+});
+
 test("release changelog popup checkbox follows the active color scheme", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/styles/popup.css"),
@@ -782,6 +836,9 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
         openPopup(options) {
             openPopupCalls.push(options);
             return Promise.resolve("close");
+        },
+        primePopupStylesheet() {
+            return Promise.resolve();
         },
         shouldSuppressConnectionRecoveryPopup() {
             return false;
