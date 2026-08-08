@@ -290,6 +290,25 @@ test("docs route renders changelog feature branch from file slug", async () => {
     );
 });
 
+test("docs route serves changelog slugs containing registry host dots", async () => {
+    const route = createDocsRoutes();
+    let status = 0;
+    const handled = await route(
+        { method: "GET" } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL(
+            "http://localhost/api/v1/docs/changelog/registry.gitlab.firehawk-systems.com-firehawk-cognis-cognis-web?langs=ja%2Cen",
+        ),
+    );
+    assert.equal(handled, true);
+    assert.equal(status, 200);
+});
+
 test("docs route returns 404 for unknown slug", async () => {
     const route = createDocsRoutes();
     let status = 0;

@@ -6,6 +6,17 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const SOCIAL_MESSAGES_BASE = "/api/v1/social/messages";
+const SEARCH_SOURCE = readFileSync(
+    resolve(ROOT, "src/adapters/social/messages/ui/search/index.js"),
+    "utf8",
+);
+
+test("global message search imports its authenticated API client", () => {
+    assert.match(
+        SEARCH_SOURCE,
+        /import \{ apiFetch \} from "\/static\/reuse\/api-client\.js";/,
+    );
+});
 
 function collectFilePathsRecursively(directoryPath) {
     const files = [];

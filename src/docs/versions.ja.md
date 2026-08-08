@@ -41,7 +41,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.8`    |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.6`    |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`    |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.17`   |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.18`   |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.9`    |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.4`    |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.3`    |
@@ -86,7 +86,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.3.2`    |
+| API Server     | `src/api/` | `0.3.3`    |
 
 ## ツール
 
