@@ -102,6 +102,10 @@ test("profile adapter bootstrap contributes profile capabilities", async () => {
         "social:profileStore capability must be contributed",
     );
     assert.ok(
+        capabilities.get("social:getUserAvailability"),
+        "social:getUserAvailability capability must be contributed",
+    );
+    assert.ok(
         capabilities.get("social:profileLifecycle"),
         "social:profileLifecycle capability must be contributed",
     );
@@ -194,5 +198,48 @@ test("profile adapter bootstrap registers navbar plugin that resolves within sta
             access(resolvedPath),
             `file referenced by navbar plugin scriptUrl must exist on disk: ${resolvedPath}`,
         );
+    }
+});
+
+test("user availability capability resolves calendar-aware status", async () => {
+    const { dir, executor } = makeTempDb();
+    try {
+        const capabilities = new CapabilityStore();
+        capabilities.contribute("db:executor", executor);
+        capabilities.contribute(
+            "calendar:getCurrentAvailability",
+            async (accountId: string) =>
+                accountId === "availability-user"
+                    ? {
+                          status: "busy",
+                          effectiveSince: "2030-01-01T00:00:00.000Z",
+                      }
+                    : null,
+        );
+        const { ctx } = makeAdapterCtx({ capabilities });
+        await bootstrapSocialAdapter(ctx);
+
+        const profileStore = capabilities.get<{
+            createProfile(accountId: string, handle: string): Promise<unknown>;
+        }>("social:profileStore");
+        const getUserAvailability = capabilities.get<
+            (accountId: string) => Promise<{ status: string } | null>
+        >("social:getUserAvailability");
+        assert.ok(profileStore);
+        assert.ok(getUserAvailability);
+        assert.deepEqual(
+            capabilities.get<() => string[]>(
+                "social:getAvailabilityStatuses",
+            )?.(),
+            ["free", "busy", "tentative"],
+        );
+        await profileStore.createProfile("availability-user", "available");
+
+        assert.equal(
+            (await getUserAvailability("availability-user"))?.status,
+            "busy",
+        );
+    } finally {
+        rmSync(dir, { recursive: true, force: true });
     }
 });

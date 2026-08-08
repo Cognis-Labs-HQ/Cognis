@@ -49,3 +49,7 @@ Gespeicherte Profildaten werden sofort angezeigt. Die Zahlen und Benutzerkarten 
 Änderungen beim Folgen und die Auswahl der Bannerhöhe werden sofort angezeigt, während die Synchronisierung im Hintergrund abgeschlossen wird.
 
 Rückmeldungen zu Nachrichtenaktionen werden aus profileigenen Sprachressourcen geladen, sodass die Profildarstellung nicht von einem aktivierten Nachrichtenadapter abhängt.
+
+## Verfügbarkeit
+
+Das Profilmenü zeigt die aktuelle Verfügbarkeit und ermöglicht angemeldeten Benutzern die Auswahl zwischen Frei, Beschäftigt und Vorläufig. Statusleuchten an Avataren zeigen den ermittelten Status als Kurzinfo beim Darüberfahren. Andere Komponenten können den kalenderabhängigen Status eines Benutzers anhand der Konto-ID über die ctx-Fähigkeit `social:getUserAvailability` abfragen.

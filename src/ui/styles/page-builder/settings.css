@@ -75,11 +75,23 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 8px;
+    min-height: 2.5rem;
 }
 
 .settings-language-heading-row h3 {
     margin: 0;
+    font: inherit;
+}
+
+.settings-language-heading-row button {
+    flex: 0 0 auto;
+    max-width: 50%;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.875rem;
+    line-height: 1.2;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .language-table-empty-cell {

@@ -1,6 +1,44 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
+const STATUS_STYLESHEET_ID = "calendar-event-status-styles";
+
+export function loadCalendarEventStatusStyles() {
+    if (document.getElementById(STATUS_STYLESHEET_ID)) return;
+    const stylesheet = document.createElement("link");
+    stylesheet.id = STATUS_STYLESHEET_ID;
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = "/static/gateways/calendar/ui/calendar-status.css";
+    document.head.append(stylesheet);
+}
+
+export function calendarEventStatusClasses(status) {
+    const visualStatus =
+        status === "free" || status === "tentative" ? status : "busy";
+    return `calendar-event-status calendar-event-status--${visualStatus}`;
+}
+
+export async function refreshUserAvailability() {
+    await uiCtx.capabilities
+        .get("ui:availabilityRenderer")
+        ?.refresh?.(document);
+}
+
+export async function fetchStatusPreference() {
+    const response = await apiFetch("/api/v1/calendar/status-preference");
+    if (!response.ok) throw new Error("calendar_status_preference_load_failed");
+    return (await response.json()).data?.prevented === true;
+}
+
+export async function saveStatusPreference(prevented) {
+    const response = await apiFetch("/api/v1/calendar/status-preference", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ prevented }),
+    });
+    if (!response.ok) throw new Error("calendar_status_preference_save_failed");
+}
+
 const shareAccessByCalendarId = new Map();
 
 function refusedSecretError() {
@@ -110,7 +148,7 @@ async function fetchEvent(calendarId, eventId) {
 }
 
 async function createEvent(calendarId, payload) {
-    return requestCalendarResource(calendarId, (password) =>
+    const response = await requestCalendarResource(calendarId, (password) =>
         apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events`,
             {
@@ -125,10 +163,19 @@ async function createEvent(calendarId, payload) {
             },
         ),
     );
+    const now = Date.now();
+    if (
+        response.ok &&
+        Date.parse(payload.startAt) <= now &&
+        Date.parse(payload.endAt) > now
+    ) {
+        await refreshUserAvailability();
+    }
+    return response;
 }
 
 async function updateEvent(calendarId, eventId, payload) {
-    return requestCalendarResource(calendarId, (password) =>
+    const response = await requestCalendarResource(calendarId, (password) =>
         apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
             {
@@ -143,6 +190,10 @@ async function updateEvent(calendarId, eventId, payload) {
             },
         ),
     );
+    if (response.ok) {
+        await refreshUserAvailability();
+    }
+    return response;
 }
 
 async function deleteEvent(calendarId, eventId, { deleteAll = false } = {}) {
@@ -207,6 +258,12 @@ async function createJitsiMeeting(attendees, { scheduledAt = null } = {}) {
     }
     return payload?.data?.meetingUrl ? String(payload.data.meetingUrl) : null;
 }
+
+uiCtx.capabilities.contribute("calendar:dashboardEvents", {
+    fetchUpcomingEvents,
+    loadEventStatusStyles: loadCalendarEventStatusStyles,
+    eventStatusClasses: calendarEventStatusClasses,
+});
 
 export {
     fetchCalendarState,

@@ -15,3 +15,7 @@ Halaman Kalender pengguna mendelegasikan tindakan tampilan, periode, dan slot wa
 ## Integrasi shell Share
 
 Calendar mengikuti siklus hidup berbagi rapat yang sudah terbukti: Share menghapus composer pemuatan lalu meneruskan akar halaman, konteks terselesaikan, terjemahan, dan sinyal pembatalan ke Calendar. Calendar kemudian memiliki halaman `createPageComposer` lengkap dengan header standar, kontrol tema, dan footer tanpa navigasi akun. Elemen kalender tunggal mengimpor dependensi formulir, popup, stempel waktu, dan tampilan secara langsung, sedangkan mutasi acara diautentikasi dengan token tamu terbatas yang diberikan.
+
+## Status ketersediaan
+
+Acara kalender memperbarui ketersediaan pengguna saat dimulai atau saat acara dibuat pada rentang waktu saat ini. Status manual yang dipilih setelah aktivasi tersebut berlaku hingga acara lain dimulai. Pengguna dapat menonaktifkan pembaruan status dari kalender melalui Pengaturan Pengguna → Umum.

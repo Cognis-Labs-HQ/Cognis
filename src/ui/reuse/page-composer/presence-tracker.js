@@ -4,6 +4,9 @@
  * Public exports:
  *   createPresenceTracker(options) — mounts a compact presence strip and keeps
  *     it synchronized with a page-specific presence endpoint.
+ *   PRESENCE_ACTIVITY_EVENT — event emitted when local activity changes.
+ *   subscribePresenceActivity(listener) — observes browser activity, including
+ *     pages without a page-specific presence endpoint.
  *
  * Usage:
  *   const tracker = createPresenceTracker({
@@ -14,6 +17,10 @@
  *     onPresenceUpdate: (entries, sessionId) => void syncSelection(entries, sessionId),
  *   });
  *   tracker.mount(mainWindow);
+ *   const unsubscribe = subscribePresenceActivity(({ active }) => {
+ *     statusLight.classList.toggle('is-idle', !active);
+ *   });
+ *   unsubscribe();
  *
  * @param {object} options - Presence tracker options.
  * @returns {{ mount(container: HTMLElement): void, refresh(): void, destroy(): void }}
@@ -31,6 +38,68 @@ const REFRESH_MIN_INTERVAL_MS = 250;
 const REFRESH_MAX_INTERVAL_MS = 5000;
 const ACTIVE_WINDOW_MS = 15000;
 const IDLE_AFTER_MS = 30000;
+export const PRESENCE_ACTIVITY_EVENT = "cognis:presence-activity-change";
+const activitySubscribers = new Set();
+let activityDetectorBound = false;
+let activityDetectorTimer = null;
+let presenceActive = true;
+
+function publishPresenceActivity(active) {
+    if (presenceActive === active) return;
+    presenceActive = active;
+    const detail = { active };
+    window.dispatchEvent(new CustomEvent(PRESENCE_ACTIVITY_EVENT, { detail }));
+    for (const subscriber of activitySubscribers) subscriber(detail);
+}
+
+function schedulePresenceIdle() {
+    window.clearTimeout(activityDetectorTimer);
+    activityDetectorTimer = window.setTimeout(
+        () => publishPresenceActivity(false),
+        IDLE_AFTER_MS,
+    );
+}
+
+function notePresenceActivity() {
+    publishPresenceActivity(true);
+    schedulePresenceIdle();
+}
+
+function markPresenceInactive() {
+    window.clearTimeout(activityDetectorTimer);
+    publishPresenceActivity(false);
+}
+
+function bindActivityDetector() {
+    if (activityDetectorBound) return;
+    activityDetectorBound = true;
+    for (const eventName of ["pointermove", "keydown", "focus"]) {
+        window.addEventListener(eventName, notePresenceActivity, {
+            passive: true,
+        });
+    }
+    window.addEventListener("blur", markPresenceInactive);
+    window.addEventListener("pagehide", markPresenceInactive);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") markPresenceInactive();
+        else notePresenceActivity();
+    });
+    schedulePresenceIdle();
+}
+
+/**
+ * Subscribes to local browser activity changes and immediately reports the
+ * current state.
+ *
+ * @param {(detail: { active: boolean }) => void} listener - Activity listener.
+ * @returns {() => boolean} Function that removes the listener.
+ */
+export function subscribePresenceActivity(listener) {
+    bindActivityDetector();
+    activitySubscribers.add(listener);
+    listener({ active: presenceActive });
+    return () => activitySubscribers.delete(listener);
+}
 
 function normalizePresenceName(value) {
     return (
@@ -105,6 +174,7 @@ export function createPresenceTracker({
     let lastActivityAt = Date.now();
     let lastPresenceSignature = "";
     let lastPresenceMarkupSignature = "";
+    let unsubscribeActivity = null;
 
     function noteActivity() {
         lastActivityAt = Date.now();
@@ -263,6 +333,10 @@ export function createPresenceTracker({
         refreshPoller.start();
         heartbeatPoller.start();
         markInactive = () => void sendPresence(false, { keepalive: true });
+        unsubscribeActivity = subscribePresenceActivity(({ active }) => {
+            if (active) noteActivity();
+            else markInactive?.();
+        });
         handleVisibilityChange = () => {
             if (document.visibilityState === "hidden") markInactive?.();
             else {
@@ -273,14 +347,12 @@ export function createPresenceTracker({
         };
         window.addEventListener("pagehide", markInactive);
         window.addEventListener("beforeunload", markInactive);
-        for (const eventName of ["pointermove", "keydown", "focus"]) {
-            window.addEventListener(eventName, noteActivity, { passive: true });
-        }
         document.addEventListener("visibilitychange", handleVisibilityChange);
     }
 
     function destroy() {
         destroyed = true;
+        unsubscribeActivity?.();
         heartbeatPoller?.stop();
         refreshPoller?.stop();
         heartbeatPoller = null;
@@ -288,9 +360,6 @@ export function createPresenceTracker({
         if (markInactive) {
             window.removeEventListener("pagehide", markInactive);
             window.removeEventListener("beforeunload", markInactive);
-        }
-        for (const eventName of ["pointermove", "keydown", "focus"]) {
-            window.removeEventListener(eventName, noteActivity);
         }
         if (handleVisibilityChange) {
             document.removeEventListener(

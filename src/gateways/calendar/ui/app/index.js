@@ -31,6 +31,14 @@ export async function mount(root, { signal } = {}) {
     let selectedView = "month";
     let activeDate = new Date();
     let composer = null;
+    let availabilityBoundaryTimer = null;
+    const MAX_TIMEOUT_MS = 2_147_000_000;
+
+    signal?.addEventListener(
+        "abort",
+        () => window.clearTimeout(availabilityBoundaryTimer),
+        { once: true },
+    );
 
     function loadSelectedViewPreference() {
         try {
@@ -110,6 +118,9 @@ export async function mount(root, { signal } = {}) {
 
     async function reloadState() {
         const calendarState = await calendarUi.fetchCalendarState();
+        calendarUi.setEventStatusOptions(
+            calendarState.meta.availabilityStatuses,
+        );
         calendars = calendarState.calendars;
         canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
         currentAccountId = String(calendarState.meta?.currentAccountId ?? "");
@@ -139,6 +150,7 @@ export async function mount(root, { signal } = {}) {
             console.warn("Failed to load pending invitations:", err);
             pendingInvitations = [];
         }
+        scheduleAvailabilityBoundaryRefresh();
     }
 
     async function retryCalendarUnlock(calendar) {
@@ -179,6 +191,26 @@ export async function mount(root, { signal } = {}) {
                 })),
             )
             .sort((left, right) => left.startAt.localeCompare(right.startAt));
+    }
+
+    function scheduleAvailabilityBoundaryRefresh() {
+        window.clearTimeout(availabilityBoundaryTimer);
+        const now = Date.now();
+        const nextBoundary = allCalendarEvents()
+            .flatMap((event) => [
+                Date.parse(event.startAt),
+                Date.parse(event.endAt),
+            ])
+            .filter((boundary) => Number.isFinite(boundary) && boundary > now)
+            .sort((first, second) => first - second)[0];
+        if (!nextBoundary) return;
+        availabilityBoundaryTimer = window.setTimeout(
+            async () => {
+                await calendarUi.refreshUserAvailability();
+                scheduleAvailabilityBoundaryRefresh();
+            },
+            Math.min(MAX_TIMEOUT_MS, nextBoundary - now + 50),
+        );
     }
 
     function collectCalendarSearchGroups() {

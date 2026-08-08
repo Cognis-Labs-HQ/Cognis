@@ -41,6 +41,26 @@ test("messages sidebar separates pending requests from conversations", () => {
     assert.match(source, /!room\.pendingRequest/);
 });
 
+test("messages omits availability lights from primary chat avatars", () => {
+    const roomRenderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+        "utf8",
+    );
+    const messageRenderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+        "utf8",
+    );
+
+    assert.equal(
+        roomRenderSource.match(/showAvailability:\s*false/g)?.length,
+        2,
+    );
+    assert.equal(
+        messageRenderSource.match(/showAvailability:\s*false/g)?.length,
+        3,
+    );
+});
+
 test("rejecting a request navigates away from the removed room", () => {
     const source = readMessagesUiBundle();
     assert.match(

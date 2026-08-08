@@ -358,6 +358,9 @@ export async function registerAuthBootstrapHook(
         (stageCtx) => {
             const flowSections = (stageCtx.stageResults["resolve-sections"] ??
                 []) as Array<Record<string, unknown>>;
+            const sectionAugmentations = (stageCtx.stageResults[
+                "augment-sections"
+            ] ?? []) as Array<Record<string, unknown>>;
             const uiRegistry = stageCtx.meta["uiRegistry"] as
                 { listSettingsSections?: () => unknown[] } | undefined;
             const registrySections = uiRegistry?.listSettingsSections?.() ?? [];
@@ -365,7 +368,11 @@ export async function registerAuthBootstrapHook(
                 string,
                 Record<string, unknown>
             >();
-            for (const section of [...flowSections, ...registrySections]) {
+            for (const section of [
+                ...flowSections,
+                ...sectionAugmentations,
+                ...registrySections,
+            ]) {
                 if (!section || typeof section !== "object") {
                     continue;
                 }

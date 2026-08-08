@@ -1,6 +1,31 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { shouldQueryGatewayAdapters } from "./toggle-flows.js";
 import { loadDynamicContribution } from "../../reuse/dynamic-contribution-loader.js";
+import { renderStructuredContent } from "../../reuse/structured-content.js";
+
+function normalizeStructuredAdminSection(sectionDefinition) {
+    if (!Array.isArray(sectionDefinition.content)) {
+        return sectionDefinition;
+    }
+    return {
+        ...sectionDefinition,
+        subComposerOptions: {
+            allowCustomization: false,
+            preferenceKey: `administration-${sectionDefinition.id}-layout`,
+            heading: sectionDefinition.label,
+            elements: [
+                {
+                    id: `${sectionDefinition.id}-content`,
+                    label: sectionDefinition.label,
+                    pinned: true,
+                    render: () =>
+                        renderStructuredContent(sectionDefinition.content),
+                },
+            ],
+            onRender: sectionDefinition.onRender,
+        },
+    };
+}
 
 async function loadList(url) {
     const response = await apiFetch(url);
@@ -122,5 +147,5 @@ export async function loadGatewaySection(
     if (sectionDef.dataReady) {
         await sectionDef.dataReady;
     }
-    return sectionDef;
+    return normalizeStructuredAdminSection(sectionDef);
 }

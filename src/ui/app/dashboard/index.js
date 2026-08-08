@@ -1,5 +1,4 @@
 import { apiFetch } from "../../reuse/api-client.js";
-import { fetchUpcomingEvents } from "/static/gateways/calendar/calendar-api.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -53,6 +52,8 @@ async function loadDashboardExtensions({ i18n, account, role }) {
 }
 
 export async function mount(root, { signal } = {}) {
+    const calendarEvents = uiCtx.capabilities.get("calendar:dashboardEvents");
+    calendarEvents?.loadEventStatusStyles();
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
 
@@ -63,7 +64,9 @@ export async function mount(root, { signal } = {}) {
     let info = null;
     let upcomingCalendarEvents = null;
     const accountInfoPromise = loadAccountInfo(account);
-    const upcomingEventsPromise = fetchUpcomingEvents(5);
+    const upcomingEventsPromise = calendarEvents
+        ? calendarEvents.fetchUpcomingEvents(5)
+        : Promise.resolve([]);
     const extensionElementsPromise = loadDashboardExtensions({
         i18n,
         account,
@@ -170,7 +173,7 @@ export async function mount(root, { signal } = {}) {
                 ? `<ul class="dashboard-info-list">${upcomingCalendarEvents
                       .map(
                           (event) => `<li>
-            <a href="/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}" class="dashboard-upcoming-event-link">
+            <a href="/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}" class="dashboard-upcoming-event-link ${calendarEvents?.eventStatusClasses(event.status) ?? ""}" style="--calendar-event-stripe:${escapeHtml(String(event.calendarColor ?? "#1f8ceb"))}">
               <strong>${escapeHtml(event.title)}</strong>
               <span>${escapeHtml(formatDateTime(event.startAt))}</span>
               ${event.calendarName ? `<span>${escapeHtml(String(event.calendarName))}</span>` : ""}

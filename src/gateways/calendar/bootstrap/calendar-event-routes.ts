@@ -8,12 +8,14 @@ import {
     dispatchCancellationNotifications,
     dispatchInviteNotifications,
     errorMessage,
+    normalizeAttendeesForOwner,
     normalizeReminderOffsets,
     normalizeStringList,
     requireOrganizerOwnedSourceEvent,
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
+    resolveAvailabilityStatus,
     sendCalendarError,
     sendJson,
     validateSharedCalendars,
@@ -165,6 +167,7 @@ export async function handleCalendarEventRoutes({
             activeSharedCalendar?.ownerAccountId ?? claims.sub;
         const sourceCalendarId =
             activeSharedCalendar?.ownerCalendarId ?? calendarId;
+        const existingEvent = gateway.getEvent(sourceCalendarId, eventId);
         const body = (await readJson(req)) as Record<string, unknown>;
         if (
             activeSharedCalendar &&
@@ -249,9 +252,13 @@ export async function handleCalendarEventRoutes({
                         ? body.meetingUrl
                         : undefined,
                 status:
-                    body.status === "free" || body.status === "busy"
-                        ? body.status
-                        : undefined,
+                    body.status === undefined
+                        ? undefined
+                        : resolveAvailabilityStatus(
+                              body.status,
+                              getCapability,
+                              existingEvent?.status ?? "busy",
+                          ),
                 recurrence:
                     body.recurrence === "daily" ||
                     body.recurrence === "weekly" ||
