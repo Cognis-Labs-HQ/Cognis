@@ -47,7 +47,10 @@ import {
 } from "../../reuse/message-style-options.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
 import { renderStructuredContent } from "../../reuse/structured-content.js";
-import { collectSettingsSearchGroups } from "./search-index.js";
+import {
+    collectSettingsSearchGroups,
+    renderAccountOperationButton,
+} from "./search-index.js";
 import {
     getSettingsShellOptions,
     resolveSettingsSetupRedirect,

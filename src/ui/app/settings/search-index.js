@@ -22,7 +22,12 @@ function accountOperationSearchAttrs(i18n, action, labelKey, descriptionKey) {
     });
 }
 
-function renderAccountOperationButton(i18n, action, labelKey, descriptionKey) {
+export function renderAccountOperationButton(
+    i18n,
+    action,
+    labelKey,
+    descriptionKey,
+) {
     const label = i18n.t(labelKey);
     return `
       <button
