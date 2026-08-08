@@ -28,7 +28,9 @@ export function createChatHandlers({
             return state.chatRoomKey;
         }
         if (typeof loadChatRoomKey !== "function") return null;
-        const roomKey = await loadChatRoomKey(roomId);
+        const roomKey = await loadChatRoomKey(roomId, {
+            recoverMissing: true,
+        });
         state.chatRoomKey = roomKey;
         return roomKey;
     }
