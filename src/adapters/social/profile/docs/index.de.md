@@ -6,7 +6,7 @@ Das Profil-Gateway besitzt Benutzerprofile, den sozialen Graph, Beiträge und di
 
 ## Verantwortlichkeiten
 
-- Die Datenbanktabellen `account_profiles`, `account_follows`, `account_blocks`, `posts` und `file_size_limits` besitzen und initialisieren.
+- Die Datenbanktabellen `account_profiles`, `account_follows`, `account_blocks`, `posts` besitzen und initialisieren.
 - Account- und Post-Level-Sichtbarkeit auf allen Profil- und Sozial-Endpunkten durchsetzen.
 - Den sozialen Graph verwalten: Folgen, Entfolgen, Blockieren, Entblocken, Follower/Following-Abfragen.
 - Avatar- und Banner-Uploads über die `file:gateway`-Capability verwalten.

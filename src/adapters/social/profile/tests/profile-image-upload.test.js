@@ -58,6 +58,22 @@ test("successful uploads do not fail on optional follow-up data", () => {
     );
 });
 
+test("banner layout coordinates remain in scope for preference persistence", () => {
+    const panDeclarationIndex = PROFILE_UPLOAD_SOURCE.indexOf(
+        "let nextBannerPanX = 50;",
+    );
+    const mediaBranchIndex = PROFILE_UPLOAD_SOURCE.indexOf(
+        'if (kind === "avatar")',
+    );
+    const preferenceIndex = PROFILE_UPLOAD_SOURCE.indexOf(
+        "await saveBannerLayoutPreference",
+    );
+
+    assert.notEqual(panDeclarationIndex, -1);
+    assert.ok(panDeclarationIndex < mediaBranchIndex);
+    assert.ok(mediaBranchIndex < preferenceIndex);
+});
+
 test("profile image selection and upload reject duplicate activation", () => {
     assert.match(
         PROFILE_IMAGE_SELECTION_SOURCE,

@@ -380,30 +380,7 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const maxBytes = await profileStore.getFileSizeLimit("image");
             const body = await readRawBody(req);
-            if (body.length > maxBytes) {
-                log?.(
-                    "warn",
-                    "Rejected avatar upload that exceeded the size limit.",
-                    {
-                        ...logMeta,
-                        mime,
-                        sizeBytes: body.length,
-                        maxBytes,
-                    },
-                );
-                res.writeHead(413, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "payload_too_large",
-                            message: `Avatar exceeds ${maxBytes} byte limit`,
-                        },
-                    }),
-                );
-                return true;
-            }
             let updated: AccountProfile | null | undefined;
             let storedKey: string | undefined;
             if (flowApi.exists("upload-profile-media")) {
@@ -647,30 +624,7 @@ export function createProfileRoutes(
                 );
                 return true;
             }
-            const maxBytes = await profileStore.getFileSizeLimit("image");
             const body = await readRawBody(req);
-            if (body.length > maxBytes) {
-                log?.(
-                    "warn",
-                    "Rejected banner upload that exceeded the size limit.",
-                    {
-                        ...logMeta,
-                        mime,
-                        sizeBytes: body.length,
-                        maxBytes,
-                    },
-                );
-                res.writeHead(413, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "payload_too_large",
-                            message: `Banner exceeds ${maxBytes} byte limit`,
-                        },
-                    }),
-                );
-                return true;
-            }
             let updated: AccountProfile | null | undefined;
             let storedKey: string | undefined;
             if (flowApi.exists("upload-profile-media")) {

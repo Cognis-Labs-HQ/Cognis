@@ -6,7 +6,7 @@
 
 ## 責務
 
-- `account_profiles`、`account_follows`、`account_blocks`、`posts`、`file_size_limits` データベーステーブルを所有・初期化する。
+- `account_profiles`、`account_follows`、`account_blocks`、`posts` データベーステーブルを所有・初期化する。
 - すべてのプロフィールとソーシャルエンドポイントでアカウントレベルと投稿レベルの公開設定を強制する。
 - ソーシャルグラフを管理する: フォロー、アンフォロー、ブロック、ブロック解除、フォロワー/フォロー中リスト。
 - `file:gateway` ケイパビリティを通じてアバターとバナーのアップロードを管理する。
