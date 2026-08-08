@@ -18,6 +18,12 @@ export function calendarEventStatusClasses(status) {
     return `calendar-event-status calendar-event-status--${visualStatus}`;
 }
 
+export async function refreshUserAvailability() {
+    await uiCtx.capabilities
+        .get("ui:availabilityRenderer")
+        ?.refresh?.(document);
+}
+
 const shareAccessByCalendarId = new Map();
 
 function refusedSecretError() {
@@ -127,7 +133,7 @@ async function fetchEvent(calendarId, eventId) {
 }
 
 async function createEvent(calendarId, payload) {
-    return requestCalendarResource(calendarId, (password) =>
+    const response = await requestCalendarResource(calendarId, (password) =>
         apiFetch(
             `/api/v1/calendar/calendars/${encodeURIComponent(calendarId)}/events`,
             {
@@ -142,6 +148,15 @@ async function createEvent(calendarId, payload) {
             },
         ),
     );
+    const now = Date.now();
+    if (
+        response.ok &&
+        Date.parse(payload.startAt) <= now &&
+        Date.parse(payload.endAt) > now
+    ) {
+        await refreshUserAvailability();
+    }
+    return response;
 }
 
 async function updateEvent(calendarId, eventId, payload) {
@@ -161,9 +176,7 @@ async function updateEvent(calendarId, eventId, payload) {
         ),
     );
     if (response.ok) {
-        await uiCtx.capabilities
-            .get("ui:availabilityRenderer")
-            ?.refresh?.(document);
+        await refreshUserAvailability();
     }
     return response;
 }

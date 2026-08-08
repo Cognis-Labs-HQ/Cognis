@@ -305,7 +305,26 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
 test("successful event updates refresh availability through ui ctx", () => {
     assert.match(
         CALENDAR_API_SOURCE,
-        /async function updateEvent[\s\S]*response\.ok[\s\S]*ui:availabilityRenderer[\s\S]*\.refresh\?\.\(document\)/,
+        /refreshUserAvailability[\s\S]*ui:availabilityRenderer[\s\S]*\.refresh\?\.\(document\)/,
+    );
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /async function updateEvent[\s\S]*response\.ok[\s\S]*await refreshUserAvailability\(\)/,
+    );
+});
+
+test("active event creation and event boundaries refresh availability", () => {
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /async function createEvent[\s\S]*Date\.parse\(payload\.startAt\) <= now[\s\S]*Date\.parse\(payload\.endAt\) > now[\s\S]*await refreshUserAvailability\(\)/,
+    );
+    assert.match(
+        APP_SOURCE,
+        /scheduleAvailabilityBoundaryRefresh[\s\S]*event\.startAt[\s\S]*event\.endAt[\s\S]*calendarUi\.refreshUserAvailability\(\)/,
+    );
+    assert.match(
+        APP_SOURCE,
+        /signal\?\.addEventListener\([\s\S]*"abort"[\s\S]*clearTimeout\(availabilityBoundaryTimer\)/,
     );
 });
 

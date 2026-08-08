@@ -67,3 +67,7 @@ Successful Calendar event updates now invoke the profile adapter's availability 
 ## Profile menu follows effective status
 
 Availability refreshes now notify the profile menu as well as avatar lights. The menu immediately moves its active selection when Calendar changes the effective status, and automatic Idle clears every selectable option while showing a grey Idle summary.
+
+## Availability follows active event boundaries
+
+Creating a Calendar event that is already active now refreshes availability immediately. The Calendar page also schedules ctx-backed refreshes at event start and end boundaries, so status lights and the profile menu change when an event begins or finishes without a page reload.

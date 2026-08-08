@@ -67,3 +67,7 @@ Pembaruan acara Kalender yang berhasil kini memanggil perender ketersediaan adap
 ## Menu profil mengikuti status efektif
 
 Penyegaran ketersediaan kini memberi tahu menu profil serta lampu avatar. Menu langsung memindahkan pilihan aktif ketika Kalender mengubah status efektif, sedangkan status Tidak aktif otomatis menghapus pilihan dari semua opsi yang dapat dipilih dan menampilkan ringkasan abu-abu.
+
+## Ketersediaan mengikuti batas acara aktif
+
+Membuat acara Kalender yang sudah aktif kini langsung menyegarkan ketersediaan. Halaman Kalender juga menjadwalkan penyegaran berbasis ctx pada waktu mulai dan berakhir acara, sehingga lampu status dan menu profil berubah tanpa memuat ulang halaman.

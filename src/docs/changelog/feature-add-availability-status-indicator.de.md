@@ -67,3 +67,7 @@ Erfolgreiche Aktualisierungen von Kalenderterminen rufen nun den Verfügbarkeits
 ## Profilmenü folgt dem wirksamen Status
 
 Aktualisierungen der Verfügbarkeit benachrichtigen nun neben den Avataranzeigen auch das Profilmenü. Das Menü verschiebt seine aktive Auswahl sofort, wenn der Kalender den wirksamen Status ändert. Der automatische Status „Inaktiv“ hebt alle auswählbaren Optionen auf und zeigt eine graue Zusammenfassung an.
+
+## Verfügbarkeit folgt aktiven Termingrenzen
+
+Beim Erstellen eines bereits aktiven Kalendertermins wird die Verfügbarkeit sofort aktualisiert. Die Kalenderseite plant außerdem ctx-gestützte Aktualisierungen für Beginn und Ende von Terminen, sodass Statusanzeigen und Profilmenü ohne Neuladen der Seite reagieren.
