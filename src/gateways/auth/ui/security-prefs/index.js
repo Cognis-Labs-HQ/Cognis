@@ -31,14 +31,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
 
     function renderBody() {
         if (!capability) {
-            return `<p>${i18n.t("gateway.auth.security.loading")}</p>`;
+            return `<p class="structured-content__text">${i18n.t("gateway.auth.security.loading")}</p>`;
         }
         const unsupported = capability.supported !== true;
         return `
       <div class="settings-auth-password-reset">
-        <h3>${i18n.t("gateway.auth.security.reset_title")}</h3>
         <button class="btn-animated" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
-        ${unsupported ? `<p>${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
+        ${unsupported ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
       </div>
     `;
     }
@@ -112,7 +111,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         container.innerHTML = subs
             .map(
                 (section) =>
-                    `<div data-security-subsection="${escapeHtml(section.id)}">${section.renderContent()}</div>`,
+                    `<section class="components-section" data-security-subsection="${escapeHtml(section.id)}">
+                        <h3 class="components-section-heading">${escapeHtml(section.heading ?? section.label ?? "")}</h3>
+                        <div class="components-section-body">${section.renderContent()}</div>
+                    </section>`,
             )
             .join("");
         for (const section of subs) {
@@ -126,7 +128,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         heading: i18n.t("gateway.auth.security.section_title"),
         preferenceKey: "settings-security-layout",
         renderContent() {
-            return `<div id="auth-security-reset-panel">${renderBody()}</div><div id="auth-security-subsections"></div>`;
+            return `<section class="components-section">
+                <h3 class="components-section-heading">${escapeHtml(i18n.t("gateway.auth.security.reset_title"))}</h3>
+                <div id="auth-security-reset-panel" class="components-section-body">${renderBody()}</div>
+            </section>
+            <div id="auth-security-subsections"></div>`;
         },
         async onRender() {
             await loadCapability();

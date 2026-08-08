@@ -333,7 +333,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
+    position: relative;
 }
 .avatar-image {
     width: 100%;
@@ -408,8 +409,11 @@
         background 0.15s ease,
         transform 0.15s ease;
 }
-.dropdown-item:hover {
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
     background: var(--surface-soft);
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
     transform: translateX(3px);
 }
 .hidden {
@@ -653,7 +657,7 @@ button.dropdown-item {
     width: 48px;
     height: 48px;
     border-radius: 999px;
-    overflow: hidden;
+    position: relative;
     flex: 0 0 auto;
 }
 .profile-mini-preview__avatar-img,
@@ -667,6 +671,7 @@ button.dropdown-item {
     background: var(--initials-bg, var(--accent));
     color: #fff;
     font-weight: 700;
+    border-radius: inherit;
 }
 .profile-mini-preview__identity {
     display: grid;

@@ -10,6 +10,14 @@ import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
 import { createFileLimitRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
+import {
+    AVAILABILITY_STATUSES,
+    createAvailabilityRoutes,
+    AvailabilityPresenceStore,
+    readStoredManualAvailability,
+    resolveEffectiveAvailability,
+    type CalendarAvailability,
+} from "./routes/availability/index.js";
 import type { AccountLifecycleState, AccountRole } from "./store.js";
 import type {
     SocialAdapter,
@@ -220,6 +228,7 @@ export async function bootstrapSocialAdapter(
 
     const prefStore = new DbUserPreferenceStore(dbExecutor);
     await prefStore.ensureSchema();
+    const availabilityPresenceStore = new AvailabilityPresenceStore();
     /**
      * preferences:store — per-user settings persistence consumed by shared UI
      * and gateways.
@@ -230,6 +239,38 @@ export async function bootstrapSocialAdapter(
      * peer adapters and modules.
      */
     ctx.capabilities.contribute("social:profileStore", profileStore);
+    ctx.capabilities.contribute("social:getAvailabilityStatuses", () => [
+        ...AVAILABILITY_STATUSES,
+    ]);
+    ctx.capabilities.contribute(
+        "social:getUserAvailability",
+        async (accountId: string) => {
+            const profile = await profileStore.getProfile(accountId);
+            if (!profile) return null;
+            const calendarResolver = ctx.capabilities.get<
+                (
+                    targetAccountId: string,
+                ) => Promise<CalendarAvailability | null>
+            >("calendar:getCurrentAvailability");
+            const calendarAvailability = calendarResolver
+                ? await calendarResolver(accountId)
+                : null;
+            const manualAvailability = readStoredManualAvailability(
+                await prefStore.get(accountId, "availability"),
+            );
+            const effectiveAvailability = resolveEffectiveAvailability(
+                manualAvailability,
+                calendarAvailability,
+            );
+            const idle = availabilityPresenceStore.isIdle(accountId);
+            return {
+                handle: profile.handle,
+                status: idle ? "idle" : effectiveAvailability.status,
+                manualStatus: manualAvailability?.status ?? "free",
+                source: idle ? "presence" : effectiveAvailability.source,
+            };
+        },
+    );
     /**
      * social:profileLifecycle — profile-owned lifecycle boundary for account
      * archive/deactivate/reactivate transitions consumed by auth and admin
@@ -408,6 +449,23 @@ export async function bootstrapSocialAdapter(
     ctx.registerRoute(createPostRoutes(profileStore, routeContext), "social");
     ctx.registerRoute(
         createPreferencesRoutes(prefStore, routeContext),
+        "social",
+    );
+    ctx.registerRoute(
+        createAvailabilityRoutes(
+            profileStore,
+            prefStore,
+            async (accountId) => {
+                const resolver = ctx.capabilities.get<
+                    (
+                        targetAccountId: string,
+                    ) => Promise<CalendarAvailability | null>
+                >("calendar:getCurrentAvailability");
+                return resolver ? resolver(accountId) : null;
+            },
+            routeContext,
+            availabilityPresenceStore,
+        ),
         "social",
     );
     ctx.log?.("info", "Profile adapter routes registered.", {

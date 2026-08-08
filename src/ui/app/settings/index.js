@@ -50,6 +50,7 @@ import {
     normalizeMessageStyle,
 } from "../../reuse/message-style-options.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
+import { renderStructuredContent } from "../../reuse/structured-content.js";
 import {
     getSettingsShellOptions,
     resolveSettingsSetupRedirect,
@@ -413,6 +414,31 @@ export async function mount(root, { signal } = {}) {
         console.warn(`[settings] sections-load-failed:`, error);
         contributedSections = [];
     }
+    const generalContributions = contributedSections.filter(
+        (section) => section.targetSectionId === "general",
+    );
+    const standaloneContributions = contributedSections.filter(
+        (section) => section.targetSectionId !== "general",
+    );
+
+    function renderContributedSection(section) {
+        if (Array.isArray(section.content)) {
+            return renderStructuredContent(section.content);
+        }
+        return section.renderContent?.() ?? "";
+    }
+
+    function renderContributedSections(sections) {
+        return sections
+            .map((section, sectionIndex) => {
+                const divider =
+                    sectionIndex === 0
+                        ? ""
+                        : '<hr class="structured-content__divider" />';
+                return `${divider}${renderContributedSection(section)}`;
+            })
+            .join("");
+    }
 
     function initThemePrefs({ onDirtyChange }) {
         let currentMode = savedMode;
@@ -510,24 +536,31 @@ export async function mount(root, { signal } = {}) {
                                 "ui.reuse.more_information",
                             );
                             return `
-            <h3>${i18n.t("ui.app.settings.emails")}</h3>
-            <ul id="email-list" class="email-list"></ul>
-            <div class="email-add-row">
-              <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
-              <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
+            <div class="components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.emails")}</h3>
+              <div class="components-section-body">
+                <ul id="email-list" class="email-list"></ul>
+                <div class="email-add-row">
+                  <input id="email-add-input" type="email" placeholder="${i18n.t("ui.app.settings.emails_add_placeholder")}" />
+                  <button id="email-add-btn" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.settings.emails_add")}</button>
+                </div>
+              </div>
             </div>
-            <div class="font-heading-row">
-              <h3>${escapeHtml(i18n.t("ui.app.settings.show_changelogs"))}</h3>
-              ${renderInfoTooltip(i18n.t("ui.app.settings.show_changelogs_hint"), tooltipAria)}
+            <div class="components-section">
+              <h3 class="components-section-heading">
+                ${escapeHtml(i18n.t("ui.app.settings.show_changelogs"))}
+                ${renderInfoTooltip(i18n.t("ui.app.settings.show_changelogs_hint"), tooltipAria)}
+              </h3>
+              <div class="components-section-body">
+                <label class="switch">
+                  <input id="pref-release-changelog-show" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
             </div>
-            <div>
-              <label class="switch">
-                <input id="pref-release-changelog-show" type="checkbox" />
-                <span class="slider"></span>
-              </label>
-            </div>
+            ${renderContributedSections(generalContributions)}
             <section class="settings-danger-zone" aria-labelledby="settings-danger-zone-title">
-              <h3 id="settings-danger-zone-title">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
+              <h3 id="settings-danger-zone-title" class="components-section-heading">${escapeHtml(i18n.t("ui.app.settings.danger_zone"))}</h3>
               <p>${escapeHtml(i18n.t("ui.app.settings.danger_zone_body"))}</p>
               <div class="settings-danger-actions">
                 ${renderAccountOperationButton(i18n, "archive", "ui.app.settings.danger_archive", "ui.app.settings.danger_archive_warning")}
@@ -560,6 +593,9 @@ export async function mount(root, { signal } = {}) {
                     } else {
                         releaseNotesPrefs.refresh();
                     }
+                    for (const section of generalContributions) {
+                        section.onRender();
+                    }
                 },
             },
         },
@@ -575,10 +611,12 @@ export async function mount(root, { signal } = {}) {
                         id: "appearance-prefs",
                         label: i18n.t("ui.reuse.appearance"),
                         render: () => `
-            <div class="font-heading-row">
-              <h3>${i18n.t("ui.app.settings.font")}</h3>
+            <div class="components-section">
+            <h3 class="font-heading-row components-section-heading">
+              ${i18n.t("ui.app.settings.font")}
               <button id="pref-font-reset" type="button" disabled>${i18n.t("ui.reuse.reset")}</button>
-            </div>
+            </h3>
+            <div class="components-section-body">
             <div class="font-picker-row">
               <label class="font-picker-label">
                 ${i18n.t("ui.app.settings.font")}
@@ -594,15 +632,17 @@ export async function mount(root, { signal } = {}) {
               <h4>${i18n.t("ui.app.settings.font_preview")}</h4>
               <span id="pref-font-preview">${i18n.t("ui.app.settings.font_preview_sample")}</span>
             </div>
-            <div class="theme-subsection">
-              <h3>${i18n.t("ui.app.settings.theme")}</h3>
+            </div>
+            </div>
+            <div class="theme-subsection components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.theme")}</h3>
               <div class="theme-selector" id="pref-theme-selector">
                 <button type="button" class="theme-btn" data-theme-value="dark">${i18n.t("ui.app.settings.theme_dark")}</button>
                 <button type="button" class="theme-btn" data-theme-value="light">${i18n.t("ui.app.settings.theme_light")}</button>
               </div>
             </div>
-            <div class="message-style-subsection">
-              <h3>${i18n.t("ui.app.settings.message_style")}</h3>
+            <div class="message-style-subsection components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.message_style")}</h3>
               <div class="message-style-selector" id="pref-message-style-selector">
                 <button type="button" class="message-style-btn" data-message-style-value="default">${i18n.t("ui.app.settings.message_style_default")}</button>
                 <button type="button" class="message-style-btn" data-message-style-value="speech_bubbles">${i18n.t("ui.app.settings.message_style_speech_bubbles")}</button>
@@ -642,7 +682,7 @@ export async function mount(root, { signal } = {}) {
                         id: "available-languages",
                         label: i18n.t("ui.app.settings.available_languages"),
                         render: () => `
-            <div class="settings-language-heading-row">
+            <div class="settings-language-heading-row components-section-heading">
               <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
             </div>
             <table id="available-languages" class="language-table"></table>
@@ -652,7 +692,7 @@ export async function mount(root, { signal } = {}) {
                         id: "preferred-languages",
                         label: i18n.t("ui.app.settings.preferred_languages"),
                         render: () => `
-            <div class="settings-language-heading-row">
+            <div class="settings-language-heading-row components-section-heading">
               <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
               <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
             </div>
@@ -684,7 +724,7 @@ export async function mount(root, { signal } = {}) {
                 },
             },
         },
-        ...contributedSections.map((section) => ({
+        ...standaloneContributions.map((section) => ({
             id: section.id,
             label: section.label,
             subComposerOptions: {
@@ -695,7 +735,7 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: `${section.id}-content`,
                         label: section.label,
-                        render: () => section.renderContent(),
+                        render: () => renderContributedSection(section),
                     },
                 ],
                 onRender: () => section.onRender(),
@@ -713,16 +753,24 @@ export async function mount(root, { signal } = {}) {
                         id: "datetime-prefs",
                         label: i18n.t("ui.app.settings.datetime"),
                         render: () => `
-            <h3>${i18n.t("ui.app.settings.datetime_tz_heading")}</h3>
-            <label class="timezone-label">
-              ${i18n.t("ui.app.settings.datetime_tz_label")}
-              <select id="pref-timezone-select" class="theme-select"></select>
-            </label>
-            <h3>${i18n.t("ui.app.settings.datetime_time_format_heading")}</h3>
-            <label class="timezone-label">
-              ${i18n.t("ui.app.settings.datetime_time_format_label")}
-              <select id="pref-time-format-select" class="theme-select"></select>
-            </label>
+            <section class="components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.datetime_tz_heading")}</h3>
+              <div class="components-section-body">
+                <label class="timezone-label">
+                  ${i18n.t("ui.app.settings.datetime_tz_label")}
+                  <select id="pref-timezone-select" class="theme-select"></select>
+                </label>
+              </div>
+            </section>
+            <section class="components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.datetime_time_format_heading")}</h3>
+              <div class="components-section-body">
+                <label class="timezone-label">
+                  ${i18n.t("ui.app.settings.datetime_time_format_label")}
+                  <select id="pref-time-format-select" class="theme-select"></select>
+                </label>
+              </div>
+            </section>
           `,
                     },
                 ],
@@ -749,7 +797,7 @@ export async function mount(root, { signal } = {}) {
                         label: i18n.t("ui.app.settings.preferences"),
                         pinned: true,
                         render: () => `
-            <h3>${i18n.t("ui.app.settings.preferences")}</h3>
+            <h3 class="components-section-heading">${i18n.t("ui.app.settings.preferences")}</h3>
             <textarea id="prefs-dump" class="prefs-dump" aria-label="${escapeHtml(i18n.t("ui.app.settings.preferences"))}" spellcheck="false" readonly>${i18n.t("ui.app.settings.prefs_loading")}</textarea>
           `,
                     },
@@ -810,7 +858,7 @@ export async function mount(root, { signal } = {}) {
         <li><button data-composer-scroll="general">${i18n.t("ui.app.settings.general")}</button></li>
         <li><button data-composer-scroll="appearance">${i18n.t("ui.reuse.appearance")}</button></li>
         <li><button data-composer-scroll="language">${i18n.t("ui.reuse.language")}</button></li>
-        ${contributedSections
+        ${standaloneContributions
             .map(
                 (section) =>
                     `<li><button data-composer-scroll="${escapeHtml(section.id)}">${section.label}</button></li>`,

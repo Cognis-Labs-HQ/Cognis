@@ -62,11 +62,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    margin: 16px 0 6px;
-}
-
-.font-heading-row h3 {
-    margin: 0;
+    margin-top: 0;
 }
 
 .theme-subsection {
@@ -311,7 +307,6 @@ body[data-theme="light"] .email-badge-unverified {
 
 .settings-danger-zone h3 {
     color: var(--danger-text, #dc2626);
-    margin-top: 0;
 }
 
 .settings-danger-actions {

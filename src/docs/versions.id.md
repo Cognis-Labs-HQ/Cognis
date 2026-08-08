@@ -37,7 +37,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.8`  |
 | Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.6`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.6`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.29` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.30` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.8`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.6`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`  |
@@ -50,8 +50,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.31` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.37` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.45` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.40` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.11` |
 | User Share            | `src/adapters/share/user/`          | `1.1.12` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -64,9 +64,9 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi    |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`  |
-| Authentication (auth) | `src/gateways/auth/`          | `1.7.42` |
+| Authentication (auth) | `src/gateways/auth/`          | `1.7.44` |
 | Share                 | `src/gateways/share/`         | `1.6.45` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.13` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
 | Social                | `src/gateways/social/`        | `1.2.11` |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.5`  |
@@ -74,7 +74,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Logging               | `src/gateways/logging/`       | `1.5.11` |
 | Observability         | `src/gateways/observability/` | `1.0.5`  |
 | Study                 | `src/gateways/study/`         | `1.5.10` |
-| Calendar              | `src/gateways/calendar/`      | `1.4.52` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.73` |
 
 ## Kontrak inti
 
@@ -99,7 +99,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.58` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.35` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.63` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.39` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

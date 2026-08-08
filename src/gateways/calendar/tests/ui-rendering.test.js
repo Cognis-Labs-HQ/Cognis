@@ -113,6 +113,14 @@ const TIMED_GRID_CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-timed-grid.css"),
     "utf8",
 );
+const STATUS_CSS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/calendar-status.css"),
+    "utf8",
+);
+const DASHBOARD_SOURCE = readFileSync(
+    resolve(ROOT, "src/ui/app/dashboard/index.js"),
+    "utf8",
+);
 const SHARE_REMINDER_CSS_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-share-reminder.css"),
     "utf8",
@@ -214,6 +222,109 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     assert.match(
         CSS_SOURCE,
         /\.calendar-month-table\s*\{[\s\S]*table-layout:\s*fixed;/s,
+    );
+});
+
+test("event status backgrounds cover calendar cards and dashboard summaries", () => {
+    assert.match(CALENDAR_API_SOURCE, /calendarEventStatusClasses/);
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /loadCalendarEventStatusStyles[\s\S]*\/static\/gateways\/calendar\/ui\/calendar-status\.css/,
+    );
+    assert.doesNotMatch(
+        CALENDAR_API_SOURCE,
+        /const statusStylesheet = document\.createElement/,
+    );
+    assert.match(CSS_SOURCE, /@import "\.\/calendar-status\.css";/);
+    assert.match(
+        HELPERS_SOURCE,
+        /calendar-slot-event \$\{calendarEventStatusClasses\(event\.status\)\}/,
+    );
+    assert.match(
+        HELPERS_SOURCE,
+        /calendar-upcoming-button \$\{calendarEventStatusClasses\(event\.status\)\}/,
+    );
+    assert.match(
+        PENDING_RENDER_SOURCE,
+        /calendar-upcoming-button \$\{calendarEventStatusClasses\(event\.status\)\}/,
+    );
+    assert.match(
+        DASHBOARD_SOURCE,
+        /calendarEventStatusClasses\(event\.status\)/,
+    );
+    assert.match(DASHBOARD_SOURCE, /loadCalendarEventStatusStyles\(\)/);
+    for (const status of ["busy", "free", "tentative"]) {
+        assert.match(
+            STATUS_CSS_SOURCE,
+            new RegExp(`calendar-event-status--${status}`),
+        );
+    }
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*background:\s*transparent !important;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-view-canvas \.calendar-event-status--tentative,[\s\S]*repeating-linear-gradient\(/,
+    );
+    assert.doesNotMatch(STATUS_CSS_SOURCE, /border-style:\s*dashed/);
+    for (const status of ["busy", "free", "tentative"]) {
+        assert.match(
+            STATUS_CSS_SOURCE,
+            new RegExp(
+                `app-shell \\.calendar-view-canvas \\.calendar-event-status--${status}:hover`,
+            ),
+        );
+    }
+    for (const status of ["busy", "free", "tentative"]) {
+        assert.match(
+            STATUS_CSS_SOURCE,
+            new RegExp(
+                `calendar-upcoming-button\\.calendar-event-status--${status}:hover`,
+            ),
+        );
+    }
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-events-list \.calendar-upcoming-item\s*\{[\s\S]*padding:\s*0;[\s\S]*border:\s*0;[\s\S]*background:\s*transparent;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-upcoming-button\.calendar-event-status\s*\{[\s\S]*border-radius:\s*10px;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-slot-event\.calendar-event-status:hover\s*\{[\s\S]*border-color:[\s\S]*field-border[\s\S]*border-left-color:[\s\S]*75%[\s\S]*transform:\s*none;/,
+    );
+    assert.match(
+        STATUS_CSS_SOURCE,
+        /calendar-upcoming-button\.calendar-event-status:hover\s*\{[\s\S]*border-color:\s*var\(--field-border\)[\s\S]*border-left-color:[\s\S]*75%[\s\S]*transform:\s*none;/,
+    );
+});
+
+test("successful event updates refresh availability through ui ctx", () => {
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /refreshUserAvailability[\s\S]*ui:availabilityRenderer[\s\S]*\.refresh\?\.\(document\)/,
+    );
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /async function updateEvent[\s\S]*response\.ok[\s\S]*await refreshUserAvailability\(\)/,
+    );
+});
+
+test("active event creation and event boundaries refresh availability", () => {
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /async function createEvent[\s\S]*Date\.parse\(payload\.startAt\) <= now[\s\S]*Date\.parse\(payload\.endAt\) > now[\s\S]*await refreshUserAvailability\(\)/,
+    );
+    assert.match(
+        APP_SOURCE,
+        /scheduleAvailabilityBoundaryRefresh[\s\S]*event\.startAt[\s\S]*event\.endAt[\s\S]*calendarUi\.refreshUserAvailability\(\)/,
+    );
+    assert.match(
+        APP_SOURCE,
+        /signal\?\.addEventListener\([\s\S]*"abort"[\s\S]*clearTimeout\(availabilityBoundaryTimer\)/,
     );
 });
 
@@ -570,6 +681,14 @@ test("shared events stay visible in Upcoming and calendar layout is fixed", () =
     assert.match(
         CSS_SOURCE,
         /\.calendar-toolbar-heading h3\s*\{[\s\S]*text-align:\s*center/,
+    );
+    assert.match(
+        CSS_SOURCE,
+        /\.calendar-toolbar-heading\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) auto/,
+    );
+    assert.doesNotMatch(
+        CSS_SOURCE,
+        /\.toolbar \.calendar-toolbar-add\s*\{[^}]*position:\s*absolute/,
     );
     assert.match(
         CSS_SOURCE,

@@ -18,6 +18,7 @@ export function createRenderPendingEvents({
     normalizeHexColor,
     EVENT_RESPONSE_OPTIONS,
     getResponseActionLabelKey,
+    calendarEventStatusClasses,
 }) {
     return function renderPendingEvents(events, i18n) {
         if (!events.length) {
@@ -30,7 +31,7 @@ export function createRenderPendingEvents({
               (
                   event,
               ) => `<li class="calendar-upcoming-item" style="--calendar-event-stripe:${escapeHtml(normalizeHexColor(event.calendarColor))}">
-          <button type="button" class="calendar-upcoming-button" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
+          <button type="button" class="calendar-upcoming-button ${calendarEventStatusClasses(event.status)}" data-calendar-event="${escapeHtml(event.id)}" data-calendar-id="${escapeHtml(event.calendarId)}">
             <strong>${escapeHtml(event.title)}</strong>
             <div>${formatDateTime(event.startAt)}</div>
           </button>

@@ -12,6 +12,7 @@ import {
     ResponseRecorder,
 } from "../../../api/tests/reuse/route-test-helpers.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
+import { VolatileUserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import { bootstrap } from "../bootstrap.js";
 
 test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
@@ -274,6 +275,11 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
     );
     capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("auth:routeContext", authContext);
+    capabilities.contribute("social:getAvailabilityStatuses", () => [
+        "free",
+        "busy",
+        "tentative",
+    ]);
 
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -293,6 +299,64 @@ test("calendar calendars metadata resolves meetings availability via ctx capabil
 
     assert.equal(calendarsResponse.statusCode, 200);
     assert.equal(calendarsResponse.body.meta.jitsiAvailable, true);
+    assert.deepEqual(calendarsResponse.body.meta.availabilityStatuses, [
+        "free",
+        "busy",
+        "tentative",
+    ]);
+});
+
+test("current events drive availability unless the user prevents updates", async () => {
+    const capabilities = new CapabilityStore();
+    const preferences = new VolatileUserPreferenceStore();
+    capabilities.contribute("social:getAvailabilityStatuses", () => [
+        "busy",
+        "focused",
+    ]);
+    await bootstrap({
+        adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
+        routeRegistry: new RouteRegistry(),
+        gatewayRegistry: new GatewayRegistry(),
+        capabilities,
+        uiRegistry: new UIRegistry(),
+        flow: createCtx().flow,
+    } as any);
+    capabilities.contribute("preferences:store", preferences);
+
+    const createCalendar = capabilities.get<
+        (accountId: string, name: string) => { id: string }
+    >("calendar:createCalendar");
+    const addEvent =
+        capabilities.get<
+            (input: {
+                ownerAccountId: string;
+                calendarId: string;
+                title: string;
+                startAt: string;
+                endAt: string;
+                status: string;
+            }) => unknown
+        >("calendar:addEvent");
+    const getCurrentAvailability = capabilities.get<
+        (accountId: string) => Promise<{ status: string } | null>
+    >("calendar:getCurrentAvailability");
+    assert.ok(createCalendar);
+    assert.ok(addEvent);
+    assert.ok(getCurrentAvailability);
+    const calendarId = createCalendar("alice", "Primary").id;
+    const now = Date.now();
+    addEvent({
+        ownerAccountId: "alice",
+        calendarId,
+        title: "Current focus",
+        startAt: new Date(now - 60_000).toISOString(),
+        endAt: new Date(now + 60_000).toISOString(),
+        status: "focused",
+    });
+    assert.equal((await getCurrentAvailability("alice"))?.status, "focused");
+
+    await preferences.set("alice", "calendar-prevent-status-updates", "true");
+    assert.equal(await getCurrentAvailability("alice"), null);
 });
 
 test("calendar invitations endpoint returns pending invited events for attendee", async () => {

@@ -3,6 +3,7 @@ import { getInitialsText, pickInitialsColor } from "./avatar-utils.js";
 import { escapeHtml } from "./escape-html.js";
 import { renderMarkdown } from "./markdown-renderer.js";
 import { getRoleLabel, normalizeRoleValue } from "./access-role.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
@@ -116,6 +117,12 @@ async function showPreview(link) {
     const roleLabel = PREVIEW_ROLE_LABELS.has(normalizedRole)
         ? getRoleLabel(previewI18n, normalizedRole)
         : null;
+    const availabilityRenderer = uiCtx.capabilities.get(
+        "ui:availabilityRenderer",
+    );
+    const availabilityMarkup = availabilityRenderer?.buildMarkup
+        ? availabilityRenderer.buildMarkup(handleText)
+        : "";
     const stats = [
         profile.followerCount != null
             ? `${profile.followerCount} ${previewI18n?.t("ui.reuse.followers") ?? ""}`
@@ -132,7 +139,7 @@ async function showPreview(link) {
 
     preview.innerHTML = `
         <div class="profile-mini-preview__header">
-            <div class="profile-mini-preview__avatar">${renderAvatar(profile, avatarUrl)}</div>
+            <div class="profile-mini-preview__avatar">${renderAvatar(profile, avatarUrl)}${availabilityMarkup}</div>
             <div class="profile-mini-preview__identity">
                 <strong>${escapeHtml(name)}</strong>
                 <span>@${escapeHtml(handleText)}</span>
@@ -142,6 +149,7 @@ async function showPreview(link) {
         ${profile.bio ? `<div class="profile-mini-preview__bio">${renderMarkdown(profile.bio)}</div>` : ""}
         ${stats ? `<p class="profile-mini-preview__stats">${escapeHtml(stats)}</p>` : ""}
     `;
+    await availabilityRenderer?.hydrate?.(preview);
     positionPreview(link, preview);
 }
 

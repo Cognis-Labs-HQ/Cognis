@@ -91,6 +91,25 @@ test("room leave controls use explicit destructive button styling", () => {
     );
     assert.match(englishStrings, />Leave Room</);
     assert.doesNotMatch(englishStrings, /Conversation/i);
+
+test("messages omits availability lights from primary chat avatars", () => {
+    const roomRenderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
+        "utf8",
+    );
+    const messageRenderSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+        "utf8",
+    );
+
+    assert.equal(
+        roomRenderSource.match(/showAvailability:\s*false/g)?.length,
+        2,
+    );
+    assert.equal(
+        messageRenderSource.match(/showAvailability:\s*false/g)?.length,
+        3,
+    );
 });
 
 test("rejecting a request navigates away from the removed room", () => {

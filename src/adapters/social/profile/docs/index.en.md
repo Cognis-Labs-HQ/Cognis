@@ -124,3 +124,7 @@ Saved profile details are shown immediately. Follower and following totals and t
 Follow changes and banner-height selections repaint immediately while their background synchronization completes.
 
 Profile messaging feedback is loaded from profile-owned language resources, so profile rendering does not depend on the Messages adapter being enabled.
+
+## Availability
+
+The profile menu shows the current availability and lets the signed-in user choose Free, Busy, or Tentative. Avatar status lights expose the resolved status as a hover tooltip. Other components can query a user's calendar-aware resolved status by account ID through the `social:getUserAvailability` ctx capability.

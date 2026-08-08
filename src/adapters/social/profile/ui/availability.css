@@ -1,0 +1,114 @@
+.availability-indicator {
+    position: absolute;
+    right: -1px;
+    bottom: -1px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--surface, var(--background));
+    border-radius: 999px;
+    background: #2eaf62;
+    box-sizing: border-box;
+    z-index: 2;
+}
+.availability-avatar {
+    position: relative;
+}
+.availability-indicator[data-availability-status="busy"] {
+    background: #d94b4b;
+}
+.availability-indicator[data-availability-status="tentative"] {
+    background: #e6a52f;
+}
+.availability-indicator[data-availability-status="idle"] {
+    background: #8a929c;
+    filter: grayscale(1);
+}
+.availability-indicator[data-availability-status="unknown"] {
+    background: #8a929c;
+}
+.availability-menu-item {
+    border-bottom: 1px solid var(--border);
+}
+.dropdown:has(.availability-menu-item) {
+    overflow: visible;
+}
+.availability-menu-control {
+    position: relative;
+    width: 100%;
+}
+.availability-menu-toggle,
+.availability-menu-option {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    color: var(--text);
+    background: transparent;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+.availability-menu-toggle:hover,
+.availability-menu-toggle:focus-visible,
+.availability-menu-option:hover,
+.availability-menu-option:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+    background: var(--surface-soft);
+}
+.availability-menu-chevron {
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform 0.16s ease;
+}
+.availability-menu-toggle[aria-expanded="true"] .availability-menu-chevron {
+    transform: translateY(2px) rotate(225deg);
+}
+.availability-menu-options {
+    position: absolute;
+    top: 0;
+    right: calc(100% + 8px);
+    z-index: 1;
+    display: grid;
+    gap: 2px;
+    min-width: 140px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+.availability-menu-options[hidden] {
+    display: none;
+}
+.availability-menu-option {
+    grid-template-columns: 12px 1fr;
+    font-weight: 500;
+}
+.availability-menu-option[aria-selected="true"] {
+    background: var(--surface-soft);
+}
+.availability-menu-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #2eaf62;
+}
+.availability-menu-dot[data-availability-status="busy"] {
+    background: #d94b4b;
+}
+.availability-menu-dot[data-availability-status="tentative"] {
+    background: #e6a52f;
+}
+.availability-menu-dot[data-availability-status="idle"] {
+    background: #8a929c;
+    filter: grayscale(1);
+}

@@ -13,6 +13,7 @@ import {
 } from "../../../api/reuse/route-context.js";
 import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import { DbCalendarStore } from "../store.js";
 import { normalizeCalendarColor } from "../color.js";
@@ -25,6 +26,7 @@ import { createCalendarCoreRoutes } from "./calendar-routes.js";
 import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
 import { CalendarShareRegistry } from "./share-registry.js";
+import { createStatusPreferenceRoutes } from "./status-preference/index.js";
 
 const GATEWAY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -41,6 +43,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
     const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const getPreferenceStore = () =>
+        ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
     if (systemCtx && !systemCtx.hasFlow("calendar-upcoming-events")) {
         systemCtx.registerFlow({
@@ -818,12 +822,73 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             inviteEmails?: string[];
             reminderOffsetsMinutes?: number[];
             meetingUrl?: string | null;
-            status?: "busy" | "free";
+            status?: string;
             recurrence?: "none" | "daily" | "weekly" | "monthly" | "yearly";
         }) => gateway.addEvent(input),
     );
     ctx.capabilities.contribute("calendar:listEvents", (calendarId: string) =>
         gateway.listEvents(calendarId),
+    );
+    ctx.capabilities.contribute(
+        "calendar:getCurrentAvailability",
+        async (
+            accountId: string,
+        ): Promise<{
+            status: string;
+            effectiveSince: string;
+        } | null> => {
+            const preventsCalendarStatus =
+                (await getPreferenceStore()?.get(
+                    accountId,
+                    "calendar-prevent-status-updates",
+                )) === "true";
+            if (preventsCalendarStatus) return null;
+            const now = Date.now();
+            const activeEvents = gateway
+                .listCalendars(accountId)
+                .flatMap((calendar) => gateway.listEvents(calendar.id))
+                .filter(
+                    (event) =>
+                        new Date(event.startAt).getTime() <= now &&
+                        new Date(event.endAt).getTime() > now,
+                )
+                .map((event) => ({
+                    event,
+                    effectiveSince: new Date(
+                        Math.max(
+                            new Date(event.startAt).getTime(),
+                            new Date(event.createdAt).getTime(),
+                        ),
+                    ).toISOString(),
+                }))
+                .sort((first, second) =>
+                    second.effectiveSince.localeCompare(first.effectiveSince),
+                );
+            const activeEvent = activeEvents[0];
+            if (!activeEvent) return null;
+            const resolveAvailabilityStatuses = ctx.capabilities.get<
+                () => readonly string[]
+            >("social:getAvailabilityStatuses");
+            const supportedStatuses = resolveAvailabilityStatuses?.() ?? [];
+            const fallbackStatus = supportedStatuses.includes("busy")
+                ? "busy"
+                : (supportedStatuses[0] ?? "busy");
+            const eventStatus = supportedStatuses.includes(
+                activeEvent.event.status,
+            )
+                ? activeEvent.event.status
+                : fallbackStatus;
+            const tentativeStatus = supportedStatuses.includes("tentative")
+                ? "tentative"
+                : eventStatus;
+            return {
+                status:
+                    activeEvent.event.responses[accountId] === "tentative"
+                        ? tentativeStatus
+                        : eventStatus,
+                effectiveSince: activeEvent.effectiveSince,
+            };
+        },
     );
     ctx.capabilities.contribute("calendar:exportIcs", (calendarId: string) =>
         gateway.exportCalendarAsIcs(calendarId),
@@ -845,6 +910,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     });
 
+    ctx.routeRegistry.register(
+        createStatusPreferenceRoutes({
+            routeContext,
+            getPreference: (accountId) =>
+                getPreferenceStore()?.get(
+                    accountId,
+                    "calendar-prevent-status-updates",
+                ) ?? Promise.resolve(null),
+            setPreference: (accountId, prevented) => {
+                const preferenceStore = getPreferenceStore();
+                if (!preferenceStore) {
+                    return Promise.resolve(false);
+                }
+                return preferenceStore
+                    .set(
+                        accountId,
+                        "calendar-prevent-status-updates",
+                        String(prevented),
+                    )
+                    .then(() => true);
+            },
+            log: ctx.log,
+        }),
+        "calendar",
+    );
     ctx.routeRegistry.register(
         createCalendarCoreRoutes({
             gateway,
@@ -919,6 +1009,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/gateways/calendar/ui/navbar.js",
         () => ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
     );
+    if (ctx.flow.exists("construct-settings-ui")) {
+        ctx.flow.extend(
+            "construct-settings-ui",
+            "augment-sections",
+            { id: "calendar-gateway:status-preference" },
+            () => ({
+                gatewayId: "calendar",
+                sectionId: "calendar-status-preference",
+                targetSectionId: "general",
+                scriptUrl: "/static/gateways/calendar/ui/status-prefs.js",
+                stringsBaseUrl: "/static/gateways/calendar/ui/languages",
+            }),
+        );
+    }
     uiHooks.registerSpaRoute({
         id: "calendar-page",
         pattern: "^/calendar$",
@@ -937,7 +1041,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "calendar",
         name: "Calendar Gateway",
-        version: "1.4.48",
+        version: "1.4.73",
         description:
             "Internal calendar management with pluggable CalDAV and ICS adapters.",
         publisher: "Cognis Labs HQ",

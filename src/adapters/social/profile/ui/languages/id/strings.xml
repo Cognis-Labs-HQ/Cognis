@@ -7,4 +7,9 @@
   <string name="ui.app.profile.archived_banner">Profil ini diarsipkan. Interaksi dengan pengguna ini dinonaktifkan.</string>
   <string name="ui.app.profile.message_start_failed">Gagal memulai percakapan.</string>
   <string name="ui.app.profile.message_request_sent">Permintaan pesan telah dikirim.</string>
+  <string name="ui.app.profile.availability.free">Luang</string>
+  <string name="ui.app.profile.availability.busy">Sibuk</string>
+  <string name="ui.app.profile.availability.tentative">Tentatif</string>
+  <string name="ui.app.profile.availability.idle">Tidak aktif</string>
+  <string name="ui.app.profile.availability.unknown">Tidak diketahui</string>
 </resources>
