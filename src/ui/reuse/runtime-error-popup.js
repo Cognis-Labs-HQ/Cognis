@@ -35,7 +35,7 @@
  * @returns {Promise<void>}
  */
 
-import { openPopup } from "./popup.js";
+import { openPopup, primePopupStylesheet } from "./popup.js";
 import { shouldSuppressConnectionRecoveryPopup } from "./api-client.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
@@ -493,6 +493,7 @@ export function installRuntimeErrorHandlers() {
     handlersInstalled = true;
 
     installConsoleCapture();
+    void primePopupStylesheet();
 
     window.addEventListener(
         "error",
