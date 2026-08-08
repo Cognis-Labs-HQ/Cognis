@@ -9,7 +9,11 @@ const source = readFileSync(
 );
 
 test("performance telemetry authenticates submissions and skips signed-out clients", () => {
-    assert.match(source, /localStorage\.getItem\("cognis_access_token"\)/);
-    assert.match(source, /authorization: `Bearer \$\{accessToken\}`/);
+    assert.match(
+        source,
+        /uiCtx\.capabilities\.get\(\s*"observability:submitClientMetrics"/,
+    );
+    assert.doesNotMatch(source, /gateways\/observability/);
+    assert.doesNotMatch(source, /fetch\("\/api\/v1\/observability\/client"/);
     assert.doesNotMatch(source, /navigator\.sendBeacon/);
 });
