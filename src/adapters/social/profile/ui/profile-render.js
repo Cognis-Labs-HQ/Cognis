@@ -379,7 +379,7 @@ export function renderHero({
                 : ""
         }
         <button
-          class="${isBlocked ? "profile-hero-unblock-btn" : "profile-hero-block-btn"}"
+          class="${isBlocked ? "profile-hero-unblock-btn" : "profile-hero-block-btn btn-cancel"}"
           type="button"
           aria-label="${escapeHtml(i18n.t(isBlocked ? "ui.app.profile.unblock_user" : "ui.app.profile.block_user"))}"
         >${isBlocked ? "🔓" : "🚫"}</button>
