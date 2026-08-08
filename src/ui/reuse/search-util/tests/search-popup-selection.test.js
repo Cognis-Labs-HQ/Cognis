@@ -187,10 +187,14 @@ test("search popup displays result categories below parameters", () => {
 });
 
 test("settings search exposes archive action by name and description", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/settings/index.js"),
-        "utf8",
-    );
+    const source = ["index.js", "search-index.js"]
+        .map((fileName) =>
+            readFileSync(
+                resolve(ROOT, `src/ui/app/settings/${fileName}`),
+                "utf8",
+            ),
+        )
+        .join("\n");
     assert.match(
         source,
         /"data-search-category": i18n\.t\("ui\.reuse\.operations"\)/,
@@ -406,10 +410,14 @@ test("study content and sub-navigation participate in global search", () => {
 });
 
 test("settings search skips paragraph text entries and search results highlight targets", () => {
-    const settingsSource = readFileSync(
-        resolve(ROOT, "src/ui/app/settings/index.js"),
-        "utf8",
-    );
+    const settingsSource = ["index.js", "search-index.js"]
+        .map((fileName) =>
+            readFileSync(
+                resolve(ROOT, `src/ui/app/settings/${fileName}`),
+                "utf8",
+            ),
+        )
+        .join("\n");
     const searchIndexSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/search-util/indexing.js"),
         "utf8",

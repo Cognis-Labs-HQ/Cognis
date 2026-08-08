@@ -5,10 +5,14 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
-const HELPERS_SOURCE = readFileSync(
-    resolve(ROOT, "src/gateways/calendar/ui/calendar-ui-helpers.js"),
-    "utf8",
-);
+const HELPERS_SOURCE = ["calendar-ui-helpers.js", "event-composer.js"]
+    .map((fileName) =>
+        readFileSync(
+            resolve(ROOT, `src/gateways/calendar/ui/${fileName}`),
+            "utf8",
+        ),
+    )
+    .join("\n");
 const PENDING_RENDER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-pending-render.js"),
     "utf8",
@@ -250,9 +254,12 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     );
     assert.match(
         DASHBOARD_SOURCE,
-        /calendarEventStatusClasses\(event\.status\)/,
+        /calendarEvents\?\.eventStatusClasses\(event\.status\)/,
     );
-    assert.match(DASHBOARD_SOURCE, /loadCalendarEventStatusStyles\(\)/);
+    assert.match(
+        DASHBOARD_SOURCE,
+        /calendarEvents\?\.loadEventStatusStyles\(\)/,
+    );
     for (const status of ["busy", "free", "tentative"]) {
         assert.match(
             STATUS_CSS_SOURCE,

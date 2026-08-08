@@ -18,7 +18,7 @@
  *   });
  *   tracker.mount(mainWindow);
  *   const unsubscribe = subscribePresenceActivity(({ active }) => {
- *     statusLight.classList.toggle('is-idle', !active);
+ *     updateActivityState(active);
  *   });
  *   unsubscribe();
  *
