@@ -35,3 +35,7 @@ Halaman dan pratinjau profil kini menampilkan status pengguna lain sesuai visibi
 ## Latar status kalender yang konsisten
 
 Latar Sibuk, Luang, dan Tentatif kini diterapkan secara konsisten pada kartu acara di semua tampilan Kalender, daftar acara mendatang, ringkasan tertunda, serta ringkasan acara mendatang di Dasbor. Kartu Luang tetap transparan, sedangkan kartu Tentatif tetap menggunakan garis putus-putus.
+
+## Gaya Kalender hanya dimuat saat diperlukan
+
+Gaya status Kalender kini dimuat melalui lembar gaya halaman Kalender atau permintaan Dasbor yang eksplisit. Halaman yang tidak terkait seperti Administrasi tidak lagi meminta CSS status Kalender melalui klien navigasi Kalender global.

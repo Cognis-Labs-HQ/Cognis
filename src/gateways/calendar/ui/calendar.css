@@ -1,6 +1,7 @@
 @import "./calendar-timed-grid.css";
 @import "./calendar-share-reminder.css";
 @import "./calendar-event-details.css";
+@import "./calendar-status.css";
 
 .calendar-section {
     display: grid;

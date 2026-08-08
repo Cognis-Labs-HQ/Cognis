@@ -35,3 +35,7 @@ Profilseiten und Vorschauen zeigen den Status anderer Benutzer nun gemäß deren
 ## Einheitliche Hintergründe für Kalenderstatus
 
 Die Hintergründe für „Beschäftigt“, „Frei“ und „Vorläufig“ gelten nun einheitlich für Terminkarten in allen Kalenderansichten, bevorstehende Kalendertermine, ausstehende Zusammenfassungen und bevorstehende Termine im Dashboard. Freie Karten bleiben transparent, während vorläufige Karten weiterhin gestrichelt dargestellt werden.
+
+## Kalenderstile werden nur bei Bedarf geladen
+
+Kalenderstatus-Stile werden nun über das Stylesheet der Kalenderseite oder durch eine ausdrückliche Dashboard-Anfrage geladen. Nicht verwandte Seiten wie die Administration fordern über den globalen Kalender-Navigationsclient keine Kalenderstatus-CSS mehr an.

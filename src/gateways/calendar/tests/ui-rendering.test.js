@@ -228,6 +228,15 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
 test("event status backgrounds cover calendar cards and dashboard summaries", () => {
     assert.match(CALENDAR_API_SOURCE, /calendarEventStatusClasses/);
     assert.match(
+        CALENDAR_API_SOURCE,
+        /loadCalendarEventStatusStyles[\s\S]*\/static\/gateways\/calendar\/ui\/calendar-status\.css/,
+    );
+    assert.doesNotMatch(
+        CALENDAR_API_SOURCE,
+        /const statusStylesheet = document\.createElement/,
+    );
+    assert.match(CSS_SOURCE, /@import "\.\/calendar-status\.css";/);
+    assert.match(
         HELPERS_SOURCE,
         /calendar-slot-event \$\{calendarEventStatusClasses\(event\.status\)\}/,
     );
@@ -243,6 +252,7 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
         DASHBOARD_SOURCE,
         /calendarEventStatusClasses\(event\.status\)/,
     );
+    assert.match(DASHBOARD_SOURCE, /loadCalendarEventStatusStyles\(\)/);
     for (const status of ["busy", "free", "tentative"]) {
         assert.match(
             STATUS_CSS_SOURCE,

@@ -35,3 +35,7 @@ Profile pages and previews now show another user's status according to that user
 ## Consistent calendar status backgrounds
 
 Busy, free, and tentative backgrounds now apply consistently to event cards in every Calendar view, Calendar upcoming-event lists, pending summaries, and Dashboard upcoming-event summaries. Free cards remain transparent, while tentative cards retain their dashed treatment.
+
+## Calendar styles load only where needed
+
+Calendar status styles now load through the Calendar page stylesheet or an explicit Dashboard request. Unrelated pages such as Administration no longer request Calendar status CSS through the global Calendar navigation client.

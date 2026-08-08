@@ -1,10 +1,16 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-const statusStylesheet = document.createElement("link");
-statusStylesheet.rel = "stylesheet";
-statusStylesheet.href = "/static/gateways/calendar/calendar-status.css";
-document.head.append(statusStylesheet);
+const STATUS_STYLESHEET_ID = "calendar-event-status-styles";
+
+export function loadCalendarEventStatusStyles() {
+    if (document.getElementById(STATUS_STYLESHEET_ID)) return;
+    const stylesheet = document.createElement("link");
+    stylesheet.id = STATUS_STYLESHEET_ID;
+    stylesheet.rel = "stylesheet";
+    stylesheet.href = "/static/gateways/calendar/ui/calendar-status.css";
+    document.head.append(stylesheet);
+}
 
 export function calendarEventStatusClasses(status) {
     const visualStatus =

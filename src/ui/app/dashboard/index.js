@@ -2,6 +2,7 @@ import { apiFetch } from "../../reuse/api-client.js";
 import {
     calendarEventStatusClasses,
     fetchUpcomingEvents,
+    loadCalendarEventStatusStyles,
 } from "/static/gateways/calendar/calendar-api.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
@@ -56,6 +57,7 @@ async function loadDashboardExtensions({ i18n, account, role }) {
 }
 
 export async function mount(root, { signal } = {}) {
+    loadCalendarEventStatusStyles();
     const i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.dashboard");
 
