@@ -11,3 +11,5 @@ Das Laufzeitformular erlaubt keine Änderung des durch die Umgebung festgelegten
 ## Protokolleinstellungen sind übersetzt
 
 Beschriftungen für Konsolen- und Dateieinstellungen verwenden nun komponenteneigene deutsche, englische, indonesische und japanische Ressourcen.
+
+Das Administrationsfenster lädt nun vor der Darstellung der Konfigurationsfelder die angekündigten Sprachressourcen des jeweiligen Adapters.

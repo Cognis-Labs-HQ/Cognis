@@ -81,6 +81,14 @@ test("logging gateway bootstrap registers admin logs section and static UI scrip
     await assert.doesNotReject(
         access(path.join(staticDir!, "admin-section.js")),
     );
+    assert.equal(
+        ctx.uiRegistry.getAdapterStaticDir("logging", "console"),
+        path.resolve(process.cwd(), "src", "adapters", "logging", "console"),
+    );
+    assert.equal(
+        ctx.uiRegistry.getAdapterStaticDir("logging", "file"),
+        path.resolve(process.cwd(), "src", "adapters", "logging", "file"),
+    );
 });
 
 test("logging adapter level overrides reconfigure the running logger immediately", async () => {
@@ -121,6 +129,21 @@ test("logging adapter level overrides reconfigure the running logger immediately
             false,
         );
         assert.equal("path" in fileConfigPayload.envValues, false);
+
+        const catalogRequest = new RequestRecorder("GET", token);
+        const catalogResponse = new ResponseRecorder();
+        await adapterHandler(
+            catalogRequest as any,
+            catalogResponse as any,
+            new URL("/api/v1/gateways/logging/adapters", "http://localhost"),
+        );
+        const fileAdapter = JSON.parse(catalogResponse.payload).data.find(
+            (adapter: { id: string }) => adapter.id === "file",
+        );
+        assert.equal(
+            fileAdapter.stringsBaseUrl,
+            "/static/adapters/logging/file/languages",
+        );
 
         const updateAdapter = async (
             adapterId: "console" | "file",

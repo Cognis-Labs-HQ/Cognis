@@ -2,6 +2,7 @@ export function createLoggingAdapter(supportedLevels: readonly string[]) {
     return {
         id: "console",
         name: "Console Logging",
+        stringsBaseUrl: "/static/adapters/logging/console/languages",
         schema: [
             {
                 key: "level",

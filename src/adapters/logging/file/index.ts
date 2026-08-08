@@ -2,6 +2,7 @@ export function createLoggingAdapter(supportedLevels: readonly string[]) {
     return {
         id: "file",
         name: "File Logging",
+        stringsBaseUrl: "/static/adapters/logging/file/languages",
         schema: [
             {
                 key: "level",

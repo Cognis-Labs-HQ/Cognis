@@ -316,6 +316,7 @@ type ConfigValue = string | number | boolean;
 type LoggingAdapterContract = {
     id: "console" | "file";
     name: string;
+    stringsBaseUrl: string;
     schema: Array<{
         key: string;
         labelKey: string;
@@ -550,6 +551,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const adaptersRoot =
         ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
     const adapterCatalog = await loadLoggingAdapterContracts(adaptersRoot);
+    for (const adapter of adapterCatalog) {
+        ctx.uiRegistry?.registerAdapterStaticDir(
+            "logging",
+            adapter.id,
+            path.join(adaptersRoot, "logging", adapter.id),
+        );
+    }
     ctx.routeRegistry.register(
         createLoggingAdapterRoutes(
             adapterCatalog,
@@ -586,7 +594,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "logging",
         name: "Logging Gateway",
-        version: "1.5.6",
+        version: "1.5.7",
         required: true,
         description:
             "Structured application logging to stdout/stderr and file.",

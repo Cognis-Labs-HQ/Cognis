@@ -11,3 +11,5 @@ The runtime form no longer permits changing the environment-owned log path, and 
 ## Logging settings are translated
 
 Console and file setting labels now use component-owned German, English, Indonesian, and Japanese resources.
+
+The Administration popup now loads each adapter's announced language resources before rendering its configuration fields.

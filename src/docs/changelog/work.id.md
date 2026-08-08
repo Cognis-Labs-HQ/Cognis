@@ -11,3 +11,5 @@ Formulir waktu proses tidak lagi mengizinkan perubahan jalur log milik lingkunga
 ## Pengaturan log telah diterjemahkan
 
 Label pengaturan konsol dan file kini menggunakan sumber daya bahasa Jerman, Inggris, Indonesia, dan Jepang milik komponen.
+
+Popup Administrasi kini memuat sumber daya bahasa yang diumumkan oleh setiap adaptor sebelum merender bidang konfigurasinya.

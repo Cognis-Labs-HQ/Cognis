@@ -65,7 +65,6 @@ let composer = null;
 let changesBar = null;
 let securitySection = null;
 let elements = [];
-let adapterConfigPopup = null;
 function adapterCompositeKey(gatewayId, adapterId) {
     return `${gatewayId}:${adapterId}`;
 }
@@ -700,10 +699,17 @@ function bindDependencyLinks() {
 
 // prettier-ignore
 async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = null) {
-    if (!adapterConfigPopup) return;
     const configUrl = resolveAdapterControlUrl(gatewayId, adapterId, "config", adapterOverride);
     const testUrl = resolveAdapterControlUrl(gatewayId, adapterId, "test", adapterOverride);
     const version = String(adapterOverride?.version ?? "").trim();
+    const adapterI18n = await extendI18n(i18n, adapterOverride?.stringsBaseUrl);
+    const adapterConfigPopup = createAdapterConfigPopup({
+        i18n: adapterI18n,
+        escapeHtml,
+        apiFetch,
+        openPopup,
+        showToast,
+    });
     await adapterConfigPopup.openAdapterConfig(version ? `${name} v${version}` : name, {
         configUrl,
         testUrl,
@@ -745,13 +751,6 @@ export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
     i18n = await createI18n();
     i18n = await extendI18n(i18n, "/static/gateways/tfa/languages");
-    adapterConfigPopup = createAdapterConfigPopup({
-        i18n,
-        escapeHtml,
-        apiFetch,
-        openPopup,
-        showToast,
-    });
     applyDocumentTitle(i18n, "ui.page.title.administration");
 
     setModules([]);

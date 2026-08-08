@@ -181,3 +181,15 @@ test("configured adapter rows use the component click behavior even when locked"
     assert.match(source, /row\.addEventListener\("click", handleOpen\)/);
     assert.match(source, /row\.addEventListener\("keydown"/);
 });
+
+test("adapter configuration popups load adapter-owned translations", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /extendI18n\(i18n, adapterOverride\?\.stringsBaseUrl\)/,
+    );
+    assert.match(source, /i18n: adapterI18n/);
+});
