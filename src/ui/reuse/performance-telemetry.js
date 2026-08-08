@@ -14,6 +14,8 @@
  * @returns {void}
  */
 
+import { submitClientMetrics } from "../../gateways/observability/ui/client.js";
+
 const SAMPLE_RATE = 0.1;
 const sampled = Math.random() < SAMPLE_RATE;
 const documentMetrics = new Map();
@@ -21,11 +23,6 @@ let installed = false;
 
 function send(navigation, metrics) {
     if (!sampled || metrics.size === 0) return;
-    const accessToken = localStorage.getItem("cognis_access_token");
-    if (!accessToken) {
-        metrics.clear();
-        return;
-    }
     if (navigation === "document") {
         const resources = performance.getEntriesByType("resource");
         metrics.set("web.resource_count", resources.length);
@@ -37,21 +34,12 @@ function send(navigation, metrics) {
             ),
         );
     }
-    const payload = JSON.stringify({
+    const payload = {
         navigation,
         metrics: Array.from(metrics, ([name, value]) => ({ name, value })),
-    });
+    };
     metrics.clear();
-    void fetch("/api/v1/observability/client", {
-        method: "POST",
-        body: payload,
-        headers: {
-            authorization: `Bearer ${accessToken}`,
-            "content-type": "application/json",
-        },
-        credentials: "same-origin",
-        keepalive: true,
-    });
+    void submitClientMetrics(payload).catch(() => {});
 }
 
 export function observePerformance() {

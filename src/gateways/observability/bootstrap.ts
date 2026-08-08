@@ -143,7 +143,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "observability",
         name: "Observability Gateway",
-        version: "1.0.2",
+        version: "1.0.4",
         required: true,
         hasAdapters: false,
         description:
