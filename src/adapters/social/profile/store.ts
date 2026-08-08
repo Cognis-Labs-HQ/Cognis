@@ -12,7 +12,6 @@ export type {
     AccountLifecycleState,
     AccountProfile,
     Post,
-    FileSizeLimit,
     ProfileCreateStore,
     ProfileStore,
     ProfileSearchOptions,
@@ -25,7 +24,6 @@ import type {
     AccountLifecycleState,
     AccountProfile,
     Post,
-    FileSizeLimit,
     ProfileCreateStore,
     ProfileSearchOptions,
 } from "./store-contract.js";
@@ -155,13 +153,6 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
             },
         ],
     },
-    {
-        name: "file_size_limits",
-        columns: [
-            { name: "category", type: "text", primaryKey: true },
-            { name: "max_bytes", type: "bigint", notNull: true },
-        ],
-    },
 ];
 
 export class DbProfileStore implements ProfileCreateStore {
@@ -170,24 +161,6 @@ export class DbProfileStore implements ProfileCreateStore {
     async ensureSchema(): Promise<void> {
         for (const def of SCHEMA_TABLE_DEFS) {
             await this.db.ensureTable(def);
-        }
-        await this.seedFileSizeLimits();
-    }
-
-    private async seedFileSizeLimits(): Promise<void> {
-        const defaults: Array<[string, number]> = [
-            ["image", 5_242_880],
-            ["video", 104_857_600],
-            ["text", 1_048_576],
-            ["global", 10_485_760],
-        ];
-        for (const [category, maxBytes] of defaults) {
-            await this.db.executeCommand({
-                option: "INSERT",
-                table: "file_size_limits",
-                values: { category, max_bytes: maxBytes },
-                conflict: { action: "ignore" },
-            });
         }
     }
 
@@ -661,47 +634,5 @@ export class DbProfileStore implements ProfileCreateStore {
             where: [{ column: "id", value: postId }],
         });
         return (result.rowCount ?? 0) > 0;
-    }
-
-    async getFileSizeLimit(category: string): Promise<number> {
-        const result = await this.db.executeCommand({
-            option: "SELECT",
-            table: "file_size_limits",
-            columns: ["max_bytes"],
-            where: [{ column: "category", value: category }],
-        });
-        if (result.rows?.length) return Number(result.rows[0].max_bytes);
-        const fallback = await this.db.executeCommand({
-            option: "SELECT",
-            table: "file_size_limits",
-            columns: ["max_bytes"],
-            where: [{ column: "category", value: "global" }],
-        });
-        return Number(fallback.rows?.[0]?.max_bytes ?? 10_485_760);
-    }
-
-    async setFileSizeLimit(category: string, maxBytes: number): Promise<void> {
-        await this.db.executeCommand({
-            option: "INSERT",
-            table: "file_size_limits",
-            values: { category, max_bytes: maxBytes },
-            conflict: {
-                action: "update",
-                target: ["category"],
-            },
-        });
-    }
-
-    async getAllFileSizeLimits(): Promise<FileSizeLimit[]> {
-        const result = await this.db.executeCommand({
-            option: "SELECT",
-            table: "file_size_limits",
-            columns: ["category", "max_bytes"],
-            orderBy: [{ column: "category" }],
-        });
-        return (result.rows ?? []).map((row) => ({
-            category: row.category as string,
-            maxBytes: Number(row.max_bytes),
-        }));
     }
 }

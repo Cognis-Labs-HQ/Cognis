@@ -639,24 +639,28 @@ test("profile routes - avatar upload rejects disallowed MIME type", async () => 
     assert.equal(status, 415);
 });
 
-test("profile routes - avatar upload rejects oversized image", async () => {
+test("profile routes - avatar upload delegates large images to quota-aware storage", async () => {
     const profileStore = new VolatileProfileStore();
     await setupUser(profileStore, "alice");
-    profileStore.setFileSizeLimit("image", 10);
-    const route = createProfileRoutes(profileStore, fakeFileGateway());
+    const gateway = fakeFileGateway();
+    const route = createProfileRoutes(profileStore, gateway);
     const token = issueAccessToken("alice", "user", 60);
     let status = 0;
+    let responseBody = "";
     await route(
-        makeReq("PUT", token, Buffer.alloc(20, "x"), "image/png"),
+        makeReq("PUT", token, Buffer.alloc(12_000_000, "x"), "image/png"),
         {
             writeHead(c: number) {
                 status = c;
             },
-            end() {},
+            end(payload: string) {
+                responseBody = payload;
+            },
         } as any,
         new URL("http://localhost/api/v1/social/profile/avatar"),
     );
-    assert.equal(status, 413);
+    assert.equal(status, 200);
+    assert.equal(gateway._has(JSON.parse(responseBody).data.avatarKey), true);
 });
 
 test("profile routes - banner upload allows gif", async () => {

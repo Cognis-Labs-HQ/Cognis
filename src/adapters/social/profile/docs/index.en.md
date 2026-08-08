@@ -15,7 +15,7 @@ database schema. Core has no knowledge of profiles, follows, blocks, or posts.
 ## Responsibilities
 
 - Own and initialise the `account_profiles`, `account_follows`,
-  `account_blocks`, `posts`, and `file_size_limits` database tables.
+  `account_blocks`, and `posts` database tables.
 - Enforce account-level and post-level visibility on all profile and social
   endpoints.
 - Manage the social graph: follow, unfollow, block, unblock, and
@@ -91,31 +91,29 @@ registering routes or contributing capabilities.
 
 ## API Routes
 
-| Method   | Path                                         | Description                   | Auth   |
-| -------- | -------------------------------------------- | ----------------------------- | ------ |
-| `GET`    | `/api/v1/social/profile/ping`                | Capability check              | Bearer |
-| `GET`    | `/api/v1/social/profile`                     | Own profile                   | Bearer |
-| `PATCH`  | `/api/v1/social/profile`                     | Update own profile fields     | Bearer |
-| `PUT`    | `/api/v1/social/profile/avatar`              | Upload avatar                 | Bearer |
-| `DELETE` | `/api/v1/social/profile/avatar`              | Remove own avatar             | Bearer |
-| `PUT`    | `/api/v1/social/profile/banner`              | Upload banner                 | Bearer |
-| `DELETE` | `/api/v1/social/profile/banner`              | Remove own banner             | Bearer |
-| `GET`    | `/api/v1/social/users/:handle/profile`       | Public profile                | Bearer |
-| `POST`   | `/api/v1/social/users/:handle/follow`        | Follow a user                 | Bearer |
-| `DELETE` | `/api/v1/social/users/:handle/follow`        | Unfollow                      | Bearer |
-| `POST`   | `/api/v1/social/users/:handle/block`         | Block a user                  | Bearer |
-| `DELETE` | `/api/v1/social/users/:handle/block`         | Unblock                       | Bearer |
-| `GET`    | `/api/v1/social/users/:handle/followers`     | Follower list                 | Bearer |
-| `GET`    | `/api/v1/social/users/:handle/following`     | Following list                | Bearer |
-| `POST`   | `/api/v1/social/posts`                       | Create post                   | Bearer |
-| `GET`    | `/api/v1/social/posts`                       | List own posts                | Bearer |
-| `DELETE` | `/api/v1/social/posts/:id`                   | Delete post                   | Bearer |
-| `GET`    | `/api/v1/social/users/:handle/posts`         | List user's posts             | Bearer |
-| `PUT`    | `/api/v1/files/:bucket/:key`                 | Upload file                   | Bearer |
-| `GET`    | `/api/v1/files/:bucket/:key`                 | Download file                 | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key`                 | Delete file                   | Admin  |
-| `GET`    | `/api/v1/social/admin/file-limits`           | List per-category size limits | Admin  |
-| `PUT`    | `/api/v1/social/admin/file-limits/:category` | Set a size limit              | Admin  |
+| Method   | Path                                     | Description               | Auth   |
+| -------- | ---------------------------------------- | ------------------------- | ------ |
+| `GET`    | `/api/v1/social/profile/ping`            | Capability check          | Bearer |
+| `GET`    | `/api/v1/social/profile`                 | Own profile               | Bearer |
+| `PATCH`  | `/api/v1/social/profile`                 | Update own profile fields | Bearer |
+| `PUT`    | `/api/v1/social/profile/avatar`          | Upload avatar             | Bearer |
+| `DELETE` | `/api/v1/social/profile/avatar`          | Remove own avatar         | Bearer |
+| `PUT`    | `/api/v1/social/profile/banner`          | Upload banner             | Bearer |
+| `DELETE` | `/api/v1/social/profile/banner`          | Remove own banner         | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/profile`   | Public profile            | Bearer |
+| `POST`   | `/api/v1/social/users/:handle/follow`    | Follow a user             | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/follow`    | Unfollow                  | Bearer |
+| `POST`   | `/api/v1/social/users/:handle/block`     | Block a user              | Bearer |
+| `DELETE` | `/api/v1/social/users/:handle/block`     | Unblock                   | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/followers` | Follower list             | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/following` | Following list            | Bearer |
+| `POST`   | `/api/v1/social/posts`                   | Create post               | Bearer |
+| `GET`    | `/api/v1/social/posts`                   | List own posts            | Bearer |
+| `DELETE` | `/api/v1/social/posts/:id`               | Delete post               | Bearer |
+| `GET`    | `/api/v1/social/users/:handle/posts`     | List user's posts         | Bearer |
+| `PUT`    | `/api/v1/files/:bucket/:key`             | Upload file               | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key`             | Download file             | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key`             | Delete file               | Admin  |
 
 ## Live profile updates
 

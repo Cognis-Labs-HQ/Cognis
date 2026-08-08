@@ -19,6 +19,18 @@ test("nginx preserves an incoming HTTPS forwarding scheme", async () => {
     );
 });
 
+test("nginx delegates API upload limits to application quotas", async () => {
+    const configuration = await readRepositoryFile(
+        "docker/cognis-web/default.conf.template",
+    );
+    const apiLocation = configuration.match(
+        /location \^~ \/api\/ \{([\s\S]*?)\n    \}/,
+    )?.[1];
+
+    assert.ok(apiLocation);
+    assert.match(apiLocation, /client_max_body_size 0;/);
+});
+
 for (const profile of ["postgres", "mariadb"]) {
     test(`${profile} Compose profile requires deployment settings`, async () => {
         const configuration = await readRepositoryFile(
