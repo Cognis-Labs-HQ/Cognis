@@ -228,6 +228,7 @@ export function createShareRoutes(input: {
             const body = (await readJson(req)) as {
                 resourceType?: unknown;
                 resourceId?: unknown;
+                contentUrl?: unknown;
                 label?: unknown;
                 grantedCapabilities?: unknown;
                 accessControls?: unknown;
@@ -239,12 +240,22 @@ export function createShareRoutes(input: {
             };
             const resourceType = String(body.resourceType ?? "").trim();
             const resourceId = String(body.resourceId ?? "").trim();
+            const contentUrl = String(body.contentUrl ?? "").trim();
             if (!resourceType || !resourceId) {
                 sendError(
                     res,
                     400,
                     "bad_request",
                     "resourceType and resourceId are required.",
+                );
+                return true;
+            }
+            if (contentUrl && !/^\/(?!\/)/.test(contentUrl)) {
+                sendError(
+                    res,
+                    400,
+                    "invalid_content_url",
+                    "contentUrl must be an internal absolute path.",
                 );
                 return true;
             }
@@ -301,6 +312,7 @@ export function createShareRoutes(input: {
                 ownerAccountId: claims.sub,
                 resourceType,
                 resourceId,
+                contentUrl,
                 label: typeof body.label === "string" ? body.label : "",
                 grantedCapabilities: Array.isArray(body.grantedCapabilities)
                     ? body.grantedCapabilities

@@ -302,6 +302,7 @@ export async function registerShareBootstrapHooks(input: {
                 password?: string | null;
                 generatePassword?: boolean;
                 expiresAt?: string;
+                contentUrl?: string;
             };
             let shareRecord;
             try {
@@ -312,9 +313,9 @@ export async function registerShareBootstrapHooks(input: {
                         "",
                     resourceType: resourceResult.resourceType ?? "",
                     resourceId: resourceResult.resourceId ?? "",
-                    metadata:
-                        resourceResult.metadata ??
-                        (authorizeResult.meetingInstanceId
+                    metadata: {
+                        ...(resourceResult.metadata ?? {}),
+                        ...(authorizeResult.meetingInstanceId
                             ? {
                                   meetingInstanceId:
                                       authorizeResult.meetingInstanceId,
@@ -324,7 +325,11 @@ export async function registerShareBootstrapHooks(input: {
                                     meetingInstanceId:
                                         resourceResult.meetingInstanceId,
                                 }
-                              : null),
+                              : {}),
+                        ...(inputPayload.contentUrl
+                            ? { contentUrl: inputPayload.contentUrl }
+                            : {}),
+                    },
                     label: inputPayload.label,
                     grantedCapabilities: Array.isArray(
                         inputPayload.grantedCapabilities,
@@ -368,6 +373,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 label?: string;
                 shareUrl?: string;
+                metadata?: Record<string, string> | null;
                 accessControls?: {
                     recipients?: Array<{ type?: string; id?: string }>;
                 };
@@ -397,13 +403,9 @@ export async function registerShareBootstrapHooks(input: {
                 >("notify:dispatch");
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
-                const buildUserShareUrl = input.gateway.getCapability<
-                    (share: {
-                        shareId: string;
-                        resourceId: string;
-                        recipientAccountId: string;
-                    }) => string | null
-                >(`share:buildUserShareUrl:${shareRecord?.resourceType ?? ""}`);
+                const contentUrl = String(
+                    shareRecord?.metadata?.contentUrl ?? "",
+                ).trim();
                 await Promise.allSettled(
                     userRecipients.map((recipientUsername) =>
                         dispatch({
@@ -411,17 +413,7 @@ export async function registerShareBootstrapHooks(input: {
                             recipientUsername,
                             subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
                             body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
-                            actionUrl:
-                                buildUserShareUrl?.({
-                                    shareId: String(
-                                        (shareRecord as { id?: string })?.id ??
-                                            "",
-                                    ),
-                                    resourceId: String(
-                                        shareRecord?.resourceId ?? "",
-                                    ),
-                                    recipientAccountId: recipientUsername,
-                                }) ?? undefined,
+                            actionUrl: contentUrl || undefined,
                             senderName: "Cognis Share",
                             metadata: {
                                 shareId: (shareRecord as { id?: string })?.id,

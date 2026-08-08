@@ -49,17 +49,6 @@ export function bootstrapModule(ctx) {
         "whiteboard:fetchBoardData",
         fetchBoardData,
     );
-    systemCtx?.contributePublicCapability?.(
-        "share:buildUserShareUrl:whiteboard",
-        ({ shareId, resourceId }) => {
-            if (!shareId || !resourceId) return null;
-            const params = new URLSearchParams({
-                id: resourceId,
-                userShare: shareId,
-            });
-            return `/whiteboard?${params.toString()}`;
-        },
-    );
 
     ctx.flow.extend(
         "bootstrap-platform",
@@ -71,7 +60,6 @@ export function bootstrapModule(ctx) {
                 "nextcloud-whiteboard:spawnWhiteboardWindow",
                 "whiteboard:getEmbedUrl",
                 "whiteboard:fetchBoardData",
-                "share:buildUserShareUrl:whiteboard",
             ],
         }),
     );

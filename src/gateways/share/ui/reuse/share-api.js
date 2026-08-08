@@ -36,6 +36,7 @@ export function resolveShareExpiry(expiresInHours) {
 export function buildShareTokenCallbacks({
     resourceType,
     resourceId,
+    contentUrl,
     grantedCapabilities,
 } = {}) {
     return {
@@ -69,6 +70,7 @@ export function buildShareTokenCallbacks({
                 body: JSON.stringify({
                     resourceType,
                     resourceId,
+                    contentUrl,
                     label,
                     expiresAt:
                         String(expiresAt ?? "").trim() ||

@@ -78,6 +78,7 @@ test("share popup owns user recipient search and selection", () => {
 
 test("share popup callbacks use only share gateway recipient and token routes", () => {
     assert.match(apiSource, /\/api\/v1\/share\/recipients\/users/);
+    assert.match(apiSource, /contentUrl/);
     assert.match(apiSource, /method: "PATCH"/);
     assert.match(apiSource, /password: String\(password/);
     assert.match(apiSource, /String\(expiresAt/);

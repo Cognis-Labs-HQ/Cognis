@@ -105,15 +105,6 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 `${String(input.label ?? "")}\n${input.shareUrl}`,
             )}`) as never,
     );
-    capabilities.contribute(
-        "share:buildUserShareUrl:meeting",
-        ((input: {
-            shareId: string;
-            resourceId: string;
-            recipientAccountId: string;
-        }) =>
-            `/meetings?shared=${encodeURIComponent(input.shareId)}&recipient=${encodeURIComponent(input.recipientAccountId)}`) as never,
-    );
     const shareEmailRecipients: string[] = [];
     const shareEmailVariables: Array<Record<string, string>> = [];
     const userShareNotifications: Array<Record<string, unknown>> = [];
@@ -194,6 +185,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             valid: true,
             resourceType: "meeting",
             resourceId: "meeting-1",
+            contentUrl: "/meetings?meeting=meeting-1",
             ownerAccountId: "alice",
             metadata: {
                 resourceName: "Project Sync",
@@ -491,6 +483,22 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(basicResolveResponse.statusCode, 200);
 
+    const externalContentUrlResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+            contentUrl: "https://attacker.example/meeting-1",
+        },
+    );
+    assert.equal(externalContentUrlResponse.statusCode, 400);
+    assert.equal(
+        externalContentUrlResponse.body.error.code,
+        "invalid_content_url",
+    );
+
     const restrictedCreateResponse = await dispatchJson(
         "POST",
         adminToken,
@@ -498,6 +506,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         {
             resourceType: "meeting",
             resourceId: "meeting-1",
+            contentUrl: "/meetings?meeting=meeting-1",
             accessControls: {
                 recipients: [{ type: "user", id: "bob" }],
             },
@@ -555,7 +564,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(userShareNotifications[0]?.category, "share");
     assert.equal(
         userShareNotifications[0]?.actionUrl,
-        `/meetings?shared=${encodeURIComponent(restrictedCreateResponse.body.data.id)}&recipient=bob`,
+        "/meetings?meeting=meeting-1",
     );
     const restrictedToken = encodeURIComponent(
         restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],

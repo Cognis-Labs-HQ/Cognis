@@ -109,6 +109,7 @@ export { openShareLinksPopup };
 export function openSharePopup({
     resourceType,
     resourceId,
+    contentUrl,
     grantedCapabilities = [],
     passwordRequired = false,
     ...popupOptions
@@ -120,6 +121,7 @@ export function openSharePopup({
         ...buildShareTokenCallbacks({
             resourceType,
             resourceId,
+            contentUrl,
             grantedCapabilities,
         }),
     });

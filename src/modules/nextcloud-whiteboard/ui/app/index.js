@@ -470,6 +470,7 @@ async function openSharePopup() {
         await sharePopup({
             resourceType: "whiteboard",
             resourceId: activeBoard.id,
+            contentUrl: `/whiteboard?id=${encodeURIComponent(activeBoard.id)}`,
             grantedCapabilities: ["whiteboard:read", "whiteboard:write"],
             title: translateModuleString(
                 "module.nextcloud_whiteboard.share_popup_title",
