@@ -172,6 +172,8 @@
   <string name="ui.app.settings.preferences_acknowledgement_error">確認への同意を保存できませんでした。編集はロックされたままです。</string>
 
   <string name="ui.app.docs.page_subtitle">開発者ドキュメント。</string>
+  <string name="ui.app.docs.version.label">ドキュメントのバージョン</string>
+  <string name="ui.app.docs.version.latest">最新版</string>
   <string name="ui.app.docs.group.platform">プラットフォーム</string>
   <string name="ui.app.docs.group.gateways">ゲートウェイ</string>
   <string name="ui.app.docs.group.adapters_auth">認証アダプター</string>
