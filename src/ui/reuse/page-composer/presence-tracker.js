@@ -17,6 +17,10 @@
  *     onPresenceUpdate: (entries, sessionId) => void syncSelection(entries, sessionId),
  *   });
  *   tracker.mount(mainWindow);
+ *   const unsubscribe = subscribePresenceActivity(({ active }) => {
+ *     statusLight.classList.toggle('is-idle', !active);
+ *   });
+ *   unsubscribe();
  *
  * @param {object} options - Presence tracker options.
  * @returns {{ mount(container: HTMLElement): void, refresh(): void, destroy(): void }}
@@ -83,6 +87,13 @@ function bindActivityDetector() {
     schedulePresenceIdle();
 }
 
+/**
+ * Subscribes to local browser activity changes and immediately reports the
+ * current state.
+ *
+ * @param {(detail: { active: boolean }) => void} listener - Activity listener.
+ * @returns {() => boolean} Function that removes the listener.
+ */
 export function subscribePresenceActivity(listener) {
     bindActivityDetector();
     activitySubscribers.add(listener);

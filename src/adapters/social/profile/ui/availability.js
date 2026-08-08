@@ -166,7 +166,7 @@ window.setInterval(() => {
 
 window.setInterval(() => {
     const hasVisibleUserAvailability = document.querySelector(
-        '[data-availability-handle]:not([data-availability-handle=""])',
+        "[data-availability-handle]",
     );
     if (hasVisibleUserAvailability) {
         void refreshAvailabilityIndicators();

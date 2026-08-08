@@ -24,6 +24,21 @@ export async function refreshUserAvailability() {
         ?.refresh?.(document);
 }
 
+export async function fetchStatusPreference() {
+    const response = await apiFetch("/api/v1/calendar/status-preference");
+    if (!response.ok) throw new Error("calendar_status_preference_load_failed");
+    return (await response.json()).data?.prevented === true;
+}
+
+export async function saveStatusPreference(prevented) {
+    const response = await apiFetch("/api/v1/calendar/status-preference", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ prevented }),
+    });
+    if (!response.ok) throw new Error("calendar_status_preference_save_failed");
+}
+
 const shareAccessByCalendarId = new Map();
 
 function refusedSecretError() {

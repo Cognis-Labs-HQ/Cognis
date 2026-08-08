@@ -9,7 +9,7 @@ import type { CalendarLogger } from "../helpers.js";
 interface StatusPreferenceRouteOptions {
     routeContext?: RouteContext;
     getPreference: (accountId: string) => Promise<string | null>;
-    setPreference: (accountId: string, prevented: boolean) => Promise<void>;
+    setPreference: (accountId: string, prevented: boolean) => Promise<boolean>;
     log?: CalendarLogger;
 }
 
@@ -50,7 +50,19 @@ export function createStatusPreferenceRoutes({
                 );
                 return true;
             }
-            await setPreference(claims.sub, body.prevented);
+            const saved = await setPreference(claims.sub, body.prevented);
+            if (!saved) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "preferences_unavailable",
+                            message: "Preference storage is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
             log?.("info", "Calendar status preference updated.", {
                 component: "calendar-gateway",
                 operation: "update_status_preference",
@@ -58,7 +70,7 @@ export function createStatusPreferenceRoutes({
                 prevented: body.prevented,
             });
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            res.end(JSON.stringify({ data: { saved } }));
             return true;
         }
         return false;

@@ -81,7 +81,7 @@ test("profile heroes keep status lights clear of role badges", () => {
     assert.match(app, /hydrateAvailabilityIndicators\(root\)/);
 });
 
-test("visible user statuses are polled every ten seconds", () => {
+test("visible statuses, including the signed-in user, are polled", () => {
     const availability = readFileSync(
         resolve(PROFILE_ROOT, "ui/availability.js"),
         "utf8",
@@ -90,8 +90,9 @@ test("visible user statuses are polled every ten seconds", () => {
     assert.match(availability, /AVAILABILITY_REFRESH_INTERVAL_MS = 10_000/);
     assert.match(
         availability,
-        /data-availability-handle[^\n]+:not\([^\n]+\)[\s\S]+refreshAvailabilityIndicators/,
+        /querySelector\([\s\S]+data-availability-handle[\s\S]+refreshAvailabilityIndicators/,
     );
+    assert.doesNotMatch(availability, /data-availability-handle[^\n]+:not\(/);
 });
 
 test("availability renderer exposes immediate ctx refresh", () => {

@@ -1,26 +1,14 @@
-import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
+import {
+    fetchStatusPreference,
+    saveStatusPreference,
+} from "/static/gateways/calendar/ui/calendar-api.js";
 
 const stylesheet = document.createElement("link");
 stylesheet.rel = "stylesheet";
 stylesheet.href = "/static/gateways/calendar/ui/status-prefs.css";
 document.head.append(stylesheet);
-
-async function fetchStatusPreference() {
-    const response = await apiFetch("/api/v1/calendar/status-preference");
-    if (!response.ok) throw new Error("calendar_status_preference_load_failed");
-    return (await response.json()).data?.prevented === true;
-}
-
-async function saveStatusPreference(prevented) {
-    const response = await apiFetch("/api/v1/calendar/status-preference", {
-        method: "PUT",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ prevented }),
-    });
-    if (!response.ok) throw new Error("calendar_status_preference_save_failed");
-}
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let savedPreference = false;

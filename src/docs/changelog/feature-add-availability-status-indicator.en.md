@@ -83,3 +83,7 @@ Status indicators now appear grey with an Unknown label when availability cannot
 ## Visible statuses stay current
 
 Availability for other users now refreshes every ten seconds while their indicators are visible across profile previews, meetings, whiteboards, and other surfaces. The Profile hero no longer overlays an availability light on its avatar, leaving the role badge unobstructed.
+
+## Availability integration reliability
+
+Calendar now handles unavailable preference storage without errors, its UI client owns preference requests, self status indicators stay fresh, and the reusable presence subscription is fully documented.

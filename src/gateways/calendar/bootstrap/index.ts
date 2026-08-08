@@ -921,13 +921,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             setPreference: (accountId, prevented) => {
                 const preferenceStore = getPreferenceStore();
                 if (!preferenceStore) {
-                    throw new Error("preferences_store_unavailable");
+                    return Promise.resolve(false);
                 }
-                return preferenceStore.set(
-                    accountId,
-                    "calendar-prevent-status-updates",
-                    String(prevented),
-                );
+                return preferenceStore
+                    .set(
+                        accountId,
+                        "calendar-prevent-status-updates",
+                        String(prevented),
+                    )
+                    .then(() => true);
             },
             log: ctx.log,
         }),

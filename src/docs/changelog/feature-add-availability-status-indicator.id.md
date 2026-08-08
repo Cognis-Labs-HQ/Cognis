@@ -83,3 +83,7 @@ Indikator status kini berwarna abu-abu dengan label Tidak diketahui ketika keter
 ## Status yang terlihat tetap terkini
 
 Ketersediaan pengguna lain kini diperbarui setiap sepuluh detik selama indikator mereka terlihat di pratinjau profil, rapat, papan tulis, dan permukaan lain. Hero Profil tidak lagi menumpuk lampu ketersediaan pada avatar sehingga lencana peran tidak terhalang.
+
+## Keandalan integrasi ketersediaan
+
+Kalender kini menangani penyimpanan preferensi yang tidak tersedia tanpa galat, klien UI-nya memiliki permintaan preferensi, indikator status pengguna sendiri tetap mutakhir, dan langganan kehadiran yang dapat digunakan kembali telah didokumentasikan sepenuhnya.

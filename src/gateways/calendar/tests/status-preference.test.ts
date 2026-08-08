@@ -37,6 +37,7 @@ test("calendar status preference is authenticated and persisted", async () => {
         setPreference: async (accountId, prevented) => {
             assert.equal(accountId, "alice");
             storedPreference = String(prevented);
+            return true;
         },
     });
     const saved = responseCapture();
@@ -59,7 +60,7 @@ test("calendar status preference is authenticated and persisted", async () => {
 test("calendar status preference rejects non-boolean values", async () => {
     const route = createStatusPreferenceRoutes({
         getPreference: async () => null,
-        setPreference: async () => undefined,
+        setPreference: async () => true,
     });
     const result = responseCapture();
     await route(
@@ -71,5 +72,23 @@ test("calendar status preference rejects non-boolean values", async () => {
     assert.equal(
         JSON.parse(result.capture.body).error.code,
         "invalid_preference",
+    );
+});
+
+test("calendar status preference reports unavailable storage", async () => {
+    const route = createStatusPreferenceRoutes({
+        getPreference: async () => null,
+        setPreference: async () => false,
+    });
+    const result = responseCapture();
+    await route(
+        request("PUT", JSON.stringify({ prevented: true })),
+        result.response,
+        new URL("http://localhost/api/v1/calendar/status-preference"),
+    );
+    assert.equal(result.capture.status, 503);
+    assert.equal(
+        JSON.parse(result.capture.body).error.code,
+        "preferences_unavailable",
     );
 });

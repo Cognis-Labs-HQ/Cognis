@@ -83,3 +83,7 @@ Statusanzeigen erscheinen nun grau mit der Bezeichnung „Unbekannt“, wenn die
 ## Sichtbare Status bleiben aktuell
 
 Die Verfügbarkeit anderer Benutzer wird nun alle zehn Sekunden aktualisiert, solange ihre Anzeigen in Profilvorschauen, Besprechungen, Whiteboards oder anderen Ansichten sichtbar sind. Im Profilkopf überlagert keine Verfügbarkeitsanzeige mehr den Avatar, sodass das Rollenabzeichen frei bleibt.
+
+## Zuverlässige Verfügbarkeitsintegration
+
+Der Kalender behandelt nun einen nicht verfügbaren Einstellungsspeicher ohne Fehler, sein UI-Client verwaltet Einstellungsanfragen, eigene Statusanzeigen bleiben aktuell und das wiederverwendbare Anwesenheitsabonnement ist vollständig dokumentiert.
