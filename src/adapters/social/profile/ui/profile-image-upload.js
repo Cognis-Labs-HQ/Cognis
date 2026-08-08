@@ -143,6 +143,8 @@ export function createProfileImageUploadActions({
             }
 
             const currentState = getState();
+            let nextBannerPanX = 50;
+            let nextBannerPanY = 50;
             if (kind === "avatar") {
                 if (currentState.avatarBlobUrl) {
                     URL.revokeObjectURL(currentState.avatarBlobUrl);
@@ -155,8 +157,6 @@ export function createProfileImageUploadActions({
                 if (currentState.bannerBlobUrl) {
                     URL.revokeObjectURL(currentState.bannerBlobUrl);
                 }
-                let nextBannerPanX = 50;
-                let nextBannerPanY = 50;
                 if (
                     preserveOriginalGif &&
                     isCropResultWithSourceRect(cropResult)
