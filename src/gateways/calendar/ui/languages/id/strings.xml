@@ -185,6 +185,7 @@
   <string name="gateway.calendar.share_no_events">Tidak ada acara di kalender ini.</string>
   <string name="gateway.calendar.new_calendar_short">+ Baru</string>
   <string name="gateway.calendar.status_updates_title">Pembaruan Status Kalender</string>
+  <string name="gateway.calendar.status_updates_hint">Saat diaktifkan, acara kalender yang sedang berlangsung dapat secara otomatis menampilkan status Sibuk, Kosong, atau Tentatif. Status yang Anda pilih secara manual akan diprioritaskan hingga acara lain dimulai.</string>
   <string name="gateway.calendar.status_updates_allow">Izinkan acara kalender mengatur status saya</string>
   <string name="gateway.calendar.status_updates_prevent">Cegah acara kalender mengatur status</string>
   <string name="gateway.calendar.status_updates_load_failed">Preferensi status kalender tidak dapat dimuat.</string>

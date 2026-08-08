@@ -11,7 +11,11 @@ test("calendar status updates use an enabled-by-default switch", () => {
     assert.match(source, /let savedAllowed = true/);
     assert.match(source, /type="checkbox" checked/);
     assert.match(source, /saveStatusPreference\(!pendingAllowed\)/);
-    assert.match(source, /<h3>[^]*class="switch"[^]*class="slider"/);
+    assert.match(source, /components-section-heading/);
+    assert.match(source, /components-section-body/);
+    assert.match(source, /renderInfoTooltip/);
+    assert.match(source, /status_updates_hint/);
+    assert.match(source, /class="switch"[^]*class="slider"/);
     assert.doesNotMatch(source, /switch--inline/);
     assert.doesNotMatch(source, /type="radio"/);
 });

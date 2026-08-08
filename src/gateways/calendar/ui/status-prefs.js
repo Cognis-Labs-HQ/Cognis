@@ -1,4 +1,5 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { showToast } from "/static/reuse/toast.js";
 import {
     fetchStatusPreference,
@@ -19,14 +20,22 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         id: "calendar-status-preference",
         targetSectionId: "general",
         label: i18n.t("gateway.calendar.status_updates_title"),
-        renderContent: () => `
-          <h3>${escapeHtml(i18n.t("gateway.calendar.status_updates_title"))}</h3>
-          <div>
+        renderContent: () => {
+            const tooltipAria = i18n.t("ui.reuse.more_information");
+            return `
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("gateway.calendar.status_updates_title"))}
+              ${renderInfoTooltip(i18n.t("gateway.calendar.status_updates_hint"), tooltipAria, "calendar-status-updates")}
+            </h3>
+            <div class="components-section-body">
             <label class="switch" aria-label="${escapeHtml(i18n.t("gateway.calendar.status_updates_allow"))}">
               <input id="${preferenceId}" type="checkbox" checked />
               <span class="slider"></span>
             </label>
-          </div>`,
+            </div>
+          </div>`;
+        },
         async onRender() {
             try {
                 savedAllowed = !(await fetchStatusPreference());

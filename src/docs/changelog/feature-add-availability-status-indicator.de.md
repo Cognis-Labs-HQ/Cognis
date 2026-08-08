@@ -95,3 +95,7 @@ Kalender-Statusaktualisierungen verwenden jetzt einen standardmäßig aktivierte
 ## Durchgehende allgemeine Einstellungen
 
 Kalender-Statusaktualisierungen bleiben jetzt in der durchgehenden Karte für allgemeine Einstellungen, verwenden dieselbe Überschriften- und Schieberegleranordnung wie Änderungsprotokolle anzeigen und stehen direkt über dem abschließenden Gefahrenbereich.
+
+## Verständlichere, einheitliche Statuseinstellungen
+
+Die Kalender-Statusaktualisierungen enthalten jetzt ein Informationsfenster, das erklärt, wie Termine die Verfügbarkeit beeinflussen. Die Benutzereinstellungen verwenden nun dieselbe Struktur für Abschnittsüberschriften, Inhalte, Abstände und Größen wie die Administration.

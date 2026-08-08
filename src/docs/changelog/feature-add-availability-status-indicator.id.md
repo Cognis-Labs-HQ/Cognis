@@ -95,3 +95,7 @@ Pembaruan Status Kalender kini menggunakan tombol geser yang aktif secara bawaan
 ## Pengaturan Umum yang berkelanjutan
 
 Pembaruan Status Kalender kini tetap berada dalam kartu pengaturan Umum yang berkelanjutan, menggunakan tata letak judul dan tombol geser yang sama seperti Tampilkan Catatan Perubahan, serta berada tepat di atas Zona Berbahaya terakhir.
+
+## Pengaturan status yang lebih jelas dan konsisten
+
+Pembaruan Status Kalender kini memiliki jendela informasi yang menjelaskan pengaruh acara terhadap ketersediaan. Pengaturan Pengguna kini memakai struktur judul bagian, isi, jarak, dan ukuran yang sama dengan Administrasi.

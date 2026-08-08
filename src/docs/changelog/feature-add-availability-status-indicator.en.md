@@ -95,3 +95,7 @@ Calendar Status Updates now uses an enabled-by-default slider and appears before
 ## Continuous General settings
 
 Calendar Status Updates now remains in the continuous General settings card, uses the same heading and slider layout as Show Changelogs, and stays immediately above the final Danger Zone.
+
+## Clearer, consistent status settings
+
+Calendar Status Updates now includes an information popup explaining how events affect availability. User Settings now uses the same section heading, body, spacing, and sizing structure as Administration for a more consistent experience.

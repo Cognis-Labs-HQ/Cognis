@@ -185,6 +185,7 @@
   <string name="gateway.calendar.share_no_events">There are no events in this calendar.</string>
   <string name="gateway.calendar.new_calendar_short">+ New</string>
   <string name="gateway.calendar.status_updates_title">Calendar Status Updates</string>
+  <string name="gateway.calendar.status_updates_hint">When enabled, an active calendar event can automatically show you as busy, free, or tentative. A status you select manually takes priority until another event starts.</string>
   <string name="gateway.calendar.status_updates_allow">Allow calendar events to set my status</string>
   <string name="gateway.calendar.status_updates_prevent">Prevent calendar events from setting status</string>
   <string name="gateway.calendar.status_updates_load_failed">Could not load the calendar status preference.</string>

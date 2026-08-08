@@ -185,6 +185,7 @@
   <string name="gateway.calendar.share_no_events">このカレンダーには予定がありません。</string>
   <string name="gateway.calendar.new_calendar_short">+ 新規</string>
   <string name="gateway.calendar.status_updates_title">カレンダーの状態更新</string>
+  <string name="gateway.calendar.status_updates_hint">有効にすると、進行中のカレンダー予定に応じて状態が予定あり、空き、または仮予定に自動更新されます。手動で選んだ状態は、次の予定が始まるまで優先されます。</string>
   <string name="gateway.calendar.status_updates_allow">カレンダー予定による状態設定を許可</string>
   <string name="gateway.calendar.status_updates_prevent">カレンダー予定による状態設定を防ぐ</string>
   <string name="gateway.calendar.status_updates_load_failed">カレンダー状態の設定を読み込めませんでした。</string>
