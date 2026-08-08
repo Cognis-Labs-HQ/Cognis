@@ -21,6 +21,11 @@ let installed = false;
 
 function send(navigation, metrics) {
     if (!sampled || metrics.size === 0) return;
+    const accessToken = localStorage.getItem("cognis_access_token");
+    if (!accessToken) {
+        metrics.clear();
+        return;
+    }
     if (navigation === "document") {
         const resources = performance.getEntriesByType("resource");
         metrics.set("web.resource_count", resources.length);
@@ -37,14 +42,13 @@ function send(navigation, metrics) {
         metrics: Array.from(metrics, ([name, value]) => ({ name, value })),
     });
     metrics.clear();
-    if (navigator.sendBeacon) {
-        navigator.sendBeacon("/api/v1/observability/client", payload);
-        return;
-    }
     void fetch("/api/v1/observability/client", {
         method: "POST",
         body: payload,
-        headers: { "content-type": "application/json" },
+        headers: {
+            authorization: `Bearer ${accessToken}`,
+            "content-type": "application/json",
+        },
         credentials: "same-origin",
         keepalive: true,
     });
