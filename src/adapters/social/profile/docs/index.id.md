@@ -6,7 +6,7 @@ Gateway Profil memiliki profil pengguna, grafik sosial, postingan, dan manajemen
 
 ## Tanggung Jawab
 
-- Memiliki dan menginisialisasi tabel database `account_profiles`, `account_follows`, `account_blocks`, `posts`, dan `file_size_limits`.
+- Memiliki dan menginisialisasi tabel database `account_profiles`, `account_follows`, `account_blocks`, `posts`.
 - Menegakkan visibilitas tingkat akun dan postingan pada semua endpoint profil dan sosial.
 - Mengelola grafik sosial: follow, unfollow, block, unblock, dan query daftar follower/following.
 - Mengelola upload avatar dan banner melalui capability `file:gateway`.

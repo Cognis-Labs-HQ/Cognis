@@ -8,7 +8,6 @@ import { createProfileRoutes } from "./routes/index.js";
 import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
 import { createPostRoutes } from "./routes/posts.js";
-import { createFileLimitRoutes } from "./routes/files.js";
 import { createPreferencesRoutes } from "./routes/preferences.js";
 import {
     AVAILABILITY_STATUSES,
@@ -430,11 +429,6 @@ export async function bootstrapSocialAdapter(
             "Profile adapter: files:* capabilities not found — avatar/banner uploads unavailable.",
         );
     }
-
-    ctx.registerRoute(
-        createFileLimitRoutes(profileStore, routeContext),
-        "social",
-    );
 
     ctx.registerRoute(
         createProfilePageRoutes(routeContext, () => ctx.isGatewayEnabled()),

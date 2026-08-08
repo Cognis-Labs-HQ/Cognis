@@ -45,11 +45,6 @@ export interface Post {
     updatedAt: string;
 }
 
-export interface FileSizeLimit {
-    category: string;
-    maxBytes: number;
-}
-
 export interface ProfileCreateStore {
     createProfile(
         accountId: string,
@@ -96,7 +91,6 @@ export interface ProfileStore extends ProfileCreateStore {
     getFollowingCount(accountId: string): Promise<number>;
     getPostsByAccount(accountId: string): Promise<Post[]>;
     getAllPosts(): Promise<Post[]>;
-    getFileSizeLimit(category: string): Promise<number>;
     isBlocked(blockerId: string, blockedId: string): Promise<boolean>;
     isFollowing(followerId: string, followingId: string): Promise<boolean>;
 }
@@ -122,12 +116,6 @@ export class VolatileProfileStore implements ProfileStore {
     private readonly posts = new Map<string, Post[]>();
     private readonly follows = new Set<string>();
     private readonly blocks = new Set<string>();
-    private readonly fileSizeLimits = new Map<string, number>([
-        ["image", 5_242_880],
-        ["video", 104_857_600],
-        ["text", 1_048_576],
-        ["global", 10_485_760],
-    ]);
 
     async createProfile(
         accountId: string,
@@ -334,14 +322,6 @@ export class VolatileProfileStore implements ProfileStore {
             );
     }
 
-    async getFileSizeLimit(category: string): Promise<number> {
-        return (
-            this.fileSizeLimits.get(category) ??
-            this.fileSizeLimits.get("global") ??
-            10_485_760
-        );
-    }
-
     async isBlocked(blockerId: string, blockedId: string): Promise<boolean> {
         return this.blocks.has(`${blockerId}:${blockedId}`);
     }
@@ -388,9 +368,5 @@ export class VolatileProfileStore implements ProfileStore {
 
     async unblock(blockerId: string, blockedId: string): Promise<void> {
         this.blocks.delete(`${blockerId}:${blockedId}`);
-    }
-
-    setFileSizeLimit(category: string, maxBytes: number): void {
-        this.fileSizeLimits.set(category, maxBytes);
     }
 }
