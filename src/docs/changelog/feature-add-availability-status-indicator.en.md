@@ -111,3 +111,7 @@ Structured-content dividers now use a lower-contrast tint. The complete Security
 ## Balanced Settings layout
 
 Settings dividers now use the theme's muted grey border in dark and light modes. Two-factor method headings no longer carry redundant spacing, Recovery Codes has its expected divider, Date & Time groups have clear separation, Keyring uses the canonical section structure, and the browser-sync action can no longer distort the language headings.
+
+## Availability privacy and status integrity
+
+Availability now respects profile blocking before exposing live status. Calendar preserves capability-approved custom event statuses across restarts, and runtime and dependency versions now match their component manifests. The availability route and isolated tests also follow component route organization and isolation requirements.

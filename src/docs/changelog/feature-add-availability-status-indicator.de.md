@@ -111,3 +111,7 @@ Trennlinien für strukturierte Inhalte verwenden jetzt einen kontrastärmeren Fa
 ## Ausgewogenes Einstellungslayout
 
 Trennlinien in den Einstellungen verwenden jetzt in dunklen und hellen Designs die gedämpfte graue Rahmenfarbe des Designs. Überschriften für Zwei-Faktor-Methoden haben keine überflüssigen Abstände mehr, Wiederherstellungscodes besitzen die erwartete Trennlinie, Datums- und Zeitgruppen sind klar getrennt, der Schlüsselbund verwendet die kanonische Abschnittsstruktur und die Browser-Synchronisierung kann die Sprachüberschriften nicht mehr verzerren.
+
+## Datenschutz und Statusintegrität bei Verfügbarkeit
+
+Die Verfügbarkeit berücksichtigt nun Profilsperren, bevor ein Live-Status angezeigt wird. Der Kalender bewahrt durch Capabilities genehmigte benutzerdefinierte Ereignisstatus über Neustarts hinweg, und Laufzeit- sowie Abhängigkeitsversionen stimmen nun mit den Komponentenmanifesten überein. Auch die Verfügbarkeitsroute und ihre isolierten Tests erfüllen die Vorgaben für Routenstruktur und Komponententrennung.

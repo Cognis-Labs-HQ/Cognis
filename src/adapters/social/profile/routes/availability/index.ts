@@ -1,11 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readJson } from "../../../../api/reuse/read-json.js";
+import { readJson } from "../../../../../api/reuse/read-json.js";
 import {
     resolveRouteContext,
     type RouteContext,
-} from "../../../../api/reuse/route-context.js";
-import type { UserPreferenceStore } from "../../../../api/reuse/preference-store.js";
-import type { ProfileStore } from "../store-contract.js";
+} from "../../../../../api/reuse/route-context.js";
+import type { UserPreferenceStore } from "../../../../../api/reuse/preference-store.js";
+import type { ProfileStore } from "../../store-contract.js";
 
 export type AvailabilityStatus = "free" | "busy" | "tentative";
 export type EffectiveAvailabilityStatus = AvailabilityStatus | "idle";
@@ -83,6 +83,9 @@ async function canViewAvailability(
 ): Promise<boolean> {
     if (!target) return false;
     if (requesterId === target.accountId) return true;
+    if (await profileStore.isBlocked(target.accountId, requesterId)) {
+        return false;
+    }
     if (target.visibility === "community") return true;
     if (target.visibility === "friends") {
         return profileStore.isFollowing(requesterId, target.accountId);

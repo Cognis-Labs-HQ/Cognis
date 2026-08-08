@@ -269,8 +269,8 @@ export class DbCalendarStore implements CalendarStore {
             endAt: String(row.end_at ?? ""),
             createdBy: String(row.created_by ?? ""),
             status:
-                row.status === "free" || row.status === "tentative"
-                    ? row.status
+                typeof row.status === "string" && row.status.trim()
+                    ? row.status.trim()
                     : "busy",
             recurrence:
                 row.recurrence === "daily" ||

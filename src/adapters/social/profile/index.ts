@@ -17,7 +17,7 @@ import {
     readStoredManualAvailability,
     resolveEffectiveAvailability,
     type CalendarAvailability,
-} from "./routes/availability.js";
+} from "./routes/availability/index.js";
 import type { AccountLifecycleState, AccountRole } from "./store.js";
 import type {
     SocialAdapter,

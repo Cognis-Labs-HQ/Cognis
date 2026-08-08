@@ -111,3 +111,7 @@ Pemisah konten terstruktur kini menggunakan warna dengan kontras lebih rendah. S
 ## Tata letak Pengaturan yang seimbang
 
 Pemisah Pengaturan kini memakai warna garis abu-abu redup dari tema dalam mode gelap maupun terang. Judul metode autentikasi dua faktor tidak lagi memiliki jarak berlebih, Kode Pemulihan memiliki pemisah yang semestinya, grup Tanggal & Waktu terpisah dengan jelas, Keyring memakai struktur bagian kanonis, dan tindakan sinkronisasi browser tidak lagi mengubah ukuran judul bahasa.
+
+## Privasi ketersediaan dan integritas status
+
+Ketersediaan kini menghormati pemblokiran profil sebelum menampilkan status langsung. Kalender mempertahankan status acara khusus yang disetujui capability setelah mulai ulang, dan versi runtime serta dependensi kini sesuai dengan manifes komponennya. Rute ketersediaan dan pengujian terisolasinya juga mengikuti persyaratan organisasi rute dan isolasi komponen.

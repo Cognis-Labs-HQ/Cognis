@@ -1,12 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
-import { VolatileUserPreferenceStore } from "../preferences.js";
+import type { RouteContext } from "../../../../../../api/reuse/route-context.js";
+import { VolatileUserPreferenceStore } from "../../preferences.js";
 import {
     AvailabilityPresenceStore,
     createAvailabilityRoutes,
     resolveEffectiveAvailability,
-} from "../availability.js";
+} from "../index.js";
 
 const profile = {
     accountId: "alice",
@@ -17,14 +17,21 @@ const profile = {
 function request(method: string, body?: string, accountId = "alice") {
     return {
         method,
-        headers: {
-            authorization: `Bearer ${issueAccessToken(accountId, "user", 60)}`,
-        },
+        accountId,
         [Symbol.asyncIterator]: async function* () {
             if (body) yield Buffer.from(body);
         },
     } as any;
 }
+
+const routeContext = {
+    requireAuth(request) {
+        return {
+            sub: String((request as { accountId: string }).accountId),
+            role: "user",
+        };
+    },
+} as RouteContext;
 
 function responseCapture() {
     const capture = { status: 0, body: "" };
@@ -54,6 +61,7 @@ test("manual availability overrides an active calendar event", async () => {
             status: "tentative",
             effectiveSince: "2020-01-01T00:00:00.000Z",
         }),
+        routeContext,
     );
 
     const saved = responseCapture();
@@ -147,18 +155,21 @@ test("availability visibility follows community, friends, and private relationsh
         ],
     ]);
     const follows = new Set<string>();
+    const blocks = new Set<string>();
     const profileStore = {
         getProfile: async (accountId: string) => profiles.get(accountId),
         getProfileByHandle: async (handle: string) => profiles.get(handle),
         isFollowing: async (followerId: string, followingId: string) =>
             follows.has(`${followerId}:${followingId}`),
+        isBlocked: async (blockerId: string, blockedId: string) =>
+            blocks.has(`${blockerId}:${blockedId}`),
     } as any;
     const presence = new AvailabilityPresenceStore();
     const route = createAvailabilityRoutes(
         profileStore,
         preferences,
         async () => null,
-        undefined,
+        routeContext,
         presence,
     );
     const presenceResponse = responseCapture();
@@ -181,6 +192,10 @@ test("availability visibility follows community, friends, and private relationsh
 
     assert.equal((await readAsBob()).status, 200);
     assert.equal(JSON.parse((await readAsBob()).body).data.status, "idle");
+
+    blocks.add("alice:bob");
+    assert.equal((await readAsBob()).status, 404);
+    blocks.clear();
 
     profiles.set("alice", { ...profiles.get("alice")!, visibility: "friends" });
     assert.equal((await readAsBob()).status, 404);
