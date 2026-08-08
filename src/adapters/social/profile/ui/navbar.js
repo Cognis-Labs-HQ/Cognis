@@ -108,6 +108,7 @@ function updateAvailabilitySelection(container, indicator, status, i18n) {
             );
         });
     indicator.dataset.availabilityStatus = status;
+    indicator.dataset.availableStatus = status;
     indicator.title = label;
     indicator.setAttribute("aria-label", label);
 }

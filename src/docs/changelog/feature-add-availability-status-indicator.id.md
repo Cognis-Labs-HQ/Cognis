@@ -23,3 +23,7 @@ Saat pemilih status dibuka, pilihannya kini tampil di sebelah kiri menu profil s
 ## Kontrol status kalender
 
 Pengaturan Pengguna kini memiliki opsi Umum untuk mencegah acara kalender mengubah ketersediaan.
+
+## Kehadiran tidak aktif dan status kalender yang dapat diperluas
+
+Adapter profil kini mengubah lampu status pengguna saat ini menjadi abu-abu ketika pendeteksi kehadiran melaporkan ketidakaktifan dan langsung memulihkannya saat aktivitas berlanjut. Status Tidak aktif diterapkan otomatis dan tidak dapat dipilih secara manual. Status acara kalender diperoleh dari kapabilitas ctx adapter profil, dan acara bebas menggunakan latar transparan.

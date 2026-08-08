@@ -19,6 +19,7 @@ import {
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
+    resolveAvailabilityStatus,
     resolveJitsiAvailability,
     sendCalendarError,
     sendJson,
@@ -619,11 +620,10 @@ export function createCalendarCoreRoutes({
                               typeof body.meetingUrl === "string"
                                   ? body.meetingUrl
                                   : null,
-                          status:
-                              body.status === "free" ||
-                              body.status === "tentative"
-                                  ? body.status
-                                  : "busy",
+                          status: resolveAvailabilityStatus(
+                              body.status,
+                              getCapability,
+                          ),
                           recurrence:
                               body.recurrence === "daily" ||
                               body.recurrence === "weekly" ||
@@ -649,11 +649,10 @@ export function createCalendarCoreRoutes({
                               typeof body.meetingUrl === "string"
                                   ? body.meetingUrl
                                   : null,
-                          status:
-                              body.status === "free" ||
-                              body.status === "tentative"
-                                  ? body.status
-                                  : "busy",
+                          status: resolveAvailabilityStatus(
+                              body.status,
+                              getCapability,
+                          ),
                           recurrence:
                               body.recurrence === "daily" ||
                               body.recurrence === "weekly" ||

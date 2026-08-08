@@ -23,3 +23,7 @@ Opening the status selector now displays its choices to the left of the profile 
 ## Calendar status control
 
 User Settings now includes a General option to prevent calendar events from changing availability.
+
+## Idle presence and extensible calendar statuses
+
+The profile adapter now greys out the current user's status light when the presence detector reports inactivity and restores it as soon as activity resumes. Idle is automatic and cannot be selected manually. Calendar event statuses are resolved from the profile adapter's ctx capability, and free events use a transparent background.

@@ -14,6 +14,7 @@ import {
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
     resolveEventMeta,
+    resolveAvailabilityStatus,
     sendCalendarError,
     sendJson,
     validateSharedCalendars,
@@ -249,11 +250,13 @@ export async function handleCalendarEventRoutes({
                         ? body.meetingUrl
                         : undefined,
                 status:
-                    body.status === "free" ||
-                    body.status === "busy" ||
-                    body.status === "tentative"
-                        ? body.status
-                        : undefined,
+                    body.status === undefined
+                        ? undefined
+                        : resolveAvailabilityStatus(
+                              body.status,
+                              getCapability,
+                              String(event.status),
+                          ),
                 recurrence:
                     body.recurrence === "daily" ||
                     body.recurrence === "weekly" ||

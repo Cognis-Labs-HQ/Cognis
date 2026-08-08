@@ -239,6 +239,7 @@
 
 .calendar-slot-event--free {
     opacity: 0.78;
+    background: transparent;
 }
 
 .calendar-slot-event--tentative {

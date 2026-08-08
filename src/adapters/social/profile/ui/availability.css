@@ -19,6 +19,10 @@
 .availability-indicator[data-availability-status="tentative"] {
     background: #e6a52f;
 }
+.availability-indicator[data-availability-status="idle"] {
+    background: #8a929c;
+    filter: grayscale(1);
+}
 .availability-menu-item {
     border-bottom: 1px solid var(--border);
 }

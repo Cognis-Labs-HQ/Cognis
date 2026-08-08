@@ -2,10 +2,27 @@ import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
+import { PRESENCE_ACTIVITY_EVENT } from "/static/reuse/page-composer/presence-tracker.js";
 
 const availabilityCache = new Map();
 export const STATUS_OPTIONS = Object.freeze(["free", "busy", "tentative"]);
 const AVAILABILITY_REFRESH_INTERVAL_MS = 30_000;
+let locallyIdle = false;
+
+function displayedStatus(indicator, status) {
+    return locallyIdle && !indicator.dataset.availabilityHandle
+        ? "idle"
+        : status;
+}
+
+async function applyIndicatorStatus(indicator, status, i18n) {
+    const resolvedStatus = displayedStatus(indicator, status);
+    const label = i18n.t(`ui.app.profile.availability.${resolvedStatus}`);
+    indicator.dataset.availabilityStatus = resolvedStatus;
+    indicator.dataset.availableStatus = status;
+    indicator.title = label;
+    indicator.setAttribute("aria-label", label);
+}
 
 export async function fetchAvailability(handle = "") {
     const normalizedHandle = String(handle).replace(/^@/, "");
@@ -40,12 +57,11 @@ export async function hydrateAvailabilityIndicators(container = document) {
                 indicator.dataset.availabilityHandle,
             );
             if (availability?.status) {
-                const label = i18n.t(
-                    `ui.app.profile.availability.${availability.status}`,
+                await applyIndicatorStatus(
+                    indicator,
+                    availability.status,
+                    i18n,
                 );
-                indicator.dataset.availabilityStatus = availability.status;
-                indicator.title = label;
-                indicator.setAttribute("aria-label", label);
             }
         }),
     );
@@ -71,6 +87,22 @@ export async function setManualAvailability(status) {
 uiCtx.capabilities.contribute("ui:availabilityRenderer", {
     buildMarkup: availabilityIndicatorMarkup,
     hydrate: hydrateAvailabilityIndicators,
+});
+
+window.addEventListener(PRESENCE_ACTIVITY_EVENT, async (event) => {
+    locallyIdle = event.detail?.active === false;
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
+    });
+    for (const indicator of document.querySelectorAll(
+        '[data-availability-handle=""]',
+    )) {
+        await applyIndicatorStatus(
+            indicator,
+            indicator.dataset.availableStatus ?? "free",
+            i18n,
+        );
+    }
 });
 
 window.setInterval(() => {

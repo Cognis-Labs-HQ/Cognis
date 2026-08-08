@@ -10,4 +10,5 @@
   <string name="ui.app.profile.availability.free">Free</string>
   <string name="ui.app.profile.availability.busy">Busy</string>
   <string name="ui.app.profile.availability.tentative">Tentative</string>
+  <string name="ui.app.profile.availability.idle">Idle</string>
 </resources>

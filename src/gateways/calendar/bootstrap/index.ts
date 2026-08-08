@@ -822,7 +822,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             inviteEmails?: string[];
             reminderOffsetsMinutes?: number[];
             meetingUrl?: string | null;
-            status?: "busy" | "free" | "tentative";
+            status?: string;
             recurrence?: "none" | "daily" | "weekly" | "monthly" | "yearly";
         }) => gateway.addEvent(input),
     );
@@ -834,7 +834,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         async (
             accountId: string,
         ): Promise<{
-            status: "free" | "busy" | "tentative";
+            status: string;
             effectiveSince: string;
         } | null> => {
             const preventsCalendarStatus =
@@ -866,11 +866,26 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 );
             const activeEvent = activeEvents[0];
             if (!activeEvent) return null;
+            const resolveAvailabilityStatuses = ctx.capabilities.get<
+                () => readonly string[]
+            >("social:getAvailabilityStatuses");
+            const supportedStatuses = resolveAvailabilityStatuses?.() ?? [];
+            const fallbackStatus = supportedStatuses.includes("busy")
+                ? "busy"
+                : (supportedStatuses[0] ?? "busy");
+            const eventStatus = supportedStatuses.includes(
+                activeEvent.event.status,
+            )
+                ? activeEvent.event.status
+                : fallbackStatus;
+            const tentativeStatus = supportedStatuses.includes("tentative")
+                ? "tentative"
+                : eventStatus;
             return {
                 status:
                     activeEvent.event.responses[accountId] === "tentative"
-                        ? "tentative"
-                        : activeEvent.event.status,
+                        ? tentativeStatus
+                        : eventStatus,
                 effectiveSince: activeEvent.effectiveSince,
             };
         },

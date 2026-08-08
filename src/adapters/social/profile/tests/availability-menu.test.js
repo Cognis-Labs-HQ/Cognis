@@ -46,3 +46,25 @@ test("availability options open beside the profile menu", () => {
         /\.dropdown:has\(\.availability-menu-item\) \{[\s\S]+overflow: visible;/,
     );
 });
+
+test("idle status is detector-controlled and not manually selectable", () => {
+    const availability = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.js"),
+        "utf8",
+    );
+    const styles = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.css"),
+        "utf8",
+    );
+
+    assert.match(availability, /PRESENCE_ACTIVITY_EVENT/);
+    assert.match(availability, /locallyIdle[\s\S]+"idle"/);
+    assert.match(
+        availability,
+        /STATUS_OPTIONS = Object\.freeze\(\["free", "busy", "tentative"\]\)/,
+    );
+    assert.match(
+        styles,
+        /data-availability-status="idle"[\s\S]+filter: grayscale\(1\);/,
+    );
+});

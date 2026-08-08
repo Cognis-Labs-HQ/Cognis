@@ -14,6 +14,20 @@ import type {
 
 const DEFAULT_SHARE_TTL_SECONDS = 24 * 3600;
 
+export function resolveAvailabilityStatus(
+    value: unknown,
+    getCapability: <T>(capabilityId: string) => T | undefined,
+    fallback = "busy",
+): string {
+    const resolveStatuses = getCapability<() => readonly string[]>(
+        "social:getAvailabilityStatuses",
+    );
+    const supportedStatuses = resolveStatuses?.() ?? [];
+    return typeof value === "string" && supportedStatuses.includes(value)
+        ? value
+        : fallback;
+}
+
 export type NotificationDispatcher = (envelope: {
     category: string;
     recipientUsername: string;

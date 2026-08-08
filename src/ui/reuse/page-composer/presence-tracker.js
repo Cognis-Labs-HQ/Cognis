@@ -4,6 +4,7 @@
  * Public exports:
  *   createPresenceTracker(options) — mounts a compact presence strip and keeps
  *     it synchronized with a page-specific presence endpoint.
+ *   PRESENCE_ACTIVITY_EVENT — event emitted when local activity changes.
  *
  * Usage:
  *   const tracker = createPresenceTracker({
@@ -31,6 +32,7 @@ const REFRESH_MIN_INTERVAL_MS = 250;
 const REFRESH_MAX_INTERVAL_MS = 5000;
 const ACTIVE_WINDOW_MS = 15000;
 const IDLE_AFTER_MS = 30000;
+export const PRESENCE_ACTIVITY_EVENT = "cognis:presence-activity-change";
 
 function normalizePresenceName(value) {
     return (
@@ -105,9 +107,31 @@ export function createPresenceTracker({
     let lastActivityAt = Date.now();
     let lastPresenceSignature = "";
     let lastPresenceMarkupSignature = "";
+    let idleTimer = null;
+    let activityState = true;
+
+    function publishActivity(active) {
+        if (activityState === active) return;
+        activityState = active;
+        window.dispatchEvent(
+            new CustomEvent(PRESENCE_ACTIVITY_EVENT, {
+                detail: { active },
+            }),
+        );
+    }
+
+    function scheduleIdleDetection() {
+        window.clearTimeout(idleTimer);
+        idleTimer = window.setTimeout(() => {
+            publishActivity(false);
+            void sendPresence(false);
+        }, IDLE_AFTER_MS);
+    }
 
     function noteActivity() {
         lastActivityAt = Date.now();
+        publishActivity(true);
+        scheduleIdleDetection();
         heartbeatPoller?.markActivity();
         refreshPoller?.markActivity();
     }
@@ -260,9 +284,13 @@ export function createPresenceTracker({
             initialIntervalMs: HEARTBEAT_MIN_INTERVAL_MS,
         });
         void sendPresence(true).then(refresh);
+        scheduleIdleDetection();
         refreshPoller.start();
         heartbeatPoller.start();
-        markInactive = () => void sendPresence(false, { keepalive: true });
+        markInactive = () => {
+            publishActivity(false);
+            void sendPresence(false, { keepalive: true });
+        };
         handleVisibilityChange = () => {
             if (document.visibilityState === "hidden") markInactive?.();
             else {
@@ -281,6 +309,7 @@ export function createPresenceTracker({
 
     function destroy() {
         destroyed = true;
+        window.clearTimeout(idleTimer);
         heartbeatPoller?.stop();
         refreshPoller?.stop();
         heartbeatPoller = null;

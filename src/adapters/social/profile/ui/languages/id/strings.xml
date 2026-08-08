@@ -10,4 +10,5 @@
   <string name="ui.app.profile.availability.free">Luang</string>
   <string name="ui.app.profile.availability.busy">Sibuk</string>
   <string name="ui.app.profile.availability.tentative">Tentatif</string>
+  <string name="ui.app.profile.availability.idle">Tidak aktif</string>
 </resources>

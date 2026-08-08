@@ -310,6 +310,10 @@ test("current events drive availability unless the user prevents updates", async
     const capabilities = new CapabilityStore();
     const preferences = new VolatileUserPreferenceStore();
     capabilities.contribute("preferences:store", preferences);
+    capabilities.contribute("social:getAvailabilityStatuses", () => [
+        "busy",
+        "focused",
+    ]);
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
         routeRegistry: new RouteRegistry(),
@@ -330,7 +334,7 @@ test("current events drive availability unless the user prevents updates", async
                 title: string;
                 startAt: string;
                 endAt: string;
-                status: "busy";
+                status: string;
             }) => unknown
         >("calendar:addEvent");
     const getCurrentAvailability = capabilities.get<
@@ -347,9 +351,9 @@ test("current events drive availability unless the user prevents updates", async
         title: "Current focus",
         startAt: new Date(now - 60_000).toISOString(),
         endAt: new Date(now + 60_000).toISOString(),
-        status: "busy",
+        status: "focused",
     });
-    assert.equal((await getCurrentAvailability("alice"))?.status, "busy");
+    assert.equal((await getCurrentAvailability("alice"))?.status, "focused");
 
     await preferences.set("alice", "calendar-prevent-status-updates", "true");
     assert.equal(await getCurrentAvailability("alice"), null);

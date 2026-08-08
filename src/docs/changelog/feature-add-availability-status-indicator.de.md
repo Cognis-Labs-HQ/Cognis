@@ -23,3 +23,7 @@ Beim Öffnen der Statusauswahl erscheinen die Optionen jetzt links neben dem Pro
 ## Kalenderstatus steuern
 
 In den Benutzereinstellungen gibt es unter „Allgemein“ jetzt eine Option, die verhindert, dass Kalendertermine die Verfügbarkeit ändern.
+
+## Inaktivität und erweiterbare Kalenderstatus
+
+Der Profiladapter stellt die Statusanzeige des aktuellen Benutzers grau dar, wenn die Anwesenheitserkennung Inaktivität meldet, und stellt sie bei neuer Aktivität sofort wieder her. „Inaktiv“ wird automatisch vergeben und kann nicht manuell ausgewählt werden. Kalenderstatus stammen aus der ctx-Fähigkeit des Profiladapters; freie Termine haben einen transparenten Hintergrund.
