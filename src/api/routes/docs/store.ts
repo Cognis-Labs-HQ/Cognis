@@ -16,6 +16,7 @@ interface SourceDoc extends Omit<StoredDoc, "version" | "versions"> {
 }
 
 const DEFAULT_LANG = "en";
+const SEMANTIC_VERSION = /^\d+\.\d+\.\d+$/;
 
 async function directoriesNamedDocs(
     directory: string,
@@ -166,7 +167,10 @@ async function availableVersions(
 ): Promise<string[]> {
     try {
         return (await readdir(join(archiveRoot, slug), { withFileTypes: true }))
-            .filter((entry) => entry.isDirectory())
+            .filter(
+                (entry) =>
+                    entry.isDirectory() && SEMANTIC_VERSION.test(entry.name),
+            )
             .map((entry) => entry.name)
             .sort((first, second) =>
                 second.localeCompare(first, undefined, {
@@ -176,6 +180,66 @@ async function availableVersions(
     } catch {
         return [];
     }
+}
+
+async function archivedTitle(
+    archiveRoot: string,
+    slug: string,
+    version: string,
+): Promise<string> {
+    for (const language of [DEFAULT_LANG, "base"]) {
+        try {
+            const markdown = await readFile(
+                join(archiveRoot, slug, version, `${language}.md`),
+                "utf8",
+            );
+            return markdown.match(/^#\s+(.+)$/m)?.[1].trim() ?? "";
+        } catch {
+            // Try the next archived language source in the loop above.
+        }
+    }
+    return "";
+}
+
+async function archivedDocs(
+    archiveRoot: string,
+    directory = archiveRoot,
+): Promise<StoredDoc[]> {
+    let entries;
+    try {
+        entries = await readdir(directory, { withFileTypes: true });
+    } catch {
+        return [];
+    }
+
+    const slug = relative(archiveRoot, directory).replaceAll(sep, "/");
+    const versions = slug ? await availableVersions(archiveRoot, slug) : [];
+    if (versions.length > 0) {
+        const version = versions[0];
+        return [
+            {
+                fileStem: "",
+                slug,
+                title: await archivedTitle(archiveRoot, slug, version),
+                group: groupFor(slug, false),
+                version,
+                versions,
+            },
+        ];
+    }
+
+    const docs: StoredDoc[] = [];
+    for (const entry of entries) {
+        if (entry.isDirectory()) {
+            docs.push(
+                ...(await archivedDocs(
+                    archiveRoot,
+                    join(directory, entry.name),
+                )),
+            );
+        }
+    }
+    return docs;
 }
 
 export async function initializeDocsStore(
@@ -214,6 +278,9 @@ export async function initializeDocsStore(
             version,
             versions: await availableVersions(archiveRoot, doc.slug),
         });
+    }
+    for (const doc of await archivedDocs(archiveRoot)) {
+        if (!storedDocs.has(doc.slug)) storedDocs.set(doc.slug, doc);
     }
     return storedDocs;
 }

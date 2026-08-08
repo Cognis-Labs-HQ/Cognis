@@ -89,6 +89,20 @@ test("docs snapshots manifest versions across software starts", async () => {
     );
     assert.match(latest.body.data.markdown, /Second/);
     assert.match(historical.body.data.markdown, /First/);
+
+    await rm(join(docsRoot, "index.en.md"));
+    const routeAfterRemoval = createDocsRoutes({ sourceRoot, archiveRoot });
+    const indexAfterRemoval = await request(routeAfterRemoval, "/api/v1/docs");
+    const archivedEntry = indexAfterRemoval.body.data.find(
+        (entry: { slug: string }) => entry.slug === "gateways/example",
+    );
+    assert.deepEqual(archivedEntry.versions, ["1.1.0", "1.0.0"]);
+    const removedHistorical = await request(
+        routeAfterRemoval,
+        "/api/v1/docs/1.0.0/gateways/example",
+    );
+    assert.equal(removedHistorical.status, 200);
+    assert.match(removedHistorical.body.data.markdown, /First/);
     await rm(fixtureRoot, { recursive: true, force: true });
 });
 
