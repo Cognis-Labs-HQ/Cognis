@@ -1,4 +1,5 @@
 import { monitorEventLoopDelay } from "node:perf_hooks";
+import path from "node:path";
 import type { GatewayBootstrapContext } from "../shared.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 
@@ -39,6 +40,13 @@ function boundedLabels(labels: MetricLabels = {}): MetricLabels {
 }
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    ctx.uiRegistry?.registerStaticDir(
+        "observability",
+        path.resolve(process.cwd(), "src", "gateways", "observability", "ui"),
+    );
+    ctx.uiRegistry?.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/observability/client.js",
+    });
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const clientSubmissions = new Map<
@@ -143,7 +151,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "observability",
         name: "Observability Gateway",
-        version: "1.0.2",
+        version: "1.0.5",
         required: true,
         hasAdapters: false,
         description:
