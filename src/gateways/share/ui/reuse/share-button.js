@@ -89,7 +89,7 @@ export function mountShareButton({
                     classToken,
                 ),
         );
-    button.className = [...classes, "btn-cancel"].join(" ");
+    button.className = [...classes, "btn-neutral"].join(" ");
     button.textContent = `${icon ? `${icon} ` : ""}${label ?? ""}`;
     if (title) {
         button.title = title;

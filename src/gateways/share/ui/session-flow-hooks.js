@@ -71,6 +71,7 @@ window.addEventListener("cognis:api-access-denied", () => {
         return;
     sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
     accessDeniedNavigationPending = true;
+    restoreGuestToken();
     void import("/static/reuse/app-router.js")
         .then(({ navigateTo }) =>
             navigateTo(`/share/${encodeURIComponent(shareToken)}`),

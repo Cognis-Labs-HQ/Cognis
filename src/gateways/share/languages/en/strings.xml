@@ -39,6 +39,7 @@
   <string name="share.shares.delete_prompt">Delete this share for every recipient?</string>
   <string name="share.shares.reject_title">Reject Share</string>
   <string name="share.shares.reject_prompt">Reject this share and remove your access?</string>
+  <string name="share.shares.cancel">Cancel</string>
   <string name="share.shares.updated">Share updated.</string>
   <string name="share.shares.update_failed">The share could not be updated.</string>
   <string name="share.shares.load_failed">Shares could not be loaded.</string>
@@ -63,12 +64,14 @@
   <string name="share.shares.popup_label">Name</string>
   <string name="share.shares.popup_label_placeholder">Add a recognizable name</string>
   <string name="share.shares.popup_expiry">Expiration</string>
-  <string name="share.shares.popup_password">Password (optional)</string>
+  <string name="share.shares.popup_password">Password</string>
+  <string name="share.shares.popup_password_title">Share Password</string>
+  <string name="share.shares.popup_password_share_instruction">Share this password with the share recipient</string>
   <string name="share.shares.popup_password_placeholder">Leave blank to keep the current password</string>
   <string name="share.shares.popup_generate_password">Generate password</string>
   <string name="share.shares.popup_permission">Permission</string>
-  <string name="share.shares.popup_read">Read</string>
-  <string name="share.shares.popup_write">Write</string>
+  <string name="share.shares.popup_read">Read-Only</string>
+  <string name="share.shares.popup_write">Read &amp; Write</string>
   <string name="share.shares.popup_update">Update share</string>
   <string name="share.shares.popup_copied">Share link copied.</string>
   <string name="share.shares.popup_copy_failed">The share link could not be copied.</string>

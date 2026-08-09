@@ -39,6 +39,7 @@
   <string name="share.shares.delete_prompt">Diese Freigabe für alle Empfangenden löschen?</string>
   <string name="share.shares.reject_title">Freigabe ablehnen</string>
   <string name="share.shares.reject_prompt">Diese Freigabe ablehnen und Ihren Zugriff entfernen?</string>
+  <string name="share.shares.cancel">Abbrechen</string>
   <string name="share.shares.updated">Freigabe aktualisiert.</string>
   <string name="share.shares.update_failed">Die Freigabe konnte nicht aktualisiert werden.</string>
   <string name="share.shares.load_failed">Freigaben konnten nicht geladen werden.</string>
@@ -63,12 +64,14 @@
   <string name="share.shares.popup_label">Name</string>
   <string name="share.shares.popup_label_placeholder">Einen erkennbaren Namen hinzufügen</string>
   <string name="share.shares.popup_expiry">Ablaufzeit</string>
-  <string name="share.shares.popup_password">Passwort (optional)</string>
+  <string name="share.shares.popup_password">Passwort</string>
+  <string name="share.shares.popup_password_title">Freigabepasswort</string>
+  <string name="share.shares.popup_password_share_instruction">Teilen Sie dieses Passwort mit dem Empfänger der Freigabe</string>
   <string name="share.shares.popup_password_placeholder">Leer lassen, um das aktuelle Passwort beizubehalten</string>
   <string name="share.shares.popup_generate_password">Passwort erzeugen</string>
   <string name="share.shares.popup_permission">Berechtigung</string>
-  <string name="share.shares.popup_read">Lesen</string>
-  <string name="share.shares.popup_write">Schreiben</string>
+  <string name="share.shares.popup_read">Schreibgeschützt</string>
+  <string name="share.shares.popup_write">Lesen &amp; Schreiben</string>
   <string name="share.shares.popup_update">Freigabe aktualisieren</string>
   <string name="share.shares.popup_copied">Freigabelink kopiert.</string>
   <string name="share.shares.popup_copy_failed">Der Freigabelink konnte nicht kopiert werden.</string>

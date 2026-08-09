@@ -39,6 +39,7 @@
   <string name="share.shares.delete_prompt">Hapus berbagi ini untuk semua penerima?</string>
   <string name="share.shares.reject_title">Tolak Berbagi</string>
   <string name="share.shares.reject_prompt">Tolak berbagi ini dan hapus akses Anda?</string>
+  <string name="share.shares.cancel">Batal</string>
   <string name="share.shares.updated">Berbagi diperbarui.</string>
   <string name="share.shares.update_failed">Berbagi tidak dapat diperbarui.</string>
   <string name="share.shares.load_failed">Berbagi tidak dapat dimuat.</string>
@@ -63,12 +64,14 @@
   <string name="share.shares.popup_label">Nama</string>
   <string name="share.shares.popup_label_placeholder">Tambahkan nama yang mudah dikenali</string>
   <string name="share.shares.popup_expiry">Kedaluwarsa</string>
-  <string name="share.shares.popup_password">Kata sandi (opsional)</string>
+  <string name="share.shares.popup_password">Kata Sandi</string>
+  <string name="share.shares.popup_password_title">Kata Sandi Berbagi</string>
+  <string name="share.shares.popup_password_share_instruction">Bagikan kata sandi ini kepada penerima berbagi</string>
   <string name="share.shares.popup_password_placeholder">Biarkan kosong untuk mempertahankan kata sandi saat ini</string>
   <string name="share.shares.popup_generate_password">Buat kata sandi</string>
   <string name="share.shares.popup_permission">Izin</string>
-  <string name="share.shares.popup_read">Baca</string>
-  <string name="share.shares.popup_write">Tulis</string>
+  <string name="share.shares.popup_read">Hanya Baca</string>
+  <string name="share.shares.popup_write">Baca &amp; Tulis</string>
   <string name="share.shares.popup_update">Perbarui berbagi</string>
   <string name="share.shares.popup_copied">Tautan berbagi disalin.</string>
   <string name="share.shares.popup_copy_failed">Tautan berbagi tidak dapat disalin.</string>

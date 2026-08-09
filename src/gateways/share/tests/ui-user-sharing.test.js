@@ -239,8 +239,8 @@ test("logged-in share recipients keep their account session", () => {
     );
 });
 
-test("share buttons always use the destructive consequence style", () => {
-    assert.match(shareButtonSource, /\[\.\.\.classes, "btn-cancel"\]/);
+test("share buttons use the neutral consequence style", () => {
+    assert.match(shareButtonSource, /\[\.\.\.classes, "btn-neutral"\]/);
     assert.match(shareButtonSource, /"btn-confirm", "btn-neutral"/);
 });
 
@@ -260,6 +260,10 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     );
     assert.match(sessionFlowSource, /keyring:activateTemporary/);
     assert.match(sessionFlowSource, /await activateGuestToken/);
+    assert.match(
+        sessionFlowSource,
+        /sessionStorage\.setItem\(ACCESS_DENIED_TOKEN_KEY, shareToken\);[\s\S]*restoreGuestToken\(\);[\s\S]*navigateTo/,
+    );
     assert.match(sessionFlowSource, /activeShareSession\?\.shareToken/);
     assert.match(
         sessionFlowSource,

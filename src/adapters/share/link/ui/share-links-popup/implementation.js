@@ -242,7 +242,7 @@ async function showSharePasswordPopup(password, labels) {
     await openPopup({
         title: labels.passwordPopupTitle || labels.password,
         body: () =>
-            `<div class="share-password-result">${renderSecretVisibilityField({ id: "created-share-password", value: normalizedPassword, label: labels.passwordPopupLabel || labels.password, toggleLabel: labels.passwordReveal, escapeHtml })}<button type="button" class="btn-confirm" data-share-password-copy>${escapeHtml(labels.passwordCopy || labels.copyLink)}</button></div>`,
+            `<div class="share-password-result">${renderSecretVisibilityField({ id: "created-share-password", value: normalizedPassword, label: labels.passwordPopupLabel || labels.password, toggleLabel: labels.passwordReveal, escapeHtml })}</div>`,
         actions: [
             {
                 id: "done",
@@ -252,16 +252,6 @@ async function showSharePasswordPopup(password, labels) {
         ],
         onOpen(overlay) {
             bindSecretVisibilityToggles({ root: overlay });
-            overlay
-                .querySelector("[data-share-password-copy]")
-                ?.addEventListener("click", async () => {
-                    const copied =
-                        await copyTextToClipboard(normalizedPassword);
-                    showToast(
-                        copied ? labels.passwordCopied : labels.copyFailed,
-                        { variant: copied ? "success" : "error" },
-                    );
-                });
         },
     });
 }

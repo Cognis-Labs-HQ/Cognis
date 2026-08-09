@@ -1,5 +1,9 @@
 # Refine share management
 
+## Secure user shares and clarify sharing controls
+
+User shares continue to require the designated account instead of creating transferable guest access. Share actions now use neutral styling, permission choices clearly distinguish Read-Only from Read & Write, password dialogs provide concise recipient guidance, and removed guest shares exit cleanly without repeated redirects or notices.
+
 ## Restore share updates and seamless page transitions
 
 The focused share editor now submits expiration changes consistently and presents its update action with the standard confirm treatment. In-app navigation keeps the current page styled until the destination has fully mounted, preventing flashes of unstyled outgoing content.

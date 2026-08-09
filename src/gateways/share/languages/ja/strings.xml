@@ -39,6 +39,7 @@
   <string name="share.shares.delete_prompt">すべての受信者に対してこの共有を削除しますか？</string>
   <string name="share.shares.reject_title">共有を拒否</string>
   <string name="share.shares.reject_prompt">この共有を拒否してアクセス権を削除しますか？</string>
+  <string name="share.shares.cancel">キャンセル</string>
   <string name="share.shares.updated">共有を更新しました。</string>
   <string name="share.shares.update_failed">共有を更新できませんでした。</string>
   <string name="share.shares.load_failed">共有を読み込めませんでした。</string>
@@ -63,12 +64,14 @@
   <string name="share.shares.popup_label">名前</string>
   <string name="share.shares.popup_label_placeholder">識別しやすい名前を追加</string>
   <string name="share.shares.popup_expiry">有効期限</string>
-  <string name="share.shares.popup_password">パスワード（任意）</string>
+  <string name="share.shares.popup_password">パスワード</string>
+  <string name="share.shares.popup_password_title">共有パスワード</string>
+  <string name="share.shares.popup_password_share_instruction">このパスワードを共有の受信者に伝えてください</string>
   <string name="share.shares.popup_password_placeholder">現在のパスワードを維持する場合は空欄</string>
   <string name="share.shares.popup_generate_password">パスワードを生成</string>
   <string name="share.shares.popup_permission">権限</string>
-  <string name="share.shares.popup_read">読み取り</string>
-  <string name="share.shares.popup_write">書き込み</string>
+  <string name="share.shares.popup_read">読み取り専用</string>
+  <string name="share.shares.popup_write">読み取りと書き込み</string>
   <string name="share.shares.popup_update">共有を更新</string>
   <string name="share.shares.popup_copied">共有リンクをコピーしました。</string>
   <string name="share.shares.popup_copy_failed">共有リンクをコピーできませんでした。</string>
