@@ -2,7 +2,7 @@
 
 ## Language switcher
 
-The persistent language switcher is enabled by default and can be controlled above the language tables under User Settings → Languages. The dashboard button cycles through preferred languages and confirms the last selection after five seconds. Right-clicking the language or theme switcher opens its corresponding settings page.
+The language switcher is enabled by default and can be controlled with Show Language Switcher in the continuous Languages settings block, above the side-by-side Available and Preferred tables. The dashboard button cycles through preferred languages and confirms the last selection after five seconds. Right-clicking the language or theme switcher opens its corresponding settings page.
 
 ## Overview
 

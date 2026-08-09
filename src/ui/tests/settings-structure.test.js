@@ -21,13 +21,11 @@ test("language headings keep actions outside heading elements", () => {
     );
 });
 
-test("language switcher setting is registered before language tables", () => {
-    const switcherIndex = source.indexOf('id: "language-switcher"');
-    const availableLanguagesIndex = source.indexOf('id: "available-languages"');
-    const preferredLanguagesIndex = source.indexOf('id: "preferred-languages"');
-
-    assert.ok(switcherIndex >= 0);
-    assert.ok(switcherIndex < availableLanguagesIndex);
-    assert.ok(switcherIndex < preferredLanguagesIndex);
+test("language settings render as one block with side-by-side tables", () => {
+    assert.match(source, /id: "language-preferences"/);
+    assert.match(
+        source,
+        /settings-language-block[\s\S]*pref-language-switcher-show[\s\S]*settings-language-tables[\s\S]*id="available-languages"[\s\S]*id="preferred-languages"/,
+    );
     assert.match(source, /languageSwitcherShow !== false/);
 });

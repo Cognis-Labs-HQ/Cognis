@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getNextLanguage, promoteLanguage } from "../language-switcher.js";
+import {
+    bindLanguageSwitcher,
+    getNextLanguage,
+    promoteLanguage,
+} from "../language-switcher.js";
 import { readFileSync } from "node:fs";
 
 test("language switcher cycles through preferred languages", () => {
@@ -38,4 +42,41 @@ test("language switcher promotes the selected language", () => {
         "de",
         "en",
     ]);
+});
+
+test("language switcher uses persisted preferences when local state is not initialized", () => {
+    const originalDocument = globalThis.document;
+    const listeners = new Map();
+    const button = {
+        hidden: true,
+        textContent: "",
+        addEventListener(type, handler) {
+            listeners.set(type, handler);
+        },
+        setAttribute(name, value) {
+            this[name] = value;
+        },
+    };
+    globalThis.document = {
+        querySelector: () => button,
+    };
+
+    try {
+        bindLanguageSwitcher({
+            preferences: {
+                languagePriority: ["de", "ja", "en"],
+                languageSwitcherShow: true,
+            },
+            i18n: {
+                t: () => "Switch language; {language} selected",
+            },
+        });
+
+        assert.equal(button.hidden, false);
+        assert.equal(button.textContent, "DE");
+        assert.equal(listeners.has("click"), true);
+        assert.equal(listeners.has("contextmenu"), true);
+    } finally {
+        globalThis.document = originalDocument;
+    }
 });

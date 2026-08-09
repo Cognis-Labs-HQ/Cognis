@@ -94,6 +94,29 @@
     text-overflow: ellipsis;
 }
 
+.settings-language-block {
+    display: grid;
+    gap: 18px;
+}
+
+.settings-language-switcher-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.settings-language-switcher-row h3 {
+    margin: 0;
+}
+
+.settings-language-tables {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 18px;
+    align-items: start;
+}
+
 .language-table-empty-cell {
     color: transparent;
 }

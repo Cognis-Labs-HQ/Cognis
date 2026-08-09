@@ -2,7 +2,7 @@
 
 ## Pengalih bahasa
 
-Pengalih bahasa tetap diaktifkan secara bawaan dan dapat dikendalikan di atas tabel bahasa melalui Pengaturan Pengguna → Bahasa. Tombol dasbor menelusuri bahasa pilihan dan mengonfirmasi pilihan terakhir setelah lima detik. Klik kanan pada pengalih bahasa atau tema membuka halaman pengaturan yang sesuai.
+Pengalih bahasa diaktifkan secara bawaan dan dapat dikendalikan dengan Tampilkan Pengalih Bahasa pada blok Bahasa yang menyatu, di atas tabel Tersedia dan Pilihan yang berdampingan. Tombol dasbor menelusuri bahasa pilihan dan mengonfirmasi pilihan terakhir setelah lima detik. Klik kanan pada pengalih bahasa atau tema membuka halaman pengaturan yang sesuai.
 
 ## Ikhtisar
 

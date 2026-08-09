@@ -18,6 +18,9 @@ import { showToast } from "./toast.js";
 import { navigateToSettingsSection } from "./settings-navigation.js";
 
 const LANGUAGE_COMMIT_DELAY_MS = 5000;
+const SWITCHER_HANDLER_KEY = "__cognisLanguageSwitcherHandler";
+const SWITCHER_OPTIONS_KEY = "__cognisLanguageSwitcherOptions";
+const SWITCHER_TIMER_KEY = "__cognisLanguageSwitcherTimer";
 
 export function getNextLanguage(languages, currentLanguage) {
     if (!Array.isArray(languages) || languages.length === 0) return null;
@@ -43,43 +46,60 @@ export function promoteLanguage(languages, selectedLanguage) {
  * @returns {void}
  */
 export function bindLanguageSwitcher({ preferences, i18n }) {
-    const existingButton = document.querySelector("#language-switcher");
-    if (!existingButton) return;
-    const button = existingButton.cloneNode(true);
-    existingButton.replaceWith(button);
-
-    const languages = readPreferredLanguages();
+    const button = document.querySelector("#language-switcher");
+    if (!button) return;
+    const configuredLanguages = Array.isArray(preferences?.languagePriority)
+        ? preferences.languagePriority
+        : readPreferredLanguages();
+    const languages = [...new Set(configuredLanguages)];
     const enabled = preferences?.languageSwitcherShow !== false;
     button.hidden = !enabled || languages.length < 2;
-    if (button.hidden) return;
-
-    let selectedLanguage = languages[0];
-    let commitTimer = null;
+    button[SWITCHER_OPTIONS_KEY] = {
+        i18n,
+        languages,
+        selectedLanguage: languages[0] ?? null,
+    };
+    if (button.hidden) {
+        if (button[SWITCHER_TIMER_KEY]) {
+            clearTimeout(button[SWITCHER_TIMER_KEY]);
+            button[SWITCHER_TIMER_KEY] = null;
+        }
+        return;
+    }
 
     function renderSelection() {
-        button.textContent = selectedLanguage.toUpperCase();
+        const options = button[SWITCHER_OPTIONS_KEY];
+        const languageLabel = options.selectedLanguage.toUpperCase();
+        button.textContent = languageLabel;
         button.setAttribute(
             "aria-label",
-            i18n
+            options.i18n
                 .t("ui.layout.language_switcher.aria")
-                .replace("{language}", selectedLanguage.toUpperCase()),
+                .replace("{language}", languageLabel),
         );
     }
 
     renderSelection();
-    button.dataset.languageSwitcherBound = "true";
+    if (button[SWITCHER_HANDLER_KEY]) return;
     button.addEventListener("contextmenu", (event) => {
         event.preventDefault();
         navigateToSettingsSection("language");
     });
-    button.addEventListener("click", () => {
-        selectedLanguage = getNextLanguage(languages, selectedLanguage);
+    const handler = () => {
+        const options = button[SWITCHER_OPTIONS_KEY];
+        options.selectedLanguage = getNextLanguage(
+            options.languages,
+            options.selectedLanguage,
+        );
         renderSelection();
-        if (commitTimer) clearTimeout(commitTimer);
-        commitTimer = setTimeout(async () => {
+        if (button[SWITCHER_TIMER_KEY]) {
+            clearTimeout(button[SWITCHER_TIMER_KEY]);
+        }
+        button[SWITCHER_TIMER_KEY] = setTimeout(async () => {
+            const currentOptions = button[SWITCHER_OPTIONS_KEY];
             const languagePriority = promoteLanguage(
-                languages,
-                selectedLanguage,
+                currentOptions.languages,
+                currentOptions.selectedLanguage,
             );
             try {
                 await saveUiPreferences({
@@ -88,18 +108,21 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
                 });
                 setPreferredLanguages(languagePriority, { mode: "manual" });
                 console.info("[language-switcher]:language-selected", {
-                    language: selectedLanguage,
+                    language: currentOptions.selectedLanguage,
                 });
                 window.location.reload();
             } catch (error) {
                 console.error("[language-switcher]:language-save-failed", {
-                    language: selectedLanguage,
+                    language: currentOptions.selectedLanguage,
                     error,
                 });
-                showToast(i18n.t("ui.layout.language_switcher.error"), {
-                    variant: "error",
-                });
+                showToast(
+                    currentOptions.i18n.t("ui.layout.language_switcher.error"),
+                    { variant: "error" },
+                );
             }
         }, LANGUAGE_COMMIT_DELAY_MS);
-    });
+    };
+    button[SWITCHER_HANDLER_KEY] = handler;
+    button.addEventListener("click", handler);
 }

@@ -2,4 +2,4 @@
 
 ## Optional dashboard switcher
 
-The language switcher is shown by default, with its own control above the language tables in User Settings. Each click previews the next preferred language; after five seconds without another click, Cognis promotes that language to first preference and reloads the page. Right-clicking either floating switcher opens its corresponding Language or Appearance settings page.
+The language switcher is shown by default and controlled by Show Language Switcher in one continuous settings block above the side-by-side language tables. The dashboard now reads the saved language priority directly so the switcher reliably appears. Each click previews the next preferred language; after five seconds without another click, Cognis promotes that language to first preference and reloads the page.

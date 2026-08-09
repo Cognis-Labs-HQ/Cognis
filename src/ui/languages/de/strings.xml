@@ -393,7 +393,7 @@
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
   <string name="ui.app.settings.preferred_languages">Bevorzugte Sprachen</string>
   <string name="ui.app.settings.sync_from_browser">Mit Browser synchronisieren</string>
-  <string name="ui.app.settings.language_switcher">Sprachumschalter immer anzeigen</string>
+  <string name="ui.app.settings.language_switcher">Sprachumschalter anzeigen</string>
   <string name="ui.layout.language_switcher.aria">Sprache wechseln; {language} ist ausgewählt</string>
   <string name="ui.layout.language_switcher.error">Die Spracheinstellung konnte nicht gespeichert werden.</string>
   <string name="ui.reuse.edit_layout">Layout bearbeiten</string>

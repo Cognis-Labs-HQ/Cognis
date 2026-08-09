@@ -2,7 +2,7 @@
 
 ## Sprachumschalter
 
-Der dauerhafte Sprachumschalter ist standardmäßig aktiviert und kann über den Sprachtabellen unter Benutzereinstellungen → Sprachen gesteuert werden. Die Schaltfläche wechselt durch die bevorzugten Sprachen und bestätigt die letzte Auswahl nach fünf Sekunden. Ein Rechtsklick auf den Sprach- oder Designumschalter öffnet die zugehörige Einstellungsseite.
+Der Sprachumschalter ist standardmäßig aktiviert und kann mit Sprachumschalter anzeigen im durchgehenden Sprachbereich über den nebeneinander angeordneten Tabellen Verfügbar und Bevorzugt gesteuert werden. Die Schaltfläche wechselt durch die bevorzugten Sprachen und bestätigt die letzte Auswahl nach fünf Sekunden. Ein Rechtsklick auf den Sprach- oder Designumschalter öffnet die zugehörige Einstellungsseite.
 
 ## Überblick
 

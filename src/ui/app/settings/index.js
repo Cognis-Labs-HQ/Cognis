@@ -488,43 +488,37 @@ export async function mount(root, { signal } = {}) {
             subComposerOptions: {
                 allowCustomization: false,
                 preferenceKey: "settings-language-layout",
-                columns: 2,
+                columns: 1,
                 heading: i18n.t("ui.reuse.language"),
                 elements: [
                     {
-                        id: "language-switcher",
-                        label: i18n.t("ui.app.settings.language_switcher"),
+                        id: "language-preferences",
+                        label: i18n.t("ui.reuse.language"),
                         render: () => `
-            <div class="components-section">
-              <h3 class="components-section-heading">${i18n.t("ui.app.settings.language_switcher")}</h3>
-              <div class="components-section-body">
+            <div class="settings-language-block">
+              <div class="settings-language-switcher-row">
+                <h3 class="components-section-heading">${i18n.t("ui.app.settings.language_switcher")}</h3>
                 <label class="switch">
                   <input id="pref-language-switcher-show" type="checkbox" />
                   <span class="slider"></span>
                 </label>
               </div>
+              <div class="settings-language-tables">
+                <section>
+                  <div class="settings-language-heading-row components-section-heading">
+                    <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+                  </div>
+                  <table id="available-languages" class="language-table"></table>
+                </section>
+                <section>
+                  <div class="settings-language-heading-row components-section-heading">
+                    <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
+                    <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
+                  </div>
+                  <table id="preferred-languages" class="language-table"></table>
+                </section>
+              </div>
             </div>
-          `,
-                    },
-                    {
-                        id: "available-languages",
-                        label: i18n.t("ui.app.settings.available_languages"),
-                        render: () => `
-            <div class="settings-language-heading-row components-section-heading">
-              <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
-            </div>
-            <table id="available-languages" class="language-table"></table>
-          `,
-                    },
-                    {
-                        id: "preferred-languages",
-                        label: i18n.t("ui.app.settings.preferred_languages"),
-                        render: () => `
-            <div class="settings-language-heading-row components-section-heading">
-              <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
-              <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
-            </div>
-            <table id="preferred-languages" class="language-table"></table>
           `,
                     },
                 ],
