@@ -87,6 +87,12 @@ export async function bindShareButton({
                         password: i18n.t(
                             "module.jitsi_meet.share.password_optional",
                         ),
+                        passwordPopupTitle: i18n.t(
+                            "module.jitsi_meet.share.password_title",
+                        ),
+                        passwordPopupLabel: i18n.t(
+                            "module.jitsi_meet.share.password_instruction",
+                        ),
                         passwordPlaceholder: i18n.t(
                             "module.jitsi_meet.share.password_placeholder",
                         ),
@@ -106,6 +112,11 @@ export async function bindShareButton({
                             "module.jitsi_meet.share.generate_link",
                         ),
                         close: i18n.t("ui.reuse.close"),
+                        cancel: i18n.t("ui.reuse.cancel"),
+                        confirm: i18n.t("module.jitsi_meet.share.revoke"),
+                        deleteConfirmMessage: i18n.t(
+                            "module.jitsi_meet.share.delete_prompt",
+                        ),
                         createFailed: i18n.t(
                             "module.jitsi_meet.share.create_failed",
                         ),

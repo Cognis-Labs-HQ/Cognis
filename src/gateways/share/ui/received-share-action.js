@@ -4,7 +4,6 @@ import { resolveReceivedShare } from "./received-share.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { showToast } from "/static/reuse/toast.js";
-import { isViewingAsGuest } from "./reuse/share-button.js";
 
 function tokenFromActionUrl(actionUrl) {
     const url = new URL(actionUrl, window.location.origin);
@@ -24,7 +23,7 @@ window.addEventListener("cognis:notification-action", (event) => {
                 headers: accessToken
                     ? { authorization: `Bearer ${accessToken}` }
                     : undefined,
-                useAccountKeyring: Boolean(accessToken) && !isViewingAsGuest(),
+                useAccountKeyring: false,
             });
             if (!response) return;
             if (response.status === 404) {

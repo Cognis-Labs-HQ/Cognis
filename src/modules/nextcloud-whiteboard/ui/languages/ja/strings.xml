@@ -79,7 +79,10 @@
   <string name="module.nextcloud_whiteboard.share_label">ラベル</string>
   <string name="module.nextcloud_whiteboard.share_label_placeholder">チーム確認</string>
   <string name="module.nextcloud_whiteboard.share_expiry_label">有効期限（任意）</string>
-  <string name="module.nextcloud_whiteboard.share_password_optional">パスワード保護（任意）</string>
+  <string name="module.nextcloud_whiteboard.share_password_optional">パスワード保護</string>
+  <string name="module.nextcloud_whiteboard.share_password_title">共有パスワード</string>
+  <string name="module.nextcloud_whiteboard.share_password_instruction">このパスワードを共有の受信者に伝えてください</string>
+  <string name="module.nextcloud_whiteboard.share_delete_prompt">この共有を削除しますか？</string>
   <string name="module.nextcloud_whiteboard.share_password_placeholder">パスワードなしの場合は空欄</string>
   <string name="module.nextcloud_whiteboard.share_status_active">有効</string>
   <string name="module.nextcloud_whiteboard.share_status_expired">期限切れ</string>

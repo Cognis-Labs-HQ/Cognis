@@ -540,8 +540,21 @@ async function openSharePopup() {
                 password: translateModuleString(
                     "module.nextcloud_whiteboard.share_password_optional",
                 ),
+                passwordPopupTitle: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_title",
+                ),
+                passwordPopupLabel: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_instruction",
+                ),
                 passwordPlaceholder: translateModuleString(
                     "module.nextcloud_whiteboard.share_password_placeholder",
+                ),
+                cancel: translateModuleString("ui.reuse.cancel"),
+                confirm: translateModuleString(
+                    "module.nextcloud_whiteboard.share_revoke",
+                ),
+                deleteConfirmMessage: translateModuleString(
+                    "module.nextcloud_whiteboard.share_delete_prompt",
                 ),
                 statusActive: translateModuleString(
                     "module.nextcloud_whiteboard.share_status_active",

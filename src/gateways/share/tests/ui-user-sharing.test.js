@@ -275,10 +275,7 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     );
     assert.match(sessionFlowSource, /guestSessionAlreadyActive/);
     assert.match(sessionFlowSource, /keyring:endTemporary/);
-    assert.match(
-        sessionFlowSource,
-        /useAccountKeyring: hasValidatedAccountSession/,
-    );
+    assert.match(sessionFlowSource, /useAccountKeyring: false/);
     assert.match(sessionFlowSource, /!isViewingAsGuest\(\)/);
     assert.match(sessionFlowSource, /!ownAccountId\.startsWith\("share:"\)/);
     assert.match(receivedShareSource, /if \(useAccountKeyring\)/);

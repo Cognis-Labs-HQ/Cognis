@@ -79,7 +79,10 @@
   <string name="module.nextcloud_whiteboard.share_label">Bezeichnung</string>
   <string name="module.nextcloud_whiteboard.share_label_placeholder">Teamprüfung</string>
   <string name="module.nextcloud_whiteboard.share_expiry_label">Läuft ab (optional)</string>
-  <string name="module.nextcloud_whiteboard.share_password_optional">Passwortschutz (optional)</string>
+  <string name="module.nextcloud_whiteboard.share_password_optional">Passwortschutz</string>
+  <string name="module.nextcloud_whiteboard.share_password_title">Freigabepasswort</string>
+  <string name="module.nextcloud_whiteboard.share_password_instruction">Teilen Sie dieses Passwort mit dem Empfänger der Freigabe</string>
+  <string name="module.nextcloud_whiteboard.share_delete_prompt">Diese Freigabe löschen?</string>
   <string name="module.nextcloud_whiteboard.share_password_placeholder">Leer lassen für kein Passwort</string>
   <string name="module.nextcloud_whiteboard.share_status_active">Aktiv</string>
   <string name="module.nextcloud_whiteboard.share_status_expired">Abgelaufen</string>

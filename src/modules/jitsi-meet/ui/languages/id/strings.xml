@@ -94,7 +94,10 @@
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Label Opsional</string>
   <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa (opsional)</string>
-  <string name="module.jitsi_meet.share.password_optional">Perlindungan kata sandi (opsional)</string>
+  <string name="module.jitsi_meet.share.password_optional">Perlindungan kata sandi</string>
+  <string name="module.jitsi_meet.share.password_title">Kata Sandi Berbagi</string>
+  <string name="module.jitsi_meet.share.password_instruction">Bagikan kata sandi ini kepada penerima berbagi</string>
+  <string name="module.jitsi_meet.share.delete_prompt">Hapus berbagi ini?</string>
   <string name="module.jitsi_meet.share.password_placeholder">Biarkan kosong tanpa kata sandi</string>
   <string name="module.jitsi_meet.share.status_active">Aktif</string>
   <string name="module.jitsi_meet.share.status_expired">Kedaluwarsa</string>

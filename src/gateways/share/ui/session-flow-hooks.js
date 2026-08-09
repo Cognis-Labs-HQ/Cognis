@@ -259,7 +259,7 @@ uiCtx.extendFlow(
         try {
             response = await resolveReceivedShare(shareToken, {
                 headers,
-                useAccountKeyring: hasValidatedAccountSession,
+                useAccountKeyring: false,
             });
         } catch {
             return { authenticated: false, reason: "share_resolve_failed" };

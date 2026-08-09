@@ -94,7 +94,10 @@
   <string name="module.jitsi_meet.share.label">ラベル</string>
   <string name="module.jitsi_meet.share.label_placeholder">任意のラベル</string>
   <string name="module.jitsi_meet.share.expiry_label">有効期限（任意）</string>
-  <string name="module.jitsi_meet.share.password_optional">パスワード保護（任意）</string>
+  <string name="module.jitsi_meet.share.password_optional">パスワード保護</string>
+  <string name="module.jitsi_meet.share.password_title">共有パスワード</string>
+  <string name="module.jitsi_meet.share.password_instruction">このパスワードを共有の受信者に伝えてください</string>
+  <string name="module.jitsi_meet.share.delete_prompt">この共有を削除しますか？</string>
   <string name="module.jitsi_meet.share.password_placeholder">パスワードなしの場合は空欄</string>
   <string name="module.jitsi_meet.share.status_active">有効</string>
   <string name="module.jitsi_meet.share.status_expired">期限切れ</string>

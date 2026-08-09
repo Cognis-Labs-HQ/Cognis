@@ -140,13 +140,21 @@ export function buildShareTokenCallbacks({
                     method: "PATCH",
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
-                        label,
-                        expiresAt: String(expiresAt ?? "").trim(),
+                        label: String(label ?? "").trim() || undefined,
+                        expiresAt: String(expiresAt ?? "").trim() || undefined,
                         password: String(password ?? "").trim()
                             ? password
                             : undefined,
-                        accessControls,
-                        grantedCapabilities: requestedCapabilities,
+                        accessControls:
+                            accessControls &&
+                            Object.keys(accessControls).length > 0
+                                ? accessControls
+                                : undefined,
+                        grantedCapabilities:
+                            Array.isArray(requestedCapabilities) &&
+                            requestedCapabilities.length > 0
+                                ? requestedCapabilities
+                                : undefined,
                     }),
                 },
             );
