@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Kontozugriff bei eigenen und empfangenen Freigaben bewahren
+
+Beim Öffnen einer Whiteboard-Freigabe durch ihren Ersteller oder einer Meeting-Benutzerfreigabe durch ihren Empfänger bleibt nun die authentifizierte Kontositzung erhalten. Der freigegebene Inhalt behält die vollständige Kontonavigation und wechselt nicht mehr in die eingeschränkte Gastansicht.
+
 ## Seitensteuerung und Stile des Ziels isolieren
 
 Auf Whiteboard- und Freigabeseiten bleibt die Layoutbearbeitung deaktiviert. Bei jeder Navigation innerhalb der Anwendung wird das Aktionsdock neu aufgebaut, nicht von der Zielseite bereitgestellte Aktionen werden entfernt, das vollständige Stylesheet-Paket wird geladen und nicht mehr benötigte Routenstile werden entfernt.

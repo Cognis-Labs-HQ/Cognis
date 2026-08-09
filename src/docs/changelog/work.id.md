@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Mempertahankan akses akun untuk berbagi milik sendiri dan yang diterima
+
+Membuka berbagi Papan Tulis sebagai pembuatnya atau berbagi pengguna Rapat sebagai penerimanya kini mempertahankan sesi akun terautentikasi. Konten yang dibagikan tetap memiliki navigasi akun lengkap dan tidak lagi masuk ke tampilan tamu terbatas.
+
 ## Mengisolasi kontrol dan gaya halaman tujuan
 
 Pengeditan tata letak tetap dinonaktifkan pada halaman Papan Tulis dan Berbagi. Setiap navigasi dalam aplikasi kini membangun ulang dok tindakan halaman, membuang tindakan yang tidak disediakan kembali oleh tujuan, memuat paket stylesheet lengkap, dan menghapus gaya rute yang tidak lagi berlaku.

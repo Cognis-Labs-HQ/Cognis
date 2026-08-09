@@ -14,6 +14,36 @@ import { createHash } from "node:crypto";
 
 const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
 
+type ShareAccessResult = {
+    allowed?: boolean;
+    reason?: string;
+    directAccess?: boolean;
+};
+
+function resolveShareAccessResult(
+    stageResults: Record<string, unknown[]> | undefined,
+): ShareAccessResult | null {
+    return (
+        (getFirstMatchingStageResult(
+            stageResults,
+            "check-access",
+            (result) =>
+                (result as ShareAccessResult)?.allowed === true &&
+                (result as ShareAccessResult)?.directAccess === true,
+        ) as ShareAccessResult | null) ??
+        (getFirstMatchingStageResult(
+            stageResults,
+            "check-access",
+            (result) => (result as ShareAccessResult)?.allowed === true,
+        ) as ShareAccessResult | null) ??
+        (getFirstMatchingStageResult(
+            stageResults,
+            "check-access",
+            (result) => (result as ShareAccessResult)?.allowed === false,
+        ) as ShareAccessResult | null)
+    );
+}
+
 function shareRecipientsAllowRequester(
     tokenRecord: {
         ownerAccountId?: unknown;
@@ -63,7 +93,7 @@ export async function registerShareBootstrapHooks(input: {
     input.ctx.flow.extend(
         "resolve-share-token",
         "check-access",
-        { id: "share-gateway:user-recipient-access" },
+        { id: "share-gateway:account-access" },
         (stageCtx) => {
             const tokenResult = getFirstStageResult(
                 stageCtx.stageResults,
@@ -71,6 +101,7 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 valid?: boolean;
                 tokenRecord?: {
+                    ownerAccountId?: unknown;
                     accessControls?: { recipients?: unknown };
                 };
             } | null;
@@ -79,6 +110,11 @@ export async function registerShareBootstrapHooks(input: {
             ).trim();
             const recipients =
                 tokenResult?.tokenRecord?.accessControls?.recipients;
+            const isOwner =
+                tokenResult?.valid === true &&
+                requesterAccountId.length > 0 &&
+                requesterAccountId ===
+                    String(tokenResult.tokenRecord?.ownerAccountId ?? "");
             const isUserRecipient =
                 tokenResult?.valid === true &&
                 requesterAccountId.length > 0 &&
@@ -90,7 +126,7 @@ export async function registerShareBootstrapHooks(input: {
                         String(recipient.type ?? "") === "user" &&
                         String(recipient.id ?? "") === requesterAccountId,
                 );
-            return isUserRecipient
+            return isOwner || isUserRecipient
                 ? { allowed: true, directAccess: true }
                 : null;
         },
@@ -495,25 +531,9 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 resolved?: boolean;
             } | null;
-            const accessResult =
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === true,
-                ) as {
-                    allowed?: boolean;
-                    directAccess?: boolean;
-                } | null) ??
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === false,
-                ) as {
-                    allowed?: boolean;
-                    directAccess?: boolean;
-                } | null);
+            const accessResult = resolveShareAccessResult(
+                stageCtx.stageResults,
+            );
             if (!tokenResult?.valid) {
                 return {
                     issued: false,
@@ -605,27 +625,9 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 payload?: Record<string, unknown>;
             } | null;
-            const accessResult =
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === true,
-                ) as {
-                    allowed?: boolean;
-                    reason?: string;
-                    directAccess?: boolean;
-                } | null) ??
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === false,
-                ) as {
-                    allowed?: boolean;
-                    reason?: string;
-                    directAccess?: boolean;
-                } | null);
+            const accessResult = resolveShareAccessResult(
+                stageCtx.stageResults,
+            );
             if (!tokenResult?.valid) {
                 return {
                     resolved: false,

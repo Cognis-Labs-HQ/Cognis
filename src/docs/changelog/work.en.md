@@ -1,5 +1,9 @@
 # Refine share management
 
+## Preserve account access through owned and received shares
+
+Opening a Whiteboard share as its creator or a Meeting user share as its recipient now keeps the authenticated account session. The shared content retains the full account navigation and no longer enters the restricted guest experience.
+
 ## Keep destination page controls and styles isolated
 
 Whiteboard and Share pages keep layout editing disabled. Each in-app navigation now rebuilds the page action dock, discards actions not contributed by the destination, loads its complete stylesheet bundle, and removes route styles that no longer apply.

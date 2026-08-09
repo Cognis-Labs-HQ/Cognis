@@ -453,6 +453,23 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(resolvedShare.resourceType, "meeting");
     assert.match(resolvedShare.guestAccessToken, /^cgs_/);
     assert.match(resolvedShare.guestKeyring.accountId, /^share:[^:]+:[^:]+$/);
+
+    const ownerResolveResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            headers: { authorization: `Bearer ${adminToken}` },
+        }),
+        ownerResolveResponse,
+        new URL(
+            `http://localhost/api/v1/share/resolve/${encodeURIComponent(createResponse.body.data.shareUrl.split("/share/")[1])}`,
+        ),
+    );
+    assert.equal(ownerResolveResponse.statusCode, 200);
+    const ownerResolvedShare = JSON.parse(ownerResolveResponse.payload).data;
+    assert.equal(ownerResolvedShare.directAccess, true);
+    assert.equal(ownerResolvedShare.guestAccessToken, "");
     assert.match(resolvedShare.guestKeyring.passphrase, /^[A-Za-z0-9_-]+$/);
 
     const protectedCreateResponse = await dispatchJson(
