@@ -63,3 +63,11 @@ test("share deletion requires explicit confirmation", () => {
         /if \(confirmation !== "confirm"\) return;[\s\S]*deleteLink\(\{ shareId \}\)/,
     );
 });
+
+test("share popup can open directly in database-backed edit mode", () => {
+    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+
+    assert.match(source, /initialEditingShareId = ""/);
+    assert.match(source, /function selectShareForEditing\(selectedShare\)/);
+    assert.match(source, /state\.links\.find\([\s\S]*initialEditingShareId/);
+});

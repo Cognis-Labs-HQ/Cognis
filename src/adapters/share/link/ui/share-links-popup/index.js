@@ -97,6 +97,7 @@
  *   updateLink?: (opts: { shareId: string, accessControls: object }) => Promise<object|null>,
  *   searchUsers?: (query: string) => Promise<Array<{id: string, label: string, handle?: string}>>,
  *   fetchMethods?: () => Promise<Array<{id: string, name: string, pageModuleUrl?: string}>>,
+ *   initialEditingShareId?: string,
  * }} options
  * @returns {Promise<void>}
  */
@@ -125,6 +126,7 @@ export function openSharePopup({
             resourceId,
             contentUrl,
             grantedCapabilities,
+            supportsReadOnly,
         }),
     });
 }

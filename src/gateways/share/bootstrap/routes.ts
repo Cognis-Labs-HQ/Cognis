@@ -240,6 +240,7 @@ export function createShareRoutes(input: {
                 resourceType?: unknown;
                 resourceId?: unknown;
                 contentUrl?: unknown;
+                supportsReadOnly?: unknown;
                 label?: unknown;
                 grantedCapabilities?: unknown;
                 accessControls?: unknown;
@@ -324,6 +325,7 @@ export function createShareRoutes(input: {
                 resourceType,
                 resourceId,
                 contentUrl,
+                supportsReadOnly: body.supportsReadOnly === true,
                 label: typeof body.label === "string" ? body.label : "",
                 grantedCapabilities: Array.isArray(body.grantedCapabilities)
                     ? body.grantedCapabilities

@@ -18,6 +18,13 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /rejectShare/);
     assert.match(pageSource, /pageContext:[\s\S]*title:[\s\S]*subtitle:/);
     assert.match(pageSource, /export async function mount\(root, \{ signal \}/);
+    assert.match(pageSource, /buildSharesElement/);
+    assert.match(pageSource, /shares-title-link/);
+    assert.match(pageSource, /data-share-manage/);
+    assert.match(pageSource, /share:openLinksPopup/);
+    assert.match(pageSource, /initialEditingShareId/);
+    assert.match(pageSource, /buildShareTokenCallbacks/);
+    assert.doesNotMatch(pageSource, /share\.shares\.open/);
 });
 
 test("Share navbar plugin adds Shares to the user menu", () => {

@@ -303,6 +303,7 @@ export async function registerShareBootstrapHooks(input: {
                 generatePassword?: boolean;
                 expiresAt?: string;
                 contentUrl?: string;
+                supportsReadOnly?: boolean;
             };
             let shareRecord;
             try {
@@ -329,6 +330,9 @@ export async function registerShareBootstrapHooks(input: {
                         ...(inputPayload.contentUrl
                             ? { contentUrl: inputPayload.contentUrl }
                             : {}),
+                        supportsReadOnly: inputPayload.supportsReadOnly
+                            ? "true"
+                            : "false",
                     },
                     label: inputPayload.label,
                     grantedCapabilities: Array.isArray(

@@ -35,3 +35,7 @@ The User Menu now includes a Shares page for opening sent and received shares. C
 ## Stop shared-page work when access ends
 
 Whiteboard presence now stops immediately when a share is revoked and is fully detached during SPA navigation. Page action buttons use one CTX-managed dock so pointer, theme, and layout controls share consistent placement and can be added, updated, or removed with page lifecycle changes. Share dialogs always provide a Close label, and signed-in Meeting share recipients load the complete account page structure.
+
+## Streamline the Shares overview
+
+Sent and received shares now appear in one polished, responsive table with clear shared-to and shared-from details. Share titles open their content directly, while an icon-based Manage action opens the existing Share editor prefilled from the gateway database so owners can update recipients, permissions, names, expiration, and protection without leaving the Shares page.

@@ -313,6 +313,7 @@ export async function openShareLinksPopup({
     passwordRequired = false,
     defaultGrantedCapabilities = [],
     supportsReadOnly = false,
+    initialEditingShareId = "",
 }) {
     await ensureStylesheet();
 
@@ -394,6 +395,41 @@ export async function openShareLinksPopup({
         });
     }
 
+    function selectShareForEditing(selectedShare) {
+        if (!selectedShare) return false;
+        const recipients = Array.isArray(
+            selectedShare.accessControls?.recipients,
+        )
+            ? selectedShare.accessControls.recipients
+            : [];
+        state.activeMethodId = recipients.some(
+            (recipient) => recipient?.type === "user",
+        )
+            ? "user"
+            : "link";
+        state.editingShareId = String(selectedShare.id ?? "");
+        state.label = String(selectedShare.label ?? "");
+        state.expiresAt = selectedShare.expiresAt
+            ? new Date(selectedShare.expiresAt).toISOString().slice(0, 16)
+            : "";
+        state.recipients = recipients;
+        state.permission = state.supportsReadOnly
+            ? selectedShare.accessControls?.permissions?.includes("write")
+                ? "write"
+                : "read"
+            : "write";
+        const matchingAccess = state.linkAccessOptions.find(
+            (option) =>
+                option.grantedCapabilities?.length ===
+                    selectedShare.grantedCapabilities?.length &&
+                option.grantedCapabilities.every((capability) =>
+                    selectedShare.grantedCapabilities.includes(capability),
+                ),
+        );
+        if (matchingAccess) state.linkAccessId = matchingAccess.id;
+        return true;
+    }
+
     async function refreshLinks({ preserveOnError = true } = {}) {
         try {
             const fetchedLinks = await fetchLinks();
@@ -443,6 +479,11 @@ export async function openShareLinksPopup({
     }
 
     await refreshLinks({ preserveOnError: false });
+    selectShareForEditing(
+        state.links.find(
+            (share) => String(share.id) === String(initialEditingShareId),
+        ),
+    );
 
     let refreshTimer = null;
     let popupOpen = false;
@@ -852,50 +893,8 @@ export async function openShareLinksPopup({
                     const selectedShare = state.links.find(
                         (link) => String(link.id) === editRow.dataset.shareEdit,
                     );
-                    if (selectedShare) {
-                        const hasUserRecipients = Array.isArray(
-                            selectedShare.accessControls?.recipients,
-                        )
-                            ? selectedShare.accessControls.recipients.some(
-                                  (recipient) => recipient?.type === "user",
-                              )
-                            : false;
-                        state.activeMethodId = hasUserRecipients
-                            ? "user"
-                            : "link";
-                        state.editingShareId = String(selectedShare.id);
-                        state.label = String(selectedShare.label ?? "");
-                        state.expiresAt = selectedShare.expiresAt
-                            ? new Date(selectedShare.expiresAt)
-                                  .toISOString()
-                                  .slice(0, 16)
-                            : "";
-                        state.recipients = Array.isArray(
-                            selectedShare.accessControls?.recipients,
-                        )
-                            ? selectedShare.accessControls.recipients
-                            : [];
-                        state.permission = state.supportsReadOnly
-                            ? selectedShare.accessControls?.permissions?.includes(
-                                  "write",
-                              )
-                                ? "write"
-                                : "read"
-                            : "write";
-                        const matchingAccess = state.linkAccessOptions.find(
-                            (option) =>
-                                option.grantedCapabilities?.every(
-                                    (capability) =>
-                                        selectedShare.grantedCapabilities?.includes(
-                                            capability,
-                                        ),
-                                ),
-                        );
-                        if (matchingAccess) {
-                            state.linkAccessId = matchingAccess.id;
-                        }
+                    if (selectShareForEditing(selectedShare))
                         renderMethodPage();
-                    }
                     return;
                 }
                 const copyButton = event.target.closest("[data-share-copy]");

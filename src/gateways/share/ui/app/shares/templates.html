@@ -1,16 +1,34 @@
-<template id="shares-card-template">
-    <article class="shares-card" data-share-id="">
-        <div class="shares-card-copy">
-            <h3></h3>
-            <p></p>
+<template id="shares-table-template">
+    <section class="shares-overview">
+        <div class="shares-summary" aria-live="polite">
+            <span data-share-total></span>
+            <span data-share-sent></span>
+            <span data-share-received></span>
         </div>
-        <div class="shares-card-actions"></div>
-    </article>
+        <div class="shares-table-wrap">
+            <table class="shares-table">
+                <thead>
+                    <tr>
+                        <th data-column-title></th>
+                        <th data-column-relationship></th>
+                        <th data-column-status></th>
+                        <th data-column-expires></th>
+                        <th data-column-actions></th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <p class="shares-empty" hidden></p>
+        </div>
+    </section>
 </template>
 
-<template id="shares-section-template">
-    <section class="shares-section">
-        <h2></h2>
-        <div class="shares-list"></div>
-    </section>
+<template id="shares-row-template">
+    <tr data-share-id="">
+        <td data-share-title></td>
+        <td data-share-relationship></td>
+        <td data-share-status></td>
+        <td data-share-expires></td>
+        <td class="shares-actions" data-share-actions></td>
+    </tr>
 </template>

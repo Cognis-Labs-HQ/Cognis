@@ -35,3 +35,7 @@ Menu Pengguna kini memiliki halaman Berbagi untuk membuka berbagi yang dikirim d
 ## Hentikan aktivitas halaman bersama saat akses berakhir
 
 Kehadiran Whiteboard kini segera berhenti ketika berbagi dicabut dan dilepas sepenuhnya saat navigasi SPA. Tombol tindakan halaman memakai satu dok yang dikelola CTX sehingga kontrol penunjuk, tema, dan tata letak memiliki posisi yang konsisten serta dapat ditambahkan, diperbarui, atau dihapus mengikuti siklus hidup halaman. Dialog berbagi selalu menyediakan label Tutup, dan penerima berbagi Meeting yang telah masuk memuat struktur halaman akun lengkap.
+
+## Sederhanakan ikhtisar Berbagi
+
+Berbagi terkirim dan diterima kini tampil dalam satu tabel responsif yang rapi dengan informasi tujuan dan asal berbagi yang jelas. Judul berbagi membuka kontennya secara langsung, sedangkan tindakan Kelola berbasis ikon membuka editor Berbagi yang sudah diisi dari basis data gateway sehingga pemilik dapat memperbarui penerima, izin, nama, kedaluwarsa, dan perlindungan tanpa meninggalkan halaman Berbagi.

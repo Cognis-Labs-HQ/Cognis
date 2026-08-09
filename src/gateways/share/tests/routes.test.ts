@@ -520,12 +520,17 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             resourceType: "meeting",
             resourceId: "meeting-1",
             contentUrl: "/meetings?meeting=meeting-1",
+            supportsReadOnly: true,
             accessControls: {
                 recipients: [{ type: "user", id: "bob" }],
             },
         },
     );
     assert.equal(restrictedCreateResponse.statusCode, 200);
+    assert.equal(
+        restrictedCreateResponse.body.data.metadata.supportsReadOnly,
+        "true",
+    );
     const duplicateRestrictedResponse = await dispatchJson(
         "POST",
         adminToken,

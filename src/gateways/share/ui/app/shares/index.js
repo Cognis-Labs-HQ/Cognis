@@ -3,7 +3,9 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
+    buildShareTokenCallbacks,
     fetchShareOverview,
     rejectShare,
     revokeShare,
@@ -22,110 +24,286 @@ async function loadMarkupTemplates() {
         "text/html",
     );
     markupTemplates = {
-        card: templateDocument.querySelector("#shares-card-template"),
-        section: templateDocument.querySelector("#shares-section-template"),
+        row: templateDocument.querySelector("#shares-row-template"),
+        table: templateDocument.querySelector("#shares-table-template"),
     };
     return markupTemplates;
-}
-
-function createAction({
-    label,
-    href = "",
-    attribute = "",
-    value = "",
-    className,
-}) {
-    const action = document.createElement(href ? "a" : "button");
-    action.className = className;
-    action.textContent = label;
-    if (action instanceof HTMLAnchorElement) action.href = href;
-    if (action instanceof HTMLButtonElement) action.type = "button";
-    if (attribute) action.setAttribute(attribute, value);
-    return action;
 }
 
 function shareStatus(share, i18n) {
     const expiresAt = String(share?.expiresAt ?? "");
     return expiresAt && Date.parse(expiresAt) <= Date.now()
-        ? i18n.t("share.shares.expired")
-        : i18n.t("share.shares.active");
+        ? { id: "expired", label: i18n.t("share.shares.expired") }
+        : { id: "active", label: i18n.t("share.shares.active") };
 }
 
-function renderShareCard(share, mode, i18n, cardTemplate) {
+function shareRecipients(share) {
+    return Array.isArray(share?.accessControls?.recipients)
+        ? share.accessControls.recipients.filter(
+              (recipient) => recipient?.type === "user",
+          )
+        : [];
+}
+
+function relationshipCell(share, direction, i18n) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "shares-relationship";
+    const badge = document.createElement("span");
+    badge.className = `shares-type shares-type--${direction}`;
+    const detail = document.createElement("span");
+    if (direction === "received") {
+        badge.textContent = i18n.t("share.shares.received_badge");
+        detail.textContent = String(
+            share?.ownerDisplayName || share?.ownerAccountId || "",
+        );
+    } else {
+        const recipients = shareRecipients(share);
+        const isUserShare = recipients.length > 0;
+        badge.textContent = i18n.t(
+            isUserShare ? "share.shares.user_badge" : "share.shares.link_badge",
+        );
+        detail.textContent = isUserShare
+            ? recipients
+                  .map((recipient) => recipient.label || recipient.id)
+                  .filter(Boolean)
+                  .join(", ")
+            : i18n.t("share.shares.anyone_with_link");
+    }
+    wrapper.append(badge, detail);
+    return wrapper;
+}
+
+function createIconButton({ shareId, action, label, destructive = false }) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = destructive
+        ? "shares-icon-button shares-icon-button--danger"
+        : "shares-icon-button";
+    button.setAttribute(`data-share-${action}`, shareId);
+    button.title = label;
+    button.setAttribute("aria-label", label);
+    const icon = document.createElement("span");
+    icon.className = `shares-action-icon shares-action-icon--${action}`;
+    icon.setAttribute("aria-hidden", "true");
+    button.appendChild(icon);
+    return button;
+}
+
+function renderShareRow(share, direction, i18n, rowTemplate) {
+    const row = rowTemplate.content.firstElementChild.cloneNode(true);
     const shareId = String(share?.id ?? "");
+    const shareUrl = String(share?.shareUrl ?? "");
     const label = String(
         share?.label || share?.resourceType || share?.id || "",
     );
-    const shareUrl = String(share?.shareUrl ?? "");
-    const contentUrl = String(share?.metadata?.contentUrl ?? "");
-    const expiresAt = String(share?.expiresAt ?? "");
-    const dateLabel = expiresAt
-        ? formatDateTime(expiresAt)
+    row.dataset.shareId = shareId;
+    const titleLink = document.createElement("a");
+    titleLink.className = "shares-title-link";
+    titleLink.href = shareUrl;
+    titleLink.textContent = label;
+    row.querySelector("[data-share-title]").appendChild(titleLink);
+    row.querySelector("[data-share-relationship]").appendChild(
+        relationshipCell(share, direction, i18n),
+    );
+    const status = shareStatus(share, i18n);
+    const statusBadge = document.createElement("span");
+    statusBadge.className = `shares-status shares-status--${status.id}`;
+    statusBadge.textContent = status.label;
+    row.querySelector("[data-share-status]").appendChild(statusBadge);
+    row.querySelector("[data-share-expires]").textContent = share.expiresAt
+        ? formatDateTime(share.expiresAt)
         : i18n.t("share.shares.never");
-    const card = cardTemplate.content.firstElementChild.cloneNode(true);
-    card.dataset.shareId = shareId;
-    card.querySelector("h3").textContent = label;
-    card.querySelector("p").textContent =
-        `${shareStatus(share, i18n)} · ${dateLabel}`;
-    const actions = card.querySelector(".shares-card-actions");
-    if (shareUrl) {
+    const actions = row.querySelector("[data-share-actions]");
+    if (direction === "sent") {
         actions.appendChild(
-            createAction({
-                label: i18n.t("share.shares.open"),
-                href: shareUrl,
-                className: "btn-confirm btn-animated",
-            }),
-        );
-    }
-    if (mode === "sent" && contentUrl) {
-        actions.appendChild(
-            createAction({
+            createIconButton({
+                shareId,
+                action: "manage",
                 label: i18n.t("share.shares.manage"),
-                href: contentUrl,
-                className: "btn-neutral btn-animated",
             }),
         );
     }
     actions.appendChild(
-        createAction({
+        createIconButton({
+            shareId,
+            action: direction === "sent" ? "revoke" : "reject",
             label: i18n.t(
-                mode === "sent" ? "share.shares.delete" : "share.shares.reject",
+                direction === "sent"
+                    ? "share.shares.delete"
+                    : "share.shares.reject",
             ),
-            attribute:
-                mode === "sent" ? "data-share-revoke" : "data-share-reject",
-            value: shareId,
-            className: "btn-cancel btn-animated",
+            destructive: true,
         }),
     );
-    return card.outerHTML;
+    return row;
 }
 
-function buildSection(id, title, shares, mode, i18n, templates) {
+function buildSharesElement(overview, i18n, templates) {
+    const shares = [
+        ...overview.sent.map((share) => ({ share, direction: "sent" })),
+        ...overview.received.map((share) => ({
+            share,
+            direction: "received",
+        })),
+    ].sort(
+        (left, right) =>
+            Date.parse(right.share.updatedAt || right.share.createdAt || 0) -
+            Date.parse(left.share.updatedAt || left.share.createdAt || 0),
+    );
     return {
-        id,
-        label: title,
+        id: "shares-overview",
+        label: i18n.t("share.shares.title"),
         pinned: true,
-        gridSize: { default: [12, 5], min: [6, 3], max: "full" },
+        gridSize: { default: [12, 8], min: [6, 4], max: "full" },
         render: () => {
             const section =
-                templates.section.content.firstElementChild.cloneNode(true);
-            section.querySelector("h2").textContent = title;
-            const list = section.querySelector(".shares-list");
-            if (shares.length) {
-                list.innerHTML = shares
-                    .map((share) =>
-                        renderShareCard(share, mode, i18n, templates.card),
-                    )
-                    .join("");
-            } else {
-                const empty = document.createElement("p");
-                empty.className = "shares-empty";
+                templates.table.content.firstElementChild.cloneNode(true);
+            section.querySelector("[data-share-total]").textContent = i18n
+                .t("share.shares.total_count")
+                .replace("{{count}}", String(shares.length));
+            section.querySelector("[data-share-sent]").textContent = i18n
+                .t("share.shares.sent_count")
+                .replace("{{count}}", String(overview.sent.length));
+            section.querySelector("[data-share-received]").textContent = i18n
+                .t("share.shares.received_count")
+                .replace("{{count}}", String(overview.received.length));
+            for (const [selector, key] of [
+                ["[data-column-title]", "share.shares.column_title"],
+                [
+                    "[data-column-relationship]",
+                    "share.shares.column_relationship",
+                ],
+                ["[data-column-status]", "share.shares.column_status"],
+                ["[data-column-expires]", "share.shares.column_expires"],
+                ["[data-column-actions]", "share.shares.column_actions"],
+            ]) {
+                section.querySelector(selector).textContent = i18n.t(key);
+            }
+            const tableBody = section.querySelector("tbody");
+            tableBody.append(
+                ...shares.map(({ share, direction }) =>
+                    renderShareRow(share, direction, i18n, templates.row),
+                ),
+            );
+            if (shares.length === 0) {
+                section.querySelector("table").hidden = true;
+                const empty = section.querySelector(".shares-empty");
+                empty.hidden = false;
                 empty.textContent = i18n.t("share.shares.empty");
-                list.appendChild(empty);
             }
             return section.outerHTML;
         },
     };
+}
+
+function popupLabels(i18n) {
+    const translate = (suffix) => i18n.t(`share.shares.popup_${suffix}`);
+    return {
+        empty: translate("empty"),
+        userEmpty: translate("user_empty"),
+        untitled: i18n.t("share.shares.untitled"),
+        copyLink: translate("copy_link"),
+        revoke: i18n.t("share.shares.delete"),
+        confirm: i18n.t("ui.reuse.confirm"),
+        cancel: i18n.t("ui.reuse.cancel"),
+        close: i18n.t("ui.reuse.close"),
+        shareOptions: translate("options"),
+        methods: translate("options"),
+        methodUnavailable: i18n.t("share.shares.update_failed"),
+        mail: i18n.t("ui.reuse.mail"),
+        send: translate("send"),
+        emailRecipients: translate("email_recipients"),
+        emailRecipientsPlaceholder: translate("email_recipients_placeholder"),
+        emailRecipientsRequired: translate("email_recipients_required"),
+        emailSent: translate("email_sent"),
+        emailFailed: translate("email_failed"),
+        label: translate("label"),
+        labelPlaceholder: translate("label_placeholder"),
+        expiryLabel: translate("expiry"),
+        password: translate("password"),
+        passwordPlaceholder: translate("password_placeholder"),
+        generatePassword: translate("generate_password"),
+        passwordPopupTitle: translate("password"),
+        passwordPopupLabel: translate("password"),
+        passwordReveal: translate("password_reveal"),
+        passwordCopy: translate("password_copy"),
+        passwordCopied: translate("password_copied"),
+        permission: translate("permission"),
+        readPermission: translate("read"),
+        writePermission: translate("write"),
+        accessMode: translate("permission"),
+        updateLinkShare: translate("update"),
+        updateUserShare: translate("update"),
+        createFailed: i18n.t("share.shares.update_failed"),
+        copySuccess: translate("copied"),
+        copyFailed: translate("copy_failed"),
+        deleteFailed: i18n.t("share.shares.update_failed"),
+        deleteConfirmTitle: i18n.t("share.shares.delete_title"),
+        deleteConfirmMessage: i18n.t("share.shares.delete_prompt"),
+        statusActive: i18n.t("share.shares.active"),
+        statusExpired: i18n.t("share.shares.expired"),
+        expiresAtLabel: translate("expiry"),
+        expiredAtLabel: i18n.t("share.shares.expired"),
+        createdAtLabel: translate("created"),
+        linkMethod: i18n.t("share.shares.link_badge"),
+        userMethod: i18n.t("share.shares.user_badge"),
+        users: translate("users"),
+        userSearchPlaceholder: translate("user_search"),
+        duplicateUserShare: translate("duplicate_user"),
+        shareWithPrefix: translate("share_with"),
+        usersCountLabel: translate("users_count"),
+    };
+}
+
+async function openManagePopup(share, i18n) {
+    const openShareLinksPopup = uiCtx.capabilities.get("share:openLinksPopup");
+    if (typeof openShareLinksPopup !== "function") {
+        showToast(i18n.t("share.shares.update_failed"), { variant: "error" });
+        return;
+    }
+    const permissions = Array.isArray(share?.accessControls?.permissions)
+        ? share.accessControls.permissions
+        : [];
+    const grantedCapabilities = Array.isArray(share?.grantedCapabilities)
+        ? share.grantedCapabilities
+        : [];
+    const supportsReadOnly =
+        share?.metadata?.supportsReadOnly === "true" ||
+        !permissions.includes("write");
+    const readCapabilities = grantedCapabilities.filter(
+        (capability) => !String(capability).endsWith(":write"),
+    );
+    const linkAccessOptions = supportsReadOnly
+        ? [
+              {
+                  id: "read",
+                  label: i18n.t("share.shares.popup_read"),
+                  permissions: ["read"],
+                  grantedCapabilities: readCapabilities,
+              },
+              {
+                  id: "write",
+                  label: i18n.t("share.shares.popup_write"),
+                  permissions: ["read", "write"],
+                  grantedCapabilities,
+              },
+          ]
+        : [];
+    await openShareLinksPopup({
+        title: i18n.t("share.shares.manage_title"),
+        labels: popupLabels(i18n),
+        initialEditingShareId: String(share.id),
+        supportsReadOnly,
+        defaultGrantedCapabilities: grantedCapabilities,
+        linkAccessOptions,
+        ...buildShareTokenCallbacks({
+            resourceType: share.resourceType,
+            resourceId: share.resourceId,
+            contentUrl: share.metadata?.contentUrl,
+            grantedCapabilities,
+            supportsReadOnly,
+        }),
+    });
 }
 
 export async function mount(root, { signal } = {}) {
@@ -135,11 +313,17 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "share.shares.title");
     const templates = await loadMarkupTemplates();
     let overview = { sent: [], received: [] };
-    try {
-        overview = await fetchShareOverview();
-    } catch {
-        showToast(i18n.t("share.shares.load_failed"), { variant: "error" });
-    }
+    const loadOverview = async () => {
+        try {
+            overview = await fetchShareOverview();
+        } catch (error) {
+            console.error("[share] failed to load share overview", error);
+            showToast(i18n.t("share.shares.load_failed"), {
+                variant: "error",
+            });
+        }
+    };
+    await loadOverview();
     const composer = createPageComposer(root, {
         allowCustomization: false,
         preferenceKey: "shares-layout",
@@ -148,29 +332,26 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("share.shares.title"),
             subtitle: i18n.t("share.shares.subtitle"),
         },
-        elements: [
-            buildSection(
-                "sent-shares",
-                i18n.t("share.shares.sent"),
-                overview.sent,
-                "sent",
-                i18n,
-                templates,
-            ),
-            buildSection(
-                "received-shares",
-                i18n.t("share.shares.received"),
-                overview.received,
-                "received",
-                i18n,
-                templates,
-            ),
-        ],
+        elements: [buildSharesElement(overview, i18n, templates)],
     });
     root.addEventListener(
         "click",
         async (event) => {
             if (!(event.target instanceof Element)) return;
+            const manageButton = event.target.closest("[data-share-manage]");
+            if (manageButton instanceof HTMLButtonElement) {
+                const share = overview.sent.find(
+                    (entry) =>
+                        String(entry.id) === manageButton.dataset.shareManage,
+                );
+                if (!share) return;
+                await openManagePopup(share, i18n);
+                await loadOverview();
+                composer.refresh([
+                    buildSharesElement(overview, i18n, templates),
+                ]);
+                return;
+            }
             const button = event.target.closest(
                 "[data-share-revoke], [data-share-reject]",
             );
@@ -218,9 +399,9 @@ export async function mount(root, { signal } = {}) {
                 ),
                 { variant: response.ok ? "success" : "error" },
             );
-            if (response.ok) {
-                button.closest("[data-share-id]")?.remove();
-            }
+            if (!response.ok) return;
+            await loadOverview();
+            composer.refresh([buildSharesElement(overview, i18n, templates)]);
         },
         { signal },
     );

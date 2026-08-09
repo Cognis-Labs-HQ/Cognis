@@ -59,7 +59,7 @@ export async function rejectShare(shareId) {
 }
 
 /**
- * @param {{resourceType: string, resourceId: string, grantedCapabilities: string[]}} options
+ * @param {{resourceType: string, resourceId: string, contentUrl?: string, grantedCapabilities: string[], supportsReadOnly?: boolean}} options
  * @returns {{fetchLinks: () => Promise<Array>, createLink: (input: {label: string, expiresInHours: number|string, recipients?: Array}) => Promise<object|null>, updateLink: (input: {shareId: string, accessControls: object}) => Promise<object|null>, deleteLink: (input: {shareId: string}) => Promise<void>, searchUsers: (query: string) => Promise<Array>}}
  */
 export function buildShareTokenCallbacks({
@@ -67,6 +67,7 @@ export function buildShareTokenCallbacks({
     resourceId,
     contentUrl,
     grantedCapabilities,
+    supportsReadOnly = false,
 } = {}) {
     return {
         fetchMethods: async () => {
@@ -100,6 +101,7 @@ export function buildShareTokenCallbacks({
                     resourceType,
                     resourceId,
                     contentUrl,
+                    supportsReadOnly,
                     label,
                     expiresAt:
                         String(expiresAt ?? "").trim() ||
@@ -140,7 +142,9 @@ export function buildShareTokenCallbacks({
                     body: JSON.stringify({
                         label,
                         expiresAt: String(expiresAt ?? "").trim() || undefined,
-                        password,
+                        password: String(password ?? "").trim()
+                            ? password
+                            : undefined,
                         accessControls,
                         grantedCapabilities: requestedCapabilities,
                     }),

@@ -35,3 +35,7 @@ Das Benutzermenü enthält jetzt eine Seite „Freigaben“, auf der gesendete u
 ## Aktivitäten geteilter Seiten bei Zugriffsende stoppen
 
 Die Whiteboard-Anwesenheit wird nun sofort beendet, wenn eine Freigabe widerrufen wird, und bei der SPA-Navigation vollständig getrennt. Seitenaktionsschaltflächen verwenden eine gemeinsame, über CTX verwaltete Leiste, damit Zeiger-, Design- und Layoutsteuerungen einheitlich angeordnet sind und mit dem Seitenlebenszyklus hinzugefügt, aktualisiert oder entfernt werden können. Freigabedialoge zeigen stets eine Beschriftung „Schließen“, und angemeldete Empfänger von Meeting-Freigaben laden die vollständige Kontoseitenstruktur.
+
+## Freigabeübersicht vereinfachen
+
+Gesendete und empfangene Freigaben erscheinen jetzt in einer einheitlichen, responsiven Tabelle mit klaren Angaben zu Freigabeziel und Freigabequelle. Der Freigabetitel öffnet den Inhalt direkt. Die symbolbasierte Aktion „Verwalten“ öffnet den vorhandenen Freigabeeditor mit den Daten aus der Gateway-Datenbank, sodass Eigentümer Empfänger, Berechtigungen, Namen, Ablaufzeit und Schutz bearbeiten können, ohne die Freigabeseite zu verlassen.
