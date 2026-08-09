@@ -127,6 +127,10 @@ test("share popup adds a created token to history before refetching", () => {
 test("share history supports email delivery and form-based update mode", () => {
     assert.match(popupSource, /data-share-email/);
     assert.match(popupSource, /editingShareId/);
+    assert.match(
+        popupSource,
+        /state\.editingShareId &&[\s\S]*selectedMethodId !== state\.activeMethodId[\s\S]*clearEditMode\(\)/,
+    );
     assert.match(popupSource, /await updateLink/);
     assert.match(
         popupSource,
@@ -298,6 +302,10 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
     assert.match(receivedShareActionSource, /resolveReceivedShare/);
     assert.match(receivedShareActionSource, /useAccountKeyring/);
+    assert.match(
+        receivedShareActionSource,
+        /useAccountKeyring: Boolean\(accessToken\)/,
+    );
     assert.match(receivedShareActionSource, /payload\.data\.navigationUrl/);
     assert.match(receivedShareActionSource, /payload\.data\.guestAccessToken/);
     assert.match(receivedShareActionSource, /\? sharePath/);

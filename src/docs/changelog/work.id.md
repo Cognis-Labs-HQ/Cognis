@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Membuat pengeditan dan berbagi pengguna terlindungi dapat diprediksi
+
+Pembaruan berbagi kini hanya memuat perubahan nyata, pergantian metode berbagi keluar dari mode edit, dan tinggi halaman Berbagi menyesuaikan tabel. Notifikasi berbagi pengguna berpassword meminta satu kali dan dapat menyimpan password terverifikasi ke gantungan kunci penerima yang dituju, sedangkan berbagi tautan publik tetap terpisah dari gantungan kunci akun.
+
 ## Menyederhanakan perilaku berbagi akun dan tamu
 
 Notifikasi berbagi pengguna mempertahankan sesi akun yang ditentukan, sedangkan tautan publik berpassword meminta password tanpa membuka atau menyimpannya di gantungan kunci akun sebelum masuk ke mode tamu. Kolom pembaruan kosong mempertahankan nilai lama, dan dialog berbagi milik modul kini selalu memakai teks password dan penghapusan yang telah diperbaiki.

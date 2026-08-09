@@ -1,5 +1,9 @@
 # Refine share management
 
+## Make editing and protected user shares predictable
+
+Share updates now contain only concrete changes, switching share methods exits edit mode, and the Shares page sizes itself to its table. Password-protected user-share notifications prompt once and may save the verified password to the intended recipient's keyring, while public link shares remain isolated from account keyrings.
+
 ## Simplify authenticated and guest share behavior
 
 User-share notifications retain the designated account session, while password-protected public links prompt without unlocking or saving into an account keyring before entering guest mode. Empty update fields preserve existing values, and module-owned share dialogs now consistently use the corrected password and deletion wording.

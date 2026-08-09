@@ -391,32 +391,35 @@ export function createShareRoutes(input: {
             }
             let flowResult;
             try {
+                const changes = {
+                    ...(typeof body.label === "string" && body.label.trim()
+                        ? { label: body.label }
+                        : {}),
+                    ...(Array.isArray(body.grantedCapabilities) &&
+                    body.grantedCapabilities.length > 0
+                        ? { grantedCapabilities: body.grantedCapabilities }
+                        : {}),
+                    ...(body.accessControls &&
+                    typeof body.accessControls === "object" &&
+                    Object.keys(body.accessControls).length > 0
+                        ? { accessControls: body.accessControls }
+                        : {}),
+                    ...(typeof body.password === "string" &&
+                    body.password.trim()
+                        ? { password: body.password }
+                        : {}),
+                    ...(body.generatePassword === true
+                        ? { generatePassword: true }
+                        : {}),
+                    ...(body.clearPassword === true
+                        ? { clearPassword: true }
+                        : {}),
+                    ...(expiresAt ? { expiresAt } : {}),
+                };
                 flowResult = await input.flow.run("update-share-token", {
                     claims,
                     shareId,
-                    changes: {
-                        label:
-                            typeof body.label === "string"
-                                ? body.label
-                                : undefined,
-                        grantedCapabilities: Array.isArray(
-                            body.grantedCapabilities,
-                        )
-                            ? body.grantedCapabilities
-                            : undefined,
-                        accessControls:
-                            body.accessControls &&
-                            typeof body.accessControls === "object"
-                                ? body.accessControls
-                                : undefined,
-                        password:
-                            typeof body.password === "string"
-                                ? body.password
-                                : null,
-                        generatePassword: body.generatePassword === true,
-                        clearPassword: body.clearPassword === true,
-                        expiresAt,
-                    },
+                    changes,
                 });
             } catch (error) {
                 if (

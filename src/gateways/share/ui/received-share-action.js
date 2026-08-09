@@ -23,7 +23,7 @@ window.addEventListener("cognis:notification-action", (event) => {
                 headers: accessToken
                     ? { authorization: `Bearer ${accessToken}` }
                     : undefined,
-                useAccountKeyring: false,
+                useAccountKeyring: Boolean(accessToken),
             });
             if (!response) return;
             if (response.status === 404) {

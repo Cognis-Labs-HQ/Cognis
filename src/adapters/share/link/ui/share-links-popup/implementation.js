@@ -728,9 +728,18 @@ export async function openShareLinksPopup({
             methodTabs?.addEventListener("click", (event) => {
                 const button = event.target.closest("[data-share-method]");
                 if (!(button instanceof HTMLElement)) return;
-                state.activeMethodId = String(
+                const selectedMethodId = String(
                     button.dataset.shareMethod || "link",
                 );
+                if (
+                    state.editingShareId &&
+                    selectedMethodId !== state.activeMethodId
+                ) {
+                    state.activeMethodId = selectedMethodId;
+                    clearEditMode();
+                    return;
+                }
+                state.activeMethodId = selectedMethodId;
                 renderMethodPage();
             });
 

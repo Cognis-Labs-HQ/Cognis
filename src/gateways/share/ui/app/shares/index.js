@@ -157,7 +157,11 @@ function buildSharesElement(overview, i18n, templates, activeFilter = "all") {
         id: "shares-overview",
         label: i18n.t("share.shares.title"),
         pinned: true,
-        gridSize: { default: [12, 8], min: [6, 4], max: "full" },
+        gridSize: {
+            default: [12, Math.max(2, Math.min(8, visibleShares.length + 2))],
+            min: [6, 2],
+            max: "full",
+        },
         render: () => {
             const section =
                 templates.table.content.firstElementChild.cloneNode(true);

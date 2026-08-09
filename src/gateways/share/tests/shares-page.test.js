@@ -29,6 +29,7 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /destructive \? "btn-cancel"/);
     assert.doesNotMatch(pageSource, /shares-icon-button--danger/);
     assert.match(pageSource, /activeFilter = filter\.dataset\.shareFilter/);
+    assert.match(pageSource, /visibleShares\.length \+ 2/);
     assert.match(pageSource, /\[collection\]: overview\[collection\]\.filter/);
     assert.match(templateSource, /data-share-filter="all"/);
     assert.match(templateSource, /data-share-filter="sent"/);
