@@ -23,3 +23,7 @@ Halaman bersama kini menggunakan kembali satu sesi tamu yang telah diresolusi se
 ## Perbaiki formulir acara Kalender
 
 Formulir acara Kalender kini memuat dependensi pengamanan HTML secara eksplisit sehingga kesalahan `escapeHtml is not defined` tidak lagi terjadi saat membuka atau membuat acara.
+
+## Sempurnakan akses Meeting bersama
+
+Dialog berbagi kini menggunakan tindakan Tutup yang netral dan tindakan Cabut yang destruktif. Meeting yang dibagikan kepada pengguna mempertahankan struktur halaman lengkap tanpa menampilkan kontrol untuk membagikannya kembali, sedangkan tautan yang ditolak berhenti di layar akses dan tidak dimuat ulang berulang kali.

@@ -105,7 +105,7 @@ export async function bindShareButton({
                         generateLink: i18n.t(
                             "module.jitsi_meet.share.generate_link",
                         ),
-                        done: i18n.t("ui.reuse.done"),
+                        close: i18n.t("ui.reuse.close"),
                         createFailed: i18n.t(
                             "module.jitsi_meet.share.create_failed",
                         ),

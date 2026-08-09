@@ -23,3 +23,7 @@ Shared pages now reuse one resolved guest session for their full lifecycle inste
 ## Fix Calendar event forms
 
 Calendar event forms now load their HTML escaping dependency explicitly, preventing an `escapeHtml is not defined` error when opening or creating events.
+
+## Refine shared Meeting access
+
+Share dialogs now use a neutral Close action and a destructive Revoke action. User-shared Meetings retain the full page structure without exposing resharing controls, while denied link shares stop on the access screen instead of repeatedly reloading.

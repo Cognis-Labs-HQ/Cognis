@@ -558,7 +558,7 @@ async function openSharePopup() {
                 generateLink: translateModuleString(
                     "module.nextcloud_whiteboard.share_generate_link",
                 ),
-                done: translateModuleString("ui.reuse.done"),
+                close: translateModuleString("ui.reuse.close"),
                 createFailed: translateModuleString(
                     "module.nextcloud_whiteboard.share_create_failed",
                 ),

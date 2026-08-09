@@ -45,7 +45,7 @@ async function openCalendarSharePopup({ calendar, i18n }) {
             updateUserShare: i18n.t("gateway.calendar.share_user_update"),
             shareWithPrefix: i18n.t("gateway.calendar.share_with_prefix"),
             usersCountLabel: i18n.t("gateway.calendar.share_users_count"),
-            done: i18n.t("ui.reuse.done"),
+            close: i18n.t("ui.reuse.close"),
             createFailed: i18n.t("gateway.calendar.share_link_failed"),
             duplicateUserShare: i18n.t("gateway.calendar.share_user_duplicate"),
             copySuccess: i18n.t("gateway.calendar.share_link_copied"),

@@ -115,7 +115,7 @@ test("jitsi meeting window has light-theme overlay overrides", () => {
 test("meetings page composer uses a dedicated layout preference key", () => {
     const source = readJitsiUiBundle();
     assert.match(source, /preferenceKey:\s*"meetings-layout-v3"/);
-    assert.match(source, /requireAccountSession:\s*!inShareView/);
+    assert.match(source, /requireAccountSession:\s*!limitedShareView/);
 });
 
 test("jitsi meetings embed gates privileged settings by local moderator role and uses reduced toolbar", () => {
@@ -716,4 +716,13 @@ test("meeting shares use the Cognis route and skip account setup", () => {
         appSource,
         /if \(!inShareView\) await ensureFullAccountSession\(\)/,
     );
+    assert.match(
+        appSource,
+        /limitedShareView =\s*inShareView && shareContext\?\.directAccess !== true/,
+    );
+    assert.match(
+        appSource,
+        /createMeetingPageElements\(i18n, limitedShareView\)/,
+    );
+    assert.match(appSource, /if \(!inShareView\) \{[\s\S]*bindShareButton/);
 });

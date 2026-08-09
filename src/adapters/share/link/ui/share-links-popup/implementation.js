@@ -260,7 +260,13 @@ async function showSharePasswordPopup(password, labels) {
         title: labels.passwordPopupTitle || labels.password,
         body: () =>
             `<div class="share-password-result">${renderSecretVisibilityField({ id: "created-share-password", value: normalizedPassword, label: labels.passwordPopupLabel || labels.password, toggleLabel: labels.passwordReveal, escapeHtml })}<button type="button" class="btn-confirm" data-share-password-copy>${escapeHtml(labels.passwordCopy || labels.copyLink)}</button></div>`,
-        actions: [{ id: "done", label: labels.done, variant: "confirm" }],
+        actions: [
+            {
+                id: "done",
+                label: labels.close || labels.done,
+                variant: "neutral",
+            },
+        ],
         onOpen(overlay) {
             bindSecretVisibilityToggles({ root: overlay });
             overlay
@@ -447,8 +453,8 @@ export async function openShareLinksPopup({
         actions: [
             {
                 id: "done",
-                label: labels.done,
-                variant: "confirm",
+                label: labels.close || labels.done,
+                variant: "neutral",
             },
         ],
         onOpen: (overlay) => {
@@ -921,12 +927,12 @@ export async function openShareLinksPopup({
                         {
                             id: "confirm",
                             label: labels.confirm || labels.revoke,
-                            variant: "danger",
+                            variant: "cancel",
                         },
                         {
                             id: "cancel",
                             label: labels.cancel || labels.done,
-                            variant: "cancel",
+                            variant: "neutral",
                         },
                     ],
                 });

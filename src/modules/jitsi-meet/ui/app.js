@@ -59,6 +59,7 @@ export async function mount(
 ) {
     const shareContext = routedShareContext ?? getShareContext();
     const inShareView = shareContext !== null;
+    const limitedShareView = inShareView && shareContext?.directAccess !== true;
     if (!inShareView) await ensureFullAccountSession();
     const resolvedMeetingId =
         requestedMeetingId ||
@@ -897,7 +898,7 @@ export async function mount(
         renderParticipants();
         void updateNativeChat();
     }
-    const elements = createMeetingPageElements(i18n, inShareView);
+    const elements = createMeetingPageElements(i18n, limitedShareView);
 
     const [allParticipants, currentProfile] = await Promise.all([
         fetchParticipants(""),
@@ -918,7 +919,7 @@ export async function mount(
     }));
 
     const composer = createPageComposer(root, {
-        allowCustomization: !inShareView,
+        allowCustomization: !limitedShareView,
         enableDomParking: true,
         elements,
         preferenceKey: "meetings-layout-v3",
@@ -928,11 +929,11 @@ export async function mount(
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
         showTopbar: true,
-        showNavbar: !inShareView,
+        showNavbar: !limitedShareView,
         showFooter: true,
         showThemeToggle: true,
-        requireAccountSession: !inShareView,
-        persistLayoutPreferences: !inShareView,
+        requireAccountSession: !limitedShareView,
+        persistLayoutPreferences: !limitedShareView,
         frameless: false,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);

@@ -23,3 +23,7 @@ Geteilte Seiten verwenden nun während ihres gesamten Lebenszyklus dieselbe aufg
 ## Kalender-Ereignisformulare repariert
 
 Kalender-Ereignisformulare laden ihre Abhängigkeit zur HTML-Escapierung jetzt ausdrücklich. Dadurch tritt beim Öffnen oder Erstellen von Ereignissen kein Fehler `escapeHtml is not defined` mehr auf.
+
+## Zugriff auf geteilte Meetings verbessert
+
+Freigabedialoge verwenden jetzt eine neutrale Aktion „Schließen“ und eine destruktive Aktion „Widerrufen“. Für Benutzer freigegebene Meetings behalten die vollständige Seitenstruktur bei, ohne Steuerelemente zum erneuten Teilen anzuzeigen. Abgelehnte Link-Freigaben bleiben auf der Zugriffsseite, statt wiederholt neu zu laden.

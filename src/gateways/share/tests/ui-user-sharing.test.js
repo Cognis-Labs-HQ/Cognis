@@ -176,6 +176,17 @@ test("user share permissions constrain granted capabilities", async () => {
     );
 });
 
+test("share popup uses neutral close and destructive revoke actions", () => {
+    assert.match(
+        popupSource,
+        /label: labels\.close \|\| labels\.done,[\s\S]*variant: "neutral"/,
+    );
+    assert.match(
+        popupSource,
+        /label: labels\.confirm \|\| labels\.revoke,[\s\S]*variant: "cancel"/,
+    );
+});
+
 test("share origins can suppress read-only choices", async () => {
     assert.match(popupSource, /supportsReadOnly = false/);
     assert.match(
@@ -217,6 +228,14 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
         /capabilities\.contribute\("session:isGuest", isViewingAsGuest\)/,
     );
     assert.match(sessionFlowSource, /guestKeyring: shareData\.guestKeyring/);
+    assert.match(
+        sessionFlowSource,
+        /directAccess: shareData\.directAccess === true/,
+    );
+    assert.match(
+        sessionFlowSource,
+        /ACCESS_DENIED_TOKEN_KEY\) === shareToken[\s\S]*share_access_denied/,
+    );
     assert.match(sessionFlowSource, /keyring:activateTemporary/);
     assert.match(sessionFlowSource, /await activateGuestToken/);
     assert.match(sessionFlowSource, /activeGuestSession\?\.shareToken/);

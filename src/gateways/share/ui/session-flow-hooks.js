@@ -209,6 +209,10 @@ uiCtx.extendFlow(
             }
             return null;
         }
+        if (sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken) {
+            sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
+            return { authenticated: false, reason: "share_access_denied" };
+        }
 
         if (
             isViewingAsGuest() &&
@@ -288,6 +292,7 @@ uiCtx.extendFlow(
             guestAccessToken: shareData.guestAccessToken ?? null,
             guestProfile: shareData.guestProfile ?? null,
             guestKeyring: shareData.guestKeyring ?? null,
+            directAccess: shareData.directAccess === true,
         };
 
         if (hasValidatedAccountSession && shareData.directAccess === true) {
