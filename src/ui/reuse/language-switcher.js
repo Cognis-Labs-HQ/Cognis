@@ -15,6 +15,7 @@
 import { readPreferredLanguages, setPreferredLanguages } from "./i18n.js";
 import { saveUiPreferences } from "./ui-preferences.js";
 import { showToast } from "./toast.js";
+import { navigateToSettingsSection } from "./settings-navigation.js";
 
 const LANGUAGE_COMMIT_DELAY_MS = 5000;
 
@@ -48,7 +49,7 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
     existingButton.replaceWith(button);
 
     const languages = readPreferredLanguages();
-    const enabled = preferences?.languageSwitcherShow === true;
+    const enabled = preferences?.languageSwitcherShow !== false;
     button.hidden = !enabled || languages.length < 2;
     if (button.hidden) return;
 
@@ -67,6 +68,10 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
 
     renderSelection();
     button.dataset.languageSwitcherBound = "true";
+    button.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        navigateToSettingsSection("language");
+    });
     button.addEventListener("click", () => {
         selectedLanguage = getNextLanguage(languages, selectedLanguage);
         renderSelection();

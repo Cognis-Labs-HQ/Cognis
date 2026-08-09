@@ -10,6 +10,8 @@
  *   import { bindThemeToggle } from '../reuse/theme-toggle.js';
  *   bindThemeToggle({ onThemeChange: async (mode) => savePrefs({ mode }) });
  */
+import { navigateToSettingsSection } from "./settings-navigation.js";
+
 const THEME_KEY = "cognis_theme";
 const TOGGLE_HANDLER_KEY = "__cognisThemeToggleHandler";
 const TOGGLE_OPTIONS_KEY = "__cognisThemeToggleOptions";
@@ -84,4 +86,8 @@ export function bindThemeToggle(options = {}) {
     };
     toggle[TOGGLE_HANDLER_KEY] = handler;
     toggle.addEventListener("click", handler);
+    toggle.addEventListener("contextmenu", (event) => {
+        event.preventDefault();
+        navigateToSettingsSection("appearance");
+    });
 }

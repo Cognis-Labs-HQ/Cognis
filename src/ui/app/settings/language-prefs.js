@@ -13,7 +13,7 @@ async function loadLanguagesCatalog() {
 export function initLanguagePrefs(
     root,
     initialPriority,
-    { initialSwitcherShow = false, onDirtyChange } = {},
+    { initialSwitcherShow = true, onDirtyChange } = {},
 ) {
     let languagePriority = [...initialPriority];
     let savedPriority = [...initialPriority];

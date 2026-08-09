@@ -492,6 +492,21 @@ export async function mount(root, { signal } = {}) {
                 heading: i18n.t("ui.reuse.language"),
                 elements: [
                     {
+                        id: "language-switcher",
+                        label: i18n.t("ui.app.settings.language_switcher"),
+                        render: () => `
+            <div class="components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.language_switcher")}</h3>
+              <div class="components-section-body">
+                <label class="switch">
+                  <input id="pref-language-switcher-show" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          `,
+                    },
+                    {
                         id: "available-languages",
                         label: i18n.t("ui.app.settings.available_languages"),
                         render: () => `
@@ -510,15 +525,6 @@ export async function mount(root, { signal } = {}) {
               <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
             </div>
             <table id="preferred-languages" class="language-table"></table>
-            <div class="components-section">
-              <h3 class="components-section-heading">${i18n.t("ui.app.settings.language_switcher")}</h3>
-              <div class="components-section-body">
-                <label class="switch">
-                  <input id="pref-language-switcher-show" type="checkbox" />
-                  <span class="slider"></span>
-                </label>
-              </div>
-            </div>
           `,
                     },
                 ],
@@ -529,7 +535,7 @@ export async function mount(root, { signal } = {}) {
                             languagePriority,
                             {
                                 initialSwitcherShow:
-                                    loadedPrefs?.languageSwitcherShow === true,
+                                    loadedPrefs?.languageSwitcherShow !== false,
                                 onDirtyChange: (dirty) =>
                                     markDirty("language", dirty),
                             },
@@ -752,7 +758,7 @@ export async function mount(root, { signal } = {}) {
                 languageSwitcherShow:
                     languagePrefs?.getSwitcherShow() ??
                     loadedPrefs?.languageSwitcherShow ??
-                    false,
+                    true,
                 mode,
                 timezone:
                     datetimePrefs?.getTimezone() ??

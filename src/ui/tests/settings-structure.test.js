@@ -20,3 +20,14 @@ test("language headings keep actions outside heading elements", () => {
         /settings-language-heading-row components-section-heading">[\s\S]*<h3>[\s\S]*preferred_languages[\s\S]*<\/h3>[\s\S]*pref-language-sync-from-browser/,
     );
 });
+
+test("language switcher setting is registered before language tables", () => {
+    const switcherIndex = source.indexOf('id: "language-switcher"');
+    const availableLanguagesIndex = source.indexOf('id: "available-languages"');
+    const preferredLanguagesIndex = source.indexOf('id: "preferred-languages"');
+
+    assert.ok(switcherIndex >= 0);
+    assert.ok(switcherIndex < availableLanguagesIndex);
+    assert.ok(switcherIndex < preferredLanguagesIndex);
+    assert.match(source, /languageSwitcherShow !== false/);
+});
