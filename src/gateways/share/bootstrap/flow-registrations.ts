@@ -677,6 +677,9 @@ export async function registerShareBootstrapHooks(input: {
                 ),
                 expiresAt: String(tokenResult.tokenRecord?.expiresAt ?? ""),
                 payload: resourceResult.payload ?? {},
+                contentUrl: String(
+                    tokenResult.tokenRecord?.metadata?.contentUrl ?? "",
+                ),
                 directAccess: accessResult?.directAccess === true,
                 guestAccessToken:
                     typeof stageCtx.data.guestAccessToken === "string"

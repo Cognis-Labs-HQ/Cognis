@@ -375,7 +375,16 @@ async function loadRoute(path) {
     const session =
         (authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
 
-    if (session?.isGuestSession === true && !isGuestAllowedPath(path)) {
+    const isGuestContentPath =
+        uiCtx.capabilities.get("session:isGuestAllowedPath")?.(
+            new URL(path, window.location.origin).pathname +
+                new URL(path, window.location.origin).search,
+        ) === true;
+    if (
+        session?.isGuestSession === true &&
+        !isGuestAllowedPath(path) &&
+        !isGuestContentPath
+    ) {
         await openGuestBlockedPopup({ currentRoutePath: path });
         return false;
     }
@@ -458,14 +467,14 @@ async function loadRoute(path) {
 
 export async function navigateTo(path) {
     const route = await resolveRoute(path);
-    if (!route) return;
+    if (!route) return false;
     if (isPotentialStudyChildPath(path)) {
         const component = await resolveStudyChildComponent(path);
-        if (!component) return;
+        if (!component) return false;
     }
     const previousRouterPage = getCurrentRoutePath();
     history.pushState({ routerPage: path, previousRouterPage }, "", path);
-    await loadRoute(path);
+    return loadRoute(path);
 }
 
 /**

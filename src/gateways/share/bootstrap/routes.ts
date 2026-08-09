@@ -603,6 +603,7 @@ export function createShareRoutes(input: {
                 ownerAccountId?: string;
                 expiresAt?: string;
                 payload?: Record<string, unknown>;
+                contentUrl?: string;
                 directAccess?: boolean;
                 grantedCapabilities?: string[];
                 accessControls?: Record<string, unknown>;
@@ -641,6 +642,7 @@ export function createShareRoutes(input: {
                     resourceType: resolved.resourceType,
                     resourceId: resolved.resourceId,
                     payload: resolved.payload ?? {},
+                    contentUrl: resolved.contentUrl ?? "",
                     directAccess: resolved.directAccess === true,
                     grantedCapabilities: resolved.grantedCapabilities ?? [],
                     accessControls: resolved.accessControls ?? {},

@@ -85,8 +85,22 @@ test("share token schema declares resource and token columns", async () => {
         (def) => def.name === "share_tokens",
     );
     assert.ok(tableDef);
+    const resourceTableDef = executor.tableDefs.find(
+        (def) => def.name === "share_resources",
+    );
+    assert.ok(resourceTableDef);
     const columnNames = tableDef.columns.map((column) => column.name);
     assert.ok(columnNames.includes("resource_type"));
+    assert.ok(columnNames.includes("resource_key"));
+    assert.deepEqual(
+        tableDef.columns.find((column) => column.name === "resource_key")
+            ?.references,
+        {
+            table: "share_resources",
+            column: "resource_key",
+            onDelete: "CASCADE",
+        },
+    );
     assert.ok(columnNames.includes("resource_id"));
     assert.ok(columnNames.includes("metadata"));
     assert.ok(columnNames.includes("token_value"));

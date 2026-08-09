@@ -1,4 +1,9 @@
-import { pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
+import {
+    createHash,
+    pbkdf2Sync,
+    randomBytes,
+    timingSafeEqual,
+} from "node:crypto";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
@@ -27,6 +32,7 @@ export interface ShareAccessControls {
 
 export interface ShareTokenRecord {
     id: string;
+    resourceKey: string;
     ownerAccountId: string;
     resourceType: string;
     resourceId: string;
@@ -210,6 +216,7 @@ const EXPIRED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     const id = String(row.id ?? "").trim();
     const ownerAccountId = String(row.owner_account_id ?? "").trim();
+    const resourceKey = String(row.resource_key ?? "").trim();
     const resourceType = String(row.resource_type ?? "").trim();
     const resourceId = String(row.resource_id ?? "").trim();
     const tokenValue = String(row.token_value ?? "").trim();
@@ -220,6 +227,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     if (
         !id ||
         !ownerAccountId ||
+        !resourceKey ||
         !resourceType ||
         !resourceId ||
         !tokenValue ||
@@ -231,6 +239,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     }
     return {
         id,
+        resourceKey,
         ownerAccountId,
         resourceType,
         resourceId,
@@ -279,9 +288,30 @@ export class ShareTokenStore {
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
+            name: "share_resources",
+            columns: [
+                { name: "resource_key", type: "text", primaryKey: true },
+                { name: "resource_type", type: "text", notNull: true },
+                { name: "resource_id", type: "text", notNull: true },
+                { name: "content_url", type: "text", notNull: true },
+                { name: "created_at", type: "text", notNull: true },
+            ],
+            uniqueKeys: [["resource_type", "resource_id", "content_url"]],
+        });
+        await this.db.ensureTable({
             name: "share_tokens",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "resource_key",
+                    type: "text",
+                    notNull: true,
+                    references: {
+                        table: "share_resources",
+                        column: "resource_key",
+                        onDelete: "CASCADE",
+                    },
+                },
                 { name: "owner_account_id", type: "text", notNull: true },
                 { name: "resource_type", type: "text", notNull: true },
                 { name: "resource_id", type: "text", notNull: true },
@@ -312,12 +342,38 @@ export class ShareTokenStore {
     }): Promise<ShareTokenRecord> {
         const token = issueShareTokenValue();
         const createdAt = new Date().toISOString();
+        const resourceType = String(input.resourceType ?? "").trim();
+        const resourceId = String(input.resourceId ?? "").trim();
+        const metadata = normalizeMetadata(input.metadata);
+        const contentUrl = String(metadata?.contentUrl ?? "").trim();
+        const resourceKey = createHash("sha256")
+            .update(`${resourceType}\u0000${resourceId}\u0000${contentUrl}`)
+            .digest("hex");
+        const existingResource = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_resources",
+            where: [{ column: "resource_key", value: resourceKey }],
+        });
+        if ((existingResource.rows ?? []).length === 0) {
+            await this.db.executeCommand({
+                option: "INSERT",
+                table: "share_resources",
+                values: {
+                    resource_key: resourceKey,
+                    resource_type: resourceType,
+                    resource_id: resourceId,
+                    content_url: contentUrl,
+                    created_at: createdAt,
+                },
+            });
+        }
         const record: ShareTokenRecord = {
             id: token.tokenId,
+            resourceKey,
             ownerAccountId: String(input.ownerAccountId ?? "").trim(),
-            resourceType: String(input.resourceType ?? "").trim(),
-            resourceId: String(input.resourceId ?? "").trim(),
-            metadata: normalizeMetadata(input.metadata),
+            resourceType,
+            resourceId,
+            metadata,
             tokenValue: token.tokenValue,
             tokenHash: token.tokenHash,
             passwordHash: input.password
@@ -340,6 +396,7 @@ export class ShareTokenStore {
             table: "share_tokens",
             values: {
                 id: record.id,
+                resource_key: record.resourceKey,
                 owner_account_id: record.ownerAccountId,
                 resource_type: record.resourceType,
                 resource_id: record.resourceId,

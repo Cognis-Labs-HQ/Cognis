@@ -55,6 +55,16 @@ const ACCOUNT_KEY = "cognis_account";
 let activeGuestSession = null;
 
 uiCtx.capabilities.contribute("session:isGuest", isViewingAsGuest);
+uiCtx.capabilities.contribute("session:isGuestAllowedPath", (path) => {
+    const contentUrl = activeGuestSession?.session?.shareContext?.contentUrl;
+    if (!contentUrl) return false;
+    const expectedUrl = new URL(contentUrl, window.location.origin);
+    const requestedUrl = new URL(path, window.location.origin);
+    return (
+        expectedUrl.pathname === requestedUrl.pathname &&
+        expectedUrl.search === requestedUrl.search
+    );
+});
 
 const SHARE_GUEST_PAGE_DEFAULTS = Object.freeze({
     showNavbar: false,
@@ -234,6 +244,7 @@ uiCtx.extendFlow(
             resourceType: shareData.resourceType,
             resourceId: shareData.resourceId ?? null,
             payload: shareData.payload ?? {},
+            contentUrl: String(shareData.contentUrl ?? "").trim(),
             grantedCapabilities: Array.isArray(shareData.grantedCapabilities)
                 ? shareData.grantedCapabilities
                 : [],

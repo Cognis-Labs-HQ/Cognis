@@ -252,6 +252,17 @@ test("share session-flow-hooks.js defaults guest share chrome to hidden", () => 
     );
 });
 
+test("share sessions authorize only their stored internal content route", () => {
+    const shareSource = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(shareSource, /session:isGuestAllowedPath/);
+    assert.match(shareSource, /shareContext\?\.contentUrl/);
+    assert.match(routerSource, /session:isGuestAllowedPath/);
+});
+
 test("page actions can defer popup work until mounting has completed", () => {
     const contractsSource = readFileSync(FLOW_REGISTRY_PATH, "utf8");
     const registrySource = readFileSync(

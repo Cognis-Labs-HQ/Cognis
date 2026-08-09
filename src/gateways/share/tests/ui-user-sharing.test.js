@@ -226,6 +226,8 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
 });
 
 test("component page renderers receive the root used by meeting shares", () => {
+    assert.match(shareAppSource, /navigateTo\(shareContext\.contentUrl\)/);
+    assert.match(shareAppSource, /if \(navigated\) return/);
     assert.match(shareAppSource, /root\.replaceChildren\(\)/);
     assert.match(shareAppSource, /mountSharedPage\(root/);
     assert.doesNotMatch(shareAppSource, /preserveShareShell/);

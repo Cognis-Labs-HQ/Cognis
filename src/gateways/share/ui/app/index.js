@@ -10,6 +10,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
 function renderFallbackBody(i18n, messageKey) {
@@ -148,6 +149,16 @@ export async function mount(root, { signal } = {}) {
     if (!session?.authenticated) {
         state.loading = false;
         state.errorKey = "share.error.expired";
+        updatePageDescriptor(root, state.i18n, state.errorKey);
+        composer.refresh([buildShareElement(state)]);
+        return;
+    }
+
+    if (shareContext.contentUrl) {
+        const navigated = await navigateTo(shareContext.contentUrl);
+        if (navigated) return;
+        state.loading = false;
+        state.errorKey = "share.error.renderer_missing";
         updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
