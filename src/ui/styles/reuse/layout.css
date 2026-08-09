@@ -611,6 +611,25 @@ button.dropdown-item {
     z-index: 1000;
     font-size: 1.25rem;
 }
+.language-switcher {
+    position: fixed;
+    right: 18px;
+    bottom: 78px;
+    width: 48px;
+    height: 48px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--theme-toggle-bg);
+    color: var(--theme-toggle-color);
+    cursor: pointer;
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+.language-switcher:hover {
+    background: var(--theme-toggle-bg-hover);
+}
 .theme-toggle[data-mode="light"] {
     color: #f59e0b;
 }

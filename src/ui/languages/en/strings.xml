@@ -393,6 +393,9 @@
   <string name="ui.app.settings.available_languages">Available languages</string>
   <string name="ui.app.settings.preferred_languages">Preferred languages</string>
   <string name="ui.app.settings.sync_from_browser">Sync from browser</string>
+  <string name="ui.app.settings.language_switcher">Always Show Language Switcher</string>
+  <string name="ui.layout.language_switcher.aria">Switch language; {language} selected</string>
+  <string name="ui.layout.language_switcher.error">The language preference could not be saved.</string>
   <string name="ui.reuse.edit_layout">Edit Layout</string>
   <string name="ui.reuse.elements">Elements</string>
   <string name="ui.reuse.all_elements_visible">All elements are visible.</string>

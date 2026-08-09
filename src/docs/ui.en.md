@@ -1,5 +1,9 @@
 # UI
 
+## Language switcher
+
+Users can enable the persistent language switcher under User Settings → Languages. The dashboard button cycles through preferred languages and confirms the last selection after five seconds.
+
 ## Overview
 
 `src/ui/` hosts the Cognis browser frontend. It provides the study workflows, social interaction surfaces, administration panels, and the embedded documentation browser. The UI is a server-rendered multi-page application: each page is an HTML file with its own JavaScript entry point; shared layout shells and reuse utilities keep common behaviour consistent across pages.

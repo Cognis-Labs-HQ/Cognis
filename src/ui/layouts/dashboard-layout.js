@@ -28,6 +28,7 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
+import { bindLanguageSwitcher } from "../reuse/language-switcher.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -107,7 +108,7 @@ function isNavigationLinkActive(currentPath, href) {
     );
 }
 
-async function bindThemeToggle({ usePreferenceApi = true } = {}) {
+async function bindThemeToggle({ usePreferenceApi = true, i18n } = {}) {
     if (!usePreferenceApi) {
         bindSharedThemeToggle();
         return;
@@ -115,6 +116,7 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
 
     const prefs = await loadUiPreferences();
     applyUiPreferences(prefs);
+    bindLanguageSwitcher({ preferences: prefs, i18n });
     applyTimezoneToLocalStorage(
         prefs?.timezone ?? null,
         prefs?.detectedTimezone ?? null,
@@ -681,7 +683,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
-    bindThemeToggle({ usePreferenceApi });
+    bindThemeToggle({ usePreferenceApi, i18n });
     registerServiceWorker();
 }
 

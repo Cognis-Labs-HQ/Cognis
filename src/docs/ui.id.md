@@ -1,5 +1,9 @@
 # UI
 
+## Pengalih bahasa
+
+Pengguna dapat mengaktifkan pengalih bahasa tetap melalui Pengaturan Pengguna → Bahasa. Tombol dasbor menelusuri bahasa pilihan dan mengonfirmasi pilihan terakhir setelah lima detik.
+
 ## Ikhtisar
 
 `src/ui/` menjadi tuan rumah frontend browser Cognis. Menyediakan alur kerja studi, permukaan interaksi sosial, panel administrasi, dan browser dokumentasi yang tertanam. UI adalah aplikasi multi-halaman yang di-render oleh server.

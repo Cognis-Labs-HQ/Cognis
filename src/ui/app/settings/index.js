@@ -39,6 +39,7 @@ import { registerSearchIndex } from "../../reuse/search-util/popup.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { showToast } from "../../reuse/toast.js";
+import { bindLanguageSwitcher } from "../../reuse/language-switcher.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
@@ -509,6 +510,15 @@ export async function mount(root, { signal } = {}) {
               <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
             </div>
             <table id="preferred-languages" class="language-table"></table>
+            <div class="components-section">
+              <h3 class="components-section-heading">${i18n.t("ui.app.settings.language_switcher")}</h3>
+              <div class="components-section-body">
+                <label class="switch">
+                  <input id="pref-language-switcher-show" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
           `,
                     },
                 ],
@@ -518,6 +528,8 @@ export async function mount(root, { signal } = {}) {
                             root,
                             languagePriority,
                             {
+                                initialSwitcherShow:
+                                    loadedPrefs?.languageSwitcherShow === true,
                                 onDirtyChange: (dirty) =>
                                     markDirty("language", dirty),
                             },
@@ -737,6 +749,10 @@ export async function mount(root, { signal } = {}) {
                     loadedPrefs,
                     storedLanguagePriorityMode,
                 ),
+                languageSwitcherShow:
+                    languagePrefs?.getSwitcherShow() ??
+                    loadedPrefs?.languageSwitcherShow ??
+                    false,
                 mode,
                 timezone:
                     datetimePrefs?.getTimezone() ??
@@ -764,6 +780,8 @@ export async function mount(root, { signal } = {}) {
                     prefs.languagePriority = selectedPrefs.languagePriority;
                     prefs.languagePriorityMode =
                         selectedPrefs.languagePriorityMode;
+                    prefs.languageSwitcherShow =
+                        selectedPrefs.languageSwitcherShow;
                 }
                 if (themePrefs?.isDirty()) {
                     prefs.mode = selectedPrefs.mode;
@@ -795,6 +813,7 @@ export async function mount(root, { signal } = {}) {
                 JSON.stringify(prefs),
             );
             applyUiPreferences(prefs); // apply font/theme/timezone to live page without reload
+            bindLanguageSwitcher({ preferences: prefs, i18n });
             fontPrefs?.commit();
             themePrefs?.commit();
             messageStylePrefs?.commit();

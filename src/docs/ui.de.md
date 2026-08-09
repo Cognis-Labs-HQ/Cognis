@@ -1,5 +1,9 @@
 # UI
 
+## Sprachumschalter
+
+Benutzer können den dauerhaften Sprachumschalter unter Benutzereinstellungen → Sprachen aktivieren. Die Schaltfläche wechselt durch die bevorzugten Sprachen und bestätigt die letzte Auswahl nach fünf Sekunden.
+
 ## Überblick
 
 `src/ui/` hostet das Cognis-Browser-Frontend. Es stellt die Studieworkflows, sozialen Interaktionsoberflächen, Administrationspanels und den eingebetteten Dokumentationsbrowser bereit. Die UI ist eine server-seitig gerenderte Multi-Page-Anwendung.

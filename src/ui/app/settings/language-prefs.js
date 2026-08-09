@@ -13,12 +13,14 @@ async function loadLanguagesCatalog() {
 export function initLanguagePrefs(
     root,
     initialPriority,
-    { onDirtyChange } = {},
+    { initialSwitcherShow = false, onDirtyChange } = {},
 ) {
     let languagePriority = [...initialPriority];
     let savedPriority = [...initialPriority];
     let catalog = [];
     let pendingMode = null;
+    let switcherShow = initialSwitcherShow;
+    let savedSwitcherShow = initialSwitcherShow;
 
     function getSupportedLanguageCodes() {
         return catalog.map((item) => item.iso_code);
@@ -26,7 +28,9 @@ export function initLanguagePrefs(
 
     function notifyDirty() {
         const dirty =
-            JSON.stringify(languagePriority) !== JSON.stringify(savedPriority);
+            JSON.stringify(languagePriority) !==
+                JSON.stringify(savedPriority) ||
+            switcherShow !== savedSwitcherShow;
         onDirtyChange?.(dirty);
     }
 
@@ -264,11 +268,17 @@ export function initLanguagePrefs(
 
     function commit() {
         savedPriority = [...languagePriority];
+        savedSwitcherShow = switcherShow;
         pendingMode = null;
     }
 
     function discard() {
         languagePriority = [...savedPriority];
+        switcherShow = savedSwitcherShow;
+        const switcherInput = root.querySelector(
+            "#pref-language-switcher-show",
+        );
+        if (switcherInput) switcherInput.checked = switcherShow;
         pendingMode = null;
         renderTables();
         notifyDirty();
@@ -287,6 +297,16 @@ export function initLanguagePrefs(
             getSupportedLanguageCodes(),
         );
         renderTables();
+        const switcherInput = root.querySelector(
+            "#pref-language-switcher-show",
+        );
+        if (switcherInput) {
+            switcherInput.checked = switcherShow;
+            switcherInput.addEventListener("change", () => {
+                switcherShow = switcherInput.checked;
+                notifyDirty();
+            });
+        }
     }
 
     return {
@@ -303,8 +323,11 @@ export function initLanguagePrefs(
         },
         getPendingMode: () => pendingMode,
         getPriority: () => languagePriority,
+        getSwitcherShow: () => switcherShow,
         isDirty: () =>
-            JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),
+            JSON.stringify(languagePriority) !==
+                JSON.stringify(savedPriority) ||
+            switcherShow !== savedSwitcherShow,
         commit,
         discard,
     };

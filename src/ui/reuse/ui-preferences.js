@@ -42,7 +42,7 @@ export async function saveUiPreferences(patch) {
     if (!account || !hasPreferenceApiContext()) return;
     const current = await loadUiPreferences();
     const merged = { ...(current || {}), ...patch };
-    await apiFetch(
+    const response = await apiFetch(
         `/api/v1/social/users/${encodeURIComponent(account)}/preferences/ui-preferences`,
         {
             method: "PUT",
@@ -50,6 +50,9 @@ export async function saveUiPreferences(patch) {
             body: JSON.stringify({ layout: merged }),
         },
     );
+    if (!response.ok) {
+        throw new Error("ui_preferences_save_failed");
+    }
 }
 
 export function applyUiPreferences(prefs) {
