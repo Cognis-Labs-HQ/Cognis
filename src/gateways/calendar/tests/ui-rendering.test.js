@@ -13,6 +13,10 @@ const HELPERS_SOURCE = ["calendar-ui-helpers.js", "event-composer.js"]
         ),
     )
     .join("\n");
+const EVENT_COMPOSER_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/event-composer.js"),
+    "utf8",
+);
 const PENDING_RENDER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-pending-render.js"),
     "utf8",
@@ -90,6 +94,14 @@ const CALENDAR_ROUTES_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/bootstrap/calendar-routes.ts"),
     "utf8",
 );
+
+test("calendar event composer imports its HTML escaping dependency", () => {
+    assert.match(
+        EVENT_COMPOSER_SOURCE,
+        /import \{ escapeHtml \} from "\/static\/reuse\/escape-html\.js";/,
+    );
+    assert.match(EVENT_COMPOSER_SOURCE, /createFormBuilder\([\s\S]*escapeHtml/);
+});
 const SHARED_PASSWORD_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/bootstrap/shared-password.ts"),
     "utf8",

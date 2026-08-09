@@ -1,4 +1,5 @@
 import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 
 const EVENT_STATUS_OPTIONS = ["busy", "free"];
 const EVENT_RECURRENCE_OPTIONS = [
