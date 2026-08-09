@@ -10,6 +10,10 @@ const POPUP_ENTRY_URL = new URL(
     "../ui/share-links-popup/index.js",
     import.meta.url,
 );
+const POPUP_BODY_URL = new URL(
+    "../ui/share-links-popup/body.js",
+    import.meta.url,
+);
 const STYLESHEET_URL = new URL(
     "../ui/share-links-popup/index.css",
     import.meta.url,
@@ -66,8 +70,19 @@ test("share deletion requires explicit confirmation", () => {
 
 test("share popup can open directly in database-backed edit mode", () => {
     const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+    const bodySource = readFileSync(POPUP_BODY_URL, "utf8");
 
     assert.match(source, /initialEditingShareId = ""/);
     assert.match(source, /function selectShareForEditing\(selectedShare\)/);
     assert.match(source, /state\.links\.find\([\s\S]*initialEditingShareId/);
+    assert.match(source, /initialEditingShare = null/);
+    assert.match(source, /editOnly = false/);
+    assert.match(source, /state\.links = \[initialShare\]/);
+    assert.match(bodySource, /share-links-popup--edit-only/);
+    assert.match(source, /updateButton\?\.classList\.add\("btn-neutral"\)/);
+    assert.match(
+        bodySource,
+        /editOnly[\s\S]*\? ""[\s\S]*: `<nav class="share-method-tabs"/,
+    );
+    assert.match(source, /if \(!editOnly\) \{[\s\S]*window\.setInterval\(/);
 });

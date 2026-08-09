@@ -23,7 +23,11 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /data-share-manage/);
     assert.match(pageSource, /share:openLinksPopup/);
     assert.match(pageSource, /initialEditingShareId/);
+    assert.match(pageSource, /initialEditingShare: share/);
+    assert.match(pageSource, /editOnly: true/);
     assert.match(pageSource, /buildShareTokenCallbacks/);
+    assert.match(pageSource, /await mountWhenDirect\(mount\)/);
+    assert.doesNotMatch(pageSource, /await mount\(document\.querySelector/);
     assert.doesNotMatch(pageSource, /share\.shares\.open/);
 });
 

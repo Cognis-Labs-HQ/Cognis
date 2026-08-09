@@ -3,6 +3,10 @@
     gap: 1rem;
 }
 
+.share-links-popup--edit-only [data-share-cancel-edit] {
+    display: none;
+}
+
 .share-method-tabs {
     display: flex;
     gap: 0.5rem;

@@ -2,6 +2,7 @@ import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { openPopup } from "/static/reuse/popup.js";
+import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
@@ -293,6 +294,8 @@ async function openManagePopup(share, i18n) {
         title: i18n.t("share.shares.manage_title"),
         labels: popupLabels(i18n),
         initialEditingShareId: String(share.id),
+        initialEditingShare: share,
+        editOnly: true,
         supportsReadOnly,
         defaultGrantedCapabilities: grantedCapabilities,
         linkAccessOptions,
@@ -408,4 +411,4 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
 }
 
-await mount(document.querySelector("#app"));
+await mountWhenDirect(mount);

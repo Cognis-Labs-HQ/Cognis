@@ -23,6 +23,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import { renderPopupBody, resolveShareMethodId } from "./body.js";
 import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
@@ -195,24 +196,6 @@ function renderRows(labels, links) {
   `;
 }
 
-function renderBody(labels, state) {
-    const activeModule = state.methodModules.get(state.activeMethodId);
-    const emptyLabel = activeModule?.getEmptyLabel?.(labels) ?? labels.empty;
-    return `
-    <section class="share-links-popup">
-      <nav class="share-method-tabs" aria-label="${escapeHtml(labels.methods || "Share methods")}">
-        ${state.methods.map((method) => `<button type="button" class="share-method-tab${method.id === state.activeMethodId ? " is-active" : ""}" data-share-method="${escapeHtml(method.id)}" aria-pressed="${method.id === state.activeMethodId ? "true" : "false"}">${escapeHtml(method.name)}</button>`).join("")}
-      </nav>
-      <p class="share-method-description"></p>
-      <div class="share-method-page"></div>
-          <h3 class="share-method-history-heading"></h3>
-          <div class="share-links-list-container">
-        ${renderRows({ ...labels, hidePermissionLabels: !state.supportsReadOnly, empty: emptyLabel }, state.visibleLinks)}
-      </div>
-    </section>
-  `;
-}
-
 function renderPasswordProtectionField(labels, state) {
     const formMarkup = createFormBuilder(
         {
@@ -314,6 +297,8 @@ export async function openShareLinksPopup({
     defaultGrantedCapabilities = [],
     supportsReadOnly = false,
     initialEditingShareId = "",
+    initialEditingShare = null,
+    editOnly = false,
 }) {
     await ensureStylesheet();
 
@@ -348,6 +333,13 @@ export async function openShareLinksPopup({
             )?.id ?? "",
         ),
     };
+    const initialShare =
+        initialEditingShare && typeof initialEditingShare === "object"
+            ? initialEditingShare
+            : null;
+    if (initialShare) {
+        state.activeMethodId = resolveShareMethodId(initialShare);
+    }
 
     try {
         state.methods =
@@ -360,6 +352,11 @@ export async function openShareLinksPopup({
             { id: "link", name: labels.linkMethod || "Link" },
             { id: "user", name: labels.userMethod || "User" },
         ];
+    }
+    if (editOnly) {
+        state.methods = state.methods.filter(
+            (method) => method.id === state.activeMethodId,
+        );
     }
     for (const method of state.methods) {
         if (!method?.pageModuleUrl) continue;
@@ -478,19 +475,32 @@ export async function openShareLinksPopup({
         }
     }
 
-    await refreshLinks({ preserveOnError: false });
-    selectShareForEditing(
-        state.links.find(
-            (share) => String(share.id) === String(initialEditingShareId),
-        ),
-    );
+    if (editOnly && initialShare) {
+        state.links = [initialShare];
+        selectShareForEditing(initialShare);
+        filterLinksForActiveMethod();
+    } else {
+        await refreshLinks({ preserveOnError: false });
+        selectShareForEditing(
+            state.links.find(
+                (share) => String(share.id) === String(initialEditingShareId),
+            ),
+        );
+    }
 
     let refreshTimer = null;
     let popupOpen = false;
 
     await openPopup({
         title,
-        body: () => renderBody(labels, state),
+        body: () =>
+            renderPopupBody({
+                labels,
+                state,
+                editOnly,
+                escapeHtml,
+                renderRows,
+            }),
         actions: [
             {
                 id: "done",
@@ -512,7 +522,7 @@ export async function openShareLinksPopup({
             );
             if (
                 !(methodPage instanceof HTMLElement) ||
-                !(listContainer instanceof HTMLElement)
+                (!editOnly && !(listContainer instanceof HTMLElement))
             ) {
                 return;
             }
@@ -557,10 +567,16 @@ export async function openShareLinksPopup({
                             active ? "true" : "false",
                         );
                     });
-                methodDescription.textContent = String(
-                    activeMethod?.description ?? "",
-                );
-                historyHeading.textContent = String(activeMethod?.name ?? "");
+                if (methodDescription instanceof HTMLElement) {
+                    methodDescription.textContent = String(
+                        activeMethod?.description ?? "",
+                    );
+                }
+                if (historyHeading instanceof HTMLElement) {
+                    historyHeading.textContent = String(
+                        activeMethod?.name ?? "",
+                    );
+                }
                 methodPage.innerHTML =
                     typeof methodModule?.renderPage === "function"
                         ? methodModule.renderPage({
@@ -575,6 +591,13 @@ export async function openShareLinksPopup({
                               },
                           })
                         : `<p class="share-links-empty">${escapeHtml(labels.methodUnavailable || labels.createFailed)}</p>`;
+                if (editOnly) {
+                    const updateButton = methodPage.querySelector(
+                        "#share-links-create-btn",
+                    );
+                    updateButton?.classList.remove("btn-confirm", "btn-cancel");
+                    updateButton?.classList.add("btn-neutral");
+                }
                 renderSelectedUsers();
                 filterLinksForActiveMethod();
                 renderLinksList(listContainer);
@@ -658,13 +681,21 @@ export async function openShareLinksPopup({
                         state.activeMethodId === "link"
                             ? (result?.shareUrl ?? null)
                             : null;
-                    state.label = "";
-                    state.password = "";
-                    state.recipients = [];
-                    state.editingShareId = "";
-                    if (popupOpen) renderMethodPage();
-                    await refreshLinks();
-                    if (popupOpen) renderLinksList(listContainer);
+                    if (editOnly && result?.id) {
+                        state.pendingLinks.clear();
+                        state.links = [result];
+                        selectShareForEditing(result);
+                        filterLinksForActiveMethod();
+                        if (popupOpen) renderMethodPage();
+                    } else {
+                        state.label = "";
+                        state.password = "";
+                        state.recipients = [];
+                        state.editingShareId = "";
+                        if (popupOpen) renderMethodPage();
+                        await refreshLinks();
+                        if (popupOpen) renderLinksList(listContainer);
+                    }
                 } catch (error) {
                     showToast(
                         error?.code === "duplicate_user_share"
@@ -862,7 +893,7 @@ export async function openShareLinksPopup({
                 });
             });
 
-            listContainer.addEventListener("click", async (event) => {
+            listContainer?.addEventListener("click", async (event) => {
                 if (!(event.target instanceof HTMLElement)) return;
                 const emailButton = event.target.closest("[data-share-email]");
                 if (emailButton instanceof HTMLElement) {
@@ -948,11 +979,13 @@ export async function openShareLinksPopup({
             });
 
             renderMethodPage();
-            refreshTimer = window.setInterval(() => {
-                void refreshLinks().then(() => {
-                    if (popupOpen) renderLinksList(listContainer);
-                });
-            }, SHARE_LINKS_REFRESH_INTERVAL_MS);
+            if (!editOnly) {
+                refreshTimer = window.setInterval(() => {
+                    void refreshLinks().then(() => {
+                        if (popupOpen) renderLinksList(listContainer);
+                    });
+                }, SHARE_LINKS_REFRESH_INTERVAL_MS);
+            }
         },
     });
 

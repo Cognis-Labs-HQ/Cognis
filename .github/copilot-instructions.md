@@ -296,6 +296,16 @@ When a comment introduces an alternative or fallback code path (e.g. a catch blo
 
 ## Code quality
 
+### Button consequence styling
+
+Button classes must communicate the consequence of the action consistently:
+
+- An action with any potentially destructive consequence must use `btn-cancel`.
+- An action with a creative consequence must use `btn-confirm`.
+- Every other action must use `btn-neutral`.
+
+Choose the class from the action's consequence, never from visual preference.
+
 ### Codebase cleanliness is paramount
 
 The cleanliness, consistency, and structural integrity of the codebase are non-negotiable. Every contribution must leave the codebase in at least as clean a state as it found it. Introducing non-conformant code — even as a temporary measure, even under time pressure, even when it "works" — is unacceptable.

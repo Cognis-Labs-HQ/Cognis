@@ -69,7 +69,7 @@ export function mountShareButton({
     label,
     onClick,
     id = "share-gateway-share-btn",
-    className = "btn-confirm btn-animated",
+    className = "btn-animated",
     icon = "🔗",
     title = "",
     signal,
@@ -80,7 +80,16 @@ export function mountShareButton({
     const button = document.createElement("button");
     button.id = id;
     button.type = "button";
-    button.className = className;
+    const classes = String(className)
+        .split(/\s+/)
+        .filter(
+            (classToken) =>
+                classToken &&
+                !["btn-cancel", "btn-confirm", "btn-neutral"].includes(
+                    classToken,
+                ),
+        );
+    button.className = [...classes, "btn-cancel"].join(" ");
     button.textContent = `${icon ? `${icon} ` : ""}${label ?? ""}`;
     if (title) {
         button.title = title;

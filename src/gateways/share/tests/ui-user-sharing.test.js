@@ -222,6 +222,11 @@ test("logged-in share recipients keep their account session", () => {
     assert.match(shareButtonSource, /accountId\.startsWith\("share:"\)/);
 });
 
+test("share buttons always use the destructive consequence style", () => {
+    assert.match(shareButtonSource, /\[\.\.\.classes, "btn-cancel"\]/);
+    assert.match(shareButtonSource, /"btn-confirm", "btn-neutral"/);
+});
+
 test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(
         sessionFlowSource,
