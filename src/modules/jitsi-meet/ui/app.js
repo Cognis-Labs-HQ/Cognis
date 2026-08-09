@@ -45,9 +45,9 @@ const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
  * embed updates). The optional AbortSignal is used by the SPA router to clean
  * up timers and event listeners when users navigate away.
  *
- * When the page is loaded inside a share context (detected via getShareContext()),
- * the shell chrome (topbar, navbar, footer) is hidden and the share button is
- * suppressed — no explicit `embedded` or `shareEnabled` flags are needed.
+ * Guest link shares receive a limited shell, while signed-in user-share
+ * recipients retain the full account page structure. Both share modes suppress
+ * resharing controls.
  *
  * @param {HTMLElement} root - Page mount root (usually #app).
  * @param {{ signal?: AbortSignal, requestedMeetingId?: string, shareContext?: object }} [options] - Router lifecycle options.
@@ -59,8 +59,11 @@ export async function mount(
 ) {
     const shareContext = routedShareContext ?? getShareContext();
     const inShareView = shareContext !== null;
-    const limitedShareView = inShareView && shareContext?.directAccess !== true;
-    if (!inShareView) await ensureFullAccountSession();
+    const limitedShareView =
+        inShareView &&
+        Boolean(shareContext?.guestAccessToken) &&
+        shareContext?.directAccess !== true;
+    if (!limitedShareView) await ensureFullAccountSession();
     const resolvedMeetingId =
         requestedMeetingId ||
         (inShareView ? String(shareContext?.resourceId ?? "") : "");

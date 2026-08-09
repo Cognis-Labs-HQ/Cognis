@@ -31,3 +31,7 @@ Share dialogs now use a neutral Close action and a destructive Revoke action. Us
 ## Manage shares in one place
 
 The User Menu now includes a Shares page for opening sent and received shares. Creators can manage or delete sent shares, recipients can reject received shares, and Cognis notifies affected users when shares are deleted, expire, or are rejected.
+
+## Stop shared-page work when access ends
+
+Whiteboard presence now stops immediately when a share is revoked and is fully detached during SPA navigation. Page action buttons use one CTX-managed dock so pointer, theme, and layout controls share consistent placement and can be added, updated, or removed with page lifecycle changes. Share dialogs always provide a Close label, and signed-in Meeting share recipients load the complete account page structure.

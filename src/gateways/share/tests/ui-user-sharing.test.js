@@ -179,7 +179,7 @@ test("user share permissions constrain granted capabilities", async () => {
 test("share popup uses neutral close and destructive revoke actions", () => {
     assert.match(
         popupSource,
-        /label: labels\.close \|\| labels\.done,[\s\S]*variant: "neutral"/,
+        /label: labels\.close \|\| labels\.done \|\| "Close",[\s\S]*variant: "neutral"/,
     );
     assert.match(
         popupSource,

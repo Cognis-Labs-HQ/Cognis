@@ -31,6 +31,8 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /offset\.y/);
     assert.match(pointerSource, /renderRoot\.appendChild\(overlay\)/);
     assert.match(pointerSource, /className = "pointer-style-toggle"/);
+    assert.match(pointerSource, /capabilities\.get\("page:actions"\)/);
+    assert.match(pointerSource, /removePageAction\?\.\(\)/);
     assert.match(pointerSource, /noteActivity\?\.\(\)/);
     assert.match(pointerSource, /page-pointer--/);
     assert.match(pointerSource, /page-selection/);
@@ -60,6 +62,12 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(presenceSource, /const REFRESH_MIN_INTERVAL_MS = 250/);
     assert.match(presenceSource, /const REFRESH_MAX_INTERVAL_MS = 5000/);
     assert.match(presenceSource, /function isRecentlyActive\(\)/);
+    assert.match(
+        presenceSource,
+        /response\?\.status === 401 \|\| response\?\.status === 403/,
+    );
+    assert.match(presenceSource, /destroy\(\{ notifyInactive: false \}\)/);
+    assert.match(presenceSource, /requestAbortController\.abort\(\)/);
     assert.match(
         composerSource,
         /pageManifest\?: \{ features\?: \{ pointerTracking\?: boolean \} \}/,

@@ -55,8 +55,10 @@ const ACCOUNT_KEY = "cognis_account";
 const ACCESS_DENIED_TOKEN_KEY = "cognis_share_access_denied_token";
 let activeGuestSession = null;
 let activeShareSession = null;
+let accessDeniedNavigationPending = false;
 
 window.addEventListener("cognis:api-access-denied", () => {
+    if (accessDeniedNavigationPending) return;
     const shareToken = activeShareSession?.shareToken;
     const contentUrl = activeShareSession?.session?.shareContext?.contentUrl;
     if (!shareToken || !contentUrl) return;
@@ -68,9 +70,14 @@ window.addEventListener("cognis:api-access-denied", () => {
     )
         return;
     sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
-    void import("/static/reuse/app-router.js").then(({ navigateTo }) =>
-        navigateTo(`/share/${encodeURIComponent(shareToken)}`),
-    );
+    accessDeniedNavigationPending = true;
+    void import("/static/reuse/app-router.js")
+        .then(({ navigateTo }) =>
+            navigateTo(`/share/${encodeURIComponent(shareToken)}`),
+        )
+        .finally(() => {
+            accessDeniedNavigationPending = false;
+        });
 });
 
 uiCtx.capabilities.contribute("session:isGuest", isViewingAsGuest);

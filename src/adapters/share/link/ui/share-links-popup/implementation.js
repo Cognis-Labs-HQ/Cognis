@@ -263,7 +263,7 @@ async function showSharePasswordPopup(password, labels) {
         actions: [
             {
                 id: "done",
-                label: labels.close || labels.done,
+                label: labels.close || labels.done || "Close",
                 variant: "neutral",
             },
         ],
@@ -453,7 +453,7 @@ export async function openShareLinksPopup({
         actions: [
             {
                 id: "done",
-                label: labels.close || labels.done,
+                label: labels.close || labels.done || "Close",
                 variant: "neutral",
             },
         ],

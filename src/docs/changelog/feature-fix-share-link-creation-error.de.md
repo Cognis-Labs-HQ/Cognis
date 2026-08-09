@@ -31,3 +31,7 @@ Freigabedialoge verwenden jetzt eine neutrale Aktion „Schließen“ und eine d
 ## Freigaben zentral verwalten
 
 Das Benutzermenü enthält jetzt eine Seite „Freigaben“, auf der gesendete und empfangene Freigaben geöffnet werden können. Erstellende können gesendete Freigaben verwalten oder löschen, Empfangende können Freigaben ablehnen, und Cognis benachrichtigt betroffene Personen, wenn Freigaben gelöscht werden, ablaufen oder abgelehnt werden.
+
+## Aktivitäten geteilter Seiten bei Zugriffsende stoppen
+
+Die Whiteboard-Anwesenheit wird nun sofort beendet, wenn eine Freigabe widerrufen wird, und bei der SPA-Navigation vollständig getrennt. Seitenaktionsschaltflächen verwenden eine gemeinsame, über CTX verwaltete Leiste, damit Zeiger-, Design- und Layoutsteuerungen einheitlich angeordnet sind und mit dem Seitenlebenszyklus hinzugefügt, aktualisiert oder entfernt werden können. Freigabedialoge zeigen stets eine Beschriftung „Schließen“, und angemeldete Empfänger von Meeting-Freigaben laden die vollständige Kontoseitenstruktur.

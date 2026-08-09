@@ -31,3 +31,7 @@ Dialog berbagi kini menggunakan tindakan Tutup yang netral dan tindakan Cabut ya
 ## Kelola berbagi di satu tempat
 
 Menu Pengguna kini memiliki halaman Berbagi untuk membuka berbagi yang dikirim dan diterima. Pembuat dapat mengelola atau menghapus berbagi terkirim, penerima dapat menolak berbagi yang diterima, dan Cognis memberi tahu pengguna terkait saat berbagi dihapus, kedaluwarsa, atau ditolak.
+
+## Hentikan aktivitas halaman bersama saat akses berakhir
+
+Kehadiran Whiteboard kini segera berhenti ketika berbagi dicabut dan dilepas sepenuhnya saat navigasi SPA. Tombol tindakan halaman memakai satu dok yang dikelola CTX sehingga kontrol penunjuk, tema, dan tata letak memiliki posisi yang konsisten serta dapat ditambahkan, diperbarui, atau dihapus mengikuti siklus hidup halaman. Dialog berbagi selalu menyediakan label Tutup, dan penerima berbagi Meeting yang telah masuk memuat struktur halaman akun lengkap.

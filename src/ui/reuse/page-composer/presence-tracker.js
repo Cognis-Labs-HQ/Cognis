@@ -175,6 +175,7 @@ export function createPresenceTracker({
     let lastPresenceSignature = "";
     let lastPresenceMarkupSignature = "";
     let unsubscribeActivity = null;
+    const requestAbortController = new AbortController();
 
     function noteActivity() {
         lastActivityAt = Date.now();
@@ -192,8 +193,8 @@ export function createPresenceTracker({
 
     async function sendPresence(active = true, { keepalive = false } = {}) {
         const resolvedPageId = currentPageId();
-        if (!enabled || !endpoint || !resolvedPageId) return;
-        await apiFetch(endpoint, {
+        if (destroyed || !enabled || !endpoint || !resolvedPageId) return null;
+        const response = await apiFetch(endpoint, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -207,7 +208,12 @@ export function createPresenceTracker({
                         : null,
             }),
             keepalive,
+            signal: keepalive ? undefined : requestAbortController.signal,
         }).catch(() => null);
+        if (response?.status === 401 || response?.status === 403) {
+            destroy({ notifyInactive: false });
+        }
+        return response;
     }
 
     function placePresenceContainer() {
@@ -258,7 +264,12 @@ export function createPresenceTracker({
         }
         const response = await apiFetch(
             `${endpoint}?pageId=${encodeURIComponent(resolvedPageId)}`,
+            { signal: requestAbortController.signal },
         ).catch(() => null);
+        if (response?.status === 401 || response?.status === 403) {
+            destroy({ notifyInactive: false });
+            return false;
+        }
         if (!response?.ok) return false;
         const payload = await response.json().catch(() => ({}));
         const entries = Array.isArray(payload?.data?.presence)
@@ -350,7 +361,11 @@ export function createPresenceTracker({
         document.addEventListener("visibilitychange", handleVisibilityChange);
     }
 
-    function destroy() {
+    function destroy({ notifyInactive = true } = {}) {
+        if (destroyed) return;
+        if (notifyInactive) {
+            void sendPresence(false, { keepalive: true });
+        }
         destroyed = true;
         unsubscribeActivity?.();
         heartbeatPoller?.stop();
@@ -368,7 +383,7 @@ export function createPresenceTracker({
             );
         }
         onPresenceUpdate?.([], sessionId);
-        void sendPresence(false, { keepalive: true });
+        requestAbortController.abort();
         pointerTracker?.destroy();
         pointerTracker = null;
         container?.remove();

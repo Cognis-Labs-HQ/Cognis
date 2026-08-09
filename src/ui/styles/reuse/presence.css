@@ -363,24 +363,5 @@
 }
 
 .pointer-style-toggle {
-    align-items: center;
-    background: var(--theme-toggle-bg);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    bottom: 76px;
-    box-shadow: var(--shadow);
-    color: var(--theme-toggle-color);
-    cursor: pointer;
-    display: inline-flex;
     font-size: 1.1rem;
-    height: 42px;
-    justify-content: center;
-    position: fixed;
-    right: 21px;
-    width: 42px;
-    z-index: 1000;
-}
-
-.pointer-style-toggle:hover {
-    background: var(--theme-toggle-bg-hover);
 }

@@ -124,7 +124,8 @@ export async function apiFetch(path, options = {}) {
         const response = await fetch(path, { ...requestOptions, headers });
         if (
             (response.status === 401 || response.status === 403) &&
-            requestTargetsApi(path)
+            requestTargetsApi(path) &&
+            typeof window !== "undefined"
         ) {
             window.dispatchEvent(
                 new CustomEvent("cognis:api-access-denied", {
