@@ -530,6 +530,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     }
 
     const i18n = slots.i18n || (await createI18n());
+    const template = await DASHBOARD_LAYOUT_TEMPLATE_PROMISE;
 
     const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
@@ -540,6 +541,17 @@ export async function renderDashboardLayout(root, slots = {}) {
         existingShell &&
         shellMatchesConfig(root, showTopbar, showNavbar, showFooter)
     ) {
+        const templateContent = document.createElement("template");
+        templateContent.innerHTML = template;
+        const freshActionDock = templateContent.content.querySelector(
+            "[data-page-action-dock]",
+        );
+        const existingActionDock = existingShell.querySelector(
+            "[data-page-action-dock]",
+        );
+        if (freshActionDock && existingActionDock) {
+            existingActionDock.replaceWith(freshActionDock);
+        }
         const pageCtxEl = existingShell.querySelector(".page-context");
         if (pageCtxEl) pageCtxEl.innerHTML = slots.pageContext || "";
         const existingSubNavEl = existingShell.querySelector(".page-subnav");
@@ -626,10 +638,10 @@ export async function renderDashboardLayout(root, slots = {}) {
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
+        bindThemeToggle({ usePreferenceApi });
         return;
     }
 
-    const template = await DASHBOARD_LAYOUT_TEMPLATE_PROMISE;
     root.innerHTML = template
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)

@@ -39,7 +39,7 @@
  * @returns {void}
  */
 
-import { ensurePageStylesheet } from "./page-styles.js";
+import { ensurePageStylesheet, syncPageStylesheets } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
 import { beginPageLoading } from "./page-entry.js";
 import { getCurrentRoutePath } from "./route-path.js";
@@ -74,6 +74,7 @@ const ROUTE_STYLE_BUNDLES = {
     settings: [
         "/static/styles/page-builder.css",
         "/static/styles/reuse/page-sections.css",
+        "/static/styles/reuse/structured-content.css",
         "/static/styles/settings.css",
     ],
     docs: [
@@ -268,7 +269,10 @@ const STATIC_ROUTES = [
     {
         pattern: /^\/administration/,
         base: "/administration",
-        stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
+        stylesheets: [
+            ...ROUTE_STYLE_BUNDLES.pageSections,
+            "/static/styles/reuse/structured-content.css",
+        ],
         load: () => import("../app/administration/index.js"),
     },
     {
@@ -406,6 +410,7 @@ async function loadRoute(path) {
         if (_mountController) {
             _mountController.abort();
         }
+        uiCtx.capabilities.get("page:actions")?.reset?.();
         _mountController = new AbortController();
         _currentBase = route.base;
         const { signal } = _mountController;
@@ -413,9 +418,7 @@ async function loadRoute(path) {
         // Start stylesheet injection and module loading in parallel — both are
         // network operations and can race. We await both before calling mount()
         // so CSS is guaranteed present before the page touches the DOM.
-        const stylesheetsReady = route.stylesheets?.length
-            ? Promise.all(route.stylesheets.map(ensurePageStylesheet))
-            : Promise.resolve();
+        const stylesheetsReady = syncPageStylesheets(route.stylesheets ?? []);
 
         globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
         globalThis.__spaRouter = true;

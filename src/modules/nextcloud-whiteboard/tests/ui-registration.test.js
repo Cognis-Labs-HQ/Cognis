@@ -64,6 +64,13 @@ test("nextcloud whiteboard standalone shell loads shared layout styles", async (
     assert.match(shellSource, /\/static\/styles\/reuse\/layout\.css/);
 });
 
+test("nextcloud whiteboard disables page layout editing", async () => {
+    const appSource = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+    );
+    assert.match(appSource, /allowCustomization:\s*false/);
+});
+
 test("nextcloud whiteboard app loads module strings and omits inline status element", async () => {
     const [
         source,

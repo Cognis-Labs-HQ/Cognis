@@ -81,6 +81,11 @@ export const pageActions = Object.freeze({
         return removed;
     },
 
+    reset() {
+        actions.clear();
+        renderActions();
+    },
+
     mount(root, { signal } = {}) {
         activeDock = root?.querySelector?.("[data-page-action-dock]") ?? null;
         renderActions();

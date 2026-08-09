@@ -6,7 +6,7 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
-test("page actions expose CTX-backed add, update, remove, and SPA cleanup", () => {
+test("page actions expose CTX-backed lifecycle controls and SPA cleanup", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-actions.js"),
         "utf8",
@@ -18,6 +18,7 @@ test("page actions expose CTX-backed add, update, remove, and SPA cleanup", () =
     assert.match(source, /add\(action\)/);
     assert.match(source, /update\(id, changes = \{\}\)/);
     assert.match(source, /remove\(id\)/);
+    assert.match(source, /reset\(\)/);
     assert.match(
         source,
         /signal\?\.addEventListener\([\s\S]*actions\.clear\(\)/,

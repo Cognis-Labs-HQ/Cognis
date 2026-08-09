@@ -158,6 +158,30 @@ test("router uses history.pushState for navigation", () => {
     );
 });
 
+test("router resets page actions and reconciles route styles on navigation", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(src, /capabilities\.get\("page:actions"\)\?\.reset/);
+    assert.match(src, /syncPageStylesheets\(route\.stylesheets \?\? \[\]\)/);
+});
+
+test("SPA route bundles match structured-content styles from direct loads", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        src,
+        /settings:[\s\S]*structured-content\.css[\s\S]*settings\.css/,
+    );
+    assert.match(
+        src,
+        /pattern: \/\^\\\/administration\/[\s\S]*structured-content\.css/,
+    );
+});
+
 test("router guards against re-initialisation while refreshing its root", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),

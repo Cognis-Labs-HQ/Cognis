@@ -13,6 +13,7 @@ const navbarSource = await readFile(
 
 test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /createPageComposer/);
+    assert.match(pageSource, /allowCustomization:\s*false/);
     assert.match(pageSource, /fetchShareOverview/);
     assert.match(pageSource, /revokeShare/);
     assert.match(pageSource, /rejectShare/);

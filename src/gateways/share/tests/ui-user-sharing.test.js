@@ -46,6 +46,10 @@ const shareButtonSource = await readFile(
     "utf8",
 );
 
+test("public Share page disables page layout editing", () => {
+    assert.match(shareAppSource, /allowCustomization:\s*false/);
+});
+
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
     assert.match(popupSource, /data-share-user-id/);

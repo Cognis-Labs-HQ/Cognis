@@ -1,5 +1,9 @@
 # Refine share management
 
+## Keep destination page controls and styles isolated
+
+Whiteboard and Share pages keep layout editing disabled. Each in-app navigation now rebuilds the page action dock, discards actions not contributed by the destination, loads its complete stylesheet bundle, and removes route styles that no longer apply.
+
 ## Focus management on one share
 
 The Shares page now opens a compact editor containing only the selected share's form. It keeps the share method fixed, updates only that database record, and no longer opens twice during client-side navigation.

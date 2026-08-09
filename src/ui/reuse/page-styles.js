@@ -15,6 +15,8 @@
  *                                than rejecting, so that a stylesheet failure
  *                                never prevents the page from mounting. The
  *                                error is logged to console.error.
+ *   syncPageStylesheets(hrefs) — loads a route's complete stylesheet set and
+ *                                removes page styles left by the prior route.
  *
  * Usage:
  *   import { ensurePageStylesheet } from '../reuse/page-styles.js';
@@ -28,6 +30,12 @@
  */
 
 const _pending = new Map();
+const _initialPageStylesheets = new Set(
+    [...document.head.querySelectorAll('link[rel="stylesheet"][href]')].map(
+        (link) => new URL(link.href, window.location.origin).pathname,
+    ),
+);
+let _activePageStylesheets = new Set(_initialPageStylesheets);
 
 export function ensurePageStylesheet(href) {
     if (_pending.has(href)) return _pending.get(href);
@@ -62,4 +70,32 @@ export function ensurePageStylesheet(href) {
     document.head.appendChild(link);
     _pending.set(href, ready);
     return ready;
+}
+
+/**
+ * Reconciles document styles with the destination route's declared bundle.
+ *
+ * @param {string[]} hrefs - Complete stylesheet URLs declared by the route.
+ * @returns {Promise<void>} Resolves after destination styles have loaded and stale route styles are removed.
+ */
+export async function syncPageStylesheets(hrefs) {
+    const destinationStylesheets = new Set(
+        hrefs.map((href) => new URL(href, window.location.origin).pathname),
+    );
+    await Promise.all(hrefs.map(ensurePageStylesheet));
+    for (const staleStylesheet of _activePageStylesheets) {
+        if (destinationStylesheets.has(staleStylesheet)) continue;
+        for (const link of document.head.querySelectorAll(
+            'link[rel="stylesheet"][href]',
+        )) {
+            if (
+                new URL(link.href, window.location.origin).pathname ===
+                staleStylesheet
+            ) {
+                link.remove();
+            }
+        }
+        _pending.delete(staleStylesheet);
+    }
+    _activePageStylesheets = destinationStylesheets;
 }
