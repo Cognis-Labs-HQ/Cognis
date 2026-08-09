@@ -19,6 +19,8 @@ import {
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
 import { initLanguagePrefs } from "./language-prefs.js";
+import { loadTemplate } from "../../reuse/template-loader.js";
+import { formatTemplate } from "../../reuse/format-template.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
 import {
@@ -135,7 +137,7 @@ function resolveLanguagePriorityMode(
     existingPrefs,
     storedMode,
 ) {
-    if (languagePrefsController?.isDirty()) {
+    if (languagePrefsController?.isPriorityDirty()) {
         return languagePrefsController.getPendingMode() ?? "manual";
     }
     if (existingPrefs?.languagePriorityMode === "manual") return "manual";
@@ -146,6 +148,9 @@ const LANGUAGE_RELOAD_DELAY_MS = 400;
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
+    const languagePreferencesTemplate = await loadTemplate(
+        "settings-language-preferences",
+    );
     let loadedPrefs = await loadPrefs().catch(() => null);
     const editorAcknowledgementAccepted =
         await loadEditorAcknowledgement().catch(() => false);
@@ -494,32 +499,21 @@ export async function mount(root, { signal } = {}) {
                     {
                         id: "language-preferences",
                         label: i18n.t("ui.reuse.language"),
-                        render: () => `
-            <div class="settings-language-block">
-              <div class="settings-language-switcher-row">
-                <h3 class="components-section-heading">${i18n.t("ui.app.settings.language_switcher")}</h3>
-                <label class="switch">
-                  <input id="pref-language-switcher-show" type="checkbox" />
-                  <span class="slider"></span>
-                </label>
-              </div>
-              <div class="settings-language-tables">
-                <section>
-                  <div class="settings-language-heading-row components-section-heading">
-                    <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
-                  </div>
-                  <table id="available-languages" class="language-table"></table>
-                </section>
-                <section>
-                  <div class="settings-language-heading-row components-section-heading">
-                    <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
-                    <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
-                  </div>
-                  <table id="preferred-languages" class="language-table"></table>
-                </section>
-              </div>
-            </div>
-          `,
+                        render: () =>
+                            formatTemplate(languagePreferencesTemplate, {
+                                languageSwitcher: i18n.t(
+                                    "ui.app.settings.language_switcher",
+                                ),
+                                availableLanguages: i18n.t(
+                                    "ui.app.settings.available_languages",
+                                ),
+                                preferredLanguages: i18n.t(
+                                    "ui.app.settings.preferred_languages",
+                                ),
+                                syncFromBrowser: i18n.t(
+                                    "ui.app.settings.sync_from_browser",
+                                ),
+                            }),
                     },
                 ],
                 onRender: () => {

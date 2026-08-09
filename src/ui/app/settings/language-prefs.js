@@ -322,6 +322,8 @@ export function initLanguagePrefs(
             pendingMode = "auto";
         },
         getPendingMode: () => pendingMode,
+        isPriorityDirty: () =>
+            JSON.stringify(languagePriority) !== JSON.stringify(savedPriority),
         getPriority: () => languagePriority,
         getSwitcherShow: () => switcherShow,
         isDirty: () =>

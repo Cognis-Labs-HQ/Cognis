@@ -20,11 +20,51 @@ import {
 import { saveUiPreferences } from "./ui-preferences.js";
 import { showToast } from "./toast.js";
 import { navigateToSettingsSection } from "./settings-navigation.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const LANGUAGE_COMMIT_DELAY_MS = 5000;
 const SWITCHER_HANDLER_KEY = "__cognisLanguageSwitcherHandler";
 const SWITCHER_OPTIONS_KEY = "__cognisLanguageSwitcherOptions";
-const SWITCHER_TIMER_KEY = "__cognisLanguageSwitcherTimer";
+let pendingCommitTimer = null;
+
+uiCtx.extendFlow(
+    "switch-language",
+    "persist-preferences",
+    { id: "ui:language-switcher:persist" },
+    ({ input }) =>
+        saveUiPreferences({
+            languagePriority: input.languagePriority,
+            languagePriorityMode: "manual",
+        }),
+);
+uiCtx.extendFlow(
+    "switch-language",
+    "apply-language",
+    { id: "ui:language-switcher:apply" },
+    ({ input }) =>
+        setPreferredLanguages(input.languagePriority, { mode: "manual" }),
+);
+uiCtx.extendFlow(
+    "switch-language",
+    "record-selection",
+    { id: "ui:language-switcher:record" },
+    ({ input }) =>
+        console.info("[language-switcher]:language-selected", {
+            language: input.selectedLanguage,
+        }),
+);
+uiCtx.extendFlow(
+    "switch-language",
+    "reload-page",
+    { id: "ui:language-switcher:reload" },
+    () => window.location.reload(),
+);
+
+function cancelPendingCommit() {
+    if (!pendingCommitTimer) return;
+    clearTimeout(pendingCommitTimer);
+    pendingCommitTimer = null;
+}
 
 export function getNextLanguage(languages, currentLanguage) {
     if (!Array.isArray(languages) || languages.length === 0) return null;
@@ -50,6 +90,7 @@ export function promoteLanguage(languages, selectedLanguage) {
  * @returns {void}
  */
 export function bindLanguageSwitcher({ preferences, i18n }) {
+    cancelPendingCommit();
     const button = document.querySelector("#language-switcher");
     if (!button) return;
     const configuredLanguages = Array.isArray(preferences?.languagePriority)
@@ -64,10 +105,6 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
         selectedLanguage: languages[0] ?? null,
     };
     if (button.hidden) {
-        if (button[SWITCHER_TIMER_KEY]) {
-            clearTimeout(button[SWITCHER_TIMER_KEY]);
-            button[SWITCHER_TIMER_KEY] = null;
-        }
         return;
     }
 
@@ -96,25 +133,19 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
             options.selectedLanguage,
         );
         renderSelection();
-        if (button[SWITCHER_TIMER_KEY]) {
-            clearTimeout(button[SWITCHER_TIMER_KEY]);
-        }
-        button[SWITCHER_TIMER_KEY] = setTimeout(async () => {
+        cancelPendingCommit();
+        pendingCommitTimer = setTimeout(async () => {
+            pendingCommitTimer = null;
             const currentOptions = button[SWITCHER_OPTIONS_KEY];
             const languagePriority = promoteLanguage(
                 currentOptions.languages,
                 currentOptions.selectedLanguage,
             );
             try {
-                await saveUiPreferences({
+                await uiCtx.runFlow("switch-language", {
                     languagePriority,
-                    languagePriorityMode: "manual",
+                    selectedLanguage: currentOptions.selectedLanguage,
                 });
-                setPreferredLanguages(languagePriority, { mode: "manual" });
-                console.info("[language-switcher]:language-selected", {
-                    language: currentOptions.selectedLanguage,
-                });
-                window.location.reload();
             } catch (error) {
                 console.error("[language-switcher]:language-save-failed", {
                     language: currentOptions.selectedLanguage,

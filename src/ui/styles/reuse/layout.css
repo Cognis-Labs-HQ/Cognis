@@ -630,6 +630,9 @@ button.dropdown-item {
 .language-switcher:hover {
     background: var(--theme-toggle-bg-hover);
 }
+body:has(.composer-edit-toggle:not([hidden])) .language-switcher {
+    bottom: 134px;
+}
 .theme-toggle[data-mode="light"] {
     color: #f59e0b;
 }
