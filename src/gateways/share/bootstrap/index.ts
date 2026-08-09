@@ -231,6 +231,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "/static/styles/reuse/page-sections.css",
             "/static/gateways/share/ui/app/shares/index.css",
         ],
+        access: { minRole: "user" },
     });
     for (const adapter of gateway.listAdapters()) {
         uiHooks.registerAdapterStaticDir(

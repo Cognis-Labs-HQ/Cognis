@@ -121,6 +121,7 @@ export function registerUi(ctx) {
         scriptUrl: "/static/modules/jitsi-meet/app.js",
         stylesheets: [
             "/static/styles/page-builder.css",
+            "/static/styles/reuse/layout.css",
             "/static/styles/reuse/page-sections.css",
             ...sharedStylesheetUrls,
             "/static/modules/jitsi-meet/jitsi-meet.css",

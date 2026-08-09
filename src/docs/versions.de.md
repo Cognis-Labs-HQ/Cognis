@@ -65,7 +65,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`  |
 | Authentication (auth) | `src/gateways/auth/`          | `1.7.45` |
-| Share                 | `src/gateways/share/`         | `1.6.60` |
+| Share                 | `src/gateways/share/`         | `1.6.61` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
 | Social                | `src/gateways/social/`        | `1.2.11` |
@@ -86,7 +86,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.3.4` |
+| API Server | `src/api/` | `0.3.5` |
 
 ## Werkzeuge
 
@@ -99,7 +99,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.80` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.57` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.81` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.58` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

@@ -221,11 +221,8 @@ uiCtx.extendFlow(
             return { authenticated: false, reason: "share_access_denied" };
         }
 
-        if (
-            isViewingAsGuest() &&
-            activeGuestSession?.shareToken === shareToken
-        ) {
-            return activeGuestSession.session;
+        if (activeShareSession?.shareToken === shareToken) {
+            return activeShareSession.session;
         }
 
         // If the visitor already has a valid full-account session, send

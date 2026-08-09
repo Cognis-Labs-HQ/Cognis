@@ -285,6 +285,18 @@ export class UIRegistry {
         return this.resolveDescriptor([...this.spaRoutes]);
     }
 
+    resolveSpaRoute(pathname: string): SpaRoute | undefined {
+        return this.listSpaRoutes().find((route) => {
+            if (route.isEnabled && !route.isEnabled()) return false;
+            try {
+                return new RegExp(route.pattern).test(pathname);
+            } catch {
+                // Invalid-pattern fallback: exclude the route via the return below.
+                return false;
+            }
+        });
+    }
+
     listAuthTypingMessages(): AuthTypingMessage[] {
         return [...this.authTypingMessages];
     }

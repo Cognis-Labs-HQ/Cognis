@@ -726,3 +726,16 @@ test("meeting shares use the Cognis route and skip account setup", () => {
     );
     assert.match(appSource, /if \(!inShareView\) \{[\s\S]*bindShareButton/);
 });
+
+test("meeting routes and standalone shell load shared layout styles", () => {
+    const apiSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    const shellSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/index.html"),
+        "utf8",
+    );
+    assert.match(apiSource, /\/static\/styles\/reuse\/layout\.css/);
+    assert.match(shellSource, /\/static\/styles\/reuse\/layout\.css/);
+});

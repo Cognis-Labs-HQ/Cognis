@@ -424,7 +424,7 @@ test("meeting share routes let participants manage shares and reject outsiders",
     }
 });
 
-test("meeting share list marks links from a prior meeting instance as expired", async () => {
+test("meeting share list keeps links active across meeting instances", async () => {
     const handlers = createRouterHarness({
         executor: new MeetingExecutor({
             participantUsernames: ["alice", "bob"],
@@ -463,7 +463,7 @@ test("meeting share list marks links from a prior meeting instance as expired", 
     const byId = Object.fromEntries(
         listResponse.body.data.map((share) => [share.id, share.status]),
     );
-    assert.equal(byId["share-stale"], "expired");
+    assert.equal(byId["share-stale"], "active");
     assert.equal(byId["share-current"], "active");
     assert.equal(byId["share-no-instance"], "active");
 });
@@ -511,7 +511,7 @@ test("meeting share approval targets only include currently present participants
     );
 });
 
-test("meeting share tokens expire when the meeting instance changes", async () => {
+test("meeting share tokens remain valid when the meeting instance changes", async () => {
     const { ctx } = createFlowHarness(
         new MeetingExecutor({
             meetingStateRow: {
@@ -538,8 +538,37 @@ test("meeting share tokens expire when the meeting instance changes", async () =
     const result = await ctx.flow.run("resolve-share-token", {
         token: "shr_test.secret",
     });
-    assert.equal(result.stageResults["check-access"][0].allowed, false);
-    assert.equal(result.stageResults["check-access"][0].reason, "expired");
+    assert.equal(result.stageResults["check-access"][0].allowed, true);
+});
+
+test("meeting share tokens remain valid after a meeting instance ends", async () => {
+    const { ctx } = createFlowHarness(
+        new MeetingExecutor({
+            meetingStateRow: {
+                ended_at: "2026-07-07T01:00:00.000Z",
+            },
+        }),
+    );
+
+    ctx.flow.extend(
+        "resolve-share-token",
+        "validate-token",
+        { id: "test:share-token" },
+        () => ({
+            valid: true,
+            tokenRecord: {
+                resourceType: "meeting",
+                resourceId: "meeting-1",
+                grantedCapabilities: ["meeting:join"],
+                metadata: { meetingInstanceId: "instance-1" },
+            },
+        }),
+    );
+
+    const result = await ctx.flow.run("resolve-share-token", {
+        token: "shr_test.secret",
+    });
+    assert.equal(result.stageResults["check-access"][0].allowed, true);
 });
 
 test("meeting share tokens minted before a meeting's first instance still resolve", async () => {
