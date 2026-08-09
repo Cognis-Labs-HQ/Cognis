@@ -122,6 +122,13 @@ export async function apiFetch(path, options = {}) {
     }
     try {
         const response = await fetch(path, { ...requestOptions, headers });
+        if (response.status === 403 && requestTargetsApi(path)) {
+            window.dispatchEvent(
+                new CustomEvent("cognis:api-access-denied", {
+                    detail: { path },
+                }),
+            );
+        }
         if (
             token &&
             !suppressConnectionRecoveryToast &&

@@ -26,6 +26,7 @@ function loadApiClientForTests({
         "};\n";
 
     const showToastCalls = [];
+    const dispatchedEvents = [];
     const context = {
         showToast(message, options) {
             showToastCalls.push({ message, options });
@@ -45,6 +46,15 @@ function loadApiClientForTests({
             location: {
                 origin: "https://example.com",
             },
+            dispatchEvent(event) {
+                dispatchedEvents.push(event);
+            },
+        },
+        CustomEvent: class CustomEvent {
+            constructor(type, options) {
+                this.type = type;
+                this.detail = options?.detail;
+            }
         },
     };
     context.globalThis = context;
@@ -53,8 +63,27 @@ function loadApiClientForTests({
         filename: "api-client.js",
     });
 
-    return { apiClient: context.__testExports, showToastCalls };
+    return {
+        apiClient: context.__testExports,
+        dispatchedEvents,
+        showToastCalls,
+    };
 }
+
+test("apiFetch announces API access denial to active share sessions", async () => {
+    const { apiClient, dispatchedEvents } = loadApiClientForTests({
+        fetchImpl: async () => ({ ok: false, status: 403 }),
+    });
+
+    await apiClient.apiFetch("/api/v1/modules/example/resource");
+
+    assert.equal(dispatchedEvents.length, 1);
+    assert.equal(dispatchedEvents[0].type, "cognis:api-access-denied");
+    assert.equal(
+        dispatchedEvents[0].detail.path,
+        "/api/v1/modules/example/resource",
+    );
+});
 
 test("apiFetch shows one permanent warning toast for repeated API network failures", async () => {
     const networkError = new Error("network down");

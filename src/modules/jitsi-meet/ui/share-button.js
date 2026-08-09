@@ -66,6 +66,7 @@ export async function bindShareButton({
             deferAloneParticipantPrompt?.();
             try {
                 await openShareLinksPopup({
+                    supportsReadOnly: false,
                     title: i18n.t("module.jitsi_meet.share.popup_title"),
                     labels: {
                         empty: i18n.t("module.jitsi_meet.share.empty"),

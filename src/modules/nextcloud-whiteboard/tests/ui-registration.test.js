@@ -124,6 +124,8 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /uiCtx\.capabilities\.get\("share:openPopup"\)/);
     assert.match(source, /resourceType:\s*"whiteboard"/);
     assert.match(source, /resourceId:\s*activeBoard\.id/);
+    assert.match(source, /supportsReadOnly:\s*true/);
+    assert.match(source, /readOnly:\s*session\.canWrite !== true/);
     assert.match(
         source,
         /\/static\/gateways\/share\/ui\/reuse\/share-button\.js/,
@@ -182,7 +184,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /redoButton\?\.addEventListener\("click"/);
     assert.match(
         source,
-        /if \(meta\?\.transient !== true\) persistChanges\(elements\)/,
+        /if \(canWrite && meta\?\.transient !== true\) persistChanges\(elements\)/,
     );
     assert.match(styles, /#page-presence-section\s*\{[^}]*flex:\s*0 0 auto;/s);
     assert.match(

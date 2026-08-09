@@ -176,6 +176,15 @@ test("user share permissions constrain granted capabilities", async () => {
     );
 });
 
+test("share origins can suppress read-only choices", async () => {
+    assert.match(popupSource, /supportsReadOnly = false/);
+    assert.match(
+        popupSource,
+        /supportsReadOnly \|\|\s*option\?\.permissions\?\.includes\("write"\)/,
+    );
+    assert.match(userPageSource, /state\.supportsReadOnly \?/);
+});
+
 test("selected recipient badges track the pending permission", () => {
     assert.match(
         popupSource,

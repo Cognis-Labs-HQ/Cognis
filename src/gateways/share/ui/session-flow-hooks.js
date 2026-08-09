@@ -52,7 +52,26 @@ const PREV_DISPLAY_NAME_KEY = "cognis_prev_display_name";
 const GUEST_TOKEN_ACTIVE_KEY = GUEST_SESSION_ACTIVE_STORAGE_KEY;
 const DISPLAY_NAME_KEY = "cognis_display_name";
 const ACCOUNT_KEY = "cognis_account";
+const ACCESS_DENIED_TOKEN_KEY = "cognis_share_access_denied_token";
 let activeGuestSession = null;
+let activeShareSession = null;
+
+window.addEventListener("cognis:api-access-denied", () => {
+    const shareToken = activeShareSession?.shareToken;
+    const contentUrl = activeShareSession?.session?.shareContext?.contentUrl;
+    if (!shareToken || !contentUrl) return;
+    const activeUrl = new URL(window.location.href);
+    const expectedUrl = new URL(contentUrl, window.location.origin);
+    if (
+        activeUrl.pathname !== expectedUrl.pathname ||
+        activeUrl.search !== expectedUrl.search
+    )
+        return;
+    sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
+    void import("/static/reuse/app-router.js").then(({ navigateTo }) =>
+        navigateTo(`/share/${encodeURIComponent(shareToken)}`),
+    );
+});
 
 uiCtx.capabilities.contribute("session:isGuest", isViewingAsGuest);
 uiCtx.capabilities.contribute("session:isGuestAllowedPath", (path) => {
@@ -157,6 +176,7 @@ function restoreGuestToken() {
     sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
     activeGuestSession = null;
+    activeShareSession = null;
 }
 
 uiCtx.extendFlow(
@@ -225,12 +245,18 @@ uiCtx.extendFlow(
         }
 
         if (!response.ok) {
+            const wasDeniedWhileOpen =
+                sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken;
+            if (wasDeniedWhileOpen) {
+                sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
+            }
             return {
                 authenticated: false,
-                reason:
-                    response.status === 404
-                        ? "share_not_found"
-                        : "share_expired",
+                reason: wasDeniedWhileOpen
+                    ? "share_access_denied"
+                    : response.status === 404
+                      ? "share_not_found"
+                      : "share_expired",
             };
         }
 
@@ -262,13 +288,15 @@ uiCtx.extendFlow(
             // renderer receives the scoped guest token separately for
             // share-only API calls, so notification navigation never swaps
             // localStorage credentials or appears to log the user out.
-            return {
+            const accountSession = {
                 authenticated: true,
                 accountId: priorSessionResult.accountId,
                 role: priorSessionResult.role,
                 isGuestSession: false,
                 shareContext,
             };
+            activeShareSession = { shareToken, session: accountSession };
+            return accountSession;
         }
 
         const abortController = await activateGuestToken(
@@ -294,6 +322,7 @@ uiCtx.extendFlow(
             shareContext,
         };
         activeGuestSession = { shareToken, session: guestSession };
+        activeShareSession = activeGuestSession;
         return guestSession;
     },
 );

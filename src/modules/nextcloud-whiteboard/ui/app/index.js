@@ -151,6 +151,7 @@ function emitBoardRenamed(title) {
 }
 function connectSocket(io, session, canvas) {
     const { serverUrl, roomId, token } = session;
+    const canWrite = session.canWrite === true;
     const socket = io(serverUrl, {
         auth: { token },
         transports: ["websocket"],
@@ -175,6 +176,7 @@ function connectSocket(io, session, canvas) {
     }, EMIT_DEBOUNCE_MS);
     const emitChanges = throttleLatest(
         (elements, type = SYNC_MESSAGE_SCENE_INIT) => {
+            if (!canWrite) return;
             if (!socket.connected || !joinedRoom) {
                 setSyncStatus(
                     "error",
@@ -211,8 +213,8 @@ function connectSocket(io, session, canvas) {
         }
         savedElements = elements;
         composer?.refreshPresence?.();
-        if (meta?.transient !== true) persistChanges(elements);
-        emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
+        if (canWrite && meta?.transient !== true) persistChanges(elements);
+        if (canWrite) emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
     });
     socket.on("connect", () => {
         lastConnectionToast = "";
@@ -266,7 +268,7 @@ function connectSocket(io, session, canvas) {
                 canvas.applyElements(message.payload.elements, {
                     replace: true,
                 });
-                persistChanges(message.payload.elements);
+                if (canWrite) persistChanges(message.payload.elements);
             }
         } catch (error) {
             console.warn(
@@ -472,6 +474,28 @@ async function openSharePopup() {
             resourceId: activeBoard.id,
             contentUrl: `/whiteboard?id=${encodeURIComponent(activeBoard.id)}`,
             grantedCapabilities: ["whiteboard:read", "whiteboard:write"],
+            supportsReadOnly: true,
+            linkAccessOptions: [
+                {
+                    id: "read",
+                    label: translateModuleString(
+                        "module.nextcloud_whiteboard.share_permission_read",
+                    ),
+                    permissions: ["read"],
+                    grantedCapabilities: ["whiteboard:read"],
+                },
+                {
+                    id: "write",
+                    label: translateModuleString(
+                        "module.nextcloud_whiteboard.share_permission_write",
+                    ),
+                    permissions: ["read", "write"],
+                    grantedCapabilities: [
+                        "whiteboard:read",
+                        "whiteboard:write",
+                    ],
+                },
+            ],
             title: translateModuleString(
                 "module.nextcloud_whiteboard.share_popup_title",
             ),
@@ -490,6 +514,18 @@ async function openSharePopup() {
                 ),
                 shareOptions: translateModuleString(
                     "module.nextcloud_whiteboard.share_options_label",
+                ),
+                permission: translateModuleString(
+                    "module.nextcloud_whiteboard.share_options_label",
+                ),
+                accessMode: translateModuleString(
+                    "module.nextcloud_whiteboard.share_options_label",
+                ),
+                readPermission: translateModuleString(
+                    "module.nextcloud_whiteboard.share_permission_read",
+                ),
+                writePermission: translateModuleString(
+                    "module.nextcloud_whiteboard.share_permission_write",
                 ),
                 mail: translateModuleString("ui.reuse.mail"),
                 label: translateModuleString(
@@ -770,10 +806,14 @@ async function openBoard(board) {
     }
     const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasElement) return;
-    canvasInstance = createWhiteboardCanvas(canvasElement);
-    canvasInstance.setImageUploader((dataUrl) =>
-        uploadWhiteboardImage(session.roomId, dataUrl),
-    );
+    canvasInstance = createWhiteboardCanvas(canvasElement, {
+        readOnly: session.canWrite !== true,
+    });
+    if (session.canWrite === true) {
+        canvasInstance.setImageUploader((dataUrl) =>
+            uploadWhiteboardImage(session.roomId, dataUrl),
+        );
+    }
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     savedElements = Array.isArray(session.elements) ? session.elements : [];
     if (savedElements.length > 0) {
@@ -783,6 +823,15 @@ async function openBoard(board) {
     socketInstance = connectSocket(io, session, canvasInstance);
     composer?.refreshPresence?.();
     bindCanvasToolbar(canvasInstance);
+    if (session.canWrite !== true) {
+        document
+            .querySelectorAll(
+                "#whiteboard-toolbar button, #whiteboard-toolbar select, #whiteboard-toolbar input",
+            )
+            .forEach((control) => {
+                control.disabled = true;
+            });
+    }
     setOverlayVisible(false);
 }
 
@@ -820,10 +869,14 @@ function onCanvasRender() {
     if (!canvasElement || canvasInstance || !activeBoard || !activeSession)
         return;
     if (preflightStatus !== "passed") return;
-    canvasInstance = createWhiteboardCanvas(canvasElement);
-    canvasInstance.setImageUploader((dataUrl) =>
-        uploadWhiteboardImage(activeSession.roomId, dataUrl),
-    );
+    canvasInstance = createWhiteboardCanvas(canvasElement, {
+        readOnly: activeSession.canWrite !== true,
+    });
+    if (activeSession.canWrite === true) {
+        canvasInstance.setImageUploader((dataUrl) =>
+            uploadWhiteboardImage(activeSession.roomId, dataUrl),
+        );
+    }
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);

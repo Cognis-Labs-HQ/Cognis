@@ -22,4 +22,5 @@
   <string name="share.keyring.request_component">共有</string>
   <string name="share.keyring.request_action_access">アクセス</string>
   <string name="share.keyring.request_process">共有 {{shareId}}</string>
+  <string name="share.error.access_denied">この共有項目にアクセスする権限がありません。</string>
 </resources>

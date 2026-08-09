@@ -14,6 +14,7 @@ async function openCalendarSharePopup({ calendar, i18n }) {
         resourceId: calendar.id,
         passwordRequired: calendar.visibility === "private",
         grantedCapabilities: ["calendar:read", "calendar:write"],
+        supportsReadOnly: true,
         title: i18n.t("gateway.calendar.share_calendar"),
         labels: {
             empty: i18n.t("gateway.calendar.share_links_details"),

@@ -306,6 +306,7 @@ export async function openShareLinksPopup({
     linkAccessOptions = [],
     passwordRequired = false,
     defaultGrantedCapabilities = [],
+    supportsReadOnly = false,
 }) {
     await ensureStylesheet();
 
@@ -324,11 +325,21 @@ export async function openShareLinksPopup({
         methodModules: new Map(),
         activeMethodId: "link",
         visibleLinks: [],
-        permission: "read",
+        permission: supportsReadOnly ? "read" : "write",
+        supportsReadOnly,
         linkAccessOptions: Array.isArray(linkAccessOptions)
-            ? linkAccessOptions
+            ? linkAccessOptions.filter(
+                  (option) =>
+                      supportsReadOnly ||
+                      option?.permissions?.includes("write"),
+              )
             : [],
-        linkAccessId: String(linkAccessOptions?.[0]?.id ?? ""),
+        linkAccessId: String(
+            linkAccessOptions.find(
+                (option) =>
+                    supportsReadOnly || option?.permissions?.includes("write"),
+            )?.id ?? "",
+        ),
     };
 
     try {
@@ -551,9 +562,18 @@ export async function openShareLinksPopup({
                         recipients: state.recipients,
                         shareMethod: state.activeMethodId,
                         permission: state.permission,
-                        selectedAccess: state.linkAccessOptions.find(
-                            (option) => option.id === state.linkAccessId,
-                        ),
+                        supportsReadOnly: state.supportsReadOnly,
+                        selectedAccess:
+                            state.linkAccessOptions.find(
+                                (option) => option.id === state.linkAccessId,
+                            ) ??
+                            (state.supportsReadOnly
+                                ? undefined
+                                : {
+                                      permissions: ["read", "write"],
+                                      grantedCapabilities:
+                                          state.defaultGrantedCapabilities,
+                                  }),
                         defaultGrantedCapabilities:
                             state.defaultGrantedCapabilities,
                     };
@@ -629,7 +649,7 @@ export async function openShareLinksPopup({
                 state.expiresAt = "";
                 state.password = "";
                 state.recipients = [];
-                state.permission = "read";
+                state.permission = state.supportsReadOnly ? "read" : "write";
                 state.linkAccessId = String(
                     state.linkAccessOptions?.[0]?.id ?? "",
                 );

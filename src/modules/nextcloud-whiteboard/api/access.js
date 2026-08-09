@@ -89,19 +89,29 @@ export async function resolveWhiteboardUserAccess({
                 : "whiteboard:read",
         }).catch(() => null);
         if (shareAccess?.shareGuest) {
-            return shareAccess.authorized
-                ? {
-                      authorized: true,
-                      username: shareAccess.username,
-                      displayName: shareAccess.displayName,
-                  }
-                : {
-                      authorized: false,
-                      status: 403,
-                      code: "forbidden",
-                      message:
-                          "This share link cannot access the requested whiteboard.",
-                  };
+            if (shareAccess.authorized) {
+                const writeAccess = requireWrite
+                    ? shareAccess
+                    : await resolveShareGuestAccess({
+                          claims,
+                          resourceType: "whiteboard",
+                          resourceId: whiteboardId,
+                          requiredCapability: "whiteboard:write",
+                      }).catch(() => null);
+                return {
+                    authorized: true,
+                    canWrite: writeAccess?.authorized === true,
+                    username: shareAccess.username,
+                    displayName: shareAccess.displayName,
+                };
+            }
+            return {
+                authorized: false,
+                status: 403,
+                code: "forbidden",
+                message:
+                    "This share link cannot access the requested whiteboard.",
+            };
         }
     }
     if (typeof resolveShareUserAccess === "function") {
@@ -114,12 +124,24 @@ export async function resolveWhiteboardUserAccess({
                 : "whiteboard:read",
         }).catch(() => null);
         if (userShareAccess?.authorized) {
+            const writeAccess = requireWrite
+                ? userShareAccess
+                : await resolveShareUserAccess({
+                      accountId: claims.sub,
+                      resourceType: "whiteboard",
+                      resourceId: whiteboardId,
+                      requiredCapability: "whiteboard:write",
+                  }).catch(() => null);
             const username = await resolveRequesterUsername(
                 profileStore,
                 claims.sub,
             ).catch(() => "");
             return username
-                ? { authorized: true, username }
+                ? {
+                      authorized: true,
+                      canWrite: writeAccess?.authorized === true,
+                      username,
+                  }
                 : {
                       authorized: false,
                       status: 409,
@@ -142,7 +164,7 @@ export async function resolveWhiteboardUserAccess({
         };
     const authorized = await store.canAccessWhiteboard(whiteboardId, username);
     return authorized
-        ? { authorized: true, username }
+        ? { authorized: true, canWrite: true, username }
         : {
               authorized: false,
               status: 403,

@@ -16,7 +16,10 @@ import { createWhiteboardTextTools } from "./text-tools.js";
 import { createClipboardImageHandler } from "./clipboard-images.js";
 import { bindWhiteboardCanvasEvents } from "./canvas-events.js";
 
-export function createWhiteboardCanvas(canvasElement) {
+export function createWhiteboardCanvas(
+    canvasElement,
+    { readOnly = false } = {},
+) {
     const context = canvasElement.getContext("2d");
     let elements = [];
     let currentPoints = [];
@@ -769,6 +772,7 @@ export function createWhiteboardCanvas(canvasElement) {
         shouldPreventContextMenu: (event) => {
             if (panState) event.preventDefault();
         },
+        readOnly,
     });
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(canvasElement.parentElement ?? document.body);

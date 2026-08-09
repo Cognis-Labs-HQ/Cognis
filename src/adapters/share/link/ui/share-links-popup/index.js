@@ -112,11 +112,13 @@ export function openSharePopup({
     contentUrl,
     grantedCapabilities = [],
     passwordRequired = false,
+    supportsReadOnly = false,
     ...popupOptions
 }) {
     return openShareLinksPopup({
         ...popupOptions,
         passwordRequired,
+        supportsReadOnly,
         defaultGrantedCapabilities: grantedCapabilities,
         ...buildShareTokenCallbacks({
             resourceType,

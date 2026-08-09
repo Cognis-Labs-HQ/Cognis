@@ -33,7 +33,11 @@ test("user-share recipients keep their account identity for whiteboard access", 
         },
     });
 
-    assert.deepEqual(access, { authorized: true, username: "bob" });
+    assert.deepEqual(access, {
+        authorized: true,
+        canWrite: false,
+        username: "bob",
+    });
     assert.equal(nativeAccessChecked, false);
 });
 

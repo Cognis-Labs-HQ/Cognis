@@ -419,7 +419,7 @@ export function registerApiRoutes(router, ctx) {
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
                 resolveShareUserAccess,
-                requireWrite: true,
+                requireWrite: false,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -453,6 +453,7 @@ export function registerApiRoutes(router, ctx) {
                     roomId: whiteboard.id,
                     title: whiteboard.title,
                     canRename: access.username === whiteboard.createdBy,
+                    canWrite: access.canWrite === true,
                     serverUrl: config.serverUrl,
                     imageUploadMaxBytes: config.imageUploadMaxBytes,
                     elements,

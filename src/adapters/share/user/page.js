@@ -32,14 +32,16 @@ export function buildCreateOptions(input) {
         ...input,
         recipients: input.recipients || [],
         grantedCapabilities:
-            input.permission === "write"
+            input.permission === "write" || input.supportsReadOnly === false
                 ? defaultCapabilities
                 : defaultCapabilities.filter(
                       (capability) => !String(capability).endsWith(":write"),
                   ),
         accessControls: {
             permissions:
-                input.permission === "write" ? ["read", "write"] : ["read"],
+                input.permission === "write" || input.supportsReadOnly === false
+                    ? ["read", "write"]
+                    : ["read"],
             recipients: input.recipients || [],
         },
     };
@@ -54,7 +56,7 @@ export function renderPage({ labels, state, escapeHtml, gatewayFields }) {
       <label><span>${escapeHtml(labels.users || "Share with people")}</span><input id="share-links-user-search" type="search" autocomplete="off" placeholder="${escapeHtml(labels.userSearchPlaceholder || "Search people…")}" /></label>
       <div class="share-links-user-results"></div>
       <div class="share-links-selected-users"></div>
-      <label><span>${escapeHtml(labels.permission || "Permission")}</span><select id="share-links-user-permission"><option value="read"${state.permission === "read" ? " selected" : ""}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${state.permission === "write" ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select></label>
+      ${state.supportsReadOnly ? `<label><span>${escapeHtml(labels.permission || "Permission")}</span><select id="share-links-user-permission"><option value="read"${state.permission === "read" ? " selected" : ""}>${escapeHtml(labels.readPermission || "Read")}</option><option value="write"${state.permission === "write" ? " selected" : ""}>${escapeHtml(labels.writePermission || "Write")}</option></select></label>` : ""}
       <label><span>${escapeHtml(labels.expiryLabel)}</span><input id="share-links-expiry" type="datetime-local" value="${escapeHtml(state.expiresAt)}" /></label>
       ${gatewayFields.password}
       <div class="share-links-form-actions"><button id="share-links-create-btn" class="btn-confirm btn-animated" type="button">${escapeHtml(state.editingShareId ? labels.updateUserShare || "Update User Share" : `${labels.shareWithPrefix || "Share with"} ${state.recipients.length} ${labels.usersCountLabel || "users"}`)}</button>${state.editingShareId ? `<button type="button" class="btn-cancel" data-share-cancel-edit aria-label="${escapeHtml(labels.cancel)}">×</button>` : ""}</div>
