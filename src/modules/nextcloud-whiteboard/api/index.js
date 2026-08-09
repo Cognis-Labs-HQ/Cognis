@@ -519,7 +519,7 @@ export function registerApiRoutes(router, ctx) {
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
                 resolveShareUserAccess,
-                requireWrite: true,
+                requireWrite: false,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -593,7 +593,7 @@ export function registerApiRoutes(router, ctx) {
                     whiteboardId: whiteboard.id,
                     resolveShareGuestAccess,
                     resolveShareUserAccess,
-                    requireWrite: true,
+                    requireWrite: false,
                 });
                 if (!access.authorized) {
                     sendError(res, access.status, access.code, access.message);

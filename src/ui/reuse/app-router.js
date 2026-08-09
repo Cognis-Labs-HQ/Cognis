@@ -434,7 +434,10 @@ async function loadRoute(path) {
         try {
             const routeRoot = resolveRouterRoot();
             if (!routeRoot) return false;
-            await mod.mount(routeRoot, { signal });
+            await mod.mount(routeRoot, {
+                signal,
+                shareContext: session?.shareContext ?? null,
+            });
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {

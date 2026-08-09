@@ -186,19 +186,13 @@ uiCtx.extendFlow(
     async (stageCtx) => {
         const shareToken = resolveShareTokenFromLocation();
         if (!shareToken) {
-            if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1") {
-                // The guest session was already activated on the share page
-                // itself; keep recognising it as authenticated on other
-                // paths so the guest-navigation guard can intercept the
-                // route with a blocked-page popup instead of the generic
-                // auth flow silently redirecting to /login.
-                return {
-                    authenticated: true,
-                    accountId: null,
-                    role: "user",
-                    isGuestSession: true,
-                    shareContext: null,
-                };
+            if (
+                sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1" &&
+                activeGuestSession?.session
+            ) {
+                // Preserve the resolved share context after the gateway
+                // forwards the guest from /share/:token to its content URL.
+                return activeGuestSession.session;
             }
             return null;
         }

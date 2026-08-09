@@ -184,7 +184,10 @@ test("router resolves #app before mounting routes", () => {
     assert.match(src, /function resolveRouterRoot\(\)/);
     assert.match(src, /_root = document\.querySelector\(["']#app["']\);/);
     assert.match(src, /const routeRoot = resolveRouterRoot\(\);/);
-    assert.match(src, /await mod\.mount\(routeRoot, \{ signal \}\);/);
+    assert.match(
+        src,
+        /await mod\.mount\(routeRoot, \{[\s\S]*signal,[\s\S]*shareContext:/,
+    );
 });
 
 test("dashboard-layout initialises the router after shell setup", () => {
@@ -289,6 +292,17 @@ test("router aborts the previous mount's signal on navigation", () => {
         src,
         /openRuntimeErrorPopup\(/,
         "app-router.js must surface runtime route failures via the shared error popup",
+    );
+});
+
+test("router passes resolved share context to destination pages", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        routerSource,
+        /shareContext:\s*session\?\.shareContext \?\? null/,
     );
 });
 

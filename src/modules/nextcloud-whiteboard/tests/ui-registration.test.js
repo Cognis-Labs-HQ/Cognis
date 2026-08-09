@@ -126,6 +126,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /resourceId:\s*activeBoard\.id/);
     assert.match(source, /supportsReadOnly:\s*true/);
     assert.match(source, /readOnly:\s*session\.canWrite !== true/);
+    assert.match(source, /composer\?\.destroy\(\)/);
     assert.match(
         source,
         /\/static\/gateways\/share\/ui\/reuse\/share-button\.js/,

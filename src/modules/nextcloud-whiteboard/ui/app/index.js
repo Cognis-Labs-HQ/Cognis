@@ -936,7 +936,15 @@ export async function mount(root, { signal, shareContext } = {}) {
         };
     }
 
-    signal?.addEventListener("abort", () => teardownCanvas(), { once: true });
+    signal?.addEventListener(
+        "abort",
+        () => {
+            composer?.destroy();
+            composer = null;
+            teardownCanvas();
+        },
+        { once: true },
+    );
 
     composer = createPageComposer(root, {
         allowCustomization: false,
