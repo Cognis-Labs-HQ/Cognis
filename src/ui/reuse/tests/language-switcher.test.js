@@ -92,7 +92,7 @@ test("language switcher uses persisted preferences when local state is not initi
     }
 });
 
-test("enabled language switcher remains visible with one preferred language", () => {
+test("enabled language switcher stays hidden with one preferred language", () => {
     const originalDocument = globalThis.document;
     const button = {
         hidden: true,
@@ -115,8 +115,8 @@ test("enabled language switcher remains visible with one preferred language", ()
             },
         });
 
-        assert.equal(button.hidden, false);
-        assert.equal(button.textContent, "EN");
+        assert.equal(button.hidden, true);
+        assert.equal(button.textContent, "");
     } finally {
         globalThis.document = originalDocument;
     }

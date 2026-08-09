@@ -57,7 +57,7 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
         : readPreferredLanguages();
     const languages = sanitizeLanguagePriority(configuredLanguages);
     const enabled = preferences?.languageSwitcherShow !== false;
-    button.hidden = !enabled;
+    button.hidden = !enabled || languages.length <= 1;
     button[SWITCHER_OPTIONS_KEY] = {
         i18n,
         languages,
