@@ -6,6 +6,9 @@
  *     an ISO timestamp or an empty value for non-expiring links.
  *   buildShareTokenCallbacks(options) — returns popup callbacks backed by the
  *     Share gateway token API for one resource.
+ *   fetchShareOverview() — lists shares sent and received by the active user.
+ *   revokeShare(shareId) — revokes a share owned by the active user.
+ *   rejectShare(shareId) — rejects a share received by the active user.
  *
  * Usage:
  *   const callbacks = buildShareTokenCallbacks({
@@ -27,6 +30,32 @@ export function resolveShareExpiry(expiresInHours) {
     return Number.isFinite(hours) && hours > 0
         ? new Date(Date.now() + hours * 60 * 60 * 1000).toISOString()
         : "";
+}
+
+export async function fetchShareOverview() {
+    const response = await apiFetch("/api/v1/share/overview");
+    if (!response.ok) throw new Error("share_overview_failed");
+    const payload = await response.json();
+    return {
+        sent: Array.isArray(payload?.data?.sent) ? payload.data.sent : [],
+        received: Array.isArray(payload?.data?.received)
+            ? payload.data.received
+            : [],
+    };
+}
+
+/** @param {string} shareId @returns {Promise<Response>} */
+export async function revokeShare(shareId) {
+    return apiFetch(`${SHARE_API}/${encodeURIComponent(shareId)}`, {
+        method: "DELETE",
+    });
+}
+
+/** @param {string} shareId @returns {Promise<Response>} */
+export async function rejectShare(shareId) {
+    return apiFetch(`${SHARE_API}/${encodeURIComponent(shareId)}/reject`, {
+        method: "POST",
+    });
 }
 
 /**

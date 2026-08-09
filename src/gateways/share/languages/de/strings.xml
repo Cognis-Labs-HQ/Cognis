@@ -23,4 +23,23 @@
   <string name="share.keyring.request_action_access">zugreifen auf</string>
   <string name="share.keyring.request_process">Freigabe {{shareId}}</string>
   <string name="share.error.access_denied">Sie haben keine Berechtigung mehr, auf dieses freigegebene Element zuzugreifen.</string>
+  <string name="share.shares.title">Freigaben</string>
+  <string name="share.shares.subtitle">Überprüfen Sie gesendete und empfangene Freigaben.</string>
+  <string name="share.shares.sent">Gesendete Freigaben</string>
+  <string name="share.shares.received">Empfangene Freigaben</string>
+  <string name="share.shares.empty">Keine Freigaben vorhanden.</string>
+  <string name="share.shares.active">Aktiv</string>
+  <string name="share.shares.expired">Abgelaufen</string>
+  <string name="share.shares.never">Läuft nie ab</string>
+  <string name="share.shares.open">Öffnen</string>
+  <string name="share.shares.manage">Verwalten</string>
+  <string name="share.shares.delete">Löschen</string>
+  <string name="share.shares.reject">Ablehnen</string>
+  <string name="share.shares.delete_title">Freigabe löschen</string>
+  <string name="share.shares.delete_prompt">Diese Freigabe für alle Empfangenden löschen?</string>
+  <string name="share.shares.reject_title">Freigabe ablehnen</string>
+  <string name="share.shares.reject_prompt">Diese Freigabe ablehnen und Ihren Zugriff entfernen?</string>
+  <string name="share.shares.updated">Freigabe aktualisiert.</string>
+  <string name="share.shares.update_failed">Die Freigabe konnte nicht aktualisiert werden.</string>
+  <string name="share.shares.load_failed">Freigaben konnten nicht geladen werden.</string>
 </resources>

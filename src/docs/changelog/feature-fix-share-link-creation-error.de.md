@@ -27,3 +27,7 @@ Kalender-Ereignisformulare laden ihre Abhängigkeit zur HTML-Escapierung jetzt a
 ## Zugriff auf geteilte Meetings verbessert
 
 Freigabedialoge verwenden jetzt eine neutrale Aktion „Schließen“ und eine destruktive Aktion „Widerrufen“. Für Benutzer freigegebene Meetings behalten die vollständige Seitenstruktur bei, ohne Steuerelemente zum erneuten Teilen anzuzeigen. Abgelehnte Link-Freigaben bleiben auf der Zugriffsseite, statt wiederholt neu zu laden.
+
+## Freigaben zentral verwalten
+
+Das Benutzermenü enthält jetzt eine Seite „Freigaben“, auf der gesendete und empfangene Freigaben geöffnet werden können. Erstellende können gesendete Freigaben verwalten oder löschen, Empfangende können Freigaben ablehnen, und Cognis benachrichtigt betroffene Personen, wenn Freigaben gelöscht werden, ablaufen oder abgelehnt werden.

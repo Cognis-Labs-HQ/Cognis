@@ -23,4 +23,23 @@
   <string name="share.keyring.request_action_access">mengakses</string>
   <string name="share.keyring.request_process">berbagi {{shareId}}</string>
   <string name="share.error.access_denied">Anda tidak lagi memiliki izin untuk mengakses item bersama ini.</string>
+  <string name="share.shares.title">Berbagi</string>
+  <string name="share.shares.subtitle">Tinjau item yang Anda bagikan dan terima.</string>
+  <string name="share.shares.sent">Berbagi Terkirim</string>
+  <string name="share.shares.received">Berbagi Diterima</string>
+  <string name="share.shares.empty">Tidak ada berbagi untuk ditampilkan.</string>
+  <string name="share.shares.active">Aktif</string>
+  <string name="share.shares.expired">Kedaluwarsa</string>
+  <string name="share.shares.never">Tidak pernah kedaluwarsa</string>
+  <string name="share.shares.open">Buka</string>
+  <string name="share.shares.manage">Kelola</string>
+  <string name="share.shares.delete">Hapus</string>
+  <string name="share.shares.reject">Tolak</string>
+  <string name="share.shares.delete_title">Hapus Berbagi</string>
+  <string name="share.shares.delete_prompt">Hapus berbagi ini untuk semua penerima?</string>
+  <string name="share.shares.reject_title">Tolak Berbagi</string>
+  <string name="share.shares.reject_prompt">Tolak berbagi ini dan hapus akses Anda?</string>
+  <string name="share.shares.updated">Berbagi diperbarui.</string>
+  <string name="share.shares.update_failed">Berbagi tidak dapat diperbarui.</string>
+  <string name="share.shares.load_failed">Berbagi tidak dapat dimuat.</string>
 </resources>

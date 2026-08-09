@@ -27,3 +27,7 @@ Calendar event forms now load their HTML escaping dependency explicitly, prevent
 ## Refine shared Meeting access
 
 Share dialogs now use a neutral Close action and a destructive Revoke action. User-shared Meetings retain the full page structure without exposing resharing controls, while denied link shares stop on the access screen instead of repeatedly reloading.
+
+## Manage shares in one place
+
+The User Menu now includes a Shares page for opening sent and received shares. Creators can manage or delete sent shares, recipients can reject received shares, and Cognis notifies affected users when shares are deleted, expire, or are rejected.

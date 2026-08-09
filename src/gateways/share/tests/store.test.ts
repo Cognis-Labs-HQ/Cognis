@@ -92,6 +92,7 @@ test("share token schema declares resource and token columns", async () => {
     const columnNames = tableDef.columns.map((column) => column.name);
     assert.ok(columnNames.includes("resource_type"));
     assert.ok(columnNames.includes("resource_key"));
+    assert.ok(columnNames.includes("expiration_notified_at"));
     assert.deepEqual(
         tableDef.columns.find((column) => column.name === "resource_key")
             ?.references,
@@ -159,6 +160,9 @@ test("issue, list, resolve, and delete share tokens", async () => {
     assert.deepEqual(resolved?.accessControls.permissions, ["read"]);
     assert.equal(resolved?.accessControls.watermarkReadonly, true);
     assert.equal(resolved?.accessControls.recipients[0]?.id, "bob");
+    const received = await store.listByRecipient("bob");
+    assert.equal(received.length, 1);
+    assert.equal(received[0]?.id, issued.id);
 
     const deleted = await store.deleteById({
         shareId: issued.id,
@@ -264,4 +268,22 @@ test("purgeExpired removes only tokens past the retention window", async () => {
         Array.from(executor.rows.values())[0].owner_account_id,
         "alice",
     );
+});
+
+test("expired share notifications are claimed only once", async () => {
+    const executor = new MemoryExecutor();
+    const store = new ShareTokenStore(executor as never);
+    await store.ensureSchema();
+    const share = await store.issue({
+        ownerAccountId: "alice",
+        resourceType: "meeting",
+        resourceId: "meeting-expired",
+        expiresAt: new Date(Date.now() - 60_000).toISOString(),
+    });
+
+    assert.deepEqual(
+        (await store.claimExpiredNotifications()).map((record) => record.id),
+        [share.id],
+    );
+    assert.deepEqual(await store.claimExpiredNotifications(), []);
 });

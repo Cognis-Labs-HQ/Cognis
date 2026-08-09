@@ -27,3 +27,7 @@ Formulir acara Kalender kini memuat dependensi pengamanan HTML secara eksplisit 
 ## Sempurnakan akses Meeting bersama
 
 Dialog berbagi kini menggunakan tindakan Tutup yang netral dan tindakan Cabut yang destruktif. Meeting yang dibagikan kepada pengguna mempertahankan struktur halaman lengkap tanpa menampilkan kontrol untuk membagikannya kembali, sedangkan tautan yang ditolak berhenti di layar akses dan tidak dimuat ulang berulang kali.
+
+## Kelola berbagi di satu tempat
+
+Menu Pengguna kini memiliki halaman Berbagi untuk membuka berbagi yang dikirim dan diterima. Pembuat dapat mengelola atau menghapus berbagi terkirim, penerima dapat menolak berbagi yang diterima, dan Cognis memberi tahu pengguna terkait saat berbagi dihapus, kedaluwarsa, atau ditolak.

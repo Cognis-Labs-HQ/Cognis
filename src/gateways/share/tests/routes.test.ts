@@ -290,6 +290,19 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             ],
         },
     );
+    assert.equal(
+        uiRegistry.listSpaRoutes().find((route) => route.id === "shares-page")
+            ?.scriptUrl,
+        "/static/gateways/share/ui/app/shares/index.js",
+    );
+    assert.ok(
+        uiRegistry
+            .listNavbarPlugins()
+            .some(
+                (plugin) =>
+                    plugin.scriptUrl === "/static/gateways/share/ui/navbar.js",
+            ),
+    );
 
     const response = new ResponseRecorder();
     await dispatchRoute(
@@ -566,6 +579,19 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         String(userShareNotifications[0]?.actionUrl ?? ""),
         /^\/share\//,
     );
+    const deleteAlternateResponse = await dispatchJson(
+        "DELETE",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(alternateRecipientResponse.body.data.id)}`,
+    );
+    assert.equal(deleteAlternateResponse.statusCode, 200);
+    assert.ok(
+        userShareNotifications.some(
+            (notification) =>
+                notification.recipientUsername === "charlie" &&
+                notification.subject === "A shared item was revoked",
+        ),
+    );
     const restrictedToken = encodeURIComponent(
         restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],
     );
@@ -620,6 +646,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(deliveredShares.length, 1);
 
     const restrictedShareId = String(restrictedCreateResponse.body.data.id);
+    const overviewResponse = await dispatchJson(
+        "GET",
+        bobToken,
+        "/api/v1/share/overview",
+    );
+    assert.equal(overviewResponse.statusCode, 200);
+    assert.equal(overviewResponse.body.data.received[0]?.id, restrictedShareId);
     const addSecondRecipientResponse = await dispatchJson(
         "PATCH",
         adminToken,
@@ -634,25 +667,32 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         },
     );
     assert.equal(addSecondRecipientResponse.statusCode, 200);
+    const rejectionResponse = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/share/tokens/${encodeURIComponent(restrictedShareId)}/reject`,
+    );
+    assert.equal(rejectionResponse.statusCode, 200);
+    assert.equal(rejectionResponse.body.data.rejected, true);
+    assert.ok(
+        userShareNotifications.some(
+            (notification) =>
+                notification.recipientUsername === "alice" &&
+                notification.subject === "A recipient rejected your share",
+        ),
+    );
     const removeUserRecipient = capabilities.get<
         (input: {
             shareId: string;
             recipientAccountId: string;
         }) => Promise<"updated" | "deleted" | "not_found">
     >("share:removeUserRecipient");
-    assert.equal(
-        await removeUserRecipient?.({
-            shareId: restrictedShareId,
-            recipientAccountId: "bob",
-        }),
-        "updated",
-    );
-    const afterBobLeaves = await dispatchJson(
+    const afterRejection = await dispatchJson(
         "GET",
         adminToken,
         "/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
     );
-    const remainingShare = afterBobLeaves.body.data.find(
+    const remainingShare = afterRejection.body.data.find(
         (share: { id?: string }) => share.id === restrictedShareId,
     );
     assert.equal(remainingShare.accessControls.recipients.length, 1);

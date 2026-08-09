@@ -23,4 +23,23 @@
   <string name="share.keyring.request_action_access">アクセス</string>
   <string name="share.keyring.request_process">共有 {{shareId}}</string>
   <string name="share.error.access_denied">この共有項目にアクセスする権限がありません。</string>
+  <string name="share.shares.title">共有</string>
+  <string name="share.shares.subtitle">送信した共有と受信した共有を確認します。</string>
+  <string name="share.shares.sent">送信した共有</string>
+  <string name="share.shares.received">受信した共有</string>
+  <string name="share.shares.empty">表示する共有はありません。</string>
+  <string name="share.shares.active">有効</string>
+  <string name="share.shares.expired">期限切れ</string>
+  <string name="share.shares.never">無期限</string>
+  <string name="share.shares.open">開く</string>
+  <string name="share.shares.manage">管理</string>
+  <string name="share.shares.delete">削除</string>
+  <string name="share.shares.reject">拒否</string>
+  <string name="share.shares.delete_title">共有を削除</string>
+  <string name="share.shares.delete_prompt">すべての受信者に対してこの共有を削除しますか？</string>
+  <string name="share.shares.reject_title">共有を拒否</string>
+  <string name="share.shares.reject_prompt">この共有を拒否してアクセス権を削除しますか？</string>
+  <string name="share.shares.updated">共有を更新しました。</string>
+  <string name="share.shares.update_failed">共有を更新できませんでした。</string>
+  <string name="share.shares.load_failed">共有を読み込めませんでした。</string>
 </resources>

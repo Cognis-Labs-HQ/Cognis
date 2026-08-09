@@ -23,4 +23,23 @@
   <string name="share.keyring.request_action_access">access</string>
   <string name="share.keyring.request_process">share {{shareId}}</string>
   <string name="share.error.access_denied">You no longer have permission to access this shared item.</string>
+  <string name="share.shares.title">Shares</string>
+  <string name="share.shares.subtitle">Review the items you have shared and received.</string>
+  <string name="share.shares.sent">Sent Shares</string>
+  <string name="share.shares.received">Received Shares</string>
+  <string name="share.shares.empty">No shares to show.</string>
+  <string name="share.shares.active">Active</string>
+  <string name="share.shares.expired">Expired</string>
+  <string name="share.shares.never">Never expires</string>
+  <string name="share.shares.open">Open</string>
+  <string name="share.shares.manage">Manage</string>
+  <string name="share.shares.delete">Delete</string>
+  <string name="share.shares.reject">Reject</string>
+  <string name="share.shares.delete_title">Delete Share</string>
+  <string name="share.shares.delete_prompt">Delete this share for every recipient?</string>
+  <string name="share.shares.reject_title">Reject Share</string>
+  <string name="share.shares.reject_prompt">Reject this share and remove your access?</string>
+  <string name="share.shares.updated">Share updated.</string>
+  <string name="share.shares.update_failed">The share could not be updated.</string>
+  <string name="share.shares.load_failed">Shares could not be loaded.</string>
 </resources>

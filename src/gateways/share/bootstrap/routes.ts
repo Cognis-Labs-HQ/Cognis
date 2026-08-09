@@ -222,6 +222,17 @@ export function createShareRoutes(input: {
             return true;
         }
 
+        if (req.method === "GET" && url.pathname === "/api/v1/share/overview") {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const [sent, received] = await Promise.all([
+                input.gateway.listTokens({ ownerAccountId: claims.sub }),
+                input.gateway.listReceivedTokens(claims.sub),
+            ]);
+            sendJson(res, 200, { data: { sent, received } });
+            return true;
+        }
+
         if (req.method === "POST" && url.pathname === "/api/v1/share/tokens") {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
@@ -445,6 +456,8 @@ export function createShareRoutes(input: {
                 ownerAccountId: existingToken.ownerAccountId,
                 resourceType: existingToken.resourceType,
                 resourceId: existingToken.resourceId,
+                label: existingToken.label,
+                recipients: existingToken.accessControls.recipients,
             });
             const deleted = getFirstStageResult<{ revoked?: boolean }>(
                 flowResult.stageResults,
@@ -460,6 +473,40 @@ export function createShareRoutes(input: {
                 return true;
             }
             sendJson(res, 200, { data: { deleted: true } });
+            return true;
+        }
+
+        const rejectMatch = url.pathname.match(
+            /^\/api\/v1\/share\/tokens\/([^/]+)\/reject$/,
+        );
+        if (req.method === "POST" && rejectMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const shareId = decodeURIComponent(rejectMatch[1]);
+            const shareRecord = await input.gateway.getTokenById(shareId);
+            const flowResult = await input.flow.run("revoke-share-token", {
+                claims,
+                shareId,
+                rejection: true,
+                ownerAccountId: shareRecord?.ownerAccountId,
+                recipientAccountId: claims.sub,
+                label: shareRecord?.label,
+                recipients: shareRecord?.accessControls.recipients,
+            });
+            const rejected = getFirstStageResult<{
+                revoked?: boolean;
+                rejected?: boolean;
+            }>(flowResult.stageResults, "delete-token");
+            if (!rejected?.revoked || !rejected.rejected) {
+                sendError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Share could not be rejected.",
+                );
+                return true;
+            }
+            sendJson(res, 200, { data: { rejected: true } });
             return true;
         }
 

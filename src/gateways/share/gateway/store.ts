@@ -44,6 +44,7 @@ export interface ShareTokenRecord {
     grantedCapabilities: string[];
     accessControls: ShareAccessControls;
     expiresAt: string;
+    expirationNotifiedAt: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -224,6 +225,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     const createdAt = String(row.created_at ?? "").trim();
     const updatedAt = String(row.updated_at ?? "").trim();
     const expiresAt = String(row.expires_at ?? "");
+    const expirationNotifiedAt = String(row.expiration_notified_at ?? "");
     if (
         !id ||
         !ownerAccountId ||
@@ -249,7 +251,19 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
                     return row.metadata
                         ? JSON.parse(String(row.metadata))
                         : null;
-                } catch {
+                } catch (error) {
+                    this.log?.(
+                        "error",
+                        "Failed to parse expired share token.",
+                        {
+                            component: "share-gateway",
+                            operation: "claim_expired_share_notifications",
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
                     return null;
                 }
             })(),
@@ -271,6 +285,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
             parseJsonObject(row.access_controls),
         ),
         expiresAt,
+        expirationNotifiedAt,
         createdAt,
         updatedAt,
     };
@@ -323,6 +338,7 @@ export class ShareTokenStore {
                 { name: "granted_capabilities", type: "text", notNull: true },
                 { name: "access_controls", type: "text", notNull: true },
                 { name: "expires_at", type: "text", notNull: true },
+                { name: "expiration_notified_at", type: "text" },
                 { name: "created_at", type: "text", notNull: true },
                 { name: "updated_at", type: "text", notNull: true },
             ],
@@ -388,6 +404,7 @@ export class ShareTokenStore {
                 passwordProtected: Boolean(input.password),
             }),
             expiresAt: String(input.expiresAt ?? ""),
+            expirationNotifiedAt: "",
             createdAt,
             updatedAt: createdAt,
         };
@@ -412,6 +429,7 @@ export class ShareTokenStore {
                 ),
                 access_controls: JSON.stringify(record.accessControls),
                 expires_at: record.expiresAt,
+                expiration_notified_at: null,
                 created_at: record.createdAt,
                 updated_at: record.updatedAt,
             },
@@ -495,6 +513,79 @@ export class ShareTokenStore {
                 }
             })
             .filter((record): record is ShareTokenRecord => Boolean(record));
+        return records;
+    }
+
+    async listByRecipient(
+        recipientAccountId: string,
+    ): Promise<ShareTokenRecord[]> {
+        await this.purgeExpired();
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? [])
+            .map((row) => {
+                try {
+                    return parseRecord(row);
+                } catch (error) {
+                    this.log?.(
+                        "error",
+                        "Failed to parse received share token.",
+                        {
+                            component: "share-gateway",
+                            operation: "list_received_shares",
+                            recipientAccountId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    return null;
+                }
+            })
+            .filter((record): record is ShareTokenRecord =>
+                Boolean(
+                    record?.accessControls.recipients.some(
+                        (recipient) =>
+                            recipient.type === "user" &&
+                            recipient.id === recipientAccountId,
+                    ),
+                ),
+            );
+    }
+
+    async claimExpiredNotifications(): Promise<ShareTokenRecord[]> {
+        const now = new Date().toISOString();
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+            where: [
+                { column: "expires_at", operator: "!=", value: "" },
+                { column: "expires_at", operator: "<", value: now },
+            ],
+        });
+        const records = (result.rows ?? [])
+            .map((row) => {
+                try {
+                    return parseRecord(row);
+                } catch {
+                    return null;
+                }
+            })
+            .filter((record): record is ShareTokenRecord =>
+                Boolean(record && !record.expirationNotifiedAt),
+            );
+        for (const record of records) {
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "share_tokens",
+                values: { expiration_notified_at: now },
+                where: [{ column: "id", value: record.id }],
+            });
+        }
         return records;
     }
 

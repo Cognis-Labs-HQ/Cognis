@@ -826,6 +826,39 @@ export async function registerShareBootstrapHooks(input: {
 
     input.ctx.flow.extend(
         "revoke-share-token",
+        "authorize-revocation",
+        { id: "share-gateway:authorize-recipient-rejection" },
+        async (stageCtx) => {
+            if (stageCtx.input?.rejection !== true) return null;
+            const flowInput = (stageCtx.input ?? {}) as {
+                claims?: { sub?: string };
+                shareId?: string;
+            };
+            const shareRecord = await input.gateway.getTokenById(
+                String(flowInput.shareId ?? ""),
+            );
+            const recipientAccountId = String(flowInput.claims?.sub ?? "");
+            const authorized = Boolean(
+                shareRecord?.accessControls.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" &&
+                        recipient.id === recipientAccountId,
+                ),
+            );
+            return {
+                authorized,
+                shareId: shareRecord?.id,
+                ownerAccountId: shareRecord?.ownerAccountId,
+                resourceType: shareRecord?.resourceType,
+                resourceId: shareRecord?.resourceId,
+                rejection: authorized,
+                recipientAccountId,
+            };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "revoke-share-token",
         "delete-token",
         { id: "share-gateway:delete-token" },
         async (stageCtx) => {
@@ -840,9 +873,24 @@ export async function registerShareBootstrapHooks(input: {
                 ownerAccountId?: string;
                 resourceType?: string;
                 resourceId?: string;
+                rejection?: boolean;
+                recipientAccountId?: string;
             } | null;
             if (!authorizeResult?.authorized || !authorizeResult.shareId) {
                 return { revoked: false, reason: "share_revoke_rejected" };
+            }
+            if (
+                authorizeResult.rejection &&
+                authorizeResult.recipientAccountId
+            ) {
+                const result = await input.gateway.removeUserRecipient({
+                    shareId: authorizeResult.shareId,
+                    recipientAccountId: authorizeResult.recipientAccountId,
+                });
+                return {
+                    revoked: result !== "not_found",
+                    rejected: result !== "not_found",
+                };
             }
             const deleted = await input.gateway.deleteToken({
                 shareId: authorizeResult.shareId,
@@ -850,7 +898,61 @@ export async function registerShareBootstrapHooks(input: {
                 resourceType: authorizeResult.resourceType,
                 resourceId: authorizeResult.resourceId,
             });
-            return { revoked: deleted };
+            return { revoked: deleted, rejected: false };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "revoke-share-token",
+        "remove-delivery",
+        { id: "share-gateway:notify-share-removal" },
+        async (stageCtx) => {
+            const deletion = getFirstStageResult(
+                stageCtx.stageResults,
+                "delete-token",
+            ) as { revoked?: boolean; rejected?: boolean } | null;
+            if (!deletion?.revoked) return { notified: false };
+            const flowInput = (stageCtx.input ?? {}) as {
+                shareId?: string;
+                label?: string;
+                ownerAccountId?: string;
+                recipientAccountId?: string;
+                recipients?: Array<{ type?: string; id?: string }>;
+            };
+            const dispatch =
+                input.ctx.capabilities.get<
+                    (notification: Record<string, unknown>) => Promise<unknown>
+                >("notify:dispatch");
+            if (!dispatch) return { notified: false };
+            if (deletion.rejected && flowInput.ownerAccountId) {
+                await dispatch({
+                    category: "share",
+                    recipientUsername: flowInput.ownerAccountId,
+                    subject: "A recipient rejected your share",
+                    body: `${flowInput.recipientAccountId || "A recipient"} rejected ${flowInput.label || "your shared item"}.`,
+                    actionUrl: "/shares",
+                    senderName: "Cognis Share",
+                    metadata: { shareId: flowInput.shareId },
+                });
+                return { notified: true };
+            }
+            const recipients = (flowInput.recipients ?? []).filter(
+                (recipient) => recipient.type === "user" && recipient.id,
+            );
+            await Promise.allSettled(
+                recipients.map((recipient) =>
+                    dispatch({
+                        category: "share",
+                        recipientUsername: recipient.id,
+                        subject: "A shared item was revoked",
+                        body: `${flowInput.label || "A shared item"} is no longer available.`,
+                        actionUrl: "/shares",
+                        senderName: "Cognis Share",
+                        metadata: { shareId: flowInput.shareId },
+                    }),
+                ),
+            );
+            return { notified: recipients.length > 0 };
         },
     );
 

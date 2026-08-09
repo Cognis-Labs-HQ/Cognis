@@ -295,6 +295,19 @@ export class CoreShareGateway {
         );
     }
 
+    async listReceivedTokens(
+        recipientAccountId: string,
+    ): Promise<Record<string, unknown>[]> {
+        const records = await this.store.listByRecipient(recipientAccountId);
+        return Promise.all(
+            records.map((record) => this.serializeRecord(record)),
+        );
+    }
+
+    async claimExpiredNotifications(): Promise<ShareTokenRecord[]> {
+        return this.store.claimExpiredNotifications();
+    }
+
     async removeUserRecipient(input: {
         shareId: string;
         recipientAccountId: string;
