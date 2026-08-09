@@ -12,7 +12,11 @@
  * @param {string} currentLanguage
  * @returns {string | null}
  */
-import { readPreferredLanguages, setPreferredLanguages } from "./i18n.js";
+import {
+    readPreferredLanguages,
+    sanitizeLanguagePriority,
+    setPreferredLanguages,
+} from "./i18n.js";
 import { saveUiPreferences } from "./ui-preferences.js";
 import { showToast } from "./toast.js";
 import { navigateToSettingsSection } from "./settings-navigation.js";
@@ -51,9 +55,9 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
     const configuredLanguages = Array.isArray(preferences?.languagePriority)
         ? preferences.languagePriority
         : readPreferredLanguages();
-    const languages = [...new Set(configuredLanguages)];
+    const languages = sanitizeLanguagePriority(configuredLanguages);
     const enabled = preferences?.languageSwitcherShow !== false;
-    button.hidden = !enabled || languages.length < 2;
+    button.hidden = !enabled;
     button[SWITCHER_OPTIONS_KEY] = {
         i18n,
         languages,

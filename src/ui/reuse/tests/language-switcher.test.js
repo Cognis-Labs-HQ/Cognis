@@ -64,6 +64,17 @@ test("language switcher uses persisted preferences when local state is not initi
     try {
         bindLanguageSwitcher({
             preferences: {
+                languagePriority: ["en"],
+                languageSwitcherShow: false,
+            },
+            i18n: {
+                t: () => "Switch language; {language} selected",
+            },
+        });
+        assert.equal(button.hidden, true);
+
+        bindLanguageSwitcher({
+            preferences: {
                 languagePriority: ["de", "ja", "en"],
                 languageSwitcherShow: true,
             },
@@ -76,6 +87,36 @@ test("language switcher uses persisted preferences when local state is not initi
         assert.equal(button.textContent, "DE");
         assert.equal(listeners.has("click"), true);
         assert.equal(listeners.has("contextmenu"), true);
+    } finally {
+        globalThis.document = originalDocument;
+    }
+});
+
+test("enabled language switcher remains visible with one preferred language", () => {
+    const originalDocument = globalThis.document;
+    const button = {
+        hidden: true,
+        textContent: "",
+        addEventListener() {},
+        setAttribute() {},
+    };
+    globalThis.document = {
+        querySelector: () => button,
+    };
+
+    try {
+        bindLanguageSwitcher({
+            preferences: {
+                languagePriority: ["en"],
+                languageSwitcherShow: true,
+            },
+            i18n: {
+                t: () => "Switch language; {language} selected",
+            },
+        });
+
+        assert.equal(button.hidden, false);
+        assert.equal(button.textContent, "EN");
     } finally {
         globalThis.document = originalDocument;
     }
