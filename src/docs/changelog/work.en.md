@@ -1,5 +1,9 @@
 # Refine share management
 
+## Filter and remove shares immediately
+
+The Total, Sent, and Received summary pills now filter the Shares table. Successfully rejected or deleted shares disappear immediately, and each destructive row action uses the standard cancel treatment without competing button classes.
+
 ## Preserve account access through owned and received shares
 
 Opening a Whiteboard share as its creator or a Meeting user share as its recipient now keeps the authenticated account session during in-app navigation as well as after a refresh. The destination mounts its full account page, retains complete navigation, and no longer enters the restricted guest experience.

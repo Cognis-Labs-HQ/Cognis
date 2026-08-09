@@ -306,6 +306,10 @@ Button classes must communicate the consequence of the action consistently:
 
 Choose the class from the action's consequence, never from visual preference.
 
+### Prefer links over buttons
+
+Always prefer an `<a>` element over a `<button>` when the control can be represented as navigation to a URL. Use a `<button>` only when there is a specific semantic reason, such as submitting a form, changing in-page state, or performing an action that has no navigation target.
+
 ### Codebase cleanliness is paramount
 
 The cleanliness, consistency, and structural integrity of the codebase are non-negotiable. Every contribution must leave the codebase in at least as clean a state as it found it. Introducing non-conformant code — even as a temporary measure, even under time pressure, even when it "works" — is unacceptable.

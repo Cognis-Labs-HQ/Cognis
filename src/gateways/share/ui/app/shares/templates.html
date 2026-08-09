@@ -1,9 +1,21 @@
 <template id="shares-table-template">
     <section class="shares-overview">
         <div class="shares-summary" aria-live="polite">
-            <span data-share-total></span>
-            <span data-share-sent></span>
-            <span data-share-received></span>
+            <button
+                type="button"
+                data-share-total
+                data-share-filter="all"
+            ></button>
+            <button
+                type="button"
+                data-share-sent
+                data-share-filter="sent"
+            ></button>
+            <button
+                type="button"
+                data-share-received
+                data-share-filter="received"
+            ></button>
         </div>
         <div class="shares-table-wrap">
             <table class="shares-table">

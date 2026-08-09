@@ -77,9 +77,7 @@ function relationshipCell(share, direction, i18n) {
 function createIconButton({ shareId, action, label, destructive = false }) {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = destructive
-        ? "shares-icon-button shares-icon-button--danger"
-        : "shares-icon-button";
+    button.className = destructive ? "btn-cancel" : "shares-icon-button";
     button.setAttribute(`data-share-${action}`, shareId);
     button.title = label;
     button.setAttribute("aria-label", label);
@@ -139,7 +137,7 @@ function renderShareRow(share, direction, i18n, rowTemplate) {
     return row;
 }
 
-function buildSharesElement(overview, i18n, templates) {
+function buildSharesElement(overview, i18n, templates, activeFilter = "all") {
     const shares = [
         ...overview.sent.map((share) => ({ share, direction: "sent" })),
         ...overview.received.map((share) => ({
@@ -151,6 +149,10 @@ function buildSharesElement(overview, i18n, templates) {
             Date.parse(right.share.updatedAt || right.share.createdAt || 0) -
             Date.parse(left.share.updatedAt || left.share.createdAt || 0),
     );
+    const visibleShares =
+        activeFilter === "all"
+            ? shares
+            : shares.filter(({ direction }) => direction === activeFilter);
     return {
         id: "shares-overview",
         label: i18n.t("share.shares.title"),
@@ -168,6 +170,11 @@ function buildSharesElement(overview, i18n, templates) {
             section.querySelector("[data-share-received]").textContent = i18n
                 .t("share.shares.received_count")
                 .replace("{{count}}", String(overview.received.length));
+            section.querySelectorAll("[data-share-filter]").forEach((pill) => {
+                const active = pill.dataset.shareFilter === activeFilter;
+                pill.classList.toggle("active", active);
+                pill.setAttribute("aria-pressed", String(active));
+            });
             for (const [selector, key] of [
                 ["[data-column-title]", "share.shares.column_title"],
                 [
@@ -182,11 +189,11 @@ function buildSharesElement(overview, i18n, templates) {
             }
             const tableBody = section.querySelector("tbody");
             tableBody.append(
-                ...shares.map(({ share, direction }) =>
+                ...visibleShares.map(({ share, direction }) =>
                     renderShareRow(share, direction, i18n, templates.row),
                 ),
             );
-            if (shares.length === 0) {
+            if (visibleShares.length === 0) {
                 section.querySelector("table").hidden = true;
                 const empty = section.querySelector(".shares-empty");
                 empty.hidden = false;
@@ -316,6 +323,7 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "share.shares.title");
     const templates = await loadMarkupTemplates();
     let overview = { sent: [], received: [] };
+    let activeFilter = "all";
     const loadOverview = async () => {
         try {
             overview = await fetchShareOverview();
@@ -335,12 +343,20 @@ export async function mount(root, { signal } = {}) {
             title: i18n.t("share.shares.title"),
             subtitle: i18n.t("share.shares.subtitle"),
         },
-        elements: [buildSharesElement(overview, i18n, templates)],
+        elements: [buildSharesElement(overview, i18n, templates, activeFilter)],
     });
     root.addEventListener(
         "click",
         async (event) => {
             if (!(event.target instanceof Element)) return;
+            const filter = event.target.closest("[data-share-filter]");
+            if (filter instanceof HTMLButtonElement) {
+                activeFilter = filter.dataset.shareFilter ?? "all";
+                composer.refresh([
+                    buildSharesElement(overview, i18n, templates, activeFilter),
+                ]);
+                return;
+            }
             const manageButton = event.target.closest("[data-share-manage]");
             if (manageButton instanceof HTMLButtonElement) {
                 const share = overview.sent.find(
@@ -351,7 +367,7 @@ export async function mount(root, { signal } = {}) {
                 await openManagePopup(share, i18n);
                 await loadOverview();
                 composer.refresh([
-                    buildSharesElement(overview, i18n, templates),
+                    buildSharesElement(overview, i18n, templates, activeFilter),
                 ]);
                 return;
             }
@@ -403,8 +419,16 @@ export async function mount(root, { signal } = {}) {
                 { variant: response.ok ? "success" : "error" },
             );
             if (!response.ok) return;
-            await loadOverview();
-            composer.refresh([buildSharesElement(overview, i18n, templates)]);
+            const collection = rejecting ? "received" : "sent";
+            overview = {
+                ...overview,
+                [collection]: overview[collection].filter(
+                    (share) => String(share.id) !== shareId,
+                ),
+            };
+            composer.refresh([
+                buildSharesElement(overview, i18n, templates, activeFilter),
+            ]);
         },
         { signal },
     );
