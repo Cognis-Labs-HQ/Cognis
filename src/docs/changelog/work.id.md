@@ -2,7 +2,7 @@
 
 ## Mempertahankan akses akun untuk berbagi milik sendiri dan yang diterima
 
-Membuka berbagi Papan Tulis sebagai pembuatnya atau berbagi pengguna Rapat sebagai penerimanya kini mempertahankan sesi akun terautentikasi. Konten yang dibagikan tetap memiliki navigasi akun lengkap dan tidak lagi masuk ke tampilan tamu terbatas.
+Membuka berbagi Papan Tulis sebagai pembuatnya atau berbagi pengguna Rapat sebagai penerimanya kini mempertahankan sesi akun terautentikasi saat navigasi dalam aplikasi maupun setelah penyegaran. Tujuan memasang halaman akun lengkap, mempertahankan seluruh navigasi, dan tidak lagi masuk ke tampilan tamu terbatas.
 
 ## Mengisolasi kontrol dan gaya halaman tujuan
 

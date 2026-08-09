@@ -58,7 +58,8 @@ export async function mount(
     { signal, requestedMeetingId = "", shareContext: routedShareContext } = {},
 ) {
     const shareContext = routedShareContext ?? getShareContext();
-    const inShareView = shareContext !== null;
+    const inShareView =
+        shareContext !== null && shareContext?.directAccess !== true;
     const limitedShareView =
         inShareView &&
         Boolean(shareContext?.guestAccessToken) &&

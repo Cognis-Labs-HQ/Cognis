@@ -910,7 +910,8 @@ export async function mount(root, { signal, shareContext } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "module.nextcloud_whiteboard.page_title");
-    activeShareContext = shareContext ?? null;
+    activeShareContext =
+        shareContext?.directAccess === true ? null : (shareContext ?? null);
     integrationCanvasMode =
         Boolean(shareContext?.page?.instantCanvas) ||
         new URLSearchParams(window.location.search).get("instantCanvas") ===

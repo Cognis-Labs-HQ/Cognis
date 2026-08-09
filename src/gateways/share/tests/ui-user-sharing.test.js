@@ -224,6 +224,14 @@ test("logged-in share recipients keep their account session", () => {
     );
     assert.match(shareAppSource, /import "\.\.\/session-flow-hooks\.js"/);
     assert.match(shareButtonSource, /accountId\.startsWith\("share:"\)/);
+    assert.match(
+        sessionFlowSource,
+        /resolveActiveShareContentSession\(activeShareSession\)/,
+    );
+    assert.match(
+        sessionFlowSource,
+        /session\.isGuestSession === true[\s\S]*shareContext: null/,
+    );
 });
 
 test("share buttons always use the destructive consequence style", () => {

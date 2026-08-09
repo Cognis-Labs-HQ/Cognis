@@ -2,7 +2,7 @@
 
 ## Kontozugriff bei eigenen und empfangenen Freigaben bewahren
 
-Beim Öffnen einer Whiteboard-Freigabe durch ihren Ersteller oder einer Meeting-Benutzerfreigabe durch ihren Empfänger bleibt nun die authentifizierte Kontositzung erhalten. Der freigegebene Inhalt behält die vollständige Kontonavigation und wechselt nicht mehr in die eingeschränkte Gastansicht.
+Beim Öffnen einer Whiteboard-Freigabe durch ihren Ersteller oder einer Meeting-Benutzerfreigabe durch ihren Empfänger bleibt die authentifizierte Kontositzung nun sowohl bei der Navigation innerhalb der Anwendung als auch nach einer Aktualisierung erhalten. Das Ziel bindet seine vollständige Kontoseite ein, behält die komplette Navigation und wechselt nicht mehr in die eingeschränkte Gastansicht.
 
 ## Seitensteuerung und Stile des Ziels isolieren
 

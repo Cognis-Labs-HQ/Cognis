@@ -71,6 +71,16 @@ test("nextcloud whiteboard disables page layout editing", async () => {
     assert.match(appSource, /allowCustomization:\s*false/);
 });
 
+test("direct-account SPA shares mount the full Whiteboard page", async () => {
+    const appSource = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+    );
+    assert.match(
+        appSource,
+        /shareContext\?\.directAccess === true \? null : \(shareContext \?\? null\)/,
+    );
+});
+
 test("nextcloud whiteboard app loads module strings and omits inline status element", async () => {
     const [
         source,

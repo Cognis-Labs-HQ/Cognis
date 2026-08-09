@@ -115,6 +115,15 @@ function isActiveShareContentRoute(activeSession) {
     );
 }
 
+function resolveActiveShareContentSession(activeSession) {
+    const session = activeSession?.session;
+    if (!session || session.isGuestSession === true) return session ?? null;
+    return {
+        ...session,
+        shareContext: null,
+    };
+}
+
 async function activateGuestToken(
     guestAccessToken,
     guestProfile = null,
@@ -204,7 +213,7 @@ uiCtx.extendFlow(
         const shareToken = resolveShareTokenFromLocation();
         if (!shareToken) {
             if (isActiveShareContentRoute(activeShareSession)) {
-                return activeShareSession.session;
+                return resolveActiveShareContentSession(activeShareSession);
             }
             if (
                 sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1" &&

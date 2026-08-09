@@ -2,7 +2,7 @@
 
 ## Preserve account access through owned and received shares
 
-Opening a Whiteboard share as its creator or a Meeting user share as its recipient now keeps the authenticated account session. The shared content retains the full account navigation and no longer enters the restricted guest experience.
+Opening a Whiteboard share as its creator or a Meeting user share as its recipient now keeps the authenticated account session during in-app navigation as well as after a refresh. The destination mounts its full account page, retains complete navigation, and no longer enters the restricted guest experience.
 
 ## Keep destination page controls and styles isolated
 

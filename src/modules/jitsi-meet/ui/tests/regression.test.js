@@ -727,6 +727,17 @@ test("meeting shares use the Cognis route and skip account setup", () => {
     assert.match(appSource, /if \(!inShareView\) \{[\s\S]*bindShareButton/);
 });
 
+test("direct-account SPA shares mount the full Meetings page", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        appSource,
+        /inShareView =\s*shareContext !== null &&\s*shareContext\?\.directAccess !== true/,
+    );
+});
+
 test("meeting routes and standalone shell load shared layout styles", () => {
     const apiSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
