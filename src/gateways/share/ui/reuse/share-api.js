@@ -110,7 +110,7 @@ export function buildShareTokenCallbacks({
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         label,
-                        expiresAt,
+                        expiresAt: String(expiresAt ?? "").trim() || undefined,
                         password,
                         accessControls,
                         grantedCapabilities: requestedCapabilities,

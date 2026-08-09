@@ -701,3 +701,19 @@ test("jitsi opts into composer DOM parking for its stateful iframe", () => {
     );
     assert.match(source, /enableDomParking: true/);
 });
+
+test("meeting shares use the Cognis route and skip account setup", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const adapterSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/share-adapter.js"),
+        "utf8",
+    );
+    assert.match(adapterSource, /contentUrl: `\/meetings\?meetingId=/);
+    assert.match(
+        appSource,
+        /if \(!inShareView\) await ensureFullAccountSession\(\)/,
+    );
+});

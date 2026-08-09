@@ -155,11 +155,15 @@ export function registerApiRoutes(router, ctx) {
     const listCalendarsByOwner = ctx.getCapability("calendar:listCalendars");
     const listCalendarEvents = ctx.getCapability("calendar:listEvents");
     const getShareTokenById = ctx.getCapability("share:getTokenById");
+    const resolveShareUserAccess = ctx.getCapability("share:resolveUserAccess");
     const resolveMeetingPayload = (input) =>
         resolveMeetingPayloadOrReject({
             ...input,
             sendError,
+            resolveShareUserAccess,
         });
+    const canAccessMeetingForRequester = (input) =>
+        canAccessMeeting({ ...input, resolveShareUserAccess });
 
     if (typeof registerNotificationCategory === "function") {
         registerNotificationCategory("meetings", "Meetings");
@@ -559,7 +563,7 @@ export function registerApiRoutes(router, ctx) {
             }),
         resolveShareGuestPresenceUsername,
         listClassroomParticipantHandles,
-        canAccessMeeting,
+        canAccessMeeting: canAccessMeetingForRequester,
         resolveGroupChat,
         buildMeetingChatTitle,
         dispatchMeetingNotifications,
@@ -580,7 +584,7 @@ export function registerApiRoutes(router, ctx) {
         resolveMeetingPayloadOrReject: resolveMeetingPayload,
         createMeetingPayload,
         resolveRequesterUsername,
-        canAccessMeeting,
+        canAccessMeeting: canAccessMeetingForRequester,
         filterUsernamesForGuestVisibility: (usernames) =>
             filterUsernamesForGuestVisibility(profileStore, usernames),
         requireAuth,

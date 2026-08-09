@@ -812,3 +812,10 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(CALENDAR_API_SOURCE, /promptWhenLocked/);
     assert.match(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
 });
+
+test("calendar shares provide a Cognis content route", () => {
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /contentUrl: `\/calendar\?calendarId=/,
+    );
+});

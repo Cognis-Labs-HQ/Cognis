@@ -107,6 +107,7 @@ export async function canAccessMeeting({
     listClassroomParticipantHandles,
     profileStore = null,
     requesterAccountId = "",
+    resolveShareUserAccess = null,
 }) {
     const directParticipants = await store.listParticipants(meeting.id);
     const normalizedRequesterAccountId = normalizeHandleKey(requesterAccountId);
@@ -145,6 +146,15 @@ export async function canAccessMeeting({
     ) {
         return true;
     }
+    if (typeof resolveShareUserAccess === "function" && requesterAccountId) {
+        const shareAccess = await resolveShareUserAccess({
+            accountId: requesterAccountId,
+            resourceType: "meeting",
+            resourceId: meeting.id,
+            requiredCapability: "meeting:join",
+        }).catch(() => null);
+        if (shareAccess?.authorized) return true;
+    }
     if (!meeting.classroomId) {
         return false;
     }
@@ -162,6 +172,7 @@ export async function resolveMeetingPayloadOrReject({
     sendError,
     res,
     listClassroomParticipantHandles,
+    resolveShareUserAccess = null,
 }) {
     const requesterUsername = await resolveRequesterUsername(
         profileStore,
@@ -188,6 +199,7 @@ export async function resolveMeetingPayloadOrReject({
         listClassroomParticipantHandles,
         profileStore,
         requesterAccountId: claims.sub,
+        resolveShareUserAccess,
     });
     if (!authorized) {
         sendError(
@@ -199,6 +211,18 @@ export async function resolveMeetingPayloadOrReject({
         return null;
     }
     const participants = await store.listParticipants(meeting.id);
+    if (
+        typeof resolveShareUserAccess === "function" &&
+        !participants.includes(requesterUsername)
+    ) {
+        const shareAccess = await resolveShareUserAccess({
+            accountId: claims.sub,
+            resourceType: "meeting",
+            resourceId: meeting.id,
+            requiredCapability: "meeting:join",
+        }).catch(() => null);
+        if (shareAccess?.authorized) participants.push(requesterUsername);
+    }
     const state = await store.getMeetingState(meeting.id);
     return {
         meeting,

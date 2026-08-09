@@ -12,6 +12,7 @@ async function openCalendarSharePopup({ calendar, i18n }) {
     await openSharePopup({
         resourceType: "calendar",
         resourceId: calendar.id,
+        contentUrl: `/calendar?calendarId=${encodeURIComponent(calendar.id)}`,
         passwordRequired: calendar.visibility === "private",
         grantedCapabilities: ["calendar:read", "calendar:write"],
         supportsReadOnly: true,

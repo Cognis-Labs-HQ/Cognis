@@ -70,20 +70,22 @@ function loadApiClientForTests({
     };
 }
 
-test("apiFetch announces API access denial to active share sessions", async () => {
-    const { apiClient, dispatchedEvents } = loadApiClientForTests({
-        fetchImpl: async () => ({ ok: false, status: 403 }),
+for (const status of [401, 403]) {
+    test(`apiFetch announces ${status} API access denial to active share sessions`, async () => {
+        const { apiClient, dispatchedEvents } = loadApiClientForTests({
+            fetchImpl: async () => ({ ok: false, status }),
+        });
+
+        await apiClient.apiFetch("/api/v1/modules/example/resource");
+
+        assert.equal(dispatchedEvents.length, 1);
+        assert.equal(dispatchedEvents[0].type, "cognis:api-access-denied");
+        assert.equal(
+            dispatchedEvents[0].detail.path,
+            "/api/v1/modules/example/resource",
+        );
     });
-
-    await apiClient.apiFetch("/api/v1/modules/example/resource");
-
-    assert.equal(dispatchedEvents.length, 1);
-    assert.equal(dispatchedEvents[0].type, "cognis:api-access-denied");
-    assert.equal(
-        dispatchedEvents[0].detail.path,
-        "/api/v1/modules/example/resource",
-    );
-});
+}
 
 test("apiFetch shows one permanent warning toast for repeated API network failures", async () => {
     const networkError = new Error("network down");

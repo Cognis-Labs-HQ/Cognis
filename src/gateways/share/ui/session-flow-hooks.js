@@ -98,6 +98,16 @@ function resolveShareTokenFromLocation() {
     ).trim();
 }
 
+function isActiveShareContentRoute(activeSession) {
+    const contentUrl = activeSession?.session?.shareContext?.contentUrl;
+    if (!contentUrl) return false;
+    const expectedUrl = new URL(contentUrl, window.location.origin);
+    return (
+        expectedUrl.pathname === window.location.pathname &&
+        expectedUrl.search === window.location.search
+    );
+}
+
 async function activateGuestToken(
     guestAccessToken,
     guestProfile = null,
@@ -186,6 +196,9 @@ uiCtx.extendFlow(
     async (stageCtx) => {
         const shareToken = resolveShareTokenFromLocation();
         if (!shareToken) {
+            if (isActiveShareContentRoute(activeShareSession)) {
+                return activeShareSession.session;
+            }
             if (
                 sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1" &&
                 activeGuestSession?.session

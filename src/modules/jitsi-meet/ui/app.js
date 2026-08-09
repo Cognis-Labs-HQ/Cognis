@@ -50,13 +50,16 @@ const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
  * suppressed — no explicit `embedded` or `shareEnabled` flags are needed.
  *
  * @param {HTMLElement} root - Page mount root (usually #app).
- * @param {{ signal?: AbortSignal, requestedMeetingId?: string }} [options] - Router lifecycle options.
+ * @param {{ signal?: AbortSignal, requestedMeetingId?: string, shareContext?: object }} [options] - Router lifecycle options.
  * @returns {Promise<void>}
  */
-export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
-    await ensureFullAccountSession();
-    const shareContext = getShareContext();
+export async function mount(
+    root,
+    { signal, requestedMeetingId = "", shareContext: routedShareContext } = {},
+) {
+    const shareContext = routedShareContext ?? getShareContext();
     const inShareView = shareContext !== null;
+    if (!inShareView) await ensureFullAccountSession();
     const resolvedMeetingId =
         requestedMeetingId ||
         (inShareView ? String(shareContext?.resourceId ?? "") : "");

@@ -562,9 +562,9 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ["bob", "charlie"],
     );
     assert.equal(userShareNotifications[0]?.category, "share");
-    assert.equal(
-        userShareNotifications[0]?.actionUrl,
-        "/meetings?meeting=meeting-1",
+    assert.match(
+        String(userShareNotifications[0]?.actionUrl ?? ""),
+        /^\/share\//,
     );
     const restrictedToken = encodeURIComponent(
         restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],

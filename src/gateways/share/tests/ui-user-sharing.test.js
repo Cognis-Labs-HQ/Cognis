@@ -183,6 +183,11 @@ test("share origins can suppress read-only choices", async () => {
         /supportsReadOnly \|\|\s*option\?\.permissions\?\.includes\("write"\)/,
     );
     assert.match(userPageSource, /state\.supportsReadOnly \?/);
+    assert.match(popupSource, /hidePermissionLabels: !state\.supportsReadOnly/);
+    assert.match(
+        popupSource,
+        /state\.supportsReadOnly[\s\S]*\? selectedShare\.accessControls/,
+    );
 });
 
 test("selected recipient badges track the pending permission", () => {

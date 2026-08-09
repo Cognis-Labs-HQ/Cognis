@@ -173,7 +173,7 @@ function renderRows(labels, links) {
                 </div>
                 ${renderShareStatus(link, labels)}
                 ${createdAt ? `<p class="share-links-row-created">${escapeHtml(labels.createdAtLabel || "Created")}: ${escapeHtml(formatDateTime(createdAt))}</p>` : ""}
-                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small></span>`).join("")}</div>` : ""}
+                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span>${labels.hidePermissionLabels ? "" : `<small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small>`}</span>`).join("")}</div>` : ""}
                 ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(variant.label)}</button>`).join("")}</div>` : ""}
               </div>
               ${
@@ -207,7 +207,7 @@ function renderBody(labels, state) {
       <div class="share-method-page"></div>
           <h3 class="share-method-history-heading"></h3>
           <div class="share-links-list-container">
-        ${renderRows({ ...labels, empty: emptyLabel }, state.visibleLinks)}
+        ${renderRows({ ...labels, hidePermissionLabels: !state.supportsReadOnly, empty: emptyLabel }, state.visibleLinks)}
       </div>
     </section>
   `;
@@ -413,6 +413,7 @@ export async function openShareLinksPopup({
         listContainer.innerHTML = renderRows(
             {
                 ...labels,
+                hidePermissionLabels: !state.supportsReadOnly,
                 empty:
                     state.methodModules
                         .get(state.activeMethodId)
@@ -481,7 +482,7 @@ export async function openShareLinksPopup({
                 selectedUsers.innerHTML = state.recipients
                     .map(
                         (recipient) =>
-                            `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.id, colorSeed: recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
+                            `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.id, colorSeed: recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span>${state.supportsReadOnly ? `<small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small>` : ""}<button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
                     )
                     .join("");
                 hydrateRecipientAvatars(selectedUsers);
@@ -868,12 +869,13 @@ export async function openShareLinksPopup({
                         )
                             ? selectedShare.accessControls.recipients
                             : [];
-                        state.permission =
-                            selectedShare.accessControls?.permissions?.includes(
-                                "write",
-                            )
+                        state.permission = state.supportsReadOnly
+                            ? selectedShare.accessControls?.permissions?.includes(
+                                  "write",
+                              )
                                 ? "write"
-                                : "read";
+                                : "read"
+                            : "write";
                         const matchingAccess = state.linkAccessOptions.find(
                             (option) =>
                                 option.grantedCapabilities?.every(
