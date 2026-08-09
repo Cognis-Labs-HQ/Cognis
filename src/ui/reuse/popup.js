@@ -8,18 +8,20 @@
  * The action descriptor array mirrors the page-composer `elements` pattern:
  * each entry is a plain object with `id`, `label`, and an optional `variant`.
  *
- * This module lazily injects /static/styles/popup.css into the document
- * <head> on the first call to openPopup(), so callers do not need to include
- * that stylesheet explicitly in their page HTML.
+ * This module keeps /static/styles/popup.css in browser Cache Storage and
+ * injects the cached CSS when a popup opens, so dialogs remain styled through
+ * temporary server interruptions.
  *
  * Public exports:
+ *   primePopupStylesheet() — refreshes the browser-cached popup stylesheet.
  *   openPopup(options) — opens a modal and returns a Promise<string|null>.
  *   createAnchoredPopup(options) — returns a controller for a non-modal popup
  *     positioned beside an anchor element.
  *
  * Usage:
- *   import { openPopup } from '../../reuse/popup.js';
+ *   import { openPopup, primePopupStylesheet } from '../../reuse/popup.js';
  *
+ *   void primePopupStylesheet();
  *   const result = await openPopup({
  *     title: 'Disable module',
  *     body: `Are you sure you want to disable "my-module"?`,
@@ -88,7 +90,12 @@ import { createI18n } from "./i18n.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
 
 let stylesheetReady = null;
+let stylesheetRefresh = null;
 let i18nReady = null;
+
+const POPUP_STYLESHEET_URL = "/static/styles/popup.css";
+const POPUP_STYLESHEET_CACHE = "cognis-popup-styles-v1";
+const CACHED_STYLESHEET_ID = "popup-cached-styles";
 
 function getI18n() {
     // Store the Promise, not the resolved value, so concurrent calls
@@ -136,30 +143,101 @@ function unlockPageScroll() {
     scrollLockState.mainOverflowValues = [];
 }
 
-function ensureStylesheet() {
-    if (stylesheetReady) return stylesheetReady;
-
-    const existing = document.querySelector(
-        'link[href="/static/styles/popup.css"]',
-    );
-    if (existing) {
-        stylesheetReady = existing.sheet
-            ? Promise.resolve()
-            : new Promise((resolve) => {
-                  existing.addEventListener("load", resolve, { once: true });
-                  existing.addEventListener("error", resolve, { once: true });
-              });
-        return stylesheetReady;
+async function getPopupStylesheetCache() {
+    if (typeof globalThis.caches === "undefined") return null;
+    try {
+        return await globalThis.caches.open(POPUP_STYLESHEET_CACHE);
+    } catch (error) {
+        console.error(
+            `[popup] Failed to open stylesheet cache "${POPUP_STYLESHEET_CACHE}":`,
+            error,
+        );
+        return null;
     }
+}
 
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/static/styles/popup.css";
-    stylesheetReady = new Promise((resolve) => {
+async function refreshPopupStylesheet() {
+    const stylesheetCache = await getPopupStylesheetCache();
+    if (!stylesheetCache || typeof globalThis.fetch !== "function") return;
+
+    try {
+        const response = await globalThis.fetch(POPUP_STYLESHEET_URL, {
+            cache: "no-cache",
+            credentials: "same-origin",
+        });
+        if (!response.ok) return;
+
+        await stylesheetCache.put(POPUP_STYLESHEET_URL, response.clone());
+        const installedStylesheet = globalThis.document?.querySelector(
+            `#${CACHED_STYLESHEET_ID}`,
+        );
+        if (installedStylesheet) {
+            installedStylesheet.textContent = await response.text();
+        }
+    } catch (error) {
+        console.error(
+            `[popup] Failed to refresh stylesheet cache for "${POPUP_STYLESHEET_URL}":`,
+            error,
+        );
+    }
+}
+
+/**
+ * Refreshes the complete popup stylesheet held in browser Cache Storage.
+ *
+ * @returns {Promise<void>}
+ */
+export function primePopupStylesheet() {
+    if (!stylesheetRefresh) {
+        stylesheetRefresh = refreshPopupStylesheet().finally(() => {
+            stylesheetRefresh = null;
+        });
+    }
+    return stylesheetRefresh;
+}
+
+async function installCachedStylesheet() {
+    const existing = document.querySelector(`#${CACHED_STYLESHEET_ID}`);
+    if (existing) return true;
+    const stylesheetCache = await getPopupStylesheetCache();
+    const cachedResponse = await stylesheetCache?.match(POPUP_STYLESHEET_URL);
+    if (!cachedResponse?.ok) return false;
+    const cachedStylesheet = document.createElement("style");
+    cachedStylesheet.id = CACHED_STYLESHEET_ID;
+    cachedStylesheet.textContent = await cachedResponse.text();
+    document.head.appendChild(cachedStylesheet);
+    return true;
+}
+
+function installNetworkStylesheet() {
+    return new Promise((resolve) => {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = POPUP_STYLESHEET_URL;
         link.addEventListener("load", resolve, { once: true });
         link.addEventListener("error", resolve, { once: true });
+        document.head.appendChild(link);
     });
-    document.head.appendChild(link);
+}
+
+function ensureStylesheet() {
+    if (stylesheetReady) return stylesheetReady;
+    const existing = document.querySelector(
+        `link[href="${POPUP_STYLESHEET_URL}"]`,
+    );
+    if (existing?.sheet) {
+        stylesheetReady = Promise.resolve();
+        return stylesheetReady;
+    }
+    if (typeof globalThis.caches === "undefined") {
+        stylesheetReady = installNetworkStylesheet();
+        return stylesheetReady;
+    }
+    stylesheetReady = (async () => {
+        await stylesheetRefresh;
+        if (await installCachedStylesheet()) return;
+        await installNetworkStylesheet();
+    })();
     return stylesheetReady;
 }
 
