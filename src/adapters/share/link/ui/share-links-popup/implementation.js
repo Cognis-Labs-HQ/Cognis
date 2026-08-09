@@ -595,8 +595,8 @@ export async function openShareLinksPopup({
                     const updateButton = methodPage.querySelector(
                         "#share-links-create-btn",
                     );
-                    updateButton?.classList.remove("btn-confirm", "btn-cancel");
-                    updateButton?.classList.add("btn-neutral");
+                    updateButton?.classList.remove("btn-neutral", "btn-cancel");
+                    updateButton?.classList.add("btn-confirm");
                 }
                 renderSelectedUsers();
                 filterLinksForActiveMethod();

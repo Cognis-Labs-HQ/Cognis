@@ -15,8 +15,9 @@
  *                                than rejecting, so that a stylesheet failure
  *                                never prevents the page from mounting. The
  *                                error is logged to console.error.
- *   syncPageStylesheets(hrefs) — loads a route's complete stylesheet set and
- *                                removes page styles left by the prior route.
+ *   preparePageStylesheets(hrefs) — loads a route's complete stylesheet set
+ *                                and returns a commit callback that removes
+ *                                prior-route styles after the new page mounts.
  *
  * Usage:
  *   import { ensurePageStylesheet } from '../reuse/page-styles.js';
@@ -35,7 +36,7 @@ const _initialPageStylesheets = new Set(
         (link) => new URL(link.href, window.location.origin).pathname,
     ),
 );
-let _activePageStylesheets = new Set(_initialPageStylesheets);
+const _managedPageStylesheets = new Set(_initialPageStylesheets);
 
 export function ensurePageStylesheet(href) {
     if (_pending.has(href)) return _pending.get(href);
@@ -76,26 +77,28 @@ export function ensurePageStylesheet(href) {
  * Reconciles document styles with the destination route's declared bundle.
  *
  * @param {string[]} hrefs - Complete stylesheet URLs declared by the route.
- * @returns {Promise<void>} Resolves after destination styles have loaded and stale route styles are removed.
+ * @returns {Promise<() => void>} Resolves after destination styles load with a callback that removes stale route styles.
  */
-export async function syncPageStylesheets(hrefs) {
+export async function preparePageStylesheets(hrefs) {
     const destinationStylesheets = new Set(
         hrefs.map((href) => new URL(href, window.location.origin).pathname),
     );
+    destinationStylesheets.forEach((href) => _managedPageStylesheets.add(href));
     await Promise.all(hrefs.map(ensurePageStylesheet));
-    for (const staleStylesheet of _activePageStylesheets) {
-        if (destinationStylesheets.has(staleStylesheet)) continue;
-        for (const link of document.head.querySelectorAll(
-            'link[rel="stylesheet"][href]',
-        )) {
-            if (
-                new URL(link.href, window.location.origin).pathname ===
-                staleStylesheet
-            ) {
-                link.remove();
+    return () => {
+        for (const staleStylesheet of _managedPageStylesheets) {
+            if (destinationStylesheets.has(staleStylesheet)) continue;
+            for (const link of document.head.querySelectorAll(
+                'link[rel="stylesheet"][href]',
+            )) {
+                if (
+                    new URL(link.href, window.location.origin).pathname ===
+                    staleStylesheet
+                ) {
+                    link.remove();
+                }
             }
+            _pending.delete(staleStylesheet);
         }
-        _pending.delete(staleStylesheet);
-    }
-    _activePageStylesheets = destinationStylesheets;
+    };
 }

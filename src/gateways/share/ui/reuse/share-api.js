@@ -141,7 +141,7 @@ export function buildShareTokenCallbacks({
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         label,
-                        expiresAt: String(expiresAt ?? "").trim() || undefined,
+                        expiresAt: String(expiresAt ?? "").trim(),
                         password: String(password ?? "").trim()
                             ? password
                             : undefined,
@@ -150,7 +150,14 @@ export function buildShareTokenCallbacks({
                     }),
                 },
             );
-            if (!response.ok) throw new Error("update_failed");
+            if (!response.ok) {
+                const errorPayload = await response.json().catch(() => null);
+                const error = new Error(
+                    String(errorPayload?.error?.code ?? "update_failed"),
+                );
+                error.code = errorPayload?.error?.code;
+                throw error;
+            }
             const payload = await response.json().catch(() => ({ data: null }));
             return payload?.data ?? null;
         },

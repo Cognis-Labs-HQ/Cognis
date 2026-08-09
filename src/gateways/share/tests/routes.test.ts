@@ -401,6 +401,21 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         "invalid_expires_at",
     );
 
+    const updateResponse = await dispatchJson(
+        "PATCH",
+        adminToken,
+        `/api/v1/share/tokens/${encodeURIComponent(createResponse.body.data.id)}`,
+        {
+            label: "Updated Project Sync",
+            expiresAt: "",
+            accessControls: { permissions: ["read"] },
+            grantedCapabilities: ["meeting:join"],
+        },
+    );
+    assert.equal(updateResponse.statusCode, 200);
+    assert.equal(updateResponse.body.data.label, "Updated Project Sync");
+    assert.equal(updateResponse.body.data.expiresAt, "");
+
     const shareEmailResponse = await dispatchJson(
         "POST",
         adminToken,

@@ -128,6 +128,11 @@ test("share history supports email delivery and form-based update mode", () => {
     assert.match(popupSource, /data-share-email/);
     assert.match(popupSource, /editingShareId/);
     assert.match(popupSource, /await updateLink/);
+    assert.match(
+        popupSource,
+        /updateButton\?\.classList\.add\("btn-confirm"\)/,
+    );
+    assert.match(apiSource, /expiresAt: String\(expiresAt \?\? ""\)\.trim\(\)/);
     assert.match(linkPageSource, /Create Link Share/);
     assert.match(linkPageSource, /Update Link Share/);
     assert.match(userPageSource, /state\.recipients\.length/);

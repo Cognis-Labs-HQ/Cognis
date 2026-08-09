@@ -1,5 +1,9 @@
 # Refine share management
 
+## Restore share updates and seamless page transitions
+
+The focused share editor now submits expiration changes consistently and presents its update action with the standard confirm treatment. In-app navigation keeps the current page styled until the destination has fully mounted, preventing flashes of unstyled outgoing content.
+
 ## Filter and remove shares immediately
 
 The Total, Sent, and Received summary pills now filter the Shares table. Successfully rejected or deleted shares disappear immediately, and each destructive row action uses the standard cancel treatment without competing button classes.

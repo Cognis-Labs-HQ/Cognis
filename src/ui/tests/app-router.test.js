@@ -158,13 +158,17 @@ test("router uses history.pushState for navigation", () => {
     );
 });
 
-test("router resets page actions and reconciles route styles on navigation", () => {
+test("router resets page actions and commits route styles after mounting", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(src, /capabilities\.get\("page:actions"\)\?\.reset/);
-    assert.match(src, /syncPageStylesheets\(route\.stylesheets \?\? \[\]\)/);
+    assert.match(src, /preparePageStylesheets\(/);
+    assert.ok(
+        src.indexOf("await mod.mount") < src.indexOf("commitPageStylesheets()"),
+        "stale styles must remain until the destination page has mounted",
+    );
 });
 
 test("SPA route bundles match structured-content styles from direct loads", () => {

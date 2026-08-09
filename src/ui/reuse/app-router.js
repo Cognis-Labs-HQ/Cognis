@@ -39,7 +39,7 @@
  * @returns {void}
  */
 
-import { ensurePageStylesheet, syncPageStylesheets } from "./page-styles.js";
+import { ensurePageStylesheet, preparePageStylesheets } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
 import { beginPageLoading } from "./page-entry.js";
 import { getCurrentRoutePath } from "./route-path.js";
@@ -418,7 +418,9 @@ async function loadRoute(path) {
         // Start stylesheet injection and module loading in parallel — both are
         // network operations and can race. We await both before calling mount()
         // so CSS is guaranteed present before the page touches the DOM.
-        const stylesheetsReady = syncPageStylesheets(route.stylesheets ?? []);
+        const stylesheetsReady = preparePageStylesheets(
+            route.stylesheets ?? [],
+        );
 
         globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
         globalThis.__spaRouter = true;
@@ -431,7 +433,7 @@ async function loadRoute(path) {
                 globalThis.__spaRouter = false;
             }
         }
-        await stylesheetsReady;
+        const commitPageStylesheets = await stylesheetsReady;
         // If another navigation started while loading, bail out.
         if (signal.aborted) return false;
         try {
@@ -441,6 +443,7 @@ async function loadRoute(path) {
                 signal,
                 shareContext: session?.shareContext ?? null,
             });
+            commitPageStylesheets();
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {

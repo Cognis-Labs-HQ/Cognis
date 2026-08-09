@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Memulihkan pembaruan berbagi dan perpindahan halaman yang mulus
+
+Editor berbagi terfokus kini mengirim perubahan masa berlaku secara konsisten dan menampilkan tindakan pembaruan dengan tampilan konfirmasi standar. Navigasi dalam aplikasi mempertahankan gaya halaman saat ini sampai tujuan selesai dipasang sehingga konten lama tidak sempat berkedip tanpa gaya.
+
 ## Memfilter dan langsung menghapus berbagi
 
 Pil ringkasan Total, Terkirim, dan Diterima kini memfilter tabel Berbagi. Berbagi yang berhasil ditolak atau dihapus langsung menghilang, dan setiap tindakan baris destruktif hanya menggunakan tampilan batal standar.
