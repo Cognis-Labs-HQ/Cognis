@@ -1,6 +1,9 @@
 /** Handles received user-share notifications inside the authenticated shell. */
 
-import { resolveReceivedShare } from "./received-share.js";
+import {
+    rememberResolvedAccountShare,
+    resolveReceivedShare,
+} from "./received-share.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -42,6 +45,7 @@ export async function navigateAccountShare(actionUrl) {
         if (!response.ok || !payload?.data?.directAccess) {
             throw new Error("share_resolution_failed");
         }
+        rememberResolvedAccountShare(token, payload.data);
         const navigationUrl = String(
             payload.data.navigationUrl || payload.data.contentUrl || "",
         ).trim();

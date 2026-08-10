@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Melanjutkan berbagi pengguna terlindungi tanpa penyelesaian ganda
+
+Setelah penerima yang dituju membuka berbagi pengguna yang dilindungi kata sandi, hasil yang telah diverifikasi kini dibawa ke navigasi dalam aplikasi berikutnya. Cognis tidak lagi mengulangi permintaan penyelesaian tanpa kata sandinya, sehingga halaman akun lengkap terbuka alih-alih berakhir dengan galat 401 dan pemberitahuan berbagi tidak valid.
+
 ## Membuka berbagi akun secara langsung
 
 Tautan berbagi pengguna pada halaman Berbagi dan dalam notifikasi kini diselesaikan satu kali melalui jalur akun terautentikasi lalu langsung menuju halaman tujuan lengkap. Tautan tersebut tidak lagi melewati halaman tamu atau mengaktifkan tampilan tamu terbatas.

@@ -1,5 +1,9 @@
 # Refine share management
 
+## Continue protected user shares without resolving twice
+
+After an intended recipient unlocks a password-protected user share, the verified result now carries across the following in-app navigation. Cognis no longer repeats the resolve request without its password, so the full account page opens instead of ending with a 401 error and an invalid-share notice.
+
 ## Open account shares directly
 
 User-share links on the Shares page and in notifications now resolve once through the authenticated account path and navigate straight to the full destination page. They no longer pass through the guest landing page or activate guest-restricted presentation.

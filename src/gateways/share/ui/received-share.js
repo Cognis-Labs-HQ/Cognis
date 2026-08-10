@@ -7,6 +7,9 @@
  *     on a password challenge and saving a verified password to the keyring.
  *   fetchProtectedShareResource(options) — loads a protected resource with a
  *     freshly validated keyring or prompted share password.
+ *   rememberResolvedAccountShare(token, payload) — retains one verified
+ *     account-share payload across the following SPA navigation.
+ *   takeResolvedAccountShare(token) — consumes that retained payload once.
  *
  * Usage:
  *   const result = await resolveReceivedShare(token, { headers });
@@ -21,6 +24,21 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
+
+const resolvedAccountShares = new Map();
+
+export function rememberResolvedAccountShare(token, payload) {
+    const normalizedToken = String(token ?? "").trim();
+    if (!normalizedToken || payload?.directAccess !== true) return;
+    resolvedAccountShares.set(normalizedToken, payload);
+}
+
+export function takeResolvedAccountShare(token) {
+    const normalizedToken = String(token ?? "").trim();
+    const payload = resolvedAccountShares.get(normalizedToken) ?? null;
+    resolvedAccountShares.delete(normalizedToken);
+    return payload;
+}
 
 async function promptForPassword({ allowSave = true } = {}) {
     const i18n = await createI18n({

@@ -283,7 +283,10 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     );
     assert.match(sessionFlowSource, /guestSessionAlreadyActive/);
     assert.match(sessionFlowSource, /keyring:endTemporary/);
-    assert.match(sessionFlowSource, /useAccountKeyring: false/);
+    assert.match(
+        sessionFlowSource,
+        /useAccountKeyring: hasValidatedAccountSession/,
+    );
     assert.match(sessionFlowSource, /!isViewingAsGuest\(\)/);
     assert.match(sessionFlowSource, /!ownAccountId\.startsWith\("share:"\)/);
     assert.match(receivedShareSource, /if \(useAccountKeyring\)/);
@@ -333,6 +336,12 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareActionSource, /variant: "success"/);
     assert.match(receivedShareSource, /share:fetchProtectedResource/);
     assert.match(receivedShareSource, /keyring:requestUnlock/);
+    assert.match(receivedShareActionSource, /rememberResolvedAccountShare/);
+    assert.match(sessionFlowSource, /takeResolvedAccountShare\(shareToken\)/);
+    assert.match(
+        sessionFlowSource,
+        /useAccountKeyring: hasValidatedAccountSession/,
+    );
     assert.match(
         receivedShareSource,
         /let response = await request\(null\);[\s\S]*if \(response\.status !== 401\) return response;[\s\S]*unlockKeyringForShare/,

@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Geschützte Benutzerfreigaben ohne doppelte Auflösung fortsetzen
+
+Nachdem ein vorgesehener Empfänger eine passwortgeschützte Benutzerfreigabe entsperrt hat, wird das bestätigte Ergebnis nun in die folgende In-App-Navigation übernommen. Cognis wiederholt die Auflösungsanfrage nicht mehr ohne Passwort, sodass die vollständige Kontoseite statt eines 401-Fehlers und eines Hinweises auf eine ungültige Freigabe geöffnet wird.
+
 ## Kontofreigaben direkt öffnen
 
 Links zu Benutzerfreigaben auf der Freigabeseite und in Benachrichtigungen werden nun einmal über den authentifizierten Kontopfad aufgelöst und führen direkt zur vollständigen Zielseite. Sie durchlaufen nicht mehr die Gaststartseite und aktivieren keine eingeschränkte Gastdarstellung.

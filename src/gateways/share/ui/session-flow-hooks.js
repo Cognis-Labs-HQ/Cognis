@@ -39,7 +39,10 @@
 
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { resolveReceivedShare } from "./received-share.js";
+import {
+    resolveReceivedShare,
+    takeResolvedAccountShare,
+} from "./received-share.js";
 import {
     GUEST_SESSION_ACTIVE_STORAGE_KEY,
     isViewingAsGuest,
@@ -255,38 +258,48 @@ uiCtx.extendFlow(
                 ? { authorization: "Bearer " + ownAccessToken }
                 : undefined;
 
-        let response;
-        try {
-            response = await resolveReceivedShare(shareToken, {
-                headers,
-                useAccountKeyring: false,
-            });
-        } catch {
-            return { authenticated: false, reason: "share_resolve_failed" };
-        }
-
-        if (!response) {
-            return { authenticated: false, reason: "share_unlock_cancelled" };
-        }
-
-        if (!response.ok) {
-            const wasDeniedWhileOpen =
-                sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken;
-            if (wasDeniedWhileOpen) {
-                sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
+        let shareData = takeResolvedAccountShare(shareToken);
+        if (!shareData) {
+            let response;
+            try {
+                response = await resolveReceivedShare(shareToken, {
+                    headers,
+                    useAccountKeyring: hasValidatedAccountSession,
+                });
+            } catch {
+                return {
+                    authenticated: false,
+                    reason: "share_resolve_failed",
+                };
             }
-            return {
-                authenticated: false,
-                reason: wasDeniedWhileOpen
-                    ? "share_access_denied"
-                    : response.status === 404
-                      ? "share_not_found"
-                      : "share_expired",
-            };
-        }
 
-        const body = await response.json().catch(() => ({ data: null }));
-        const shareData = body?.data ?? null;
+            if (!response) {
+                return {
+                    authenticated: false,
+                    reason: "share_unlock_cancelled",
+                };
+            }
+
+            if (!response.ok) {
+                const wasDeniedWhileOpen =
+                    sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) ===
+                    shareToken;
+                if (wasDeniedWhileOpen) {
+                    sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
+                }
+                return {
+                    authenticated: false,
+                    reason: wasDeniedWhileOpen
+                        ? "share_access_denied"
+                        : response.status === 404
+                          ? "share_not_found"
+                          : "share_expired",
+                };
+            }
+
+            const body = await response.json().catch(() => ({ data: null }));
+            shareData = body?.data ?? null;
+        }
         if (!shareData?.resourceType) {
             return { authenticated: false, reason: "share_malformed" };
         }
