@@ -290,6 +290,17 @@ uiCtx.extendFlow(
         if (!shareData?.resourceType) {
             return { authenticated: false, reason: "share_malformed" };
         }
+        const isUserShare = Array.isArray(shareData.accessControls?.recipients)
+            ? shareData.accessControls.recipients.some(
+                  (recipient) => recipient?.type === "user",
+              )
+            : false;
+        if (isUserShare && shareData.directAccess !== true) {
+            return {
+                authenticated: false,
+                reason: "recipient_restricted",
+            };
+        }
 
         const shareContext = {
             resourceType: shareData.resourceType,

@@ -51,7 +51,7 @@ function shareRecipientsAllowRequester(
     },
     requesterClaims: { sub?: unknown } | null | undefined,
 ): boolean {
-    const recipients = tokenRecord.accessControls?.recipients;
+    const recipients = tokenRecord?.accessControls?.recipients;
     if (!Array.isArray(recipients) || recipients.length === 0) {
         return true;
     }
@@ -72,6 +72,26 @@ function shareRecipientsAllowRequester(
             String(recipient.id ?? "") === requesterId
         );
     });
+}
+
+function hasUserRecipients(
+    tokenRecord:
+        | {
+              accessControls?: { recipients?: unknown };
+          }
+        | null
+        | undefined,
+): boolean {
+    const recipients = tokenRecord.accessControls?.recipients;
+    return (
+        Array.isArray(recipients) &&
+        recipients.some(
+            (recipient) =>
+                recipient &&
+                typeof recipient === "object" &&
+                String((recipient as { type?: unknown }).type ?? "") === "user",
+        )
+    );
 }
 
 export async function registerShareBootstrapHooks(input: {
@@ -555,6 +575,9 @@ export async function registerShareBootstrapHooks(input: {
                 // the share link falls back to being a one-time bypass
                 // only for visitors without direct access.
                 return { issued: false, reason: "direct_access" };
+            }
+            if (hasUserRecipients(tokenResult.tokenRecord)) {
+                return { issued: false, reason: "account_recipient_required" };
             }
             if (!issueAccessToken || !tokenResult.tokenRecord?.id) {
                 return { issued: false, reason: "auth_issue_unavailable" };

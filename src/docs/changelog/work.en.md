@@ -1,5 +1,9 @@
 # Refine share management
 
+## Keep user shares account-only
+
+Shares addressed to Cognis users can no longer mint or activate guest sessions. Only the explicitly named authenticated recipient or the share owner can resolve them; public link shares remain the sole guest-access mechanism.
+
 ## Make editing and protected user shares predictable
 
 Share updates now contain only concrete changes, switching share methods exits edit mode, and the Shares page sizes itself to its table. Password-protected user-share notifications prompt once and may save the verified password to the intended recipient's keyring, while public link shares remain isolated from account keyrings.

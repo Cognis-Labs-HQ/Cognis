@@ -235,6 +235,10 @@ test("logged-in share recipients keep their account session", () => {
     assert.match(shareButtonSource, /accountId\.startsWith\("share:"\)/);
     assert.match(
         sessionFlowSource,
+        /isUserShare && shareData\.directAccess !== true[\s\S]*recipient_restricted/,
+    );
+    assert.match(
+        sessionFlowSource,
         /resolveActiveShareContentSession\(activeShareSession\)/,
     );
     assert.match(

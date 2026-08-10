@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Membatasi berbagi pengguna hanya untuk akun
+
+Berbagi yang ditujukan kepada pengguna Cognis tidak lagi dapat menerbitkan atau mengaktifkan sesi tamu. Hanya penerima terautentikasi yang disebutkan secara eksplisit atau pemilik berbagi yang dapat membukanya; berbagi tautan publik tetap menjadi satu-satunya mekanisme akses tamu.
+
 ## Membuat pengeditan dan berbagi pengguna terlindungi dapat diprediksi
 
 Pembaruan berbagi kini hanya memuat perubahan nyata, pergantian metode berbagi keluar dari mode edit, dan tinggi halaman Berbagi menyesuaikan tabel. Notifikasi berbagi pengguna berpassword meminta satu kali dan dapat menyimpan password terverifikasi ke gantungan kunci penerima yang dituju, sedangkan berbagi tautan publik tetap terpisah dari gantungan kunci akun.
