@@ -40,7 +40,7 @@
 
 .shares-table {
     border-collapse: collapse;
-    table-layout: fixed;
+    table-layout: auto;
     width: 100%;
 }
 
@@ -71,18 +71,20 @@
 
 .shares-table th:first-child,
 .shares-table td:first-child {
-    width: 28%;
+    white-space: nowrap;
+    width: 1%;
 }
 
 .shares-table th:nth-child(2),
 .shares-table td:nth-child(2) {
-    width: 30%;
+    white-space: nowrap;
+    width: 1%;
 }
 
 .shares-table th:last-child,
 .shares-table td:last-child {
     text-align: right;
-    width: 5.5rem;
+    width: 1%;
 }
 
 .shares-title-link {
@@ -148,7 +150,15 @@
 }
 
 .shares-actions {
+    padding-inline: 1.25rem;
     white-space: nowrap;
+}
+
+.shares-actions button {
+    height: 2.25rem;
+    margin-inline: 0.15rem;
+    padding: 0.35rem;
+    width: 2.25rem;
 }
 
 .shares-icon-button {

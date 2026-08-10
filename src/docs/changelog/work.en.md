@@ -1,5 +1,9 @@
 # Refine share management
 
+## Make share ownership and overview controls deterministic
+
+Share owners now bypass share-password challenges and proceed directly to their content URL under their account session, while recipients still complete any configured share authentication. The gateway-owned Shares page now rerenders filtered and optimistically removed rows explicitly, uses compact content-sized leading columns, and gives action controls consistent padded dimensions.
+
 ## Bind share authentication to the requested SPA route
 
 The router now supplies the exact destination path to session authentication, and the Share gateway extracts the user-share token from that immutable route input. Concurrent URL changes can no longer make a valid user share appear to have no token or leave its recipient in the public loading shell.

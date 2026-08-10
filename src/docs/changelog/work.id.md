@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Pastikan kepemilikan berbagi dan kontrol ikhtisar konsisten
+
+Pemilik berbagi kini melewati tantangan kata sandi berbagi dan langsung menuju URL konten dengan sesi akun mereka, sementara penerima tetap menyelesaikan autentikasi berbagi yang dikonfigurasi. Halaman Berbagi milik gateway kini merender ulang baris yang difilter dan dihapus secara optimistis, memakai kolom awal ringkas sesuai isi, serta memberikan ukuran dan bantalan tombol aksi yang konsisten.
+
 ## Ikat autentikasi berbagi ke rute SPA yang diminta
 
 Router kini memberikan jalur tujuan yang tepat kepada autentikasi sesi, dan gateway Share mengambil token berbagi pengguna dari masukan rute yang tetap tersebut. Perubahan URL yang bersamaan tidak lagi dapat membuat berbagi pengguna yang valid tampak tidak memiliki token atau menahan penerima di tampilan pemuatan publik.

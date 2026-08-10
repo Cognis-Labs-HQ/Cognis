@@ -503,12 +503,26 @@ export async function registerShareBootstrapHooks(input: {
             if (!token) {
                 return { valid: false, reason: "missing_token" };
             }
-            const tokenRecord = await input.gateway.resolveToken(
-                token,
-                inputPayload.password,
+            const requesterAccountId = String(
+                (
+                    stageCtx.input as {
+                        requesterClaims?: { sub?: unknown } | null;
+                    }
+                ).requesterClaims?.sub ?? "",
+            ).trim();
+            const inspectedRecord = await input.gateway.inspectToken(token);
+            const requesterOwnsShare = Boolean(
+                inspectedRecord &&
+                requesterAccountId &&
+                requesterAccountId === inspectedRecord.ownerAccountId,
             );
+            const tokenRecord = requesterOwnsShare
+                ? inspectedRecord
+                : await input.gateway.resolveToken(
+                      token,
+                      inputPayload.password,
+                  );
             if (!tokenRecord) {
-                const inspectedRecord = await input.gateway.inspectToken(token);
                 if (inspectedRecord?.passwordHash) {
                     return { valid: false, reason: "password_required" };
                 }

@@ -500,6 +500,21 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const protectedToken = encodeURIComponent(
         protectedCreateResponse.body.data.shareUrl.split("/share/")[1],
     );
+    const protectedOwnerResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            headers: { authorization: `Bearer ${adminToken}` },
+        }),
+        protectedOwnerResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${protectedToken}`),
+    );
+    assert.equal(protectedOwnerResponse.statusCode, 200);
+    assert.equal(
+        JSON.parse(protectedOwnerResponse.payload).data.directAccess,
+        true,
+    );
     const missingPasswordResponse = new ResponseRecorder();
     await dispatchRoute(
         routeRegistry,

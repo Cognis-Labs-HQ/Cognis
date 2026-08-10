@@ -14,6 +14,14 @@ const templateSource = await readFile(
     new URL("../ui/app/shares/templates.html", import.meta.url),
     "utf8",
 );
+const styleSource = await readFile(
+    new URL("../ui/app/shares/index.css", import.meta.url),
+    "utf8",
+);
+const bootstrapSource = await readFile(
+    new URL("../bootstrap/index.ts", import.meta.url),
+    "utf8",
+);
 
 test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /createPageComposer/);
@@ -33,10 +41,8 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /activeFilter = filter\.dataset\.shareFilter/);
     assert.match(pageSource, /visibleShares\.length \+ 2/);
     assert.match(pageSource, /\[collection\]: overview\[collection\]\.filter/);
-    assert.match(
-        pageSource,
-        /button\.closest\("\[data-share-id\]"\)\?\.remove\(\)[\s\S]*await rejectShare|button\.closest\("\[data-share-id\]"\)\?\.remove\(\)[\s\S]*await revokeShare/,
-    );
+    assert.match(pageSource, /composer\.refreshElements\(\[element\.id\]\)/);
+    assert.doesNotMatch(pageSource, /button\.closest\("\[data-share-id\]"\)/);
     assert.match(templateSource, /data-share-filter="all"/);
     assert.match(templateSource, /data-share-filter="sent"/);
     assert.match(templateSource, /data-share-filter="received"/);
@@ -52,6 +58,32 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /await mountWhenDirect\(mount\)/);
     assert.doesNotMatch(pageSource, /await mount\(document\.querySelector/);
     assert.doesNotMatch(pageSource, /share\.shares\.open/);
+});
+
+test("Shares table filters rerender rows and keeps compact columns and actions", () => {
+    assert.match(pageSource, /activeFilter = filter\.dataset\.shareFilter/);
+    assert.match(pageSource, /refreshOverview\(\)/);
+    assert.match(styleSource, /table-layout:\s*auto/);
+    assert.match(
+        styleSource,
+        /th:first-child,[\s\S]*white-space:\s*nowrap;[\s\S]*width:\s*1%/,
+    );
+    assert.match(
+        styleSource,
+        /\.shares-actions button[\s\S]*height:\s*2\.25rem/,
+    );
+    assert.match(
+        styleSource,
+        /\.shares-actions button[\s\S]*width:\s*2\.25rem/,
+    );
+});
+
+test("Share gateway owns its pages and adapter static directories", () => {
+    assert.match(
+        bootstrapSource,
+        /uiHooks\.registerSpaRoute\(\{[\s\S]*id: "shares-page"/,
+    );
+    assert.match(bootstrapSource, /uiHooks\.registerAdapterStaticDir/);
 });
 
 test("Share navbar plugin adds Shares to the user menu", () => {

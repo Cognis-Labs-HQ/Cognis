@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Freigabeeigentum und Übersichtssteuerung eindeutig behandeln
+
+Eigentümer umgehen jetzt Freigabepasswortabfragen und gelangen unter ihrer Kontositzung direkt zur Inhalts-URL, während Empfänger weiterhin eine konfigurierte Freigabeauthentifizierung abschließen. Die gatewayeigene Freigabeseite rendert gefilterte und vorläufig entfernte Zeilen nun ausdrücklich neu, verwendet kompakte inhaltsbreite Anfangsspalten und einheitlich gepolsterte Aktionsschaltflächen.
+
 ## Freigabeauthentifizierung an die angeforderte SPA-Route binden
 
 Der Router übergibt jetzt den genauen Zielpfad an die Sitzungsauthentifizierung, und das Share-Gateway liest das Benutzerfreigabe-Token aus dieser unveränderlichen Routeneingabe. Gleichzeitige URL-Änderungen können dadurch eine gültige Benutzerfreigabe nicht mehr ohne Token erscheinen lassen oder den Empfänger in der öffentlichen Ladeansicht festhalten.

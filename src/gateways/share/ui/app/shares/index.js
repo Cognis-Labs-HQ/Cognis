@@ -362,6 +362,16 @@ export async function mount(root, { signal } = {}) {
         },
         elements: [buildSharesElement(overview, i18n, templates, activeFilter)],
     });
+    const refreshOverview = () => {
+        const element = buildSharesElement(
+            overview,
+            i18n,
+            templates,
+            activeFilter,
+        );
+        composer.refresh([element]);
+        composer.refreshElements([element.id]);
+    };
     root.addEventListener(
         "click",
         async (event) => {
@@ -379,9 +389,7 @@ export async function mount(root, { signal } = {}) {
             const filter = event.target.closest("[data-share-filter]");
             if (filter instanceof HTMLButtonElement) {
                 activeFilter = filter.dataset.shareFilter ?? "all";
-                composer.refresh([
-                    buildSharesElement(overview, i18n, templates, activeFilter),
-                ]);
+                refreshOverview();
                 return;
             }
             const manageButton = event.target.closest("[data-share-manage]");
@@ -393,9 +401,7 @@ export async function mount(root, { signal } = {}) {
                 if (!share) return;
                 await openManagePopup(share, i18n);
                 await loadOverview();
-                composer.refresh([
-                    buildSharesElement(overview, i18n, templates, activeFilter),
-                ]);
+                refreshOverview();
                 return;
             }
             const button = event.target.closest(
@@ -442,7 +448,7 @@ export async function mount(root, { signal } = {}) {
                     (share) => String(share.id) !== shareId,
                 ),
             };
-            button.closest("[data-share-id]")?.remove();
+            refreshOverview();
             const response = rejecting
                 ? await rejectShare(shareId)
                 : await revokeShare(shareId);
@@ -456,9 +462,7 @@ export async function mount(root, { signal } = {}) {
             );
             if (response.ok) return;
             overview = previousOverview;
-            composer.refresh([
-                buildSharesElement(overview, i18n, templates, activeFilter),
-            ]);
+            refreshOverview();
         },
         { signal },
     );

@@ -1,7 +1,7 @@
 {
     "id": "share",
     "name": "Share Gateway",
-    "version": "1.6.80",
+    "version": "1.6.81",
     "required": false,
     "requires": ["auth", "db"],
     "description": "Gateway-owned public share token orchestration for Cognis resources.",
