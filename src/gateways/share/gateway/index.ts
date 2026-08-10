@@ -29,6 +29,7 @@ export interface ShareMethodAdapter {
     version?: string;
     publisher?: string;
     locked?: boolean;
+    delivery: "link" | "user";
     prepare(input: {
         recipients?: unknown;
         accessControls?: Record<string, unknown>;
@@ -119,6 +120,19 @@ export class CoreShareGateway {
         return this.adapters.get(adapterId) ?? null;
     }
 
+    resolveRecordAdapter(record: {
+        metadata?: Record<string, string> | null;
+        accessControls?: Partial<ShareAccessControls>;
+    }): ShareMethodAdapter | null {
+        const declaredId = String(record.metadata?.shareMethod ?? "").trim();
+        if (declaredId) return this.getAdapter(declaredId);
+        return (
+            this.listAdapters().find((adapter) =>
+                adapter.owns?.(record.accessControls ?? {}),
+            ) ?? this.getAdapter("link")
+        );
+    }
+
     prepareAdapterShare(
         adapterId: string,
         input: {
@@ -159,7 +173,14 @@ export class CoreShareGateway {
     async serializeRecord(
         record: ShareTokenRecord,
     ): Promise<Record<string, unknown>> {
-        const shareUrl = this.buildShareUrl(record.tokenValue);
+        const adapter = this.resolveRecordAdapter(record);
+        const publicLink = adapter?.delivery === "link";
+        const shareUrl = publicLink
+            ? this.buildShareUrl(record.tokenValue)
+            : "";
+        const destinationUrl = publicLink
+            ? shareUrl
+            : this.buildAbsoluteUrl(String(record.metadata?.contentUrl ?? ""));
         const resolveVariants = this.resolveCapability<
             (input: {
                 resourceType: string;
@@ -170,16 +191,17 @@ export class CoreShareGateway {
                 metadata: Record<string, string> | null;
             }) => Promise<ShareVariant[]> | ShareVariant[]
         >("share:resolveVariants");
-        const resolvedVariants = resolveVariants
-            ? await resolveVariants({
-                  resourceType: record.resourceType,
-                  resourceId: record.resourceId,
-                  token: record.tokenValue,
-                  shareUrl,
-                  grantedCapabilities: record.grantedCapabilities,
-                  metadata: record.metadata,
-              })
-            : [];
+        const resolvedVariants =
+            publicLink && resolveVariants
+                ? await resolveVariants({
+                      resourceType: record.resourceType,
+                      resourceId: record.resourceId,
+                      token: record.tokenValue,
+                      shareUrl,
+                      grantedCapabilities: record.grantedCapabilities,
+                      metadata: record.metadata,
+                  })
+                : [];
         const variants = resolvedVariants.map((variant) => ({
             ...variant,
             url: this.buildAbsoluteUrl(variant.url),
@@ -201,15 +223,18 @@ export class CoreShareGateway {
             updatedAt: record.updatedAt,
             lastAccessedAt: record.lastAccessedAt,
             shareUrl,
+            destinationUrl,
+            shareMethod: adapter?.id ?? "link",
             variants,
-            emailSupported: Boolean(this.resolveCapability("notify:sendEmail")),
-            quickShareActions: await resolveQuickShareActions(
-                this.resolveCapability,
-                {
-                    shareUrl,
-                    label: record.label,
-                },
-            ),
+            emailSupported:
+                publicLink &&
+                Boolean(this.resolveCapability("notify:sendEmail")),
+            quickShareActions: publicLink
+                ? await resolveQuickShareActions(this.resolveCapability, {
+                      shareUrl,
+                      label: record.label,
+                  })
+                : [],
         };
     }
 

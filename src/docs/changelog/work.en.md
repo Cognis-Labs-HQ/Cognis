@@ -103,3 +103,7 @@ Registered gateway and module pages now load their own dashboard entry point and
 ## Keep Meeting shares valid for their configured lifetime
 
 Meeting shares now remain resolvable across meeting instances and ended sessions. Access continues until the share itself expires, is rejected, or is revoked, while repeated authentication flows reuse the already resolved share session.
+
+## User shares stay in account sessions
+
+Direct user shares now deliver the content provider’s opaque destination to the named recipient and never expose a public share URL or mint a guest session. Link shares retain their independent public-link and guest-access lifecycle.

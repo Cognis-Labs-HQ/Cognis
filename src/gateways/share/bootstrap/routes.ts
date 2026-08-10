@@ -358,6 +358,7 @@ export function createShareRoutes(input: {
                 resourceId,
                 contentUrl,
                 supportsReadOnly: body.supportsReadOnly === true,
+                shareMethod,
                 label: typeof body.label === "string" ? body.label : "",
                 grantedCapabilities: Array.isArray(body.grantedCapabilities)
                     ? body.grantedCapabilities

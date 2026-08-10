@@ -627,9 +627,15 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ["bob", "charlie"],
     );
     assert.equal(userShareNotifications[0]?.category, "share");
-    assert.match(
-        String(userShareNotifications[0]?.actionUrl ?? ""),
-        /^\/share\//,
+    assert.equal(
+        userShareNotifications[0]?.actionUrl,
+        "/meetings?meeting=meeting-1",
+    );
+    assert.equal(restrictedCreateResponse.body.data.shareMethod, "user");
+    assert.equal(restrictedCreateResponse.body.data.shareUrl, "");
+    assert.equal(
+        restrictedCreateResponse.body.data.destinationUrl,
+        "/meetings?meeting=meeting-1",
     );
     const deleteAlternateResponse = await dispatchJson(
         "DELETE",
@@ -644,58 +650,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 notification.subject === "A shared item was revoked",
         ),
     );
-    const restrictedToken = encodeURIComponent(
-        restrictedCreateResponse.body.data.shareUrl.split("/share/")[1],
-    );
-
-    const anonymousRestrictedResponse = new ResponseRecorder();
-    await dispatchRoute(
-        routeRegistry,
-        new RequestRecorder({ method: "GET" }),
-        anonymousRestrictedResponse,
-        new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
-    );
-    assert.equal(anonymousRestrictedResponse.statusCode, 403);
-    assert.equal(
-        JSON.parse(anonymousRestrictedResponse.payload).error.code,
-        "recipient_restricted",
-    );
-
-    const bobRestrictedResponse = new ResponseRecorder();
-    await dispatchRoute(
-        routeRegistry,
-        new RequestRecorder({
-            method: "GET",
-            headers: { authorization: `Bearer ${bobToken}` },
-        }),
-        bobRestrictedResponse,
-        new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
-    );
-    assert.equal(bobRestrictedResponse.statusCode, 200);
-    assert.equal(
-        JSON.parse(bobRestrictedResponse.payload).data.directAccess,
-        true,
-    );
-    assert.equal(
-        JSON.parse(bobRestrictedResponse.payload).data.guestAccessToken,
-        "",
-    );
-    assert.equal(
-        JSON.parse(bobRestrictedResponse.payload).data.navigationUrl,
-        "/meetings/shared",
-    );
-    assert.equal(
-        JSON.parse(bobRestrictedResponse.payload).data.feedback.messageKey,
-        "meeting.share_imported",
-    );
-    assert.ok(
-        deliveredShares.some(
-            (delivery) => delivery.recipientAccountId === "bob",
-        ),
-    );
-    assert.equal(typeof deliveredShares[0]?.shareId, "string");
-    assert.ok(String(deliveredShares[0]?.shareId ?? "").length > 0);
-    assert.equal(deliveredShares.length, 1);
+    assert.equal(deliveredShares.length, 0);
 
     const restrictedShareId = String(restrictedCreateResponse.body.data.id);
     const overviewResponse = await dispatchJson(

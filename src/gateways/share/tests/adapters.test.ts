@@ -38,6 +38,10 @@ test("share gateway discovers Link and User method adapters", async () => {
         gateway.listAdapters().map(({ id }) => id),
         ["link", "user"],
     );
+    assert.deepEqual(
+        gateway.listAdapters().map(({ delivery }) => delivery),
+        ["link", "user"],
+    );
     assert.deepEqual(gateway.prepareAdapterShare("link", {}), {
         accessControls: { recipients: [] },
     });

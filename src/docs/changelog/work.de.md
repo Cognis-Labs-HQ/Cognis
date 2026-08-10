@@ -103,3 +103,7 @@ Registrierte Gateway- und Modulseiten laden nun sowohl nach einer Browser-Aktual
 ## Besprechungsfreigaben für ihre konfigurierte Laufzeit gültig halten
 
 Besprechungsfreigaben bleiben nun über Besprechungsinstanzen und beendete Sitzungen hinweg auflösbar. Der Zugriff besteht weiter, bis die Freigabe selbst abläuft, abgelehnt oder widerrufen wird; wiederholte Authentifizierungsabläufe verwenden die bereits aufgelöste Freigabesitzung erneut.
+
+## Benutzerfreigaben bleiben in Kontositzungen
+
+Direkte Benutzerfreigaben übermitteln nun das undurchsichtige Ziel des Inhaltsanbieters an den benannten Empfänger und legen weder eine öffentliche Freigabe-URL offen noch erstellen sie eine Gastsitzung. Linkfreigaben behalten ihren unabhängigen Ablauf für öffentliche Links und Gastzugriff.

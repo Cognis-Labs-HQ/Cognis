@@ -52,8 +52,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.49` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.44` |
-| Link Share            | `src/adapters/share/link/`          | `1.1.20` |
-| User Share            | `src/adapters/share/user/`          | `1.1.13` |
+| Link Share            | `src/adapters/share/link/`          | `1.1.21` |
+| User Share            | `src/adapters/share/user/`          | `1.1.14` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`  |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.3`  |
@@ -65,7 +65,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`  |
 | Authentication (auth) | `src/gateways/auth/`          | `1.7.45` |
-| Share                 | `src/gateways/share/`         | `1.6.82` |
+| Share                 | `src/gateways/share/`         | `1.6.83` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
 | Social                | `src/gateways/social/`        | `1.2.11` |

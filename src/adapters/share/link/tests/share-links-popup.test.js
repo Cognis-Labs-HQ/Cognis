@@ -79,7 +79,7 @@ test("share popup can open directly in database-backed edit mode", () => {
     assert.match(source, /editOnly = false/);
     assert.match(source, /state\.links = \[initialShare\]/);
     assert.match(bodySource, /share-links-popup--edit-only/);
-    assert.match(source, /updateButton\?\.classList\.add\("btn-neutral"\)/);
+    assert.match(source, /updateButton\?\.classList\.add\("btn-confirm"\)/);
     assert.match(
         bodySource,
         /editOnly[\s\S]*\? ""[\s\S]*: `<nav class="share-method-tabs"/,

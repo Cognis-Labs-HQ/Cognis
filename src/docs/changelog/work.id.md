@@ -103,3 +103,7 @@ Halaman gateway dan modul yang terdaftar kini memuat titik masuk dasbor serta pa
 ## Mempertahankan berbagi Rapat selama masa berlaku yang ditentukan
 
 Berbagi Rapat kini tetap dapat diselesaikan di seluruh instans rapat dan sesi yang telah berakhir. Akses berlanjut sampai berbagi itu sendiri kedaluwarsa, ditolak, atau dicabut, sedangkan alur autentikasi berulang menggunakan kembali sesi berbagi yang sudah diselesaikan.
+
+## Berbagi pengguna tetap dalam sesi akun
+
+Berbagi langsung kepada pengguna kini mengirim tujuan buram dari penyedia konten kepada penerima yang ditentukan dan tidak pernah mengekspos URL berbagi publik atau membuat sesi tamu. Berbagi tautan mempertahankan siklus tautan publik dan akses tamunya secara mandiri.

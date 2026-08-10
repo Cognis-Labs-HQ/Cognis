@@ -74,26 +74,6 @@ function shareRecipientsAllowRequester(
     });
 }
 
-function hasUserRecipients(
-    tokenRecord:
-        | {
-              accessControls?: { recipients?: unknown };
-          }
-        | null
-        | undefined,
-): boolean {
-    const recipients = tokenRecord.accessControls?.recipients;
-    return (
-        Array.isArray(recipients) &&
-        recipients.some(
-            (recipient) =>
-                recipient &&
-                typeof recipient === "object" &&
-                String((recipient as { type?: unknown }).type ?? "") === "user",
-        )
-    );
-}
-
 export async function registerShareBootstrapHooks(input: {
     ctx: GatewayBootstrapContext;
     gateway: CoreShareGateway;
@@ -360,6 +340,7 @@ export async function registerShareBootstrapHooks(input: {
                 expiresAt?: string;
                 contentUrl?: string;
                 supportsReadOnly?: boolean;
+                shareMethod?: string;
             };
             let shareRecord;
             try {
@@ -386,6 +367,7 @@ export async function registerShareBootstrapHooks(input: {
                         ...(inputPayload.contentUrl
                             ? { contentUrl: inputPayload.contentUrl }
                             : {}),
+                        shareMethod: String(inputPayload.shareMethod ?? "link"),
                         supportsReadOnly: inputPayload.supportsReadOnly
                             ? "true"
                             : "false",
@@ -433,6 +415,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 label?: string;
                 shareUrl?: string;
+                destinationUrl?: string;
                 metadata?: Record<string, string> | null;
                 accessControls?: {
                     recipients?: Array<{ type?: string; id?: string }>;
@@ -463,7 +446,9 @@ export async function registerShareBootstrapHooks(input: {
                 >("notify:dispatch");
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
-                const shareUrl = String(shareRecord?.shareUrl ?? "").trim();
+                const destinationUrl = String(
+                    shareRecord?.destinationUrl ?? shareRecord?.shareUrl ?? "",
+                ).trim();
                 await Promise.allSettled(
                     userRecipients.map((recipientUsername) =>
                         dispatch({
@@ -471,7 +456,7 @@ export async function registerShareBootstrapHooks(input: {
                             recipientUsername,
                             subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
                             body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
-                            actionUrl: shareUrl || undefined,
+                            actionUrl: destinationUrl || undefined,
                             senderName: "Cognis Share",
                             metadata: {
                                 shareId: (shareRecord as { id?: string })?.id,
@@ -528,6 +513,12 @@ export async function registerShareBootstrapHooks(input: {
                 }
                 return { valid: false, reason: "invalid_token" };
             }
+            if (
+                input.gateway.resolveRecordAdapter(tokenRecord)?.delivery !==
+                "link"
+            ) {
+                return { valid: false, reason: "account_share_not_public" };
+            }
             const requesterClaims = (
                 stageCtx.input as {
                     requesterClaims?: { sub?: unknown } | null;
@@ -554,6 +545,10 @@ export async function registerShareBootstrapHooks(input: {
                 tokenRecord?: {
                     id?: string;
                     expiresAt?: string;
+                    metadata?: Record<string, string> | null;
+                    accessControls?: {
+                        recipients?: Array<{ type?: string; id?: string }>;
+                    };
                 };
                 reason?: string;
             } | null;
@@ -590,7 +585,10 @@ export async function registerShareBootstrapHooks(input: {
                 // only for visitors without direct access.
                 return { issued: false, reason: "direct_access" };
             }
-            if (hasUserRecipients(tokenResult.tokenRecord)) {
+            if (
+                input.gateway.resolveRecordAdapter(tokenResult.tokenRecord)
+                    ?.delivery !== "link"
+            ) {
                 return { issued: false, reason: "account_recipient_required" };
             }
             if (!issueAccessToken || !tokenResult.tokenRecord?.id) {

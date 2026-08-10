@@ -9,6 +9,7 @@ export function createShareAdapter(): ShareMethodAdapter {
         descriptionKey: "adapter.share.user.description",
         pageModuleUrl: "/static/adapters/share/user/page.js",
         order: 20,
+        delivery: "user",
         owns(accessControls) {
             return (accessControls.recipients ?? []).some(
                 (recipient) => recipient.type === "user",
