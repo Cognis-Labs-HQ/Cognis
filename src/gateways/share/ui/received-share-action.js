@@ -28,6 +28,7 @@ window.addEventListener("cognis:notification-action", (event) => {
 export async function navigateAccountShare(actionUrl) {
     const token = tokenFromActionUrl(actionUrl);
     if (!token) return false;
+    let shareVerified = false;
     try {
         const accessToken = localStorage.getItem("cognis_access_token");
         const response = await resolveReceivedShare(token, {
@@ -48,6 +49,7 @@ export async function navigateAccountShare(actionUrl) {
         if (!response.ok || !payload?.data?.directAccess) {
             throw new Error("share_resolution_failed");
         }
+        shareVerified = true;
         if (payload.data.resourceType === "calendar") {
             const calendarI18n = await createI18n({
                 componentStringBaseUrls: [
@@ -92,6 +94,7 @@ export async function navigateAccountShare(actionUrl) {
         await navigateTo(navigationUrl);
         return true;
     } catch {
+        if (shareVerified) return false;
         const i18n = await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         });

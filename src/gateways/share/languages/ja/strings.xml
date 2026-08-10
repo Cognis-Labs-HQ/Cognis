@@ -47,6 +47,8 @@
   <string name="share.shares.column_relationship">共有先 / 共有元</string>
   <string name="share.shares.column_status">状態</string>
   <string name="share.shares.column_expires">有効期限</string>
+  <string name="share.shares.column_created">作成日時</string>
+  <string name="share.shares.column_accessed">最終アクセス</string>
   <string name="share.shares.column_actions">操作</string>
   <string name="share.shares.total_count">合計 {{count}} 件</string>
   <string name="share.shares.sent_count">送信 {{count}} 件</string>

@@ -36,6 +36,9 @@ test("Shares page composes sent and received share management", () => {
     assert.match(templateSource, /data-share-filter="all"/);
     assert.match(templateSource, /data-share-filter="sent"/);
     assert.match(templateSource, /data-share-filter="received"/);
+    assert.match(templateSource, /data-column-created/);
+    assert.match(templateSource, /data-column-accessed/);
+    assert.match(pageSource, /share\.lastAccessedAt/);
     assert.match(pageSource, /share:openLinksPopup/);
     assert.match(pageSource, /initialEditingShareId/);
     assert.match(pageSource, /initialEditingShare: share/);

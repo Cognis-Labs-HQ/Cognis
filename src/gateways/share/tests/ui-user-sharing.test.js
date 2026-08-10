@@ -312,6 +312,10 @@ test("component page renderers receive the root used by meeting shares", () => {
 test("received user shares unlock in place and navigate to the component", () => {
     assert.match(receivedShareActionSource, /event\.defaultPrevented/);
     assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
+    assert.match(
+        receivedShareActionSource,
+        /if \(shareVerified\) return false/,
+    );
     assert.match(receivedShareActionSource, /resolveReceivedShare/);
     assert.match(receivedShareActionSource, /useAccountKeyring/);
     assert.match(

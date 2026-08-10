@@ -97,5 +97,6 @@
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard muss die Serverprüfung bestehen, bevor es aktiviert werden kann.</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">Der Whiteboard-Server hat die WebSocket-Authentifizierung abgelehnt. Prüfe die API-Schlüssel-Konfiguration.</string>
   <string name="module.nextcloud_whiteboard.tool_lock">Aktuelles Zeichenwerkzeug nach dem Erstellen eines Objekts aktiv lassen</string>
-  <string name="module.nextcloud_whiteboard.share_permission_read">Nur lesen</string>\n  <string name="module.nextcloud_whiteboard.share_permission_write">Darf bearbeiten</string>
+  <string name="module.nextcloud_whiteboard.share_permission_read">Nur Lesen</string>
+  <string name="module.nextcloud_whiteboard.share_permission_write">Lesen + Schreiben</string>
 </resources>

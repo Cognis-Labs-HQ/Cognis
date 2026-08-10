@@ -97,5 +97,6 @@
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">ホワイトボードサーバーが WebSocket 認証を拒否しました。API キー設定を確認してください。</string>
   <string name="module.nextcloud_whiteboard.tool_lock">オブジェクト作成後も現在の描画ツールを維持</string>
-  <string name="module.nextcloud_whiteboard.share_permission_read">読み取り専用</string>\n  <string name="module.nextcloud_whiteboard.share_permission_write">編集可能</string>
+  <string name="module.nextcloud_whiteboard.share_permission_read">読み取り専用</string>
+  <string name="module.nextcloud_whiteboard.share_permission_write">読み取り + 書き込み</string>
 </resources>

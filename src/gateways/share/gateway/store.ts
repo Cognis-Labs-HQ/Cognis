@@ -45,6 +45,7 @@ export interface ShareTokenRecord {
     accessControls: ShareAccessControls;
     expiresAt: string;
     expirationNotifiedAt: string;
+    lastAccessedAt: string;
     createdAt: string;
     updatedAt: string;
 }
@@ -226,6 +227,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     const updatedAt = String(row.updated_at ?? "").trim();
     const expiresAt = String(row.expires_at ?? "");
     const expirationNotifiedAt = String(row.expiration_notified_at ?? "");
+    const lastAccessedAt = String(row.last_accessed_at ?? "");
     if (
         !id ||
         !ownerAccountId ||
@@ -286,6 +288,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
         ),
         expiresAt,
         expirationNotifiedAt,
+        lastAccessedAt,
         createdAt,
         updatedAt,
     };
@@ -339,6 +342,7 @@ export class ShareTokenStore {
                 { name: "access_controls", type: "text", notNull: true },
                 { name: "expires_at", type: "text", notNull: true },
                 { name: "expiration_notified_at", type: "text" },
+                { name: "last_accessed_at", type: "text" },
                 { name: "created_at", type: "text", notNull: true },
                 { name: "updated_at", type: "text", notNull: true },
             ],
@@ -405,6 +409,7 @@ export class ShareTokenStore {
             }),
             expiresAt: String(input.expiresAt ?? ""),
             expirationNotifiedAt: "",
+            lastAccessedAt: "",
             createdAt,
             updatedAt: createdAt,
         };
@@ -430,6 +435,7 @@ export class ShareTokenStore {
                 access_controls: JSON.stringify(record.accessControls),
                 expires_at: record.expiresAt,
                 expiration_notified_at: null,
+                last_accessed_at: null,
                 created_at: record.createdAt,
                 updated_at: record.updatedAt,
             },
@@ -768,7 +774,14 @@ export class ShareTokenStore {
                 return null;
             }
         }
-        return record;
+        const lastAccessedAt = new Date().toISOString();
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "share_tokens",
+            values: { last_accessed_at: lastAccessedAt },
+            where: [{ column: "id", value: record.id }],
+        });
+        return { ...record, lastAccessedAt };
     }
 
     async inspect(rawToken: string): Promise<ShareTokenRecord | null> {

@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Memperjelas berbagi berhasil dan menampilkan tanggal akses
+
+Kegagalan halaman tujuan setelah berbagi pengguna diverifikasi tidak lagi melaporkan berbagi tersebut sebagai tidak valid atau kedaluwarsa. Berbagi kini menampilkan tanggal pembuatan dan akses terakhir, serta pilihan izin Whiteboard menggunakan Hanya Baca dan Baca + Tulis secara konsisten.
+
 ## Menyelesaikan navigasi berbagi terlindungi dan kontrol tamu kalender
 
 Tindakan notifikasi kini hanya ditangani oleh satu penangan berbagi sehingga permintaan kata sandi ganda dan galat berbagi tidak valid yang keliru dicegah. Penerima kalender mengakui impor, penghapusan kalender yang diterima memakai teks yang sesuai, dan tamu kalender dapat menavigasi tampilan dengan gulir otomatis ke waktu saat ini. Akses tulis kini berlabel Baca + Tulis.

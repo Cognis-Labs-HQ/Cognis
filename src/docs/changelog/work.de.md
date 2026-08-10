@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Erfolgreiche Freigaben klar melden und Zugriffsdaten anzeigen
+
+Ein Fehler auf der Zielseite meldet eine bereits bestätigte Benutzerfreigabe nicht mehr als ungültig oder abgelaufen. Freigaben zeigen nun Erstellungs- und letzte Zugriffsdaten, und Whiteboard-Berechtigungen verwenden einheitlich Nur Lesen und Lesen + Schreiben.
+
 ## Geschützte Freigabenavigation und Gaststeuerung im Kalender abschließen
 
 Benachrichtigungsaktionen werden nun nur von einem Freigabe-Handler übernommen, wodurch doppelte Passwortabfragen und falsche Meldungen über ungültige Freigaben vermieden werden. Kalenderempfänger bestätigen Importe, beim Löschen empfangener Kalender wird ein passender Text verwendet und Kalendergäste können Ansichten mit automatischem Scrollen zur aktuellen Uhrzeit wechseln. Schreibzugriff heißt nun Lesen + Schreiben.

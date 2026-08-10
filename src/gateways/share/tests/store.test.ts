@@ -93,6 +93,7 @@ test("share token schema declares resource and token columns", async () => {
     assert.ok(columnNames.includes("resource_type"));
     assert.ok(columnNames.includes("resource_key"));
     assert.ok(columnNames.includes("expiration_notified_at"));
+    assert.ok(columnNames.includes("last_accessed_at"));
     assert.deepEqual(
         tableDef.columns.find((column) => column.name === "resource_key")
             ?.references,
@@ -152,6 +153,7 @@ test("issue, list, resolve, and delete share tokens", async () => {
     assert.equal(Boolean(inspected?.passwordHash), true);
     const resolved = await store.resolve(issued.tokenValue, "secret");
     assert.ok(resolved);
+    assert.match(resolved?.lastAccessedAt ?? "", /^\d{4}-\d{2}-\d{2}T/);
     assert.equal(resolved?.resourceId, "meeting-1");
     assert.deepEqual(resolved?.metadata, {
         meetingInstanceId: "instance-1",

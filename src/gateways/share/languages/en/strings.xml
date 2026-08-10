@@ -47,6 +47,8 @@
   <string name="share.shares.column_relationship">Shared To / Shared From</string>
   <string name="share.shares.column_status">Status</string>
   <string name="share.shares.column_expires">Expires</string>
+  <string name="share.shares.column_created">Created</string>
+  <string name="share.shares.column_accessed">Last accessed</string>
   <string name="share.shares.column_actions">Actions</string>
   <string name="share.shares.total_count">{{count}} total</string>
   <string name="share.shares.sent_count">{{count}} sent</string>

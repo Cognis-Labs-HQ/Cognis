@@ -47,6 +47,8 @@
   <string name="share.shares.column_relationship">Dibagikan Kepada / Dibagikan Oleh</string>
   <string name="share.shares.column_status">Status</string>
   <string name="share.shares.column_expires">Kedaluwarsa</string>
+  <string name="share.shares.column_created">Dibuat</string>
+  <string name="share.shares.column_accessed">Terakhir diakses</string>
   <string name="share.shares.column_actions">Tindakan</string>
   <string name="share.shares.total_count">{{count}} total</string>
   <string name="share.shares.sent_count">{{count}} terkirim</string>

@@ -113,6 +113,13 @@ function renderShareRow(share, direction, i18n, rowTemplate) {
     statusBadge.className = `shares-status shares-status--${status.id}`;
     statusBadge.textContent = status.label;
     row.querySelector("[data-share-status]").appendChild(statusBadge);
+    row.querySelector("[data-share-created]").textContent = share.createdAt
+        ? formatDateTime(share.createdAt)
+        : i18n.t("share.shares.never");
+    row.querySelector("[data-share-accessed]").textContent =
+        share.lastAccessedAt
+            ? formatDateTime(share.lastAccessedAt)
+            : i18n.t("share.shares.never");
     row.querySelector("[data-share-expires]").textContent = share.expiresAt
         ? formatDateTime(share.expiresAt)
         : i18n.t("share.shares.never");
@@ -190,6 +197,8 @@ function buildSharesElement(overview, i18n, templates, activeFilter = "all") {
                     "share.shares.column_relationship",
                 ],
                 ["[data-column-status]", "share.shares.column_status"],
+                ["[data-column-created]", "share.shares.column_created"],
+                ["[data-column-accessed]", "share.shares.column_accessed"],
                 ["[data-column-expires]", "share.shares.column_expires"],
                 ["[data-column-actions]", "share.shares.column_actions"],
             ]) {

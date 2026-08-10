@@ -47,6 +47,8 @@
   <string name="share.shares.column_relationship">Freigegeben für / Freigegeben von</string>
   <string name="share.shares.column_status">Status</string>
   <string name="share.shares.column_expires">Läuft ab</string>
+  <string name="share.shares.column_created">Erstellt</string>
+  <string name="share.shares.column_accessed">Zuletzt aufgerufen</string>
   <string name="share.shares.column_actions">Aktionen</string>
   <string name="share.shares.total_count">{{count}} insgesamt</string>
   <string name="share.shares.sent_count">{{count}} gesendet</string>

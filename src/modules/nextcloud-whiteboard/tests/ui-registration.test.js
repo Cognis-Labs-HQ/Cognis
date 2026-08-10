@@ -64,6 +64,18 @@ test("nextcloud whiteboard standalone shell loads shared layout styles", async (
     assert.match(shellSource, /\/static\/styles\/reuse\/layout\.css/);
 });
 
+test("nextcloud whiteboard share permissions use explicit access labels", async () => {
+    const strings = await import("node:fs/promises").then((fs) =>
+        fs.readFile(
+            new URL("../ui/languages/en/strings.xml", import.meta.url),
+            "utf8",
+        ),
+    );
+    assert.match(strings, />Read-Only<\/string>/);
+    assert.match(strings, />Read \+ Write<\/string>/);
+    assert.doesNotMatch(strings, />Can edit<\/string>/);
+});
+
 test("nextcloud whiteboard disables page layout editing", async () => {
     const appSource = await import("node:fs/promises").then((fs) =>
         fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),

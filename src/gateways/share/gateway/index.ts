@@ -199,6 +199,7 @@ export class CoreShareGateway {
             status: this.isTokenExpired(record) ? "expired" : "active",
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
+            lastAccessedAt: record.lastAccessedAt,
             shareUrl,
             variants,
             emailSupported: Boolean(this.resolveCapability("notify:sendEmail")),

@@ -1,5 +1,9 @@
 # Refine share management
 
+## Clarify successful shares and expose access dates
+
+A destination-page failure after a user share has already been verified no longer reports that share as invalid or expired. Shares now show creation and last-accessed dates, and Whiteboard permission choices consistently use Read-Only and Read + Write.
+
 ## Finish protected share navigation and calendar guest controls
 
 Notification actions are now claimed by only one share handler, preventing duplicate password prompts and false invalid-share errors. Calendar recipients acknowledge imports, received-calendar deletion uses applicable wording, and calendar guests can navigate views with current-time auto-scrolling. Share permissions now label write access as Read + Write.
