@@ -355,6 +355,10 @@ test("share resolution uses the authenticated API client without treating passwo
     assert.match(receivedShareSource, /suppressAccessDeniedEvent: true/);
     assert.doesNotMatch(sessionFlowSource, /authorization: "Bearer "/);
     assert.match(sessionFlowSource, /errorCode === "recipient_restricted"/);
+    assert.match(
+        sessionFlowSource,
+        /resolveShareTokenFromRoute\(\s*stageCtx\.input\?\.routePath/,
+    );
 });
 
 test("share method adapters own localized display metadata", async () => {

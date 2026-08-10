@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Ikat autentikasi berbagi ke rute SPA yang diminta
+
+Router kini memberikan jalur tujuan yang tepat kepada autentikasi sesi, dan gateway Share mengambil token berbagi pengguna dari masukan rute yang tetap tersebut. Perubahan URL yang bersamaan tidak lagi dapat membuat berbagi pengguna yang valid tampak tidak memiliki token atau menahan penerima di tampilan pemuatan publik.
+
 ## Pertahankan autentikasi akun pada permintaan penyelesaian berbagi
 
 Penyelesaian berbagi kini menggunakan klien API terautentikasi yang selalu menyertakan token akun pengguna sambil mempertahankan header kata sandi berbagi. Tantangan kata sandi yang diharapkan dipisahkan dari penanganan penolakan akses global sehingga tidak lagi memicu pengalihan sesi tamu atau alur buka kunci ganda.

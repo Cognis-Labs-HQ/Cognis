@@ -345,7 +345,7 @@ test("router loads destination flow hooks before authenticating an SPA route", (
         loadRouteStart,
     );
     const authentication = source.indexOf(
-        'uiCtx.runFlow("authenticate-session", {})',
+        'uiCtx.runFlow("authenticate-session",',
         loadRouteStart,
     );
 
@@ -355,6 +355,17 @@ test("router loads destination flow hooks before authenticating an SPA route", (
     assert.ok(
         routeModuleLoad < authentication,
         "destination modules must register their gateway flow hooks before authentication",
+    );
+});
+
+test("router authenticates against the requested route instead of mutable location state", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /runFlow\("authenticate-session", \{\s*routePath: path,\s*\}\)/,
     );
 });
 

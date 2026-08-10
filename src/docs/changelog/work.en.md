@@ -1,5 +1,9 @@
 # Refine share management
 
+## Bind share authentication to the requested SPA route
+
+The router now supplies the exact destination path to session authentication, and the Share gateway extracts the user-share token from that immutable route input. Concurrent URL changes can no longer make a valid user share appear to have no token or leave its recipient in the public loading shell.
+
 ## Keep account authentication on share resolution requests
 
 Share resolution now uses the authenticated API client, which always attaches the signed-in account token while preserving share-password headers. Expected password challenges are isolated from global access-denied handling, so they no longer trigger guest-session redirects or duplicate unlock flows.

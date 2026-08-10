@@ -98,12 +98,14 @@ const SHARE_GUEST_PAGE_DEFAULTS = Object.freeze({
     showShareControls: false,
 });
 
-function resolveShareTokenFromLocation() {
-    const pathnameMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
+function resolveShareTokenFromRoute(routePath) {
+    const routeUrl = new URL(
+        String(routePath ?? window.location.href),
+        window.location.origin,
+    );
+    const pathnameMatch = routeUrl.pathname.match(/^\/share\/([^/]+)$/);
     if (pathnameMatch) return decodeURIComponent(pathnameMatch[1]);
-    return String(
-        new URL(window.location.href).searchParams.get("token") ?? "",
-    ).trim();
+    return String(routeUrl.searchParams.get("token") ?? "").trim();
 }
 
 function isActiveShareContentRoute(activeSession) {
@@ -211,7 +213,9 @@ uiCtx.extendFlow(
     "apply-alternate-auth",
     { id: "share-gateway:apply-alternate-auth" },
     async (stageCtx) => {
-        const shareToken = resolveShareTokenFromLocation();
+        const shareToken = resolveShareTokenFromRoute(
+            stageCtx.input?.routePath,
+        );
         if (!shareToken) {
             if (isActiveShareContentRoute(activeShareSession)) {
                 return resolveActiveShareContentSession(activeShareSession);

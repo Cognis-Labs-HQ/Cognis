@@ -398,7 +398,9 @@ async function loadRoute(path) {
         }
     }
 
-    const authResult = await uiCtx.runFlow("authenticate-session", {});
+    const authResult = await uiCtx.runFlow("authenticate-session", {
+        routePath: path,
+    });
     const session =
         (authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
 

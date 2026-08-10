@@ -122,7 +122,9 @@ export async function mount(
 
     const flowResult = routedShareContext
         ? null
-        : await uiCtx.runFlow("authenticate-session", {});
+        : await uiCtx.runFlow("authenticate-session", {
+              routePath: `${window.location.pathname}${window.location.search}`,
+          });
     const session = routedShareContext
         ? { authenticated: true, shareContext: routedShareContext }
         : ((flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
