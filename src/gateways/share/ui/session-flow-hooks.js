@@ -40,10 +40,15 @@
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { resolveReceivedShare } from "./received-share.js";
+import { apiFetch } from "/static/reuse/api-client.js";
 import {
     GUEST_SESSION_ACTIVE_STORAGE_KEY,
     isViewingAsGuest,
 } from "./reuse/share-button.js";
+import {
+    listenForShareRevocation,
+    publishShareRevoked,
+} from "./session-events.js";
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
@@ -56,6 +61,29 @@ const ACCESS_DENIED_TOKEN_KEY = "cognis_share_access_denied_token";
 let activeGuestSession = null;
 let activeShareSession = null;
 let accessDeniedNavigationPending = false;
+let shareStatusTimer = null;
+
+function stopShareStatusMonitor() {
+    if (shareStatusTimer) clearTimeout(shareStatusTimer);
+    shareStatusTimer = null;
+}
+
+function startShareStatusMonitor(shareId) {
+    stopShareStatusMonitor();
+    if (!shareId) return;
+    const poll = async () => {
+        const response = await apiFetch(
+            `/api/v1/share/status/${encodeURIComponent(shareId)}`,
+            { suppressAccessDeniedEvent: true },
+        ).catch(() => null);
+        if (response && !response.ok) {
+            publishShareRevoked(shareId);
+            return;
+        }
+        shareStatusTimer = setTimeout(poll, 2_000);
+    };
+    shareStatusTimer = setTimeout(poll, 2_000);
+}
 
 window.addEventListener("cognis:api-access-denied", () => {
     if (accessDeniedNavigationPending) return;
@@ -180,6 +208,7 @@ async function activateGuestToken(
 }
 
 function restoreGuestToken() {
+    stopShareStatusMonitor();
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
     uiCtx.capabilities.get("keyring:endTemporary")?.();
     const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
@@ -208,6 +237,30 @@ function restoreGuestToken() {
     activeShareSession = null;
 }
 
+listenForShareRevocation((shareId) => {
+    const activeShareId = String(
+        activeShareSession?.session?.shareContext?.shareId ?? "",
+    );
+    if (!shareId || shareId !== activeShareId) return;
+    const shareToken = activeShareSession?.shareToken;
+    if (!shareToken) return;
+    sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
+    restoreGuestToken();
+    void import("/static/reuse/app-router.js").then(({ navigateTo }) =>
+        navigateTo(`/share/${encodeURIComponent(shareToken)}`),
+    );
+});
+
+window.addEventListener("cognis:notification-arrival", (event) => {
+    const notification = event.detail?.notification;
+    if (notification?.category !== "share") return;
+    const shareId = String(notification.metadata?.shareId ?? "").trim();
+    if (!shareId) return;
+    window.dispatchEvent(
+        new CustomEvent("cognis:share-revoked", { detail: { shareId } }),
+    );
+});
+
 uiCtx.extendFlow(
     "authenticate-session",
     "apply-alternate-auth",
@@ -229,6 +282,12 @@ uiCtx.extendFlow(
                 return activeGuestSession.session;
             }
             return null;
+        }
+        if (
+            isViewingAsGuest() &&
+            sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY)
+        ) {
+            restoreGuestToken();
         }
         if (sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken) {
             sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
@@ -314,6 +373,7 @@ uiCtx.extendFlow(
         }
 
         const shareContext = {
+            shareId: String(shareData.shareId ?? ""),
             resourceType: shareData.resourceType,
             resourceId: shareData.resourceId ?? null,
             payload: shareData.payload ?? {},
@@ -347,6 +407,7 @@ uiCtx.extendFlow(
                 shareContext,
             };
             activeShareSession = { shareToken, session: accountSession };
+            startShareStatusMonitor(shareContext.shareId);
             return accountSession;
         }
 
@@ -374,6 +435,7 @@ uiCtx.extendFlow(
         };
         activeGuestSession = { shareToken, session: guestSession };
         activeShareSession = activeGuestSession;
+        startShareStatusMonitor(shareContext.shareId);
         return guestSession;
     },
 );

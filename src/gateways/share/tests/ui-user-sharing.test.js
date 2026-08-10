@@ -359,6 +359,14 @@ test("share resolution uses the authenticated API client without treating passwo
         sessionFlowSource,
         /resolveShareTokenFromRoute\(\s*stageCtx\.input\?\.routePath/,
     );
+    assert.match(
+        sessionFlowSource,
+        /isViewingAsGuest\(\)[\s\S]*PREV_ACCESS_TOKEN_KEY[\s\S]*restoreGuestToken\(\)/,
+    );
+    assert.match(sessionFlowSource, /listenForShareRevocation/);
+    assert.match(sessionFlowSource, /shareId: String\(shareData\.shareId/);
+    assert.match(sessionFlowSource, /\/api\/v1\/share\/status\//);
+    assert.match(sessionFlowSource, /startShareStatusMonitor/);
 });
 
 test("share method adapters own localized display metadata", async () => {

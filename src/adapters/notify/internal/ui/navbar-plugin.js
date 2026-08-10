@@ -617,6 +617,11 @@ async function checkForNew(i18n) {
     const arrivals = notifs.filter((n) => !seenIds.has(n.id));
     for (const notif of arrivals) {
         seenIds.add(notif.id);
+        window.dispatchEvent(
+            new CustomEvent("cognis:notification-arrival", {
+                detail: { notification: notif },
+            }),
+        );
         if (!notif.read && !isNotificationOwnedByCurrentPage(notif)) {
             void showArrivalToast(notif, i18n);
         }

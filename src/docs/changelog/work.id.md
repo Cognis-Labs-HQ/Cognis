@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Cabut berbagi aktif dan batasi antarmuka tamu
+
+Penghapusan berbagi kini menerbitkan peristiwa pencabutan ke tab aktif dan penerima yang masuk saat menerima pemberitahuan penghapusan, sehingga pemirsa terdampak segera kembali ke layar berbagi yang ditolak. Konfirmasi hapus ganda dicegah, sesi tamu tidak lagi menerima ringkasan rilis, dan sesi akun yang disimpan dipulihkan sebelum menentukan kepemilikan berbagi lain.
+
 ## Pastikan kepemilikan berbagi dan kontrol ikhtisar konsisten
 
 Pemilik berbagi kini melewati tantangan kata sandi berbagi dan langsung menuju URL konten dengan sesi akun mereka, sementara penerima tetap menyelesaikan autentikasi berbagi yang dikonfigurasi. Halaman Berbagi milik gateway kini merender ulang baris yang difilter dan dihapus secara optimistis, memakai kolom awal ringkas sesuai isi, serta memberikan ukuran dan bantalan tombol aksi yang konsisten.

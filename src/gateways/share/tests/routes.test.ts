@@ -705,6 +705,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(overviewResponse.statusCode, 200);
     assert.equal(overviewResponse.body.data.received[0]?.id, restrictedShareId);
+    const activeStatusResponse = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/share/status/${encodeURIComponent(restrictedShareId)}`,
+    );
+    assert.equal(activeStatusResponse.statusCode, 200);
+    assert.equal(activeStatusResponse.body.data.active, true);
     const addSecondRecipientResponse = await dispatchJson(
         "PATCH",
         adminToken,
@@ -756,6 +763,12 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         }),
         "deleted",
     );
+    const revokedStatusResponse = await dispatchJson(
+        "GET",
+        bobToken,
+        `/api/v1/share/status/${encodeURIComponent(restrictedShareId)}`,
+    );
+    assert.equal(revokedStatusResponse.statusCode, 404);
     const afterLastRecipientLeaves = await dispatchJson(
         "GET",
         adminToken,

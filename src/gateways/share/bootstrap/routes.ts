@@ -222,6 +222,38 @@ export function createShareRoutes(input: {
             return true;
         }
 
+        const statusMatch = url.pathname.match(
+            /^\/api\/v1\/share\/status\/([^/]+)$/,
+        );
+        if (req.method === "GET" && statusMatch) {
+            const claims = routeContext.getAuthClaims(req);
+            if (!claims) {
+                sendError(res, 401, "unauthorized", "Authentication required.");
+                return true;
+            }
+            const shareId = decodeURIComponent(statusMatch[1]);
+            const record = await input.gateway.getTokenById(shareId);
+            if (!record) {
+                sendError(res, 404, "not_found", "Share no longer exists.");
+                return true;
+            }
+            const guestShareId = resolveShareGuestId(claims);
+            const accountId = String(claims.sub ?? "");
+            const authorized =
+                guestShareId === shareId ||
+                record.ownerAccountId === accountId ||
+                record.accessControls.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" && recipient.id === accountId,
+                );
+            if (!authorized) {
+                sendError(res, 403, "forbidden", "Share access was revoked.");
+                return true;
+            }
+            sendJson(res, 200, { data: { active: true } });
+            return true;
+        }
+
         if (req.method === "GET" && url.pathname === "/api/v1/share/overview") {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;

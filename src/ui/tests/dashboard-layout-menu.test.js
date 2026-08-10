@@ -145,6 +145,17 @@ test("dashboard layout checks release changelog popup in shell sessions", () => 
     );
 });
 
+test("dashboard layout suppresses release summaries for guest sessions", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /releaseChangelogPopupChecked \|\| isGuestSession\(\)/,
+    );
+});
+
 test("dashboard layout keeps active avatar blob URL during SPA refresh", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),

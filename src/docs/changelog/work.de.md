@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Aktive Freigaben entziehen und Gastoberfläche begrenzen
+
+Das Löschen einer Freigabe veröffentlicht jetzt ein Widerrufsereignis an aktive Tabs und angemeldete Empfänger der Entfernungsbenachrichtigung, sodass betroffene Betrachter sofort zur verweigerten Freigabeansicht zurückkehren. Doppelte Löschbestätigungen werden verhindert, Gastsitzungen erhalten keine Versionszusammenfassungen mehr und vor der Eigentümerprüfung einer weiteren Freigabe wird eine hinterlegte Kontositzung wiederhergestellt.
+
 ## Freigabeeigentum und Übersichtssteuerung eindeutig behandeln
 
 Eigentümer umgehen jetzt Freigabepasswortabfragen und gelangen unter ihrer Kontositzung direkt zur Inhalts-URL, während Empfänger weiterhin eine konfigurierte Freigabeauthentifizierung abschließen. Die gatewayeigene Freigabeseite rendert gefilterte und vorläufig entfernte Zeilen nun ausdrücklich neu, verwendet kompakte inhaltsbreite Anfangsspalten und einheitlich gepolsterte Aktionsschaltflächen.

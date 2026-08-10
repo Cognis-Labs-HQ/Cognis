@@ -42,6 +42,8 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /visibleShares\.length \+ 2/);
     assert.match(pageSource, /\[collection\]: overview\[collection\]\.filter/);
     assert.match(pageSource, /composer\.refreshElements\(\[element\.id\]\)/);
+    assert.match(pageSource, /deleteConfirmationPending/);
+    assert.match(pageSource, /publishShareRevoked\(shareId\)/);
     assert.doesNotMatch(pageSource, /button\.closest\("\[data-share-id\]"\)/);
     assert.match(templateSource, /data-share-filter="all"/);
     assert.match(templateSource, /data-share-filter="sent"/);

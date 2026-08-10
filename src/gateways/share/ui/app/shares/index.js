@@ -12,8 +12,10 @@ import {
     revokeShare,
 } from "../../reuse/share-api.js";
 import { navigateAccountShare } from "../../received-share-action.js";
+import { publishShareRevoked } from "../../session-events.js";
 
 let markupTemplates = null;
+let deleteConfirmationPending = false;
 
 async function loadMarkupTemplates() {
     if (markupTemplates) return markupTemplates;
@@ -411,34 +413,41 @@ export async function mount(root, { signal } = {}) {
             const shareId =
                 button.dataset.shareRevoke ?? button.dataset.shareReject ?? "";
             const rejecting = Boolean(button.dataset.shareReject);
-            const confirmed = await openPopup({
-                title: i18n.t(
-                    rejecting
-                        ? "share.shares.reject_title"
-                        : "share.shares.delete_title",
-                ),
-                body: i18n.t(
-                    rejecting
-                        ? "share.shares.reject_prompt"
-                        : "share.shares.delete_prompt",
-                ),
-                actions: [
-                    {
-                        id: "confirm",
-                        label: i18n.t(
-                            rejecting
-                                ? "share.shares.reject"
-                                : "share.shares.delete",
-                        ),
-                        variant: "cancel",
-                    },
-                    {
-                        id: "cancel",
-                        label: i18n.t("ui.reuse.cancel"),
-                        variant: "neutral",
-                    },
-                ],
-            });
+            if (deleteConfirmationPending) return;
+            deleteConfirmationPending = true;
+            let confirmed;
+            try {
+                confirmed = await openPopup({
+                    title: i18n.t(
+                        rejecting
+                            ? "share.shares.reject_title"
+                            : "share.shares.delete_title",
+                    ),
+                    body: i18n.t(
+                        rejecting
+                            ? "share.shares.reject_prompt"
+                            : "share.shares.delete_prompt",
+                    ),
+                    actions: [
+                        {
+                            id: "confirm",
+                            label: i18n.t(
+                                rejecting
+                                    ? "share.shares.reject"
+                                    : "share.shares.delete",
+                            ),
+                            variant: "cancel",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "neutral",
+                        },
+                    ],
+                });
+            } finally {
+                deleteConfirmationPending = false;
+            }
             if (confirmed !== "confirm") return;
             const collection = rejecting ? "received" : "sent";
             const previousOverview = overview;
@@ -460,7 +469,10 @@ export async function mount(root, { signal } = {}) {
                 ),
                 { variant: response.ok ? "success" : "error" },
             );
-            if (response.ok) return;
+            if (response.ok) {
+                publishShareRevoked(shareId);
+                return;
+            }
             overview = previousOverview;
             refreshOverview();
         },

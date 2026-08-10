@@ -1,5 +1,9 @@
 # Refine share management
 
+## Revoke active shares and keep guest chrome scoped
+
+Share deletion now publishes a revocation event to active tabs and signed-in recipients receiving the removal notification, immediately returning affected viewers to the denied share screen. Duplicate delete confirmations are suppressed, guest sessions no longer receive release summaries, and opening another share restores any stashed account session before deciding whether the requester is its owner.
+
 ## Make share ownership and overview controls deterministic
 
 Share owners now bypass share-password challenges and proceed directly to their content URL under their account session, while recipients still complete any configured share authentication. The gateway-owned Shares page now rerenders filtered and optimistically removed rows explicitly, uses compact content-sized leading columns, and gives action controls consistent padded dimensions.
