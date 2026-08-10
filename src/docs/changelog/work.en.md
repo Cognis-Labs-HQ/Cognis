@@ -1,5 +1,9 @@
 # Refine share management
 
+## Reuse the router-resolved account share
+
+The Share page now consumes the authenticated share context already resolved by SPA navigation instead of running authentication a second time. User shares therefore retain their direct account classification and proceed to the full destination page without being reinterpreted as guest access.
+
 ## Keep direct recipients in their account view
 
 A server-verified direct user share now always builds an account session, even when the local validation stage did not return account metadata. It can no longer fall through into guest presentation. Deleted and rejected shares are also removed directly from the visible table before the request completes.

@@ -79,7 +79,10 @@ function buildShareElement(state) {
     };
 }
 
-export async function mount(root, { signal } = {}) {
+export async function mount(
+    root,
+    { signal, shareContext: routedShareContext } = {},
+) {
     const state = {
         loading: true,
         errorKey: "",
@@ -117,10 +120,13 @@ export async function mount(root, { signal } = {}) {
 
     installGuestNavigationGuard({ root, signal });
 
-    const flowResult = await uiCtx.runFlow("authenticate-session", {});
-    const session =
-        (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
-    const shareContext = session?.shareContext ?? null;
+    const flowResult = routedShareContext
+        ? null
+        : await uiCtx.runFlow("authenticate-session", {});
+    const session = routedShareContext
+        ? { authenticated: true, shareContext: routedShareContext }
+        : ((flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
+    const shareContext = routedShareContext ?? session?.shareContext ?? null;
 
     if (session?.shareAttempted && !session?.authenticated) {
         // A share token was present in the URL but failed to resolve

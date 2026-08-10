@@ -48,6 +48,12 @@ const shareButtonSource = await readFile(
 
 test("public Share page disables page layout editing", () => {
     assert.match(shareAppSource, /allowCustomization:\s*false/);
+    assert.match(shareAppSource, /shareContext: routedShareContext/);
+    assert.match(shareAppSource, /routedShareContext\s*\? null/);
+    assert.match(
+        shareAppSource,
+        /authenticated: true, shareContext: routedShareContext/,
+    );
 });
 
 test("share popup owns user recipient search and selection", () => {

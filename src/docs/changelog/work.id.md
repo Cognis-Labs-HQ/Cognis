@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Menggunakan kembali berbagi akun yang diselesaikan router
+
+Halaman Berbagi kini memakai konteks berbagi terautentikasi yang sudah diselesaikan navigasi SPA, alih-alih menjalankan autentikasi untuk kedua kalinya. Berbagi pengguna mempertahankan klasifikasi akun langsung dan membuka halaman tujuan lengkap tanpa ditafsirkan ulang sebagai akses tamu.
+
 ## Mempertahankan penerima langsung dalam tampilan akun
 
 Berbagi pengguna langsung yang diverifikasi server kini selalu membentuk sesi akun, meskipun tahap validasi lokal tidak mengembalikan metadata akun. Berbagi tersebut tidak lagi dapat jatuh ke tampilan tamu. Berbagi yang dihapus dan ditolak juga langsung dihilangkan dari tabel terlihat sebelum permintaan selesai.

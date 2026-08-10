@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Vom Router aufgelöste Kontofreigabe wiederverwenden
+
+Die Freigabeseite verwendet nun den bereits von der SPA-Navigation authentifizierten Freigabekontext, anstatt die Authentifizierung ein zweites Mal auszuführen. Benutzerfreigaben behalten dadurch ihre direkte Kontozuordnung und öffnen die vollständige Zielseite, ohne als Gastzugriff neu interpretiert zu werden.
+
 ## Direkte Empfänger in ihrer Kontoansicht halten
 
 Eine serverseitig bestätigte direkte Benutzerfreigabe erstellt nun immer eine Kontositzung, auch wenn die lokale Prüfphase keine Kontometadaten geliefert hat. Sie kann nicht mehr in die Gastdarstellung fallen. Gelöschte und abgelehnte Freigaben werden außerdem vor Abschluss der Anfrage direkt aus der sichtbaren Tabelle entfernt.
