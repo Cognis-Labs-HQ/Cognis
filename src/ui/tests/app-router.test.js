@@ -334,6 +334,30 @@ test("router passes resolved share context to destination pages", () => {
     );
 });
 
+test("router loads destination flow hooks before authenticating an SPA route", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const loadRouteStart = source.indexOf("async function loadRoute(path)");
+    const routeModuleLoad = source.indexOf(
+        "mod = await route.load(path)",
+        loadRouteStart,
+    );
+    const authentication = source.indexOf(
+        'uiCtx.runFlow("authenticate-session", {})',
+        loadRouteStart,
+    );
+
+    assert.ok(loadRouteStart >= 0, "router must define loadRoute");
+    assert.ok(routeModuleLoad >= 0, "router must load the destination module");
+    assert.ok(authentication >= 0, "router must authenticate the navigation");
+    assert.ok(
+        routeModuleLoad < authentication,
+        "destination modules must register their gateway flow hooks before authentication",
+    );
+});
+
 test("router delegates auth enforcement to the authenticate-session flow", () => {
     const routerSrc = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
@@ -342,7 +366,7 @@ test("router delegates auth enforcement to the authenticate-session flow", () =>
     assert.match(
         routerSrc,
         /authenticate-session/,
-        "app-router.js must run the authenticate-session flow to enforce auth before route loads",
+        "app-router.js must run the authenticate-session flow to enforce auth before route mounts",
     );
     const hooksSrc = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),

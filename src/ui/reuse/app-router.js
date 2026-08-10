@@ -375,6 +375,29 @@ async function loadRoute(path) {
     const route = await resolveRoute(path);
     if (!route) return false;
 
+    // Load the destination entry before authentication so its gateway-owned
+    // flow hooks participate in this navigation's authenticate-session run.
+    // The router flag prevents the entry's direct-load mount from running.
+    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+    globalThis.__spaRouter = true;
+    let mod;
+    try {
+        mod = await route.load(path);
+    } catch (error) {
+        console.error("[router] route load error for", path, error);
+        await openRuntimeErrorPopup({
+            error,
+            contextKey: "ui.reuse.runtime_error_context_route_load",
+            contextDetail: path,
+        });
+        return false;
+    } finally {
+        globalThis.__spaRouterCount--;
+        if (globalThis.__spaRouterCount === 0) {
+            globalThis.__spaRouter = false;
+        }
+    }
+
     const authResult = await uiCtx.runFlow("authenticate-session", {});
     const session =
         (authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
@@ -415,24 +438,12 @@ async function loadRoute(path) {
         _currentBase = route.base;
         const { signal } = _mountController;
 
-        // Start stylesheet injection and module loading in parallel — both are
-        // network operations and can race. We await both before calling mount()
-        // so CSS is guaranteed present before the page touches the DOM.
+        // Prepare the destination styles before calling mount() so CSS is
+        // guaranteed present before the page touches the DOM.
         const stylesheetsReady = preparePageStylesheets(
             route.stylesheets ?? [],
         );
 
-        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
-        globalThis.__spaRouter = true;
-        let mod;
-        try {
-            mod = await route.load(path);
-        } finally {
-            globalThis.__spaRouterCount--;
-            if (globalThis.__spaRouterCount === 0) {
-                globalThis.__spaRouter = false;
-            }
-        }
         const commitPageStylesheets = await stylesheetsReady;
         // If another navigation started while loading, bail out.
         if (signal.aborted) return false;

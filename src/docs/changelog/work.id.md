@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Daftarkan autentikasi berbagi tujuan sebelum pemeriksaan SPA
+
+Navigasi SPA kini memuat kontribusi alur entri tujuan sebelum mengautentikasi rute. Penerima berbagi pengguna karena itu diselesaikan oleh gateway Share dalam satu-satunya proses autentikasi router dan mempertahankan sesi akun lengkap, alih-alih masuk ke halaman tamu.
+
 ## Menggunakan kembali berbagi akun yang diselesaikan router
 
 Halaman Berbagi kini memakai konteks berbagi terautentikasi yang sudah diselesaikan navigasi SPA, alih-alih menjalankan autentikasi untuk kedua kalinya. Berbagi pengguna mempertahankan klasifikasi akun langsung dan membuka halaman tujuan lengkap tanpa ditafsirkan ulang sebagai akses tamu.

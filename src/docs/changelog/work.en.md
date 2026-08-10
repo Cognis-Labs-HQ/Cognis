@@ -1,5 +1,9 @@
 # Refine share management
 
+## Register destination share authentication before SPA checks
+
+SPA navigation now loads the destination entry's flow contributions before authenticating the route. User-share recipients are therefore resolved by the Share gateway during the router's single authentication pass and retain their full account session instead of falling into the guest page.
+
 ## Reuse the router-resolved account share
 
 The Share page now consumes the authenticated share context already resolved by SPA navigation instead of running authentication a second time. User shares therefore retain their direct account classification and proceed to the full destination page without being reinterpreted as guest access.
