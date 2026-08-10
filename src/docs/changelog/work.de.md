@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Kontoauthentifizierung bei Freigabeauflösungen beibehalten
+
+Die Freigabeauflösung verwendet jetzt den authentifizierten API-Client, der stets das Token des angemeldeten Kontos mitsendet und Freigabepasswort-Header beibehält. Erwartete Passwortabfragen sind von der globalen Zugriffsverweigerungsbehandlung getrennt, sodass sie keine Weiterleitungen in Gastsitzungen oder doppelten Entsperrabläufe mehr auslösen.
+
 ## Freigabeauthentifizierung des Ziels vor SPA-Prüfungen registrieren
 
 Bei der SPA-Navigation werden die Flow-Beiträge des Zieleintrags jetzt vor der Routenauthentifizierung geladen. Empfänger einer Benutzerfreigabe werden dadurch während des einzigen Authentifizierungsdurchlaufs des Routers vom Share-Gateway aufgelöst und behalten ihre vollständige Kontositzung, statt auf die Gastseite zu geraten.

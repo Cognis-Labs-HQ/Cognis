@@ -242,7 +242,6 @@ uiCtx.extendFlow(
         // participant). Read this *before* any guest-token swap below.
         const priorSessionResult =
             (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
-        const ownAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
         const ownAccountId = String(
             localStorage.getItem(ACCOUNT_KEY) ?? "",
         ).trim();
@@ -250,15 +249,9 @@ uiCtx.extendFlow(
             priorSessionResult?.valid === true &&
             !isViewingAsGuest() &&
             !ownAccountId.startsWith("share:");
-        const headers =
-            hasValidatedAccountSession && ownAccessToken
-                ? { authorization: "Bearer " + ownAccessToken }
-                : undefined;
-
         let response;
         try {
             response = await resolveReceivedShare(shareToken, {
-                headers,
                 useAccountKeyring: hasValidatedAccountSession,
             });
         } catch {
@@ -281,13 +274,21 @@ uiCtx.extendFlow(
             if (wasDeniedWhileOpen) {
                 sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
             }
+            const errorPayload = await response
+                .clone()
+                .json()
+                .catch(() => null);
+            const errorCode = String(errorPayload?.error?.code ?? "");
             return {
                 authenticated: false,
                 reason: wasDeniedWhileOpen
                     ? "share_access_denied"
-                    : response.status === 404
-                      ? "share_not_found"
-                      : "share_expired",
+                    : errorCode === "recipient_restricted" ||
+                        errorCode === "forbidden"
+                      ? "share_access_denied"
+                      : response.status === 404
+                        ? "share_not_found"
+                        : "share_expired",
             };
         }
 

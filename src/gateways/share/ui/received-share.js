@@ -9,14 +9,15 @@
  *     freshly validated keyring or prompted share password.
  *
  * Usage:
- *   const result = await resolveReceivedShare(token, { headers });
+ *   const result = await resolveReceivedShare(token);
  *
  * @param {string} token Share token from a notification or share URL.
- * @param {{ headers?: HeadersInit, useAccountKeyring?: boolean }} [options] Request and account-keyring options.
+ * @param {{ useAccountKeyring?: boolean }} [options] Account-keyring options.
  * @returns {Promise<Response|null>} Final response, or null when cancelled.
  */
 
 import { createI18n } from "/static/reuse/i18n.js";
+import { apiFetch } from "/static/reuse/api-client.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -110,7 +111,7 @@ export async function fetchProtectedShareResource({ shareId, request }) {
 
 export async function resolveReceivedShare(
     token,
-    { headers, useAccountKeyring = false } = {},
+    { useAccountKeyring = false } = {},
 ) {
     const normalizedToken = String(token ?? "").trim();
     if (!normalizedToken) return null;
@@ -119,12 +120,15 @@ export async function resolveReceivedShare(
         "Share Gateway",
     );
     const request = (password) => {
-        const requestHeaders = new Headers(headers);
+        const requestHeaders = new Headers();
         if (password) requestHeaders.set("x-cognis-share-password", password);
-        return fetch(
+        return apiFetch(
             `/api/v1/share/resolve/${encodeURIComponent(normalizedToken)}`,
             {
                 headers: requestHeaders,
+                // A 401 is the expected password challenge for protected
+                // shares, not evidence that the signed-in account expired.
+                suppressAccessDeniedEvent: true,
             },
         );
     };

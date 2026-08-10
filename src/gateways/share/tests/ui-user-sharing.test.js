@@ -350,6 +350,13 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /share\.keyring\.request_process/);
 });
 
+test("share resolution uses the authenticated API client without treating password challenges as session failures", () => {
+    assert.match(receivedShareSource, /import \{ apiFetch \}/);
+    assert.match(receivedShareSource, /suppressAccessDeniedEvent: true/);
+    assert.doesNotMatch(sessionFlowSource, /authorization: "Bearer "/);
+    assert.match(sessionFlowSource, /errorCode === "recipient_restricted"/);
+});
+
 test("share method adapters own localized display metadata", async () => {
     assert.match(userPageSource, /getMetadata/);
     assert.match(userPageSource, /adapter\.share\.user\.name/);

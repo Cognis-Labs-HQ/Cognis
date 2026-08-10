@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Pertahankan autentikasi akun pada permintaan penyelesaian berbagi
+
+Penyelesaian berbagi kini menggunakan klien API terautentikasi yang selalu menyertakan token akun pengguna sambil mempertahankan header kata sandi berbagi. Tantangan kata sandi yang diharapkan dipisahkan dari penanganan penolakan akses global sehingga tidak lagi memicu pengalihan sesi tamu atau alur buka kunci ganda.
+
 ## Daftarkan autentikasi berbagi tujuan sebelum pemeriksaan SPA
 
 Navigasi SPA kini memuat kontribusi alur entri tujuan sebelum mengautentikasi rute. Penerima berbagi pengguna karena itu diselesaikan oleh gateway Share dalam satu-satunya proses autentikasi router dan mempertahankan sesi akun lengkap, alih-alih masuk ke halaman tamu.

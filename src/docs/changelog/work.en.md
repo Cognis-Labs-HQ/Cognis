@@ -1,5 +1,9 @@
 # Refine share management
 
+## Keep account authentication on share resolution requests
+
+Share resolution now uses the authenticated API client, which always attaches the signed-in account token while preserving share-password headers. Expected password challenges are isolated from global access-denied handling, so they no longer trigger guest-session redirects or duplicate unlock flows.
+
 ## Register destination share authentication before SPA checks
 
 SPA navigation now loads the destination entry's flow contributions before authenticating the route. User-share recipients are therefore resolved by the Share gateway during the router's single authentication pass and retain their full account session instead of falling into the guest page.

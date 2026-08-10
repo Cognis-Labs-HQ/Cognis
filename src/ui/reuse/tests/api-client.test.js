@@ -38,6 +38,7 @@ function loadApiClientForTests({
             },
         },
         fetch: fetchImpl,
+        Headers,
         URL,
         Date: {
             now,
@@ -86,6 +87,40 @@ for (const status of [401, 403]) {
         );
     });
 }
+
+test("apiFetch suppresses expected share-password access-denied events", async () => {
+    const { apiClient, dispatchedEvents } = loadApiClientForTests({
+        fetchImpl: async () => ({ ok: false, status: 401 }),
+    });
+
+    await apiClient.apiFetch("/api/v1/share/resolve/token", {
+        suppressAccessDeniedEvent: true,
+    });
+
+    assert.equal(dispatchedEvents.length, 0);
+});
+
+test("apiFetch preserves Headers input while attaching account authorization", async () => {
+    let requestOptions = null;
+    const { apiClient } = loadApiClientForTests({
+        fetchImpl: async (_path, options) => {
+            requestOptions = options;
+            return { ok: true, status: 200 };
+        },
+    });
+    const headers = new Headers({ "x-cognis-share-password": "secret" });
+
+    await apiClient.apiFetch("/api/v1/share/resolve/token", { headers });
+
+    assert.equal(
+        requestOptions.headers.get("x-cognis-share-password"),
+        "secret",
+    );
+    assert.equal(
+        requestOptions.headers.get("authorization"),
+        "Bearer test-token",
+    );
+});
 
 test("apiFetch shows one permanent warning toast for repeated API network failures", async () => {
     const networkError = new Error("network down");

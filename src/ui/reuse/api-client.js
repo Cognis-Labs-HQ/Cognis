@@ -7,7 +7,7 @@
  *   const res = await apiFetch('/api/v1/items', { method: 'POST', ... });
  *
  * @param {string} path
- * @param {RequestInit} [options]
+ * @param {RequestInit & { suppressAccessDeniedEvent?: boolean, suppressConnectionRecoveryToast?: boolean }} [options]
  * @returns {Promise<Response>}
  */
 import { showToast } from "./toast.js";
@@ -111,19 +111,21 @@ export function shouldSuppressConnectionRecoveryPopup(error) {
 }
 
 export async function apiFetch(path, options = {}) {
-    const { suppressConnectionRecoveryToast = false, ...requestOptions } =
-        options ?? {};
+    const {
+        suppressAccessDeniedEvent = false,
+        suppressConnectionRecoveryToast = false,
+        ...requestOptions
+    } = options ?? {};
     const token = localStorage.getItem("cognis_access_token");
-    const headers = {
-        ...(requestOptions.headers ?? {}),
-    };
+    const headers = new Headers(requestOptions.headers);
     if (token) {
-        headers.authorization = `Bearer ${token}`;
+        headers.set("authorization", `Bearer ${token}`);
     }
     try {
         const response = await fetch(path, { ...requestOptions, headers });
         if (
             (response.status === 401 || response.status === 403) &&
+            !suppressAccessDeniedEvent &&
             requestTargetsApi(path) &&
             typeof window !== "undefined"
         ) {
