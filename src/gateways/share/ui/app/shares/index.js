@@ -442,9 +442,7 @@ export async function mount(root, { signal } = {}) {
                     (share) => String(share.id) !== shareId,
                 ),
             };
-            composer.refresh([
-                buildSharesElement(overview, i18n, templates, activeFilter),
-            ]);
+            button.closest("[data-share-id]")?.remove();
             const response = rejecting
                 ? await rejectShare(shareId)
                 : await revokeShare(shareId);

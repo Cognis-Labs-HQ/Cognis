@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Direkte Empfänger in ihrer Kontoansicht halten
+
+Eine serverseitig bestätigte direkte Benutzerfreigabe erstellt nun immer eine Kontositzung, auch wenn die lokale Prüfphase keine Kontometadaten geliefert hat. Sie kann nicht mehr in die Gastdarstellung fallen. Gelöschte und abgelehnte Freigaben werden außerdem vor Abschluss der Anfrage direkt aus der sichtbaren Tabelle entfernt.
+
 ## Benutzerfreigaben in einem Ablauf auflösen
 
 Klicks auf Benutzerfreigaben wechseln nun zur Freigabeseite, ohne das Token zuvor in einem zweiten Clientpfad aufzulösen. Der Sitzungsablauf übernimmt Kontoprüfung, Passwortabfrage und Auslieferung einmalig. Gelöschte Zeilen verschwinden sofort und werden nur wiederhergestellt, wenn der Server das Löschen ablehnt.

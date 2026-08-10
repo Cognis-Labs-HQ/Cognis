@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Mempertahankan penerima langsung dalam tampilan akun
+
+Berbagi pengguna langsung yang diverifikasi server kini selalu membentuk sesi akun, meskipun tahap validasi lokal tidak mengembalikan metadata akun. Berbagi tersebut tidak lagi dapat jatuh ke tampilan tamu. Berbagi yang dihapus dan ditolak juga langsung dihilangkan dari tabel terlihat sebelum permintaan selesai.
+
 ## Menyelesaikan berbagi pengguna dalam satu alur
 
 Klik berbagi pengguna kini menuju halaman Berbagi tanpa menyelesaikan token terlebih dahulu melalui jalur klien kedua. Alur sesi menangani validasi akun, permintaan kata sandi, dan pengiriman satu kali. Baris yang dihapus langsung menghilang dan hanya dipulihkan bila server menolak penghapusan.

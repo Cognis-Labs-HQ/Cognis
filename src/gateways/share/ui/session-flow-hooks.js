@@ -326,15 +326,18 @@ uiCtx.extendFlow(
             directAccess: shareData.directAccess === true,
         };
 
-        if (hasValidatedAccountSession && shareData.directAccess === true) {
+        if (shareData.directAccess === true) {
             // Logged-in recipients retain their full account session. The
             // renderer receives the scoped guest token separately for
             // share-only API calls, so notification navigation never swaps
             // localStorage credentials or appears to log the user out.
             const accountSession = {
                 authenticated: true,
-                accountId: priorSessionResult.accountId,
-                role: priorSessionResult.role,
+                accountId: priorSessionResult?.accountId ?? ownAccountId,
+                role:
+                    priorSessionResult?.role ??
+                    localStorage.getItem("cognis_role") ??
+                    "user",
                 isGuestSession: false,
                 shareContext,
             };
