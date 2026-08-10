@@ -365,6 +365,18 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         "invalid_expires_at",
     );
 
+    const missingMethodResponse = await dispatchJson(
+        "POST",
+        adminToken,
+        "/api/v1/share/tokens",
+        {
+            resourceType: "meeting",
+            resourceId: "meeting-1",
+        },
+    );
+    assert.equal(missingMethodResponse.statusCode, 400);
+    assert.equal(missingMethodResponse.body.error.code, "invalid_share_method");
+
     const createResponse = await dispatchJson(
         "POST",
         adminToken,
@@ -372,6 +384,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         {
             resourceType: "meeting",
             resourceId: "meeting-1",
+            shareMethod: "link",
             grantedCapabilities: ["meeting:join"],
         },
     );
@@ -494,6 +507,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         {
             resourceType: "meeting",
             resourceId: "meeting-1",
+            shareMethod: "link",
             password: "mail-client-secret",
         },
     );
@@ -566,11 +580,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         {
             resourceType: "meeting",
             resourceId: "meeting-1",
+            shareMethod: "user",
             contentUrl: "/meetings?meeting=meeting-1",
             supportsReadOnly: true,
-            accessControls: {
-                recipients: [{ type: "user", id: "bob" }],
-            },
+            recipients: [{ type: "user", id: "bob" }],
         },
     );
     assert.equal(restrictedCreateResponse.statusCode, 200);
@@ -585,10 +598,11 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         {
             resourceType: "meeting",
             resourceId: "meeting-1",
+            shareMethod: "user",
             grantedCapabilities: ["meeting:join", "meeting:write"],
+            recipients: [{ type: "user", id: "bob" }],
             accessControls: {
                 permissions: ["read", "write"],
-                recipients: [{ type: "user", id: "bob" }],
             },
         },
     );
@@ -604,9 +618,8 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         {
             resourceType: "meeting",
             resourceId: "meeting-1",
-            accessControls: {
-                recipients: [{ type: "user", id: "charlie" }],
-            },
+            shareMethod: "user",
+            recipients: [{ type: "user", id: "charlie" }],
         },
     );
     assert.equal(alternateRecipientResponse.statusCode, 200);

@@ -29,12 +29,11 @@ export interface ShareMethodAdapter {
     version?: string;
     publisher?: string;
     locked?: boolean;
-    delivery: "link" | "user";
+    delivery: "public" | "account";
     prepare(input: {
         recipients?: unknown;
         accessControls?: Record<string, unknown>;
     }): { accessControls: Record<string, unknown> };
-    owns?(accessControls: Partial<ShareAccessControls>): boolean;
     validateUnique?(input: {
         accessControls: Partial<ShareAccessControls>;
         existingAccessControls: ShareAccessControls[];
@@ -122,15 +121,8 @@ export class CoreShareGateway {
 
     resolveRecordAdapter(record: {
         metadata?: Record<string, string> | null;
-        accessControls?: Partial<ShareAccessControls>;
     }): ShareMethodAdapter | null {
-        const declaredId = String(record.metadata?.shareMethod ?? "").trim();
-        if (declaredId) return this.getAdapter(declaredId);
-        return (
-            this.listAdapters().find((adapter) =>
-                adapter.owns?.(record.accessControls ?? {}),
-            ) ?? this.getAdapter("link")
-        );
+        return this.getAdapter(String(record.metadata?.adapterId ?? ""));
     }
 
     prepareAdapterShare(
@@ -174,7 +166,7 @@ export class CoreShareGateway {
         record: ShareTokenRecord,
     ): Promise<Record<string, unknown>> {
         const adapter = this.resolveRecordAdapter(record);
-        const publicLink = adapter?.delivery === "link";
+        const publicLink = adapter?.delivery === "public";
         const shareUrl = publicLink
             ? this.buildShareUrl(record.tokenValue)
             : "";
@@ -252,6 +244,7 @@ export class CoreShareGateway {
     }): Promise<Record<string, unknown>> {
         await this.validateAdapterUniqueness({
             ownerAccountId: input.ownerAccountId,
+            adapterId: String(input.metadata?.adapterId ?? ""),
             resourceType: input.resourceType,
             resourceId: input.resourceId,
             accessControls: input.accessControls,
@@ -289,6 +282,7 @@ export class CoreShareGateway {
         }
         await this.validateAdapterUniqueness({
             ownerAccountId: input.ownerAccountId,
+            adapterId: String(existingRecord.metadata?.adapterId ?? ""),
             resourceType: existingRecord.resourceType,
             resourceId: existingRecord.resourceId,
             accessControls:
@@ -380,6 +374,7 @@ export class CoreShareGateway {
 
     private async validateAdapterUniqueness(input: {
         ownerAccountId: string;
+        adapterId: string;
         resourceType: string;
         resourceId: string;
         accessControls?: Partial<ShareAccessControls>;
@@ -394,18 +389,10 @@ export class CoreShareGateway {
             .filter((record) => record.id !== input.excludeShareId)
             .filter((record) => !this.isTokenExpired(record))
             .map((record) => record.accessControls);
-        for (const adapter of this.adapters.values()) {
-            if (
-                !adapter.validateUnique ||
-                !adapter.owns?.(input.accessControls ?? {})
-            ) {
-                continue;
-            }
-            adapter.validateUnique({
-                accessControls: input.accessControls ?? {},
-                existingAccessControls,
-            });
-        }
+        this.getAdapter(input.adapterId)?.validateUnique?.({
+            accessControls: input.accessControls ?? {},
+            existingAccessControls,
+        });
     }
 
     async listByResource(filter: {

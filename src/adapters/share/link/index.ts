@@ -9,7 +9,7 @@ export function createShareAdapter(): ShareMethodAdapter {
         descriptionKey: "adapter.share.link.description",
         pageModuleUrl: "/static/adapters/share/link/page.js",
         order: 10,
-        delivery: "link",
+        delivery: "public",
         prepare(input) {
             return {
                 accessControls: {

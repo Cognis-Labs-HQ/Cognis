@@ -323,18 +323,10 @@ export function createShareRoutes(input: {
                 body.accessControls && typeof body.accessControls === "object"
                     ? (body.accessControls as Record<string, unknown>)
                     : {};
-            const legacyRecipients = Array.isArray(
-                requestedAccessControls.recipients,
-            )
-                ? requestedAccessControls.recipients
-                : [];
-            const shareMethod = String(
-                body.shareMethod ??
-                    (legacyRecipients.length > 0 ? "user" : "link"),
-            ).trim();
+            const shareMethod = String(body.shareMethod ?? "").trim();
             const methodResult = await input.flow.run("prepare-share-method", {
                 shareMethod,
-                recipients: body.recipients ?? legacyRecipients,
+                recipients: body.recipients,
                 accessControls: requestedAccessControls,
             });
             const prepared = getFirstStageResult<{

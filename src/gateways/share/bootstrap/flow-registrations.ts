@@ -367,7 +367,7 @@ export async function registerShareBootstrapHooks(input: {
                         ...(inputPayload.contentUrl
                             ? { contentUrl: inputPayload.contentUrl }
                             : {}),
-                        shareMethod: String(inputPayload.shareMethod ?? "link"),
+                        adapterId: String(inputPayload.shareMethod ?? ""),
                         supportsReadOnly: inputPayload.supportsReadOnly
                             ? "true"
                             : "false",
@@ -515,7 +515,7 @@ export async function registerShareBootstrapHooks(input: {
             }
             if (
                 input.gateway.resolveRecordAdapter(tokenRecord)?.delivery !==
-                "link"
+                "public"
             ) {
                 return { valid: false, reason: "account_share_not_public" };
             }
@@ -545,10 +545,6 @@ export async function registerShareBootstrapHooks(input: {
                 tokenRecord?: {
                     id?: string;
                     expiresAt?: string;
-                    metadata?: Record<string, string> | null;
-                    accessControls?: {
-                        recipients?: Array<{ type?: string; id?: string }>;
-                    };
                 };
                 reason?: string;
             } | null;
@@ -584,12 +580,6 @@ export async function registerShareBootstrapHooks(input: {
                 // the share link falls back to being a one-time bypass
                 // only for visitors without direct access.
                 return { issued: false, reason: "direct_access" };
-            }
-            if (
-                input.gateway.resolveRecordAdapter(tokenResult.tokenRecord)
-                    ?.delivery !== "link"
-            ) {
-                return { issued: false, reason: "account_recipient_required" };
             }
             if (!issueAccessToken || !tokenResult.tokenRecord?.id) {
                 return { issued: false, reason: "auth_issue_unavailable" };
