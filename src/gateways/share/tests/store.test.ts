@@ -174,6 +174,30 @@ test("issue, list, resolve, and delete share tokens", async () => {
     assert.equal(await store.resolve(issued.tokenValue, "secret"), null);
 });
 
+test("share resolution survives access timestamp persistence failure", async () => {
+    const executor = new MemoryExecutor();
+    const store = new ShareTokenStore(executor as never);
+    const issued = await store.issue({
+        ownerAccountId: "alice",
+        resourceType: "meeting",
+        resourceId: "meeting-1",
+    });
+    const executeCommand = executor.executeCommand.bind(executor);
+    executor.executeCommand = async (command) => {
+        if (
+            command.option === "UPDATE" &&
+            "last_accessed_at" in command.values
+        ) {
+            throw new Error("missing audit column");
+        }
+        return executeCommand(command);
+    };
+
+    const resolved = await store.resolve(issued.tokenValue);
+    assert.equal(resolved?.id, issued.id);
+    assert.equal(resolved?.lastAccessedAt, "");
+});
+
 test("updateById edits expiry, permissions, and password controls", async () => {
     const executor = new MemoryExecutor();
     const store = new ShareTokenStore(executor as never);

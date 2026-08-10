@@ -775,13 +775,30 @@ export class ShareTokenStore {
             }
         }
         const lastAccessedAt = new Date().toISOString();
-        await this.db.executeCommand({
-            option: "UPDATE",
-            table: "share_tokens",
-            values: { last_accessed_at: lastAccessedAt },
-            where: [{ column: "id", value: record.id }],
-        });
-        return { ...record, lastAccessedAt };
+        const accessRecorded = await this.db
+            .executeCommand({
+                option: "UPDATE",
+                table: "share_tokens",
+                values: { last_accessed_at: lastAccessedAt },
+                where: [{ column: "id", value: record.id }],
+            })
+            .then(() => true)
+            .catch((error) => {
+                this.log?.("warn", "Could not record share access time.", {
+                    component: "share-gateway",
+                    operation: "record_share_access",
+                    shareId: record.id,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                return false;
+            });
+        return {
+            ...record,
+            lastAccessedAt: accessRecorded
+                ? lastAccessedAt
+                : record.lastAccessedAt,
+        };
     }
 
     async inspect(rawToken: string): Promise<ShareTokenRecord | null> {

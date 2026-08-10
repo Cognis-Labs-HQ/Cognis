@@ -31,6 +31,7 @@
   <string name="share.shares.active">Active</string>
   <string name="share.shares.expired">Expired</string>
   <string name="share.shares.never">Never expires</string>
+  <string name="share.shares.not_accessed">Not accessed</string>
   <string name="share.shares.open">Open</string>
   <string name="share.shares.manage">Manage</string>
   <string name="share.shares.delete">Delete</string>

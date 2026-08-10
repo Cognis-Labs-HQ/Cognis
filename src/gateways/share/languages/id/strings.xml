@@ -31,6 +31,7 @@
   <string name="share.shares.active">Aktif</string>
   <string name="share.shares.expired">Kedaluwarsa</string>
   <string name="share.shares.never">Tidak pernah kedaluwarsa</string>
+  <string name="share.shares.not_accessed">Belum diakses</string>
   <string name="share.shares.open">Buka</string>
   <string name="share.shares.manage">Kelola</string>
   <string name="share.shares.delete">Hapus</string>

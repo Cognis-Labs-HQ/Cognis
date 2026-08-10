@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Menjaga audit akses agar tidak menghalangi konten
+
+Penyelesaian berbagi tidak lagi gagal ketika pencatatan waktu akses terakhir opsional menemui kolom basis data lama atau sementara tidak tersedia. Berbagi yang belum pernah dibuka kini menampilkan Belum diakses, bukan Tidak pernah kedaluwarsa.
+
 ## Memperjelas berbagi berhasil dan menampilkan tanggal akses
 
 Kegagalan halaman tujuan setelah berbagi pengguna diverifikasi tidak lagi melaporkan berbagi tersebut sebagai tidak valid atau kedaluwarsa. Berbagi kini menampilkan tanggal pembuatan dan akses terakhir, serta pilihan izin Whiteboard menggunakan Hanya Baca dan Baca + Tulis secara konsisten.

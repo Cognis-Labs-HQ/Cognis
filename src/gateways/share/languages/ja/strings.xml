@@ -31,6 +31,7 @@
   <string name="share.shares.active">有効</string>
   <string name="share.shares.expired">期限切れ</string>
   <string name="share.shares.never">無期限</string>
+  <string name="share.shares.not_accessed">未アクセス</string>
   <string name="share.shares.open">開く</string>
   <string name="share.shares.manage">管理</string>
   <string name="share.shares.delete">削除</string>

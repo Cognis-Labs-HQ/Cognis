@@ -1,5 +1,9 @@
 # Refine share management
 
+## Keep share access auditing from blocking content
+
+Share resolution no longer fails when recording its optional last-access timestamp encounters an older or temporarily unavailable database column. Shares that have not been opened now say Not accessed instead of Never expires.
+
 ## Clarify successful shares and expose access dates
 
 A destination-page failure after a user share has already been verified no longer reports that share as invalid or expired. Shares now show creation and last-accessed dates, and Whiteboard permission choices consistently use Read-Only and Read + Write.

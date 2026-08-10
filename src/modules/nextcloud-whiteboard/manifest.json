@@ -1,7 +1,7 @@
 {
     "id": "nextcloud-whiteboard",
     "name": "Nextcloud Whiteboard",
-    "version": "2.2.70",
+    "version": "2.2.71",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": [

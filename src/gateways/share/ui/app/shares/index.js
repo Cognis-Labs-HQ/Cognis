@@ -119,7 +119,7 @@ function renderShareRow(share, direction, i18n, rowTemplate) {
     row.querySelector("[data-share-accessed]").textContent =
         share.lastAccessedAt
             ? formatDateTime(share.lastAccessedAt)
-            : i18n.t("share.shares.never");
+            : i18n.t("share.shares.not_accessed");
     row.querySelector("[data-share-expires]").textContent = share.expiresAt
         ? formatDateTime(share.expiresAt)
         : i18n.t("share.shares.never");
