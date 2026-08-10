@@ -1,5 +1,9 @@
 # Refine share management
 
+## Repair share database updates
+
+Share access timestamps, share edits, and expiration notification claims now use the database gateway’s supported update contract. This removes the null-object error that interrupted valid share resolution.
+
 ## Keep share access auditing from blocking content
 
 Share resolution no longer fails when recording its optional last-access timestamp encounters an older or temporarily unavailable database column. Shares that have not been opened now say Not accessed instead of Never expires.

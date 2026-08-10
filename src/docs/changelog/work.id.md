@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Memperbaiki pembaruan basis data berbagi
+
+Stempel waktu akses berbagi, perubahan berbagi, dan penandaan notifikasi kedaluwarsa kini menggunakan kontrak pembaruan gateway basis data yang didukung. Ini menghapus galat objek null yang mengganggu penyelesaian berbagi yang valid.
+
 ## Menjaga audit akses agar tidak menghalangi konten
 
 Penyelesaian berbagi tidak lagi gagal ketika pencatatan waktu akses terakhir opsional menemui kolom basis data lama atau sementara tidak tersedia. Berbagi yang belum pernah dibuka kini menampilkan Belum diakses, bukan Tidak pernah kedaluwarsa.

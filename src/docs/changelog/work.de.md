@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Datenbankaktualisierungen für Freigaben reparieren
+
+Zeitstempel für Freigabezugriffe, Freigabebearbeitungen und Markierungen für Ablaufbenachrichtigungen verwenden nun den unterstützten Aktualisierungsvertrag des Datenbank-Gateways. Dadurch unterbricht der Nullobjektfehler gültige Freigaben nicht mehr.
+
 ## Freigabezugriff trotz Auditfehlern ermöglichen
 
 Die Freigabeauflösung schlägt nicht mehr fehl, wenn der optionale Zeitstempel des letzten Zugriffs wegen einer älteren oder vorübergehend nicht verfügbaren Datenbankspalte nicht gespeichert werden kann. Noch nicht geöffnete Freigaben zeigen nun Nicht aufgerufen statt Läuft nie ab.

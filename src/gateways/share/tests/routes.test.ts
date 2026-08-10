@@ -54,7 +54,7 @@ class MemoryExecutor {
                     (condition) => row[condition.column] === condition.value,
                 );
                 if (!matches) continue;
-                this.rows.set(key, { ...row, ...command.values });
+                this.rows.set(key, { ...row, ...command.set });
                 rowCount += 1;
             }
             return { rowCount };

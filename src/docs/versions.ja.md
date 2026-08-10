@@ -65,7 +65,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`    |
 | Authentication (auth) | `src/gateways/auth/`          | `1.7.45`   |
-| Share                 | `src/gateways/share/`         | `1.6.74`   |
+| Share                 | `src/gateways/share/`         | `1.6.75`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`    |
 | Social                | `src/gateways/social/`        | `1.2.11`   |
@@ -99,7 +99,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント       | パス                                | バージョン |
 | -------------------- | ----------------------------------- | ---------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`    |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.94`   |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.71`   |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.95`   |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.72`   |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`    |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`    |

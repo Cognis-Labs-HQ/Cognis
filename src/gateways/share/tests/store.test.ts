@@ -35,7 +35,7 @@ class MemoryExecutor {
             let rowCount = 0;
             for (const [key, row] of this.rows.entries()) {
                 if (this.matchesWhere(row, command.where ?? [])) {
-                    this.rows.set(key, { ...row, ...command.values });
+                    this.rows.set(key, { ...row, ...command.set });
                     rowCount += 1;
                 }
             }
@@ -184,10 +184,7 @@ test("share resolution survives access timestamp persistence failure", async () 
     });
     const executeCommand = executor.executeCommand.bind(executor);
     executor.executeCommand = async (command) => {
-        if (
-            command.option === "UPDATE" &&
-            "last_accessed_at" in command.values
-        ) {
+        if (command.option === "UPDATE" && "last_accessed_at" in command.set) {
             throw new Error("missing audit column");
         }
         return executeCommand(command);

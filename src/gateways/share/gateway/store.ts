@@ -588,7 +588,7 @@ export class ShareTokenStore {
             await this.db.executeCommand({
                 option: "UPDATE",
                 table: "share_tokens",
-                values: { expiration_notified_at: now },
+                set: { expiration_notified_at: now },
                 where: [{ column: "id", value: record.id }],
             });
         }
@@ -733,7 +733,7 @@ export class ShareTokenStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "share_tokens",
-            values: {
+            set: {
                 label:
                     input.label === undefined
                         ? record.label
@@ -779,7 +779,7 @@ export class ShareTokenStore {
             .executeCommand({
                 option: "UPDATE",
                 table: "share_tokens",
-                values: { last_accessed_at: lastAccessedAt },
+                set: { last_accessed_at: lastAccessedAt },
                 where: [{ column: "id", value: record.id }],
             })
             .then(() => true)
