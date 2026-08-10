@@ -71,7 +71,7 @@
   <string name="share.shares.popup_generate_password">Buat kata sandi</string>
   <string name="share.shares.popup_permission">Izin</string>
   <string name="share.shares.popup_read">Hanya Baca</string>
-  <string name="share.shares.popup_write">Baca &amp; Tulis</string>
+  <string name="share.shares.popup_write">Baca + Tulis</string>
   <string name="share.shares.popup_update">Perbarui berbagi</string>
   <string name="share.shares.popup_copied">Tautan berbagi disalin.</string>
   <string name="share.shares.popup_copy_failed">Tautan berbagi tidak dapat disalin.</string>

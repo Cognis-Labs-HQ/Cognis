@@ -205,6 +205,34 @@ export async function mount(
 
     function renderCalendar() {
         composer.refresh([buildCalendarElement()]);
+        requestAnimationFrame(scrollTimedViewsToCurrentSlot);
+    }
+
+    function scrollTimedViewsToCurrentSlot() {
+        root.querySelectorAll(".calendar-day-timed-lane").forEach((lane) => {
+            if (!(lane instanceof HTMLElement)) return;
+            const currentSlot = lane.querySelector(
+                ".calendar-timeslot-events--current",
+            );
+            if (!(currentSlot instanceof HTMLElement)) return;
+            lane.scrollTop = Math.max(
+                0,
+                currentSlot.offsetTop - lane.clientHeight * 0.3,
+            );
+        });
+        root.querySelectorAll("[data-calendar-week-scroll-grid]").forEach(
+            (grid) => {
+                if (!(grid instanceof HTMLElement)) return;
+                const currentSlot = grid.querySelector(
+                    ".calendar-week-slot--current-time",
+                );
+                if (!(currentSlot instanceof HTMLElement)) return;
+                grid.scrollTop = Math.max(
+                    0,
+                    currentSlot.offsetTop - grid.clientHeight * 0.3,
+                );
+            },
+        );
     }
 
     function buildCalendarElement() {
@@ -323,4 +351,5 @@ export async function mount(
     });
 
     await composer.init();
+    requestAnimationFrame(scrollTimedViewsToCurrentSlot);
 }

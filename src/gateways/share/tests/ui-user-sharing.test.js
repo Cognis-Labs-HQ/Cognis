@@ -298,6 +298,10 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
 
 test("component page renderers receive the root used by meeting shares", () => {
     assert.match(shareAppSource, /navigateTo\(shareContext\.contentUrl\)/);
+    assert.match(
+        shareAppSource,
+        /shareContext\.contentUrl && shareContext\.directAccess === true/,
+    );
     assert.match(shareAppSource, /if \(navigated\) return/);
     assert.match(shareAppSource, /root\.replaceChildren\(\)/);
     assert.match(shareAppSource, /mountSharedPage\(root/);
@@ -306,6 +310,7 @@ test("component page renderers receive the root used by meeting shares", () => {
 });
 
 test("received user shares unlock in place and navigate to the component", () => {
+    assert.match(receivedShareActionSource, /event\.defaultPrevented/);
     assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
     assert.match(receivedShareActionSource, /resolveReceivedShare/);
     assert.match(receivedShareActionSource, /useAccountKeyring/);
@@ -337,6 +342,8 @@ test("received user shares unlock in place and navigate to the component", () =>
     assert.match(receivedShareSource, /share:fetchProtectedResource/);
     assert.match(receivedShareSource, /keyring:requestUnlock/);
     assert.match(receivedShareActionSource, /rememberResolvedAccountShare/);
+    assert.match(receivedShareActionSource, /share_acknowledge_title/);
+    assert.match(receivedShareActionSource, /acknowledged !== "continue"/);
     assert.match(sessionFlowSource, /takeResolvedAccountShare\(shareToken\)/);
     assert.match(
         sessionFlowSource,

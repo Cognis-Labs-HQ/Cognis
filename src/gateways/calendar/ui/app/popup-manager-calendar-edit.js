@@ -229,7 +229,13 @@ export function createCalendarEditPopupHandler({
                         title: i18n.t(
                             "gateway.calendar.delete_calendar_confirm_title",
                         ),
-                        body: `<p>${escapeHtml(i18n.t("gateway.calendar.delete_calendar_confirm"))}</p>`,
+                        body: `<p>${escapeHtml(
+                            i18n.t(
+                                calendar.visibility === "shared"
+                                    ? "gateway.calendar.delete_shared_calendar_confirm"
+                                    : "gateway.calendar.delete_calendar_confirm",
+                            ),
+                        )}</p>`,
                         variant: "danger",
                         actions: [
                             {

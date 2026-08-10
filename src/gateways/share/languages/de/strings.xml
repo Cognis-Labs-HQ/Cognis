@@ -71,7 +71,7 @@
   <string name="share.shares.popup_generate_password">Passwort erzeugen</string>
   <string name="share.shares.popup_permission">Berechtigung</string>
   <string name="share.shares.popup_read">Schreibgeschützt</string>
-  <string name="share.shares.popup_write">Lesen &amp; Schreiben</string>
+  <string name="share.shares.popup_write">Lesen + Schreiben</string>
   <string name="share.shares.popup_update">Freigabe aktualisieren</string>
   <string name="share.shares.popup_copied">Freigabelink kopiert.</string>
   <string name="share.shares.popup_copy_failed">Der Freigabelink konnte nicht kopiert werden.</string>

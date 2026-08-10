@@ -156,7 +156,7 @@ export async function mount(root, { signal } = {}) {
         return;
     }
 
-    if (shareContext.contentUrl) {
+    if (shareContext.contentUrl && shareContext.directAccess === true) {
         const navigated = await navigateTo(shareContext.contentUrl);
         if (navigated) return;
         state.loading = false;

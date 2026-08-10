@@ -71,7 +71,7 @@
   <string name="share.shares.popup_generate_password">Generate password</string>
   <string name="share.shares.popup_permission">Permission</string>
   <string name="share.shares.popup_read">Read-Only</string>
-  <string name="share.shares.popup_write">Read &amp; Write</string>
+  <string name="share.shares.popup_write">Read + Write</string>
   <string name="share.shares.popup_update">Update share</string>
   <string name="share.shares.popup_copied">Share link copied.</string>
   <string name="share.shares.popup_copy_failed">The share link could not be copied.</string>

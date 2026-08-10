@@ -1,5 +1,9 @@
 # Refine share management
 
+## Finish protected share navigation and calendar guest controls
+
+Notification actions are now claimed by only one share handler, preventing duplicate password prompts and false invalid-share errors. Calendar recipients acknowledge imports, received-calendar deletion uses applicable wording, and calendar guests can navigate views with current-time auto-scrolling. Share permissions now label write access as Read + Write.
+
 ## Continue protected user shares without resolving twice
 
 After an intended recipient unlocks a password-protected user share, the verified result now carries across the following in-app navigation. Cognis no longer repeats the resolve request without its password, so the full account page opens instead of ending with a 401 error and an invalid-share notice.

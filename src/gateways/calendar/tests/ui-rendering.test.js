@@ -725,6 +725,10 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar-view-switcher/);
+    assert.match(SHARE_RENDERER_SOURCE, /data-calendar-nav/);
+    assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
+    assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);
+    assert.match(SHARE_RENDERER_SOURCE, /requestAnimationFrame/);
     assert.match(SHARE_RENDERER_SOURCE, /root\.addEventListener/);
     assert.match(SHARE_RENDERER_SOURCE, /onRender:\s*bindInteractiveHandlers/);
     assert.match(SHARE_RENDERER_SOURCE, /interactionController\?\.abort\(\)/);
@@ -774,6 +778,10 @@ test("shared calendar settings expose recipient-local name and color", () => {
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /delete_calendar_confirm_title/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /delete_shared_calendar_confirm/,
     );
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /confirmed !== "delete"/);
     assert.doesNotMatch(

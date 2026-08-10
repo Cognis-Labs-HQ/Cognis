@@ -71,7 +71,7 @@
   <string name="share.shares.popup_generate_password">パスワードを生成</string>
   <string name="share.shares.popup_permission">権限</string>
   <string name="share.shares.popup_read">読み取り専用</string>
-  <string name="share.shares.popup_write">読み取りと書き込み</string>
+  <string name="share.shares.popup_write">読み取り + 書き込み</string>
   <string name="share.shares.popup_update">共有を更新</string>
   <string name="share.shares.popup_copied">共有リンクをコピーしました。</string>
   <string name="share.shares.popup_copy_failed">共有リンクをコピーできませんでした。</string>
