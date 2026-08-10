@@ -1,5 +1,9 @@
 # Refine share management
 
+## Resolve user shares in one flow
+
+User-share clicks now navigate to the Share page without pre-resolving the token in a second client path. The session flow owns account validation, password prompting, and delivery once, while deleted rows disappear optimistically and are restored only if the server rejects deletion.
+
 ## Repair share database updates
 
 Share access timestamps, share edits, and expiration notification claims now use the database gateway’s supported update contract. This removes the null-object error that interrupted valid share resolution.

@@ -434,6 +434,17 @@ export async function mount(root, { signal } = {}) {
                 ],
             });
             if (confirmed !== "confirm") return;
+            const collection = rejecting ? "received" : "sent";
+            const previousOverview = overview;
+            overview = {
+                ...overview,
+                [collection]: overview[collection].filter(
+                    (share) => String(share.id) !== shareId,
+                ),
+            };
+            composer.refresh([
+                buildSharesElement(overview, i18n, templates, activeFilter),
+            ]);
             const response = rejecting
                 ? await rejectShare(shareId)
                 : await revokeShare(shareId);
@@ -445,14 +456,8 @@ export async function mount(root, { signal } = {}) {
                 ),
                 { variant: response.ok ? "success" : "error" },
             );
-            if (!response.ok) return;
-            const collection = rejecting ? "received" : "sent";
-            overview = {
-                ...overview,
-                [collection]: overview[collection].filter(
-                    (share) => String(share.id) !== shareId,
-                ),
-            };
+            if (response.ok) return;
+            overview = previousOverview;
             composer.refresh([
                 buildSharesElement(overview, i18n, templates, activeFilter),
             ]);

@@ -33,6 +33,10 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /activeFilter = filter\.dataset\.shareFilter/);
     assert.match(pageSource, /visibleShares\.length \+ 2/);
     assert.match(pageSource, /\[collection\]: overview\[collection\]\.filter/);
+    assert.match(
+        pageSource,
+        /previousOverview = overview[\s\S]*composer\.refresh[\s\S]*await rejectShare|previousOverview = overview[\s\S]*composer\.refresh[\s\S]*await revokeShare/,
+    );
     assert.match(templateSource, /data-share-filter="all"/);
     assert.match(templateSource, /data-share-filter="sent"/);
     assert.match(templateSource, /data-share-filter="received"/);

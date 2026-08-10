@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Menyelesaikan berbagi pengguna dalam satu alur
+
+Klik berbagi pengguna kini menuju halaman Berbagi tanpa menyelesaikan token terlebih dahulu melalui jalur klien kedua. Alur sesi menangani validasi akun, permintaan kata sandi, dan pengiriman satu kali. Baris yang dihapus langsung menghilang dan hanya dipulihkan bila server menolak penghapusan.
+
 ## Memperbaiki pembaruan basis data berbagi
 
 Stempel waktu akses berbagi, perubahan berbagi, dan penandaan notifikasi kedaluwarsa kini menggunakan kontrak pembaruan gateway basis data yang didukung. Ini menghapus galat objek null yang mengganggu penyelesaian berbagi yang valid.

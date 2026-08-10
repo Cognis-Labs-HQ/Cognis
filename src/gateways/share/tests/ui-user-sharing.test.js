@@ -309,26 +309,12 @@ test("component page renderers receive the root used by meeting shares", () => {
     assert.doesNotMatch(shareAppSource, /share-resource-mount-root/);
 });
 
-test("received user shares unlock in place and navigate to the component", () => {
+test("received user shares navigate once through the share session flow", () => {
     assert.match(receivedShareActionSource, /event\.defaultPrevented/);
     assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
-    assert.match(
-        receivedShareActionSource,
-        /if \(shareVerified\) return false/,
-    );
-    assert.match(receivedShareActionSource, /resolveReceivedShare/);
-    assert.match(receivedShareActionSource, /useAccountKeyring/);
-    assert.match(
-        receivedShareActionSource,
-        /useAccountKeyring: Boolean\(accessToken\)/,
-    );
-    assert.match(receivedShareActionSource, /payload\.data\.navigationUrl/);
-    assert.match(receivedShareActionSource, /payload\?\.data\?\.directAccess/);
-    assert.doesNotMatch(receivedShareActionSource, /guestAccessToken/);
-    assert.match(
-        receivedShareActionSource,
-        /await navigateTo\(navigationUrl\)/,
-    );
+    assert.match(receivedShareActionSource, /navigateTo\(sharePath\)/);
+    assert.doesNotMatch(receivedShareActionSource, /resolveReceivedShare/);
+    assert.doesNotMatch(receivedShareActionSource, /invalid_token/);
     assert.match(receivedShareSource, /response\.status !== 401/);
     assert.match(receivedShareSource, /await promptForPassword\(\)/);
     assert.match(receivedShareSource, /keyring:forComponent/);
@@ -341,14 +327,8 @@ test("received user shares unlock in place and navigate to the component", () =>
         receivedShareSource,
         /identifiers\.push\(`share:\$\{shareId\}`\)/,
     );
-    assert.match(receivedShareActionSource, /payload\.data\.feedback/);
-    assert.match(receivedShareActionSource, /variant: "success"/);
     assert.match(receivedShareSource, /share:fetchProtectedResource/);
     assert.match(receivedShareSource, /keyring:requestUnlock/);
-    assert.match(receivedShareActionSource, /rememberResolvedAccountShare/);
-    assert.match(receivedShareActionSource, /share_acknowledge_title/);
-    assert.match(receivedShareActionSource, /acknowledged !== "continue"/);
-    assert.match(sessionFlowSource, /takeResolvedAccountShare\(shareToken\)/);
     assert.match(
         sessionFlowSource,
         /useAccountKeyring: hasValidatedAccountSession/,
@@ -357,8 +337,6 @@ test("received user shares unlock in place and navigate to the component", () =>
         receivedShareSource,
         /let response = await request\(null\);[\s\S]*if \(response\.status !== 401\) return response;[\s\S]*unlockKeyringForShare/,
     );
-    assert.match(receivedShareActionSource, /response\.status === 404/);
-    assert.match(receivedShareActionSource, /share\.error\.not_found/);
     assert.match(receivedShareSource, /share\.keyring\.request_component/);
     assert.match(receivedShareSource, /share\.keyring\.request_action_access/);
     assert.match(receivedShareSource, /share\.keyring\.request_process/);
