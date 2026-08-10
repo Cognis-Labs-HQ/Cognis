@@ -311,8 +311,8 @@ test("received user shares unlock in place and navigate to the component", () =>
         /useAccountKeyring: Boolean\(accessToken\)/,
     );
     assert.match(receivedShareActionSource, /payload\.data\.navigationUrl/);
-    assert.match(receivedShareActionSource, /payload\.data\.guestAccessToken/);
-    assert.match(receivedShareActionSource, /\? sharePath/);
+    assert.match(receivedShareActionSource, /payload\?\.data\?\.directAccess/);
+    assert.doesNotMatch(receivedShareActionSource, /guestAccessToken/);
     assert.match(
         receivedShareActionSource,
         /await navigateTo\(navigationUrl\)/,

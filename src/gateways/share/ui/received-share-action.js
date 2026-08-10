@@ -16,59 +16,51 @@ window.addEventListener("cognis:notification-action", (event) => {
     const token = tokenFromActionUrl(actionUrl);
     if (!token) return;
     event.preventDefault();
-    void (async () => {
-        try {
-            const accessToken = localStorage.getItem("cognis_access_token");
-            const response = await resolveReceivedShare(token, {
-                headers: accessToken
-                    ? { authorization: `Bearer ${accessToken}` }
-                    : undefined,
-                useAccountKeyring: Boolean(accessToken),
-            });
-            if (!response) return;
-            if (response.status === 404) {
-                const i18n = await createI18n({
-                    componentStringBaseUrls: [
-                        "/static/gateways/share/languages",
-                    ],
-                });
-                showToast(i18n.t("share.error.not_found"), {
-                    variant: "warning",
-                });
-                return;
-            }
-            const payload = await response.json().catch(() => null);
-            if (!response.ok || !payload?.data) {
-                throw new Error("share_resolution_failed");
-            }
-            const sharePath = new URL(actionUrl, window.location.origin)
-                .pathname;
-            const navigationUrl = String(
-                payload.data.guestAccessToken
-                    ? sharePath
-                    : payload.data.navigationUrl || sharePath,
-            ).trim();
-            if (!navigationUrl) {
-                throw new Error("share_delivery_unavailable");
-            }
-            const feedback = payload.data.feedback;
-            const messageKey = String(feedback?.messageKey ?? "").trim();
-            if (messageKey) {
-                const feedbackI18n = await createI18n({
-                    componentStringBaseUrls: feedback.stringsBaseUrl,
-                });
-                showToast(feedbackI18n.t(messageKey), {
-                    variant: "success",
-                });
-            }
-            await navigateTo(navigationUrl);
-        } catch {
+    void navigateAccountShare(actionUrl);
+});
+
+export async function navigateAccountShare(actionUrl) {
+    const token = tokenFromActionUrl(actionUrl);
+    if (!token) return false;
+    try {
+        const accessToken = localStorage.getItem("cognis_access_token");
+        const response = await resolveReceivedShare(token, {
+            headers: accessToken
+                ? { authorization: `Bearer ${accessToken}` }
+                : undefined,
+            useAccountKeyring: Boolean(accessToken),
+        });
+        if (!response) return false;
+        if (response.status === 404) {
             const i18n = await createI18n({
                 componentStringBaseUrls: ["/static/gateways/share/languages"],
             });
-            showToast(i18n.t("share.error.invalid_token"), {
-                variant: "error",
-            });
+            showToast(i18n.t("share.error.not_found"), { variant: "warning" });
+            return false;
         }
-    })();
-});
+        const payload = await response.json().catch(() => null);
+        if (!response.ok || !payload?.data?.directAccess) {
+            throw new Error("share_resolution_failed");
+        }
+        const navigationUrl = String(
+            payload.data.navigationUrl || payload.data.contentUrl || "",
+        ).trim();
+        if (!navigationUrl) throw new Error("share_delivery_unavailable");
+        const feedback = payload.data.feedback;
+        const messageKey = String(feedback?.messageKey ?? "").trim();
+        if (messageKey) {
+            const feedbackI18n = await createI18n({
+                componentStringBaseUrls: feedback.stringsBaseUrl,
+            });
+            showToast(feedbackI18n.t(messageKey), { variant: "success" });
+        }
+        await navigateTo(navigationUrl);
+        return true;
+    } catch {
+        const i18n = await createI18n({
+            componentStringBaseUrls: ["/static/gateways/share/languages"],
+        });
+        showToast(i18n.t("share.error.invalid_token"), { variant: "error" });
+        return false;
+    }
+}

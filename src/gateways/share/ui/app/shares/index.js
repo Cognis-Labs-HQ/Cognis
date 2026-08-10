@@ -11,6 +11,7 @@ import {
     rejectShare,
     revokeShare,
 } from "../../reuse/share-api.js";
+import { navigateAccountShare } from "../../received-share-action.js";
 
 let markupTemplates = null;
 
@@ -100,6 +101,9 @@ function renderShareRow(share, direction, i18n, rowTemplate) {
     titleLink.className = "shares-title-link";
     titleLink.href = shareUrl;
     titleLink.textContent = label;
+    if (shareRecipients(share).length > 0) {
+        titleLink.dataset.accountShareUrl = shareUrl;
+    }
     row.querySelector("[data-share-title]").appendChild(titleLink);
     row.querySelector("[data-share-relationship]").appendChild(
         relationshipCell(share, direction, i18n),
@@ -353,6 +357,16 @@ export async function mount(root, { signal } = {}) {
         "click",
         async (event) => {
             if (!(event.target instanceof Element)) return;
+            const accountShareLink = event.target.closest(
+                "[data-account-share-url]",
+            );
+            if (accountShareLink instanceof HTMLAnchorElement) {
+                event.preventDefault();
+                await navigateAccountShare(
+                    accountShareLink.dataset.accountShareUrl,
+                );
+                return;
+            }
             const filter = event.target.closest("[data-share-filter]");
             if (filter instanceof HTMLButtonElement) {
                 activeFilter = filter.dataset.shareFilter ?? "all";

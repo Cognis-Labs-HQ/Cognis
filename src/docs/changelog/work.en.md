@@ -1,5 +1,9 @@
 # Refine share management
 
+## Open account shares directly
+
+User-share links on the Shares page and in notifications now resolve once through the authenticated account path and navigate straight to the full destination page. They no longer pass through the guest landing page or activate guest-restricted presentation.
+
 ## Keep user shares account-only
 
 Shares addressed to Cognis users can no longer mint or activate guest sessions. Only the explicitly named authenticated recipient or the share owner can resolve them; public link shares remain the sole guest-access mechanism.
