@@ -111,3 +111,7 @@ Berbagi langsung kepada pengguna kini mengirim tujuan buram dari penyedia konten
 ## Terapkan akses berbagi aktif
 
 Kata sandi berbagi yang salah kini menampilkan kesalahan dan dapat langsung dicoba kembali. Berbagi pengguna yang dilindungi dibuka sebelum konten ditampilkan, entri halaman Berbagi memakai gerbang akses yang sama dengan notifikasi, dan pencabutan berbagi tautan atau pengguna segera mengeluarkan penerima dari konten aktif.
+
+## Stabilkan tindakan entri berbagi
+
+Notifikasi berbagi pengguna tanpa perlindungan membuka kontennya secara langsung, entri terlindungi mengonsumsi tindakan satu kali di halaman Berbagi sebelum meminta kata sandi, dan pembukaan yang berhasil memakai rute aplikasi internal. Pengiriman berbagi pengguna duplikat kini melaporkan konflik atau memperbarui berbagi yang ada saat pengaturannya berubah.

@@ -277,6 +277,7 @@ function popupLabels(i18n) {
         users: translate("users"),
         userSearchPlaceholder: translate("user_search"),
         duplicateUserShare: translate("duplicate_user"),
+        duplicateUserShareUpdated: translate("duplicate_user_updated"),
         shareWithPrefix: translate("share_with"),
         usersCountLabel: translate("users_count"),
     };
@@ -486,6 +487,7 @@ export async function mount(root, { signal } = {}) {
         "open",
     );
     if (requestedShareId) {
+        window.history.replaceState({}, "", "/shares");
         const requestedShare = overview.received.find(
             (share) => String(share.id) === requestedShareId,
         );

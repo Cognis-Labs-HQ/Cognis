@@ -47,6 +47,35 @@ export function buildCreateOptions(input) {
     };
 }
 
+export function findExistingShare(shares, input) {
+    const recipientIds = new Set(
+        (input.recipients || []).map((recipient) => String(recipient.id)),
+    );
+    return (shares || []).find((share) =>
+        (share.accessControls?.recipients || []).some(
+            (recipient) =>
+                recipient.type === "user" && recipientIds.has(recipient.id),
+        ),
+    );
+}
+
+export function hasShareChanges(share, input) {
+    const currentPermissions = (share.accessControls?.permissions || [])
+        .map(String)
+        .sort()
+        .join(",");
+    const requestedPermissions = (input.accessControls?.permissions || [])
+        .map(String)
+        .sort()
+        .join(",");
+    return (
+        String(share.label || "") !== String(input.label || "") ||
+        String(share.expiresAt || "") !== String(input.expiresAt || "") ||
+        currentPermissions !== requestedPermissions ||
+        Boolean(String(input.password || "").trim())
+    );
+}
+
 export function getEmptyLabel(labels) {
     return labels.userEmpty || labels.empty;
 }

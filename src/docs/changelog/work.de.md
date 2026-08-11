@@ -111,3 +111,7 @@ Direkte Benutzerfreigaben übermitteln nun das undurchsichtige Ziel des Inhaltsa
 ## Aktiven Freigabezugriff durchsetzen
 
 Falsche Freigabepasswörter zeigen nun einen Fehler und können sofort erneut eingegeben werden. Geschützte Benutzerfreigaben werden vor dem Öffnen entsperrt, Einträge auf der Freigabeseite verwenden dieselbe Zugriffskontrolle wie Benachrichtigungen und widerrufene Link- oder Benutzerfreigaben entfernen Empfänger umgehend aus aktiven Inhalten.
+
+## Aktionen für Freigabeeinträge stabilisieren
+
+Benachrichtigungen für ungeschützte Benutzerfreigaben öffnen ihren Inhalt direkt, geschützte Einträge verbrauchen ihre einmalige Aktion auf der Freigabeseite vor der Passwortabfrage und erfolgreiche Entsperrungen verwenden die interne App-Route. Doppelte Benutzerfreigaben melden nun den Konflikt oder aktualisieren die vorhandene Freigabe, wenn sich deren Einstellungen geändert haben.

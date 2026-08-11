@@ -111,3 +111,7 @@ Direct user shares now deliver the content provider’s opaque destination to th
 ## Enforce live share access
 
 Incorrect share passwords now show an error and can be retried immediately. Protected user shares unlock before opening, Shares-page entries use the same access gate as notifications, and revoked link or user shares promptly remove recipients from active content.
+
+## Stabilize share entry actions
+
+Unprotected user-share notifications open their content directly, protected entries consume their one-time Shares-page action before prompting, and successful unlocks navigate using the internal app route. Duplicate user-share submissions now report the conflict or update the existing share when its settings changed.

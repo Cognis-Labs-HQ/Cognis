@@ -83,6 +83,7 @@
   <string name="share.shares.popup_users">Freigegeben für</string>
   <string name="share.shares.popup_user_search">Benutzer suchen</string>
   <string name="share.shares.popup_duplicate_user">Dieses Element ist bereits für diesen Benutzer freigegeben.</string>
+  <string name="share.shares.popup_duplicate_user_updated">Die vorhandene Benutzerfreigabe wurde aktualisiert.</string>
   <string name="share.shares.popup_share_with">Freigeben für</string>
   <string name="share.shares.popup_users_count">Benutzer</string>
   <string name="share.shares.popup_send">Senden</string>

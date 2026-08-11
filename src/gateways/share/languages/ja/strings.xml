@@ -83,6 +83,7 @@
   <string name="share.shares.popup_users">共有先</string>
   <string name="share.shares.popup_user_search">ユーザーを検索</string>
   <string name="share.shares.popup_duplicate_user">この項目はすでにそのユーザーと共有されています。</string>
+  <string name="share.shares.popup_duplicate_user_updated">既存のユーザー共有を更新しました。</string>
   <string name="share.shares.popup_share_with">共有先</string>
   <string name="share.shares.popup_users_count">ユーザー</string>
   <string name="share.shares.popup_send">送信</string>

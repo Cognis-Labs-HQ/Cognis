@@ -193,6 +193,39 @@ test("user share permissions constrain granted capabilities", async () => {
         }).grantedCapabilities,
         ["calendar:read", "calendar:write"],
     );
+    const existingShare = {
+        id: "share-1",
+        label: "Planning",
+        expiresAt: "2030-01-01T00:00:00.000Z",
+        accessControls: {
+            permissions: ["read"],
+            recipients: [{ type: "user", id: "bob" }],
+        },
+    };
+    assert.equal(
+        userPageModule.findExistingShare([existingShare], baseInput),
+        existingShare,
+    );
+    assert.equal(
+        userPageModule.hasShareChanges(existingShare, {
+            label: "Planning",
+            expiresAt: "2030-01-01T00:00:00.000Z",
+            accessControls: { permissions: ["read"] },
+        }),
+        false,
+    );
+    assert.equal(
+        userPageModule.hasShareChanges(existingShare, {
+            label: "Updated Planning",
+            expiresAt: "2030-01-01T00:00:00.000Z",
+            accessControls: { permissions: ["read"] },
+        }),
+        true,
+    );
+    assert.match(
+        popupSource,
+        /duplicate_user_share[\s\S]*findExistingShare[\s\S]*updateLink/,
+    );
 });
 
 test("share popup uses neutral close and destructive revoke actions", () => {

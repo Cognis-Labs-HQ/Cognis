@@ -83,6 +83,7 @@
   <string name="share.shares.popup_users">Shared with</string>
   <string name="share.shares.popup_user_search">Search users</string>
   <string name="share.shares.popup_duplicate_user">This item is already shared with that user.</string>
+  <string name="share.shares.popup_duplicate_user_updated">The existing user share was updated.</string>
   <string name="share.shares.popup_share_with">Share with</string>
   <string name="share.shares.popup_users_count">users</string>
   <string name="share.shares.popup_send">Send</string>

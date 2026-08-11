@@ -613,6 +613,8 @@ export async function openShareLinksPopup({
                 syncCreateButton(createButton);
                 let shareUrl = null;
                 let revealedPassword = "";
+                let methodModule = null;
+                let preparedInput = null;
                 try {
                     const createInput = {
                         label: state.label,
@@ -638,10 +640,10 @@ export async function openShareLinksPopup({
                         defaultGrantedCapabilities:
                             state.defaultGrantedCapabilities,
                     };
-                    const methodModule = state.methodModules.get(
+                    methodModule = state.methodModules.get(
                         state.activeMethodId,
                     );
-                    const preparedInput =
+                    preparedInput =
                         typeof methodModule?.buildCreateOptions === "function"
                             ? methodModule.buildCreateOptions(createInput)
                             : createInput;
@@ -687,6 +689,54 @@ export async function openShareLinksPopup({
                         if (popupOpen) renderLinksList(listContainer);
                     }
                 } catch (error) {
+                    if (
+                        error?.code === "duplicate_user_share" &&
+                        preparedInput &&
+                        typeof methodModule?.findExistingShare === "function"
+                    ) {
+                        const existingShare = methodModule.findExistingShare(
+                            state.links,
+                            preparedInput,
+                        );
+                        const hasChanges = methodModule.hasShareChanges?.(
+                            existingShare,
+                            preparedInput,
+                        );
+                        if (existingShare && hasChanges) {
+                            try {
+                                const updatedShare = await updateLink({
+                                    shareId: existingShare.id,
+                                    ...preparedInput,
+                                });
+                                showToast(
+                                    labels.duplicateUserShareUpdated ||
+                                        labels.updateUserShare,
+                                    { variant: "success" },
+                                );
+                                if (updatedShare) {
+                                    state.links = [
+                                        updatedShare,
+                                        ...state.links.filter(
+                                            (share) =>
+                                                String(share.id) !==
+                                                String(updatedShare.id),
+                                        ),
+                                    ];
+                                    filterLinksForActiveMethod();
+                                    renderLinksList(listContainer);
+                                }
+                            } catch (updateError) {
+                                console.error(
+                                    "[share] failed to update duplicate user share",
+                                    updateError,
+                                );
+                                showToast(labels.createFailed, {
+                                    variant: "error",
+                                });
+                            }
+                            return;
+                        }
+                    }
                     showToast(
                         error?.code === "duplicate_user_share"
                             ? labels.duplicateUserShare || labels.createFailed

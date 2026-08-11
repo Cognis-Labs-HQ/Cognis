@@ -60,7 +60,9 @@ export async function navigateAccountShare(share) {
         }
         return false;
     }
-    const navigated = await navigateTo(destinationUrl);
+    const destination = new URL(destinationUrl, window.location.origin);
+    const navigationPath = `${destination.pathname}${destination.search}${destination.hash}`;
+    const navigated = await navigateTo(navigationPath);
     if (navigated) monitorAccountShare(String(share.id));
     return navigated;
 }

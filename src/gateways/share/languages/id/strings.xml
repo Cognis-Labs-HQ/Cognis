@@ -83,6 +83,7 @@
   <string name="share.shares.popup_users">Dibagikan kepada</string>
   <string name="share.shares.popup_user_search">Cari pengguna</string>
   <string name="share.shares.popup_duplicate_user">Item ini sudah dibagikan kepada pengguna tersebut.</string>
+  <string name="share.shares.popup_duplicate_user_updated">Berbagi pengguna yang ada telah diperbarui.</string>
   <string name="share.shares.popup_share_with">Bagikan kepada</string>
   <string name="share.shares.popup_users_count">pengguna</string>
   <string name="share.shares.popup_send">Kirim</string>

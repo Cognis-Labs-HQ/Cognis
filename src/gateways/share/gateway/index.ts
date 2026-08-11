@@ -174,11 +174,12 @@ export class CoreShareGateway {
         const destinationUrl = publicLink
             ? shareUrl
             : this.buildAbsoluteUrl(String(record.metadata?.contentUrl ?? ""));
-        const actionUrl = publicLink
-            ? shareUrl
-            : this.buildAbsoluteUrl(
-                  `/shares?open=${encodeURIComponent(record.id)}`,
-              );
+        const actionUrl =
+            publicLink || !record.passwordHash
+                ? destinationUrl
+                : this.buildAbsoluteUrl(
+                      `/shares?open=${encodeURIComponent(record.id)}`,
+                  );
         const resolveVariants = this.resolveCapability<
             (input: {
                 resourceType: string;
