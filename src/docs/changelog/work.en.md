@@ -107,3 +107,7 @@ Meeting shares now remain resolvable across meeting instances and ended sessions
 ## User shares stay in account sessions
 
 Direct user shares now deliver the content provider’s opaque destination to the named recipient and never expose a public share URL or mint a guest session. Link shares retain their independent public-link and guest-access lifecycle.
+
+## Enforce live share access
+
+Incorrect share passwords now show an error and can be retried immediately. Protected user shares unlock before opening, Shares-page entries use the same access gate as notifications, and revoked link or user shares promptly remove recipients from active content.

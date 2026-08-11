@@ -325,6 +325,12 @@ test("received user shares navigate once through the share session flow", () => 
     assert.doesNotMatch(receivedShareActionSource, /invalid_token/);
     assert.match(receivedShareSource, /response\.status !== 401/);
     assert.match(receivedShareSource, /await promptForPassword\(\)/);
+    assert.match(receivedShareSource, /while \(response\.status === 401\)/);
+    assert.match(receivedShareSource, /share\.error\.invalid_password/);
+    assert.match(
+        receivedShareActionSource,
+        /api\/v1\/share\/status[\s\S]*setTimeout\(poll, 500\)/,
+    );
     assert.match(receivedShareSource, /keyring:forComponent/);
     assert.match(receivedShareSource, /share\.unlock\.keyring_label/);
     assert.match(receivedShareSource, /"Share Gateway"/);

@@ -80,9 +80,9 @@ function startShareStatusMonitor(shareId) {
             publishShareRevoked(shareId);
             return;
         }
-        shareStatusTimer = setTimeout(poll, 2_000);
+        shareStatusTimer = setTimeout(poll, 500);
     };
-    shareStatusTimer = setTimeout(poll, 2_000);
+    shareStatusTimer = setTimeout(poll, 500);
 }
 
 window.addEventListener("cognis:api-access-denied", () => {

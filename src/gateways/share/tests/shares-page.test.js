@@ -36,6 +36,8 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /data-share-manage/);
     assert.match(pageSource, /data-account-share-url/);
     assert.match(pageSource, /await navigateAccountShare/);
+    assert.match(pageSource, /share\?\.actionUrl \|\| share\?\.shareUrl/);
+    assert.match(pageSource, /searchParams\.get\(\s*"open"/);
     assert.match(pageSource, /destructive \? "btn-cancel"/);
     assert.doesNotMatch(pageSource, /shares-icon-button--danger/);
     assert.match(pageSource, /activeFilter = filter\.dataset\.shareFilter/);

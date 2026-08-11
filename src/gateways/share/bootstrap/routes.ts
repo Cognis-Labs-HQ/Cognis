@@ -265,6 +265,46 @@ export function createShareRoutes(input: {
             return true;
         }
 
+        const accountShareMatch = url.pathname.match(
+            /^\/api\/v1\/share\/account\/([^/]+)\/resolve$/,
+        );
+        if (req.method === "POST" && accountShareMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = (await readJson(req)) as { password?: unknown };
+            const result = await input.gateway.resolveAccountShare({
+                shareId: decodeURIComponent(accountShareMatch[1]),
+                accountId: claims.sub,
+                password:
+                    typeof body.password === "string" ? body.password : null,
+            });
+            if (!result.resolved) {
+                input.log?.("warn", "Denied account share access.", {
+                    component: "share-gateway",
+                    operation: "resolve_account_share",
+                    shareId: decodeURIComponent(accountShareMatch[1]),
+                    accountId: claims.sub,
+                    reason: result.reason,
+                });
+                const status =
+                    result.reason === "not_found"
+                        ? 404
+                        : result.reason === "invalid_password"
+                          ? 401
+                          : 403;
+                sendError(res, status, result.reason, "Share access denied.");
+                return true;
+            }
+            input.log?.("info", "Resolved account share access.", {
+                component: "share-gateway",
+                operation: "resolve_account_share",
+                shareId: decodeURIComponent(accountShareMatch[1]),
+                accountId: claims.sub,
+            });
+            sendJson(res, 200, { data: result });
+            return true;
+        }
+
         if (req.method === "POST" && url.pathname === "/api/v1/share/tokens") {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;

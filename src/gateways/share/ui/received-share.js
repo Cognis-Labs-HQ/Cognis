@@ -146,9 +146,20 @@ export async function resolveReceivedShare(
             }
         }
     }
-    const entered = await promptForPassword({ allowSave: useAccountKeyring });
-    if (!entered?.password) return null;
-    response = await request(entered.password);
+    let entered = null;
+    while (response.status === 401) {
+        entered = await promptForPassword({ allowSave: useAccountKeyring });
+        if (!entered?.password) return null;
+        response = await request(entered.password);
+        if (response.status === 401) {
+            const i18n = await createI18n({
+                componentStringBaseUrls: ["/static/gateways/share/languages"],
+            });
+            showToast(i18n.t("share.error.invalid_password"), {
+                variant: "error",
+            });
+        }
+    }
     if (response.ok) {
         try {
             const i18n = await createI18n({
@@ -189,6 +200,37 @@ export async function resolveReceivedShare(
         }
     }
     return response;
+}
+
+export async function resolveAccountShare(shareId) {
+    const normalizedShareId = String(shareId ?? "").trim();
+    if (!normalizedShareId) return null;
+    const request = (password) =>
+        apiFetch(
+            `/api/v1/share/account/${encodeURIComponent(normalizedShareId)}/resolve`,
+            {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ password: password || undefined }),
+                suppressAccessDeniedEvent: true,
+            },
+        );
+    let response = await request(null);
+    while (response.status === 401) {
+        const entered = await promptForPassword();
+        if (!entered?.password) return null;
+        response = await request(entered.password);
+        if (response.status === 401) {
+            const i18n = await createI18n({
+                componentStringBaseUrls: ["/static/gateways/share/languages"],
+            });
+            showToast(i18n.t("share.error.invalid_password"), {
+                variant: "error",
+            });
+        }
+    }
+    if (!response.ok) return response;
+    return response.json();
 }
 
 uiCtx.capabilities.contribute(

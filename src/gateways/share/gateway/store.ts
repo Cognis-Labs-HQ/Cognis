@@ -152,7 +152,10 @@ export function hashSharePassword(password: string): string {
     return `${SHARE_PASSWORD_KDF_ALGO}$${SHARE_PASSWORD_KDF_ITERATIONS}$${salt.toString("hex")}$${derived.toString("hex")}`;
 }
 
-function verifySharePassword(password: string, storedHash: string): boolean {
+export function verifySharePassword(
+    password: string,
+    storedHash: string,
+): boolean {
     const normalized = String(password ?? "");
     const encoded = String(storedHash ?? "");
     const parts = encoded.split("$");

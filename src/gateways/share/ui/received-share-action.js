@@ -1,6 +1,34 @@
 /** Routes received user-share actions through the single share-page flow. */
 
 import { navigateTo } from "/static/reuse/app-router.js";
+import { resolveAccountShare } from "./received-share.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { createI18n } from "/static/reuse/i18n.js";
+import { showToast } from "/static/reuse/toast.js";
+
+let accountShareMonitor = null;
+
+function monitorAccountShare(shareId) {
+    if (accountShareMonitor) clearTimeout(accountShareMonitor);
+    const poll = async () => {
+        const response = await apiFetch(
+            `/api/v1/share/status/${encodeURIComponent(shareId)}`,
+            { suppressAccessDeniedEvent: true },
+        ).catch(() => null);
+        if (response && !response.ok) {
+            const i18n = await createI18n({
+                componentStringBaseUrls: ["/static/gateways/share/languages"],
+            });
+            showToast(i18n.t("share.error.access_denied"), {
+                variant: "error",
+            });
+            await navigateTo("/shares");
+            return;
+        }
+        accountShareMonitor = setTimeout(poll, 500);
+    };
+    accountShareMonitor = setTimeout(poll, 500);
+}
 
 function sharePathFromActionUrl(actionUrl) {
     const url = new URL(actionUrl, window.location.origin);
@@ -18,7 +46,21 @@ window.addEventListener("cognis:notification-action", (event) => {
     void navigateTo(sharePath);
 });
 
-export async function navigateAccountShare(actionUrl) {
-    const sharePath = sharePathFromActionUrl(actionUrl);
-    return sharePath ? navigateTo(sharePath) : false;
+export async function navigateAccountShare(share) {
+    const result = await resolveAccountShare(share?.id);
+    const destinationUrl = String(result?.data?.destinationUrl ?? "").trim();
+    if (!destinationUrl) {
+        if (result instanceof Response) {
+            const i18n = await createI18n({
+                componentStringBaseUrls: ["/static/gateways/share/languages"],
+            });
+            showToast(i18n.t("share.error.access_denied"), {
+                variant: "error",
+            });
+        }
+        return false;
+    }
+    const navigated = await navigateTo(destinationUrl);
+    if (navigated) monitorAccountShare(String(share.id));
+    return navigated;
 }

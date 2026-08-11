@@ -4,6 +4,7 @@
   <string name="share.loading">共有コンテンツを読み込んでいます…</string>
   <string name="share.error.invalid_token">この共有リンクは無効か、期限切れです。</string>
   <string name="share.error.keyring_locked">共有のロックは解除されましたが、パスワードをキーリングに保存できませんでした。</string>
+  <string name="share.error.invalid_password">共有パスワードが正しくありません。</string>
   <string name="share.error.missing_token">共有トークンが指定されていません。</string>
   <string name="share.error.not_found">この共有リンクは無効か、期限切れです。</string>
   <string name="share.error.malformed_response">この共有項目から無効な応答が返されました。</string>

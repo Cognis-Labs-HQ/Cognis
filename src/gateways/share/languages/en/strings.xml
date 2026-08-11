@@ -4,6 +4,7 @@
   <string name="share.loading">Loading shared content…</string>
   <string name="share.error.invalid_token">This share link is invalid or has expired.</string>
   <string name="share.error.keyring_locked">The share was unlocked, but its password could not be saved to your keyring.</string>
+  <string name="share.error.invalid_password">The share password is incorrect.</string>
   <string name="share.error.missing_token">No share token was provided.</string>
   <string name="share.error.not_found">This share link is invalid or has expired.</string>
   <string name="share.error.malformed_response">This shared item returned an invalid response.</string>

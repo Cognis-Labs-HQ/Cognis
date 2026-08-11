@@ -107,3 +107,7 @@ Berbagi Rapat kini tetap dapat diselesaikan di seluruh instans rapat dan sesi ya
 ## Berbagi pengguna tetap dalam sesi akun
 
 Berbagi langsung kepada pengguna kini mengirim tujuan buram dari penyedia konten kepada penerima yang ditentukan dan tidak pernah mengekspos URL berbagi publik atau membuat sesi tamu. Berbagi tautan mempertahankan siklus tautan publik dan akses tamunya secara mandiri.
+
+## Terapkan akses berbagi aktif
+
+Kata sandi berbagi yang salah kini menampilkan kesalahan dan dapat langsung dicoba kembali. Berbagi pengguna yang dilindungi dibuka sebelum konten ditampilkan, entri halaman Berbagi memakai gerbang akses yang sama dengan notifikasi, dan pencabutan berbagi tautan atau pengguna segera mengeluarkan penerima dari konten aktif.

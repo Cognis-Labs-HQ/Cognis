@@ -94,7 +94,7 @@ function createIconButton({ shareId, action, label, destructive = false }) {
 function renderShareRow(share, direction, i18n, rowTemplate) {
     const row = rowTemplate.content.firstElementChild.cloneNode(true);
     const shareId = String(share?.id ?? "");
-    const shareUrl = String(share?.shareUrl ?? "");
+    const shareUrl = String(share?.actionUrl || share?.shareUrl || "");
     const label = String(
         share?.label || share?.resourceType || share?.id || "",
     );
@@ -383,9 +383,12 @@ export async function mount(root, { signal } = {}) {
             );
             if (accountShareLink instanceof HTMLAnchorElement) {
                 event.preventDefault();
-                await navigateAccountShare(
-                    accountShareLink.dataset.accountShareUrl,
+                const share = [...overview.sent, ...overview.received].find(
+                    (entry) =>
+                        String(entry.id) ===
+                        accountShareLink.closest("tr")?.dataset.shareId,
                 );
+                await navigateAccountShare(share);
                 return;
             }
             const filter = event.target.closest("[data-share-filter]");
@@ -479,6 +482,15 @@ export async function mount(root, { signal } = {}) {
         { signal },
     );
     await composer.init();
+    const requestedShareId = new URL(window.location.href).searchParams.get(
+        "open",
+    );
+    if (requestedShareId) {
+        const requestedShare = overview.received.find(
+            (share) => String(share.id) === requestedShareId,
+        );
+        if (requestedShare) await navigateAccountShare(requestedShare);
+    }
 }
 
 await mountWhenDirect(mount);

@@ -416,6 +416,7 @@ export async function registerShareBootstrapHooks(input: {
                 label?: string;
                 shareUrl?: string;
                 destinationUrl?: string;
+                actionUrl?: string;
                 metadata?: Record<string, string> | null;
                 accessControls?: {
                     recipients?: Array<{ type?: string; id?: string }>;
@@ -446,8 +447,8 @@ export async function registerShareBootstrapHooks(input: {
                 >("notify:dispatch");
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
-                const destinationUrl = String(
-                    shareRecord?.destinationUrl ?? shareRecord?.shareUrl ?? "",
+                const actionUrl = String(
+                    shareRecord?.actionUrl ?? shareRecord?.shareUrl ?? "",
                 ).trim();
                 await Promise.allSettled(
                     userRecipients.map((recipientUsername) =>
@@ -456,7 +457,7 @@ export async function registerShareBootstrapHooks(input: {
                             recipientUsername,
                             subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
                             body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
-                            actionUrl: destinationUrl || undefined,
+                            actionUrl: actionUrl || undefined,
                             senderName: "Cognis Share",
                             metadata: {
                                 shareId: (shareRecord as { id?: string })?.id,

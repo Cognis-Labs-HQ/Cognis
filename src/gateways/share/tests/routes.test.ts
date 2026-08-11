@@ -584,6 +584,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             contentUrl: "/meetings?meeting=meeting-1",
             supportsReadOnly: true,
             recipients: [{ type: "user", id: "bob" }],
+            password: "recipient-secret",
         },
     );
     assert.equal(restrictedCreateResponse.statusCode, 200);
@@ -640,14 +641,40 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ["bob", "charlie"],
     );
     assert.equal(userShareNotifications[0]?.category, "share");
-    assert.equal(
-        userShareNotifications[0]?.actionUrl,
-        "/meetings?meeting=meeting-1",
+    assert.match(
+        String(userShareNotifications[0]?.actionUrl ?? ""),
+        /^\/shares\?open=/,
     );
     assert.equal(restrictedCreateResponse.body.data.shareMethod, "user");
     assert.equal(restrictedCreateResponse.body.data.shareUrl, "");
     assert.equal(
         restrictedCreateResponse.body.data.destinationUrl,
+        "/meetings?meeting=meeting-1",
+    );
+    const lockedAccountShare = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/share/account/${encodeURIComponent(restrictedCreateResponse.body.data.id)}/resolve`,
+        {},
+    );
+    assert.equal(lockedAccountShare.statusCode, 401);
+    assert.equal(lockedAccountShare.body.error.code, "invalid_password");
+    const wrongAccountPassword = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/share/account/${encodeURIComponent(restrictedCreateResponse.body.data.id)}/resolve`,
+        { password: "wrong" },
+    );
+    assert.equal(wrongAccountPassword.statusCode, 401);
+    const unlockedAccountShare = await dispatchJson(
+        "POST",
+        bobToken,
+        `/api/v1/share/account/${encodeURIComponent(restrictedCreateResponse.body.data.id)}/resolve`,
+        { password: "recipient-secret" },
+    );
+    assert.equal(unlockedAccountShare.statusCode, 200);
+    assert.equal(
+        unlockedAccountShare.body.data.destinationUrl,
         "/meetings?meeting=meeting-1",
     );
     const deleteAlternateResponse = await dispatchJson(

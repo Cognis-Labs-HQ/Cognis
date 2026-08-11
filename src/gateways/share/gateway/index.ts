@@ -3,6 +3,7 @@ import {
     ShareTokenStore,
     generateSharePassword,
     isExpired,
+    verifySharePassword,
     type ShareAccessControls,
     type ShareTokenRecord,
 } from "./store.js";
@@ -173,6 +174,11 @@ export class CoreShareGateway {
         const destinationUrl = publicLink
             ? shareUrl
             : this.buildAbsoluteUrl(String(record.metadata?.contentUrl ?? ""));
+        const actionUrl = publicLink
+            ? shareUrl
+            : this.buildAbsoluteUrl(
+                  `/shares?open=${encodeURIComponent(record.id)}`,
+              );
         const resolveVariants = this.resolveCapability<
             (input: {
                 resourceType: string;
@@ -216,6 +222,7 @@ export class CoreShareGateway {
             lastAccessedAt: record.lastAccessedAt,
             shareUrl,
             destinationUrl,
+            actionUrl,
             shareMethod: adapter?.id ?? "link",
             variants,
             emailSupported:
@@ -431,6 +438,47 @@ export class CoreShareGateway {
         return matchingRecord
             ? { authorized: true, shareId: matchingRecord.id }
             : { authorized: false };
+    }
+
+    async resolveAccountShare(input: {
+        shareId: string;
+        accountId: string;
+        password?: string | null;
+    }): Promise<
+        | { resolved: true; destinationUrl: string; passwordProtected: boolean }
+        | { resolved: false; reason: string }
+    > {
+        const record = await this.store.getById(input.shareId);
+        if (!record || this.isTokenExpired(record)) {
+            return { resolved: false, reason: "not_found" };
+        }
+        const adapter = this.resolveRecordAdapter(record);
+        const accountId = input.accountId.trim();
+        const allowed =
+            record.ownerAccountId === accountId ||
+            record.accessControls.recipients.some(
+                (recipient) =>
+                    recipient.type === "user" && recipient.id === accountId,
+            );
+        if (adapter?.delivery !== "account" || !allowed) {
+            return { resolved: false, reason: "forbidden" };
+        }
+        if (
+            record.passwordHash &&
+            !verifySharePassword(
+                String(input.password ?? ""),
+                record.passwordHash,
+            )
+        ) {
+            return { resolved: false, reason: "invalid_password" };
+        }
+        return {
+            resolved: true,
+            destinationUrl: this.buildAbsoluteUrl(
+                String(record.metadata?.contentUrl ?? ""),
+            ),
+            passwordProtected: Boolean(record.passwordHash),
+        };
     }
 
     async deleteToken(input: {
