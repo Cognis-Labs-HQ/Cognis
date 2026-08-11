@@ -111,3 +111,7 @@ Berbagi langsung kepada pengguna kini mengirim tujuan buram dari penyedia konten
 ## Buka berbagi pengguna terlindungi
 
 Notifikasi berbagi pengguna yang dilindungi kata sandi kini membuka halaman akses khusus akun, meminta dan memverifikasi kata sandi berbagi, lalu melanjutkan ke Papan Tulis atau Kalender tanpa mengganti sesi akun penerima.
+
+## Pulihkan tautan halaman Berbagi
+
+Judul berbagi kini membuka tujuan akses yang ditetapkan, termasuk rute berbagi pengguna khusus akun, dan setiap berbagi pengguna ditandai sebagai “Berbagi Pengguna” di kolom hubungan baik saat dikirim maupun diterima.
