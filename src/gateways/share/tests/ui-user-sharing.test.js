@@ -229,6 +229,9 @@ test("selected recipient badges track the pending permission", () => {
 });
 
 test("logged-in share recipients keep their account session", () => {
+    assert.ok(
+        sessionFlowSource.includes("/^\\/share\\/(?:account\\/)?([^/]+)$/"),
+    );
     assert.match(sessionFlowSource, /if \(shareData\.directAccess === true\)/);
     assert.match(
         sessionFlowSource,

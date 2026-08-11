@@ -173,6 +173,11 @@ export class CoreShareGateway {
         const destinationUrl = publicLink
             ? shareUrl
             : this.buildAbsoluteUrl(String(record.metadata?.contentUrl ?? ""));
+        const accessUrl = publicLink
+            ? shareUrl
+            : this.buildAbsoluteUrl(
+                  `/share/account/${encodeURIComponent(record.tokenValue)}`,
+              );
         const resolveVariants = this.resolveCapability<
             (input: {
                 resourceType: string;
@@ -216,6 +221,7 @@ export class CoreShareGateway {
             lastAccessedAt: record.lastAccessedAt,
             shareUrl,
             destinationUrl,
+            accessUrl,
             shareMethod: adapter?.id ?? "link",
             variants,
             emailSupported:

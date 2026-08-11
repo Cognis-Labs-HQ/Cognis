@@ -107,3 +107,7 @@ Berbagi Rapat kini tetap dapat diselesaikan di seluruh instans rapat dan sesi ya
 ## Berbagi pengguna tetap dalam sesi akun
 
 Berbagi langsung kepada pengguna kini mengirim tujuan buram dari penyedia konten kepada penerima yang ditentukan dan tidak pernah mengekspos URL berbagi publik atau membuat sesi tamu. Berbagi tautan mempertahankan siklus tautan publik dan akses tamunya secara mandiri.
+
+## Buka berbagi pengguna terlindungi
+
+Notifikasi berbagi pengguna yang dilindungi kata sandi kini membuka halaman akses khusus akun, meminta dan memverifikasi kata sandi berbagi, lalu melanjutkan ke Papan Tulis atau Kalender tanpa mengganti sesi akun penerima.

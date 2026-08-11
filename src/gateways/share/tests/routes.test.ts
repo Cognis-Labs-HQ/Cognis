@@ -279,7 +279,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         uiRegistry.listSpaRoutes().find((route) => route.id === "share-view"),
         {
             id: "share-view",
-            pattern: "^/share/[^/]+$",
+            pattern: "^/share/(?:account/)?[^/]+$",
             base: "/share",
             scriptUrl: "/static/gateways/share/ui/app/index.js",
             stylesheets: [
@@ -584,6 +584,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             contentUrl: "/meetings?meeting=meeting-1",
             supportsReadOnly: true,
             recipients: [{ type: "user", id: "bob" }],
+            password: "recipient-secret",
         },
     );
     assert.equal(restrictedCreateResponse.statusCode, 200);
@@ -640,9 +641,9 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ["bob", "charlie"],
     );
     assert.equal(userShareNotifications[0]?.category, "share");
-    assert.equal(
-        userShareNotifications[0]?.actionUrl,
-        "/meetings?meeting=meeting-1",
+    assert.match(
+        String(userShareNotifications[0]?.actionUrl ?? ""),
+        /^\/share\/account\//,
     );
     assert.equal(restrictedCreateResponse.body.data.shareMethod, "user");
     assert.equal(restrictedCreateResponse.body.data.shareUrl, "");
@@ -650,6 +651,43 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         restrictedCreateResponse.body.data.destinationUrl,
         "/meetings?meeting=meeting-1",
     );
+    const restrictedToken = encodeURIComponent(
+        restrictedCreateResponse.body.data.accessUrl.split(
+            "/share/account/",
+        )[1],
+    );
+    const lockedRecipientResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            headers: { authorization: `Bearer ${bobToken}` },
+        }),
+        lockedRecipientResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
+    );
+    assert.equal(lockedRecipientResponse.statusCode, 401);
+
+    const unlockedRecipientResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({
+            method: "GET",
+            headers: {
+                authorization: `Bearer ${bobToken}`,
+                "x-cognis-share-password": "recipient-secret",
+            },
+        }),
+        unlockedRecipientResponse,
+        new URL(`http://localhost/api/v1/share/resolve/${restrictedToken}`),
+    );
+    const unlockedRecipient = JSON.parse(
+        unlockedRecipientResponse.payload,
+    ).data;
+    assert.equal(unlockedRecipientResponse.statusCode, 200);
+    assert.equal(unlockedRecipient.directAccess, true);
+    assert.equal(unlockedRecipient.contentUrl, "/meetings?meeting=meeting-1");
+    assert.equal(unlockedRecipient.guestAccessToken, "");
     const deleteAlternateResponse = await dispatchJson(
         "DELETE",
         adminToken,
@@ -663,7 +701,8 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 notification.subject === "A shared item was revoked",
         ),
     );
-    assert.equal(deliveredShares.length, 0);
+    assert.equal(deliveredShares.length, 1);
+    assert.equal(deliveredShares[0]?.recipientAccountId, "bob");
 
     const restrictedShareId = String(restrictedCreateResponse.body.data.id);
     const overviewResponse = await dispatchJson(
