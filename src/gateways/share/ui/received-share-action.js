@@ -5,7 +5,7 @@ import { navigateTo } from "/static/reuse/app-router.js";
 function sharePathFromActionUrl(actionUrl) {
     const url = new URL(actionUrl, window.location.origin);
     return url.origin === window.location.origin &&
-        /^\/share\/(?:account\/)?[^/]+$/.test(url.pathname)
+        /^\/share\/[^/]+$/.test(url.pathname)
         ? `${url.pathname}${url.search}${url.hash}`
         : "";
 }

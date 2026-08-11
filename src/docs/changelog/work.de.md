@@ -107,11 +107,3 @@ Besprechungsfreigaben bleiben nun über Besprechungsinstanzen und beendete Sitzu
 ## Benutzerfreigaben bleiben in Kontositzungen
 
 Direkte Benutzerfreigaben übermitteln nun das undurchsichtige Ziel des Inhaltsanbieters an den benannten Empfänger und legen weder eine öffentliche Freigabe-URL offen noch erstellen sie eine Gastsitzung. Linkfreigaben behalten ihren unabhängigen Ablauf für öffentliche Links und Gastzugriff.
-
-## Geschützte Benutzerfreigaben entsperren
-
-Benachrichtigungen für passwortgeschützte Benutzerfreigaben öffnen nun eine kontogebundene Zugriffsseite, fordern das Freigabepasswort an, prüfen es und führen anschließend zum Whiteboard oder Kalender weiter, ohne die Kontositzung des Empfängers zu ersetzen.
-
-## Links auf der Freigabeseite wiederherstellen
-
-Freigabetitel öffnen nun ihr festgelegtes Zugriffsziel, einschließlich kontogebundener Routen für Benutzerfreigaben. Zudem wird jede Benutzerfreigabe in der Beziehungsspalte als „Benutzerfreigabe“ bezeichnet, unabhängig davon, ob sie gesendet oder empfangen wurde.

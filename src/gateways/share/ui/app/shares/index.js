@@ -55,16 +55,17 @@ function relationshipCell(share, direction, i18n) {
     const badge = document.createElement("span");
     badge.className = `shares-type shares-type--${direction}`;
     const detail = document.createElement("span");
-    const isUserShare = share?.shareMethod === "user";
-    badge.textContent = i18n.t(
-        isUserShare ? "share.shares.user_badge" : "share.shares.link_badge",
-    );
     if (direction === "received") {
+        badge.textContent = i18n.t("share.shares.received_badge");
         detail.textContent = String(
             share?.ownerDisplayName || share?.ownerAccountId || "",
         );
     } else {
         const recipients = shareRecipients(share);
+        const isUserShare = recipients.length > 0;
+        badge.textContent = i18n.t(
+            isUserShare ? "share.shares.user_badge" : "share.shares.link_badge",
+        );
         detail.textContent = isUserShare
             ? recipients
                   .map((recipient) => recipient.label || recipient.id)
@@ -93,7 +94,7 @@ function createIconButton({ shareId, action, label, destructive = false }) {
 function renderShareRow(share, direction, i18n, rowTemplate) {
     const row = rowTemplate.content.firstElementChild.cloneNode(true);
     const shareId = String(share?.id ?? "");
-    const shareUrl = String(share?.accessUrl || share?.shareUrl || "");
+    const shareUrl = String(share?.shareUrl ?? "");
     const label = String(
         share?.label || share?.resourceType || share?.id || "",
     );
@@ -102,7 +103,7 @@ function renderShareRow(share, direction, i18n, rowTemplate) {
     titleLink.className = "shares-title-link";
     titleLink.href = shareUrl;
     titleLink.textContent = label;
-    if (share?.shareMethod === "user") {
+    if (shareRecipients(share).length > 0) {
         titleLink.dataset.accountShareUrl = shareUrl;
     }
     row.querySelector("[data-share-title]").appendChild(titleLink);

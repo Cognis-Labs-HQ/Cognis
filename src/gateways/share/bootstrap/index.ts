@@ -211,7 +211,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     uiHooks.registerStaticDir("share", GATEWAY_ROOT);
     uiHooks.registerSpaRoute({
         id: "share-view",
-        pattern: "^/share/(?:account/)?[^/]+$",
+        pattern: "^/share/[^/]+$",
         base: "/share",
         scriptUrl: "/static/gateways/share/ui/app/index.js",
         stylesheets: [

@@ -416,7 +416,6 @@ export async function registerShareBootstrapHooks(input: {
                 label?: string;
                 shareUrl?: string;
                 destinationUrl?: string;
-                accessUrl?: string;
                 metadata?: Record<string, string> | null;
                 accessControls?: {
                     recipients?: Array<{ type?: string; id?: string }>;
@@ -447,8 +446,8 @@ export async function registerShareBootstrapHooks(input: {
                 >("notify:dispatch");
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
-                const accessUrl = String(
-                    shareRecord?.accessUrl ?? shareRecord?.shareUrl ?? "",
+                const destinationUrl = String(
+                    shareRecord?.destinationUrl ?? shareRecord?.shareUrl ?? "",
                 ).trim();
                 await Promise.allSettled(
                     userRecipients.map((recipientUsername) =>
@@ -457,7 +456,7 @@ export async function registerShareBootstrapHooks(input: {
                             recipientUsername,
                             subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
                             body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
-                            actionUrl: accessUrl || undefined,
+                            actionUrl: destinationUrl || undefined,
                             senderName: "Cognis Share",
                             metadata: {
                                 shareId: (shareRecord as { id?: string })?.id,
@@ -497,28 +496,12 @@ export async function registerShareBootstrapHooks(input: {
                 ).requesterClaims?.sub ?? "",
             ).trim();
             const inspectedRecord = await input.gateway.inspectToken(token);
-            const requesterClaims = (
-                stageCtx.input as {
-                    requesterClaims?: { sub?: unknown } | null;
-                }
-            ).requesterClaims;
-            const accountDelivery =
-                inspectedRecord &&
-                input.gateway.resolveRecordAdapter(inspectedRecord)
-                    ?.delivery === "account";
-            if (
-                accountDelivery &&
-                !shareRecipientsAllowRequester(inspectedRecord, requesterClaims)
-            ) {
-                return { valid: false, reason: "recipient_restricted" };
-            }
-            const requesterOwnsPublicShare = Boolean(
-                !accountDelivery &&
+            const requesterOwnsShare = Boolean(
                 inspectedRecord &&
                 requesterAccountId &&
                 requesterAccountId === inspectedRecord.ownerAccountId,
             );
-            const tokenRecord = requesterOwnsPublicShare
+            const tokenRecord = requesterOwnsShare
                 ? inspectedRecord
                 : await input.gateway.resolveToken(
                       token,
@@ -530,6 +513,17 @@ export async function registerShareBootstrapHooks(input: {
                 }
                 return { valid: false, reason: "invalid_token" };
             }
+            if (
+                input.gateway.resolveRecordAdapter(tokenRecord)?.delivery !==
+                "public"
+            ) {
+                return { valid: false, reason: "account_share_not_public" };
+            }
+            const requesterClaims = (
+                stageCtx.input as {
+                    requesterClaims?: { sub?: unknown } | null;
+                }
+            ).requesterClaims;
             if (!shareRecipientsAllowRequester(tokenRecord, requesterClaims)) {
                 return { valid: false, reason: "recipient_restricted" };
             }

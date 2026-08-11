@@ -229,9 +229,6 @@ test("selected recipient badges track the pending permission", () => {
 });
 
 test("logged-in share recipients keep their account session", () => {
-    assert.ok(
-        sessionFlowSource.includes("/^\\/share\\/(?:account\\/)?([^/]+)$/"),
-    );
     assert.match(sessionFlowSource, /if \(shareData\.directAccess === true\)/);
     assert.match(
         sessionFlowSource,
@@ -324,7 +321,6 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareActionSource, /event\.defaultPrevented/);
     assert.match(receivedShareActionSource, /event\.preventDefault\(\)/);
     assert.match(receivedShareActionSource, /navigateTo\(sharePath\)/);
-    assert.match(receivedShareActionSource, /\(\?:account\\\/\)\?\[\^\/\]\+\$/);
     assert.doesNotMatch(receivedShareActionSource, /resolveReceivedShare/);
     assert.doesNotMatch(receivedShareActionSource, /invalid_token/);
     assert.match(receivedShareSource, /response\.status !== 401/);

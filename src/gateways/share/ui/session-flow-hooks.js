@@ -131,9 +131,7 @@ function resolveShareTokenFromRoute(routePath) {
         String(routePath ?? window.location.href),
         window.location.origin,
     );
-    const pathnameMatch = routeUrl.pathname.match(
-        /^\/share\/(?:account\/)?([^/]+)$/,
-    );
+    const pathnameMatch = routeUrl.pathname.match(/^\/share\/([^/]+)$/);
     if (pathnameMatch) return decodeURIComponent(pathnameMatch[1]);
     return String(routeUrl.searchParams.get("token") ?? "").trim();
 }

@@ -107,11 +107,3 @@ Meeting shares now remain resolvable across meeting instances and ended sessions
 ## User shares stay in account sessions
 
 Direct user shares now deliver the content provider’s opaque destination to the named recipient and never expose a public share URL or mint a guest session. Link shares retain their independent public-link and guest-access lifecycle.
-
-## Unlock protected user shares
-
-Password-protected user-share notifications now open an account-only access page, request and verify the share password, and then continue to the Whiteboard or Calendar while preserving the recipient’s account session.
-
-## Restore Shares page links
-
-Share titles now open their declared access destination, including account-only user-share routes, and every user share is identified as “User Share” in the relationship column whether it was sent or received.
