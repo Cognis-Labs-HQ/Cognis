@@ -123,3 +123,7 @@ Share revocation checks now use one visibility-aware monitor instead of repeated
 ## Reuse saved share passwords
 
 Password-protected user shares now store and retrieve their password using the same stable `share:<share-id>` keyring identifier, so opening the share again does not prompt after the password has been saved.
+
+## Suspend hidden Whiteboards
+
+Whiteboard presence polling and realtime sockets now suspend while their tab is hidden and resume with a fresh connection when it becomes visible. Collaboration script loading also times out cleanly, preventing stalled external requests from leaving reloads spinning indefinitely.

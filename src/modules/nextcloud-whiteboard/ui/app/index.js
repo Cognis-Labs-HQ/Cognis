@@ -100,6 +100,7 @@ function setOverlayVisible(visible, message = "") {
 function teardownCanvas() {
     if (socketInstance) {
         try {
+            socketInstance.cognisCleanup?.();
             socketInstance.disconnect();
         } catch (error) {
             console.warn(
@@ -157,7 +158,21 @@ function connectSocket(io, session, canvas) {
         transports: ["websocket"],
         reconnectionDelay: 1000,
         reconnectionDelayMax: RECONNECT_MAX_DELAY_MS,
+        closeOnBeforeunload: true,
     });
+    const handleVisibilityChange = () => {
+        if (document.hidden) {
+            socket.disconnect();
+        } else if (!socket.connected) {
+            socket.connect();
+        }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    socket.cognisCleanup = () =>
+        document.removeEventListener(
+            "visibilitychange",
+            handleVisibilityChange,
+        );
     let joinedRoom = false;
     let isDedicatedSyncer = false;
     const persistChanges = debounce(async (elements) => {

@@ -31,9 +31,21 @@ export function loadSocketIo(serverUrl, failureMessage) {
         }
         const origin = new URL(serverUrl).origin;
         const script = document.createElement("script");
+        const timeout = window.setTimeout(() => {
+            script.remove();
+            reject(new Error(failureMessage));
+        }, 10_000);
+        script.async = true;
         script.src = `${origin}/socket.io/socket.io.js`;
-        script.onload = () => resolve(window.io);
-        script.onerror = () => reject(new Error(failureMessage));
+        script.onload = () => {
+            window.clearTimeout(timeout);
+            resolve(window.io);
+        };
+        script.onerror = () => {
+            window.clearTimeout(timeout);
+            script.remove();
+            reject(new Error(failureMessage));
+        };
         document.head.appendChild(script);
     });
 }

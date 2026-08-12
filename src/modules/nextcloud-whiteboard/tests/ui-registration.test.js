@@ -393,3 +393,18 @@ test("nextcloud whiteboard entrusts its internal URL to the share popup", async 
         /contentUrl: `\/whiteboard\?id=\$\{encodeURIComponent\(activeBoard\.id\)\}`/,
     );
 });
+
+test("whiteboard suspends realtime work while its tab is hidden", async () => {
+    const [appSource, realtimeSource] = await Promise.all(
+        ["../ui/app/index.js", "../ui/app/realtime.js"].map((relativePath) =>
+            import("node:fs/promises").then((fs) =>
+                fs.readFile(new URL(relativePath, import.meta.url), "utf8"),
+            ),
+        ),
+    );
+    assert.match(appSource, /document\.hidden[\s\S]*socket\.disconnect\(\)/);
+    assert.match(appSource, /socket\.connect\(\)/);
+    assert.match(appSource, /socketInstance\.cognisCleanup\?\.\(\)/);
+    assert.match(realtimeSource, /window\.setTimeout[\s\S]*10_000/);
+    assert.match(realtimeSource, /script\.remove\(\)/);
+});

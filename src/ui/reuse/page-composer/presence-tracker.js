@@ -349,8 +349,13 @@ export function createPresenceTracker({
             else markInactive?.();
         });
         handleVisibilityChange = () => {
-            if (document.visibilityState === "hidden") markInactive?.();
-            else {
+            if (document.visibilityState === "hidden") {
+                heartbeatPoller?.stop();
+                refreshPoller?.stop();
+                markInactive?.();
+            } else {
+                heartbeatPoller?.start();
+                refreshPoller?.start();
                 heartbeatPoller?.markActivity();
                 refreshPoller?.trigger();
                 void sendPresence(true).then(refresh);

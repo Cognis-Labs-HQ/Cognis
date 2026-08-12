@@ -123,3 +123,7 @@ Pemeriksaan pencabutan berbagi kini memakai satu pemantau yang sadar visibilitas
 ## Gunakan kembali kata sandi berbagi tersimpan
 
 Berbagi pengguna yang dilindungi kata sandi kini menyimpan dan mengambil kata sandinya dengan pengenal gantungan kunci stabil yang sama, `share:<share-id>`, sehingga pembukaan berikutnya tidak meminta kata sandi setelah disimpan.
+
+## Jeda Papan Tulis tersembunyi
+
+Polling kehadiran dan soket waktu nyata Papan Tulis kini dijeda saat tab tersembunyi dan dilanjutkan dengan koneksi baru ketika tab terlihat kembali. Pemuatan skrip kolaborasi juga memiliki batas waktu yang bersih agar permintaan eksternal yang macet tidak membuat pemuatan ulang berputar tanpa akhir.

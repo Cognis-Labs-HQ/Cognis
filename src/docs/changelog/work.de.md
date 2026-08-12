@@ -123,3 +123,7 @@ Prüfungen auf widerrufene Freigaben verwenden nun einen einzigen sichtbarkeitsa
 ## Gespeicherte Freigabepasswörter wiederverwenden
 
 Passwortgeschützte Benutzerfreigaben speichern und laden ihr Passwort nun mit derselben stabilen Schlüsselbundkennung `share:<share-id>`, sodass beim erneuten Öffnen keine Abfrage erfolgt, nachdem das Passwort gespeichert wurde.
+
+## Ausgeblendete Whiteboards anhalten
+
+Anwesenheitsabfragen und Echtzeit-Sockets von Whiteboards werden nun angehalten, solange ihr Tab ausgeblendet ist, und beim erneuten Anzeigen mit einer frischen Verbindung fortgesetzt. Das Laden des Kollaborationsskripts läuft außerdem kontrolliert ab, damit blockierte externe Anfragen Neuladevorgänge nicht endlos laufen lassen.
