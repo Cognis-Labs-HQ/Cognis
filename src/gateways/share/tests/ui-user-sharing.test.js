@@ -337,7 +337,7 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(receivedShareSource, /if \(useAccountKeyring\)/);
     assert.match(
         receivedShareSource,
-        /promptForPassword\(\{ allowSave: useAccountKeyring \}\)/,
+        /allowSave: useAccountKeyring && keyringUnlocked/,
     );
 });
 
@@ -361,7 +361,7 @@ test("received user shares navigate once through the share session flow", () => 
     assert.doesNotMatch(receivedShareActionSource, /resolveReceivedShare/);
     assert.doesNotMatch(receivedShareActionSource, /invalid_token/);
     assert.match(receivedShareSource, /response\.status !== 401/);
-    assert.match(receivedShareSource, /await promptForPassword\(\)/);
+    assert.match(receivedShareSource, /await promptForPassword\(\{/);
     assert.match(receivedShareSource, /while \(response\.status === 401\)/);
     assert.match(receivedShareSource, /share\.error\.invalid_password/);
     assert.match(statusMonitorSource, /ACTIVE_POLL_INTERVAL_MS = 5_000/);
@@ -397,6 +397,14 @@ test("received user shares navigate once through the share session flow", () => 
         /response\.ok && entered\.saveToKeyring[\s\S]*keyring\?\.set\(keyringId/,
     );
     assert.match(receivedShareSource, /keyring:requestUnlock/);
+    assert.match(
+        receivedShareSource,
+        /allowSave: useAccountKeyring && keyringUnlocked/,
+    );
+    assert.match(
+        receivedShareSource,
+        /promptForPassword\(\{ allowSave: keyringUnlocked \}\)/,
+    );
     assert.match(
         sessionFlowSource,
         /useAccountKeyring: hasValidatedAccountSession/,

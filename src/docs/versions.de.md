@@ -37,7 +37,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.8`  |
 | Dateikontingent       | `src/adapters/file/quota/`          | `1.0.6`  |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.6`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.31` |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.32` |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.8`  |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.6`  |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`  |
@@ -51,7 +51,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.49` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.44` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.45` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.23` |
 | User Share            | `src/adapters/share/user/`          | `1.1.16` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -65,7 +65,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`  |
 | Authentication (auth) | `src/gateways/auth/`          | `1.7.45` |
-| Share                 | `src/gateways/share/`         | `1.6.89` |
+| Share                 | `src/gateways/share/`         | `1.6.90` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
 | Social                | `src/gateways/social/`        | `1.2.11` |

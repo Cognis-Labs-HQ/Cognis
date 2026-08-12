@@ -131,3 +131,7 @@ Polling kehadiran dan soket waktu nyata Papan Tulis kini dijeda saat tab tersemb
 ## Minta akses gantungan kunci hanya saat diperlukan
 
 Navigasi SPA tidak lagi membuka gantungan kunci secara spekulatif. Berbagi akun terlebih dahulu memeriksa apakah akses memerlukan kata sandi dan hanya meminta akses gantungan kunci untuk berbagi terlindungi tersebut, dengan tujuan akses Berbagi dan pengenal berbagi ditampilkan dalam permintaan.
+
+## Minta akses keyring hanya saat diperlukan
+
+Kontribusi pengaturan Keyring tidak lagi menjadwalkan permintaan buka kunci saat dirender, sehingga pemuatan Dasbor atau navigasi antarhalaman tidak dapat memicu permintaan umum. Dialog kata sandi berbagi terlindungi kini hanya menawarkan penyimpanan ke keyring setelah pembukaan kunci berkonteks berhasil.

@@ -131,3 +131,7 @@ Whiteboard presence polling and realtime sockets now suspend while their tab is 
 ## Request keyring access only when needed
 
 SPA navigation no longer unlocks the keyring speculatively. Account shares first check whether access requires a password and request keyring access only for that protected share, with the Shares access purpose and share identifier shown in the prompt.
+
+## Prompt for keyring access only on demand
+
+The Keyring settings contribution no longer schedules an unlock request when it renders, so loading the Dashboard or navigating between pages cannot trigger a generic prompt. Protected-share password dialogs now offer keyring storage only after a contextual keyring unlock succeeds.

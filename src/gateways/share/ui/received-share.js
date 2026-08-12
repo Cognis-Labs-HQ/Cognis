@@ -80,7 +80,10 @@ export async function fetchProtectedShareResource({ shareId, request }) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
-    await unlockKeyringForShare(i18n, normalizedShareId);
+    const keyringUnlocked = await unlockKeyringForShare(
+        i18n,
+        normalizedShareId,
+    );
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         "Share Gateway",
     );
@@ -89,7 +92,7 @@ export async function fetchProtectedShareResource({ shareId, request }) {
     let response = await request(storedPassword);
     if (response.status !== 401) return response;
 
-    const entered = await promptForPassword();
+    const entered = await promptForPassword({ allowSave: keyringUnlocked });
     if (!entered?.password) return response;
     response = await request(entered.password);
     if (response.ok && entered.saveToKeyring) {
@@ -134,11 +137,16 @@ export async function resolveReceivedShare(
     };
     let response = await request(null);
     if (response.status !== 401) return response;
+    let keyringUnlocked = false;
     if (useAccountKeyring) {
         const shareI18n = await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         });
-        if (await unlockKeyringForShare(shareI18n, normalizedToken)) {
+        keyringUnlocked = await unlockKeyringForShare(
+            shareI18n,
+            normalizedToken,
+        );
+        if (keyringUnlocked) {
             const keyringPassword = keyring?.get(keyringId);
             if (keyringPassword) {
                 response = await request(keyringPassword);
@@ -148,7 +156,9 @@ export async function resolveReceivedShare(
     }
     let entered = null;
     while (response.status === 401) {
-        entered = await promptForPassword({ allowSave: useAccountKeyring });
+        entered = await promptForPassword({
+            allowSave: useAccountKeyring && keyringUnlocked,
+        });
         if (!entered?.password) return null;
         response = await request(entered.password);
         if (response.status === 401) {
@@ -226,7 +236,11 @@ export async function resolveAccountShare(shareId) {
     if (response.status !== 401) {
         return response.ok ? response.json() : response;
     }
-    if (await unlockKeyringForShare(i18n, normalizedShareId)) {
+    const keyringUnlocked = await unlockKeyringForShare(
+        i18n,
+        normalizedShareId,
+    );
+    if (keyringUnlocked) {
         const storedPassword = keyring?.get(keyringId);
         if (storedPassword) {
             response = await request(storedPassword);
@@ -236,7 +250,7 @@ export async function resolveAccountShare(shareId) {
         }
     }
     while (response.status === 401) {
-        const entered = await promptForPassword({ allowSave: true });
+        const entered = await promptForPassword({ allowSave: keyringUnlocked });
         if (!entered?.password) return null;
         response = await request(entered.password);
         if (response.status === 401) {

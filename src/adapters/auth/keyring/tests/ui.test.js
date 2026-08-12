@@ -7,6 +7,10 @@ import { resolve } from "node:path";
 const values = new Map();
 const sessionValues = new Map();
 const indexedDbValues = new Map();
+const settingsSource = readFileSync(
+    resolve(import.meta.dirname, "../ui/settings.js"),
+    "utf8",
+);
 Object.defineProperty(globalThis, "crypto", {
     configurable: true,
     value: webcrypto,
@@ -67,6 +71,11 @@ globalThis.indexedDB = {
         return request;
     },
 };
+
+test("keyring settings do not schedule an unlock prompt while rendering", () => {
+    assert.doesNotMatch(settingsSource, /defer-page-action/);
+    assert.match(settingsSource, /#settings-keyring-toggle/);
+});
 let unlockPromptCount = 0;
 let lastUnlockPrompt = null;
 

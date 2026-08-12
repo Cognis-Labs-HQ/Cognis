@@ -131,3 +131,7 @@ Anwesenheitsabfragen und Echtzeit-Sockets von Whiteboards werden nun angehalten,
 ## Schlüsselbundzugriff nur bei Bedarf anfordern
 
 Die SPA-Navigation entsperrt den Schlüsselbund nicht mehr vorsorglich. Benutzerfreigaben prüfen zuerst, ob ein Passwort erforderlich ist, und fordern Schlüsselbundzugriff nur für diese geschützte Freigabe an; dabei werden der Zugriffszweck der Freigabe und ihre Kennung im Dialog angezeigt.
+
+## Schlüsselbundzugriff nur bei Bedarf anfordern
+
+Der Schlüsselbund-Beitrag in den Einstellungen plant beim Rendern keine Entsperranfrage mehr ein. Dadurch kann das Laden des Dashboards oder die Navigation zwischen Seiten keine allgemeine Abfrage auslösen. Passwortdialoge für geschützte Freigaben bieten die Speicherung im Schlüsselbund nur noch an, nachdem eine kontextbezogene Entsperrung erfolgreich war.
