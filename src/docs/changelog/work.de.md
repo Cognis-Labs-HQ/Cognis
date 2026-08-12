@@ -155,3 +155,7 @@ Aktive Präsenzaktualisierungen laufen nun höchstens alle 2,5 Sekunden und Hear
 ## Bestehende und geschützte Kontofreigaben abgesichert
 
 Bestehende Freigaben werden bei Upgrades in die Ressourcenregistrierung übernommen. Passwortgeschützte Kontofreigaben erfordern nun vor dem Anbieterzugriff eine dauerhafte serverseitige Entsperrung, entfernte Ablaufdaten bleiben entfernt und die Widerrufsabfrage endet nach der Navigation.
+
+## Geteilte Kalender und aktive Meeting-Links wiederhergestellt
+
+Benutzerkalenderfreigaben werden sofort in den Kalender der empfangenden Person übertragen und über das vom Anbieter verwaltete Ziel aufgelöst. Aktive über Links geteilte Meetings übernehmen keinen veralteten Beendet-Status mehr und Versionszusammenfassungen bleiben während Gastsitzungen verborgen.

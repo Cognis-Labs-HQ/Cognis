@@ -155,3 +155,7 @@ Active presence refreshes now run no faster than every 2.5 seconds and heartbeat
 ## Hardened existing and protected account shares
 
 Existing shares are migrated to the resource registry during upgrades. Password-protected account shares now require a durable server-side unlock before provider access, cleared expirations are preserved, and revocation polling stops after navigation.
+
+## Restored shared calendars and active meeting links
+
+User calendar shares are delivered immediately into the recipient calendar and resolve through the provider-owned destination. Active link-shared meetings no longer inherit a stale closed state, and release summaries remain hidden throughout guest sessions.

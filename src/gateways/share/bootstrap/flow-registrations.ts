@@ -445,14 +445,76 @@ export async function registerShareBootstrapHooks(input: {
                         metadata?: Record<string, unknown>;
                     }) => Promise<unknown>
                 >("notify:dispatch");
+            const deliverUserShare = input.gateway.getCapability<
+                (delivery: {
+                    resourceType: string;
+                    shareId: string;
+                    resourceId: string;
+                    ownerAccountId: string;
+                    recipientAccountId: string;
+                    grantedCapabilities: string[];
+                    expiresAt: string;
+                }) => Promise<{ navigationUrl?: string } | null>
+            >(`share:deliverUserShare:${shareRecord?.resourceType ?? ""}`);
+            const deliveries =
+                issued?.minted &&
+                shareRecord?.metadata?.adapterId === "user" &&
+                deliverUserShare
+                    ? await Promise.all(
+                          userRecipients.map(async (recipientAccountId) => ({
+                              recipientAccountId,
+                              result: await deliverUserShare({
+                                  shareId: String(
+                                      (shareRecord as { id?: string })?.id ??
+                                          "",
+                                  ),
+                                  resourceType: String(
+                                      shareRecord?.resourceType ?? "",
+                                  ),
+                                  resourceId: String(
+                                      shareRecord?.resourceId ?? "",
+                                  ),
+                                  ownerAccountId: String(
+                                      shareRecord?.ownerAccountId ?? "",
+                                  ),
+                                  recipientAccountId,
+                                  grantedCapabilities: Array.isArray(
+                                      (
+                                          shareRecord as {
+                                              grantedCapabilities?: string[];
+                                          }
+                                      )?.grantedCapabilities,
+                                  )
+                                      ? (
+                                            shareRecord as {
+                                                grantedCapabilities: string[];
+                                            }
+                                        ).grantedCapabilities
+                                      : [],
+                                  expiresAt: String(
+                                      (shareRecord as { expiresAt?: string })
+                                          ?.expiresAt ?? "",
+                                  ),
+                              }),
+                          })),
+                      )
+                    : [];
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
-                const actionUrl = String(
-                    shareRecord?.actionUrl ?? shareRecord?.shareUrl ?? "",
-                ).trim();
                 await Promise.allSettled(
-                    userRecipients.map((recipientUsername) =>
-                        dispatch({
+                    userRecipients.map((recipientUsername) => {
+                        const deliveryUrl = deliveries.find(
+                            (delivery) =>
+                                delivery.recipientAccountId ===
+                                recipientUsername,
+                        )?.result?.navigationUrl;
+                        const actionUrl = String(
+                            deliveryUrl ??
+                                shareRecord?.actionUrl ??
+                                shareRecord?.shareUrl ??
+                                "",
+                        ).trim();
+                        return dispatch({
                             category: "share",
                             recipientUsername,
                             subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
@@ -464,8 +526,8 @@ export async function registerShareBootstrapHooks(input: {
                                 resourceType: shareRecord?.resourceType,
                                 resourceId: shareRecord?.resourceId,
                             },
-                        }),
-                    ),
+                        });
+                    }),
                 );
             }
             return {

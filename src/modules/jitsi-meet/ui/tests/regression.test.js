@@ -727,6 +727,13 @@ test("meeting shares use the Cognis route and skip account setup", () => {
     assert.match(appSource, /if \(!inShareView\) \{[\s\S]*bindShareButton/);
 });
 
+test("active link-shared meetings ignore a stale closed state", () => {
+    const apiSource = readJitsiApiBundle();
+    assert.match(apiSource, /isActivelyOpen/);
+    assert.match(apiSource, /activeMeetings\.some/);
+    assert.match(apiSource, /endedAt: null/);
+});
+
 test("direct-account SPA shares mount the full Meetings page", () => {
     const appSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),

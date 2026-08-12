@@ -254,7 +254,15 @@ export function registerShareFlowHooks(ctx) {
             if (!meeting) {
                 return { resolved: false, reason: "resource_not_found" };
             }
-            const state = await store.getMeetingState(meeting.id);
+            const [storedState, activeMeetings] = await Promise.all([
+                store.getMeetingState(meeting.id),
+                store.listActiveMeetings(),
+            ]);
+            const state = activeMeetings.some(
+                (activeMeeting) => activeMeeting.id === meeting.id,
+            )
+                ? { ...storedState, endedAt: null }
+                : storedState;
             const ownerProfile = await profileStore
                 .getProfileByHandle(meeting.createdBy)
                 .catch(() => null);

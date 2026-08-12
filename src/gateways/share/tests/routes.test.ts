@@ -641,10 +641,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ["bob", "charlie"],
     );
     assert.equal(userShareNotifications[0]?.category, "share");
-    assert.match(
-        String(userShareNotifications[0]?.actionUrl ?? ""),
-        /^\/shares\?open=/,
-    );
+    assert.equal(userShareNotifications[0]?.actionUrl, "/meetings/shared");
     assert.equal(restrictedCreateResponse.body.data.shareMethod, "user");
     assert.equal(restrictedCreateResponse.body.data.shareUrl, "");
     assert.equal(
@@ -682,7 +679,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     assert.equal(unlockedAccountShare.statusCode, 200);
     assert.equal(
         unlockedAccountShare.body.data.destinationUrl,
-        "/meetings?meeting=meeting-1",
+        "/meetings/shared",
     );
     const deleteAlternateResponse = await dispatchJson(
         "DELETE",
@@ -697,7 +694,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
                 notification.subject === "A shared item was revoked",
         ),
     );
-    assert.equal(deliveredShares.length, 0);
+    assert.equal(deliveredShares.length, 3);
 
     const restrictedShareId = String(restrictedCreateResponse.body.data.id);
     const overviewResponse = await dispatchJson(

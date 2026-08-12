@@ -484,10 +484,37 @@ export class CoreShareGateway {
         if (record.passwordHash && !ownerAuthorized) {
             await this.store.grantAccountUnlock(record.id, accountId);
         }
+        const deliverUserShare = this.getCapability<
+            (delivery: {
+                resourceType: string;
+                shareId: string;
+                resourceId: string;
+                ownerAccountId: string;
+                recipientAccountId: string;
+                grantedCapabilities: string[];
+                expiresAt: string;
+            }) => Promise<{ navigationUrl?: string } | null>
+        >(`share:deliverUserShare:${record.resourceType}`);
+        const delivery =
+            !ownerAuthorized && deliverUserShare
+                ? await deliverUserShare({
+                      resourceType: record.resourceType,
+                      shareId: record.id,
+                      resourceId: record.resourceId,
+                      ownerAccountId: record.ownerAccountId,
+                      recipientAccountId: accountId,
+                      grantedCapabilities: record.grantedCapabilities,
+                      expiresAt: record.expiresAt,
+                  })
+                : null;
         return {
             resolved: true,
             destinationUrl: this.buildAbsoluteUrl(
-                String(record.metadata?.contentUrl ?? ""),
+                String(
+                    delivery?.navigationUrl ??
+                        record.metadata?.contentUrl ??
+                        "",
+                ),
             ),
             passwordProtected: Boolean(record.passwordHash),
         };

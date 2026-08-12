@@ -155,3 +155,7 @@ Penyegaran kehadiran aktif kini berjalan paling cepat setiap 2,5 detik dan penul
 ## Pengamanan berbagi akun lama dan terlindungi
 
 Berbagi yang sudah ada dimigrasikan ke registri sumber daya saat peningkatan. Berbagi akun yang dilindungi kata sandi kini memerlukan pembukaan kunci persisten di server sebelum akses penyedia, penghapusan kedaluwarsa dipertahankan, dan pemeriksaan pencabutan berhenti setelah navigasi.
+
+## Memulihkan kalender bersama dan tautan rapat aktif
+
+Berbagi kalender pengguna langsung dikirim ke kalender penerima dan dibuka melalui tujuan milik penyedia. Rapat aktif yang dibagikan melalui tautan tidak lagi mewarisi status ditutup yang lama, dan ringkasan rilis tetap disembunyikan selama sesi tamu.
