@@ -127,3 +127,7 @@ Password-protected user shares now store and retrieve their password using the s
 ## Suspend hidden Whiteboards
 
 Whiteboard presence polling and realtime sockets now suspend while their tab is hidden and resume with a fresh connection when it becomes visible. Collaboration script loading also times out cleanly, preventing stalled external requests from leaving reloads spinning indefinitely.
+
+## Request keyring access only when needed
+
+SPA navigation no longer unlocks the keyring speculatively. Account shares first check whether access requires a password and request keyring access only for that protected share, with the Shares access purpose and share identifier shown in the prompt.

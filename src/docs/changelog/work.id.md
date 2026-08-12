@@ -127,3 +127,7 @@ Berbagi pengguna yang dilindungi kata sandi kini menyimpan dan mengambil kata sa
 ## Jeda Papan Tulis tersembunyi
 
 Polling kehadiran dan soket waktu nyata Papan Tulis kini dijeda saat tab tersembunyi dan dilanjutkan dengan koneksi baru ketika tab terlihat kembali. Pemuatan skrip kolaborasi juga memiliki batas waktu yang bersih agar permintaan eksternal yang macet tidak membuat pemuatan ulang berputar tanpa akhir.
+
+## Minta akses gantungan kunci hanya saat diperlukan
+
+Navigasi SPA tidak lagi membuka gantungan kunci secara spekulatif. Berbagi akun terlebih dahulu memeriksa apakah akses memerlukan kata sandi dan hanya meminta akses gantungan kunci untuk berbagi terlindungi tersebut, dengan tujuan akses Berbagi dan pengenal berbagi ditampilkan dalam permintaan.

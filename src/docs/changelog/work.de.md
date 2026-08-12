@@ -127,3 +127,7 @@ Passwortgeschützte Benutzerfreigaben speichern und laden ihr Passwort nun mit d
 ## Ausgeblendete Whiteboards anhalten
 
 Anwesenheitsabfragen und Echtzeit-Sockets von Whiteboards werden nun angehalten, solange ihr Tab ausgeblendet ist, und beim erneuten Anzeigen mit einer frischen Verbindung fortgesetzt. Das Laden des Kollaborationsskripts läuft außerdem kontrolliert ab, damit blockierte externe Anfragen Neuladevorgänge nicht endlos laufen lassen.
+
+## Schlüsselbundzugriff nur bei Bedarf anfordern
+
+Die SPA-Navigation entsperrt den Schlüsselbund nicht mehr vorsorglich. Benutzerfreigaben prüfen zuerst, ob ein Passwort erforderlich ist, und fordern Schlüsselbundzugriff nur für diese geschützte Freigabe an; dabei werden der Zugriffszweck der Freigabe und ihre Kennung im Dialog angezeigt.

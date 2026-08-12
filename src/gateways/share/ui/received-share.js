@@ -208,7 +208,6 @@ export async function resolveAccountShare(shareId) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
-    await unlockKeyringForShare(i18n, normalizedShareId);
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         "Share Gateway",
     );
@@ -223,7 +222,19 @@ export async function resolveAccountShare(shareId) {
                 suppressAccessDeniedEvent: true,
             },
         );
-    let response = await request(keyring?.get(keyringId));
+    let response = await request(null);
+    if (response.status !== 401) {
+        return response.ok ? response.json() : response;
+    }
+    if (await unlockKeyringForShare(i18n, normalizedShareId)) {
+        const storedPassword = keyring?.get(keyringId);
+        if (storedPassword) {
+            response = await request(storedPassword);
+            if (response.status !== 401) {
+                return response.ok ? response.json() : response;
+            }
+        }
+    }
     while (response.status === 401) {
         const entered = await promptForPassword({ allowSave: true });
         if (!entered?.password) return null;
