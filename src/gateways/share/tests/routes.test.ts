@@ -659,6 +659,13 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     );
     assert.equal(lockedAccountShare.statusCode, 401);
     assert.equal(lockedAccountShare.body.error.code, "invalid_password");
+    const ownerAccountShare = await dispatchJson(
+        "POST",
+        adminToken,
+        `/api/v1/share/account/${encodeURIComponent(restrictedCreateResponse.body.data.id)}/resolve`,
+        {},
+    );
+    assert.equal(ownerAccountShare.statusCode, 200);
     const wrongAccountPassword = await dispatchJson(
         "POST",
         bobToken,

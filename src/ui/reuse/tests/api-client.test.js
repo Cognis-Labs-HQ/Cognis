@@ -6,6 +6,16 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const apiClientSource = readFileSync(
+    resolve(ROOT, "src/ui/reuse/api-client.js"),
+    "utf8",
+);
+
+test("API requests receive a finite default browser timeout", () => {
+    assert.match(apiClientSource, /API_REQUEST_TIMEOUT_MS = 30_000/);
+    assert.match(apiClientSource, /AbortSignal\?\.timeout\?\.\(timeoutMs\)/);
+    assert.match(apiClientSource, /AbortSignal\?\.any\?\.\(/);
+});
 
 function loadApiClientForTests({
     token = "test-token",

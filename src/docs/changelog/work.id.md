@@ -143,3 +143,7 @@ Polling ketersediaan kini berhenti saat tab tersembunyi serta menggabungkan peny
 ## Hentikan trafik kehadiran saat halaman tidak aktif
 
 Pelacak kehadiran kini menurunkan frekuensi dengan polling adaptif dan menghentikan semua permintaan berulang ketika pengguna tidak aktif, jendela kehilangan fokus, atau tab tersembunyi. Composer papan tulis mengikat pembersihan ke sinyal navigasinya sendiri agar navigasi SPA segera menghapus hook kehadiran, penunjuk, kanvas, dan waktu nyata tanpa memengaruhi mount berikutnya.
+
+## Pertahankan akses pemilik tanpa kata sandi dan batasi permintaan browser tertunda
+
+Pemilik terautentikasi dari berbagi pengguna yang dikirim ke akun kini dapat membuka berbagi miliknya tanpa memasukkan ulang kata sandi penerima; token akun pemilik tetap menjadi otoritas tanpa menyalin kata sandi ke keyring. Permintaan API browser dan lokalisasi kini memiliki tenggat, permintaan lokalisasi dan kehadiran bersamaan digabungkan, dan pembersihan navigasi membatalkan pekerjaan kehadiran yang masih berjalan.

@@ -17,6 +17,7 @@ const RETRYABLE_SERVER_STATUS_MESSAGE_REGEX = new RegExp(
     `\\b(${[...RETRYABLE_SERVER_STATUS_CODES].join("|")})\\b`,
 );
 const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS = 5_000;
+const API_REQUEST_TIMEOUT_MS = 30_000;
 const connectionRecoveryFailureMarker = Symbol("connectionRecoveryFailure");
 
 let connectionRecoveryPrompt = "";
@@ -114,6 +115,7 @@ export async function apiFetch(path, options = {}) {
     const {
         suppressAccessDeniedEvent = false,
         suppressConnectionRecoveryToast = false,
+        timeoutMs = API_REQUEST_TIMEOUT_MS,
         ...requestOptions
     } = options ?? {};
     const token = localStorage.getItem("cognis_access_token");
@@ -121,8 +123,19 @@ export async function apiFetch(path, options = {}) {
     if (token) {
         headers.set("authorization", `Bearer ${token}`);
     }
+    const timeoutSignal = globalThis.AbortSignal?.timeout?.(timeoutMs);
+    const signal = requestOptions.signal
+        ? (globalThis.AbortSignal?.any?.([
+              requestOptions.signal,
+              timeoutSignal,
+          ]) ?? requestOptions.signal)
+        : timeoutSignal;
     try {
-        const response = await fetch(path, { ...requestOptions, headers });
+        const response = await fetch(path, {
+            ...requestOptions,
+            headers,
+            signal,
+        });
         if (
             (response.status === 401 || response.status === 403) &&
             !suppressAccessDeniedEvent &&

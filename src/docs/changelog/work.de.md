@@ -143,3 +143,7 @@ Die Verfügbarkeitssynchronisierung pausiert nun in ausgeblendeten Tabs und fass
 ## Präsenzverkehr bei inaktiven Seiten stoppen
 
 Präsenz-Tracker reduzieren ihre Häufigkeit nun adaptiv und stoppen alle wiederkehrenden Anfragen, sobald der Benutzer inaktiv wird, das Fenster den Fokus verliert oder der Tab ausgeblendet ist. Whiteboard-Composer binden die Bereinigung an ihr eigenes Navigationssignal, sodass SPA-Navigation Präsenz-, Zeiger-, Zeichenflächen- und Echtzeit-Hooks sofort entfernt, ohne eine spätere Einbindung zu beeinflussen.
+
+## Eigentümerzugriff ohne Passwort und ausstehende Browseranfragen begrenzen
+
+Der authentifizierte Eigentümer einer kontogebundenen Benutzerfreigabe kann seine eigene Freigabe nun ohne erneute Eingabe des Empfängerpassworts auflösen; maßgeblich bleibt das Token des Eigentümerkontos, statt das Passwort in den Schlüsselbund zu kopieren. Browser-API- und Lokalisierungsanfragen haben nun endliche Fristen, gleichzeitige Lokalisierungs- und Präsenzanfragen werden zusammengefasst und die Navigationsbereinigung bricht verbleibende Präsenzanfragen ab.

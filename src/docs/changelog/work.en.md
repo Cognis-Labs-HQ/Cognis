@@ -143,3 +143,7 @@ Availability polling now pauses in hidden tabs and coalesces overlapping refresh
 ## Stop presence traffic when pages become inactive
 
 Presence trackers now wind down with adaptive polling and stop all recurring requests when the user becomes idle, the window loses focus, or the tab is hidden. Whiteboard composers bind teardown to their own navigation signal so SPA navigation immediately removes presence, pointer, canvas, and realtime hooks without affecting a later mount.
+
+## Keep owner access passwordless and bound pending browser requests
+
+The authenticated owner of an account-delivered user share can now resolve their own share without re-entering its recipient password; the owner account token remains the authority instead of copying the password into the keyring. Browser API and localization requests now have finite deadlines, concurrent localization and presence requests are coalesced, and navigation teardown aborts the remaining in-flight presence work.

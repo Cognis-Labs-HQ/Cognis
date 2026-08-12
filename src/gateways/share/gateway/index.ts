@@ -464,8 +464,10 @@ export class CoreShareGateway {
         if (adapter?.delivery !== "account" || !allowed) {
             return { resolved: false, reason: "forbidden" };
         }
+        const ownerAuthorized = record.ownerAccountId === accountId;
         if (
             record.passwordHash &&
+            !ownerAuthorized &&
             !verifySharePassword(
                 String(input.password ?? ""),
                 record.passwordHash,

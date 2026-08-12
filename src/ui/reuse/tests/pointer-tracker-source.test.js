@@ -68,6 +68,8 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     );
     assert.match(presenceSource, /destroy\(\{ notifyInactive: false \}\)/);
     assert.match(presenceSource, /requestAbortController\.abort\(\)/);
+    assert.match(presenceSource, /if \(!keepalive && presenceRequest\) return/);
+    assert.match(presenceSource, /if \(refreshRequest\) return refreshRequest/);
     assert.match(
         presenceSource,
         /subscribePresenceActivity[\s\S]*if \(active\)[\s\S]*heartbeatPoller\?\.start\(\{ immediate: true \}\)[\s\S]*refreshPoller\?\.start\(\)/,

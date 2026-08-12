@@ -174,6 +174,8 @@ export function createPresenceTracker({
     let lastPresenceSignature = "";
     let lastPresenceMarkupSignature = "";
     let unsubscribeActivity = null;
+    let presenceRequest = null;
+    let refreshRequest = null;
     const requestAbortController = new AbortController();
 
     function noteActivity() {
@@ -193,7 +195,8 @@ export function createPresenceTracker({
     async function sendPresence(active = true, { keepalive = false } = {}) {
         const resolvedPageId = currentPageId();
         if (destroyed || !enabled || !endpoint || !resolvedPageId) return null;
-        const response = await apiFetch(endpoint, {
+        if (!keepalive && presenceRequest) return presenceRequest;
+        const request = apiFetch(endpoint, {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -209,6 +212,9 @@ export function createPresenceTracker({
             keepalive,
             signal: keepalive ? undefined : requestAbortController.signal,
         }).catch(() => null);
+        if (!keepalive) presenceRequest = request;
+        const response = await request;
+        if (presenceRequest === request) presenceRequest = null;
         if (response?.status === 401 || response?.status === 403) {
             destroy({ notifyInactive: false });
         }
@@ -255,6 +261,14 @@ export function createPresenceTracker({
     }
 
     async function refresh() {
+        if (refreshRequest) return refreshRequest;
+        refreshRequest = runRefresh();
+        const changed = await refreshRequest;
+        refreshRequest = null;
+        return changed;
+    }
+
+    async function runRefresh() {
         placePresenceContainer();
         const resolvedPageId = currentPageId();
         if (!container || !enabled || !endpoint || !resolvedPageId) {
