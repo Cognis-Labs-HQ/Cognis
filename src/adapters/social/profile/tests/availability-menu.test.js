@@ -93,7 +93,10 @@ test("visible statuses, including the signed-in user, are polled", () => {
         /querySelector\([\s\S]+data-availability-handle[\s\S]+refreshAvailabilityIndicators/,
     );
     assert.doesNotMatch(availability, /data-availability-handle[^\n]+:not\(/);
-    assert.match(availability, /if \(document\.hidden\) return;/);
+    assert.match(
+        availability,
+        /if \(document\.hidden \|\| !locallyActive\) return;/,
+    );
     assert.match(availability, /if \(availabilityRefresh\) return/);
     assert.match(availability, /if \(!keepalive && presenceRequest\) return/);
 });

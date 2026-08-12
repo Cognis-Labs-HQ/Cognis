@@ -139,3 +139,7 @@ Kontribusi pengaturan Keyring tidak lagi menjadwalkan permintaan buka kunci saat
 ## Batasi pekerjaan latar dan permintaan yang macet
 
 Polling ketersediaan kini berhenti saat tab tersembunyi serta menggabungkan penyegaran dan heartbeat yang bertumpuk. Node dan Nginx menghentikan pekerjaan HTTP yang macet, PostgreSQL menerapkan batas waktu pernyataan, dan MariaDB membatasi antrean kueri agar dependensi bermasalah tidak menumpuk pekerjaan hingga halaman atau layanan tidak responsif.
+
+## Hentikan trafik kehadiran saat halaman tidak aktif
+
+Pelacak kehadiran kini menurunkan frekuensi dengan polling adaptif dan menghentikan semua permintaan berulang ketika pengguna tidak aktif, jendela kehilangan fokus, atau tab tersembunyi. Composer papan tulis mengikat pembersihan ke sinyal navigasinya sendiri agar navigasi SPA segera menghapus hook kehadiran, penunjuk, kanvas, dan waktu nyata tanpa memengaruhi mount berikutnya.

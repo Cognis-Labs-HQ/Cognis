@@ -952,6 +952,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             ),
         );
     }
+    if (signal?.aborted) return;
 
     const initialBoardId =
         activeShareContext?.payload?.whiteboardId ??
@@ -965,17 +966,7 @@ export async function mount(root, { signal, shareContext } = {}) {
         };
     }
 
-    signal?.addEventListener(
-        "abort",
-        () => {
-            composer?.destroy();
-            composer = null;
-            teardownCanvas();
-        },
-        { once: true },
-    );
-
-    composer = createPageComposer(root, {
+    const mountedComposer = createPageComposer(root, {
         allowCustomization: false,
         elements: buildElements(),
         preferenceKey: "nextcloud-whiteboard-layout",
@@ -1016,10 +1007,23 @@ export async function mount(root, { signal, shareContext } = {}) {
         requireAccountSession: !activeShareContext,
         signal,
     });
-    await composer.init();
+    composer = mountedComposer;
+    signal?.addEventListener(
+        "abort",
+        () => {
+            mountedComposer.destroy();
+            if (composer === mountedComposer) composer = null;
+            teardownCanvas();
+        },
+        { once: true },
+    );
+    await mountedComposer.init();
+    if (signal?.aborted) return;
 
     if (activeBoard) {
-        void openBoard(activeBoard).then(() => composer?.refreshPresence?.());
+        void openBoard(activeBoard).then(() => {
+            if (!signal?.aborted) mountedComposer.refreshPresence?.();
+        });
     } else if (integrationCanvasMode) {
         void createAndOpenBoard();
     }

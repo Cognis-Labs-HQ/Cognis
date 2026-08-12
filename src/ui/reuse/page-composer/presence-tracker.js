@@ -169,7 +169,6 @@ export function createPresenceTracker({
     let refreshPoller = null;
     let destroyed = false;
     let markInactive = null;
-    let handleVisibilityChange = null;
     let pointerTracker = null;
     let lastActivityAt = Date.now();
     let lastPresenceSignature = "";
@@ -340,30 +339,20 @@ export function createPresenceTracker({
             maxIntervalMs: HEARTBEAT_MAX_INTERVAL_MS,
             initialIntervalMs: HEARTBEAT_MIN_INTERVAL_MS,
         });
-        void sendPresence(true).then(refresh);
-        refreshPoller.start();
-        heartbeatPoller.start();
         markInactive = () => void sendPresence(false, { keepalive: true });
         unsubscribeActivity = subscribePresenceActivity(({ active }) => {
-            if (active) noteActivity();
-            else markInactive?.();
-        });
-        handleVisibilityChange = () => {
-            if (document.visibilityState === "hidden") {
+            if (active) {
+                noteActivity();
+                heartbeatPoller?.start({ immediate: true });
+                refreshPoller?.start();
+            } else {
                 heartbeatPoller?.stop();
                 refreshPoller?.stop();
                 markInactive?.();
-            } else {
-                heartbeatPoller?.start();
-                refreshPoller?.start();
-                heartbeatPoller?.markActivity();
-                refreshPoller?.trigger();
-                void sendPresence(true).then(refresh);
             }
-        };
+        });
         window.addEventListener("pagehide", markInactive);
         window.addEventListener("beforeunload", markInactive);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
     }
 
     function destroy({ notifyInactive = true } = {}) {
@@ -380,12 +369,6 @@ export function createPresenceTracker({
         if (markInactive) {
             window.removeEventListener("pagehide", markInactive);
             window.removeEventListener("beforeunload", markInactive);
-        }
-        if (handleVisibilityChange) {
-            document.removeEventListener(
-                "visibilitychange",
-                handleVisibilityChange,
-            );
         }
         onPresenceUpdate?.([], sessionId);
         requestAbortController.abort();

@@ -183,12 +183,12 @@ window.addEventListener("pagehide", () => {
 });
 
 window.setInterval(() => {
-    if (document.hidden) return;
+    if (document.hidden || !locallyActive) return;
     void reportPresenceActivity(locallyActive);
 }, PRESENCE_HEARTBEAT_INTERVAL_MS);
 
 window.setInterval(() => {
-    if (document.hidden) return;
+    if (document.hidden || !locallyActive) return;
     const hasVisibleUserAvailability = document.querySelector(
         "[data-availability-handle]",
     );

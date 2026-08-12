@@ -163,7 +163,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /resourceId:\s*activeBoard\.id/);
     assert.match(source, /supportsReadOnly:\s*true/);
     assert.match(source, /readOnly:\s*session\.canWrite !== true/);
-    assert.match(source, /composer\?\.destroy\(\)/);
+    assert.match(source, /mountedComposer\.destroy\(\)/);
     assert.match(
         source,
         /\/static\/gateways\/share\/ui\/reuse\/share-button\.js/,
@@ -407,4 +407,9 @@ test("whiteboard suspends realtime work while its tab is hidden", async () => {
     assert.match(appSource, /socketInstance\.cognisCleanup\?\.\(\)/);
     assert.match(realtimeSource, /window\.setTimeout[\s\S]*10_000/);
     assert.match(realtimeSource, /script\.remove\(\)/);
+    assert.match(
+        appSource,
+        /const mountedComposer = createPageComposer[\s\S]*signal\?\.addEventListener\([\s\S]*mountedComposer\.destroy\(\)/,
+    );
+    assert.match(appSource, /if \(signal\?\.aborted\) return/);
 });

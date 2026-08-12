@@ -139,3 +139,7 @@ Der Schlüsselbund-Beitrag in den Einstellungen plant beim Rendern keine Entsper
 ## Hintergrundarbeit und blockierte Anfragen begrenzen
 
 Die Verfügbarkeitssynchronisierung pausiert nun in ausgeblendeten Tabs und fasst überlappende Aktualisierungs- und Heartbeat-Anfragen zusammen. Node und Nginx beenden blockierte HTTP-Arbeit, PostgreSQL verwendet ein endliches Anweisungszeitlimit und MariaDB begrenzt die Warteschlange für Abfragen, damit eine fehlerhafte Abhängigkeit nicht so lange Arbeit ansammelt, bis Seite oder Dienst nicht mehr reagieren.
+
+## Präsenzverkehr bei inaktiven Seiten stoppen
+
+Präsenz-Tracker reduzieren ihre Häufigkeit nun adaptiv und stoppen alle wiederkehrenden Anfragen, sobald der Benutzer inaktiv wird, das Fenster den Fokus verliert oder der Tab ausgeblendet ist. Whiteboard-Composer binden die Bereinigung an ihr eigenes Navigationssignal, sodass SPA-Navigation Präsenz-, Zeiger-, Zeichenflächen- und Echtzeit-Hooks sofort entfernt, ohne eine spätere Einbindung zu beeinflussen.

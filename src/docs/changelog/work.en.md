@@ -139,3 +139,7 @@ The Keyring settings contribution no longer schedules an unlock request when it 
 ## Bound background work and stalled requests
 
 Availability polling now pauses in hidden tabs and coalesces overlapping refresh and heartbeat requests. Node and Nginx terminate stalled HTTP work, PostgreSQL applies a finite statement timeout, and MariaDB bounds its waiting query queue so an unhealthy dependency cannot accumulate work until the page or service becomes unresponsive.
+
+## Stop presence traffic when pages become inactive
+
+Presence trackers now wind down with adaptive polling and stop all recurring requests when the user becomes idle, the window loses focus, or the tab is hidden. Whiteboard composers bind teardown to their own navigation signal so SPA navigation immediately removes presence, pointer, canvas, and realtime hooks without affecting a later mount.
