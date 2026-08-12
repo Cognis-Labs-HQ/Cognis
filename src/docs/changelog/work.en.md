@@ -151,3 +151,7 @@ The authenticated owner of an account-delivered user share can now resolve their
 ## Reduce active Whiteboard presence traffic
 
 Active presence refreshes now run no faster than every 2.5 seconds and heartbeat writes no faster than every 10 seconds, with both winding down to 30 seconds when unchanged. Pointer updates are limited to one per second, and server last-seen timestamps no longer count as meaningful UI changes that keep adaptive polling at maximum speed.
+
+## Hardened existing and protected account shares
+
+Existing shares are migrated to the resource registry during upgrades. Password-protected account shares now require a durable server-side unlock before provider access, cleared expirations are preserved, and revocation polling stops after navigation.

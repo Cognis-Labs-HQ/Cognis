@@ -479,7 +479,9 @@ export function createShareRoutes(input: {
                     ...(body.clearPassword === true
                         ? { clearPassword: true }
                         : {}),
-                    ...(expiresAt ? { expiresAt } : {}),
+                    ...(typeof body.expiresAt === "string"
+                        ? { expiresAt }
+                        : {}),
                 };
                 flowResult = await input.flow.run("update-share-token", {
                     claims,

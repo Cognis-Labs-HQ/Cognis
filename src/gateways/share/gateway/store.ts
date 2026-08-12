@@ -350,6 +350,119 @@ export class ShareTokenStore {
                 { name: "updated_at", type: "text", notNull: true },
             ],
         });
+        await this.backfillResourceKeys();
+        await this.db.ensureTable({
+            name: "share_account_unlocks",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "share_id",
+                    type: "text",
+                    notNull: true,
+                    references: {
+                        table: "share_tokens",
+                        column: "id",
+                        onDelete: "CASCADE",
+                    },
+                },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "created_at", type: "text", notNull: true },
+            ],
+            uniqueKeys: [["share_id", "account_id"]],
+        });
+    }
+
+    private async backfillResourceKeys(): Promise<void> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+        });
+        for (const row of result.rows ?? []) {
+            if (String(row.resource_key ?? "").trim()) continue;
+            const resourceType = String(row.resource_type ?? "").trim();
+            const resourceId = String(row.resource_id ?? "").trim();
+            if (!resourceType || !resourceId) continue;
+            const metadata = parseJsonObject(row.metadata);
+            const contentUrl = String(metadata?.contentUrl ?? "").trim();
+            const resourceKey = createHash("sha256")
+                .update(`${resourceType}\u0000${resourceId}\u0000${contentUrl}`)
+                .digest("hex");
+            const existing = await this.db.executeCommand({
+                option: "SELECT",
+                table: "share_resources",
+                where: [{ column: "resource_key", value: resourceKey }],
+            });
+            if ((existing.rows ?? []).length === 0) {
+                await this.db.executeCommand({
+                    option: "INSERT",
+                    table: "share_resources",
+                    values: {
+                        resource_key: resourceKey,
+                        resource_type: resourceType,
+                        resource_id: resourceId,
+                        content_url: contentUrl,
+                        created_at: String(
+                            row.created_at ?? new Date().toISOString(),
+                        ),
+                    },
+                });
+            }
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "share_tokens",
+                set: { resource_key: resourceKey },
+                where: [{ column: "id", value: row.id }],
+            });
+        }
+    }
+
+    async grantAccountUnlock(
+        shareId: string,
+        accountId: string,
+    ): Promise<void> {
+        const id = createHash("sha256")
+            .update(`${shareId}\u0000${accountId}`)
+            .digest("hex");
+        const existing = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_account_unlocks",
+            where: [{ column: "id", value: id }],
+        });
+        if ((existing.rows ?? []).length > 0) return;
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "share_account_unlocks",
+            values: {
+                id,
+                share_id: shareId,
+                account_id: accountId,
+                created_at: new Date().toISOString(),
+            },
+        });
+    }
+
+    async hasAccountUnlock(
+        shareId: string,
+        accountId: string,
+    ): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_account_unlocks",
+            where: [
+                { column: "share_id", value: shareId },
+                { column: "account_id", value: accountId },
+            ],
+            limit: 1,
+        });
+        return (result.rows ?? []).length > 0;
+    }
+
+    async clearAccountUnlocks(shareId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "share_account_unlocks",
+            where: [{ column: "share_id", value: shareId }],
+        });
     }
 
     async issue(input: {
@@ -760,6 +873,9 @@ export class ShareTokenStore {
             },
             where: [{ column: "id", value: record.id }],
         });
+        if (input.password !== undefined || input.clearPassword) {
+            await this.clearAccountUnlocks(record.id);
+        }
         return this.getById(record.id);
     }
 

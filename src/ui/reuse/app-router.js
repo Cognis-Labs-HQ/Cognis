@@ -432,6 +432,7 @@ async function loadRoute(path) {
 
     const finishPageLoading = beginPageLoading();
     try {
+        window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
         if (_mountController) {
             _mountController.abort();
         }

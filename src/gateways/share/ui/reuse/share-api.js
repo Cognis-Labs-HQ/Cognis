@@ -141,7 +141,7 @@ export function buildShareTokenCallbacks({
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
                         label: String(label ?? "").trim() || undefined,
-                        expiresAt: String(expiresAt ?? "").trim() || undefined,
+                        expiresAt: String(expiresAt ?? "").trim(),
                         password: String(password ?? "").trim()
                             ? password
                             : undefined,

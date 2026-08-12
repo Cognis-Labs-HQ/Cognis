@@ -4,10 +4,18 @@ import { navigateTo } from "/static/reuse/app-router.js";
 import { resolveAccountShare } from "./received-share.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { showToast } from "/static/reuse/toast.js";
-import { watchShareStatus } from "./status-monitor.js";
+import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
 
 function monitorAccountShare(shareId) {
+    const stopOnNavigation = () => stopShareStatusWatch();
+    window.addEventListener("cognis:route-will-change", stopOnNavigation, {
+        once: true,
+    });
     watchShareStatus(shareId, async () => {
+        window.removeEventListener(
+            "cognis:route-will-change",
+            stopOnNavigation,
+        );
         const i18n = await createI18n({
             componentStringBaseUrls: ["/static/gateways/share/languages"],
         });

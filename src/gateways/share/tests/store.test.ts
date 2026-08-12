@@ -10,6 +10,10 @@ import { ShareTokenStore } from "../gateway/store.js";
 class MemoryExecutor {
     public readonly tableDefs: StructuredDbTableDef[] = [];
     public readonly rows = new Map<string, Record<string, unknown>>();
+    public readonly auxiliaryRows = new Map<
+        string,
+        Map<string, Record<string, unknown>>
+    >();
 
     async ensureTable(def: StructuredDbTableDef): Promise<void> {
         this.tableDefs.push(def);
@@ -18,38 +22,44 @@ class MemoryExecutor {
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult> {
-        if (command.table !== "share_tokens") {
-            return { rows: [] };
-        }
+        const rows =
+            command.table === "share_tokens"
+                ? this.rows
+                : (this.auxiliaryRows.get(command.table) ??
+                  new Map<string, Record<string, unknown>>());
+        this.auxiliaryRows.set(command.table, rows);
         if (command.option === "INSERT") {
-            this.rows.set(String(command.values.id), { ...command.values });
+            const key = String(
+                command.values.id ?? command.values.resource_key ?? "",
+            );
+            rows.set(key, { ...command.values });
             return { rowCount: 1 };
         }
         if (command.option === "SELECT") {
-            const entries = Array.from(this.rows.values()).filter((row) =>
+            const entries = Array.from(rows.values()).filter((row) =>
                 this.matchesWhere(row, command.where ?? []),
             );
             return { rows: entries };
         }
         if (command.option === "UPDATE") {
             let rowCount = 0;
-            for (const [key, row] of this.rows.entries()) {
+            for (const [key, row] of rows.entries()) {
                 if (this.matchesWhere(row, command.where ?? [])) {
-                    this.rows.set(key, { ...row, ...command.set });
+                    rows.set(key, { ...row, ...command.set });
                     rowCount += 1;
                 }
             }
             return { rowCount };
         }
         if (command.option === "DELETE") {
-            const beforeSize = this.rows.size;
-            for (const [key, row] of this.rows.entries()) {
+            const beforeSize = rows.size;
+            for (const [key, row] of rows.entries()) {
                 const matches = this.matchesWhere(row, command.where ?? []);
                 if (matches) {
-                    this.rows.delete(key);
+                    rows.delete(key);
                 }
             }
-            return { rowCount: beforeSize - this.rows.size };
+            return { rowCount: beforeSize - rows.size };
         }
         return { rowCount: 0 };
     }
@@ -109,6 +119,38 @@ test("share token schema declares resource and token columns", async () => {
     assert.ok(columnNames.includes("token_hash"));
     assert.ok(columnNames.includes("password_hash"));
     assert.ok(columnNames.includes("access_controls"));
+});
+
+test("schema upgrade backfills resource keys for existing shares", async () => {
+    const executor = new MemoryExecutor();
+    executor.rows.set("legacy-share", {
+        id: "legacy-share",
+        resource_key: "",
+        resource_type: "meeting",
+        resource_id: "meeting-1",
+        metadata: JSON.stringify({ contentUrl: "/meetings?meeting=meeting-1" }),
+        created_at: "2026-01-01T00:00:00.000Z",
+    });
+    const store = new ShareTokenStore(executor as never);
+
+    await store.ensureSchema();
+
+    const resourceKey = String(executor.rows.get("legacy-share")?.resource_key);
+    assert.match(resourceKey, /^[a-f0-9]{64}$/);
+    assert.ok(executor.auxiliaryRows.get("share_resources")?.has(resourceKey));
+});
+
+test("account unlock grants are scoped to a share and account", async () => {
+    const executor = new MemoryExecutor();
+    const store = new ShareTokenStore(executor as never);
+    await store.ensureSchema();
+
+    assert.equal(await store.hasAccountUnlock("share-1", "bob"), false);
+    await store.grantAccountUnlock("share-1", "bob");
+    assert.equal(await store.hasAccountUnlock("share-1", "bob"), true);
+    assert.equal(await store.hasAccountUnlock("share-1", "alice"), false);
+    await store.clearAccountUnlocks("share-1");
+    assert.equal(await store.hasAccountUnlock("share-1", "bob"), false);
 });
 
 test("issue, list, resolve, and delete share tokens", async () => {

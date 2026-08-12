@@ -427,18 +427,24 @@ export class CoreShareGateway {
             resourceType: input.resourceType,
             resourceId: input.resourceId,
         });
-        const matchingRecord = records.find(
-            (record) =>
+        for (const record of records) {
+            const recipientAuthorized =
                 !isExpired(record) &&
                 record.grantedCapabilities.includes(input.requiredCapability) &&
                 record.accessControls.recipients.some(
                     (recipient) =>
                         recipient.type === "user" && recipient.id === accountId,
-                ),
-        );
-        return matchingRecord
-            ? { authorized: true, shareId: matchingRecord.id }
-            : { authorized: false };
+                );
+            if (!recipientAuthorized) continue;
+            if (
+                record.passwordHash &&
+                !(await this.store.hasAccountUnlock(record.id, accountId))
+            ) {
+                continue;
+            }
+            return { authorized: true, shareId: record.id };
+        }
+        return { authorized: false };
     }
 
     async resolveAccountShare(input: {
@@ -474,6 +480,9 @@ export class CoreShareGateway {
             )
         ) {
             return { resolved: false, reason: "invalid_password" };
+        }
+        if (record.passwordHash && !ownerAuthorized) {
+            await this.store.grantAccountUnlock(record.id, accountId);
         }
         return {
             resolved: true,

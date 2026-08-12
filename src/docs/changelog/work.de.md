@@ -151,3 +151,7 @@ Der authentifizierte Eigentümer einer kontogebundenen Benutzerfreigabe kann sei
 ## Aktiven Whiteboard-Präsenzverkehr reduzieren
 
 Aktive Präsenzaktualisierungen laufen nun höchstens alle 2,5 Sekunden und Heartbeat-Schreibvorgänge höchstens alle 10 Sekunden; ohne Änderungen verlangsamen sich beide auf 30 Sekunden. Zeigeraktualisierungen sind auf eine pro Sekunde begrenzt und serverseitige Zeitstempel der letzten Aktivität gelten nicht mehr als bedeutsame UI-Änderungen, die adaptives Polling dauerhaft auf Höchstgeschwindigkeit halten.
+
+## Bestehende und geschützte Kontofreigaben abgesichert
+
+Bestehende Freigaben werden bei Upgrades in die Ressourcenregistrierung übernommen. Passwortgeschützte Kontofreigaben erfordern nun vor dem Anbieterzugriff eine dauerhafte serverseitige Entsperrung, entfernte Ablaufdaten bleiben entfernt und die Widerrufsabfrage endet nach der Navigation.
