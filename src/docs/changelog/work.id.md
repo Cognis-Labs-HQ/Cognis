@@ -115,3 +115,7 @@ Kata sandi berbagi yang salah kini menampilkan kesalahan dan dapat langsung dico
 ## Stabilkan tindakan entri berbagi
 
 Notifikasi berbagi pengguna tanpa perlindungan membuka kontennya secara langsung, entri terlindungi mengonsumsi tindakan satu kali di halaman Berbagi sebelum meminta kata sandi, dan pembukaan yang berhasil memakai rute aplikasi internal. Pengiriman berbagi pengguna duplikat kini melaporkan konflik atau memperbarui berbagi yang ada saat pengaturannya berubah.
+
+## Jaga tab jangka panjang tetap responsif
+
+Pemeriksaan pencabutan berbagi kini memakai satu pemantau yang sadar visibilitas, bukan polling berulang setiap setengah detik. Tab latar belakang menjeda pemeriksaan jaringan dan langsung memvalidasi saat difokuskan kembali, sehingga halaman berbagi yang berjalan lama tidak menghabiskan sumber daya peramban atau server.

@@ -115,3 +115,7 @@ Falsche Freigabepasswörter zeigen nun einen Fehler und können sofort erneut ei
 ## Aktionen für Freigabeeinträge stabilisieren
 
 Benachrichtigungen für ungeschützte Benutzerfreigaben öffnen ihren Inhalt direkt, geschützte Einträge verbrauchen ihre einmalige Aktion auf der Freigabeseite vor der Passwortabfrage und erfolgreiche Entsperrungen verwenden die interne App-Route. Doppelte Benutzerfreigaben melden nun den Konflikt oder aktualisieren die vorhandene Freigabe, wenn sich deren Einstellungen geändert haben.
+
+## Lang laufende Tabs reaktionsfähig halten
+
+Prüfungen auf widerrufene Freigaben verwenden nun einen einzigen sichtbarkeitsabhängigen Monitor anstelle wiederholter Abfragen im Halbsekundentakt. Hintergrund-Tabs pausieren Netzwerkprüfungen und validieren beim erneuten Fokussieren sofort, damit lang laufende Freigabeseiten weder Browser- noch Serverressourcen erschöpfen.

@@ -115,3 +115,7 @@ Incorrect share passwords now show an error and can be retried immediately. Prot
 ## Stabilize share entry actions
 
 Unprotected user-share notifications open their content directly, protected entries consume their one-time Shares-page action before prompting, and successful unlocks navigate using the internal app route. Duplicate user-share submissions now report the conflict or update the existing share when its settings changed.
+
+## Keep long-lived tabs responsive
+
+Share revocation checks now use one visibility-aware monitor instead of repeated half-second polling. Background tabs pause network checks and validate immediately when focused again, preventing long-running share pages from exhausting browser or server resources.

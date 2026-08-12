@@ -37,6 +37,10 @@ const receivedShareSource = await readFile(
     new URL("../ui/received-share.js", import.meta.url),
     "utf8",
 );
+const statusMonitorSource = await readFile(
+    new URL("../ui/status-monitor.js", import.meta.url),
+    "utf8",
+);
 const shareAppSource = await readFile(
     new URL("../ui/app/index.js", import.meta.url),
     "utf8",
@@ -360,10 +364,11 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /await promptForPassword\(\)/);
     assert.match(receivedShareSource, /while \(response\.status === 401\)/);
     assert.match(receivedShareSource, /share\.error\.invalid_password/);
-    assert.match(
-        receivedShareActionSource,
-        /api\/v1\/share\/status[\s\S]*setTimeout\(poll, 500\)/,
-    );
+    assert.match(statusMonitorSource, /ACTIVE_POLL_INTERVAL_MS = 5_000/);
+    assert.match(statusMonitorSource, /document\.hidden/);
+    assert.match(statusMonitorSource, /visibilitychange/);
+    assert.match(receivedShareActionSource, /watchShareStatus/);
+    assert.match(sessionFlowSource, /watchShareStatus/);
     assert.match(receivedShareSource, /keyring:forComponent/);
     assert.match(receivedShareSource, /share\.unlock\.keyring_label/);
     assert.match(receivedShareSource, /"Share Gateway"/);
@@ -404,7 +409,7 @@ test("share resolution uses the authenticated API client without treating passwo
     );
     assert.match(sessionFlowSource, /listenForShareRevocation/);
     assert.match(sessionFlowSource, /shareId: String\(shareData\.shareId/);
-    assert.match(sessionFlowSource, /\/api\/v1\/share\/status\//);
+    assert.match(statusMonitorSource, /\/api\/v1\/share\/status\//);
     assert.match(sessionFlowSource, /startShareStatusMonitor/);
 });
 

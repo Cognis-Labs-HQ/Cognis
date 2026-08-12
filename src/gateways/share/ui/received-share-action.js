@@ -2,32 +2,20 @@
 
 import { navigateTo } from "/static/reuse/app-router.js";
 import { resolveAccountShare } from "./received-share.js";
-import { apiFetch } from "/static/reuse/api-client.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { showToast } from "/static/reuse/toast.js";
-
-let accountShareMonitor = null;
+import { watchShareStatus } from "./status-monitor.js";
 
 function monitorAccountShare(shareId) {
-    if (accountShareMonitor) clearTimeout(accountShareMonitor);
-    const poll = async () => {
-        const response = await apiFetch(
-            `/api/v1/share/status/${encodeURIComponent(shareId)}`,
-            { suppressAccessDeniedEvent: true },
-        ).catch(() => null);
-        if (response && !response.ok) {
-            const i18n = await createI18n({
-                componentStringBaseUrls: ["/static/gateways/share/languages"],
-            });
-            showToast(i18n.t("share.error.access_denied"), {
-                variant: "error",
-            });
-            await navigateTo("/shares");
-            return;
-        }
-        accountShareMonitor = setTimeout(poll, 500);
-    };
-    accountShareMonitor = setTimeout(poll, 500);
+    watchShareStatus(shareId, async () => {
+        const i18n = await createI18n({
+            componentStringBaseUrls: ["/static/gateways/share/languages"],
+        });
+        showToast(i18n.t("share.error.access_denied"), {
+            variant: "error",
+        });
+        await navigateTo("/shares");
+    });
 }
 
 function sharePathFromActionUrl(actionUrl) {

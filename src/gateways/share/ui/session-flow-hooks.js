@@ -49,6 +49,7 @@ import {
     listenForShareRevocation,
     publishShareRevoked,
 } from "./session-events.js";
+import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
@@ -61,28 +62,15 @@ const ACCESS_DENIED_TOKEN_KEY = "cognis_share_access_denied_token";
 let activeGuestSession = null;
 let activeShareSession = null;
 let accessDeniedNavigationPending = false;
-let shareStatusTimer = null;
 
 function stopShareStatusMonitor() {
-    if (shareStatusTimer) clearTimeout(shareStatusTimer);
-    shareStatusTimer = null;
+    stopShareStatusWatch();
 }
 
 function startShareStatusMonitor(shareId) {
     stopShareStatusMonitor();
     if (!shareId) return;
-    const poll = async () => {
-        const response = await apiFetch(
-            `/api/v1/share/status/${encodeURIComponent(shareId)}`,
-            { suppressAccessDeniedEvent: true },
-        ).catch(() => null);
-        if (response && !response.ok) {
-            publishShareRevoked(shareId);
-            return;
-        }
-        shareStatusTimer = setTimeout(poll, 500);
-    };
-    shareStatusTimer = setTimeout(poll, 500);
+    watchShareStatus(shareId, () => publishShareRevoked(shareId));
 }
 
 window.addEventListener("cognis:api-access-denied", () => {
