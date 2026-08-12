@@ -59,8 +59,15 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(presenceSource, /createAdaptivePoller/);
     assert.match(presenceSource, /mountedParent/);
     assert.match(presenceSource, /#page-presence-section/);
-    assert.match(presenceSource, /const REFRESH_MIN_INTERVAL_MS = 250/);
-    assert.match(presenceSource, /const REFRESH_MAX_INTERVAL_MS = 5000/);
+    assert.match(presenceSource, /HEARTBEAT_MIN_INTERVAL_MS = 10_000/);
+    assert.match(presenceSource, /HEARTBEAT_MAX_INTERVAL_MS = 30_000/);
+    assert.match(presenceSource, /REFRESH_MIN_INTERVAL_MS = 2_500/);
+    assert.match(presenceSource, /REFRESH_MAX_INTERVAL_MS = 30_000/);
+    assert.match(pointerSource, /POINTER_SEND_THROTTLE_MS = 1_000/);
+    assert.match(
+        presenceSource,
+        /createPresenceSignature[\s\S]*entry\.sessionId,\s*entry\.active,/,
+    );
     assert.match(presenceSource, /function isRecentlyActive\(\)/);
     assert.match(
         presenceSource,

@@ -24,7 +24,7 @@ import { uiCtx } from "./ui-ctx.js";
 
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
-const POINTER_SEND_THROTTLE_MS = 120;
+const POINTER_SEND_THROTTLE_MS = 1_000;
 
 function normalizeStyle(value) {
     return POINTER_STYLES.includes(value) ? value : "mouse";

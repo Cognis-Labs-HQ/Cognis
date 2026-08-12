@@ -147,3 +147,7 @@ Präsenz-Tracker reduzieren ihre Häufigkeit nun adaptiv und stoppen alle wieder
 ## Eigentümerzugriff ohne Passwort und ausstehende Browseranfragen begrenzen
 
 Der authentifizierte Eigentümer einer kontogebundenen Benutzerfreigabe kann seine eigene Freigabe nun ohne erneute Eingabe des Empfängerpassworts auflösen; maßgeblich bleibt das Token des Eigentümerkontos, statt das Passwort in den Schlüsselbund zu kopieren. Browser-API- und Lokalisierungsanfragen haben nun endliche Fristen, gleichzeitige Lokalisierungs- und Präsenzanfragen werden zusammengefasst und die Navigationsbereinigung bricht verbleibende Präsenzanfragen ab.
+
+## Aktiven Whiteboard-Präsenzverkehr reduzieren
+
+Aktive Präsenzaktualisierungen laufen nun höchstens alle 2,5 Sekunden und Heartbeat-Schreibvorgänge höchstens alle 10 Sekunden; ohne Änderungen verlangsamen sich beide auf 30 Sekunden. Zeigeraktualisierungen sind auf eine pro Sekunde begrenzt und serverseitige Zeitstempel der letzten Aktivität gelten nicht mehr als bedeutsame UI-Änderungen, die adaptives Polling dauerhaft auf Höchstgeschwindigkeit halten.

@@ -147,3 +147,7 @@ Pelacak kehadiran kini menurunkan frekuensi dengan polling adaptif dan menghenti
 ## Pertahankan akses pemilik tanpa kata sandi dan batasi permintaan browser tertunda
 
 Pemilik terautentikasi dari berbagi pengguna yang dikirim ke akun kini dapat membuka berbagi miliknya tanpa memasukkan ulang kata sandi penerima; token akun pemilik tetap menjadi otoritas tanpa menyalin kata sandi ke keyring. Permintaan API browser dan lokalisasi kini memiliki tenggat, permintaan lokalisasi dan kehadiran bersamaan digabungkan, dan pembersihan navigasi membatalkan pekerjaan kehadiran yang masih berjalan.
+
+## Kurangi trafik kehadiran aktif Whiteboard
+
+Penyegaran kehadiran aktif kini berjalan paling cepat setiap 2,5 detik dan penulisan heartbeat paling cepat setiap 10 detik; keduanya melambat hingga 30 detik saat tidak ada perubahan. Pembaruan penunjuk dibatasi satu per detik, dan stempel waktu terakhir terlihat dari server tidak lagi dianggap sebagai perubahan UI bermakna yang mempertahankan polling adaptif pada kecepatan maksimum.

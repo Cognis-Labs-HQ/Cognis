@@ -32,10 +32,10 @@ import { escapeHtml } from "../escape-html.js";
 import { createPointerTracker } from "../pointer-tracker.js";
 import { createAdaptivePoller } from "../adaptive-poller.js";
 
-const HEARTBEAT_MIN_INTERVAL_MS = 2500;
-const HEARTBEAT_MAX_INTERVAL_MS = 5000;
-const REFRESH_MIN_INTERVAL_MS = 250;
-const REFRESH_MAX_INTERVAL_MS = 5000;
+const HEARTBEAT_MIN_INTERVAL_MS = 10_000;
+const HEARTBEAT_MAX_INTERVAL_MS = 30_000;
+const REFRESH_MIN_INTERVAL_MS = 2_500;
+const REFRESH_MAX_INTERVAL_MS = 30_000;
 const ACTIVE_WINDOW_MS = 15000;
 const IDLE_AFTER_MS = 30000;
 export const PRESENCE_ACTIVITY_EVENT = "cognis:presence-activity-change";
@@ -235,7 +235,6 @@ export function createPresenceTracker({
             .map((entry) =>
                 [
                     entry.sessionId,
-                    entry.lastSeenAt,
                     entry.active,
                     entry.pointer?.updatedAt,
                     entry.avatarKey ?? "",

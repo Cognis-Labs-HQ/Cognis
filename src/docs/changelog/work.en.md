@@ -147,3 +147,7 @@ Presence trackers now wind down with adaptive polling and stop all recurring req
 ## Keep owner access passwordless and bound pending browser requests
 
 The authenticated owner of an account-delivered user share can now resolve their own share without re-entering its recipient password; the owner account token remains the authority instead of copying the password into the keyring. Browser API and localization requests now have finite deadlines, concurrent localization and presence requests are coalesced, and navigation teardown aborts the remaining in-flight presence work.
+
+## Reduce active Whiteboard presence traffic
+
+Active presence refreshes now run no faster than every 2.5 seconds and heartbeat writes no faster than every 10 seconds, with both winding down to 30 seconds when unchanged. Pointer updates are limited to one per second, and server last-seen timestamps no longer count as meaningful UI changes that keep adaptive polling at maximum speed.
