@@ -63,7 +63,12 @@ export function readMariaDbPoolSettings(): MariaDbPoolSettings {
             100,
             120_000,
         ),
-        queueLimit: 0,
+        queueLimit: readBoundedEnvironmentInteger(
+            "MARIADB_POOL_QUEUE_LIMIT",
+            100,
+            1,
+            10_000,
+        ),
     };
 }
 

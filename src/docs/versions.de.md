@@ -43,15 +43,15 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`  |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.18` |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.9`  |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.4`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.3`  |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.5`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.4`  |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.9`  |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.7`  |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.49` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.45` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.50` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.46` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.23` |
 | User Share            | `src/adapters/share/user/`          | `1.1.16` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -86,7 +86,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.3.5` |
+| API Server | `src/api/` | `0.3.6` |
 
 ## Werkzeuge
 

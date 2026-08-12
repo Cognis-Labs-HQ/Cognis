@@ -135,3 +135,7 @@ Die SPA-Navigation entsperrt den Schlüsselbund nicht mehr vorsorglich. Benutzer
 ## Schlüsselbundzugriff nur bei Bedarf anfordern
 
 Der Schlüsselbund-Beitrag in den Einstellungen plant beim Rendern keine Entsperranfrage mehr ein. Dadurch kann das Laden des Dashboards oder die Navigation zwischen Seiten keine allgemeine Abfrage auslösen. Passwortdialoge für geschützte Freigaben bieten die Speicherung im Schlüsselbund nur noch an, nachdem eine kontextbezogene Entsperrung erfolgreich war.
+
+## Hintergrundarbeit und blockierte Anfragen begrenzen
+
+Die Verfügbarkeitssynchronisierung pausiert nun in ausgeblendeten Tabs und fasst überlappende Aktualisierungs- und Heartbeat-Anfragen zusammen. Node und Nginx beenden blockierte HTTP-Arbeit, PostgreSQL verwendet ein endliches Anweisungszeitlimit und MariaDB begrenzt die Warteschlange für Abfragen, damit eine fehlerhafte Abhängigkeit nicht so lange Arbeit ansammelt, bis Seite oder Dienst nicht mehr reagieren.

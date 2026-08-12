@@ -135,3 +135,7 @@ SPA navigation no longer unlocks the keyring speculatively. Account shares first
 ## Prompt for keyring access only on demand
 
 The Keyring settings contribution no longer schedules an unlock request when it renders, so loading the Dashboard or navigating between pages cannot trigger a generic prompt. Protected-share password dialogs now offer keyring storage only after a contextual keyring unlock succeeds.
+
+## Bound background work and stalled requests
+
+Availability polling now pauses in hidden tabs and coalesces overlapping refresh and heartbeat requests. Node and Nginx terminate stalled HTTP work, PostgreSQL applies a finite statement timeout, and MariaDB bounds its waiting query queue so an unhealthy dependency cannot accumulate work until the page or service becomes unresponsive.

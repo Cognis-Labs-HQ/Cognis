@@ -48,7 +48,7 @@ export interface PostgresPoolSettings {
 export function readPostgresPoolSettings(): PostgresPoolSettings {
     const statementTimeout = readBoundedEnvironmentInteger(
         "POSTGRES_POOL_STATEMENT_TIMEOUT_MS",
-        0,
+        30_000,
         0,
         3_600_000,
     );

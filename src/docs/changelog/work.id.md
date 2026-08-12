@@ -135,3 +135,7 @@ Navigasi SPA tidak lagi membuka gantungan kunci secara spekulatif. Berbagi akun 
 ## Minta akses keyring hanya saat diperlukan
 
 Kontribusi pengaturan Keyring tidak lagi menjadwalkan permintaan buka kunci saat dirender, sehingga pemuatan Dasbor atau navigasi antarhalaman tidak dapat memicu permintaan umum. Dialog kata sandi berbagi terlindungi kini hanya menawarkan penyimpanan ke keyring setelah pembukaan kunci berkonteks berhasil.
+
+## Batasi pekerjaan latar dan permintaan yang macet
+
+Polling ketersediaan kini berhenti saat tab tersembunyi serta menggabungkan penyegaran dan heartbeat yang bertumpuk. Node dan Nginx menghentikan pekerjaan HTTP yang macet, PostgreSQL menerapkan batas waktu pernyataan, dan MariaDB membatasi antrean kueri agar dependensi bermasalah tidak menumpuk pekerjaan hingga halaman atau layanan tidak responsif.
