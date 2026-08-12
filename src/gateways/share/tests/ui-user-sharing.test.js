@@ -380,6 +380,15 @@ test("received user shares navigate once through the share session flow", () => 
         /identifiers\.push\(`share:\$\{shareId\}`\)/,
     );
     assert.match(receivedShareSource, /share:fetchProtectedResource/);
+    assert.match(
+        receivedShareSource,
+        /resolveAccountShare[\s\S]*keyringId = `share:\$\{normalizedShareId\}`/,
+    );
+    assert.match(receivedShareSource, /request\(keyring\?\.get\(keyringId\)\)/);
+    assert.match(
+        receivedShareSource,
+        /response\.ok && entered\.saveToKeyring[\s\S]*keyring\?\.set\(keyringId/,
+    );
     assert.match(receivedShareSource, /keyring:requestUnlock/);
     assert.match(
         sessionFlowSource,

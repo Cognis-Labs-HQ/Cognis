@@ -119,3 +119,7 @@ Benachrichtigungen für ungeschützte Benutzerfreigaben öffnen ihren Inhalt dir
 ## Lang laufende Tabs reaktionsfähig halten
 
 Prüfungen auf widerrufene Freigaben verwenden nun einen einzigen sichtbarkeitsabhängigen Monitor anstelle wiederholter Abfragen im Halbsekundentakt. Hintergrund-Tabs pausieren Netzwerkprüfungen und validieren beim erneuten Fokussieren sofort, damit lang laufende Freigabeseiten weder Browser- noch Serverressourcen erschöpfen.
+
+## Gespeicherte Freigabepasswörter wiederverwenden
+
+Passwortgeschützte Benutzerfreigaben speichern und laden ihr Passwort nun mit derselben stabilen Schlüsselbundkennung `share:<share-id>`, sodass beim erneuten Öffnen keine Abfrage erfolgt, nachdem das Passwort gespeichert wurde.

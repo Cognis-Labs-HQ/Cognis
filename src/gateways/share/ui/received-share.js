@@ -205,6 +205,14 @@ export async function resolveReceivedShare(
 export async function resolveAccountShare(shareId) {
     const normalizedShareId = String(shareId ?? "").trim();
     if (!normalizedShareId) return null;
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/share/languages"],
+    });
+    await unlockKeyringForShare(i18n, normalizedShareId);
+    const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
+        "Share Gateway",
+    );
+    const keyringId = `share:${normalizedShareId}`;
     const request = (password) =>
         apiFetch(
             `/api/v1/share/account/${encodeURIComponent(normalizedShareId)}/resolve`,
@@ -215,9 +223,9 @@ export async function resolveAccountShare(shareId) {
                 suppressAccessDeniedEvent: true,
             },
         );
-    let response = await request(null);
+    let response = await request(keyring?.get(keyringId));
     while (response.status === 401) {
-        const entered = await promptForPassword();
+        const entered = await promptForPassword({ allowSave: true });
         if (!entered?.password) return null;
         response = await request(entered.password);
         if (response.status === 401) {
@@ -226,6 +234,12 @@ export async function resolveAccountShare(shareId) {
             });
             showToast(i18n.t("share.error.invalid_password"), {
                 variant: "error",
+            });
+        }
+        if (response.ok && entered.saveToKeyring) {
+            await keyring?.set(keyringId, entered.password, {
+                label: i18n.t("share.unlock.keyring_label"),
+                shareId: normalizedShareId,
             });
         }
     }

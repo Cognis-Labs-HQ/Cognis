@@ -119,3 +119,7 @@ Notifikasi berbagi pengguna tanpa perlindungan membuka kontennya secara langsung
 ## Jaga tab jangka panjang tetap responsif
 
 Pemeriksaan pencabutan berbagi kini memakai satu pemantau yang sadar visibilitas, bukan polling berulang setiap setengah detik. Tab latar belakang menjeda pemeriksaan jaringan dan langsung memvalidasi saat difokuskan kembali, sehingga halaman berbagi yang berjalan lama tidak menghabiskan sumber daya peramban atau server.
+
+## Gunakan kembali kata sandi berbagi tersimpan
+
+Berbagi pengguna yang dilindungi kata sandi kini menyimpan dan mengambil kata sandinya dengan pengenal gantungan kunci stabil yang sama, `share:<share-id>`, sehingga pembukaan berikutnya tidak meminta kata sandi setelah disimpan.

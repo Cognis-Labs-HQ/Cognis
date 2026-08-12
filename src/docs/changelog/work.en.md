@@ -119,3 +119,7 @@ Unprotected user-share notifications open their content directly, protected entr
 ## Keep long-lived tabs responsive
 
 Share revocation checks now use one visibility-aware monitor instead of repeated half-second polling. Background tabs pause network checks and validate immediately when focused again, preventing long-running share pages from exhausting browser or server resources.
+
+## Reuse saved share passwords
+
+Password-protected user shares now store and retrieve their password using the same stable `share:<share-id>` keyring identifier, so opening the share again does not prompt after the password has been saved.
