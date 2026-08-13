@@ -43,6 +43,8 @@
   <string name="share.shares.reject_prompt">Diese Freigabe ablehnen und Ihren Zugriff entfernen?</string>
   <string name="share.shares.cancel">Abbrechen</string>
   <string name="share.shares.updated">Freigabe aktualisiert.</string>
+  <string name="share.shares.deleted">Freigabe gelöscht</string>
+  <string name="share.shares.rejected">Freigabe entfernt.</string>
   <string name="share.shares.update_failed">Die Freigabe konnte nicht aktualisiert werden.</string>
   <string name="share.shares.load_failed">Freigaben konnten nicht geladen werden.</string>
   <string name="share.shares.column_title">Freigabe</string>

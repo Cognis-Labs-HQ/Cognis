@@ -43,6 +43,8 @@
   <string name="share.shares.reject_prompt">Tolak berbagi ini dan hapus akses Anda?</string>
   <string name="share.shares.cancel">Batal</string>
   <string name="share.shares.updated">Berbagi diperbarui.</string>
+  <string name="share.shares.deleted">Berbagi Dihapus</string>
+  <string name="share.shares.rejected">Berbagi dihapus.</string>
   <string name="share.shares.update_failed">Berbagi tidak dapat diperbarui.</string>
   <string name="share.shares.load_failed">Berbagi tidak dapat dimuat.</string>
   <string name="share.shares.column_title">Berbagi</string>

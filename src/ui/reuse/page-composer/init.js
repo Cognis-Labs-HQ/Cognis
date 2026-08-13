@@ -42,6 +42,7 @@ import { createFormDraftManager } from "./form-draft.js";
 import { createLayoutPersistence } from "./layout-persistence.js";
 import { createGridOverlayHandlers } from "./grid-overlay.js";
 import { createSubComposerHandlers } from "./sub-composer.js";
+import { uiCtx } from "../ui-ctx.js";
 import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
 import { createPresenceTracker } from "./presence-tracker.js";
@@ -478,7 +479,10 @@ export function createPageComposer(
     function syncSubEditToggle(state) {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
-        if (!state.allowCustomization) {
+        if (
+            !state.allowCustomization ||
+            uiCtx.capabilities.get("session:isGuest")?.() === true
+        ) {
             editBtn.hidden = true;
             return;
         }
@@ -528,7 +532,10 @@ export function createPageComposer(
     function syncEditToggle() {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
-        if (!allowCustomization) {
+        if (
+            !allowCustomization ||
+            uiCtx.capabilities.get("session:isGuest")?.() === true
+        ) {
             editBtn.hidden = true;
             return;
         }

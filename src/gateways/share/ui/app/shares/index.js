@@ -468,7 +468,9 @@ export async function mount(root, { signal } = {}) {
             showToast(
                 i18n.t(
                     response.ok
-                        ? "share.shares.updated"
+                        ? rejecting
+                            ? "share.shares.rejected"
+                            : "share.shares.deleted"
                         : "share.shares.update_failed",
                 ),
                 { variant: response.ok ? "success" : "error" },

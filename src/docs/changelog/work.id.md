@@ -171,3 +171,7 @@ Kontrol kalender bersama kini mendengarkan pada batas capture dokumen dan hanya 
 ## Mengisolasi shell berbagi tamu dari startup akun
 
 Composer berbagi publik dan kalender bersama kini secara eksplisit menonaktifkan peningkatan shell khusus akun, sehingga permintaan changelog, profil, kehadiran, dan verifikasi kata sandi tidak dimulai sebelum autentikasi tamu selesai. Navigasi pencabutan memakai kapabilitas router alih-alih impor runtime yang rapuh, dengan fallback ke URL berbagi langsung hanya bila router tidak terpasang.
+
+## Memperjelas berbagi dicabut dan kontrol tamu
+
+Menghapus berbagi milik sendiri kini mengonfirmasi “Berbagi Dihapus”, sedangkan penerima yang menghapus akses mendapat pesan terpisah. Kalender bersama yang dicabut membuka popup penghapusan saat dipilih, whiteboard hanya-baca memakai kursor penunjuk, dan pengeditan tata letak halaman selalu disembunyikan dari tamu berbagi.

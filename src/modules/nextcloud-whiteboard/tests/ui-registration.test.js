@@ -362,6 +362,10 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         ),
     ]);
     assert.match(canvasSource, /let activeTool = "select"/);
+    assert.match(
+        canvasSource,
+        /if \(readOnly\) canvasElement\.style\.cursor = "pointer"/,
+    );
     assert.match(renderSource, /tool === "select" \? " active" : ""/);
     assert.match(
         appSource + renderSource,

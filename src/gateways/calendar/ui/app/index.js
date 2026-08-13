@@ -677,14 +677,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                             );
                             if (!calendar) return;
                             if (calendar.secretsUnavailable) {
-                                void (async () => {
-                                    if (await retryCalendarUnlock(calendar)) {
-                                        selectedCalendarId = calendarId;
-                                        selectedEventId = "";
-                                        syncRouteSelection();
-                                        refreshCalendarComposer();
-                                    }
-                                })();
+                                openCalendarEditPopup(calendar);
                                 return;
                             }
                             selectedCalendarId = calendarId;
@@ -792,19 +785,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
 
     await composer.init();
     syncRouteSelection();
-    const lockedCalendars = calendars.filter(
-        (calendar) => calendar.secretsUnavailable,
-    );
-    if (lockedCalendars.length > 0) {
-        void uiCtx.runFlow("defer-page-action", {
-            action: async () => {
-                for (const calendar of lockedCalendars) {
-                    if (!(await retryCalendarUnlock(calendar))) break;
-                }
-                refreshCalendarComposer();
-            },
-        });
-    }
     if (routeCalendarId && routeEventId) {
         void openEventPopup(routeCalendarId, routeEventId);
     }

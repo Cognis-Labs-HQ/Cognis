@@ -177,6 +177,13 @@ test("page composer resolves edit toggle from the active page root", () => {
     assert.doesNotMatch(source, /function ensureComposerEditToggleButton\(\)/);
 });
 
+test("page composer always hides layout editing from share guests", () => {
+    assert.match(
+        readPageComposerBundle(),
+        /capabilities\.get\("session:isGuest"\)/,
+    );
+});
+
 test("page composer expands compact single-pane rows to full width", () => {
     const source = readPageComposerBundle();
 

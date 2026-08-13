@@ -29,6 +29,8 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /fetchShareOverview/);
     assert.match(pageSource, /revokeShare/);
     assert.match(pageSource, /rejectShare/);
+    assert.match(pageSource, /share\.shares\.deleted/);
+    assert.match(pageSource, /share\.shares\.rejected/);
     assert.match(pageSource, /pageContext:[\s\S]*title:[\s\S]*subtitle:/);
     assert.match(pageSource, /export async function mount\(root, \{ signal \}/);
     assert.match(pageSource, /buildSharesElement/);

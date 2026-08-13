@@ -43,6 +43,8 @@
   <string name="share.shares.reject_prompt">この共有を拒否してアクセス権を削除しますか？</string>
   <string name="share.shares.cancel">キャンセル</string>
   <string name="share.shares.updated">共有を更新しました。</string>
+  <string name="share.shares.deleted">共有を削除しました</string>
+  <string name="share.shares.rejected">共有を解除しました。</string>
   <string name="share.shares.update_failed">共有を更新できませんでした。</string>
   <string name="share.shares.load_failed">共有を読み込めませんでした。</string>
   <string name="share.shares.column_title">共有</string>

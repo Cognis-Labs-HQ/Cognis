@@ -171,3 +171,7 @@ Steuerelemente geteilter Kalender lauschen nun an der Dokument-Capture-Grenze un
 ## Gastfreigabe-Shells vom Kontostart isoliert
 
 Öffentliche Freigabe- und geteilte Kalender-Composer deaktivieren nun ausdrücklich reine Kontoerweiterungen der Shell. Dadurch starten keine Änderungsprotokoll-, Profil-, Anwesenheits- oder Passwortprüfungsanfragen, bevor die Gastauthentifizierung feststeht. Die Navigation bei Widerruf verwendet die Router-Fähigkeit statt eines anfälligen Laufzeitimports und greift nur ohne eingebundenen Router direkt auf die Freigabe-URL zurück.
+
+## Widerrufene Freigaben und Gaststeuerung klargestellt
+
+Das Löschen einer eigenen Freigabe bestätigt nun „Freigabe gelöscht“, während Empfangende beim Entfernen des Zugriffs eine eigene Meldung erhalten. Widerrufene geteilte Kalender öffnen beim Auswählen ihren Entfernen-Dialog, schreibgeschützte Whiteboards verwenden einen Zeiger und die Seitenlayout-Bearbeitung bleibt für Freigabegäste immer verborgen.

@@ -6,7 +6,7 @@
     "dependencies": {
         "@cognis/adapter-social-messages": "<=2.0.49",
         "@cognis/adapter-social-profile": "<=1.1.53",
-        "@cognis/gateway-share": "<=1.6.93",
+        "@cognis/gateway-share": "<=1.6.95",
         "@cognis/gateways": "<=0.1.6"
     }
 }

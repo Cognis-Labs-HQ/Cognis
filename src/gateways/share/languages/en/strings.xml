@@ -43,6 +43,8 @@
   <string name="share.shares.reject_prompt">Reject this share and remove your access?</string>
   <string name="share.shares.cancel">Cancel</string>
   <string name="share.shares.updated">Share updated.</string>
+  <string name="share.shares.deleted">Share Deleted</string>
+  <string name="share.shares.rejected">Share removed.</string>
   <string name="share.shares.update_failed">The share could not be updated.</string>
   <string name="share.shares.load_failed">Shares could not be loaded.</string>
   <string name="share.shares.column_title">Share</string>

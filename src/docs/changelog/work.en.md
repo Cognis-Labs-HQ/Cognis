@@ -171,3 +171,7 @@ Shared calendar controls now listen at the document capture boundary and accept 
 ## Isolated guest share shells from account startup
 
 Public share and shared-calendar composers now explicitly disable account-only shell enhancements, preventing changelog, profile, presence, and password-verification startup requests before guest authentication settles. Share revocation navigation uses the router capability rather than a fragile runtime import, and falls back to a direct share URL only when no router is mounted.
+
+## Clarified revoked shares and guest controls
+
+Deleting an owned share now confirms “Share Deleted”, while recipients removing access receive separate wording. Revoked shared calendars open their removal popup when selected, read-only whiteboards use a pointer cursor, and page layout editing is always hidden from share guests.

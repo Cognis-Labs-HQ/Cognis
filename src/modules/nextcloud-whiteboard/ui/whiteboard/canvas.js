@@ -52,6 +52,7 @@ export function createWhiteboardCanvas(
     let viewportOffsetY = 0;
     let remoteSelections = new Map();
     let keepToolActive = false;
+    if (readOnly) canvasElement.style.cursor = "pointer";
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -343,12 +344,13 @@ export function createWhiteboardCanvas(
             selectedElementId = null;
             notifySelection();
         }
-        canvasElement.style.cursor =
-            tool === "select"
-                ? "pointer"
-                : tool === "eraser"
-                  ? "cell"
-                  : "crosshair";
+        canvasElement.style.cursor = readOnly
+            ? "pointer"
+            : tool === "select"
+              ? "pointer"
+              : tool === "eraser"
+                ? "cell"
+                : "crosshair";
         toolCallback?.(tool);
         scheduleRender();
     }
@@ -665,12 +667,13 @@ export function createWhiteboardCanvas(
     function onPointerUp(event) {
         if (panState && (!event || panState.pointerId === event.pointerId)) {
             panState = null;
-            canvasElement.style.cursor =
-                activeTool === "select"
-                    ? "pointer"
-                    : activeTool === "eraser"
-                      ? "cell"
-                      : "crosshair";
+            canvasElement.style.cursor = readOnly
+                ? "pointer"
+                : activeTool === "select"
+                  ? "pointer"
+                  : activeTool === "eraser"
+                    ? "cell"
+                    : "crosshair";
             return;
         }
         if (!isDrawing) return;
