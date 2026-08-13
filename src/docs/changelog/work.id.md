@@ -167,3 +167,7 @@ Kontrol tampilan dan periode kalender bersama kini memakai satu listener sepanja
 ## Menjadikan deteksi tamu dan input kalender bersama otoritatif
 
 Kontrol kalender bersama kini mendengarkan pada batas capture dokumen dan hanya menerima klik dari kalender yang dipasang, sehingga handler composer atau shell tidak mengambil navigasi lebih dahulu. Deteksi tamu kini mengenali status sesi terbatas, akun berbagi sintetis, serta penyedia tamu/berbagi sebelum ringkasan rilis atau permintaan kehadiran dimulai.
+
+## Mengisolasi shell berbagi tamu dari startup akun
+
+Composer berbagi publik dan kalender bersama kini secara eksplisit menonaktifkan peningkatan shell khusus akun, sehingga permintaan changelog, profil, kehadiran, dan verifikasi kata sandi tidak dimulai sebelum autentikasi tamu selesai. Navigasi pencabutan memakai kapabilitas router alih-alih impor runtime yang rapuh, dengan fallback ke URL berbagi langsung hanya bila router tidak terpasang.

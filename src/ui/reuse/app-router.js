@@ -500,6 +500,8 @@ export async function navigateTo(path) {
     return loadRoute(path);
 }
 
+uiCtx.capabilities.contribute("ui:navigate", navigateTo);
+
 /**
  * Invalidates the in-memory Study child component cache so the next navigation
  * to a Study child route fetches a fresh list from the API. Call this after

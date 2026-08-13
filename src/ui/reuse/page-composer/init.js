@@ -77,6 +77,7 @@ export function createPageComposer(
         pageOverrides = {},
         onBeforeSubPageSwitch,
         requireAccountSession = showTopbar || showNavbar,
+        enableAccountEnhancements = true,
         presenceTracker = null,
         pageManifest = null,
         signal,
@@ -660,6 +661,7 @@ export function createPageComposer(
             showThemeToggle,
             showFooter,
             requireAccountSession,
+            enableAccountEnhancements,
         });
         pageActions.mount(root, { signal });
 

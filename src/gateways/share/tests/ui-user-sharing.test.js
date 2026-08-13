@@ -52,6 +52,7 @@ const shareButtonSource = await readFile(
 
 test("public Share page disables page layout editing", () => {
     assert.match(shareAppSource, /allowCustomization:\s*false/);
+    assert.match(shareAppSource, /enableAccountEnhancements:\s*false/);
     assert.match(shareAppSource, /shareContext: routedShareContext/);
     assert.match(shareAppSource, /routedShareContext\s*\? null/);
     assert.match(
@@ -310,7 +311,11 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(sessionFlowSource, /await activateGuestToken/);
     assert.match(
         sessionFlowSource,
-        /sessionStorage\.setItem\(ACCESS_DENIED_TOKEN_KEY, shareToken\);[\s\S]*restoreGuestToken\(\);[\s\S]*navigateTo/,
+        /sessionStorage\.setItem\(ACCESS_DENIED_TOKEN_KEY, shareToken\);[\s\S]*restoreGuestToken\(\);[\s\S]*capabilities\.get\("ui:navigate"\)/,
+    );
+    assert.doesNotMatch(
+        sessionFlowSource,
+        /import\("\/static\/reuse\/app-router\.js"\)/,
     );
     assert.match(sessionFlowSource, /activeShareSession\?\.shareToken/);
     assert.match(

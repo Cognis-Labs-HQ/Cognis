@@ -347,6 +347,7 @@ export async function mount(
         persistLayoutPreferences: false,
         frameless: false,
         requireAccountSession: false,
+        enableAccountEnhancements: false,
     });
 
     await composer.init();

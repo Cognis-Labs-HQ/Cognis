@@ -720,6 +720,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /createPageComposer/);
     assert.match(SHARE_RENDERER_SOURCE, /await composer\.init\(\)/);
     assert.match(SHARE_RENDERER_SOURCE, /requireAccountSession:\s*false/);
+    assert.match(SHARE_RENDERER_SOURCE, /enableAccountEnhancements:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /showNavbar:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /function renderCalendar\(\)/);
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);

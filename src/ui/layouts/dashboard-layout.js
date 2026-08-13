@@ -536,6 +536,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         // no redirect in flight (e.g. an expired/invalid share token), so
         // this must not fall into the "redirect is coming" hang below.
         requireAccountSession = showTopbar || showNavbar,
+        enableAccountEnhancements = true,
     } = slots;
 
     if (requireAccountSession && !(await ensureFullAccountSession())) {
@@ -637,7 +638,11 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".main-window") ?? existingShell,
         );
         applyActiveNavigation();
-        if ((showTopbar || showNavbar) && !isGuestSession()) {
+        if (
+            enableAccountEnhancements &&
+            (showTopbar || showNavbar) &&
+            !isGuestSession()
+        ) {
             updateNavbarAvatar().catch((error) => {
                 console.warn(
                     "[dashboard-layout]:initial-navbar-avatar-render-failed",
@@ -688,7 +693,11 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
-    if ((showTopbar || showNavbar) && !isGuestSession()) {
+    if (
+        enableAccountEnhancements &&
+        (showTopbar || showNavbar) &&
+        !isGuestSession()
+    ) {
         bindTopbarActions();
         updateNavbarAvatar().catch((error) => {
             console.warn(

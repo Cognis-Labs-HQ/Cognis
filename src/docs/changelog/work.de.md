@@ -167,3 +167,7 @@ Ansichts- und Zeitraumsteuerungen geteilter Kalender verwenden nun einen einzige
 ## Gast-Erkennung und Eingaben geteilter Kalender verbindlich gemacht
 
 Steuerelemente geteilter Kalender lauschen nun an der Dokument-Capture-Grenze und akzeptieren nur Klicks aus ihrem eingebundenen Kalender, sodass Composer- oder Shell-Handler die Navigation nicht zuerst verbrauchen. Die Gast-Erkennung berücksichtigt begrenzte Sitzungen, synthetische Freigabekonten und Gast-/Freigabeanbieter, bevor Versionszusammenfassungen oder Anwesenheitsanfragen starten.
+
+## Gastfreigabe-Shells vom Kontostart isoliert
+
+Öffentliche Freigabe- und geteilte Kalender-Composer deaktivieren nun ausdrücklich reine Kontoerweiterungen der Shell. Dadurch starten keine Änderungsprotokoll-, Profil-, Anwesenheits- oder Passwortprüfungsanfragen, bevor die Gastauthentifizierung feststeht. Die Navigation bei Widerruf verwendet die Router-Fähigkeit statt eines anfälligen Laufzeitimports und greift nur ohne eingebundenen Router direkt auf die Freigabe-URL zurück.

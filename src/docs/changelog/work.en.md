@@ -167,3 +167,7 @@ Shared calendar view and period controls now use one page-lifecycle event listen
 ## Made guest detection and shared calendar input authoritative
 
 Shared calendar controls now listen at the document capture boundary and accept clicks only from their mounted calendar, preventing composer or shell handlers from consuming navigation first. Guest detection now recognizes scoped-session state, synthetic share accounts, and guest/share providers before release summaries or presence requests can start.
+
+## Isolated guest share shells from account startup
+
+Public share and shared-calendar composers now explicitly disable account-only shell enhancements, preventing changelog, profile, presence, and password-verification startup requests before guest authentication settles. Share revocation navigation uses the router capability rather than a fragile runtime import, and falls back to a direct share URL only when no router is mounted.

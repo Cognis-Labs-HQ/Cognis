@@ -113,6 +113,7 @@ export async function mount(
         // resolves to an unauthenticated session with no redirect pending,
         // which this page renders its own fallback screen for instead.
         requireAccountSession: false,
+        enableAccountEnhancements: false,
         elements: [buildShareElement(state)],
     });
 

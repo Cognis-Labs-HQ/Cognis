@@ -88,10 +88,17 @@ window.addEventListener("cognis:api-access-denied", () => {
     sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
     accessDeniedNavigationPending = true;
     restoreGuestToken();
-    void import("/static/reuse/app-router.js")
-        .then(({ navigateTo }) =>
-            navigateTo(`/share/${encodeURIComponent(shareToken)}`),
-        )
+    const navigate = uiCtx.capabilities.get("ui:navigate");
+    Promise.resolve(
+        navigate?.(`/share/${encodeURIComponent(shareToken)}`) ?? false,
+    )
+        .then((navigated) => {
+            if (!navigated) {
+                window.location.assign(
+                    `/share/${encodeURIComponent(shareToken)}`,
+                );
+            }
+        })
         .finally(() => {
             accessDeniedNavigationPending = false;
         });
@@ -234,9 +241,11 @@ listenForShareRevocation((shareId) => {
     if (!shareToken) return;
     sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
     restoreGuestToken();
-    void import("/static/reuse/app-router.js").then(({ navigateTo }) =>
-        navigateTo(`/share/${encodeURIComponent(shareToken)}`),
-    );
+    const sharePath = `/share/${encodeURIComponent(shareToken)}`;
+    const navigate = uiCtx.capabilities.get("ui:navigate");
+    Promise.resolve(navigate?.(sharePath) ?? false).then((navigated) => {
+        if (!navigated) window.location.assign(sharePath);
+    });
 });
 
 window.addEventListener("cognis:notification-arrival", (event) => {
