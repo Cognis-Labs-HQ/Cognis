@@ -82,7 +82,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         recipientUsername: accountId,
                         subject: "A share expired",
                         body: `${share.label || "A shared item"} has expired.`,
-                        actionUrl: "/shares",
+                        actionUrl: "/share",
                         senderName: "Cognis Share",
                         metadata: { shareId: share.id },
                     }),
@@ -223,8 +223,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
     uiHooks.registerSpaRoute({
         id: "shares-page",
-        pattern: "^/shares$",
-        base: "/shares",
+        pattern: "^/share$",
+        base: "/share",
         scriptUrl: "/static/gateways/share/ui/app/shares/index.js",
         stylesheets: [
             "/static/styles/page-builder.css",

@@ -97,4 +97,12 @@
   <string name="share.shares.popup_password_reveal">パスワードを表示または非表示</string>
   <string name="share.shares.popup_password_copy">パスワードをコピー</string>
   <string name="share.shares.popup_password_copied">パスワードをコピーしました。</string>
+  <string name="share.shares.copy_link">共有リンクをコピー</string>
+  <string name="share.shares.link_copied">共有リンクをコピーしました。</string>
+  <string name="share.shares.detail_activity">共有アクティビティ</string>
+  <string name="share.shares.detail_users">受信者</string>
+  <string name="share.shares.detail_created">作成</string>
+  <string name="share.shares.detail_updated">更新</string>
+  <string name="share.shares.detail_accessed">最終アクセス</string>
+  <string name="share.shares.detail_expires">有効期限</string>
 </resources>

@@ -57,6 +57,11 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /share\.lastAccessedAt/);
     assert.match(pageSource, /share\.shares\.not_accessed/);
     assert.match(pageSource, /share:openLinksPopup/);
+    assert.match(pageSource, /data-share-copy/);
+    assert.match(pageSource, /navigator\.clipboard\.writeText/);
+    assert.match(pageSource, /renderShareDetails/);
+    assert.match(pageSource, /shares-activity-chart/);
+    assert.match(pageSource, /data-share-expandable/);
     assert.match(pageSource, /initialEditingShareId/);
     assert.match(pageSource, /initialEditingShare: share/);
     assert.match(pageSource, /editOnly: true/);
@@ -94,6 +99,6 @@ test("Share gateway owns its pages and adapter static directories", () => {
 
 test("Share navbar plugin adds Shares to the user menu", () => {
     assert.match(navbarSource, /#profile-dropdown/);
-    assert.match(navbarSource, /link\.href = "\/shares"/);
+    assert.match(navbarSource, /link\.href = "\/share"/);
     assert.match(navbarSource, /#profile-logout/);
 });

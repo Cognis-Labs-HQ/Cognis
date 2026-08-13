@@ -641,7 +641,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         ["bob", "charlie"],
     );
     assert.equal(userShareNotifications[0]?.category, "share");
-    assert.equal(userShareNotifications[0]?.actionUrl, "/meetings/shared");
+    assert.match(
+        String(userShareNotifications[0]?.actionUrl ?? ""),
+        /^\/share\/usr_/,
+    );
     assert.equal(restrictedCreateResponse.body.data.shareMethod, "user");
     assert.equal(restrictedCreateResponse.body.data.shareUrl, "");
     assert.equal(

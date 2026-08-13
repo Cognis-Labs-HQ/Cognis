@@ -155,7 +155,10 @@
 }
 
 .shares-actions button {
+    align-items: center;
+    display: inline-flex;
     height: 2.25rem;
+    justify-content: center;
     margin-inline: 0.15rem;
     padding: 0.35rem;
     width: 2.25rem;
@@ -195,12 +198,74 @@
     mask-image: url("/static/assets/reuse/edit.svg");
 }
 
+.shares-action-icon--copy {
+    background: currentColor;
+    mask-image: url("/static/assets/reuse/clipboard.svg");
+}
+
 .shares-action-icon--revoke::before,
 .shares-action-icon--reject::before {
     content: "×";
     display: block;
     font-size: 1.35rem;
-    line-height: 0.7;
+    line-height: 1;
+    transform: translateY(-0.04em);
+}
+
+tr[data-share-expandable] {
+    cursor: pointer;
+}
+
+.shares-detail-panel {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr);
+    padding: 0.5rem;
+}
+
+.shares-detail-panel h3 {
+    font-size: 0.85rem;
+    margin: 0 0 0.7rem;
+}
+
+.shares-activity-chart,
+.shares-detail-users {
+    display: grid;
+    gap: 0.55rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.shares-activity-chart li {
+    display: grid;
+    gap: 0.25rem 0.75rem;
+    grid-template-columns: 7rem minmax(0, 1fr);
+}
+
+.shares-activity-chart time {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+}
+
+.shares-activity-chart i {
+    background: color-mix(in srgb, var(--accent) 58%, transparent);
+    border-radius: 999px;
+    grid-column: 1 / -1;
+    height: 0.42rem;
+    width: 100%;
+}
+
+.shares-activity-chart .shares-activity-level-2 {
+    width: 80%;
+}
+
+.shares-activity-chart .shares-activity-level-3 {
+    width: 60%;
+}
+
+.shares-activity-chart .shares-activity-level-4 {
+    width: 40%;
 }
 
 .shares-empty {

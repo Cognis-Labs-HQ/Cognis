@@ -190,8 +190,15 @@ export function createShareRoutes(input: {
                 path.join(input.uiRoot, "share.html"),
                 "utf8",
             );
+            const pageHtml =
+                url.pathname === "/share"
+                    ? html.replace(
+                          "/static/gateways/share/ui/app/index.js",
+                          "/static/gateways/share/ui/app/shares/index.js",
+                      )
+                    : html;
             res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-            res.end(html);
+            res.end(pageHtml);
             return true;
         }
 

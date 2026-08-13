@@ -207,3 +207,7 @@ Permintaan berbagi terlindungi kini sama persis dengan merek ringkas pada header
 ## Pulihkan tautan rapat lama dan ikat kontrol kalender setiap render
 
 Otorisasi tamu rapat kini mempertahankan kompatibilitas dengan tautan rapat lama yang catatannya dibuat sebelum cakupan kapabilitas eksplisit, sambil tetap mewajibkan token cocok dengan rapat yang diminta. Kontrol kalender bersama diikat ke kartu kalender yang baru dirender setelah setiap penyegaran composer agar perubahan tampilan dan periode tetap interaktif.
+
+## Satukan rute Share dan perluas aktivitas berbagi terkirim
+
+Pengelolaan berbagi kini berada di `/share`, sedangkan berbagi publik dan akun memakai URL `/share/shr_…` dan `/share/usr_…`. Baris berbagi tautan menyediakan aksi salin, baris terkirim dapat diperluas menjadi tampilan stempel waktu dan penerima, serta ikon tindakan destruktif dipusatkan secara konsisten.

@@ -207,3 +207,7 @@ Die Abfrage für geschützte Freigaben entspricht nun exakt der kompakten Cognis
 ## Ältere Meeting-Links wiederherstellen und Kalendersteuerungen je Darstellung binden
 
 Die Meeting-Gastautorisierung bleibt nun mit älteren Meeting-Links kompatibel, deren Datensätze noch keine ausdrücklichen Berechtigungsbereiche enthalten, wobei das Token weiterhin zum angeforderten Meeting passen muss. Freigegebene Kalendersteuerungen werden nach jeder Composer-Aktualisierung an die neu dargestellte Kalenderkarte gebunden, damit Ansichts- und Zeitraumwechsel interaktiv bleiben.
+
+## Share-Routen zusammenführen und Aktivität gesendeter Freigaben erweitern
+
+Die Freigabeverwaltung befindet sich nun unter `/share`, während öffentliche und kontogebundene Freigaben URLs unter `/share/shr_…` und `/share/usr_…` verwenden. Linkfreigabe-Zeilen bieten eine Kopieraktion, gesendete Zeilen erweitern sich zu Zeitstempel- und Empfängeransichten und Symbole für destruktive Aktionen sind einheitlich zentriert.

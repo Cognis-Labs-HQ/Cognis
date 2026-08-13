@@ -4,6 +4,7 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     buildShareTokenCallbacks,
@@ -91,6 +92,41 @@ function createIconButton({ shareId, action, label, destructive = false }) {
     return button;
 }
 
+function renderShareDetails(share, i18n) {
+    const recipients = shareRecipients(share);
+    const events = [
+        [i18n.t("share.shares.detail_created"), share.createdAt],
+        [i18n.t("share.shares.detail_updated"), share.updatedAt],
+        [i18n.t("share.shares.detail_accessed"), share.lastAccessedAt],
+        [i18n.t("share.shares.detail_expires"), share.expiresAt],
+    ].filter(([, timestamp]) => Boolean(timestamp));
+    const detailsRow = document.createElement("tr");
+    detailsRow.className = "shares-detail-row";
+    detailsRow.dataset.shareDetails = String(share.id);
+    const cell = document.createElement("td");
+    cell.colSpan = 7;
+    const details = document.createElement("section");
+    details.className = "shares-detail-panel";
+    const timeline = events
+        .map(
+            ([label, timestamp], index) =>
+                `<li><span>${escapeHtml(label)}</span><time>${escapeHtml(formatDateTime(timestamp))}</time><i class="shares-activity-level-${index + 1}"></i></li>`,
+        )
+        .join("");
+    const users = recipients.length
+        ? recipients
+              .map(
+                  (recipient) =>
+                      `<li>${escapeHtml(String(recipient.label || recipient.id))}</li>`,
+              )
+              .join("")
+        : `<li>${escapeHtml(i18n.t("share.shares.anyone_with_link"))}</li>`;
+    details.innerHTML = `<div><h3>${escapeHtml(i18n.t("share.shares.detail_activity"))}</h3><ol class="shares-activity-chart">${timeline}</ol></div><div><h3>${escapeHtml(i18n.t("share.shares.detail_users"))}</h3><ul class="shares-detail-users">${users}</ul></div>`;
+    cell.append(details);
+    detailsRow.append(cell);
+    return detailsRow;
+}
+
 function renderShareRow(share, direction, i18n, rowTemplate) {
     const row = rowTemplate.content.firstElementChild.cloneNode(true);
     const shareId = String(share?.id ?? "");
@@ -127,6 +163,7 @@ function renderShareRow(share, direction, i18n, rowTemplate) {
         : i18n.t("share.shares.never");
     const actions = row.querySelector("[data-share-actions]");
     if (direction === "sent") {
+        row.dataset.shareExpandable = "true";
         actions.appendChild(
             createIconButton({
                 shareId,
@@ -134,6 +171,15 @@ function renderShareRow(share, direction, i18n, rowTemplate) {
                 label: i18n.t("share.shares.manage"),
             }),
         );
+        if (shareRecipients(share).length === 0 && shareUrl) {
+            actions.appendChild(
+                createIconButton({
+                    shareId,
+                    action: "copy",
+                    label: i18n.t("share.shares.copy_link"),
+                }),
+            );
+        }
     }
     actions.appendChild(
         createIconButton({
@@ -392,6 +438,21 @@ export async function mount(root, { signal } = {}) {
                 await navigateAccountShare(share);
                 return;
             }
+            const copyButton = event.target.closest("[data-share-copy]");
+            if (copyButton instanceof HTMLButtonElement) {
+                event.stopPropagation();
+                const share = overview.sent.find(
+                    (entry) =>
+                        String(entry.id) === copyButton.dataset.shareCopy,
+                );
+                const shareUrl = String(share?.shareUrl ?? "");
+                if (!shareUrl) return;
+                await navigator.clipboard.writeText(shareUrl);
+                showToast(i18n.t("share.shares.link_copied"), {
+                    variant: "success",
+                });
+                return;
+            }
             const filter = event.target.closest("[data-share-filter]");
             if (filter instanceof HTMLButtonElement) {
                 activeFilter = filter.dataset.shareFilter ?? "all";
@@ -400,6 +461,7 @@ export async function mount(root, { signal } = {}) {
             }
             const manageButton = event.target.closest("[data-share-manage]");
             if (manageButton instanceof HTMLButtonElement) {
+                event.stopPropagation();
                 const share = overview.sent.find(
                     (entry) =>
                         String(entry.id) === manageButton.dataset.shareManage,
@@ -410,9 +472,32 @@ export async function mount(root, { signal } = {}) {
                 refreshOverview();
                 return;
             }
-            const button = event.target.closest(
+            const destructiveButton = event.target.closest(
                 "[data-share-revoke], [data-share-reject]",
             );
+            if (destructiveButton instanceof HTMLButtonElement) {
+                event.stopPropagation();
+            }
+            const sentRow = event.target.closest("tr[data-share-expandable]");
+            if (
+                sentRow instanceof HTMLTableRowElement &&
+                !(destructiveButton instanceof HTMLButtonElement)
+            ) {
+                const existing = sentRow.nextElementSibling;
+                if (existing?.matches("[data-share-details]")) {
+                    existing.remove();
+                    sentRow.setAttribute("aria-expanded", "false");
+                    return;
+                }
+                const share = overview.sent.find(
+                    (entry) => String(entry.id) === sentRow.dataset.shareId,
+                );
+                if (!share) return;
+                sentRow.after(renderShareDetails(share, i18n));
+                sentRow.setAttribute("aria-expanded", "true");
+                return;
+            }
+            const button = destructiveButton;
             if (!(button instanceof HTMLButtonElement)) return;
             const shareId =
                 button.dataset.shareRevoke ?? button.dataset.shareReject ?? "";
@@ -489,7 +574,7 @@ export async function mount(root, { signal } = {}) {
         "open",
     );
     if (requestedShareId) {
-        window.history.replaceState({}, "", "/shares");
+        window.history.replaceState({}, "", "/share");
         const requestedShare = overview.received.find(
             (share) => String(share.id) === requestedShareId,
         );

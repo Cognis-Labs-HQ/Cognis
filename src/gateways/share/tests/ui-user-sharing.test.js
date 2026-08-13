@@ -438,6 +438,12 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /share\.keyring\.request_process/);
 });
 
+test("account shares use the unified usr-prefixed Share route", () => {
+    assert.match(sessionFlowSource, /shareToken\.startsWith\("usr_"\)/);
+    assert.match(sessionFlowSource, /resolveAccountShare/);
+    assert.match(sessionFlowSource, /shareToken\.slice\("usr_"\.length\)/);
+});
+
 test("share owners bypass recipient password prompting", () => {
     assert.match(receivedShareActionSource, /ownedByCurrentAccount/);
     assert.match(

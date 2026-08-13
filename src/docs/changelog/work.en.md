@@ -207,3 +207,7 @@ The protected-share prompt now matches the compact Cognis header brand exactly a
 ## Restore legacy meeting links and bind calendar controls per render
 
 Meeting guest authorization now preserves compatibility with earlier meeting links whose records predate explicit capability scopes, while still requiring the token to match the requested meeting. Shared calendar controls bind to the freshly rendered calendar card after every composer refresh so view and period changes remain interactive.
+
+## Consolidate Share routes and expand sent-share activity
+
+Share management now lives at `/share`, while public and account shares use `/share/shr_…` and `/share/usr_…` URLs. Link-share rows provide a copy action, sent rows expand into timestamp and recipient activity views, and destructive action icons are centered consistently.

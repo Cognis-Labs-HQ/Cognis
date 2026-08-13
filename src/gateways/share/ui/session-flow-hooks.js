@@ -39,7 +39,7 @@
 
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { resolveReceivedShare } from "./received-share.js";
+import { resolveAccountShare, resolveReceivedShare } from "./received-share.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
     GUEST_SESSION_ACTIVE_STORAGE_KEY,
@@ -311,6 +311,33 @@ uiCtx.extendFlow(
             priorSessionResult?.valid === true &&
             !isViewingAsGuest() &&
             !ownAccountId.startsWith("share:");
+        if (shareToken.startsWith("usr_") && hasValidatedAccountSession) {
+            const accountShare = await resolveAccountShare(
+                shareToken.slice("usr_".length),
+            );
+            const destinationUrl = String(
+                accountShare?.data?.destinationUrl ?? "",
+            ).trim();
+            if (!destinationUrl) {
+                return { authenticated: false, reason: "share_access_denied" };
+            }
+            const destination = new URL(destinationUrl, window.location.origin);
+            const destinationPath = `${destination.pathname}${destination.search}${destination.hash}`;
+            const navigate = uiCtx.capabilities.get("ui:navigate");
+            queueMicrotask(() => {
+                Promise.resolve(navigate?.(destinationPath) ?? false).then(
+                    (navigated) => {
+                        if (!navigated) window.location.assign(destinationPath);
+                    },
+                );
+            });
+            return {
+                authenticated: true,
+                accountId: ownAccountId,
+                role: priorSessionResult?.role ?? "user",
+                isGuestSession: false,
+            };
+        }
         let response;
         try {
             response = await resolveReceivedShare(shareToken, {

@@ -97,4 +97,12 @@
   <string name="share.shares.popup_password_reveal">Tampilkan atau sembunyikan kata sandi</string>
   <string name="share.shares.popup_password_copy">Salin kata sandi</string>
   <string name="share.shares.popup_password_copied">Kata sandi disalin.</string>
+  <string name="share.shares.copy_link">Salin tautan berbagi</string>
+  <string name="share.shares.link_copied">Tautan berbagi disalin.</string>
+  <string name="share.shares.detail_activity">Aktivitas berbagi</string>
+  <string name="share.shares.detail_users">Penerima</string>
+  <string name="share.shares.detail_created">Dibuat</string>
+  <string name="share.shares.detail_updated">Diperbarui</string>
+  <string name="share.shares.detail_accessed">Terakhir diakses</string>
+  <string name="share.shares.detail_expires">Kedaluwarsa</string>
 </resources>

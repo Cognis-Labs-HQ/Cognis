@@ -97,4 +97,12 @@
   <string name="share.shares.popup_password_reveal">Show or hide password</string>
   <string name="share.shares.popup_password_copy">Copy password</string>
   <string name="share.shares.popup_password_copied">Password copied.</string>
+  <string name="share.shares.copy_link">Copy share link</string>
+  <string name="share.shares.link_copied">Share link copied.</string>
+  <string name="share.shares.detail_activity">Share activity</string>
+  <string name="share.shares.detail_users">Recipients</string>
+  <string name="share.shares.detail_created">Created</string>
+  <string name="share.shares.detail_updated">Updated</string>
+  <string name="share.shares.detail_accessed">Last accessed</string>
+  <string name="share.shares.detail_expires">Expires</string>
 </resources>

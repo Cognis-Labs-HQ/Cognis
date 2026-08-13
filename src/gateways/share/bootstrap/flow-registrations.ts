@@ -456,61 +456,39 @@ export async function registerShareBootstrapHooks(input: {
                     expiresAt: string;
                 }) => Promise<{ navigationUrl?: string } | null>
             >(`share:deliverUserShare:${shareRecord?.resourceType ?? ""}`);
-            const deliveries =
+            if (
                 issued?.minted &&
                 shareRecord?.metadata?.adapterId === "user" &&
                 deliverUserShare
-                    ? await Promise.all(
-                          userRecipients.map(async (recipientAccountId) => ({
-                              recipientAccountId,
-                              result: await deliverUserShare({
-                                  shareId: String(
-                                      (shareRecord as { id?: string })?.id ??
-                                          "",
-                                  ),
-                                  resourceType: String(
-                                      shareRecord?.resourceType ?? "",
-                                  ),
-                                  resourceId: String(
-                                      shareRecord?.resourceId ?? "",
-                                  ),
-                                  ownerAccountId: String(
-                                      shareRecord?.ownerAccountId ?? "",
-                                  ),
-                                  recipientAccountId,
-                                  grantedCapabilities: Array.isArray(
-                                      (
-                                          shareRecord as {
-                                              grantedCapabilities?: string[];
-                                          }
-                                      )?.grantedCapabilities,
-                                  )
-                                      ? (
-                                            shareRecord as {
-                                                grantedCapabilities: string[];
-                                            }
-                                        ).grantedCapabilities
-                                      : [],
-                                  expiresAt: String(
-                                      (shareRecord as { expiresAt?: string })
-                                          ?.expiresAt ?? "",
-                                  ),
-                              }),
-                          })),
-                      )
-                    : [];
+            ) {
+                await Promise.all(
+                    userRecipients.map((recipientAccountId) =>
+                        deliverUserShare({
+                            shareId: String(shareRecord?.id ?? ""),
+                            resourceType: String(
+                                shareRecord?.resourceType ?? "",
+                            ),
+                            resourceId: String(shareRecord?.resourceId ?? ""),
+                            ownerAccountId: String(
+                                shareRecord?.ownerAccountId ?? "",
+                            ),
+                            recipientAccountId,
+                            grantedCapabilities: Array.isArray(
+                                shareRecord?.grantedCapabilities,
+                            )
+                                ? shareRecord.grantedCapabilities
+                                : [],
+                            expiresAt: String(shareRecord?.expiresAt ?? ""),
+                        }),
+                    ),
+                );
+            }
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
                 await Promise.allSettled(
                     userRecipients.map((recipientUsername) => {
-                        const deliveryUrl = deliveries.find(
-                            (delivery) =>
-                                delivery.recipientAccountId ===
-                                recipientUsername,
-                        )?.result?.navigationUrl;
                         const actionUrl = String(
-                            deliveryUrl ??
-                                shareRecord?.actionUrl ??
+                            shareRecord?.actionUrl ??
                                 shareRecord?.shareUrl ??
                                 "",
                         ).trim();
@@ -1024,7 +1002,7 @@ export async function registerShareBootstrapHooks(input: {
                     recipientUsername: flowInput.ownerAccountId,
                     subject: "A recipient rejected your share",
                     body: `${flowInput.recipientAccountId || "A recipient"} rejected ${flowInput.label || "your shared item"}.`,
-                    actionUrl: "/shares",
+                    actionUrl: "/share",
                     senderName: "Cognis Share",
                     metadata: { shareId: flowInput.shareId },
                 });
@@ -1040,7 +1018,7 @@ export async function registerShareBootstrapHooks(input: {
                         recipientUsername: recipient.id,
                         subject: "A shared item was revoked",
                         body: `${flowInput.label || "A shared item"} is no longer available.`,
-                        actionUrl: "/shares",
+                        actionUrl: "/share",
                         senderName: "Cognis Share",
                         metadata: { shareId: flowInput.shareId },
                     }),
