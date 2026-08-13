@@ -721,6 +721,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /await composer\.init\(\)/);
     assert.match(SHARE_RENDERER_SOURCE, /requireAccountSession:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /enableAccountEnhancements:\s*false/);
+    assert.match(SHARE_RENDERER_SOURCE, /enableDomParking:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /showNavbar:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /function renderCalendar\(\)/);
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
@@ -756,6 +757,13 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(
         SHARE_RENDERER_CSS_SOURCE,
         /\.widget-card:has\(\.calendar-share-page\)\s*\{[\s\S]*overflow-y:\s*hidden/,
+    );
+});
+
+test("calendar page prompts to unlock received calendar shares while loading", () => {
+    assert.match(
+        APP_SOURCE,
+        /fetchEvents\(calendar\.id, calendar, \{\s*promptWhenLocked:\s*true/,
     );
 });
 
@@ -817,7 +825,10 @@ test("responses for globally stored events bypass calendar import", () => {
 });
 
 test("shared calendar event loading resolves password protection through keyring", () => {
-    assert.match(APP_SOURCE, /fetchEvents\(calendar\.id, calendar\)/);
+    assert.match(
+        APP_SOURCE,
+        /fetchEvents\(calendar\.id, calendar, \{\s*promptWhenLocked:\s*true/,
+    );
     assert.match(CALENDAR_API_SOURCE, /share:fetchProtectedResource/);
     assert.match(CALENDAR_API_SOURCE, /x-cognis-share-password/);
     assert.match(CALENDAR_API_SOURCE, /sharePasswordProtected/);

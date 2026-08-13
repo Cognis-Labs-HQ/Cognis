@@ -215,3 +215,7 @@ Die Freigabeverwaltung befindet sich nun unter `/share`, während öffentliche u
 ## SPA-Avatarressourcen gültig halten
 
 Die Wiederverwendung der Dashboard-Shell widerruft beim Ersetzen des Navigationsleisten-Avatars keine Blob-URLs des Profilanbieters mehr. Zwischengespeicherte Avatar-URLs bleiben dadurch bei späteren SPA-Navigationen einschließlich der Study-Einstellungen ladbar, während ihr Anbieter die Lebenszykluskontrolle behält.
+
+## Geteilte Kalender und Meeting-Beitritte wiederherstellen
+
+Die Kalenderseite fordert nun beim Laden empfangener Kalender deren Entsperrung über den Schlüsselbund an. Gast-Kalendersteuerungen ersetzen außerdem die gerenderte Ansicht, anstatt veraltetes DOM beizubehalten. Gäste von Meeting-Links übermitteln ihre begrenzte Freigabeberechtigung nun auch an die abschließende Beitrittsanfrage, damit der Beitrittsvorgang abgeschlossen wird.

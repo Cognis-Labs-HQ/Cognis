@@ -335,7 +335,7 @@ export async function mount(
 
     composer = createPageComposer(root, {
         allowCustomization: false,
-        enableDomParking: true,
+        enableDomParking: false,
         elements: [buildCalendarElement()],
         preferenceKey: "shared-calendar-layout",
         i18n,

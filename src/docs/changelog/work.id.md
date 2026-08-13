@@ -215,3 +215,7 @@ Pengelolaan berbagi kini berada di `/share`, sedangkan berbagi publik dan akun m
 ## Pertahankan validitas sumber avatar SPA
 
 Penggunaan ulang shell dasbor tidak lagi mencabut URL blob milik penyedia profil saat mengganti avatar bilah navigasi. URL avatar yang di-cache tetap dapat dimuat pada navigasi SPA berikutnya, termasuk pengaturan Study, sementara penyedianya tetap mengendalikan siklus hidup.
+
+## Memulihkan kalender bersama dan proses bergabung rapat
+
+Halaman Kalender kini meminta keyring membuka kalender yang diterima setiap kali dimuat, dan kontrol kalender tamu mengganti tampilan hasil render alih-alih mempertahankan DOM lama. Tamu tautan rapat kini menyertakan kredensial berbagi terbatas pada permintaan bergabung terakhir agar tahap bergabung dapat diselesaikan.

@@ -215,3 +215,7 @@ Share management now lives at `/share`, while public and account shares use `/sh
 ## Keep SPA avatar resources valid
 
 Dashboard shell reuse no longer revokes profile-provider blob URLs when replacing the navbar avatar. Cached avatar URLs therefore remain loadable during later SPA navigations, including Study settings, while their owning provider retains lifecycle control.
+
+## Restore shared calendars and meeting joins
+
+The Calendar page now asks the keyring to unlock received calendars whenever they load, and guest calendar controls replace their rendered view instead of preserving stale DOM. Meeting link guests now carry their scoped share credential into the final join request so the joining stage can complete.

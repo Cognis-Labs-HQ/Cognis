@@ -152,7 +152,9 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         const eventResults = await Promise.allSettled(
             calendars.map(async (calendar) => [
                 calendar.id,
-                await calendarUi.fetchEvents(calendar.id, calendar),
+                await calendarUi.fetchEvents(calendar.id, calendar, {
+                    promptWhenLocked: true,
+                }),
             ]),
         );
         calendars = calendars.map((calendar, index) => ({
