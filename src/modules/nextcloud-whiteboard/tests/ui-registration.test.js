@@ -344,7 +344,13 @@ test("nextcloud whiteboard image paste saves and selects resizable image objects
 });
 
 test("nextcloud whiteboard defaults to select after canvas refresh", async () => {
-    const [canvasSource, appSource, renderSource] = await Promise.all([
+    const [
+        canvasSource,
+        appSource,
+        renderSource,
+        elementsSource,
+        stylesSource,
+    ] = await Promise.all([
         import("node:fs/promises").then((fs) =>
             fs.readFile(
                 new URL("../ui/whiteboard/canvas.js", import.meta.url),
@@ -357,6 +363,18 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         import("node:fs/promises").then((fs) =>
             fs.readFile(
                 new URL("../ui/app/render.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/elements.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/styles/whiteboards.css", import.meta.url),
                 "utf8",
             ),
         ),
@@ -387,6 +405,11 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         appSource,
         /window\.history\.replaceState\(null, "", nextUrl\)/,
     );
+    assert.match(elementsSource, /ensureVisibleStrokeColor/);
+    assert.match(elementsSource, /contrastRatio/);
+    assert.match(stylesSource, /--whiteboard-auto-stroke: #0f172a/);
+    assert.match(stylesSource, /--whiteboard-auto-stroke: #f8fafc/);
+    assert.match(stylesSource, /#page-presence-section/);
 });
 test("nextcloud whiteboard entrusts its internal URL to the share popup", async () => {
     const appSource = await import("node:fs/promises").then((fs) =>

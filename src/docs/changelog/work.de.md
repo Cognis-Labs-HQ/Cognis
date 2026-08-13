@@ -187,3 +187,7 @@ Die Meetings-Seite löst nun jede `meetingId`-URL direkt auf, stellt die Teilneh
 ## Begrenzte Zugangsdaten für geteilte Ziele verwendet
 
 Meeting-Linkfreigaben senden beim Laden des Meetings nun ausdrücklich ihre aufgelösten Gastzugangsdaten und vermeiden Konflikte mit Konto- oder vorherigen Freigabetokens. Passwortgeschützte Benutzerfreigaben verwenden ihre bekannten Schutzmetadaten, um den Entsperrvorgang direkt zu öffnen, statt absichtlich eine erste nicht autorisierte Anfrage auszulösen.
+
+## Gastlayouts sperren und Whiteboard-Markierungen sichtbar halten
+
+Gastsitzungen entfernen nun die Schaltfläche zum Bearbeiten des Seitenlayouts, anstatt sich auf eine verspätete Funktionsprüfung zu verlassen. Whiteboard-Flächen wählen außerdem kontrastreiche Striche, Auswahlbeschriftungen und Anwesenheitsschattierungen für helle und dunkle Designs, sodass Markierungen und Mitwirkende nach einem Designwechsel sichtbar bleiben.

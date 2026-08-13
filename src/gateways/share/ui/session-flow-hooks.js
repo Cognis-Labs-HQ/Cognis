@@ -179,6 +179,7 @@ async function activateGuestToken(
         }
     }
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
+    document.body.dataset.shareGuest = "true";
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
     const guestKeyringAccountId = String(guestKeyring?.accountId ?? "").trim();
     if (guestKeyringAccountId) {
@@ -228,6 +229,7 @@ function restoreGuestToken() {
     sessionStorage.removeItem(PREV_ACCOUNT_KEY);
     sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
+    delete document.body.dataset.shareGuest;
     activeGuestSession = null;
     activeShareSession = null;
 }

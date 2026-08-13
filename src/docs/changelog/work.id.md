@@ -187,3 +187,7 @@ Halaman Rapat kini menyelesaikan setiap URL `meetingId` secara langsung, memulih
 ## Menggunakan kredensial terbatas untuk tujuan bersama
 
 Berbagi tautan Rapat kini mengirim kredensial tamu yang telah diselesaikan secara eksplisit saat memuat rapat, menghindari konflik dengan token akun atau berbagi sebelumnya. Berbagi pengguna yang dilindungi kata sandi memakai metadata perlindungan yang diketahui untuk langsung membuka alur buka kunci tanpa sengaja membuat permintaan tidak sah awal.
+
+## Kunci tata letak tamu dan pertahankan visibilitas tanda Whiteboard
+
+Sesi tamu kini menghapus kontrol pengeditan tata letak halaman, bukan mengandalkan pemeriksaan kemampuan yang terlambat. Kanvas Whiteboard juga memilih goresan, label pilihan, dan bayangan kehadiran yang kontras untuk tema terang maupun gelap agar tanda dan kolaborator tetap terlihat setelah tema berubah.

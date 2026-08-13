@@ -479,10 +479,11 @@ export function createPageComposer(
     function syncSubEditToggle(state) {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
-        if (
-            !state.allowCustomization ||
-            uiCtx.capabilities.get("session:isGuest")?.() === true
-        ) {
+        if (isGuestSession()) {
+            editBtn.remove();
+            return;
+        }
+        if (!state.allowCustomization) {
             editBtn.hidden = true;
             return;
         }
@@ -532,10 +533,11 @@ export function createPageComposer(
     function syncEditToggle() {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
-        if (
-            !allowCustomization ||
-            uiCtx.capabilities.get("session:isGuest")?.() === true
-        ) {
+        if (isGuestSession()) {
+            editBtn.remove();
+            return;
+        }
+        if (!allowCustomization) {
             editBtn.hidden = true;
             return;
         }
@@ -575,6 +577,20 @@ export function createPageComposer(
                 { signal },
             );
         }
+    }
+
+    function isGuestSession() {
+        return (
+            uiCtx.capabilities.get("session:isGuest")?.() === true ||
+            sessionStorage.getItem("cognis_share_guest_token_active") === "1" ||
+            localStorage.getItem("cognis_role") === "guest" ||
+            ["guest", "share"].includes(
+                localStorage.getItem("cognis_provider_id") ?? "",
+            ) ||
+            String(localStorage.getItem("cognis_account") ?? "").startsWith(
+                "share:",
+            )
+        );
     }
 
     function getComposerEditToggleButton() {

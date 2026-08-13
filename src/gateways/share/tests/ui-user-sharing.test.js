@@ -311,6 +311,14 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(sessionFlowSource, /await activateGuestToken/);
     assert.match(
         sessionFlowSource,
+        /document\.body\.dataset\.shareGuest = "true"/,
+    );
+    assert.match(
+        sessionFlowSource,
+        /delete document\.body\.dataset\.shareGuest/,
+    );
+    assert.match(
+        sessionFlowSource,
         /sessionStorage\.setItem\(ACCESS_DENIED_TOKEN_KEY, shareToken\);[\s\S]*restoreGuestToken\(\);[\s\S]*capabilities\.get\("ui:navigate"\)/,
     );
     assert.doesNotMatch(

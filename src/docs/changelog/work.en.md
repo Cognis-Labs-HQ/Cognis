@@ -187,3 +187,7 @@ The Meetings page now resolves every `meetingId` URL directly, restores that mee
 ## Used scoped credentials for shared destinations
 
 Meeting link shares now send their resolved guest credential explicitly when loading the meeting, avoiding races with account or prior-share tokens. Password-protected user shares use their known protection metadata to open the unlock flow directly instead of intentionally producing an initial unauthorized request.
+
+## Keep guest layouts locked and Whiteboard marks visible
+
+Guest sessions now remove the page-layout edit control instead of relying on a late capability check. Whiteboard canvases also select contrasting strokes, selection labels, and presence shading for light and dark themes so marks and collaborators remain visible after theme changes.
