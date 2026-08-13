@@ -50,8 +50,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.51` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.47` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.52` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.48` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.23` |
 | User Share            | `src/adapters/share/user/`          | `1.1.16` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -74,7 +74,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Logging               | `src/gateways/logging/`       | `1.5.11` |
 | Observability         | `src/gateways/observability/` | `1.0.5`  |
 | Study                 | `src/gateways/study/`         | `1.5.10` |
-| Calendar              | `src/gateways/calendar/`      | `1.4.80` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.81` |
 
 ## Kernverträge
 
@@ -99,7 +99,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.3`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.82` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.4`  |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.83` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

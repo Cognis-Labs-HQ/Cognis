@@ -159,3 +159,7 @@ Berbagi yang sudah ada dimigrasikan ke registri sumber daya saat peningkatan. Be
 ## Memulihkan kalender bersama dan tautan rapat aktif
 
 Berbagi kalender pengguna langsung dikirim ke kalender penerima dan dibuka melalui tujuan milik penyedia. Rapat aktif yang dibagikan melalui tautan tidak lagi mewarisi status ditutup yang lama, dan ringkasan rilis tetap disembunyikan selama sesi tamu.
+
+## Menstabilkan kontrol kalender bersama dan ringkasan tamu
+
+Kontrol tampilan dan periode kalender bersama kini memakai satu listener sepanjang siklus halaman yang tetap aktif setelah setiap render ulang composer. Login dengan peran tamu dikenali bersama tamu berbagi terbatas sehingga ringkasan rilis dan permintaan dasbor khusus akun tidak dijalankan.

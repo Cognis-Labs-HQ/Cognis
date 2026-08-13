@@ -159,6 +159,8 @@ test("dashboard layout suppresses release summaries for guest sessions", () => {
         "utf8",
     );
     assert.match(popupSource, /session:isGuest/);
+    assert.match(popupSource, /cognis_role/);
+    assert.match(popupSource, /=== "guest"/);
 });
 
 test("dashboard layout keeps active avatar blob URL during SPA refresh", () => {

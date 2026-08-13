@@ -159,3 +159,7 @@ Bestehende Freigaben werden bei Upgrades in die Ressourcenregistrierung übernom
 ## Geteilte Kalender und aktive Meeting-Links wiederhergestellt
 
 Benutzerkalenderfreigaben werden sofort in den Kalender der empfangenden Person übertragen und über das vom Anbieter verwaltete Ziel aufgelöst. Aktive über Links geteilte Meetings übernehmen keinen veralteten Beendet-Status mehr und Versionszusammenfassungen bleiben während Gastsitzungen verborgen.
+
+## Steuerelemente geteilter Kalender und Gastzusammenfassungen stabilisiert
+
+Ansichts- und Zeitraumsteuerungen geteilter Kalender verwenden nun einen einzigen Listener für den Seitenlebenszyklus, der jedes erneute Composer-Rendering übersteht. Anmeldungen mit Gastrolle werden neben begrenzten Freigabegästen erkannt, wodurch Versionszusammenfassungen und reine Kontoanfragen verhindert werden.

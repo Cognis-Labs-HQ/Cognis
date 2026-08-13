@@ -159,3 +159,7 @@ Existing shares are migrated to the resource registry during upgrades. Password-
 ## Restored shared calendars and active meeting links
 
 User calendar shares are delivered immediately into the recipient calendar and resolve through the provider-owned destination. Active link-shared meetings no longer inherit a stale closed state, and release summaries remain hidden throughout guest sessions.
+
+## Stabilized shared calendar controls and guest summaries
+
+Shared calendar view and period controls now use one page-lifecycle event listener that survives every composer rerender. Guest-role logins are recognized alongside scoped share guests, preventing release summaries and account-only dashboard requests.

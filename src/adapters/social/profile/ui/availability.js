@@ -16,7 +16,12 @@ let presenceRequest = null;
 let availabilityRefresh = null;
 
 function isGuestSession() {
-    return uiCtx.capabilities.get("session:isGuest")?.() === true;
+    return (
+        uiCtx.capabilities.get("session:isGuest")?.() === true ||
+        String(localStorage.getItem("cognis_role") ?? "")
+            .trim()
+            .toLowerCase() === "guest"
+    );
 }
 
 function notifyAvailabilitySubscribers(availability) {

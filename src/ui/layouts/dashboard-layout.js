@@ -53,6 +53,9 @@ function getDisplayName() {
 function isGuestSession() {
     return (
         uiCtx.capabilities.get("session:isGuest")?.() === true ||
+        String(localStorage.getItem("cognis_role") ?? "")
+            .trim()
+            .toLowerCase() === "guest" ||
         !localStorage.getItem("cognis_account")
     );
 }

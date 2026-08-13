@@ -33,6 +33,15 @@ import { uiCtx } from "../../reuse/ui-ctx.js";
 const MAX_VISIBLE_RELEASE_NOTES = 5;
 const MAX_VISIBLE_RELEASE_NOTE_BULLETS = 5;
 
+function isGuestLogin() {
+    return (
+        uiCtx.capabilities.get("session:isGuest")?.() === true ||
+        String(localStorage.getItem("cognis_role") ?? "")
+            .trim()
+            .toLowerCase() === "guest"
+    );
+}
+
 function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
     const notesItems = releaseEntries
         .slice(0, MAX_VISIBLE_RELEASE_NOTES)
@@ -69,14 +78,14 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
 }
 
 export async function maybeShowReleaseChangelogPopup(i18n) {
-    if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
+    if (isGuestLogin()) return;
     const accountId = localStorage.getItem("cognis_account");
     if (!accountId) return;
 
     const prefs = (await loadUiPreferences()) ?? {};
     if (prefs.releaseChangelogShow === false) return;
     const changelogState = await loadReleaseChangelogState();
-    if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
+    if (isGuestLogin()) return;
 
     let changelogPayload;
     try {
@@ -89,7 +98,7 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
     } catch {
         return;
     }
-    if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
+    if (isGuestLogin()) return;
     const releaseVersion = String(
         changelogPayload?.data?.releaseVersion ?? "",
     ).trim();

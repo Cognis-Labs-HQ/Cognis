@@ -179,7 +179,6 @@ export async function mount(
     const calendarId = String(calendar.id ?? "");
     const guestAccessToken = String(shareContext?.guestAccessToken ?? "");
     let composer;
-    let interactionController = null;
     root.classList.add("calendar-share-page");
     signal.addEventListener(
         "abort",
@@ -267,68 +266,61 @@ export async function mount(
         };
     }
 
-    function bindInteractiveHandlers() {
-        interactionController?.abort();
-        interactionController = new AbortController();
-        signal.addEventListener("abort", () => interactionController?.abort(), {
-            once: true,
-        });
-        root.addEventListener(
-            "click",
-            (clickEvent) => {
-                if (!(clickEvent.target instanceof Element)) return;
-                const viewButton = clickEvent.target.closest(
-                    "[data-calendar-view]",
+    root.addEventListener(
+        "click",
+        (clickEvent) => {
+            if (!(clickEvent.target instanceof Element)) return;
+            const viewButton = clickEvent.target.closest(
+                "[data-calendar-view]",
+            );
+            if (viewButton instanceof HTMLElement) {
+                const requestedView = String(
+                    viewButton.dataset.calendarView ?? "",
                 );
-                if (viewButton instanceof HTMLElement) {
-                    const requestedView = String(
-                        viewButton.dataset.calendarView ?? "",
-                    );
-                    if (!CALENDAR_VIEWS.includes(requestedView)) return;
-                    selectedView = requestedView;
-                    renderCalendar();
-                    return;
-                }
-                const navigationButton = clickEvent.target.closest(
-                    "[data-calendar-nav]",
-                );
-                if (navigationButton instanceof HTMLElement) {
-                    const direction = navigationButton.dataset.calendarNav;
-                    activeDate =
-                        direction === "today"
-                            ? new Date()
-                            : shiftActiveDate(
-                                  activeDate,
-                                  selectedView,
-                                  direction === "next" ? 1 : -1,
-                              );
-                    renderCalendar();
-                    return;
-                }
-                if (!canWrite) return;
-                const target = clickEvent.target.closest(
-                    "[data-calendar-event], [data-timeslot-add]",
-                );
-                if (!(target instanceof HTMLElement)) return;
-                const selectedEvent = events.find(
-                    (candidate) =>
-                        String(candidate.id) === target.dataset.calendarEvent,
-                );
-                void openEventEditor({
-                    calendarId,
-                    event: selectedEvent,
-                    slot: {
-                        startAt: target.dataset.slotStart,
-                        endAt: target.dataset.slotEnd,
-                    },
-                    guestAccessToken,
-                    i18n,
-                    onChanged: reloadEvents,
-                });
-            },
-            { signal: interactionController.signal },
-        );
-    }
+                if (!CALENDAR_VIEWS.includes(requestedView)) return;
+                selectedView = requestedView;
+                renderCalendar();
+                return;
+            }
+            const navigationButton = clickEvent.target.closest(
+                "[data-calendar-nav]",
+            );
+            if (navigationButton instanceof HTMLElement) {
+                const direction = navigationButton.dataset.calendarNav;
+                activeDate =
+                    direction === "today"
+                        ? new Date()
+                        : shiftActiveDate(
+                              activeDate,
+                              selectedView,
+                              direction === "next" ? 1 : -1,
+                          );
+                renderCalendar();
+                return;
+            }
+            if (!canWrite) return;
+            const target = clickEvent.target.closest(
+                "[data-calendar-event], [data-timeslot-add]",
+            );
+            if (!(target instanceof HTMLElement)) return;
+            const selectedEvent = events.find(
+                (candidate) =>
+                    String(candidate.id) === target.dataset.calendarEvent,
+            );
+            void openEventEditor({
+                calendarId,
+                event: selectedEvent,
+                slot: {
+                    startAt: target.dataset.slotStart,
+                    endAt: target.dataset.slotEnd,
+                },
+                guestAccessToken,
+                i18n,
+                onChanged: reloadEvents,
+            });
+        },
+        { signal },
+    );
 
     composer = createPageComposer(root, {
         allowCustomization: false,
@@ -347,7 +339,6 @@ export async function mount(
         persistLayoutPreferences: false,
         frameless: false,
         requireAccountSession: false,
-        onRender: bindInteractiveHandlers,
     });
 
     await composer.init();

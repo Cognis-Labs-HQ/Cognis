@@ -108,6 +108,8 @@ test("guest sessions do not poll account availability", () => {
     );
 
     assert.match(availability, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(availability, /cognis_role/);
+    assert.match(availability, /=== "guest"/);
     assert.match(
         availability,
         /function reportPresenceActivity[\s\S]*if \(isGuestSession\(\)\)/,
