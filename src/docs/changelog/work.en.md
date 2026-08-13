@@ -203,3 +203,7 @@ Saved meeting links now restore invitees through the normal participant stage, e
 ## Match Share branding and complete meeting guest access
 
 The protected-share prompt now matches the compact Cognis header brand exactly and the initial Share document has a resolved title. Meeting share content URLs explicitly request start mode, guest chat reads and sends use the scoped credential, Jitsi resolves guest access through Share, and share owners bypass recipient-only password prompts.
+
+## Restore legacy meeting links and bind calendar controls per render
+
+Meeting guest authorization now preserves compatibility with earlier meeting links whose records predate explicit capability scopes, while still requiring the token to match the requested meeting. Shared calendar controls bind to the freshly rendered calendar card after every composer refresh so view and period changes remain interactive.

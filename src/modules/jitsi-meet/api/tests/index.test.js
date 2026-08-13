@@ -43,6 +43,8 @@ test("jitsi resolves guest access through the Share gateway contract", () => {
     );
     assert.match(source, /ctx\.getCapability\(\s*"share:resolveGuestAccess"/);
     assert.match(source, /resourceType: "meeting"/);
+    assert.match(source, /const legacyMeetingAccess/);
+    assert.match(source, /legacyMeetingAccess\?\.authorized === true/);
 });
 
 test("jitsi API logs stored CSP origin registration failures", () => {

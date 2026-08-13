@@ -203,3 +203,7 @@ Tautan rapat tersimpan kini memulihkan undangan melalui panggung peserta normal,
 ## Samakan merek Share dan lengkapi akses tamu rapat
 
 Permintaan berbagi terlindungi kini sama persis dengan merek ringkas pada header Cognis dan dokumen Share awal memiliki judul yang telah diselesaikan. URL konten berbagi rapat secara eksplisit meminta mode mulai, pembacaan dan pengiriman obrolan tamu memakai kredensial terbatas, Jitsi menyelesaikan akses tamu melalui Share, dan pemilik berbagi melewati permintaan kata sandi khusus penerima.
+
+## Pulihkan tautan rapat lama dan ikat kontrol kalender setiap render
+
+Otorisasi tamu rapat kini mempertahankan kompatibilitas dengan tautan rapat lama yang catatannya dibuat sebelum cakupan kapabilitas eksplisit, sambil tetap mewajibkan token cocok dengan rapat yang diminta. Kontrol kalender bersama diikat ke kartu kalender yang baru dirender setelah setiap penyegaran composer agar perubahan tampilan dan periode tetap interaktif.

@@ -171,9 +171,23 @@ export function registerApiRoutes(router, ctx) {
             resourceId: meetingId,
             requiredCapability,
         });
+        const legacyMeetingAccess =
+            access?.shareGuest === true &&
+            access?.authorized !== true &&
+            requiredCapability
+                ? await resolveGuestAccess({
+                      claims,
+                      resourceType: "meeting",
+                      resourceId: meetingId,
+                  })
+                : null;
         return {
-            isGuest: access?.shareGuest === true,
-            allowed: access?.authorized === true,
+            isGuest:
+                access?.shareGuest === true ||
+                legacyMeetingAccess?.shareGuest === true,
+            allowed:
+                access?.authorized === true ||
+                legacyMeetingAccess?.authorized === true,
             tokenRecord: null,
         };
     };

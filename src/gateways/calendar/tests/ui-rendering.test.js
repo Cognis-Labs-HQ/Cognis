@@ -730,11 +730,9 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
     assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);
     assert.match(SHARE_RENDERER_SOURCE, /requestAnimationFrame/);
-    assert.match(SHARE_RENDERER_SOURCE, /root\.addEventListener/);
-    assert.match(SHARE_RENDERER_SOURCE, /capture:\s*true/);
-    assert.match(SHARE_RENDERER_SOURCE, /root\.contains\(sharedCalendar\)/);
-    assert.doesNotMatch(SHARE_RENDERER_SOURCE, /onRender:/);
-    assert.match(SHARE_RENDERER_SOURCE, /capture:\s*true, signal/);
+    assert.match(SHARE_RENDERER_SOURCE, /onRender:\s*bindCalendarControls/);
+    assert.match(SHARE_RENDERER_SOURCE, /sharedCalendar\.addEventListener/);
+    assert.match(SHARE_RENDERER_SOURCE, /\{ signal \}/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);

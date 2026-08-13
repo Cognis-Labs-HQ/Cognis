@@ -203,3 +203,7 @@ Gespeicherte Meeting-Links stellen Eingeladene nun über die normale Teilnehmerb
 ## Share-Branding angleichen und Meeting-Gastzugriff vervollständigen
 
 Die Abfrage für geschützte Freigaben entspricht nun exakt der kompakten Cognis-Kopfzeilenmarke und das anfängliche Share-Dokument besitzt einen aufgelösten Titel. Inhalts-URLs für Meeting-Freigaben fordern den Startmodus ausdrücklich an, Gast-Chat-Lese- und Sendevorgänge verwenden die begrenzten Zugangsdaten, Jitsi löst Gastzugriff über Share auf und Freigabeeigentümer umgehen Passwortabfragen, die nur für Empfänger gelten.
+
+## Ältere Meeting-Links wiederherstellen und Kalendersteuerungen je Darstellung binden
+
+Die Meeting-Gastautorisierung bleibt nun mit älteren Meeting-Links kompatibel, deren Datensätze noch keine ausdrücklichen Berechtigungsbereiche enthalten, wobei das Token weiterhin zum angeforderten Meeting passen muss. Freigegebene Kalendersteuerungen werden nach jeder Composer-Aktualisierung an die neu dargestellte Kalenderkarte gebunden, damit Ansichts- und Zeitraumwechsel interaktiv bleiben.
