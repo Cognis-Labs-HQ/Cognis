@@ -249,8 +249,7 @@ function bindTopbarActions() {
  * Registered by gateway navbar plugins to supply avatar and profile-link
  * state. The function receives no arguments and returns a plain object with:
  *   - profileAvailable: boolean — whether to show the Profile nav link
- *   - avatarBlobUrl?: string   — a blob: URL for the avatar image, if one is
- *     available; the layout revokes the previous blob URL and renders this one
+ *   - avatarBlobUrl?: string   — a provider-owned blob URL for the avatar
  *
  * Only one provider is active at a time; the most recently registered one
  * wins. Gateways register by calling `registerAvatarProvider` from their
@@ -268,11 +267,9 @@ export async function updateNavbarAvatar() {
     if (!avatarBtn) return;
     const handle = localStorage.getItem("cognis_account") ?? "";
 
-    const prevImg = avatarBtn.querySelector("img.avatar-image");
     const availabilityIndicator = avatarBtn.querySelector(
         ".availability-indicator",
     );
-    const prevBlobSrc = prevImg?.src?.startsWith("blob:") ? prevImg.src : null;
 
     let profileAvailable = false;
     let avatarBlobUrl = null;
@@ -298,12 +295,9 @@ export async function updateNavbarAvatar() {
         img.src = avatarBlobUrl;
         avatarBtn.replaceChildren(img);
         if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
-        if (prevBlobSrc && prevBlobSrc !== avatarBlobUrl)
-            URL.revokeObjectURL(prevBlobSrc);
         return;
     }
 
-    if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
     const initialsEl = document.createElement("span");
     initialsEl.className = "avatar-initials";
     initialsEl.textContent = getInitialsText(handle);

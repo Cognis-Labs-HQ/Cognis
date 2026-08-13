@@ -211,3 +211,7 @@ Die Meeting-Gastautorisierung bleibt nun mit älteren Meeting-Links kompatibel, 
 ## Share-Routen zusammenführen und Aktivität gesendeter Freigaben erweitern
 
 Die Freigabeverwaltung befindet sich nun unter `/share`, während öffentliche und kontogebundene Freigaben URLs unter `/share/shr_…` und `/share/usr_…` verwenden. Linkfreigabe-Zeilen bieten eine Kopieraktion, gesendete Zeilen erweitern sich zu Zeitstempel- und Empfängeransichten und Symbole für destruktive Aktionen sind einheitlich zentriert.
+
+## SPA-Avatarressourcen gültig halten
+
+Die Wiederverwendung der Dashboard-Shell widerruft beim Ersetzen des Navigationsleisten-Avatars keine Blob-URLs des Profilanbieters mehr. Zwischengespeicherte Avatar-URLs bleiben dadurch bei späteren SPA-Navigationen einschließlich der Study-Einstellungen ladbar, während ihr Anbieter die Lebenszykluskontrolle behält.

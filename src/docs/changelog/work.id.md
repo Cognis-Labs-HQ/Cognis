@@ -211,3 +211,7 @@ Otorisasi tamu rapat kini mempertahankan kompatibilitas dengan tautan rapat lama
 ## Satukan rute Share dan perluas aktivitas berbagi terkirim
 
 Pengelolaan berbagi kini berada di `/share`, sedangkan berbagi publik dan akun memakai URL `/share/shr_…` dan `/share/usr_…`. Baris berbagi tautan menyediakan aksi salin, baris terkirim dapat diperluas menjadi tampilan stempel waktu dan penerima, serta ikon tindakan destruktif dipusatkan secara konsisten.
+
+## Pertahankan validitas sumber avatar SPA
+
+Penggunaan ulang shell dasbor tidak lagi mencabut URL blob milik penyedia profil saat mengganti avatar bilah navigasi. URL avatar yang di-cache tetap dapat dimuat pada navigasi SPA berikutnya, termasuk pengaturan Study, sementara penyedianya tetap mengendalikan siklus hidup.

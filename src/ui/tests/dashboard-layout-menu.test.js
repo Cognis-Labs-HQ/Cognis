@@ -166,15 +166,13 @@ test("dashboard layout suppresses release summaries for guest sessions", () => {
     assert.match(popupSource, /providerId === "share"/);
 });
 
-test("dashboard layout keeps active avatar blob URL during SPA refresh", () => {
+test("dashboard layout leaves cached avatar blob ownership with its provider", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
-    assert.ok(
-        layoutSource.includes("prevBlobSrc && prevBlobSrc !== avatarBlobUrl"),
-        "dashboard layout should not revoke a blob URL when it is still the active avatar source",
-    );
+    assert.doesNotMatch(layoutSource, /URL\.revokeObjectURL/);
+    assert.match(layoutSource, /provider-owned blob URL/);
 });
 
 test("dashboard layout re-shows theme toggle on shell reuse when enabled", () => {

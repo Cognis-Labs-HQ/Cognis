@@ -211,3 +211,7 @@ Meeting guest authorization now preserves compatibility with earlier meeting lin
 ## Consolidate Share routes and expand sent-share activity
 
 Share management now lives at `/share`, while public and account shares use `/share/shr_…` and `/share/usr_…` URLs. Link-share rows provide a copy action, sent rows expand into timestamp and recipient activity views, and destructive action icons are centered consistently.
+
+## Keep SPA avatar resources valid
+
+Dashboard shell reuse no longer revokes profile-provider blob URLs when replacing the navbar avatar. Cached avatar URLs therefore remain loadable during later SPA navigations, including Study settings, while their owning provider retains lifecycle control.
