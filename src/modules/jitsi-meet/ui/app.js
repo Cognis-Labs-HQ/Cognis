@@ -124,8 +124,7 @@ export async function mount(
                 new URL(window.location.href).searchParams.get("meetingId"),
         ),
         requestedMeetingStart:
-            new URL(window.location.href).searchParams.get("start") === "1" ||
-            (inShareView && Boolean(resolvedMeetingId)),
+            new URL(window.location.href).searchParams.get("start") === "1",
         shareAccessToken: String(shareContext?.guestAccessToken ?? ""),
         activeMeetings: [],
         activeMeetingsRefreshTimer: null,

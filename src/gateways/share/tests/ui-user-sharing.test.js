@@ -386,6 +386,7 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /share\.unlock\.keyring_label/);
     assert.match(receivedShareSource, /"Share Gateway"/);
     assert.match(receivedShareSource, /share-unlock-save/);
+    assert.match(receivedShareSource, /cognis-logo\.webp/);
     assert.match(receivedShareSource, /type="checkbox" checked/);
     assert.match(receivedShareSource, /saveToKeyring/);
     assert.match(

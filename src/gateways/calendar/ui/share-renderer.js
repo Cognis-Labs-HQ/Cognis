@@ -266,7 +266,7 @@ export async function mount(
         };
     }
 
-    document.addEventListener(
+    root.addEventListener(
         "click",
         (clickEvent) => {
             if (!(clickEvent.target instanceof Element)) return;

@@ -24,6 +24,7 @@ function isGuestSession() {
         .toLowerCase();
     return (
         uiCtx.capabilities.get("session:isGuest")?.() === true ||
+        window.location.pathname.startsWith("/share/") ||
         sessionStorage.getItem("cognis_share_guest_token_active") === "1" ||
         accountId.startsWith("share:") ||
         providerId === "guest" ||

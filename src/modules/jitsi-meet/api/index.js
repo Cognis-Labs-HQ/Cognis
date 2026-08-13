@@ -27,7 +27,6 @@ import {
     filterUsernamesForGuestVisibility,
     resolveMeetingPayloadOrReject,
     resolveRequestedParticipants,
-    resolveShareGuestMeetingAccess,
     resolveShareGuestPresenceUsername,
 } from "./reuse/meeting-access.js";
 
@@ -90,7 +89,7 @@ function buildMeetingActionUrl(meetingId) {
     if (!normalizedMeetingId) {
         return "/meetings";
     }
-    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}&start=1`;
+    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}`;
 }
 
 function buildMeetingEmailLink(meetingId) {
@@ -155,8 +154,29 @@ export function registerApiRoutes(router, ctx) {
     const accountStore = ctx.getCapability("auth:accountStore");
     const listCalendarsByOwner = ctx.getCapability("calendar:listCalendars");
     const listCalendarEvents = ctx.getCapability("calendar:listEvents");
-    const getShareTokenById = (...args) =>
-        ctx.getCapability("share:getTokenById")?.(...args) ?? null;
+    const resolveShareGuestMeetingAccess = async ({
+        claims,
+        meetingId,
+        requiredCapability = "",
+    }) => {
+        const resolveGuestAccess = ctx.getCapability(
+            "share:resolveGuestAccess",
+        );
+        if (typeof resolveGuestAccess !== "function") {
+            return { isGuest: false, allowed: false, tokenRecord: null };
+        }
+        const access = await resolveGuestAccess({
+            claims,
+            resourceType: "meeting",
+            resourceId: meetingId,
+            requiredCapability,
+        });
+        return {
+            isGuest: access?.shareGuest === true,
+            allowed: access?.authorized === true,
+            tokenRecord: null,
+        };
+    };
     const resolveShareUserAccess = ctx.getCapability("share:resolveUserAccess");
     const resolveMeetingPayload = (input) =>
         resolveMeetingPayloadOrReject({
@@ -558,11 +578,7 @@ export function registerApiRoutes(router, ctx) {
         resolveRequestedParticipants,
         createMeetingPayload,
         resolveMeetingPayload,
-        resolveShareGuestMeetingAccess: (input) =>
-            resolveShareGuestMeetingAccess({
-                ...input,
-                getShareTokenById,
-            }),
+        resolveShareGuestMeetingAccess,
         resolveShareGuestPresenceUsername,
         listClassroomParticipantHandles,
         canAccessMeeting: canAccessMeetingForRequester,
@@ -595,11 +611,7 @@ export function registerApiRoutes(router, ctx) {
         sendError,
         checkHttpLiveness,
         LIVELINESS_TIMEOUT_MS,
-        resolveShareGuestMeetingAccess: (input) =>
-            resolveShareGuestMeetingAccess({
-                ...input,
-                getShareTokenById,
-            }),
+        resolveShareGuestMeetingAccess,
     });
 
     registerAdminMeetingRoutes({

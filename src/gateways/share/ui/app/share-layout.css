@@ -25,6 +25,16 @@
     justify-content: center;
 }
 
+.share-unlock-content {
+    align-items: stretch;
+}
+
+.share-unlock-logo {
+    align-self: center;
+    height: auto;
+    max-width: min(100%, 12rem);
+}
+
 .share-loading-state,
 .share-empty-state,
 .share-meeting-card {

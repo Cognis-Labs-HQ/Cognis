@@ -195,3 +195,7 @@ Guest sessions now remove the page-layout edit control instead of relying on a l
 ## Restore meeting deep links and add Whiteboard keyboard history
 
 Meeting URLs now load their saved participant stage, honor an explicit `start=1` option before auto-starting, and remove invalid meeting identifiers after notifying the user. Meeting share links request auto-start and resolve Share authorization at request time, while Whiteboard supports Ctrl/Command+Z and Ctrl/Command+Y history shortcuts.
+
+## Simplify meeting restoration and stabilize guest share controls
+
+Saved meeting links now restore invitees through the normal participant stage, exclude the current user, and auto-start only when `start=1` is explicitly present. Meeting guest authorization uses the Share gateway contract, calendar controls bind directly to their mounted page, account presence pauses immediately on Share routes, and protected guest links show Cognis branding in the password prompt.

@@ -195,3 +195,7 @@ Sesi tamu kini menghapus kontrol pengeditan tata letak halaman, bukan mengandalk
 ## Pulihkan tautan langsung rapat dan tambahkan riwayat papan ketik Whiteboard
 
 URL rapat kini memuat panggung peserta yang tersimpan, mematuhi opsi eksplisit `start=1` sebelum memulai otomatis, dan menghapus pengenal rapat yang tidak valid setelah memberi tahu pengguna. Tautan berbagi rapat meminta mulai otomatis dan menyelesaikan otorisasi Share saat permintaan, sementara Whiteboard mendukung pintasan riwayat Ctrl/Command+Z dan Ctrl/Command+Y.
+
+## Sederhanakan pemulihan rapat dan stabilkan kontrol berbagi tamu
+
+Tautan rapat tersimpan kini memulihkan undangan melalui panggung peserta normal, mengecualikan pengguna saat ini, dan memulai otomatis hanya ketika `start=1` hadir secara eksplisit. Otorisasi tamu rapat menggunakan kontrak gateway Share, kontrol kalender terikat langsung ke halaman terpasang, kehadiran akun segera dijeda pada rute Share, dan tautan tamu terlindungi menampilkan merek Cognis pada permintaan kata sandi.

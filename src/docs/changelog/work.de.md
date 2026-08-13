@@ -195,3 +195,7 @@ Gastsitzungen entfernen nun die Schaltfläche zum Bearbeiten des Seitenlayouts, 
 ## Meeting-Direktlinks wiederherstellen und Whiteboard-Tastaturverlauf ergänzen
 
 Meeting-URLs laden nun ihre gespeicherte Teilnehmerbühne, berücksichtigen vor dem automatischen Start die ausdrückliche Option `start=1` und entfernen ungültige Meeting-Kennungen nach einer Benachrichtigung. Meeting-Freigabelinks fordern den automatischen Start an und lösen die Share-Berechtigung zur Anfragezeit auf, während Whiteboard die Verlaufskürzel Strg/Befehl+Z und Strg/Befehl+Y unterstützt.
+
+## Meeting-Wiederherstellung vereinfachen und Gastfreigabe-Steuerelemente stabilisieren
+
+Gespeicherte Meeting-Links stellen Eingeladene nun über die normale Teilnehmerbühne wieder her, schließen den aktuellen Benutzer aus und starten nur dann automatisch, wenn `start=1` ausdrücklich vorhanden ist. Die Meeting-Gastautorisierung nutzt den Vertrag des Share-Gateways, Kalendersteuerungen werden direkt an ihre eingebundene Seite gebunden, die Kontoanwesenheit pausiert sofort auf Share-Routen und geschützte Gastlinks zeigen das Cognis-Branding in der Passwortabfrage.

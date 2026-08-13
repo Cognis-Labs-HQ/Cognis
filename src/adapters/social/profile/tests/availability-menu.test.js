@@ -111,6 +111,7 @@ test("guest sessions do not poll account availability", () => {
     assert.match(availability, /cognis_role/);
     assert.match(availability, /=== "guest"/);
     assert.match(availability, /cognis_share_guest_token_active/);
+    assert.match(availability, /pathname\.startsWith\("\/share\/"\)/);
     assert.match(availability, /accountId\.startsWith\("share:"\)/);
     assert.match(availability, /suppressAccessDeniedEvent:\s*true/);
     assert.match(

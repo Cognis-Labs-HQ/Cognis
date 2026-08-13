@@ -730,7 +730,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
     assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);
     assert.match(SHARE_RENDERER_SOURCE, /requestAnimationFrame/);
-    assert.match(SHARE_RENDERER_SOURCE, /document\.addEventListener/);
+    assert.match(SHARE_RENDERER_SOURCE, /root\.addEventListener/);
     assert.match(SHARE_RENDERER_SOURCE, /capture:\s*true/);
     assert.match(SHARE_RENDERER_SOURCE, /root\.contains\(sharedCalendar\)/);
     assert.doesNotMatch(SHARE_RENDERER_SOURCE, /onRender:/);

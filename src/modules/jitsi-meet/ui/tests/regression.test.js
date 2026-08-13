@@ -627,7 +627,7 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
         /await joinMeetingById\(state\.requestedMeetingId, \{\s*autoStart: state\.requestedMeetingStart/,
     );
     assert.match(source, /searchParams\.get\("start"\) === "1"/);
-    assert.match(source, /inShareView && Boolean\(resolvedMeetingId\)/);
+    assert.doesNotMatch(source, /inShareView && Boolean\(resolvedMeetingId\)/);
     assert.match(source, /meetingPayload\.data\.participants/);
     assert.match(source, /shareAccessToken/);
     assert.match(source, /accessToken: state\.shareAccessToken \|\| undefined/);
@@ -636,9 +636,10 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
         /state\.selectedParticipants = meetingParticipantNames/,
     );
     assert.match(source, /callbacks\.renderParticipants\(\)/);
+    assert.match(source, /username === currentUsername/);
     assert.match(
         source,
-        /if \(!autoStart \|\| state\.selectedParticipants\.length === 0\)/,
+        /if \(!autoStart\) \{\s*state\.meeting = null;\s*callbacks\.renderParticipants\(\)/,
     );
     assert.match(source, /clearRequestedMeetingParameters\(\)/);
     assert.match(source, /module\.jitsi_meet\.meeting_not_found/);
@@ -734,7 +735,7 @@ test("meeting shares use the Cognis route and skip account setup", () => {
         "utf8",
     );
     assert.match(adapterSource, /contentUrl: `\/meetings\?meetingId=/);
-    assert.match(adapterSource, /&start=1`/);
+    assert.doesNotMatch(adapterSource, /&start=1`/);
     assert.match(
         appSource,
         /limitedShareView =\s*inShareView &&\s*Boolean\(shareContext\?\.guestAccessToken\) &&\s*shareContext\?\.directAccess !== true/,

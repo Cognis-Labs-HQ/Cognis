@@ -36,15 +36,13 @@ test("jitsi API registers configured CSP origins through auth capability", () =>
     );
 });
 
-test("jitsi resolves Share capabilities at request time", () => {
+test("jitsi resolves guest access through the Share gateway contract", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
         "utf8",
     );
-    assert.match(
-        source,
-        /const getShareTokenById = \(\.\.\.args\) =>\s*ctx\.getCapability\("share:getTokenById"\)\?\.\(\.\.\.args\)/,
-    );
+    assert.match(source, /ctx\.getCapability\(\s*"share:resolveGuestAccess"/);
+    assert.match(source, /resourceType: "meeting"/);
 });
 
 test("jitsi API logs stored CSP origin registration failures", () => {

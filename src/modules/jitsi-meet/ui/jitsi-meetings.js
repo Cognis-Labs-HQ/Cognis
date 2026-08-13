@@ -195,6 +195,9 @@ export function createMeetingHandlers({
             state.alonePromptBlockedUntil = 0;
         }
         state.meeting = meetingPayload.data;
+        const currentUsername = normalizeUsername(
+            state.currentProfile?.handle ?? state.currentProfile?.username,
+        );
         const meetingParticipantNames = Array.isArray(
             meetingPayload.data.participants,
         )
@@ -207,7 +210,7 @@ export function createMeetingHandlers({
                         ? participant
                         : (participant?.username ?? participant?.handle),
                 );
-                if (!username) return null;
+                if (!username || username === currentUsername) return null;
                 return (
                     state.allParticipants.find(
                         (candidate) => candidate.username === username,
@@ -228,19 +231,13 @@ export function createMeetingHandlers({
                         participant.username === candidate.username,
                 ),
         );
+        if (!autoStart) {
+            state.meeting = null;
+            callbacks.renderParticipants();
+            return;
+        }
         callbacks.renderParticipants();
-        if (!autoStart || state.selectedParticipants.length === 0) {
-            utils.updateOverlay({
-                message: i18n.t(
-                    state.selectedParticipants.length > 0
-                        ? "module.jitsi_meet.overlay.ready_to_start"
-                        : "module.jitsi_meet.overlay.select_participants",
-                ),
-                canStart: state.selectedParticipants.length > 0,
-                showAuth: false,
-                showReclaim: false,
-                visible: true,
-            });
+        if (state.selectedParticipants.length === 0) {
             return;
         }
         state.chatMode = "meeting";
