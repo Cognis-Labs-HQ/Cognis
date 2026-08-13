@@ -179,3 +179,7 @@ Das Löschen einer eigenen Freigabe bestätigt nun „Freigabe gelöscht“, wä
 ## Meeting-Gastsitzungen bei Seitenwechseln erhalten
 
 Page Composer beendet nun den Anwesenheits-Tracker der vorherigen Seite auch dann, wenn das Ziel keine Anwesenheitskonfiguration hat. Dadurch widerrufen veraltete Whiteboard-Anfragen keine Meeting-Gastsitzung mehr. Soziale Anwesenheit und die Bereinigung der Passwortbestätigung lösen für Gäste keine globalen Zugriff-verweigert-Ereignisse mehr aus, und Meetings unterscheiden Zugriffsfehler von tatsächlich beendeten Meetings.
+
+## Meeting-Deep-Links direkt geöffnet
+
+Die Meetings-Seite löst nun jede `meetingId`-URL direkt auf, stellt die Teilnehmerauswahl aus den Meeting-Daten wieder her und tritt automatisch bei, ohne dass das Meeting zuerst in der Liste aktiver Meetings erscheinen muss. Über Shares geöffnete Meeting-Ziele führen dadurch zum referenzierten Meeting.

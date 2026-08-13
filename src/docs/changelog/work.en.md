@@ -179,3 +179,7 @@ Deleting an owned share now confirms “Share Deleted”, while recipients remov
 ## Preserved meeting guest sessions during page transitions
 
 Page Composer now destroys a previous page’s presence tracker even when the destination has no presence configuration, preventing stale Whiteboard requests from revoking a Meeting guest session. Social presence and password-confirmation cleanup no longer emit global access-denied events for guests, and Meeting distinguishes access failures from genuinely closed meetings.
+
+## Opened meeting deep links directly
+
+The Meetings page now resolves every `meetingId` URL directly, restores that meeting’s participant selection from its payload, and automatically joins it without requiring the meeting to appear in the active-meetings list first. Meeting destinations opened from Shares therefore lead to the referenced meeting.

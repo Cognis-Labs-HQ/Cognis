@@ -622,6 +622,16 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
     );
     assert.match(source, /\/api\/v1\/modules\/jitsi-meet\/meetings\/active/);
     assert.match(source, /requestedMeetingId/);
+    assert.match(
+        source,
+        /if \(state\.requestedMeetingId\) \{\s*await joinMeetingById\(state\.requestedMeetingId\)/,
+    );
+    assert.match(source, /meetingPayload\.data\.participants/);
+    assert.match(
+        source,
+        /state\.selectedParticipants = meetingParticipantNames/,
+    );
+    assert.match(source, /callbacks\.renderParticipants\(\)/);
     assert.match(source, /async function joinMeetingById/);
     assert.match(
         source,

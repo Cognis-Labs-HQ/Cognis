@@ -954,7 +954,7 @@ export async function mount(
     });
 
     await composer.init();
-    if (inShareView && state.requestedMeetingId) {
+    if (state.requestedMeetingId) {
         await joinMeetingById(state.requestedMeetingId);
     } else {
         await loadActiveMeetings({ resolveRequested: true });

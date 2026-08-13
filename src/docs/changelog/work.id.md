@@ -179,3 +179,7 @@ Menghapus berbagi milik sendiri kini mengonfirmasi “Berbagi Dihapus”, sedang
 ## Mempertahankan sesi tamu rapat saat perpindahan halaman
 
 Page Composer kini menghentikan pelacak kehadiran halaman sebelumnya meski tujuan tidak memiliki konfigurasi kehadiran, sehingga permintaan Whiteboard lama tidak mencabut sesi tamu Rapat. Kehadiran sosial dan pembersihan konfirmasi kata sandi tidak lagi memicu peristiwa penolakan akses global bagi tamu, dan Rapat membedakan kegagalan akses dari rapat yang benar-benar ditutup.
+
+## Membuka tautan dalam rapat secara langsung
+
+Halaman Rapat kini menyelesaikan setiap URL `meetingId` secara langsung, memulihkan pilihan peserta dari payload rapat, dan bergabung otomatis tanpa mengharuskan rapat muncul lebih dahulu dalam daftar rapat aktif. Tujuan rapat yang dibuka dari Shares kini menuju rapat yang dirujuk.

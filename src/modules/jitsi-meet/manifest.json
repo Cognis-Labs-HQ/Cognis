@@ -1,7 +1,7 @@
 {
     "id": "jitsi-meet",
     "name": "Jitsi Meet",
-    "version": "1.4.6",
+    "version": "1.4.7",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["meeting:video", "meeting:chat", "meeting:moderation"],

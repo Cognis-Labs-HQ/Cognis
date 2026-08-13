@@ -175,6 +175,40 @@ export function createMeetingHandlers({
             state.alonePromptBlockedUntil = 0;
         }
         state.meeting = meetingPayload.data;
+        const meetingParticipantNames = Array.isArray(
+            meetingPayload.data.participants,
+        )
+            ? meetingPayload.data.participants
+            : [];
+        state.selectedParticipants = meetingParticipantNames
+            .map((participant) => {
+                const username = normalizeUsername(
+                    typeof participant === "string"
+                        ? participant
+                        : (participant?.username ?? participant?.handle),
+                );
+                if (!username) return null;
+                return (
+                    state.allParticipants.find(
+                        (candidate) => candidate.username === username,
+                    ) ?? {
+                        username,
+                        displayName: String(
+                            participant?.displayName ?? username,
+                        ),
+                        avatarKey: participant?.avatarKey ?? null,
+                    }
+                );
+            })
+            .filter(Boolean);
+        state.availableParticipants = state.allParticipants.filter(
+            (candidate) =>
+                !state.selectedParticipants.some(
+                    (participant) =>
+                        participant.username === candidate.username,
+                ),
+        );
+        callbacks.renderParticipants();
         state.chatMode = "meeting";
         state.privateChatUsername = "";
         await callbacks.updateNativeChat();
