@@ -161,6 +161,9 @@ test("dashboard layout suppresses release summaries for guest sessions", () => {
     assert.match(popupSource, /session:isGuest/);
     assert.match(popupSource, /cognis_role/);
     assert.match(popupSource, /=== "guest"/);
+    assert.match(popupSource, /cognis_share_guest_token_active/);
+    assert.match(popupSource, /accountId\.startsWith\("share:"\)/);
+    assert.match(popupSource, /providerId === "share"/);
 });
 
 test("dashboard layout keeps active avatar blob URL during SPA refresh", () => {

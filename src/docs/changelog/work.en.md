@@ -163,3 +163,7 @@ User calendar shares are delivered immediately into the recipient calendar and r
 ## Stabilized shared calendar controls and guest summaries
 
 Shared calendar view and period controls now use one page-lifecycle event listener that survives every composer rerender. Guest-role logins are recognized alongside scoped share guests, preventing release summaries and account-only dashboard requests.
+
+## Made guest detection and shared calendar input authoritative
+
+Shared calendar controls now listen at the document capture boundary and accept clicks only from their mounted calendar, preventing composer or shell handlers from consuming navigation first. Guest detection now recognizes scoped-session state, synthetic share accounts, and guest/share providers before release summaries or presence requests can start.

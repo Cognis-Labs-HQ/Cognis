@@ -16,8 +16,18 @@ let presenceRequest = null;
 let availabilityRefresh = null;
 
 function isGuestSession() {
+    const accountId = String(
+        localStorage.getItem("cognis_account") ?? "",
+    ).trim();
+    const providerId = String(localStorage.getItem("cognis_provider_id") ?? "")
+        .trim()
+        .toLowerCase();
     return (
         uiCtx.capabilities.get("session:isGuest")?.() === true ||
+        sessionStorage.getItem("cognis_share_guest_token_active") === "1" ||
+        accountId.startsWith("share:") ||
+        providerId === "guest" ||
+        providerId === "share" ||
         String(localStorage.getItem("cognis_role") ?? "")
             .trim()
             .toLowerCase() === "guest"

@@ -163,3 +163,7 @@ Benutzerkalenderfreigaben werden sofort in den Kalender der empfangenden Person 
 ## Steuerelemente geteilter Kalender und Gastzusammenfassungen stabilisiert
 
 Ansichts- und Zeitraumsteuerungen geteilter Kalender verwenden nun einen einzigen Listener für den Seitenlebenszyklus, der jedes erneute Composer-Rendering übersteht. Anmeldungen mit Gastrolle werden neben begrenzten Freigabegästen erkannt, wodurch Versionszusammenfassungen und reine Kontoanfragen verhindert werden.
+
+## Gast-Erkennung und Eingaben geteilter Kalender verbindlich gemacht
+
+Steuerelemente geteilter Kalender lauschen nun an der Dokument-Capture-Grenze und akzeptieren nur Klicks aus ihrem eingebundenen Kalender, sodass Composer- oder Shell-Handler die Navigation nicht zuerst verbrauchen. Die Gast-Erkennung berücksichtigt begrenzte Sitzungen, synthetische Freigabekonten und Gast-/Freigabeanbieter, bevor Versionszusammenfassungen oder Anwesenheitsanfragen starten.

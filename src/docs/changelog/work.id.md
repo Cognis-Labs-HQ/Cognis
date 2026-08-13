@@ -163,3 +163,7 @@ Berbagi kalender pengguna langsung dikirim ke kalender penerima dan dibuka melal
 ## Menstabilkan kontrol kalender bersama dan ringkasan tamu
 
 Kontrol tampilan dan periode kalender bersama kini memakai satu listener sepanjang siklus halaman yang tetap aktif setelah setiap render ulang composer. Login dengan peran tamu dikenali bersama tamu berbagi terbatas sehingga ringkasan rilis dan permintaan dasbor khusus akun tidak dijalankan.
+
+## Menjadikan deteksi tamu dan input kalender bersama otoritatif
+
+Kontrol kalender bersama kini mendengarkan pada batas capture dokumen dan hanya menerima klik dari kalender yang dipasang, sehingga handler composer atau shell tidak mengambil navigasi lebih dahulu. Deteksi tamu kini mengenali status sesi terbatas, akun berbagi sintetis, serta penyedia tamu/berbagi sebelum ringkasan rilis atau permintaan kehadiran dimulai.

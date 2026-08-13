@@ -266,14 +266,20 @@ export async function mount(
         };
     }
 
-    root.addEventListener(
+    document.addEventListener(
         "click",
         (clickEvent) => {
             if (!(clickEvent.target instanceof Element)) return;
+            const sharedCalendar = clickEvent.target.closest(
+                "[data-shared-calendar-id]",
+            );
+            if (!sharedCalendar || !root.contains(sharedCalendar)) return;
             const viewButton = clickEvent.target.closest(
                 "[data-calendar-view]",
             );
             if (viewButton instanceof HTMLElement) {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
                 const requestedView = String(
                     viewButton.dataset.calendarView ?? "",
                 );
@@ -286,6 +292,8 @@ export async function mount(
                 "[data-calendar-nav]",
             );
             if (navigationButton instanceof HTMLElement) {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
                 const direction = navigationButton.dataset.calendarNav;
                 activeDate =
                     direction === "today"
@@ -319,7 +327,7 @@ export async function mount(
                 onChanged: reloadEvents,
             });
         },
-        { signal },
+        { capture: true, signal },
     );
 
     composer = createPageComposer(root, {
