@@ -184,6 +184,14 @@ test("page composer always hides layout editing from share guests", () => {
     );
 });
 
+test("page composer tears down stale presence before mounting a page", () => {
+    const source = readPageComposerBundle();
+    assert.match(
+        source,
+        /activePresenceTracker\?\.destroy\(\);\s*activePresenceTracker = null;/,
+    );
+});
+
 test("page composer expands compact single-pane rows to full width", () => {
     const source = readPageComposerBundle();
 

@@ -319,6 +319,8 @@ test("meetings session state polling handles closed meetings and distinct leave 
     const source = readJitsiUiBundle();
     assert.match(source, /latestState\.endedAt/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_closed/);
+    assert.match(source, /getResponse\.status === 404/);
+    assert.match(source, /module\.jitsi_meet\.overlay\.join_failed/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_left/);
     assert.match(source, /honorMeetingClosed: false/);
     assert.match(

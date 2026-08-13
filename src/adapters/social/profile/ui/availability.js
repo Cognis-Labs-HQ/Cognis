@@ -64,6 +64,7 @@ function reportPresenceActivity(active, keepalive = false) {
             sessionId: getPresenceSessionId(),
         }),
         keepalive,
+        suppressAccessDeniedEvent: true,
     }).catch(() => null);
     if (keepalive) return request;
     presenceRequest = request.finally(() => {
@@ -95,7 +96,7 @@ export async function fetchAvailability(handle = "") {
     const endpoint = normalizedHandle
         ? `/api/v1/social/availability/${encodeURIComponent(normalizedHandle)}`
         : "/api/v1/social/availability";
-    const request = apiFetch(endpoint)
+    const request = apiFetch(endpoint, { suppressAccessDeniedEvent: true })
         .then(async (response) =>
             response.ok ? (await response.json()).data : null,
         )

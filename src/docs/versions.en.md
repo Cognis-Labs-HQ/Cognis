@@ -50,8 +50,8 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.53` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.49` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.54` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.50` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.23` |
 | User Share            | `src/adapters/share/user/`          | `1.1.16` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -64,7 +64,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`  |
-| Authentication (auth) | `src/gateways/auth/`          | `1.7.45` |
+| Authentication (auth) | `src/gateways/auth/`          | `1.7.46` |
 | Share                 | `src/gateways/share/`         | `1.6.95` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16` |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`  |
@@ -74,7 +74,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Logging               | `src/gateways/logging/`       | `1.5.11` |
 | Observability         | `src/gateways/observability/` | `1.0.5`  |
 | Study                 | `src/gateways/study/`         | `1.5.10` |
-| Calendar              | `src/gateways/calendar/`      | `1.4.83` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.84` |
 
 ## Core contracts
 
@@ -99,7 +99,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.5`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.85` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.6`  |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.86` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

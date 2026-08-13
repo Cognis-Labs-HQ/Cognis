@@ -175,3 +175,7 @@ Steuerelemente geteilter Kalender lauschen nun an der Dokument-Capture-Grenze un
 ## Widerrufene Freigaben und Gaststeuerung klargestellt
 
 Das Löschen einer eigenen Freigabe bestätigt nun „Freigabe gelöscht“, während Empfangende beim Entfernen des Zugriffs eine eigene Meldung erhalten. Widerrufene geteilte Kalender öffnen beim Auswählen ihren Entfernen-Dialog, schreibgeschützte Whiteboards verwenden einen Zeiger und die Seitenlayout-Bearbeitung bleibt für Freigabegäste immer verborgen.
+
+## Meeting-Gastsitzungen bei Seitenwechseln erhalten
+
+Page Composer beendet nun den Anwesenheits-Tracker der vorherigen Seite auch dann, wenn das Ziel keine Anwesenheitskonfiguration hat. Dadurch widerrufen veraltete Whiteboard-Anfragen keine Meeting-Gastsitzung mehr. Soziale Anwesenheit und die Bereinigung der Passwortbestätigung lösen für Gäste keine globalen Zugriff-verweigert-Ereignisse mehr aus, und Meetings unterscheiden Zugriffsfehler von tatsächlich beendeten Meetings.

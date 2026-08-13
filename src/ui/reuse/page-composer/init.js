@@ -953,8 +953,9 @@ export function createPageComposer(
                 });
         }
 
+        activePresenceTracker?.destroy();
+        activePresenceTracker = null;
         if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
-            activePresenceTracker?.destroy();
             activePresenceTracker = createPresenceTracker({
                 ...presenceTracker,
                 pointerTracking:

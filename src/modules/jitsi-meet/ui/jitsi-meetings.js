@@ -127,12 +127,21 @@ export function createMeetingHandlers({
                 body: JSON.stringify({
                     meetingId: normalizedMeetingId,
                 }),
+                suppressAccessDeniedEvent: true,
             },
         );
         if (!getResponse.ok) {
             state.meeting = null;
+            const errorPayload = await getResponse
+                .json()
+                .catch(() => ({ error: null }));
             utils.updateOverlay({
-                message: i18n.t("module.jitsi_meet.overlay.meeting_closed"),
+                message: i18n.t(
+                    getResponse.status === 404 ||
+                        errorPayload?.error?.code === "meeting_closed"
+                        ? "module.jitsi_meet.overlay.meeting_closed"
+                        : "module.jitsi_meet.overlay.join_failed",
+                ),
                 canStart: false,
                 showAuth: false,
                 showReclaim: false,

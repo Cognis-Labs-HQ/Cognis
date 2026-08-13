@@ -175,3 +175,7 @@ Composer berbagi publik dan kalender bersama kini secara eksplisit menonaktifkan
 ## Memperjelas berbagi dicabut dan kontrol tamu
 
 Menghapus berbagi milik sendiri kini mengonfirmasi “Berbagi Dihapus”, sedangkan penerima yang menghapus akses mendapat pesan terpisah. Kalender bersama yang dicabut membuka popup penghapusan saat dipilih, whiteboard hanya-baca memakai kursor penunjuk, dan pengeditan tata letak halaman selalu disembunyikan dari tamu berbagi.
+
+## Mempertahankan sesi tamu rapat saat perpindahan halaman
+
+Page Composer kini menghentikan pelacak kehadiran halaman sebelumnya meski tujuan tidak memiliki konfigurasi kehadiran, sehingga permintaan Whiteboard lama tidak mencabut sesi tamu Rapat. Kehadiran sosial dan pembersihan konfirmasi kata sandi tidak lagi memicu peristiwa penolakan akses global bagi tamu, dan Rapat membedakan kegagalan akses dari rapat yang benar-benar ditutup.

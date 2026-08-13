@@ -175,3 +175,7 @@ Public share and shared-calendar composers now explicitly disable account-only s
 ## Clarified revoked shares and guest controls
 
 Deleting an owned share now confirms “Share Deleted”, while recipients removing access receive separate wording. Revoked shared calendars open their removal popup when selected, read-only whiteboards use a pointer cursor, and page layout editing is always hidden from share guests.
+
+## Preserved meeting guest sessions during page transitions
+
+Page Composer now destroys a previous page’s presence tracker even when the destination has no presence configuration, preventing stale Whiteboard requests from revoking a Meeting guest session. Social presence and password-confirmation cleanup no longer emit global access-denied events for guests, and Meeting distinguishes access failures from genuinely closed meetings.
