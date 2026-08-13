@@ -885,6 +885,8 @@ export async function mount(
                                 ...encrypted,
                                 contentType: "text/plain",
                             }),
+                            accessToken: state.shareAccessToken || undefined,
+                            suppressAccessDeniedEvent: true,
                         },
                     );
                     if (!response.ok) {

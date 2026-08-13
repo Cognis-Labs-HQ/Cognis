@@ -11,7 +11,7 @@ export function buildShareCallbacks(meetingId) {
     return buildShareTokenCallbacks({
         resourceType: "meeting",
         resourceId: meetingId,
-        contentUrl: `/meetings?meetingId=${encodeURIComponent(meetingId)}`,
+        contentUrl: `/meetings?meetingId=${encodeURIComponent(meetingId)}&start=1`,
         grantedCapabilities: MEETING_SHARE_CAPABILITIES,
     });
 }

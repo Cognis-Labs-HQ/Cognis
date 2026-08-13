@@ -89,7 +89,7 @@ function buildMeetingActionUrl(meetingId) {
     if (!normalizedMeetingId) {
         return "/meetings";
     }
-    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}`;
+    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}&start=1`;
 }
 
 function buildMeetingEmailLink(meetingId) {

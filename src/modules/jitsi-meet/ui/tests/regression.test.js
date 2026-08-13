@@ -735,7 +735,11 @@ test("meeting shares use the Cognis route and skip account setup", () => {
         "utf8",
     );
     assert.match(adapterSource, /contentUrl: `\/meetings\?meetingId=/);
-    assert.doesNotMatch(adapterSource, /&start=1`/);
+    assert.match(adapterSource, /&start=1`/);
+    assert.match(
+        appSource,
+        /accessToken: state\.shareAccessToken \|\| undefined/,
+    );
     assert.match(
         appSource,
         /limitedShareView =\s*inShareView &&\s*Boolean\(shareContext\?\.guestAccessToken\) &&\s*shareContext\?\.directAccess !== true/,

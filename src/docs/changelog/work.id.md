@@ -199,3 +199,7 @@ URL rapat kini memuat panggung peserta yang tersimpan, mematuhi opsi eksplisit `
 ## Sederhanakan pemulihan rapat dan stabilkan kontrol berbagi tamu
 
 Tautan rapat tersimpan kini memulihkan undangan melalui panggung peserta normal, mengecualikan pengguna saat ini, dan memulai otomatis hanya ketika `start=1` hadir secara eksplisit. Otorisasi tamu rapat menggunakan kontrak gateway Share, kontrol kalender terikat langsung ke halaman terpasang, kehadiran akun segera dijeda pada rute Share, dan tautan tamu terlindungi menampilkan merek Cognis pada permintaan kata sandi.
+
+## Samakan merek Share dan lengkapi akses tamu rapat
+
+Permintaan berbagi terlindungi kini sama persis dengan merek ringkas pada header Cognis dan dokumen Share awal memiliki judul yang telah diselesaikan. URL konten berbagi rapat secara eksplisit meminta mode mulai, pembacaan dan pengiriman obrolan tamu memakai kredensial terbatas, Jitsi menyelesaikan akses tamu melalui Share, dan pemilik berbagi melewati permintaan kata sandi khusus penerima.

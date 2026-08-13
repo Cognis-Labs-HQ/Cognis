@@ -246,6 +246,10 @@ export function createChatHandlers({
         }
         const response = await apiFetch(
             `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
+            {
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
+            },
         );
         if (!response.ok) {
             setNativeChatReady(false);

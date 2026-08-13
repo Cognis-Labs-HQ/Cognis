@@ -199,3 +199,7 @@ Meeting-URLs laden nun ihre gespeicherte Teilnehmerbühne, berücksichtigen vor 
 ## Meeting-Wiederherstellung vereinfachen und Gastfreigabe-Steuerelemente stabilisieren
 
 Gespeicherte Meeting-Links stellen Eingeladene nun über die normale Teilnehmerbühne wieder her, schließen den aktuellen Benutzer aus und starten nur dann automatisch, wenn `start=1` ausdrücklich vorhanden ist. Die Meeting-Gastautorisierung nutzt den Vertrag des Share-Gateways, Kalendersteuerungen werden direkt an ihre eingebundene Seite gebunden, die Kontoanwesenheit pausiert sofort auf Share-Routen und geschützte Gastlinks zeigen das Cognis-Branding in der Passwortabfrage.
+
+## Share-Branding angleichen und Meeting-Gastzugriff vervollständigen
+
+Die Abfrage für geschützte Freigaben entspricht nun exakt der kompakten Cognis-Kopfzeilenmarke und das anfängliche Share-Dokument besitzt einen aufgelösten Titel. Inhalts-URLs für Meeting-Freigaben fordern den Startmodus ausdrücklich an, Gast-Chat-Lese- und Sendevorgänge verwenden die begrenzten Zugangsdaten, Jitsi löst Gastzugriff über Share auf und Freigabeeigentümer umgehen Passwortabfragen, die nur für Empfänger gelten.

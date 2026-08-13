@@ -386,7 +386,8 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /share\.unlock\.keyring_label/);
     assert.match(receivedShareSource, /"Share Gateway"/);
     assert.match(receivedShareSource, /share-unlock-save/);
-    assert.match(receivedShareSource, /cognis-logo\.webp/);
+    assert.match(receivedShareSource, /cognis-icon\.png/);
+    assert.match(receivedShareSource, /share-unlock-brand/);
     assert.match(receivedShareSource, /type="checkbox" checked/);
     assert.match(receivedShareSource, /saveToKeyring/);
     assert.match(
@@ -435,6 +436,14 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /share\.keyring\.request_component/);
     assert.match(receivedShareSource, /share\.keyring\.request_action_access/);
     assert.match(receivedShareSource, /share\.keyring\.request_process/);
+});
+
+test("share owners bypass recipient password prompting", () => {
+    assert.match(receivedShareActionSource, /ownedByCurrentAccount/);
+    assert.match(
+        receivedShareActionSource,
+        /share\?\.passwordProtected === true && !ownedByCurrentAccount/,
+    );
 });
 
 test("share resolution uses the authenticated API client without treating password challenges as session failures", () => {

@@ -43,8 +43,14 @@ window.addEventListener("cognis:notification-action", (event) => {
 });
 
 export async function navigateAccountShare(share) {
+    const currentAccountId = String(
+        localStorage.getItem("cognis_account") ?? "",
+    ).trim();
+    const ownedByCurrentAccount =
+        currentAccountId && share?.ownerAccountId === currentAccountId;
     const result = await resolveAccountShare(share?.id, {
-        passwordProtected: share?.passwordProtected === true,
+        passwordProtected:
+            share?.passwordProtected === true && !ownedByCurrentAccount,
     });
     const destinationUrl = String(result?.data?.destinationUrl ?? "").trim();
     if (!destinationUrl) {

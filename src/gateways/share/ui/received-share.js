@@ -31,7 +31,7 @@ async function promptForPassword({ allowSave = true } = {}) {
     let saveInput = null;
     const action = await openPopup({
         title: i18n.t("share.unlock.title"),
-        body: `<div class="stack share-unlock-content"><img class="share-unlock-logo" src="/static/assets/icons/cognis-logo.webp" alt="Cognis" /><label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label>${allowSave ? `<label><input id="share-unlock-save" type="checkbox" checked /> ${escapeHtml(i18n.t("share.unlock.save_to_keyring"))}</label>` : ""}</div>`,
+        body: `<div class="stack share-unlock-content"><div class="brandline share-unlock-brand"><img src="/static/assets/icons/cognis-icon.png" alt="" class="topbar-icon" /><strong>Cognis</strong></div><label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label>${allowSave ? `<label><input id="share-unlock-save" type="checkbox" checked /> ${escapeHtml(i18n.t("share.unlock.save_to_keyring"))}</label>` : ""}</div>`,
         actions: [
             {
                 id: "unlock",

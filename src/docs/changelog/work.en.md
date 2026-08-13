@@ -199,3 +199,7 @@ Meeting URLs now load their saved participant stage, honor an explicit `start=1`
 ## Simplify meeting restoration and stabilize guest share controls
 
 Saved meeting links now restore invitees through the normal participant stage, exclude the current user, and auto-start only when `start=1` is explicitly present. Meeting guest authorization uses the Share gateway contract, calendar controls bind directly to their mounted page, account presence pauses immediately on Share routes, and protected guest links show Cognis branding in the password prompt.
+
+## Match Share branding and complete meeting guest access
+
+The protected-share prompt now matches the compact Cognis header brand exactly and the initial Share document has a resolved title. Meeting share content URLs explicitly request start mode, guest chat reads and sends use the scoped credential, Jitsi resolves guest access through Share, and share owners bypass recipient-only password prompts.
