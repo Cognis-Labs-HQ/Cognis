@@ -123,6 +123,7 @@ export async function mount(
             resolvedMeetingId ||
                 new URL(window.location.href).searchParams.get("meetingId"),
         ),
+        shareAccessToken: String(shareContext?.guestAccessToken ?? ""),
         activeMeetings: [],
         activeMeetingsRefreshTimer: null,
         dragUsername: null,

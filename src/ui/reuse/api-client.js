@@ -7,7 +7,7 @@
  *   const res = await apiFetch('/api/v1/items', { method: 'POST', ... });
  *
  * @param {string} path
- * @param {RequestInit & { suppressAccessDeniedEvent?: boolean, suppressConnectionRecoveryToast?: boolean }} [options]
+ * @param {RequestInit & { accessToken?: string, suppressAccessDeniedEvent?: boolean, suppressConnectionRecoveryToast?: boolean }} [options]
  * @returns {Promise<Response>}
  */
 import { showToast } from "./toast.js";
@@ -113,12 +113,15 @@ export function shouldSuppressConnectionRecoveryPopup(error) {
 
 export async function apiFetch(path, options = {}) {
     const {
+        accessToken,
         suppressAccessDeniedEvent = false,
         suppressConnectionRecoveryToast = false,
         timeoutMs = API_REQUEST_TIMEOUT_MS,
         ...requestOptions
     } = options ?? {};
-    const token = localStorage.getItem("cognis_access_token");
+    const token = String(
+        accessToken ?? localStorage.getItem("cognis_access_token") ?? "",
+    ).trim();
     const headers = new Headers(requestOptions.headers);
     if (token) {
         headers.set("authorization", `Bearer ${token}`);

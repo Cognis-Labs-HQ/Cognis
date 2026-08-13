@@ -43,7 +43,9 @@ window.addEventListener("cognis:notification-action", (event) => {
 });
 
 export async function navigateAccountShare(share) {
-    const result = await resolveAccountShare(share?.id);
+    const result = await resolveAccountShare(share?.id, {
+        passwordProtected: share?.passwordProtected === true,
+    });
     const destinationUrl = String(result?.data?.destinationUrl ?? "").trim();
     if (!destinationUrl) {
         if (result instanceof Response) {

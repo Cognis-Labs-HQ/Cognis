@@ -627,6 +627,8 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
         /if \(state\.requestedMeetingId\) \{\s*await joinMeetingById\(state\.requestedMeetingId\)/,
     );
     assert.match(source, /meetingPayload\.data\.participants/);
+    assert.match(source, /shareAccessToken/);
+    assert.match(source, /accessToken: state\.shareAccessToken \|\| undefined/);
     assert.match(
         source,
         /state\.selectedParticipants = meetingParticipantNames/,

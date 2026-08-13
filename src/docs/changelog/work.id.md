@@ -183,3 +183,7 @@ Page Composer kini menghentikan pelacak kehadiran halaman sebelumnya meski tujua
 ## Membuka tautan dalam rapat secara langsung
 
 Halaman Rapat kini menyelesaikan setiap URL `meetingId` secara langsung, memulihkan pilihan peserta dari payload rapat, dan bergabung otomatis tanpa mengharuskan rapat muncul lebih dahulu dalam daftar rapat aktif. Tujuan rapat yang dibuka dari Shares kini menuju rapat yang dirujuk.
+
+## Menggunakan kredensial terbatas untuk tujuan bersama
+
+Berbagi tautan Rapat kini mengirim kredensial tamu yang telah diselesaikan secara eksplisit saat memuat rapat, menghindari konflik dengan token akun atau berbagi sebelumnya. Berbagi pengguna yang dilindungi kata sandi memakai metadata perlindungan yang diketahui untuk langsung membuka alur buka kunci tanpa sengaja membuat permintaan tidak sah awal.

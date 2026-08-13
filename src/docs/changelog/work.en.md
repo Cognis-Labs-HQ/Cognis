@@ -183,3 +183,7 @@ Page Composer now destroys a previous page’s presence tracker even when the de
 ## Opened meeting deep links directly
 
 The Meetings page now resolves every `meetingId` URL directly, restores that meeting’s participant selection from its payload, and automatically joins it without requiring the meeting to appear in the active-meetings list first. Meeting destinations opened from Shares therefore lead to the referenced meeting.
+
+## Used scoped credentials for shared destinations
+
+Meeting link shares now send their resolved guest credential explicitly when loading the meeting, avoiding races with account or prior-share tokens. Password-protected user shares use their known protection metadata to open the unlock flow directly instead of intentionally producing an initial unauthorized request.

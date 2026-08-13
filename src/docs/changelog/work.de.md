@@ -183,3 +183,7 @@ Page Composer beendet nun den Anwesenheits-Tracker der vorherigen Seite auch dan
 ## Meeting-Deep-Links direkt geöffnet
 
 Die Meetings-Seite löst nun jede `meetingId`-URL direkt auf, stellt die Teilnehmerauswahl aus den Meeting-Daten wieder her und tritt automatisch bei, ohne dass das Meeting zuerst in der Liste aktiver Meetings erscheinen muss. Über Shares geöffnete Meeting-Ziele führen dadurch zum referenzierten Meeting.
+
+## Begrenzte Zugangsdaten für geteilte Ziele verwendet
+
+Meeting-Linkfreigaben senden beim Laden des Meetings nun ausdrücklich ihre aufgelösten Gastzugangsdaten und vermeiden Konflikte mit Konto- oder vorherigen Freigabetokens. Passwortgeschützte Benutzerfreigaben verwenden ihre bekannten Schutzmetadaten, um den Entsperrvorgang direkt zu öffnen, statt absichtlich eine erste nicht autorisierte Anfrage auszulösen.

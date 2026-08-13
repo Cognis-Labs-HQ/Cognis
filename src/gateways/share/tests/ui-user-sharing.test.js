@@ -389,6 +389,11 @@ test("received user shares navigate once through the share session flow", () => 
         receivedShareSource,
         /resolveAccountShare[\s\S]*keyringId = `share:\$\{normalizedShareId\}`/,
     );
+    assert.match(receivedShareActionSource, /passwordProtected:/);
+    assert.match(
+        receivedShareSource,
+        /passwordProtected \? null : await request\(null\)/,
+    );
     assert.match(
         receivedShareSource,
         /let response = await request\(null\);[\s\S]*response\.status !== 401[\s\S]*unlockKeyringForShare/,

@@ -212,7 +212,10 @@ export async function resolveReceivedShare(
     return response;
 }
 
-export async function resolveAccountShare(shareId) {
+export async function resolveAccountShare(
+    shareId,
+    { passwordProtected = false } = {},
+) {
     const normalizedShareId = String(shareId ?? "").trim();
     if (!normalizedShareId) return null;
     const i18n = await createI18n({
@@ -232,7 +235,10 @@ export async function resolveAccountShare(shareId) {
                 suppressAccessDeniedEvent: true,
             },
         );
-    let response = await request(null);
+    let response = passwordProtected ? null : await request(null);
+    if (passwordProtected) {
+        response = new Response(null, { status: 401 });
+    }
     if (response.status !== 401) {
         return response.ok ? response.json() : response;
     }
