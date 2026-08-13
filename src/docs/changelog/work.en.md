@@ -191,3 +191,7 @@ Meeting link shares now send their resolved guest credential explicitly when loa
 ## Keep guest layouts locked and Whiteboard marks visible
 
 Guest sessions now remove the page-layout edit control instead of relying on a late capability check. Whiteboard canvases also select contrasting strokes, selection labels, and presence shading for light and dark themes so marks and collaborators remain visible after theme changes.
+
+## Restore meeting deep links and add Whiteboard keyboard history
+
+Meeting URLs now load their saved participant stage, honor an explicit `start=1` option before auto-starting, and remove invalid meeting identifiers after notifying the user. Meeting share links request auto-start and resolve Share authorization at request time, while Whiteboard supports Ctrl/Command+Z and Ctrl/Command+Y history shortcuts.

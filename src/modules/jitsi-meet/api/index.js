@@ -90,7 +90,7 @@ function buildMeetingActionUrl(meetingId) {
     if (!normalizedMeetingId) {
         return "/meetings";
     }
-    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}`;
+    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}&start=1`;
 }
 
 function buildMeetingEmailLink(meetingId) {
@@ -155,7 +155,8 @@ export function registerApiRoutes(router, ctx) {
     const accountStore = ctx.getCapability("auth:accountStore");
     const listCalendarsByOwner = ctx.getCapability("calendar:listCalendars");
     const listCalendarEvents = ctx.getCapability("calendar:listEvents");
-    const getShareTokenById = ctx.getCapability("share:getTokenById");
+    const getShareTokenById = (...args) =>
+        ctx.getCapability("share:getTokenById")?.(...args) ?? null;
     const resolveShareUserAccess = ctx.getCapability("share:resolveUserAccess");
     const resolveMeetingPayload = (input) =>
         resolveMeetingPayloadOrReject({

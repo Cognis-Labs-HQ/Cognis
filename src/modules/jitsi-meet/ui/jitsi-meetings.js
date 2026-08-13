@@ -100,7 +100,14 @@ export function createMeetingHandlers({
         await callbacks.updateNativeChat();
     }
 
-    async function joinMeetingById(meetingId) {
+    function clearRequestedMeetingParameters() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("meetingId");
+        url.searchParams.delete("start");
+        window.history.replaceState(null, "", url);
+    }
+
+    async function joinMeetingById(meetingId, { autoStart = true } = {}) {
         const normalizedMeetingId = normalizeMeetingId(meetingId);
         if (!normalizedMeetingId) return;
         if (
@@ -148,12 +155,24 @@ export function createMeetingHandlers({
                 showReclaim: false,
                 visible: true,
             });
+            if (
+                getResponse.status === 404 ||
+                errorPayload?.error?.code === "not_found"
+            ) {
+                clearRequestedMeetingParameters();
+                showToast(i18n.t("module.jitsi_meet.meeting_not_found"), {
+                    variant: "warning",
+                });
+            }
             return;
         }
         const meetingPayload = await getResponse
             .json()
             .catch(() => ({ data: null }));
-        if (!meetingPayload?.data?.id || meetingPayload?.data?.state?.endedAt) {
+        if (
+            !meetingPayload?.data?.id ||
+            (autoStart && meetingPayload?.data?.state?.endedAt)
+        ) {
             state.meeting = null;
             utils.updateOverlay({
                 message: i18n.t("module.jitsi_meet.overlay.meeting_closed"),
@@ -210,6 +229,20 @@ export function createMeetingHandlers({
                 ),
         );
         callbacks.renderParticipants();
+        if (!autoStart || state.selectedParticipants.length === 0) {
+            utils.updateOverlay({
+                message: i18n.t(
+                    state.selectedParticipants.length > 0
+                        ? "module.jitsi_meet.overlay.ready_to_start"
+                        : "module.jitsi_meet.overlay.select_participants",
+                ),
+                canStart: state.selectedParticipants.length > 0,
+                showAuth: false,
+                showReclaim: false,
+                visible: true,
+            });
+            return;
+        }
         state.chatMode = "meeting";
         state.privateChatUsername = "";
         await callbacks.updateNativeChat();

@@ -191,3 +191,7 @@ Berbagi tautan Rapat kini mengirim kredensial tamu yang telah diselesaikan secar
 ## Kunci tata letak tamu dan pertahankan visibilitas tanda Whiteboard
 
 Sesi tamu kini menghapus kontrol pengeditan tata letak halaman, bukan mengandalkan pemeriksaan kemampuan yang terlambat. Kanvas Whiteboard juga memilih goresan, label pilihan, dan bayangan kehadiran yang kontras untuk tema terang maupun gelap agar tanda dan kolaborator tetap terlihat setelah tema berubah.
+
+## Pulihkan tautan langsung rapat dan tambahkan riwayat papan ketik Whiteboard
+
+URL rapat kini memuat panggung peserta yang tersimpan, mematuhi opsi eksplisit `start=1` sebelum memulai otomatis, dan menghapus pengenal rapat yang tidak valid setelah memberi tahu pengguna. Tautan berbagi rapat meminta mulai otomatis dan menyelesaikan otorisasi Share saat permintaan, sementara Whiteboard mendukung pintasan riwayat Ctrl/Command+Z dan Ctrl/Command+Y.

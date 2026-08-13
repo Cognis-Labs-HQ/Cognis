@@ -123,6 +123,9 @@ export async function mount(
             resolvedMeetingId ||
                 new URL(window.location.href).searchParams.get("meetingId"),
         ),
+        requestedMeetingStart:
+            new URL(window.location.href).searchParams.get("start") === "1" ||
+            (inShareView && Boolean(resolvedMeetingId)),
         shareAccessToken: String(shareContext?.guestAccessToken ?? ""),
         activeMeetings: [],
         activeMeetingsRefreshTimer: null,
@@ -956,7 +959,9 @@ export async function mount(
 
     await composer.init();
     if (state.requestedMeetingId) {
-        await joinMeetingById(state.requestedMeetingId);
+        await joinMeetingById(state.requestedMeetingId, {
+            autoStart: state.requestedMeetingStart,
+        });
     } else {
         await loadActiveMeetings({ resolveRequested: true });
         startActiveMeetingsPolling();

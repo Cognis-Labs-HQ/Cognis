@@ -17,6 +17,7 @@
   <string name="module.jitsi_meet.overlay.probe_failed">Meeting URL liveness check failed.</string>
   <string name="module.jitsi_meet.overlay.joining">Joining Meeting...</string>
   <string name="module.jitsi_meet.overlay.join_failed">Failed to join meeting.</string>
+  <string name="module.jitsi_meet.meeting_not_found">The requested meeting does not exist.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting">Authentication is required before everyone can join.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting_other">Authentication is in progress by another participant. If they do not start within two minutes, you may continue.</string>
   <string name="module.jitsi_meet.overlay.auth_required_description">Moderator authentication is required. Start authentication in this same browser session.</string>

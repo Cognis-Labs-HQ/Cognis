@@ -17,6 +17,7 @@
   <string name="module.jitsi_meet.overlay.probe_failed">ミーティング URL の疎通確認に失敗しました。</string>
   <string name="module.jitsi_meet.overlay.joining">ミーティングに参加中...</string>
   <string name="module.jitsi_meet.overlay.join_failed">ミーティングへの参加に失敗しました。</string>
+  <string name="module.jitsi_meet.meeting_not_found">指定されたミーティングは存在しません。</string>
   <string name="module.jitsi_meet.overlay.auth_waiting">全員が参加する前に認証が必要です。</string>
   <string name="module.jitsi_meet.overlay.auth_waiting_other">別の参加者が認証を進めています。2 分以内に開始されない場合は、あなたが続行できます。</string>
   <string name="module.jitsi_meet.overlay.auth_required_description">モデレーター認証が必要です。同じブラウザーセッションで認証を開始してください。</string>

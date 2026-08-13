@@ -744,6 +744,25 @@ export function createWhiteboardCanvas(
     }
 
     function onKeyDown(event) {
+        const modifierPressed = event.ctrlKey || event.metaKey;
+        if (modifierPressed && !event.altKey) {
+            const normalizedKey = event.key.toLowerCase();
+            if (normalizedKey === "z" && !event.shiftKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                undo();
+                return;
+            }
+            if (
+                normalizedKey === "y" ||
+                (normalizedKey === "z" && event.shiftKey)
+            ) {
+                event.preventDefault();
+                event.stopPropagation();
+                redo();
+                return;
+            }
+        }
         if (event.key !== "Delete" && event.key !== "Backspace") return;
         if (deleteSelectedElements()) {
             event.preventDefault();

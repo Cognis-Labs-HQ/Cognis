@@ -17,6 +17,7 @@
   <string name="module.jitsi_meet.overlay.probe_failed">Erreichbarkeitsprüfung der Meeting-URL fehlgeschlagen.</string>
   <string name="module.jitsi_meet.overlay.joining">Meeting wird betreten...</string>
   <string name="module.jitsi_meet.overlay.join_failed">Beitritt zum Meeting fehlgeschlagen.</string>
+  <string name="module.jitsi_meet.meeting_not_found">Das angeforderte Meeting existiert nicht.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting">Authentifizierung ist erforderlich, bevor alle beitreten können.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting_other">Authentifizierung läuft bei einem anderen Teilnehmer. Startet dort in zwei Minuten nichts, kannst du fortfahren.</string>
   <string name="module.jitsi_meet.overlay.auth_required_description">Moderator-Authentifizierung ist erforderlich. Starte sie in derselben Browser-Sitzung.</string>

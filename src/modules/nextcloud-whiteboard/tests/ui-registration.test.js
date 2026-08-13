@@ -380,6 +380,10 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         ),
     ]);
     assert.match(canvasSource, /let activeTool = "select"/);
+    assert.match(canvasSource, /normalizedKey === "z" && !event\.shiftKey/);
+    assert.match(canvasSource, /normalizedKey === "y"/);
+    assert.match(canvasSource, /undo\(\)/);
+    assert.match(canvasSource, /redo\(\)/);
     assert.match(
         canvasSource,
         /if \(readOnly\) canvasElement\.style\.cursor = "pointer"/,

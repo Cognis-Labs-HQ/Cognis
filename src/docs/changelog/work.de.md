@@ -191,3 +191,7 @@ Meeting-Linkfreigaben senden beim Laden des Meetings nun ausdrücklich ihre aufg
 ## Gastlayouts sperren und Whiteboard-Markierungen sichtbar halten
 
 Gastsitzungen entfernen nun die Schaltfläche zum Bearbeiten des Seitenlayouts, anstatt sich auf eine verspätete Funktionsprüfung zu verlassen. Whiteboard-Flächen wählen außerdem kontrastreiche Striche, Auswahlbeschriftungen und Anwesenheitsschattierungen für helle und dunkle Designs, sodass Markierungen und Mitwirkende nach einem Designwechsel sichtbar bleiben.
+
+## Meeting-Direktlinks wiederherstellen und Whiteboard-Tastaturverlauf ergänzen
+
+Meeting-URLs laden nun ihre gespeicherte Teilnehmerbühne, berücksichtigen vor dem automatischen Start die ausdrückliche Option `start=1` und entfernen ungültige Meeting-Kennungen nach einer Benachrichtigung. Meeting-Freigabelinks fordern den automatischen Start an und lösen die Share-Berechtigung zur Anfragezeit auf, während Whiteboard die Verlaufskürzel Strg/Befehl+Z und Strg/Befehl+Y unterstützt.
