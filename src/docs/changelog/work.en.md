@@ -223,3 +223,7 @@ The Calendar page now asks the keyring to unlock received calendars whenever the
 ## Keep shared calendar controls active
 
 Public calendar controls now use one page-level delegated interaction boundary. Day, week, month, and year switching and period navigation therefore remain connected after every calendar rerender.
+
+## Keep guest meeting controls live
+
+Guest meeting pages no longer park their composer DOM. Account meeting pages retain iframe parking, while guest join controls always bind to the current rendered elements.

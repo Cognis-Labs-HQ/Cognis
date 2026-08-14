@@ -223,3 +223,7 @@ Halaman Kalender kini meminta keyring membuka kalender yang diterima setiap kali
 ## Menjaga kontrol kalender bersama tetap aktif
 
 Kontrol kalender publik kini menggunakan satu batas interaksi terdelegasi pada tingkat halaman. Peralihan tampilan hari, minggu, bulan, dan tahun serta navigasi periode tetap terhubung setelah setiap perenderan ulang kalender.
+
+## Menjaga kontrol rapat tamu tetap aktif
+
+Halaman rapat tamu tidak lagi memarkir DOM composer. Halaman rapat akun tetap memarkir iframe, sedangkan kontrol bergabung tamu selalu terikat pada elemen yang sedang dirender.

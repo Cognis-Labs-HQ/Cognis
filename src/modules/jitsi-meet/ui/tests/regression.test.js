@@ -732,12 +732,12 @@ test("jitsi API exposes user active meetings endpoint", () => {
     );
 });
 
-test("jitsi opts into composer DOM parking for its stateful iframe", () => {
+test("jitsi limits composer DOM parking to the account meeting page", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /enableDomParking: true/);
+    assert.match(source, /enableDomParking: !limitedShareView/);
 });
 
 test("meeting shares use the Cognis route and skip account setup", () => {

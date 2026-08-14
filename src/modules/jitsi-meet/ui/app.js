@@ -929,7 +929,7 @@ export async function mount(
 
     const composer = createPageComposer(root, {
         allowCustomization: !limitedShareView,
-        enableDomParking: true,
+        enableDomParking: !limitedShareView,
         elements,
         preferenceKey: "meetings-layout-v3",
         i18n,
