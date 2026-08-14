@@ -203,8 +203,40 @@ export async function mount(
     };
 
     function renderCalendar() {
-        composer.refresh([buildCalendarElement()]);
+        const sharedCalendar = root.querySelector(
+            `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
+        );
+        if (!(sharedCalendar instanceof HTMLElement)) return;
+        const periodLabel = sharedCalendar.querySelector(
+            ".calendar-nav-month-label",
+        );
+        if (periodLabel instanceof HTMLElement) {
+            periodLabel.textContent = resolvePeriodLabel();
+        }
+        sharedCalendar
+            .querySelectorAll("[data-calendar-view]")
+            .forEach((button) => {
+                button.classList.toggle(
+                    "active",
+                    button.getAttribute("data-calendar-view") === selectedView,
+                );
+            });
+        const canvas = sharedCalendar.querySelector(".calendar-view-canvas");
+        if (canvas instanceof HTMLElement) {
+            canvas.innerHTML = renderCalendarView(
+                events,
+                selectedView,
+                activeDate,
+                i18n,
+            );
+        }
         requestAnimationFrame(scrollTimedViewsToCurrentSlot);
+    }
+
+    function resolvePeriodLabel() {
+        return selectedView === "year"
+            ? String(activeDate.getFullYear())
+            : formatMonthYear(activeDate);
     }
 
     function scrollTimedViewsToCurrentSlot() {
@@ -235,10 +267,7 @@ export async function mount(
     }
 
     function buildCalendarElement() {
-        const periodLabel =
-            selectedView === "year"
-                ? String(activeDate.getFullYear())
-                : formatMonthYear(activeDate);
+        const periodLabel = resolvePeriodLabel();
         return {
             id: "shared-calendar",
             label: calendar.name || i18n.t("gateway.calendar.page_title"),

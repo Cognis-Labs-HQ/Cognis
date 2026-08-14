@@ -15,6 +15,7 @@ export function createMeetingHandlers({
     apiFetch,
     callbacks,
     utils,
+    allowParticipantlessJoin = false,
 }) {
     function renderActiveMeetings({ loading = false } = {}) {
         const activeMeetingsEl = root.querySelector("#jitsi-active-meetings");
@@ -237,7 +238,10 @@ export function createMeetingHandlers({
             return;
         }
         callbacks.renderParticipants();
-        if (state.selectedParticipants.length === 0) {
+        if (
+            !allowParticipantlessJoin &&
+            state.selectedParticipants.length === 0
+        ) {
             return;
         }
         state.chatMode = "meeting";

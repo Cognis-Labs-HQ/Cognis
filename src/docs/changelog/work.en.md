@@ -227,3 +227,7 @@ Public calendar controls now use one page-level delegated interaction boundary. 
 ## Open share content directly
 
 Calendar links now open in month view while retaining their persistent view and period controls. Meeting links now enter the shared meeting immediately instead of treating the missing account-page `start` query parameter as an instruction not to join.
+
+## Join guest meetings without cards
+
+Meeting-link guests can now enter a shared meeting even when the scoped response intentionally contains no participant cards. Calendar share controls now update their existing canvas directly, keeping the control DOM stable while changing views and periods.

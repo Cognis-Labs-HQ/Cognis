@@ -230,6 +230,7 @@ export async function mount(
         apiFetch,
         callbacks,
         utils,
+        allowParticipantlessJoin: limitedShareView,
     });
     const preflightHandlers = createPreflightHandlers({
         root,

@@ -227,3 +227,7 @@ Die Kalenderseite fordert nun beim Laden empfangener Kalender deren Entsperrung 
 ## Freigabeinhalte direkt öffnen
 
 Kalenderlinks öffnen nun in der Monatsansicht und behalten ihre dauerhaften Ansichts- und Periodensteuerungen. Meetinglinks treten nun sofort dem freigegebenen Meeting bei, anstatt den fehlenden `start`-Abfrageparameter der Kontoseite als Anweisung zu verstehen, nicht beizutreten.
+
+## Gast-Meetings ohne Karten beitreten
+
+Gäste von Meetinglinks können nun einem freigegebenen Meeting beitreten, auch wenn die eingeschränkte Antwort absichtlich keine Teilnehmerkarten enthält. Die Steuerung freigegebener Kalender aktualisiert nun direkt die bestehende Ansicht, sodass das Steuerungs-DOM beim Wechsel von Ansicht und Zeitraum stabil bleibt.

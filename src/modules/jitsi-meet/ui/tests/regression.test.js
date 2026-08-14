@@ -51,6 +51,22 @@ test("meeting share joins use the scoped guest access token", () => {
     );
 });
 
+test("meeting link guests can join without participant-card data", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const meetingSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
+        "utf8",
+    );
+    assert.match(appSource, /allowParticipantlessJoin: limitedShareView/);
+    assert.match(
+        meetingSource,
+        /!allowParticipantlessJoin\s*&&\s*state\.selectedParticipants\.length === 0/,
+    );
+});
+
 test("meetings search popup adds confirmed users directly to meeting participants", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),

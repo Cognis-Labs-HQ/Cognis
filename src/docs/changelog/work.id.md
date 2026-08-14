@@ -227,3 +227,7 @@ Kontrol kalender publik kini menggunakan satu batas interaksi terdelegasi pada t
 ## Membuka konten berbagi secara langsung
 
 Tautan kalender kini terbuka dalam tampilan bulan dengan kontrol tampilan dan periode yang tetap aktif. Tautan rapat kini langsung memasuki rapat bersama dan tidak lagi menganggap ketiadaan parameter kueri `start` milik halaman akun sebagai perintah untuk tidak bergabung.
+
+## Bergabung sebagai tamu tanpa kartu
+
+Tamu dari tautan rapat kini dapat memasuki rapat bersama meskipun respons terbatas sengaja tidak memuat kartu peserta. Kontrol kalender bersama kini memperbarui kanvas yang ada secara langsung sehingga DOM kontrol tetap stabil saat tampilan dan periode berubah.
