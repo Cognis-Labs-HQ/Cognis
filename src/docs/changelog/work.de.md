@@ -219,3 +219,7 @@ Die Wiederverwendung der Dashboard-Shell widerruft beim Ersetzen des Navigations
 ## Geteilte Kalender und Meeting-Beitritte wiederherstellen
 
 Die Kalenderseite fordert nun beim Laden empfangener Kalender deren Entsperrung über den Schlüsselbund an. Gast-Kalendersteuerungen ersetzen außerdem die gerenderte Ansicht, anstatt veraltetes DOM beizubehalten. Gäste von Meeting-Links übermitteln ihre begrenzte Freigabeberechtigung nun auch an die abschließende Beitrittsanfrage, damit der Beitrittsvorgang abgeschlossen wird.
+
+## Freigegebene Kalendersteuerung aktiv halten
+
+Öffentliche Kalender verwenden nun eine einzige delegierte Interaktionsgrenze auf Seitenebene. Das Umschalten zwischen Tag, Woche, Monat und Jahr sowie die Periodennavigation bleiben dadurch nach jedem erneuten Rendern des Kalenders verbunden.

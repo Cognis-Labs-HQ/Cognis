@@ -219,3 +219,7 @@ Penggunaan ulang shell dasbor tidak lagi mencabut URL blob milik penyedia profil
 ## Memulihkan kalender bersama dan proses bergabung rapat
 
 Halaman Kalender kini meminta keyring membuka kalender yang diterima setiap kali dimuat, dan kontrol kalender tamu mengganti tampilan hasil render alih-alih mempertahankan DOM lama. Tamu tautan rapat kini menyertakan kredensial berbagi terbatas pada permintaan bergabung terakhir agar tahap bergabung dapat diselesaikan.
+
+## Menjaga kontrol kalender bersama tetap aktif
+
+Kontrol kalender publik kini menggunakan satu batas interaksi terdelegasi pada tingkat halaman. Peralihan tampilan hari, minggu, bulan, dan tahun serta navigasi periode tetap terhubung setelah setiap perenderan ulang kalender.

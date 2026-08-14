@@ -725,14 +725,16 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /showNavbar:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /function renderCalendar\(\)/);
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /root\.addEventListener\([\s\S]*data-shared-calendar-id[\s\S]*data-calendar-view[\s\S]*data-calendar-nav/,
+    );
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar-view-switcher/);
     assert.match(SHARE_RENDERER_SOURCE, /data-calendar-nav/);
     assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
     assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);
     assert.match(SHARE_RENDERER_SOURCE, /requestAnimationFrame/);
-    assert.match(SHARE_RENDERER_SOURCE, /onRender:\s*bindCalendarControls/);
-    assert.match(SHARE_RENDERER_SOURCE, /sharedCalendar\.addEventListener/);
     assert.match(SHARE_RENDERER_SOURCE, /\{ signal \}/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);

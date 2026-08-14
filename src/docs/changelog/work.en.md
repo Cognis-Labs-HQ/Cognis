@@ -219,3 +219,7 @@ Dashboard shell reuse no longer revokes profile-provider blob URLs when replacin
 ## Restore shared calendars and meeting joins
 
 The Calendar page now asks the keyring to unlock received calendars whenever they load, and guest calendar controls replace their rendered view instead of preserving stale DOM. Meeting link guests now carry their scoped share credential into the final join request so the joining stage can complete.
+
+## Keep shared calendar controls active
+
+Public calendar controls now use one page-level delegated interaction boundary. Day, week, month, and year switching and period navigation therefore remain connected after every calendar rerender.
