@@ -102,6 +102,7 @@
   <string name="share.shares.detail_activity">Share activity</string>
   <string name="share.shares.detail_timeline">Timeline</string>
   <string name="share.shares.detail_event_count">Event Count</string>
+  <string name="share.shares.graph_empty_selection">No share activity occurred in the selected period.</string>
   <string name="share.shares.detail_users">Recipients</string>
   <string name="share.shares.detail_created">Created</string>
   <string name="share.shares.detail_updated">Updated</string>

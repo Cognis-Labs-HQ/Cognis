@@ -102,6 +102,7 @@
   <string name="share.shares.detail_activity">Aktivitas berbagi</string>
   <string name="share.shares.detail_timeline">Linimasa</string>
   <string name="share.shares.detail_event_count">Jumlah peristiwa</string>
+  <string name="share.shares.graph_empty_selection">Tidak ada aktivitas berbagi dalam periode yang dipilih.</string>
   <string name="share.shares.detail_users">Penerima</string>
   <string name="share.shares.detail_created">Dibuat</string>
   <string name="share.shares.detail_updated">Diperbarui</string>

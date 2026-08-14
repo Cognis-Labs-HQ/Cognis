@@ -247,3 +247,7 @@ Activity graphs now show second-level time labels for short histories and redraw
 ## Restore accounts before validation
 
 When `/share` loads after a guest link, the Share gateway now restores the saved account credentials before the Authentication gateway validates the browser session. The dashboard therefore resolves the actual account directly instead of retaining or briefly resolving the scoped guest token.
+
+## Align graph selection and dates
+
+Graph drag selection now follows the cursor through the SVG coordinate transform and always clears its highlight on release or cancellation. Empty periods produce a warning toast, while short time axes include the shared date or separate dates when the endpoints cross a day boundary.

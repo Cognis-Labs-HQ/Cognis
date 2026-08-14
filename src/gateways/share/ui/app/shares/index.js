@@ -123,6 +123,10 @@ function renderShareDetails(share, i18n) {
         formatTimeTimestamp: (timestamp) =>
             formatTime(timestamp, "", { includeSeconds: true }),
         formatDateTimestamp: formatDate,
+        onEmptySelection: () =>
+            showToast(i18n.t("share.shares.graph_empty_selection"), {
+                variant: "warning",
+            }),
     });
     const users = recipients.length
         ? recipients

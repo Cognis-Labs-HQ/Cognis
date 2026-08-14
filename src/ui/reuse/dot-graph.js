@@ -14,7 +14,7 @@
  *   });
  *
  * @param {HTMLElement} container - Element that will contain the graph.
- * @param {{ points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatTimeTimestamp?: (timestamp: string) => string, formatDateTimestamp?: (timestamp: string) => string, domainStart?: string, domainEnd?: string }} options - Graph data and localized labels.
+ * @param {{ points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatTimeTimestamp?: (timestamp: string) => string, formatDateTimestamp?: (timestamp: string) => string, domainStart?: string, domainEnd?: string, onEmptySelection?: () => void }} options - Graph data and localized labels.
  * @returns {void}
  */
 export function mountDotGraph(
@@ -28,6 +28,7 @@ export function mountDotGraph(
         formatDateTimestamp = formatTimestamp,
         domainStart,
         domainEnd,
+        onEmptySelection,
     },
 ) {
     const normalized = (Array.isArray(points) ? points : [])
@@ -35,8 +36,8 @@ export function mountDotGraph(
         .filter((point) => Number.isFinite(point.time))
         .sort((left, right) => left.time - right.time);
     const width = 720;
-    const height = 260;
-    const margin = { top: 20, right: 24, bottom: 54, left: 58 };
+    const height = 280;
+    const margin = { top: 20, right: 24, bottom: 74, left: 58 };
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
     const requestedMinimumTime = Date.parse(domainStart ?? "");
@@ -105,15 +106,44 @@ export function mountDotGraph(
     addLabel(
         axisTimestampFormatter(new Date(minimumTime).toISOString()),
         margin.left,
-        height - 27,
+        height - 45,
         "dot-graph-time-start",
     );
     addLabel(
         axisTimestampFormatter(new Date(maximumTime).toISOString()),
         margin.left + plotWidth,
-        height - 27,
+        height - 45,
         "dot-graph-time-end",
     );
+    if (axisTimestampFormatter === formatTimeTimestamp) {
+        const startDate = formatDateTimestamp(
+            new Date(minimumTime).toISOString(),
+        );
+        const endDate = formatDateTimestamp(
+            new Date(maximumTime).toISOString(),
+        );
+        if (startDate === endDate) {
+            addLabel(
+                startDate,
+                margin.left + plotWidth / 2,
+                height - 27,
+                "dot-graph-date-shared",
+            );
+        } else {
+            addLabel(
+                startDate,
+                margin.left,
+                height - 27,
+                "dot-graph-date-start",
+            );
+            addLabel(
+                endDate,
+                margin.left + plotWidth,
+                height - 27,
+                "dot-graph-date-end",
+            );
+        }
+    }
 
     const tooltip = document.createElement("div");
     tooltip.className = "dot-graph-tooltip";
@@ -157,15 +187,23 @@ export function mountDotGraph(
     selection.classList.add("dot-graph-selection");
     selection.setAttribute("y", String(margin.top));
     selection.setAttribute("height", String(plotHeight));
-    selection.hidden = true;
+    selection.setAttribute("visibility", "hidden");
     const pointerX = (event) => {
-        const bounds = svg.getBoundingClientRect();
-        const scaled = ((event.clientX - bounds.left) / bounds.width) * width;
-        return Math.min(margin.left + plotWidth, Math.max(margin.left, scaled));
+        const point = svg.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
+        const matrix = svg.getScreenCTM();
+        const svgPoint = matrix
+            ? point.matrixTransform(matrix.inverse())
+            : point;
+        return Math.min(
+            margin.left + plotWidth,
+            Math.max(margin.left, svgPoint.x),
+        );
     };
     svg.addEventListener("pointerdown", (event) => {
         selectionStart = pointerX(event);
-        selection.hidden = false;
+        selection.setAttribute("visibility", "visible");
         selection.setAttribute("x", String(selectionStart));
         selection.setAttribute("width", "0");
         svg.setPointerCapture(event.pointerId);
@@ -185,7 +223,8 @@ export function mountDotGraph(
         const lowerX = Math.min(selectionStart, selectionEnd);
         const upperX = Math.max(selectionStart, selectionEnd);
         selectionStart = null;
-        selection.hidden = true;
+        selection.setAttribute("visibility", "hidden");
+        svg.releasePointerCapture(event.pointerId);
         if (upperX - lowerX < 8) return;
         const toTime = (position) =>
             minimumTime + ((position - margin.left) / plotWidth) * timeSpan;
@@ -196,7 +235,10 @@ export function mountDotGraph(
                 point.time >= selectedMinimumTime &&
                 point.time <= selectedMaximumTime,
         );
-        if (selectedPoints.length === 0) return;
+        if (selectedPoints.length === 0) {
+            onEmptySelection?.();
+            return;
+        }
         mountDotGraph(container, {
             points: selectedPoints,
             xAxisLabel,
@@ -206,7 +248,12 @@ export function mountDotGraph(
             formatDateTimestamp,
             domainStart: new Date(selectedMinimumTime).toISOString(),
             domainEnd: new Date(selectedMaximumTime).toISOString(),
+            onEmptySelection,
         });
+    });
+    svg.addEventListener("pointercancel", () => {
+        selectionStart = null;
+        selection.setAttribute("visibility", "hidden");
     });
     svg.insertBefore(selection, svg.querySelector(".dot-graph-point"));
     container.replaceChildren(svg, tooltip);

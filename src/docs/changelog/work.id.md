@@ -247,3 +247,7 @@ Grafik aktivitas kini menampilkan label waktu hingga detik untuk riwayat singkat
 ## Memulihkan akun sebelum validasi
 
 Saat `/share` dimuat setelah tautan tamu, gateway Share kini memulihkan kredensial akun tersimpan sebelum gateway Authentication memvalidasi sesi peramban. Dasbor langsung mengenali akun sebenarnya alih-alih mempertahankan atau sempat mengenali token tamu terbatas.
+
+## Menyelaraskan pilihan grafik dan tanggal
+
+Pemilihan rentang pada grafik kini mengikuti kursor melalui transformasi koordinat SVG dan selalu menghapus sorotan saat dilepas atau dibatalkan. Periode kosong menampilkan toast peringatan, sedangkan sumbu waktu singkat menyertakan tanggal yang sama atau tanggal terpisah ketika titik ujung melewati batas hari.

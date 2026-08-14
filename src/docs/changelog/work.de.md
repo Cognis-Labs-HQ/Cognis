@@ -247,3 +247,7 @@ Aktivitätsdiagramme zeigen für kurze Verläufe nun Zeitangaben mit Sekunden un
 ## Konten vor der Validierung wiederherstellen
 
 Wenn `/share` nach einem Gastlink geladen wird, stellt das Share-Gateway die gespeicherten Kontoanmeldedaten nun wieder her, bevor das Authentication-Gateway die Browsersitzung prüft. Das Dashboard löst dadurch direkt das tatsächliche Konto auf, statt das eingeschränkte Gast-Token beizubehalten oder vorübergehend aufzulösen.
+
+## Diagrammauswahl und Datumsangaben ausrichten
+
+Die Ziehauswahl im Diagramm folgt dem Mauszeiger nun über die SVG-Koordinatentransformation und entfernt ihre Hervorhebung stets beim Loslassen oder Abbrechen. Leere Zeiträume zeigen eine Warnmeldung; kurze Zeitachsen enthalten das gemeinsame Datum oder getrennte Datumsangaben, wenn die Endpunkte eine Tagesgrenze überschreiten.

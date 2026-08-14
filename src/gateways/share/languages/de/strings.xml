@@ -102,6 +102,7 @@
   <string name="share.shares.detail_activity">Freigabeaktivität</string>
   <string name="share.shares.detail_timeline">Zeitleiste</string>
   <string name="share.shares.detail_event_count">Ereignisanzahl</string>
+  <string name="share.shares.graph_empty_selection">Im ausgewählten Zeitraum gab es keine Freigabeaktivität.</string>
   <string name="share.shares.detail_users">Empfänger</string>
   <string name="share.shares.detail_created">Erstellt</string>
   <string name="share.shares.detail_updated">Aktualisiert</string>

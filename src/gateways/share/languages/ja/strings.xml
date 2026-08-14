@@ -102,6 +102,7 @@
   <string name="share.shares.detail_activity">共有アクティビティ</string>
   <string name="share.shares.detail_timeline">タイムライン</string>
   <string name="share.shares.detail_event_count">イベント数</string>
+  <string name="share.shares.graph_empty_selection">選択した期間には共有アクティビティがありません。</string>
   <string name="share.shares.detail_users">受信者</string>
   <string name="share.shares.detail_created">作成</string>
   <string name="share.shares.detail_updated">更新</string>

@@ -64,6 +64,14 @@
     text-anchor: end;
 }
 
+.dot-graph-date-shared {
+    text-anchor: middle;
+}
+
+.dot-graph-date-end {
+    text-anchor: end;
+}
+
 .dot-graph-tooltip {
     background: var(--surface);
     border: 1px solid var(--border);
