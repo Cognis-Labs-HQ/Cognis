@@ -21,6 +21,7 @@ import { saveUiPreferences } from "./ui-preferences.js";
 import { showToast } from "./toast.js";
 import { navigateToSettingsSection } from "./settings-navigation.js";
 import { uiCtx } from "./ui-ctx.js";
+import { createLanguageFlag } from "./language-flag.js";
 
 const LANGUAGE_COMMIT_DELAY_MS = 5000;
 const SWITCHER_HANDLER_KEY = "__cognisLanguageSwitcherHandler";
@@ -111,7 +112,11 @@ export function bindLanguageSwitcher({ preferences, i18n }) {
     function renderSelection() {
         const options = button[SWITCHER_OPTIONS_KEY];
         const languageLabel = options.selectedLanguage.toUpperCase();
-        button.textContent = languageLabel;
+        button.replaceChildren(
+            createLanguageFlag(options.selectedLanguage, {
+                className: "language-switcher-flag",
+            }),
+        );
         button.setAttribute(
             "aria-label",
             options.i18n

@@ -1,4 +1,6 @@
 iso_code: de
 name: Deutsch
+flag: /static/languages/de/flag.svg
+flag_source: https://flagcdn.com/de.svg
 contributor: Cognis Labs HQ
 last_updated: 2026-05-01

@@ -1,4 +1,6 @@
 iso_code: ja
 name: 日本語
+flag: /static/languages/ja/flag.svg
+flag_source: https://flagcdn.com/jp.svg
 contributor: Cognis Labs HQ
 last_updated: 2026-05-01

@@ -56,9 +56,13 @@ test("language switcher uses persisted preferences when local state is not initi
         setAttribute(name, value) {
             this[name] = value;
         },
+        replaceChildren(...children) {
+            this.children = children;
+        },
     };
     globalThis.document = {
         querySelector: () => button,
+        createElement: () => ({ setAttribute() {} }),
     };
 
     try {
@@ -84,7 +88,8 @@ test("language switcher uses persisted preferences when local state is not initi
         });
 
         assert.equal(button.hidden, false);
-        assert.equal(button.textContent, "DE");
+        assert.equal(button.children[0].src, "/static/languages/de/flag.svg");
+        assert.equal(button.children[0].alt, "");
         assert.equal(listeners.has("click"), true);
         assert.equal(listeners.has("contextmenu"), true);
     } finally {

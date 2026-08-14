@@ -3,6 +3,7 @@ import {
     sanitizeLanguagePriority,
     readBrowserLocales,
 } from "../../reuse/i18n.js";
+import { createLanguageFlag } from "../../reuse/language-flag.js";
 
 async function loadLanguagesCatalog() {
     const response = await apiFetch("/api/v1/system/languages");
@@ -34,13 +35,17 @@ export function initLanguagePrefs(
         onDirtyChange?.(dirty);
     }
 
-    function makeRow(isoCode, labelText) {
+    function makeRow(isoCode, labelText, flagUrl) {
         const row = document.createElement("tr");
         row.setAttribute("draggable", "true");
         row.setAttribute("data-lang-row", isoCode);
 
         const tdLabel = document.createElement("td");
-        tdLabel.textContent = labelText;
+        tdLabel.className = "language-label";
+        tdLabel.append(
+            createLanguageFlag(isoCode, { sourceUrl: flagUrl }),
+            document.createTextNode(labelText),
+        );
 
         const tdHandle = document.createElement("td");
         tdHandle.className = "drag-handle";
@@ -110,14 +115,18 @@ export function initLanguagePrefs(
             ...languagePriority.map((iso) => {
                 const match = catalog.find((item) => item.iso_code === iso);
                 const label = match ? `${match.name} (${iso})` : iso;
-                return makeRow(iso, label);
+                return makeRow(iso, label, match?.flag);
             }),
         );
 
         const availableRows = catalog
             .filter((item) => !preferredSet.has(item.iso_code))
             .map((item) =>
-                makeRow(item.iso_code, `${item.name} (${item.iso_code})`),
+                makeRow(
+                    item.iso_code,
+                    `${item.name} (${item.iso_code})`,
+                    item.flag,
+                ),
             );
         available.replaceChildren(
             ...(availableRows.length
