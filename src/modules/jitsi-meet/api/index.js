@@ -192,6 +192,9 @@ export function registerApiRoutes(router, ctx) {
         };
     };
     const resolveShareUserAccess = ctx.getCapability("share:resolveUserAccess");
+    const deleteResourceShares = ctx.getCapability(
+        "share:deleteResourceShares",
+    );
     const resolveMeetingPayload = (input) =>
         resolveMeetingPayloadOrReject({
             ...input,
@@ -417,6 +420,22 @@ export function registerApiRoutes(router, ctx) {
         "jitsi-meet:getMeetingById",
         store.getMeetingById.bind(store),
     );
+    ctx.capabilities?.contribute?.(
+        "social:messages:authorizeExternalRoomAccess",
+        async ({ claims, roomId, requiredCapability }) => {
+            const meeting = await store.getMeetingByChatRoomId(roomId);
+            if (!meeting) return { external: false, authorized: false };
+            const access = await resolveShareGuestMeetingAccess({
+                claims,
+                meetingId: meeting.id,
+                requiredCapability,
+            });
+            return {
+                external: access.isGuest === true,
+                authorized: access.allowed === true,
+            };
+        },
+    );
     void registerStoredJitsiOrigin({ store, registerScriptOrigins, log });
 
     registerJitsiUiResourcesRoute({
@@ -600,6 +619,7 @@ export function registerApiRoutes(router, ctx) {
         buildMeetingChatTitle,
         dispatchMeetingNotifications,
         resolveModeratorUsernames,
+        deleteResourceShares,
     };
 
     registerMeetingConfigRoutes(routeContext);

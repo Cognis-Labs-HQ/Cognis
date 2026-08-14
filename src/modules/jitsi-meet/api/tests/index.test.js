@@ -56,6 +56,26 @@ test("meeting share guests receive the Jitsi meeting password", () => {
     );
 });
 
+test("jitsi authorizes its scoped guest chat through a neutral Messages contract", () => {
+    const source = readJitsiApiBundle();
+
+    assert.match(source, /social:messages:authorizeExternalRoomAccess/);
+    assert.match(source, /getMeetingByChatRoomId\(roomId\)/);
+    assert.match(source, /requiredCapability/);
+});
+
+test("participant-free meetings delete their identity and shares when closed", () => {
+    const source = readJitsiApiBundle();
+
+    assert.match(
+        source,
+        /const participantlessMeeting = resolved\.participants\.every/,
+    );
+    assert.match(source, /deleteResourceShares\?\.\(/);
+    assert.match(source, /await store\.deleteMeeting\(resolved\.meeting\.id\)/);
+    assert.match(source, /async deleteMeeting\(meetingId\)/);
+});
+
 test("jitsi API logs stored CSP origin registration failures", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),

@@ -38,26 +38,14 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const resolveShareGuestSessionId = ctx.getCapability<
             (claims: { sub?: string }) => string
         >("share:resolveGuestSessionId");
-        const hasShareCapability = ctx.getCapability<
-            (
-                tokenRecord:
-                    { grantedCapabilities?: string[] } | null | undefined,
-                requiredCapability: string,
-            ) => boolean
-        >("share:hasCapability");
         const shareGuestId = resolveShareGuestId?.({ sub: accountId }) ?? "";
-        const getShareTokenById = ctx.getCapability<
-            (shareId: string) => Promise<{
-                resourceType: string;
-                resourceId: string;
-                grantedCapabilities?: string[];
-            } | null>
-        >("share:getTokenById");
-        const getMeetingById = ctx.getCapability<
-            (
-                meetingId: string,
-            ) => Promise<{ chatRoomId?: string | null } | null>
-        >("jitsi-meet:getMeetingById");
+        const authorizeExternalRoomAccess = ctx.getCapability<
+            (input: {
+                claims: { sub: string; role: string };
+                roomId: string;
+                requiredCapability: "chat:read" | "chat:write";
+            }) => Promise<{ external: boolean; authorized: boolean }>
+        >("social:messages:authorizeExternalRoomAccess");
         const getGuestProfile = ctx.getCapability<
             (guestId: string) => Promise<{
                 displayName: string;
@@ -76,29 +64,32 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
         const member = await messagesStore.getMember(roomId, accountId);
-        const isShareGuest = Boolean(shareGuestId);
-        let shareGuestToken = null;
-        if (isShareGuest && typeof getShareTokenById === "function") {
-            shareGuestToken = await getShareTokenById(shareGuestId).catch(
-                () => null,
-            );
-        }
+        const [externalReadAccess, externalWriteAccess] =
+            typeof authorizeExternalRoomAccess === "function"
+                ? await Promise.all([
+                      authorizeExternalRoomAccess({
+                          claims,
+                          roomId,
+                          requiredCapability: "chat:read",
+                      }),
+                      authorizeExternalRoomAccess({
+                          claims,
+                          roomId,
+                          requiredCapability: "chat:write",
+                      }),
+                  ])
+                : [null, null];
+        const isShareGuest = Boolean(
+            shareGuestId || externalReadAccess?.external,
+        );
         const isAllowedShareGuest =
-            isShareGuest &&
-            shareGuestToken?.resourceType === "meeting" &&
-            (room.kind === "group" || room.kind === "classroom");
-        const shareMeeting = isAllowedShareGuest
-            ? await getMeetingById?.(shareGuestToken.resourceId).catch(
-                  () => null,
-              )
-            : null;
-        const shareGuestChatRoomMatch =
-            isAllowedShareGuest &&
-            typeof shareMeeting?.chatRoomId === "string" &&
-            shareMeeting.chatRoomId === roomId;
-        const hasMeetingChatAccess = (capability: "chat:read" | "chat:write") =>
-            hasShareCapability?.(shareGuestToken, capability) === true ||
-            hasShareCapability?.(shareGuestToken, "meeting:join") === true;
+            isShareGuest && externalReadAccess?.authorized === true;
+        const hasMeetingChatAccess = (
+            capability: "chat:read" | "chat:write",
+        ) =>
+            capability === "chat:write"
+                ? externalWriteAccess?.authorized === true
+                : externalReadAccess?.authorized === true;
         if (!member && !isAllowedShareGuest) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
@@ -106,18 +97,6 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     error: {
                         code: "not_member",
                         message: "Not a member of this room.",
-                    },
-                }),
-            );
-            return true;
-        }
-        if (isAllowedShareGuest && !shareGuestChatRoomMatch) {
-            res.writeHead(403, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    error: {
-                        code: "forbidden",
-                        message: "Share guest access is invalid for this room.",
                     },
                 }),
             );

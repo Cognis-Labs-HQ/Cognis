@@ -67,3 +67,7 @@ Tamu tautan rapat kini menggunakan data peserta yang telah diotorisasi oleh resp
 ## Stabilkan sesi rapat tamu
 
 Obrolan rapat tamu kini menggunakan kredensial berbagi terbatas saat mengambil kunci ruang terenkripsi, dan polling status rapat mengabaikan respons yang selesai setelah rapat dibongkar dengan aman. Undangan surel menempatkan petunjuk penerima khusus rapat di atas kolom alamat.
+
+## Aktifkan rapat tamu sekali pakai
+
+Messages kini mendelegasikan otorisasi ruang eksternal melalui kapabilitas netral yang disediakan pemilik rapat, sehingga tamu dengan akses terbatas dapat membuka dan menggunakan obrolan rapat. Rapat yang dibuat tanpa peserta di panggung akan menghapus data rapat dan berbagi terkait saat ditutup.

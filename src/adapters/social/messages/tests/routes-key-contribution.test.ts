@@ -159,19 +159,12 @@ test("meeting share guests receive a room key without consuming member delivery 
     const capabilities = new Map([
         ["share:resolveGuestId", () => "share-1"],
         [
-            "share:getTokenById",
-            async () => ({
-                resourceType: "meeting",
-                resourceId: "meeting-1",
-                grantedCapabilities: ["meeting:join"],
+            "social:messages:authorizeExternalRoomAccess",
+            async ({ roomId }) => ({
+                external: true,
+                authorized: roomId === "room-1",
             }),
         ],
-        [
-            "share:hasCapability",
-            (record, capability) =>
-                record?.grantedCapabilities?.includes(capability) === true,
-        ],
-        ["jitsi-meet:getMeetingById", async () => ({ chatRoomId: "room-1" })],
     ]);
     const route = createMessagesRoutes({
         messagesStore: messagesStore as any,

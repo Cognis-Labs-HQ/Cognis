@@ -67,3 +67,7 @@ Gäste mit Meeting-Link verwenden nun die bereits durch die Meeting-Antwort auto
 ## Gast-Meetingsitzungen stabilisieren
 
 Der Gast-Meeting-Chat verwendet nun beim Abrufen des verschlüsselten Raumschlüssels die begrenzte Freigabeberechtigung, und die Meeting-Statusabfrage ignoriert sicher Antworten, die erst nach dem Beenden eintreffen. E-Mail-Einladungen zeigen eine meetingspezifische Empfängeranweisung über dem Adressfeld.
+
+## Wegwerfbare Gast-Meetings ermöglichen
+
+Messages delegiert die externe Raumautorisierung nun über eine neutrale Fähigkeit des Meeting-Eigentümers, sodass Gäste mit begrenztem Zugriff den Meeting-Chat entsperren und verwenden können. Meetings ohne Teilnehmer auf der Bühne löschen beim Beenden ihren Meeting-Datensatz und die zugehörigen Freigaben.

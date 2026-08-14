@@ -67,3 +67,7 @@ Meeting-link guests now use participant data already authorized by the meeting r
 ## Stabilize guest meeting sessions
 
 Guest meeting chat now uses the scoped share credential while retrieving its encrypted room key, and meeting-state polling safely ignores responses that finish after teardown. Email invitations place a meeting-specific recipient instruction above the address field.
+
+## Enable disposable guest meetings
+
+Messages now delegates external room authorization through a neutral capability supplied by the meeting owner, allowing scoped guests to unlock and use meeting chat. Meetings created without staged participants delete their meeting record and associated shares when they close.
