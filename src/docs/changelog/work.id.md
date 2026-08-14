@@ -235,3 +235,7 @@ Tamu dari tautan rapat kini dapat memasuki rapat bersama meskipun respons terbat
 ## Memetakan aktivitas berbagi sepanjang waktu
 
 Detail tiap berbagi kini menggabungkan aktivitas pembuatan, pembaruan, dan akses dalam grafik titik responsif. Sumbu jumlah peristiwa dan linimasa menyesuaikan riwayat yang tersedia, sedangkan mengarahkan penunjuk atau fokus pada titik akan menampilkan peristiwa dan waktunya.
+
+## Menjelajahi riwayat akses berbagi lengkap
+
+Setiap akses berbagi yang berhasil kini disimpan dalam linimasa aktivitas terpadu. Grafik menggunakan label waktu untuk periode hingga dua hari dan tanggal untuk riwayat yang lebih panjang, mendukung pemilihan rentang dengan menyeret, serta memakai lebar penuh di atas daftar penerima.

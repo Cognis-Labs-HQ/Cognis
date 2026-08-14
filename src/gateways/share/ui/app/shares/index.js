@@ -1,6 +1,10 @@
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
-import { formatDate, formatDateTime } from "/static/reuse/timestamp.js";
+import {
+    formatDate,
+    formatDateTime,
+    formatTime,
+} from "/static/reuse/timestamp.js";
 import { mountDotGraph } from "/static/reuse/dot-graph.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
@@ -95,23 +99,13 @@ function createIconButton({ shareId, action, label, destructive = false }) {
 
 function renderShareDetails(share, i18n) {
     const recipients = shareRecipients(share);
-    const events = [
-        {
-            category: "created",
-            detail: i18n.t("share.shares.detail_created"),
-            timestamp: share.createdAt,
-        },
-        {
-            category: "updated",
-            detail: i18n.t("share.shares.detail_updated"),
-            timestamp: share.updatedAt,
-        },
-        {
-            category: "accessed",
-            detail: i18n.t("share.shares.detail_accessed"),
-            timestamp: share.lastAccessedAt,
-        },
-    ].filter((event) => Boolean(event.timestamp));
+    const events = (
+        Array.isArray(share.activityEvents) ? share.activityEvents : []
+    ).map((event) => ({
+        category: String(event.type ?? ""),
+        detail: i18n.t(`share.shares.detail_${event.type}`),
+        timestamp: event.occurredAt,
+    }));
     const detailsRow = document.createElement("tr");
     detailsRow.className = "shares-detail-row";
     detailsRow.dataset.shareDetails = String(share.id);
@@ -126,7 +120,8 @@ function renderShareDetails(share, i18n) {
         xAxisLabel: i18n.t("share.shares.detail_timeline"),
         yAxisLabel: i18n.t("share.shares.detail_event_count"),
         formatTimestamp: formatDateTime,
-        formatAxisTimestamp: formatDate,
+        formatTimeTimestamp: formatTime,
+        formatDateTimestamp: formatDate,
     });
     const users = recipients.length
         ? recipients

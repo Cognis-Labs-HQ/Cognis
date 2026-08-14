@@ -50,6 +50,13 @@ export interface ShareTokenRecord {
     updatedAt: string;
 }
 
+export interface ShareActivityEvent {
+    id: string;
+    shareId: string;
+    type: "created" | "updated" | "accessed";
+    occurredAt: string;
+}
+
 function normalizeOptionalString(value: unknown): string | null {
     if (typeof value !== "string") {
         return null;
@@ -370,6 +377,70 @@ export class ShareTokenStore {
             ],
             uniqueKeys: [["share_id", "account_id"]],
         });
+        await this.db.ensureTable({
+            name: "share_activity_events",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "share_id",
+                    type: "text",
+                    notNull: true,
+                    references: {
+                        table: "share_tokens",
+                        column: "id",
+                        onDelete: "CASCADE",
+                    },
+                },
+                { name: "event_type", type: "text", notNull: true },
+                { name: "occurred_at", type: "text", notNull: true },
+            ],
+        });
+    }
+
+    private async recordActivity(
+        shareId: string,
+        type: ShareActivityEvent["type"],
+        occurredAt: string,
+    ): Promise<void> {
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "share_activity_events",
+            values: {
+                id: randomBytes(16).toString("hex"),
+                share_id: shareId,
+                event_type: type,
+                occurred_at: occurredAt,
+            },
+        });
+    }
+
+    async listActivity(shareId: string): Promise<ShareActivityEvent[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_activity_events",
+            where: [{ column: "share_id", value: shareId }],
+            orderBy: [{ column: "occurred_at", direction: "ASC" }],
+        });
+        return (result.rows ?? []).flatMap((row) => {
+            const type = String(row.event_type ?? "");
+            const occurredAt = String(row.occurred_at ?? "");
+            if (
+                (type !== "created" &&
+                    type !== "updated" &&
+                    type !== "accessed") ||
+                !occurredAt
+            ) {
+                return [];
+            }
+            return [
+                {
+                    id: String(row.id ?? ""),
+                    shareId: String(row.share_id ?? shareId),
+                    type,
+                    occurredAt,
+                },
+            ];
+        });
     }
 
     private async backfillResourceKeys(): Promise<void> {
@@ -556,6 +627,7 @@ export class ShareTokenStore {
                 updated_at: record.updatedAt,
             },
         });
+        await this.recordActivity(record.id, "created", record.createdAt);
         return record;
     }
 
@@ -876,6 +948,7 @@ export class ShareTokenStore {
         if (input.password !== undefined || input.clearPassword) {
             await this.clearAccountUnlocks(record.id);
         }
+        await this.recordActivity(record.id, "updated", updatedAt);
         return this.getById(record.id);
     }
 
@@ -894,6 +967,7 @@ export class ShareTokenStore {
             }
         }
         const lastAccessedAt = new Date().toISOString();
+        await this.recordActivity(record.id, "accessed", lastAccessedAt);
         const accessRecorded = await this.db
             .executeCommand({
                 option: "UPDATE",

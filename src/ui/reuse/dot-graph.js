@@ -14,7 +14,7 @@
  *   });
  *
  * @param {HTMLElement} container - Element that will contain the graph.
- * @param {{ points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatAxisTimestamp?: (timestamp: string) => string }} options - Graph data and localized labels.
+ * @param {{ points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatTimeTimestamp?: (timestamp: string) => string, formatDateTimestamp?: (timestamp: string) => string }} options - Graph data and localized labels.
  * @returns {void}
  */
 export function mountDotGraph(
@@ -24,7 +24,8 @@ export function mountDotGraph(
         xAxisLabel,
         yAxisLabel,
         formatTimestamp,
-        formatAxisTimestamp = formatTimestamp,
+        formatTimeTimestamp = formatTimestamp,
+        formatDateTimestamp = formatTimestamp,
     },
 ) {
     const normalized = (Array.isArray(points) ? points : [])
@@ -39,6 +40,10 @@ export function mountDotGraph(
     const minimumTime = normalized[0]?.time ?? Date.now();
     const maximumTime = normalized.at(-1)?.time ?? minimumTime;
     const timeSpan = Math.max(1, maximumTime - minimumTime);
+    const axisTimestampFormatter =
+        timeSpan <= 2 * 24 * 60 * 60 * 1000
+            ? formatTimeTimestamp
+            : formatDateTimestamp;
     const plotted = normalized.map((point, index) => ({
         ...point,
         count: index + 1,
@@ -90,13 +95,13 @@ export function mountDotGraph(
         "dot-graph-tick",
     );
     addLabel(
-        formatAxisTimestamp(new Date(minimumTime).toISOString()),
+        axisTimestampFormatter(new Date(minimumTime).toISOString()),
         margin.left,
         height - 27,
         "dot-graph-time-start",
     );
     addLabel(
-        formatAxisTimestamp(new Date(maximumTime).toISOString()),
+        axisTimestampFormatter(new Date(maximumTime).toISOString()),
         margin.left + plotWidth,
         height - 27,
         "dot-graph-time-end",
@@ -139,5 +144,57 @@ export function mountDotGraph(
         circle.addEventListener("blur", hideTooltip);
         svg.appendChild(circle);
     }
+    let selectionStart = null;
+    const selection = document.createElementNS(svgNamespace, "rect");
+    selection.classList.add("dot-graph-selection");
+    selection.setAttribute("y", String(margin.top));
+    selection.setAttribute("height", String(plotHeight));
+    selection.hidden = true;
+    const pointerX = (event) => {
+        const bounds = svg.getBoundingClientRect();
+        const scaled = ((event.clientX - bounds.left) / bounds.width) * width;
+        return Math.min(margin.left + plotWidth, Math.max(margin.left, scaled));
+    };
+    svg.addEventListener("pointerdown", (event) => {
+        selectionStart = pointerX(event);
+        selection.hidden = false;
+        selection.setAttribute("x", String(selectionStart));
+        selection.setAttribute("width", "0");
+        svg.setPointerCapture(event.pointerId);
+    });
+    svg.addEventListener("pointermove", (event) => {
+        if (selectionStart === null) return;
+        const current = pointerX(event);
+        selection.setAttribute("x", String(Math.min(selectionStart, current)));
+        selection.setAttribute(
+            "width",
+            String(Math.abs(current - selectionStart)),
+        );
+    });
+    svg.addEventListener("pointerup", (event) => {
+        if (selectionStart === null) return;
+        const selectionEnd = pointerX(event);
+        const lowerX = Math.min(selectionStart, selectionEnd);
+        const upperX = Math.max(selectionStart, selectionEnd);
+        selectionStart = null;
+        selection.hidden = true;
+        if (upperX - lowerX < 8) return;
+        const toTime = (position) =>
+            minimumTime + ((position - margin.left) / plotWidth) * timeSpan;
+        const selectedPoints = normalized.filter(
+            (point) =>
+                point.time >= toTime(lowerX) && point.time <= toTime(upperX),
+        );
+        if (selectedPoints.length === 0) return;
+        mountDotGraph(container, {
+            points: selectedPoints,
+            xAxisLabel,
+            yAxisLabel,
+            formatTimestamp,
+            formatTimeTimestamp,
+            formatDateTimestamp,
+        });
+    });
+    svg.insertBefore(selection, svg.querySelector(".dot-graph-point"));
     container.replaceChildren(svg, tooltip);
 }

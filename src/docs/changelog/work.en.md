@@ -235,3 +235,7 @@ Meeting-link guests can now enter a shared meeting even when the scoped response
 ## Plot share activity over time
 
 Per-share details now combine creation, update, and access activity in a responsive dot graph. Its event-count and timeline axes scale to the available history, and hovering or focusing a point reveals the event and its timestamp.
+
+## Explore complete share access history
+
+Every successful share access is now retained in the unified activity timeline. Graphs use time labels for periods up to two days and dates for longer histories, support drag-selection to zoom into a period, and occupy the full detail width above the recipient list.

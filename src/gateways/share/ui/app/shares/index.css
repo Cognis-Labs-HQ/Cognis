@@ -217,9 +217,9 @@ tr[data-share-expandable] {
 }
 
 .shares-detail-panel {
-    display: grid;
+    display: flex;
+    flex-direction: column;
     gap: 1.25rem;
-    grid-template-columns: minmax(0, 2fr) minmax(12rem, 1fr);
     padding: 0.5rem;
 }
 

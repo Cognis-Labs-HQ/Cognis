@@ -23,6 +23,13 @@
     stroke-width: 2;
 }
 
+.dot-graph-selection {
+    fill: color-mix(in srgb, var(--accent) 22%, transparent);
+    pointer-events: none;
+    stroke: var(--accent);
+    stroke-dasharray: 4 3;
+}
+
 .dot-graph-point:focus,
 .dot-graph-point:hover {
     filter: brightness(1.2);

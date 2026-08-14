@@ -235,3 +235,7 @@ Gäste von Meetinglinks können nun einem freigegebenen Meeting beitreten, auch 
 ## Freigabeaktivität im Zeitverlauf darstellen
 
 Die Details jeder Freigabe vereinen nun Erstellungs-, Aktualisierungs- und Zugriffsaktivitäten in einem responsiven Punktdiagramm. Die Achsen für Ereignisanzahl und Zeitleiste passen sich dem verfügbaren Verlauf an; beim Darüberfahren oder Fokussieren eines Punkts erscheinen Ereignis und Zeitstempel.
+
+## Vollständigen Freigabezugriffsverlauf erkunden
+
+Jeder erfolgreiche Freigabezugriff wird nun in der einheitlichen Aktivitätszeitleiste gespeichert. Diagramme verwenden Zeitangaben für Zeiträume bis zu zwei Tagen und Datumsangaben für längere Verläufe, unterstützen die Bereichsauswahl durch Ziehen und nutzen die gesamte Detailbreite oberhalb der Empfängerliste.

@@ -99,6 +99,11 @@ test("share token schema declares resource and token columns", async () => {
         (def) => def.name === "share_resources",
     );
     assert.ok(resourceTableDef);
+    assert.ok(
+        executor.tableDefs.some(
+            (definition) => definition.name === "share_activity_events",
+        ),
+    );
     const columnNames = tableDef.columns.map((column) => column.name);
     assert.ok(columnNames.includes("resource_type"));
     assert.ok(columnNames.includes("resource_key"));
@@ -204,6 +209,10 @@ test("issue, list, resolve, and delete share tokens", async () => {
     assert.deepEqual(resolved?.accessControls.permissions, ["read"]);
     assert.equal(resolved?.accessControls.watermarkReadonly, true);
     assert.equal(resolved?.accessControls.recipients[0]?.id, "bob");
+    assert.deepEqual(
+        (await store.listActivity(issued.id)).map((event) => event.type),
+        ["created", "accessed"],
+    );
     const received = await store.listByRecipient("bob");
     assert.equal(received.length, 1);
     assert.equal(received[0]?.id, issued.id);
@@ -261,6 +270,10 @@ test("updateById edits expiry, permissions, and password controls", async () => 
     assert.equal(updated?.expiresAt, expiresAt);
     assert.deepEqual(updated?.accessControls.permissions, ["read", "write"]);
     assert.equal(updated?.accessControls.watermarkReadonly, false);
+    assert.deepEqual(
+        (await store.listActivity(issued.id)).map((event) => event.type),
+        ["created", "updated"],
+    );
     assert.equal(await store.resolve(issued.tokenValue), null);
     assert.equal(
         (await store.resolve(issued.tokenValue, "new-secret"))?.id,

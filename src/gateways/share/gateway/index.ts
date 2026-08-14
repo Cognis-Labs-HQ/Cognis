@@ -204,6 +204,7 @@ export class CoreShareGateway {
             ...variant,
             url: this.buildAbsoluteUrl(variant.url),
         }));
+        const activityEvents = await this.store.listActivity(record.id);
         return {
             id: record.id,
             ownerAccountId: record.ownerAccountId,
@@ -220,6 +221,7 @@ export class CoreShareGateway {
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
             lastAccessedAt: record.lastAccessedAt,
+            activityEvents,
             shareUrl,
             destinationUrl,
             actionUrl,

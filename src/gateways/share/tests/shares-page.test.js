@@ -81,15 +81,21 @@ test("Shares page composes sent and received share management", () => {
 });
 
 test("Share activity uses the reusable scalable dot graph", () => {
-    assert.match(pageSource, /share\.createdAt/);
-    assert.match(pageSource, /share\.updatedAt/);
-    assert.match(pageSource, /share\.lastAccessedAt/);
+    assert.match(pageSource, /share\.activityEvents/);
+    assert.match(pageSource, /event\.occurredAt/);
     assert.match(graphSource, /maximumCount/);
     assert.match(graphSource, /timeSpan/);
+    assert.match(graphSource, /timeSpan <= 2 \* 24 \* 60 \* 60 \* 1000/);
     assert.match(graphSource, /dot-graph-point/);
     assert.match(graphSource, /pointerenter/);
-    assert.match(graphSource, /formatAxisTimestamp/);
+    assert.match(graphSource, /pointerdown/);
+    assert.match(graphSource, /pointermove/);
+    assert.match(graphSource, /pointerup/);
+    assert.match(graphSource, /selectedPoints/);
+    assert.match(graphSource, /formatTimeTimestamp/);
+    assert.match(graphSource, /formatDateTimestamp/);
     assert.match(graphStyleSource, /\.dot-graph-tooltip/);
+    assert.match(styleSource, /flex-direction:\s*column/);
     assert.match(bootstrapSource, /styles\/reuse\/dot-graph\.css/);
 });
 
