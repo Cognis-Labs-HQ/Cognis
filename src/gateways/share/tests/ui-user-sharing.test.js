@@ -122,6 +122,13 @@ test("share popup callbacks use only share gateway recipient and token routes", 
     assert.match(popupSource, /labels\.duplicateUserShare/);
 });
 
+test("share recipient search truncates results on the API-caller side", () => {
+    assert.match(
+        apiSource,
+        /searchUsers:[\s\S]*\/recipients\/users[\s\S]*payload\.data\.slice\(0, 10\)/,
+    );
+});
+
 test("share popup renders link variants with optional avatar capabilities", () => {
     assert.match(popupSource, /link\?\.variants/);
     assert.match(popupSource, /variant\.url/);
@@ -482,6 +489,8 @@ test("account shares use an authenticated page without guest-session bootstrap",
     assert.match(accountShareAppSource, /requireAccountSession:\s*true/);
     assert.match(accountShareHtmlSource, /app\/account-share\/index\.js/);
     assert.doesNotMatch(accountShareHtmlSource, /session-flow-hooks\.js/);
+    assert.match(accountShareAppSource, /mount\(root, \{ signal \} = \{\}\)/);
+    assert.match(accountShareAppSource, /if \(signal\?\.aborted\) return;/);
 });
 
 test("account-share password prompts omit public Share branding", () => {

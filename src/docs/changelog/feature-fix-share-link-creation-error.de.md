@@ -79,3 +79,7 @@ Gelöschte, abgelaufene, fehlerhafte und nicht vorhandene Freigabelinks verlasse
 ## Isolierte Gastsitzungen und Autorisierung des Besprechungschats
 
 Die Authentifizierung verwaltet nun die Klassifizierung von Gastsitzungen, die Freigabezustellung verzweigt nicht mehr anhand von Kalenderinternas und der Zugriff auf Besprechungschats wird über die Erweiterungsschnittstelle des Nachrichtenadapters registriert.
+
+## Navigation und Empfängersuche für Freigaben aktuell halten
+
+Die Auflösung einer Benutzerfreigabe wird nun beendet, wenn die Person die Seite verlässt. Dadurch kann eine verzögerte Anfrage die neue Zielseite nicht mehr ersetzen. Empfänger-APIs geben alle Treffer zurück, während die Freigabeauswahl ihre Anzeige selbst kürzt.

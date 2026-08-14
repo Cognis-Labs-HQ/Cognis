@@ -79,3 +79,7 @@ Deleted, expired, malformed, and nonexistent share links now leave the loading s
 ## Isolated guest sessions and meeting chat authorization
 
 Authentication now owns guest-session classification, share delivery no longer branches on calendar internals, and meeting chat access is registered through the Messages adapter's extension surface.
+
+## Keep share navigation and recipient searches current
+
+Account-share resolution now stops when the user navigates away, preventing a delayed request from replacing the destination page. Recipient APIs return every match, while the share picker truncates its own display results.

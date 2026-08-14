@@ -25,10 +25,11 @@ function buildStatusElement(i18n, messageKey) {
     };
 }
 
-export async function mount(root) {
+export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
+    if (signal?.aborted) return;
     applyDocumentTitle(i18n, "share.page_title");
     const composer = createPageComposer(root, {
         allowCustomization: false,
@@ -44,13 +45,16 @@ export async function mount(root) {
         elements: [buildStatusElement(i18n, "share.loading")],
     });
     await composer.init();
+    if (signal?.aborted) return;
     const shareId = resolveAccountShareId();
     const result = shareId ? await resolveAccountShare(shareId) : null;
+    if (signal?.aborted) return;
     const destinationUrl = String(result?.data?.destinationUrl ?? "").trim();
     if (destinationUrl) {
         const destination = new URL(destinationUrl, window.location.origin);
         const destinationPath = `${destination.pathname}${destination.search}${destination.hash}`;
-        if (await navigateTo(destinationPath)) return;
+        const navigated = await navigateTo(destinationPath);
+        if (signal?.aborted || navigated) return;
     }
     composer.refresh([
         buildStatusElement(

@@ -79,3 +79,7 @@ Tautan berbagi yang dihapus, kedaluwarsa, rusak, atau tidak ada kini meninggalka
 ## Isolasi sesi tamu dan otorisasi obrolan rapat
 
 Autentikasi kini memiliki klasifikasi sesi tamu, pengiriman berbagi tidak lagi bercabang berdasarkan internal Kalender, dan akses obrolan rapat didaftarkan melalui permukaan ekstensi adapter Pesan.
+
+## Menjaga navigasi berbagi dan pencarian penerima tetap mutakhir
+
+Penyelesaian berbagi pengguna kini berhenti saat pengguna berpindah halaman sehingga permintaan yang terlambat tidak dapat menggantikan halaman tujuan baru. API penerima mengembalikan semua hasil, sedangkan pemilih berbagi membatasi sendiri hasil tampilannya.

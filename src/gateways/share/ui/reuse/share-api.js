@@ -177,7 +177,9 @@ export function buildShareTokenCallbacks({
             );
             if (!response.ok) throw new Error("search_failed");
             const payload = await response.json().catch(() => ({ data: [] }));
-            return Array.isArray(payload?.data) ? payload.data : [];
+            return Array.isArray(payload?.data)
+                ? payload.data.slice(0, 10)
+                : [];
         },
         deleteLink: async ({ shareId }) => {
             const response = await apiFetch(

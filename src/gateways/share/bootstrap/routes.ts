@@ -817,7 +817,7 @@ export function createShareRoutes(input: {
             }>("social:profileStore");
             const profiles =
                 query && typeof profileStore?.searchProfiles === "function"
-                    ? await profileStore.searchProfiles(query, 10)
+                    ? await profileStore.searchProfiles(query)
                     : [];
             sendJson(res, 200, {
                 data: profiles

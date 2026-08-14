@@ -101,3 +101,21 @@ test("profile store search can require a follow relationship", async () => {
         ["bob"],
     );
 });
+
+test("profile store search returns every match when no limit is supplied", async () => {
+    const databaseExecutor = new InMemoryTestExecutor();
+    const store = new DbProfileStore(databaseExecutor);
+    await store.ensureSchema();
+    for (let index = 0; index < 12; index += 1) {
+        await store.createProfile(
+            `account-${index}`,
+            `learner-${String(index).padStart(2, "0")}`,
+            "user",
+            `Learner ${index}`,
+        );
+    }
+
+    const profiles = await store.searchProfiles("learner");
+
+    assert.equal(profiles.length, 12);
+});

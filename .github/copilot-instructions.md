@@ -26,10 +26,13 @@ endpoint knowledge and response handling within the owning gateway.
 ### API result limits are caller-controlled
 
 API endpoints must not impose arbitrary default or maximum result limits in
-their route definitions. Filtering or limiting results is applied only when
-the caller explicitly sends the corresponding parameter. When no limit value
-is supplied, return every matching result. Validate an explicitly supplied
-limit, but do not silently replace, clamp, or default it in the endpoint.
+their route definitions or indirectly through a store's default arguments.
+Filtering or limiting results is applied only when the caller explicitly sends
+the corresponding parameter. When no limit value is supplied, return every
+matching result. Validate an explicitly supplied limit, but do not silently
+replace, clamp, or default it in the endpoint. When a UI only needs a smaller
+display set, fetch the complete API result and truncate it on the API-caller
+side.
 
 ### User-specific secrets belong in the keyring
 

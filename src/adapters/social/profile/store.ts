@@ -240,7 +240,7 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async searchProfiles(
         query: string,
-        limit: number = 10,
+        limit?: number,
         options: ProfileSearchOptions = {},
     ): Promise<AccountProfile[]> {
         const pattern =
@@ -349,7 +349,13 @@ export class DbProfileStore implements ProfileCreateStore {
                 }
             }
             visibleToRequester.push(profile);
-            if (visibleToRequester.length >= limit) break;
+            if (
+                Number.isInteger(limit) &&
+                Number(limit) >= 0 &&
+                visibleToRequester.length >= Number(limit)
+            ) {
+                break;
+            }
         }
         return visibleToRequester;
     }
