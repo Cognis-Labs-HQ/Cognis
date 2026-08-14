@@ -30,6 +30,7 @@ const ADAPTER_LANGUAGE_URLS = ["de", "en", "id", "ja"].map(
 
 test("share popup keeps the active adapter page and history rendering separate", () => {
     const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+    const renderingSource = readFileSync(RENDERING_URL, "utf8");
 
     assert.match(source, /share-method-page/);
     assert.match(source, /share-links-list-container/);
@@ -37,6 +38,8 @@ test("share popup keeps the active adapter page and history rendering separate",
     assert.match(source, /state\.visibleLinks/);
     assert.match(source, /methodModule\.renderPage/);
     assert.match(source, /window\.setInterval\(/);
+    assert.match(source, /const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;/);
+    assert.match(renderingSource, /bindSecretVisibilityToggles,/);
     assert.doesNotMatch(source, /captureFocusableTarget/);
     assert.doesNotMatch(source, /restoreFocusableTarget/);
 });

@@ -391,3 +391,7 @@ Guest sessions now retain the generated disposable-keyring credentials and can r
 ## Harden share updates and delivery
 
 Share editing now preserves explicitly cleared labels, navigation ignores stale authentication results, failed direct-share notifications are logged, malformed stored metadata remains recoverable, and activity-log failures no longer make successful share creation appear to fail.
+
+## Keep share popup refresh active
+
+Share popups now keep their refresh interval within the popup lifecycle module, preventing whiteboard sharing from failing when the popup opens.

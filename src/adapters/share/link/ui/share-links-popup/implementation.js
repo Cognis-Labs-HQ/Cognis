@@ -25,10 +25,6 @@ import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
 import { renderPopupBody, resolveShareMethodId } from "./body.js";
 import {
-    bindSecretVisibilityToggles,
-    renderSecretVisibilityField,
-} from "/static/reuse/secret-visibility-toggle.js";
-import {
     buildRecipientAvatarMarkup,
     ensureStylesheet,
     generateSharePassword,
@@ -39,6 +35,9 @@ import {
     renderShareStatus,
     showSharePasswordPopup,
 } from "./rendering.js";
+
+const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
+
 export async function openShareLinksPopup({
     title,
     labels,

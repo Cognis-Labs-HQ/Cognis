@@ -391,3 +391,7 @@ Sesi tamu kini menyimpan kredensial keyring sementara yang dibuat dan dapat meng
 ## Memperkuat pembaruan dan pengiriman berbagi
 
 Pengeditan berbagi kini mempertahankan label yang dikosongkan secara eksplisit, navigasi mengabaikan hasil autentikasi yang kedaluwarsa, kegagalan notifikasi berbagi langsung dicatat, metadata tersimpan yang rusak tetap dapat dipulihkan, dan kegagalan log aktivitas tidak lagi membuat pembuatan berbagi yang berhasil tampak gagal.
+
+## Menjaga pembaruan popup berbagi tetap aktif
+
+Popup berbagi kini menyimpan interval pembaruannya di dalam modul siklus hidup popup sehingga berbagi papan tulis tidak lagi gagal saat popup dibuka.

@@ -9,11 +9,13 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
-import { renderSecretVisibilityField } from "/static/reuse/secret-visibility-toggle.js";
+import {
+    bindSecretVisibilityToggles,
+    renderSecretVisibilityField,
+} from "/static/reuse/secret-visibility-toggle.js";
 
 const STYLESHEET_HREF =
     "/static/adapters/share/link/ui/share-links-popup/index.css";
-const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
 let stylesheetReady = null;
 
 export function buildRecipientAvatarMarkup(options) {

@@ -391,3 +391,7 @@ Gastsitzungen behalten nun die erzeugten Zugangsdaten des temporären Schlüssel
 ## Freigabeaktualisierungen und Zustellung absichern
 
 Beim Bearbeiten von Freigaben bleiben ausdrücklich entfernte Bezeichnungen erhalten, die Navigation ignoriert veraltete Authentifizierungsergebnisse, fehlgeschlagene direkte Freigabebenachrichtigungen werden protokolliert, fehlerhafte gespeicherte Metadaten bleiben wiederherstellbar und Fehler im Aktivitätsprotokoll lassen eine erfolgreiche Freigabeerstellung nicht mehr als fehlgeschlagen erscheinen.
+
+## Aktualisierung des Freigabe-Popups aktiv halten
+
+Freigabe-Popups verwalten ihr Aktualisierungsintervall nun im Popup-Lebenszyklusmodul. Dadurch schlägt das Teilen von Whiteboards beim Öffnen des Popups nicht mehr fehl.
