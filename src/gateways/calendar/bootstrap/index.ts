@@ -428,6 +428,51 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
     ctx.capabilities.contribute(
+        "calendar:reconcileUserShares",
+        async (recipientAccountId: string) => {
+            const listReceivedTokens = ctx.capabilities.get<
+                (accountId: string) => Promise<Array<Record<string, unknown>>>
+            >("share:listReceivedTokens");
+            const deliverUserShare = ctx.capabilities.get<
+                (delivery: {
+                    shareId: string;
+                    resourceType: string;
+                    resourceId: string;
+                    ownerAccountId: string;
+                    recipientAccountId: string;
+                    grantedCapabilities: string[];
+                    expiresAt: string;
+                }) => Promise<unknown>
+            >("share:deliverUserShare:calendar");
+            if (!listReceivedTokens || !deliverUserShare) return;
+            const receivedShares = await listReceivedTokens(recipientAccountId);
+            await Promise.all(
+                receivedShares
+                    .filter(
+                        (share) =>
+                            share.resourceType === "calendar" &&
+                            (share.metadata as { adapterId?: string } | null)
+                                ?.adapterId === "user",
+                    )
+                    .map((share) =>
+                        deliverUserShare({
+                            shareId: String(share.id ?? ""),
+                            resourceType: "calendar",
+                            resourceId: String(share.resourceId ?? ""),
+                            ownerAccountId: String(share.ownerAccountId ?? ""),
+                            recipientAccountId,
+                            grantedCapabilities: Array.isArray(
+                                share.grantedCapabilities,
+                            )
+                                ? share.grantedCapabilities.map(String)
+                                : [],
+                            expiresAt: String(share.expiresAt ?? ""),
+                        }),
+                    ),
+            );
+        },
+    );
+    ctx.capabilities.contribute(
         "share:resolveVariants",
         (variantInput: {
             resourceType: string;

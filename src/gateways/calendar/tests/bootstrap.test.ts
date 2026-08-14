@@ -31,6 +31,11 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     );
     capabilities.contribute("auth:routeContext", authContext);
     capabilities.contribute("system:ctx", systemCtx);
+    let receivedCalendarShares: Array<Record<string, unknown>> = [];
+    capabilities.contribute(
+        "share:listReceivedTokens",
+        async () => receivedCalendarShares,
+    );
 
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -77,6 +82,37 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         },
     );
     assert.equal(ownerEventResponse.statusCode, 201);
+    receivedCalendarShares = [
+        {
+            id: "central-share-token",
+            resourceType: "calendar",
+            resourceId: createCalendarResponse.body.data.id,
+            ownerAccountId: "calendar-admin",
+            grantedCapabilities: ["calendar:read"],
+            expiresAt: "",
+            metadata: { adapterId: "user" },
+        },
+    ];
+    const reconciledCalendars = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        "/api/v1/calendar/calendars",
+    );
+    const reconciledCalendar = reconciledCalendars.body.data.find(
+        (calendar: { visibility?: string }) => calendar.visibility === "shared",
+    );
+    assert.ok(reconciledCalendar);
+    const reconciledEvents = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(reconciledCalendar.id)}/events`,
+    );
+    assert.deepEqual(
+        reconciledEvents.body.data.events.map(
+            (event: { title: string }) => event.title,
+        ),
+        ["Visible through user share"],
+    );
     const deliverLifecycleShare = capabilities.get<
         (delivery: {
             shareId: string;
@@ -150,6 +186,7 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
             },
         }),
     );
+    receivedCalendarShares = [];
     await systemCtx.flow.run("update-share-token", {});
     const recipientCalendarsAfterRemoval = await createJsonDispatcher(
         routeRegistry,

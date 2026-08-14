@@ -504,3 +504,9 @@ test("share method adapters own localized display metadata", async () => {
     );
     assert.match(adapterSource, /nameKey: "adapter\.share\.user\.name"/);
 });
+
+test("guest sessions can re-assert their disposable keyring without prompting", () => {
+    assert.match(sessionFlowSource, /session:ensureGuestKeyring/);
+    assert.match(sessionFlowSource, /activeGuestKeyring/);
+    assert.match(sessionFlowSource, /keyring:activateTemporary/);
+});

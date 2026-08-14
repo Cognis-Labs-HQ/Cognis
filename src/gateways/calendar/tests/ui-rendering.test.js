@@ -715,6 +715,19 @@ test("shared events stay visible in Upcoming and calendar layout is fixed", () =
     );
 });
 
+test("calendar link guests can inspect events and writable guests can open empty slots", () => {
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /canWrite\s*\? "\[data-calendar-event\], \[data-timeslot-add\]"\s*:\s*"\[data-calendar-event\]"/,
+    );
+    assert.match(SHARE_RENDERER_SOURCE, /if \(!canWrite\)/);
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /querySelectorAll\("input, textarea, select"\)/,
+    );
+    assert.match(SHARE_RENDERER_SOURCE, /id:\s*"close"/);
+});
+
 test("calendar share renderer displays one calendar and enables scoped writes", () => {
     assert.match(SHARE_RENDERER_SOURCE, /export async function mount/);
     assert.match(SHARE_RENDERER_SOURCE, /createPageComposer/);

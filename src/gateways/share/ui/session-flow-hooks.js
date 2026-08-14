@@ -62,6 +62,7 @@ const ACCESS_DENIED_TOKEN_KEY = "cognis_share_access_denied_token";
 let activeGuestSession = null;
 let activeShareSession = null;
 let accessDeniedNavigationPending = false;
+let activeGuestKeyring = null;
 
 function hasStoredAccountSession() {
     const token = String(localStorage.getItem(ACCESS_TOKEN_KEY) ?? "").trim();
@@ -122,6 +123,18 @@ window.addEventListener("cognis:api-access-denied", () => {
 });
 
 uiCtx.capabilities.contribute("session:isGuest", isViewingAsGuest);
+uiCtx.capabilities.contribute("session:ensureGuestKeyring", async () => {
+    if (!isViewingAsGuest() || !activeGuestKeyring) return false;
+    const activateTemporaryKeyring = uiCtx.capabilities.get(
+        "keyring:activateTemporary",
+    );
+    return Boolean(
+        await activateTemporaryKeyring?.(
+            activeGuestKeyring.accountId,
+            activeGuestKeyring.passphrase,
+        ),
+    );
+});
 uiCtx.capabilities.contribute("session:isGuestAllowedPath", (path) => {
     const contentUrl = activeGuestSession?.session?.shareContext?.contentUrl;
     if (!contentUrl) return false;
@@ -200,14 +213,19 @@ async function activateGuestToken(
     document.body.dataset.shareGuest = "true";
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
     const guestKeyringAccountId = String(guestKeyring?.accountId ?? "").trim();
-    if (guestKeyringAccountId) {
+    const guestKeyringPassphrase = String(guestKeyring?.passphrase ?? "");
+    if (guestKeyringAccountId && guestKeyringPassphrase) {
+        activeGuestKeyring = {
+            accountId: guestKeyringAccountId,
+            passphrase: guestKeyringPassphrase,
+        };
         localStorage.setItem(ACCOUNT_KEY, guestKeyringAccountId);
         const activateTemporaryKeyring = uiCtx.capabilities.get(
             "keyring:activateTemporary",
         );
         const activated = await activateTemporaryKeyring?.(
             guestKeyringAccountId,
-            guestKeyring?.passphrase,
+            guestKeyringPassphrase,
         );
         if (!activated) {
             restoreGuestToken();
@@ -225,6 +243,7 @@ function restoreGuestToken() {
     stopShareStatusMonitor();
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
     uiCtx.capabilities.get("keyring:endTemporary")?.();
+    activeGuestKeyring = null;
     const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
     const priorAccount = sessionStorage.getItem(PREV_ACCOUNT_KEY);
     const priorDisplayName = sessionStorage.getItem(PREV_DISPLAY_NAME_KEY);

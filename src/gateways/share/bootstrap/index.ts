@@ -109,6 +109,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.listTokens.bind(gateway),
     );
     ctx.capabilities.contribute(
+        "share:listReceivedTokens",
+        gateway.listReceivedTokens.bind(gateway),
+    );
+    ctx.capabilities.contribute(
         "share:listByResource",
         gateway.listByResource.bind(gateway),
     );

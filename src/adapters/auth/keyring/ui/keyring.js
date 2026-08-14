@@ -498,6 +498,14 @@ function normalizeUnlockRequest(request) {
 export async function requestKeyringUnlock(options = {}) {
     const request = normalizeUnlockRequest(options.request);
     if (isKeyringUnlocked()) return true;
+    const isGuestSession =
+        uiCtx.capabilities.get("session:isGuest")?.() === true;
+    if (isGuestSession) {
+        const ensureGuestKeyring = uiCtx.capabilities.get(
+            "session:ensureGuestKeyring",
+        );
+        return Boolean(await ensureGuestKeyring?.());
+    }
     if (temporaryKeyringAccountId) return false;
     if (keyringAccessSuppressed && options.manual !== true) return false;
     if (unlockRequestPromise) return unlockRequestPromise;

@@ -279,3 +279,7 @@ Rapat kini dapat dimulai dengan panggung peserta kosong. Setelah penyelenggara b
 ## Menyelesaikan berbagi kalender akun dan rapat tamu
 
 Popup berbagi rapat kini hanya terbuka untuk rapat baru yang dimulai dengan panggung peserta kosong. Tamu tautan rapat tidak pernah menerima permintaan kata sandi keyring akun saat keyring sementara mereka diaktifkan, dan chat rapat yang diizinkan menyediakan nama serta avatar peserta tanpa membuka seluruh permukaan pementasan peserta. Kalender yang dibagikan kepada pengguna kini menghormati izin buka kunci akun sisi server dari gateway Share saat memuat acara pemilik secara langsung, termasuk berbagi yang dilindungi kata sandi.
+
+## Menjaga keyring tamu dan kalender bersama tetap tersedia
+
+Sesi tamu kini menyimpan kredensial keyring sementara yang dibuat dan dapat mengaktifkan kembali keyring tersebut saat konsumen meminta akses, sehingga permintaan kata sandi akun tidak muncul saat chat rapat dimuat. Tamu tautan kalender dapat membuka acara dalam pemeriksa hanya-baca, sedangkan tautan dengan akses tulis juga dapat membuat dan mengedit acara. Kalender yang dibagikan ke akun merekonsiliasi pengiriman persistennya dari berbagi aktif yang diterima setiap kali kalender dimuat, sehingga acara pemilik tetap terlihat setelah pemuatan ulang sampai berbagi dicabut atau ditolak.

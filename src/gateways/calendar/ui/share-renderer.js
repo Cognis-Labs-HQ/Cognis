@@ -93,6 +93,7 @@ async function openEventEditor({
     guestAccessToken,
     i18n,
     onChanged,
+    canWrite,
 }) {
     let form = null;
     const isEditing = Boolean(event?.id);
@@ -103,33 +104,48 @@ async function openEventEditor({
                 : "gateway.calendar.create_event",
         ),
         body: buildEventFormMarkup(i18n, event, slot),
-        actions: [
-            {
-                id: "save",
-                label: i18n.t(
-                    isEditing
-                        ? "gateway.calendar.save_event"
-                        : "gateway.calendar.create_event",
-                ),
-                variant: "confirm",
-            },
-            ...(isEditing
-                ? [
-                      {
-                          id: "delete",
-                          label: i18n.t("gateway.calendar.delete_event"),
-                          variant: "danger",
-                      },
-                  ]
-                : []),
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "cancel",
-            },
-        ],
+        actions: canWrite
+            ? [
+                  {
+                      id: "save",
+                      label: i18n.t(
+                          isEditing
+                              ? "gateway.calendar.save_event"
+                              : "gateway.calendar.create_event",
+                      ),
+                      variant: "confirm",
+                  },
+                  ...(isEditing
+                      ? [
+                            {
+                                id: "delete",
+                                label: i18n.t("gateway.calendar.delete_event"),
+                                variant: "danger",
+                            },
+                        ]
+                      : []),
+                  {
+                      id: "cancel",
+                      label: i18n.t("ui.reuse.cancel"),
+                      variant: "cancel",
+                  },
+              ]
+            : [
+                  {
+                      id: "close",
+                      label: i18n.t("ui.reuse.close"),
+                      variant: "neutral",
+                  },
+              ],
         onOpen: (overlay) => {
             form = overlay.querySelector("#shared-calendar-event-form");
+            if (!canWrite) {
+                form?.querySelectorAll("input, textarea, select").forEach(
+                    (control) => {
+                        control.disabled = true;
+                    },
+                );
+            }
         },
         onAction: (actionId) =>
             actionId !== "save" || form?.reportValidity() === true,
@@ -335,9 +351,10 @@ export async function mount(
                 renderCalendar();
                 return;
             }
-            if (!canWrite) return;
             const target = clickEvent.target.closest(
-                "[data-calendar-event], [data-timeslot-add]",
+                canWrite
+                    ? "[data-calendar-event], [data-timeslot-add]"
+                    : "[data-calendar-event]",
             );
             if (!(target instanceof HTMLElement)) return;
             const selectedEvent = events.find(
@@ -354,6 +371,7 @@ export async function mount(
                 guestAccessToken,
                 i18n,
                 onChanged: reloadEvents,
+                canWrite,
             });
         },
         { signal },

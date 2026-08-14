@@ -287,6 +287,10 @@ export function createCalendarCoreRoutes({
                 "busy",
                 "free",
             ];
+            const reconcileUserShares = getCapability<
+                (accountId: string) => Promise<void>
+            >("calendar:reconcileUserShares");
+            await reconcileUserShares?.(targetAccountId);
             const validatedCalendars = await validateSharedCalendars(
                 gateway.listCalendars(targetAccountId),
                 targetAccountId,

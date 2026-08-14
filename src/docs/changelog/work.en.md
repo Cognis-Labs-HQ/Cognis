@@ -279,3 +279,7 @@ Meetings can now start with an empty participant stage. Once the organizer actua
 ## Complete account-calendar and guest-meeting sharing
 
 The meeting share prompt now opens only for newly started meetings whose participant stage was empty. Meeting-link guests never receive an account-keyring password prompt while their disposable keyring activates, and their authorized meeting chat supplies participant names and avatars without exposing the full participant staging surface. User-shared calendars now honor the Share gateway’s server-side account unlock grant when loading live owner events, including password-protected shares.
+
+## Keep guest keyrings and shared calendars available
+
+Guest sessions now retain the generated disposable-keyring credentials and can re-activate that keyring when a consumer requests access, eliminating account-password prompts during meeting chat loading. Calendar link guests can open events in a read-only inspector, while writable links can also create and edit events. Account-shared calendars reconcile their persistent delivery from active received shares whenever calendars load, keeping owner events visible across reloads until the share is revoked or rejected.

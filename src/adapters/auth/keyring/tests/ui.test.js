@@ -836,6 +836,6 @@ test("keyring persistence surfaces definitive server rejection", async () => {
 test("temporary guest keyrings never request an account password", () => {
     assert.match(
         keyringSource,
-        /if \(temporaryKeyringAccountId\) return false;[\s\S]*keyringAccessSuppressed/,
+        /session:isGuest[\s\S]*session:ensureGuestKeyring[\s\S]*if \(temporaryKeyringAccountId\) return false/,
     );
 });
