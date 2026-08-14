@@ -259,3 +259,7 @@ The reusable graph renderer now supports dot and line modes, uses the full respo
 ## Keep valid sessions and compact graphs
 
 The Shares authentication hook now distinguishes stale guest markers from an active scoped guest token, clearing only the stale markers when valid account credentials are already present. Activity graphs use a shorter, wider plot ratio so they remain readable without dominating the expanded share details.
+
+## Separate Shares from share links
+
+Authenticated share management is restored to `/shares`, while `/share/usr_…` and `/share/shr_…` remain the account-share and public-link delivery namespaces. Valid account credentials are now validated before any public-link fallback, so owners opening their own link shares retain their user session instead of becoming guests.

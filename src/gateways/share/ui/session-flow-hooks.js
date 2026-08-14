@@ -286,13 +286,14 @@ uiCtx.extendFlow(
         const shareToken = resolveShareTokenFromRoute(
             stageCtx.input?.routePath,
         );
+        const hasAccountSession = hasStoredAccountSession();
+        if (isViewingAsGuest() && hasAccountSession) {
+            discardStaleGuestMarkers();
+            return null;
+        }
         if (shareToken.startsWith("shr_")) return null;
         if (isViewingAsGuest()) {
-            if (hasStoredAccountSession()) {
-                discardStaleGuestMarkers();
-            } else {
-                restoreGuestToken();
-            }
+            restoreGuestToken();
         }
         return null;
     },

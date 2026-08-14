@@ -259,3 +259,7 @@ Perender grafik pakai ulang kini mendukung mode titik dan garis, memakai lebar r
 ## Mempertahankan sesi valid dan grafik ringkas
 
 Hook autentikasi halaman Berbagi kini membedakan penanda tamu usang dari token tamu terbatas yang aktif dan hanya menghapus penanda usang ketika kredensial akun valid sudah tersedia. Grafik aktivitas memakai rasio plot yang lebih pendek dan lebar agar tetap mudah dibaca tanpa mendominasi detail berbagi yang diperluas.
+
+## Memisahkan pengelolaan berbagi dari tautan
+
+Pengelolaan berbagi terautentikasi dikembalikan ke `/shares`, sedangkan `/share/usr_…` dan `/share/shr_…` tetap menjadi ruang nama pengiriman untuk berbagi akun dan tautan publik. Kredensial akun valid kini diperiksa sebelum fallback tautan publik sehingga pemilik yang membuka tautannya sendiri tetap memakai sesi pengguna dan tidak berubah menjadi tamu.

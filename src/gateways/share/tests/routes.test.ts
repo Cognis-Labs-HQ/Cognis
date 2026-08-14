@@ -279,7 +279,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         uiRegistry.listSpaRoutes().find((route) => route.id === "share-view"),
         {
             id: "share-view",
-            pattern: "^/share/[^/]+$",
+            pattern: "^/share/(?:usr_|shr_)[^/]+$",
             base: "/share",
             scriptUrl: "/static/gateways/share/ui/app/index.js",
             stylesheets: [
@@ -294,6 +294,11 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         uiRegistry.listSpaRoutes().find((route) => route.id === "shares-page")
             ?.scriptUrl,
         "/static/gateways/share/ui/app/shares/index.js",
+    );
+    assert.equal(
+        uiRegistry.listSpaRoutes().find((route) => route.id === "shares-page")
+            ?.base,
+        "/shares",
     );
     assert.ok(
         uiRegistry

@@ -596,7 +596,7 @@ export async function mount(root, { signal } = {}) {
         "open",
     );
     if (requestedShareId) {
-        window.history.replaceState({}, "", "/share");
+        window.history.replaceState({}, "", "/shares");
         const requestedShare = overview.received.find(
             (share) => String(share.id) === requestedShareId,
         );

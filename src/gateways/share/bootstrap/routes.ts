@@ -183,7 +183,7 @@ export function createShareRoutes(input: {
 
         if (
             req.method === "GET" &&
-            (url.pathname === "/share" || url.pathname.startsWith("/share/"))
+            (url.pathname === "/shares" || url.pathname.startsWith("/share/"))
         ) {
             routeContext.setPageSecurityHeaders(res);
             const html = await readFile(
@@ -191,7 +191,7 @@ export function createShareRoutes(input: {
                 "utf8",
             );
             const pageHtml =
-                url.pathname === "/share"
+                url.pathname === "/shares"
                     ? html.replace(
                           "/static/gateways/share/ui/app/index.js",
                           "/static/gateways/share/ui/app/shares/index.js",

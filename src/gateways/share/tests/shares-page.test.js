@@ -146,6 +146,6 @@ test("Share gateway owns its pages and adapter static directories", () => {
 
 test("Share navbar plugin adds Shares to the user menu", () => {
     assert.match(navbarSource, /#profile-dropdown/);
-    assert.match(navbarSource, /link\.href = "\/share"/);
+    assert.match(navbarSource, /link\.href = "\/shares"/);
     assert.match(navbarSource, /#profile-logout/);
 });

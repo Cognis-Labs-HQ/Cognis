@@ -259,3 +259,7 @@ Der wiederverwendbare Diagramm-Renderer unterstützt nun Punkt- und Liniendarste
 ## Gültige Sitzungen und kompakte Diagramme bewahren
 
 Der Authentifizierungs-Hook der Freigabeseite unterscheidet nun veraltete Gastmarkierungen von einem aktiven eingeschränkten Gast-Token und entfernt nur die veralteten Markierungen, wenn bereits gültige Kontoanmeldedaten vorliegen. Aktivitätsdiagramme verwenden ein niedrigeres, breiteres Seitenverhältnis und bleiben dadurch lesbar, ohne die erweiterten Freigabedetails zu dominieren.
+
+## Freigabeverwaltung von Links trennen
+
+Die authentifizierte Freigabeverwaltung befindet sich wieder unter `/shares`, während `/share/usr_…` und `/share/shr_…` die Zustellungsnamensräume für Konto- und öffentliche Linkfreigaben bleiben. Gültige Kontoanmeldedaten werden vor einem Rückgriff auf öffentliche Links geprüft, sodass Eigentümer beim Öffnen eigener Linkfreigaben ihre Benutzersitzung behalten und nicht zu Gästen werden.

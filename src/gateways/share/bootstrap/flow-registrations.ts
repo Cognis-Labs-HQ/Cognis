@@ -1002,7 +1002,7 @@ export async function registerShareBootstrapHooks(input: {
                     recipientUsername: flowInput.ownerAccountId,
                     subject: "A recipient rejected your share",
                     body: `${flowInput.recipientAccountId || "A recipient"} rejected ${flowInput.label || "your shared item"}.`,
-                    actionUrl: "/share",
+                    actionUrl: "/shares",
                     senderName: "Cognis Share",
                     metadata: { shareId: flowInput.shareId },
                 });
@@ -1018,7 +1018,7 @@ export async function registerShareBootstrapHooks(input: {
                         recipientUsername: recipient.id,
                         subject: "A shared item was revoked",
                         body: `${flowInput.label || "A shared item"} is no longer available.`,
-                        actionUrl: "/share",
+                        actionUrl: "/shares",
                         senderName: "Cognis Share",
                         metadata: { shareId: flowInput.shareId },
                     }),

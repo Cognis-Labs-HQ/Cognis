@@ -22,7 +22,7 @@ function monitorAccountShare(shareId) {
         showToast(i18n.t("share.error.access_denied"), {
             variant: "error",
         });
-        await navigateTo("/share");
+        await navigateTo("/shares");
     });
 }
 
