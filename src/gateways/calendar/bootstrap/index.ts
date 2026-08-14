@@ -46,6 +46,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const getPreferenceStore = () =>
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    let projectUpcomingEvents = (accountId: string, limit?: number) =>
+        Promise.resolve(gateway.listUpcomingEvents(accountId, limit));
     if (systemCtx && !systemCtx.hasFlow("calendar-upcoming-events")) {
         systemCtx.registerFlow({
             id: "calendar-upcoming-events",
@@ -61,7 +63,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 accountId: string;
                 limit?: number;
             };
-            return gateway.listUpcomingEvents(input.accountId, input.limit);
+            return projectUpcomingEvents(input.accountId, input.limit);
         },
     );
     // Calendar currently bootstraps before Share. Registering the shared flow
@@ -427,9 +429,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             };
         },
     );
-    ctx.capabilities.contribute(
-        "calendar:reconcileUserShares",
-        async (recipientAccountId: string) => {
+    const reconciliationByAccount = new Map<string, Promise<void>>();
+    const reconcileUserShares = async (recipientAccountId: string) => {
+        const activeReconciliation =
+            reconciliationByAccount.get(recipientAccountId);
+        if (activeReconciliation) return activeReconciliation;
+        const reconciliation = (async () => {
             const listReceivedTokens = ctx.capabilities.get<
                 (accountId: string) => Promise<Array<Record<string, unknown>>>
             >("share:listReceivedTokens");
@@ -448,12 +453,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const receivedShares = await listReceivedTokens(recipientAccountId);
             await Promise.all(
                 receivedShares
-                    .filter(
-                        (share) =>
+                    .filter((share) => {
+                        const adapterId = String(share.shareMethod ?? "");
+                        return (
                             share.resourceType === "calendar" &&
-                            (share.metadata as { adapterId?: string } | null)
-                                ?.adapterId === "user",
-                    )
+                            adapterId === "user"
+                        );
+                    })
                     .map((share) =>
                         deliverUserShare({
                             shareId: String(share.id ?? ""),
@@ -470,8 +476,44 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         }),
                     ),
             );
-        },
+        })().finally(() => {
+            reconciliationByAccount.delete(recipientAccountId);
+        });
+        reconciliationByAccount.set(recipientAccountId, reconciliation);
+        return reconciliation;
+    };
+    ctx.capabilities.contribute(
+        "calendar:reconcileUserShares",
+        reconcileUserShares,
     );
+    projectUpcomingEvents = async (accountId: string, limit?: number) => {
+        await reconcileUserShares(accountId);
+        const ownAndInvitedEvents = gateway.listUpcomingEvents(accountId);
+        const now = Date.now();
+        const sharedCalendars =
+            await shareRegistry.listCalendarUserSharesByRecipient(accountId);
+        const sharedEvents = sharedCalendars.flatMap((share) => {
+            const expiresAt = Date.parse(share.expiresAt);
+            if (Number.isFinite(expiresAt) && expiresAt <= now) return [];
+            const recipientCalendar = gateway.getOwnedCalendar(
+                accountId,
+                share.recipientCalendarId,
+            );
+            if (!recipientCalendar) return [];
+            return gateway
+                .listEvents(share.ownerCalendarId)
+                .filter((event) => Date.parse(event.endAt) >= now)
+                .map((event) => ({
+                    ...event,
+                    calendarId: share.recipientCalendarId,
+                    calendarName: recipientCalendar.name,
+                }));
+        });
+        const events = [...ownAndInvitedEvents, ...sharedEvents].sort(
+            (left, right) => left.startAt.localeCompare(right.startAt),
+        );
+        return limit === undefined ? events : events.slice(0, limit);
+    };
     ctx.capabilities.contribute(
         "share:resolveVariants",
         (variantInput: {

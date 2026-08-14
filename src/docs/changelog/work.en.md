@@ -1,5 +1,9 @@
 # Refine share management
 
+## Keep received calendar events visible
+
+Account-bound calendar shares now reconcile from their adapter-owned share method whenever calendar state or upcoming-event summaries load. Shared events are projected into the recipient's persistent calendar and adjacent summaries without requiring the recipient to reopen the share from Shares.
+
 ## Isolate account shares from guest sessions
 
 Account-bound user shares now use a dedicated authenticated delivery page that never imports the public-link guest-session bootstrap. Their password prompt omits public-share Cognis branding, while public link shares retain their guest lifecycle and branded prompt.

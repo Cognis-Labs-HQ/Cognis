@@ -90,9 +90,21 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
             ownerAccountId: "calendar-admin",
             grantedCapabilities: ["calendar:read"],
             expiresAt: "",
-            metadata: { adapterId: "user" },
+            shareMethod: "user",
         },
     ];
+    const upcomingSharedEvents = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        "/api/v1/calendar/upcoming-events",
+    );
+    assert.deepEqual(
+        upcomingSharedEvents.body.data.map(
+            (event: { title: string }) => event.title,
+        ),
+        ["Visible through user share"],
+        "received calendar events should reconcile without opening Shares",
+    );
     const reconciledCalendars = await createJsonDispatcher(routeRegistry)(
         "GET",
         recipientToken,

@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Empfangene Kalenderereignisse sichtbar halten
+
+Kontogebundene Kalenderfreigaben werden jetzt anhand ihrer adaptereigenen Freigabemethode abgeglichen, wenn der Kalenderstatus oder Zusammenfassungen anstehender Ereignisse geladen werden. Freigegebene Ereignisse erscheinen dauerhaft im Kalender des Empfängers und in angrenzenden Zusammenfassungen, ohne dass die Freigabe erneut unter Freigaben geöffnet werden muss.
+
 ## Benutzerfreigaben von Gastsitzungen isolieren
 
 Kontogebundene Benutzerfreigaben verwenden jetzt eine eigene authentifizierte Auslieferungsseite, die den Gastsitzungsstart für öffentliche Links niemals lädt. Ihre Passwortabfrage zeigt nicht das Cognis-Branding öffentlicher Freigaben; öffentliche Linkfreigaben behalten ihren Gastablauf und die gebrandete Abfrage.
