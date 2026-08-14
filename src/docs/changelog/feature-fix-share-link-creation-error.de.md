@@ -387,3 +387,7 @@ Das Freigabe-Popup für Besprechungen öffnet sich nun nur bei neu gestarteten B
 ## Gast-Schlüsselbünde und freigegebene Kalender verfügbar halten
 
 Gastsitzungen behalten nun die erzeugten Zugangsdaten des temporären Schlüsselbunds und können ihn bei einer Zugriffsanfrage erneut aktivieren. Dadurch erscheinen beim Laden des Besprechungschats keine Kontopasswort-Abfragen mehr. Gäste eines Kalenderlinks können Termine in einer schreibgeschützten Ansicht öffnen; Links mit Schreibzugriff können Termine außerdem erstellen und bearbeiten. Für Konten freigegebene Kalender gleichen ihre dauerhafte Zustellung bei jedem Laden mit aktiven empfangenen Freigaben ab, sodass Eigentümertermine bis zum Widerruf oder zur Ablehnung über Neuladungen hinweg sichtbar bleiben.
+
+## Freigabeaktualisierungen und Zustellung absichern
+
+Beim Bearbeiten von Freigaben bleiben ausdrücklich entfernte Bezeichnungen erhalten, die Navigation ignoriert veraltete Authentifizierungsergebnisse, fehlgeschlagene direkte Freigabebenachrichtigungen werden protokolliert, fehlerhafte gespeicherte Metadaten bleiben wiederherstellbar und Fehler im Aktivitätsprotokoll lassen eine erfolgreiche Freigabeerstellung nicht mehr als fehlgeschlagen erscheinen.

@@ -387,3 +387,7 @@ The meeting share prompt now opens only for newly started meetings whose partici
 ## Keep guest keyrings and shared calendars available
 
 Guest sessions now retain the generated disposable-keyring credentials and can re-activate that keyring when a consumer requests access, eliminating account-password prompts during meeting chat loading. Calendar link guests can open events in a read-only inspector, while writable links can also create and edit events. Account-shared calendars reconcile their persistent delivery from active received shares whenever calendars load, keeping owner events visible across reloads until the share is revoked or rejected.
+
+## Harden share updates and delivery
+
+Share editing now preserves explicitly cleared labels, navigation ignores stale authentication results, failed direct-share notifications are logged, malformed stored metadata remains recoverable, and activity-log failures no longer make successful share creation appear to fail.

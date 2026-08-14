@@ -103,6 +103,10 @@ test("share popup owns user recipient search and selection", () => {
     assert.doesNotMatch(userPageSource, /share-links-label/);
 });
 
+test("share updates preserve explicitly cleared labels", () => {
+    assert.match(apiSource, /label: String\(label \?\? ""\)\.trim\(\)/);
+});
+
 test("share popup callbacks use only share gateway recipient and token routes", () => {
     assert.match(apiSource, /\/api\/v1\/share\/recipients\/users/);
     assert.match(apiSource, /contentUrl/);

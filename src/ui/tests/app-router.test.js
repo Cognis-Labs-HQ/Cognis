@@ -158,6 +158,24 @@ test("router uses history.pushState for navigation", () => {
     );
 });
 
+test("router rechecks navigation freshness after authentication", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const authentication = src.indexOf(
+        'await uiCtx.runFlow("authenticate-session"',
+    );
+    const freshnessCheck = src.indexOf(
+        "signal.aborted || navigationSequence !== _navigationSequence",
+        authentication,
+    );
+    const sessionProcessing = src.indexOf("const session =", authentication);
+    assert.ok(authentication >= 0);
+    assert.ok(freshnessCheck > authentication);
+    assert.ok(freshnessCheck < sessionProcessing);
+});
+
 test("router resets page actions and commits route styles after mounting", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),

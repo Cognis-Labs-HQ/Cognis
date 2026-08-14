@@ -374,3 +374,52 @@ test("expired share notifications remain claimable until delivery succeeds", asy
     await store.markExpirationNotificationSent(share.id);
     assert.deepEqual(await store.claimExpiredNotifications(), []);
 });
+
+test("share creation succeeds when activity recording fails", async () => {
+    const executor = new MemoryExecutor();
+    const executeCommand = executor.executeCommand.bind(executor);
+    executor.executeCommand = async (command) => {
+        if (
+            command.option === "INSERT" &&
+            command.table === "share_activity_events"
+        ) {
+            throw new Error("activity store unavailable");
+        }
+        return executeCommand(command);
+    };
+    const logs: string[] = [];
+    const store = new ShareTokenStore(executor as never, (_level, message) => {
+        logs.push(message);
+    });
+
+    const share = await store.issue({
+        ownerAccountId: "alice",
+        resourceType: "meeting",
+        resourceId: "meeting-audit-failure",
+        expiresAt: "",
+    });
+
+    assert.equal(executor.rows.has(share.id), true);
+    assert.deepEqual(logs, ["Failed to record share creation activity."]);
+});
+
+test("malformed metadata is logged without hiding an otherwise valid share", async () => {
+    const executor = new MemoryExecutor();
+    const logs: string[] = [];
+    const store = new ShareTokenStore(executor as never, (_level, message) => {
+        logs.push(message);
+    });
+    const share = await store.issue({
+        ownerAccountId: "alice",
+        resourceType: "meeting",
+        resourceId: "meeting-malformed-metadata",
+        expiresAt: "",
+    });
+    executor.rows.get(share.id)!.metadata = "{invalid";
+
+    const loaded = await store.getById(share.id);
+
+    assert.equal(loaded?.id, share.id);
+    assert.equal(loaded?.metadata, null);
+    assert.deepEqual(logs, ["Failed to parse share token metadata."]);
+});

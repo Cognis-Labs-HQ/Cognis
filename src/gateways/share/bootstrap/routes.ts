@@ -471,7 +471,7 @@ export function createShareRoutes(input: {
             let flowResult;
             try {
                 const changes = {
-                    ...(typeof body.label === "string" && body.label.trim()
+                    ...(typeof body.label === "string"
                         ? { label: body.label }
                         : {}),
                     ...(Array.isArray(body.grantedCapabilities) &&

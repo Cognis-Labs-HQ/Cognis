@@ -143,7 +143,14 @@ export function isExpired(expiresAt: string): boolean {
 // purgeExpired() only removes tokens older than this retention window.
 const EXPIRED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
-function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
+function parseRecord(
+    row: Record<string, unknown>,
+    log?: (
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void,
+): ShareTokenRecord | null {
     const id = String(row.id ?? "").trim();
     const ownerAccountId = String(row.owner_account_id ?? "").trim();
     const resourceKey = String(row.resource_key ?? "").trim();
@@ -182,18 +189,14 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
                         ? JSON.parse(String(row.metadata))
                         : null;
                 } catch (error) {
-                    this.log?.(
-                        "error",
-                        "Failed to parse expired share token.",
-                        {
-                            component: "share-gateway",
-                            operation: "claim_expired_share_notifications",
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
+                    log?.("error", "Failed to parse share token metadata.", {
+                        component: "share-gateway",
+                        operation: "parse_share_token_metadata",
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    });
                     return null;
                 }
             })(),
@@ -576,7 +579,16 @@ export class ShareTokenStore {
                 updated_at: record.updatedAt,
             },
         });
-        await this.recordActivity(record.id, "created", record.createdAt);
+        try {
+            await this.recordActivity(record.id, "created", record.createdAt);
+        } catch (error) {
+            this.log?.("error", "Failed to record share creation activity.", {
+                component: "share-gateway",
+                operation: "record_share_creation_activity",
+                shareId: record.id,
+                error: error instanceof Error ? error.message : String(error),
+            });
+        }
         return record;
     }
 
@@ -608,7 +620,7 @@ export class ShareTokenStore {
         const records = (result.rows ?? [])
             .map((row) => {
                 try {
-                    return parseRecord(row);
+                    return parseRecord(row, this.log);
                 } catch (error) {
                     this.log?.("error", "Failed to parse share token record.", {
                         component: "share-gateway",
@@ -642,7 +654,7 @@ export class ShareTokenStore {
         const records = (result.rows ?? [])
             .map((row) => {
                 try {
-                    return parseRecord(row);
+                    return parseRecord(row, this.log);
                 } catch (error) {
                     this.log?.("error", "Failed to parse share token record.", {
                         component: "share-gateway",
@@ -671,7 +683,7 @@ export class ShareTokenStore {
         return (result.rows ?? [])
             .map((row) => {
                 try {
-                    return parseRecord(row);
+                    return parseRecord(row, this.log);
                 } catch (error) {
                     this.log?.(
                         "error",
@@ -713,7 +725,7 @@ export class ShareTokenStore {
         const records = (result.rows ?? [])
             .map((row) => {
                 try {
-                    return parseRecord(row);
+                    return parseRecord(row, this.log);
                 } catch {
                     return null;
                 }
@@ -819,7 +831,7 @@ export class ShareTokenStore {
             // Expired tokens are intentionally not deleted here so their
             // owner can still see them listed with an "Expired" status
             // until purgeExpired() removes them after the retention window.
-            return parseRecord(row);
+            return parseRecord(row, this.log);
         } catch (error) {
             this.log?.("error", "Failed to parse share token record.", {
                 component: "share-gateway",

@@ -431,7 +431,7 @@ export async function registerShareBootstrapHooks(input: {
             }
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
-                await Promise.allSettled(
+                const notificationResults = await Promise.allSettled(
                     userRecipients.map((recipientUsername) => {
                         const actionUrl = String(
                             shareRecord?.actionUrl ??
@@ -453,6 +453,24 @@ export async function registerShareBootstrapHooks(input: {
                         });
                     }),
                 );
+                notificationResults.forEach((result, index) => {
+                    if (result.status === "rejected") {
+                        input.log?.(
+                            "error",
+                            "Failed to dispatch direct share notification.",
+                            {
+                                component: "share-gateway",
+                                operation: "dispatch_direct_share_notification",
+                                shareId: String(shareRecord?.id ?? ""),
+                                recipientUsername: userRecipients[index],
+                                error:
+                                    result.reason instanceof Error
+                                        ? result.reason.message
+                                        : String(result.reason),
+                            },
+                        );
+                    }
+                });
             }
             return {
                 emitted: Boolean(issued?.minted),

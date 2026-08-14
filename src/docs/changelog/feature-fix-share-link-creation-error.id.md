@@ -387,3 +387,7 @@ Popup berbagi rapat kini hanya terbuka untuk rapat baru yang dimulai dengan pang
 ## Menjaga keyring tamu dan kalender bersama tetap tersedia
 
 Sesi tamu kini menyimpan kredensial keyring sementara yang dibuat dan dapat mengaktifkan kembali keyring tersebut saat konsumen meminta akses, sehingga permintaan kata sandi akun tidak muncul saat chat rapat dimuat. Tamu tautan kalender dapat membuka acara dalam pemeriksa hanya-baca, sedangkan tautan dengan akses tulis juga dapat membuat dan mengedit acara. Kalender yang dibagikan ke akun merekonsiliasi pengiriman persistennya dari berbagi aktif yang diterima setiap kali kalender dimuat, sehingga acara pemilik tetap terlihat setelah pemuatan ulang sampai berbagi dicabut atau ditolak.
+
+## Memperkuat pembaruan dan pengiriman berbagi
+
+Pengeditan berbagi kini mempertahankan label yang dikosongkan secara eksplisit, navigasi mengabaikan hasil autentikasi yang kedaluwarsa, kegagalan notifikasi berbagi langsung dicatat, metadata tersimpan yang rusak tetap dapat dipulihkan, dan kegagalan log aktivitas tidak lagi membuat pembuatan berbagi yang berhasil tampak gagal.
