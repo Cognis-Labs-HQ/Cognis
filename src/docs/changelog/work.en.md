@@ -267,3 +267,7 @@ Authenticated share management is restored to `/shares`, while `/share/usr_…` 
 ## Clarify access-event tooltips
 
 Every access point in the expanded Share activity graph is now labelled “Accessed” rather than “Last accessed”, because the graph displays the complete access history rather than only its latest event.
+
+## Keep meeting-link guest chat unlocked
+
+Meeting-link guests now receive the meeting chat room key through their scoped share authorization without consuming an account member’s one-time key delivery. The key is stored in the guest’s already-unlocked temporary keyring, preventing repeated unlock and empty room-key popups while the meeting chat loads.

@@ -183,10 +183,13 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const roomKey = await messagesStore.claimRoomKeyContribution(
-                roomId,
-                accountId,
-            );
+            const roomKey = isAllowedShareGuest
+                ? ((await messagesStore.getUnwrappedRoomKey(roomId)) ??
+                  (await messagesStore.generateAndStoreRoomKey(roomId)))
+                : await messagesStore.claimRoomKeyContribution(
+                      roomId,
+                      accountId,
+                  );
             if (!roomKey) {
                 res.writeHead(409, { "content-type": "application/json" });
                 res.end(
@@ -216,10 +219,12 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             subArg === "acknowledge" &&
             req.method === "POST"
         ) {
-            await messagesStore.acknowledgeRoomKeyContribution(
-                roomId,
-                accountId,
-            );
+            if (!isAllowedShareGuest) {
+                await messagesStore.acknowledgeRoomKeyContribution(
+                    roomId,
+                    accountId,
+                );
+            }
             res.writeHead(204);
             res.end();
             return true;

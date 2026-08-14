@@ -267,3 +267,7 @@ Pengelolaan berbagi terautentikasi dikembalikan ke `/shares`, sedangkan `/share/
 ## Memperjelas tooltip peristiwa akses
 
 Setiap titik akses dalam grafik aktivitas berbagi yang diperluas kini diberi label “Diakses”, bukan “Terakhir diakses”, karena grafik menampilkan seluruh riwayat akses dan bukan hanya peristiwa terbaru.
+
+## Menjaga chat tamu tautan rapat tetap terbuka
+
+Tamu tautan rapat kini menerima kunci ruang chat melalui otorisasi berbagi terbatas tanpa memakai pengiriman kunci satu kali milik anggota akun. Kunci disimpan dalam keyring sementara tamu yang sudah terbuka, sehingga popup pembukaan keyring dan kunci ruang kosong tidak berulang saat chat rapat dimuat.

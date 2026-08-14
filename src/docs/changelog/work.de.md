@@ -267,3 +267,7 @@ Die authentifizierte Freigabeverwaltung befindet sich wieder unter `/shares`, w�
 ## Tooltips für Zugriffsereignisse verdeutlichen
 
 Jeder Zugriffspunkt im erweiterten Aktivitätsdiagramm einer Freigabe heißt nun „Aufgerufen“ statt „Zuletzt aufgerufen“, da das Diagramm den vollständigen Zugriffsverlauf und nicht nur das neueste Ereignis anzeigt.
+
+## Chat für Gäste von Besprechungslinks entsperrt halten
+
+Gäste eines Besprechungslinks erhalten den Chatraumschlüssel nun über ihre begrenzte Freigabeberechtigung, ohne die einmalige Schlüsselzustellung eines Kontomitglieds zu verbrauchen. Der Schlüssel wird im bereits entsperrten temporären Schlüsselbund des Gastes gespeichert, sodass beim Laden des Besprechungschats keine wiederholten Entsperr- oder leeren Raumschlüssel-Popups mehr erscheinen.
