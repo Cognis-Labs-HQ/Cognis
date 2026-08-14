@@ -83,8 +83,11 @@
 
 .shares-table th:last-child,
 .shares-table td:last-child {
-    text-align: right;
     width: 1%;
+}
+
+.shares-table .shares-actions-heading {
+    text-align: center;
 }
 
 .shares-title-link {
@@ -150,7 +153,11 @@
 }
 
 .shares-actions {
-    padding-inline: 1.25rem;
+    align-items: center;
+    display: grid;
+    gap: 0.3rem;
+    grid-template-columns: repeat(3, 2.25rem);
+    justify-content: center;
     white-space: nowrap;
 }
 
@@ -159,9 +166,21 @@
     display: inline-flex;
     height: 2.25rem;
     justify-content: center;
-    margin-inline: 0.15rem;
     padding: 0.35rem;
     width: 2.25rem;
+}
+
+.shares-actions [data-share-manage] {
+    grid-column: 1;
+}
+
+.shares-actions [data-share-copy] {
+    grid-column: 2;
+}
+
+.shares-actions [data-share-revoke],
+.shares-actions [data-share-reject] {
+    grid-column: 3;
 }
 
 .shares-icon-button {

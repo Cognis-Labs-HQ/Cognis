@@ -47,3 +47,7 @@ Gesendete und empfangene Freigaben erscheinen jetzt in einer einheitlichen, resp
 ## Ein Kontokontext für Gastsitzungen
 
 Dashboard-Funktionen verwenden nun die gemeinsame Gastsitzungs-Fähigkeit des Kontokontexts, anstatt den Authentifizierungsspeicher unabhängig auszuwerten.
+
+## Freigabeaktionen ausrichten
+
+Die Freigabetabelle zentriert nun die Überschrift „Aktionen“ und ordnet Verwalten, Kopieren und Entfernen in jeder Zeile in einheitlichen vertikalen Spalten an.

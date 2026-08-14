@@ -47,3 +47,7 @@ Overlapping SPA navigations now cancel older route loads before they can mount. 
 ## One account context for guest sessions
 
 Dashboard features now use the account context's shared guest-session capability instead of independently interpreting authentication storage.
+
+## Align share actions
+
+The Shares table now centers its Actions heading and keeps Manage, Copy, and Remove controls in consistent vertical columns across every row.

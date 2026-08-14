@@ -47,3 +47,7 @@ Navigasi SPA yang tumpang tindih kini membatalkan pemuatan rute lama sebelum dap
 ## Satu konteks akun untuk sesi tamu
 
 Fitur dasbor kini menggunakan kapabilitas sesi tamu bersama dari konteks akun, bukan menafsirkan penyimpanan autentikasi secara terpisah.
+
+## Sejajarkan tindakan berbagi
+
+Tabel Berbagi kini memusatkan judul Tindakan dan mempertahankan kontrol Kelola, Salin, dan Hapus dalam kolom vertikal yang konsisten di setiap baris.

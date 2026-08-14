@@ -147,6 +147,22 @@ test("Shares table filters rerender rows and keeps compact columns and actions",
         styleSource,
         /\.shares-actions button[\s\S]*width:\s*2\.25rem/,
     );
+    assert.match(
+        styleSource,
+        /\.shares-actions-heading[\s\S]*text-align:\s*center/,
+    );
+    assert.match(
+        styleSource,
+        /\.shares-actions \[data-share-manage\][\s\S]*grid-column:\s*1/,
+    );
+    assert.match(
+        styleSource,
+        /\.shares-actions \[data-share-copy\][\s\S]*grid-column:\s*2/,
+    );
+    assert.match(
+        styleSource,
+        /\[data-share-revoke\],[\s\S]*\[data-share-reject\][\s\S]*grid-column:\s*3/,
+    );
 });
 
 test("Share gateway owns its pages and adapter static directories", () => {
