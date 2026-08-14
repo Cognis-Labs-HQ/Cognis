@@ -50,10 +50,7 @@ import {
     restoreWindowScrollPosition,
 } from "./dom-position.js";
 
-import {
-    TOOLBAR_TOGGLE_CLOSED_SVG,
-    TOOLBAR_TOGGLE_OPEN_SVG,
-} from "./toolbar-icons.js";
+import { renderToolbarToggleIcon } from "./toolbar-icons.js";
 export function createPageComposer(
     root,
     {
@@ -790,9 +787,7 @@ export function createPageComposer(
                         "toolbar-mobile-toggle--drawer-open",
                         open,
                     );
-                    mobileToggleBtn.innerHTML = open
-                        ? TOOLBAR_TOGGLE_OPEN_SVG
-                        : TOOLBAR_TOGGLE_CLOSED_SVG;
+                    mobileToggleBtn.innerHTML = renderToolbarToggleIcon(open);
                     mobileToggleBtn.setAttribute(
                         "aria-label",
                         open
@@ -802,7 +797,7 @@ export function createPageComposer(
                 }
 
                 mobileToggleBtn.setAttribute("aria-expanded", "false");
-                mobileToggleBtn.innerHTML = TOOLBAR_TOGGLE_CLOSED_SVG;
+                mobileToggleBtn.innerHTML = renderToolbarToggleIcon(false);
                 mobileToggleBtn.setAttribute(
                     "aria-label",
                     i18n.t("ui.layout.toolbar.expand"),

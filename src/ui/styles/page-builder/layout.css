@@ -394,3 +394,21 @@ code {
         padding: 0;
     }
 }
+
+.toolbar-mobile-toggle-icon {
+    display: block;
+    width: 16px;
+    height: 16px;
+    background: currentColor;
+    mask-position: center;
+    mask-size: contain;
+    mask-repeat: no-repeat;
+}
+
+.toolbar-mobile-toggle-icon--toolbar-close {
+    mask-image: url("../../public/assets/reuse/icons/toolbar-close.svg");
+}
+
+.toolbar-mobile-toggle-icon--toolbar-menu {
+    mask-image: url("../../public/assets/reuse/icons/toolbar-menu.svg");
+}

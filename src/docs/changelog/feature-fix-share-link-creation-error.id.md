@@ -87,3 +87,7 @@ Penyelesaian berbagi pengguna kini berhenti saat pengguna berpindah halaman sehi
 ## Memecah modul berbagi dan halaman yang terlalu besar
 
 Berkas besar untuk Berbagi, Kalender, Whiteboard, dan penyusun halaman kini dibagi menjadi modul terfokus untuk perenderan, akses, penyimpanan, finalisasi rute, riwayat, overlay, dan DOM agar setiap berkas sumber tetap di bawah batas proyek.
+
+## Menyimpan ikon bilah alat sebagai aset yang dapat digunakan kembali
+
+Bilah alat penyusun halaman kini memuat ikon menu dan tutup dari berkas aset SVG yang dapat digunakan kembali, bukan menyematkan markup SVG di JavaScript.

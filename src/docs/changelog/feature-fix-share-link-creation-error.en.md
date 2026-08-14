@@ -87,3 +87,7 @@ Account-share resolution now stops when the user navigates away, preventing a de
 ## Split oversized share and page modules
 
 Large Share, Calendar, Whiteboard, and page-composer files are now divided into focused rendering, access, persistence, route-finalization, history, overlay, and DOM modules to keep every source file below the project limit.
+
+## Store toolbar icons as reusable assets
+
+The page-composer toolbar now loads its menu and close icons from reusable SVG asset files instead of embedding SVG markup in JavaScript.

@@ -123,7 +123,13 @@ test("page composer includes mobile toolbar drawer behavior", () => {
         source,
         /mobileToggleBtn\.classList\.toggle\(\s*"toolbar-mobile-toggle--drawer-open",\s*open,\s*\)/m,
     );
-    assert.match(source, /mobileToggleBtn\.innerHTML = open/);
+    assert.match(
+        source,
+        /mobileToggleBtn\.innerHTML = renderToolbarToggleIcon\(open\)/,
+    );
+    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-close/);
+    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-menu/);
+    assert.doesNotMatch(source, /<svg\b/);
     assert.match(
         source,
         /if \(didSwitch\) \{\s*closeMobileDrawerIfNeeded\(\);\s*\}/m,

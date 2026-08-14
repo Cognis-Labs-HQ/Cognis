@@ -87,3 +87,7 @@ Die Auflösung einer Benutzerfreigabe wird nun beendet, wenn die Person die Seit
 ## Übergroße Freigabe- und Seitenmodule aufteilen
 
 Große Dateien für Freigaben, Kalender, Whiteboard und den Seiten-Composer sind nun in gezielte Module für Darstellung, Zugriff, Speicherung, Routenabschluss, Verlauf, Überlagerungen und DOM aufgeteilt. Damit bleibt jede Quelldatei unter der Projektgrenze.
+
+## Symbolleisten-Symbole als wiederverwendbare Assets speichern
+
+Die Symbolleiste des Seiten-Composers lädt ihre Menü- und Schließen-Symbole nun aus wiederverwendbaren SVG-Asset-Dateien, statt SVG-Markup in JavaScript einzubetten.
