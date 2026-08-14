@@ -118,4 +118,9 @@ test("profile store search returns every match when no limit is supplied", async
     const profiles = await store.searchProfiles("learner");
 
     assert.equal(profiles.length, 12);
+    assert.deepEqual(await store.searchProfiles("learner", 0), []);
+    await assert.rejects(
+        () => store.searchProfiles("learner", -1),
+        /non-negative integer/,
+    );
 });
