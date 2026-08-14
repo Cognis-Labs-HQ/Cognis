@@ -30,6 +30,7 @@ export function createChatHandlers({
         if (typeof loadChatRoomKey !== "function") return null;
         const roomKey = await loadChatRoomKey(roomId, {
             recoverMissing: true,
+            accessToken: state.shareAccessToken,
         });
         state.chatRoomKey = roomKey;
         return roomKey;

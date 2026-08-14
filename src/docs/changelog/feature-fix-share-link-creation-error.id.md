@@ -63,3 +63,7 @@ Tamu tautan rapat kini menerima kata sandi Jitsi khusus rapat melalui sesi berba
 ## Muat obrolan rapat tamu dengan bersih
 
 Tamu tautan rapat kini menggunakan data peserta yang telah diotorisasi oleh respons rapat, bukan membuat permintaan metadata ruang yang ditolak. Link Share juga menyediakan label formulir surel terlokalisasi sendiri agar kontrol penerima dan Kirim selalu ditampilkan dengan benar.
+
+## Stabilkan sesi rapat tamu
+
+Obrolan rapat tamu kini menggunakan kredensial berbagi terbatas saat mengambil kunci ruang terenkripsi, dan polling status rapat mengabaikan respons yang selesai setelah rapat dibongkar dengan aman. Undangan surel menempatkan petunjuk penerima khusus rapat di atas kolom alamat.

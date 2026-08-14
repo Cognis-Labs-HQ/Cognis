@@ -63,3 +63,7 @@ Meeting-link guests now receive the meeting-specific Jitsi password through thei
 ## Load guest meeting chat cleanly
 
 Meeting-link guests now use participant data already authorized by the meeting response instead of making forbidden room-metadata requests. Link Share also supplies its own localized email form labels so recipient and Send controls always render correctly.
+
+## Stabilize guest meeting sessions
+
+Guest meeting chat now uses the scoped share credential while retrieving its encrypted room key, and meeting-state polling safely ignores responses that finish after teardown. Email invitations place a meeting-specific recipient instruction above the address field.

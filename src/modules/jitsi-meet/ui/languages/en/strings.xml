@@ -90,6 +90,7 @@
   <string name="module.jitsi_meet.share.button">Share</string>
   <string name="module.jitsi_meet.share.popup_title">Share Meeting</string>
   <string name="module.jitsi_meet.share.generate_link">Generate Link</string>
+  <string name="module.jitsi_meet.share.email_recipients">Send an invitation containing this meeting link to:</string>
   <string name="module.jitsi_meet.share.copy_link">Copy Link</string>
   <string name="module.jitsi_meet.share.revoke">Revoke</string>
   <string name="module.jitsi_meet.share.share_options_label">Share:</string>

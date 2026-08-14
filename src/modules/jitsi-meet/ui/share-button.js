@@ -35,6 +35,9 @@ export async function openMeetingSharePopup({
                     "module.jitsi_meet.share.share_options_label",
                 ),
                 mail: i18n.t("ui.reuse.mail"),
+                emailRecipients: i18n.t(
+                    "module.jitsi_meet.share.email_recipients",
+                ),
                 label: i18n.t("module.jitsi_meet.share.label"),
                 labelPlaceholder: i18n.t(
                     "module.jitsi_meet.share.label_placeholder",

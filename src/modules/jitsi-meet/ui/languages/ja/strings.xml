@@ -90,6 +90,7 @@
   <string name="module.jitsi_meet.share.button">共有</string>
   <string name="module.jitsi_meet.share.popup_title">ミーティングを共有</string>
   <string name="module.jitsi_meet.share.generate_link">リンクを作成</string>
+  <string name="module.jitsi_meet.share.email_recipients">このミーティングリンクを含む招待を次の宛先に送信：</string>
   <string name="module.jitsi_meet.share.copy_link">リンクをコピー</string>
   <string name="module.jitsi_meet.share.revoke">無効化</string>
   <string name="module.jitsi_meet.share.share_options_label">共有：</string>

@@ -647,6 +647,20 @@ test("messages serialize concurrent room-key loads during SPA mounting", () => {
     assert.match(source, /if \(existingLoad\) \{\s*return existingLoad;/);
 });
 
+test("room-key loading forwards a caller-scoped access token", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/chat-loading.js"),
+        "utf8",
+    );
+
+    assert.match(source, /accessToken = ""/);
+    assert.match(
+        source,
+        /key-contribution[\s\S]*accessToken:\s*stageContext\.input\.accessToken/,
+    );
+    assert.match(source, /suppressAccessDeniedEvent:\s*true/);
+});
+
 test("keyring reset preserves message-room membership", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/index.ts"),

@@ -90,6 +90,7 @@
   <string name="module.jitsi_meet.share.button">Bagikan</string>
   <string name="module.jitsi_meet.share.popup_title">Bagikan Rapat</string>
   <string name="module.jitsi_meet.share.generate_link">Buat Tautan</string>
+  <string name="module.jitsi_meet.share.email_recipients">Kirim undangan yang berisi tautan rapat ini kepada:</string>
   <string name="module.jitsi_meet.share.copy_link">Salin Tautan</string>
   <string name="module.jitsi_meet.share.revoke">Cabut</string>
   <string name="module.jitsi_meet.share.share_options_label">Bagikan:</string>

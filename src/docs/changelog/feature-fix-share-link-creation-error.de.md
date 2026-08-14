@@ -63,3 +63,7 @@ Gäste mit Meeting-Link erhalten nun das meetingspezifische Jitsi-Passwort über
 ## Gast-Meeting-Chat fehlerfrei laden
 
 Gäste mit Meeting-Link verwenden nun die bereits durch die Meeting-Antwort autorisierten Teilnehmerdaten, anstatt unzulässige Raum-Metadaten anzufordern. Link Share stellt außerdem eigene lokalisierte Beschriftungen für das E-Mail-Formular bereit, damit Empfänger- und Senden-Steuerelemente immer korrekt dargestellt werden.
+
+## Gast-Meetingsitzungen stabilisieren
+
+Der Gast-Meeting-Chat verwendet nun beim Abrufen des verschlüsselten Raumschlüssels die begrenzte Freigabeberechtigung, und die Meeting-Statusabfrage ignoriert sicher Antworten, die erst nach dem Beenden eintreffen. E-Mail-Einladungen zeigen eine meetingspezifische Empfängeranweisung über dem Adressfeld.

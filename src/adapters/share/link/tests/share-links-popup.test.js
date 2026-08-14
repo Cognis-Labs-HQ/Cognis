@@ -18,6 +18,7 @@ const STYLESHEET_URL = new URL(
     "../ui/share-links-popup/index.css",
     import.meta.url,
 );
+const LINK_PAGE_URL = new URL("../page.js", import.meta.url);
 const ADAPTER_LANGUAGE_URLS = ["de", "en", "id", "ja"].map(
     (language) =>
         new URL(`../languages/${language}/strings.xml`, import.meta.url),
@@ -62,6 +63,20 @@ test("link adapter supplies localized email popup labels", () => {
             /name="adapter\.share\.link\.email\.recipients">[^<]+</,
         );
     }
+});
+
+test("email recipient instruction renders above its input", () => {
+    const pageSource = readFileSync(LINK_PAGE_URL, "utf8");
+    const cssSource = readFileSync(STYLESHEET_URL, "utf8");
+
+    assert.match(
+        pageSource,
+        /share-email-recipient-field[\s\S]*<span>\$\{escapeHtml\(labels\.emailRecipients\)\}<\/span>[\s\S]*<input/,
+    );
+    assert.match(
+        cssSource,
+        /\.share-email-recipient-field[\s\S]*display:\s*grid/,
+    );
 });
 
 test("share links popup renders existing links as an icon-only copy button", () => {

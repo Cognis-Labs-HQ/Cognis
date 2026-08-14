@@ -171,7 +171,8 @@ export function createPreflightHandlers({
     }
 
     async function loadMeetingState() {
-        if (!state.meeting?.id) return;
+        const meetingId = state.meeting?.id;
+        if (!meetingId) return;
         const response = await apiFetch(
             "/api/v1/modules/jitsi-meet/meetings/state",
             {
@@ -180,9 +181,11 @@ export function createPreflightHandlers({
                     "content-type": "application/json",
                 },
                 body: JSON.stringify({
-                    meetingId: state.meeting.id,
+                    meetingId,
                     sessionId: state.sessionId,
                 }),
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
             },
         );
         if (!response.ok) return;
@@ -205,6 +208,7 @@ export function createPreflightHandlers({
             });
             return;
         }
+        if (state.meeting?.id !== meetingId) return;
         state.meeting.state = latestState;
         if (latestState.authRequired && !latestState.authCompletedAt) {
             utils.updateOverlay({
@@ -249,6 +253,8 @@ export function createPreflightHandlers({
                     active,
                     terminated,
                 }),
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
             },
         );
         if (!response.ok) return null;

@@ -202,7 +202,7 @@ test("jitsi chat loads room keys through the messages adapter loading flow", () 
     );
     assert.match(
         chatSource,
-        /await loadChatRoomKey\(roomId,\s*\{\s*recoverMissing:\s*true,?\s*\}\)/,
+        /await loadChatRoomKey\(roomId,[\s\S]*recoverMissing:\s*true,[\s\S]*accessToken:\s*state\.shareAccessToken/,
     );
     assert.doesNotMatch(chatSource, /adapters\/auth\/keyring/);
     assert.match(resourcesSource, /chatLoadingModuleUrl/);
@@ -446,6 +446,20 @@ test("meetings session state polling handles closed meetings and distinct leave 
     );
     assert.match(source, /addEventListener\("notificationTriggered"/);
     assert.match(source, /reportTerminated: true/);
+});
+
+test("meeting state polling ignores responses after meeting teardown", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-preflight.js"),
+        "utf8",
+    );
+
+    assert.match(source, /const meetingId = state\.meeting\?\.id/);
+    assert.match(source, /if \(state\.meeting\?\.id !== meetingId\) return/);
+    assert.match(
+        source,
+        /meetings\/state[\s\S]*accessToken:\s*state\.shareAccessToken/,
+    );
 });
 
 test("jitsi API resets ended meetings and reports meetingClosed from presence updates", () => {

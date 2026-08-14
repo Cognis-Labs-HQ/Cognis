@@ -1,10 +1,10 @@
 {
     "name": "@cognis/module-jitsi-meet",
-    "version": "1.4.35",
+    "version": "1.4.36",
     "private": true,
     "type": "module",
     "dependencies": {
-        "@cognis/adapter-social-messages": "<=2.0.54",
+        "@cognis/adapter-social-messages": "<=2.0.55",
         "@cognis/adapter-social-profile": "<=1.1.55",
         "@cognis/gateway-share": "<=1.7.17",
         "@cognis/gateways": "<=0.1.6"
