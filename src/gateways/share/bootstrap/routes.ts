@@ -241,7 +241,7 @@ export function createShareRoutes(input: {
             }
             const shareId = decodeURIComponent(statusMatch[1]);
             const record = await input.gateway.getTokenById(shareId);
-            if (!record) {
+            if (!record || input.gateway.isTokenExpired(record)) {
                 sendError(res, 404, "not_found", "Share no longer exists.");
                 return true;
             }

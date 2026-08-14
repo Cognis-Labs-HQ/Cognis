@@ -352,7 +352,7 @@ test("purgeExpired removes only tokens past the retention window", async () => {
     );
 });
 
-test("expired share notifications are claimed only once", async () => {
+test("expired share notifications remain claimable until delivery succeeds", async () => {
     const executor = new MemoryExecutor();
     const store = new ShareTokenStore(executor as never);
     await store.ensureSchema();
@@ -367,5 +367,10 @@ test("expired share notifications are claimed only once", async () => {
         (await store.claimExpiredNotifications()).map((record) => record.id),
         [share.id],
     );
+    assert.deepEqual(
+        (await store.claimExpiredNotifications()).map((record) => record.id),
+        [share.id],
+    );
+    await store.markExpirationNotificationSent(share.id);
     assert.deepEqual(await store.claimExpiredNotifications(), []);
 });

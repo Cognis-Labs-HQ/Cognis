@@ -39,3 +39,7 @@ Die Whiteboard-Anwesenheit wird nun sofort beendet, wenn eine Freigabe widerrufe
 ## Freigabeübersicht vereinfachen
 
 Gesendete und empfangene Freigaben erscheinen jetzt in einer einheitlichen, responsiven Tabelle mit klaren Angaben zu Freigabeziel und Freigabequelle. Der Freigabetitel öffnet den Inhalt direkt. Die symbolbasierte Aktion „Verwalten“ öffnet den vorhandenen Freigabeeditor mit den Daten aus der Gateway-Datenbank, sodass Eigentümer Empfänger, Berechtigungen, Namen, Ablaufzeit und Schutz bearbeiten können, ohne die Freigabeseite zu verlassen.
+
+## Veraltete Navigation und Freigabestatus verhindern
+
+Überlappende SPA-Navigationen brechen ältere Routenladevorgänge ab, bevor diese eingebunden werden können. Abgelaufene Freigaben werden als inaktiv gemeldet. Ablaufbenachrichtigungen gelten erst nach erfolgreicher Zustellung an alle Empfänger als abgeschlossen, sodass vorübergehende Fehler protokolliert und erneut versucht werden.

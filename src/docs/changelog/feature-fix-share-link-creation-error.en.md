@@ -39,3 +39,7 @@ Whiteboard presence now stops immediately when a share is revoked and is fully d
 ## Streamline the Shares overview
 
 Sent and received shares now appear in one polished, responsive table with clear shared-to and shared-from details. Share titles open their content directly, while an icon-based Manage action opens the existing Share editor prefilled from the gateway database so owners can update recipients, permissions, names, expiration, and protection without leaving the Shares page.
+
+## Prevent stale navigation and share status
+
+Overlapping SPA navigations now cancel older route loads before they can mount. Expired shares are reported as inactive, and expiration notifications are marked complete only after every delivery succeeds so transient failures are logged and retried.

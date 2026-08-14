@@ -337,6 +337,10 @@ export class CoreShareGateway {
         return this.store.claimExpiredNotifications();
     }
 
+    async markExpirationNotificationSent(shareId: string): Promise<void> {
+        await this.store.markExpirationNotificationSent(shareId);
+    }
+
     async removeUserRecipient(input: {
         shareId: string;
         recipientAccountId: string;

@@ -803,15 +803,16 @@ export class ShareTokenStore {
             .filter((record): record is ShareTokenRecord =>
                 Boolean(record && !record.expirationNotifiedAt),
             );
-        for (const record of records) {
-            await this.db.executeCommand({
-                option: "UPDATE",
-                table: "share_tokens",
-                set: { expiration_notified_at: now },
-                where: [{ column: "id", value: record.id }],
-            });
-        }
         return records;
+    }
+
+    async markExpirationNotificationSent(shareId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "share_tokens",
+            set: { expiration_notified_at: new Date().toISOString() },
+            where: [{ column: "id", value: shareId }],
+        });
     }
 
     async purgeExpired(filter?: {

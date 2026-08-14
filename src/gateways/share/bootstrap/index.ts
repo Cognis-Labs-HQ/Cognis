@@ -75,7 +75,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     .filter((recipient) => recipient.type === "user")
                     .map((recipient) => recipient.id),
             ]);
-            await Promise.allSettled(
+            const results = await Promise.allSettled(
                 Array.from(accountIds).map((accountId) =>
                     dispatchNotification({
                         category: "share",
@@ -88,6 +88,28 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     }),
                 ),
             );
+            const failures = results.filter(
+                (result): result is PromiseRejectedResult =>
+                    result.status === "rejected",
+            );
+            if (failures.length > 0) {
+                ctx.log?.(
+                    "error",
+                    "Failed to deliver one or more expired share notifications; delivery will be retried.",
+                    {
+                        component: "share-gateway",
+                        operation: "notify_expired_shares",
+                        shareId: share.id,
+                        errors: failures.map((failure) =>
+                            failure.reason instanceof Error
+                                ? failure.reason.message
+                                : String(failure.reason),
+                        ),
+                    },
+                );
+                continue;
+            }
+            await gateway.markExpirationNotificationSent(share.id);
         }
     };
     registerEmailTemplate?.("share-link", (variables) => ({

@@ -39,3 +39,7 @@ Kehadiran Whiteboard kini segera berhenti ketika berbagi dicabut dan dilepas sep
 ## Sederhanakan ikhtisar Berbagi
 
 Berbagi terkirim dan diterima kini tampil dalam satu tabel responsif yang rapi dengan informasi tujuan dan asal berbagi yang jelas. Judul berbagi membuka kontennya secara langsung, sedangkan tindakan Kelola berbasis ikon membuka editor Berbagi yang sudah diisi dari basis data gateway sehingga pemilik dapat memperbarui penerima, izin, nama, kedaluwarsa, dan perlindungan tanpa meninggalkan halaman Berbagi.
+
+## Cegah navigasi dan status berbagi yang kedaluwarsa
+
+Navigasi SPA yang tumpang tindih kini membatalkan pemuatan rute lama sebelum dapat dipasang. Berbagi yang kedaluwarsa dilaporkan tidak aktif, dan notifikasi kedaluwarsa baru ditandai selesai setelah semua pengiriman berhasil sehingga kegagalan sementara dicatat dan dicoba kembali.

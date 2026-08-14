@@ -368,12 +368,26 @@ function resolveRouterRoot() {
 }
 
 let _mountController = null;
+let _navigationSequence = 0;
 let _initialized = false;
 
 async function loadRoute(path) {
+    const navigationSequence = ++_navigationSequence;
+    if (_mountController) {
+        _mountController.abort();
+    }
+    const navigationController = new AbortController();
+    _mountController = navigationController;
+    const { signal } = navigationController;
     const routeMountStartedAt = performance.now();
     const route = await resolveRoute(path);
-    if (!route) return false;
+    if (
+        !route ||
+        signal.aborted ||
+        navigationSequence !== _navigationSequence
+    ) {
+        return false;
+    }
 
     // Load the destination entry before authentication so its gateway-owned
     // flow hooks participate in this navigation's authenticate-session run.
@@ -396,6 +410,9 @@ async function loadRoute(path) {
         if (globalThis.__spaRouterCount === 0) {
             globalThis.__spaRouter = false;
         }
+    }
+    if (signal.aborted || navigationSequence !== _navigationSequence) {
+        return false;
     }
 
     const authResult = await uiCtx.runFlow("authenticate-session", {
@@ -433,13 +450,8 @@ async function loadRoute(path) {
     const finishPageLoading = beginPageLoading();
     try {
         window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
-        if (_mountController) {
-            _mountController.abort();
-        }
         uiCtx.capabilities.get("page:actions")?.reset?.();
-        _mountController = new AbortController();
         _currentBase = route.base;
-        const { signal } = _mountController;
 
         // Prepare the destination styles before calling mount() so CSS is
         // guaranteed present before the page touches the DOM.
