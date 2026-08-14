@@ -11,6 +11,72 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
  * this meeting.
  */
 
+export async function openMeetingSharePopup({
+    state,
+    i18n,
+    deferAloneParticipantPrompt,
+}) {
+    if (!state.meeting?.id || !state.jitsiConferenceJoined) return;
+    const openShareLinksPopup = uiCtx.capabilities.get("share:openLinksPopup");
+    if (typeof openShareLinksPopup !== "function") return;
+    const { buildShareCallbacks } = await import("./share-adapter.js");
+    deferAloneParticipantPrompt?.();
+    try {
+        await openShareLinksPopup({
+            allowedMethodIds: ["link"],
+            supportsReadOnly: false,
+            title: i18n.t("module.jitsi_meet.share.popup_title"),
+            labels: {
+                empty: i18n.t("module.jitsi_meet.share.empty"),
+                untitled: i18n.t("module.jitsi_meet.share.untitled"),
+                copyLink: i18n.t("module.jitsi_meet.share.copy_link"),
+                revoke: i18n.t("module.jitsi_meet.share.revoke"),
+                shareOptions: i18n.t(
+                    "module.jitsi_meet.share.share_options_label",
+                ),
+                mail: i18n.t("ui.reuse.mail"),
+                label: i18n.t("module.jitsi_meet.share.label"),
+                labelPlaceholder: i18n.t(
+                    "module.jitsi_meet.share.label_placeholder",
+                ),
+                expiryLabel: i18n.t("module.jitsi_meet.share.expiry_label"),
+                password: i18n.t("module.jitsi_meet.share.password_optional"),
+                passwordPopupTitle: i18n.t(
+                    "module.jitsi_meet.share.password_title",
+                ),
+                passwordPopupLabel: i18n.t(
+                    "module.jitsi_meet.share.password_instruction",
+                ),
+                passwordPlaceholder: i18n.t(
+                    "module.jitsi_meet.share.password_placeholder",
+                ),
+                statusActive: i18n.t("module.jitsi_meet.share.status_active"),
+                statusExpired: i18n.t("module.jitsi_meet.share.status_expired"),
+                expiresAtLabel: i18n.t(
+                    "module.jitsi_meet.share.expires_at_label",
+                ),
+                expiredAtLabel: i18n.t(
+                    "module.jitsi_meet.share.expired_at_label",
+                ),
+                generateLink: i18n.t("module.jitsi_meet.share.generate_link"),
+                close: i18n.t("ui.reuse.close"),
+                cancel: i18n.t("ui.reuse.cancel"),
+                confirm: i18n.t("module.jitsi_meet.share.revoke"),
+                deleteConfirmMessage: i18n.t(
+                    "module.jitsi_meet.share.delete_prompt",
+                ),
+                createFailed: i18n.t("module.jitsi_meet.share.create_failed"),
+                copySuccess: i18n.t("module.jitsi_meet.share.copy_success"),
+                copyFailed: i18n.t("module.jitsi_meet.share.copy_failed"),
+                deleteFailed: i18n.t("module.jitsi_meet.share.delete_failed"),
+            },
+            ...buildShareCallbacks(state.meeting.id),
+        });
+    } finally {
+        deferAloneParticipantPrompt?.();
+    }
+}
+
 export async function bindShareButton({
     root,
     signal,
@@ -48,94 +114,12 @@ export async function bindShareButton({
         label: i18n.t("module.jitsi_meet.share.button"),
         id: "share-resource-btn",
         signal,
-        onClick: async () => {
-            if (!state.meeting?.id || !state.jitsiConferenceJoined) {
-                return;
-            }
-            const openShareLinksPopup = uiCtx.capabilities.get(
-                "share:openLinksPopup",
-            );
-            if (typeof openShareLinksPopup !== "function") return;
-            const { buildShareCallbacks } = await import("./share-adapter.js");
-            // Opening the share popup pauses the local user's attention on
-            // the meeting for an unpredictable amount of time. Defer the
-            // "alone in meeting" overlay for the duration so it doesn't fire
-            // spuriously while other participants are simply not yet
-            // reflected in the next state poll, then defer it again once the
-            // popup closes to cover the time it takes to resume interacting.
-            deferAloneParticipantPrompt?.();
-            try {
-                await openShareLinksPopup({
-                    supportsReadOnly: false,
-                    title: i18n.t("module.jitsi_meet.share.popup_title"),
-                    labels: {
-                        empty: i18n.t("module.jitsi_meet.share.empty"),
-                        untitled: i18n.t("module.jitsi_meet.share.untitled"),
-                        copyLink: i18n.t("module.jitsi_meet.share.copy_link"),
-                        revoke: i18n.t("module.jitsi_meet.share.revoke"),
-                        shareOptions: i18n.t(
-                            "module.jitsi_meet.share.share_options_label",
-                        ),
-                        mail: i18n.t("ui.reuse.mail"),
-                        label: i18n.t("module.jitsi_meet.share.label"),
-                        labelPlaceholder: i18n.t(
-                            "module.jitsi_meet.share.label_placeholder",
-                        ),
-                        expiryLabel: i18n.t(
-                            "module.jitsi_meet.share.expiry_label",
-                        ),
-                        password: i18n.t(
-                            "module.jitsi_meet.share.password_optional",
-                        ),
-                        passwordPopupTitle: i18n.t(
-                            "module.jitsi_meet.share.password_title",
-                        ),
-                        passwordPopupLabel: i18n.t(
-                            "module.jitsi_meet.share.password_instruction",
-                        ),
-                        passwordPlaceholder: i18n.t(
-                            "module.jitsi_meet.share.password_placeholder",
-                        ),
-                        statusActive: i18n.t(
-                            "module.jitsi_meet.share.status_active",
-                        ),
-                        statusExpired: i18n.t(
-                            "module.jitsi_meet.share.status_expired",
-                        ),
-                        expiresAtLabel: i18n.t(
-                            "module.jitsi_meet.share.expires_at_label",
-                        ),
-                        expiredAtLabel: i18n.t(
-                            "module.jitsi_meet.share.expired_at_label",
-                        ),
-                        generateLink: i18n.t(
-                            "module.jitsi_meet.share.generate_link",
-                        ),
-                        close: i18n.t("ui.reuse.close"),
-                        cancel: i18n.t("ui.reuse.cancel"),
-                        confirm: i18n.t("module.jitsi_meet.share.revoke"),
-                        deleteConfirmMessage: i18n.t(
-                            "module.jitsi_meet.share.delete_prompt",
-                        ),
-                        createFailed: i18n.t(
-                            "module.jitsi_meet.share.create_failed",
-                        ),
-                        copySuccess: i18n.t(
-                            "module.jitsi_meet.share.copy_success",
-                        ),
-                        copyFailed: i18n.t(
-                            "module.jitsi_meet.share.copy_failed",
-                        ),
-                        deleteFailed: i18n.t(
-                            "module.jitsi_meet.share.delete_failed",
-                        ),
-                    },
-                    ...buildShareCallbacks(state.meeting.id),
-                });
-            } finally {
-                deferAloneParticipantPrompt?.();
-            }
-        },
+        onClick: () =>
+            openMeetingSharePopup({
+                state,
+                i18n,
+                deferAloneParticipantPrompt,
+            }),
     });
     if (shareButton instanceof HTMLButtonElement) {
         shareButton.disabled = !state.jitsiConferenceJoined;

@@ -271,3 +271,7 @@ Jeder Zugriffspunkt im erweiterten Aktivitätsdiagramm einer Freigabe heißt nun
 ## Chat für Gäste von Besprechungslinks entsperrt halten
 
 Gäste eines Besprechungslinks erhalten den Chatraumschlüssel nun über ihre begrenzte Freigabeberechtigung, ohne die einmalige Schlüsselzustellung eines Kontomitglieds zu verbrauchen. Der Schlüssel wird im bereits entsperrten temporären Schlüsselbund des Gastes gespeichert, sodass beim Laden des Besprechungschats keine wiederholten Entsperr- oder leeren Raumschlüssel-Popups mehr erscheinen.
+
+## Besprechungen vor dem Einladen von Teilnehmern starten
+
+Besprechungen können nun mit einer leeren Teilnehmerbühne gestartet werden. Sobald der Organisator der neu erstellten Konferenz tatsächlich beitritt, öffnet Cognis automatisch ein ausschließlich für Links bestimmtes Freigabe-Popup als Aufforderung, einen Gastlink zu erstellen; redundante Freigabemethoden für Kontobenutzer werden in diesem Besprechungs-Popup nicht angeboten.

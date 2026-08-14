@@ -289,6 +289,7 @@ export async function openShareLinksPopup({
     initialEditingShareId = "",
     initialEditingShare = null,
     editOnly = false,
+    allowedMethodIds = null,
 }) {
     await ensureStylesheet();
 
@@ -342,6 +343,12 @@ export async function openShareLinksPopup({
             { id: "link", name: labels.linkMethod || "Link" },
             { id: "user", name: labels.userMethod || "User" },
         ];
+    }
+    if (Array.isArray(allowedMethodIds)) {
+        const allowedMethods = new Set(allowedMethodIds.map(String));
+        state.methods = state.methods.filter((method) =>
+            allowedMethods.has(String(method?.id ?? "")),
+        );
     }
     if (editOnly) {
         state.methods = state.methods.filter(

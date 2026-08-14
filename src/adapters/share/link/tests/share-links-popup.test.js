@@ -86,3 +86,11 @@ test("share popup can open directly in database-backed edit mode", () => {
     );
     assert.match(source, /if \(!editOnly\) \{[\s\S]*window\.setInterval\(/);
 });
+
+test("share popup supports restricting available adapter methods", () => {
+    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+
+    assert.match(source, /allowedMethodIds = null/);
+    assert.match(source, /new Set\(allowedMethodIds\.map\(String\)\)/);
+    assert.match(source, /allowedMethods\.has/);
+});

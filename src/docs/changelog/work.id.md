@@ -271,3 +271,7 @@ Setiap titik akses dalam grafik aktivitas berbagi yang diperluas kini diberi lab
 ## Menjaga chat tamu tautan rapat tetap terbuka
 
 Tamu tautan rapat kini menerima kunci ruang chat melalui otorisasi berbagi terbatas tanpa memakai pengiriman kunci satu kali milik anggota akun. Kunci disimpan dalam keyring sementara tamu yang sudah terbuka, sehingga popup pembukaan keyring dan kunci ruang kosong tidak berulang saat chat rapat dimuat.
+
+## Memulai rapat sebelum mengundang peserta
+
+Rapat kini dapat dimulai dengan panggung peserta kosong. Setelah penyelenggara benar-benar bergabung ke konferensi yang baru dibuat, Cognis otomatis membuka popup berbagi khusus tautan untuk mendorong pembuatan tautan tamu; metode berbagi pengguna akun yang redundan tidak ditampilkan dalam popup rapat ini.

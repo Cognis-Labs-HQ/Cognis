@@ -271,3 +271,7 @@ Every access point in the expanded Share activity graph is now labelled “Acces
 ## Keep meeting-link guest chat unlocked
 
 Meeting-link guests now receive the meeting chat room key through their scoped share authorization without consuming an account member’s one-time key delivery. The key is stored in the guest’s already-unlocked temporary keyring, preventing repeated unlock and empty room-key popups while the meeting chat loads.
+
+## Start meetings before inviting participants
+
+Meetings can now start with an empty participant stage. Once the organizer actually joins the newly created conference, Cognis automatically opens a link-only share popup as a prompt to create a guest link; redundant account-user sharing methods are excluded from this meeting prompt.

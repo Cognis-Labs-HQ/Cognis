@@ -455,7 +455,7 @@ export function createMeetingHandlers({
             }
             return "module.jitsi_meet.overlay.preflight_required";
         }
-        if (participantCount > 0) {
+        if (state.preflightPassed || participantCount > 0) {
             return "module.jitsi_meet.overlay.ready_to_start";
         }
         return "module.jitsi_meet.overlay.select_participants";

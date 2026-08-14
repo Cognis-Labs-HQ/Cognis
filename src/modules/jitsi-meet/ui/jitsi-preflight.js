@@ -107,10 +107,7 @@ export function createPreflightHandlers({
         if (!participantSelectionLocked) {
             utils.updateOverlay({
                 message: i18n.t(callbacks.lobbyMessageKey(participantCount)),
-                canStart:
-                    participantCount > 0 &&
-                    state.preflightPassed &&
-                    !state.meeting?.id,
+                canStart: state.preflightPassed && !state.meeting?.id,
             });
         }
         callbacks.renderActiveMeetings();

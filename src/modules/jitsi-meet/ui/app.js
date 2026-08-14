@@ -27,7 +27,7 @@ import { createMeetingHandlers } from "./jitsi-meetings.js";
 import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
 import { createMountUtilities } from "./jitsi-mount-utils.js";
-import { bindShareButton } from "./share-button.js";
+import { bindShareButton, openMeetingSharePopup } from "./share-button.js";
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
     destroy: () => undefined,
@@ -138,6 +138,7 @@ export async function mount(
         alonePromptDismissedMeetingId: "",
         alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
+        promptShareOnJoin: false,
     };
     function collectMeetingSearchGroups() {
         const meetings = [
@@ -202,7 +203,14 @@ export async function mount(
             signal,
         });
     }
-    const callbacks = {};
+    const callbacks = {
+        openMeetingSharePopup: () =>
+            openMeetingSharePopup({
+                state,
+                i18n,
+                deferAloneParticipantPrompt,
+            }),
+    };
     const utils = {
         clearTimers,
         deferAloneParticipantPrompt,

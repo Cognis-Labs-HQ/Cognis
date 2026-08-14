@@ -51,6 +51,36 @@ test("meeting share joins use the scoped guest access token", () => {
     );
 });
 
+test("new meetings can start with an empty participant stage and prompt for a link share after joining", () => {
+    const preflightSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-preflight.js"),
+        "utf8",
+    );
+    const embedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-embed.js"),
+        "utf8",
+    );
+    const shareButtonSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/share-button.js"),
+        "utf8",
+    );
+    assert.match(
+        preflightSource,
+        /canStart:\s*state\.preflightPassed && !state\.meeting\?\.id/,
+    );
+    assert.doesNotMatch(embedSource, /if \(selected\.length === 0\)/);
+    assert.doesNotMatch(embedSource, /canStart:[^,]*selected\.length/);
+    assert.match(
+        embedSource,
+        /state\.promptShareOnJoin = Boolean\(state\.meeting\?\.id\)/,
+    );
+    assert.match(
+        embedSource,
+        /videoConferenceJoined[\s\S]*state\.promptShareOnJoin = false;[\s\S]*openMeetingSharePopup/,
+    );
+    assert.match(shareButtonSource, /allowedMethodIds:\s*\["link"\]/);
+});
+
 test("meeting link guests can join without participant-card data", () => {
     const appSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
