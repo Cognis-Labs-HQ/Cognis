@@ -488,6 +488,8 @@ export function createCalendarCoreRoutes({
                     req,
                     res,
                     shareTokenId: activeSharedCalendar.shareTokenId,
+                    accountId: claims.sub,
+                    ownerCalendarId: activeSharedCalendar.ownerCalendarId,
                     getCapability,
                 }))
             ) {
@@ -568,6 +570,8 @@ export function createCalendarCoreRoutes({
                         req,
                         res,
                         shareTokenId: activeSharedCalendar.shareTokenId,
+                        accountId: claims.sub,
+                        ownerCalendarId: activeSharedCalendar.ownerCalendarId,
                         getCapability,
                     }))
                 ) {
@@ -775,6 +779,8 @@ export function createCalendarCoreRoutes({
                     req,
                     res,
                     shareTokenId: responseSharedCalendar.shareTokenId,
+                    accountId: claims.sub,
+                    ownerCalendarId: responseSharedCalendar.ownerCalendarId,
                     getCapability,
                 }))
             ) {

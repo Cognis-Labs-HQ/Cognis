@@ -498,6 +498,7 @@ function normalizeUnlockRequest(request) {
 export async function requestKeyringUnlock(options = {}) {
     const request = normalizeUnlockRequest(options.request);
     if (isKeyringUnlocked()) return true;
+    if (temporaryKeyringAccountId) return false;
     if (keyringAccessSuppressed && options.manual !== true) return false;
     if (unlockRequestPromise) return unlockRequestPromise;
     unlockRequestPromise = (async () => {

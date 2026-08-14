@@ -72,13 +72,40 @@ test("new meetings can start with an empty participant stage and prompt for a li
     assert.doesNotMatch(embedSource, /canStart:[^,]*selected\.length/);
     assert.match(
         embedSource,
-        /state\.promptShareOnJoin = Boolean\(state\.meeting\?\.id\)/,
+        /state\.promptShareOnJoin =\s*Boolean\(state\.meeting\?\.id\) && selected\.length === 0/,
     );
     assert.match(
         embedSource,
         /videoConferenceJoined[\s\S]*state\.promptShareOnJoin = false;[\s\S]*openMeetingSharePopup/,
     );
     assert.match(shareButtonSource, /allowedMethodIds:\s*\["link"\]/);
+    assert.match(
+        embedSource,
+        /videoConferenceJoined[\s\S]*if \(state\.promptShareOnJoin\)/,
+    );
+});
+
+test("meeting link guests load participant names and avatars only from the authorized chat room", () => {
+    const chatSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        chatSource,
+        /api\/v1\/social\/messages\/rooms\/\$\{encodeURIComponent\(roomId\)\}/,
+    );
+    assert.match(chatSource, /payload\?\.data\?\.members/);
+    assert.match(chatSource, /member\?\.displayName/);
+    assert.match(chatSource, /member\?\.avatarKey/);
+    assert.match(
+        chatSource,
+        /if \(state\.shareAccessToken\) return state\.chatParticipantEntries/,
+    );
+    assert.match(appSource, /if \(state\.shareAccessToken\) return;/);
 });
 
 test("meeting link guests can join without participant-card data", () => {

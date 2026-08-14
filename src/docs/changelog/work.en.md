@@ -275,3 +275,7 @@ Meeting-link guests now receive the meeting chat room key through their scoped s
 ## Start meetings before inviting participants
 
 Meetings can now start with an empty participant stage. Once the organizer actually joins the newly created conference, Cognis automatically opens a link-only share popup as a prompt to create a guest link; redundant account-user sharing methods are excluded from this meeting prompt.
+
+## Complete account-calendar and guest-meeting sharing
+
+The meeting share prompt now opens only for newly started meetings whose participant stage was empty. Meeting-link guests never receive an account-keyring password prompt while their disposable keyring activates, and their authorized meeting chat supplies participant names and avatars without exposing the full participant staging surface. User-shared calendars now honor the Share gateway’s server-side account unlock grant when loading live owner events, including password-protected shares.

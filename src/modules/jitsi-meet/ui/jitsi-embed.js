@@ -402,7 +402,8 @@ export function createEmbedHandlers({
             .json()
             .catch(() => ({ data: null }));
         state.meeting = createPayload?.data;
-        state.promptShareOnJoin = Boolean(state.meeting?.id);
+        state.promptShareOnJoin =
+            Boolean(state.meeting?.id) && selected.length === 0;
         state.chatMode = "meeting";
         state.privateChatUsername = "";
         await callbacks.updateNativeChat();

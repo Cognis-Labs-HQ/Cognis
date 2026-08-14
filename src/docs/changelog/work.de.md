@@ -275,3 +275,7 @@ Gäste eines Besprechungslinks erhalten den Chatraumschlüssel nun über ihre be
 ## Besprechungen vor dem Einladen von Teilnehmern starten
 
 Besprechungen können nun mit einer leeren Teilnehmerbühne gestartet werden. Sobald der Organisator der neu erstellten Konferenz tatsächlich beitritt, öffnet Cognis automatisch ein ausschließlich für Links bestimmtes Freigabe-Popup als Aufforderung, einen Gastlink zu erstellen; redundante Freigabemethoden für Kontobenutzer werden in diesem Besprechungs-Popup nicht angeboten.
+
+## Konto-Kalender- und Gast-Besprechungsfreigaben vervollständigen
+
+Das Freigabe-Popup für Besprechungen öffnet sich nun nur bei neu gestarteten Besprechungen mit leerer Teilnehmerbühne. Gäste über Besprechungslinks erhalten während der Aktivierung ihres temporären Schlüsselbunds keine Aufforderung für ein Kontoschlüsselbund-Passwort; ihr berechtigter Besprechungschat liefert Teilnehmernamen und Avatare, ohne die vollständige Teilnehmerauswahl offenzulegen. Für Benutzer freigegebene Kalender berücksichtigen beim Laden aktueller Eigentümertermine nun die serverseitige Konto-Entsperrfreigabe des Share-Gateways, auch bei passwortgeschützten Freigaben.

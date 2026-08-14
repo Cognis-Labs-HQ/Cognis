@@ -11,6 +11,10 @@ const settingsSource = readFileSync(
     resolve(import.meta.dirname, "../ui/settings.js"),
     "utf8",
 );
+const keyringSource = readFileSync(
+    resolve(import.meta.dirname, "../ui/keyring.js"),
+    "utf8",
+);
 Object.defineProperty(globalThis, "crypto", {
     configurable: true,
     value: webcrypto,
@@ -827,4 +831,11 @@ test("keyring persistence surfaces definitive server rejection", async () => {
         await keyring.lockKeyring();
         localStorage.removeItem("cognis_account");
     }
+});
+
+test("temporary guest keyrings never request an account password", () => {
+    assert.match(
+        keyringSource,
+        /if \(temporaryKeyringAccountId\) return false;[\s\S]*keyringAccessSuppressed/,
+    );
 });

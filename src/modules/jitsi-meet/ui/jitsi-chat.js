@@ -155,16 +155,10 @@ export function createChatHandlers({
 
     function resolveParticipantChatEntries() {
         if (!state.meeting?.id) return [];
+        if (state.shareAccessToken) return state.chatParticipantEntries;
         const localHandle = normalizeUsername(
             state.currentProfile?.handle ?? "",
         );
-        // Share guests have no account and are only ever authorized to read
-        // and write the meeting's own group chat room — never the private,
-        // per-user DM rooms these avatars would open. Omit the switcher
-        // entirely for guests so it's never shown, let alone clicked, which
-        // previously caused a 403 when guests tried to fetch a private
-        // room's encryption key.
-        if (!localHandle) return [];
         return Array.from(
             new Set(
                 state.lastMeetingParticipants
@@ -183,6 +177,35 @@ export function createChatHandlers({
                     avatarKey: participant?.avatarKey ?? null,
                 };
             })
+            .sort((left, right) => left.username.localeCompare(right.username));
+    }
+
+    async function loadMeetingChatParticipants(roomId) {
+        if (!state.shareAccessToken || !roomId) return;
+        const response = await apiFetch(
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}`,
+            {
+                accessToken: state.shareAccessToken,
+                suppressAccessDeniedEvent: true,
+            },
+        );
+        if (!response.ok) return;
+        const payload = await response.json().catch(() => ({ data: null }));
+        const members = Array.isArray(payload?.data?.members)
+            ? payload.data.members
+            : [];
+        state.chatParticipantEntries = members
+            .map((member) => ({
+                username: normalizeUsername(member?.handle ?? ""),
+                displayName: String(
+                    member?.displayName ?? member?.handle ?? "",
+                ).trim(),
+                avatarKey:
+                    typeof member?.avatarKey === "string"
+                        ? member.avatarKey
+                        : null,
+            }))
+            .filter((member) => Boolean(member.username))
             .sort((left, right) => left.username.localeCompare(right.username));
     }
 
@@ -404,6 +427,7 @@ export function createChatHandlers({
         if (state.chatMode !== "private") {
             applyActiveChatRoom(state.lastMeetingChatRoomId);
         }
+        await loadMeetingChatParticipants(state.lastMeetingChatRoomId);
         renderChatParticipantStrip();
         await refreshNativeChat();
         startNativeChatPolling();

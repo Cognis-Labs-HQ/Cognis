@@ -275,3 +275,7 @@ Tamu tautan rapat kini menerima kunci ruang chat melalui otorisasi berbagi terba
 ## Memulai rapat sebelum mengundang peserta
 
 Rapat kini dapat dimulai dengan panggung peserta kosong. Setelah penyelenggara benar-benar bergabung ke konferensi yang baru dibuat, Cognis otomatis membuka popup berbagi khusus tautan untuk mendorong pembuatan tautan tamu; metode berbagi pengguna akun yang redundan tidak ditampilkan dalam popup rapat ini.
+
+## Menyelesaikan berbagi kalender akun dan rapat tamu
+
+Popup berbagi rapat kini hanya terbuka untuk rapat baru yang dimulai dengan panggung peserta kosong. Tamu tautan rapat tidak pernah menerima permintaan kata sandi keyring akun saat keyring sementara mereka diaktifkan, dan chat rapat yang diizinkan menyediakan nama serta avatar peserta tanpa membuka seluruh permukaan pementasan peserta. Kalender yang dibagikan kepada pengguna kini menghormati izin buka kunci akun sisi server dari gateway Share saat memuat acara pemilik secara langsung, termasuk berbagi yang dilindungi kata sandi.

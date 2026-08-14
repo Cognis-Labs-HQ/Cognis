@@ -113,6 +113,7 @@ export async function mount(
         privateChatUsername: "",
         lastMeetingChatRoomId: "",
         lastMeetingParticipants: [],
+        chatParticipantEntries: [],
         currentProfile: null,
         preflightStatus: "idle",
         preflightPassed: false,
@@ -509,6 +510,7 @@ export async function mount(
                         ".jitsi-chat-participant-item[data-username]",
                     );
                     if (!(button instanceof HTMLButtonElement)) return;
+                    if (state.shareAccessToken) return;
                     const username = normalizeUsername(button.dataset.username);
                     if (!username) return;
                     void activatePrivateChatForParticipant(username);
