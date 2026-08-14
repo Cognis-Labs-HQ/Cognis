@@ -239,3 +239,7 @@ Detail tiap berbagi kini menggabungkan aktivitas pembuatan, pembaruan, dan akses
 ## Menjelajahi riwayat akses berbagi lengkap
 
 Setiap akses berbagi yang berhasil kini disimpan dalam linimasa aktivitas terpadu. Grafik menggunakan label waktu untuk periode hingga dua hari dan tanggal untuk riwayat yang lebih panjang, mendukung pemilihan rentang dengan menyeret, serta memakai lebar penuh di atas daftar penerima.
+
+## Mempertahankan rentang grafik dan sesi akun
+
+Grafik aktivitas kini menampilkan label waktu hingga detik untuk riwayat singkat dan langsung menggambar ulang rentang tepat yang dipilih dengan menyeret. Stempel waktu berbagi yang sudah ada mengisi rentang grafik lengkap, sedangkan membuka `/share` memulihkan sesi akun alih-alih memakai kembali sesi tamu; aktivasi tamu dibatasi pada token tautan publik yang valid.

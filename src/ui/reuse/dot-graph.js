@@ -14,7 +14,7 @@
  *   });
  *
  * @param {HTMLElement} container - Element that will contain the graph.
- * @param {{ points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatTimeTimestamp?: (timestamp: string) => string, formatDateTimestamp?: (timestamp: string) => string }} options - Graph data and localized labels.
+ * @param {{ points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatTimeTimestamp?: (timestamp: string) => string, formatDateTimestamp?: (timestamp: string) => string, domainStart?: string, domainEnd?: string }} options - Graph data and localized labels.
  * @returns {void}
  */
 export function mountDotGraph(
@@ -26,6 +26,8 @@ export function mountDotGraph(
         formatTimestamp,
         formatTimeTimestamp = formatTimestamp,
         formatDateTimestamp = formatTimestamp,
+        domainStart,
+        domainEnd,
     },
 ) {
     const normalized = (Array.isArray(points) ? points : [])
@@ -37,8 +39,14 @@ export function mountDotGraph(
     const margin = { top: 20, right: 24, bottom: 54, left: 58 };
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
-    const minimumTime = normalized[0]?.time ?? Date.now();
-    const maximumTime = normalized.at(-1)?.time ?? minimumTime;
+    const requestedMinimumTime = Date.parse(domainStart ?? "");
+    const requestedMaximumTime = Date.parse(domainEnd ?? "");
+    const minimumTime = Number.isFinite(requestedMinimumTime)
+        ? requestedMinimumTime
+        : (normalized[0]?.time ?? Date.now());
+    const maximumTime = Number.isFinite(requestedMaximumTime)
+        ? requestedMaximumTime
+        : (normalized.at(-1)?.time ?? minimumTime);
     const timeSpan = Math.max(1, maximumTime - minimumTime);
     const axisTimestampFormatter =
         timeSpan <= 2 * 24 * 60 * 60 * 1000
@@ -181,9 +189,12 @@ export function mountDotGraph(
         if (upperX - lowerX < 8) return;
         const toTime = (position) =>
             minimumTime + ((position - margin.left) / plotWidth) * timeSpan;
+        const selectedMinimumTime = toTime(lowerX);
+        const selectedMaximumTime = toTime(upperX);
         const selectedPoints = normalized.filter(
             (point) =>
-                point.time >= toTime(lowerX) && point.time <= toTime(upperX),
+                point.time >= selectedMinimumTime &&
+                point.time <= selectedMaximumTime,
         );
         if (selectedPoints.length === 0) return;
         mountDotGraph(container, {
@@ -193,6 +204,8 @@ export function mountDotGraph(
             formatTimestamp,
             formatTimeTimestamp,
             formatDateTimestamp,
+            domainStart: new Date(selectedMinimumTime).toISOString(),
+            domainEnd: new Date(selectedMaximumTime).toISOString(),
         });
     });
     svg.insertBefore(selection, svg.querySelector(".dot-graph-point"));

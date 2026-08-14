@@ -239,3 +239,7 @@ Die Details jeder Freigabe vereinen nun Erstellungs-, Aktualisierungs- und Zugri
 ## Vollständigen Freigabezugriffsverlauf erkunden
 
 Jeder erfolgreiche Freigabezugriff wird nun in der einheitlichen Aktivitätszeitleiste gespeichert. Diagramme verwenden Zeitangaben für Zeiträume bis zu zwei Tagen und Datumsangaben für längere Verläufe, unterstützen die Bereichsauswahl durch Ziehen und nutzen die gesamte Detailbreite oberhalb der Empfängerliste.
+
+## Diagrammbereiche und Kontositzungen bewahren
+
+Aktivitätsdiagramme zeigen für kurze Verläufe nun Zeitangaben mit Sekunden und zeichnen nach einer Ziehauswahl exakt den gewählten Bereich neu. Vorhandene Freigabezeitstempel bilden den vollständigen Diagrammbereich, während der Besuch von `/share` die Kontositzung wiederherstellt, statt eine Gastsitzung weiterzuverwenden; die Gastaktivierung ist auf gültige öffentliche Link-Token beschränkt.

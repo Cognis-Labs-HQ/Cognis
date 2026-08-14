@@ -284,6 +284,14 @@ test("logged-in share recipients keep their account session", () => {
     );
     assert.match(
         sessionFlowSource,
+        /if \(isViewingAsGuest\(\)\) restoreGuestToken\(\)/,
+    );
+    assert.match(
+        sessionFlowSource,
+        /if \(!shareToken\.startsWith\("shr_"\)\)[\s\S]*recipient_restricted[\s\S]*await activateGuestToken/,
+    );
+    assert.match(
+        sessionFlowSource,
         /session\.isGuestSession === true[\s\S]*shareContext: null/,
     );
 });

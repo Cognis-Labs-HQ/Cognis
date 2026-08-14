@@ -395,6 +395,7 @@ export class ShareTokenStore {
                 { name: "occurred_at", type: "text", notNull: true },
             ],
         });
+        await this.backfillActivityEvents();
     }
 
     private async recordActivity(
@@ -441,6 +442,36 @@ export class ShareTokenStore {
                 },
             ];
         });
+    }
+
+    private async backfillActivityEvents(): Promise<void> {
+        const tokenResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+        });
+        for (const row of tokenResult.rows ?? []) {
+            const shareId = String(row.id ?? "").trim();
+            if (!shareId) continue;
+            const existingTypes = new Set(
+                (await this.listActivity(shareId)).map((event) => event.type),
+            );
+            const createdAt = String(row.created_at ?? "").trim();
+            const updatedAt = String(row.updated_at ?? "").trim();
+            const lastAccessedAt = String(row.last_accessed_at ?? "").trim();
+            if (createdAt && !existingTypes.has("created")) {
+                await this.recordActivity(shareId, "created", createdAt);
+            }
+            if (
+                updatedAt &&
+                updatedAt !== createdAt &&
+                !existingTypes.has("updated")
+            ) {
+                await this.recordActivity(shareId, "updated", updatedAt);
+            }
+            if (lastAccessedAt && !existingTypes.has("accessed")) {
+                await this.recordActivity(shareId, "accessed", lastAccessedAt);
+            }
+        }
     }
 
     private async backfillResourceKeys(): Promise<void> {

@@ -143,6 +143,10 @@ test("schema upgrade backfills resource keys for existing shares", async () => {
     const resourceKey = String(executor.rows.get("legacy-share")?.resource_key);
     assert.match(resourceKey, /^[a-f0-9]{64}$/);
     assert.ok(executor.auxiliaryRows.get("share_resources")?.has(resourceKey));
+    assert.deepEqual(
+        (await store.listActivity("legacy-share")).map((event) => event.type),
+        ["created"],
+    );
 });
 
 test("account unlock grants are scoped to a share and account", async () => {

@@ -120,7 +120,8 @@ function renderShareDetails(share, i18n) {
         xAxisLabel: i18n.t("share.shares.detail_timeline"),
         yAxisLabel: i18n.t("share.shares.detail_event_count"),
         formatTimestamp: formatDateTime,
-        formatTimeTimestamp: formatTime,
+        formatTimeTimestamp: (timestamp) =>
+            formatTime(timestamp, "", { includeSeconds: true }),
         formatDateTimestamp: formatDate,
     });
     const users = recipients.length

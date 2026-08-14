@@ -9,6 +9,8 @@
     max-height: 20rem;
     overflow: visible;
     width: 100%;
+    touch-action: none;
+    user-select: none;
 }
 
 .dot-graph-axis {

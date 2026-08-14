@@ -92,6 +92,9 @@ test("Share activity uses the reusable scalable dot graph", () => {
     assert.match(graphSource, /pointermove/);
     assert.match(graphSource, /pointerup/);
     assert.match(graphSource, /selectedPoints/);
+    assert.match(graphSource, /domainStart/);
+    assert.match(graphSource, /domainEnd/);
+    assert.match(pageSource, /includeSeconds:\s*true/);
     assert.match(graphSource, /formatTimeTimestamp/);
     assert.match(graphSource, /formatDateTimestamp/);
     assert.match(graphStyleSource, /\.dot-graph-tooltip/);

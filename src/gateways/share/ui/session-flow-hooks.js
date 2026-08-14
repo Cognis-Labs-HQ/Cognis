@@ -272,14 +272,7 @@ uiCtx.extendFlow(
             if (isActiveShareContentRoute(activeShareSession)) {
                 return resolveActiveShareContentSession(activeShareSession);
             }
-            if (
-                sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1" &&
-                activeGuestSession?.session
-            ) {
-                // Preserve the resolved share context after the gateway
-                // forwards the guest from /share/:token to its content URL.
-                return activeGuestSession.session;
-            }
+            if (isViewingAsGuest()) restoreGuestToken();
             return null;
         }
         if (
@@ -437,6 +430,9 @@ uiCtx.extendFlow(
             return accountSession;
         }
 
+        if (!shareToken.startsWith("shr_")) {
+            return { authenticated: false, reason: "recipient_restricted" };
+        }
         const abortController = await activateGuestToken(
             shareData.guestAccessToken,
             shareData.guestProfile,

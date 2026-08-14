@@ -239,3 +239,7 @@ Per-share details now combine creation, update, and access activity in a respons
 ## Explore complete share access history
 
 Every successful share access is now retained in the unified activity timeline. Graphs use time labels for periods up to two days and dates for longer histories, support drag-selection to zoom into a period, and occupy the full detail width above the recipient list.
+
+## Preserve graph ranges and account sessions
+
+Activity graphs now show second-level time labels for short histories and redraw against the exact range selected by dragging. Existing share timestamps seed the complete graph range, while visiting `/share` restores the account session instead of reusing a guest session; guest activation is limited to valid public link tokens.
