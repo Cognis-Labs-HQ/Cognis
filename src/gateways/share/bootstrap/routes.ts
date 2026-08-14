@@ -183,22 +183,19 @@ export function createShareRoutes(input: {
 
         if (
             req.method === "GET" &&
-            (url.pathname === "/shares" || url.pathname.startsWith("/share/"))
+            (url.pathname === "/shares" ||
+                /^\/share\/(?:usr_|shr_)[^/]+$/.test(url.pathname))
         ) {
             routeContext.setPageSecurityHeaders(res);
             const html = await readFile(
-                path.join(input.uiRoot, "share.html"),
+                path.join(
+                    input.uiRoot,
+                    url.pathname === "/shares" ? "shares.html" : "share.html",
+                ),
                 "utf8",
             );
-            const pageHtml =
-                url.pathname === "/shares"
-                    ? html.replace(
-                          "/static/gateways/share/ui/app/index.js",
-                          "/static/gateways/share/ui/app/shares/index.js",
-                      )
-                    : html;
             res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-            res.end(pageHtml);
+            res.end(html);
             return true;
         }
 

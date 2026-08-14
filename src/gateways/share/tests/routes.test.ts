@@ -314,13 +314,25 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         routeRegistry,
         new RequestRecorder({ method: "GET" }),
         response,
-        new URL("http://localhost/share/test-token"),
+        new URL("http://localhost/share/shr_test-token"),
     );
     assert.equal(response.statusCode, 200);
     assert.match(
         response.payload,
         /share.page_title|Shared Content|<main id="app">/,
     );
+    assert.match(response.payload, /session-flow-hooks\.js/);
+
+    const sharesResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET" }),
+        sharesResponse,
+        new URL("http://localhost/shares"),
+    );
+    assert.equal(sharesResponse.statusCode, 200);
+    assert.match(sharesResponse.payload, /app\/shares\/index\.js/);
+    assert.doesNotMatch(sharesResponse.payload, /session-flow-hooks\.js/);
 
     const dispatchJson = createJsonDispatcher(routeRegistry);
     const adaptersResponse = await dispatchJson(
