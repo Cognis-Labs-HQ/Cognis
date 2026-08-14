@@ -224,6 +224,6 @@ The Calendar page now asks the keyring to unlock received calendars whenever the
 
 Public calendar controls now use one page-level delegated interaction boundary. Day, week, month, and year switching and period navigation therefore remain connected after every calendar rerender.
 
-## Keep guest meeting controls live
+## Open share content directly
 
-Guest meeting pages no longer park their composer DOM. Account meeting pages retain iframe parking, while guest join controls always bind to the current rendered elements.
+Calendar links now open in month view while retaining their persistent view and period controls. Meeting links now enter the shared meeting immediately instead of treating the missing account-page `start` query parameter as an instruction not to join.

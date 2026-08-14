@@ -224,6 +224,6 @@ Die Kalenderseite fordert nun beim Laden empfangener Kalender deren Entsperrung 
 
 Öffentliche Kalender verwenden nun eine einzige delegierte Interaktionsgrenze auf Seitenebene. Das Umschalten zwischen Tag, Woche, Monat und Jahr sowie die Periodennavigation bleiben dadurch nach jedem erneuten Rendern des Kalenders verbunden.
 
-## Gast-Meetingsteuerung aktiv halten
+## Freigabeinhalte direkt öffnen
 
-Gast-Meetingseiten parken ihr Composer-DOM nicht mehr. Meetingseiten für Konten behalten das Parken des Iframes bei, während die Beitrittssteuerung für Gäste immer an die aktuell gerenderten Elemente gebunden wird.
+Kalenderlinks öffnen nun in der Monatsansicht und behalten ihre dauerhaften Ansichts- und Periodensteuerungen. Meetinglinks treten nun sofort dem freigegebenen Meeting bei, anstatt den fehlenden `start`-Abfrageparameter der Kontoseite als Anweisung zu verstehen, nicht beizutreten.

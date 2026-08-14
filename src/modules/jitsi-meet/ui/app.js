@@ -929,7 +929,7 @@ export async function mount(
 
     const composer = createPageComposer(root, {
         allowCustomization: !limitedShareView,
-        enableDomParking: !limitedShareView,
+        enableDomParking: true,
         elements,
         preferenceKey: "meetings-layout-v3",
         i18n,
@@ -961,7 +961,7 @@ export async function mount(
     await composer.init();
     if (state.requestedMeetingId) {
         await joinMeetingById(state.requestedMeetingId, {
-            autoStart: state.requestedMeetingStart,
+            autoStart: inShareView || state.requestedMeetingStart,
         });
     } else {
         await loadActiveMeetings({ resolveRequested: true });

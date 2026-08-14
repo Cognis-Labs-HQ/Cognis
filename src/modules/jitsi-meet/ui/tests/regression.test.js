@@ -639,7 +639,7 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
     assert.match(source, /requestedMeetingId/);
     assert.match(
         source,
-        /await joinMeetingById\(state\.requestedMeetingId, \{\s*autoStart: state\.requestedMeetingStart/,
+        /await joinMeetingById\(state\.requestedMeetingId, \{\s*autoStart: inShareView \|\| state\.requestedMeetingStart/,
     );
     assert.match(source, /searchParams\.get\("start"\) === "1"/);
     assert.doesNotMatch(source, /inShareView && Boolean\(resolvedMeetingId\)/);
@@ -732,12 +732,12 @@ test("jitsi API exposes user active meetings endpoint", () => {
     );
 });
 
-test("jitsi limits composer DOM parking to the account meeting page", () => {
+test("jitsi opts into composer DOM parking for its stateful iframe", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
         "utf8",
     );
-    assert.match(source, /enableDomParking: !limitedShareView/);
+    assert.match(source, /enableDomParking: true/);
 });
 
 test("meeting shares use the Cognis route and skip account setup", () => {

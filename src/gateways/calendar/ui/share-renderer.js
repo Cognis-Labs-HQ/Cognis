@@ -172,7 +172,7 @@ export async function mount(
     let events = Array.isArray(shareContext?.payload?.events)
         ? shareContext.payload.events
         : [];
-    let selectedView = "day";
+    let selectedView = "month";
     let activeDate = new Date();
     const canWrite =
         shareContext?.grantedCapabilities?.includes("calendar:write");

@@ -725,6 +725,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /showNavbar:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /function renderCalendar\(\)/);
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
+    assert.match(SHARE_RENDERER_SOURCE, /let selectedView = "month"/);
     assert.match(
         SHARE_RENDERER_SOURCE,
         /root\.addEventListener\([\s\S]*data-shared-calendar-id[\s\S]*data-calendar-view[\s\S]*data-calendar-nav/,
