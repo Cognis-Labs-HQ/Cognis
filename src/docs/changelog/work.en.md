@@ -243,3 +243,7 @@ Every successful share access is now retained in the unified activity timeline. 
 ## Preserve graph ranges and account sessions
 
 Activity graphs now show second-level time labels for short histories and redraw against the exact range selected by dragging. Existing share timestamps seed the complete graph range, while visiting `/share` restores the account session instead of reusing a guest session; guest activation is limited to valid public link tokens.
+
+## Restore accounts before validation
+
+When `/share` loads after a guest link, the Share gateway now restores the saved account credentials before the Authentication gateway validates the browser session. The dashboard therefore resolves the actual account directly instead of retaining or briefly resolving the scoped guest token.

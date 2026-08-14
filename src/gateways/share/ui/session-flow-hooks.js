@@ -262,6 +262,20 @@ window.addEventListener("cognis:notification-arrival", (event) => {
 
 uiCtx.extendFlow(
     "authenticate-session",
+    "validate-stored-token",
+    { id: "share-gateway:restore-account-session", order: -100 },
+    (stageCtx) => {
+        const shareToken = resolveShareTokenFromRoute(
+            stageCtx.input?.routePath,
+        );
+        if (shareToken.startsWith("shr_")) return null;
+        if (isViewingAsGuest()) restoreGuestToken();
+        return null;
+    },
+);
+
+uiCtx.extendFlow(
+    "authenticate-session",
     "apply-alternate-auth",
     { id: "share-gateway:apply-alternate-auth" },
     async (stageCtx) => {

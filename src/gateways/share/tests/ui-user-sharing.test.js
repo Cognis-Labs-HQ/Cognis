@@ -288,6 +288,10 @@ test("logged-in share recipients keep their account session", () => {
     );
     assert.match(
         sessionFlowSource,
+        /"validate-stored-token"[\s\S]*restore-account-session[\s\S]*order: -100[\s\S]*shareToken\.startsWith\("shr_"\)[\s\S]*restoreGuestToken\(\)/,
+    );
+    assert.match(
+        sessionFlowSource,
         /if \(!shareToken\.startsWith\("shr_"\)\)[\s\S]*recipient_restricted[\s\S]*await activateGuestToken/,
     );
     assert.match(

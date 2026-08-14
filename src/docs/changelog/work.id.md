@@ -243,3 +243,7 @@ Setiap akses berbagi yang berhasil kini disimpan dalam linimasa aktivitas terpad
 ## Mempertahankan rentang grafik dan sesi akun
 
 Grafik aktivitas kini menampilkan label waktu hingga detik untuk riwayat singkat dan langsung menggambar ulang rentang tepat yang dipilih dengan menyeret. Stempel waktu berbagi yang sudah ada mengisi rentang grafik lengkap, sedangkan membuka `/share` memulihkan sesi akun alih-alih memakai kembali sesi tamu; aktivasi tamu dibatasi pada token tautan publik yang valid.
+
+## Memulihkan akun sebelum validasi
+
+Saat `/share` dimuat setelah tautan tamu, gateway Share kini memulihkan kredensial akun tersimpan sebelum gateway Authentication memvalidasi sesi peramban. Dasbor langsung mengenali akun sebenarnya alih-alih mempertahankan atau sempat mengenali token tamu terbatas.

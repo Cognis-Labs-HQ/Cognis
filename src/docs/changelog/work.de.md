@@ -243,3 +243,7 @@ Jeder erfolgreiche Freigabezugriff wird nun in der einheitlichen Aktivitätszeit
 ## Diagrammbereiche und Kontositzungen bewahren
 
 Aktivitätsdiagramme zeigen für kurze Verläufe nun Zeitangaben mit Sekunden und zeichnen nach einer Ziehauswahl exakt den gewählten Bereich neu. Vorhandene Freigabezeitstempel bilden den vollständigen Diagrammbereich, während der Besuch von `/share` die Kontositzung wiederherstellt, statt eine Gastsitzung weiterzuverwenden; die Gastaktivierung ist auf gültige öffentliche Link-Token beschränkt.
+
+## Konten vor der Validierung wiederherstellen
+
+Wenn `/share` nach einem Gastlink geladen wird, stellt das Share-Gateway die gespeicherten Kontoanmeldedaten nun wieder her, bevor das Authentication-Gateway die Browsersitzung prüft. Das Dashboard löst dadurch direkt das tatsächliche Konto auf, statt das eingeschränkte Gast-Token beizubehalten oder vorübergehend aufzulösen.

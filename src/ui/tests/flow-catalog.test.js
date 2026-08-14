@@ -265,7 +265,10 @@ test("share sessions authorize only their stored internal content route", () => 
 
 test("share sessions preserve guest context on the internal content route", () => {
     const sessionFlowSource = readFileSync(SHARE_HOOKS_PATH, "utf8");
-    assert.match(sessionFlowSource, /return activeGuestSession\.session/);
+    assert.match(
+        sessionFlowSource,
+        /isActiveShareContentRoute\(activeShareSession\)[\s\S]*resolveActiveShareContentSession\(activeShareSession\)/,
+    );
 });
 
 test("page actions can defer popup work until mounting has completed", () => {
