@@ -37,6 +37,25 @@ let authSetupCacheExpiresAt = 0;
 let authSetupRequiredCached = false;
 const accountInfoByAccount = new Map();
 
+function isGuestSession() {
+    const accountId = String(
+        localStorage.getItem("cognis_account") ?? "",
+    ).trim();
+    const providerId = String(localStorage.getItem("cognis_provider_id") ?? "")
+        .trim()
+        .toLowerCase();
+    const role = String(localStorage.getItem("cognis_role") ?? "")
+        .trim()
+        .toLowerCase();
+    return (
+        accountId.startsWith("share:") ||
+        ["guest", "share"].includes(providerId) ||
+        role === "guest"
+    );
+}
+
+uiCtx.capabilities.contribute("session:isGuest", isGuestSession);
+
 uiCtx.capabilities.contribute(
     "session:getAccountInfo",
     (accountId) => accountInfoByAccount.get(accountId) ?? null,
@@ -65,6 +84,11 @@ uiCtx.extendFlow(
     async () => {
         const token = localStorage.getItem("cognis_access_token");
         const account = localStorage.getItem("cognis_account");
+        const usesAlternateSession =
+            uiCtx.capabilities.get("session:isGuest")?.() === true;
+        if (usesAlternateSession) {
+            return { valid: false, reason: "session_expired" };
+        }
         if (!token || !account) {
             if (!token) {
                 // No token at all — full clear to ensure no partial stale state.

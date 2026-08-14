@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">Pre-Flight-Prüfung läuft. Das Starten bleibt deaktiviert, bis sie erfolgreich ist.</string>
   <string name="module.jitsi_meet.overlay.preflight_required">Die Pre-Flight-Prüfung muss erfolgreich sein, bevor das Meeting starten kann.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Teilnehmer ausgewählt. Meeting kann gestartet werden.</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">Das Meeting kann gestartet werden. Das Meeting-Link-Popup wird angezeigt.</string>
   <string name="module.jitsi_meet.overlay.creating">Meeting-URL wird erstellt oder wiederverwendet...</string>
   <string name="module.jitsi_meet.overlay.config_required">Ein Admin muss zuerst die Jitsi-Instanz-URL konfigurieren.</string>
   <string name="module.jitsi_meet.overlay.create_failed">Meeting konnte nicht erstellt werden.</string>
@@ -17,6 +18,7 @@
   <string name="module.jitsi_meet.overlay.probe_failed">Erreichbarkeitsprüfung der Meeting-URL fehlgeschlagen.</string>
   <string name="module.jitsi_meet.overlay.joining">Meeting wird betreten...</string>
   <string name="module.jitsi_meet.overlay.join_failed">Beitritt zum Meeting fehlgeschlagen.</string>
+  <string name="module.jitsi_meet.meeting_not_found">Das angeforderte Meeting existiert nicht.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting">Authentifizierung ist erforderlich, bevor alle beitreten können.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting_other">Authentifizierung läuft bei einem anderen Teilnehmer. Startet dort in zwei Minuten nichts, kannst du fortfahren.</string>
   <string name="module.jitsi_meet.overlay.auth_required_description">Moderator-Authentifizierung ist erforderlich. Starte sie in derselben Browser-Sitzung.</string>
@@ -88,13 +90,17 @@
   <string name="module.jitsi_meet.share.button">Teilen</string>
   <string name="module.jitsi_meet.share.popup_title">Meeting teilen</string>
   <string name="module.jitsi_meet.share.generate_link">Link erzeugen</string>
+  <string name="module.jitsi_meet.share.email_recipients">Eine Einladung mit diesem Meeting-Link senden an:</string>
   <string name="module.jitsi_meet.share.copy_link">Link kopieren</string>
   <string name="module.jitsi_meet.share.revoke">Widerrufen</string>
   <string name="module.jitsi_meet.share.share_options_label">Teilen:</string>
   <string name="module.jitsi_meet.share.label">Bezeichnung</string>
   <string name="module.jitsi_meet.share.label_placeholder">Optionale Bezeichnung</string>
   <string name="module.jitsi_meet.share.expiry_label">Läuft ab (optional)</string>
-  <string name="module.jitsi_meet.share.password_optional">Passwortschutz (optional)</string>
+  <string name="module.jitsi_meet.share.password_optional">Passwortschutz</string>
+  <string name="module.jitsi_meet.share.password_title">Freigabepasswort</string>
+  <string name="module.jitsi_meet.share.password_instruction">Teilen Sie dieses Passwort mit dem Empfänger der Freigabe</string>
+  <string name="module.jitsi_meet.share.delete_prompt">Diese Freigabe löschen?</string>
   <string name="module.jitsi_meet.share.password_placeholder">Leer lassen für kein Passwort</string>
   <string name="module.jitsi_meet.share.status_active">Aktiv</string>
   <string name="module.jitsi_meet.share.status_expired">Abgelaufen</string>

@@ -142,11 +142,49 @@ export function buildImageElement(point, dataUrl, dimensions = {}) {
 }
 
 function resolvedStrokeColor(context, element) {
-    return element.strokeColor === "auto"
-        ? getComputedStyle(context.canvas)
-              .getPropertyValue("--whiteboard-auto-stroke")
-              .trim() || "#111827"
-        : (element.strokeColor ?? "#000000");
+    const strokeColor =
+        element.strokeColor === "auto"
+            ? getComputedStyle(context.canvas)
+                  .getPropertyValue("--whiteboard-auto-stroke")
+                  .trim() || "#111827"
+            : (element.strokeColor ?? "#000000");
+    const canvasColor =
+        getComputedStyle(context.canvas)
+            .getPropertyValue("--whiteboard-canvas-bg")
+            .trim() || "#ffffff";
+    return ensureVisibleStrokeColor(strokeColor, canvasColor);
+}
+
+function ensureVisibleStrokeColor(strokeColor, canvasColor) {
+    const stroke = parseHexColor(strokeColor);
+    const canvas = parseHexColor(canvasColor);
+    if (!stroke || !canvas) return strokeColor;
+    const contrast = contrastRatio(stroke, canvas);
+    if (contrast >= 3) return strokeColor;
+    return relativeLuminance(canvas) > 0.5 ? "#0f172a" : "#f8fafc";
+}
+
+function parseHexColor(value) {
+    const match = String(value ?? "").match(/^#([a-f\d]{6})$/i);
+    if (!match) return null;
+    const valueNumber = Number.parseInt(match[1], 16);
+    return [valueNumber >> 16, (valueNumber >> 8) & 255, valueNumber & 255];
+}
+
+function relativeLuminance(color) {
+    const channels = color.map((channel) => {
+        const normalized = channel / 255;
+        return normalized <= 0.04045
+            ? normalized / 12.92
+            : ((normalized + 0.055) / 1.055) ** 2.4;
+    });
+    return channels[0] * 0.2126 + channels[1] * 0.7152 + channels[2] * 0.0722;
+}
+
+function contrastRatio(left, right) {
+    const lighter = Math.max(relativeLuminance(left), relativeLuminance(right));
+    const darker = Math.min(relativeLuminance(left), relativeLuminance(right));
+    return (lighter + 0.05) / (darker + 0.05);
 }
 function renderFreedraw(context, element) {
     const rawPoints = element.points ?? [];

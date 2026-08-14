@@ -1,71 +1,72 @@
-/** Handles received user-share notifications inside the authenticated shell. */
+/** Routes received user-share actions through the single share-page flow. */
 
-import { resolveReceivedShare } from "./received-share.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { resolveAccountShare } from "./received-share.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { showToast } from "/static/reuse/toast.js";
-import { isViewingAsGuest } from "./reuse/share-button.js";
+import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
 
-function tokenFromActionUrl(actionUrl) {
+function monitorAccountShare(shareId) {
+    const stopOnNavigation = () => stopShareStatusWatch();
+    window.addEventListener("cognis:route-will-change", stopOnNavigation, {
+        once: true,
+    });
+    watchShareStatus(shareId, async () => {
+        window.removeEventListener(
+            "cognis:route-will-change",
+            stopOnNavigation,
+        );
+        const i18n = await createI18n({
+            componentStringBaseUrls: ["/static/gateways/share/languages"],
+        });
+        showToast(i18n.t("share.error.access_denied"), {
+            variant: "error",
+        });
+        await navigateTo("/shares");
+    });
+}
+
+function sharePathFromActionUrl(actionUrl) {
     const url = new URL(actionUrl, window.location.origin);
-    const match = url.pathname.match(/^\/share\/([^/]+)$/);
-    return match ? decodeURIComponent(match[1]) : "";
+    return url.origin === window.location.origin &&
+        /^\/share\/[^/]+$/.test(url.pathname)
+        ? `${url.pathname}${url.search}${url.hash}`
+        : "";
 }
 
 window.addEventListener("cognis:notification-action", (event) => {
-    const actionUrl = event.detail?.actionUrl;
-    const token = tokenFromActionUrl(actionUrl);
-    if (!token) return;
+    if (event.defaultPrevented) return;
+    const sharePath = sharePathFromActionUrl(event.detail?.actionUrl);
+    if (!sharePath) return;
     event.preventDefault();
-    void (async () => {
-        try {
-            const accessToken = localStorage.getItem("cognis_access_token");
-            const response = await resolveReceivedShare(token, {
-                headers: accessToken
-                    ? { authorization: `Bearer ${accessToken}` }
-                    : undefined,
-                useAccountKeyring: Boolean(accessToken) && !isViewingAsGuest(),
-            });
-            if (!response) return;
-            if (response.status === 404) {
-                const i18n = await createI18n({
-                    componentStringBaseUrls: [
-                        "/static/gateways/share/languages",
-                    ],
-                });
-                showToast(i18n.t("share.error.not_found"), {
-                    variant: "warning",
-                });
-                return;
-            }
-            const payload = await response.json().catch(() => null);
-            if (!response.ok || !payload?.data) {
-                throw new Error("share_resolution_failed");
-            }
-            const navigationUrl = String(
-                payload.data.navigationUrl ?? "",
-            ).trim();
-            if (!navigationUrl) {
-                throw new Error("share_delivery_unavailable");
-            }
-            const feedback = payload.data.feedback;
-            const messageKey = String(feedback?.messageKey ?? "").trim();
-            if (messageKey) {
-                const feedbackI18n = await createI18n({
-                    componentStringBaseUrls: feedback.stringsBaseUrl,
-                });
-                showToast(feedbackI18n.t(messageKey), {
-                    variant: "success",
-                });
-            }
-            await navigateTo(navigationUrl);
-        } catch {
+    void navigateTo(sharePath);
+});
+
+export async function navigateAccountShare(share) {
+    const currentAccountId = String(
+        localStorage.getItem("cognis_account") ?? "",
+    ).trim();
+    const ownedByCurrentAccount =
+        currentAccountId && share?.ownerAccountId === currentAccountId;
+    const result = await resolveAccountShare(share?.id, {
+        passwordProtected:
+            share?.passwordProtected === true && !ownedByCurrentAccount,
+    });
+    const destinationUrl = String(result?.data?.destinationUrl ?? "").trim();
+    if (!destinationUrl) {
+        if (result instanceof Response) {
             const i18n = await createI18n({
                 componentStringBaseUrls: ["/static/gateways/share/languages"],
             });
-            showToast(i18n.t("share.error.invalid_token"), {
+            showToast(i18n.t("share.error.access_denied"), {
                 variant: "error",
             });
         }
-    })();
-});
+        return false;
+    }
+    const destination = new URL(destinationUrl, window.location.origin);
+    const navigationPath = `${destination.pathname}${destination.search}${destination.hash}`;
+    const navigated = await navigateTo(navigationPath);
+    if (navigated) monitorAccountShare(String(share.id));
+    return navigated;
+}

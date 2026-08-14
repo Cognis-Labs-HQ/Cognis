@@ -51,8 +51,12 @@ export function renderWhiteboardPresenceEntry(entry) {
         label,
         colorSeed: handle || displayName,
         avatarClass: "page-presence__profile",
-        imageClass: `page-presence__avatar-img${active ? " is-active" : ""}`,
-        fallbackClass: `page-presence__avatar${active ? " is-active" : ""}`,
+        imageClass: ["page-presence__avatar-img", active ? "is-active" : ""]
+            .filter(Boolean)
+            .join(" "),
+        fallbackClass: ["page-presence__avatar", active ? "is-active" : ""]
+            .filter(Boolean)
+            .join(" "),
         profileHandle: entry.guest || !handle ? null : handle,
     });
 }

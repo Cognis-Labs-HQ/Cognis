@@ -55,7 +55,13 @@ const GUEST_SESSION_ACTIVE_STORAGE_KEY = "cognis_share_guest_token_active";
  */
 export function isViewingAsGuest() {
     if (typeof sessionStorage === "undefined") return false;
-    return sessionStorage.getItem(GUEST_SESSION_ACTIVE_STORAGE_KEY) === "1";
+    const accountId = String(
+        globalThis.localStorage?.getItem("cognis_account") ?? "",
+    ).trim();
+    return (
+        sessionStorage.getItem(GUEST_SESSION_ACTIVE_STORAGE_KEY) === "1" ||
+        accountId.startsWith("share:")
+    );
 }
 
 export function mountShareButton({
@@ -63,7 +69,7 @@ export function mountShareButton({
     label,
     onClick,
     id = "share-gateway-share-btn",
-    className = "btn-confirm btn-animated",
+    className = "btn-animated",
     icon = "🔗",
     title = "",
     signal,
@@ -74,7 +80,16 @@ export function mountShareButton({
     const button = document.createElement("button");
     button.id = id;
     button.type = "button";
-    button.className = className;
+    const classes = String(className)
+        .split(/\s+/)
+        .filter(
+            (classToken) =>
+                classToken &&
+                !["btn-cancel", "btn-confirm", "btn-neutral"].includes(
+                    classToken,
+                ),
+        );
+    button.className = [...classes, "btn-neutral"].join(" ");
     button.textContent = `${icon ? `${icon} ` : ""}${label ?? ""}`;
     if (title) {
         button.title = title;

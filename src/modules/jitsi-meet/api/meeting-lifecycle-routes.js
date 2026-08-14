@@ -21,6 +21,7 @@ export function registerMeetingLifecycleRoutes({
     buildMeetingChatTitle,
     dispatchMeetingNotifications,
     resolveModeratorUsernames,
+    deleteResourceShares,
 }) {
     router.post(
         "/api/v1/modules/jitsi-meet/meetings/create",
@@ -214,6 +215,7 @@ export function registerMeetingLifecycleRoutes({
                         ? `/messages/${encodeURIComponent(meeting.chatRoomId)}`
                         : null,
                     requiresReclaim: false,
+                    meetingPassword: meeting.meetingPassword,
                 });
                 sendJson(res, 200, {
                     data: {
@@ -491,6 +493,7 @@ export function registerMeetingLifecycleRoutes({
             );
             const nextPresenceActive = body.active !== false;
             const meetingTerminated = body.terminated === true;
+            let disposableMeetingDeleted = false;
 
             await store.upsertPresence(
                 resolved.meeting.id,
@@ -562,6 +565,18 @@ export function registerMeetingLifecycleRoutes({
                         meetingId: resolved.meeting.id,
                         organizerUsername: resolved.meeting.createdBy,
                     });
+                    const participantlessMeeting = resolved.participants.every(
+                        (username) => username === resolved.meeting.createdBy,
+                    );
+                    if (participantlessMeeting) {
+                        await deleteResourceShares?.({
+                            ownerAccountId: claims.sub,
+                            resourceType: "meeting",
+                            resourceId: resolved.meeting.id,
+                        });
+                        await store.deleteMeeting(resolved.meeting.id);
+                        disposableMeetingDeleted = true;
+                    }
                 }
             }
 
@@ -569,10 +584,11 @@ export function registerMeetingLifecycleRoutes({
                 data: {
                     ok: true,
                     meetingClosed:
-                        previousSessionPresence?.active && !nextPresenceActive
+                        disposableMeetingDeleted ||
+                        (previousSessionPresence?.active && !nextPresenceActive
                             ? (await store.getMeetingState(resolved.meeting.id))
                                   .endedAt !== null
-                            : false,
+                            : false),
                 },
             });
         },

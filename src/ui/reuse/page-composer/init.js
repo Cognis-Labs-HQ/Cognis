@@ -1,18 +1,14 @@
 /**
- * Page composer layout orchestration.
+ * Page composer orchestration.
  * Export: createPageComposer(root, options).
  * Usage: const composer = createPageComposer(root, { allowCustomization: true, elements, preferenceKey, i18n }); await composer.init();
- * Supports grid and sub-page layouts, per-grid persistence, and nested sub-composers.
- *
+ * Supports grid and sub-page layouts, persistence, and nested composers.
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
  *   allowCustomization: boolean,
  *   elements: Array<{
- *     id: string,
- *     label: string,
- *     render: () => string,
- *     onRender?: () => void,
- *     onUnmount?: () => void,
+ *     id: string, label: string, render: () => string,
+ *     onRender?: () => void, onUnmount?: () => void,
  *     pinned?: boolean,
  *     gridSize?: { default: [number, number], min: [number, number], max?: [number, number] | 'full' | 'half' | ['half'|number, 'half'|number] },
  *   }>,
@@ -21,27 +17,21 @@
  *   onRender?: () => void,
  *   pageContext?: { title: string, subtitle: string },
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
- *   toolbarScrollable?: boolean,
- *   contentScrolling?: boolean,
- *   enableDomParking?: boolean,
+ *   toolbarScrollable?: boolean, contentScrolling?: boolean, enableDomParking?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
- *   subPageNavigation?: boolean,
- *   columns?: number,
- *   showTopbar?: boolean,
- *   showNavbar?: boolean,
- *   showThemeToggle?: boolean,
- *   showFooter?: boolean,
+ *   subPageNavigation?: boolean, columns?: number,
+ *   showTopbar?: boolean, showNavbar?: boolean, showThemeToggle?: boolean, showFooter?: boolean,
  *   persistLayoutPreferences?: boolean,
  *   pageOverrides?: Record<string, { showThemeToggle?: boolean }>,
  *   onBeforeSubPageSwitch?: (fromId: string|null, toId: string) => Promise<boolean>,
  *   requireAccountSession?: boolean,
  *   presenceTracker?: { enabled?: boolean, endpoint: string, pageId: string | (() => string) },
  *   pageManifest?: { features?: { pointerTracking?: boolean } },
+ *   signal?: AbortSignal,
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
-
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
 import { renderDashboardLayout } from "../../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "../motion.js";
@@ -50,16 +40,17 @@ import { createFormDraftManager } from "./form-draft.js";
 import { createLayoutPersistence } from "./layout-persistence.js";
 import { createGridOverlayHandlers } from "./grid-overlay.js";
 import { createSubComposerHandlers } from "./sub-composer.js";
+import { uiCtx } from "../ui-ctx.js";
 import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
 import { createPresenceTracker } from "./presence-tracker.js";
+import { pageActions } from "../page-actions.js";
+import {
+    getFloatingSlot as findFloatingSlot,
+    restoreWindowScrollPosition,
+} from "./dom-position.js";
 
-const TOOLBAR_TOGGLE_OPEN_SVG =
-    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-
-const TOOLBAR_TOGGLE_CLOSED_SVG =
-    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 8H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 12H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-
+import { renderToolbarToggleIcon } from "./toolbar-icons.js";
 export function createPageComposer(
     root,
     {
@@ -86,8 +77,10 @@ export function createPageComposer(
         pageOverrides = {},
         onBeforeSubPageSwitch,
         requireAccountSession = showTopbar || showNavbar,
+        enableAccountEnhancements = true,
         presenceTracker = null,
         pageManifest = null,
+        signal,
     },
 ) {
     function escapeHtml(value) {
@@ -113,6 +106,19 @@ export function createPageComposer(
     let editToggleAbortController = null;
     let layoutProfiles = { layoutsByGrid: {} };
     let activePresenceTracker = null;
+    let composerDestroyed = false;
+
+    function destroy() {
+        if (composerDestroyed) return;
+        composerDestroyed = true;
+        activePresenceTracker?.destroy();
+        activePresenceTracker = null;
+        resizeObserver?.disconnect();
+        resizeObserver = null;
+    }
+
+    if (signal?.aborted) destroy();
+    else signal?.addEventListener("abort", destroy, { once: true });
 
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
@@ -472,6 +478,10 @@ export function createPageComposer(
     function syncSubEditToggle(state) {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
+        if (uiCtx.capabilities.get("session:isGuest")?.() === true) {
+            editBtn.remove();
+            return;
+        }
         if (!state.allowCustomization) {
             editBtn.hidden = true;
             return;
@@ -522,6 +532,10 @@ export function createPageComposer(
     function syncEditToggle() {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
+        if (uiCtx.capabilities.get("session:isGuest")?.() === true) {
+            editBtn.remove();
+            return;
+        }
         if (!allowCustomization) {
             editBtn.hidden = true;
             return;
@@ -619,6 +633,7 @@ export function createPageComposer(
     }
 
     async function init() {
+        if (composerDestroyed) return;
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
         configureConnectionRecoveryPrompt(
             i18n.t("ui.reuse.connection_lost_refresh_prompt"),
@@ -654,7 +669,9 @@ export function createPageComposer(
             showThemeToggle,
             showFooter,
             requireAccountSession,
+            enableAccountEnhancements,
         });
+        pageActions.mount(root, { signal });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
             const floatingToolbar = root.querySelector(".floating-toolbar");
@@ -770,9 +787,7 @@ export function createPageComposer(
                         "toolbar-mobile-toggle--drawer-open",
                         open,
                     );
-                    mobileToggleBtn.innerHTML = open
-                        ? TOOLBAR_TOGGLE_OPEN_SVG
-                        : TOOLBAR_TOGGLE_CLOSED_SVG;
+                    mobileToggleBtn.innerHTML = renderToolbarToggleIcon(open);
                     mobileToggleBtn.setAttribute(
                         "aria-label",
                         open
@@ -782,7 +797,7 @@ export function createPageComposer(
                 }
 
                 mobileToggleBtn.setAttribute("aria-expanded", "false");
-                mobileToggleBtn.innerHTML = TOOLBAR_TOGGLE_CLOSED_SVG;
+                mobileToggleBtn.innerHTML = renderToolbarToggleIcon(false);
                 mobileToggleBtn.setAttribute(
                     "aria-label",
                     i18n.t("ui.layout.toolbar.expand"),
@@ -937,8 +952,9 @@ export function createPageComposer(
                 });
         }
 
+        activePresenceTracker?.destroy();
+        activePresenceTracker = null;
         if (presenceTracker?.enabled !== false && presenceTracker?.endpoint) {
-            activePresenceTracker?.destroy();
             activePresenceTracker = createPresenceTracker({
                 ...presenceTracker,
                 pointerTracking:
@@ -947,20 +963,6 @@ export function createPageComposer(
             });
             activePresenceTracker.mount(mainWindow);
         }
-    }
-
-    function getFloatingSlot(id) {
-        return root.querySelector(`[data-floating-slot="${CSS.escape(id)}"]`);
-    }
-
-    function restoreWindowScrollPosition(left, top) {
-        window.requestAnimationFrame(() => {
-            window.scrollTo({
-                left,
-                top,
-                behavior: "auto",
-            });
-        });
     }
 
     function refresh(newElements) {
@@ -984,9 +986,9 @@ export function createPageComposer(
         init,
         refresh,
         refreshElements,
-        getFloatingSlot,
+        getFloatingSlot: (id) => findFloatingSlot(root, id),
         showToast,
         refreshPresence: () => activePresenceTracker?.refresh(),
-        destroy: () => activePresenceTracker?.destroy(),
+        destroy,
     };
 }

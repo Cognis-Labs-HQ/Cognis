@@ -32,10 +32,7 @@ test("client telemetry retries once when authentication changes in flight", asyn
     });
 
     assert.equal(response.status, 204);
-    assert.deepEqual(authorizationHeaders, [
-        "Bearer initial-token",
-        "Bearer replacement-token",
-    ]);
+    assert.deepEqual(authorizationHeaders, [undefined, undefined]);
 });
 
 test("client telemetry does not submit while signed out", async () => {

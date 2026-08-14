@@ -79,7 +79,10 @@
   <string name="module.nextcloud_whiteboard.share_label">Label</string>
   <string name="module.nextcloud_whiteboard.share_label_placeholder">Tinjauan tim</string>
   <string name="module.nextcloud_whiteboard.share_expiry_label">Kedaluwarsa (opsional)</string>
-  <string name="module.nextcloud_whiteboard.share_password_optional">Perlindungan kata sandi (opsional)</string>
+  <string name="module.nextcloud_whiteboard.share_password_optional">Perlindungan kata sandi</string>
+  <string name="module.nextcloud_whiteboard.share_password_title">Kata Sandi Berbagi</string>
+  <string name="module.nextcloud_whiteboard.share_password_instruction">Bagikan kata sandi ini kepada penerima berbagi</string>
+  <string name="module.nextcloud_whiteboard.share_delete_prompt">Hapus berbagi ini?</string>
   <string name="module.nextcloud_whiteboard.share_password_placeholder">Biarkan kosong tanpa kata sandi</string>
   <string name="module.nextcloud_whiteboard.share_status_active">Aktif</string>
   <string name="module.nextcloud_whiteboard.share_status_expired">Kedaluwarsa</string>
@@ -94,5 +97,6 @@
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard harus lulus pemeriksaan server sebelum dapat diaktifkan.</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">Server whiteboard menolak autentikasi websocket. Periksa konfigurasi kunci API.</string>
   <string name="module.nextcloud_whiteboard.tool_lock">Pertahankan alat gambar saat ini setelah membuat objek</string>
+  <string name="module.nextcloud_whiteboard.share_permission_read">Hanya Baca</string>
+  <string name="module.nextcloud_whiteboard.share_permission_write">Baca + Tulis</string>
 </resources>
-

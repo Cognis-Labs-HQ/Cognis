@@ -151,6 +151,41 @@ test("LDAP participants retain meeting access when their profile handle changes"
     assert.equal(allowed, true);
 });
 
+test("active user shares grant meeting access until the share is removed", async () => {
+    let shareAuthorized = true;
+    const input = {
+        store: {
+            async listParticipants() {
+                return ["alice"];
+            },
+        },
+        meeting: {
+            id: "meeting-1",
+            createdBy: "alice",
+            classroomId: null,
+        },
+        username: "bob",
+        requesterAccountId: "account-bob",
+        profileStore: {
+            async getProfileByHandle() {
+                return null;
+            },
+            async isBlocked() {
+                return false;
+            },
+        },
+        listClassroomParticipantHandles: async () => [],
+        resolveShareUserAccess: async (request) => {
+            assert.equal(request.requiredCapability, "meeting:join");
+            return { authorized: shareAuthorized };
+        },
+    };
+
+    assert.equal(await canAccessMeeting(input), true);
+    shareAuthorized = false;
+    assert.equal(await canAccessMeeting(input), false);
+});
+
 test("jitsi meetings active endpoint passes account identity to access checks", async () => {
     class RouterStub {
         routes = [];

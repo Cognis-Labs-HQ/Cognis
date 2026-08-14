@@ -123,7 +123,13 @@ test("page composer includes mobile toolbar drawer behavior", () => {
         source,
         /mobileToggleBtn\.classList\.toggle\(\s*"toolbar-mobile-toggle--drawer-open",\s*open,\s*\)/m,
     );
-    assert.match(source, /mobileToggleBtn\.innerHTML = open/);
+    assert.match(
+        source,
+        /mobileToggleBtn\.innerHTML = renderToolbarToggleIcon\(open\)/,
+    );
+    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-close/);
+    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-menu/);
+    assert.doesNotMatch(source, /<svg\b/);
     assert.match(
         source,
         /if \(didSwitch\) \{\s*closeMobileDrawerIfNeeded\(\);\s*\}/m,
@@ -175,6 +181,20 @@ test("page composer resolves edit toggle from the active page root", () => {
     assert.match(source, /document\.getElementById\("composer-edit-toggle"\)/);
     assert.match(source, /const editBtn = getComposerEditToggleButton\(\)/);
     assert.doesNotMatch(source, /function ensureComposerEditToggleButton\(\)/);
+});
+
+test("page composer always hides layout editing from share guests", () => {
+    const source = readPageComposerBundle();
+    assert.match(source, /capabilities\.get\("session:isGuest"\)/);
+    assert.doesNotMatch(source, /account-context/);
+});
+
+test("page composer tears down stale presence before mounting a page", () => {
+    const source = readPageComposerBundle();
+    assert.match(
+        source,
+        /activePresenceTracker\?\.destroy\(\);\s*activePresenceTracker = null;/,
+    );
 });
 
 test("page composer expands compact single-pane rows to full width", () => {

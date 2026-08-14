@@ -26,10 +26,13 @@ endpoint knowledge and response handling within the owning gateway.
 ### API result limits are caller-controlled
 
 API endpoints must not impose arbitrary default or maximum result limits in
-their route definitions. Filtering or limiting results is applied only when
-the caller explicitly sends the corresponding parameter. When no limit value
-is supplied, return every matching result. Validate an explicitly supplied
-limit, but do not silently replace, clamp, or default it in the endpoint.
+their route definitions or indirectly through a store's default arguments.
+Filtering or limiting results is applied only when the caller explicitly sends
+the corresponding parameter. When no limit value is supplied, return every
+matching result. Validate an explicitly supplied limit, but do not silently
+replace, clamp, or default it in the endpoint. When a UI only needs a smaller
+display set, fetch the complete API result and truncate it on the API-caller
+side.
 
 ### User-specific secrets belong in the keyring
 
@@ -295,6 +298,20 @@ When a comment introduces an alternative or fallback code path (e.g. a catch blo
 ---
 
 ## Code quality
+
+### Button consequence styling
+
+Button classes must communicate the consequence of the action consistently:
+
+- An action with any potentially destructive consequence must use `btn-cancel`.
+- An action with a creative consequence must use `btn-confirm`.
+- Every other action must use `btn-neutral`.
+
+Choose the class from the action's consequence, never from visual preference.
+
+### Prefer links over buttons
+
+Always prefer an `<a>` element over a `<button>` when the control can be represented as navigation to a URL. Use a `<button>` only when there is a specific semantic reason, such as submitting a form, changing in-page state, or performing an action that has no navigation target.
 
 ### Codebase cleanliness is paramount
 

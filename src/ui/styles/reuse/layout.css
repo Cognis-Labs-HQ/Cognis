@@ -597,19 +597,35 @@ button.dropdown-item {
     }
 }
 .theme-toggle {
+    font-size: 1.25rem;
+}
+.page-action-dock {
+    align-items: center;
+    bottom: 18px;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 10px;
     position: fixed;
     right: 18px;
-    bottom: 18px;
-    width: 48px;
-    height: 48px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
+    z-index: 1000;
+}
+.page-action-dock > .page-action-button {
+    align-items: center;
     background: var(--theme-toggle-bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    box-shadow: var(--shadow);
     color: var(--theme-toggle-color);
     cursor: pointer;
-    box-shadow: var(--shadow);
-    z-index: 1000;
-    font-size: 1.25rem;
+    display: inline-flex;
+    flex: 0 0 auto;
+    height: 44px;
+    justify-content: center;
+    position: static;
+    width: 44px;
+}
+.page-action-dock > .page-action-button:hover {
+    background: var(--theme-toggle-bg-hover);
 }
 .language-switcher {
     position: fixed;

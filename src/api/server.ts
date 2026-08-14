@@ -266,7 +266,7 @@ export function buildServer(deps: ApiDependencies) {
             });
         });
 
-    return createServer(async (req, res) => {
+    const server = createServer(async (req, res) => {
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         let responseBytes = 0;
@@ -483,4 +483,9 @@ export function buildServer(deps: ApiDependencies) {
             });
         }
     });
+    server.requestTimeout = 60_000;
+    server.headersTimeout = 15_000;
+    server.keepAliveTimeout = 30_000;
+    server.maxRequestsPerSocket = 500;
+    return server;
 }

@@ -37,6 +37,7 @@ export function registerWhiteboardImageRoutes(
         store,
         profileStore,
         resolveShareGuestAccess,
+        resolveShareUserAccess,
         resolveWhiteboardUserAccess,
         whiteboardFiles,
     },
@@ -69,6 +70,7 @@ export function registerWhiteboardImageRoutes(
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -153,6 +155,7 @@ export function registerWhiteboardImageRoutes(
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);

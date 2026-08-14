@@ -6,6 +6,9 @@
  *     an ISO timestamp or an empty value for non-expiring links.
  *   buildShareTokenCallbacks(options) — returns popup callbacks backed by the
  *     Share gateway token API for one resource.
+ *   fetchShareOverview() — lists shares sent and received by the active user.
+ *   revokeShare(shareId) — revokes a share owned by the active user.
+ *   rejectShare(shareId) — rejects a share received by the active user.
  *
  * Usage:
  *   const callbacks = buildShareTokenCallbacks({
@@ -29,14 +32,42 @@ export function resolveShareExpiry(expiresInHours) {
         : "";
 }
 
+export async function fetchShareOverview() {
+    const response = await apiFetch("/api/v1/share/overview");
+    if (!response.ok) throw new Error("share_overview_failed");
+    const payload = await response.json();
+    return {
+        sent: Array.isArray(payload?.data?.sent) ? payload.data.sent : [],
+        received: Array.isArray(payload?.data?.received)
+            ? payload.data.received
+            : [],
+    };
+}
+
+/** @param {string} shareId @returns {Promise<Response>} */
+export async function revokeShare(shareId) {
+    return apiFetch(`${SHARE_API}/${encodeURIComponent(shareId)}`, {
+        method: "DELETE",
+    });
+}
+
+/** @param {string} shareId @returns {Promise<Response>} */
+export async function rejectShare(shareId) {
+    return apiFetch(`${SHARE_API}/${encodeURIComponent(shareId)}/reject`, {
+        method: "POST",
+    });
+}
+
 /**
- * @param {{resourceType: string, resourceId: string, grantedCapabilities: string[]}} options
+ * @param {{resourceType: string, resourceId: string, contentUrl?: string, grantedCapabilities: string[], supportsReadOnly?: boolean}} options
  * @returns {{fetchLinks: () => Promise<Array>, createLink: (input: {label: string, expiresInHours: number|string, recipients?: Array}) => Promise<object|null>, updateLink: (input: {shareId: string, accessControls: object}) => Promise<object|null>, deleteLink: (input: {shareId: string}) => Promise<void>, searchUsers: (query: string) => Promise<Array>}}
  */
 export function buildShareTokenCallbacks({
     resourceType,
     resourceId,
+    contentUrl,
     grantedCapabilities,
+    supportsReadOnly = false,
 } = {}) {
     return {
         fetchMethods: async () => {
@@ -69,6 +100,8 @@ export function buildShareTokenCallbacks({
                 body: JSON.stringify({
                     resourceType,
                     resourceId,
+                    contentUrl,
+                    supportsReadOnly,
                     label,
                     expiresAt:
                         String(expiresAt ?? "").trim() ||
@@ -107,15 +140,32 @@ export function buildShareTokenCallbacks({
                     method: "PATCH",
                     headers: { "content-type": "application/json" },
                     body: JSON.stringify({
-                        label,
-                        expiresAt,
-                        password,
-                        accessControls,
-                        grantedCapabilities: requestedCapabilities,
+                        label: String(label ?? "").trim(),
+                        expiresAt: String(expiresAt ?? "").trim(),
+                        password: String(password ?? "").trim()
+                            ? password
+                            : undefined,
+                        accessControls:
+                            accessControls &&
+                            Object.keys(accessControls).length > 0
+                                ? accessControls
+                                : undefined,
+                        grantedCapabilities:
+                            Array.isArray(requestedCapabilities) &&
+                            requestedCapabilities.length > 0
+                                ? requestedCapabilities
+                                : undefined,
                     }),
                 },
             );
-            if (!response.ok) throw new Error("update_failed");
+            if (!response.ok) {
+                const errorPayload = await response.json().catch(() => null);
+                const error = new Error(
+                    String(errorPayload?.error?.code ?? "update_failed"),
+                );
+                error.code = errorPayload?.error?.code;
+                throw error;
+            }
             const payload = await response.json().catch(() => ({ data: null }));
             return payload?.data ?? null;
         },
@@ -127,7 +177,9 @@ export function buildShareTokenCallbacks({
             );
             if (!response.ok) throw new Error("search_failed");
             const payload = await response.json().catch(() => ({ data: [] }));
-            return Array.isArray(payload?.data) ? payload.data : [];
+            return Array.isArray(payload?.data)
+                ? payload.data.slice(0, 10)
+                : [];
         },
         deleteLink: async ({ shareId }) => {
             const response = await apiFetch(

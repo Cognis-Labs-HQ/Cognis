@@ -29,12 +29,16 @@ function resolveErrorCode(search) {
     return /^\d+$/.test(rawCode) ? rawCode : "";
 }
 
-function buildErrorContent(i18n, errorCode, isAuthenticated) {
+function resolveErrorMessage(search) {
+    return String(new URLSearchParams(search).get("message") ?? "").trim();
+}
+
+function buildErrorContent(i18n, errorCode, errorMessage, isAuthenticated) {
     const displayCode = errorCode || "???";
     const descriptionKey = KNOWN_ERROR_CODES.has(errorCode)
         ? `ui.app.error.code.${errorCode}`
         : "ui.app.error.code.default";
-    const description = i18n.t(descriptionKey);
+    const description = errorMessage || i18n.t(descriptionKey);
     const fullscreenClass = isAuthenticated ? "" : " error-page--fullscreen";
     const contentClass = isAuthenticated ? "" : " error-content--fullscreen";
     const ariaLabel = `${escapeHtml(i18n.t("ui.app.error.aria_prefix"))} ${escapeHtml(displayCode)}`;
@@ -61,7 +65,7 @@ function buildErrorContent(i18n, errorCode, isAuthenticated) {
     `;
 }
 
-function buildErrorElement(i18n, errorCode, isAuthenticated) {
+function buildErrorElement(i18n, errorCode, errorMessage, isAuthenticated) {
     return {
         id: "error-view",
         label: errorCode || "error",
@@ -71,7 +75,8 @@ function buildErrorElement(i18n, errorCode, isAuthenticated) {
             min: [12, 6],
             max: ["fill", "fill"],
         },
-        render: () => buildErrorContent(i18n, errorCode, isAuthenticated),
+        render: () =>
+            buildErrorContent(i18n, errorCode, errorMessage, isAuthenticated),
     };
 }
 
@@ -86,6 +91,7 @@ export async function mount(root, { signal } = {}) {
     applyDocumentTitle(i18n, "ui.page.title.error");
 
     const errorCode = resolveErrorCode(window.location.search);
+    const errorMessage = resolveErrorMessage(window.location.search);
 
     const sharedComposerOptions = {
         allowCustomization: false,
@@ -111,15 +117,23 @@ export async function mount(root, { signal } = {}) {
     const composer = createPageComposer(root, {
         ...sharedComposerOptions,
         ...authComposerOptions,
-        elements: [buildErrorElement(i18n, errorCode, isAuthenticated)],
+        elements: [
+            buildErrorElement(i18n, errorCode, errorMessage, isAuthenticated),
+        ],
     });
 
     window.addEventListener(
         "popstate",
         () => {
             const updatedCode = resolveErrorCode(window.location.search);
+            const updatedMessage = resolveErrorMessage(window.location.search);
             composer.refresh([
-                buildErrorElement(i18n, updatedCode, isAuthenticated),
+                buildErrorElement(
+                    i18n,
+                    updatedCode,
+                    updatedMessage,
+                    isAuthenticated,
+                ),
             ]);
         },
         { signal },

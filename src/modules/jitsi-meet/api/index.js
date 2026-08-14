@@ -27,7 +27,6 @@ import {
     filterUsernamesForGuestVisibility,
     resolveMeetingPayloadOrReject,
     resolveRequestedParticipants,
-    resolveShareGuestMeetingAccess,
     resolveShareGuestPresenceUsername,
 } from "./reuse/meeting-access.js";
 
@@ -90,7 +89,7 @@ function buildMeetingActionUrl(meetingId) {
     if (!normalizedMeetingId) {
         return "/meetings";
     }
-    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}`;
+    return `/meetings?meetingId=${encodeURIComponent(normalizedMeetingId)}&start=1`;
 }
 
 function buildMeetingEmailLink(meetingId) {
@@ -121,6 +120,7 @@ export function registerUi(ctx) {
         scriptUrl: "/static/modules/jitsi-meet/app.js",
         stylesheets: [
             "/static/styles/page-builder.css",
+            "/static/styles/reuse/layout.css",
             "/static/styles/reuse/page-sections.css",
             ...sharedStylesheetUrls,
             "/static/modules/jitsi-meet/jitsi-meet.css",
@@ -154,12 +154,55 @@ export function registerApiRoutes(router, ctx) {
     const accountStore = ctx.getCapability("auth:accountStore");
     const listCalendarsByOwner = ctx.getCapability("calendar:listCalendars");
     const listCalendarEvents = ctx.getCapability("calendar:listEvents");
-    const getShareTokenById = ctx.getCapability("share:getTokenById");
+    const resolveShareGuestMeetingAccess = async ({
+        claims,
+        meetingId,
+        requiredCapability = "",
+    }) => {
+        const resolveGuestAccess = ctx.getCapability(
+            "share:resolveGuestAccess",
+        );
+        if (typeof resolveGuestAccess !== "function") {
+            return { isGuest: false, allowed: false, tokenRecord: null };
+        }
+        const access = await resolveGuestAccess({
+            claims,
+            resourceType: "meeting",
+            resourceId: meetingId,
+            requiredCapability,
+        });
+        const legacyMeetingAccess =
+            access?.shareGuest === true &&
+            access?.authorized !== true &&
+            requiredCapability
+                ? await resolveGuestAccess({
+                      claims,
+                      resourceType: "meeting",
+                      resourceId: meetingId,
+                  })
+                : null;
+        return {
+            isGuest:
+                access?.shareGuest === true ||
+                legacyMeetingAccess?.shareGuest === true,
+            allowed:
+                access?.authorized === true ||
+                legacyMeetingAccess?.authorized === true,
+            tokenRecord: null,
+        };
+    };
+    const resolveShareUserAccess = ctx.getCapability("share:resolveUserAccess");
+    const deleteResourceShares = ctx.getCapability(
+        "share:deleteResourceShares",
+    );
     const resolveMeetingPayload = (input) =>
         resolveMeetingPayloadOrReject({
             ...input,
             sendError,
+            resolveShareUserAccess,
         });
+    const canAccessMeetingForRequester = (input) =>
+        canAccessMeeting({ ...input, resolveShareUserAccess });
 
     if (typeof registerNotificationCategory === "function") {
         registerNotificationCategory("meetings", "Meetings");
@@ -377,6 +420,24 @@ export function registerApiRoutes(router, ctx) {
         "jitsi-meet:getMeetingById",
         store.getMeetingById.bind(store),
     );
+    const registerExternalRoomAuthorizer = ctx.capabilities?.get?.(
+        "social:messages:registerExternalRoomAuthorizer",
+    );
+    registerExternalRoomAuthorizer?.(
+        async ({ claims, roomId, requiredCapability }) => {
+            const meeting = await store.getMeetingByChatRoomId(roomId);
+            if (!meeting) return { external: false, authorized: false };
+            const access = await resolveShareGuestMeetingAccess({
+                claims,
+                meetingId: meeting.id,
+                requiredCapability,
+            });
+            return {
+                external: access.isGuest === true,
+                authorized: access.allowed === true,
+            };
+        },
+    );
     void registerStoredJitsiOrigin({ store, registerScriptOrigins, log });
 
     registerJitsiUiResourcesRoute({
@@ -552,18 +613,15 @@ export function registerApiRoutes(router, ctx) {
         resolveRequestedParticipants,
         createMeetingPayload,
         resolveMeetingPayload,
-        resolveShareGuestMeetingAccess: (input) =>
-            resolveShareGuestMeetingAccess({
-                ...input,
-                getShareTokenById,
-            }),
+        resolveShareGuestMeetingAccess,
         resolveShareGuestPresenceUsername,
         listClassroomParticipantHandles,
-        canAccessMeeting,
+        canAccessMeeting: canAccessMeetingForRequester,
         resolveGroupChat,
         buildMeetingChatTitle,
         dispatchMeetingNotifications,
         resolveModeratorUsernames,
+        deleteResourceShares,
     };
 
     registerMeetingConfigRoutes(routeContext);
@@ -580,7 +638,7 @@ export function registerApiRoutes(router, ctx) {
         resolveMeetingPayloadOrReject: resolveMeetingPayload,
         createMeetingPayload,
         resolveRequesterUsername,
-        canAccessMeeting,
+        canAccessMeeting: canAccessMeetingForRequester,
         filterUsernamesForGuestVisibility: (usernames) =>
             filterUsernamesForGuestVisibility(profileStore, usernames),
         requireAuth,
@@ -589,11 +647,7 @@ export function registerApiRoutes(router, ctx) {
         sendError,
         checkHttpLiveness,
         LIVELINESS_TIMEOUT_MS,
-        resolveShareGuestMeetingAccess: (input) =>
-            resolveShareGuestMeetingAccess({
-                ...input,
-                getShareTokenById,
-            }),
+        resolveShareGuestMeetingAccess,
     });
 
     registerAdminMeetingRoutes({

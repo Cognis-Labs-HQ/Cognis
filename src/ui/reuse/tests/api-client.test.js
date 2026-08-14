@@ -6,6 +6,16 @@ import { fileURLToPath } from "node:url";
 import vm from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const apiClientSource = readFileSync(
+    resolve(ROOT, "src/ui/reuse/api-client.js"),
+    "utf8",
+);
+
+test("API requests receive a finite default browser timeout", () => {
+    assert.match(apiClientSource, /API_REQUEST_TIMEOUT_MS = 30_000/);
+    assert.match(apiClientSource, /AbortSignal\?\.timeout\?\.\(timeoutMs\)/);
+    assert.match(apiClientSource, /AbortSignal\?\.any\?\.\(/);
+});
 
 function loadApiClientForTests({
     token = "test-token",
@@ -26,6 +36,7 @@ function loadApiClientForTests({
         "};\n";
 
     const showToastCalls = [];
+    const dispatchedEvents = [];
     const context = {
         showToast(message, options) {
             showToastCalls.push({ message, options });
@@ -37,6 +48,7 @@ function loadApiClientForTests({
             },
         },
         fetch: fetchImpl,
+        Headers,
         URL,
         Date: {
             now,
@@ -45,6 +57,15 @@ function loadApiClientForTests({
             location: {
                 origin: "https://example.com",
             },
+            dispatchEvent(event) {
+                dispatchedEvents.push(event);
+            },
+        },
+        CustomEvent: class CustomEvent {
+            constructor(type, options) {
+                this.type = type;
+                this.detail = options?.detail;
+            }
         },
     };
     context.globalThis = context;
@@ -53,8 +74,63 @@ function loadApiClientForTests({
         filename: "api-client.js",
     });
 
-    return { apiClient: context.__testExports, showToastCalls };
+    return {
+        apiClient: context.__testExports,
+        dispatchedEvents,
+        showToastCalls,
+    };
 }
+
+for (const status of [401, 403]) {
+    test(`apiFetch announces ${status} API access denial to active share sessions`, async () => {
+        const { apiClient, dispatchedEvents } = loadApiClientForTests({
+            fetchImpl: async () => ({ ok: false, status }),
+        });
+
+        await apiClient.apiFetch("/api/v1/modules/example/resource");
+
+        assert.equal(dispatchedEvents.length, 1);
+        assert.equal(dispatchedEvents[0].type, "cognis:api-access-denied");
+        assert.equal(
+            dispatchedEvents[0].detail.path,
+            "/api/v1/modules/example/resource",
+        );
+    });
+}
+
+test("apiFetch suppresses expected share-password access-denied events", async () => {
+    const { apiClient, dispatchedEvents } = loadApiClientForTests({
+        fetchImpl: async () => ({ ok: false, status: 401 }),
+    });
+
+    await apiClient.apiFetch("/api/v1/share/resolve/token", {
+        suppressAccessDeniedEvent: true,
+    });
+
+    assert.equal(dispatchedEvents.length, 0);
+});
+
+test("apiFetch preserves Headers input while attaching account authorization", async () => {
+    let requestOptions = null;
+    const { apiClient } = loadApiClientForTests({
+        fetchImpl: async (_path, options) => {
+            requestOptions = options;
+            return { ok: true, status: 200 };
+        },
+    });
+    const headers = new Headers({ "x-cognis-share-password": "secret" });
+
+    await apiClient.apiFetch("/api/v1/share/resolve/token", { headers });
+
+    assert.equal(
+        requestOptions.headers.get("x-cognis-share-password"),
+        "secret",
+    );
+    assert.equal(
+        requestOptions.headers.get("authorization"),
+        "Bearer test-token",
+    );
+});
 
 test("apiFetch shows one permanent warning toast for repeated API network failures", async () => {
     const networkError = new Error("network down");

@@ -30,6 +30,7 @@ export function createChatHandlers({
         if (typeof loadChatRoomKey !== "function") return null;
         const roomKey = await loadChatRoomKey(roomId, {
             recoverMissing: true,
+            accessToken: state.shareAccessToken,
         });
         state.chatRoomKey = roomKey;
         return roomKey;
@@ -155,16 +156,12 @@ export function createChatHandlers({
 
     function resolveParticipantChatEntries() {
         if (!state.meeting?.id) return [];
+        if (state.shareAccessToken && state.chatParticipantEntries.length > 0) {
+            return state.chatParticipantEntries;
+        }
         const localHandle = normalizeUsername(
             state.currentProfile?.handle ?? "",
         );
-        // Share guests have no account and are only ever authorized to read
-        // and write the meeting's own group chat room — never the private,
-        // per-user DM rooms these avatars would open. Omit the switcher
-        // entirely for guests so it's never shown, let alone clicked, which
-        // previously caused a 403 when guests tried to fetch a private
-        // room's encryption key.
-        if (!localHandle) return [];
         return Array.from(
             new Set(
                 state.lastMeetingParticipants
@@ -246,6 +243,10 @@ export function createChatHandlers({
         }
         const response = await apiFetch(
             `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=50`,
+            {
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
+            },
         );
         if (!response.ok) {
             setNativeChatReady(false);

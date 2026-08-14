@@ -146,7 +146,11 @@ uiCtx.extendFlow(
         }
         const response = await apiFetch(
             `/api/v1/social/messages/rooms/${encodeURIComponent(stageContext.input.roomId)}/key-contribution`,
-            { method: "POST" },
+            {
+                method: "POST",
+                accessToken: stageContext.input.accessToken || undefined,
+                suppressAccessDeniedEvent: true,
+            },
         );
         if (!response.ok) return;
         const payload = await response.json().catch(() => null);
@@ -173,7 +177,11 @@ uiCtx.extendFlow(
         if (contributed) {
             const response = await apiFetch(
                 `/api/v1/social/messages/rooms/${encodeURIComponent(stageContext.input.roomId)}/key-contribution/acknowledge`,
-                { method: "POST" },
+                {
+                    method: "POST",
+                    accessToken: stageContext.input.accessToken || undefined,
+                    suppressAccessDeniedEvent: true,
+                },
             );
             if (!response.ok) return;
             stageContext.data.roomKey = await roomKeys.getRoomKey(
@@ -183,7 +191,10 @@ uiCtx.extendFlow(
     },
 );
 
-export async function loadChatRoomKey(roomId, { recoverMissing = false } = {}) {
+export async function loadChatRoomKey(
+    roomId,
+    { recoverMissing = false, accessToken = "" } = {},
+) {
     if (!roomId) return null;
     const loadId = `${String(roomId)}:${recoverMissing ? "recover" : "local"}`;
     const existingLoad = pendingRoomKeyLoads.get(loadId);
@@ -196,6 +207,7 @@ export async function loadChatRoomKey(roomId, { recoverMissing = false } = {}) {
         .runFlow(FLOW_ID, {
             roomId,
             recoverMissing,
+            accessToken,
             keyringGeneration: loadGeneration,
         })
         .then((result) =>

@@ -160,6 +160,12 @@ test("auth session-flow-hooks.js registers a validate-stored-token hook", () => 
     );
 });
 
+test("auth defers stored-account validation for alternate guest sessions", () => {
+    const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
+    assert.match(src, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(src, /if \(usesAlternateSession\)/);
+});
+
 test("auth session-flow-hooks.js registers an enforce-setup-requirements hook", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
     assert.match(
@@ -243,6 +249,25 @@ test("share session-flow-hooks.js defaults guest share chrome to hidden", () => 
     assert.match(
         src,
         /page:\s*\{[\s\S]*\.\.\.SHARE_GUEST_PAGE_DEFAULTS[\s\S]*\.\.\.\(shareData\.page \?\? \{\}\)/,
+    );
+});
+
+test("share sessions authorize only their stored internal content route", () => {
+    const shareSource = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(shareSource, /session:isGuestAllowedPath/);
+    assert.match(shareSource, /shareContext\?\.contentUrl/);
+    assert.match(routerSource, /session:isGuestAllowedPath/);
+});
+
+test("share sessions preserve guest context on the internal content route", () => {
+    const sessionFlowSource = readFileSync(SHARE_HOOKS_PATH, "utf8");
+    assert.match(
+        sessionFlowSource,
+        /isActiveShareContentRoute\(activeShareSession\)[\s\S]*resolveActiveShareContentSession\(activeShareSession\)/,
     );
 });
 

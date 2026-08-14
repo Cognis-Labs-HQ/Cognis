@@ -8,16 +8,19 @@ export function bindWhiteboardCanvasEvents({
     onPointerUp,
     scheduleRender,
     shouldPreventContextMenu,
+    readOnly = false,
 }) {
-    canvasElement.addEventListener("pointerdown", onPointerDown);
-    canvasElement.addEventListener("pointermove", onPointerMove);
-    canvasElement.addEventListener("pointerup", onPointerUp);
-    canvasElement.addEventListener("pointercancel", onPointerUp);
-    canvasElement.addEventListener("paste", onPaste);
-    document.addEventListener("paste", onPaste);
-    canvasElement.addEventListener("keydown", onKeyDown);
+    if (!readOnly) {
+        canvasElement.addEventListener("pointerdown", onPointerDown);
+        canvasElement.addEventListener("pointermove", onPointerMove);
+        canvasElement.addEventListener("pointerup", onPointerUp);
+        canvasElement.addEventListener("pointercancel", onPointerUp);
+        canvasElement.addEventListener("paste", onPaste);
+        document.addEventListener("paste", onPaste);
+        canvasElement.addEventListener("keydown", onKeyDown);
+        canvasElement.addEventListener("dblclick", onDoubleClick);
+    }
     canvasElement.addEventListener("whiteboard:image-loaded", scheduleRender);
-    canvasElement.addEventListener("dblclick", onDoubleClick);
     canvasElement.addEventListener("auxclick", preventMiddleClickDefault);
     canvasElement.addEventListener("contextmenu", shouldPreventContextMenu);
 

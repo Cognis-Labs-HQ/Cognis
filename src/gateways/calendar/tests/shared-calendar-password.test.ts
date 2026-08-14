@@ -29,9 +29,21 @@ test("password-protected recipient calendars validate every supplied password", 
                 accessControls: { passwordProtected: true },
             })) as T;
         }
-        if (id === "share:resolveToken") {
-            return (async (_token: string, password: string | null) =>
-                password === "correct" ? { id: "share-id" } : null) as T;
+        if (id === "share:unlockUserAccess") {
+            return (async (input: {
+                shareId: string;
+                accountId: string;
+                resourceType: string;
+                resourceId: string;
+                requiredCapability: string;
+                password: string;
+            }) =>
+                input.shareId === "share-id" &&
+                input.accountId === "recipient" &&
+                input.resourceType === "calendar" &&
+                input.resourceId === "owner-calendar" &&
+                input.requiredCapability === "calendar:read" &&
+                input.password === "correct") as T;
         }
         return undefined;
     };
@@ -42,6 +54,8 @@ test("password-protected recipient calendars validate every supplied password", 
             req: { headers: {} } as any,
             res: denied as any,
             shareTokenId: "share-id",
+            accountId: "recipient",
+            ownerCalendarId: "owner-calendar",
             getCapability,
         }),
         false,
@@ -57,8 +71,51 @@ test("password-protected recipient calendars validate every supplied password", 
             } as any,
             res: allowed as any,
             shareTokenId: "share-id",
+            accountId: "recipient",
+            ownerCalendarId: "owner-calendar",
             getCapability,
         }),
         true,
     );
+});
+
+test("an unlocked account share does not require resubmitting its calendar password", async () => {
+    let passwordUnlockAttempted = false;
+    const getCapability = <T>(id: string): T | undefined => {
+        if (id === "share:getTokenById") {
+            return (async () => ({
+                tokenValue: "share-token",
+                accessControls: { passwordProtected: true },
+            })) as T;
+        }
+        if (id === "share:resolveUserAccess") {
+            return (async (input: {
+                accountId: string;
+                resourceId: string;
+            }) => ({
+                authorized:
+                    input.accountId === "recipient" &&
+                    input.resourceId === "owner-calendar",
+            })) as T;
+        }
+        if (id === "share:unlockUserAccess") {
+            return (async () => {
+                passwordUnlockAttempted = true;
+                return false;
+            }) as T;
+        }
+        return undefined;
+    };
+    assert.equal(
+        await requireSharedCalendarPassword({
+            req: { headers: {} } as any,
+            res: response() as any,
+            shareTokenId: "share-id",
+            accountId: "recipient",
+            ownerCalendarId: "owner-calendar",
+            getCapability,
+        }),
+        true,
+    );
+    assert.equal(passwordUnlockAttempted, false);
 });

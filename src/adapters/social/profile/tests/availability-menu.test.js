@@ -93,6 +93,35 @@ test("visible statuses, including the signed-in user, are polled", () => {
         /querySelector\([\s\S]+data-availability-handle[\s\S]+refreshAvailabilityIndicators/,
     );
     assert.doesNotMatch(availability, /data-availability-handle[^\n]+:not\(/);
+    assert.match(
+        availability,
+        /if \(document\.hidden \|\| !locallyActive\) return;/,
+    );
+    assert.match(availability, /if \(availabilityRefresh\) return/);
+    assert.match(availability, /if \(!keepalive && presenceRequest\) return/);
+});
+
+test("guest sessions do not poll account availability", () => {
+    const availability = readFileSync(
+        resolve(PROFILE_ROOT, "ui/availability.js"),
+        "utf8",
+    );
+
+    assert.match(availability, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(availability, /cognis_role/);
+    assert.match(availability, /=== "guest"/);
+    assert.match(availability, /cognis_share_guest_token_active/);
+    assert.match(availability, /pathname\.startsWith\("\/share\/"\)/);
+    assert.match(availability, /accountId\.startsWith\("share:"\)/);
+    assert.match(availability, /suppressAccessDeniedEvent:\s*true/);
+    assert.match(
+        availability,
+        /function reportPresenceActivity[\s\S]*if \(isGuestSession\(\)\)/,
+    );
+    assert.match(
+        availability,
+        /function fetchAvailability[\s\S]*if \(isGuestSession\(\)\)/,
+    );
 });
 
 test("availability renderer exposes immediate ctx refresh", () => {

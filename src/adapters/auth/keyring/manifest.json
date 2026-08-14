@@ -1,7 +1,7 @@
 {
     "id": "keyring",
     "name": "User Keyring",
-    "version": "1.0.30",
+    "version": "1.0.34",
     "publisher": "Cognis Labs HQ",
     "gateway": "auth",
     "requires": ["db"],

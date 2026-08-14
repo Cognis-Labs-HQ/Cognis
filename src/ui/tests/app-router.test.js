@@ -158,6 +158,52 @@ test("router uses history.pushState for navigation", () => {
     );
 });
 
+test("router rechecks navigation freshness after authentication", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const authentication = src.indexOf(
+        'await uiCtx.runFlow("authenticate-session"',
+    );
+    const freshnessCheck = src.indexOf(
+        "signal.aborted || navigationSequence !== _navigationSequence",
+        authentication,
+    );
+    const sessionProcessing = src.indexOf("const session =", authentication);
+    assert.ok(authentication >= 0);
+    assert.ok(freshnessCheck > authentication);
+    assert.ok(freshnessCheck < sessionProcessing);
+});
+
+test("router resets page actions and commits route styles after mounting", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(src, /capabilities\.get\("page:actions"\)\?\.reset/);
+    assert.match(src, /preparePageStylesheets\(/);
+    assert.ok(
+        src.indexOf("await mod.mount") < src.indexOf("commitPageStylesheets()"),
+        "stale styles must remain until the destination page has mounted",
+    );
+});
+
+test("SPA route bundles match structured-content styles from direct loads", () => {
+    const src = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        src,
+        /settings:[\s\S]*structured-content\.css[\s\S]*settings\.css/,
+    );
+    assert.match(
+        src,
+        /pattern: \/\^\\\/administration\/[\s\S]*structured-content\.css/,
+    );
+});
+
 test("router guards against re-initialisation while refreshing its root", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
@@ -184,7 +230,10 @@ test("router resolves #app before mounting routes", () => {
     assert.match(src, /function resolveRouterRoot\(\)/);
     assert.match(src, /_root = document\.querySelector\(["']#app["']\);/);
     assert.match(src, /const routeRoot = resolveRouterRoot\(\);/);
-    assert.match(src, /await mod\.mount\(routeRoot, \{ signal \}\);/);
+    assert.match(
+        src,
+        /await mod\.mount\(routeRoot, \{[\s\S]*signal,[\s\S]*shareContext:/,
+    );
 });
 
 test("dashboard-layout initialises the router after shell setup", () => {
@@ -292,6 +341,52 @@ test("router aborts the previous mount's signal on navigation", () => {
     );
 });
 
+test("router passes resolved share context to destination pages", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        routerSource,
+        /shareContext:\s*session\?\.shareContext \?\? null/,
+    );
+});
+
+test("router loads destination flow hooks before authenticating an SPA route", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    const loadRouteStart = source.indexOf("async function loadRoute(path)");
+    const routeModuleLoad = source.indexOf(
+        "mod = await route.load(path)",
+        loadRouteStart,
+    );
+    const authentication = source.indexOf(
+        'uiCtx.runFlow("authenticate-session",',
+        loadRouteStart,
+    );
+
+    assert.ok(loadRouteStart >= 0, "router must define loadRoute");
+    assert.ok(routeModuleLoad >= 0, "router must load the destination module");
+    assert.ok(authentication >= 0, "router must authenticate the navigation");
+    assert.ok(
+        routeModuleLoad < authentication,
+        "destination modules must register their gateway flow hooks before authentication",
+    );
+});
+
+test("router authenticates against the requested route instead of mutable location state", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /runFlow\("authenticate-session", \{\s*routePath: path,\s*\}\)/,
+    );
+});
+
 test("router delegates auth enforcement to the authenticate-session flow", () => {
     const routerSrc = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
@@ -300,7 +395,7 @@ test("router delegates auth enforcement to the authenticate-session flow", () =>
     assert.match(
         routerSrc,
         /authenticate-session/,
-        "app-router.js must run the authenticate-session flow to enforce auth before route loads",
+        "app-router.js must run the authenticate-session flow to enforce auth before route mounts",
     );
     const hooksSrc = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
@@ -322,5 +417,20 @@ test("router installs global runtime error handlers", () => {
         src,
         /installRuntimeErrorHandlers\(\)/,
         "app-router.js must initialize global runtime error listeners",
+    );
+});
+
+test("router mounts the native error page without account authentication", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        routerSource,
+        /pattern:\s*\/\^\\\/error\$\/[\s\S]*public:\s*true/,
+    );
+    assert.match(
+        routerSource,
+        /const authResult = route\.public[\s\S]*\? null[\s\S]*runFlow\("authenticate-session"/,
     );
 });

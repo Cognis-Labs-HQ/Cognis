@@ -27,7 +27,7 @@ import { createMeetingHandlers } from "./jitsi-meetings.js";
 import { createPreflightHandlers } from "./jitsi-preflight.js";
 import { createEmbedHandlers } from "./jitsi-embed.js";
 import { createMountUtilities } from "./jitsi-mount-utils.js";
-import { bindShareButton } from "./share-button.js";
+import { bindShareButton, openMeetingSharePopup } from "./share-button.js";
 const JITSI_MEET_CHAT_REACTIONS_ENABLED = false;
 const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
     destroy: () => undefined,
@@ -45,18 +45,26 @@ const NULL_MESSAGE_REACTIONS_CONTROLLER = Object.freeze({
  * embed updates). The optional AbortSignal is used by the SPA router to clean
  * up timers and event listeners when users navigate away.
  *
- * When the page is loaded inside a share context (detected via getShareContext()),
- * the shell chrome (topbar, navbar, footer) is hidden and the share button is
- * suppressed — no explicit `embedded` or `shareEnabled` flags are needed.
+ * Guest link shares receive a limited shell, while signed-in user-share
+ * recipients retain the full account page structure. Both share modes suppress
+ * resharing controls.
  *
  * @param {HTMLElement} root - Page mount root (usually #app).
- * @param {{ signal?: AbortSignal, requestedMeetingId?: string }} [options] - Router lifecycle options.
+ * @param {{ signal?: AbortSignal, requestedMeetingId?: string, shareContext?: object }} [options] - Router lifecycle options.
  * @returns {Promise<void>}
  */
-export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
-    await ensureFullAccountSession();
-    const shareContext = getShareContext();
-    const inShareView = shareContext !== null;
+export async function mount(
+    root,
+    { signal, requestedMeetingId = "", shareContext: routedShareContext } = {},
+) {
+    const shareContext = routedShareContext ?? getShareContext();
+    const inShareView =
+        shareContext !== null && shareContext?.directAccess !== true;
+    const limitedShareView =
+        inShareView &&
+        Boolean(shareContext?.guestAccessToken) &&
+        shareContext?.directAccess !== true;
+    if (!limitedShareView) await ensureFullAccountSession();
     const resolvedMeetingId =
         requestedMeetingId ||
         (inShareView ? String(shareContext?.resourceId ?? "") : "");
@@ -105,6 +113,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         privateChatUsername: "",
         lastMeetingChatRoomId: "",
         lastMeetingParticipants: [],
+        chatParticipantEntries: [],
         currentProfile: null,
         preflightStatus: "idle",
         preflightPassed: false,
@@ -115,6 +124,9 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             resolvedMeetingId ||
                 new URL(window.location.href).searchParams.get("meetingId"),
         ),
+        requestedMeetingStart:
+            new URL(window.location.href).searchParams.get("start") === "1",
+        shareAccessToken: String(shareContext?.guestAccessToken ?? ""),
         activeMeetings: [],
         activeMeetingsRefreshTimer: null,
         dragUsername: null,
@@ -127,6 +139,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         alonePromptDismissedMeetingId: "",
         alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
+        promptShareOnJoin: false,
     };
     function collectMeetingSearchGroups() {
         const meetings = [
@@ -191,7 +204,14 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             signal,
         });
     }
-    const callbacks = {};
+    const callbacks = {
+        openMeetingSharePopup: () =>
+            openMeetingSharePopup({
+                state,
+                i18n,
+                deferAloneParticipantPrompt,
+            }),
+    };
     const utils = {
         clearTimers,
         deferAloneParticipantPrompt,
@@ -219,6 +239,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         apiFetch,
         callbacks,
         utils,
+        allowParticipantlessJoin: limitedShareView,
     });
     const preflightHandlers = createPreflightHandlers({
         root,
@@ -489,6 +510,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                         ".jitsi-chat-participant-item[data-username]",
                     );
                     if (!(button instanceof HTMLButtonElement)) return;
+                    if (state.shareAccessToken) return;
                     const username = normalizeUsername(button.dataset.username);
                     if (!username) return;
                     void activatePrivateChatForParticipant(username);
@@ -874,6 +896,8 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
                                 ...encrypted,
                                 contentType: "text/plain",
                             }),
+                            accessToken: state.shareAccessToken || undefined,
+                            suppressAccessDeniedEvent: true,
                         },
                     );
                     if (!response.ok) {
@@ -894,7 +918,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
         renderParticipants();
         void updateNativeChat();
     }
-    const elements = createMeetingPageElements(i18n, inShareView);
+    const elements = createMeetingPageElements(i18n, limitedShareView);
 
     const [allParticipants, currentProfile] = await Promise.all([
         fetchParticipants(""),
@@ -915,7 +939,7 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     }));
 
     const composer = createPageComposer(root, {
-        allowCustomization: !inShareView,
+        allowCustomization: !limitedShareView,
         enableDomParking: true,
         elements,
         preferenceKey: "meetings-layout-v3",
@@ -925,10 +949,11 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
             subtitle: i18n.t("module.jitsi_meet.page.subtitle"),
         },
         showTopbar: true,
-        showNavbar: !inShareView,
+        showNavbar: !limitedShareView,
         showFooter: true,
         showThemeToggle: true,
-        persistLayoutPreferences: !inShareView,
+        requireAccountSession: !limitedShareView,
+        persistLayoutPreferences: !limitedShareView,
         frameless: false,
         onRender: (...args) => {
             bindInteractiveHandlers(...args);
@@ -945,8 +970,10 @@ export async function mount(root, { signal, requestedMeetingId = "" } = {}) {
     });
 
     await composer.init();
-    if (inShareView && state.requestedMeetingId) {
-        await joinMeetingById(state.requestedMeetingId);
+    if (state.requestedMeetingId) {
+        await joinMeetingById(state.requestedMeetingId, {
+            autoStart: inShareView || state.requestedMeetingStart,
+        });
     } else {
         await loadActiveMeetings({ resolveRequested: true });
         startActiveMeetingsPolling();

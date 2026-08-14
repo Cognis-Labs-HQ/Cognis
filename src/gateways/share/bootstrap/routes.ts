@@ -183,11 +183,25 @@ export function createShareRoutes(input: {
 
         if (
             req.method === "GET" &&
-            (url.pathname === "/share" || url.pathname.startsWith("/share/"))
+            (url.pathname === "/shares" || url.pathname.startsWith("/share/"))
         ) {
+            const deliveryPage = input.gateway
+                .listAdapters()
+                .map((adapter) => adapter.deliveryPage)
+                .find(
+                    (candidate) =>
+                        candidate &&
+                        new RegExp(candidate.pattern).test(url.pathname),
+                );
+            if (url.pathname !== "/shares" && !deliveryPage) return false;
             routeContext.setPageSecurityHeaders(res);
             const html = await readFile(
-                path.join(input.uiRoot, "share.html"),
+                path.join(
+                    input.uiRoot,
+                    url.pathname === "/shares"
+                        ? "shares.html"
+                        : (deliveryPage?.document ?? ""),
+                ),
                 "utf8",
             );
             res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
@@ -222,12 +236,97 @@ export function createShareRoutes(input: {
             return true;
         }
 
+        const statusMatch = url.pathname.match(
+            /^\/api\/v1\/share\/status\/([^/]+)$/,
+        );
+        if (req.method === "GET" && statusMatch) {
+            const claims = routeContext.getAuthClaims(req);
+            if (!claims) {
+                sendError(res, 401, "unauthorized", "Authentication required.");
+                return true;
+            }
+            const shareId = decodeURIComponent(statusMatch[1]);
+            const record = await input.gateway.getTokenById(shareId);
+            if (!record || input.gateway.isTokenExpired(record)) {
+                sendError(res, 404, "not_found", "Share no longer exists.");
+                return true;
+            }
+            const guestShareId = resolveShareGuestId(claims);
+            const accountId = String(claims.sub ?? "");
+            const authorized =
+                guestShareId === shareId ||
+                record.ownerAccountId === accountId ||
+                record.accessControls.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" && recipient.id === accountId,
+                );
+            if (!authorized) {
+                sendError(res, 403, "forbidden", "Share access was revoked.");
+                return true;
+            }
+            sendJson(res, 200, { data: { active: true } });
+            return true;
+        }
+
+        if (req.method === "GET" && url.pathname === "/api/v1/share/overview") {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const [sent, received] = await Promise.all([
+                input.gateway.listTokens({ ownerAccountId: claims.sub }),
+                input.gateway.listReceivedTokens(claims.sub),
+            ]);
+            sendJson(res, 200, { data: { sent, received } });
+            return true;
+        }
+
+        const accountShareMatch = url.pathname.match(
+            /^\/api\/v1\/share\/account\/([^/]+)\/resolve$/,
+        );
+        if (req.method === "POST" && accountShareMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = (await readJson(req)) as { password?: unknown };
+            const result = await input.gateway.resolveAccountShare({
+                shareId: decodeURIComponent(accountShareMatch[1]),
+                accountId: claims.sub,
+                password:
+                    typeof body.password === "string" ? body.password : null,
+            });
+            if (!result.resolved) {
+                input.log?.("warn", "Denied account share access.", {
+                    component: "share-gateway",
+                    operation: "resolve_account_share",
+                    shareId: decodeURIComponent(accountShareMatch[1]),
+                    accountId: claims.sub,
+                    reason: result.reason,
+                });
+                const status =
+                    result.reason === "not_found"
+                        ? 404
+                        : result.reason === "invalid_password"
+                          ? 401
+                          : 403;
+                sendError(res, status, result.reason, "Share access denied.");
+                return true;
+            }
+            input.log?.("info", "Resolved account share access.", {
+                component: "share-gateway",
+                operation: "resolve_account_share",
+                shareId: decodeURIComponent(accountShareMatch[1]),
+                accountId: claims.sub,
+            });
+            sendJson(res, 200, { data: result });
+            return true;
+        }
+
         if (req.method === "POST" && url.pathname === "/api/v1/share/tokens") {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const body = (await readJson(req)) as {
                 resourceType?: unknown;
                 resourceId?: unknown;
+                contentUrl?: unknown;
+                supportsReadOnly?: unknown;
                 label?: unknown;
                 grantedCapabilities?: unknown;
                 accessControls?: unknown;
@@ -239,12 +338,22 @@ export function createShareRoutes(input: {
             };
             const resourceType = String(body.resourceType ?? "").trim();
             const resourceId = String(body.resourceId ?? "").trim();
+            const contentUrl = String(body.contentUrl ?? "").trim();
             if (!resourceType || !resourceId) {
                 sendError(
                     res,
                     400,
                     "bad_request",
                     "resourceType and resourceId are required.",
+                );
+                return true;
+            }
+            if (contentUrl && !/^\/(?!\/)/.test(contentUrl)) {
+                sendError(
+                    res,
+                    400,
+                    "invalid_content_url",
+                    "contentUrl must be an internal absolute path.",
                 );
                 return true;
             }
@@ -268,18 +377,10 @@ export function createShareRoutes(input: {
                 body.accessControls && typeof body.accessControls === "object"
                     ? (body.accessControls as Record<string, unknown>)
                     : {};
-            const legacyRecipients = Array.isArray(
-                requestedAccessControls.recipients,
-            )
-                ? requestedAccessControls.recipients
-                : [];
-            const shareMethod = String(
-                body.shareMethod ??
-                    (legacyRecipients.length > 0 ? "user" : "link"),
-            ).trim();
+            const shareMethod = String(body.shareMethod ?? "").trim();
             const methodResult = await input.flow.run("prepare-share-method", {
                 shareMethod,
-                recipients: body.recipients ?? legacyRecipients,
+                recipients: body.recipients,
                 accessControls: requestedAccessControls,
             });
             const prepared = getFirstStageResult<{
@@ -301,6 +402,9 @@ export function createShareRoutes(input: {
                 ownerAccountId: claims.sub,
                 resourceType,
                 resourceId,
+                contentUrl,
+                supportsReadOnly: body.supportsReadOnly === true,
+                shareMethod,
                 label: typeof body.label === "string" ? body.label : "",
                 grantedCapabilities: Array.isArray(body.grantedCapabilities)
                     ? body.grantedCapabilities
@@ -366,32 +470,37 @@ export function createShareRoutes(input: {
             }
             let flowResult;
             try {
+                const changes = {
+                    ...(typeof body.label === "string"
+                        ? { label: body.label }
+                        : {}),
+                    ...(Array.isArray(body.grantedCapabilities) &&
+                    body.grantedCapabilities.length > 0
+                        ? { grantedCapabilities: body.grantedCapabilities }
+                        : {}),
+                    ...(body.accessControls &&
+                    typeof body.accessControls === "object" &&
+                    Object.keys(body.accessControls).length > 0
+                        ? { accessControls: body.accessControls }
+                        : {}),
+                    ...(typeof body.password === "string" &&
+                    body.password.trim()
+                        ? { password: body.password }
+                        : {}),
+                    ...(body.generatePassword === true
+                        ? { generatePassword: true }
+                        : {}),
+                    ...(body.clearPassword === true
+                        ? { clearPassword: true }
+                        : {}),
+                    ...(typeof body.expiresAt === "string"
+                        ? { expiresAt }
+                        : {}),
+                };
                 flowResult = await input.flow.run("update-share-token", {
                     claims,
                     shareId,
-                    changes: {
-                        label:
-                            typeof body.label === "string"
-                                ? body.label
-                                : undefined,
-                        grantedCapabilities: Array.isArray(
-                            body.grantedCapabilities,
-                        )
-                            ? body.grantedCapabilities
-                            : undefined,
-                        accessControls:
-                            body.accessControls &&
-                            typeof body.accessControls === "object"
-                                ? body.accessControls
-                                : undefined,
-                        password:
-                            typeof body.password === "string"
-                                ? body.password
-                                : null,
-                        generatePassword: body.generatePassword === true,
-                        clearPassword: body.clearPassword === true,
-                        expiresAt,
-                    },
+                    changes,
                 });
             } catch (error) {
                 if (
@@ -433,6 +542,8 @@ export function createShareRoutes(input: {
                 ownerAccountId: existingToken.ownerAccountId,
                 resourceType: existingToken.resourceType,
                 resourceId: existingToken.resourceId,
+                label: existingToken.label,
+                recipients: existingToken.accessControls.recipients,
             });
             const deleted = getFirstStageResult<{ revoked?: boolean }>(
                 flowResult.stageResults,
@@ -448,6 +559,40 @@ export function createShareRoutes(input: {
                 return true;
             }
             sendJson(res, 200, { data: { deleted: true } });
+            return true;
+        }
+
+        const rejectMatch = url.pathname.match(
+            /^\/api\/v1\/share\/tokens\/([^/]+)\/reject$/,
+        );
+        if (req.method === "POST" && rejectMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const shareId = decodeURIComponent(rejectMatch[1]);
+            const shareRecord = await input.gateway.getTokenById(shareId);
+            const flowResult = await input.flow.run("revoke-share-token", {
+                claims,
+                shareId,
+                rejection: true,
+                ownerAccountId: shareRecord?.ownerAccountId,
+                recipientAccountId: claims.sub,
+                label: shareRecord?.label,
+                recipients: shareRecord?.accessControls.recipients,
+            });
+            const rejected = getFirstStageResult<{
+                revoked?: boolean;
+                rejected?: boolean;
+            }>(flowResult.stageResults, "delete-token");
+            if (!rejected?.revoked || !rejected.rejected) {
+                sendError(
+                    res,
+                    403,
+                    "forbidden",
+                    "Share could not be rejected.",
+                );
+                return true;
+            }
+            sendJson(res, 200, { data: { rejected: true } });
             return true;
         }
 
@@ -591,6 +736,7 @@ export function createShareRoutes(input: {
                 ownerAccountId?: string;
                 expiresAt?: string;
                 payload?: Record<string, unknown>;
+                contentUrl?: string;
                 directAccess?: boolean;
                 grantedCapabilities?: string[];
                 accessControls?: Record<string, unknown>;
@@ -629,6 +775,7 @@ export function createShareRoutes(input: {
                     resourceType: resolved.resourceType,
                     resourceId: resolved.resourceId,
                     payload: resolved.payload ?? {},
+                    contentUrl: resolved.contentUrl ?? "",
                     directAccess: resolved.directAccess === true,
                     grantedCapabilities: resolved.grantedCapabilities ?? [],
                     accessControls: resolved.accessControls ?? {},
@@ -670,7 +817,7 @@ export function createShareRoutes(input: {
             }>("social:profileStore");
             const profiles =
                 query && typeof profileStore?.searchProfiles === "function"
-                    ? await profileStore.searchProfiles(query, 10)
+                    ? await profileStore.searchProfiles(query)
                     : [];
             sendJson(res, 200, {
                 data: profiles

@@ -66,6 +66,17 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         },
     );
     assert.equal(createCalendarResponse.statusCode, 201);
+    const ownerEventResponse = await createJsonDispatcher(routeRegistry)(
+        "POST",
+        adminToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(String(createCalendarResponse.body.data.id))}/events`,
+        {
+            title: "Visible through user share",
+            startAt: "2026-08-14T09:00:00.000Z",
+            endAt: "2026-08-14T10:00:00.000Z",
+        },
+    );
+    assert.equal(ownerEventResponse.statusCode, 201);
     const deliverLifecycleShare = capabilities.get<
         (delivery: {
             shareId: string;
@@ -214,6 +225,18 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         (calendar: { id?: string }) => calendar.id === deliveredCalendarId,
     );
     assert.equal(deliveredCalendar.sharedPermission, "read");
+    const deliveredEvents = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        `/api/v1/calendar/calendars/${encodeURIComponent(String(deliveredCalendarId))}/events`,
+    );
+    assert.equal(deliveredEvents.statusCode, 200);
+    assert.deepEqual(
+        deliveredEvents.body.data.events.map(
+            (event: { title: string }) => event.title,
+        ),
+        ["Visible through user share"],
+    );
     const updatedDelivery = await deliverUserShare?.({
         ...delivery,
         grantedCapabilities: ["calendar:read", "calendar:write"],

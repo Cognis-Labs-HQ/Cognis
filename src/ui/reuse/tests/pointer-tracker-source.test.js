@@ -31,6 +31,8 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(pointerSource, /offset\.y/);
     assert.match(pointerSource, /renderRoot\.appendChild\(overlay\)/);
     assert.match(pointerSource, /className = "pointer-style-toggle"/);
+    assert.match(pointerSource, /capabilities\.get\("page:actions"\)/);
+    assert.match(pointerSource, /removePageAction\?\.\(\)/);
     assert.match(pointerSource, /noteActivity\?\.\(\)/);
     assert.match(pointerSource, /page-pointer--/);
     assert.match(pointerSource, /page-selection/);
@@ -57,12 +59,43 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
     assert.match(presenceSource, /createAdaptivePoller/);
     assert.match(presenceSource, /mountedParent/);
     assert.match(presenceSource, /#page-presence-section/);
-    assert.match(presenceSource, /const REFRESH_MIN_INTERVAL_MS = 250/);
-    assert.match(presenceSource, /const REFRESH_MAX_INTERVAL_MS = 5000/);
+    assert.match(presenceSource, /HEARTBEAT_MIN_INTERVAL_MS = 10_000/);
+    assert.match(presenceSource, /HEARTBEAT_MAX_INTERVAL_MS = 30_000/);
+    assert.match(presenceSource, /REFRESH_MIN_INTERVAL_MS = 2_500/);
+    assert.match(presenceSource, /REFRESH_MAX_INTERVAL_MS = 30_000/);
+    assert.match(pointerSource, /POINTER_SEND_THROTTLE_MS = 1_000/);
+    assert.match(
+        presenceSource,
+        /createPresenceSignature[\s\S]*entry\.sessionId,\s*entry\.active,/,
+    );
     assert.match(presenceSource, /function isRecentlyActive\(\)/);
+    assert.match(
+        presenceSource,
+        /response\?\.status === 401 \|\| response\?\.status === 403/,
+    );
+    assert.match(presenceSource, /destroy\(\{ notifyInactive: false \}\)/);
+    assert.match(presenceSource, /requestAbortController\.abort\(\)/);
+    assert.match(presenceSource, /if \(!keepalive && presenceRequest\) return/);
+    assert.match(presenceSource, /if \(refreshRequest\) return refreshRequest/);
+    assert.match(
+        presenceSource,
+        /subscribePresenceActivity[\s\S]*if \(active\)[\s\S]*heartbeatPoller\?\.start\(\{ immediate: true \}\)[\s\S]*refreshPoller\?\.start\(\)/,
+    );
+    assert.match(
+        presenceSource,
+        /else \{[\s\S]*heartbeatPoller\?\.stop\(\)[\s\S]*refreshPoller\?\.stop\(\)[\s\S]*markInactive\?\.\(\)/,
+    );
     assert.match(
         composerSource,
         /pageManifest\?: \{ features\?: \{ pointerTracking\?: boolean \} \}/,
+    );
+    assert.match(
+        composerSource,
+        /signal\?\.addEventListener\("abort", destroy/,
+    );
+    assert.match(
+        composerSource,
+        /function destroy\(\)[\s\S]*activePresenceTracker\?\.destroy\(\)/,
     );
     assert.ok(
         composerSource.indexOf("render();") <

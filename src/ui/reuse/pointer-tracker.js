@@ -20,10 +20,11 @@
 
 import { escapeHtml } from "./escape-html.js";
 import { pickInitialsColor } from "./avatar-utils.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
-const POINTER_SEND_THROTTLE_MS = 120;
+const POINTER_SEND_THROTTLE_MS = 1_000;
 
 function normalizeStyle(value) {
     return POINTER_STYLES.includes(value) ? value : "mouse";
@@ -113,6 +114,7 @@ export function createPointerTracker({
     let pointerPayload = null;
     let destroyed = false;
     let lastSentAt = 0;
+    let removePageAction = null;
     const overlay = document.createElement("div");
     overlay.className = "page-pointer-layer";
     overlay.setAttribute("aria-hidden", "true");
@@ -260,11 +262,20 @@ export function createPointerTracker({
         contentGrid.removeEventListener("pointermove", recordPointer);
         button.removeEventListener("click", cycleStyle);
         overlay.remove();
+        removePageAction?.();
+        removePageAction = null;
         button.remove();
     }
 
     updateButton();
-    document.body.appendChild(button);
+    const pageActionRegistry = uiCtx.capabilities.get("page:actions");
+    if (pageActionRegistry?.add) {
+        removePageAction = pageActionRegistry.add({
+            id: "presence:pointer-style",
+            element: button,
+            order: 20,
+        });
+    }
     contentGrid.addEventListener("pointermove", recordPointer, {
         passive: true,
     });

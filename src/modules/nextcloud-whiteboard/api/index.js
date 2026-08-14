@@ -20,6 +20,7 @@ const initializedRuntimeContexts = new WeakSet();
 const MODULE_ID = "nextcloud-whiteboard";
 const WHITEBOARD_STYLESHEETS = [
     "/static/styles/page-builder.css",
+    "/static/styles/reuse/layout.css",
     "/static/styles/reuse/page-sections.css",
     "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
 ];
@@ -79,6 +80,7 @@ export function registerApiRoutes(router, ctx) {
     const resolveShareGuestAccess = ctx.getCapability(
         "share:resolveGuestAccess",
     );
+    const resolveShareUserAccess = ctx.getCapability("share:resolveUserAccess");
     const resolveShareGuestId = ctx.getCapability("share:resolveGuestId");
     const listSharesByResource = ctx.getCapability("share:listByResource");
     const systemCtx = ctx.getCapability("system:ctx");
@@ -393,6 +395,7 @@ export function registerApiRoutes(router, ctx) {
         store,
         profileStore,
         resolveShareGuestAccess,
+        resolveShareUserAccess,
         resolveWhiteboardUserAccess,
         whiteboardFiles,
     });
@@ -416,7 +419,8 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
-                requireWrite: true,
+                resolveShareUserAccess,
+                requireWrite: false,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -450,6 +454,7 @@ export function registerApiRoutes(router, ctx) {
                     roomId: whiteboard.id,
                     title: whiteboard.title,
                     canRename: access.username === whiteboard.createdBy,
+                    canWrite: access.canWrite === true,
                     serverUrl: config.serverUrl,
                     imageUploadMaxBytes: config.imageUploadMaxBytes,
                     elements,
@@ -479,6 +484,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {
@@ -513,7 +519,8 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
-                requireWrite: true,
+                resolveShareUserAccess,
+                requireWrite: false,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -586,7 +593,8 @@ export function registerApiRoutes(router, ctx) {
                     store,
                     whiteboardId: whiteboard.id,
                     resolveShareGuestAccess,
-                    requireWrite: true,
+                    resolveShareUserAccess,
+                    requireWrite: false,
                 });
                 if (!access.authorized) {
                     sendError(res, access.status, access.code, access.message);
@@ -712,6 +720,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
             });
             if (!access.authorized) {
                 sendError(res, access.status, access.code, access.message);
@@ -838,6 +847,7 @@ export function registerApiRoutes(router, ctx) {
                 store,
                 whiteboardId: whiteboard.id,
                 resolveShareGuestAccess,
+                resolveShareUserAccess,
                 requireWrite: true,
             });
             if (!access.authorized) {

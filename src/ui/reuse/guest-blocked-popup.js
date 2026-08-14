@@ -26,6 +26,7 @@ import { openPopup } from "./popup.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
 import { normalizeSameOriginRoutePath } from "./route-path.js";
+import { uiCtx } from "./ui-ctx.js";
 
 export const ALLOWED_GUEST_ROUTE_BASES = ["/share", "/login", "/register"];
 
@@ -158,6 +159,12 @@ export function installGuestNavigationGuard({ root = document, signal } = {}) {
             }
             if (destinationUrl.origin !== window.location.origin) return;
             if (isGuestAllowedPath(destinationUrl.pathname)) return;
+            if (
+                uiCtx.capabilities.get("session:isGuestAllowedPath")?.(
+                    destinationUrl.pathname + destinationUrl.search,
+                ) === true
+            )
+                return;
             event.preventDefault();
             openGuestBlockedPopup({ allowBackNavigation: false }).catch(
                 (error) => {

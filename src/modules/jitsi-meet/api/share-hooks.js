@@ -254,7 +254,15 @@ export function registerShareFlowHooks(ctx) {
             if (!meeting) {
                 return { resolved: false, reason: "resource_not_found" };
             }
-            const state = await store.getMeetingState(meeting.id);
+            const [storedState, activeMeetings] = await Promise.all([
+                store.getMeetingState(meeting.id),
+                store.listActiveMeetings(),
+            ]);
+            const state = activeMeetings.some(
+                (activeMeeting) => activeMeeting.id === meeting.id,
+            )
+                ? { ...storedState, endedAt: null }
+                : storedState;
             const ownerProfile = await profileStore
                 .getProfileByHandle(meeting.createdBy)
                 .catch(() => null);
@@ -302,33 +310,6 @@ export function registerShareFlowHooks(ctx) {
                     reason: resourceResult?.reason ?? "resource_not_found",
                 };
             }
-            const tokenResult = getFirstStageResult(
-                stageCtx.stageResults,
-                "validate-token",
-            );
-            const tokenMeetingInstanceId = String(
-                tokenResult?.tokenRecord?.metadata?.meetingInstanceId ?? "",
-            ).trim();
-            const currentMeetingInstanceId = String(
-                resourceResult.payload?.instanceId ?? "",
-            ).trim();
-            // Only reject as "expired" when both the token and the current
-            // meeting have a concrete instance id that disagree — this means
-            // the meeting was ended and restarted since the link was minted.
-            // A share link minted before the meeting's first instance ever
-            // started (a very common "share ahead of time" case) has an
-            // empty tokenMeetingInstanceId and must not be rejected outright;
-            // it should resolve normally once the meeting starts.
-            if (
-                tokenMeetingInstanceId &&
-                currentMeetingInstanceId &&
-                tokenMeetingInstanceId !== currentMeetingInstanceId
-            ) {
-                return { allowed: false, reason: "expired" };
-            }
-            if (resourceResult.payload?.endedAt) {
-                return { allowed: false, reason: "expired" };
-            }
             const requesterClaims = stageCtx.input?.requesterClaims;
             if (requesterClaims?.sub) {
                 const hasDirectAccess = await requesterHasDirectMeetingAccess(
@@ -359,6 +340,7 @@ export function registerShareFlowHooks(ctx) {
                     stringsBaseUrl: ["/static/modules/jitsi-meet/languages"],
                     stylesheetUrls: [
                         "/static/styles/page-builder.css",
+                        "/static/styles/reuse/layout.css",
                         "/static/styles/reuse/page-sections.css",
                         ...resolveSharedMessagesStylesheetUrls(
                             resolveMessagesUiResources(ctx),

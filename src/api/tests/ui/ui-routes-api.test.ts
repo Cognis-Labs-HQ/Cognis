@@ -239,6 +239,45 @@ test("GET /api/v1/ui/app-routes returns registered routes for authenticated user
     assert.equal(payload.data[0].id, "messages-page");
 });
 
+test("GET registered SPA route serves the dashboard shell on refresh", async () => {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerSpaRoute({
+        id: "shares-page",
+        pattern: "^/shares$",
+        base: "/shares",
+        scriptUrl: "/static/gateways/share/ui/app/shares/index.js",
+        stylesheets: ["/static/gateways/share/ui/app/shares/index.css"],
+        access: { minRole: "user" },
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+
+    const handled = await route(
+        {
+            method: "GET",
+            headers: {
+                authorization: `Bearer ${userToken}`,
+                cookie: `cognis_access_token=${userToken}`,
+            },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/shares"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /<div id="app"/);
+    assert.match(
+        recorder.body,
+        /src="\/static\/gateways\/share\/ui\/app\/shares\/index\.js"/,
+    );
+    assert.match(
+        recorder.body,
+        /href="\/static\/gateways\/share\/ui\/app\/shares\/index\.css"/,
+    );
+});
+
 test("GET /api/v1/ui/app-routes filters disabled and protected routes", async () => {
     const uiRegistry = new UIRegistry();
     uiRegistry.registerSpaRoute({

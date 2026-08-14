@@ -50,10 +50,47 @@ test("nextcloud whiteboard registers full SPA routing and boilerplate styles", (
         );
         assert.deepEqual(route.stylesheets, [
             "/static/styles/page-builder.css",
+            "/static/styles/reuse/layout.css",
             "/static/styles/reuse/page-sections.css",
             "/static/modules/nextcloud-whiteboard/styles/whiteboards.css",
         ]);
     }
+});
+
+test("nextcloud whiteboard standalone shell loads shared layout styles", async () => {
+    const shellSource = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../ui/index.html", import.meta.url), "utf8"),
+    );
+    assert.match(shellSource, /\/static\/styles\/reuse\/layout\.css/);
+});
+
+test("nextcloud whiteboard share permissions use explicit access labels", async () => {
+    const strings = await import("node:fs/promises").then((fs) =>
+        fs.readFile(
+            new URL("../ui/languages/en/strings.xml", import.meta.url),
+            "utf8",
+        ),
+    );
+    assert.match(strings, />Read-Only<\/string>/);
+    assert.match(strings, />Read \+ Write<\/string>/);
+    assert.doesNotMatch(strings, />Can edit<\/string>/);
+});
+
+test("nextcloud whiteboard disables page layout editing", async () => {
+    const appSource = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+    );
+    assert.match(appSource, /allowCustomization:\s*false/);
+});
+
+test("direct-account SPA shares mount the full Whiteboard page", async () => {
+    const appSource = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+    );
+    assert.match(
+        appSource,
+        /shareContext\?\.directAccess === true \? null : \(shareContext \?\? null\)/,
+    );
 });
 
 test("nextcloud whiteboard app loads module strings and omits inline status element", async () => {
@@ -65,6 +102,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         renderSource,
         textToolsSource,
         styles,
+        presenceStyles,
     ] = await Promise.all([
         import("node:fs/promises").then((fs) =>
             fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
@@ -105,21 +143,37 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
                 "utf8",
             ),
         ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL(
+                    "../../../ui/styles/reuse/presence.css",
+                    import.meta.url,
+                ),
+                "utf8",
+            ),
+        ),
     ]);
     assert.match(
         source,
         /componentStringBaseUrls:\s*\[\s*"\/static\/modules\/nextcloud-whiteboard\/languages"/,
     );
     assert.doesNotMatch(source, /whiteboard-connection-status/);
-    assert.match(
-        source,
-        /\/static\/modules\/nextcloud-whiteboard\/share-adapter\.js/,
-    );
+    assert.match(source, /uiCtx\.capabilities\.get\("share:openPopup"\)/);
+    assert.match(source, /resourceType:\s*"whiteboard"/);
+    assert.match(source, /resourceId:\s*activeBoard\.id/);
+    assert.match(source, /supportsReadOnly:\s*true/);
+    assert.match(source, /readOnly:\s*session\.canWrite !== true/);
+    assert.match(source, /mountedComposer\.destroy\(\)/);
     assert.match(
         source,
         /\/static\/gateways\/share\/ui\/reuse\/share-button\.js/,
     );
     assert.match(source, /showNavbar:\s*sharePageFlag\("showNavbar",\s*true\)/);
+    assert.match(source, /requireAccountSession:\s*!activeShareContext/);
+    assert.match(
+        source,
+        /requireAccountSession:\s*!activeShareContext,\s*signal/,
+    );
     assert.match(source, /pageManifest:\s*\{/);
     assert.match(source, /pointerTracking:\s*true/);
     assert.match(
@@ -168,7 +222,7 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
     assert.match(source, /redoButton\?\.addEventListener\("click"/);
     assert.match(
         source,
-        /if \(meta\?\.transient !== true\) persistChanges\(elements\)/,
+        /if \(canWrite && meta\?\.transient !== true\) persistChanges\(elements\)/,
     );
     assert.match(styles, /#page-presence-section\s*\{[^}]*flex:\s*0 0 auto;/s);
     assert.match(
@@ -180,8 +234,12 @@ test("nextcloud whiteboard app loads module strings and omits inline status elem
         /#page-presence-section\s*\{[^}]*justify-content:\s*flex-start;/s,
     );
     assert.match(styles, /#page-presence-section\s*\{[^}]*margin-left:\s*0;/s);
+    assert.match(
+        presenceStyles,
+        /\.page-presence__avatar-img\s*\{[^}]*height:\s*2rem;[^}]*object-fit:\s*cover;[^}]*width:\s*2rem;/s,
+    );
     assert.match(styles, /\.whiteboard-text-menu/);
-    assert.doesNotMatch(source, /import\("\.\/share-adapter\.js"\)/);
+    assert.doesNotMatch(source, /share-adapter\.js/);
 });
 
 test("nextcloud whiteboard canvas deletes selected objects via keyboard", async () => {
@@ -286,7 +344,13 @@ test("nextcloud whiteboard image paste saves and selects resizable image objects
 });
 
 test("nextcloud whiteboard defaults to select after canvas refresh", async () => {
-    const [canvasSource, appSource, renderSource] = await Promise.all([
+    const [
+        canvasSource,
+        appSource,
+        renderSource,
+        elementsSource,
+        stylesSource,
+    ] = await Promise.all([
         import("node:fs/promises").then((fs) =>
             fs.readFile(
                 new URL("../ui/whiteboard/canvas.js", import.meta.url),
@@ -302,8 +366,28 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
                 "utf8",
             ),
         ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/whiteboard/elements.js", import.meta.url),
+                "utf8",
+            ),
+        ),
+        import("node:fs/promises").then((fs) =>
+            fs.readFile(
+                new URL("../ui/styles/whiteboards.css", import.meta.url),
+                "utf8",
+            ),
+        ),
     ]);
     assert.match(canvasSource, /let activeTool = "select"/);
+    assert.match(canvasSource, /normalizedKey === "z" && !event\.shiftKey/);
+    assert.match(canvasSource, /normalizedKey === "y"/);
+    assert.match(canvasSource, /undo\(\)/);
+    assert.match(canvasSource, /redo\(\)/);
+    assert.match(
+        canvasSource,
+        /if \(readOnly\) canvasElement\.style\.cursor = "pointer"/,
+    );
     assert.match(renderSource, /tool === "select" \? " active" : ""/);
     assert.match(
         appSource + renderSource,
@@ -325,4 +409,38 @@ test("nextcloud whiteboard defaults to select after canvas refresh", async () =>
         appSource,
         /window\.history\.replaceState\(null, "", nextUrl\)/,
     );
+    assert.match(elementsSource, /ensureVisibleStrokeColor/);
+    assert.match(elementsSource, /contrastRatio/);
+    assert.match(stylesSource, /--whiteboard-auto-stroke: #0f172a/);
+    assert.match(stylesSource, /--whiteboard-auto-stroke: #f8fafc/);
+    assert.match(stylesSource, /#page-presence-section/);
+});
+test("nextcloud whiteboard entrusts its internal URL to the share popup", async () => {
+    const appSource = await import("node:fs/promises").then((fs) =>
+        fs.readFile(new URL("../ui/app/index.js", import.meta.url), "utf8"),
+    );
+    assert.match(
+        appSource,
+        /contentUrl: `\/whiteboard\?id=\$\{encodeURIComponent\(activeBoard\.id\)\}`/,
+    );
+});
+
+test("whiteboard suspends realtime work while its tab is hidden", async () => {
+    const [appSource, realtimeSource] = await Promise.all(
+        ["../ui/app/index.js", "../ui/app/realtime.js"].map((relativePath) =>
+            import("node:fs/promises").then((fs) =>
+                fs.readFile(new URL(relativePath, import.meta.url), "utf8"),
+            ),
+        ),
+    );
+    assert.match(appSource, /document\.hidden[\s\S]*socket\.disconnect\(\)/);
+    assert.match(appSource, /socket\.connect\(\)/);
+    assert.match(appSource, /socketInstance\.cognisCleanup\?\.\(\)/);
+    assert.match(realtimeSource, /window\.setTimeout[\s\S]*10_000/);
+    assert.match(realtimeSource, /script\.remove\(\)/);
+    assert.match(
+        appSource,
+        /const mountedComposer = createPageComposer[\s\S]*signal\?\.addEventListener\([\s\S]*mountedComposer\.destroy\(\)/,
+    );
+    assert.match(appSource, /if \(signal\?\.aborted\) return/);
 });

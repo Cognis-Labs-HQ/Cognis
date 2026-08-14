@@ -287,6 +287,10 @@ export function createCalendarCoreRoutes({
                 "busy",
                 "free",
             ];
+            const reconcileUserShares = getCapability<
+                (accountId: string) => Promise<void>
+            >("calendar:reconcileUserShares");
+            await reconcileUserShares?.(targetAccountId);
             const validatedCalendars = await validateSharedCalendars(
                 gateway.listCalendars(targetAccountId),
                 targetAccountId,
@@ -488,6 +492,8 @@ export function createCalendarCoreRoutes({
                     req,
                     res,
                     shareTokenId: activeSharedCalendar.shareTokenId,
+                    accountId: claims.sub,
+                    ownerCalendarId: activeSharedCalendar.ownerCalendarId,
                     getCapability,
                 }))
             ) {
@@ -568,6 +574,8 @@ export function createCalendarCoreRoutes({
                         req,
                         res,
                         shareTokenId: activeSharedCalendar.shareTokenId,
+                        accountId: claims.sub,
+                        ownerCalendarId: activeSharedCalendar.ownerCalendarId,
                         getCapability,
                     }))
                 ) {
@@ -775,6 +783,8 @@ export function createCalendarCoreRoutes({
                     req,
                     res,
                     shareTokenId: responseSharedCalendar.shareTokenId,
+                    accountId: claims.sub,
+                    ownerCalendarId: responseSharedCalendar.ownerCalendarId,
                     getCapability,
                 }))
             ) {

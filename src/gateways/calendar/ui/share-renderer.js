@@ -93,6 +93,7 @@ async function openEventEditor({
     guestAccessToken,
     i18n,
     onChanged,
+    canWrite,
 }) {
     let form = null;
     const isEditing = Boolean(event?.id);
@@ -103,33 +104,48 @@ async function openEventEditor({
                 : "gateway.calendar.create_event",
         ),
         body: buildEventFormMarkup(i18n, event, slot),
-        actions: [
-            {
-                id: "save",
-                label: i18n.t(
-                    isEditing
-                        ? "gateway.calendar.save_event"
-                        : "gateway.calendar.create_event",
-                ),
-                variant: "confirm",
-            },
-            ...(isEditing
-                ? [
-                      {
-                          id: "delete",
-                          label: i18n.t("gateway.calendar.delete_event"),
-                          variant: "danger",
-                      },
-                  ]
-                : []),
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "cancel",
-            },
-        ],
+        actions: canWrite
+            ? [
+                  {
+                      id: "save",
+                      label: i18n.t(
+                          isEditing
+                              ? "gateway.calendar.save_event"
+                              : "gateway.calendar.create_event",
+                      ),
+                      variant: "confirm",
+                  },
+                  ...(isEditing
+                      ? [
+                            {
+                                id: "delete",
+                                label: i18n.t("gateway.calendar.delete_event"),
+                                variant: "danger",
+                            },
+                        ]
+                      : []),
+                  {
+                      id: "cancel",
+                      label: i18n.t("ui.reuse.cancel"),
+                      variant: "cancel",
+                  },
+              ]
+            : [
+                  {
+                      id: "close",
+                      label: i18n.t("ui.reuse.close"),
+                      variant: "neutral",
+                  },
+              ],
         onOpen: (overlay) => {
             form = overlay.querySelector("#shared-calendar-event-form");
+            if (!canWrite) {
+                form?.querySelectorAll("input, textarea, select").forEach(
+                    (control) => {
+                        control.disabled = true;
+                    },
+                );
+            }
         },
         onAction: (actionId) =>
             actionId !== "save" || form?.reportValidity() === true,
@@ -172,14 +188,13 @@ export async function mount(
     let events = Array.isArray(shareContext?.payload?.events)
         ? shareContext.payload.events
         : [];
-    let selectedView = "day";
+    let selectedView = "month";
     let activeDate = new Date();
     const canWrite =
         shareContext?.grantedCapabilities?.includes("calendar:write");
     const calendarId = String(calendar.id ?? "");
     const guestAccessToken = String(shareContext?.guestAccessToken ?? "");
     let composer;
-    let interactionController = null;
     root.classList.add("calendar-share-page");
     signal.addEventListener(
         "abort",
@@ -204,14 +219,71 @@ export async function mount(
     };
 
     function renderCalendar() {
-        composer.refresh([buildCalendarElement()]);
+        const sharedCalendar = root.querySelector(
+            `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
+        );
+        if (!(sharedCalendar instanceof HTMLElement)) return;
+        const periodLabel = sharedCalendar.querySelector(
+            ".calendar-nav-month-label",
+        );
+        if (periodLabel instanceof HTMLElement) {
+            periodLabel.textContent = resolvePeriodLabel();
+        }
+        sharedCalendar
+            .querySelectorAll("[data-calendar-view]")
+            .forEach((button) => {
+                button.classList.toggle(
+                    "active",
+                    button.getAttribute("data-calendar-view") === selectedView,
+                );
+            });
+        const canvas = sharedCalendar.querySelector(".calendar-view-canvas");
+        if (canvas instanceof HTMLElement) {
+            canvas.innerHTML = renderCalendarView(
+                events,
+                selectedView,
+                activeDate,
+                i18n,
+            );
+        }
+        requestAnimationFrame(scrollTimedViewsToCurrentSlot);
+    }
+
+    function resolvePeriodLabel() {
+        return selectedView === "year"
+            ? String(activeDate.getFullYear())
+            : formatMonthYear(activeDate);
+    }
+
+    function scrollTimedViewsToCurrentSlot() {
+        root.querySelectorAll(".calendar-day-timed-lane").forEach((lane) => {
+            if (!(lane instanceof HTMLElement)) return;
+            const currentSlot = lane.querySelector(
+                ".calendar-timeslot-events--current",
+            );
+            if (!(currentSlot instanceof HTMLElement)) return;
+            lane.scrollTop = Math.max(
+                0,
+                currentSlot.offsetTop - lane.clientHeight * 0.3,
+            );
+        });
+        root.querySelectorAll("[data-calendar-week-scroll-grid]").forEach(
+            (grid) => {
+                if (!(grid instanceof HTMLElement)) return;
+                const currentSlot = grid.querySelector(
+                    ".calendar-week-slot--current-time",
+                );
+                if (!(currentSlot instanceof HTMLElement)) return;
+                grid.scrollTop = Math.max(
+                    0,
+                    currentSlot.offsetTop - grid.clientHeight * 0.3,
+                );
+            },
+        );
     }
 
     function buildCalendarElement() {
-        const periodLabel =
-            selectedView === "year"
-                ? String(activeDate.getFullYear())
-                : formatMonthYear(activeDate);
+        const periodLabel = resolvePeriodLabel();
         return {
             id: "shared-calendar",
             label: calendar.name || i18n.t("gateway.calendar.page_title"),
@@ -239,72 +311,75 @@ export async function mount(
         };
     }
 
-    function bindInteractiveHandlers() {
-        interactionController?.abort();
-        interactionController = new AbortController();
-        signal.addEventListener("abort", () => interactionController?.abort(), {
-            once: true,
-        });
-        root.addEventListener(
-            "click",
-            (clickEvent) => {
-                if (!(clickEvent.target instanceof Element)) return;
-                const viewButton = clickEvent.target.closest(
-                    "[data-calendar-view]",
+    root.addEventListener(
+        "click",
+        (clickEvent) => {
+            if (!(clickEvent.target instanceof Element)) return;
+            const sharedCalendar = clickEvent.target.closest(
+                `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
+            );
+            if (!(sharedCalendar instanceof HTMLElement)) return;
+            const viewButton = clickEvent.target.closest(
+                "[data-calendar-view]",
+            );
+            if (viewButton instanceof HTMLElement) {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                const requestedView = String(
+                    viewButton.dataset.calendarView ?? "",
                 );
-                if (viewButton instanceof HTMLElement) {
-                    const requestedView = String(
-                        viewButton.dataset.calendarView ?? "",
-                    );
-                    if (!CALENDAR_VIEWS.includes(requestedView)) return;
-                    selectedView = requestedView;
-                    renderCalendar();
-                    return;
-                }
-                const navigationButton = clickEvent.target.closest(
-                    "[data-calendar-nav]",
-                );
-                if (navigationButton instanceof HTMLElement) {
-                    const direction = navigationButton.dataset.calendarNav;
-                    activeDate =
-                        direction === "today"
-                            ? new Date()
-                            : shiftActiveDate(
-                                  activeDate,
-                                  selectedView,
-                                  direction === "next" ? 1 : -1,
-                              );
-                    renderCalendar();
-                    return;
-                }
-                if (!canWrite) return;
-                const target = clickEvent.target.closest(
-                    "[data-calendar-event], [data-timeslot-add]",
-                );
-                if (!(target instanceof HTMLElement)) return;
-                const selectedEvent = events.find(
-                    (candidate) =>
-                        String(candidate.id) === target.dataset.calendarEvent,
-                );
-                void openEventEditor({
-                    calendarId,
-                    event: selectedEvent,
-                    slot: {
-                        startAt: target.dataset.slotStart,
-                        endAt: target.dataset.slotEnd,
-                    },
-                    guestAccessToken,
-                    i18n,
-                    onChanged: reloadEvents,
-                });
-            },
-            { signal: interactionController.signal },
-        );
-    }
+                if (!CALENDAR_VIEWS.includes(requestedView)) return;
+                selectedView = requestedView;
+                renderCalendar();
+                return;
+            }
+            const navigationButton = clickEvent.target.closest(
+                "[data-calendar-nav]",
+            );
+            if (navigationButton instanceof HTMLElement) {
+                clickEvent.preventDefault();
+                clickEvent.stopPropagation();
+                const direction = navigationButton.dataset.calendarNav;
+                activeDate =
+                    direction === "today"
+                        ? new Date()
+                        : shiftActiveDate(
+                              activeDate,
+                              selectedView,
+                              direction === "next" ? 1 : -1,
+                          );
+                renderCalendar();
+                return;
+            }
+            const target = clickEvent.target.closest(
+                canWrite
+                    ? "[data-calendar-event], [data-timeslot-add]"
+                    : "[data-calendar-event]",
+            );
+            if (!(target instanceof HTMLElement)) return;
+            const selectedEvent = events.find(
+                (candidate) =>
+                    String(candidate.id) === target.dataset.calendarEvent,
+            );
+            void openEventEditor({
+                calendarId,
+                event: selectedEvent,
+                slot: {
+                    startAt: target.dataset.slotStart,
+                    endAt: target.dataset.slotEnd,
+                },
+                guestAccessToken,
+                i18n,
+                onChanged: reloadEvents,
+                canWrite,
+            });
+        },
+        { signal },
+    );
 
     composer = createPageComposer(root, {
         allowCustomization: false,
-        enableDomParking: true,
+        enableDomParking: false,
         elements: [buildCalendarElement()],
         preferenceKey: "shared-calendar-layout",
         i18n,
@@ -319,8 +394,9 @@ export async function mount(
         persistLayoutPreferences: false,
         frameless: false,
         requireAccountSession: false,
-        onRender: bindInteractiveHandlers,
+        enableAccountEnhancements: false,
     });
 
     await composer.init();
+    requestAnimationFrame(scrollTimedViewsToCurrentSlot);
 }

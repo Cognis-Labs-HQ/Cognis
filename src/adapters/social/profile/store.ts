@@ -240,9 +240,14 @@ export class DbProfileStore implements ProfileCreateStore {
 
     async searchProfiles(
         query: string,
-        limit: number = 10,
+        limit?: number,
         options: ProfileSearchOptions = {},
     ): Promise<AccountProfile[]> {
+        if (limit !== undefined && (!Number.isInteger(limit) || limit < 0)) {
+            throw new RangeError(
+                "Profile search limit must be a non-negative integer.",
+            );
+        }
         const pattern =
             String(query ?? "")
                 .trim()
@@ -348,8 +353,10 @@ export class DbProfileStore implements ProfileCreateStore {
                     continue;
                 }
             }
+            if (limit !== undefined && visibleToRequester.length >= limit) {
+                break;
+            }
             visibleToRequester.push(profile);
-            if (visibleToRequester.length >= limit) break;
         }
         return visibleToRequester;
     }

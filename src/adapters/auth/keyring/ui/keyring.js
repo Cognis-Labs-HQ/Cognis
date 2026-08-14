@@ -166,6 +166,14 @@ function clearVault(clearPendingValues) {
 }
 
 async function loadRemoteEnvelope() {
+    if (temporaryKeyringAccountId) {
+        return {
+            resolved: true,
+            envelope: null,
+            accountInstanceId: temporaryKeyringAccountId,
+            derivationIterations: DEFAULT_ITERATIONS,
+        };
+    }
     try {
         const response = await apiFetch(KEYRING_API);
         if (!response.ok) return { resolved: false, envelope: null };
@@ -230,6 +238,7 @@ export function selectKeyringEnvelope(localEnvelope, remoteState) {
 }
 
 async function syncEnvelope(envelope) {
+    if (temporaryKeyringAccountId) return;
     let response;
     try {
         response = await apiFetch(KEYRING_API, {
@@ -489,6 +498,15 @@ function normalizeUnlockRequest(request) {
 export async function requestKeyringUnlock(options = {}) {
     const request = normalizeUnlockRequest(options.request);
     if (isKeyringUnlocked()) return true;
+    const isGuestSession =
+        uiCtx.capabilities.get("session:isGuest")?.() === true;
+    if (isGuestSession) {
+        const ensureGuestKeyring = uiCtx.capabilities.get(
+            "session:ensureGuestKeyring",
+        );
+        return Boolean(await ensureGuestKeyring?.());
+    }
+    if (temporaryKeyringAccountId) return false;
     if (keyringAccessSuppressed && options.manual !== true) return false;
     if (unlockRequestPromise) return unlockRequestPromise;
     unlockRequestPromise = (async () => {

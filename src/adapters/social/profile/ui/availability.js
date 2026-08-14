@@ -12,6 +12,28 @@ const PRESENCE_HEARTBEAT_INTERVAL_MS = 15_000;
 const PRESENCE_SESSION_KEY = "cognis_availability_presence_session";
 let locallyIdle = false;
 let locallyActive = true;
+let presenceRequest = null;
+let availabilityRefresh = null;
+
+function isGuestSession() {
+    const accountId = String(
+        localStorage.getItem("cognis_account") ?? "",
+    ).trim();
+    const providerId = String(localStorage.getItem("cognis_provider_id") ?? "")
+        .trim()
+        .toLowerCase();
+    return (
+        uiCtx.capabilities.get("session:isGuest")?.() === true ||
+        window.location.pathname.startsWith("/share/") ||
+        sessionStorage.getItem("cognis_share_guest_token_active") === "1" ||
+        accountId.startsWith("share:") ||
+        providerId === "guest" ||
+        providerId === "share" ||
+        String(localStorage.getItem("cognis_role") ?? "")
+            .trim()
+            .toLowerCase() === "guest"
+    );
+}
 
 function notifyAvailabilitySubscribers(availability) {
     for (const subscriber of availabilitySubscribers) {
@@ -33,7 +55,9 @@ function getPresenceSessionId() {
 }
 
 function reportPresenceActivity(active, keepalive = false) {
-    return apiFetch("/api/v1/social/availability/presence", {
+    if (isGuestSession()) return Promise.resolve(null);
+    if (!keepalive && presenceRequest) return presenceRequest;
+    const request = apiFetch("/api/v1/social/availability/presence", {
         method: "PUT",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
@@ -41,7 +65,13 @@ function reportPresenceActivity(active, keepalive = false) {
             sessionId: getPresenceSessionId(),
         }),
         keepalive,
+        suppressAccessDeniedEvent: true,
     }).catch(() => null);
+    if (keepalive) return request;
+    presenceRequest = request.finally(() => {
+        presenceRequest = null;
+    });
+    return presenceRequest;
 }
 
 function displayedStatus(indicator, status) {
@@ -60,13 +90,14 @@ async function applyIndicatorStatus(indicator, status, i18n) {
 }
 
 export async function fetchAvailability(handle = "") {
+    if (isGuestSession()) return null;
     const normalizedHandle = String(handle).replace(/^@/, "");
     const cacheKey = normalizedHandle || "self";
     if (availabilityCache.has(cacheKey)) return availabilityCache.get(cacheKey);
     const endpoint = normalizedHandle
         ? `/api/v1/social/availability/${encodeURIComponent(normalizedHandle)}`
         : "/api/v1/social/availability";
-    const request = apiFetch(endpoint)
+    const request = apiFetch(endpoint, { suppressAccessDeniedEvent: true })
         .then(async (response) =>
             response.ok ? (await response.json()).data : null,
         )
@@ -80,6 +111,7 @@ export function availabilityIndicatorMarkup(handle, label = "") {
 }
 
 export async function hydrateAvailabilityIndicators(container = document) {
+    if (isGuestSession()) return;
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
@@ -101,18 +133,25 @@ export async function hydrateAvailabilityIndicators(container = document) {
 }
 
 export async function refreshAvailabilityIndicators(container = document) {
-    availabilityCache.clear();
-    await hydrateAvailabilityIndicators(container);
-    const availability = await fetchAvailability();
-    if (availability?.status) {
-        const displayedAvailability = {
-            ...availability,
-            status: locallyIdle ? "idle" : availability.status,
-        };
-        notifyAvailabilitySubscribers(displayedAvailability);
-        return displayedAvailability;
-    }
-    return availability;
+    if (isGuestSession()) return null;
+    if (availabilityRefresh) return availabilityRefresh;
+    availabilityRefresh = (async () => {
+        availabilityCache.clear();
+        await hydrateAvailabilityIndicators(container);
+        const availability = await fetchAvailability();
+        if (availability?.status) {
+            const displayedAvailability = {
+                ...availability,
+                status: locallyIdle ? "idle" : availability.status,
+            };
+            notifyAvailabilitySubscribers(displayedAvailability);
+            return displayedAvailability;
+        }
+        return availability;
+    })().finally(() => {
+        availabilityRefresh = null;
+    });
+    return availabilityRefresh;
 }
 
 export async function setManualAvailability(status) {
@@ -161,10 +200,12 @@ window.addEventListener("pagehide", () => {
 });
 
 window.setInterval(() => {
+    if (document.hidden || !locallyActive) return;
     void reportPresenceActivity(locallyActive);
 }, PRESENCE_HEARTBEAT_INTERVAL_MS);
 
 window.setInterval(() => {
+    if (document.hidden || !locallyActive) return;
     const hasVisibleUserAvailability = document.querySelector(
         "[data-availability-handle]",
     );

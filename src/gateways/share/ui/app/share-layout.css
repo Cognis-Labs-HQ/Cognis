@@ -25,6 +25,10 @@
     justify-content: center;
 }
 
+.share-unlock-brand {
+    align-self: flex-start;
+}
+
 .share-loading-state,
 .share-empty-state,
 .share-meeting-card {

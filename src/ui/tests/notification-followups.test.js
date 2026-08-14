@@ -32,6 +32,18 @@ test("clear-all notifications button is disabled for empty inboxes", () => {
     assert.match(source, /if \(currentNotifications\.length === 0\) return;/);
 });
 
+test("notification arrivals publish a component-neutral browser event", () => {
+    const notificationSource = readFileSync(
+        resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
+        "utf8",
+    );
+    assert.match(
+        notificationSource,
+        /new CustomEvent\("cognis:notification-arrival"/,
+    );
+    assert.match(notificationSource, /detail: \{ notification: notif \}/);
+});
+
 test("notification actions can be handled without leaving the dashboard", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),

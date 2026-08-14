@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">Pre-Flight Check In Progress. Starting is disabled until it succeeds.</string>
   <string name="module.jitsi_meet.overlay.preflight_required">Pre-Flight Check must pass before the meeting can start.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Participants selected. Meeting can be started.</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">Meeting can be started. Meeting link popup will be shown.</string>
   <string name="module.jitsi_meet.overlay.creating">Creating or Reusing Meeting URL...</string>
   <string name="module.jitsi_meet.overlay.config_required">An admin must configure the Jitsi instance URL before Meetings can be used.</string>
   <string name="module.jitsi_meet.overlay.create_failed">Failed to create meeting.</string>
@@ -17,6 +18,7 @@
   <string name="module.jitsi_meet.overlay.probe_failed">Meeting URL liveness check failed.</string>
   <string name="module.jitsi_meet.overlay.joining">Joining Meeting...</string>
   <string name="module.jitsi_meet.overlay.join_failed">Failed to join meeting.</string>
+  <string name="module.jitsi_meet.meeting_not_found">The requested meeting does not exist.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting">Authentication is required before everyone can join.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting_other">Authentication is in progress by another participant. If they do not start within two minutes, you may continue.</string>
   <string name="module.jitsi_meet.overlay.auth_required_description">Moderator authentication is required. Start authentication in this same browser session.</string>
@@ -88,13 +90,17 @@
   <string name="module.jitsi_meet.share.button">Share</string>
   <string name="module.jitsi_meet.share.popup_title">Share Meeting</string>
   <string name="module.jitsi_meet.share.generate_link">Generate Link</string>
+  <string name="module.jitsi_meet.share.email_recipients">Send an invitation containing this meeting link to:</string>
   <string name="module.jitsi_meet.share.copy_link">Copy Link</string>
   <string name="module.jitsi_meet.share.revoke">Revoke</string>
   <string name="module.jitsi_meet.share.share_options_label">Share:</string>
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Optional Label</string>
   <string name="module.jitsi_meet.share.expiry_label">Expires (optional)</string>
-  <string name="module.jitsi_meet.share.password_optional">Password protection (optional)</string>
+  <string name="module.jitsi_meet.share.password_optional">Password protection</string>
+  <string name="module.jitsi_meet.share.password_title">Share Password</string>
+  <string name="module.jitsi_meet.share.password_instruction">Share this password with the share recipient</string>
+  <string name="module.jitsi_meet.share.delete_prompt">Delete this share?</string>
   <string name="module.jitsi_meet.share.password_placeholder">Leave blank for no password</string>
   <string name="module.jitsi_meet.share.status_active">Active</string>
   <string name="module.jitsi_meet.share.status_expired">Expired</string>

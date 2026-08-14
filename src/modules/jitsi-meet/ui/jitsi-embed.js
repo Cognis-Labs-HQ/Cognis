@@ -75,7 +75,12 @@ export function createEmbedHandlers({
                 },
             })) || suppliedMeetingPassword,
         ).trim();
-        if (meetingKeyring && suppliedMeetingPassword && meetingPassword) {
+        if (
+            meetingKeyring &&
+            suppliedMeetingPassword &&
+            meetingPassword &&
+            !state.shareAccessToken
+        ) {
             const acknowledgeResponse = await apiFetch(
                 "/api/v1/modules/jitsi-meet/meetings/password/acknowledge",
                 {
@@ -226,6 +231,10 @@ export function createEmbedHandlers({
             applyPrivilegedMeetingSettings();
             utils.syncShareButtonAvailability();
             void callbacks.keepPresenceAlive(true);
+            if (state.promptShareOnJoin) {
+                state.promptShareOnJoin = false;
+                void callbacks.openMeetingSharePopup?.();
+            }
         });
         apiInstance.addEventListener("participantRoleChanged", (event) => {
             const participantId = callbacks.getParticipantId(event);
@@ -299,6 +308,8 @@ export function createEmbedHandlers({
                     meetingId: state.meeting.id,
                     sessionId: state.sessionId,
                 }),
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
             },
         );
         if (!joinResponse.ok) {
@@ -357,10 +368,6 @@ export function createEmbedHandlers({
         }
 
         const selected = utils.selectedUsernames();
-        if (selected.length === 0) {
-            callbacks.renderParticipants();
-            return;
-        }
 
         utils.updateOverlay({
             message: i18n.t("module.jitsi_meet.overlay.creating"),
@@ -389,7 +396,7 @@ export function createEmbedHandlers({
             utils.updateOverlay({
                 message,
                 loading: false,
-                canStart: state.preflightPassed && selected.length > 0,
+                canStart: state.preflightPassed,
                 visible: true,
             });
             showToast(message, { variant: "error" });
@@ -400,6 +407,8 @@ export function createEmbedHandlers({
             .json()
             .catch(() => ({ data: null }));
         state.meeting = createPayload?.data;
+        state.promptShareOnJoin =
+            Boolean(state.meeting?.id) && selected.length === 0;
         state.chatMode = "meeting";
         state.privateChatUsername = "";
         await callbacks.updateNativeChat();

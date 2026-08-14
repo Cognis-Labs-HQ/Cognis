@@ -7,6 +7,14 @@ import { resolve } from "node:path";
 const values = new Map();
 const sessionValues = new Map();
 const indexedDbValues = new Map();
+const settingsSource = readFileSync(
+    resolve(import.meta.dirname, "../ui/settings.js"),
+    "utf8",
+);
+const keyringSource = readFileSync(
+    resolve(import.meta.dirname, "../ui/keyring.js"),
+    "utf8",
+);
 Object.defineProperty(globalThis, "crypto", {
     configurable: true,
     value: webcrypto,
@@ -67,6 +75,11 @@ globalThis.indexedDB = {
         return request;
     },
 };
+
+test("keyring settings do not schedule an unlock prompt while rendering", () => {
+    assert.doesNotMatch(settingsSource, /defer-page-action/);
+    assert.match(settingsSource, /#settings-keyring-toggle/);
+});
 let unlockPromptCount = 0;
 let lastUnlockPrompt = null;
 
@@ -437,26 +450,42 @@ test("locked keyring exposes no entry metadata or decrypted values", async () =>
 test("temporary guest keyrings stay unlocked and use session storage", async () => {
     const keyring = await import("../ui/keyring.js");
     localStorage.setItem("cognis_account", "share:share-1:guest-1");
+    const originalFetch = globalThis.fetch;
+    let networkRequestCount = 0;
+    globalThis.fetch = async () => {
+        networkRequestCount += 1;
+        throw new Error("temporary_keyring_network_request");
+    };
 
-    assert.equal(
-        await keyring.activateTemporaryKeyring(
-            "share:share-1:guest-1",
-            "derived-guest-passphrase",
-        ),
-        true,
-    );
-    await keyring.setKeyringValue("chatroom:room-1:key", "room-key");
-    await keyring.lockKeyring();
+    try {
+        assert.equal(
+            await keyring.activateTemporaryKeyring(
+                "share:share-1:guest-1",
+                "derived-guest-passphrase",
+            ),
+            true,
+        );
+        await keyring.setKeyringValue("chatroom:room-1:key", "room-key");
+        await keyring.lockKeyring();
 
-    assert.equal(keyring.isKeyringUnlocked(), true);
-    assert.equal(keyring.getKeyringValue("chatroom:room-1:key"), "room-key");
-    assert.ok(
-        sessionValues.has("cognis_secure_keyring:share%3Ashare-1%3Aguest-1"),
-    );
-    keyring.endTemporaryKeyring();
+        assert.equal(networkRequestCount, 0);
+        assert.equal(keyring.isKeyringUnlocked(), true);
+        assert.equal(
+            keyring.getKeyringValue("chatroom:room-1:key"),
+            "room-key",
+        );
+        assert.ok(
+            sessionValues.has(
+                "cognis_secure_keyring:share%3Ashare-1%3Aguest-1",
+            ),
+        );
+    } finally {
+        keyring.endTemporaryKeyring();
+        globalThis.fetch = originalFetch;
+        localStorage.removeItem("cognis_account");
+    }
     assert.equal(keyring.isKeyringUnlocked(), false);
     assert.equal(sessionValues.size, 0);
-    localStorage.removeItem("cognis_account");
 });
 
 test("first login sets up a new keyring with the selected encryption password", async () => {
@@ -802,4 +831,11 @@ test("keyring persistence surfaces definitive server rejection", async () => {
         await keyring.lockKeyring();
         localStorage.removeItem("cognis_account");
     }
+});
+
+test("temporary guest keyrings never request an account password", () => {
+    assert.match(
+        keyringSource,
+        /session:isGuest[\s\S]*session:ensureGuestKeyring[\s\S]*if \(temporaryKeyringAccountId\) return false/,
+    );
 });

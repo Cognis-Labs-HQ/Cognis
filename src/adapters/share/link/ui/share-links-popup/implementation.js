@@ -23,276 +23,20 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { renderInfoTooltip } from "/static/reuse/info-tooltip.js";
+import { renderPopupBody, resolveShareMethodId } from "./body.js";
 import {
-    bindSecretVisibilityToggles,
-    renderSecretVisibilityField,
-} from "/static/reuse/secret-visibility-toggle.js";
-const STYLESHEET_HREF =
-    "/static/adapters/share/link/ui/share-links-popup/index.css";
+    buildRecipientAvatarMarkup,
+    ensureStylesheet,
+    generateSharePassword,
+    hydrateRecipientAvatars,
+    renderPasswordProtectionField,
+    renderQuickShareActions,
+    renderRows,
+    renderShareStatus,
+    showSharePasswordPopup,
+} from "./rendering.js";
+
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
-let stylesheetReady = null;
-
-function buildRecipientAvatarMarkup(options) {
-    const avatarRenderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
-    if (avatarRenderer?.buildMarkup) {
-        return avatarRenderer.buildMarkup(options);
-    }
-    const avatarClass = escapeHtml(options.avatarClass);
-    const fallbackClass = escapeHtml(options.fallbackClass);
-    const color = escapeHtml(pickInitialsColor(options.colorSeed));
-    const initials = escapeHtml(getInitialsText(options.label));
-    return (
-        `<span class="${avatarClass}">` +
-        `<span class="${fallbackClass}" style="--initials-bg: ${color};">` +
-        `${initials}</span></span>`
-    );
-}
-
-function hydrateRecipientAvatars(container) {
-    return uiCtx.capabilities
-        .get("ui:profileAvatarRenderer")
-        ?.hydrate?.(container);
-}
-function ensureStylesheet() {
-    if (stylesheetReady) return stylesheetReady;
-    const existing = document.querySelector(`link[href="${STYLESHEET_HREF}"]`);
-    if (existing) {
-        stylesheetReady = existing.sheet
-            ? Promise.resolve()
-            : new Promise((resolve) => {
-                  existing.addEventListener("load", resolve, { once: true });
-              });
-        return stylesheetReady;
-    }
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = STYLESHEET_HREF;
-    stylesheetReady = new Promise((resolve) => {
-        link.addEventListener("load", resolve, { once: true });
-    });
-    document.head.appendChild(link);
-    return stylesheetReady;
-}
-function renderQuickShareActions(link, labels) {
-    const quickShareActions = Array.isArray(link?.quickShareActions)
-        ? link.quickShareActions
-        : [];
-    return quickShareActions
-        .map((action) => {
-            const href = String(action?.href ?? "").trim();
-            const label = String(action?.label ?? "").trim();
-            const id = String(action?.id ?? "").trim();
-            if (!href || !label) {
-                return "";
-            }
-            if (id === "smtp") {
-                return `
-          <a
-            class="btn-neutral btn-animated"
-            href="${escapeHtml(href)}"
-            target="_blank"
-            rel="noopener noreferrer"
-            data-share-quick-action="${escapeHtml(id)}"
-            aria-label="${escapeHtml(labels.mail)}"
-            title="${escapeHtml(labels.mail)}"
-          ><span class="share-links-row-mail-icon" aria-hidden="true"></span></a>
-        `;
-            }
-            return `
-        <a
-          class="btn-neutral btn-animated share-links-row-quick-action"
-          href="${escapeHtml(href)}"
-          data-share-quick-action="${escapeHtml(id)}"
-        >${escapeHtml(label)}</a>
-      `;
-        })
-        .join("");
-}
-function renderShareStatus(link, labels) {
-    const expiresAt = String(link?.expiresAt ?? "").trim();
-    const isExpired = link?.status === "expired";
-    const statusLabel = isExpired ? labels.statusExpired : labels.statusActive;
-    const statusClass = isExpired
-        ? "share-links-row-status-expired"
-        : "share-links-row-status-active";
-    const timeLabel = expiresAt
-        ? `${isExpired ? labels.expiredAtLabel : labels.expiresAtLabel}: ${formatDateTime(expiresAt)}`
-        : "";
-    return `
-    <div class="share-links-row-status-line">
-      <span class="share-links-row-status ${statusClass}">${escapeHtml(statusLabel)}</span>
-      ${timeLabel ? `<span class="share-links-row-expiry">${escapeHtml(timeLabel)}</span>` : ""}
-    </div>
-  `;
-}
-function renderRows(labels, links) {
-    if (!Array.isArray(links) || links.length === 0) {
-        return `<p class="share-links-empty">${escapeHtml(labels.empty)}</p>`;
-    }
-    return `
-    <div class="share-links-list">
-      ${links
-          .map((link) => {
-              const shareUrl = String(link?.shareUrl ?? "");
-              const shareId = String(link?.id ?? "");
-              const shareLabel =
-                  String(link?.label ?? "").trim() || labels.untitled;
-              const recipients = Array.isArray(link?.accessControls?.recipients)
-                  ? link.accessControls.recipients.filter(
-                        (entry) => entry?.type === "user",
-                    )
-                  : [];
-              const isUserShare = recipients.length > 0;
-              const variants = Array.isArray(link?.variants)
-                  ? link.variants
-                  : [];
-              const createdAt = String(link?.createdAt ?? "").trim();
-              return `
-            <article class="share-links-row" data-share-edit="${escapeHtml(shareId)}">
-              <button
-                type="button"
-                class="popup-close-btn btn-cancel btn-animated share-links-row-close"
-                data-share-delete="${escapeHtml(shareId)}"
-                aria-label="${escapeHtml(labels.revoke)}"
-                title="${escapeHtml(labels.revoke)}"
-              >&#x2715;</button>
-              <div class="share-links-row-main">
-                <div class="share-links-row-header">
-                  <p class="share-links-row-label">${escapeHtml(shareLabel)}</p>
-                  ${
-                      isUserShare
-                          ? ""
-                          : `<button
-                    type="button"
-                    class="share-links-row-copy"
-                    data-share-copy="${escapeHtml(shareUrl)}"
-                    title="${escapeHtml(shareUrl)}"
-                    aria-label="${escapeHtml(labels.copyLink)}: ${escapeHtml(shareUrl)}"
-                  >🔗</button>`
-                  }
-                </div>
-                ${renderShareStatus(link, labels)}
-                ${createdAt ? `<p class="share-links-row-created">${escapeHtml(labels.createdAtLabel || "Created")}: ${escapeHtml(formatDateTime(createdAt))}</p>` : ""}
-                ${recipients.length ? `<div class="share-links-recipients">${recipients.map((recipient) => `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.handle || recipient.id, colorSeed: recipient.handle || recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small></span>`).join("")}</div>` : ""}
-                ${!isUserShare && variants.length ? `<div class="share-links-variants">${variants.map((variant) => `<button type="button" class="share-links-variant" data-share-copy="${escapeHtml(variant.url)}" title="${escapeHtml(variant.url)}">${escapeHtml(variant.label)}</button>`).join("")}</div>` : ""}
-              </div>
-              ${
-                  isUserShare
-                      ? ""
-                      : `<div class="share-links-row-share">
-                <span class="share-links-row-share-label">${escapeHtml(labels.shareOptions)}</span>
-                <div class="share-links-row-actions">
-                  ${link.emailSupported ? `<button type="button" class="btn-neutral share-links-email-action" data-share-email="${escapeHtml(shareId)}" aria-label="${escapeHtml(labels.mail)}" title="${escapeHtml(labels.mail)}"><span class="share-links-row-mail-icon" aria-hidden="true"></span></button>` : ""}
-                  ${renderQuickShareActions(link, labels)}
-                </div>
-              </div>`
-              }
-            </article>
-          `;
-          })
-          .join("")}
-    </div>
-  `;
-}
-
-function renderBody(labels, state) {
-    const activeModule = state.methodModules.get(state.activeMethodId);
-    const emptyLabel = activeModule?.getEmptyLabel?.(labels) ?? labels.empty;
-    return `
-    <section class="share-links-popup">
-      <nav class="share-method-tabs" aria-label="${escapeHtml(labels.methods || "Share methods")}">
-        ${state.methods.map((method) => `<button type="button" class="share-method-tab${method.id === state.activeMethodId ? " is-active" : ""}" data-share-method="${escapeHtml(method.id)}" aria-pressed="${method.id === state.activeMethodId ? "true" : "false"}">${escapeHtml(method.name)}</button>`).join("")}
-      </nav>
-      <p class="share-method-description"></p>
-      <div class="share-method-page"></div>
-          <h3 class="share-method-history-heading"></h3>
-          <div class="share-links-list-container">
-        ${renderRows({ ...labels, empty: emptyLabel }, state.visibleLinks)}
-      </div>
-    </section>
-  `;
-}
-
-function renderPasswordProtectionField(labels, state) {
-    const formMarkup = createFormBuilder(
-        {
-            i18n: {
-                t: () => labels.password,
-            },
-            escapeHtml,
-            renderInfoTooltip,
-        },
-        {
-            formId: "share-links-password-form",
-            includeSubmitButton: false,
-            submitLabelKey: "ui.reuse.save",
-            fields: [
-                {
-                    name: "password",
-                    labelKey: "password",
-                    type: "password",
-                    required: state.passwordRequired,
-                    infoTooltip:
-                        state.passwordRequired &&
-                        state.activeMethodId === "link"
-                            ? {
-                                  text: labels.passwordRequiredInfo,
-                                  ariaLabel: labels.moreInformation,
-                                  id: "share-password-required",
-                              }
-                            : undefined,
-                    value: state.password,
-                    attributes: {
-                        autocomplete: "new-password",
-                        placeholder: labels.passwordPlaceholder,
-                    },
-                },
-            ],
-        },
-    ).render();
-    return `<div class="share-links-password-row">${formMarkup}<button type="button" class="btn-neutral btn-animated share-links-password-generate" data-share-generate-password aria-label="${escapeHtml(labels.generatePassword)}" title="${escapeHtml(labels.generatePassword)}"><span aria-hidden="true">&#8635;</span></button></div>`;
-}
-
-async function showSharePasswordPopup(password, labels) {
-    const normalizedPassword = String(password ?? "");
-    if (!normalizedPassword) return;
-    await openPopup({
-        title: labels.passwordPopupTitle || labels.password,
-        body: () =>
-            `<div class="share-password-result">${renderSecretVisibilityField({ id: "created-share-password", value: normalizedPassword, label: labels.passwordPopupLabel || labels.password, toggleLabel: labels.passwordReveal, escapeHtml })}<button type="button" class="btn-confirm" data-share-password-copy>${escapeHtml(labels.passwordCopy || labels.copyLink)}</button></div>`,
-        actions: [{ id: "done", label: labels.done, variant: "confirm" }],
-        onOpen(overlay) {
-            bindSecretVisibilityToggles({ root: overlay });
-            overlay
-                .querySelector("[data-share-password-copy]")
-                ?.addEventListener("click", async () => {
-                    const copied =
-                        await copyTextToClipboard(normalizedPassword);
-                    showToast(
-                        copied ? labels.passwordCopied : labels.copyFailed,
-                        { variant: copied ? "success" : "error" },
-                    );
-                });
-        },
-    });
-}
-
-function generateSharePassword() {
-    const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789_-";
-    const characters = [];
-    const randomValues = new Uint8Array(32);
-    while (characters.length < 20) {
-        crypto.getRandomValues(randomValues);
-        for (const value of randomValues) {
-            if (value >= 228) continue;
-            characters.push(alphabet[value % alphabet.length]);
-            if (characters.length === 20) break;
-        }
-    }
-    return Array.from({ length: 5 }, (_, index) =>
-        characters.slice(index * 4, index * 4 + 4).join(""),
-    ).join("-");
-}
 
 export async function openShareLinksPopup({
     title,
@@ -306,6 +50,11 @@ export async function openShareLinksPopup({
     linkAccessOptions = [],
     passwordRequired = false,
     defaultGrantedCapabilities = [],
+    supportsReadOnly = false,
+    initialEditingShareId = "",
+    initialEditingShare = null,
+    editOnly = false,
+    allowedMethodIds = null,
 }) {
     await ensureStylesheet();
 
@@ -324,12 +73,29 @@ export async function openShareLinksPopup({
         methodModules: new Map(),
         activeMethodId: "link",
         visibleLinks: [],
-        permission: "read",
+        permission: supportsReadOnly ? "read" : "write",
+        supportsReadOnly,
         linkAccessOptions: Array.isArray(linkAccessOptions)
-            ? linkAccessOptions
+            ? linkAccessOptions.filter(
+                  (option) =>
+                      supportsReadOnly ||
+                      option?.permissions?.includes("write"),
+              )
             : [],
-        linkAccessId: String(linkAccessOptions?.[0]?.id ?? ""),
+        linkAccessId: String(
+            linkAccessOptions.find(
+                (option) =>
+                    supportsReadOnly || option?.permissions?.includes("write"),
+            )?.id ?? "",
+        ),
     };
+    const initialShare =
+        initialEditingShare && typeof initialEditingShare === "object"
+            ? initialEditingShare
+            : null;
+    if (initialShare) {
+        state.activeMethodId = resolveShareMethodId(initialShare);
+    }
 
     try {
         state.methods =
@@ -342,6 +108,17 @@ export async function openShareLinksPopup({
             { id: "link", name: labels.linkMethod || "Link" },
             { id: "user", name: labels.userMethod || "User" },
         ];
+    }
+    if (Array.isArray(allowedMethodIds)) {
+        const allowedMethods = new Set(allowedMethodIds.map(String));
+        state.methods = state.methods.filter((method) =>
+            allowedMethods.has(String(method?.id ?? "")),
+        );
+    }
+    if (editOnly) {
+        state.methods = state.methods.filter(
+            (method) => method.id === state.activeMethodId,
+        );
     }
     for (const method of state.methods) {
         if (!method?.pageModuleUrl) continue;
@@ -377,6 +154,41 @@ export async function openShareLinksPopup({
         });
     }
 
+    function selectShareForEditing(selectedShare) {
+        if (!selectedShare) return false;
+        const recipients = Array.isArray(
+            selectedShare.accessControls?.recipients,
+        )
+            ? selectedShare.accessControls.recipients
+            : [];
+        state.activeMethodId = recipients.some(
+            (recipient) => recipient?.type === "user",
+        )
+            ? "user"
+            : "link";
+        state.editingShareId = String(selectedShare.id ?? "");
+        state.label = String(selectedShare.label ?? "");
+        state.expiresAt = selectedShare.expiresAt
+            ? new Date(selectedShare.expiresAt).toISOString().slice(0, 16)
+            : "";
+        state.recipients = recipients;
+        state.permission = state.supportsReadOnly
+            ? selectedShare.accessControls?.permissions?.includes("write")
+                ? "write"
+                : "read"
+            : "write";
+        const matchingAccess = state.linkAccessOptions.find(
+            (option) =>
+                option.grantedCapabilities?.length ===
+                    selectedShare.grantedCapabilities?.length &&
+                option.grantedCapabilities.every((capability) =>
+                    selectedShare.grantedCapabilities.includes(capability),
+                ),
+        );
+        if (matchingAccess) state.linkAccessId = matchingAccess.id;
+        return true;
+    }
+
     async function refreshLinks({ preserveOnError = true } = {}) {
         try {
             const fetchedLinks = await fetchLinks();
@@ -402,6 +214,7 @@ export async function openShareLinksPopup({
         listContainer.innerHTML = renderRows(
             {
                 ...labels,
+                hidePermissionLabels: !state.supportsReadOnly,
                 empty:
                     state.methodModules
                         .get(state.activeMethodId)
@@ -424,19 +237,37 @@ export async function openShareLinksPopup({
         }
     }
 
-    await refreshLinks({ preserveOnError: false });
+    if (editOnly && initialShare) {
+        state.links = [initialShare];
+        selectShareForEditing(initialShare);
+        filterLinksForActiveMethod();
+    } else {
+        await refreshLinks({ preserveOnError: false });
+        selectShareForEditing(
+            state.links.find(
+                (share) => String(share.id) === String(initialEditingShareId),
+            ),
+        );
+    }
 
     let refreshTimer = null;
     let popupOpen = false;
 
     await openPopup({
         title,
-        body: () => renderBody(labels, state),
+        body: () =>
+            renderPopupBody({
+                labels,
+                state,
+                editOnly,
+                escapeHtml,
+                renderRows,
+            }),
         actions: [
             {
                 id: "done",
-                label: labels.done,
-                variant: "confirm",
+                label: labels.close || labels.done || "Close",
+                variant: "neutral",
             },
         ],
         onOpen: (overlay) => {
@@ -453,7 +284,7 @@ export async function openShareLinksPopup({
             );
             if (
                 !(methodPage instanceof HTMLElement) ||
-                !(listContainer instanceof HTMLElement)
+                (!editOnly && !(listContainer instanceof HTMLElement))
             ) {
                 return;
             }
@@ -470,7 +301,7 @@ export async function openShareLinksPopup({
                 selectedUsers.innerHTML = state.recipients
                     .map(
                         (recipient) =>
-                            `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.id, colorSeed: recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span><small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small><button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
+                            `<span class="share-links-recipient-chip">${buildRecipientAvatarMarkup({ avatarKey: recipient.avatarKey || null, label: recipient.label || recipient.id, colorSeed: recipient.id, profileHandle: recipient.handle || null, avatarClass: "share-links-user-avatar", imageClass: "share-links-user-avatar-image", fallbackClass: "share-links-user-avatar-fallback" })}<span>${escapeHtml(recipient.label || recipient.id)}</span>${state.supportsReadOnly ? `<small>${escapeHtml(recipient.permissions?.includes("write") ? labels.writePermission || "Write" : labels.readPermission || "Read")}</small>` : ""}<button type="button" data-selected-recipient-remove="${escapeHtml(recipient.id)}">×</button></span>`,
                     )
                     .join("");
                 hydrateRecipientAvatars(selectedUsers);
@@ -498,10 +329,16 @@ export async function openShareLinksPopup({
                             active ? "true" : "false",
                         );
                     });
-                methodDescription.textContent = String(
-                    activeMethod?.description ?? "",
-                );
-                historyHeading.textContent = String(activeMethod?.name ?? "");
+                if (methodDescription instanceof HTMLElement) {
+                    methodDescription.textContent = String(
+                        activeMethod?.description ?? "",
+                    );
+                }
+                if (historyHeading instanceof HTMLElement) {
+                    historyHeading.textContent = String(
+                        activeMethod?.name ?? "",
+                    );
+                }
                 methodPage.innerHTML =
                     typeof methodModule?.renderPage === "function"
                         ? methodModule.renderPage({
@@ -516,6 +353,13 @@ export async function openShareLinksPopup({
                               },
                           })
                         : `<p class="share-links-empty">${escapeHtml(labels.methodUnavailable || labels.createFailed)}</p>`;
+                if (editOnly) {
+                    const updateButton = methodPage.querySelector(
+                        "#share-links-create-btn",
+                    );
+                    updateButton?.classList.remove("btn-neutral", "btn-cancel");
+                    updateButton?.classList.add("btn-confirm");
+                }
                 renderSelectedUsers();
                 filterLinksForActiveMethod();
                 renderLinksList(listContainer);
@@ -541,6 +385,8 @@ export async function openShareLinksPopup({
                 syncCreateButton(createButton);
                 let shareUrl = null;
                 let revealedPassword = "";
+                let methodModule = null;
+                let preparedInput = null;
                 try {
                     const createInput = {
                         label: state.label,
@@ -551,16 +397,25 @@ export async function openShareLinksPopup({
                         recipients: state.recipients,
                         shareMethod: state.activeMethodId,
                         permission: state.permission,
-                        selectedAccess: state.linkAccessOptions.find(
-                            (option) => option.id === state.linkAccessId,
-                        ),
+                        supportsReadOnly: state.supportsReadOnly,
+                        selectedAccess:
+                            state.linkAccessOptions.find(
+                                (option) => option.id === state.linkAccessId,
+                            ) ??
+                            (state.supportsReadOnly
+                                ? undefined
+                                : {
+                                      permissions: ["read", "write"],
+                                      grantedCapabilities:
+                                          state.defaultGrantedCapabilities,
+                                  }),
                         defaultGrantedCapabilities:
                             state.defaultGrantedCapabilities,
                     };
-                    const methodModule = state.methodModules.get(
+                    methodModule = state.methodModules.get(
                         state.activeMethodId,
                     );
-                    const preparedInput =
+                    preparedInput =
                         typeof methodModule?.buildCreateOptions === "function"
                             ? methodModule.buildCreateOptions(createInput)
                             : createInput;
@@ -590,14 +445,70 @@ export async function openShareLinksPopup({
                         state.activeMethodId === "link"
                             ? (result?.shareUrl ?? null)
                             : null;
-                    state.label = "";
-                    state.password = "";
-                    state.recipients = [];
-                    state.editingShareId = "";
-                    if (popupOpen) renderMethodPage();
-                    await refreshLinks();
-                    if (popupOpen) renderLinksList(listContainer);
+                    if (editOnly && result?.id) {
+                        state.pendingLinks.clear();
+                        state.links = [result];
+                        selectShareForEditing(result);
+                        filterLinksForActiveMethod();
+                        if (popupOpen) renderMethodPage();
+                    } else {
+                        state.label = "";
+                        state.password = "";
+                        state.recipients = [];
+                        state.editingShareId = "";
+                        if (popupOpen) renderMethodPage();
+                        await refreshLinks();
+                        if (popupOpen) renderLinksList(listContainer);
+                    }
                 } catch (error) {
+                    if (
+                        error?.code === "duplicate_user_share" &&
+                        preparedInput &&
+                        typeof methodModule?.findExistingShare === "function"
+                    ) {
+                        const existingShare = methodModule.findExistingShare(
+                            state.links,
+                            preparedInput,
+                        );
+                        const hasChanges = methodModule.hasShareChanges?.(
+                            existingShare,
+                            preparedInput,
+                        );
+                        if (existingShare && hasChanges) {
+                            try {
+                                const updatedShare = await updateLink({
+                                    shareId: existingShare.id,
+                                    ...preparedInput,
+                                });
+                                showToast(
+                                    labels.duplicateUserShareUpdated ||
+                                        labels.updateUserShare,
+                                    { variant: "success" },
+                                );
+                                if (updatedShare) {
+                                    state.links = [
+                                        updatedShare,
+                                        ...state.links.filter(
+                                            (share) =>
+                                                String(share.id) !==
+                                                String(updatedShare.id),
+                                        ),
+                                    ];
+                                    filterLinksForActiveMethod();
+                                    renderLinksList(listContainer);
+                                }
+                            } catch (updateError) {
+                                console.error(
+                                    "[share] failed to update duplicate user share",
+                                    updateError,
+                                );
+                                showToast(labels.createFailed, {
+                                    variant: "error",
+                                });
+                            }
+                            return;
+                        }
+                    }
                     showToast(
                         error?.code === "duplicate_user_share"
                             ? labels.duplicateUserShare || labels.createFailed
@@ -629,7 +540,7 @@ export async function openShareLinksPopup({
                 state.expiresAt = "";
                 state.password = "";
                 state.recipients = [];
-                state.permission = "read";
+                state.permission = state.supportsReadOnly ? "read" : "write";
                 state.linkAccessId = String(
                     state.linkAccessOptions?.[0]?.id ?? "",
                 );
@@ -639,9 +550,18 @@ export async function openShareLinksPopup({
             methodTabs?.addEventListener("click", (event) => {
                 const button = event.target.closest("[data-share-method]");
                 if (!(button instanceof HTMLElement)) return;
-                state.activeMethodId = String(
+                const selectedMethodId = String(
                     button.dataset.shareMethod || "link",
                 );
+                if (
+                    state.editingShareId &&
+                    selectedMethodId !== state.activeMethodId
+                ) {
+                    state.activeMethodId = selectedMethodId;
+                    clearEditMode();
+                    return;
+                }
+                state.activeMethodId = selectedMethodId;
                 renderMethodPage();
             });
 
@@ -794,7 +714,7 @@ export async function openShareLinksPopup({
                 });
             });
 
-            listContainer.addEventListener("click", async (event) => {
+            listContainer?.addEventListener("click", async (event) => {
                 if (!(event.target instanceof HTMLElement)) return;
                 const emailButton = event.target.closest("[data-share-email]");
                 if (emailButton instanceof HTMLElement) {
@@ -825,49 +745,8 @@ export async function openShareLinksPopup({
                     const selectedShare = state.links.find(
                         (link) => String(link.id) === editRow.dataset.shareEdit,
                     );
-                    if (selectedShare) {
-                        const hasUserRecipients = Array.isArray(
-                            selectedShare.accessControls?.recipients,
-                        )
-                            ? selectedShare.accessControls.recipients.some(
-                                  (recipient) => recipient?.type === "user",
-                              )
-                            : false;
-                        state.activeMethodId = hasUserRecipients
-                            ? "user"
-                            : "link";
-                        state.editingShareId = String(selectedShare.id);
-                        state.label = String(selectedShare.label ?? "");
-                        state.expiresAt = selectedShare.expiresAt
-                            ? new Date(selectedShare.expiresAt)
-                                  .toISOString()
-                                  .slice(0, 16)
-                            : "";
-                        state.recipients = Array.isArray(
-                            selectedShare.accessControls?.recipients,
-                        )
-                            ? selectedShare.accessControls.recipients
-                            : [];
-                        state.permission =
-                            selectedShare.accessControls?.permissions?.includes(
-                                "write",
-                            )
-                                ? "write"
-                                : "read";
-                        const matchingAccess = state.linkAccessOptions.find(
-                            (option) =>
-                                option.grantedCapabilities?.every(
-                                    (capability) =>
-                                        selectedShare.grantedCapabilities?.includes(
-                                            capability,
-                                        ),
-                                ),
-                        );
-                        if (matchingAccess) {
-                            state.linkAccessId = matchingAccess.id;
-                        }
+                    if (selectShareForEditing(selectedShare))
                         renderMethodPage();
-                    }
                     return;
                 }
                 const copyButton = event.target.closest("[data-share-copy]");
@@ -899,12 +778,12 @@ export async function openShareLinksPopup({
                         {
                             id: "confirm",
                             label: labels.confirm || labels.revoke,
-                            variant: "danger",
+                            variant: "cancel",
                         },
                         {
                             id: "cancel",
                             label: labels.cancel || labels.done,
-                            variant: "cancel",
+                            variant: "neutral",
                         },
                     ],
                 });
@@ -921,11 +800,13 @@ export async function openShareLinksPopup({
             });
 
             renderMethodPage();
-            refreshTimer = window.setInterval(() => {
-                void refreshLinks().then(() => {
-                    if (popupOpen) renderLinksList(listContainer);
-                });
-            }, SHARE_LINKS_REFRESH_INTERVAL_MS);
+            if (!editOnly) {
+                refreshTimer = window.setInterval(() => {
+                    void refreshLinks().then(() => {
+                        if (popupOpen) renderLinksList(listContainer);
+                    });
+                }, SHARE_LINKS_REFRESH_INTERVAL_MS);
+            }
         },
     });
 
