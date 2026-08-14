@@ -32,10 +32,14 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
     capabilities.contribute("auth:routeContext", authContext);
     capabilities.contribute("system:ctx", systemCtx);
     let receivedCalendarShares: Array<Record<string, unknown>> = [];
+    let receivedCalendarUnlocked = true;
     capabilities.contribute(
         "share:listReceivedTokens",
         async () => receivedCalendarShares,
     );
+    capabilities.contribute("share:resolveUserAccess", async () => ({
+        authorized: receivedCalendarUnlocked,
+    }));
 
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -93,6 +97,18 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
             shareMethod: "user",
         },
     ];
+    receivedCalendarUnlocked = false;
+    const lockedUpcomingEvents = await createJsonDispatcher(routeRegistry)(
+        "GET",
+        recipientToken,
+        "/api/v1/calendar/upcoming-events",
+    );
+    assert.deepEqual(
+        lockedUpcomingEvents.body.data,
+        [],
+        "locked shared events must not leak into adjacent summaries",
+    );
+    receivedCalendarUnlocked = true;
     const upcomingSharedEvents = await createJsonDispatcher(routeRegistry)(
         "GET",
         recipientToken,

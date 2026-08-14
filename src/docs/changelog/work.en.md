@@ -1,5 +1,9 @@
 # Refine share management
 
+## Restore protected user-shared calendars from the keyring
+
+Calendar now delegates protected-share secret retrieval entirely to the Share gateway, which reads the canonical share password from the keyring without opening a prompt during background work and prompts during an explicit calendar load when needed. Successful validation creates the account-scoped server unlock grant, while locked shared events remain excluded from adjacent summaries. Meeting and whiteboard account shares continue to use the same Share-owned account unlock grant before their content loads.
+
 ## Keep received calendar events visible
 
 Account-bound calendar shares now reconcile from their adapter-owned share method whenever calendar state or upcoming-event summaries load. Shared events are projected into the recipient's persistent calendar and adjacent summaries without requiring the recipient to reopen the share from Shares.

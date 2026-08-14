@@ -855,7 +855,7 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(CALENDAR_API_SOURCE, /sharePasswordProtected/);
     assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarPassword/);
     assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
-    assert.match(SHARED_PASSWORD_SOURCE, /share:resolveToken/);
+    assert.match(SHARED_PASSWORD_SOURCE, /share:unlockUserAccess/);
     assert.match(CALENDAR_API_SOURCE, /calendar_share_secrets_refused/);
     assert.match(APP_SOURCE, /secretsUnavailable/);
     assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);
@@ -866,7 +866,8 @@ test("shared calendar event loading resolves password protection through keyring
         /calendar\.secretsUnavailable[\s\S]*openCalendarEditPopup\(calendar\)/,
     );
     assert.match(CALENDAR_API_SOURCE, /promptWhenLocked/);
-    assert.match(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
+    assert.match(CALENDAR_API_SOURCE, /promptWhenLocked,/);
+    assert.doesNotMatch(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
 });
 
 test("calendar shares provide a Cognis content route", () => {

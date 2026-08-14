@@ -492,26 +492,44 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         const now = Date.now();
         const sharedCalendars =
             await shareRegistry.listCalendarUserSharesByRecipient(accountId);
-        const sharedEvents = sharedCalendars.flatMap((share) => {
-            const expiresAt = Date.parse(share.expiresAt);
-            if (Number.isFinite(expiresAt) && expiresAt <= now) return [];
-            const recipientCalendar = gateway.getOwnedCalendar(
-                accountId,
-                share.recipientCalendarId,
-            );
-            if (!recipientCalendar) return [];
-            return gateway
-                .listEvents(share.ownerCalendarId)
-                .filter((event) => Date.parse(event.endAt) >= now)
-                .map((event) => ({
-                    ...event,
-                    calendarId: share.recipientCalendarId,
-                    calendarName: recipientCalendar.name,
-                }));
-        });
-        const events = [...ownAndInvitedEvents, ...sharedEvents].sort(
-            (left, right) => left.startAt.localeCompare(right.startAt),
+        const resolveUserAccess = ctx.capabilities.get<
+            (access: {
+                accountId: string;
+                resourceType: string;
+                resourceId: string;
+                requiredCapability: string;
+            }) => Promise<{ authorized: boolean }>
+        >("share:resolveUserAccess");
+        const sharedEventGroups = await Promise.all(
+            sharedCalendars.map(async (share) => {
+                const expiresAt = Date.parse(share.expiresAt);
+                if (Number.isFinite(expiresAt) && expiresAt <= now) return [];
+                const recipientCalendar = gateway.getOwnedCalendar(
+                    accountId,
+                    share.recipientCalendarId,
+                );
+                if (!recipientCalendar) return [];
+                const access = await resolveUserAccess?.({
+                    accountId,
+                    resourceType: "calendar",
+                    resourceId: share.ownerCalendarId,
+                    requiredCapability: "calendar:read",
+                });
+                if (access && !access.authorized) return [];
+                return gateway
+                    .listEvents(share.ownerCalendarId)
+                    .filter((event) => Date.parse(event.endAt) >= now)
+                    .map((event) => ({
+                        ...event,
+                        calendarId: share.recipientCalendarId,
+                        calendarName: recipientCalendar.name,
+                    }));
+            }),
         );
+        const events = [
+            ...ownAndInvitedEvents,
+            ...sharedEventGroups.flat(),
+        ].sort((left, right) => left.startAt.localeCompare(right.startAt));
         return limit === undefined ? events : events.slice(0, limit);
     };
     ctx.capabilities.contribute(

@@ -75,22 +75,25 @@ async function unlockKeyringForShare(i18n, shareId) {
     });
 }
 
-export async function fetchProtectedShareResource({ shareId, request }) {
+export async function fetchProtectedShareResource({
+    shareId,
+    request,
+    promptWhenLocked = true,
+}) {
     const normalizedShareId = String(shareId ?? "").trim();
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
-    const keyringUnlocked = await unlockKeyringForShare(
-        i18n,
-        normalizedShareId,
-    );
+    const keyringUnlocked = promptWhenLocked
+        ? await unlockKeyringForShare(i18n, normalizedShareId)
+        : Boolean(uiCtx.capabilities.get("keyring:isUnlocked")?.());
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         "Share Gateway",
     );
     const keyringId = `share:${normalizedShareId}`;
     const storedPassword = keyring?.get(keyringId);
     let response = await request(storedPassword);
-    if (response.status !== 401) return response;
+    if (response.status !== 401 || !promptWhenLocked) return response;
 
     const entered = await promptForPassword({ allowSave: keyringUnlocked });
     if (!entered?.password) return response;

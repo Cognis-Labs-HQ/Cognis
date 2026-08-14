@@ -121,6 +121,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.resolveUserAccess.bind(gateway),
     );
     ctx.capabilities.contribute(
+        "share:unlockUserAccess",
+        gateway.unlockUserAccess.bind(gateway),
+    );
+    ctx.capabilities.contribute(
         "share:deleteToken",
         gateway.deleteToken.bind(gateway),
     );

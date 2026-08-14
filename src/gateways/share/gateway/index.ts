@@ -448,6 +448,37 @@ export class CoreShareGateway {
         return { authorized: false };
     }
 
+    async unlockUserAccess(input: {
+        shareId: string;
+        accountId: string;
+        resourceType: string;
+        resourceId: string;
+        requiredCapability: string;
+        password: string;
+    }): Promise<boolean> {
+        const record = await this.store.getById(input.shareId);
+        if (!record || this.isTokenExpired(record)) return false;
+        const adapter = this.resolveRecordAdapter(record);
+        const accountId = input.accountId.trim();
+        const recipientAuthorized = record.accessControls.recipients.some(
+            (recipient) =>
+                recipient.type === "user" && recipient.id === accountId,
+        );
+        if (
+            adapter?.delivery !== "account" ||
+            !recipientAuthorized ||
+            record.resourceType !== input.resourceType ||
+            record.resourceId !== input.resourceId ||
+            !record.grantedCapabilities.includes(input.requiredCapability) ||
+            !record.passwordHash ||
+            !verifySharePassword(input.password, record.passwordHash)
+        ) {
+            return false;
+        }
+        await this.store.grantAccountUnlock(record.id, accountId);
+        return true;
+    }
+
     async resolveAccountShare(input: {
         shareId: string;
         accountId: string;

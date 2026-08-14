@@ -29,9 +29,21 @@ test("password-protected recipient calendars validate every supplied password", 
                 accessControls: { passwordProtected: true },
             })) as T;
         }
-        if (id === "share:resolveToken") {
-            return (async (_token: string, password: string | null) =>
-                password === "correct" ? { id: "share-id" } : null) as T;
+        if (id === "share:unlockUserAccess") {
+            return (async (input: {
+                shareId: string;
+                accountId: string;
+                resourceType: string;
+                resourceId: string;
+                requiredCapability: string;
+                password: string;
+            }) =>
+                input.shareId === "share-id" &&
+                input.accountId === "recipient" &&
+                input.resourceType === "calendar" &&
+                input.resourceId === "owner-calendar" &&
+                input.requiredCapability === "calendar:read" &&
+                input.password === "correct") as T;
         }
         return undefined;
     };
@@ -68,7 +80,7 @@ test("password-protected recipient calendars validate every supplied password", 
 });
 
 test("an unlocked account share does not require resubmitting its calendar password", async () => {
-    let passwordResolutionAttempted = false;
+    let passwordUnlockAttempted = false;
     const getCapability = <T>(id: string): T | undefined => {
         if (id === "share:getTokenById") {
             return (async () => ({
@@ -86,10 +98,10 @@ test("an unlocked account share does not require resubmitting its calendar passw
                     input.resourceId === "owner-calendar",
             })) as T;
         }
-        if (id === "share:resolveToken") {
+        if (id === "share:unlockUserAccess") {
             return (async () => {
-                passwordResolutionAttempted = true;
-                return null;
+                passwordUnlockAttempted = true;
+                return false;
             }) as T;
         }
         return undefined;
@@ -105,5 +117,5 @@ test("an unlocked account share does not require resubmitting its calendar passw
         }),
         true,
     );
-    assert.equal(passwordResolutionAttempted, false);
+    assert.equal(passwordUnlockAttempted, false);
 });

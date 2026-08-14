@@ -449,6 +449,11 @@ test("received user shares navigate once through the share session flow", () => 
         /response\.ok && entered\.saveToKeyring[\s\S]*keyring\?\.set\(keyringId/,
     );
     assert.match(receivedShareSource, /keyring:requestUnlock/);
+    assert.match(receivedShareSource, /promptWhenLocked = true/);
+    assert.match(
+        receivedShareSource,
+        /response.status !== 401 \|\| !promptWhenLocked/,
+    );
     assert.match(
         receivedShareSource,
         /allowSave: useAccountKeyring && keyringUnlocked/,

@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Geschützte benutzerfreigegebene Kalender aus dem Schlüsselbund wiederherstellen
+
+Der Kalender überlässt das Abrufen geschützter Freigabegeheimnisse jetzt vollständig dem Freigabe-Gateway, das das kanonische Freigabepasswort bei Hintergrundarbeit ohne Nachfrage aus dem Schlüsselbund liest und bei einem ausdrücklichen Kalenderladen bei Bedarf nachfragt. Eine erfolgreiche Prüfung erstellt die kontogebundene serverseitige Entsperrfreigabe, während gesperrte gemeinsame Ereignisse aus angrenzenden Zusammenfassungen ausgeschlossen bleiben. Besprechungs- und Whiteboard-Benutzerfreigaben verwenden weiterhin dieselbe vom Freigabe-Gateway verwaltete Kontoentsperrung, bevor ihre Inhalte geladen werden.
+
 ## Empfangene Kalenderereignisse sichtbar halten
 
 Kontogebundene Kalenderfreigaben werden jetzt anhand ihrer adaptereigenen Freigabemethode abgeglichen, wenn der Kalenderstatus oder Zusammenfassungen anstehender Ereignisse geladen werden. Freigegebene Ereignisse erscheinen dauerhaft im Kalender des Empfängers und in angrenzenden Zusammenfassungen, ohne dass die Freigabe erneut unter Freigaben geöffnet werden muss.

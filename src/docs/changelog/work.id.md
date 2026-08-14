@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Pulihkan kalender berbagi pengguna yang dilindungi dari keyring
+
+Kalender kini menyerahkan seluruh pengambilan rahasia berbagi yang dilindungi kepada gateway Berbagi, yang membaca kata sandi berbagi kanonis dari keyring tanpa membuka permintaan selama pekerjaan latar belakang dan meminta saat pemuatan kalender eksplisit bila diperlukan. Validasi yang berhasil membuat izin buka kunci server yang tercakup akun, sedangkan acara bersama yang terkunci tetap dikecualikan dari ringkasan terkait. Berbagi pengguna untuk rapat dan papan tulis tetap memakai izin buka kunci akun milik Berbagi yang sama sebelum kontennya dimuat.
+
 ## Pertahankan visibilitas acara kalender yang diterima
 
 Berbagi kalender yang terikat akun kini direkonsiliasi dari metode berbagi milik adapter setiap kali status kalender atau ringkasan acara mendatang dimuat. Acara bersama diproyeksikan secara persisten ke kalender penerima dan ringkasan terkait tanpa perlu membuka kembali berbagi dari halaman Berbagi.
