@@ -11,38 +11,14 @@ import {
 } from "../../../api/reuse/flow-helpers.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 import { createHash } from "node:crypto";
+import { logRejectedDeliveries } from "../reuse/settled-deliveries.js";
+import {
+    resolveShareAccessResult,
+    shareRecipientsAllowRequester,
+    type ShareAccessResult,
+} from "./access-resolution.js";
 
 const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
-
-function shareRecipientsAllowRequester(
-    tokenRecord: {
-        ownerAccountId?: unknown;
-        accessControls?: { recipients?: unknown };
-    },
-    requesterClaims: { sub?: unknown } | null | undefined,
-): boolean {
-    const recipients = tokenRecord.accessControls?.recipients;
-    if (!Array.isArray(recipients) || recipients.length === 0) {
-        return true;
-    }
-    const requesterId = String(requesterClaims?.sub ?? "").trim();
-    if (!requesterId) {
-        return false;
-    }
-    if (requesterId === String(tokenRecord.ownerAccountId ?? "")) {
-        return true;
-    }
-    return recipients.some((entry) => {
-        if (!entry || typeof entry !== "object") {
-            return false;
-        }
-        const recipient = entry as { type?: unknown; id?: unknown };
-        return (
-            String(recipient.type ?? "") === "user" &&
-            String(recipient.id ?? "") === requesterId
-        );
-    });
-}
 
 export async function registerShareBootstrapHooks(input: {
     ctx: GatewayBootstrapContext;
@@ -59,6 +35,48 @@ export async function registerShareBootstrapHooks(input: {
             },
         ) => string
     >("auth:issueAccessToken");
+
+    input.ctx.flow.extend(
+        "resolve-share-token",
+        "check-access",
+        { id: "share-gateway:account-access" },
+        (stageCtx) => {
+            const tokenResult = getFirstStageResult(
+                stageCtx.stageResults,
+                "validate-token",
+            ) as {
+                valid?: boolean;
+                tokenRecord?: {
+                    ownerAccountId?: unknown;
+                    accessControls?: { recipients?: unknown };
+                };
+            } | null;
+            const requesterAccountId = String(
+                stageCtx.input?.requesterClaims?.sub ?? "",
+            ).trim();
+            const recipients =
+                tokenResult?.tokenRecord?.accessControls?.recipients;
+            const isOwner =
+                tokenResult?.valid === true &&
+                requesterAccountId.length > 0 &&
+                requesterAccountId ===
+                    String(tokenResult.tokenRecord?.ownerAccountId ?? "");
+            const isUserRecipient =
+                tokenResult?.valid === true &&
+                requesterAccountId.length > 0 &&
+                Array.isArray(recipients) &&
+                recipients.some(
+                    (recipient) =>
+                        recipient &&
+                        typeof recipient === "object" &&
+                        String(recipient.type ?? "") === "user" &&
+                        String(recipient.id ?? "") === requesterAccountId,
+                );
+            return isOwner || isUserRecipient
+                ? { allowed: true, directAccess: true }
+                : null;
+        },
+    );
     const systemCtx = input.ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     if (systemCtx) {
         for (const flow of SHARE_FLOW_CATALOG) {
@@ -195,9 +213,8 @@ export async function registerShareBootstrapHooks(input: {
                     await input.gateway.resolveApprovalStatus(mintRequestId);
             }
             if (!summary.allResponded) {
-                // Timeout reached; resolveApprovalStatus auto-approves any
-                // still-pending rows on its next call, so query once more to
-                // pick up the fallback-approved state.
+                // Timeout fallback block: resolveApprovalStatus auto-approves
+                // pending rows on its next call, so query once more.
                 summary =
                     await input.gateway.resolveApprovalStatus(mintRequestId);
             }
@@ -266,6 +283,9 @@ export async function registerShareBootstrapHooks(input: {
                 password?: string | null;
                 generatePassword?: boolean;
                 expiresAt?: string;
+                contentUrl?: string;
+                supportsReadOnly?: boolean;
+                shareMethod?: string;
             };
             let shareRecord;
             try {
@@ -276,9 +296,9 @@ export async function registerShareBootstrapHooks(input: {
                         "",
                     resourceType: resourceResult.resourceType ?? "",
                     resourceId: resourceResult.resourceId ?? "",
-                    metadata:
-                        resourceResult.metadata ??
-                        (authorizeResult.meetingInstanceId
+                    metadata: {
+                        ...(resourceResult.metadata ?? {}),
+                        ...(authorizeResult.meetingInstanceId
                             ? {
                                   meetingInstanceId:
                                       authorizeResult.meetingInstanceId,
@@ -288,7 +308,15 @@ export async function registerShareBootstrapHooks(input: {
                                     meetingInstanceId:
                                         resourceResult.meetingInstanceId,
                                 }
-                              : null),
+                              : {}),
+                        ...(inputPayload.contentUrl
+                            ? { contentUrl: inputPayload.contentUrl }
+                            : {}),
+                        adapterId: String(inputPayload.shareMethod ?? ""),
+                        supportsReadOnly: inputPayload.supportsReadOnly
+                            ? "true"
+                            : "false",
+                    },
                     label: inputPayload.label,
                     grantedCapabilities: Array.isArray(
                         inputPayload.grantedCapabilities,
@@ -332,6 +360,9 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 label?: string;
                 shareUrl?: string;
+                destinationUrl?: string;
+                actionUrl?: string;
+                metadata?: Record<string, string> | null;
                 accessControls?: {
                     recipients?: Array<{ type?: string; id?: string }>;
                 };
@@ -359,25 +390,76 @@ export async function registerShareBootstrapHooks(input: {
                         metadata?: Record<string, unknown>;
                     }) => Promise<unknown>
                 >("notify:dispatch");
+            const deliverUserShare = input.gateway.getCapability<
+                (delivery: {
+                    resourceType: string;
+                    shareId: string;
+                    resourceId: string;
+                    ownerAccountId: string;
+                    recipientAccountId: string;
+                    grantedCapabilities: string[];
+                    expiresAt: string;
+                }) => Promise<{ navigationUrl?: string } | null>
+            >(`share:deliverUserShare:${shareRecord?.resourceType ?? ""}`);
+            if (
+                issued?.minted &&
+                shareRecord?.metadata?.adapterId === "user" &&
+                deliverUserShare
+            ) {
+                await Promise.all(
+                    userRecipients.map((recipientAccountId) =>
+                        deliverUserShare({
+                            shareId: String(shareRecord?.id ?? ""),
+                            resourceType: String(
+                                shareRecord?.resourceType ?? "",
+                            ),
+                            resourceId: String(shareRecord?.resourceId ?? ""),
+                            ownerAccountId: String(
+                                shareRecord?.ownerAccountId ?? "",
+                            ),
+                            recipientAccountId,
+                            grantedCapabilities: Array.isArray(
+                                shareRecord?.grantedCapabilities,
+                            )
+                                ? shareRecord.grantedCapabilities
+                                : [],
+                            expiresAt: String(shareRecord?.expiresAt ?? ""),
+                        }),
+                    ),
+                );
+            }
             if (issued?.minted && dispatch && userRecipients.length > 0) {
                 registerCategory?.("share", "Share");
-                await Promise.allSettled(
-                    userRecipients.map((recipientUsername) =>
-                        dispatch({
+                const notificationResults = await Promise.allSettled(
+                    userRecipients.map((recipientUsername) => {
+                        const actionUrl = String(
+                            shareRecord?.actionUrl ??
+                                shareRecord?.shareUrl ??
+                                "",
+                        ).trim();
+                        return dispatch({
                             category: "share",
                             recipientUsername,
                             subject: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared an item with you`,
                             body: `${shareRecord?.ownerAccountId ?? "A Cognis user"} shared ${shareRecord?.label || shareRecord?.resourceType || "an item"} with you. Open it to view the shared content and its access permissions.`,
-                            actionUrl: shareRecord?.shareUrl,
+                            actionUrl: actionUrl || undefined,
                             senderName: "Cognis Share",
                             metadata: {
                                 shareId: (shareRecord as { id?: string })?.id,
                                 resourceType: shareRecord?.resourceType,
                                 resourceId: shareRecord?.resourceId,
                             },
-                        }),
-                    ),
+                        });
+                    }),
                 );
+                logRejectedDeliveries({
+                    results: notificationResults,
+                    recipients: userRecipients,
+                    log: input.log,
+                    message: "Failed to dispatch direct share notification.",
+                    operation: "dispatch_direct_share_notification",
+                    shareId: String(shareRecord?.id ?? ""),
+                });
             }
             return {
                 emitted: Boolean(issued?.minted),
@@ -400,16 +482,36 @@ export async function registerShareBootstrapHooks(input: {
             if (!token) {
                 return { valid: false, reason: "missing_token" };
             }
-            const tokenRecord = await input.gateway.resolveToken(
-                token,
-                inputPayload.password,
+            const requesterAccountId = String(
+                (
+                    stageCtx.input as {
+                        requesterClaims?: { sub?: unknown } | null;
+                    }
+                ).requesterClaims?.sub ?? "",
+            ).trim();
+            const inspectedRecord = await input.gateway.inspectToken(token);
+            const requesterOwnsShare = Boolean(
+                inspectedRecord &&
+                requesterAccountId &&
+                requesterAccountId === inspectedRecord.ownerAccountId,
             );
+            const tokenRecord = requesterOwnsShare
+                ? inspectedRecord
+                : await input.gateway.resolveToken(
+                      token,
+                      inputPayload.password,
+                  );
             if (!tokenRecord) {
-                const inspectedRecord = await input.gateway.inspectToken(token);
                 if (inspectedRecord?.passwordHash) {
                     return { valid: false, reason: "password_required" };
                 }
                 return { valid: false, reason: "invalid_token" };
+            }
+            if (
+                input.gateway.resolveRecordAdapter(tokenRecord)?.delivery !==
+                "public"
+            ) {
+                return { valid: false, reason: "account_share_not_public" };
             }
             const requesterClaims = (
                 stageCtx.input as {
@@ -448,25 +550,9 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 resolved?: boolean;
             } | null;
-            const accessResult =
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === true,
-                ) as {
-                    allowed?: boolean;
-                    directAccess?: boolean;
-                } | null) ??
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === false,
-                ) as {
-                    allowed?: boolean;
-                    directAccess?: boolean;
-                } | null);
+            const accessResult = resolveShareAccessResult(
+                stageCtx.stageResults,
+            );
             if (!tokenResult?.valid) {
                 return {
                     issued: false,
@@ -480,13 +566,9 @@ export async function registerShareBootstrapHooks(input: {
                 return { issued: false, reason: "forbidden" };
             }
             if (accessResult?.directAccess === true) {
-                // The requester already has direct access to the resource
-                // through their own account (e.g. they are the meeting
-                // owner or an invited participant). Minting a guest token
-                // for them would discard their real identity when the
-                // client activates it, so no guest token is issued here —
-                // the share link falls back to being a one-time bypass
-                // only for visitors without direct access.
+                // Direct-access branch: owners and invited participants keep
+                // their account identity, while visitors continue below to
+                // the scoped guest-token branch.
                 return { issued: false, reason: "direct_access" };
             }
             if (!issueAccessToken || !tokenResult.tokenRecord?.id) {
@@ -558,27 +640,9 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 payload?: Record<string, unknown>;
             } | null;
-            const accessResult =
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === true,
-                ) as {
-                    allowed?: boolean;
-                    reason?: string;
-                    directAccess?: boolean;
-                } | null) ??
-                (getFirstMatchingStageResult(
-                    stageCtx.stageResults,
-                    "check-access",
-                    (result) =>
-                        (result as { allowed?: boolean })?.allowed === false,
-                ) as {
-                    allowed?: boolean;
-                    reason?: string;
-                    directAccess?: boolean;
-                } | null);
+            const accessResult = resolveShareAccessResult(
+                stageCtx.stageResults,
+            );
             if (!tokenResult?.valid) {
                 return {
                     resolved: false,
@@ -632,6 +696,9 @@ export async function registerShareBootstrapHooks(input: {
                 ),
                 expiresAt: String(tokenResult.tokenRecord?.expiresAt ?? ""),
                 payload: resourceResult.payload ?? {},
+                contentUrl: String(
+                    tokenResult.tokenRecord?.metadata?.contentUrl ?? "",
+                ),
                 directAccess: accessResult?.directAccess === true,
                 guestAccessToken:
                     typeof stageCtx.data.guestAccessToken === "string"
@@ -780,6 +847,39 @@ export async function registerShareBootstrapHooks(input: {
 
     input.ctx.flow.extend(
         "revoke-share-token",
+        "authorize-revocation",
+        { id: "share-gateway:authorize-recipient-rejection" },
+        async (stageCtx) => {
+            if (stageCtx.input?.rejection !== true) return null;
+            const flowInput = (stageCtx.input ?? {}) as {
+                claims?: { sub?: string };
+                shareId?: string;
+            };
+            const shareRecord = await input.gateway.getTokenById(
+                String(flowInput.shareId ?? ""),
+            );
+            const recipientAccountId = String(flowInput.claims?.sub ?? "");
+            const authorized = Boolean(
+                shareRecord?.accessControls.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" &&
+                        recipient.id === recipientAccountId,
+                ),
+            );
+            return {
+                authorized,
+                shareId: shareRecord?.id,
+                ownerAccountId: shareRecord?.ownerAccountId,
+                resourceType: shareRecord?.resourceType,
+                resourceId: shareRecord?.resourceId,
+                rejection: authorized,
+                recipientAccountId,
+            };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "revoke-share-token",
         "delete-token",
         { id: "share-gateway:delete-token" },
         async (stageCtx) => {
@@ -794,9 +894,24 @@ export async function registerShareBootstrapHooks(input: {
                 ownerAccountId?: string;
                 resourceType?: string;
                 resourceId?: string;
+                rejection?: boolean;
+                recipientAccountId?: string;
             } | null;
             if (!authorizeResult?.authorized || !authorizeResult.shareId) {
                 return { revoked: false, reason: "share_revoke_rejected" };
+            }
+            if (
+                authorizeResult.rejection &&
+                authorizeResult.recipientAccountId
+            ) {
+                const result = await input.gateway.removeUserRecipient({
+                    shareId: authorizeResult.shareId,
+                    recipientAccountId: authorizeResult.recipientAccountId,
+                });
+                return {
+                    revoked: result !== "not_found",
+                    rejected: result !== "not_found",
+                };
             }
             const deleted = await input.gateway.deleteToken({
                 shareId: authorizeResult.shareId,
@@ -804,7 +919,61 @@ export async function registerShareBootstrapHooks(input: {
                 resourceType: authorizeResult.resourceType,
                 resourceId: authorizeResult.resourceId,
             });
-            return { revoked: deleted };
+            return { revoked: deleted, rejected: false };
+        },
+    );
+
+    input.ctx.flow.extend(
+        "revoke-share-token",
+        "remove-delivery",
+        { id: "share-gateway:notify-share-removal" },
+        async (stageCtx) => {
+            const deletion = getFirstStageResult(
+                stageCtx.stageResults,
+                "delete-token",
+            ) as { revoked?: boolean; rejected?: boolean } | null;
+            if (!deletion?.revoked) return { notified: false };
+            const flowInput = (stageCtx.input ?? {}) as {
+                shareId?: string;
+                label?: string;
+                ownerAccountId?: string;
+                recipientAccountId?: string;
+                recipients?: Array<{ type?: string; id?: string }>;
+            };
+            const dispatch =
+                input.ctx.capabilities.get<
+                    (notification: Record<string, unknown>) => Promise<unknown>
+                >("notify:dispatch");
+            if (!dispatch) return { notified: false };
+            if (deletion.rejected && flowInput.ownerAccountId) {
+                await dispatch({
+                    category: "share",
+                    recipientUsername: flowInput.ownerAccountId,
+                    subject: "A recipient rejected your share",
+                    body: `${flowInput.recipientAccountId || "A recipient"} rejected ${flowInput.label || "your shared item"}.`,
+                    actionUrl: "/shares",
+                    senderName: "Cognis Share",
+                    metadata: { shareId: flowInput.shareId },
+                });
+                return { notified: true };
+            }
+            const recipients = (flowInput.recipients ?? []).filter(
+                (recipient) => recipient.type === "user" && recipient.id,
+            );
+            await Promise.allSettled(
+                recipients.map((recipient) =>
+                    dispatch({
+                        category: "share",
+                        recipientUsername: recipient.id,
+                        subject: "A shared item was revoked",
+                        body: `${flowInput.label || "A shared item"} is no longer available.`,
+                        actionUrl: "/shares",
+                        senderName: "Cognis Share",
+                        metadata: { shareId: flowInput.shareId },
+                    }),
+                ),
+            );
+            return { notified: recipients.length > 0 };
         },
     );
 

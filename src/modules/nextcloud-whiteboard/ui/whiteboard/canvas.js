@@ -16,7 +16,10 @@ import { createWhiteboardTextTools } from "./text-tools.js";
 import { createClipboardImageHandler } from "./clipboard-images.js";
 import { bindWhiteboardCanvasEvents } from "./canvas-events.js";
 
-export function createWhiteboardCanvas(canvasElement) {
+export function createWhiteboardCanvas(
+    canvasElement,
+    { readOnly = false } = {},
+) {
     const context = canvasElement.getContext("2d");
     let elements = [];
     let currentPoints = [];
@@ -49,6 +52,7 @@ export function createWhiteboardCanvas(canvasElement) {
     let viewportOffsetY = 0;
     let remoteSelections = new Map();
     let keepToolActive = false;
+    if (readOnly) canvasElement.style.cursor = "pointer";
 
     function scheduleRender() {
         if (pendingRender) return;
@@ -340,12 +344,13 @@ export function createWhiteboardCanvas(canvasElement) {
             selectedElementId = null;
             notifySelection();
         }
-        canvasElement.style.cursor =
-            tool === "select"
-                ? "pointer"
-                : tool === "eraser"
-                  ? "cell"
-                  : "crosshair";
+        canvasElement.style.cursor = readOnly
+            ? "pointer"
+            : tool === "select"
+              ? "pointer"
+              : tool === "eraser"
+                ? "cell"
+                : "crosshair";
         toolCallback?.(tool);
         scheduleRender();
     }
@@ -662,12 +667,13 @@ export function createWhiteboardCanvas(canvasElement) {
     function onPointerUp(event) {
         if (panState && (!event || panState.pointerId === event.pointerId)) {
             panState = null;
-            canvasElement.style.cursor =
-                activeTool === "select"
-                    ? "pointer"
-                    : activeTool === "eraser"
-                      ? "cell"
-                      : "crosshair";
+            canvasElement.style.cursor = readOnly
+                ? "pointer"
+                : activeTool === "select"
+                  ? "pointer"
+                  : activeTool === "eraser"
+                    ? "cell"
+                    : "crosshair";
             return;
         }
         if (!isDrawing) return;
@@ -738,6 +744,25 @@ export function createWhiteboardCanvas(canvasElement) {
     }
 
     function onKeyDown(event) {
+        const modifierPressed = event.ctrlKey || event.metaKey;
+        if (modifierPressed && !event.altKey) {
+            const normalizedKey = event.key.toLowerCase();
+            if (normalizedKey === "z" && !event.shiftKey) {
+                event.preventDefault();
+                event.stopPropagation();
+                undo();
+                return;
+            }
+            if (
+                normalizedKey === "y" ||
+                (normalizedKey === "z" && event.shiftKey)
+            ) {
+                event.preventDefault();
+                event.stopPropagation();
+                redo();
+                return;
+            }
+        }
         if (event.key !== "Delete" && event.key !== "Backspace") return;
         if (deleteSelectedElements()) {
             event.preventDefault();
@@ -769,6 +794,7 @@ export function createWhiteboardCanvas(canvasElement) {
         shouldPreventContextMenu: (event) => {
             if (panState) event.preventDefault();
         },
+        readOnly,
     });
     const resizeObserver = new ResizeObserver(resizeCanvas);
     resizeObserver.observe(canvasElement.parentElement ?? document.body);

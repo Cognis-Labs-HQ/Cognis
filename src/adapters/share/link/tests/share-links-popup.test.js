@@ -6,17 +6,31 @@ const IMPLEMENTATION_URL = new URL(
     "../ui/share-links-popup/implementation.js",
     import.meta.url,
 );
+const RENDERING_URL = new URL(
+    "../ui/share-links-popup/rendering.js",
+    import.meta.url,
+);
 const POPUP_ENTRY_URL = new URL(
     "../ui/share-links-popup/index.js",
+    import.meta.url,
+);
+const POPUP_BODY_URL = new URL(
+    "../ui/share-links-popup/body.js",
     import.meta.url,
 );
 const STYLESHEET_URL = new URL(
     "../ui/share-links-popup/index.css",
     import.meta.url,
 );
+const LINK_PAGE_URL = new URL("../page.js", import.meta.url);
+const ADAPTER_LANGUAGE_URLS = ["de", "en", "id", "ja"].map(
+    (language) =>
+        new URL(`../languages/${language}/strings.xml`, import.meta.url),
+);
 
 test("share popup keeps the active adapter page and history rendering separate", () => {
     const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+    const renderingSource = readFileSync(RENDERING_URL, "utf8");
 
     assert.match(source, /share-method-page/);
     assert.match(source, /share-links-list-container/);
@@ -24,6 +38,8 @@ test("share popup keeps the active adapter page and history rendering separate",
     assert.match(source, /state\.visibleLinks/);
     assert.match(source, /methodModule\.renderPage/);
     assert.match(source, /window\.setInterval\(/);
+    assert.match(source, /const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;/);
+    assert.match(renderingSource, /bindSecretVisibilityToggles,/);
     assert.doesNotMatch(source, /captureFocusableTarget/);
     assert.doesNotMatch(source, /restoreFocusableTarget/);
 });
@@ -37,8 +53,43 @@ test("share popup loads callbacks from the gateway-owned static asset", () => {
     );
 });
 
+test("link adapter supplies localized email popup labels", () => {
+    const source = readFileSync(POPUP_ENTRY_URL, "utf8");
+
+    assert.match(source, /function openLocalizedShareLinksPopup\(options\)/);
+    assert.match(source, /adapter\.share\.link\.email\.send/);
+    assert.match(source, /adapter\.share\.link\.email\.recipients/);
+    for (const languageUrl of ADAPTER_LANGUAGE_URLS) {
+        const strings = readFileSync(languageUrl, "utf8");
+        assert.match(
+            strings,
+            /name="adapter\.share\.link\.email\.send">[^<]+</,
+        );
+        assert.match(
+            strings,
+            /name="adapter\.share\.link\.email\.recipients">[^<]+</,
+        );
+    }
+});
+
+test("email recipient instruction renders above its input", () => {
+    const pageSource = readFileSync(LINK_PAGE_URL, "utf8");
+    const cssSource = readFileSync(STYLESHEET_URL, "utf8");
+
+    assert.match(
+        pageSource,
+        /share-email-recipient-field[\s\S]*<span>\$\{escapeHtml\(labels\.emailRecipients\)\}<\/span>[\s\S]*<input/,
+    );
+    assert.match(
+        cssSource,
+        /\.share-email-recipient-field[\s\S]*display:\s*grid/,
+    );
+});
+
 test("share links popup renders existing links as an icon-only copy button", () => {
-    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+    const source = [IMPLEMENTATION_URL, RENDERING_URL]
+        .map((url) => readFileSync(url, "utf8"))
+        .join("\n");
     const cssSource = readFileSync(STYLESHEET_URL, "utf8");
 
     assert.match(source, /class="share-links-row-header"/);
@@ -62,4 +113,31 @@ test("share deletion requires explicit confirmation", () => {
         source,
         /if \(confirmation !== "confirm"\) return;[\s\S]*deleteLink\(\{ shareId \}\)/,
     );
+});
+
+test("share popup can open directly in database-backed edit mode", () => {
+    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+    const bodySource = readFileSync(POPUP_BODY_URL, "utf8");
+
+    assert.match(source, /initialEditingShareId = ""/);
+    assert.match(source, /function selectShareForEditing\(selectedShare\)/);
+    assert.match(source, /state\.links\.find\([\s\S]*initialEditingShareId/);
+    assert.match(source, /initialEditingShare = null/);
+    assert.match(source, /editOnly = false/);
+    assert.match(source, /state\.links = \[initialShare\]/);
+    assert.match(bodySource, /share-links-popup--edit-only/);
+    assert.match(source, /updateButton\?\.classList\.add\("btn-confirm"\)/);
+    assert.match(
+        bodySource,
+        /editOnly[\s\S]*\? ""[\s\S]*: `<nav class="share-method-tabs"/,
+    );
+    assert.match(source, /if \(!editOnly\) \{[\s\S]*window\.setInterval\(/);
+});
+
+test("share popup supports restricting available adapter methods", () => {
+    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+
+    assert.match(source, /allowedMethodIds = null/);
+    assert.match(source, /new Set\(allowedMethodIds\.map\(String\)\)/);
+    assert.match(source, /allowedMethods\.has/);
 });

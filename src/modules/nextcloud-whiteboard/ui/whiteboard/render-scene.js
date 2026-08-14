@@ -41,6 +41,7 @@ export function renderWhiteboardScene({
             remoteSelections,
             selectedElementId,
             selectedElementIds,
+            style,
         });
     }
     context.restore();
@@ -70,6 +71,7 @@ function renderElementSelection({
     remoteSelections,
     selectedElementId,
     selectedElementIds,
+    style,
 }) {
     const remoteSelection = remoteSelections.get(element.id);
     if (
@@ -83,9 +85,11 @@ function renderElementSelection({
     const localSelection = selectedElementIds.has(element.id);
     const eraserSelection = eraserSelectionIds.has(element.id);
     const selectionColor = eraserSelection
-        ? "#c0392b"
+        ? style.getPropertyValue("--whiteboard-selection-erase").trim() ||
+          "#c0392b"
         : localSelection
-          ? "#2d9e5c"
+          ? style.getPropertyValue("--whiteboard-selection-local").trim() ||
+            "#2d9e5c"
           : remoteSelection?.color || "#5e81f4";
     context.save();
     context.setLineDash([6, 4]);
@@ -106,7 +110,9 @@ function renderElementSelection({
         context.setLineDash([]);
         context.fillStyle = selectionColor;
         context.fillRect(labelX, labelY, labelWidth, 18);
-        context.fillStyle = "#ffffff";
+        context.fillStyle =
+            style.getPropertyValue("--whiteboard-selection-label").trim() ||
+            "#ffffff";
         context.fillText(remoteSelection.label, labelX + 6, labelY + 13);
     }
     context.restore();

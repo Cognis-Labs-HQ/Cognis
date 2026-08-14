@@ -77,6 +77,8 @@ export async function handleCalendarEventRoutes({
                 req,
                 res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
+                accountId: claims.sub,
+                ownerCalendarId: activeSharedCalendar.ownerCalendarId,
                 getCapability,
             }))
         ) {
@@ -147,6 +149,8 @@ export async function handleCalendarEventRoutes({
                 req,
                 res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
+                accountId: claims.sub,
+                ownerCalendarId: activeSharedCalendar.ownerCalendarId,
                 getCapability,
             }))
         ) {
@@ -342,6 +346,8 @@ export async function handleCalendarEventRoutes({
                 req,
                 res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
+                accountId: claims.sub,
+                ownerCalendarId: activeSharedCalendar.ownerCalendarId,
                 getCapability,
             }))
         ) {

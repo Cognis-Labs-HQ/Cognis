@@ -1,46 +1,25 @@
-import { pbkdf2Sync, randomBytes, timingSafeEqual } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
     parseShareToken,
 } from "../reuse/token-format.js";
 
-export type SharePermission = "read" | "write";
-
-export type ShareRecipientType = "user" | "group" | "email";
-
-export interface ShareRecipient {
-    type: ShareRecipientType;
-    id: string;
-    label?: string | null;
-    handle?: string | null;
-    avatarKey?: string | null;
-    permissions: SharePermission[];
-}
-
-export interface ShareAccessControls {
-    permissions: SharePermission[];
-    recipients: ShareRecipient[];
-    passwordProtected: boolean;
-    watermarkReadonly: boolean;
-}
-
-export interface ShareTokenRecord {
-    id: string;
-    ownerAccountId: string;
-    resourceType: string;
-    resourceId: string;
-    metadata: Record<string, string> | null;
-    tokenValue: string;
-    tokenHash: string;
-    passwordHash: string | null;
-    label: string | null;
-    grantedCapabilities: string[];
-    accessControls: ShareAccessControls;
-    expiresAt: string;
-    createdAt: string;
-    updatedAt: string;
-}
+export type {
+    ShareAccessControls,
+    ShareActivityEvent,
+    SharePermission,
+    ShareRecipient,
+    ShareRecipientType,
+    ShareTokenRecord,
+} from "./types.js";
+import type {
+    ShareAccessControls,
+    ShareActivityEvent,
+    SharePermission,
+    ShareRecipient,
+    ShareTokenRecord,
+} from "./types.js";
 
 function normalizeOptionalString(value: unknown): string | null {
     if (typeof value !== "string") {
@@ -122,55 +101,12 @@ function parseJsonObject(value: unknown): Record<string, unknown> | null {
     }
 }
 
-export function generateSharePassword(): string {
-    return randomBytes(9).toString("base64url");
-}
-
-const SHARE_PASSWORD_KDF_ALGO = "pbkdf2_sha512";
-const SHARE_PASSWORD_KDF_DIGEST = "sha512";
-const SHARE_PASSWORD_KDF_ITERATIONS = 210000;
-const SHARE_PASSWORD_KDF_KEYLEN = 32;
-
-export function hashSharePassword(password: string): string {
-    const normalized = String(password ?? "");
-    const salt = randomBytes(16);
-    const derived = pbkdf2Sync(
-        normalized,
-        salt,
-        SHARE_PASSWORD_KDF_ITERATIONS,
-        SHARE_PASSWORD_KDF_KEYLEN,
-        SHARE_PASSWORD_KDF_DIGEST,
-    );
-    return `${SHARE_PASSWORD_KDF_ALGO}$${SHARE_PASSWORD_KDF_ITERATIONS}$${salt.toString("hex")}$${derived.toString("hex")}`;
-}
-
-function verifySharePassword(password: string, storedHash: string): boolean {
-    const normalized = String(password ?? "");
-    const encoded = String(storedHash ?? "");
-    const parts = encoded.split("$");
-    if (parts.length === 4 && parts[0] === SHARE_PASSWORD_KDF_ALGO) {
-        const iterations = Number(parts[1]);
-        const saltHex = parts[2];
-        const expectedHex = parts[3];
-        if (!Number.isFinite(iterations) || iterations <= 0) {
-            return false;
-        }
-        const salt = Buffer.from(saltHex, "hex");
-        const expected = Buffer.from(expectedHex, "hex");
-        const actual = pbkdf2Sync(
-            normalized,
-            salt,
-            iterations,
-            expected.length || SHARE_PASSWORD_KDF_KEYLEN,
-            SHARE_PASSWORD_KDF_DIGEST,
-        );
-        return (
-            expected.length === actual.length &&
-            timingSafeEqual(expected, actual)
-        );
-    }
-    return false;
-}
+export {
+    generateSharePassword,
+    hashSharePassword,
+    verifySharePassword,
+} from "./password.js";
+import { hashSharePassword, verifySharePassword } from "./password.js";
 
 function normalizeCapabilities(value: unknown): string[] {
     if (!Array.isArray(value)) {
@@ -207,9 +143,17 @@ export function isExpired(expiresAt: string): boolean {
 // purgeExpired() only removes tokens older than this retention window.
 const EXPIRED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
-function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
+function parseRecord(
+    row: Record<string, unknown>,
+    log?: (
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void,
+): ShareTokenRecord | null {
     const id = String(row.id ?? "").trim();
     const ownerAccountId = String(row.owner_account_id ?? "").trim();
+    const resourceKey = String(row.resource_key ?? "").trim();
     const resourceType = String(row.resource_type ?? "").trim();
     const resourceId = String(row.resource_id ?? "").trim();
     const tokenValue = String(row.token_value ?? "").trim();
@@ -217,9 +161,12 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     const createdAt = String(row.created_at ?? "").trim();
     const updatedAt = String(row.updated_at ?? "").trim();
     const expiresAt = String(row.expires_at ?? "");
+    const expirationNotifiedAt = String(row.expiration_notified_at ?? "");
+    const lastAccessedAt = String(row.last_accessed_at ?? "");
     if (
         !id ||
         !ownerAccountId ||
+        !resourceKey ||
         !resourceType ||
         !resourceId ||
         !tokenValue ||
@@ -231,6 +178,7 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
     }
     return {
         id,
+        resourceKey,
         ownerAccountId,
         resourceType,
         resourceId,
@@ -240,7 +188,15 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
                     return row.metadata
                         ? JSON.parse(String(row.metadata))
                         : null;
-                } catch {
+                } catch (error) {
+                    log?.("error", "Failed to parse share token metadata.", {
+                        component: "share-gateway",
+                        operation: "parse_share_token_metadata",
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    });
                     return null;
                 }
             })(),
@@ -262,6 +218,8 @@ function parseRecord(row: Record<string, unknown>): ShareTokenRecord | null {
             parseJsonObject(row.access_controls),
         ),
         expiresAt,
+        expirationNotifiedAt,
+        lastAccessedAt,
         createdAt,
         updatedAt,
     };
@@ -279,9 +237,30 @@ export class ShareTokenStore {
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
+            name: "share_resources",
+            columns: [
+                { name: "resource_key", type: "text", primaryKey: true },
+                { name: "resource_type", type: "text", notNull: true },
+                { name: "resource_id", type: "text", notNull: true },
+                { name: "content_url", type: "text", notNull: true },
+                { name: "created_at", type: "text", notNull: true },
+            ],
+            uniqueKeys: [["resource_type", "resource_id", "content_url"]],
+        });
+        await this.db.ensureTable({
             name: "share_tokens",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "resource_key",
+                    type: "text",
+                    notNull: true,
+                    references: {
+                        table: "share_resources",
+                        column: "resource_key",
+                        onDelete: "CASCADE",
+                    },
+                },
                 { name: "owner_account_id", type: "text", notNull: true },
                 { name: "resource_type", type: "text", notNull: true },
                 { name: "resource_id", type: "text", notNull: true },
@@ -293,9 +272,219 @@ export class ShareTokenStore {
                 { name: "granted_capabilities", type: "text", notNull: true },
                 { name: "access_controls", type: "text", notNull: true },
                 { name: "expires_at", type: "text", notNull: true },
+                { name: "expiration_notified_at", type: "text" },
+                { name: "last_accessed_at", type: "text" },
                 { name: "created_at", type: "text", notNull: true },
                 { name: "updated_at", type: "text", notNull: true },
             ],
+        });
+        await this.backfillResourceKeys();
+        await this.db.ensureTable({
+            name: "share_account_unlocks",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "share_id",
+                    type: "text",
+                    notNull: true,
+                    references: {
+                        table: "share_tokens",
+                        column: "id",
+                        onDelete: "CASCADE",
+                    },
+                },
+                { name: "account_id", type: "text", notNull: true },
+                { name: "created_at", type: "text", notNull: true },
+            ],
+            uniqueKeys: [["share_id", "account_id"]],
+        });
+        await this.db.ensureTable({
+            name: "share_activity_events",
+            columns: [
+                { name: "id", type: "text", primaryKey: true },
+                {
+                    name: "share_id",
+                    type: "text",
+                    notNull: true,
+                    references: {
+                        table: "share_tokens",
+                        column: "id",
+                        onDelete: "CASCADE",
+                    },
+                },
+                { name: "event_type", type: "text", notNull: true },
+                { name: "occurred_at", type: "text", notNull: true },
+            ],
+        });
+        await this.backfillActivityEvents();
+    }
+
+    private async recordActivity(
+        shareId: string,
+        type: ShareActivityEvent["type"],
+        occurredAt: string,
+    ): Promise<void> {
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "share_activity_events",
+            values: {
+                id: randomBytes(16).toString("hex"),
+                share_id: shareId,
+                event_type: type,
+                occurred_at: occurredAt,
+            },
+        });
+    }
+
+    async listActivity(shareId: string): Promise<ShareActivityEvent[]> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_activity_events",
+            where: [{ column: "share_id", value: shareId }],
+            orderBy: [{ column: "occurred_at", direction: "ASC" }],
+        });
+        return (result.rows ?? []).flatMap((row) => {
+            const type = String(row.event_type ?? "");
+            const occurredAt = String(row.occurred_at ?? "");
+            if (
+                (type !== "created" &&
+                    type !== "updated" &&
+                    type !== "accessed") ||
+                !occurredAt
+            ) {
+                return [];
+            }
+            return [
+                {
+                    id: String(row.id ?? ""),
+                    shareId: String(row.share_id ?? shareId),
+                    type,
+                    occurredAt,
+                },
+            ];
+        });
+    }
+
+    private async backfillActivityEvents(): Promise<void> {
+        const tokenResult = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+        });
+        for (const row of tokenResult.rows ?? []) {
+            const shareId = String(row.id ?? "").trim();
+            if (!shareId) continue;
+            const existingTypes = new Set(
+                (await this.listActivity(shareId)).map((event) => event.type),
+            );
+            const createdAt = String(row.created_at ?? "").trim();
+            const updatedAt = String(row.updated_at ?? "").trim();
+            const lastAccessedAt = String(row.last_accessed_at ?? "").trim();
+            if (createdAt && !existingTypes.has("created")) {
+                await this.recordActivity(shareId, "created", createdAt);
+            }
+            if (
+                updatedAt &&
+                updatedAt !== createdAt &&
+                !existingTypes.has("updated")
+            ) {
+                await this.recordActivity(shareId, "updated", updatedAt);
+            }
+            if (lastAccessedAt && !existingTypes.has("accessed")) {
+                await this.recordActivity(shareId, "accessed", lastAccessedAt);
+            }
+        }
+    }
+
+    private async backfillResourceKeys(): Promise<void> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+        });
+        for (const row of result.rows ?? []) {
+            if (String(row.resource_key ?? "").trim()) continue;
+            const resourceType = String(row.resource_type ?? "").trim();
+            const resourceId = String(row.resource_id ?? "").trim();
+            if (!resourceType || !resourceId) continue;
+            const metadata = parseJsonObject(row.metadata);
+            const contentUrl = String(metadata?.contentUrl ?? "").trim();
+            const resourceKey = createHash("sha256")
+                .update(`${resourceType}\u0000${resourceId}\u0000${contentUrl}`)
+                .digest("hex");
+            const existing = await this.db.executeCommand({
+                option: "SELECT",
+                table: "share_resources",
+                where: [{ column: "resource_key", value: resourceKey }],
+            });
+            if ((existing.rows ?? []).length === 0) {
+                await this.db.executeCommand({
+                    option: "INSERT",
+                    table: "share_resources",
+                    values: {
+                        resource_key: resourceKey,
+                        resource_type: resourceType,
+                        resource_id: resourceId,
+                        content_url: contentUrl,
+                        created_at: String(
+                            row.created_at ?? new Date().toISOString(),
+                        ),
+                    },
+                });
+            }
+            await this.db.executeCommand({
+                option: "UPDATE",
+                table: "share_tokens",
+                set: { resource_key: resourceKey },
+                where: [{ column: "id", value: row.id }],
+            });
+        }
+    }
+
+    async grantAccountUnlock(
+        shareId: string,
+        accountId: string,
+    ): Promise<void> {
+        const id = createHash("sha256")
+            .update(`${shareId}\u0000${accountId}`)
+            .digest("hex");
+        const existing = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_account_unlocks",
+            where: [{ column: "id", value: id }],
+        });
+        if ((existing.rows ?? []).length > 0) return;
+        await this.db.executeCommand({
+            option: "INSERT",
+            table: "share_account_unlocks",
+            values: {
+                id,
+                share_id: shareId,
+                account_id: accountId,
+                created_at: new Date().toISOString(),
+            },
+        });
+    }
+
+    async hasAccountUnlock(
+        shareId: string,
+        accountId: string,
+    ): Promise<boolean> {
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_account_unlocks",
+            where: [
+                { column: "share_id", value: shareId },
+                { column: "account_id", value: accountId },
+            ],
+            limit: 1,
+        });
+        return (result.rows ?? []).length > 0;
+    }
+
+    async clearAccountUnlocks(shareId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "DELETE",
+            table: "share_account_unlocks",
+            where: [{ column: "share_id", value: shareId }],
         });
     }
 
@@ -312,12 +501,38 @@ export class ShareTokenStore {
     }): Promise<ShareTokenRecord> {
         const token = issueShareTokenValue();
         const createdAt = new Date().toISOString();
+        const resourceType = String(input.resourceType ?? "").trim();
+        const resourceId = String(input.resourceId ?? "").trim();
+        const metadata = normalizeMetadata(input.metadata);
+        const contentUrl = String(metadata?.contentUrl ?? "").trim();
+        const resourceKey = createHash("sha256")
+            .update(`${resourceType}\u0000${resourceId}\u0000${contentUrl}`)
+            .digest("hex");
+        const existingResource = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_resources",
+            where: [{ column: "resource_key", value: resourceKey }],
+        });
+        if ((existingResource.rows ?? []).length === 0) {
+            await this.db.executeCommand({
+                option: "INSERT",
+                table: "share_resources",
+                values: {
+                    resource_key: resourceKey,
+                    resource_type: resourceType,
+                    resource_id: resourceId,
+                    content_url: contentUrl,
+                    created_at: createdAt,
+                },
+            });
+        }
         const record: ShareTokenRecord = {
             id: token.tokenId,
+            resourceKey,
             ownerAccountId: String(input.ownerAccountId ?? "").trim(),
-            resourceType: String(input.resourceType ?? "").trim(),
-            resourceId: String(input.resourceId ?? "").trim(),
-            metadata: normalizeMetadata(input.metadata),
+            resourceType,
+            resourceId,
+            metadata,
             tokenValue: token.tokenValue,
             tokenHash: token.tokenHash,
             passwordHash: input.password
@@ -332,6 +547,8 @@ export class ShareTokenStore {
                 passwordProtected: Boolean(input.password),
             }),
             expiresAt: String(input.expiresAt ?? ""),
+            expirationNotifiedAt: "",
+            lastAccessedAt: "",
             createdAt,
             updatedAt: createdAt,
         };
@@ -340,6 +557,7 @@ export class ShareTokenStore {
             table: "share_tokens",
             values: {
                 id: record.id,
+                resource_key: record.resourceKey,
                 owner_account_id: record.ownerAccountId,
                 resource_type: record.resourceType,
                 resource_id: record.resourceId,
@@ -355,10 +573,22 @@ export class ShareTokenStore {
                 ),
                 access_controls: JSON.stringify(record.accessControls),
                 expires_at: record.expiresAt,
+                expiration_notified_at: null,
+                last_accessed_at: null,
                 created_at: record.createdAt,
                 updated_at: record.updatedAt,
             },
         });
+        try {
+            await this.recordActivity(record.id, "created", record.createdAt);
+        } catch (error) {
+            this.log?.("error", "Failed to record share creation activity.", {
+                component: "share-gateway",
+                operation: "record_share_creation_activity",
+                shareId: record.id,
+                error: error instanceof Error ? error.message : String(error),
+            });
+        }
         return record;
     }
 
@@ -390,7 +620,7 @@ export class ShareTokenStore {
         const records = (result.rows ?? [])
             .map((row) => {
                 try {
-                    return parseRecord(row);
+                    return parseRecord(row, this.log);
                 } catch (error) {
                     this.log?.("error", "Failed to parse share token record.", {
                         component: "share-gateway",
@@ -424,7 +654,7 @@ export class ShareTokenStore {
         const records = (result.rows ?? [])
             .map((row) => {
                 try {
-                    return parseRecord(row);
+                    return parseRecord(row, this.log);
                 } catch (error) {
                     this.log?.("error", "Failed to parse share token record.", {
                         component: "share-gateway",
@@ -439,6 +669,80 @@ export class ShareTokenStore {
             })
             .filter((record): record is ShareTokenRecord => Boolean(record));
         return records;
+    }
+
+    async listByRecipient(
+        recipientAccountId: string,
+    ): Promise<ShareTokenRecord[]> {
+        await this.purgeExpired();
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+            orderBy: [{ column: "created_at", direction: "DESC" }],
+        });
+        return (result.rows ?? [])
+            .map((row) => {
+                try {
+                    return parseRecord(row, this.log);
+                } catch (error) {
+                    this.log?.(
+                        "error",
+                        "Failed to parse received share token.",
+                        {
+                            component: "share-gateway",
+                            operation: "list_received_shares",
+                            recipientAccountId,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                    return null;
+                }
+            })
+            .filter((record): record is ShareTokenRecord =>
+                Boolean(
+                    record?.accessControls.recipients.some(
+                        (recipient) =>
+                            recipient.type === "user" &&
+                            recipient.id === recipientAccountId,
+                    ),
+                ),
+            );
+    }
+
+    async claimExpiredNotifications(): Promise<ShareTokenRecord[]> {
+        const now = new Date().toISOString();
+        const result = await this.db.executeCommand({
+            option: "SELECT",
+            table: "share_tokens",
+            where: [
+                { column: "expires_at", operator: "!=", value: "" },
+                { column: "expires_at", operator: "<", value: now },
+            ],
+        });
+        const records = (result.rows ?? [])
+            .map((row) => {
+                try {
+                    return parseRecord(row, this.log);
+                } catch {
+                    return null;
+                }
+            })
+            .filter((record): record is ShareTokenRecord =>
+                Boolean(record && !record.expirationNotifiedAt),
+            );
+        return records;
+    }
+
+    async markExpirationNotificationSent(shareId: string): Promise<void> {
+        await this.db.executeCommand({
+            option: "UPDATE",
+            table: "share_tokens",
+            set: { expiration_notified_at: new Date().toISOString() },
+            where: [{ column: "id", value: shareId }],
+        });
     }
 
     async purgeExpired(filter?: {
@@ -527,7 +831,7 @@ export class ShareTokenStore {
             // Expired tokens are intentionally not deleted here so their
             // owner can still see them listed with an "Expired" status
             // until purgeExpired() removes them after the retention window.
-            return parseRecord(row);
+            return parseRecord(row, this.log);
         } catch (error) {
             this.log?.("error", "Failed to parse share token record.", {
                 component: "share-gateway",
@@ -579,7 +883,7 @@ export class ShareTokenStore {
         await this.db.executeCommand({
             option: "UPDATE",
             table: "share_tokens",
-            values: {
+            set: {
                 label:
                     input.label === undefined
                         ? record.label
@@ -603,6 +907,10 @@ export class ShareTokenStore {
             },
             where: [{ column: "id", value: record.id }],
         });
+        if (input.password !== undefined || input.clearPassword) {
+            await this.clearAccountUnlocks(record.id);
+        }
+        await this.recordActivity(record.id, "updated", updatedAt);
         return this.getById(record.id);
     }
 
@@ -620,7 +928,32 @@ export class ShareTokenStore {
                 return null;
             }
         }
-        return record;
+        const lastAccessedAt = new Date().toISOString();
+        await this.recordActivity(record.id, "accessed", lastAccessedAt);
+        const accessRecorded = await this.db
+            .executeCommand({
+                option: "UPDATE",
+                table: "share_tokens",
+                set: { last_accessed_at: lastAccessedAt },
+                where: [{ column: "id", value: record.id }],
+            })
+            .then(() => true)
+            .catch((error) => {
+                this.log?.("warn", "Could not record share access time.", {
+                    component: "share-gateway",
+                    operation: "record_share_access",
+                    shareId: record.id,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                return false;
+            });
+        return {
+            ...record,
+            lastAccessedAt: accessRecorded
+                ? lastAccessedAt
+                : record.lastAccessedAt,
+        };
     }
 
     async inspect(rawToken: string): Promise<ShareTokenRecord | null> {

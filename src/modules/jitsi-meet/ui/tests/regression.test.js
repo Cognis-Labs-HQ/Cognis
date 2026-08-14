@@ -36,6 +36,115 @@ test("meeting chat polling respects cancelled keyring access", () => {
     );
 });
 
+test("meeting share joins use the scoped guest access token", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-embed.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /meetings\/join[\s\S]*accessToken:\s*state\.shareAccessToken \|\| undefined/,
+    );
+    assert.match(
+        source,
+        /meetings\/join[\s\S]*suppressAccessDeniedEvent:\s*true/,
+    );
+    assert.match(
+        source,
+        /suppliedMeetingPassword[\s\S]*!state\.shareAccessToken/,
+    );
+});
+
+test("new meetings can start with an empty participant stage and prompt for a link share after joining", () => {
+    const preflightSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-preflight.js"),
+        "utf8",
+    );
+    const embedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-embed.js"),
+        "utf8",
+    );
+    const shareButtonSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/share-button.js"),
+        "utf8",
+    );
+    const meetingsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
+        "utf8",
+    );
+    assert.match(
+        preflightSource,
+        /canStart:\s*state\.preflightPassed && !state\.meeting\?\.id/,
+    );
+    assert.doesNotMatch(embedSource, /if \(selected\.length === 0\)/);
+    assert.doesNotMatch(embedSource, /canStart:[^,]*selected\.length/);
+    assert.match(
+        embedSource,
+        /state\.promptShareOnJoin =\s*Boolean\(state\.meeting\?\.id\) && selected\.length === 0/,
+    );
+    assert.match(
+        embedSource,
+        /videoConferenceJoined[\s\S]*state\.promptShareOnJoin = false;[\s\S]*openMeetingSharePopup/,
+    );
+    assert.match(shareButtonSource, /allowedMethodIds:\s*\["link"\]/);
+    assert.match(
+        embedSource,
+        /videoConferenceJoined[\s\S]*if \(state\.promptShareOnJoin\)/,
+    );
+    assert.match(
+        meetingsSource,
+        /state\.preflightPassed && participantCount === 0[\s\S]*ready_without_participants/,
+    );
+    assert.match(meetingsSource, /participantCount > 0[\s\S]*ready_to_start/);
+});
+
+test("meeting link guests derive participants from the scoped meeting payload", () => {
+    const chatSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        chatSource,
+        /state\.shareAccessToken && state\.chatParticipantEntries\.length > 0/,
+    );
+    assert.match(chatSource, /state\.lastMeetingParticipants/);
+    assert.match(chatSource, /participant\?\.displayName \|\| username/);
+    assert.match(appSource, /if \(state\.shareAccessToken\) return;/);
+});
+
+test("meeting link chat uses scoped message APIs without requesting room metadata", () => {
+    const chatSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+
+    assert.doesNotMatch(chatSource, /loadMeetingChatParticipants/);
+    assert.match(
+        chatSource,
+        /rooms\/\$\{encodeURIComponent\(roomId\)\}\/messages\?limit=50/,
+    );
+});
+
+test("meeting link guests can join without participant-card data", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const meetingSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
+        "utf8",
+    );
+    assert.match(appSource, /allowParticipantlessJoin: limitedShareView/);
+    assert.match(
+        meetingSource,
+        /!allowParticipantlessJoin\s*&&\s*state\.selectedParticipants\.length === 0/,
+    );
+});
+
 test("meetings search popup adds confirmed users directly to meeting participants", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
@@ -93,7 +202,7 @@ test("jitsi chat loads room keys through the messages adapter loading flow", () 
     );
     assert.match(
         chatSource,
-        /await loadChatRoomKey\(roomId,\s*\{\s*recoverMissing:\s*true,?\s*\}\)/,
+        /await loadChatRoomKey\(roomId,[\s\S]*recoverMissing:\s*true,[\s\S]*accessToken:\s*state\.shareAccessToken/,
     );
     assert.doesNotMatch(chatSource, /adapters\/auth\/keyring/);
     assert.match(resourcesSource, /chatLoadingModuleUrl/);
@@ -115,6 +224,7 @@ test("jitsi meeting window has light-theme overlay overrides", () => {
 test("meetings page composer uses a dedicated layout preference key", () => {
     const source = readJitsiUiBundle();
     assert.match(source, /preferenceKey:\s*"meetings-layout-v3"/);
+    assert.match(source, /requireAccountSession:\s*!limitedShareView/);
 });
 
 test("jitsi meetings embed gates privileged settings by local moderator role and uses reduced toolbar", () => {
@@ -318,6 +428,8 @@ test("meetings session state polling handles closed meetings and distinct leave 
     const source = readJitsiUiBundle();
     assert.match(source, /latestState\.endedAt/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_closed/);
+    assert.match(source, /getResponse\.status === 404/);
+    assert.match(source, /module\.jitsi_meet\.overlay\.join_failed/);
     assert.match(source, /module\.jitsi_meet\.overlay\.meeting_left/);
     assert.match(source, /honorMeetingClosed: false/);
     assert.match(
@@ -334,6 +446,20 @@ test("meetings session state polling handles closed meetings and distinct leave 
     );
     assert.match(source, /addEventListener\("notificationTriggered"/);
     assert.match(source, /reportTerminated: true/);
+});
+
+test("meeting state polling ignores responses after meeting teardown", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-preflight.js"),
+        "utf8",
+    );
+
+    assert.match(source, /const meetingId = state\.meeting\?\.id/);
+    assert.match(source, /if \(state\.meeting\?\.id !== meetingId\) return/);
+    assert.match(
+        source,
+        /meetings\/state[\s\S]*accessToken:\s*state\.shareAccessToken/,
+    );
 });
 
 test("jitsi API resets ended meetings and reports meetingClosed from presence updates", () => {
@@ -619,6 +745,27 @@ test("meetings UI renders active meetings panel and deep-link join support", () 
     );
     assert.match(source, /\/api\/v1\/modules\/jitsi-meet\/meetings\/active/);
     assert.match(source, /requestedMeetingId/);
+    assert.match(
+        source,
+        /await joinMeetingById\(state\.requestedMeetingId, \{\s*autoStart: inShareView \|\| state\.requestedMeetingStart/,
+    );
+    assert.match(source, /searchParams\.get\("start"\) === "1"/);
+    assert.doesNotMatch(source, /inShareView && Boolean\(resolvedMeetingId\)/);
+    assert.match(source, /meetingPayload\.data\.participants/);
+    assert.match(source, /shareAccessToken/);
+    assert.match(source, /accessToken: state\.shareAccessToken \|\| undefined/);
+    assert.match(
+        source,
+        /state\.selectedParticipants = meetingParticipantNames/,
+    );
+    assert.match(source, /callbacks\.renderParticipants\(\)/);
+    assert.match(source, /username === currentUsername/);
+    assert.match(
+        source,
+        /if \(!autoStart\) \{\s*state\.meeting = null;\s*callbacks\.renderParticipants\(\)/,
+    );
+    assert.match(source, /clearRequestedMeetingParameters\(\)/);
+    assert.match(source, /module\.jitsi_meet\.meeting_not_found/);
     assert.match(source, /async function joinMeetingById/);
     assert.match(
         source,
@@ -699,4 +846,65 @@ test("jitsi opts into composer DOM parking for its stateful iframe", () => {
         "utf8",
     );
     assert.match(source, /enableDomParking: true/);
+});
+
+test("meeting shares use the Cognis route and skip account setup", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const adapterSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/share-adapter.js"),
+        "utf8",
+    );
+    assert.match(adapterSource, /contentUrl: `\/meetings\?meetingId=/);
+    assert.match(adapterSource, /&start=1`/);
+    assert.match(
+        appSource,
+        /accessToken: state\.shareAccessToken \|\| undefined/,
+    );
+    assert.match(
+        appSource,
+        /limitedShareView =\s*inShareView &&\s*Boolean\(shareContext\?\.guestAccessToken\) &&\s*shareContext\?\.directAccess !== true/,
+    );
+    assert.match(
+        appSource,
+        /if \(!limitedShareView\) await ensureFullAccountSession\(\)/,
+    );
+    assert.match(
+        appSource,
+        /createMeetingPageElements\(i18n, limitedShareView\)/,
+    );
+    assert.match(appSource, /if \(!inShareView\) \{[\s\S]*bindShareButton/);
+});
+
+test("active link-shared meetings ignore a stale closed state", () => {
+    const apiSource = readJitsiApiBundle();
+    assert.match(apiSource, /isActivelyOpen/);
+    assert.match(apiSource, /activeMeetings\.some/);
+    assert.match(apiSource, /endedAt: null/);
+});
+
+test("direct-account SPA shares mount the full Meetings page", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    assert.match(
+        appSource,
+        /inShareView =\s*shareContext !== null &&\s*shareContext\?\.directAccess !== true/,
+    );
+});
+
+test("meeting routes and standalone shell load shared layout styles", () => {
+    const apiSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    const shellSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/index.html"),
+        "utf8",
+    );
+    assert.match(apiSource, /\/static\/styles\/reuse\/layout\.css/);
+    assert.match(shellSource, /\/static\/styles\/reuse\/layout\.css/);
 });

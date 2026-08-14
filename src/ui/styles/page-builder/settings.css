@@ -145,6 +145,10 @@
     display: none;
 }
 
+body[data-share-guest="true"] .composer-edit-toggle {
+    display: none;
+}
+
 .composer-edit-toggle:hover {
     background: var(--theme-toggle-bg-hover);
 }

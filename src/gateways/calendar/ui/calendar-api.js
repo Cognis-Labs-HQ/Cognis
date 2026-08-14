@@ -56,21 +56,15 @@ async function requestCalendarResource(
     if (!shareAccess?.sharePasswordProtected || !shareAccess?.shareId) {
         return request(null);
     }
-    if (!promptWhenLocked) {
-        if (!uiCtx.capabilities.get("keyring:isUnlocked")?.()) {
-            throw refusedSecretError();
-        }
-        const storedPassword = uiCtx.capabilities
-            .get("keyring:forComponent")?.("Calendar Gateway")
-            ?.get(`share:${shareAccess.shareId}`);
-        if (!storedPassword) throw refusedSecretError();
-        return request(storedPassword);
-    }
     const fetchProtected = uiCtx.capabilities.get(
         "share:fetchProtectedResource",
     );
     if (!fetchProtected) throw new Error("calendar_share_password_unavailable");
-    return fetchProtected({ shareId: shareAccess.shareId, request });
+    return fetchProtected({
+        shareId: shareAccess.shareId,
+        request,
+        promptWhenLocked,
+    });
 }
 
 async function fetchCalendarState() {

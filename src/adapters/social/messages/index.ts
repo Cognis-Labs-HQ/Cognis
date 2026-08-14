@@ -113,6 +113,30 @@ export async function bootstrapSocialAdapter(
 
     const messagesStore = new DbMessagesStore(dbExecutor);
     await messagesStore.ensureSchema();
+
+    type ExternalRoomAuthorizer = (input: {
+        claims: { sub: string; role: string };
+        roomId: string;
+        requiredCapability: "chat:read" | "chat:write";
+    }) => Promise<{ external: boolean; authorized: boolean }>;
+    const externalRoomAuthorizers = new Set<ExternalRoomAuthorizer>();
+    ctx.capabilities.contribute(
+        "social:messages:registerExternalRoomAuthorizer",
+        (authorizer: ExternalRoomAuthorizer) => {
+            externalRoomAuthorizers.add(authorizer);
+            return () => externalRoomAuthorizers.delete(authorizer);
+        },
+    );
+    ctx.capabilities.contribute(
+        "social:messages:authorizeExternalRoomAccess",
+        async (input: Parameters<ExternalRoomAuthorizer>[0]) => {
+            for (const authorize of externalRoomAuthorizers) {
+                const result = await authorize(input);
+                if (result.external) return result;
+            }
+            return { external: false, authorized: false };
+        },
+    );
     const deleteAccountActivity = async (
         accountId: string,
         subjectHandle = accountId,

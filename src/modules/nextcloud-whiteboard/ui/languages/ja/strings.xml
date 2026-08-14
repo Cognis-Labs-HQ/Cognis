@@ -79,7 +79,10 @@
   <string name="module.nextcloud_whiteboard.share_label">ラベル</string>
   <string name="module.nextcloud_whiteboard.share_label_placeholder">チーム確認</string>
   <string name="module.nextcloud_whiteboard.share_expiry_label">有効期限（任意）</string>
-  <string name="module.nextcloud_whiteboard.share_password_optional">パスワード保護（任意）</string>
+  <string name="module.nextcloud_whiteboard.share_password_optional">パスワード保護</string>
+  <string name="module.nextcloud_whiteboard.share_password_title">共有パスワード</string>
+  <string name="module.nextcloud_whiteboard.share_password_instruction">このパスワードを共有の受信者に伝えてください</string>
+  <string name="module.nextcloud_whiteboard.share_delete_prompt">この共有を削除しますか？</string>
   <string name="module.nextcloud_whiteboard.share_password_placeholder">パスワードなしの場合は空欄</string>
   <string name="module.nextcloud_whiteboard.share_status_active">有効</string>
   <string name="module.nextcloud_whiteboard.share_status_expired">期限切れ</string>
@@ -94,5 +97,6 @@
   <string name="module.nextcloud_whiteboard.enable_test_failed">Nextcloud Whiteboard を有効化するには、事前にサーバーチェックに合格する必要があります。</string>
   <string name="module.nextcloud_whiteboard.preflight_websocket_failed">ホワイトボードサーバーが WebSocket 認証を拒否しました。API キー設定を確認してください。</string>
   <string name="module.nextcloud_whiteboard.tool_lock">オブジェクト作成後も現在の描画ツールを維持</string>
+  <string name="module.nextcloud_whiteboard.share_permission_read">読み取り専用</string>
+  <string name="module.nextcloud_whiteboard.share_permission_write">読み取り + 書き込み</string>
 </resources>
-

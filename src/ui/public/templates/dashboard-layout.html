@@ -161,17 +161,23 @@
             ></a>
         </div>
     </footer>
-    <button
-        id="theme-toggle"
-        class="theme-toggle"
-        data-i18n-aria-label="ui.layout.theme.aria"
-        aria-label="Toggle theme"
-    >
-        🌙
-    </button>
-    <button id="composer-edit-toggle" class="composer-edit-toggle" hidden>
-        <span class="composer-edit-icon" aria-hidden="true"></span>
-    </button>
+    <div class="page-action-dock" data-page-action-dock>
+        <button
+            id="theme-toggle"
+            class="theme-toggle page-action-button"
+            data-i18n-aria-label="ui.layout.theme.aria"
+            aria-label="Toggle theme"
+        >
+            🌙
+        </button>
+        <button
+            id="composer-edit-toggle"
+            class="composer-edit-toggle page-action-button"
+            hidden
+        >
+            <span class="composer-edit-icon" aria-hidden="true"></span>
+        </button>
+    </div>
     <div
         id="nav-drawer"
         class="nav-drawer"

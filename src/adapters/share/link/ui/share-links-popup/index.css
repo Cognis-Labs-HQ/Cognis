@@ -3,6 +3,10 @@
     gap: 1rem;
 }
 
+.share-links-popup--edit-only [data-share-cancel-edit] {
+    display: none;
+}
+
 .share-method-tabs {
     display: flex;
     gap: 0.5rem;
@@ -329,4 +333,9 @@
 .share-email-popup {
     display: grid;
     gap: 0.75rem;
+}
+
+.share-email-recipient-field {
+    display: grid;
+    gap: 0.5rem;
 }

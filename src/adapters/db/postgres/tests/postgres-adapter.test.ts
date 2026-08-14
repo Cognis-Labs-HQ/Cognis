@@ -199,3 +199,7 @@ test("postgres pool environment settings are bounded", () => {
     if (previousMaximum === undefined) delete process.env.POSTGRES_POOL_MAX;
     else process.env.POSTGRES_POOL_MAX = previousMaximum;
 });
+
+test("postgres queries have a finite default statement timeout", () => {
+    assert.equal(readPostgresPoolSettings().statement_timeout, 30_000);
+});

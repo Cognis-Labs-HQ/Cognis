@@ -96,13 +96,22 @@ test("dashboard logout requests server revocation before clearing local token", 
     );
 });
 
+test("dashboard resolves guest sessions through the auth capability", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
+    assert.doesNotMatch(layoutSource, /account-context/);
+});
+
 test("dashboard layout refreshes the greeting from the profile display name", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
     assert.ok(
-        layoutSource.includes("const profileEndpoint = isGuestSession()") &&
+        layoutSource.includes('capabilities.get("session:isGuest")') &&
             layoutSource.includes("apiFetch(profileEndpoint)"),
         "dashboard layout should fetch the authenticated profile to refresh the greeting display name",
     );
@@ -133,15 +142,32 @@ test("dashboard layout checks release changelog popup in shell sessions", () => 
     );
 });
 
-test("dashboard layout keeps active avatar blob URL during SPA refresh", () => {
+test("dashboard layout suppresses release summaries for guest sessions", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(source, /capabilities\.get\("session:isGuest"\)/);
+    const popupSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/release-changelog/popup.js"),
+        "utf8",
+    );
+    assert.match(popupSource, /capabilities\.get\("session:isGuest"\)/);
+    const authSessionSource = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
+        "utf8",
+    );
+    assert.match(authSessionSource, /contribute\("session:isGuest"/);
+    assert.match(authSessionSource, /accountId\.startsWith\("share:"\)/);
+});
+
+test("dashboard layout leaves cached avatar blob ownership with its provider", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
-    assert.ok(
-        layoutSource.includes("prevBlobSrc && prevBlobSrc !== avatarBlobUrl"),
-        "dashboard layout should not revoke a blob URL when it is still the active avatar source",
-    );
+    assert.doesNotMatch(layoutSource, /URL\.revokeObjectURL/);
+    assert.match(layoutSource, /provider-owned blob URL/);
 });
 
 test("dashboard layout re-shows theme toggle on shell reuse when enabled", () => {

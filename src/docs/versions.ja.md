@@ -33,27 +33,27 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                                | バージョン |
 | --------------------- | ----------------------------------- | ---------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.17`   |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.17`   |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.18`   |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.8`    |
 | ファイル容量制限      | `src/adapters/file/quota/`          | `1.0.6`    |
 | Local Auth            | `src/adapters/auth/local/`          | `0.3.6`    |
-| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.30`   |
+| User Keyring          | `src/adapters/auth/keyring/`        | `1.0.34`   |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.8`    |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.6`    |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.6`    |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.18`   |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.9`    |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.4`    |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.3`    |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.5`    |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.4`    |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.9`    |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.7`    |
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`    |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`    |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`    |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.48`   |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.42`   |
-| Link Share            | `src/adapters/share/link/`          | `1.1.11`   |
-| User Share            | `src/adapters/share/user/`          | `1.1.12`   |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.56`   |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.58`   |
+| Link Share            | `src/adapters/share/link/`          | `1.1.29`   |
+| User Share            | `src/adapters/share/user/`          | `1.1.17`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`    |
 | Japanese (Study)      | `src/adapters/study/japanese/`      | `1.0.0`    |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.3`    |
@@ -64,8 +64,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`    |
-| Authentication (auth) | `src/gateways/auth/`          | `1.7.44`   |
-| Share                 | `src/gateways/share/`         | `1.6.45`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.7.47`   |
+| Share                 | `src/gateways/share/`         | `1.7.22`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`    |
 | Social                | `src/gateways/social/`        | `1.2.11`   |
@@ -74,7 +74,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Logging               | `src/gateways/logging/`       | `1.5.11`   |
 | Observability         | `src/gateways/observability/` | `1.0.5`    |
 | Study                 | `src/gateways/study/`         | `1.5.10`   |
-| Calendar              | `src/gateways/calendar/`      | `1.4.74`   |
+| Calendar              | `src/gateways/calendar/`      | `1.4.96`   |
 
 ## コア契約
 
@@ -86,7 +86,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.3.4`    |
+| API Server     | `src/api/` | `0.3.6`    |
 
 ## ツール
 
@@ -99,7 +99,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント       | パス                                | バージョン |
 | -------------------- | ----------------------------------- | ---------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`    |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.3.65`   |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.39`   |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.41`   |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.8`    |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`    |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`    |

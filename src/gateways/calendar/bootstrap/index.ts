@@ -1,5 +1,4 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 import {
     registerCanonicalFlow,
     SHARE_FLOW_CATALOG,
@@ -18,21 +17,10 @@ import {
     CoreCalendarGateway,
     type CalendarVisibility,
 } from "../gateway/index.js";
-import { createCalendarAdapterRoutes } from "./adapter-routes.js";
-import { createCalendarCoreRoutes } from "./calendar-routes.js";
 import type { ResolveAccountId } from "./helpers.js";
 import { createCalendarNotificationResolver } from "./notification-capabilities.js";
+import { finalizeCalendarBootstrap, GATEWAY_ROOT } from "./finalize.js";
 import { CalendarShareRegistry } from "./share-registry.js";
-import { createStatusPreferenceRoutes } from "./status-preference/index.js";
-import { registerCalendarUi } from "./ui-registration.js";
-import { registerCalendarComponent } from "./component-registration.js";
-import { createCalendarHtmlRoute } from "./html-route.js";
-
-const GATEWAY_ROOT = path.resolve(
-    path.dirname(fileURLToPath(import.meta.url)),
-    "..",
-);
-
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
@@ -46,6 +34,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const getPreferenceStore = () =>
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+    let projectUpcomingEvents = (accountId: string, limit?: number) =>
+        Promise.resolve(gateway.listUpcomingEvents(accountId, limit));
     if (systemCtx && !systemCtx.hasFlow("calendar-upcoming-events")) {
         systemCtx.registerFlow({
             id: "calendar-upcoming-events",
@@ -61,12 +51,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 accountId: string;
                 limit?: number;
             };
-            return gateway.listUpcomingEvents(input.accountId, input.limit);
+            return projectUpcomingEvents(input.accountId, input.limit);
         },
     );
-    // Calendar currently bootstraps before Share. Registering the shared flow
-    // contracts here makes the facilitator hooks below independent of gateway
-    // discovery order; Share's later registration is intentionally idempotent.
     if (systemCtx) {
         for (const flow of SHARE_FLOW_CATALOG) {
             registerCanonicalFlow(systemCtx, flow);
@@ -427,6 +414,109 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             };
         },
     );
+    const reconciliationByAccount = new Map<string, Promise<void>>();
+    const reconcileUserShares = async (recipientAccountId: string) => {
+        const activeReconciliation =
+            reconciliationByAccount.get(recipientAccountId);
+        if (activeReconciliation) return activeReconciliation;
+        const reconciliation = (async () => {
+            const listReceivedTokens = ctx.capabilities.get<
+                (accountId: string) => Promise<Array<Record<string, unknown>>>
+            >("share:listReceivedTokens");
+            const deliverUserShare = ctx.capabilities.get<
+                (delivery: {
+                    shareId: string;
+                    resourceType: string;
+                    resourceId: string;
+                    ownerAccountId: string;
+                    recipientAccountId: string;
+                    grantedCapabilities: string[];
+                    expiresAt: string;
+                }) => Promise<unknown>
+            >("share:deliverUserShare:calendar");
+            if (!listReceivedTokens || !deliverUserShare) return;
+            const receivedShares = await listReceivedTokens(recipientAccountId);
+            await Promise.all(
+                receivedShares
+                    .filter((share) => {
+                        const adapterId = String(share.shareMethod ?? "");
+                        return (
+                            share.resourceType === "calendar" &&
+                            adapterId === "user"
+                        );
+                    })
+                    .map((share) =>
+                        deliverUserShare({
+                            shareId: String(share.id ?? ""),
+                            resourceType: "calendar",
+                            resourceId: String(share.resourceId ?? ""),
+                            ownerAccountId: String(share.ownerAccountId ?? ""),
+                            recipientAccountId,
+                            grantedCapabilities: Array.isArray(
+                                share.grantedCapabilities,
+                            )
+                                ? share.grantedCapabilities.map(String)
+                                : [],
+                            expiresAt: String(share.expiresAt ?? ""),
+                        }),
+                    ),
+            );
+        })().finally(() => {
+            reconciliationByAccount.delete(recipientAccountId);
+        });
+        reconciliationByAccount.set(recipientAccountId, reconciliation);
+        return reconciliation;
+    };
+    ctx.capabilities.contribute(
+        "calendar:reconcileUserShares",
+        reconcileUserShares,
+    );
+    projectUpcomingEvents = async (accountId: string, limit?: number) => {
+        await reconcileUserShares(accountId);
+        const ownAndInvitedEvents = gateway.listUpcomingEvents(accountId);
+        const now = Date.now();
+        const sharedCalendars =
+            await shareRegistry.listCalendarUserSharesByRecipient(accountId);
+        const resolveUserAccess = ctx.capabilities.get<
+            (access: {
+                accountId: string;
+                resourceType: string;
+                resourceId: string;
+                requiredCapability: string;
+            }) => Promise<{ authorized: boolean }>
+        >("share:resolveUserAccess");
+        const sharedEventGroups = await Promise.all(
+            sharedCalendars.map(async (share) => {
+                const expiresAt = Date.parse(share.expiresAt);
+                if (Number.isFinite(expiresAt) && expiresAt <= now) return [];
+                const recipientCalendar = gateway.getOwnedCalendar(
+                    accountId,
+                    share.recipientCalendarId,
+                );
+                if (!recipientCalendar) return [];
+                const access = await resolveUserAccess?.({
+                    accountId,
+                    resourceType: "calendar",
+                    resourceId: share.ownerCalendarId,
+                    requiredCapability: "calendar:read",
+                });
+                if (access && !access.authorized) return [];
+                return gateway
+                    .listEvents(share.ownerCalendarId)
+                    .filter((event) => Date.parse(event.endAt) >= now)
+                    .map((event) => ({
+                        ...event,
+                        calendarId: share.recipientCalendarId,
+                        calendarName: recipientCalendar.name,
+                    }));
+            }),
+        );
+        const events = [
+            ...ownAndInvitedEvents,
+            ...sharedEventGroups.flat(),
+        ].sort((left, right) => left.startAt.localeCompare(right.startAt));
+        return limit === undefined ? events : events.slice(0, limit);
+    };
     ctx.capabilities.contribute(
         "share:resolveVariants",
         (variantInput: {
@@ -890,101 +980,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             };
         },
     );
-    ctx.capabilities.contribute("calendar:exportIcs", (calendarId: string) =>
-        gateway.exportCalendarAsIcs(calendarId),
-    );
-    ctx.capabilities.contribute(
-        "calendar:importIcs",
-        (input: { ownerAccountId: string; calendarId: string; ics: string }) =>
-            gateway.importIcs(input),
-    );
-
-    await gateway.bootstrapAdapters(adaptersRoot, {
+    await finalizeCalendarBootstrap({
+        ctx,
         gateway,
-        capabilities: ctx.capabilities,
-        gatewayRegistry: ctx.gatewayRegistry,
-        registerRoute: (handler, gatewayId) =>
-            ctx.routeRegistry.register(handler, gatewayId ?? "calendar"),
-        log: ctx.log,
-        isGatewayEnabled: () =>
-            ctx.gatewayRegistry.get("calendar")?.status !== "disabled",
+        shareRegistry,
+        routeContext,
+        routeHelpers,
+        adaptersRoot,
+        getPreferenceStore,
+        resolveMeetingsProviderAvailability,
+        resolveShareableUsers,
+        resolveAccountId,
+        resolveAccountDisplayName,
+        notificationResolver,
+        systemCtx,
+        gatewayRoot: GATEWAY_ROOT,
     });
-
-    ctx.routeRegistry.register(
-        createStatusPreferenceRoutes({
-            routeContext,
-            getPreference: (accountId) =>
-                getPreferenceStore()?.get(
-                    accountId,
-                    "calendar-prevent-status-updates",
-                ) ?? Promise.resolve(null),
-            setPreference: (accountId, prevented) => {
-                const preferenceStore = getPreferenceStore();
-                if (!preferenceStore) {
-                    return Promise.resolve(false);
-                }
-                return preferenceStore
-                    .set(
-                        accountId,
-                        "calendar-prevent-status-updates",
-                        String(prevented),
-                    )
-                    .then(() => true);
-            },
-            log: ctx.log,
-        }),
-        "calendar",
-    );
-    ctx.routeRegistry.register(
-        createCalendarCoreRoutes({
-            gateway,
-            shareRegistry,
-            routeContext,
-            resolveMeetingsProviderAvailability:
-                resolveMeetingsProviderAvailability ?? null,
-            resolveShareableUsers,
-            resolveAccountId: resolveAccountId ?? null,
-            resolveAccountDisplayName,
-            log: ctx.log,
-            getDispatchNotification: () =>
-                notificationResolver.getDispatchNotification(),
-            ensureNotificationCategory: () =>
-                notificationResolver.ensureCategory(),
-            getCapability: <T>(capabilityId: string) =>
-                ctx.capabilities.get<T>(capabilityId),
-            runUpcomingEventsFlow: async (input) => {
-                if (!systemCtx?.flow.exists("calendar-upcoming-events")) {
-                    return [
-                        gateway.listUpcomingEvents(
-                            input.accountId,
-                            input.limit,
-                        ),
-                    ];
-                }
-                const result = await systemCtx.flow.run(
-                    "calendar-upcoming-events",
-                    input,
-                );
-                return result.stageResults["project-events"] ?? [];
-            },
-        }),
-        "calendar",
-    );
-
-    ctx.routeRegistry.register(
-        createCalendarHtmlRoute(GATEWAY_ROOT, routeHelpers),
-        "calendar",
-    );
-    ctx.routeRegistry.register(
-        createCalendarAdapterRoutes(
-            "calendar",
-            gateway,
-            ctx.gatewayRegistry,
-            routeContext,
-        ),
-        "calendar",
-    );
-
-    registerCalendarUi(ctx, GATEWAY_ROOT);
-    registerCalendarComponent(ctx);
 }

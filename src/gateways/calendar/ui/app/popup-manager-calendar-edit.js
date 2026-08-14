@@ -12,8 +12,10 @@ async function openCalendarSharePopup({ calendar, i18n }) {
     await openSharePopup({
         resourceType: "calendar",
         resourceId: calendar.id,
+        contentUrl: `/calendar?calendarId=${encodeURIComponent(calendar.id)}`,
         passwordRequired: calendar.visibility === "private",
         grantedCapabilities: ["calendar:read", "calendar:write"],
+        supportsReadOnly: true,
         title: i18n.t("gateway.calendar.share_calendar"),
         labels: {
             empty: i18n.t("gateway.calendar.share_links_details"),
@@ -43,7 +45,7 @@ async function openCalendarSharePopup({ calendar, i18n }) {
             updateUserShare: i18n.t("gateway.calendar.share_user_update"),
             shareWithPrefix: i18n.t("gateway.calendar.share_with_prefix"),
             usersCountLabel: i18n.t("gateway.calendar.share_users_count"),
-            done: i18n.t("ui.reuse.done"),
+            close: i18n.t("ui.reuse.close"),
             createFailed: i18n.t("gateway.calendar.share_link_failed"),
             duplicateUserShare: i18n.t("gateway.calendar.share_user_duplicate"),
             copySuccess: i18n.t("gateway.calendar.share_link_copied"),
@@ -227,7 +229,13 @@ export function createCalendarEditPopupHandler({
                         title: i18n.t(
                             "gateway.calendar.delete_calendar_confirm_title",
                         ),
-                        body: `<p>${escapeHtml(i18n.t("gateway.calendar.delete_calendar_confirm"))}</p>`,
+                        body: `<p>${escapeHtml(
+                            i18n.t(
+                                calendar.visibility === "shared"
+                                    ? "gateway.calendar.delete_shared_calendar_confirm"
+                                    : "gateway.calendar.delete_calendar_confirm",
+                            ),
+                        )}</p>`,
                         variant: "danger",
                         actions: [
                             {

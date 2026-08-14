@@ -7,7 +7,7 @@
  *   const res = await apiFetch('/api/v1/items', { method: 'POST', ... });
  *
  * @param {string} path
- * @param {RequestInit} [options]
+ * @param {RequestInit & { accessToken?: string, suppressAccessDeniedEvent?: boolean, suppressConnectionRecoveryToast?: boolean }} [options]
  * @returns {Promise<Response>}
  */
 import { showToast } from "./toast.js";
@@ -17,6 +17,7 @@ const RETRYABLE_SERVER_STATUS_MESSAGE_REGEX = new RegExp(
     `\\b(${[...RETRYABLE_SERVER_STATUS_CODES].join("|")})\\b`,
 );
 const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS = 5_000;
+const API_REQUEST_TIMEOUT_MS = 30_000;
 const connectionRecoveryFailureMarker = Symbol("connectionRecoveryFailure");
 
 let connectionRecoveryPrompt = "";
@@ -111,17 +112,45 @@ export function shouldSuppressConnectionRecoveryPopup(error) {
 }
 
 export async function apiFetch(path, options = {}) {
-    const { suppressConnectionRecoveryToast = false, ...requestOptions } =
-        options ?? {};
-    const token = localStorage.getItem("cognis_access_token");
-    const headers = {
-        ...(requestOptions.headers ?? {}),
-    };
+    const {
+        accessToken,
+        suppressAccessDeniedEvent = false,
+        suppressConnectionRecoveryToast = false,
+        timeoutMs = API_REQUEST_TIMEOUT_MS,
+        ...requestOptions
+    } = options ?? {};
+    const token = String(
+        accessToken ?? localStorage.getItem("cognis_access_token") ?? "",
+    ).trim();
+    const headers = new Headers(requestOptions.headers);
     if (token) {
-        headers.authorization = `Bearer ${token}`;
+        headers.set("authorization", `Bearer ${token}`);
     }
+    const timeoutSignal = globalThis.AbortSignal?.timeout?.(timeoutMs);
+    const signal = requestOptions.signal
+        ? (globalThis.AbortSignal?.any?.([
+              requestOptions.signal,
+              timeoutSignal,
+          ]) ?? requestOptions.signal)
+        : timeoutSignal;
     try {
-        const response = await fetch(path, { ...requestOptions, headers });
+        const response = await fetch(path, {
+            ...requestOptions,
+            headers,
+            signal,
+        });
+        if (
+            (response.status === 401 || response.status === 403) &&
+            !suppressAccessDeniedEvent &&
+            requestTargetsApi(path) &&
+            typeof window !== "undefined"
+        ) {
+            window.dispatchEvent(
+                new CustomEvent("cognis:api-access-denied", {
+                    detail: { path },
+                }),
+            );
+        }
         if (
             token &&
             !suppressConnectionRecoveryToast &&

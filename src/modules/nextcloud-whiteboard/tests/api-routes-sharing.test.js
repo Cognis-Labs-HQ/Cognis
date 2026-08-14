@@ -3,6 +3,43 @@ import test from "node:test";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 import { registerApiRoutes } from "../api/index.js";
 import { NextcloudWhiteboardStore } from "../api/store.js";
+import { resolveWhiteboardUserAccess } from "../api/access.js";
+
+test("user-share recipients keep their account identity for whiteboard access", async () => {
+    let nativeAccessChecked = false;
+    const access = await resolveWhiteboardUserAccess({
+        claims: { sub: "bob" },
+        profileStore: {
+            async getProfile(accountId) {
+                assert.equal(accountId, "bob");
+                return { handle: "bob" };
+            },
+        },
+        store: {
+            async canAccessWhiteboard() {
+                nativeAccessChecked = true;
+                return false;
+            },
+        },
+        whiteboardId: "board-1",
+        resolveShareUserAccess: async (request) => {
+            assert.deepEqual(request, {
+                accountId: "bob",
+                resourceType: "whiteboard",
+                resourceId: "board-1",
+                requiredCapability: "whiteboard:read",
+            });
+            return { authorized: true, shareId: "share-1" };
+        },
+    });
+
+    assert.deepEqual(access, {
+        authorized: true,
+        canWrite: false,
+        username: "bob",
+    });
+    assert.equal(nativeAccessChecked, false);
+});
 
 function createMemoryDb() {
     const tables = new Map();
@@ -257,6 +294,7 @@ test("nextcloud whiteboard share guests use gateway guest profiles", async () =>
 });
 
 test("nextcloud whiteboard presence tracks share guests and profile users", async () => {
+    const guestAccessRequests = [];
     const db = createMemoryDb();
     const store = new NextcloudWhiteboardStore({ db });
     await store.ensureSchema();
@@ -285,14 +323,19 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
                 };
             }
             if (key === "share:resolveGuestAccess") {
-                return async ({ claims, resourceType, resourceId }) => ({
-                    shareGuest: String(claims?.sub ?? "").startsWith("share:"),
-                    authorized:
-                        resourceType === "whiteboard" &&
-                        resourceId === board.id,
-                    username: "guest:guest-1",
-                    displayName: "Guest #123456",
-                });
+                return async (request) => {
+                    guestAccessRequests.push(request);
+                    return {
+                        shareGuest: String(
+                            request.claims?.sub ?? "",
+                        ).startsWith("share:"),
+                        authorized:
+                            request.resourceType === "whiteboard" &&
+                            request.resourceId === board.id,
+                        username: "guest:guest-1",
+                        displayName: "Guest #123456",
+                    };
+                };
             }
             if (key === "logging:log") return () => {};
             return undefined;
@@ -400,6 +443,11 @@ test("nextcloud whiteboard presence tracks share guests and profile users", asyn
         inactiveRes,
     );
     assert.equal(inactiveRes.statusCode, 200);
+    assert.ok(
+        guestAccessRequests.some(
+            (request) => request.requiredCapability === "whiteboard:read",
+        ),
+    );
 
     await db.executeCommand({
         option: "UPDATE",

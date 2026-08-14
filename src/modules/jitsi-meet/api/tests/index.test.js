@@ -36,6 +36,46 @@ test("jitsi API registers configured CSP origins through auth capability", () =>
     );
 });
 
+test("jitsi resolves guest access through the Share gateway contract", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
+        "utf8",
+    );
+    assert.match(source, /ctx\.getCapability\(\s*"share:resolveGuestAccess"/);
+    assert.match(source, /resourceType: "meeting"/);
+    assert.match(source, /const legacyMeetingAccess/);
+    assert.match(source, /legacyMeetingAccess\?\.authorized === true/);
+});
+
+test("meeting share guests receive the Jitsi meeting password", () => {
+    const source = readJitsiApiBundle();
+
+    assert.match(
+        source,
+        /if \(shareGuestAccess\.isGuest\)[\s\S]*meetingPassword:\s*meeting\.meetingPassword/,
+    );
+});
+
+test("jitsi authorizes its scoped guest chat through a neutral Messages contract", () => {
+    const source = readJitsiApiBundle();
+
+    assert.match(source, /social:messages:registerExternalRoomAuthorizer/);
+    assert.match(source, /getMeetingByChatRoomId\(roomId\)/);
+    assert.match(source, /requiredCapability/);
+});
+
+test("participant-free meetings delete their identity and shares when closed", () => {
+    const source = readJitsiApiBundle();
+
+    assert.match(
+        source,
+        /const participantlessMeeting = resolved\.participants\.every/,
+    );
+    assert.match(source, /deleteResourceShares\?\.\(/);
+    assert.match(source, /await store\.deleteMeeting\(resolved\.meeting\.id\)/);
+    assert.match(source, /async deleteMeeting\(meetingId\)/);
+});
+
 test("jitsi API logs stored CSP origin registration failures", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),

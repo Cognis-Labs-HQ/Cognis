@@ -190,4 +190,8 @@
   <string name="gateway.calendar.status_updates_prevent">Cegah acara kalender mengatur status</string>
   <string name="gateway.calendar.status_updates_load_failed">Preferensi status kalender tidak dapat dimuat.</string>
   <string name="gateway.calendar.status_updates_save_failed">Preferensi status kalender tidak dapat disimpan.</string>
+  <string name="gateway.calendar.share_acknowledge_title">Tambahkan kalender bersama?</string>
+  <string name="gateway.calendar.share_acknowledge_message">Kalender ini akan ditambahkan ke halaman Kalender Anda.</string>
+  <string name="gateway.calendar.share_acknowledge_action">Tambahkan kalender</string>
+  <string name="gateway.calendar.delete_shared_calendar_confirm">Kalender bersama ini akan dihapus dari halaman Kalender Anda.</string>
 </resources>

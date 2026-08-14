@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">事前チェックを実行しています。成功するまでミーティング開始は無効です。</string>
   <string name="module.jitsi_meet.overlay.preflight_required">ミーティングを開始する前に事前チェックを成功させる必要があります。</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">参加者が選択されました。ミーティングを開始できます。</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">ミーティングを開始できます。ミーティングリンクのポップアップが表示されます。</string>
   <string name="module.jitsi_meet.overlay.creating">ミーティング URL を作成または再利用しています...</string>
   <string name="module.jitsi_meet.overlay.config_required">ミーティングを使う前に、管理者が Jitsi インスタンス URL を設定する必要があります。</string>
   <string name="module.jitsi_meet.overlay.create_failed">ミーティングの作成に失敗しました。</string>
@@ -17,6 +18,7 @@
   <string name="module.jitsi_meet.overlay.probe_failed">ミーティング URL の疎通確認に失敗しました。</string>
   <string name="module.jitsi_meet.overlay.joining">ミーティングに参加中...</string>
   <string name="module.jitsi_meet.overlay.join_failed">ミーティングへの参加に失敗しました。</string>
+  <string name="module.jitsi_meet.meeting_not_found">指定されたミーティングは存在しません。</string>
   <string name="module.jitsi_meet.overlay.auth_waiting">全員が参加する前に認証が必要です。</string>
   <string name="module.jitsi_meet.overlay.auth_waiting_other">別の参加者が認証を進めています。2 分以内に開始されない場合は、あなたが続行できます。</string>
   <string name="module.jitsi_meet.overlay.auth_required_description">モデレーター認証が必要です。同じブラウザーセッションで認証を開始してください。</string>
@@ -88,13 +90,17 @@
   <string name="module.jitsi_meet.share.button">共有</string>
   <string name="module.jitsi_meet.share.popup_title">ミーティングを共有</string>
   <string name="module.jitsi_meet.share.generate_link">リンクを作成</string>
+  <string name="module.jitsi_meet.share.email_recipients">このミーティングリンクを含む招待を次の宛先に送信：</string>
   <string name="module.jitsi_meet.share.copy_link">リンクをコピー</string>
   <string name="module.jitsi_meet.share.revoke">無効化</string>
   <string name="module.jitsi_meet.share.share_options_label">共有：</string>
   <string name="module.jitsi_meet.share.label">ラベル</string>
   <string name="module.jitsi_meet.share.label_placeholder">任意のラベル</string>
   <string name="module.jitsi_meet.share.expiry_label">有効期限（任意）</string>
-  <string name="module.jitsi_meet.share.password_optional">パスワード保護（任意）</string>
+  <string name="module.jitsi_meet.share.password_optional">パスワード保護</string>
+  <string name="module.jitsi_meet.share.password_title">共有パスワード</string>
+  <string name="module.jitsi_meet.share.password_instruction">このパスワードを共有の受信者に伝えてください</string>
+  <string name="module.jitsi_meet.share.delete_prompt">この共有を削除しますか？</string>
   <string name="module.jitsi_meet.share.password_placeholder">パスワードなしの場合は空欄</string>
   <string name="module.jitsi_meet.share.status_active">有効</string>
   <string name="module.jitsi_meet.share.status_expired">期限切れ</string>

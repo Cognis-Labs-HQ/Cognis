@@ -335,6 +335,34 @@ export class JitsiMeetStore {
         return this.getMeetingById(String(row.id));
     }
 
+    async deleteMeeting(meetingId) {
+        const normalizedMeetingId = String(meetingId ?? "").trim();
+        if (!normalizedMeetingId) return false;
+        await this.db.transaction(async (executor) => {
+            for (const table of [
+                "jitsi_meeting_presence",
+                "jitsi_meeting_state",
+                "jitsi_meeting_participants",
+                "jitsi_meetings",
+            ]) {
+                await executor.executeCommand({
+                    option: "DELETE",
+                    table,
+                    where: [
+                        {
+                            column:
+                                table === "jitsi_meetings"
+                                    ? "id"
+                                    : "meeting_id",
+                            value: normalizedMeetingId,
+                        },
+                    ],
+                });
+            }
+        });
+        return true;
+    }
+
     async listParticipants(meetingId) {
         const result = await this.db.executeCommand({
             option: "SELECT",

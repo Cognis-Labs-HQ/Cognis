@@ -330,7 +330,36 @@
 .whiteboard-canvas-stage {
     --whiteboard-canvas-bg: var(--surface, #ffffff);
     --whiteboard-auto-stroke: var(--text, #111827);
+    --whiteboard-selection-local: #22c55e;
+    --whiteboard-selection-erase: #ef4444;
+    --whiteboard-selection-label: #ffffff;
     overflow: auto;
+}
+
+body[data-theme="light"] .whiteboard-canvas-stage {
+    --whiteboard-canvas-bg: #ffffff;
+    --whiteboard-auto-stroke: #0f172a;
+    --whiteboard-selection-local: #047857;
+    --whiteboard-selection-erase: #b91c1c;
+    --whiteboard-selection-label: #ffffff;
+}
+
+body:not([data-theme="light"]) .whiteboard-canvas-stage {
+    --whiteboard-canvas-bg: #0f172a;
+    --whiteboard-auto-stroke: #f8fafc;
+    --whiteboard-selection-local: #4ade80;
+    --whiteboard-selection-erase: #f87171;
+    --whiteboard-selection-label: #020617;
+}
+
+body[data-theme="light"] #page-presence-section {
+    --panel-border: rgb(15 23 42 / 35%);
+    filter: drop-shadow(0 3px 6px rgb(15 23 42 / 18%));
+}
+
+body:not([data-theme="light"]) #page-presence-section {
+    --panel-border: rgb(248 250 252 / 42%);
+    filter: drop-shadow(0 3px 7px rgb(0 0 0 / 55%));
 }
 
 .whiteboard-board-title {

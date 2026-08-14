@@ -377,10 +377,18 @@ export function registerMeetingRoutes({
                     sendError(res, 404, "not_found", "Meeting not found.");
                     return;
                 }
-                const [rawParticipants, state] = await Promise.all([
-                    store.listParticipants(meeting.id),
-                    store.getMeetingState(meeting.id),
-                ]);
+                const [rawParticipants, storedState, activeMeetings] =
+                    await Promise.all([
+                        store.listParticipants(meeting.id),
+                        store.getMeetingState(meeting.id),
+                        store.listActiveMeetings(),
+                    ]);
+                const isActivelyOpen = activeMeetings.some(
+                    (activeMeeting) => activeMeeting.id === meeting.id,
+                );
+                const state = isActivelyOpen
+                    ? { ...storedState, endedAt: null }
+                    : storedState;
                 const participants =
                     typeof filterUsernamesForGuestVisibility === "function"
                         ? await filterUsernamesForGuestVisibility(

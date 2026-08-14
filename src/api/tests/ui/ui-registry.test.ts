@@ -125,6 +125,11 @@ test("UIRegistry registers and lists SPA routes", () => {
         routes[0].scriptUrl,
         "/static/adapters/social/messages/app.js",
     );
+    assert.equal(
+        reg.resolveSpaRoute("/messages/thread-1")?.id,
+        "messages-page",
+    );
+    assert.equal(reg.resolveSpaRoute("/settings"), undefined);
 });
 
 test("UIRegistry registers and lists auth typing messages", () => {

@@ -8,15 +8,20 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createCalendarPopupManager } from "./popup-manager.js";
+import { mount as mountSharedCalendar } from "../share-renderer.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
 const SELECTED_VIEW_STORAGE_KEY = "calendar.selectedView";
 
-export async function mount(root, { signal } = {}) {
+export async function mount(root, { signal, shareContext = null } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/calendar/ui/languages"],
     });
     applyDocumentTitle(i18n, "gateway.calendar.page_title");
+
+    if (shareContext?.guestAccessToken) {
+        return mountSharedCalendar(root, { shareContext, i18n, signal });
+    }
 
     let calendars = [];
     const routeCalendarId = calendarUi.parseCalendarSelection();
@@ -117,6 +122,24 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function reloadState() {
+        if (shareContext?.payload?.calendar) {
+            const sharedCalendar = {
+                ...shareContext.payload.calendar,
+                visibility: "shared",
+            };
+            calendars = [sharedCalendar];
+            selectedCalendarId = String(sharedCalendar.id ?? "");
+            eventsByCalendar = {
+                [selectedCalendarId]: Array.isArray(shareContext.payload.events)
+                    ? shareContext.payload.events
+                    : [],
+            };
+            pendingInvitations = [];
+            canInviteExternal = false;
+            currentAccountId = "";
+            jitsiAvailable = false;
+            return;
+        }
         const calendarState = await calendarUi.fetchCalendarState();
         calendarUi.setEventStatusOptions(
             calendarState.meta.availabilityStatuses,
@@ -129,7 +152,9 @@ export async function mount(root, { signal } = {}) {
         const eventResults = await Promise.allSettled(
             calendars.map(async (calendar) => [
                 calendar.id,
-                await calendarUi.fetchEvents(calendar.id, calendar),
+                await calendarUi.fetchEvents(calendar.id, calendar, {
+                    promptWhenLocked: true,
+                }),
             ]),
         );
         calendars = calendars.map((calendar, index) => ({
@@ -443,6 +468,7 @@ export async function mount(root, { signal } = {}) {
 
     composer = createPageComposer(root, {
         allowCustomization: false,
+        requireAccountSession: !shareContext,
         elements: [
             {
                 id: "calendar-view",
@@ -653,14 +679,7 @@ export async function mount(root, { signal } = {}) {
                             );
                             if (!calendar) return;
                             if (calendar.secretsUnavailable) {
-                                void (async () => {
-                                    if (await retryCalendarUnlock(calendar)) {
-                                        selectedCalendarId = calendarId;
-                                        selectedEventId = "";
-                                        syncRouteSelection();
-                                        refreshCalendarComposer();
-                                    }
-                                })();
+                                openCalendarEditPopup(calendar);
                                 return;
                             }
                             selectedCalendarId = calendarId;
@@ -768,19 +787,6 @@ export async function mount(root, { signal } = {}) {
 
     await composer.init();
     syncRouteSelection();
-    const lockedCalendars = calendars.filter(
-        (calendar) => calendar.secretsUnavailable,
-    );
-    if (lockedCalendars.length > 0) {
-        void uiCtx.runFlow("defer-page-action", {
-            action: async () => {
-                for (const calendar of lockedCalendars) {
-                    if (!(await retryCalendarUnlock(calendar))) break;
-                }
-                refreshCalendarComposer();
-            },
-        });
-    }
     if (routeCalendarId && routeEventId) {
         void openEventPopup(routeCalendarId, routeEventId);
     }

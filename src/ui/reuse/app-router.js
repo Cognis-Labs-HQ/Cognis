@@ -39,7 +39,7 @@
  * @returns {void}
  */
 
-import { ensurePageStylesheet } from "./page-styles.js";
+import { ensurePageStylesheet, preparePageStylesheets } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
 import { beginPageLoading } from "./page-entry.js";
 import { getCurrentRoutePath } from "./route-path.js";
@@ -74,6 +74,7 @@ const ROUTE_STYLE_BUNDLES = {
     settings: [
         "/static/styles/page-builder.css",
         "/static/styles/reuse/page-sections.css",
+        "/static/styles/reuse/structured-content.css",
         "/static/styles/settings.css",
     ],
     docs: [
@@ -268,7 +269,10 @@ const STATIC_ROUTES = [
     {
         pattern: /^\/administration/,
         base: "/administration",
-        stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
+        stylesheets: [
+            ...ROUTE_STYLE_BUNDLES.pageSections,
+            "/static/styles/reuse/structured-content.css",
+        ],
         load: () => import("../app/administration/index.js"),
     },
     {
@@ -292,6 +296,7 @@ const STATIC_ROUTES = [
     {
         pattern: /^\/error$/,
         base: "/error",
+        public: true,
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
@@ -364,18 +369,75 @@ function resolveRouterRoot() {
 }
 
 let _mountController = null;
+let _navigationSequence = 0;
 let _initialized = false;
 
 async function loadRoute(path) {
+    const navigationSequence = ++_navigationSequence;
+    if (_mountController) {
+        _mountController.abort();
+    }
+    const navigationController = new AbortController();
+    _mountController = navigationController;
+    const { signal } = navigationController;
     const routeMountStartedAt = performance.now();
     const route = await resolveRoute(path);
-    if (!route) return false;
+    if (
+        !route ||
+        signal.aborted ||
+        navigationSequence !== _navigationSequence
+    ) {
+        return false;
+    }
 
-    const authResult = await uiCtx.runFlow("authenticate-session", {});
-    const session =
-        (authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
+    // Load the destination entry before authentication so its gateway-owned
+    // flow hooks participate in this navigation's authenticate-session run.
+    // The router flag prevents the entry's direct-load mount from running.
+    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+    globalThis.__spaRouter = true;
+    let mod;
+    try {
+        mod = await route.load(path);
+    } catch (error) {
+        console.error("[router] route load error for", path, error);
+        await openRuntimeErrorPopup({
+            error,
+            contextKey: "ui.reuse.runtime_error_context_route_load",
+            contextDetail: path,
+        });
+        return false;
+    } finally {
+        globalThis.__spaRouterCount--;
+        if (globalThis.__spaRouterCount === 0) {
+            globalThis.__spaRouter = false;
+        }
+    }
+    if (signal.aborted || navigationSequence !== _navigationSequence) {
+        return false;
+    }
 
-    if (session?.isGuestSession === true && !isGuestAllowedPath(path)) {
+    const authResult = route.public
+        ? null
+        : await uiCtx.runFlow("authenticate-session", {
+              routePath: path,
+          });
+    if (signal.aborted || navigationSequence !== _navigationSequence) {
+        return false;
+    }
+    const session = route.public
+        ? null
+        : ((authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
+
+    const isGuestContentPath =
+        uiCtx.capabilities.get("session:isGuestAllowedPath")?.(
+            new URL(path, window.location.origin).pathname +
+                new URL(path, window.location.origin).search,
+        ) === true;
+    if (
+        session?.isGuestSession === true &&
+        !isGuestAllowedPath(path) &&
+        !isGuestContentPath
+    ) {
         await openGuestBlockedPopup({ currentRoutePath: path });
         return false;
     }
@@ -394,38 +456,27 @@ async function loadRoute(path) {
 
     const finishPageLoading = beginPageLoading();
     try {
-        if (_mountController) {
-            _mountController.abort();
-        }
-        _mountController = new AbortController();
+        window.dispatchEvent(new CustomEvent("cognis:route-will-change"));
+        uiCtx.capabilities.get("page:actions")?.reset?.();
         _currentBase = route.base;
-        const { signal } = _mountController;
 
-        // Start stylesheet injection and module loading in parallel — both are
-        // network operations and can race. We await both before calling mount()
-        // so CSS is guaranteed present before the page touches the DOM.
-        const stylesheetsReady = route.stylesheets?.length
-            ? Promise.all(route.stylesheets.map(ensurePageStylesheet))
-            : Promise.resolve();
+        // Prepare the destination styles before calling mount() so CSS is
+        // guaranteed present before the page touches the DOM.
+        const stylesheetsReady = preparePageStylesheets(
+            route.stylesheets ?? [],
+        );
 
-        globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
-        globalThis.__spaRouter = true;
-        let mod;
-        try {
-            mod = await route.load(path);
-        } finally {
-            globalThis.__spaRouterCount--;
-            if (globalThis.__spaRouterCount === 0) {
-                globalThis.__spaRouter = false;
-            }
-        }
-        await stylesheetsReady;
+        const commitPageStylesheets = await stylesheetsReady;
         // If another navigation started while loading, bail out.
         if (signal.aborted) return false;
         try {
             const routeRoot = resolveRouterRoot();
             if (!routeRoot) return false;
-            await mod.mount(routeRoot, { signal });
+            await mod.mount(routeRoot, {
+                signal,
+                shareContext: session?.shareContext ?? null,
+            });
+            commitPageStylesheets();
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {
@@ -458,15 +509,17 @@ async function loadRoute(path) {
 
 export async function navigateTo(path) {
     const route = await resolveRoute(path);
-    if (!route) return;
+    if (!route) return false;
     if (isPotentialStudyChildPath(path)) {
         const component = await resolveStudyChildComponent(path);
-        if (!component) return;
+        if (!component) return false;
     }
     const previousRouterPage = getCurrentRoutePath();
     history.pushState({ routerPage: path, previousRouterPage }, "", path);
-    await loadRoute(path);
+    return loadRoute(path);
 }
+
+uiCtx.capabilities.contribute("ui:navigate", navigateTo);
 
 /**
  * Invalidates the in-memory Study child component cache so the next navigation

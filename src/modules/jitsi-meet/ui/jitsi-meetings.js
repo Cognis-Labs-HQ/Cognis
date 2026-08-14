@@ -15,6 +15,7 @@ export function createMeetingHandlers({
     apiFetch,
     callbacks,
     utils,
+    allowParticipantlessJoin = false,
 }) {
     function renderActiveMeetings({ loading = false } = {}) {
         const activeMeetingsEl = root.querySelector("#jitsi-active-meetings");
@@ -100,7 +101,14 @@ export function createMeetingHandlers({
         await callbacks.updateNativeChat();
     }
 
-    async function joinMeetingById(meetingId) {
+    function clearRequestedMeetingParameters() {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("meetingId");
+        url.searchParams.delete("start");
+        window.history.replaceState(null, "", url);
+    }
+
+    async function joinMeetingById(meetingId, { autoStart = true } = {}) {
         const normalizedMeetingId = normalizeMeetingId(meetingId);
         if (!normalizedMeetingId) return;
         if (
@@ -127,23 +135,45 @@ export function createMeetingHandlers({
                 body: JSON.stringify({
                     meetingId: normalizedMeetingId,
                 }),
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
             },
         );
         if (!getResponse.ok) {
             state.meeting = null;
+            const errorPayload = await getResponse
+                .json()
+                .catch(() => ({ error: null }));
             utils.updateOverlay({
-                message: i18n.t("module.jitsi_meet.overlay.meeting_closed"),
+                message: i18n.t(
+                    getResponse.status === 404 ||
+                        errorPayload?.error?.code === "meeting_closed"
+                        ? "module.jitsi_meet.overlay.meeting_closed"
+                        : "module.jitsi_meet.overlay.join_failed",
+                ),
                 canStart: false,
                 showAuth: false,
                 showReclaim: false,
                 visible: true,
             });
+            if (
+                getResponse.status === 404 ||
+                errorPayload?.error?.code === "not_found"
+            ) {
+                clearRequestedMeetingParameters();
+                showToast(i18n.t("module.jitsi_meet.meeting_not_found"), {
+                    variant: "warning",
+                });
+            }
             return;
         }
         const meetingPayload = await getResponse
             .json()
             .catch(() => ({ data: null }));
-        if (!meetingPayload?.data?.id || meetingPayload?.data?.state?.endedAt) {
+        if (
+            !meetingPayload?.data?.id ||
+            (autoStart && meetingPayload?.data?.state?.endedAt)
+        ) {
             state.meeting = null;
             utils.updateOverlay({
                 message: i18n.t("module.jitsi_meet.overlay.meeting_closed"),
@@ -166,6 +196,54 @@ export function createMeetingHandlers({
             state.alonePromptBlockedUntil = 0;
         }
         state.meeting = meetingPayload.data;
+        const currentUsername = normalizeUsername(
+            state.currentProfile?.handle ?? state.currentProfile?.username,
+        );
+        const meetingParticipantNames = Array.isArray(
+            meetingPayload.data.participants,
+        )
+            ? meetingPayload.data.participants
+            : [];
+        state.selectedParticipants = meetingParticipantNames
+            .map((participant) => {
+                const username = normalizeUsername(
+                    typeof participant === "string"
+                        ? participant
+                        : (participant?.username ?? participant?.handle),
+                );
+                if (!username || username === currentUsername) return null;
+                return (
+                    state.allParticipants.find(
+                        (candidate) => candidate.username === username,
+                    ) ?? {
+                        username,
+                        displayName: String(
+                            participant?.displayName ?? username,
+                        ),
+                        avatarKey: participant?.avatarKey ?? null,
+                    }
+                );
+            })
+            .filter(Boolean);
+        state.availableParticipants = state.allParticipants.filter(
+            (candidate) =>
+                !state.selectedParticipants.some(
+                    (participant) =>
+                        participant.username === candidate.username,
+                ),
+        );
+        if (!autoStart) {
+            state.meeting = null;
+            callbacks.renderParticipants();
+            return;
+        }
+        callbacks.renderParticipants();
+        if (
+            !allowParticipantlessJoin &&
+            state.selectedParticipants.length === 0
+        ) {
+            return;
+        }
         state.chatMode = "meeting";
         state.privateChatUsername = "";
         await callbacks.updateNativeChat();
@@ -377,7 +455,10 @@ export function createMeetingHandlers({
             }
             return "module.jitsi_meet.overlay.preflight_required";
         }
-        if (participantCount > 0) {
+        if (state.preflightPassed && participantCount === 0) {
+            return "module.jitsi_meet.overlay.ready_without_participants";
+        }
+        if (state.preflightPassed || participantCount > 0) {
             return "module.jitsi_meet.overlay.ready_to_start";
         }
         return "module.jitsi_meet.overlay.select_participants";

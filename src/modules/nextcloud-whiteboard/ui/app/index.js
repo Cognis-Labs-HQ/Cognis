@@ -9,6 +9,8 @@ import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 import { confirmClearCanvas } from "./clear-canvas.js";
 import { createWhiteboardSearchCollector } from "./search-index.js";
 import { createWhiteboardStatusController } from "./status.js";
+import { setOverlayVisible } from "./overlay.js";
+import { openWhiteboardHistoryPopup } from "./history-popup.js";
 import { renderCanvasElement as renderWhiteboardCanvasElement } from "./render.js";
 import {
     API_BASE,
@@ -79,27 +81,10 @@ const collectWhiteboardSearchGroups = createWhiteboardSearchCollector({
 async function loadBoards() {
     boards = await fetchWhiteboardList();
 }
-async function renameBoard(boardId, title) {
-    return renameWhiteboard(
-        boardId,
-        title,
-        i18n?.t("module.nextcloud_whiteboard.rename_failed") ??
-            "module.nextcloud_whiteboard.rename_failed",
-    );
-}
-async function spawnBoard({ title, participants = [] } = {}) {
-    return spawnWhiteboard({ title, participants });
-}
-function setOverlayVisible(visible, message = "") {
-    const overlay = document.getElementById("whiteboard-canvas-overlay");
-    if (!overlay) return;
-    overlay.hidden = !visible;
-    const messageEl = overlay.querySelector(".whiteboard-overlay-message");
-    if (messageEl) messageEl.textContent = message;
-}
 function teardownCanvas() {
     if (socketInstance) {
         try {
+            socketInstance.cognisCleanup?.();
             socketInstance.disconnect();
         } catch (error) {
             console.warn(
@@ -151,12 +136,27 @@ function emitBoardRenamed(title) {
 }
 function connectSocket(io, session, canvas) {
     const { serverUrl, roomId, token } = session;
+    const canWrite = session.canWrite === true;
     const socket = io(serverUrl, {
         auth: { token },
         transports: ["websocket"],
         reconnectionDelay: 1000,
         reconnectionDelayMax: RECONNECT_MAX_DELAY_MS,
+        closeOnBeforeunload: true,
     });
+    const handleVisibilityChange = () => {
+        if (document.hidden) {
+            socket.disconnect();
+        } else if (!socket.connected) {
+            socket.connect();
+        }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    socket.cognisCleanup = () =>
+        document.removeEventListener(
+            "visibilitychange",
+            handleVisibilityChange,
+        );
     let joinedRoom = false;
     let isDedicatedSyncer = false;
     const persistChanges = debounce(async (elements) => {
@@ -175,6 +175,7 @@ function connectSocket(io, session, canvas) {
     }, EMIT_DEBOUNCE_MS);
     const emitChanges = throttleLatest(
         (elements, type = SYNC_MESSAGE_SCENE_INIT) => {
+            if (!canWrite) return;
             if (!socket.connected || !joinedRoom) {
                 setSyncStatus(
                     "error",
@@ -211,8 +212,8 @@ function connectSocket(io, session, canvas) {
         }
         savedElements = elements;
         composer?.refreshPresence?.();
-        if (meta?.transient !== true) persistChanges(elements);
-        emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
+        if (canWrite && meta?.transient !== true) persistChanges(elements);
+        if (canWrite) emitChanges(elements, SYNC_MESSAGE_SCENE_UPDATE);
     });
     socket.on("connect", () => {
         lastConnectionToast = "";
@@ -266,7 +267,7 @@ function connectSocket(io, session, canvas) {
                 canvas.applyElements(message.payload.elements, {
                     replace: true,
                 });
-                persistChanges(message.payload.elements);
+                if (canWrite) persistChanges(message.payload.elements);
             }
         } catch (error) {
             console.warn(
@@ -282,7 +283,7 @@ async function createAndOpenBoard() {
     if (!passed) return;
     let spawnResult;
     try {
-        spawnResult = await spawnBoard({
+        spawnResult = await spawnWhiteboard({
             title: createRandomWhiteboardTitle(),
         });
     } catch (error) {
@@ -465,11 +466,35 @@ async function bindShareButton(toolbar) {
 async function openSharePopup() {
     if (!activeBoard?.id || !canManageShares()) return;
     try {
-        const sharePopup = uiCtx.capabilities.get("share:openLinksPopup");
+        const sharePopup = uiCtx.capabilities.get("share:openPopup");
         if (typeof sharePopup !== "function") return;
-        const { buildShareCallbacks } =
-            await import("/static/modules/nextcloud-whiteboard/share-adapter.js");
         await sharePopup({
+            resourceType: "whiteboard",
+            resourceId: activeBoard.id,
+            contentUrl: `/whiteboard?id=${encodeURIComponent(activeBoard.id)}`,
+            grantedCapabilities: ["whiteboard:read", "whiteboard:write"],
+            supportsReadOnly: true,
+            linkAccessOptions: [
+                {
+                    id: "read",
+                    label: translateModuleString(
+                        "module.nextcloud_whiteboard.share_permission_read",
+                    ),
+                    permissions: ["read"],
+                    grantedCapabilities: ["whiteboard:read"],
+                },
+                {
+                    id: "write",
+                    label: translateModuleString(
+                        "module.nextcloud_whiteboard.share_permission_write",
+                    ),
+                    permissions: ["read", "write"],
+                    grantedCapabilities: [
+                        "whiteboard:read",
+                        "whiteboard:write",
+                    ],
+                },
+            ],
             title: translateModuleString(
                 "module.nextcloud_whiteboard.share_popup_title",
             ),
@@ -489,6 +514,18 @@ async function openSharePopup() {
                 shareOptions: translateModuleString(
                     "module.nextcloud_whiteboard.share_options_label",
                 ),
+                permission: translateModuleString(
+                    "module.nextcloud_whiteboard.share_options_label",
+                ),
+                accessMode: translateModuleString(
+                    "module.nextcloud_whiteboard.share_options_label",
+                ),
+                readPermission: translateModuleString(
+                    "module.nextcloud_whiteboard.share_permission_read",
+                ),
+                writePermission: translateModuleString(
+                    "module.nextcloud_whiteboard.share_permission_write",
+                ),
                 mail: translateModuleString("ui.reuse.mail"),
                 label: translateModuleString(
                     "module.nextcloud_whiteboard.share_label",
@@ -502,8 +539,21 @@ async function openSharePopup() {
                 password: translateModuleString(
                     "module.nextcloud_whiteboard.share_password_optional",
                 ),
+                passwordPopupTitle: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_title",
+                ),
+                passwordPopupLabel: translateModuleString(
+                    "module.nextcloud_whiteboard.share_password_instruction",
+                ),
                 passwordPlaceholder: translateModuleString(
                     "module.nextcloud_whiteboard.share_password_placeholder",
+                ),
+                cancel: translateModuleString("ui.reuse.cancel"),
+                confirm: translateModuleString(
+                    "module.nextcloud_whiteboard.share_revoke",
+                ),
+                deleteConfirmMessage: translateModuleString(
+                    "module.nextcloud_whiteboard.share_delete_prompt",
                 ),
                 statusActive: translateModuleString(
                     "module.nextcloud_whiteboard.share_status_active",
@@ -520,7 +570,7 @@ async function openSharePopup() {
                 generateLink: translateModuleString(
                     "module.nextcloud_whiteboard.share_generate_link",
                 ),
-                done: translateModuleString("ui.reuse.done"),
+                close: translateModuleString("ui.reuse.close"),
                 createFailed: translateModuleString(
                     "module.nextcloud_whiteboard.share_create_failed",
                 ),
@@ -534,7 +584,6 @@ async function openSharePopup() {
                     "module.nextcloud_whiteboard.share_delete_failed",
                 ),
             },
-            ...buildShareCallbacks(activeBoard.id),
         });
     } catch (error) {
         reportClientError(
@@ -553,30 +602,11 @@ async function openHistoryPopup() {
         );
         return;
     }
-    const body = boards.length
-        ? `<div class="whiteboard-history-list">${boards
-              .map(
-                  (board) => `
-                    <article class="whiteboard-history-card">
-                        <h3>${escapeHtml(board.title)}</h3>
-                        <p>${escapeHtml(new Date(board.updatedAt).toLocaleString())}</p>
-                        <button type="button" disabled>${escapeHtml(translateModuleString("module.nextcloud_whiteboard.open"))}</button>
-                    </article>`,
-              )
-              .join("")}</div>`
-        : `<p>${escapeHtml(translateModuleString("module.nextcloud_whiteboard.empty"))}</p>`;
-    await openPopup({
-        title: translateModuleString(
-            "module.nextcloud_whiteboard.history_title",
-        ),
-        body,
-        actions: [
-            {
-                id: "done",
-                label: translateModuleString("ui.reuse.close"),
-                variant: "confirm",
-            },
-        ],
+    await openWhiteboardHistoryPopup({
+        boards,
+        escapeHtml,
+        openPopup,
+        translate: translateModuleString,
     });
 }
 async function renameActiveBoard() {
@@ -608,7 +638,7 @@ async function renameActiveBoard() {
                 activeBoard.id ||
                 activeSession?.roomId ||
                 new URLSearchParams(window.location.search).get("id");
-            const renamed = await renameBoard(boardId, nextTitle);
+            const renamed = await renameWhiteboard(boardId, nextTitle);
             activeBoard = {
                 ...activeBoard,
                 ...renamed,
@@ -769,10 +799,14 @@ async function openBoard(board) {
     }
     const canvasElement = document.getElementById("whiteboard-canvas");
     if (!canvasElement) return;
-    canvasInstance = createWhiteboardCanvas(canvasElement);
-    canvasInstance.setImageUploader((dataUrl) =>
-        uploadWhiteboardImage(session.roomId, dataUrl),
-    );
+    canvasInstance = createWhiteboardCanvas(canvasElement, {
+        readOnly: session.canWrite !== true,
+    });
+    if (session.canWrite === true) {
+        canvasInstance.setImageUploader((dataUrl) =>
+            uploadWhiteboardImage(session.roomId, dataUrl),
+        );
+    }
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     savedElements = Array.isArray(session.elements) ? session.elements : [];
     if (savedElements.length > 0) {
@@ -782,6 +816,15 @@ async function openBoard(board) {
     socketInstance = connectSocket(io, session, canvasInstance);
     composer?.refreshPresence?.();
     bindCanvasToolbar(canvasInstance);
+    if (session.canWrite !== true) {
+        document
+            .querySelectorAll(
+                "#whiteboard-toolbar button, #whiteboard-toolbar select, #whiteboard-toolbar input",
+            )
+            .forEach((control) => {
+                control.disabled = true;
+            });
+    }
     setOverlayVisible(false);
 }
 
@@ -819,10 +862,14 @@ function onCanvasRender() {
     if (!canvasElement || canvasInstance || !activeBoard || !activeSession)
         return;
     if (preflightStatus !== "passed") return;
-    canvasInstance = createWhiteboardCanvas(canvasElement);
-    canvasInstance.setImageUploader((dataUrl) =>
-        uploadWhiteboardImage(activeSession.roomId, dataUrl),
-    );
+    canvasInstance = createWhiteboardCanvas(canvasElement, {
+        readOnly: activeSession.canWrite !== true,
+    });
+    if (activeSession.canWrite === true) {
+        canvasInstance.setImageUploader((dataUrl) =>
+            uploadWhiteboardImage(activeSession.roomId, dataUrl),
+        );
+    }
     canvasInstance.setImageUploadMaxBytes(imageUploadMaxBytes);
     if (savedElements.length > 0) {
         canvasInstance.applyElements(savedElements);
@@ -856,7 +903,8 @@ export async function mount(root, { signal, shareContext } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "module.nextcloud_whiteboard.page_title");
-    activeShareContext = shareContext ?? null;
+    activeShareContext =
+        shareContext?.directAccess === true ? null : (shareContext ?? null);
     integrationCanvasMode =
         Boolean(shareContext?.page?.instantCanvas) ||
         new URLSearchParams(window.location.search).get("instantCanvas") ===
@@ -869,6 +917,7 @@ export async function mount(root, { signal, shareContext } = {}) {
             ),
         );
     }
+    if (signal?.aborted) return;
 
     const initialBoardId =
         activeShareContext?.payload?.whiteboardId ??
@@ -882,9 +931,7 @@ export async function mount(root, { signal, shareContext } = {}) {
         };
     }
 
-    signal?.addEventListener("abort", () => teardownCanvas(), { once: true });
-
-    composer = createPageComposer(root, {
+    const mountedComposer = createPageComposer(root, {
         allowCustomization: false,
         elements: buildElements(),
         preferenceKey: "nextcloud-whiteboard-layout",
@@ -922,11 +969,26 @@ export async function mount(root, { signal, shareContext } = {}) {
         showTopbar: sharePageFlag("showTopbar", true),
         showFooter: sharePageFlag("showFooter", true),
         showThemeToggle: sharePageFlag("showThemeToggle", true),
+        requireAccountSession: !activeShareContext,
+        signal,
     });
-    await composer.init();
+    composer = mountedComposer;
+    signal?.addEventListener(
+        "abort",
+        () => {
+            mountedComposer.destroy();
+            if (composer === mountedComposer) composer = null;
+            teardownCanvas();
+        },
+        { once: true },
+    );
+    await mountedComposer.init();
+    if (signal?.aborted) return;
 
     if (activeBoard) {
-        void openBoard(activeBoard).then(() => composer?.refreshPresence?.());
+        void openBoard(activeBoard).then(() => {
+            if (!signal?.aborted) mountedComposer.refreshPresence?.();
+        });
     } else if (integrationCanvasMode) {
         void createAndOpenBoard();
     }

@@ -210,3 +210,7 @@ test("mariadb pool environment settings are bounded", () => {
     if (previousMaximum === undefined) delete process.env.MARIADB_POOL_MAX;
     else process.env.MARIADB_POOL_MAX = previousMaximum;
 });
+
+test("mariadb waiting queries have a bounded default queue", () => {
+    assert.equal(readMariaDbPoolSettings().queueLimit, 100);
+});

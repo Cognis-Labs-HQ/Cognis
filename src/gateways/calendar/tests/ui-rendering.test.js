@@ -13,6 +13,10 @@ const HELPERS_SOURCE = ["calendar-ui-helpers.js", "event-composer.js"]
         ),
     )
     .join("\n");
+const EVENT_COMPOSER_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/ui/event-composer.js"),
+    "utf8",
+);
 const PENDING_RENDER_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/ui/calendar-pending-render.js"),
     "utf8",
@@ -90,6 +94,14 @@ const CALENDAR_ROUTES_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/bootstrap/calendar-routes.ts"),
     "utf8",
 );
+
+test("calendar event composer imports its HTML escaping dependency", () => {
+    assert.match(
+        EVENT_COMPOSER_SOURCE,
+        /import \{ escapeHtml \} from "\/static\/reuse\/escape-html\.js";/,
+    );
+    assert.match(EVENT_COMPOSER_SOURCE, /createFormBuilder\([\s\S]*escapeHtml/);
+});
 const SHARED_PASSWORD_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/calendar/bootstrap/shared-password.ts"),
     "utf8",
@@ -703,19 +715,46 @@ test("shared events stay visible in Upcoming and calendar layout is fixed", () =
     );
 });
 
+test("calendar link guests can inspect events and writable guests can open empty slots", () => {
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /canWrite\s*\? "\[data-calendar-event\], \[data-timeslot-add\]"\s*:\s*"\[data-calendar-event\]"/,
+    );
+    assert.match(SHARE_RENDERER_SOURCE, /if \(!canWrite\)/);
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /querySelectorAll\("input, textarea, select"\)/,
+    );
+    assert.match(SHARE_RENDERER_SOURCE, /id:\s*"close"/);
+});
+
 test("calendar share renderer displays one calendar and enables scoped writes", () => {
     assert.match(SHARE_RENDERER_SOURCE, /export async function mount/);
     assert.match(SHARE_RENDERER_SOURCE, /createPageComposer/);
     assert.match(SHARE_RENDERER_SOURCE, /await composer\.init\(\)/);
     assert.match(SHARE_RENDERER_SOURCE, /requireAccountSession:\s*false/);
+    assert.match(SHARE_RENDERER_SOURCE, /enableAccountEnhancements:\s*false/);
+    assert.match(SHARE_RENDERER_SOURCE, /enableDomParking:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /showNavbar:\s*false/);
     assert.match(SHARE_RENDERER_SOURCE, /function renderCalendar\(\)/);
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /querySelector\("\.calendar-view-canvas"\)[\s\S]*canvas\.innerHTML = renderCalendarView/,
+    );
+    assert.match(SHARE_RENDERER_SOURCE, /button\.classList\.toggle/);
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
+    assert.match(SHARE_RENDERER_SOURCE, /let selectedView = "month"/);
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /root\.addEventListener\([\s\S]*data-shared-calendar-id[\s\S]*data-calendar-view[\s\S]*data-calendar-nav/,
+    );
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar-view-switcher/);
-    assert.match(SHARE_RENDERER_SOURCE, /root\.addEventListener/);
-    assert.match(SHARE_RENDERER_SOURCE, /onRender:\s*bindInteractiveHandlers/);
-    assert.match(SHARE_RENDERER_SOURCE, /interactionController\?\.abort\(\)/);
+    assert.match(SHARE_RENDERER_SOURCE, /data-calendar-nav/);
+    assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
+    assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);
+    assert.match(SHARE_RENDERER_SOURCE, /requestAnimationFrame/);
+    assert.match(SHARE_RENDERER_SOURCE, /\{ signal \}/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
@@ -742,6 +781,13 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     );
 });
 
+test("calendar page prompts to unlock received calendar shares while loading", () => {
+    assert.match(
+        APP_SOURCE,
+        /fetchEvents\(calendar\.id, calendar, \{\s*promptWhenLocked:\s*true/,
+    );
+});
+
 test("shared calendar settings expose recipient-local name and color", () => {
     assert.match(APP_SOURCE, /openCalendarEditPopup\(calendar\)/);
     assert.match(
@@ -762,6 +808,10 @@ test("shared calendar settings expose recipient-local name and color", () => {
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /delete_calendar_confirm_title/,
+    );
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /delete_shared_calendar_confirm/,
     );
     assert.match(POPUP_MANAGER_CALENDAR_EDIT_SOURCE, /confirmed !== "delete"/);
     assert.doesNotMatch(
@@ -796,19 +846,33 @@ test("responses for globally stored events bypass calendar import", () => {
 });
 
 test("shared calendar event loading resolves password protection through keyring", () => {
-    assert.match(APP_SOURCE, /fetchEvents\(calendar\.id, calendar\)/);
+    assert.match(
+        APP_SOURCE,
+        /fetchEvents\(calendar\.id, calendar, \{\s*promptWhenLocked:\s*true/,
+    );
     assert.match(CALENDAR_API_SOURCE, /share:fetchProtectedResource/);
     assert.match(CALENDAR_API_SOURCE, /x-cognis-share-password/);
     assert.match(CALENDAR_API_SOURCE, /sharePasswordProtected/);
     assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarPassword/);
     assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
-    assert.match(SHARED_PASSWORD_SOURCE, /share:resolveToken/);
+    assert.match(SHARED_PASSWORD_SOURCE, /share:unlockUserAccess/);
     assert.match(CALENDAR_API_SOURCE, /calendar_share_secrets_refused/);
     assert.match(APP_SOURCE, /secretsUnavailable/);
     assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);
     assert.match(HELPERS_SOURCE, /share_secrets_not_provided/);
     assert.match(CSS_SOURCE, /calendar-item-btn--locked/);
-    assert.match(APP_SOURCE, /runFlow\("defer-page-action"/);
+    assert.match(
+        APP_SOURCE,
+        /calendar\.secretsUnavailable[\s\S]*openCalendarEditPopup\(calendar\)/,
+    );
     assert.match(CALENDAR_API_SOURCE, /promptWhenLocked/);
-    assert.match(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
+    assert.match(CALENDAR_API_SOURCE, /promptWhenLocked,/);
+    assert.doesNotMatch(CALENDAR_API_SOURCE, /"Calendar Gateway"/);
+});
+
+test("calendar shares provide a Cognis content route", () => {
+    assert.match(
+        POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
+        /contentUrl: `\/calendar\?calendarId=/,
+    );
 });

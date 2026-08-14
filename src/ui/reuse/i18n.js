@@ -25,6 +25,21 @@ export const DEFAULT_LOCALE = "en";
 const STRINGS_BASE_PATH = "/static/languages";
 
 const cache = new Map();
+const stringRequestCache = new Map();
+const STRING_REQUEST_TIMEOUT_MS = 15_000;
+
+async function fetchStrings(path) {
+    let request = stringRequestCache.get(path);
+    if (!request) {
+        request = fetch(path, {
+            signal: globalThis.AbortSignal?.timeout?.(
+                STRING_REQUEST_TIMEOUT_MS,
+            ),
+        }).finally(() => stringRequestCache.delete(path));
+        stringRequestCache.set(path, request);
+    }
+    return (await request).clone();
+}
 
 const LANGUAGE_COOKIE = "cognis_lang_priority";
 const LANGUAGE_PRIORITY_STORAGE_KEY = "cognis_language_priority";
@@ -234,7 +249,7 @@ async function loadLocaleStrings(locale) {
     const normalized = normalizeLocale(locale);
     if (cache.has(normalized)) return cache.get(normalized);
 
-    const response = await fetch(
+    const response = await fetchStrings(
         `${STRINGS_BASE_PATH}/${normalized}/strings.xml`,
     );
     if (!response.ok) {
@@ -256,7 +271,7 @@ async function loadModuleStrings(activeLocale, moduleIds) {
     await Promise.all(
         moduleIds.map(async (moduleId) => {
             try {
-                const response = await fetch(
+                const response = await fetchStrings(
                     `/modules/${encodeURIComponent(moduleId)}/strings/${activeLocale}.xml`,
                 );
                 if (!response.ok) return;
@@ -279,11 +294,11 @@ async function loadComponentStrings(activeLocale, baseUrls) {
     await Promise.all(
         baseUrls.map(async (baseUrl) => {
             try {
-                let response = await fetch(
+                let response = await fetchStrings(
                     `${baseUrl}/${activeLocale}/strings.xml`,
                 );
                 if (!response.ok && activeLocale !== DEFAULT_LOCALE) {
-                    response = await fetch(
+                    response = await fetchStrings(
                         `${baseUrl}/${DEFAULT_LOCALE}/strings.xml`,
                     );
                 }

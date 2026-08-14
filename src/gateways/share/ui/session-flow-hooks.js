@@ -40,10 +40,16 @@
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { resolveReceivedShare } from "./received-share.js";
+import { apiFetch } from "/static/reuse/api-client.js";
 import {
     GUEST_SESSION_ACTIVE_STORAGE_KEY,
     isViewingAsGuest,
 } from "./reuse/share-button.js";
+import {
+    listenForShareRevocation,
+    publishShareRevoked,
+} from "./session-events.js";
+import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
@@ -52,18 +58,126 @@ const PREV_DISPLAY_NAME_KEY = "cognis_prev_display_name";
 const GUEST_TOKEN_ACTIVE_KEY = GUEST_SESSION_ACTIVE_STORAGE_KEY;
 const DISPLAY_NAME_KEY = "cognis_display_name";
 const ACCOUNT_KEY = "cognis_account";
+const ACCESS_DENIED_TOKEN_KEY = "cognis_share_access_denied_token";
+let activeGuestSession = null;
+let activeShareSession = null;
+let accessDeniedNavigationPending = false;
+let activeGuestKeyring = null;
+
+function hasStoredAccountSession() {
+    const token = String(localStorage.getItem(ACCESS_TOKEN_KEY) ?? "").trim();
+    const accountId = String(localStorage.getItem(ACCOUNT_KEY) ?? "").trim();
+    return Boolean(token && accountId && !accountId.startsWith("share:"));
+}
+
+function discardStaleGuestMarkers() {
+    stopShareStatusMonitor();
+    sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(PREV_ACCOUNT_KEY);
+    sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+    sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
+    delete document.body.dataset.shareGuest;
+    activeGuestSession = null;
+    activeShareSession = null;
+}
+
+function stopShareStatusMonitor() {
+    stopShareStatusWatch();
+}
+
+function startShareStatusMonitor(shareId) {
+    stopShareStatusMonitor();
+    if (!shareId) return;
+    watchShareStatus(shareId, () => publishShareRevoked(shareId));
+}
+
+window.addEventListener("cognis:api-access-denied", () => {
+    if (accessDeniedNavigationPending) return;
+    const shareToken = activeShareSession?.shareToken;
+    const contentUrl = activeShareSession?.session?.shareContext?.contentUrl;
+    if (!shareToken || !contentUrl) return;
+    const activeUrl = new URL(window.location.href);
+    const expectedUrl = new URL(contentUrl, window.location.origin);
+    if (
+        activeUrl.pathname !== expectedUrl.pathname ||
+        activeUrl.search !== expectedUrl.search
+    )
+        return;
+    sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
+    accessDeniedNavigationPending = true;
+    restoreGuestToken();
+    const navigate = uiCtx.capabilities.get("ui:navigate");
+    Promise.resolve(
+        navigate?.(`/share/${encodeURIComponent(shareToken)}`) ?? false,
+    )
+        .then((navigated) => {
+            if (!navigated) {
+                window.location.assign(
+                    `/share/${encodeURIComponent(shareToken)}`,
+                );
+            }
+        })
+        .finally(() => {
+            accessDeniedNavigationPending = false;
+        });
+});
+
+uiCtx.capabilities.contribute("session:ensureGuestKeyring", async () => {
+    if (!isViewingAsGuest() || !activeGuestKeyring) return false;
+    const activateTemporaryKeyring = uiCtx.capabilities.get(
+        "keyring:activateTemporary",
+    );
+    return Boolean(
+        await activateTemporaryKeyring?.(
+            activeGuestKeyring.accountId,
+            activeGuestKeyring.passphrase,
+        ),
+    );
+});
+uiCtx.capabilities.contribute("session:isGuestAllowedPath", (path) => {
+    const contentUrl = activeGuestSession?.session?.shareContext?.contentUrl;
+    if (!contentUrl) return false;
+    const expectedUrl = new URL(contentUrl, window.location.origin);
+    const requestedUrl = new URL(path, window.location.origin);
+    return (
+        expectedUrl.pathname === requestedUrl.pathname &&
+        expectedUrl.search === requestedUrl.search
+    );
+});
 
 const SHARE_GUEST_PAGE_DEFAULTS = Object.freeze({
     showNavbar: false,
     showShareControls: false,
 });
 
-function resolveShareTokenFromLocation() {
-    const pathnameMatch = window.location.pathname.match(/^\/share\/([^/]+)$/);
+function resolveShareTokenFromRoute(routePath) {
+    const routeUrl = new URL(
+        String(routePath ?? window.location.href),
+        window.location.origin,
+    );
+    const pathnameMatch = routeUrl.pathname.match(/^\/share\/(shr_[^/]+)$/);
     if (pathnameMatch) return decodeURIComponent(pathnameMatch[1]);
-    return String(
-        new URL(window.location.href).searchParams.get("token") ?? "",
-    ).trim();
+    const queryToken = String(routeUrl.searchParams.get("token") ?? "").trim();
+    return queryToken.startsWith("shr_") ? queryToken : "";
+}
+
+function isActiveShareContentRoute(activeSession) {
+    const contentUrl = activeSession?.session?.shareContext?.contentUrl;
+    if (!contentUrl) return false;
+    const expectedUrl = new URL(contentUrl, window.location.origin);
+    return (
+        expectedUrl.pathname === window.location.pathname &&
+        expectedUrl.search === window.location.search
+    );
+}
+
+function resolveActiveShareContentSession(activeSession) {
+    const session = activeSession?.session;
+    if (!session || session.isGuestSession === true) return session ?? null;
+    return {
+        ...session,
+        shareContext: null,
+    };
 }
 
 async function activateGuestToken(
@@ -73,35 +187,45 @@ async function activateGuestToken(
 ) {
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
+    const guestSessionAlreadyActive = isViewingAsGuest();
     const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
     const priorAccount = localStorage.getItem(ACCOUNT_KEY);
     const priorDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
-    if (prior) {
-        sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
-    } else {
-        sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
-    }
-    if (priorAccount) {
-        sessionStorage.setItem(PREV_ACCOUNT_KEY, priorAccount);
-    } else {
-        sessionStorage.removeItem(PREV_ACCOUNT_KEY);
-    }
-    if (priorDisplayName) {
-        sessionStorage.setItem(PREV_DISPLAY_NAME_KEY, priorDisplayName);
-    } else {
-        sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+    const hasAccountSession = hasStoredAccountSession();
+    if (!guestSessionAlreadyActive || hasAccountSession) {
+        if (prior) {
+            sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
+        } else {
+            sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
+        }
+        if (priorAccount) {
+            sessionStorage.setItem(PREV_ACCOUNT_KEY, priorAccount);
+        } else {
+            sessionStorage.removeItem(PREV_ACCOUNT_KEY);
+        }
+        if (priorDisplayName) {
+            sessionStorage.setItem(PREV_DISPLAY_NAME_KEY, priorDisplayName);
+        } else {
+            sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+        }
     }
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
+    document.body.dataset.shareGuest = "true";
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
     const guestKeyringAccountId = String(guestKeyring?.accountId ?? "").trim();
-    if (guestKeyringAccountId) {
+    const guestKeyringPassphrase = String(guestKeyring?.passphrase ?? "");
+    if (guestKeyringAccountId && guestKeyringPassphrase) {
+        activeGuestKeyring = {
+            accountId: guestKeyringAccountId,
+            passphrase: guestKeyringPassphrase,
+        };
         localStorage.setItem(ACCOUNT_KEY, guestKeyringAccountId);
         const activateTemporaryKeyring = uiCtx.capabilities.get(
             "keyring:activateTemporary",
         );
         const activated = await activateTemporaryKeyring?.(
             guestKeyringAccountId,
-            guestKeyring?.passphrase,
+            guestKeyringPassphrase,
         );
         if (!activated) {
             restoreGuestToken();
@@ -116,8 +240,10 @@ async function activateGuestToken(
 }
 
 function restoreGuestToken() {
+    stopShareStatusMonitor();
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
     uiCtx.capabilities.get("keyring:endTemporary")?.();
+    activeGuestKeyring = null;
     const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
     const priorAccount = sessionStorage.getItem(PREV_ACCOUNT_KEY);
     const priorDisplayName = sessionStorage.getItem(PREV_DISPLAY_NAME_KEY);
@@ -140,30 +266,86 @@ function restoreGuestToken() {
     sessionStorage.removeItem(PREV_ACCOUNT_KEY);
     sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
+    delete document.body.dataset.shareGuest;
+    activeGuestSession = null;
+    activeShareSession = null;
 }
+
+listenForShareRevocation((shareId) => {
+    const activeShareId = String(
+        activeShareSession?.session?.shareContext?.shareId ?? "",
+    );
+    if (!shareId || shareId !== activeShareId) return;
+    const shareToken = activeShareSession?.shareToken;
+    if (!shareToken) return;
+    sessionStorage.setItem(ACCESS_DENIED_TOKEN_KEY, shareToken);
+    restoreGuestToken();
+    const sharePath = `/share/${encodeURIComponent(shareToken)}`;
+    const navigate = uiCtx.capabilities.get("ui:navigate");
+    Promise.resolve(navigate?.(sharePath) ?? false).then((navigated) => {
+        if (!navigated) window.location.assign(sharePath);
+    });
+});
+
+window.addEventListener("cognis:notification-arrival", (event) => {
+    const notification = event.detail?.notification;
+    if (notification?.category !== "share") return;
+    const shareId = String(notification.metadata?.shareId ?? "").trim();
+    if (!shareId) return;
+    window.dispatchEvent(
+        new CustomEvent("cognis:share-revoked", { detail: { shareId } }),
+    );
+});
+
+uiCtx.extendFlow(
+    "authenticate-session",
+    "validate-stored-token",
+    { id: "share-gateway:restore-account-session", order: -100 },
+    (stageCtx) => {
+        const shareToken = resolveShareTokenFromRoute(
+            stageCtx.input?.routePath,
+        );
+        const hasAccountSession = hasStoredAccountSession();
+        if (isViewingAsGuest() && hasAccountSession) {
+            discardStaleGuestMarkers();
+            return null;
+        }
+        if (shareToken.startsWith("shr_")) return null;
+        if (isViewingAsGuest()) {
+            restoreGuestToken();
+        }
+        return null;
+    },
+);
 
 uiCtx.extendFlow(
     "authenticate-session",
     "apply-alternate-auth",
     { id: "share-gateway:apply-alternate-auth" },
     async (stageCtx) => {
-        const shareToken = resolveShareTokenFromLocation();
+        const shareToken = resolveShareTokenFromRoute(
+            stageCtx.input?.routePath,
+        );
         if (!shareToken) {
-            if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) === "1") {
-                // The guest session was already activated on the share page
-                // itself; keep recognising it as authenticated on other
-                // paths so the guest-navigation guard can intercept the
-                // route with a blocked-page popup instead of the generic
-                // auth flow silently redirecting to /login.
-                return {
-                    authenticated: true,
-                    accountId: null,
-                    role: "user",
-                    isGuestSession: true,
-                    shareContext: null,
-                };
+            if (isActiveShareContentRoute(activeShareSession)) {
+                return resolveActiveShareContentSession(activeShareSession);
             }
+            if (isViewingAsGuest()) restoreGuestToken();
             return null;
+        }
+        if (
+            isViewingAsGuest() &&
+            sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY)
+        ) {
+            restoreGuestToken();
+        }
+        if (sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken) {
+            sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
+            return { authenticated: false, reason: "share_access_denied" };
+        }
+
+        if (activeShareSession?.shareToken === shareToken) {
+            return activeShareSession.session;
         }
 
         // If the visitor already has a valid full-account session, send
@@ -173,7 +355,6 @@ uiCtx.extendFlow(
         // participant). Read this *before* any guest-token swap below.
         const priorSessionResult =
             (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
-        const ownAccessToken = localStorage.getItem(ACCESS_TOKEN_KEY);
         const ownAccountId = String(
             localStorage.getItem(ACCOUNT_KEY) ?? "",
         ).trim();
@@ -181,30 +362,44 @@ uiCtx.extendFlow(
             priorSessionResult?.valid === true &&
             !isViewingAsGuest() &&
             !ownAccountId.startsWith("share:");
-        const headers =
-            hasValidatedAccountSession && ownAccessToken
-                ? { authorization: "Bearer " + ownAccessToken }
-                : undefined;
-
         let response;
         try {
             response = await resolveReceivedShare(shareToken, {
-                headers,
                 useAccountKeyring: hasValidatedAccountSession,
             });
         } catch {
-            return { authenticated: false, reason: "share_resolve_failed" };
+            return {
+                authenticated: false,
+                reason: "share_resolve_failed",
+            };
         }
 
         if (!response) {
-            return { authenticated: false, reason: "share_unlock_cancelled" };
+            return {
+                authenticated: false,
+                reason: "share_unlock_cancelled",
+            };
         }
 
         if (!response.ok) {
+            const wasDeniedWhileOpen =
+                sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken;
+            if (wasDeniedWhileOpen) {
+                sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
+            }
+            const errorPayload = await response
+                .clone()
+                .json()
+                .catch(() => null);
+            const errorCode = String(errorPayload?.error?.code ?? "");
             return {
                 authenticated: false,
-                reason:
-                    response.status === 404
+                reason: wasDeniedWhileOpen
+                    ? "share_access_denied"
+                    : errorCode === "recipient_restricted" ||
+                        errorCode === "forbidden"
+                      ? "share_access_denied"
+                      : response.status === 404
                         ? "share_not_found"
                         : "share_expired",
             };
@@ -215,11 +410,24 @@ uiCtx.extendFlow(
         if (!shareData?.resourceType) {
             return { authenticated: false, reason: "share_malformed" };
         }
+        const isUserShare = Array.isArray(shareData.accessControls?.recipients)
+            ? shareData.accessControls.recipients.some(
+                  (recipient) => recipient?.type === "user",
+              )
+            : false;
+        if (isUserShare && shareData.directAccess !== true) {
+            return {
+                authenticated: false,
+                reason: "recipient_restricted",
+            };
+        }
 
         const shareContext = {
+            shareId: String(shareData.shareId ?? ""),
             resourceType: shareData.resourceType,
             resourceId: shareData.resourceId ?? null,
             payload: shareData.payload ?? {},
+            contentUrl: String(shareData.contentUrl ?? "").trim(),
             grantedCapabilities: Array.isArray(shareData.grantedCapabilities)
                 ? shareData.grantedCapabilities
                 : [],
@@ -230,22 +438,32 @@ uiCtx.extendFlow(
             guestAccessToken: shareData.guestAccessToken ?? null,
             guestProfile: shareData.guestProfile ?? null,
             guestKeyring: shareData.guestKeyring ?? null,
+            directAccess: shareData.directAccess === true,
         };
 
-        if (hasValidatedAccountSession) {
+        if (shareData.directAccess === true) {
             // Logged-in recipients retain their full account session. The
             // renderer receives the scoped guest token separately for
             // share-only API calls, so notification navigation never swaps
             // localStorage credentials or appears to log the user out.
-            return {
+            const accountSession = {
                 authenticated: true,
-                accountId: priorSessionResult.accountId,
-                role: priorSessionResult.role,
+                accountId: priorSessionResult?.accountId ?? ownAccountId,
+                role:
+                    priorSessionResult?.role ??
+                    localStorage.getItem("cognis_role") ??
+                    "user",
                 isGuestSession: false,
                 shareContext,
             };
+            activeShareSession = { shareToken, session: accountSession };
+            startShareStatusMonitor(shareContext.shareId);
+            return accountSession;
         }
 
+        if (!shareToken.startsWith("shr_")) {
+            return { authenticated: false, reason: "recipient_restricted" };
+        }
         const abortController = await activateGuestToken(
             shareData.guestAccessToken,
             shareData.guestProfile,
@@ -261,12 +479,16 @@ uiCtx.extendFlow(
             });
         }
 
-        return {
+        const guestSession = {
             authenticated: true,
             accountId: null,
             role: "user",
             isGuestSession: true,
             shareContext,
         };
+        activeGuestSession = { shareToken, session: guestSession };
+        activeShareSession = activeGuestSession;
+        startShareStatusMonitor(shareContext.shareId);
+        return guestSession;
     },
 );

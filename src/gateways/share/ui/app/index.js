@@ -1,3 +1,4 @@
+import "../session-flow-hooks.js";
 import {
     applyDocumentTitle,
     createI18n,
@@ -9,6 +10,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
+import { navigateTo } from "/static/reuse/app-router.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
 function renderFallbackBody(i18n, messageKey) {
@@ -28,6 +30,25 @@ function updatePageDescriptor(root, i18n, subtitleKey) {
     if (subtitle instanceof HTMLElement) {
         subtitle.textContent = i18n.t(subtitleKey);
     }
+}
+
+async function navigateToShareError(i18n, reason) {
+    const notFound = reason === "share_not_found";
+    const code = notFound ? "404" : "410";
+    const message = i18n.t(
+        notFound ? "share.error.not_found" : "share.error.expired",
+    );
+    const destination = `/error?code=${code}&message=${encodeURIComponent(message)}`;
+    try {
+        if (await navigateTo(destination)) return;
+    } catch (error) {
+        console.error("[share] failed to open share error route", {
+            operation: "navigate_share_error",
+            reason,
+            error,
+        });
+    }
+    window.location.replace(destination);
 }
 
 /**
@@ -76,7 +97,10 @@ function buildShareElement(state) {
     };
 }
 
-export async function mount(root, { signal } = {}) {
+export async function mount(
+    root,
+    { signal, shareContext: routedShareContext } = {},
+) {
     const state = {
         loading: true,
         errorKey: "",
@@ -107,6 +131,7 @@ export async function mount(root, { signal } = {}) {
         // resolves to an unauthenticated session with no redirect pending,
         // which this page renders its own fallback screen for instead.
         requireAccountSession: false,
+        enableAccountEnhancements: false,
         elements: [buildShareElement(state)],
     });
 
@@ -114,39 +139,49 @@ export async function mount(root, { signal } = {}) {
 
     installGuestNavigationGuard({ root, signal });
 
-    const flowResult = await uiCtx.runFlow("authenticate-session", {});
-    const session =
-        (flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
-    const shareContext = session?.shareContext ?? null;
+    const flowResult = routedShareContext
+        ? null
+        : await uiCtx.runFlow("authenticate-session", {
+              routePath: `${window.location.pathname}${window.location.search}`,
+          });
+    const session = routedShareContext
+        ? { authenticated: true, shareContext: routedShareContext }
+        : ((flowResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
+    const shareContext = routedShareContext ?? session?.shareContext ?? null;
 
     if (session?.shareAttempted && !session?.authenticated) {
+        if (session.failureReason !== "share_access_denied") {
+            await navigateToShareError(state.i18n, session.failureReason);
+            return;
+        }
         // A share token was present in the URL but failed to resolve
         // (expired, revoked, or invalid). Render the fallback screen
         // directly instead of the generic missing/malformed messages below.
         state.loading = false;
-        state.errorKey =
-            session.failureReason === "share_not_found"
-                ? "share.error.not_found"
-                : "share.error.expired";
+        state.errorKey = "share.error.access_denied";
         updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
     }
 
     if (!shareContext?.resourceType) {
-        state.loading = false;
-        state.errorKey =
-            shareContext === null
-                ? "share.error.missing_token"
-                : "share.error.malformed_response";
-        updatePageDescriptor(root, state.i18n, state.errorKey);
-        composer.refresh([buildShareElement(state)]);
+        await navigateToShareError(
+            state.i18n,
+            shareContext === null ? "share_not_found" : "share_expired",
+        );
         return;
     }
 
     if (!session?.authenticated) {
+        await navigateToShareError(state.i18n, "share_expired");
+        return;
+    }
+
+    if (shareContext.contentUrl && shareContext.directAccess === true) {
+        const navigated = await navigateTo(shareContext.contentUrl);
+        if (navigated) return;
         state.loading = false;
-        state.errorKey = "share.error.expired";
+        state.errorKey = "share.error.renderer_missing";
         updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;

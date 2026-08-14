@@ -50,13 +50,6 @@ function getDisplayName() {
     );
 }
 
-function isGuestSession() {
-    return (
-        sessionStorage.getItem("cognis_share_guest_active") === "1" ||
-        !localStorage.getItem("cognis_account")
-    );
-}
-
 function updateDisplayedName(displayName = getDisplayName()) {
     const nameElement = document.querySelector("#profile-name");
     if (nameElement) nameElement.textContent = displayName;
@@ -71,9 +64,10 @@ function storeProfileDisplayName(displayName) {
 
 async function refreshDisplayNameFromProfile() {
     if (!localStorage.getItem("cognis_access_token")) return;
-    const profileEndpoint = isGuestSession()
-        ? "/api/v1/share/guest-profile"
-        : "/api/v1/social/profile";
+    const profileEndpoint =
+        uiCtx.capabilities.get("session:isGuest")?.() === true
+            ? "/api/v1/share/guest-profile"
+            : "/api/v1/social/profile";
     try {
         const response = await apiFetch(profileEndpoint);
         if (!response.ok) return;
@@ -236,8 +230,7 @@ function bindTopbarActions() {
  * Registered by gateway navbar plugins to supply avatar and profile-link
  * state. The function receives no arguments and returns a plain object with:
  *   - profileAvailable: boolean — whether to show the Profile nav link
- *   - avatarBlobUrl?: string   — a blob: URL for the avatar image, if one is
- *     available; the layout revokes the previous blob URL and renders this one
+ *   - avatarBlobUrl?: string   — a provider-owned blob URL for the avatar
  *
  * Only one provider is active at a time; the most recently registered one
  * wins. Gateways register by calling `registerAvatarProvider` from their
@@ -255,11 +248,9 @@ export async function updateNavbarAvatar() {
     if (!avatarBtn) return;
     const handle = localStorage.getItem("cognis_account") ?? "";
 
-    const prevImg = avatarBtn.querySelector("img.avatar-image");
     const availabilityIndicator = avatarBtn.querySelector(
         ".availability-indicator",
     );
-    const prevBlobSrc = prevImg?.src?.startsWith("blob:") ? prevImg.src : null;
 
     let profileAvailable = false;
     let avatarBlobUrl = null;
@@ -285,12 +276,9 @@ export async function updateNavbarAvatar() {
         img.src = avatarBlobUrl;
         avatarBtn.replaceChildren(img);
         if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
-        if (prevBlobSrc && prevBlobSrc !== avatarBlobUrl)
-            URL.revokeObjectURL(prevBlobSrc);
         return;
     }
 
-    if (prevBlobSrc) URL.revokeObjectURL(prevBlobSrc);
     const initialsEl = document.createElement("span");
     initialsEl.className = "avatar-initials";
     initialsEl.textContent = getInitialsText(handle);
@@ -386,7 +374,11 @@ function scheduleNavbarEnhancements() {
 }
 
 function ensureReleaseChangelogPopupChecked(i18n) {
-    if (releaseChangelogPopupChecked) return;
+    if (
+        releaseChangelogPopupChecked ||
+        uiCtx.capabilities.get("session:isGuest")?.() === true
+    )
+        return;
     releaseChangelogPopupChecked = true;
     maybeShowReleaseChangelogPopup(i18n).catch(() => {});
 }
@@ -523,6 +515,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         // no redirect in flight (e.g. an expired/invalid share token), so
         // this must not fall into the "redirect is coming" hang below.
         requireAccountSession = showTopbar || showNavbar,
+        enableAccountEnhancements = true,
     } = slots;
 
     if (requireAccountSession && !(await ensureFullAccountSession())) {
@@ -530,6 +523,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     }
 
     const i18n = slots.i18n || (await createI18n());
+    const template = await DASHBOARD_LAYOUT_TEMPLATE_PROMISE;
 
     const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
@@ -540,6 +534,17 @@ export async function renderDashboardLayout(root, slots = {}) {
         existingShell &&
         shellMatchesConfig(root, showTopbar, showNavbar, showFooter)
     ) {
+        const templateContent = document.createElement("template");
+        templateContent.innerHTML = template;
+        const freshActionDock = templateContent.content.querySelector(
+            "[data-page-action-dock]",
+        );
+        const existingActionDock = existingShell.querySelector(
+            "[data-page-action-dock]",
+        );
+        if (freshActionDock && existingActionDock) {
+            existingActionDock.replaceWith(freshActionDock);
+        }
         const pageCtxEl = existingShell.querySelector(".page-context");
         if (pageCtxEl) pageCtxEl.innerHTML = slots.pageContext || "";
         const existingSubNavEl = existingShell.querySelector(".page-subnav");
@@ -612,7 +617,11 @@ export async function renderDashboardLayout(root, slots = {}) {
             existingShell.querySelector(".main-window") ?? existingShell,
         );
         applyActiveNavigation();
-        if (showTopbar || showNavbar) {
+        if (
+            enableAccountEnhancements &&
+            (showTopbar || showNavbar) &&
+            !uiCtx.capabilities.get("session:isGuest")?.() === true
+        ) {
             updateNavbarAvatar().catch((error) => {
                 console.warn(
                     "[dashboard-layout]:initial-navbar-avatar-render-failed",
@@ -626,10 +635,10 @@ export async function renderDashboardLayout(root, slots = {}) {
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
+        bindThemeToggle({ usePreferenceApi });
         return;
     }
 
-    const template = await DASHBOARD_LAYOUT_TEMPLATE_PROMISE;
     root.innerHTML = template
         .replace("{{pageContext}}", slots.pageContext || "")
         .replace("{{topbar}}", slots.topbar)
@@ -663,7 +672,11 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!showFooter) root.querySelector(".global-footer")?.remove();
 
     applyStaticTranslations(i18n, root);
-    if (showTopbar || showNavbar) {
+    if (
+        enableAccountEnhancements &&
+        (showTopbar || showNavbar) &&
+        !uiCtx.capabilities.get("session:isGuest")?.() === true
+    ) {
         bindTopbarActions();
         updateNavbarAvatar().catch((error) => {
             console.warn(

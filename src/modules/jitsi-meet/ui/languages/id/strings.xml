@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">Pemeriksaan pra-penerbangan sedang berjalan. Mulai rapat dinonaktifkan sampai pemeriksaan berhasil.</string>
   <string name="module.jitsi_meet.overlay.preflight_required">Pemeriksaan pra-penerbangan harus berhasil sebelum rapat bisa dimulai.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Peserta dipilih. Rapat siap dimulai.</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">Rapat dapat dimulai. Popup tautan rapat akan ditampilkan.</string>
   <string name="module.jitsi_meet.overlay.creating">Membuat atau menggunakan ulang URL rapat...</string>
   <string name="module.jitsi_meet.overlay.config_required">Admin harus mengatur URL instans Jitsi sebelum Rapat dapat dipakai.</string>
   <string name="module.jitsi_meet.overlay.create_failed">Gagal membuat rapat.</string>
@@ -17,6 +18,7 @@
   <string name="module.jitsi_meet.overlay.probe_failed">Pemeriksaan liveness URL rapat gagal.</string>
   <string name="module.jitsi_meet.overlay.joining">Sedang gabung rapat...</string>
   <string name="module.jitsi_meet.overlay.join_failed">Gagal gabung rapat.</string>
+  <string name="module.jitsi_meet.meeting_not_found">Rapat yang diminta tidak ada.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting">Autentikasi diperlukan sebelum semua pengguna dapat bergabung.</string>
   <string name="module.jitsi_meet.overlay.auth_waiting_other">Autentikasi sedang dilakukan peserta lain. Jika tidak dimulai dalam dua menit, kamu bisa lanjut.</string>
   <string name="module.jitsi_meet.overlay.auth_required_description">Autentikasi moderator diperlukan. Jalankan di sesi browser yang sama.</string>
@@ -88,13 +90,17 @@
   <string name="module.jitsi_meet.share.button">Bagikan</string>
   <string name="module.jitsi_meet.share.popup_title">Bagikan Rapat</string>
   <string name="module.jitsi_meet.share.generate_link">Buat Tautan</string>
+  <string name="module.jitsi_meet.share.email_recipients">Kirim undangan yang berisi tautan rapat ini kepada:</string>
   <string name="module.jitsi_meet.share.copy_link">Salin Tautan</string>
   <string name="module.jitsi_meet.share.revoke">Cabut</string>
   <string name="module.jitsi_meet.share.share_options_label">Bagikan:</string>
   <string name="module.jitsi_meet.share.label">Label</string>
   <string name="module.jitsi_meet.share.label_placeholder">Label Opsional</string>
   <string name="module.jitsi_meet.share.expiry_label">Kedaluwarsa (opsional)</string>
-  <string name="module.jitsi_meet.share.password_optional">Perlindungan kata sandi (opsional)</string>
+  <string name="module.jitsi_meet.share.password_optional">Perlindungan kata sandi</string>
+  <string name="module.jitsi_meet.share.password_title">Kata Sandi Berbagi</string>
+  <string name="module.jitsi_meet.share.password_instruction">Bagikan kata sandi ini kepada penerima berbagi</string>
+  <string name="module.jitsi_meet.share.delete_prompt">Hapus berbagi ini?</string>
   <string name="module.jitsi_meet.share.password_placeholder">Biarkan kosong tanpa kata sandi</string>
   <string name="module.jitsi_meet.share.status_active">Aktif</string>
   <string name="module.jitsi_meet.share.status_expired">Kedaluwarsa</string>

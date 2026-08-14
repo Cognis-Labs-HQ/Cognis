@@ -3,6 +3,7 @@ import {
     ShareTokenStore,
     generateSharePassword,
     isExpired,
+    verifySharePassword,
     type ShareAccessControls,
     type ShareTokenRecord,
 } from "./store.js";
@@ -29,11 +30,18 @@ export interface ShareMethodAdapter {
     version?: string;
     publisher?: string;
     locked?: boolean;
+    delivery: "public" | "account";
+    deliveryPage?: {
+        id: string;
+        pattern: string;
+        document: string;
+        scriptUrl: string;
+        access?: { minRole: string };
+    };
     prepare(input: {
         recipients?: unknown;
         accessControls?: Record<string, unknown>;
     }): { accessControls: Record<string, unknown> };
-    owns?(accessControls: Partial<ShareAccessControls>): boolean;
     validateUnique?(input: {
         accessControls: Partial<ShareAccessControls>;
         existingAccessControls: ShareAccessControls[];
@@ -119,6 +127,12 @@ export class CoreShareGateway {
         return this.adapters.get(adapterId) ?? null;
     }
 
+    resolveRecordAdapter(record: {
+        metadata?: Record<string, string> | null;
+    }): ShareMethodAdapter | null {
+        return this.getAdapter(String(record.metadata?.adapterId ?? ""));
+    }
+
     prepareAdapterShare(
         adapterId: string,
         input: {
@@ -159,7 +173,19 @@ export class CoreShareGateway {
     async serializeRecord(
         record: ShareTokenRecord,
     ): Promise<Record<string, unknown>> {
-        const shareUrl = this.buildShareUrl(record.tokenValue);
+        const adapter = this.resolveRecordAdapter(record);
+        const publicLink = adapter?.delivery === "public";
+        const shareUrl = publicLink
+            ? this.buildShareUrl(record.tokenValue)
+            : "";
+        const destinationUrl = publicLink
+            ? shareUrl
+            : this.buildAbsoluteUrl(String(record.metadata?.contentUrl ?? ""));
+        const actionUrl = publicLink
+            ? destinationUrl
+            : this.buildAbsoluteUrl(
+                  `/share/usr_${encodeURIComponent(record.id)}`,
+              );
         const resolveVariants = this.resolveCapability<
             (input: {
                 resourceType: string;
@@ -170,20 +196,22 @@ export class CoreShareGateway {
                 metadata: Record<string, string> | null;
             }) => Promise<ShareVariant[]> | ShareVariant[]
         >("share:resolveVariants");
-        const resolvedVariants = resolveVariants
-            ? await resolveVariants({
-                  resourceType: record.resourceType,
-                  resourceId: record.resourceId,
-                  token: record.tokenValue,
-                  shareUrl,
-                  grantedCapabilities: record.grantedCapabilities,
-                  metadata: record.metadata,
-              })
-            : [];
+        const resolvedVariants =
+            publicLink && resolveVariants
+                ? await resolveVariants({
+                      resourceType: record.resourceType,
+                      resourceId: record.resourceId,
+                      token: record.tokenValue,
+                      shareUrl,
+                      grantedCapabilities: record.grantedCapabilities,
+                      metadata: record.metadata,
+                  })
+                : [];
         const variants = resolvedVariants.map((variant) => ({
             ...variant,
             url: this.buildAbsoluteUrl(variant.url),
         }));
+        const activityEvents = await this.store.listActivity(record.id);
         return {
             id: record.id,
             ownerAccountId: record.ownerAccountId,
@@ -199,16 +227,22 @@ export class CoreShareGateway {
             status: this.isTokenExpired(record) ? "expired" : "active",
             createdAt: record.createdAt,
             updatedAt: record.updatedAt,
+            lastAccessedAt: record.lastAccessedAt,
+            activityEvents,
             shareUrl,
+            destinationUrl,
+            actionUrl,
+            shareMethod: adapter?.id ?? "link",
             variants,
-            emailSupported: Boolean(this.resolveCapability("notify:sendEmail")),
-            quickShareActions: await resolveQuickShareActions(
-                this.resolveCapability,
-                {
-                    shareUrl,
-                    label: record.label,
-                },
-            ),
+            emailSupported:
+                publicLink &&
+                Boolean(this.resolveCapability("notify:sendEmail")),
+            quickShareActions: publicLink
+                ? await resolveQuickShareActions(this.resolveCapability, {
+                      shareUrl,
+                      label: record.label,
+                  })
+                : [],
         };
     }
 
@@ -226,6 +260,7 @@ export class CoreShareGateway {
     }): Promise<Record<string, unknown>> {
         await this.validateAdapterUniqueness({
             ownerAccountId: input.ownerAccountId,
+            adapterId: String(input.metadata?.adapterId ?? ""),
             resourceType: input.resourceType,
             resourceId: input.resourceId,
             accessControls: input.accessControls,
@@ -263,6 +298,7 @@ export class CoreShareGateway {
         }
         await this.validateAdapterUniqueness({
             ownerAccountId: input.ownerAccountId,
+            adapterId: String(existingRecord.metadata?.adapterId ?? ""),
             resourceType: existingRecord.resourceType,
             resourceId: existingRecord.resourceId,
             accessControls:
@@ -272,9 +308,18 @@ export class CoreShareGateway {
         const generatedPassword = input.generatePassword
             ? generateSharePassword()
             : null;
+        const {
+            generatePassword: _generatePassword,
+            password,
+            ...changes
+        } = input;
         const record = await this.store.updateById({
-            ...input,
-            password: input.password ?? generatedPassword,
+            ...changes,
+            ...(generatedPassword
+                ? { password: generatedPassword }
+                : password !== undefined
+                  ? { password }
+                  : {}),
         });
         return record
             ? {
@@ -293,6 +338,23 @@ export class CoreShareGateway {
         return await Promise.all(
             records.map((record) => this.serializeRecord(record)),
         );
+    }
+
+    async listReceivedTokens(
+        recipientAccountId: string,
+    ): Promise<Record<string, unknown>[]> {
+        const records = await this.store.listByRecipient(recipientAccountId);
+        return Promise.all(
+            records.map((record) => this.serializeRecord(record)),
+        );
+    }
+
+    async claimExpiredNotifications(): Promise<ShareTokenRecord[]> {
+        return this.store.claimExpiredNotifications();
+    }
+
+    async markExpirationNotificationSent(shareId: string): Promise<void> {
+        await this.store.markExpirationNotificationSent(shareId);
     }
 
     async removeUserRecipient(input: {
@@ -341,6 +403,7 @@ export class CoreShareGateway {
 
     private async validateAdapterUniqueness(input: {
         ownerAccountId: string;
+        adapterId: string;
         resourceType: string;
         resourceId: string;
         accessControls?: Partial<ShareAccessControls>;
@@ -355,18 +418,10 @@ export class CoreShareGateway {
             .filter((record) => record.id !== input.excludeShareId)
             .filter((record) => !this.isTokenExpired(record))
             .map((record) => record.accessControls);
-        for (const adapter of this.adapters.values()) {
-            if (
-                !adapter.validateUnique ||
-                !adapter.owns?.(input.accessControls ?? {})
-            ) {
-                continue;
-            }
-            adapter.validateUnique({
-                accessControls: input.accessControls ?? {},
-                existingAccessControls,
-            });
-        }
+        this.getAdapter(input.adapterId)?.validateUnique?.({
+            accessControls: input.accessControls ?? {},
+            existingAccessControls,
+        });
     }
 
     async listByResource(filter: {
@@ -377,6 +432,144 @@ export class CoreShareGateway {
         return await Promise.all(
             records.map((record) => this.serializeRecord(record)),
         );
+    }
+
+    async resolveUserAccess(input: {
+        accountId: string;
+        resourceType: string;
+        resourceId: string;
+        requiredCapability: string;
+    }): Promise<{ authorized: boolean; shareId?: string }> {
+        const accountId = input.accountId.trim();
+        if (!accountId || accountId.startsWith("share:")) {
+            return { authorized: false };
+        }
+        const records = await this.store.listByResource({
+            resourceType: input.resourceType,
+            resourceId: input.resourceId,
+        });
+        for (const record of records) {
+            const recipientAuthorized =
+                !isExpired(record) &&
+                record.grantedCapabilities.includes(input.requiredCapability) &&
+                record.accessControls.recipients.some(
+                    (recipient) =>
+                        recipient.type === "user" && recipient.id === accountId,
+                );
+            if (!recipientAuthorized) continue;
+            if (
+                record.passwordHash &&
+                !(await this.store.hasAccountUnlock(record.id, accountId))
+            ) {
+                continue;
+            }
+            return { authorized: true, shareId: record.id };
+        }
+        return { authorized: false };
+    }
+
+    async unlockUserAccess(input: {
+        shareId: string;
+        accountId: string;
+        resourceType: string;
+        resourceId: string;
+        requiredCapability: string;
+        password: string;
+    }): Promise<boolean> {
+        const record = await this.store.getById(input.shareId);
+        if (!record || this.isTokenExpired(record)) return false;
+        const adapter = this.resolveRecordAdapter(record);
+        const accountId = input.accountId.trim();
+        const recipientAuthorized = record.accessControls.recipients.some(
+            (recipient) =>
+                recipient.type === "user" && recipient.id === accountId,
+        );
+        if (
+            adapter?.delivery !== "account" ||
+            !recipientAuthorized ||
+            record.resourceType !== input.resourceType ||
+            record.resourceId !== input.resourceId ||
+            !record.grantedCapabilities.includes(input.requiredCapability) ||
+            !record.passwordHash ||
+            !verifySharePassword(input.password, record.passwordHash)
+        ) {
+            return false;
+        }
+        await this.store.grantAccountUnlock(record.id, accountId);
+        return true;
+    }
+
+    async resolveAccountShare(input: {
+        shareId: string;
+        accountId: string;
+        password?: string | null;
+    }): Promise<
+        | { resolved: true; destinationUrl: string; passwordProtected: boolean }
+        | { resolved: false; reason: string }
+    > {
+        const record = await this.store.getById(input.shareId);
+        if (!record || this.isTokenExpired(record)) {
+            return { resolved: false, reason: "not_found" };
+        }
+        const adapter = this.resolveRecordAdapter(record);
+        const accountId = input.accountId.trim();
+        const allowed =
+            record.ownerAccountId === accountId ||
+            record.accessControls.recipients.some(
+                (recipient) =>
+                    recipient.type === "user" && recipient.id === accountId,
+            );
+        if (adapter?.delivery !== "account" || !allowed) {
+            return { resolved: false, reason: "forbidden" };
+        }
+        const ownerAuthorized = record.ownerAccountId === accountId;
+        if (
+            record.passwordHash &&
+            !ownerAuthorized &&
+            !verifySharePassword(
+                String(input.password ?? ""),
+                record.passwordHash,
+            )
+        ) {
+            return { resolved: false, reason: "invalid_password" };
+        }
+        if (record.passwordHash && !ownerAuthorized) {
+            await this.store.grantAccountUnlock(record.id, accountId);
+        }
+        const deliverUserShare = this.getCapability<
+            (delivery: {
+                resourceType: string;
+                shareId: string;
+                resourceId: string;
+                ownerAccountId: string;
+                recipientAccountId: string;
+                grantedCapabilities: string[];
+                expiresAt: string;
+            }) => Promise<{ navigationUrl?: string } | null>
+        >(`share:deliverUserShare:${record.resourceType}`);
+        const delivery =
+            !ownerAuthorized && deliverUserShare
+                ? await deliverUserShare({
+                      resourceType: record.resourceType,
+                      shareId: record.id,
+                      resourceId: record.resourceId,
+                      ownerAccountId: record.ownerAccountId,
+                      recipientAccountId: accountId,
+                      grantedCapabilities: record.grantedCapabilities,
+                      expiresAt: record.expiresAt,
+                  })
+                : null;
+        return {
+            resolved: true,
+            destinationUrl: this.buildAbsoluteUrl(
+                String(
+                    delivery?.navigationUrl ??
+                        record.metadata?.contentUrl ??
+                        "",
+                ),
+            ),
+            passwordProtected: Boolean(record.passwordHash),
+        };
     }
 
     async deleteToken(input: {

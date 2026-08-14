@@ -93,7 +93,7 @@ export async function openEmailPopup({ share, labels, escapeHtml }) {
     await openPopup({
         title: labels.mail,
         body: () =>
-            `<div class="share-email-popup"><label><span>${escapeHtml(labels.emailRecipients)}</span><input id="share-email-input" type="email" autocomplete="email" placeholder="${escapeHtml(labels.emailRecipientsPlaceholder)}" /></label><div class="share-email-tags"></div></div>`,
+            `<div class="share-email-popup"><label class="share-email-recipient-field"><span>${escapeHtml(labels.emailRecipients)}</span><input id="share-email-input" type="email" autocomplete="email" placeholder="${escapeHtml(labels.emailRecipientsPlaceholder)}" /></label><div class="share-email-tags"></div></div>`,
         actions: [
             {
                 id: "send",

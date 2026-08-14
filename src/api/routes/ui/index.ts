@@ -4,11 +4,11 @@ import path from "node:path";
 import {
     isRoleAllowed,
     type BootstrapLog,
+    type LocalAccountStore,
     type ModuleRuntimeGateway,
     type GatewayRegistry,
 } from "@cognis/core";
 import type { UIRegistry } from "../../reuse/ui-registry.js";
-import type { LocalAccountStore } from "@cognis/core";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -22,10 +22,8 @@ import {
     resolveContentType,
     serveStaticAsset,
 } from "../../reuse/static-asset-response.js";
-import {
-    serveHtmlPage,
-    serveHtmlPageWithReplacements,
-} from "../../reuse/html-response.js";
+import * as htmlResponse from "../../reuse/html-response.js";
+import { handleRegisteredSpaPage } from "./spa-pages.js";
 
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
@@ -282,7 +280,7 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "index.html"),
                 log,
@@ -293,7 +291,7 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/login") {
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "login.html"),
                 log,
@@ -316,7 +314,7 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "settings.html"),
                 log,
@@ -348,7 +346,7 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "administration.html"),
                 log,
@@ -383,7 +381,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "users.html"),
                 log,
@@ -449,7 +447,7 @@ export function createUiRoutes(
                 res.end();
                 return true;
             }
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "invite.html"),
                 log,
@@ -472,7 +470,7 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "docs.html"),
                 log,
@@ -495,7 +493,7 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveHtmlPageWithReplacements(
+            await htmlResponse.serveHtmlPageWithReplacements(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "docs.html"),
                 [
@@ -534,7 +532,7 @@ export function createUiRoutes(
                 return true;
             }
 
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "license.html"),
                 log,
@@ -545,13 +543,33 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/error") {
-            await serveHtmlPage(
+            await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "error.html"),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
+            return true;
+        }
+
+        const registeredSpaRoute = uiRegistry?.resolveSpaRoute(url.pathname);
+        if (
+            uiRegistry &&
+            (await handleRegisteredSpaPage({
+                req,
+                res,
+                route: registeredSpaRoute,
+                uiRegistry,
+                publicRoot: SERVED_PUBLIC_ROOT,
+                routeContext: ctx,
+                log,
+                resolveLoginRedirect: () =>
+                    resolveLoginRedirectLocation(req, ctx, accountStore, log),
+                redirect: (location) => sendRedirect(res, location),
+                getSessionRole: () => ctx.getCookieSession(req)?.role,
+            }))
+        ) {
             return true;
         }
 
@@ -609,7 +627,7 @@ export function createUiRoutes(
                         manifest.id,
                         manifest.entrypoints.ui,
                     );
-                    await serveHtmlPage(
+                    await htmlResponse.serveHtmlPage(
                         res,
                         uiFile,
                         log,

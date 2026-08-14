@@ -472,15 +472,6 @@ export function createSettingsSection({ i18n, root }) {
                 "/static/adapters/auth/keyring/settings.css",
             );
             bindActions();
-            if (!isKeyringUnlocked()) {
-                void uiCtx.runFlow("defer-page-action", {
-                    action: async () => {
-                        if (!isKeyringUnlocked() && (await promptToUnlock())) {
-                            rerender();
-                        }
-                    },
-                });
-            }
         },
         isDirty: () => false,
         async save() {},
