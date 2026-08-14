@@ -537,10 +537,16 @@ test("guest sessions can re-assert their disposable keyring without prompting", 
     assert.match(sessionFlowSource, /keyring:activateTemporary/);
 });
 
-test("missing share links navigate to the native error page", () => {
+test("unavailable share links navigate to the native error page", () => {
     assert.match(sessionFlowSource, /response\.status === 404/);
     assert.match(
         sharePageSource,
-        /\/error\?code=404&message=\$\{encodeURIComponent\(message\)\}/,
+        /function navigateToShareError\(i18n, reason\)/,
     );
+    assert.match(sharePageSource, /const code = notFound \? "404" : "410"/);
+    assert.match(
+        sharePageSource,
+        /\/error\?code=\$\{code\}&message=\$\{encodeURIComponent\(message\)\}/,
+    );
+    assert.match(sharePageSource, /window\.location\.replace\(destination\)/);
 });

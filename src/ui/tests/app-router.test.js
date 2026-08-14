@@ -401,3 +401,18 @@ test("router installs global runtime error handlers", () => {
         "app-router.js must initialize global runtime error listeners",
     );
 });
+
+test("router mounts the native error page without account authentication", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    assert.match(
+        routerSource,
+        /pattern:\s*\/\^\\\/error\$\/[\s\S]*public:\s*true/,
+    );
+    assert.match(
+        routerSource,
+        /const authResult = route\.public[\s\S]*\? null[\s\S]*runFlow\("authenticate-session"/,
+    );
+});

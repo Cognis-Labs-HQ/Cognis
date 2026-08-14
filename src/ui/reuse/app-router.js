@@ -296,6 +296,7 @@ const STATIC_ROUTES = [
     {
         pattern: /^\/error$/,
         base: "/error",
+        public: true,
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
@@ -415,11 +416,14 @@ async function loadRoute(path) {
         return false;
     }
 
-    const authResult = await uiCtx.runFlow("authenticate-session", {
-        routePath: path,
-    });
-    const session =
-        (authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null;
+    const authResult = route.public
+        ? null
+        : await uiCtx.runFlow("authenticate-session", {
+              routePath: path,
+          });
+    const session = route.public
+        ? null
+        : ((authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
 
     const isGuestContentPath =
         uiCtx.capabilities.get("session:isGuestAllowedPath")?.(

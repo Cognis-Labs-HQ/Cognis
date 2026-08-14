@@ -33,6 +33,25 @@ function updatePageDescriptor(root, i18n, subtitleKey) {
     }
 }
 
+async function navigateToShareError(i18n, reason) {
+    const notFound = reason === "share_not_found";
+    const code = notFound ? "404" : "410";
+    const message = i18n.t(
+        notFound ? "share.error.not_found" : "share.error.expired",
+    );
+    const destination = `/error?code=${code}&message=${encodeURIComponent(message)}`;
+    try {
+        if (await navigateTo(destination)) return;
+    } catch (error) {
+        console.error("[share] failed to open share error route", {
+            operation: "navigate_share_error",
+            reason,
+            error,
+        });
+    }
+    window.location.replace(destination);
+}
+
 /**
  * Builds the composer element for the share page.
  *
@@ -132,42 +151,30 @@ export async function mount(
     const shareContext = routedShareContext ?? session?.shareContext ?? null;
 
     if (session?.shareAttempted && !session?.authenticated) {
-        if (session.failureReason === "share_not_found") {
-            const message = state.i18n.t("share.error.expired");
-            await navigateTo(
-                `/error?code=404&message=${encodeURIComponent(message)}`,
-            );
+        if (session.failureReason !== "share_access_denied") {
+            await navigateToShareError(state.i18n, session.failureReason);
             return;
         }
         // A share token was present in the URL but failed to resolve
         // (expired, revoked, or invalid). Render the fallback screen
         // directly instead of the generic missing/malformed messages below.
         state.loading = false;
-        state.errorKey =
-            session.failureReason === "share_access_denied"
-                ? "share.error.access_denied"
-                : "share.error.expired";
+        state.errorKey = "share.error.access_denied";
         updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;
     }
 
     if (!shareContext?.resourceType) {
-        state.loading = false;
-        state.errorKey =
-            shareContext === null
-                ? "share.error.missing_token"
-                : "share.error.malformed_response";
-        updatePageDescriptor(root, state.i18n, state.errorKey);
-        composer.refresh([buildShareElement(state)]);
+        await navigateToShareError(
+            state.i18n,
+            shareContext === null ? "share_not_found" : "share_expired",
+        );
         return;
     }
 
     if (!session?.authenticated) {
-        state.loading = false;
-        state.errorKey = "share.error.expired";
-        updatePageDescriptor(root, state.i18n, state.errorKey);
-        composer.refresh([buildShareElement(state)]);
+        await navigateToShareError(state.i18n, "share_expired");
         return;
     }
 

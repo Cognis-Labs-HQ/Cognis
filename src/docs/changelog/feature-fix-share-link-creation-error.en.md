@@ -71,3 +71,7 @@ Guest meeting chat now uses the scoped share credential while retrieving its enc
 ## Enable disposable guest meetings
 
 Messages now delegates external room authorization through a neutral capability supplied by the meeting owner, allowing scoped guests to unlock and use meeting chat. Meetings created without staged participants delete their meeting record and associated shares when they close.
+
+## Route unavailable shares to errors
+
+Deleted, expired, malformed, and nonexistent share links now leave the loading screen and open the public native error page with a localized share-specific description and the appropriate 404 or 410 status code.

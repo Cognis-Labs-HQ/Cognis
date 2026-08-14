@@ -71,3 +71,7 @@ Der Gast-Meeting-Chat verwendet nun beim Abrufen des verschlüsselten Raumschlü
 ## Wegwerfbare Gast-Meetings ermöglichen
 
 Messages delegiert die externe Raumautorisierung nun über eine neutrale Fähigkeit des Meeting-Eigentümers, sodass Gäste mit begrenztem Zugriff den Meeting-Chat entsperren und verwenden können. Meetings ohne Teilnehmer auf der Bühne löschen beim Beenden ihren Meeting-Datensatz und die zugehörigen Freigaben.
+
+## Nicht verfügbare Freigaben zu Fehlern leiten
+
+Gelöschte, abgelaufene, fehlerhafte und nicht vorhandene Freigabelinks verlassen nun den Ladebildschirm und öffnen die öffentliche native Fehlerseite mit einer lokalisierten freigabespezifischen Beschreibung und dem passenden Statuscode 404 oder 410.

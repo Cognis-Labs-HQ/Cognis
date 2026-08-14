@@ -71,3 +71,7 @@ Obrolan rapat tamu kini menggunakan kredensial berbagi terbatas saat mengambil k
 ## Aktifkan rapat tamu sekali pakai
 
 Messages kini mendelegasikan otorisasi ruang eksternal melalui kapabilitas netral yang disediakan pemilik rapat, sehingga tamu dengan akses terbatas dapat membuka dan menggunakan obrolan rapat. Rapat yang dibuat tanpa peserta di panggung akan menghapus data rapat dan berbagi terkait saat ditutup.
+
+## Arahkan berbagi tak tersedia ke galat
+
+Tautan berbagi yang dihapus, kedaluwarsa, rusak, atau tidak ada kini meninggalkan layar pemuatan dan membuka halaman galat bawaan publik dengan deskripsi khusus berbagi yang terlokalisasi serta kode status 404 atau 410 yang sesuai.
