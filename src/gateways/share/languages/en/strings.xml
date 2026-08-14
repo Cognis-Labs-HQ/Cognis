@@ -106,6 +106,6 @@
   <string name="share.shares.detail_users">Recipients</string>
   <string name="share.shares.detail_created">Created</string>
   <string name="share.shares.detail_updated">Updated</string>
-  <string name="share.shares.detail_accessed">Last accessed</string>
+  <string name="share.shares.detail_accessed">Accessed</string>
   <string name="share.shares.detail_expires">Expires</string>
 </resources>

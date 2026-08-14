@@ -106,6 +106,6 @@
   <string name="share.shares.detail_users">Penerima</string>
   <string name="share.shares.detail_created">Dibuat</string>
   <string name="share.shares.detail_updated">Diperbarui</string>
-  <string name="share.shares.detail_accessed">Terakhir diakses</string>
+  <string name="share.shares.detail_accessed">Diakses</string>
   <string name="share.shares.detail_expires">Kedaluwarsa</string>
 </resources>

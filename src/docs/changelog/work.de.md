@@ -263,3 +263,7 @@ Der Authentifizierungs-Hook der Freigabeseite unterscheidet nun veraltete Gastma
 ## Freigabeverwaltung von Links trennen
 
 Die authentifizierte Freigabeverwaltung befindet sich wieder unter `/shares`, während `/share/usr_…` und `/share/shr_…` die Zustellungsnamensräume für Konto- und öffentliche Linkfreigaben bleiben. Gültige Kontoanmeldedaten werden vor einem Rückgriff auf öffentliche Links geprüft, sodass Eigentümer beim Öffnen eigener Linkfreigaben ihre Benutzersitzung behalten und nicht zu Gästen werden. Das Verwaltungsdokument lädt die Gastsitzungs-Initialisierung überhaupt nicht mehr.
+
+## Tooltips für Zugriffsereignisse verdeutlichen
+
+Jeder Zugriffspunkt im erweiterten Aktivitätsdiagramm einer Freigabe heißt nun „Aufgerufen“ statt „Zuletzt aufgerufen“, da das Diagramm den vollständigen Zugriffsverlauf und nicht nur das neueste Ereignis anzeigt.

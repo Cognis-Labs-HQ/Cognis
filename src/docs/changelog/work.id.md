@@ -263,3 +263,7 @@ Hook autentikasi halaman Berbagi kini membedakan penanda tamu usang dari token t
 ## Memisahkan pengelolaan berbagi dari tautan
 
 Pengelolaan berbagi terautentikasi dikembalikan ke `/shares`, sedangkan `/share/usr_…` dan `/share/shr_…` tetap menjadi ruang nama pengiriman untuk berbagi akun dan tautan publik. Kredensial akun valid kini diperiksa sebelum fallback tautan publik sehingga pemilik yang membuka tautannya sendiri tetap memakai sesi pengguna dan tidak berubah menjadi tamu. Dokumen pengelolaan juga tidak lagi memuat bootstrap sesi tamu.
+
+## Memperjelas tooltip peristiwa akses
+
+Setiap titik akses dalam grafik aktivitas berbagi yang diperluas kini diberi label “Diakses”, bukan “Terakhir diakses”, karena grafik menampilkan seluruh riwayat akses dan bukan hanya peristiwa terbaru.

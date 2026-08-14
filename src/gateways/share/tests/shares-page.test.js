@@ -30,6 +30,10 @@ const graphStyleSource = await readFile(
     new URL("../../../ui/styles/reuse/graph.css", import.meta.url),
     "utf8",
 );
+const englishStrings = await readFile(
+    new URL("../languages/en/strings.xml", import.meta.url),
+    "utf8",
+);
 
 test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /createPageComposer/);
@@ -83,6 +87,15 @@ test("Shares page composes sent and received share management", () => {
 test("Share activity uses the reusable scalable graph", () => {
     assert.match(pageSource, /share\.activityEvents/);
     assert.match(pageSource, /event\.occurredAt/);
+    assert.match(pageSource, /detail_\$\{event\.type\}/);
+    assert.match(
+        englishStrings,
+        /name="share\.shares\.detail_accessed">Accessed</,
+    );
+    assert.doesNotMatch(
+        englishStrings,
+        /name="share\.shares\.detail_accessed">Last accessed</,
+    );
     assert.match(graphSource, /maximumCount/);
     assert.match(graphSource, /mode = "dot"/);
     assert.match(graphSource, /mode === "line"/);

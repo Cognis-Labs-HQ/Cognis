@@ -263,3 +263,7 @@ The Shares authentication hook now distinguishes stale guest markers from an act
 ## Separate Shares from share links
 
 Authenticated share management is restored to `/shares`, while `/share/usr_…` and `/share/shr_…` remain the account-share and public-link delivery namespaces. Valid account credentials are now validated before any public-link fallback, so owners opening their own link shares retain their user session instead of becoming guests. The management document no longer loads the guest-session bootstrap at all.
+
+## Clarify access-event tooltips
+
+Every access point in the expanded Share activity graph is now labelled “Accessed” rather than “Last accessed”, because the graph displays the complete access history rather than only its latest event.
