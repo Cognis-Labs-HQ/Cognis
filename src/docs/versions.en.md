@@ -74,7 +74,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Logging               | `src/gateways/logging/`       | `1.5.11` |
 | Observability         | `src/gateways/observability/` | `1.0.5`  |
 | Study                 | `src/gateways/study/`         | `1.5.10` |
-| Calendar              | `src/gateways/calendar/`      | `1.4.80` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.81` |
 
 ## Core contracts
 
@@ -99,7 +99,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.2`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.3`  |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.2.81` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

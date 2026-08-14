@@ -151,3 +151,7 @@ The authenticated owner of an account-delivered user share can now resolve their
 ## Reduce active Whiteboard presence traffic
 
 Active presence refreshes now run no faster than every 2.5 seconds and heartbeat writes no faster than every 10 seconds, with both winding down to 30 seconds when unchanged. Pointer updates are limited to one per second, and server last-seen timestamps no longer count as meaningful UI changes that keep adaptive polling at maximum speed.
+
+## Complete shared calendar and meeting guest loading
+
+Received calendars now retry password-protected event requests through the Share keyring whenever the server challenges them, even when cached share metadata is incomplete. Guest calendar controls use one mount-scoped event boundary and replace stale rendered markup. Meeting guests now use their scoped credential both to load the meeting and to complete the join request.

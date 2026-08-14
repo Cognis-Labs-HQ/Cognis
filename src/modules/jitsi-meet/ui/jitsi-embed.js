@@ -299,6 +299,8 @@ export function createEmbedHandlers({
                     meetingId: state.meeting.id,
                     sessionId: state.sessionId,
                 }),
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
             },
         );
         if (!joinResponse.ok) {

@@ -151,3 +151,7 @@ Pemilik terautentikasi dari berbagi pengguna yang dikirim ke akun kini dapat mem
 ## Kurangi trafik kehadiran aktif Whiteboard
 
 Penyegaran kehadiran aktif kini berjalan paling cepat setiap 2,5 detik dan penulisan heartbeat paling cepat setiap 10 detik; keduanya melambat hingga 30 detik saat tidak ada perubahan. Pembaruan penunjuk dibatasi satu per detik, dan stempel waktu terakhir terlihat dari server tidak lagi dianggap sebagai perubahan UI bermakna yang mempertahankan polling adaptif pada kecepatan maksimum.
+
+## Menyelesaikan pemuatan kalender bersama dan rapat tamu
+
+Kalender yang diterima kini mengulangi permintaan acara yang dilindungi kata sandi melalui keyring Share saat server memintanya, meskipun metadata berbagi yang tersimpan belum lengkap. Kontrol kalender tamu memakai satu batas kejadian yang mengikuti masa pemasangan dan mengganti markup lama. Tamu rapat kini memakai kredensial terbatasnya saat memuat rapat maupun menyelesaikan permintaan bergabung.

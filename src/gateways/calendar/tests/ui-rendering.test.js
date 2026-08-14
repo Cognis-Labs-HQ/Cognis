@@ -730,8 +730,9 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);
     assert.match(SHARE_RENDERER_SOURCE, /requestAnimationFrame/);
     assert.match(SHARE_RENDERER_SOURCE, /root\.addEventListener/);
-    assert.match(SHARE_RENDERER_SOURCE, /onRender:\s*bindInteractiveHandlers/);
-    assert.match(SHARE_RENDERER_SOURCE, /interactionController\?\.abort\(\)/);
+    assert.match(SHARE_RENDERER_SOURCE, /\{ signal \}/);
+    assert.match(SHARE_RENDERER_SOURCE, /enableDomParking:\s*false/);
+    assert.doesNotMatch(SHARE_RENDERER_SOURCE, /interactionController/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
@@ -824,6 +825,10 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
     assert.match(SHARED_PASSWORD_SOURCE, /share:resolveToken/);
     assert.match(CALENDAR_API_SOURCE, /calendar_share_secrets_refused/);
+    assert.match(
+        CALENDAR_API_SOURCE,
+        /response\?\.status === 401[\s\S]*requestProtectedCalendarResource/,
+    );
     assert.match(APP_SOURCE, /secretsUnavailable/);
     assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);
     assert.match(HELPERS_SOURCE, /share_secrets_not_provided/);

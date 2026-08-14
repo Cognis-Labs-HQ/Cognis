@@ -36,6 +36,33 @@ test("meeting chat polling respects cancelled keyring access", () => {
     );
 });
 
+test("meeting share loading and joining use the scoped guest token", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),
+        "utf8",
+    );
+    const meetingsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
+        "utf8",
+    );
+    const embedSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-embed.js"),
+        "utf8",
+    );
+    assert.match(
+        appSource,
+        /shareAccessToken:\s*String\(shareContext\?\.guestAccessToken/,
+    );
+    assert.match(
+        meetingsSource,
+        /meetings\/get[\s\S]*accessToken:\s*state\.shareAccessToken/,
+    );
+    assert.match(
+        embedSource,
+        /meetings\/join[\s\S]*accessToken:\s*state\.shareAccessToken/,
+    );
+});
+
 test("meetings search popup adds confirmed users directly to meeting participants", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"),

@@ -151,3 +151,7 @@ Der authentifizierte Eigentümer einer kontogebundenen Benutzerfreigabe kann sei
 ## Aktiven Whiteboard-Präsenzverkehr reduzieren
 
 Aktive Präsenzaktualisierungen laufen nun höchstens alle 2,5 Sekunden und Heartbeat-Schreibvorgänge höchstens alle 10 Sekunden; ohne Änderungen verlangsamen sich beide auf 30 Sekunden. Zeigeraktualisierungen sind auf eine pro Sekunde begrenzt und serverseitige Zeitstempel der letzten Aktivität gelten nicht mehr als bedeutsame UI-Änderungen, die adaptives Polling dauerhaft auf Höchstgeschwindigkeit halten.
+
+## Laden geteilter Kalender und Meetings für Gäste vervollständigen
+
+Empfangene Kalender wiederholen kennwortgeschützte Ereignisanfragen nun über den Share-Schlüsselbund, sobald der Server sie anfordert, selbst wenn zwischengespeicherte Freigabemetadaten unvollständig sind. Gast-Kalendersteuerungen verwenden eine einzige, an die Einbindung gebundene Ereignisgrenze und ersetzen veraltetes gerendertes Markup. Meeting-Gäste verwenden ihre begrenzte Berechtigung nun sowohl zum Laden als auch zum vollständigen Beitritt.

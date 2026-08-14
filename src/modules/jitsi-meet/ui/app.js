@@ -135,6 +135,7 @@ export async function mount(
         alonePromptDismissedMeetingId: "",
         alonePromptBlockedUntil: 0,
         recoveringMeetingSession: false,
+        shareAccessToken: String(shareContext?.guestAccessToken ?? ""),
     };
     function collectMeetingSearchGroups() {
         const meetings = [

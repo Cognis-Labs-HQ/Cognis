@@ -127,6 +127,8 @@ export function createMeetingHandlers({
                 body: JSON.stringify({
                     meetingId: normalizedMeetingId,
                 }),
+                accessToken: state.shareAccessToken || undefined,
+                suppressAccessDeniedEvent: true,
             },
         );
         if (!getResponse.ok) {

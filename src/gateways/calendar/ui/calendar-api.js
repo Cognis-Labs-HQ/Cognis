@@ -73,6 +73,14 @@ async function requestCalendarResource(
     return fetchProtected({ shareId: shareAccess.shareId, request });
 }
 
+async function requestProtectedCalendarResource(shareId, request) {
+    const fetchProtected = uiCtx.capabilities.get(
+        "share:fetchProtectedResource",
+    );
+    if (!fetchProtected) throw new Error("calendar_share_password_unavailable");
+    return fetchProtected({ shareId, request });
+}
+
 async function fetchCalendarState() {
     const response = await apiFetch("/api/v1/calendar/calendars");
     if (!response.ok) throw new Error("calendar_load_failed");
@@ -101,9 +109,15 @@ async function fetchEvents(
                 ? { headers: { "x-cognis-share-password": password } }
                 : undefined,
         );
-    const response = await requestCalendarResource(calendarId, request, {
+    let response = await requestCalendarResource(calendarId, request, {
         promptWhenLocked,
     });
+    if (response?.status === 401 && promptWhenLocked && shareAccess?.shareId) {
+        response = await requestProtectedCalendarResource(
+            shareAccess.shareId,
+            request,
+        );
+    }
     if (!response) throw new Error("calendar_share_password_unavailable");
     if (!response.ok) {
         const error =
