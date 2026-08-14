@@ -112,7 +112,8 @@ test("Share activity uses the reusable scalable graph", () => {
     assert.match(graphSource, /formatDateTimestamp/);
     assert.match(graphStyleSource, /\.graph-tooltip/);
     assert.match(graphStyleSource, /\.graph-line/);
-    assert.match(graphStyleSource, /aspect-ratio:\s*720 \/ 280/);
+    assert.match(graphStyleSource, /aspect-ratio:\s*900 \/ 220/);
+    assert.match(graphStyleSource, /min-height:\s*11rem/);
     assert.match(styleSource, /flex-direction:\s*column/);
     assert.match(bootstrapSource, /styles\/reuse\/graph\.css/);
 });

@@ -255,3 +255,7 @@ Die Ziehauswahl im Diagramm folgt dem Mauszeiger nun über die SVG-Koordinatentr
 ## Diagramme verallgemeinern und Konten bewahren
 
 Der wiederverwendbare Diagramm-Renderer unterstützt nun Punkt- und Liniendarstellungen, nutzt die gesamte responsive Breite und zählt die Ereignishäufigkeit je Typ und Zeitstempel, statt sie dauerhaft aufzusummieren. Die Gastaktivierung sichert nun alle gefundenen echten Kontoanmeldedaten, auch bei veraltetem Gaststatus, sodass die Rückkehr zu `/share` den Benutzer wiederherstellt, anstatt ihn abzumelden.
+
+## Gültige Sitzungen und kompakte Diagramme bewahren
+
+Der Authentifizierungs-Hook der Freigabeseite unterscheidet nun veraltete Gastmarkierungen von einem aktiven eingeschränkten Gast-Token und entfernt nur die veralteten Markierungen, wenn bereits gültige Kontoanmeldedaten vorliegen. Aktivitätsdiagramme verwenden ein niedrigeres, breiteres Seitenverhältnis und bleiben dadurch lesbar, ohne die erweiterten Freigabedetails zu dominieren.

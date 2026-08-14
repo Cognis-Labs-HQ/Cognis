@@ -37,9 +37,9 @@ export function mountGraph(
         .map((point) => ({ ...point, time: Date.parse(point.timestamp) }))
         .filter((point) => Number.isFinite(point.time))
         .sort((left, right) => left.time - right.time);
-    const width = 720;
-    const height = 280;
-    const margin = { top: 20, right: 24, bottom: 74, left: 58 };
+    const width = 900;
+    const height = 220;
+    const margin = { top: 16, right: 24, bottom: 64, left: 58 };
     const plotWidth = width - margin.left - margin.right;
     const plotHeight = height - margin.top - margin.bottom;
     const requestedMinimumTime = Date.parse(domainStart ?? "");

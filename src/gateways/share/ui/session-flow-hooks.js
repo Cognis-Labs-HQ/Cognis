@@ -63,6 +63,23 @@ let activeGuestSession = null;
 let activeShareSession = null;
 let accessDeniedNavigationPending = false;
 
+function hasStoredAccountSession() {
+    const token = String(localStorage.getItem(ACCESS_TOKEN_KEY) ?? "").trim();
+    const accountId = String(localStorage.getItem(ACCOUNT_KEY) ?? "").trim();
+    return Boolean(token && accountId && !accountId.startsWith("share:"));
+}
+
+function discardStaleGuestMarkers() {
+    stopShareStatusMonitor();
+    sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(PREV_ACCOUNT_KEY);
+    sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+    sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
+    delete document.body.dataset.shareGuest;
+    activeGuestSession = null;
+    activeShareSession = null;
+}
+
 function stopShareStatusMonitor() {
     stopShareStatusWatch();
 }
@@ -161,10 +178,7 @@ async function activateGuestToken(
     const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
     const priorAccount = localStorage.getItem(ACCOUNT_KEY);
     const priorDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
-    const hasAccountSession =
-        Boolean(prior) &&
-        Boolean(priorAccount) &&
-        !String(priorAccount).startsWith("share:");
+    const hasAccountSession = hasStoredAccountSession();
     if (!guestSessionAlreadyActive || hasAccountSession) {
         if (prior) {
             sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
@@ -273,7 +287,13 @@ uiCtx.extendFlow(
             stageCtx.input?.routePath,
         );
         if (shareToken.startsWith("shr_")) return null;
-        if (isViewingAsGuest()) restoreGuestToken();
+        if (isViewingAsGuest()) {
+            if (hasStoredAccountSession()) {
+                discardStaleGuestMarkers();
+            } else {
+                restoreGuestToken();
+            }
+        }
         return null;
     },
 );

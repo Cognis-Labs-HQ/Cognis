@@ -255,3 +255,7 @@ Graph drag selection now follows the cursor through the SVG coordinate transform
 ## Generalize graphs and preserve accounts
 
 The reusable graph renderer now supports dot and line modes, uses the full responsive width, and counts event frequency per type and timestamp rather than accumulating forever. Guest activation now snapshots any real account credentials it encounters, even when stale guest state exists, so returning to `/share` can restore the user instead of logging them out.
+
+## Keep valid sessions and compact graphs
+
+The Shares authentication hook now distinguishes stale guest markers from an active scoped guest token, clearing only the stale markers when valid account credentials are already present. Activity graphs use a shorter, wider plot ratio so they remain readable without dominating the expanded share details.

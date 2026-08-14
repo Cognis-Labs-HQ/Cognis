@@ -323,7 +323,11 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(sessionFlowSource, /await activateGuestToken/);
     assert.match(
         sessionFlowSource,
-        /hasAccountSession[\s\S]*!String\(priorAccount\)\.startsWith\("share:"\)[\s\S]*!guestSessionAlreadyActive \|\| hasAccountSession/,
+        /const hasAccountSession = hasStoredAccountSession\(\)[\s\S]*!guestSessionAlreadyActive \|\| hasAccountSession/,
+    );
+    assert.match(
+        sessionFlowSource,
+        /hasStoredAccountSession\(\)[\s\S]*discardStaleGuestMarkers\(\)[\s\S]*restoreGuestToken\(\)/,
     );
     assert.match(
         sessionFlowSource,

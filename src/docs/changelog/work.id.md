@@ -255,3 +255,7 @@ Pemilihan rentang pada grafik kini mengikuti kursor melalui transformasi koordin
 ## Menggeneralisasi grafik dan mempertahankan akun
 
 Perender grafik pakai ulang kini mendukung mode titik dan garis, memakai lebar responsif penuh, serta menghitung frekuensi per jenis peristiwa dan stempel waktu tanpa terus menjumlahkannya. Aktivasi tamu kini menyimpan kredensial akun nyata yang ditemukan meskipun ada status tamu usang, sehingga kembali ke `/share` dapat memulihkan pengguna alih-alih mengeluarkannya.
+
+## Mempertahankan sesi valid dan grafik ringkas
+
+Hook autentikasi halaman Berbagi kini membedakan penanda tamu usang dari token tamu terbatas yang aktif dan hanya menghapus penanda usang ketika kredensial akun valid sudah tersedia. Grafik aktivitas memakai rasio plot yang lebih pendek dan lebar agar tetap mudah dibaca tanpa mendominasi detail berbagi yang diperluas.
