@@ -1,61 +1,25 @@
-import {
-    createHash,
-    pbkdf2Sync,
-    randomBytes,
-    timingSafeEqual,
-} from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
     parseShareToken,
 } from "../reuse/token-format.js";
 
-export type SharePermission = "read" | "write";
-
-export type ShareRecipientType = "user" | "group" | "email";
-
-export interface ShareRecipient {
-    type: ShareRecipientType;
-    id: string;
-    label?: string | null;
-    handle?: string | null;
-    avatarKey?: string | null;
-    permissions: SharePermission[];
-}
-
-export interface ShareAccessControls {
-    permissions: SharePermission[];
-    recipients: ShareRecipient[];
-    passwordProtected: boolean;
-    watermarkReadonly: boolean;
-}
-
-export interface ShareTokenRecord {
-    id: string;
-    resourceKey: string;
-    ownerAccountId: string;
-    resourceType: string;
-    resourceId: string;
-    metadata: Record<string, string> | null;
-    tokenValue: string;
-    tokenHash: string;
-    passwordHash: string | null;
-    label: string | null;
-    grantedCapabilities: string[];
-    accessControls: ShareAccessControls;
-    expiresAt: string;
-    expirationNotifiedAt: string;
-    lastAccessedAt: string;
-    createdAt: string;
-    updatedAt: string;
-}
-
-export interface ShareActivityEvent {
-    id: string;
-    shareId: string;
-    type: "created" | "updated" | "accessed";
-    occurredAt: string;
-}
+export type {
+    ShareAccessControls,
+    ShareActivityEvent,
+    SharePermission,
+    ShareRecipient,
+    ShareRecipientType,
+    ShareTokenRecord,
+} from "./types.js";
+import type {
+    ShareAccessControls,
+    ShareActivityEvent,
+    SharePermission,
+    ShareRecipient,
+    ShareTokenRecord,
+} from "./types.js";
 
 function normalizeOptionalString(value: unknown): string | null {
     if (typeof value !== "string") {
@@ -137,58 +101,12 @@ function parseJsonObject(value: unknown): Record<string, unknown> | null {
     }
 }
 
-export function generateSharePassword(): string {
-    return randomBytes(9).toString("base64url");
-}
-
-const SHARE_PASSWORD_KDF_ALGO = "pbkdf2_sha512";
-const SHARE_PASSWORD_KDF_DIGEST = "sha512";
-const SHARE_PASSWORD_KDF_ITERATIONS = 210000;
-const SHARE_PASSWORD_KDF_KEYLEN = 32;
-
-export function hashSharePassword(password: string): string {
-    const normalized = String(password ?? "");
-    const salt = randomBytes(16);
-    const derived = pbkdf2Sync(
-        normalized,
-        salt,
-        SHARE_PASSWORD_KDF_ITERATIONS,
-        SHARE_PASSWORD_KDF_KEYLEN,
-        SHARE_PASSWORD_KDF_DIGEST,
-    );
-    return `${SHARE_PASSWORD_KDF_ALGO}$${SHARE_PASSWORD_KDF_ITERATIONS}$${salt.toString("hex")}$${derived.toString("hex")}`;
-}
-
-export function verifySharePassword(
-    password: string,
-    storedHash: string,
-): boolean {
-    const normalized = String(password ?? "");
-    const encoded = String(storedHash ?? "");
-    const parts = encoded.split("$");
-    if (parts.length === 4 && parts[0] === SHARE_PASSWORD_KDF_ALGO) {
-        const iterations = Number(parts[1]);
-        const saltHex = parts[2];
-        const expectedHex = parts[3];
-        if (!Number.isFinite(iterations) || iterations <= 0) {
-            return false;
-        }
-        const salt = Buffer.from(saltHex, "hex");
-        const expected = Buffer.from(expectedHex, "hex");
-        const actual = pbkdf2Sync(
-            normalized,
-            salt,
-            iterations,
-            expected.length || SHARE_PASSWORD_KDF_KEYLEN,
-            SHARE_PASSWORD_KDF_DIGEST,
-        );
-        return (
-            expected.length === actual.length &&
-            timingSafeEqual(expected, actual)
-        );
-    }
-    return false;
-}
+export {
+    generateSharePassword,
+    hashSharePassword,
+    verifySharePassword,
+} from "./password.js";
+import { hashSharePassword, verifySharePassword } from "./password.js";
 
 function normalizeCapabilities(value: unknown): string[] {
     if (!Array.isArray(value)) {

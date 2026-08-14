@@ -9,6 +9,8 @@ import { createWhiteboardCanvas } from "../whiteboard/canvas.js";
 import { confirmClearCanvas } from "./clear-canvas.js";
 import { createWhiteboardSearchCollector } from "./search-index.js";
 import { createWhiteboardStatusController } from "./status.js";
+import { setOverlayVisible } from "./overlay.js";
+import { openWhiteboardHistoryPopup } from "./history-popup.js";
 import { renderCanvasElement as renderWhiteboardCanvasElement } from "./render.js";
 import {
     API_BASE,
@@ -78,24 +80,6 @@ const collectWhiteboardSearchGroups = createWhiteboardSearchCollector({
 
 async function loadBoards() {
     boards = await fetchWhiteboardList();
-}
-async function renameBoard(boardId, title) {
-    return renameWhiteboard(
-        boardId,
-        title,
-        i18n?.t("module.nextcloud_whiteboard.rename_failed") ??
-            "module.nextcloud_whiteboard.rename_failed",
-    );
-}
-async function spawnBoard({ title, participants = [] } = {}) {
-    return spawnWhiteboard({ title, participants });
-}
-function setOverlayVisible(visible, message = "") {
-    const overlay = document.getElementById("whiteboard-canvas-overlay");
-    if (!overlay) return;
-    overlay.hidden = !visible;
-    const messageEl = overlay.querySelector(".whiteboard-overlay-message");
-    if (messageEl) messageEl.textContent = message;
 }
 function teardownCanvas() {
     if (socketInstance) {
@@ -299,7 +283,7 @@ async function createAndOpenBoard() {
     if (!passed) return;
     let spawnResult;
     try {
-        spawnResult = await spawnBoard({
+        spawnResult = await spawnWhiteboard({
             title: createRandomWhiteboardTitle(),
         });
     } catch (error) {
@@ -618,30 +602,11 @@ async function openHistoryPopup() {
         );
         return;
     }
-    const body = boards.length
-        ? `<div class="whiteboard-history-list">${boards
-              .map(
-                  (board) => `
-                    <article class="whiteboard-history-card">
-                        <h3>${escapeHtml(board.title)}</h3>
-                        <p>${escapeHtml(new Date(board.updatedAt).toLocaleString())}</p>
-                        <button type="button" disabled>${escapeHtml(translateModuleString("module.nextcloud_whiteboard.open"))}</button>
-                    </article>`,
-              )
-              .join("")}</div>`
-        : `<p>${escapeHtml(translateModuleString("module.nextcloud_whiteboard.empty"))}</p>`;
-    await openPopup({
-        title: translateModuleString(
-            "module.nextcloud_whiteboard.history_title",
-        ),
-        body,
-        actions: [
-            {
-                id: "done",
-                label: translateModuleString("ui.reuse.close"),
-                variant: "confirm",
-            },
-        ],
+    await openWhiteboardHistoryPopup({
+        boards,
+        escapeHtml,
+        openPopup,
+        translate: translateModuleString,
     });
 }
 async function renameActiveBoard() {
@@ -673,7 +638,7 @@ async function renameActiveBoard() {
                 activeBoard.id ||
                 activeSession?.roomId ||
                 new URLSearchParams(window.location.search).get("id");
-            const renamed = await renameBoard(boardId, nextTitle);
+            const renamed = await renameWhiteboard(boardId, nextTitle);
             activeBoard = {
                 ...activeBoard,
                 ...renamed,

@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 const popupSource = await Promise.all(
-    ["index.js", "implementation.js"].map((fileName) =>
+    ["index.js", "implementation.js", "rendering.js"].map((fileName) =>
         readFile(
             new URL(
                 `../../../adapters/share/link/ui/share-links-popup/${fileName}`,

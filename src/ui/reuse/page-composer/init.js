@@ -1,9 +1,8 @@
 /**
- * Page composer layout orchestration.
+ * Page composer orchestration.
  * Export: createPageComposer(root, options).
  * Usage: const composer = createPageComposer(root, { allowCustomization: true, elements, preferenceKey, i18n }); await composer.init();
- * Supports grid and sub-page layouts, per-grid persistence, and nested sub-composers.
- *
+ * Supports grid and sub-page layouts, persistence, and nested composers.
  * @param {HTMLElement} root - The #app root element for the page.
  * @param {{
  *   allowCustomization: boolean,
@@ -33,7 +32,6 @@
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
-
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
 import { renderDashboardLayout } from "../../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "../motion.js";
@@ -47,11 +45,15 @@ import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
 import { createPresenceTracker } from "./presence-tracker.js";
 import { pageActions } from "../page-actions.js";
+import {
+    getFloatingSlot as findFloatingSlot,
+    restoreWindowScrollPosition,
+} from "./dom-position.js";
 
-const TOOLBAR_TOGGLE_OPEN_SVG =
-    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 3L13 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M13 3L3 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
-const TOOLBAR_TOGGLE_CLOSED_SVG =
-    '<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M2.5 4H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 8H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2.5 12H13.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+import {
+    TOOLBAR_TOGGLE_CLOSED_SVG,
+    TOOLBAR_TOGGLE_OPEN_SVG,
+} from "./toolbar-icons.js";
 export function createPageComposer(
     root,
     {
@@ -968,20 +970,6 @@ export function createPageComposer(
         }
     }
 
-    function getFloatingSlot(id) {
-        return root.querySelector(`[data-floating-slot="${CSS.escape(id)}"]`);
-    }
-
-    function restoreWindowScrollPosition(left, top) {
-        window.requestAnimationFrame(() => {
-            window.scrollTo({
-                left,
-                top,
-                behavior: "auto",
-            });
-        });
-    }
-
     function refresh(newElements) {
         const previousScrollLeft = window.scrollX;
         const previousScrollTop = window.scrollY;
@@ -1003,7 +991,7 @@ export function createPageComposer(
         init,
         refresh,
         refreshElements,
-        getFloatingSlot,
+        getFloatingSlot: (id) => findFloatingSlot(root, id),
         showToast,
         refreshPresence: () => activePresenceTracker?.refresh(),
         destroy,

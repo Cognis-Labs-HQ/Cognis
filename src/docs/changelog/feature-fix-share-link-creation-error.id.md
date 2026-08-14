@@ -83,3 +83,7 @@ Autentikasi kini memiliki klasifikasi sesi tamu, pengiriman berbagi tidak lagi b
 ## Menjaga navigasi berbagi dan pencarian penerima tetap mutakhir
 
 Penyelesaian berbagi pengguna kini berhenti saat pengguna berpindah halaman sehingga permintaan yang terlambat tidak dapat menggantikan halaman tujuan baru. API penerima mengembalikan semua hasil, sedangkan pemilih berbagi membatasi sendiri hasil tampilannya.
+
+## Memecah modul berbagi dan halaman yang terlalu besar
+
+Berkas besar untuk Berbagi, Kalender, Whiteboard, dan penyusun halaman kini dibagi menjadi modul terfokus untuk perenderan, akses, penyimpanan, finalisasi rute, riwayat, overlay, dan DOM agar setiap berkas sumber tetap di bawah batas proyek.

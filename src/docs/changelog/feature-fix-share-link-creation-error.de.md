@@ -83,3 +83,7 @@ Die Authentifizierung verwaltet nun die Klassifizierung von Gastsitzungen, die F
 ## Navigation und Empfängersuche für Freigaben aktuell halten
 
 Die Auflösung einer Benutzerfreigabe wird nun beendet, wenn die Person die Seite verlässt. Dadurch kann eine verzögerte Anfrage die neue Zielseite nicht mehr ersetzen. Empfänger-APIs geben alle Treffer zurück, während die Freigabeauswahl ihre Anzeige selbst kürzt.
+
+## Übergroße Freigabe- und Seitenmodule aufteilen
+
+Große Dateien für Freigaben, Kalender, Whiteboard und den Seiten-Composer sind nun in gezielte Module für Darstellung, Zugriff, Speicherung, Routenabschluss, Verlauf, Überlagerungen und DOM aufgeteilt. Damit bleibt jede Quelldatei unter der Projektgrenze.

@@ -6,6 +6,10 @@ const IMPLEMENTATION_URL = new URL(
     "../ui/share-links-popup/implementation.js",
     import.meta.url,
 );
+const RENDERING_URL = new URL(
+    "../ui/share-links-popup/rendering.js",
+    import.meta.url,
+);
 const POPUP_ENTRY_URL = new URL(
     "../ui/share-links-popup/index.js",
     import.meta.url,
@@ -80,7 +84,9 @@ test("email recipient instruction renders above its input", () => {
 });
 
 test("share links popup renders existing links as an icon-only copy button", () => {
-    const source = readFileSync(IMPLEMENTATION_URL, "utf8");
+    const source = [IMPLEMENTATION_URL, RENDERING_URL]
+        .map((url) => readFileSync(url, "utf8"))
+        .join("\n");
     const cssSource = readFileSync(STYLESHEET_URL, "utf8");
 
     assert.match(source, /class="share-links-row-header"/);

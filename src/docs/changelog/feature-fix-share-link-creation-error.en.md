@@ -83,3 +83,7 @@ Authentication now owns guest-session classification, share delivery no longer b
 ## Keep share navigation and recipient searches current
 
 Account-share resolution now stops when the user navigates away, preventing a delayed request from replacing the destination page. Recipient APIs return every match, while the share picker truncates its own display results.
+
+## Split oversized share and page modules
+
+Large Share, Calendar, Whiteboard, and page-composer files are now divided into focused rendering, access, persistence, route-finalization, history, overlay, and DOM modules to keep every source file below the project limit.
