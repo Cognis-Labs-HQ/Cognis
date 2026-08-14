@@ -245,21 +245,19 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "/static/styles/reuse/page-sections.css",
         "/static/gateways/share/ui/app/share-layout.css",
     ];
-    uiHooks.registerSpaRoute({
-        id: "share-link-view",
-        pattern: "^/share/shr_[^/]+$",
-        base: "/share",
-        scriptUrl: "/static/gateways/share/ui/app/index.js",
-        stylesheets: shareViewStylesheets,
-    });
-    uiHooks.registerSpaRoute({
-        id: "account-share-view",
-        pattern: "^/share/usr_[^/]+$",
-        base: "/share",
-        scriptUrl: "/static/gateways/share/ui/app/account-share/index.js",
-        stylesheets: shareViewStylesheets,
-        access: { minRole: "user" },
-    });
+    for (const adapter of gateway.listAdapters()) {
+        if (!adapter.deliveryPage) continue;
+        uiHooks.registerSpaRoute({
+            id: adapter.deliveryPage.id,
+            pattern: adapter.deliveryPage.pattern,
+            base: "/share",
+            scriptUrl: adapter.deliveryPage.scriptUrl,
+            stylesheets: shareViewStylesheets,
+            ...(adapter.deliveryPage.access
+                ? { access: adapter.deliveryPage.access }
+                : {}),
+        });
+    }
     uiHooks.registerSpaRoute({
         id: "shares-page",
         pattern: "^/shares$",

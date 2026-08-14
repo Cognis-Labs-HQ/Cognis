@@ -179,9 +179,10 @@ test("page composer resolves edit toggle from the active page root", () => {
 
 test("page composer always hides layout editing from share guests", () => {
     const source = readPageComposerBundle();
-    assert.match(source, /capabilities\.get\("session:isGuest"\)/);
-    assert.match(source, /cognis_share_guest_token_active/);
-    assert.match(source, /startsWith\(\s*"share:"/);
+    assert.match(
+        source,
+        /import \{ isGuestSession \} from "\.\.\/account-context\.js"/,
+    );
 });
 
 test("page composer tears down stale presence before mounting a page", () => {

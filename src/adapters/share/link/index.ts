@@ -10,6 +10,12 @@ export function createShareAdapter(): ShareMethodAdapter {
         pageModuleUrl: "/static/adapters/share/link/page.js",
         order: 10,
         delivery: "public",
+        deliveryPage: {
+            id: "share-link-view",
+            pattern: "^/share/shr_[^/]+$",
+            document: "share.html",
+            scriptUrl: "/static/gateways/share/ui/app/index.js",
+        },
         prepare(input) {
             return {
                 accessControls: {

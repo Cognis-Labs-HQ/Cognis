@@ -10,6 +10,13 @@ export function createShareAdapter(): ShareMethodAdapter {
         pageModuleUrl: "/static/adapters/share/user/page.js",
         order: 20,
         delivery: "account",
+        deliveryPage: {
+            id: "account-share-view",
+            pattern: "^/share/usr_[^/]+$",
+            document: "user-share.html",
+            scriptUrl: "/static/gateways/share/ui/app/account-share/index.js",
+            access: { minRole: "user" },
+        },
         validateUnique({ accessControls, existingAccessControls }) {
             const requestedRecipientIds = new Set(
                 (accessControls.recipients ?? [])

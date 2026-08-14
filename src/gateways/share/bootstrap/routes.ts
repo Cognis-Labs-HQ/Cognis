@@ -183,18 +183,24 @@ export function createShareRoutes(input: {
 
         if (
             req.method === "GET" &&
-            (url.pathname === "/shares" ||
-                /^\/share\/(?:usr_|shr_)[^/]+$/.test(url.pathname))
+            (url.pathname === "/shares" || url.pathname.startsWith("/share/"))
         ) {
+            const deliveryPage = input.gateway
+                .listAdapters()
+                .map((adapter) => adapter.deliveryPage)
+                .find(
+                    (candidate) =>
+                        candidate &&
+                        new RegExp(candidate.pattern).test(url.pathname),
+                );
+            if (url.pathname !== "/shares" && !deliveryPage) return false;
             routeContext.setPageSecurityHeaders(res);
             const html = await readFile(
                 path.join(
                     input.uiRoot,
                     url.pathname === "/shares"
                         ? "shares.html"
-                        : url.pathname.startsWith("/share/usr_")
-                          ? "user-share.html"
-                          : "share.html",
+                        : (deliveryPage?.document ?? ""),
                 ),
                 "utf8",
             );

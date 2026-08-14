@@ -1,6 +1,6 @@
 {
     "name": "@cognis/gateway-share",
-    "version": "1.7.14",
+    "version": "1.7.15",
     "description": "Share gateway for public resource links.",
     "type": "module",
     "private": true,

@@ -96,12 +96,15 @@ test("dashboard logout requests server revocation before clearing local token", 
     );
 });
 
-test("dashboard resolves guest sessions through the session capability", () => {
+test("dashboard resolves guest sessions through the account context", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
-    assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(
+        layoutSource,
+        /import \{ isGuestSession \} from "\.\.\/reuse\/account-context\.js"/,
+    );
     assert.match(
         layoutSource,
         /releaseChangelogPopupChecked \|\| isGuestSession\(\)/,
@@ -158,12 +161,14 @@ test("dashboard layout suppresses release summaries for guest sessions", () => {
         resolve(ROOT, "src/ui/layouts/release-changelog/popup.js"),
         "utf8",
     );
-    assert.match(popupSource, /session:isGuest/);
-    assert.match(popupSource, /cognis_role/);
-    assert.match(popupSource, /=== "guest"/);
-    assert.match(popupSource, /cognis_share_guest_token_active/);
-    assert.match(popupSource, /accountId\.startsWith\("share:"\)/);
-    assert.match(popupSource, /providerId === "share"/);
+    assert.match(popupSource, /account-context\.js/);
+    assert.match(popupSource, /if \(isGuestSession\(\)\) return/);
+    const accountContextSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/account-context.js"),
+        "utf8",
+    );
+    assert.match(accountContextSource, /contribute\("session:isGuest"/);
+    assert.match(accountContextSource, /accountId\.startsWith\("share:"\)/);
 });
 
 test("dashboard layout leaves cached avatar blob ownership with its provider", () => {

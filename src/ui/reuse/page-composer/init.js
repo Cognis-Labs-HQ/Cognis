@@ -43,6 +43,7 @@ import { createLayoutPersistence } from "./layout-persistence.js";
 import { createGridOverlayHandlers } from "./grid-overlay.js";
 import { createSubComposerHandlers } from "./sub-composer.js";
 import { uiCtx } from "../ui-ctx.js";
+import { isGuestSession } from "../account-context.js";
 import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
 import { createPresenceTracker } from "./presence-tracker.js";
@@ -577,20 +578,6 @@ export function createPageComposer(
                 { signal },
             );
         }
-    }
-
-    function isGuestSession() {
-        return (
-            uiCtx.capabilities.get("session:isGuest")?.() === true ||
-            sessionStorage.getItem("cognis_share_guest_token_active") === "1" ||
-            localStorage.getItem("cognis_role") === "guest" ||
-            ["guest", "share"].includes(
-                localStorage.getItem("cognis_provider_id") ?? "",
-            ) ||
-            String(localStorage.getItem("cognis_account") ?? "").startsWith(
-                "share:",
-            )
-        );
     }
 
     function getComposerEditToggleButton() {

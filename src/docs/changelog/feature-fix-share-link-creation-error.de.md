@@ -43,3 +43,7 @@ Gesendete und empfangene Freigaben erscheinen jetzt in einer einheitlichen, resp
 ## Veraltete Navigation und Freigabestatus verhindern
 
 Überlappende SPA-Navigationen brechen ältere Routenladevorgänge ab, bevor diese eingebunden werden können. Abgelaufene Freigaben werden als inaktiv gemeldet. Ablaufbenachrichtigungen gelten erst nach erfolgreicher Zustellung an alle Empfänger als abgeschlossen, sodass vorübergehende Fehler protokolliert und erneut versucht werden.
+
+## Ein Kontokontext für Gastsitzungen
+
+Dashboard-Funktionen verwenden nun die gemeinsame Gastsitzungs-Fähigkeit des Kontokontexts, anstatt den Authentifizierungsspeicher unabhängig auszuwerten.

@@ -27,6 +27,7 @@ import { createSearchBar } from "../reuse/search-util/popup.js";
 import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
+import { isGuestSession } from "../reuse/account-context.js";
 import { showToast } from "../reuse/toast.js";
 
 capturePwaInstallPrompt();
@@ -47,26 +48,6 @@ function getDisplayName() {
         localStorage.getItem("cognis_display_name") ||
         localStorage.getItem("cognis_account") ||
         ""
-    );
-}
-
-function isGuestSession() {
-    const accountId = String(
-        localStorage.getItem("cognis_account") ?? "",
-    ).trim();
-    const providerId = String(localStorage.getItem("cognis_provider_id") ?? "")
-        .trim()
-        .toLowerCase();
-    return (
-        uiCtx.capabilities.get("session:isGuest")?.() === true ||
-        sessionStorage.getItem("cognis_share_guest_token_active") === "1" ||
-        accountId.startsWith("share:") ||
-        providerId === "guest" ||
-        providerId === "share" ||
-        String(localStorage.getItem("cognis_role") ?? "")
-            .trim()
-            .toLowerCase() === "guest" ||
-        !accountId
     );
 }
 

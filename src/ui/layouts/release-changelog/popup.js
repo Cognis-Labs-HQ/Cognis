@@ -28,29 +28,10 @@ import {
     saveReleaseChangelogState,
 } from "./state.js";
 import { resolveReleaseChangelogStatus } from "./status.js";
-import { uiCtx } from "../../reuse/ui-ctx.js";
+import { isGuestSession } from "../../reuse/account-context.js";
 
 const MAX_VISIBLE_RELEASE_NOTES = 5;
 const MAX_VISIBLE_RELEASE_NOTE_BULLETS = 5;
-
-function isGuestLogin() {
-    const accountId = String(
-        localStorage.getItem("cognis_account") ?? "",
-    ).trim();
-    const providerId = String(localStorage.getItem("cognis_provider_id") ?? "")
-        .trim()
-        .toLowerCase();
-    return (
-        uiCtx.capabilities.get("session:isGuest")?.() === true ||
-        sessionStorage.getItem("cognis_share_guest_token_active") === "1" ||
-        accountId.startsWith("share:") ||
-        providerId === "guest" ||
-        providerId === "share" ||
-        String(localStorage.getItem("cognis_role") ?? "")
-            .trim()
-            .toLowerCase() === "guest"
-    );
-}
 
 function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
     const notesItems = releaseEntries
@@ -88,14 +69,14 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
 }
 
 export async function maybeShowReleaseChangelogPopup(i18n) {
-    if (isGuestLogin()) return;
+    if (isGuestSession()) return;
     const accountId = localStorage.getItem("cognis_account");
     if (!accountId) return;
 
     const prefs = (await loadUiPreferences()) ?? {};
     if (prefs.releaseChangelogShow === false) return;
     const changelogState = await loadReleaseChangelogState();
-    if (isGuestLogin()) return;
+    if (isGuestSession()) return;
 
     let changelogPayload;
     try {
@@ -108,7 +89,7 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
     } catch {
         return;
     }
-    if (isGuestLogin()) return;
+    if (isGuestSession()) return;
     const releaseVersion = String(
         changelogPayload?.data?.releaseVersion ?? "",
     ).trim();

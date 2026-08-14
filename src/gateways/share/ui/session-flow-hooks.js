@@ -39,6 +39,7 @@
 
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import "/static/reuse/account-context.js";
 import { resolveReceivedShare } from "./received-share.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
@@ -122,7 +123,6 @@ window.addEventListener("cognis:api-access-denied", () => {
         });
 });
 
-uiCtx.capabilities.contribute("session:isGuest", isViewingAsGuest);
 uiCtx.capabilities.contribute("session:ensureGuestKeyring", async () => {
     if (!isViewingAsGuest() || !activeGuestKeyring) return false;
     const activateTemporaryKeyring = uiCtx.capabilities.get(

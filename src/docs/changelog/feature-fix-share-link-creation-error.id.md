@@ -43,3 +43,7 @@ Berbagi terkirim dan diterima kini tampil dalam satu tabel responsif yang rapi d
 ## Cegah navigasi dan status berbagi yang kedaluwarsa
 
 Navigasi SPA yang tumpang tindih kini membatalkan pemuatan rute lama sebelum dapat dipasang. Berbagi yang kedaluwarsa dilaporkan tidak aktif, dan notifikasi kedaluwarsa baru ditandai selesai setelah semua pengiriman berhasil sehingga kegagalan sementara dicatat dan dicoba kembali.
+
+## Satu konteks akun untuk sesi tamu
+
+Fitur dasbor kini menggunakan kapabilitas sesi tamu bersama dari konteks akun, bukan menafsirkan penyimpanan autentikasi secara terpisah.

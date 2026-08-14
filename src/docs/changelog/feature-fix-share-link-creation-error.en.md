@@ -43,3 +43,7 @@ Sent and received shares now appear in one polished, responsive table with clear
 ## Prevent stale navigation and share status
 
 Overlapping SPA navigations now cancel older route loads before they can mount. Expired shares are reported as inactive, and expiration notifications are marked complete only after every delivery succeeds so transient failures are logged and retried.
+
+## One account context for guest sessions
+
+Dashboard features now use the account context's shared guest-session capability instead of independently interpreting authentication storage.

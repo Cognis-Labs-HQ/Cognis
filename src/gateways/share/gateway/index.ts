@@ -31,6 +31,13 @@ export interface ShareMethodAdapter {
     publisher?: string;
     locked?: boolean;
     delivery: "public" | "account";
+    deliveryPage?: {
+        id: string;
+        pattern: string;
+        document: string;
+        scriptUrl: string;
+        access?: { minRole: string };
+    };
     prepare(input: {
         recipients?: unknown;
         accessControls?: Record<string, unknown>;
