@@ -49,6 +49,10 @@ test("meeting share joins use the scoped guest access token", () => {
         source,
         /meetings\/join[\s\S]*suppressAccessDeniedEvent:\s*true/,
     );
+    assert.match(
+        source,
+        /suppliedMeetingPassword[\s\S]*!state\.shareAccessToken/,
+    );
 });
 
 test("new meetings can start with an empty participant stage and prompt for a link share after joining", () => {
@@ -62,6 +66,10 @@ test("new meetings can start with an empty participant stage and prompt for a li
     );
     const shareButtonSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/share-button.js"),
+        "utf8",
+    );
+    const meetingsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
         "utf8",
     );
     assert.match(
@@ -83,6 +91,11 @@ test("new meetings can start with an empty participant stage and prompt for a li
         embedSource,
         /videoConferenceJoined[\s\S]*if \(state\.promptShareOnJoin\)/,
     );
+    assert.match(
+        meetingsSource,
+        /state\.preflightPassed && participantCount === 0[\s\S]*ready_without_participants/,
+    );
+    assert.match(meetingsSource, /participantCount > 0[\s\S]*ready_to_start/);
 });
 
 test("meeting link guests load participant names and avatars only from the authorized chat room", () => {

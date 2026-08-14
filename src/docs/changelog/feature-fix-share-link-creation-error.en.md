@@ -55,3 +55,7 @@ The Shares table now centers its Actions heading and keeps Manage, Copy, and Rem
 ## Keep updated shares available
 
 Changing a user share's permissions no longer invalidates the recipient's existing unlock. Unavailable share links now open the standard error page with a clear, localized explanation.
+
+## Prepare participant-free meetings
+
+Meeting-link guests now receive the meeting-specific Jitsi password through their scoped share session. A participant-free stage clearly explains that starting the meeting will show its link popup, while staged participants retain the existing readiness message.

@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">Pre-Flight-Prüfung läuft. Das Starten bleibt deaktiviert, bis sie erfolgreich ist.</string>
   <string name="module.jitsi_meet.overlay.preflight_required">Die Pre-Flight-Prüfung muss erfolgreich sein, bevor das Meeting starten kann.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Teilnehmer ausgewählt. Meeting kann gestartet werden.</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">Das Meeting kann gestartet werden. Das Meeting-Link-Popup wird angezeigt.</string>
   <string name="module.jitsi_meet.overlay.creating">Meeting-URL wird erstellt oder wiederverwendet...</string>
   <string name="module.jitsi_meet.overlay.config_required">Ein Admin muss zuerst die Jitsi-Instanz-URL konfigurieren.</string>
   <string name="module.jitsi_meet.overlay.create_failed">Meeting konnte nicht erstellt werden.</string>

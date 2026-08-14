@@ -55,3 +55,7 @@ Tabel Berbagi kini memusatkan judul Tindakan dan mempertahankan kontrol Kelola, 
 ## Pertahankan akses berbagi yang diperbarui
 
 Perubahan izin berbagi pengguna kini tidak lagi membatalkan pembukaan akses penerima yang sudah ada. Tautan berbagi yang tidak tersedia kini membuka halaman galat standar dengan penjelasan yang jelas dan terlokalisasi.
+
+## Siapkan rapat tanpa peserta
+
+Tamu tautan rapat kini menerima kata sandi Jitsi khusus rapat melalui sesi berbagi terbatas mereka. Panggung tanpa peserta menjelaskan bahwa memulai rapat akan menampilkan popup tautan, sedangkan panggung dengan peserta tetap menggunakan pesan kesiapan yang ada.

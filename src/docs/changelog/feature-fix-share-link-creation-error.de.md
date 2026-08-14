@@ -55,3 +55,7 @@ Die Freigabetabelle zentriert nun die Überschrift „Aktionen“ und ordnet Ver
 ## Aktualisierte Freigaben verfügbar halten
 
 Das Ändern der Berechtigungen einer Benutzerfreigabe macht die bestehende Entsperrung des Empfängers nicht mehr ungültig. Nicht verfügbare Freigabelinks öffnen nun die Standardfehlerseite mit einer klaren, lokalisierten Erklärung.
+
+## Meetings ohne Teilnehmer vorbereiten
+
+Gäste mit Meeting-Link erhalten nun das meetingspezifische Jitsi-Passwort über ihre begrenzte Freigabesitzung. Bei einer Bühne ohne Teilnehmer wird klar erklärt, dass beim Starten des Meetings das Link-Popup erscheint; mit Teilnehmern bleibt die bisherige Bereitschaftsmeldung erhalten.

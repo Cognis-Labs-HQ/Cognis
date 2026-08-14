@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">事前チェックを実行しています。成功するまでミーティング開始は無効です。</string>
   <string name="module.jitsi_meet.overlay.preflight_required">ミーティングを開始する前に事前チェックを成功させる必要があります。</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">参加者が選択されました。ミーティングを開始できます。</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">ミーティングを開始できます。ミーティングリンクのポップアップが表示されます。</string>
   <string name="module.jitsi_meet.overlay.creating">ミーティング URL を作成または再利用しています...</string>
   <string name="module.jitsi_meet.overlay.config_required">ミーティングを使う前に、管理者が Jitsi インスタンス URL を設定する必要があります。</string>
   <string name="module.jitsi_meet.overlay.create_failed">ミーティングの作成に失敗しました。</string>

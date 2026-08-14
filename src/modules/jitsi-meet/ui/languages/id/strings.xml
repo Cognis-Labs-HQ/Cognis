@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">Pemeriksaan pra-penerbangan sedang berjalan. Mulai rapat dinonaktifkan sampai pemeriksaan berhasil.</string>
   <string name="module.jitsi_meet.overlay.preflight_required">Pemeriksaan pra-penerbangan harus berhasil sebelum rapat bisa dimulai.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Peserta dipilih. Rapat siap dimulai.</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">Rapat dapat dimulai. Popup tautan rapat akan ditampilkan.</string>
   <string name="module.jitsi_meet.overlay.creating">Membuat atau menggunakan ulang URL rapat...</string>
   <string name="module.jitsi_meet.overlay.config_required">Admin harus mengatur URL instans Jitsi sebelum Rapat dapat dipakai.</string>
   <string name="module.jitsi_meet.overlay.create_failed">Gagal membuat rapat.</string>

@@ -214,6 +214,7 @@ export function registerMeetingLifecycleRoutes({
                         ? `/messages/${encodeURIComponent(meeting.chatRoomId)}`
                         : null,
                     requiresReclaim: false,
+                    meetingPassword: meeting.meetingPassword,
                 });
                 sendJson(res, 200, {
                     data: {

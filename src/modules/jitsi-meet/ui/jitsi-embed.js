@@ -75,7 +75,12 @@ export function createEmbedHandlers({
                 },
             })) || suppliedMeetingPassword,
         ).trim();
-        if (meetingKeyring && suppliedMeetingPassword && meetingPassword) {
+        if (
+            meetingKeyring &&
+            suppliedMeetingPassword &&
+            meetingPassword &&
+            !state.shareAccessToken
+        ) {
             const acknowledgeResponse = await apiFetch(
                 "/api/v1/modules/jitsi-meet/meetings/password/acknowledge",
                 {

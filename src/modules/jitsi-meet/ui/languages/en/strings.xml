@@ -10,6 +10,7 @@
   <string name="module.jitsi_meet.overlay.preflight_running">Pre-Flight Check In Progress. Starting is disabled until it succeeds.</string>
   <string name="module.jitsi_meet.overlay.preflight_required">Pre-Flight Check must pass before the meeting can start.</string>
   <string name="module.jitsi_meet.overlay.ready_to_start">Participants selected. Meeting can be started.</string>
+  <string name="module.jitsi_meet.overlay.ready_without_participants">Meeting can be started. Meeting link popup will be shown.</string>
   <string name="module.jitsi_meet.overlay.creating">Creating or Reusing Meeting URL...</string>
   <string name="module.jitsi_meet.overlay.config_required">An admin must configure the Jitsi instance URL before Meetings can be used.</string>
   <string name="module.jitsi_meet.overlay.create_failed">Failed to create meeting.</string>

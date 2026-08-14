@@ -47,6 +47,15 @@ test("jitsi resolves guest access through the Share gateway contract", () => {
     assert.match(source, /legacyMeetingAccess\?\.authorized === true/);
 });
 
+test("meeting share guests receive the Jitsi meeting password", () => {
+    const source = readJitsiApiBundle();
+
+    assert.match(
+        source,
+        /if \(shareGuestAccess\.isGuest\)[\s\S]*meetingPassword:\s*meeting\.meetingPassword/,
+    );
+});
+
 test("jitsi API logs stored CSP origin registration failures", () => {
     const source = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/api/index.js"),
