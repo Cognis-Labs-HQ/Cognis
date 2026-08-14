@@ -11,14 +11,14 @@ import {
 } from "../../../api/reuse/flow-helpers.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 import { createHash } from "node:crypto";
-
-const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
-
+import { logRejectedDeliveries } from "../reuse/settled-deliveries.js";
 import {
     resolveShareAccessResult,
     shareRecipientsAllowRequester,
     type ShareAccessResult,
 } from "./access-resolution.js";
+
+const MAX_GUEST_TOKEN_TTL_SECONDS = 4 * 60 * 60;
 
 export async function registerShareBootstrapHooks(input: {
     ctx: GatewayBootstrapContext;
@@ -213,9 +213,8 @@ export async function registerShareBootstrapHooks(input: {
                     await input.gateway.resolveApprovalStatus(mintRequestId);
             }
             if (!summary.allResponded) {
-                // Timeout reached; resolveApprovalStatus auto-approves any
-                // still-pending rows on its next call, so query once more to
-                // pick up the fallback-approved state.
+                // Timeout fallback block: resolveApprovalStatus auto-approves
+                // pending rows on its next call, so query once more.
                 summary =
                     await input.gateway.resolveApprovalStatus(mintRequestId);
             }
@@ -453,23 +452,13 @@ export async function registerShareBootstrapHooks(input: {
                         });
                     }),
                 );
-                notificationResults.forEach((result, index) => {
-                    if (result.status === "rejected") {
-                        input.log?.(
-                            "error",
-                            "Failed to dispatch direct share notification.",
-                            {
-                                component: "share-gateway",
-                                operation: "dispatch_direct_share_notification",
-                                shareId: String(shareRecord?.id ?? ""),
-                                recipientUsername: userRecipients[index],
-                                error:
-                                    result.reason instanceof Error
-                                        ? result.reason.message
-                                        : String(result.reason),
-                            },
-                        );
-                    }
+                logRejectedDeliveries({
+                    results: notificationResults,
+                    recipients: userRecipients,
+                    log: input.log,
+                    message: "Failed to dispatch direct share notification.",
+                    operation: "dispatch_direct_share_notification",
+                    shareId: String(shareRecord?.id ?? ""),
                 });
             }
             return {
@@ -577,13 +566,9 @@ export async function registerShareBootstrapHooks(input: {
                 return { issued: false, reason: "forbidden" };
             }
             if (accessResult?.directAccess === true) {
-                // The requester already has direct access to the resource
-                // through their own account (e.g. they are the meeting
-                // owner or an invited participant). Minting a guest token
-                // for them would discard their real identity when the
-                // client activates it, so no guest token is issued here —
-                // the share link falls back to being a one-time bypass
-                // only for visitors without direct access.
+                // Direct-access branch: owners and invited participants keep
+                // their account identity, while visitors continue below to
+                // the scoped guest-token branch.
                 return { issued: false, reason: "direct_access" };
             }
             if (!issueAccessToken || !tokenResult.tokenRecord?.id) {
