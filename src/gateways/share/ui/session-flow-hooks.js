@@ -158,10 +158,14 @@ async function activateGuestToken(
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
     const guestSessionAlreadyActive = isViewingAsGuest();
-    if (!guestSessionAlreadyActive) {
-        const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
-        const priorAccount = localStorage.getItem(ACCOUNT_KEY);
-        const priorDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
+    const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const priorAccount = localStorage.getItem(ACCOUNT_KEY);
+    const priorDisplayName = localStorage.getItem(DISPLAY_NAME_KEY);
+    const hasAccountSession =
+        Boolean(prior) &&
+        Boolean(priorAccount) &&
+        !String(priorAccount).startsWith("share:");
+    if (!guestSessionAlreadyActive || hasAccountSession) {
         if (prior) {
             sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
         } else {

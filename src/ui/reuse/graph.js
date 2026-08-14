@@ -1,12 +1,13 @@
 /**
- * Renders responsive timeline dot graphs with automatically scaled axes and
- * accessible hover/focus detail popups.
+ * Renders responsive dot or line graphs with automatically scaled axes,
+ * selectable time ranges, and accessible hover/focus detail popups.
  *
  * Public exports:
- *   mountDotGraph(container, options) — mounts a scalable SVG dot graph.
+ *   mountGraph(container, options) — mounts a scalable SVG graph.
  *
  * Usage:
- *   mountDotGraph(element, {
+ *   mountGraph(element, {
+ *     mode: 'dot',
  *     points: [{ timestamp: new Date().toISOString(), detail: 'Created' }],
  *     xAxisLabel: 'Timeline',
  *     yAxisLabel: 'Event Count',
@@ -14,12 +15,13 @@
  *   });
  *
  * @param {HTMLElement} container - Element that will contain the graph.
- * @param {{ points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatTimeTimestamp?: (timestamp: string) => string, formatDateTimestamp?: (timestamp: string) => string, domainStart?: string, domainEnd?: string, onEmptySelection?: () => void }} options - Graph data and localized labels.
+ * @param {{ mode?: "dot"|"line", points: Array<{ timestamp: string, detail: string, category?: string }>, xAxisLabel: string, yAxisLabel: string, formatTimestamp: (timestamp: string) => string, formatTimeTimestamp?: (timestamp: string) => string, formatDateTimestamp?: (timestamp: string) => string, domainStart?: string, domainEnd?: string, onEmptySelection?: () => void }} options - Graph data and localized labels.
  * @returns {void}
  */
-export function mountDotGraph(
+export function mountGraph(
     container,
     {
+        mode = "dot",
         points,
         xAxisLabel,
         yAxisLabel,
@@ -53,10 +55,13 @@ export function mountDotGraph(
         timeSpan <= 2 * 24 * 60 * 60 * 1000
             ? formatTimeTimestamp
             : formatDateTimestamp;
-    const plotted = normalized.map((point, index) => ({
-        ...point,
-        count: index + 1,
-    }));
+    const frequencies = new Map();
+    const plotted = normalized.map((point) => {
+        const frequencyKey = `${point.time}\u0000${point.category ?? ""}`;
+        const count = (frequencies.get(frequencyKey) ?? 0) + 1;
+        frequencies.set(frequencyKey, count);
+        return { ...point, count };
+    });
     const maximumCount = Math.max(1, ...plotted.map((point) => point.count));
     const x = (time) =>
         margin.left + ((time - minimumTime) / timeSpan) * plotWidth;
@@ -64,17 +69,28 @@ export function mountDotGraph(
         margin.top + plotHeight - (count / maximumCount) * plotHeight;
     const svgNamespace = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNamespace, "svg");
-    svg.classList.add("dot-graph");
+    svg.classList.add("graph");
     svg.setAttribute("viewBox", `0 0 ${width} ${height}`);
     svg.setAttribute("role", "img");
     svg.setAttribute("aria-label", `${yAxisLabel}; ${xAxisLabel}`);
     const axis = document.createElementNS(svgNamespace, "path");
-    axis.classList.add("dot-graph-axis");
+    axis.classList.add("graph-axis");
     axis.setAttribute(
         "d",
         `M ${margin.left} ${margin.top} V ${margin.top + plotHeight} H ${margin.left + plotWidth}`,
     );
     svg.appendChild(axis);
+    if (mode === "line" && plotted.length > 1) {
+        const line = document.createElementNS(svgNamespace, "polyline");
+        line.classList.add("graph-line");
+        line.setAttribute(
+            "points",
+            plotted
+                .map((point) => `${x(point.time)},${y(point.count)}`)
+                .join(" "),
+        );
+        svg.appendChild(line);
+    }
 
     const addLabel = (text, xPosition, yPosition, className) => {
         const label = document.createElementNS(svgNamespace, "text");
@@ -84,36 +100,31 @@ export function mountDotGraph(
         label.textContent = text;
         svg.appendChild(label);
     };
-    addLabel(yAxisLabel, 16, margin.top + plotHeight / 2, "dot-graph-y-label");
+    addLabel(yAxisLabel, 16, margin.top + plotHeight / 2, "graph-y-label");
     addLabel(
         xAxisLabel,
         margin.left + plotWidth / 2,
         height - 8,
-        "dot-graph-x-label",
+        "graph-x-label",
     );
     addLabel(
         String(maximumCount),
         margin.left - 12,
         margin.top + 4,
-        "dot-graph-tick",
+        "graph-tick",
     );
-    addLabel(
-        "0",
-        margin.left - 12,
-        margin.top + plotHeight + 4,
-        "dot-graph-tick",
-    );
+    addLabel("0", margin.left - 12, margin.top + plotHeight + 4, "graph-tick");
     addLabel(
         axisTimestampFormatter(new Date(minimumTime).toISOString()),
         margin.left,
         height - 45,
-        "dot-graph-time-start",
+        "graph-time-start",
     );
     addLabel(
         axisTimestampFormatter(new Date(maximumTime).toISOString()),
         margin.left + plotWidth,
         height - 45,
-        "dot-graph-time-end",
+        "graph-time-end",
     );
     if (axisTimestampFormatter === formatTimeTimestamp) {
         const startDate = formatDateTimestamp(
@@ -127,26 +138,21 @@ export function mountDotGraph(
                 startDate,
                 margin.left + plotWidth / 2,
                 height - 27,
-                "dot-graph-date-shared",
+                "graph-date-shared",
             );
         } else {
-            addLabel(
-                startDate,
-                margin.left,
-                height - 27,
-                "dot-graph-date-start",
-            );
+            addLabel(startDate, margin.left, height - 27, "graph-date-start");
             addLabel(
                 endDate,
                 margin.left + plotWidth,
                 height - 27,
-                "dot-graph-date-end",
+                "graph-date-end",
             );
         }
     }
 
     const tooltip = document.createElement("div");
-    tooltip.className = "dot-graph-tooltip";
+    tooltip.className = "graph-tooltip";
     tooltip.hidden = true;
     const showTooltip = (point, circle) => {
         tooltip.replaceChildren();
@@ -164,7 +170,7 @@ export function mountDotGraph(
     };
     for (const point of plotted) {
         const circle = document.createElementNS(svgNamespace, "circle");
-        circle.classList.add("dot-graph-point");
+        circle.classList.add("graph-point");
         if (point.category) circle.dataset.category = point.category;
         circle.setAttribute("cx", String(x(point.time)));
         circle.setAttribute("cy", String(y(point.count)));
@@ -184,7 +190,7 @@ export function mountDotGraph(
     }
     let selectionStart = null;
     const selection = document.createElementNS(svgNamespace, "rect");
-    selection.classList.add("dot-graph-selection");
+    selection.classList.add("graph-selection");
     selection.setAttribute("y", String(margin.top));
     selection.setAttribute("height", String(plotHeight));
     selection.setAttribute("visibility", "hidden");
@@ -239,7 +245,8 @@ export function mountDotGraph(
             onEmptySelection?.();
             return;
         }
-        mountDotGraph(container, {
+        mountGraph(container, {
+            mode,
             points: selectedPoints,
             xAxisLabel,
             yAxisLabel,
@@ -255,6 +262,6 @@ export function mountDotGraph(
         selectionStart = null;
         selection.setAttribute("visibility", "hidden");
     });
-    svg.insertBefore(selection, svg.querySelector(".dot-graph-point"));
+    svg.insertBefore(selection, svg.querySelector(".graph-point"));
     container.replaceChildren(svg, tooltip);
 }

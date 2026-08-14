@@ -251,3 +251,7 @@ Saat `/share` dimuat setelah tautan tamu, gateway Share kini memulihkan kredensi
 ## Menyelaraskan pilihan grafik dan tanggal
 
 Pemilihan rentang pada grafik kini mengikuti kursor melalui transformasi koordinat SVG dan selalu menghapus sorotan saat dilepas atau dibatalkan. Periode kosong menampilkan toast peringatan, sedangkan sumbu waktu singkat menyertakan tanggal yang sama atau tanggal terpisah ketika titik ujung melewati batas hari.
+
+## Menggeneralisasi grafik dan mempertahankan akun
+
+Perender grafik pakai ulang kini mendukung mode titik dan garis, memakai lebar responsif penuh, serta menghitung frekuensi per jenis peristiwa dan stempel waktu tanpa terus menjumlahkannya. Aktivasi tamu kini menyimpan kredensial akun nyata yang ditemukan meskipun ada status tamu usang, sehingga kembali ke `/share` dapat memulihkan pengguna alih-alih mengeluarkannya.

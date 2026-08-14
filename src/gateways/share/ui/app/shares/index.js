@@ -5,7 +5,7 @@ import {
     formatDateTime,
     formatTime,
 } from "/static/reuse/timestamp.js";
-import { mountDotGraph } from "/static/reuse/dot-graph.js";
+import { mountGraph } from "/static/reuse/graph.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -114,8 +114,9 @@ function renderShareDetails(share, i18n) {
     const details = document.createElement("section");
     details.className = "shares-detail-panel";
     const graph = document.createElement("div");
-    graph.className = "dot-graph-shell shares-activity-graph";
-    mountDotGraph(graph, {
+    graph.className = "graph-shell shares-activity-graph";
+    mountGraph(graph, {
+        mode: "dot",
         points: events,
         xAxisLabel: i18n.t("share.shares.detail_timeline"),
         yAxisLabel: i18n.t("share.shares.detail_event_count"),

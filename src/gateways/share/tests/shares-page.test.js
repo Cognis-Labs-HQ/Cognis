@@ -23,11 +23,11 @@ const bootstrapSource = await readFile(
     "utf8",
 );
 const graphSource = await readFile(
-    new URL("../../../ui/reuse/dot-graph.js", import.meta.url),
+    new URL("../../../ui/reuse/graph.js", import.meta.url),
     "utf8",
 );
 const graphStyleSource = await readFile(
-    new URL("../../../ui/styles/reuse/dot-graph.css", import.meta.url),
+    new URL("../../../ui/styles/reuse/graph.css", import.meta.url),
     "utf8",
 );
 
@@ -68,7 +68,7 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /data-share-copy/);
     assert.match(pageSource, /navigator\.clipboard\.writeText/);
     assert.match(pageSource, /renderShareDetails/);
-    assert.match(pageSource, /mountDotGraph/);
+    assert.match(pageSource, /mountGraph/);
     assert.match(pageSource, /shares-activity-graph/);
     assert.match(pageSource, /data-share-expandable/);
     assert.match(pageSource, /initialEditingShareId/);
@@ -80,13 +80,19 @@ test("Shares page composes sent and received share management", () => {
     assert.doesNotMatch(pageSource, /share\.shares\.open/);
 });
 
-test("Share activity uses the reusable scalable dot graph", () => {
+test("Share activity uses the reusable scalable graph", () => {
     assert.match(pageSource, /share\.activityEvents/);
     assert.match(pageSource, /event\.occurredAt/);
     assert.match(graphSource, /maximumCount/);
+    assert.match(graphSource, /mode = "dot"/);
+    assert.match(graphSource, /mode === "line"/);
+    assert.match(graphSource, /graph-line/);
+    assert.match(graphSource, /polyline/);
+    assert.match(graphSource, /frequencies/);
+    assert.match(pageSource, /mode:\s*"dot"/);
     assert.match(graphSource, /timeSpan/);
     assert.match(graphSource, /timeSpan <= 2 \* 24 \* 60 \* 60 \* 1000/);
-    assert.match(graphSource, /dot-graph-point/);
+    assert.match(graphSource, /graph-point/);
     assert.match(graphSource, /pointerenter/);
     assert.match(graphSource, /pointerdown/);
     assert.match(graphSource, /pointermove/);
@@ -98,15 +104,17 @@ test("Share activity uses the reusable scalable dot graph", () => {
     assert.match(graphSource, /getScreenCTM/);
     assert.match(graphSource, /onEmptySelection/);
     assert.match(graphSource, /visibility/);
-    assert.match(graphSource, /dot-graph-date-shared/);
+    assert.match(graphSource, /graph-date-shared/);
     assert.match(pageSource, /includeSeconds:\s*true/);
     assert.match(pageSource, /share\.shares\.graph_empty_selection/);
     assert.match(pageSource, /variant:\s*"warning"/);
     assert.match(graphSource, /formatTimeTimestamp/);
     assert.match(graphSource, /formatDateTimestamp/);
-    assert.match(graphStyleSource, /\.dot-graph-tooltip/);
+    assert.match(graphStyleSource, /\.graph-tooltip/);
+    assert.match(graphStyleSource, /\.graph-line/);
+    assert.match(graphStyleSource, /aspect-ratio:\s*720 \/ 280/);
     assert.match(styleSource, /flex-direction:\s*column/);
-    assert.match(bootstrapSource, /styles\/reuse\/dot-graph\.css/);
+    assert.match(bootstrapSource, /styles\/reuse\/graph\.css/);
 });
 
 test("Shares table filters rerender rows and keeps compact columns and actions", () => {

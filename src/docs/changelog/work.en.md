@@ -251,3 +251,7 @@ When `/share` loads after a guest link, the Share gateway now restores the saved
 ## Align graph selection and dates
 
 Graph drag selection now follows the cursor through the SVG coordinate transform and always clears its highlight on release or cancellation. Empty periods produce a warning toast, while short time axes include the shared date or separate dates when the endpoints cross a day boundary.
+
+## Generalize graphs and preserve accounts
+
+The reusable graph renderer now supports dot and line modes, uses the full responsive width, and counts event frequency per type and timestamp rather than accumulating forever. Guest activation now snapshots any real account credentials it encounters, even when stale guest state exists, so returning to `/share` can restore the user instead of logging them out.

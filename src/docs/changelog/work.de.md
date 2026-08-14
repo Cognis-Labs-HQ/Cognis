@@ -251,3 +251,7 @@ Wenn `/share` nach einem Gastlink geladen wird, stellt das Share-Gateway die ges
 ## Diagrammauswahl und Datumsangaben ausrichten
 
 Die Ziehauswahl im Diagramm folgt dem Mauszeiger nun über die SVG-Koordinatentransformation und entfernt ihre Hervorhebung stets beim Loslassen oder Abbrechen. Leere Zeiträume zeigen eine Warnmeldung; kurze Zeitachsen enthalten das gemeinsame Datum oder getrennte Datumsangaben, wenn die Endpunkte eine Tagesgrenze überschreiten.
+
+## Diagramme verallgemeinern und Konten bewahren
+
+Der wiederverwendbare Diagramm-Renderer unterstützt nun Punkt- und Liniendarstellungen, nutzt die gesamte responsive Breite und zählt die Ereignishäufigkeit je Typ und Zeitstempel, statt sie dauerhaft aufzusummieren. Die Gastaktivierung sichert nun alle gefundenen echten Kontoanmeldedaten, auch bei veraltetem Gaststatus, sodass die Rückkehr zu `/share` den Benutzer wiederherstellt, anstatt ihn abzumelden.

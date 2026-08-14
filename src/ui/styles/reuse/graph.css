@@ -1,78 +1,86 @@
-.dot-graph-shell {
+.graph-shell {
     min-height: 16rem;
     position: relative;
 }
 
-.dot-graph {
+.graph {
+    aspect-ratio: 720 / 280;
     display: block;
     height: auto;
-    max-height: 20rem;
     overflow: visible;
     width: 100%;
     touch-action: none;
     user-select: none;
 }
 
-.dot-graph-axis {
+.graph-line {
+    fill: none;
+    stroke: var(--accent);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2;
+}
+
+.graph-axis {
     fill: none;
     stroke: var(--border);
     stroke-width: 2;
 }
 
-.dot-graph-point {
+.graph-point {
     fill: var(--accent);
     stroke: var(--surface);
     stroke-width: 2;
 }
 
-.dot-graph-selection {
+.graph-selection {
     fill: color-mix(in srgb, var(--accent) 22%, transparent);
     pointer-events: none;
     stroke: var(--accent);
     stroke-dasharray: 4 3;
 }
 
-.dot-graph-point:focus,
-.dot-graph-point:hover {
+.graph-point:focus,
+.graph-point:hover {
     filter: brightness(1.2);
     outline: none;
     stroke-width: 4;
 }
 
-.dot-graph text {
+.graph text {
     fill: var(--text-muted);
     font-size: 12px;
 }
 
-.dot-graph-x-label,
-.dot-graph-y-label {
+.graph-x-label,
+.graph-y-label {
     font-weight: 700;
     text-anchor: middle;
 }
 
-.dot-graph-y-label {
+.graph-y-label {
     transform: rotate(-90deg);
     transform-box: fill-box;
     transform-origin: center;
 }
 
-.dot-graph-tick {
+.graph-tick {
     text-anchor: end;
 }
 
-.dot-graph-time-end {
+.graph-time-end {
     text-anchor: end;
 }
 
-.dot-graph-date-shared {
+.graph-date-shared {
     text-anchor: middle;
 }
 
-.dot-graph-date-end {
+.graph-date-end {
     text-anchor: end;
 }
 
-.dot-graph-tooltip {
+.graph-tooltip {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 0.5rem;
@@ -88,10 +96,10 @@
     z-index: 4;
 }
 
-.dot-graph-tooltip[hidden] {
+.graph-tooltip[hidden] {
     display: none;
 }
 
-.dot-graph-tooltip span {
+.graph-tooltip span {
     color: var(--text-muted);
 }
