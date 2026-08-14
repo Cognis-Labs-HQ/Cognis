@@ -1,6 +1,7 @@
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
-import { formatDateTime } from "/static/reuse/timestamp.js";
+import { formatDate, formatDateTime } from "/static/reuse/timestamp.js";
+import { mountDotGraph } from "/static/reuse/dot-graph.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -95,11 +96,22 @@ function createIconButton({ shareId, action, label, destructive = false }) {
 function renderShareDetails(share, i18n) {
     const recipients = shareRecipients(share);
     const events = [
-        [i18n.t("share.shares.detail_created"), share.createdAt],
-        [i18n.t("share.shares.detail_updated"), share.updatedAt],
-        [i18n.t("share.shares.detail_accessed"), share.lastAccessedAt],
-        [i18n.t("share.shares.detail_expires"), share.expiresAt],
-    ].filter(([, timestamp]) => Boolean(timestamp));
+        {
+            category: "created",
+            detail: i18n.t("share.shares.detail_created"),
+            timestamp: share.createdAt,
+        },
+        {
+            category: "updated",
+            detail: i18n.t("share.shares.detail_updated"),
+            timestamp: share.updatedAt,
+        },
+        {
+            category: "accessed",
+            detail: i18n.t("share.shares.detail_accessed"),
+            timestamp: share.lastAccessedAt,
+        },
+    ].filter((event) => Boolean(event.timestamp));
     const detailsRow = document.createElement("tr");
     detailsRow.className = "shares-detail-row";
     detailsRow.dataset.shareDetails = String(share.id);
@@ -107,12 +119,15 @@ function renderShareDetails(share, i18n) {
     cell.colSpan = 7;
     const details = document.createElement("section");
     details.className = "shares-detail-panel";
-    const timeline = events
-        .map(
-            ([label, timestamp], index) =>
-                `<li><span>${escapeHtml(label)}</span><time>${escapeHtml(formatDateTime(timestamp))}</time><i class="shares-activity-level-${index + 1}"></i></li>`,
-        )
-        .join("");
+    const graph = document.createElement("div");
+    graph.className = "dot-graph-shell shares-activity-graph";
+    mountDotGraph(graph, {
+        points: events,
+        xAxisLabel: i18n.t("share.shares.detail_timeline"),
+        yAxisLabel: i18n.t("share.shares.detail_event_count"),
+        formatTimestamp: formatDateTime,
+        formatAxisTimestamp: formatDate,
+    });
     const users = recipients.length
         ? recipients
               .map(
@@ -121,7 +136,13 @@ function renderShareDetails(share, i18n) {
               )
               .join("")
         : `<li>${escapeHtml(i18n.t("share.shares.anyone_with_link"))}</li>`;
-    details.innerHTML = `<div><h3>${escapeHtml(i18n.t("share.shares.detail_activity"))}</h3><ol class="shares-activity-chart">${timeline}</ol></div><div><h3>${escapeHtml(i18n.t("share.shares.detail_users"))}</h3><ul class="shares-detail-users">${users}</ul></div>`;
+    const activity = document.createElement("div");
+    const activityHeading = document.createElement("h3");
+    activityHeading.textContent = i18n.t("share.shares.detail_activity");
+    activity.append(activityHeading, graph);
+    const userDetails = document.createElement("div");
+    userDetails.innerHTML = `<h3>${escapeHtml(i18n.t("share.shares.detail_users"))}</h3><ul class="shares-detail-users">${users}</ul>`;
+    details.append(activity, userDetails);
     cell.append(details);
     detailsRow.append(cell);
     return detailsRow;

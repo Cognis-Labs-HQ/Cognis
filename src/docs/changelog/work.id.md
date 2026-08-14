@@ -231,3 +231,7 @@ Tautan kalender kini terbuka dalam tampilan bulan dengan kontrol tampilan dan pe
 ## Bergabung sebagai tamu tanpa kartu
 
 Tamu dari tautan rapat kini dapat memasuki rapat bersama meskipun respons terbatas sengaja tidak memuat kartu peserta. Kontrol kalender bersama kini memperbarui kanvas yang ada secara langsung sehingga DOM kontrol tetap stabil saat tampilan dan periode berubah.
+
+## Memetakan aktivitas berbagi sepanjang waktu
+
+Detail tiap berbagi kini menggabungkan aktivitas pembuatan, pembaruan, dan akses dalam grafik titik responsif. Sumbu jumlah peristiwa dan linimasa menyesuaikan riwayat yang tersedia, sedangkan mengarahkan penunjuk atau fokus pada titik akan menampilkan peristiwa dan waktunya.

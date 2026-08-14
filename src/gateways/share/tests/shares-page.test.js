@@ -22,6 +22,14 @@ const bootstrapSource = await readFile(
     new URL("../bootstrap/index.ts", import.meta.url),
     "utf8",
 );
+const graphSource = await readFile(
+    new URL("../../../ui/reuse/dot-graph.js", import.meta.url),
+    "utf8",
+);
+const graphStyleSource = await readFile(
+    new URL("../../../ui/styles/reuse/dot-graph.css", import.meta.url),
+    "utf8",
+);
 
 test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /createPageComposer/);
@@ -60,7 +68,8 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /data-share-copy/);
     assert.match(pageSource, /navigator\.clipboard\.writeText/);
     assert.match(pageSource, /renderShareDetails/);
-    assert.match(pageSource, /shares-activity-chart/);
+    assert.match(pageSource, /mountDotGraph/);
+    assert.match(pageSource, /shares-activity-graph/);
     assert.match(pageSource, /data-share-expandable/);
     assert.match(pageSource, /initialEditingShareId/);
     assert.match(pageSource, /initialEditingShare: share/);
@@ -69,6 +78,19 @@ test("Shares page composes sent and received share management", () => {
     assert.match(pageSource, /await mountWhenDirect\(mount\)/);
     assert.doesNotMatch(pageSource, /await mount\(document\.querySelector/);
     assert.doesNotMatch(pageSource, /share\.shares\.open/);
+});
+
+test("Share activity uses the reusable scalable dot graph", () => {
+    assert.match(pageSource, /share\.createdAt/);
+    assert.match(pageSource, /share\.updatedAt/);
+    assert.match(pageSource, /share\.lastAccessedAt/);
+    assert.match(graphSource, /maximumCount/);
+    assert.match(graphSource, /timeSpan/);
+    assert.match(graphSource, /dot-graph-point/);
+    assert.match(graphSource, /pointerenter/);
+    assert.match(graphSource, /formatAxisTimestamp/);
+    assert.match(graphStyleSource, /\.dot-graph-tooltip/);
+    assert.match(bootstrapSource, /styles\/reuse\/dot-graph\.css/);
 });
 
 test("Shares table filters rerender rows and keeps compact columns and actions", () => {

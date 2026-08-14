@@ -231,3 +231,7 @@ Kalenderlinks öffnen nun in der Monatsansicht und behalten ihre dauerhaften Ans
 ## Gast-Meetings ohne Karten beitreten
 
 Gäste von Meetinglinks können nun einem freigegebenen Meeting beitreten, auch wenn die eingeschränkte Antwort absichtlich keine Teilnehmerkarten enthält. Die Steuerung freigegebener Kalender aktualisiert nun direkt die bestehende Ansicht, sodass das Steuerungs-DOM beim Wechsel von Ansicht und Zeitraum stabil bleibt.
+
+## Freigabeaktivität im Zeitverlauf darstellen
+
+Die Details jeder Freigabe vereinen nun Erstellungs-, Aktualisierungs- und Zugriffsaktivitäten in einem responsiven Punktdiagramm. Die Achsen für Ereignisanzahl und Zeitleiste passen sich dem verfügbaren Verlauf an; beim Darüberfahren oder Fokussieren eines Punkts erscheinen Ereignis und Zeitstempel.

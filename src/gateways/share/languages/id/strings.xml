@@ -100,6 +100,8 @@
   <string name="share.shares.copy_link">Salin tautan berbagi</string>
   <string name="share.shares.link_copied">Tautan berbagi disalin.</string>
   <string name="share.shares.detail_activity">Aktivitas berbagi</string>
+  <string name="share.shares.detail_timeline">Linimasa</string>
+  <string name="share.shares.detail_event_count">Jumlah peristiwa</string>
   <string name="share.shares.detail_users">Penerima</string>
   <string name="share.shares.detail_created">Dibuat</string>
   <string name="share.shares.detail_updated">Diperbarui</string>

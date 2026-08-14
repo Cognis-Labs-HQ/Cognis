@@ -229,6 +229,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         stylesheets: [
             "/static/styles/page-builder.css",
             "/static/styles/reuse/page-sections.css",
+            "/static/styles/reuse/dot-graph.css",
             "/static/gateways/share/ui/app/shares/index.css",
         ],
         access: { minRole: "user" },

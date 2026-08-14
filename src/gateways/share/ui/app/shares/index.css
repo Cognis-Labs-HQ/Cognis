@@ -228,7 +228,6 @@ tr[data-share-expandable] {
     margin: 0 0 0.7rem;
 }
 
-.shares-activity-chart,
 .shares-detail-users {
     display: grid;
     gap: 0.55rem;
@@ -237,35 +236,8 @@ tr[data-share-expandable] {
     padding: 0;
 }
 
-.shares-activity-chart li {
-    display: grid;
-    gap: 0.25rem 0.75rem;
-    grid-template-columns: 7rem minmax(0, 1fr);
-}
-
-.shares-activity-chart time {
-    color: var(--text-muted);
-    font-size: 0.78rem;
-}
-
-.shares-activity-chart i {
-    background: color-mix(in srgb, var(--accent) 58%, transparent);
-    border-radius: 999px;
-    grid-column: 1 / -1;
-    height: 0.42rem;
+.shares-activity-graph {
     width: 100%;
-}
-
-.shares-activity-chart .shares-activity-level-2 {
-    width: 80%;
-}
-
-.shares-activity-chart .shares-activity-level-3 {
-    width: 60%;
-}
-
-.shares-activity-chart .shares-activity-level-4 {
-    width: 40%;
 }
 
 .shares-empty {

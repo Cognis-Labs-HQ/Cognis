@@ -231,3 +231,7 @@ Calendar links now open in month view while retaining their persistent view and 
 ## Join guest meetings without cards
 
 Meeting-link guests can now enter a shared meeting even when the scoped response intentionally contains no participant cards. Calendar share controls now update their existing canvas directly, keeping the control DOM stable while changing views and periods.
+
+## Plot share activity over time
+
+Per-share details now combine creation, update, and access activity in a responsive dot graph. Its event-count and timeline axes scale to the available history, and hovering or focusing a point reveals the event and its timestamp.

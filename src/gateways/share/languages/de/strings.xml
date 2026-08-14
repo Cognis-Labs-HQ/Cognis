@@ -100,6 +100,8 @@
   <string name="share.shares.copy_link">Freigabelink kopieren</string>
   <string name="share.shares.link_copied">Freigabelink kopiert.</string>
   <string name="share.shares.detail_activity">Freigabeaktivität</string>
+  <string name="share.shares.detail_timeline">Zeitleiste</string>
+  <string name="share.shares.detail_event_count">Ereignisanzahl</string>
   <string name="share.shares.detail_users">Empfänger</string>
   <string name="share.shares.detail_created">Erstellt</string>
   <string name="share.shares.detail_updated">Aktualisiert</string>

@@ -100,6 +100,8 @@
   <string name="share.shares.copy_link">共有リンクをコピー</string>
   <string name="share.shares.link_copied">共有リンクをコピーしました。</string>
   <string name="share.shares.detail_activity">共有アクティビティ</string>
+  <string name="share.shares.detail_timeline">タイムライン</string>
+  <string name="share.shares.detail_event_count">イベント数</string>
   <string name="share.shares.detail_users">受信者</string>
   <string name="share.shares.detail_created">作成</string>
   <string name="share.shares.detail_updated">更新</string>
