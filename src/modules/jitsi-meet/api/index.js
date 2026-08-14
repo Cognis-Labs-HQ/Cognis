@@ -420,8 +420,10 @@ export function registerApiRoutes(router, ctx) {
         "jitsi-meet:getMeetingById",
         store.getMeetingById.bind(store),
     );
-    ctx.capabilities?.contribute?.(
-        "social:messages:authorizeExternalRoomAccess",
+    const registerExternalRoomAuthorizer = ctx.capabilities?.get?.(
+        "social:messages:registerExternalRoomAuthorizer",
+    );
+    registerExternalRoomAuthorizer?.(
         async ({ claims, roomId, requiredCapability }) => {
             const meeting = await store.getMeetingByChatRoomId(roomId);
             if (!meeting) return { external: false, authorized: false };

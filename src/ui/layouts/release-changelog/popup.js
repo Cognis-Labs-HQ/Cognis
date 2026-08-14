@@ -19,6 +19,7 @@ import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { readPreferredLanguages } from "../../reuse/i18n.js";
 import { openPopup } from "../../reuse/popup.js";
 import { navigateTo } from "../../reuse/app-router.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     loadUiPreferences,
     saveUiPreferences,
@@ -28,7 +29,6 @@ import {
     saveReleaseChangelogState,
 } from "./state.js";
 import { resolveReleaseChangelogStatus } from "./status.js";
-import { isGuestSession } from "../../reuse/account-context.js";
 
 const MAX_VISIBLE_RELEASE_NOTES = 5;
 const MAX_VISIBLE_RELEASE_NOTE_BULLETS = 5;
@@ -69,14 +69,14 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
 }
 
 export async function maybeShowReleaseChangelogPopup(i18n) {
-    if (isGuestSession()) return;
+    if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
     const accountId = localStorage.getItem("cognis_account");
     if (!accountId) return;
 
     const prefs = (await loadUiPreferences()) ?? {};
     if (prefs.releaseChangelogShow === false) return;
     const changelogState = await loadReleaseChangelogState();
-    if (isGuestSession()) return;
+    if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
 
     let changelogPayload;
     try {
@@ -89,7 +89,7 @@ export async function maybeShowReleaseChangelogPopup(i18n) {
     } catch {
         return;
     }
-    if (isGuestSession()) return;
+    if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
     const releaseVersion = String(
         changelogPayload?.data?.releaseVersion ?? "",
     ).trim();

@@ -96,19 +96,13 @@ test("dashboard logout requests server revocation before clearing local token", 
     );
 });
 
-test("dashboard resolves guest sessions through the account context", () => {
+test("dashboard resolves guest sessions through the auth capability", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
-    assert.match(
-        layoutSource,
-        /import \{ isGuestSession \} from "\.\.\/reuse\/account-context\.js"/,
-    );
-    assert.match(
-        layoutSource,
-        /releaseChangelogPopupChecked \|\| isGuestSession\(\)/,
-    );
+    assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
+    assert.doesNotMatch(layoutSource, /account-context/);
 });
 
 test("dashboard layout refreshes the greeting from the profile display name", () => {
@@ -117,7 +111,7 @@ test("dashboard layout refreshes the greeting from the profile display name", ()
         "utf8",
     );
     assert.ok(
-        layoutSource.includes("const profileEndpoint = isGuestSession()") &&
+        layoutSource.includes('capabilities.get("session:isGuest")') &&
             layoutSource.includes("apiFetch(profileEndpoint)"),
         "dashboard layout should fetch the authenticated profile to refresh the greeting display name",
     );
@@ -153,22 +147,18 @@ test("dashboard layout suppresses release summaries for guest sessions", () => {
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
-    assert.match(
-        source,
-        /releaseChangelogPopupChecked \|\| isGuestSession\(\)/,
-    );
+    assert.match(source, /capabilities\.get\("session:isGuest"\)/);
     const popupSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/release-changelog/popup.js"),
         "utf8",
     );
-    assert.match(popupSource, /account-context\.js/);
-    assert.match(popupSource, /if \(isGuestSession\(\)\) return/);
-    const accountContextSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/account-context.js"),
+    assert.match(popupSource, /capabilities\.get\("session:isGuest"\)/);
+    const authSessionSource = readFileSync(
+        resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
         "utf8",
     );
-    assert.match(accountContextSource, /contribute\("session:isGuest"/);
-    assert.match(accountContextSource, /accountId\.startsWith\("share:"\)/);
+    assert.match(authSessionSource, /contribute\("session:isGuest"/);
+    assert.match(authSessionSource, /accountId\.startsWith\("share:"\)/);
 });
 
 test("dashboard layout leaves cached avatar blob ownership with its provider", () => {

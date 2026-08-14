@@ -318,10 +318,7 @@ test("share buttons use the neutral consequence style", () => {
 });
 
 test("anonymous share guests activate a temporary unlocked keyring", () => {
-    assert.match(
-        sessionFlowSource,
-        /import "\/static\/reuse\/account-context\.js"/,
-    );
+    assert.doesNotMatch(sessionFlowSource, /account-context/);
     assert.match(sessionFlowSource, /guestKeyring: shareData\.guestKeyring/);
     assert.match(
         sessionFlowSource,

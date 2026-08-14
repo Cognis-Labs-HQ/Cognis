@@ -75,3 +75,7 @@ Messages now delegates external room authorization through a neutral capability 
 ## Route unavailable shares to errors
 
 Deleted, expired, malformed, and nonexistent share links now leave the loading screen and open the public native error page with a localized share-specific description and the appropriate 404 or 410 status code.
+
+## Isolated guest sessions and meeting chat authorization
+
+Authentication now owns guest-session classification, share delivery no longer branches on calendar internals, and meeting chat access is registered through the Messages adapter's extension surface.

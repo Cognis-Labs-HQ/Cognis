@@ -11,7 +11,6 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
-import { openPopup } from "/static/reuse/popup.js";
 import { getShareRenderer } from "./renderer-registry.js";
 
 function renderFallbackBody(i18n, messageKey) {
@@ -179,32 +178,6 @@ export async function mount(
     }
 
     if (shareContext.contentUrl && shareContext.directAccess === true) {
-        if (shareContext.resourceType === "calendar") {
-            const calendarI18n = await extendI18n(state.i18n, [
-                "/static/gateways/calendar/ui/languages",
-            ]);
-            const acknowledged = await openPopup({
-                title: calendarI18n.t(
-                    "gateway.calendar.share_acknowledge_title",
-                ),
-                body: `<p>${escapeHtml(calendarI18n.t("gateway.calendar.share_acknowledge_message"))}</p>`,
-                actions: [
-                    {
-                        id: "continue",
-                        label: calendarI18n.t(
-                            "gateway.calendar.share_acknowledge_action",
-                        ),
-                        variant: "confirm",
-                    },
-                    {
-                        id: "cancel",
-                        label: calendarI18n.t("ui.reuse.cancel"),
-                        variant: "neutral",
-                    },
-                ],
-            });
-            if (acknowledged !== "continue") return;
-        }
         const navigated = await navigateTo(shareContext.contentUrl);
         if (navigated) return;
         state.loading = false;

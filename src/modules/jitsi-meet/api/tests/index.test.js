@@ -59,7 +59,7 @@ test("meeting share guests receive the Jitsi meeting password", () => {
 test("jitsi authorizes its scoped guest chat through a neutral Messages contract", () => {
     const source = readJitsiApiBundle();
 
-    assert.match(source, /social:messages:authorizeExternalRoomAccess/);
+    assert.match(source, /social:messages:registerExternalRoomAuthorizer/);
     assert.match(source, /getMeetingByChatRoomId\(roomId\)/);
     assert.match(source, /requiredCapability/);
 });

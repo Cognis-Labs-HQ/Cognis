@@ -75,3 +75,7 @@ Messages delegiert die externe Raumautorisierung nun über eine neutrale Fähigk
 ## Nicht verfügbare Freigaben zu Fehlern leiten
 
 Gelöschte, abgelaufene, fehlerhafte und nicht vorhandene Freigabelinks verlassen nun den Ladebildschirm und öffnen die öffentliche native Fehlerseite mit einer lokalisierten freigabespezifischen Beschreibung und dem passenden Statuscode 404 oder 410.
+
+## Isolierte Gastsitzungen und Autorisierung des Besprechungschats
+
+Die Authentifizierung verwaltet nun die Klassifizierung von Gastsitzungen, die Freigabezustellung verzweigt nicht mehr anhand von Kalenderinternas und der Zugriff auf Besprechungschats wird über die Erweiterungsschnittstelle des Nachrichtenadapters registriert.

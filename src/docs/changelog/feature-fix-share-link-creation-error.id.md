@@ -75,3 +75,7 @@ Messages kini mendelegasikan otorisasi ruang eksternal melalui kapabilitas netra
 ## Arahkan berbagi tak tersedia ke galat
 
 Tautan berbagi yang dihapus, kedaluwarsa, rusak, atau tidak ada kini meninggalkan layar pemuatan dan membuka halaman galat bawaan publik dengan deskripsi khusus berbagi yang terlokalisasi serta kode status 404 atau 410 yang sesuai.
+
+## Isolasi sesi tamu dan otorisasi obrolan rapat
+
+Autentikasi kini memiliki klasifikasi sesi tamu, pengiriman berbagi tidak lagi bercabang berdasarkan internal Kalender, dan akses obrolan rapat didaftarkan melalui permukaan ekstensi adapter Pesan.

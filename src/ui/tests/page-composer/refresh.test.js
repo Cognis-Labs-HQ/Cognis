@@ -179,10 +179,8 @@ test("page composer resolves edit toggle from the active page root", () => {
 
 test("page composer always hides layout editing from share guests", () => {
     const source = readPageComposerBundle();
-    assert.match(
-        source,
-        /import \{ isGuestSession \} from "\.\.\/account-context\.js"/,
-    );
+    assert.match(source, /capabilities\.get\("session:isGuest"\)/);
+    assert.doesNotMatch(source, /account-context/);
 });
 
 test("page composer tears down stale presence before mounting a page", () => {

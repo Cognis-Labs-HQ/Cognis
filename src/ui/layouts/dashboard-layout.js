@@ -27,7 +27,6 @@ import { createSearchBar } from "../reuse/search-util/popup.js";
 import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
-import { isGuestSession } from "../reuse/account-context.js";
 import { showToast } from "../reuse/toast.js";
 
 capturePwaInstallPrompt();
@@ -65,9 +64,10 @@ function storeProfileDisplayName(displayName) {
 
 async function refreshDisplayNameFromProfile() {
     if (!localStorage.getItem("cognis_access_token")) return;
-    const profileEndpoint = isGuestSession()
-        ? "/api/v1/share/guest-profile"
-        : "/api/v1/social/profile";
+    const profileEndpoint =
+        uiCtx.capabilities.get("session:isGuest")?.() === true
+            ? "/api/v1/share/guest-profile"
+            : "/api/v1/social/profile";
     try {
         const response = await apiFetch(profileEndpoint);
         if (!response.ok) return;
@@ -374,7 +374,11 @@ function scheduleNavbarEnhancements() {
 }
 
 function ensureReleaseChangelogPopupChecked(i18n) {
-    if (releaseChangelogPopupChecked || isGuestSession()) return;
+    if (
+        releaseChangelogPopupChecked ||
+        uiCtx.capabilities.get("session:isGuest")?.() === true
+    )
+        return;
     releaseChangelogPopupChecked = true;
     maybeShowReleaseChangelogPopup(i18n).catch(() => {});
 }
@@ -616,7 +620,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         if (
             enableAccountEnhancements &&
             (showTopbar || showNavbar) &&
-            !isGuestSession()
+            !uiCtx.capabilities.get("session:isGuest")?.() === true
         ) {
             updateNavbarAvatar().catch((error) => {
                 console.warn(
@@ -671,7 +675,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (
         enableAccountEnhancements &&
         (showTopbar || showNavbar) &&
-        !isGuestSession()
+        !uiCtx.capabilities.get("session:isGuest")?.() === true
     ) {
         bindTopbarActions();
         updateNavbarAvatar().catch((error) => {

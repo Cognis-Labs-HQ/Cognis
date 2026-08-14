@@ -43,7 +43,6 @@ import { createLayoutPersistence } from "./layout-persistence.js";
 import { createGridOverlayHandlers } from "./grid-overlay.js";
 import { createSubComposerHandlers } from "./sub-composer.js";
 import { uiCtx } from "../ui-ctx.js";
-import { isGuestSession } from "../account-context.js";
 import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
 import { createPresenceTracker } from "./presence-tracker.js";
@@ -480,7 +479,7 @@ export function createPageComposer(
     function syncSubEditToggle(state) {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
-        if (isGuestSession()) {
+        if (uiCtx.capabilities.get("session:isGuest")?.() === true) {
             editBtn.remove();
             return;
         }
@@ -534,7 +533,7 @@ export function createPageComposer(
     function syncEditToggle() {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
-        if (isGuestSession()) {
+        if (uiCtx.capabilities.get("session:isGuest")?.() === true) {
             editBtn.remove();
             return;
         }

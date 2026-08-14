@@ -39,7 +39,6 @@
 
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
-import "/static/reuse/account-context.js";
 import { resolveReceivedShare } from "./received-share.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
