@@ -80,3 +80,37 @@ test("share gateway tolerates an absent adapter directory", async () => {
     await gateway.discoverAdapters(path.join(temp, "missing"));
     assert.deepEqual(gateway.listAdapters(), []);
 });
+
+test("permission-only updates preserve existing account unlock grants", async () => {
+    let updateInput: Record<string, unknown> | null = null;
+    const existing = {
+        id: "share-1",
+        ownerAccountId: "alice",
+        resourceType: "calendar",
+        resourceId: "calendar-1",
+        metadata: { adapterId: "user" },
+        accessControls: { permissions: ["read"], recipients: [] },
+        expiresAt: "",
+    };
+    const gateway = new CoreShareGateway(
+        {
+            getById: async () => existing,
+            listByOwner: async () => [existing],
+            updateById: async (input: Record<string, unknown>) => {
+                updateInput = input;
+                return null;
+            },
+        } as never,
+        { ensureSchema: async () => {} } as never,
+        { ensureSchema: async () => {} } as never,
+    );
+
+    await gateway.updateToken({
+        shareId: "share-1",
+        ownerAccountId: "alice",
+        grantedCapabilities: ["calendar:read", "calendar:write"],
+    });
+
+    assert.ok(updateInput);
+    assert.equal(Object.hasOwn(updateInput, "password"), false);
+});

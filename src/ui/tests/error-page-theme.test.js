@@ -31,3 +31,15 @@ test("error page stylesheet includes light theme treatments", () => {
         /body\[data-theme="light"\] \.error-content a\.error-dashboard-btn/,
     );
 });
+
+test("error page renders an escaped custom message from its route", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/error/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function resolveErrorMessage\(search\)/);
+    assert.match(source, /get\("message"\)/);
+    assert.match(source, /errorMessage \|\| i18n\.t\(descriptionKey\)/);
+    assert.match(source, /escapeHtml\(description\)/);
+});

@@ -51,3 +51,7 @@ Fitur dasbor kini menggunakan kapabilitas sesi tamu bersama dari konteks akun, b
 ## Sejajarkan tindakan berbagi
 
 Tabel Berbagi kini memusatkan judul Tindakan dan mempertahankan kontrol Kelola, Salin, dan Hapus dalam kolom vertikal yang konsisten di setiap baris.
+
+## Pertahankan akses berbagi yang diperbarui
+
+Perubahan izin berbagi pengguna kini tidak lagi membatalkan pembukaan akses penerima yang sudah ada. Tautan berbagi yang tidak tersedia kini membuka halaman galat standar dengan penjelasan yang jelas dan terlokalisasi.

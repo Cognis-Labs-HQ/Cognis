@@ -132,6 +132,13 @@ export async function mount(
     const shareContext = routedShareContext ?? session?.shareContext ?? null;
 
     if (session?.shareAttempted && !session?.authenticated) {
+        if (session.failureReason === "share_not_found") {
+            const message = state.i18n.t("share.error.expired");
+            await navigateTo(
+                `/error?code=404&message=${encodeURIComponent(message)}`,
+            );
+            return;
+        }
         // A share token was present in the URL but failed to resolve
         // (expired, revoked, or invalid). Render the fallback screen
         // directly instead of the generic missing/malformed messages below.
@@ -139,9 +146,7 @@ export async function mount(
         state.errorKey =
             session.failureReason === "share_access_denied"
                 ? "share.error.access_denied"
-                : session.failureReason === "share_not_found"
-                  ? "share.error.not_found"
-                  : "share.error.expired";
+                : "share.error.expired";
         updatePageDescriptor(root, state.i18n, state.errorKey);
         composer.refresh([buildShareElement(state)]);
         return;

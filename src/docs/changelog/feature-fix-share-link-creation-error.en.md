@@ -51,3 +51,7 @@ Dashboard features now use the account context's shared guest-session capability
 ## Align share actions
 
 The Shares table now centers its Actions heading and keeps Manage, Copy, and Remove controls in consistent vertical columns across every row.
+
+## Keep updated shares available
+
+Changing a user share's permissions no longer invalidates the recipient's existing unlock. Unavailable share links now open the standard error page with a clear, localized explanation.

@@ -51,3 +51,7 @@ Dashboard-Funktionen verwenden nun die gemeinsame Gastsitzungs-Fähigkeit des Ko
 ## Freigabeaktionen ausrichten
 
 Die Freigabetabelle zentriert nun die Überschrift „Aktionen“ und ordnet Verwalten, Kopieren und Entfernen in jeder Zeile in einheitlichen vertikalen Spalten an.
+
+## Aktualisierte Freigaben verfügbar halten
+
+Das Ändern der Berechtigungen einer Benutzerfreigabe macht die bestehende Entsperrung des Empfängers nicht mehr ungültig. Nicht verfügbare Freigabelinks öffnen nun die Standardfehlerseite mit einer klaren, lokalisierten Erklärung.

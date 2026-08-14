@@ -29,6 +29,10 @@ const sessionFlowSource = await readFile(
     new URL("../ui/session-flow-hooks.js", import.meta.url),
     "utf8",
 );
+const sharePageSource = await readFile(
+    new URL("../ui/app/index.js", import.meta.url),
+    "utf8",
+);
 const accountShareAppSource = await readFile(
     new URL("../ui/app/account-share/index.js", import.meta.url),
     "utf8",
@@ -316,7 +320,7 @@ test("share buttons use the neutral consequence style", () => {
 test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.match(
         sessionFlowSource,
-        /capabilities\.contribute\("session:isGuest", isViewingAsGuest\)/,
+        /import "\/static\/reuse\/account-context\.js"/,
     );
     assert.match(sessionFlowSource, /guestKeyring: shareData\.guestKeyring/);
     assert.match(
@@ -531,4 +535,12 @@ test("guest sessions can re-assert their disposable keyring without prompting", 
     assert.match(sessionFlowSource, /session:ensureGuestKeyring/);
     assert.match(sessionFlowSource, /activeGuestKeyring/);
     assert.match(sessionFlowSource, /keyring:activateTemporary/);
+});
+
+test("missing share links navigate to the native error page", () => {
+    assert.match(sessionFlowSource, /response\.status === 404/);
+    assert.match(
+        sharePageSource,
+        /\/error\?code=404&message=\$\{encodeURIComponent\(message\)\}/,
+    );
 });

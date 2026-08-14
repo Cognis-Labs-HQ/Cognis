@@ -308,9 +308,18 @@ export class CoreShareGateway {
         const generatedPassword = input.generatePassword
             ? generateSharePassword()
             : null;
+        const {
+            generatePassword: _generatePassword,
+            password,
+            ...changes
+        } = input;
         const record = await this.store.updateById({
-            ...input,
-            password: input.password ?? generatedPassword,
+            ...changes,
+            ...(generatedPassword
+                ? { password: generatedPassword }
+                : password !== undefined
+                  ? { password }
+                  : {}),
         });
         return record
             ? {
