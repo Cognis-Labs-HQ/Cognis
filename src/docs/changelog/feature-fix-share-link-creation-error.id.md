@@ -59,3 +59,7 @@ Perubahan izin berbagi pengguna kini tidak lagi membatalkan pembukaan akses pene
 ## Siapkan rapat tanpa peserta
 
 Tamu tautan rapat kini menerima kata sandi Jitsi khusus rapat melalui sesi berbagi terbatas mereka. Panggung tanpa peserta menjelaskan bahwa memulai rapat akan menampilkan popup tautan, sedangkan panggung dengan peserta tetap menggunakan pesan kesiapan yang ada.
+
+## Muat obrolan rapat tamu dengan bersih
+
+Tamu tautan rapat kini menggunakan data peserta yang telah diotorisasi oleh respons rapat, bukan membuat permintaan metadata ruang yang ditolak. Link Share juga menyediakan label formulir surel terlokalisasi sendiri agar kontrol penerima dan Kirim selalu ditampilkan dengan benar.

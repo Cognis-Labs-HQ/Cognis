@@ -1,4 +1,10 @@
 <resources>
   <string name="adapter.share.link.name">Link</string>
   <string name="adapter.share.link.description">Erstellen Sie einen Link, der außerhalb von Cognis versendet werden kann.</string>
+  <string name="adapter.share.link.email.send">Senden</string>
+  <string name="adapter.share.link.email.recipients">Empfangende</string>
+  <string name="adapter.share.link.email.placeholder">E-Mail-Adressen eingeben</string>
+  <string name="adapter.share.link.email.required">Mindestens eine empfangende Person hinzufügen.</string>
+  <string name="adapter.share.link.email.sent">Freigabe-E-Mail gesendet.</string>
+  <string name="adapter.share.link.email.failed">Freigabe-E-Mail konnte nicht gesendet werden.</string>
 </resources>

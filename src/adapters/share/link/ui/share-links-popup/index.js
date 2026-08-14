@@ -116,7 +116,7 @@ export function openSharePopup({
     supportsReadOnly = false,
     ...popupOptions
 }) {
-    return openShareLinksPopup({
+    return openLocalizedShareLinksPopup({
         ...popupOptions,
         passwordRequired,
         supportsReadOnly,
@@ -131,5 +131,42 @@ export function openSharePopup({
     });
 }
 
+let linkI18nPromise = null;
+
+async function openLocalizedShareLinksPopup(options) {
+    linkI18nPromise ??= import("/static/reuse/i18n.js").then(({ createI18n }) =>
+        createI18n({
+            componentStringBaseUrls: ["/static/adapters/share/link/languages"],
+        }),
+    );
+    const i18n = await linkI18nPromise;
+    return openShareLinksPopup({
+        ...options,
+        labels: {
+            ...options.labels,
+            send:
+                options.labels?.send || i18n.t("adapter.share.link.email.send"),
+            emailRecipients:
+                options.labels?.emailRecipients ||
+                i18n.t("adapter.share.link.email.recipients"),
+            emailRecipientsPlaceholder:
+                options.labels?.emailRecipientsPlaceholder ||
+                i18n.t("adapter.share.link.email.placeholder"),
+            emailRecipientsRequired:
+                options.labels?.emailRecipientsRequired ||
+                i18n.t("adapter.share.link.email.required"),
+            emailSent:
+                options.labels?.emailSent ||
+                i18n.t("adapter.share.link.email.sent"),
+            emailFailed:
+                options.labels?.emailFailed ||
+                i18n.t("adapter.share.link.email.failed"),
+        },
+    });
+}
+
 uiCtx.capabilities.contribute("share:openPopup", openSharePopup);
-uiCtx.capabilities.contribute("share:openLinksPopup", openShareLinksPopup);
+uiCtx.capabilities.contribute(
+    "share:openLinksPopup",
+    openLocalizedShareLinksPopup,
+);

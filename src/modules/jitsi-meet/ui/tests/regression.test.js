@@ -98,7 +98,7 @@ test("new meetings can start with an empty participant stage and prompt for a li
     assert.match(meetingsSource, /participantCount > 0[\s\S]*ready_to_start/);
 });
 
-test("meeting link guests load participant names and avatars only from the authorized chat room", () => {
+test("meeting link guests derive participants from the scoped meeting payload", () => {
     const chatSource = readFileSync(
         resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
         "utf8",
@@ -109,16 +109,24 @@ test("meeting link guests load participant names and avatars only from the autho
     );
     assert.match(
         chatSource,
-        /api\/v1\/social\/messages\/rooms\/\$\{encodeURIComponent\(roomId\)\}/,
+        /state\.shareAccessToken && state\.chatParticipantEntries\.length > 0/,
     );
-    assert.match(chatSource, /payload\?\.data\?\.members/);
-    assert.match(chatSource, /member\?\.displayName/);
-    assert.match(chatSource, /member\?\.avatarKey/);
+    assert.match(chatSource, /state\.lastMeetingParticipants/);
+    assert.match(chatSource, /participant\?\.displayName \|\| username/);
+    assert.match(appSource, /if \(state\.shareAccessToken\) return;/);
+});
+
+test("meeting link chat uses scoped message APIs without requesting room metadata", () => {
+    const chatSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+
+    assert.doesNotMatch(chatSource, /loadMeetingChatParticipants/);
     assert.match(
         chatSource,
-        /if \(state\.shareAccessToken\) return state\.chatParticipantEntries/,
+        /rooms\/\$\{encodeURIComponent\(roomId\)\}\/messages\?limit=50/,
     );
-    assert.match(appSource, /if \(state\.shareAccessToken\) return;/);
 });
 
 test("meeting link guests can join without participant-card data", () => {

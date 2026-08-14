@@ -1,4 +1,10 @@
 <resources>
   <string name="adapter.share.link.name">Tautan</string>
   <string name="adapter.share.link.description">Buat tautan yang dapat dikirim ke luar Cognis.</string>
+  <string name="adapter.share.link.email.send">Kirim</string>
+  <string name="adapter.share.link.email.recipients">Penerima</string>
+  <string name="adapter.share.link.email.placeholder">Masukkan alamat email</string>
+  <string name="adapter.share.link.email.required">Tambahkan setidaknya satu penerima.</string>
+  <string name="adapter.share.link.email.sent">Surel berbagi terkirim.</string>
+  <string name="adapter.share.link.email.failed">Surel berbagi tidak dapat dikirim.</string>
 </resources>

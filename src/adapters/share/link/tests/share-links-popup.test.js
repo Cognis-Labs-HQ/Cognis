@@ -18,6 +18,10 @@ const STYLESHEET_URL = new URL(
     "../ui/share-links-popup/index.css",
     import.meta.url,
 );
+const ADAPTER_LANGUAGE_URLS = ["de", "en", "id", "ja"].map(
+    (language) =>
+        new URL(`../languages/${language}/strings.xml`, import.meta.url),
+);
 
 test("share popup keeps the active adapter page and history rendering separate", () => {
     const source = readFileSync(IMPLEMENTATION_URL, "utf8");
@@ -39,6 +43,25 @@ test("share popup loads callbacks from the gateway-owned static asset", () => {
         source,
         /from "\/static\/gateways\/share\/ui\/reuse\/share-api\.js"/,
     );
+});
+
+test("link adapter supplies localized email popup labels", () => {
+    const source = readFileSync(POPUP_ENTRY_URL, "utf8");
+
+    assert.match(source, /function openLocalizedShareLinksPopup\(options\)/);
+    assert.match(source, /adapter\.share\.link\.email\.send/);
+    assert.match(source, /adapter\.share\.link\.email\.recipients/);
+    for (const languageUrl of ADAPTER_LANGUAGE_URLS) {
+        const strings = readFileSync(languageUrl, "utf8");
+        assert.match(
+            strings,
+            /name="adapter\.share\.link\.email\.send">[^<]+</,
+        );
+        assert.match(
+            strings,
+            /name="adapter\.share\.link\.email\.recipients">[^<]+</,
+        );
+    }
 });
 
 test("share links popup renders existing links as an icon-only copy button", () => {

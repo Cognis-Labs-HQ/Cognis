@@ -59,3 +59,7 @@ Das Ändern der Berechtigungen einer Benutzerfreigabe macht die bestehende Entsp
 ## Meetings ohne Teilnehmer vorbereiten
 
 Gäste mit Meeting-Link erhalten nun das meetingspezifische Jitsi-Passwort über ihre begrenzte Freigabesitzung. Bei einer Bühne ohne Teilnehmer wird klar erklärt, dass beim Starten des Meetings das Link-Popup erscheint; mit Teilnehmern bleibt die bisherige Bereitschaftsmeldung erhalten.
+
+## Gast-Meeting-Chat fehlerfrei laden
+
+Gäste mit Meeting-Link verwenden nun die bereits durch die Meeting-Antwort autorisierten Teilnehmerdaten, anstatt unzulässige Raum-Metadaten anzufordern. Link Share stellt außerdem eigene lokalisierte Beschriftungen für das E-Mail-Formular bereit, damit Empfänger- und Senden-Steuerelemente immer korrekt dargestellt werden.

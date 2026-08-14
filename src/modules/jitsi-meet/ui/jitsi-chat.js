@@ -155,7 +155,9 @@ export function createChatHandlers({
 
     function resolveParticipantChatEntries() {
         if (!state.meeting?.id) return [];
-        if (state.shareAccessToken) return state.chatParticipantEntries;
+        if (state.shareAccessToken && state.chatParticipantEntries.length > 0) {
+            return state.chatParticipantEntries;
+        }
         const localHandle = normalizeUsername(
             state.currentProfile?.handle ?? "",
         );
@@ -177,35 +179,6 @@ export function createChatHandlers({
                     avatarKey: participant?.avatarKey ?? null,
                 };
             })
-            .sort((left, right) => left.username.localeCompare(right.username));
-    }
-
-    async function loadMeetingChatParticipants(roomId) {
-        if (!state.shareAccessToken || !roomId) return;
-        const response = await apiFetch(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}`,
-            {
-                accessToken: state.shareAccessToken,
-                suppressAccessDeniedEvent: true,
-            },
-        );
-        if (!response.ok) return;
-        const payload = await response.json().catch(() => ({ data: null }));
-        const members = Array.isArray(payload?.data?.members)
-            ? payload.data.members
-            : [];
-        state.chatParticipantEntries = members
-            .map((member) => ({
-                username: normalizeUsername(member?.handle ?? ""),
-                displayName: String(
-                    member?.displayName ?? member?.handle ?? "",
-                ).trim(),
-                avatarKey:
-                    typeof member?.avatarKey === "string"
-                        ? member.avatarKey
-                        : null,
-            }))
-            .filter((member) => Boolean(member.username))
             .sort((left, right) => left.username.localeCompare(right.username));
     }
 
@@ -427,7 +400,6 @@ export function createChatHandlers({
         if (state.chatMode !== "private") {
             applyActiveChatRoom(state.lastMeetingChatRoomId);
         }
-        await loadMeetingChatParticipants(state.lastMeetingChatRoomId);
         renderChatParticipantStrip();
         await refreshNativeChat();
         startNativeChatPolling();

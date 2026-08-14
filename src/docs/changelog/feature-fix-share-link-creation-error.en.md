@@ -59,3 +59,7 @@ Changing a user share's permissions no longer invalidates the recipient's existi
 ## Prepare participant-free meetings
 
 Meeting-link guests now receive the meeting-specific Jitsi password through their scoped share session. A participant-free stage clearly explains that starting the meeting will show its link popup, while staged participants retain the existing readiness message.
+
+## Load guest meeting chat cleanly
+
+Meeting-link guests now use participant data already authorized by the meeting response instead of making forbidden room-metadata requests. Link Share also supplies its own localized email form labels so recipient and Send controls always render correctly.

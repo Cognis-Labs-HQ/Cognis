@@ -1,4 +1,10 @@
 <resources>
   <string name="adapter.share.link.name">リンク</string>
   <string name="adapter.share.link.description">Cognisの外部に送信できるリンクを作成します。</string>
+  <string name="adapter.share.link.email.send">送信</string>
+  <string name="adapter.share.link.email.recipients">受信者</string>
+  <string name="adapter.share.link.email.placeholder">メールアドレスを入力</string>
+  <string name="adapter.share.link.email.required">受信者を1人以上追加してください。</string>
+  <string name="adapter.share.link.email.sent">共有メールを送信しました。</string>
+  <string name="adapter.share.link.email.failed">共有メールを送信できませんでした。</string>
 </resources>
