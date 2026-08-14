@@ -190,7 +190,11 @@ export function createShareRoutes(input: {
             const html = await readFile(
                 path.join(
                     input.uiRoot,
-                    url.pathname === "/shares" ? "shares.html" : "share.html",
+                    url.pathname === "/shares"
+                        ? "shares.html"
+                        : url.pathname.startsWith("/share/usr_")
+                          ? "user-share.html"
+                          : "share.html",
                 ),
                 "utf8",
             );

@@ -23,7 +23,7 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
 
-async function promptForPassword({ allowSave = true } = {}) {
+async function promptForPassword({ allowSave = true, showBrand = true } = {}) {
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/share/languages"],
     });
@@ -31,7 +31,7 @@ async function promptForPassword({ allowSave = true } = {}) {
     let saveInput = null;
     const action = await openPopup({
         title: i18n.t("share.unlock.title"),
-        body: `<div class="stack share-unlock-content"><div class="brandline share-unlock-brand"><img src="/static/assets/icons/cognis-icon.png" alt="" class="topbar-icon" /><strong>Cognis</strong></div><label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label>${allowSave ? `<label><input id="share-unlock-save" type="checkbox" checked /> ${escapeHtml(i18n.t("share.unlock.save_to_keyring"))}</label>` : ""}</div>`,
+        body: `<div class="stack share-unlock-content">${showBrand ? '<div class="brandline share-unlock-brand"><img src="/static/assets/icons/cognis-icon.png" alt="" class="topbar-icon" /><strong>Cognis</strong></div>' : ""}<label class="stack"><span>${escapeHtml(i18n.t("share.unlock.message"))}</span><input id="share-unlock-password" type="password" autocomplete="current-password" required /></label>${allowSave ? `<label><input id="share-unlock-save" type="checkbox" checked /> ${escapeHtml(i18n.t("share.unlock.save_to_keyring"))}</label>` : ""}</div>`,
         actions: [
             {
                 id: "unlock",
@@ -256,7 +256,10 @@ export async function resolveAccountShare(
         }
     }
     while (response.status === 401) {
-        const entered = await promptForPassword({ allowSave: keyringUnlocked });
+        const entered = await promptForPassword({
+            allowSave: keyringUnlocked,
+            showBrand: false,
+        });
         if (!entered?.password) return null;
         response = await request(entered.password);
         if (response.status === 401) {

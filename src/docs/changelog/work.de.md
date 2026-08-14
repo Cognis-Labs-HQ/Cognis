@@ -1,5 +1,9 @@
 # Freigabeverwaltung verfeinern
 
+## Benutzerfreigaben von Gastsitzungen isolieren
+
+Kontogebundene Benutzerfreigaben verwenden jetzt eine eigene authentifizierte Auslieferungsseite, die den Gastsitzungsstart für öffentliche Links niemals lädt. Ihre Passwortabfrage zeigt nicht das Cognis-Branding öffentlicher Freigaben; öffentliche Linkfreigaben behalten ihren Gastablauf und die gebrandete Abfrage.
+
 ## Aktive Freigaben entziehen und Gastoberfläche begrenzen
 
 Das Löschen einer Freigabe veröffentlicht jetzt ein Widerrufsereignis an aktive Tabs und angemeldete Empfänger der Entfernungsbenachrichtigung, sodass betroffene Betrachter sofort zur verweigerten Freigabeansicht zurückkehren. Doppelte Löschbestätigungen werden verhindert, Gastsitzungen erhalten keine Versionszusammenfassungen mehr und vor der Eigentümerprüfung einer weiteren Freigabe wird eine hinterlegte Kontositzung wiederhergestellt.

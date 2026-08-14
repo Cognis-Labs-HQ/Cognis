@@ -1,5 +1,9 @@
 # Refine share management
 
+## Isolate account shares from guest sessions
+
+Account-bound user shares now use a dedicated authenticated delivery page that never imports the public-link guest-session bootstrap. Their password prompt omits public-share Cognis branding, while public link shares retain their guest lifecycle and branded prompt.
+
 ## Revoke active shares and keep guest chrome scoped
 
 Share deletion now publishes a revocation event to active tabs and signed-in recipients receiving the removal notification, immediately returning affected viewers to the denied share screen. Duplicate delete confirmations are suppressed, guest sessions no longer receive release summaries, and opening another share restores any stashed account session before deciding whether the requester is its owner.

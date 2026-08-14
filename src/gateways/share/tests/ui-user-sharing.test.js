@@ -29,6 +29,14 @@ const sessionFlowSource = await readFile(
     new URL("../ui/session-flow-hooks.js", import.meta.url),
     "utf8",
 );
+const accountShareAppSource = await readFile(
+    new URL("../ui/app/account-share/index.js", import.meta.url),
+    "utf8",
+);
+const accountShareHtmlSource = await readFile(
+    new URL("../ui/user-share.html", import.meta.url),
+    "utf8",
+);
 const receivedShareActionSource = await readFile(
     new URL("../ui/received-share-action.js", import.meta.url),
     "utf8",
@@ -462,10 +470,19 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /share\.keyring\.request_process/);
 });
 
-test("account shares use the unified usr-prefixed Share route", () => {
-    assert.match(sessionFlowSource, /shareToken\.startsWith\("usr_"\)/);
-    assert.match(sessionFlowSource, /resolveAccountShare/);
-    assert.match(sessionFlowSource, /shareToken\.slice\("usr_"\.length\)/);
+test("account shares use an authenticated page without guest-session bootstrap", () => {
+    assert.doesNotMatch(sessionFlowSource, /resolveAccountShare|usr_/);
+    assert.match(accountShareAppSource, /resolveAccountShare/);
+    assert.match(accountShareAppSource, /requireAccountSession:\s*true/);
+    assert.match(accountShareHtmlSource, /app\/account-share\/index\.js/);
+    assert.doesNotMatch(accountShareHtmlSource, /session-flow-hooks\.js/);
+});
+
+test("account-share password prompts omit public Share branding", () => {
+    assert.match(
+        receivedShareSource,
+        /resolveAccountShare[\s\S]*promptForPassword\(\{[\s\S]*showBrand:\s*false/,
+    );
 });
 
 test("share owners bypass recipient password prompting", () => {

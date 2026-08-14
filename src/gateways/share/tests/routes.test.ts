@@ -275,21 +275,20 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             ?.endsWith("src/adapters/share/user"),
         true,
     );
-    assert.deepEqual(
-        uiRegistry.listSpaRoutes().find((route) => route.id === "share-view"),
-        {
-            id: "share-view",
-            pattern: "^/share/(?:usr_|shr_)[^/]+$",
-            base: "/share",
-            scriptUrl: "/static/gateways/share/ui/app/index.js",
-            stylesheets: [
-                "/static/styles/page-builder.css",
-                "/static/styles/reuse/layout.css",
-                "/static/styles/reuse/page-sections.css",
-                "/static/gateways/share/ui/app/share-layout.css",
-            ],
-        },
+    assert.equal(
+        uiRegistry
+            .listSpaRoutes()
+            .find((route) => route.id === "share-link-view")?.scriptUrl,
+        "/static/gateways/share/ui/app/index.js",
     );
+    const accountShareRoute = uiRegistry
+        .listSpaRoutes()
+        .find((route) => route.id === "account-share-view");
+    assert.equal(
+        accountShareRoute?.scriptUrl,
+        "/static/gateways/share/ui/app/account-share/index.js",
+    );
+    assert.deepEqual(accountShareRoute?.access, { minRole: "user" });
     assert.equal(
         uiRegistry.listSpaRoutes().find((route) => route.id === "shares-page")
             ?.scriptUrl,
@@ -322,6 +321,17 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         /share.page_title|Shared Content|<main id="app">/,
     );
     assert.match(response.payload, /session-flow-hooks\.js/);
+
+    const accountShareResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET" }),
+        accountShareResponse,
+        new URL("http://localhost/share/usr_test-share"),
+    );
+    assert.equal(accountShareResponse.statusCode, 200);
+    assert.match(accountShareResponse.payload, /app\/account-share\/index\.js/);
+    assert.doesNotMatch(accountShareResponse.payload, /session-flow-hooks\.js/);
 
     const sharesResponse = new ResponseRecorder();
     await dispatchRoute(

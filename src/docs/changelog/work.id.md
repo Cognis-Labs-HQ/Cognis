@@ -1,5 +1,9 @@
 # Menyempurnakan pengelolaan berbagi
 
+## Pisahkan berbagi pengguna dari sesi tamu
+
+Berbagi pengguna yang terikat akun kini memakai halaman pengiriman terautentikasi khusus yang tidak pernah memuat bootstrap sesi tamu untuk tautan publik. Permintaan kata sandinya tidak menampilkan merek Cognis berbagi publik, sedangkan berbagi tautan publik tetap memakai siklus tamu dan permintaan bermerek.
+
 ## Cabut berbagi aktif dan batasi antarmuka tamu
 
 Penghapusan berbagi kini menerbitkan peristiwa pencabutan ke tab aktif dan penerima yang masuk saat menerima pemberitahuan penghapusan, sehingga pemirsa terdampak segera kembali ke layar berbagi yang ditolak. Konfirmasi hapus ganda dicegah, sesi tamu tidak lagi menerima ringkasan rilis, dan sesi akun yang disimpan dipulihkan sebelum menentukan kepemilikan berbagi lain.
