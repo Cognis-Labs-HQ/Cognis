@@ -3,6 +3,24 @@ import {
     resolveFieldErrorId,
 } from "../../reuse/popup.js";
 
+export function adapterConfigHasFields(payload) {
+    const dataFields = Object.keys(payload.data ?? {});
+    const environmentFields = Object.keys(payload.envValues ?? {});
+    const requiredFields = Array.isArray(payload.requiredFields)
+        ? payload.requiredFields
+        : [];
+    const schemaFields = Array.isArray(payload.schema)
+        ? payload.schema.map((field) => field.key)
+        : [];
+
+    return [
+        ...dataFields,
+        ...environmentFields,
+        ...requiredFields,
+        ...schemaFields,
+    ].some((fieldName) => fieldName !== "enabled");
+}
+
 export function createAdapterConfigPopup({
     i18n,
     escapeHtml,
@@ -326,6 +344,7 @@ export function createAdapterConfigPopup({
                 });
                 return;
             }
+            if (!adapterConfigHasFields(payload)) return;
             const dbData = payload.data ?? {};
             const envData = payload.envValues ?? {};
             const requiredFields = Array.isArray(payload.requiredFields)
