@@ -39,3 +39,7 @@ Never now hides the numeric field and saves without validation errors. User Sett
 ## Refresh the global timeout on reset
 
 The reset control is now always available. Each click reloads the latest Administration timeout and stages an update only when the effective value or default-following state differs.
+
+## Preserve Never during login
+
+Authentication bootstrap now preserves the stored zero-minute global timeout instead of replacing it with the 12-hour fallback, so synced users receive non-expiring sessions.

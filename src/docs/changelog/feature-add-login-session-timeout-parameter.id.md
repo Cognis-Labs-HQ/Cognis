@@ -39,3 +39,7 @@ Pengaturan Pengguna kini menyediakan tombol berikon urungkan di samping satuan d
 ## Segarkan batas waktu global saat mengatur ulang
 
 Kontrol atur ulang kini selalu tersedia. Setiap klik memuat ulang batas waktu Administrasi terbaru dan hanya menyiapkan pembaruan saat nilai efektif atau status mengikuti nilai bawaan berbeda.
+
+## Pertahankan Tidak pernah saat login
+
+Bootstrap autentikasi kini mempertahankan batas waktu global nol menit yang tersimpan, bukan menggantinya dengan nilai cadangan 12 jam, sehingga pengguna tersinkronisasi menerima sesi tanpa kedaluwarsa.

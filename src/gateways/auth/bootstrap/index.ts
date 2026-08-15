@@ -23,6 +23,7 @@ import {
 import { loadLocalAccountStore } from "./local-account.js";
 import { createAuthRouteBootstrapRuntime } from "./route-runtime.js";
 import { runBootstrapDirectoryHooks } from "../../reuse/bootstrap-loader.js";
+import { parseLoginSessionTimeoutMinutes } from "../session-timeout.js";
 
 export interface AuthAccountStore {
     ensureSchema(): Promise<void>;
@@ -360,11 +361,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         : false,
                 userValidationMode:
                     parsed.userValidationMode === "smtp" ? "smtp" : "none",
-                loginSessionTimeoutMinutes:
-                    Number.isInteger(parsed.loginSessionTimeoutMinutes) &&
-                    Number(parsed.loginSessionTimeoutMinutes) >= 1
-                        ? Number(parsed.loginSessionTimeoutMinutes)
-                        : 720,
+                loginSessionTimeoutMinutes: parseLoginSessionTimeoutMinutes(
+                    parsed.loginSessionTimeoutMinutes,
+                ),
             };
         } catch {
             return {

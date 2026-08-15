@@ -39,3 +39,7 @@ Die Benutzereinstellungen bieten jetzt neben der Zeiteinheit eine Schaltfläche 
 ## Globales Zeitlimit beim Zurücksetzen aktualisieren
 
 Die Schaltfläche zum Zurücksetzen ist jetzt immer verfügbar. Bei jedem Klick wird das aktuelle Zeitlimit der Administration neu geladen und nur dann eine Änderung vorgemerkt, wenn sich der wirksame Wert oder die Bindung an den Standardwert unterscheidet.
+
+## „Nie“ bei der Anmeldung bewahren
+
+Der Authentifizierungsstart bewahrt jetzt das gespeicherte globale Zeitlimit von null Minuten, statt es durch den 12-Stunden-Rückfallwert zu ersetzen. Synchronisierte Benutzer erhalten dadurch Sitzungen ohne Ablauf.

@@ -8,6 +8,13 @@ import {
     verifyAccessToken,
 } from "../access-tokens.js";
 import { makeJsonRequest, makeResponse } from "./auth-gateway-test-helpers.js";
+import { parseLoginSessionTimeoutMinutes } from "../session-timeout.js";
+
+test("auth bootstrap preserves a globally disabled session timeout", () => {
+    assert.equal(parseLoginSessionTimeoutMinutes(0), 0);
+    assert.equal(parseLoginSessionTimeoutMinutes(720), 720);
+    assert.equal(parseLoginSessionTimeoutMinutes(-1), 720);
+});
 
 test("a user timeout preference survives compatible administration updates", async () => {
     const capabilities = new CapabilityStore();
