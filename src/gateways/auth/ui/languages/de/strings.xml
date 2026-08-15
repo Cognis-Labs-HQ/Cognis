@@ -34,4 +34,6 @@
   <string name="gateway.auth.security.session_timeout_reset">Standard-Zeitlimit für Anmeldesitzungen verwenden</string>
   <string name="gateway.auth.security.session_timeout_never">Nie</string>
   <string name="gateway.auth.security.session_timeout_reset_failed">Das Standard-Zeitlimit für Anmeldesitzungen konnte nicht geladen werden.</string>
+  <string name="gateway.auth.security.session_expires_in">Aktuelle Sitzung läuft in {countdown} ab</string>
+  <string name="gateway.auth.security.session_expired">Aktuelle Sitzung abgelaufen</string>
 </resources>

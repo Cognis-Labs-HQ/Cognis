@@ -43,3 +43,7 @@ The reset control is now always available. Each click reloads the latest Adminis
 ## Preserve Never during login
 
 Authentication bootstrap now preserves the stored zero-minute global timeout instead of replacing it with the 12-hour fallback, so synced users receive non-expiring sessions.
+
+## Show the current session countdown
+
+User Security settings now show the current session time remaining beside the timeout controls. The countdown uses the expiry recorded from the issued session and is omitted for sessions that never expire.

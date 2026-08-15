@@ -43,3 +43,7 @@ Die Schaltfläche zum Zurücksetzen ist jetzt immer verfügbar. Bei jedem Klick 
 ## „Nie“ bei der Anmeldung bewahren
 
 Der Authentifizierungsstart bewahrt jetzt das gespeicherte globale Zeitlimit von null Minuten, statt es durch den 12-Stunden-Rückfallwert zu ersetzen. Synchronisierte Benutzer erhalten dadurch Sitzungen ohne Ablauf.
+
+## Countdown der aktuellen Sitzung anzeigen
+
+Die Benutzersicherheitseinstellungen zeigen jetzt neben den Zeitlimit-Steuerelementen die verbleibende Zeit der aktuellen Sitzung. Der Countdown verwendet den bei der Sitzungsausgabe gespeicherten Ablaufzeitpunkt und entfällt bei Sitzungen ohne Ablauf.

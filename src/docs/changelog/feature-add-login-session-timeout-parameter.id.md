@@ -43,3 +43,7 @@ Kontrol atur ulang kini selalu tersedia. Setiap klik memuat ulang batas waktu Ad
 ## Pertahankan Tidak pernah saat login
 
 Bootstrap autentikasi kini mempertahankan batas waktu global nol menit yang tersimpan, bukan menggantinya dengan nilai cadangan 12 jam, sehingga pengguna tersinkronisasi menerima sesi tanpa kedaluwarsa.
+
+## Tampilkan hitung mundur sesi saat ini
+
+Pengaturan Keamanan Pengguna kini menampilkan sisa waktu sesi saat ini di samping kontrol batas waktu. Hitung mundur menggunakan waktu kedaluwarsa yang dicatat saat sesi diterbitkan dan tidak ditampilkan untuk sesi yang tidak pernah berakhir.

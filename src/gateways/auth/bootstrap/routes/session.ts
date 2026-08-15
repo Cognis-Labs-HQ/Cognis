@@ -293,6 +293,7 @@ export function createSessionRoutes({
                         role: sessionResult.role,
                         isFounder: sessionResult.isFounder,
                         token,
+                        ttlSeconds,
                         userValidationMode: sessionResult.userValidationMode,
                         requiredUserValidation:
                             sessionResult.requiredUserValidation,
@@ -355,6 +356,7 @@ export function createSessionRoutes({
                         role: sessionResult.role,
                         isFounder: sessionResult.isFounder,
                         token,
+                        ttlSeconds,
                         userValidationMode: sessionResult.userValidationMode,
                         requiredUserValidation:
                             sessionResult.requiredUserValidation,

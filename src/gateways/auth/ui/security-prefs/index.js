@@ -4,6 +4,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
+import { formatCountdown } from "/static/reuse/countdown.js";
 import {
     joinDurationMinutes,
     splitDurationMinutes,
@@ -20,6 +21,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     let originalSessionTimeoutMinutes = null;
     let usesDefaultSessionTimeout = true;
     let originalUsesDefaultSessionTimeout = true;
+    let sessionCountdownTimer = null;
 
     async function loadCapability() {
         const response = await apiFetch(
@@ -129,6 +131,41 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         unit.value = duration.unit;
     }
 
+    function startSessionExpiryCountdown() {
+        if (sessionCountdownTimer !== null) {
+            window.clearInterval(sessionCountdownTimer);
+            sessionCountdownTimer = null;
+        }
+        const expiresAt = Date.parse(
+            localStorage.getItem("cognis_session_expires_at") ?? "",
+        );
+        const updateCountdown = () => {
+            const countdown = settingsRoot.querySelector(
+                "#settings-login-session-timeout-countdown",
+            );
+            if (!(countdown instanceof HTMLElement)) {
+                window.clearInterval(sessionCountdownTimer);
+                sessionCountdownTimer = null;
+                return;
+            }
+            const remaining = expiresAt - Date.now();
+            countdown.textContent =
+                remaining > 0
+                    ? i18n
+                          .t("gateway.auth.security.session_expires_in")
+                          .replace("{countdown}", formatCountdown(remaining))
+                    : i18n.t("gateway.auth.security.session_expired");
+            if (remaining <= 0) {
+                window.clearInterval(sessionCountdownTimer);
+                sessionCountdownTimer = null;
+            }
+        };
+        updateCountdown();
+        if (Number.isFinite(expiresAt) && expiresAt > Date.now()) {
+            sessionCountdownTimer = window.setInterval(updateCountdown, 1000);
+        }
+    }
+
     function renderBody() {
         if (!capability) {
             return `<p class="structured-content__text">${i18n.t("gateway.auth.security.loading")}</p>`;
@@ -138,6 +175,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             sessionTimeout?.timeoutMinutes || 1,
         );
         const timeoutDisabled = sessionTimeout?.maximumMinutes === 0;
+        const hasSessionExpiry = Number.isFinite(
+            Date.parse(localStorage.getItem("cognis_session_expires_at") ?? ""),
+        );
         return `
       <div class="components-section settings-auth-password-reset">
         <button class="btn-animated btn-cancel" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
@@ -162,6 +202,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
           <button id="settings-login-session-timeout-reset" class="btn-neutral" type="button" title="${escapeHtml(i18n.t("gateway.auth.security.session_timeout_reset"))}" aria-label="${escapeHtml(i18n.t("gateway.auth.security.session_timeout_reset"))}">
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5a7 7 0 1 1-6.32 4H8L4.5 5.5 1 9h2.6A9 9 0 1 0 12 3v2Z" /></svg>
           </button>
+          ${!timeoutDisabled && hasSessionExpiry ? `<span id="settings-login-session-timeout-countdown" class="structured-content__text" aria-live="off"></span>` : ""}
           ${timeoutDisabled ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_disabled"))}</p>` : ""}
         </div>
       </div>
@@ -193,6 +234,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         panel.innerHTML = renderBody();
         bindPasswordResetButton();
         syncLoginSessionTimeoutInputVisibility();
+        startSessionExpiryCountdown();
         const timeoutInput = settingsRoot.querySelector(
             "#settings-login-session-timeout",
         );

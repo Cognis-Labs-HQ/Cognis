@@ -86,6 +86,13 @@ test("auth security preferences show a non-selectable Never default", () => {
     );
 });
 
+test("auth security preferences show the current session countdown", () => {
+    assert.match(SOURCE, /cognis_session_expires_at/);
+    assert.match(SOURCE, /formatCountdown\(remaining\)/);
+    assert.match(SOURCE, /settings-login-session-timeout-countdown/);
+    assert.match(SOURCE, /!timeoutDisabled && hasSessionExpiry/);
+});
+
 test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /listKeyringEntries/);
     assert.match(KEYRING_SETTINGS_SOURCE, /createKeyringScope/);
