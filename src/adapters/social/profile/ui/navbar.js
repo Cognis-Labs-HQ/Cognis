@@ -1,5 +1,5 @@
 import { apiFetch } from "/static/reuse/api-client.js";
-import { registerAvatarProvider } from "/static/layouts/dashboard-layout.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { applyStaticTranslations, createI18n } from "/static/reuse/i18n.js";
 import { fetchProfileAvatarBlobUrl } from "./profile-avatar.js";
 import { registerSearchIndexing } from "./search/index.js";
@@ -120,7 +120,7 @@ function updateAvailabilitySelection(container, indicator, status, i18n) {
     indicator.setAttribute("aria-label", label);
 }
 
-registerAvatarProvider(async function profileAvatarProvider() {
+uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
     try {
         const pingRes = await apiFetch("/api/v1/social/profile/ping");
         if (!pingRes.ok) return { profileAvailable: false };

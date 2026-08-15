@@ -161,13 +161,17 @@ test("dashboard layout suppresses release summaries for guest sessions", () => {
     assert.match(authSessionSource, /accountId\.startsWith\("share:"\)/);
 });
 
-test("dashboard layout leaves cached avatar blob ownership with its provider", () => {
+test("dashboard layout preserves capability-owned cached avatar images", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
     assert.doesNotMatch(layoutSource, /URL\.revokeObjectURL/);
-    assert.match(layoutSource, /provider-owned blob URL/);
+    assert.match(layoutSource, /ui:navbarAvatarProvider/);
+    assert.match(
+        layoutSource,
+        /!avatarProvider && avatarBtn\.querySelector\("\.avatar-image"\)/,
+    );
 });
 
 test("dashboard layout re-shows theme toggle on shell reuse when enabled", () => {

@@ -434,3 +434,28 @@ test("router mounts the native error page without account authentication", () =>
         /const authResult = route\.public[\s\S]*\? null[\s\S]*runFlow\("authenticate-session"/,
     );
 });
+
+test("navbar avatar refresh preserves a resolved image during SPA plugin loading", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const profileNavbarSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/ui/navbar.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /uiCtx\.capabilities\.get\("ui:navbarAvatarProvider"\)/,
+    );
+    assert.match(
+        source,
+        /if \(!avatarProvider && avatarBtn\.querySelector\("\.avatar-image"\)\) return/,
+    );
+    assert.match(
+        profileNavbarSource,
+        /uiCtx\.capabilities\.contribute\("ui:navbarAvatarProvider"/,
+    );
+    assert.doesNotMatch(profileNavbarSource, /registerAvatarProvider/);
+});

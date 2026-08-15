@@ -227,21 +227,10 @@ function bindTopbarActions() {
 }
 
 /**
- * Registered by gateway navbar plugins to supply avatar and profile-link
- * state. The function receives no arguments and returns a plain object with:
- *   - profileAvailable: boolean — whether to show the Profile nav link
- *   - avatarBlobUrl?: string   — a provider-owned blob URL for the avatar
- *
- * Only one provider is active at a time; the most recently registered one
- * wins. Gateways register by calling `registerAvatarProvider` from their
- * navbar plugin module, which is loaded automatically by the dashboard layout.
+ * Refreshes the navbar avatar through the optional profile-owned CTX provider.
+ * The existing image remains mounted while navbar plugins are still loading so
+ * SPA page composition cannot temporarily erase a resolved profile avatar.
  */
-let _avatarProvider = null;
-
-export function registerAvatarProvider(fn) {
-    _avatarProvider = fn;
-}
-
 export async function updateNavbarAvatar() {
     const avatarBtn = document.querySelector(".avatar-button");
     const profileLink = document.querySelector("[data-profile-link]");
@@ -254,10 +243,13 @@ export async function updateNavbarAvatar() {
 
     let profileAvailable = false;
     let avatarBlobUrl = null;
+    const avatarProvider = uiCtx.capabilities.get("ui:navbarAvatarProvider");
 
-    if (_avatarProvider) {
+    if (!avatarProvider && avatarBtn.querySelector(".avatar-image")) return;
+
+    if (avatarProvider) {
         try {
-            const result = await _avatarProvider();
+            const result = await avatarProvider();
             profileAvailable = result?.profileAvailable ?? false;
             avatarBlobUrl = result?.avatarBlobUrl ?? null;
         } catch {
