@@ -23,3 +23,7 @@ User Security settings now show Login Session Timeout as a distinct subsection, 
 ## Track timeout changes reliably
 
 Session timeout fields now participate in unsaved-change tracking in both Administration and User Settings. User Settings also separates the password action and timeout heading with consistent section spacing.
+
+## Preserve user choices and report expiry
+
+Compatible Administration timeout updates now leave each saved user duration unchanged; temporary lower limits cap it without overwriting it. Expired API sessions immediately return users to Login and display the existing session-expired message.

@@ -23,3 +23,7 @@ Pengaturan Keamanan Pengguna kini menampilkan Batas Waktu Sesi Login sebagai sub
 ## Lacak perubahan batas waktu dengan andal
 
 Kolom batas waktu sesi kini masuk dalam pelacakan perubahan yang belum disimpan di Administrasi dan Pengaturan Pengguna. Pengaturan Pengguna juga memisahkan tindakan kata sandi dan judul batas waktu dengan jarak antarbagian yang konsisten.
+
+## Pertahankan pilihan pengguna dan laporkan kedaluwarsa
+
+Pembaruan batas waktu Administrasi yang kompatibel kini mempertahankan durasi tersimpan setiap pengguna; batas sementara yang lebih rendah hanya membatasinya tanpa menimpanya. Sesi API yang kedaluwarsa segera mengembalikan pengguna ke halaman Login dan menampilkan pesan sesi kedaluwarsa yang tersedia.

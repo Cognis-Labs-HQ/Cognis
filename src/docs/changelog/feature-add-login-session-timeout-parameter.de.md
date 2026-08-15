@@ -23,3 +23,7 @@ Die Sicherheitseinstellungen für Benutzer zeigen das Zeitlimit der Anmeldesitzu
 ## Änderungen am Zeitlimit zuverlässig verfolgen
 
 Die Felder für das Sitzungszeitlimit werden jetzt sowohl in der Administration als auch in den Benutzereinstellungen als ungespeicherte Änderungen erfasst. In den Benutzereinstellungen trennt ein einheitlicher Abschnittsabstand außerdem die Passwortaktion von der Überschrift des Zeitlimits.
+
+## Benutzerauswahl bewahren und Ablauf melden
+
+Kompatible Änderungen des Zeitlimits in der Administration lassen die gespeicherte Dauer jedes Benutzers unverändert; vorübergehend niedrigere Grenzen beschränken sie, ohne sie zu überschreiben. Abgelaufene API-Sitzungen führen Benutzer sofort zur Anmeldung zurück und zeigen den bestehenden Hinweis zum Sitzungsablauf.

@@ -95,6 +95,7 @@ for (const status of [401, 403]) {
             dispatchedEvents[0].detail.path,
             "/api/v1/modules/example/resource",
         );
+        assert.equal(dispatchedEvents[0].detail.status, status);
     });
 }
 

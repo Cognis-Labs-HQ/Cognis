@@ -28,6 +28,7 @@ export async function confirmPassword(password = "") {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(body),
+        suppressAccessDeniedEvent: true,
     });
     return response.ok;
 }

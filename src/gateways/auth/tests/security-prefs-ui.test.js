@@ -13,6 +13,14 @@ const PASSWORD_CHANGE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/security-prefs/password-change.js"),
     "utf8",
 );
+const PASSWORD_CONFIRMATION_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/reuse/password-confirmation.js"),
+    "utf8",
+);
+const SESSION_FLOW_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
+    "utf8",
+);
 const KEYRING_SETTINGS_SOURCE = readFileSync(
     resolve(ROOT, "src/adapters/auth/keyring/ui/settings.js"),
     "utf8",
@@ -121,5 +129,18 @@ test("password change popup revalidates confirm password reactively", () => {
     assert.match(
         PASSWORD_CHANGE_SOURCE,
         /messageKey:\s*"ui\.app\.register\.passwords_match"/,
+    );
+});
+
+test("expired API sessions redirect to login with expiry messaging", () => {
+    assert.match(SESSION_FLOW_SOURCE, /cognis:api-access-denied/);
+    assert.match(SESSION_FLOW_SOURCE, /event\.detail\?\.status !== 401/);
+    assert.match(
+        SESSION_FLOW_SOURCE,
+        /window\.location\.replace\("\/login\?reason=session_expired"\)/,
+    );
+    assert.match(
+        PASSWORD_CONFIRMATION_SOURCE,
+        /suppressAccessDeniedEvent: true/,
     );
 });
