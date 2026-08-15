@@ -4,6 +4,7 @@ import {
     createI18n,
 } from "/static/reuse/i18n.js";
 import { registerServiceWorker } from "/static/reuse/pwa.js";
+import { getLoginReturnPath } from "/static/reuse/login-navigation.js";
 
 registerServiceWorker();
 
@@ -56,6 +57,8 @@ if (!token) {
             body: JSON.stringify({ token }),
         });
         showResult(res.ok);
+        const returnPath = getLoginReturnPath();
+        if (res.ok && returnPath) window.location.replace(returnPath);
     } catch {
         showResult(false);
     }

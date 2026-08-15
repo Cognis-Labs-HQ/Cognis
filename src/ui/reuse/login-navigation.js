@@ -4,6 +4,7 @@
  * Public exports:
  * - withLoginReturnPath() — adds the current page as a login `next` parameter.
  * - getLoginReturnPath() — validates and returns a login `next` destination.
+ * - withNextDestination() — carries a validated destination to another URL.
  *
  * Usage:
  *   window.location.replace(withLoginReturnPath('/login?reason=session_expired'));
@@ -32,4 +33,20 @@ export function getLoginReturnPath(location = window.location) {
     if (destination.origin !== location.origin) return null;
     if (destination.pathname === "/login") return null;
     return `${destination.pathname}${destination.search}${destination.hash}`;
+}
+
+/**
+ * @param {string} targetUrl Local URL that should carry the destination.
+ * @param {string|null} next Validated local destination to carry forward.
+ * @param {string} [origin] Current application origin.
+ * @returns {string} Local target URL, with `next` when supplied.
+ */
+export function withNextDestination(
+    targetUrl,
+    next,
+    origin = window.location.origin,
+) {
+    const url = new URL(targetUrl, origin);
+    if (next) url.searchParams.set("next", next);
+    return `${url.pathname}${url.search}${url.hash}`;
 }

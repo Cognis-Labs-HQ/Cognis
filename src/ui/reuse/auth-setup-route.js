@@ -6,5 +6,8 @@ export function redirectToRequiredTfaSetup(
     location = window.location,
 ) {
     persistSession(data);
-    location.href = SECURITY_SETTINGS_HASH_PATH;
+    const next = new URL(location.href).searchParams.get("next");
+    const setupUrl = new URL(SECURITY_SETTINGS_HASH_PATH, location.origin);
+    if (next) setupUrl.searchParams.set("next", next);
+    location.href = `${setupUrl.pathname}${setupUrl.search}${setupUrl.hash}`;
 }

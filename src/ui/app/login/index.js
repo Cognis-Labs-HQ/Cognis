@@ -15,7 +15,10 @@ import {
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
-import { getLoginReturnPath } from "../../reuse/login-navigation.js";
+import {
+    getLoginReturnPath,
+    withNextDestination,
+} from "../../reuse/login-navigation.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
 import {
     clearLoginSession,
@@ -729,12 +732,15 @@ export async function mount(root) {
         <span id="typing-text"></span><span class="typing-cursor" aria-hidden="true">_</span>
       </div>
     `;
+        const registrationUrl = escapeHtml(
+            withNextDestination("/register", getLoginReturnPath()),
+        );
         const signupCalloutHtml = publicRegistrationEnabled
             ? `<div id="login-signup-callout">${renderInPageCallout({
                   variant: "info",
                   title: i18n.t("ui.app.login.not_registered.title"),
                   body: i18n.t("ui.app.login.not_registered.body"),
-                  footerHtml: `<a href="/register" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a>`,
+                  footerHtml: `<a href="${registrationUrl}" class="in-page-callout__link">${escapeHtml(i18n.t("ui.app.login.not_registered.link"))}</a>`,
               })}</div>`
             : "";
         const formPanelHtml = `
@@ -787,7 +793,7 @@ export async function mount(root) {
                 onRender: () => {
                     resetPasswordResetMode();
                     if (lastTfaPayload !== null) {
-                        // Restore saved TFA prompt state; on failure, fall through to login-method loading (lines 609-610 below).
+                        // Restore saved TFA prompt state; failures use the login-method fallback in the catch block below.
                         loadTfaLoginClient()
                             .then((client) => {
                                 if (client) {

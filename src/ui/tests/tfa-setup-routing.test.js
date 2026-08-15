@@ -10,9 +10,12 @@ import {
     resolveSettingsSetupRedirect,
 } from "../app/settings/setup-requirement.js";
 
-test("login TFA setup redirect persists the session and targets /settings#security", () => {
+test("login TFA setup redirect persists the session and next destination", () => {
     let persistedSession = null;
-    const location = { href: "" };
+    const location = {
+        href: "https://cognis.test/login?next=%2Fcalendar%3Fview%3Dweek",
+        origin: "https://cognis.test",
+    };
     const sessionData = { token: "pending-token", accountId: "alice" };
 
     redirectToRequiredTfaSetup(
@@ -24,7 +27,10 @@ test("login TFA setup redirect persists the session and targets /settings#securi
     );
 
     assert.deepEqual(persistedSession, sessionData);
-    assert.equal(location.href, SECURITY_SETTINGS_HASH_PATH);
+    assert.equal(
+        location.href,
+        "/settings?next=%2Fcalendar%3Fview%3Dweek#security",
+    );
     assert.equal(SECURITY_SETTINGS_HASH_PATH, "/settings#security");
 });
 

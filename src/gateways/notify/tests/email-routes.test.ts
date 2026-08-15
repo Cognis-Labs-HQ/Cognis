@@ -457,7 +457,11 @@ test("add email issues both TFA code and verify token and includes link in email
     const res = makeResponse();
 
     await route(
-        makeRequest("POST", { email: "alice@example.com" }, authToken),
+        makeRequest(
+            "POST",
+            { email: "alice@example.com", next: "/calendar?view=week" },
+            authToken,
+        ),
         res,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
@@ -465,6 +469,10 @@ test("add email issues both TFA code and verify token and includes link in email
     assert.equal(sentEmails.length, 1);
     assert.ok(sentEmails[0].verifyUrl);
     assert.ok(sentEmails[0].verifyUrl!.includes("/verify-email?token="));
+    assert.equal(
+        new URL(sentEmails[0].verifyUrl!).searchParams.get("next"),
+        "/calendar?view=week",
+    );
     const data = JSON.parse(res.payload);
     assert.ok(
         data.data.watchToken,

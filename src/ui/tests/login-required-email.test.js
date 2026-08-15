@@ -46,7 +46,7 @@ test("login UI includes password reset token flow and nested signup callout link
     assert.match(source, /method\?\.forgotPassword !== true/);
     assert.match(source, /actions\.replaceChildren\(\)/);
     assert.doesNotMatch(source, /<a href="#" id="login-request-link"/);
-    assert.match(source, /footerHtml:\s*`<a href="\/register"/);
+    assert.match(source, /footerHtml:\s*`<a href="\$\{registrationUrl\}"/);
 });
 
 test("login UI resets password reset mode on refresh re-render", () => {

@@ -29,6 +29,10 @@ import {
     normalizePasswordPolicy,
 } from "/static/gateways/auth/password-policy.js";
 import { bindConfirmPasswordRevalidation } from "/static/gateways/auth/reuse/bind-confirm-password-revalidation.js";
+import {
+    getLoginReturnPath,
+    withNextDestination,
+} from "/static/reuse/login-navigation.js";
 
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
@@ -145,6 +149,7 @@ export async function mount(root, { signal } = {}) {
     const prefilledEmail = String(params.get("email") ?? "")
         .trim()
         .toLowerCase();
+    const returnPath = getLoginReturnPath();
     const knownErrorCodes = new Set([
         "invalid_token",
         "username_taken",
@@ -498,7 +503,10 @@ export async function mount(root, { signal } = {}) {
                     "content-type": "application/json",
                     authorization: `Bearer ${verifyToken}`,
                 },
-                body: JSON.stringify({ email: emailAddress }),
+                body: JSON.stringify({
+                    email: emailAddress,
+                    next: returnPath,
+                }),
             },
         );
         if (!addResponse.ok) {
@@ -571,7 +579,10 @@ export async function mount(root, { signal } = {}) {
                         signInInsteadButton.addEventListener(
                             "click",
                             () => {
-                                window.location.href = "/login";
+                                window.location.href = withNextDestination(
+                                    "/login",
+                                    returnPath,
+                                );
                             },
                             signal ? { signal } : undefined,
                         );
@@ -812,7 +823,10 @@ export async function mount(root, { signal } = {}) {
                                     variant: "success",
                                 });
                                 window.setTimeout(() => {
-                                    window.location.href = "/login";
+                                    window.location.href = withNextDestination(
+                                        "/login",
+                                        returnPath,
+                                    );
                                 }, 1200);
                             } catch {
                                 showToast(

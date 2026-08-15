@@ -11,6 +11,7 @@ import {
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+import { getLoginReturnPath } from "/static/reuse/login-navigation.js";
 import {
     loadTfaStatus,
     beginTfaSetup,
@@ -604,6 +605,11 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 );
                 pendingPreferredIds = [...savedPreferredIds];
                 rerender();
+                const returnPath = getLoginReturnPath();
+                if (tfaStatus?.requiresSetup !== true && returnPath) {
+                    window.location.href = returnPath;
+                    return;
+                }
             }
         } finally {
             if (generatedRecoveryCodes.length === 0) {

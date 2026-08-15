@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import {
     getLoginReturnPath,
     withLoginReturnPath,
+    withNextDestination,
 } from "../login-navigation.js";
 
 test("withLoginReturnPath preserves the complete current relative URL", () => {
@@ -15,6 +16,17 @@ test("withLoginReturnPath preserves the complete current relative URL", () => {
     assert.equal(
         withLoginReturnPath("/login?reason=session_expired", location),
         "/login?reason=session_expired&next=%2Fsettings%3Fsection%3Dsecurity%23password",
+    );
+});
+
+test("withNextDestination carries a return path between auth pages", () => {
+    assert.equal(
+        withNextDestination(
+            "/register",
+            "/calendar?view=week",
+            "https://cognis.test",
+        ),
+        "/register?next=%2Fcalendar%3Fview%3Dweek",
     );
 });
 

@@ -46,6 +46,14 @@ export function createUserEmailRoutes(
             15 * 60 * 1000,
             getVerificationCodeLength?.(),
         );
+    const resolveNextParameter = (value: unknown): string | null => {
+        const next = String(value ?? "").trim();
+        if (!next.startsWith("/") || next.startsWith("//")) return null;
+        const destination = new URL(next, "http://cognis.local");
+        if (destination.origin !== "http://cognis.local") return null;
+        if (destination.pathname === "/verify-email") return null;
+        return `${destination.pathname}${destination.search}${destination.hash}`;
+    };
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -229,8 +237,9 @@ export function createUserEmailRoutes(
                     const key = `${username}:${email}`;
                     const code = issueVerificationCode(key);
                     const watchToken = verifyTokenService.issueOrGet(key);
+                    const next = resolveNextParameter(body.next);
                     const verifyUrl = externalHost
-                        ? `${externalHost}/verify-email?token=${watchToken}`
+                        ? `${externalHost}/verify-email?token=${watchToken}${next ? `&next=${encodeURIComponent(next)}` : ""}`
                         : undefined;
                     await emailDelivery.sendEmail({
                         recipientEmail: email,
