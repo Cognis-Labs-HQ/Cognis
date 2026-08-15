@@ -20,6 +20,7 @@ import {
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { ensureNavbarPluginsLoaded } from "/static/layouts/dashboard-layout.js";
 import {
     fetchEmojiUsage,
     loadAllEmojis,
@@ -78,6 +79,8 @@ export async function mount(root, { signal } = {}) {
             "/static/gateways/social/languages",
         ],
     });
+    await ensureNavbarPluginsLoaded();
+    if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
     const {

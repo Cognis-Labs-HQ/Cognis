@@ -7,8 +7,7 @@
  *   assignment, student removal, and leave-classroom interactions.
  *
  * Usage:
- *   import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { mountStudyClassroomPage } from
+ *   import { mountStudyClassroomPage } from
  *     '/static/modules/study/languages/reuse/classroom-page.js';
  *
  *   export async function mount(root, { signal } = {}) {
@@ -22,6 +21,7 @@ import { mountStudyClassroomPage } from
  * @returns {Promise<void>}
  */
 
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";

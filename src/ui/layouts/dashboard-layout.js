@@ -296,7 +296,7 @@ let navbarPluginsLoaded = false;
 let navbarPluginsLoadPromise = null;
 let releaseChangelogPopupChecked = false;
 
-async function loadNavbarPlugins() {
+export async function ensureNavbarPluginsLoaded() {
     if (navbarPluginsLoaded) return;
     if (navbarPluginsLoadPromise) return navbarPluginsLoadPromise;
     if (!localStorage.getItem("cognis_access_token")) return;
@@ -324,7 +324,7 @@ async function loadNavbarPlugins() {
 }
 
 function completeDeferredLoginSetup() {
-    return loadNavbarPlugins().then(() => {
+    return ensureNavbarPluginsLoaded().then(() => {
         const hasDeferredKeyringSetup = uiCtx.capabilities.get(
             "keyring:hasDeferredSetup",
         );
@@ -348,12 +348,12 @@ function scheduleDeferredLoginSetup(i18n) {
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
     navbarPluginsLoaded = false;
-    loadNavbarPlugins().catch(() => {});
+    ensureNavbarPluginsLoaded().catch(() => {});
 });
 
 function scheduleNavbarEnhancements() {
     const runEnhancements = () => {
-        loadNavbarPlugins()
+        ensureNavbarPluginsLoaded()
             .then(() => {
                 updateNavbarAvatar().catch((error) => {
                     console.warn(
