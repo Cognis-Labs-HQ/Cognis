@@ -27,6 +27,7 @@
 
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { withLoginReturnPath } from "/static/reuse/login-navigation.js";
 
 let lastShareContext = null;
 
@@ -55,7 +56,11 @@ export async function ensureFullAccountSession() {
     const session = getSessionResult(flowResult);
     lastShareContext = session?.shareContext ?? null;
     if (session?.requiresRedirect && session.redirectTo) {
-        window.location.replace(session.redirectTo);
+        window.location.replace(
+            session.redirectTo.startsWith("/login")
+                ? withLoginReturnPath(session.redirectTo)
+                : session.redirectTo,
+        );
         return false;
     }
     return session?.authenticated === true;

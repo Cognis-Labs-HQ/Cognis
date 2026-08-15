@@ -16,6 +16,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 function loadAuthSessionForTests({
     runFlowImpl = async () => ({}),
     pathname = "/dashboard",
+    search = "",
     hash = "",
 } = {}) {
     const source = readFileSync(
@@ -37,7 +38,9 @@ function loadAuthSessionForTests({
         window: {
             location: {
                 pathname,
+                search,
                 hash,
+                origin: "https://cognis.test",
                 replace(url) {
                     redirects.push(url);
                 },
@@ -59,6 +62,11 @@ function loadAuthSessionForTests({
             },
         }),
         console,
+        withLoginReturnPath(loginUrl) {
+            const url = new URL(loginUrl, "https://cognis.test");
+            url.searchParams.set("next", `${pathname}${search}${hash}`);
+            return `${url.pathname}${url.search}${url.hash}`;
+        },
         __testExports: {},
     });
     vm.runInContext(
@@ -122,8 +130,11 @@ test("ensureFullAccountSession returns true when authenticated with no redirect"
     assert.deepEqual(redirects, []);
 });
 
-test("ensureFullAccountSession issues redirect and returns false when requiresRedirect", async () => {
+test("ensureFullAccountSession retains the current page in a login redirect", async () => {
     const { exports, redirects } = loadAuthSessionForTests({
+        pathname: "/settings",
+        search: "?section=security",
+        hash: "#password",
         runFlowImpl: async () =>
             flowResult({
                 authenticated: false,
@@ -133,7 +144,9 @@ test("ensureFullAccountSession issues redirect and returns false when requiresRe
     });
     const result = await exports.ensureFullAccountSession();
     assert.equal(result, false);
-    assert.deepEqual(redirects, ["/login?reason=session_expired"]);
+    assert.deepEqual(redirects, [
+        "/login?reason=session_expired&next=%2Fsettings%3Fsection%3Dsecurity%23password",
+    ]);
 });
 
 test("ensureFullAccountSession stores shareContext for later getShareContext() access", async () => {

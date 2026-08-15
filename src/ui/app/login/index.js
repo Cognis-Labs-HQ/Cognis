@@ -15,6 +15,7 @@ import {
 } from "../../reuse/auth-layout.js";
 import { syncTimezoneOnLogin } from "../../reuse/timestamp.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
+import { getLoginReturnPath } from "../../reuse/login-navigation.js";
 import { createLoginIntegrationLoader } from "./integrations.js";
 import {
     clearLoginSession,
@@ -369,7 +370,7 @@ export async function mount(root) {
             }
         }
         await syncTimezoneOnLogin(data.accountId);
-        window.location.href = "/dashboard";
+        window.location.href = getLoginReturnPath() ?? "/dashboard";
     }
 
     async function handleAuthResult(data, password = "") {

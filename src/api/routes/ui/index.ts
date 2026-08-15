@@ -139,7 +139,7 @@ async function resolveLoginRedirectLocation(
     }
 
     if (!session || !tokenInfo || tokenInfo.revoked) {
-        return "/login?reason=session_expired";
+        return `/login?reason=session_expired&next=${encodeURIComponent(req.url ?? "/dashboard")}`;
     }
 
     if (!accountStore || typeof accountStore.getInfo !== "function") return "";

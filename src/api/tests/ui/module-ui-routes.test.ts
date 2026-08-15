@@ -73,7 +73,10 @@ test("module ui routes redirect revoked sessions with session_expired reason", a
     );
 
     assert.equal(recorder.status, 302);
-    assert.equal(recorder.headers.location, "/login?reason=session_expired");
+    assert.equal(
+        recorder.headers.location,
+        "/login?reason=session_expired&next=%2Fdashboard",
+    );
 });
 
 test("module ui routes skip disabled modules when isModuleEnabled returns false", async () => {
