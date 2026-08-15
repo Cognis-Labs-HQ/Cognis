@@ -5,7 +5,7 @@ import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
-import { handleProfileAvatarError } from "/static/gateways/social/reuse/profile-avatar.js";
+import { handleProfileAvatarError } from "/static/reuse/avatar-utils.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import {
     getShareContext,

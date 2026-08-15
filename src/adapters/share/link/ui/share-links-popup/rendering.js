@@ -1,5 +1,8 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import { uiCtx } from "/static/reuse/ui-ctx.js";
+import {
+    buildProfileAvatarMarkup,
+    hydrateProfileAvatars,
+} from "/static/reuse/avatar-utils.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
@@ -15,24 +18,11 @@ const STYLESHEET_HREF =
 let stylesheetReady = null;
 
 export function buildRecipientAvatarMarkup(options) {
-    const avatarRenderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
-    if (avatarRenderer?.buildMarkup) {
-        return avatarRenderer.buildMarkup(options);
-    }
-    const avatarClass = escapeHtml(options.avatarClass);
-    const fallbackClass = escapeHtml(options.fallbackClass);
-    const initials = "?";
-    return (
-        `<span class="${avatarClass}">` +
-        `<span class="${fallbackClass}">` +
-        `${initials}</span></span>`
-    );
+    return buildProfileAvatarMarkup(options);
 }
 
 export function hydrateRecipientAvatars(container) {
-    return uiCtx.capabilities
-        .get("ui:profileAvatarRenderer")
-        ?.hydrate?.(container);
+    return hydrateProfileAvatars(container);
 }
 export function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;

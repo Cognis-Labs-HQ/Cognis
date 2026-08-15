@@ -136,7 +136,7 @@ test("share recipient search truncates results on the API-caller side", () => {
 test("share popup renders link variants with optional avatar capabilities", () => {
     assert.match(popupSource, /link\?\.variants/);
     assert.match(popupSource, /variant\.url/);
-    assert.match(popupSource, /ui:profileAvatarRenderer/);
+    assert.match(popupSource, /static\/reuse\/avatar-utils\.js/);
     assert.doesNotMatch(popupSource, /static\/gateways\/social/);
     assert.match(popupSource, /data-share-user-avatar-key/);
     assert.match(popupSource, /profileHandle/);

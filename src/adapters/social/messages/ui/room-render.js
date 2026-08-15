@@ -1,9 +1,7 @@
 import {
     buildProfileAvatarMarkup,
-    isProfileAvatarUnavailable,
-} from "/static/gateways/social/reuse/profile-avatar.js";
-import {
     getInitialsText,
+    isProfileAvatarUnavailable,
     pickInitialsColor,
 } from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -128,7 +126,7 @@ function randomSample(values, count) {
         .map((item) => item.value);
 }
 
-function renderMemberInitials(member) {
+function renderMemberAvatar(member) {
     const label = resolveMemberDisplayName(member);
     const color = pickInitialsColor(member.handle || member.accountId || label);
     return `<span class="messages-classroom-collage-tile" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
@@ -154,7 +152,7 @@ function renderRoomAvatar(room, currentAccountId) {
         while (picked.length < 4) {
             picked.push({ handle: "", displayName: "" });
         }
-        return `<div class="messages-classroom-collage">${picked.map(renderMemberInitials).join("")}</div>`;
+        return `<div class="messages-classroom-collage">${picked.map(renderMemberAvatar).join("")}</div>`;
     }
     const other =
         members.find((member) => member.accountId !== currentAccountId) ??

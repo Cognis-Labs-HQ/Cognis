@@ -1,8 +1,8 @@
-import { pickInitialsColor } from "/static/reuse/avatar-utils.js";
 import {
     buildProfileAvatarMarkup,
     hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
+    pickInitialsColor,
+} from "/static/reuse/avatar-utils.js";
 
 export function getPointerOffset(canvasInstance) {
     return canvasInstance?.getViewportOffset?.() ?? { x: 0, y: 0 };

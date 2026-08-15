@@ -1,5 +1,5 @@
 import { apiFetch } from "/static/reuse/api-client.js";
-import { buildProfileAvatarMarkup } from "/static/gateways/social/reuse/profile-avatar.js";
+import { buildProfileAvatarMarkup } from "/static/reuse/avatar-utils.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 
 const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({

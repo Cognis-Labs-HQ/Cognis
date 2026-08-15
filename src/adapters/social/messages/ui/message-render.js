@@ -1,7 +1,7 @@
 import {
     buildProfileAvatarMarkup,
     hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
+} from "/static/reuse/avatar-utils.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";

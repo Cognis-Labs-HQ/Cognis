@@ -1,5 +1,5 @@
 import { showToast } from "/static/reuse/toast.js";
-import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
+import { hydrateProfileAvatars } from "/static/reuse/avatar-utils.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import {
     HEARTBEAT_INTERVAL_MS,

@@ -1,7 +1,7 @@
 import {
     buildProfileAvatarMarkup,
     hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
+} from "/static/reuse/avatar-utils.js";
 
 /**
  * Participant identifier normalization helpers for calendar popup search.

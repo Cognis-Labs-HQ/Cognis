@@ -3,7 +3,7 @@ import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatTime } from "/static/reuse/timestamp.js";
 import { bytesToHex, hexToBytes } from "/static/reuse/crypto-utils.js";
-import { hydrateProfileAvatars } from "/static/gateways/social/reuse/profile-avatar.js";
+import { hydrateProfileAvatars } from "/static/reuse/avatar-utils.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";

@@ -1,7 +1,7 @@
 import {
     handleProfileAvatarError,
     hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
+} from "/static/reuse/avatar-utils.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
     MESSAGES_FILE_NAMESPACE_ID,
