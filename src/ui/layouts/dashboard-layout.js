@@ -28,6 +28,7 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { bindProfilePreviews } from "../reuse/profile-preview.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
+import { bindLanguageToggle } from "../reuse/language-toggle.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -125,6 +126,16 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
             await saveUiPreferences({ mode });
         },
     });
+}
+
+function bindSwitcherSettingsLinks(root) {
+    root.querySelector("#theme-toggle")?.addEventListener(
+        "contextmenu",
+        (event) => {
+            event.preventDefault();
+            navigateTo("/settings#appearance");
+        },
+    );
 }
 
 function bindTopbarActions() {
@@ -636,6 +647,8 @@ export async function renderDashboardLayout(root, slots = {}) {
         }
         bindHeaderScrollState(root);
         bindThemeToggle({ usePreferenceApi });
+        bindLanguageToggle({ i18n, navigateTo, showToast });
+        bindSwitcherSettingsLinks(root);
         return;
     }
 
@@ -695,6 +708,8 @@ export async function renderDashboardLayout(root, slots = {}) {
     }
     bindHeaderScrollState(root);
     bindThemeToggle({ usePreferenceApi });
+    bindLanguageToggle({ i18n, navigateTo, showToast });
+    bindSwitcherSettingsLinks(root);
     registerServiceWorker();
 }
 

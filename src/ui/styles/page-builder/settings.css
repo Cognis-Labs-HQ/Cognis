@@ -98,6 +98,28 @@
     color: transparent;
 }
 
+.settings-language-block {
+    display: grid;
+    gap: 18px;
+}
+
+.settings-language-switcher-preference {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+}
+
+.settings-language-switcher-preference h3,
+.settings-language-switcher-preference .switch {
+    margin: 0;
+}
+
+.settings-language-tables {
+    display: grid;
+    gap: 12px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
 .sub-composer-heading {
     margin: 0 0 12px;
 }

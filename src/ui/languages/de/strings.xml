@@ -116,6 +116,7 @@
   <string name="ui.layout.search.no_results">Keine Ergebnisse gefunden.</string>
   <string name="ui.layout.account.aria">Kontoeinstellungen</string>
   <string name="ui.layout.avatar.alt">Benutzeravatar</string>
+  <string name="ui.layout.language.aria">Sprache wechseln</string>
   <string name="ui.layout.theme.aria">Thema umschalten</string>
   <string name="ui.layout.footer.license">Lizenz</string>
   <string name="ui.layout.footer.changelogs">Änderungsprotokolle</string>
@@ -390,6 +391,7 @@
   <string name="ui.app.error.code.default">Ein unerwarteter Fehler ist aufgetreten.</string>
   <string name="ui.app.settings.font_preview">Schriftvorschau</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
+  <string name="ui.app.settings.always_show_language_switcher">Sprachumschalter immer anzeigen</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
   <string name="ui.app.settings.preferred_languages">Bevorzugte Sprachen</string>
   <string name="ui.app.settings.sync_from_browser">Mit Browser synchronisieren</string>
