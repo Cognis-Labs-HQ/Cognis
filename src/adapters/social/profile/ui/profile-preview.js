@@ -61,6 +61,7 @@ function renderAvatar(profile) {
         showAvailability: false,
     });
 }
+
 function positionPreview(link, preview) {
     const rect = link.getBoundingClientRect();
     const width = Math.min(320, window.innerWidth - 24);

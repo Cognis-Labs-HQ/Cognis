@@ -50,8 +50,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.8`  |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.7`  |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.5`  |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.59` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.62` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.60` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.63` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.32` |
 | User Share            | `src/adapters/share/user/`          | `1.1.17` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.9`  |
@@ -74,7 +74,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Logging               | `src/gateways/logging/`       | `1.5.11`  |
 | Observability         | `src/gateways/observability/` | `1.0.5`   |
 | Study                 | `src/gateways/study/`         | `1.5.10`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.100` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.101` |
 
 ## Kontrak inti
 
@@ -99,7 +99,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.45` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.12` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.46` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.13` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |
