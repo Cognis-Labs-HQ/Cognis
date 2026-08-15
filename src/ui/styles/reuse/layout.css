@@ -631,6 +631,9 @@ button.dropdown-item {
     position: static;
     width: 44px;
 }
+.page-action-dock > .page-action-button[hidden] {
+    display: none;
+}
 .page-action-dock > .page-action-button:hover {
     background: var(--theme-toggle-bg-hover);
 }

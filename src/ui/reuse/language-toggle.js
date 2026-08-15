@@ -18,6 +18,7 @@ import { loadUiPreferences, saveUiPreferences } from "./ui-preferences.js";
 
 const COMMIT_DELAY_MS = 5000;
 const HANDLERS_BOUND_KEY = "__cognisLanguageToggleBound";
+const VISIBILITY_HANDLER_KEY = "__cognisLanguageToggleVisibilityHandler";
 
 export function shouldShowLanguageToggle(preferences, languages) {
     return (
@@ -79,6 +80,16 @@ export async function bindLanguageToggle({ i18n, navigateTo, showToast }) {
 
         render();
         toggle.hidden = false;
+        if (!toggle[VISIBILITY_HANDLER_KEY]) {
+            const visibilityHandler = (event) => {
+                toggle.hidden = event.detail?.visible !== true;
+            };
+            toggle[VISIBILITY_HANDLER_KEY] = visibilityHandler;
+            window.addEventListener(
+                "cognis:language-switcher-visibility",
+                visibilityHandler,
+            );
+        }
         if (toggle[HANDLERS_BOUND_KEY]) return;
         toggle[HANDLERS_BOUND_KEY] = true;
         toggle.addEventListener("click", () => {

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -27,4 +28,15 @@ test("selected language is promoted without changing the remaining order", () =>
         "en",
         "de",
     ]);
+});
+
+test("hidden page action buttons cannot retain an empty visual presence", async () => {
+    const layoutStyles = await readFile(
+        new URL("../../styles/reuse/layout.css", import.meta.url),
+        "utf8",
+    );
+    assert.match(
+        layoutStyles,
+        /\.page-action-dock\s*>\s*\.page-action-button\[hidden\]\s*\{\s*display:\s*none;/,
+    );
 });

@@ -19,9 +19,11 @@ function createRoot() {
 test("language switcher preference defaults on and tracks changes", () => {
     const root = createRoot();
     const dirtyStates = [];
+    const visibilityStates = [];
     const controller = initLanguageSwitcherPrefs(root, {
         existingPrefs: {},
         onDirtyChange: (dirty) => dirtyStates.push(dirty),
+        onValueChange: (visible) => visibilityStates.push(visible),
     });
     const input = root.mountInput();
 
@@ -31,6 +33,7 @@ test("language switcher preference defaults on and tracks changes", () => {
     input.onchange();
     assert.equal(controller.isDirty(), true);
     assert.deepEqual(dirtyStates, [true]);
+    assert.deepEqual(visibilityStates, [false]);
 });
 
 test("language switcher preference rebinds after settings remount", () => {
@@ -47,4 +50,20 @@ test("language switcher preference rebinds after settings remount", () => {
 
     controller.discard();
     assert.equal(remountedInput.checked, true);
+});
+
+test("discard restores the saved switcher visibility", () => {
+    const root = createRoot();
+    const visibilityStates = [];
+    const controller = initLanguageSwitcherPrefs(root, {
+        existingPrefs: {},
+        onValueChange: (visible) => visibilityStates.push(visible),
+    });
+    const input = root.mountInput();
+    controller.bind();
+    input.checked = false;
+    input.onchange();
+
+    controller.discard();
+    assert.deepEqual(visibilityStates, [false, true]);
 });

@@ -9,3 +9,5 @@ Telusuri bahasa pilihan melalui tombol bendera mengambang. Pilihan terakhir dipi
 Pengaturan Pengguna kini mengaktifkan pengalih bahasa secara baku, menyediakan pilihan untuk menonaktifkannya, dan mempertahankan kedua daftar bahasa berdampingan dalam satu blok.
 
 Sakelar tetap tersinkron saat halaman Bahasa dipasang kembali, dan perubahannya selalu mengaktifkan kontrol simpan serta batalkan pada pengaturan.
+
+Menonaktifkan preferensi kini langsung menyembunyikan kontrol mengambang, termasuk setelah halaman dimuat ulang, tanpa meninggalkan tombol kosong.
