@@ -11,3 +11,11 @@ Tujuan kembali setelah masuk dibatasi pada jalur lokal Cognis sehingga pengaliha
 ## Lanjutkan melalui verifikasi dan autentikasi dua faktor
 
 Pendaftaran akun membawa tujuan kembali ke verifikasi email dan penyiapan autentikasi dua faktor sehingga penyelesaian kedua alur tersebut dilanjutkan menuju halaman yang semula memerlukan autentikasi.
+
+## Inisialisasi dasbor sebelum melanjutkan
+
+Autentikasi yang berhasil kini memuat kerangka Dasbor sebelum membuka halaman yang diminta agar kontribusi navigasi dan penyiapan keyring selalu diinisialisasi dengan benar.
+
+## Terima jalur kembali yang relatif terhadap root
+
+Tujuan kembali setelah masuk tidak harus diawali garis miring. Cognis menormalkannya menjadi jalur aman yang relatif terhadap root dan tetap menolak tujuan eksternal.
