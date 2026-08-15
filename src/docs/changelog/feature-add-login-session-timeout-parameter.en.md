@@ -51,3 +51,11 @@ User Security settings now show the current session time remaining beside the ti
 ## Keep countdown logic in Authentication
 
 Countdown formatting now lives inside the Authentication gateway rather than core UI reuse. The current-session display uses readable weeks, days, hours, minutes, and seconds.
+
+## Preserve the selected timeout through verification
+
+Login sessions now retain the administrator or user-selected duration while completing two-factor verification or required setup, including non-expiring sessions.
+
+## Reject preferences that cannot be saved
+
+Session-timeout updates now return an availability error without revoking active sessions when preference storage is disabled.

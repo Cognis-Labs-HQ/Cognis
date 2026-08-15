@@ -51,3 +51,11 @@ Pengaturan Keamanan Pengguna kini menampilkan sisa waktu sesi saat ini di sampin
 ## Simpan logika hitung mundur di Autentikasi
 
 Pemformatan hitung mundur kini berada di gateway Autentikasi, bukan di penggunaan ulang UI inti. Tampilan sesi saat ini menggunakan minggu, hari, jam, menit, dan detik yang mudah dibaca.
+
+## Pertahankan batas waktu yang dipilih selama verifikasi
+
+Sesi masuk kini mempertahankan durasi yang dipilih administrator atau pengguna saat menyelesaikan verifikasi dua faktor atau penyiapan wajib, termasuk sesi yang tidak pernah kedaluwarsa.
+
+## Tolak preferensi yang tidak dapat disimpan
+
+Pembaruan batas waktu sesi kini mengembalikan galat ketersediaan tanpa mencabut sesi aktif ketika penyimpanan preferensi dinonaktifkan.
