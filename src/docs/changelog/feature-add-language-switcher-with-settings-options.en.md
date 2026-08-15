@@ -10,4 +10,4 @@ User Settings now enables the language switcher by default, offers an opt-out, a
 
 The switch remains synchronized when the Languages page is mounted again, and changing it reliably activates the settings save and discard controls.
 
-Turning the preference off now hides the floating control immediately, including after a page reload, without leaving an empty button behind.
+Turning the preference off marks Settings as changed and hides the floating control only after Save confirms the change. Reloading no longer leaves an empty button behind.

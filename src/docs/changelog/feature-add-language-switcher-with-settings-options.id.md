@@ -10,4 +10,4 @@ Pengaturan Pengguna kini mengaktifkan pengalih bahasa secara baku, menyediakan p
 
 Sakelar tetap tersinkron saat halaman Bahasa dipasang kembali, dan perubahannya selalu mengaktifkan kontrol simpan serta batalkan pada pengaturan.
 
-Menonaktifkan preferensi kini langsung menyembunyikan kontrol mengambang, termasuk setelah halaman dimuat ulang, tanpa meninggalkan tombol kosong.
+Menonaktifkan preferensi kini menandai Pengaturan sebagai berubah dan menyembunyikan kontrol mengambang hanya setelah Simpan mengonfirmasi perubahan. Memuat ulang halaman tidak lagi meninggalkan tombol kosong.

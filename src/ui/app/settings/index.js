@@ -530,7 +530,7 @@ export async function mount(root, { signal } = {}) {
                                 existingPrefs: loadedPrefs,
                                 onDirtyChange: (dirty) =>
                                     markDirty("language-switcher", dirty),
-                                onValueChange: (visible) =>
+                                onCommit: (visible) =>
                                     window.dispatchEvent(
                                         new CustomEvent(
                                             "cognis:language-switcher-visibility",

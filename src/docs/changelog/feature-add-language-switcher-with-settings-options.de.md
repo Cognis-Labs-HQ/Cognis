@@ -10,4 +10,4 @@ Die Benutzereinstellungen aktivieren den Sprachumschalter standardmäßig, biete
 
 Der Schalter bleibt auch beim erneuten Öffnen der Sprachseite synchronisiert. Änderungen aktivieren zuverlässig die Steuerelemente zum Speichern und Verwerfen der Einstellungen.
 
-Beim Ausschalten der Einstellung wird das schwebende Steuerelement jetzt sofort und auch nach dem Neuladen vollständig ausgeblendet, ohne eine leere Schaltfläche zu hinterlassen.
+Beim Ausschalten der Einstellung werden die Einstellungen als geändert markiert. Das schwebende Steuerelement wird erst nach der Bestätigung durch Speichern ausgeblendet. Nach dem Neuladen bleibt keine leere Schaltfläche zurück.

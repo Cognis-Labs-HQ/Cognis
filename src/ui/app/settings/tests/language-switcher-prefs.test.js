@@ -19,11 +19,11 @@ function createRoot() {
 test("language switcher preference defaults on and tracks changes", () => {
     const root = createRoot();
     const dirtyStates = [];
-    const visibilityStates = [];
+    const committedStates = [];
     const controller = initLanguageSwitcherPrefs(root, {
         existingPrefs: {},
         onDirtyChange: (dirty) => dirtyStates.push(dirty),
-        onValueChange: (visible) => visibilityStates.push(visible),
+        onCommit: (visible) => committedStates.push(visible),
     });
     const input = root.mountInput();
 
@@ -33,7 +33,10 @@ test("language switcher preference defaults on and tracks changes", () => {
     input.onchange();
     assert.equal(controller.isDirty(), true);
     assert.deepEqual(dirtyStates, [true]);
-    assert.deepEqual(visibilityStates, [false]);
+    assert.deepEqual(committedStates, []);
+
+    controller.commit();
+    assert.deepEqual(committedStates, [false]);
 });
 
 test("language switcher preference rebinds after settings remount", () => {
@@ -52,12 +55,12 @@ test("language switcher preference rebinds after settings remount", () => {
     assert.equal(remountedInput.checked, true);
 });
 
-test("discard restores the saved switcher visibility", () => {
+test("discard restores saved state without applying pending visibility", () => {
     const root = createRoot();
-    const visibilityStates = [];
+    const committedStates = [];
     const controller = initLanguageSwitcherPrefs(root, {
         existingPrefs: {},
-        onValueChange: (visible) => visibilityStates.push(visible),
+        onCommit: (visible) => committedStates.push(visible),
     });
     const input = root.mountInput();
     controller.bind();
@@ -65,5 +68,6 @@ test("discard restores the saved switcher visibility", () => {
     input.onchange();
 
     controller.discard();
-    assert.deepEqual(visibilityStates, [false, true]);
+    assert.equal(input.checked, true);
+    assert.deepEqual(committedStates, []);
 });

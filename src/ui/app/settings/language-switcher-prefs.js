@@ -1,6 +1,6 @@
 export function initLanguageSwitcherPrefs(
     root,
-    { existingPrefs, onDirtyChange, onValueChange } = {},
+    { existingPrefs, onDirtyChange, onCommit } = {},
 ) {
     let savedValue = existingPrefs?.alwaysShowLanguageSwitcher !== false;
     let value = savedValue;
@@ -22,7 +22,6 @@ export function initLanguageSwitcherPrefs(
         input.onchange = () => {
             value = input.checked;
             onDirtyChange?.(value !== savedValue);
-            onValueChange?.(value);
         };
     }
 
@@ -34,12 +33,12 @@ export function initLanguageSwitcherPrefs(
             savedValue = value;
             syncInput();
             onDirtyChange?.(false);
+            onCommit?.(value);
         },
         discard() {
             value = savedValue;
             syncInput();
             onDirtyChange?.(false);
-            onValueChange?.(value);
         },
     };
 }

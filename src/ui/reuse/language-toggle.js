@@ -42,10 +42,14 @@ export async function bindLanguageToggle({ i18n, navigateTo, showToast }) {
     const preferredLanguages = Array.isArray(preferences?.languagePriority)
         ? preferences.languagePriority
         : readPreferredLanguages();
-    if (!shouldShowLanguageToggle(preferences, preferredLanguages)) {
+    if (preferredLanguages.length < 2) {
         toggle.hidden = true;
         return;
     }
+    const shouldShow = shouldShowLanguageToggle(
+        preferences,
+        preferredLanguages,
+    );
 
     try {
         const response = await apiFetch("/api/v1/system/languages");
@@ -79,7 +83,7 @@ export async function bindLanguageToggle({ i18n, navigateTo, showToast }) {
         };
 
         render();
-        toggle.hidden = false;
+        toggle.hidden = !shouldShow;
         if (!toggle[VISIBILITY_HANDLER_KEY]) {
             const visibilityHandler = (event) => {
                 toggle.hidden = event.detail?.visible !== true;
