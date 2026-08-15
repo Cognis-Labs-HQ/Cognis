@@ -11,3 +11,7 @@ Die Benutzereinstellungen aktivieren den Sprachumschalter standardmäßig, biete
 Der Schalter bleibt auch beim erneuten Öffnen der Sprachseite synchronisiert. Änderungen aktivieren zuverlässig die Steuerelemente zum Speichern und Verwerfen der Einstellungen.
 
 Beim Ausschalten der Einstellung werden die Einstellungen als geändert markiert. Das schwebende Steuerelement wird erst nach der Bestätigung durch Speichern ausgeblendet. Nach dem Neuladen bleibt keine leere Schaltfläche zurück.
+
+## Seitenschaltflächen werden beim Navigieren aktualisiert
+
+Seiten verwalten nun ihr eigenes Bearbeitungssteuerelement des Page Composer. Dadurch erscheinen beim Wechsel von einer nicht bearbeitbaren zu einer bearbeitbaren Seite sofort alle verfügbaren Aktionen, ohne dass die Seite neu geladen werden muss.
