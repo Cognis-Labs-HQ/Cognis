@@ -73,18 +73,20 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         <button class="btn-animated btn-cancel" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
         ${unsupported ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
       </div>
-      <div class="security-field-row">
-        <label for="settings-login-session-timeout">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_label"))}</label>
-        <input id="settings-login-session-timeout" type="number" min="1" step="1" value="${duration.value}"${timeoutDisabled ? " disabled" : ""} />
-        <select id="settings-login-session-timeout-unit" class="theme-select"${timeoutDisabled ? " disabled" : ""}>
-          ${["minutes", "hours", "days", "weeks"]
-              .map(
-                  (unit) =>
-                      `<option value="${unit}"${duration.unit === unit ? " selected" : ""}>${escapeHtml(i18n.t(`ui.reuse.duration.${unit}`))}</option>`,
-              )
-              .join("")}
-        </select>
-        ${timeoutDisabled ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_disabled"))}</p>` : ""}
+      <div class="components-section">
+        <h3 class="components-section-heading">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_label"))}</h3>
+        <div class="security-field-row">
+          <input id="settings-login-session-timeout" type="number" min="1" step="1" value="${duration.value}"${timeoutDisabled ? " disabled" : ""} />
+          <select id="settings-login-session-timeout-unit" class="theme-select"${timeoutDisabled ? " disabled" : ""}>
+            ${["minutes", "hours", "days", "weeks"]
+                .map(
+                    (unit) =>
+                        `<option value="${unit}"${duration.unit === unit ? " selected" : ""}>${escapeHtml(i18n.t(`ui.reuse.duration.${unit}`))}</option>`,
+                )
+                .join("")}
+          </select>
+          ${timeoutDisabled ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_disabled"))}</p>` : ""}
+        </div>
       </div>
     `;
     }

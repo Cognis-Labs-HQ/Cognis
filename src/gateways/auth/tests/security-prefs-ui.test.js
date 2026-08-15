@@ -36,6 +36,14 @@ test("auth security preferences disable password reset for external users", () =
     assert.match(SOURCE, /external_password_notice/);
 });
 
+test("auth security preferences present login timeout as a subsection", () => {
+    assert.match(
+        SOURCE,
+        /<h3 class="components-section-heading">\$\{escapeHtml\(i18n\.t\("gateway\.auth\.security\.session_timeout_label"\)\)\}<\/h3>/,
+    );
+    assert.match(SOURCE, /settings-login-session-timeout-unit/);
+});
+
 test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /listKeyringEntries/);
     assert.match(KEYRING_SETTINGS_SOURCE, /createKeyringScope/);
