@@ -78,6 +78,7 @@ export interface PendingTfaLoginAttempt {
 export interface SecuritySettings {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
+    loginSessionTimeoutMinutes: number;
 }
 
 export interface AuthBootstrapHookContext {
@@ -333,14 +334,22 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         const preferenceStore =
             ctx.capabilities.get<UserPreferenceStore>("preferences:store");
         if (!preferenceStore) {
-            return { registrationsEnabled: false, userValidationMode: "none" };
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+                loginSessionTimeoutMinutes: 720,
+            };
         }
         const raw = await preferenceStore.get(
             "__system__",
             "security-settings",
         );
         if (!raw) {
-            return { registrationsEnabled: false, userValidationMode: "none" };
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+                loginSessionTimeoutMinutes: 720,
+            };
         }
         try {
             const parsed = JSON.parse(raw) as Record<string, unknown>;
@@ -351,9 +360,18 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         : false,
                 userValidationMode:
                     parsed.userValidationMode === "smtp" ? "smtp" : "none",
+                loginSessionTimeoutMinutes:
+                    Number.isInteger(parsed.loginSessionTimeoutMinutes) &&
+                    Number(parsed.loginSessionTimeoutMinutes) >= 1
+                        ? Number(parsed.loginSessionTimeoutMinutes)
+                        : 720,
             };
         } catch {
-            return { registrationsEnabled: false, userValidationMode: "none" };
+            return {
+                registrationsEnabled: false,
+                userValidationMode: "none",
+                loginSessionTimeoutMinutes: 720,
+            };
         }
     }
 

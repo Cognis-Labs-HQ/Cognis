@@ -672,4 +672,6 @@
   <string name="ui.reuse.core">コア</string>
   <string name="ui.app.users.external_password_managed">外部ユーザーのパスワードは認証プロバイダーによって管理されます。</string>
   <string name="ui.app.admin.db_managed_by_docker">Dockerによって管理</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">デフォルトのログインセッション期限（分）</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">ユーザーが選択できる最長のログインセッションです。ユーザーがより短い期間を選ばない限り、新しいセッションにはこの値が使用されます。</string>
 </resources>

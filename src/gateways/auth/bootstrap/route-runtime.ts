@@ -75,13 +75,7 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
             return pendingAttempt;
         },
         getAccessTokenTtlSeconds(): number {
-            const parsedTtlSeconds = Number.parseInt(
-                process.env.COGNIS_ACCESS_TOKEN_TTL_SECONDS ?? "43200",
-                10,
-            );
-            return Number.isFinite(parsedTtlSeconds) && parsedTtlSeconds >= 1
-                ? parsedTtlSeconds
-                : 43200;
+            return 43_200;
         },
         getPendingTfaLoginAttempt(
             loginAttemptId: string,

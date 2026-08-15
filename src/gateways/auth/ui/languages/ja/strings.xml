@@ -29,4 +29,6 @@
   <string name="gateway.auth.security.keyring_relock">キーリングを自動的にロック</string>
   <string name="gateway.auth.security.keyring_logout">ログアウト時</string>
   <string name="gateway.auth.security.keyring_minutes">分</string>
+  <string name="gateway.auth.security.session_timeout_label">ログインセッション期限（分）</string>
+  <string name="gateway.auth.security.session_timeout_hint">次回のログインから適用されます。管理者が定めた上限である1～{maximum}分から選択してください。</string>
 </resources>

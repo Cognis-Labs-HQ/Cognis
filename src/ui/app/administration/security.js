@@ -72,6 +72,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
     let currentUserValidationMode = "none";
     let originalTeacherManualApproval = true;
     let originalEnforceTfaForAllUsers = false;
+    let originalLoginSessionTimeoutMinutes = 720;
     let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
     let smtpAdapterActive = false;
     let initialized = false;
@@ -119,6 +120,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         userValidationMode,
         requireTeacherManualApproval,
         enforceTfaForAllUsers,
+        loginSessionTimeoutMinutes,
     ) {
         const response = await apiFetch("/api/v1/system/security", {
             method: "PUT",
@@ -129,6 +131,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 userValidationMode,
                 requireTeacherManualApproval,
                 enforceTfaForAllUsers,
+                loginSessionTimeoutMinutes,
             }),
         });
         if (!response.ok) throw new Error("save_failed");
@@ -177,6 +180,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         return input.checked;
     }
 
+    function getLoginSessionTimeoutMinutesValue() {
+        const input = root.querySelector("#security-login-session-timeout");
+        return input instanceof HTMLInputElement
+            ? Number.parseInt(input.value, 10)
+            : originalLoginSessionTimeoutMinutes;
+    }
+
     function getPasswordPolicyValue() {
         return Object.fromEntries(
             POLICY_FIELDS.map(({ key, id, min }) => {
@@ -217,12 +227,16 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             getTeacherManualApprovalValue() !== originalTeacherManualApproval;
         const enforceTfaChanged =
             getEnforceTfaForAllUsersValue() !== originalEnforceTfaForAllUsers;
+        const loginTimeoutChanged =
+            getLoginSessionTimeoutMinutesValue() !==
+            originalLoginSessionTimeoutMinutes;
         onDirtyChange?.(
             currentDomains !== originalDomainsValue ||
                 modeChanged ||
                 registrationsChanged ||
                 teacherApprovalChanged ||
                 enforceTfaChanged ||
+                loginTimeoutChanged ||
                 isPasswordPolicyChanged(),
         );
     }
@@ -241,6 +255,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         originalTeacherManualApproval =
             settings.requireTeacherManualApproval !== false;
         originalEnforceTfaForAllUsers = settings.enforceTfaForAllUsers === true;
+        originalLoginSessionTimeoutMinutes =
+            settings.loginSessionTimeoutMinutes ?? 720;
         originalPasswordPolicy = normalizePasswordPolicy(
             passwordPolicy,
             originalPasswordPolicy,
@@ -258,6 +274,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         );
         const enforceTfaToggle = root.querySelector(
             "#security-enforce-tfa-for-all-users",
+        );
+        const loginTimeoutInput = root.querySelector(
+            "#security-login-session-timeout",
         );
         if (validationSelect instanceof HTMLSelectElement) {
             const smtpOption = validationSelect.querySelector(
@@ -285,6 +304,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (enforceTfaToggle instanceof HTMLInputElement) {
             enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
         }
+        if (loginTimeoutInput instanceof HTMLInputElement) {
+            loginTimeoutInput.value = String(
+                originalLoginSessionTimeoutMinutes,
+            );
+        }
         for (const { key, id } of POLICY_FIELDS) {
             const policyInput = root.querySelector(`#${id}`);
             if (policyInput instanceof HTMLInputElement) {
@@ -298,6 +322,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         registrationsToggle?.addEventListener("change", markDirtyState);
         teacherApprovalToggle?.addEventListener("change", markDirtyState);
         enforceTfaToggle?.addEventListener("change", markDirtyState);
+        loginTimeoutInput?.addEventListener("input", markDirtyState);
     }
 
     return {
@@ -331,6 +356,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                     userValidationMode: originalUserValidationMode,
                     requireTeacherManualApproval: originalTeacherManualApproval,
                     enforceTfaForAllUsers: originalEnforceTfaForAllUsers,
+                    loginSessionTimeoutMinutes:
+                        originalLoginSessionTimeoutMinutes,
                 },
                 originalPasswordPolicy,
                 smtpActive,
@@ -347,6 +374,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 getTeacherManualApprovalValue();
             const enforceTfaForAllUsers = getEnforceTfaForAllUsersValue();
             const passwordPolicy = getPasswordPolicyValue();
+            const loginSessionTimeoutMinutes =
+                getLoginSessionTimeoutMinutesValue();
 
             await persistSettings(
                 domains,
@@ -354,6 +383,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 validationMode,
                 requireTeacherManualApproval,
                 enforceTfaForAllUsers,
+                loginSessionTimeoutMinutes,
             );
             await persistPasswordPolicy(passwordPolicy);
             clearTrustedDomainsCache();
@@ -369,6 +399,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             originalUserValidationMode = validationMode;
             originalTeacherManualApproval = requireTeacherManualApproval;
             originalEnforceTfaForAllUsers = enforceTfaForAllUsers;
+            originalLoginSessionTimeoutMinutes = loginSessionTimeoutMinutes;
             originalPasswordPolicy = passwordPolicy;
         },
 
@@ -395,6 +426,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const enforceTfaToggle = root.querySelector(
                 "#security-enforce-tfa-for-all-users",
             );
+            const loginTimeoutInput = root.querySelector(
+                "#security-login-session-timeout",
+            );
             if (registrationsToggle instanceof HTMLInputElement) {
                 registrationsToggle.checked = currentPublicRegistrationEnabled;
             }
@@ -403,6 +437,11 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             }
             if (enforceTfaToggle instanceof HTMLInputElement) {
                 enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
+            }
+            if (loginTimeoutInput instanceof HTMLInputElement) {
+                loginTimeoutInput.value = String(
+                    originalLoginSessionTimeoutMinutes,
+                );
             }
             for (const { key, id } of POLICY_FIELDS) {
                 const policyInput = root.querySelector(`#${id}`);
@@ -417,6 +456,15 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const tooltipAria = i18n.t("ui.reuse.more_information");
             return `
         <div class="security-settings-form">
+          <div class="components-section">
+            <h3 class="components-section-heading">
+              ${escapeHtml(i18n.t("ui.app.admin.security.login_session_timeout_label"))}
+              ${renderInfoTooltip(i18n.t("ui.app.admin.security.login_session_timeout_hint"), tooltipAria)}
+            </h3>
+            <div class="security-field-row">
+              <input id="security-login-session-timeout" class="security-policy-number-input" type="number" min="1" step="1" />
+            </div>
+          </div>
           <div class="components-section">
             <h3 class="components-section-heading">
               ${escapeHtml(i18n.t("ui.app.admin.security.trusted_domains_label"))}

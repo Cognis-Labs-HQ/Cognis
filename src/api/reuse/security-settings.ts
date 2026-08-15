@@ -4,6 +4,18 @@ export interface SecuritySettings {
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
     enforceTfaForAllUsers: boolean;
+    loginSessionTimeoutMinutes: number;
+}
+
+export const DEFAULT_LOGIN_SESSION_TIMEOUT_MINUTES = 720;
+export const MIN_LOGIN_SESSION_TIMEOUT_MINUTES = 1;
+
+export function normalizeLoginSessionTimeoutMinutes(value: unknown): number {
+    const parsed = typeof value === "number" ? value : Number.NaN;
+    return Number.isInteger(parsed) &&
+        parsed >= MIN_LOGIN_SESSION_TIMEOUT_MINUTES
+        ? parsed
+        : DEFAULT_LOGIN_SESSION_TIMEOUT_MINUTES;
 }
 
 export const SECURITY_SETTINGS_KEY = "security-settings";
@@ -15,6 +27,7 @@ export function defaultSecuritySettings(): SecuritySettings {
         userValidationMode: "none",
         requireTeacherManualApproval: true,
         enforceTfaForAllUsers: false,
+        loginSessionTimeoutMinutes: DEFAULT_LOGIN_SESSION_TIMEOUT_MINUTES,
     };
 }
 
@@ -53,6 +66,9 @@ export function parseSecuritySettings(
                 parsed.requireTeacherManualApproval === false ? false : true,
             enforceTfaForAllUsers:
                 parsed.enforceTfaForAllUsers === true ? true : false,
+            loginSessionTimeoutMinutes: normalizeLoginSessionTimeoutMinutes(
+                parsed.loginSessionTimeoutMinutes,
+            ),
         };
     } catch {
         return null;

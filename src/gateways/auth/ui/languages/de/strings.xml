@@ -29,4 +29,6 @@
   <string name="gateway.auth.security.keyring_relock">Schlüsselbund automatisch sperren</string>
   <string name="gateway.auth.security.keyring_logout">Beim Abmelden</string>
   <string name="gateway.auth.security.keyring_minutes">Minuten</string>
+  <string name="gateway.auth.security.session_timeout_label">Zeitlimit der Anmeldesitzung (Minuten)</string>
+  <string name="gateway.auth.security.session_timeout_hint">Gilt ab deiner nächsten Anmeldung. Wähle 1 bis {maximum} Minuten; dies ist das vom Administrator festgelegte Maximum.</string>
 </resources>

@@ -672,4 +672,6 @@
   <string name="ui.reuse.core">Kern</string>
   <string name="ui.app.users.external_password_managed">Passwörter externer Benutzer werden von ihrem Authentifizierungsanbieter verwaltet.</string>
   <string name="ui.app.admin.db_managed_by_docker">Von Docker verwaltet</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Standard-Zeitlimit für Anmeldesitzungen (Minuten)</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">Die längste Anmeldesitzung, die Benutzer auswählen dürfen. Neue Sitzungen verwenden diesen Wert, sofern der Benutzer keine kürzere Dauer auswählt.</string>
 </resources>

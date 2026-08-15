@@ -672,4 +672,6 @@
   <string name="ui.reuse.core">Core</string>
   <string name="ui.app.users.external_password_managed">External users' passwords are managed by their authentication provider.</string>
   <string name="ui.app.admin.db_managed_by_docker">Managed by docker</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Default Login Session Timeout (minutes)</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">The longest login session users may choose. New sessions use this value unless the user selects a shorter duration.</string>
 </resources>

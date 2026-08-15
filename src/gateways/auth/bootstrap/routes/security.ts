@@ -21,7 +21,10 @@ export interface SecuritySubsection {
 interface SecuritySettings {
     registrationsEnabled: boolean;
     userValidationMode: "none" | "smtp";
+    loginSessionTimeoutMinutes: number;
 }
+
+const LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY = "login-session-timeout-minutes";
 
 interface SecurityRouteDependencies {
     capabilities: CapabilityStore;
@@ -103,6 +106,69 @@ export function createSecurityRoutes({
             log?.("debug", "Served password policy.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: policy }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/login-session-timeout" &&
+            req.method === "GET"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const { loginSessionTimeoutMinutes: maximumMinutes } =
+                await readSecuritySettings();
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            const stored = await preferenceStore
+                ?.get(claims.sub, LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY)
+                .catch(() => null);
+            const requestedMinutes = Number(stored);
+            const timeoutMinutes =
+                Number.isInteger(requestedMinutes) && requestedMinutes >= 1
+                    ? Math.min(requestedMinutes, maximumMinutes)
+                    : maximumMinutes;
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({ data: { timeoutMinutes, maximumMinutes } }),
+            );
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/auth/login-session-timeout" &&
+            req.method === "PUT"
+        ) {
+            const claims = requireAuth(req, res, "user");
+            if (!claims) return true;
+            const { loginSessionTimeoutMinutes: maximumMinutes } =
+                await readSecuritySettings();
+            const body = await readJson(req);
+            const timeoutMinutes = body.timeoutMinutes;
+            if (
+                !Number.isInteger(timeoutMinutes) ||
+                Number(timeoutMinutes) < 1 ||
+                Number(timeoutMinutes) > maximumMinutes
+            ) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_session_timeout",
+                            message: `timeoutMinutes must be an integer from 1 to ${maximumMinutes}.`,
+                        },
+                    }),
+                );
+                return true;
+            }
+            await capabilities
+                .get<UserPreferenceStore>("preferences:store")
+                ?.set(
+                    claims.sub,
+                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                    String(timeoutMinutes),
+                );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { timeoutMinutes } }));
             return true;
         }
 

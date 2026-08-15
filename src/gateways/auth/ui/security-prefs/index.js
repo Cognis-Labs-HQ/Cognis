@@ -10,6 +10,8 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
     const settingsRoot = root ?? document;
     let subsectionInstances = null;
+    let sessionTimeout = null;
+    let originalSessionTimeoutMinutes = null;
 
     async function loadCapability() {
         const response = await apiFetch(
@@ -29,6 +31,14 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         capability = payload.data ?? null;
     }
 
+    async function loadSessionTimeout() {
+        const response = await apiFetch("/api/v1/auth/login-session-timeout");
+        if (!response.ok) return;
+        const payload = await response.json();
+        sessionTimeout = payload.data;
+        originalSessionTimeoutMinutes = sessionTimeout.timeoutMinutes;
+    }
+
     function renderBody() {
         if (!capability) {
             return `<p class="structured-content__text">${i18n.t("gateway.auth.security.loading")}</p>`;
@@ -36,8 +46,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const unsupported = capability.supported !== true;
         return `
       <div class="settings-auth-password-reset">
-        <button class="btn-animated" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
+        <button class="btn-animated btn-cancel" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
         ${unsupported ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
+      </div>
+      <div class="security-field-row">
+        <label for="settings-login-session-timeout">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_label"))}</label>
+        <input id="settings-login-session-timeout" type="number" min="1" step="1" max="${sessionTimeout?.maximumMinutes ?? 1}" value="${sessionTimeout?.timeoutMinutes ?? ""}" />
+        <p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_hint").replace("{maximum}", String(sessionTimeout?.maximumMinutes ?? "")))}</p>
       </div>
     `;
     }
@@ -66,6 +81,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         }
         panel.innerHTML = renderBody();
         bindPasswordResetButton();
+        const timeoutInput = settingsRoot.querySelector(
+            "#settings-login-session-timeout",
+        );
+        timeoutInput?.addEventListener("input", () => markDirty?.());
     }
 
     async function loadSubsections() {
@@ -135,13 +154,44 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             <div id="auth-security-subsections"></div>`;
         },
         async onRender() {
-            await loadCapability();
+            await Promise.all([loadCapability(), loadSessionTimeout()]);
             rerender();
             await renderSubsections();
         },
-        isDirty: () =>
-            (subsectionInstances ?? []).some((section) => section.isDirty?.()),
+        isDirty: () => {
+            const input = settingsRoot.querySelector(
+                "#settings-login-session-timeout",
+            );
+            const timeoutDirty =
+                input instanceof HTMLInputElement &&
+                Number(input.value) !== originalSessionTimeoutMinutes;
+            return (
+                timeoutDirty ||
+                (subsectionInstances ?? []).some((section) =>
+                    section.isDirty?.(),
+                )
+            );
+        },
         async save() {
+            const input = settingsRoot.querySelector(
+                "#settings-login-session-timeout",
+            );
+            if (
+                input instanceof HTMLInputElement &&
+                Number(input.value) !== originalSessionTimeoutMinutes
+            ) {
+                const response = await apiFetch(
+                    "/api/v1/auth/login-session-timeout",
+                    {
+                        method: "PUT",
+                        headers: { "content-type": "application/json" },
+                        body: JSON.stringify({
+                            timeoutMinutes: Number(input.value),
+                        }),
+                    },
+                );
+                if (!response.ok) throw new Error("save_failed");
+            }
             for (const section of subsectionInstances ?? []) {
                 if (section.isDirty?.()) {
                     await section.save?.();
@@ -149,11 +199,23 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             }
         },
         commit() {
+            const input = settingsRoot.querySelector(
+                "#settings-login-session-timeout",
+            );
+            if (input instanceof HTMLInputElement) {
+                originalSessionTimeoutMinutes = Number(input.value);
+            }
             for (const section of subsectionInstances ?? []) {
                 section.commit?.();
             }
         },
         discard() {
+            const input = settingsRoot.querySelector(
+                "#settings-login-session-timeout",
+            );
+            if (input instanceof HTMLInputElement) {
+                input.value = String(originalSessionTimeoutMinutes);
+            }
             for (const section of subsectionInstances ?? []) {
                 section.discard?.();
             }
