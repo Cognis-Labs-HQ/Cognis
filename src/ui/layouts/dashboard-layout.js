@@ -27,6 +27,7 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
+import { getLoginReturnPath } from "../reuse/login-navigation.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -695,6 +696,14 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyActiveNavigation();
         applyCompactNav(root);
         initRouter(root);
+        const loginReturnPath = getLoginReturnPath();
+        if (
+            window.location.pathname === "/dashboard" &&
+            loginReturnPath &&
+            loginReturnPath !== "/dashboard"
+        ) {
+            void navigateTo(loginReturnPath);
+        }
         initSearchBar(i18n);
         ensureReleaseChangelogPopupChecked(i18n);
     }

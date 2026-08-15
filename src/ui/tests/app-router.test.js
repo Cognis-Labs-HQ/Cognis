@@ -261,6 +261,11 @@ test("dashboard-layout initialises the router after shell setup", () => {
         /scheduleNavbarEnhancements\(\)/,
         "dashboard-layout.js must defer navbar enhancements until after the shell renders",
     );
+    assert.match(
+        src,
+        /initRouter\(root\);[\s\S]*getLoginReturnPath\(\)[\s\S]*navigateTo\(loginReturnPath\)/,
+        "dashboard-layout.js must initialise the shell router before resuming a login return path",
+    );
 });
 
 test("dashboard layout resumes deferred login setup after rendering", () => {

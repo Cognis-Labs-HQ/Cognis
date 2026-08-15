@@ -8,7 +8,7 @@
  *
  * Usage:
  *   window.location.replace(withLoginReturnPath('/login?reason=session_expired'));
- *   window.location.href = getLoginReturnPath() ?? '/dashboard';
+ *   window.location.href = withNextDestination('/dashboard', getLoginReturnPath());
  *
  * @param {string} loginUrl Login URL that may already contain query parameters.
  * @param {Location} [location] Browser location whose relative URL should be retained.
@@ -27,9 +27,17 @@ export function withLoginReturnPath(loginUrl, location = window.location) {
  */
 export function getLoginReturnPath(location = window.location) {
     const next = new URL(location.href).searchParams.get("next");
-    if (!next || !next.startsWith("/") || next.startsWith("//")) return null;
+    if (
+        !next ||
+        next.startsWith("//") ||
+        next.includes("\\") ||
+        /^[a-z][a-z\d+.-]*:/i.test(next)
+    ) {
+        return null;
+    }
 
-    const destination = new URL(next, location.origin);
+    const rootRelativeNext = next.startsWith("/") ? next : `/${next}`;
+    const destination = new URL(rootRelativeNext, location.origin);
     if (destination.origin !== location.origin) return null;
     if (destination.pathname === "/login") return null;
     return `${destination.pathname}${destination.search}${destination.hash}`;

@@ -64,7 +64,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.7.48`  |
+| Authentication (auth) | `src/gateways/auth/`          | `1.7.49`  |
 | Share                 | `src/gateways/share/`         | `1.7.23`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.17`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`   |
@@ -99,7 +99,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.5`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.46` |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.47` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.13` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.7`  |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.5`  |

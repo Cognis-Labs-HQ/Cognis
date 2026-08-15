@@ -373,7 +373,10 @@ export async function mount(root) {
             }
         }
         await syncTimezoneOnLogin(data.accountId);
-        window.location.href = getLoginReturnPath() ?? "/dashboard";
+        window.location.href = withNextDestination(
+            "/dashboard",
+            getLoginReturnPath(),
+        );
     }
 
     async function handleAuthResult(data, password = "") {

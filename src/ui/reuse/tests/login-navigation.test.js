@@ -40,7 +40,12 @@ test("getLoginReturnPath accepts local paths and rejects unsafe destinations", (
         getLoginReturnPath(location("/profile/alice?tab=activity#recent")),
         "/profile/alice?tab=activity#recent",
     );
+    assert.equal(
+        getLoginReturnPath(location("profile/alice?tab=activity#recent")),
+        "/profile/alice?tab=activity#recent",
+    );
     assert.equal(getLoginReturnPath(location("https://attacker.test")), null);
     assert.equal(getLoginReturnPath(location("//attacker.test/path")), null);
+    assert.equal(getLoginReturnPath(location("\\\\attacker.test/path")), null);
     assert.equal(getLoginReturnPath(location("/login")), null);
 });
