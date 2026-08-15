@@ -59,3 +59,7 @@ Anmeldesitzungen behalten nun die von der Administration oder vom Benutzer gewä
 ## Nicht speicherbare Einstellungen ablehnen
 
 Änderungen am Sitzungszeitlimit geben nun einen Verfügbarkeitsfehler zurück, ohne aktive Sitzungen zu widerrufen, wenn der Einstellungsspeicher deaktiviert ist.
+
+## Interne Abhängigkeiten abgleichen
+
+Das Jitsi-Meet-Modul deklariert jetzt die getestete lokale Version des Nachrichtenadapters, damit die repositoryweiten Architekturprüfungen zuverlässig bleiben.

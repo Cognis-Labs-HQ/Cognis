@@ -59,3 +59,7 @@ Login sessions now retain the administrator or user-selected duration while comp
 ## Reject preferences that cannot be saved
 
 Session-timeout updates now return an availability error without revoking active sessions when preference storage is disabled.
+
+## Keep internal dependencies aligned
+
+The Jitsi Meet module now declares the tested local Messages adapter version so repository-wide architecture checks remain reliable.

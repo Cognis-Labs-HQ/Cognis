@@ -59,3 +59,7 @@ Sesi masuk kini mempertahankan durasi yang dipilih administrator atau pengguna s
 ## Tolak preferensi yang tidak dapat disimpan
 
 Pembaruan batas waktu sesi kini mengembalikan galat ketersediaan tanpa mencabut sesi aktif ketika penyimpanan preferensi dinonaktifkan.
+
+## Selaraskan dependensi internal
+
+Modul Jitsi Meet kini mendeklarasikan versi adaptor Pesan lokal yang telah diuji agar pemeriksaan arsitektur di seluruh repositori tetap andal.
