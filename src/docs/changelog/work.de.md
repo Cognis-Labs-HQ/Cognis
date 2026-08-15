@@ -7,3 +7,5 @@ Mit der schwebenden Flaggenschaltfläche kann durch die bevorzugten Sprachen gew
 ## Einstellung für Sprachen
 
 Die Benutzereinstellungen aktivieren den Sprachumschalter standardmäßig, bieten eine Abwahl und zeigen beide Sprachlisten nebeneinander in einem zusammenhängenden Bereich.
+
+Der Schalter bleibt auch beim erneuten Öffnen der Sprachseite synchronisiert. Änderungen aktivieren zuverlässig die Steuerelemente zum Speichern und Verwerfen der Einstellungen.

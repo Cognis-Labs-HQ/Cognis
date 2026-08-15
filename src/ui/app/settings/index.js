@@ -19,6 +19,7 @@ import {
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
 import { initLanguagePrefs } from "./language-prefs.js";
+import { initLanguageSwitcherPrefs } from "./language-switcher-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
 import {
@@ -522,32 +523,17 @@ export async function mount(root, { signal } = {}) {
                     },
                 ],
                 onRender: () => {
-                    const languageSwitcherInput = root.querySelector(
-                        "#pref-always-show-language-switcher",
-                    );
-                    if (languageSwitcherInput && !languageSwitcherPrefs) {
-                        let savedValue =
-                            loadedPrefs?.alwaysShowLanguageSwitcher !== false;
-                        languageSwitcherInput.checked = savedValue;
-                        languageSwitcherInput.addEventListener("change", () =>
-                            markDirty(
-                                "language-switcher",
-                                languageSwitcherInput.checked !== savedValue,
-                            ),
+                    if (!languageSwitcherPrefs) {
+                        languageSwitcherPrefs = initLanguageSwitcherPrefs(
+                            root,
+                            {
+                                existingPrefs: loadedPrefs,
+                                onDirtyChange: (dirty) =>
+                                    markDirty("language-switcher", dirty),
+                            },
                         );
-                        languageSwitcherPrefs = {
-                            getValue: () => languageSwitcherInput.checked,
-                            isDirty: () =>
-                                languageSwitcherInput.checked !== savedValue,
-                            commit: () => {
-                                savedValue = languageSwitcherInput.checked;
-                            },
-                            discard: () => {
-                                languageSwitcherInput.checked = savedValue;
-                                markDirty("language-switcher", false);
-                            },
-                        };
                     }
+                    languageSwitcherPrefs.bind();
                     if (!languagePrefs) {
                         languagePrefs = initLanguagePrefs(
                             root,

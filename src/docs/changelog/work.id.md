@@ -7,3 +7,5 @@ Telusuri bahasa pilihan melalui tombol bendera mengambang. Pilihan terakhir dipi
 ## Kontrol preferensi bahasa
 
 Pengaturan Pengguna kini mengaktifkan pengalih bahasa secara baku, menyediakan pilihan untuk menonaktifkannya, dan mempertahankan kedua daftar bahasa berdampingan dalam satu blok.
+
+Sakelar tetap tersinkron saat halaman Bahasa dipasang kembali, dan perubahannya selalu mengaktifkan kontrol simpan serta batalkan pada pengaturan.

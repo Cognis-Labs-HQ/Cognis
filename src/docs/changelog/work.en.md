@@ -7,3 +7,5 @@ Cycle through preferred languages from the floating flag button. The final choic
 ## Language preference control
 
 User Settings now enables the language switcher by default, offers an opt-out, and keeps both language lists together in one side-by-side block.
+
+The switch remains synchronized when the Languages page is mounted again, and changing it reliably activates the settings save and discard controls.
