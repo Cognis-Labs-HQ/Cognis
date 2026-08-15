@@ -31,3 +31,7 @@ Kompatible Änderungen des Zeitlimits in der Administration lassen die gespeiche
 ## Auf das globale Zeitlimit zurücksetzen
 
 Die Benutzereinstellungen bieten jetzt neben der Zeiteinheit eine Schaltfläche mit Rückgängig-Symbol. Nach dem Zurücksetzen folgt das Sitzungszeitlimit den aktuellen und zukünftigen Standardwerten der Administration statt einer benutzerdefinierten Dauer.
+
+## Änderungen am Zeitlimit sicher anwenden
+
+„Nie“ blendet jetzt das Zahlenfeld aus und lässt sich ohne Validierungsfehler speichern. Die Benutzereinstellungen zeigen eine deaktivierte Auswahl „Nie“, wenn der Ablauf global deaktiviert ist. Das Speichern oder Zurücksetzen eines persönlichen Zeitlimits widerruft alle bestehenden Sitzungen dieses Benutzers.

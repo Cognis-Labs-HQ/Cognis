@@ -210,6 +210,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             return;
         const never = unit.value === "never";
         input.disabled = never;
+        input.hidden = never;
         warning?.toggleAttribute("hidden", !never);
     }
 

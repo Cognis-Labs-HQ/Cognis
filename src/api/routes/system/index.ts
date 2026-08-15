@@ -233,7 +233,7 @@ export function createSystemRoutes(
             if (
                 body.loginSessionTimeoutMinutes !== undefined &&
                 (!Number.isInteger(body.loginSessionTimeoutMinutes) ||
-                    Number(body.loginSessionTimeoutMinutes) < 1)
+                    Number(body.loginSessionTimeoutMinutes) < 0)
             ) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -241,7 +241,7 @@ export function createSystemRoutes(
                         error: {
                             code: "invalid_session_timeout",
                             message:
-                                "loginSessionTimeoutMinutes must be a positive integer.",
+                                "loginSessionTimeoutMinutes must be a non-negative integer.",
                         },
                     }),
                 );

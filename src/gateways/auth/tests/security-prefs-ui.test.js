@@ -70,6 +70,17 @@ test("auth security preferences can reset to the administration default", () => 
     assert.match(SOURCE, /sessionTimeout\?\.maximumMinutes/);
 });
 
+test("auth security preferences show a non-selectable Never default", () => {
+    assert.match(
+        SOURCE,
+        /<option value="never" selected disabled>.*session_timeout_never/,
+    );
+    assert.match(
+        SOURCE,
+        /input\.hidden = sessionTimeout\?\.maximumMinutes === 0/,
+    );
+});
+
 test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /listKeyringEntries/);
     assert.match(KEYRING_SETTINGS_SOURCE, /createKeyringScope/);

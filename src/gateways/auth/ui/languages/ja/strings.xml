@@ -32,4 +32,5 @@
   <string name="gateway.auth.security.session_timeout_label">ログインセッション期限</string>
   <string name="gateway.auth.security.session_timeout_disabled">管理者によってセッション期限が無効にされています。</string>
   <string name="gateway.auth.security.session_timeout_reset">デフォルトのログインセッション期限を使用</string>
+  <string name="gateway.auth.security.session_timeout_never">なし</string>
 </resources>

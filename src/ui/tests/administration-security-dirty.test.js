@@ -24,3 +24,8 @@ test("administration security registers both session timeout controls with dirty
         /getLoginSessionTimeoutMinutesValue\(\) !==\s*originalLoginSessionTimeoutMinutes/,
     );
 });
+
+test("administration hides the numeric timeout when Never is selected", () => {
+    assert.match(SOURCE, /input\.hidden = never/);
+    assert.match(SOURCE, /unit\.value === "never"\s*\? 0/);
+});

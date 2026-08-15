@@ -2,7 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { CapabilityStore } from "@cognis/core";
 import { createSecurityRoutes } from "../bootstrap/routes/security.js";
-import { issueAccessToken } from "../access-tokens.js";
+import {
+    issueAccessToken,
+    revokeAccessTokensForSubject,
+    verifyAccessToken,
+} from "../access-tokens.js";
 import { makeJsonRequest, makeResponse } from "./auth-gateway-test-helpers.js";
 
 test("a user timeout preference survives compatible administration updates", async () => {
@@ -23,6 +27,10 @@ test("a user timeout preference survives compatible administration updates", asy
             return [];
         },
     });
+    capabilities.contribute(
+        "auth:revokeAccessTokensForSubject",
+        revokeAccessTokensForSubject,
+    );
     const route = createSecurityRoutes({
         capabilities,
         securitySubsections: [],
@@ -57,6 +65,20 @@ test("a user timeout preference survives compatible administration updates", asy
     assert.equal(await readTimeout(), 60);
     maximumMinutes = 240;
     assert.equal(await readTimeout(), 120);
+    const updateResponse = makeResponse();
+    await route(
+        makeJsonRequest(
+            "PUT",
+            { timeoutMinutes: 90 },
+            { authorization: `Bearer ${token}` },
+        ),
+        updateResponse as unknown as import("node:http").ServerResponse,
+        new URL("/api/v1/auth/login-session-timeout", "http://localhost"),
+        { component: "auth", method: "PUT", path: "session-timeout" },
+    );
+    assert.equal(updateResponse.status, 200);
+    assert.equal(storedTimeout, "90");
+    assert.equal(verifyAccessToken(token), null);
 });
 
 test("resetting a user timeout follows subsequent administration updates", async () => {
@@ -72,6 +94,10 @@ test("resetting a user timeout follows subsequent administration updates", async
         },
         async clearUser() {},
     });
+    capabilities.contribute(
+        "auth:revokeAccessTokensForSubject",
+        revokeAccessTokensForSubject,
+    );
     const route = createSecurityRoutes({
         capabilities,
         securitySubsections: [],
@@ -95,12 +121,14 @@ test("resetting a user timeout follows subsequent administration updates", async
 
     assert.equal(resetResponse.status, 200);
     assert.equal(storedTimeout, "global");
+    assert.equal(verifyAccessToken(token), null);
     maximumMinutes = 1440;
+    const refreshedToken = issueAccessToken("alice", "user", 60);
     const getResponse = makeResponse();
     await route(
         {
             method: "GET",
-            headers,
+            headers: { authorization: `Bearer ${refreshedToken}` },
         } as import("node:http").IncomingMessage,
         getResponse as unknown as import("node:http").ServerResponse,
         new URL("/api/v1/auth/login-session-timeout", "http://localhost"),

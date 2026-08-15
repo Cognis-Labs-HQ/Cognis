@@ -31,3 +31,7 @@ Compatible Administration timeout updates now leave each saved user duration unc
 ## Reset to the global timeout
 
 User Settings now provides an undo-icon button beside the duration unit. Resetting removes the custom duration behavior so the session timeout follows current and future Administration defaults.
+
+## Apply timeout changes securely
+
+Never now hides the numeric field and saves without validation errors. User Settings displays a disabled Never choice when expiry is globally disabled. Saving or resetting a personal timeout revokes every existing session for that user.

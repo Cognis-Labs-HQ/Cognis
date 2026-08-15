@@ -43,6 +43,14 @@ export function createSecurityRoutes({
     readSecuritySettings,
     log,
 }: SecurityRouteDependencies): AuthGatewayRouteHandler {
+    function revokeUserSessions(accountId: string): number {
+        return (
+            capabilities.get<(subject: string) => number>(
+                "auth:revokeAccessTokensForSubject",
+            )?.(accountId) ?? 0
+        );
+    }
+
     return async (
         req,
         res,
@@ -162,9 +170,11 @@ export function createSecurityRoutes({
                         LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
                         LOGIN_SESSION_TIMEOUT_USE_GLOBAL,
                     );
+                const revokedSessionCount = revokeUserSessions(claims.sub);
                 log?.("info", "Reset login session timeout preference.", {
                     ...logMeta,
                     accountId: claims.sub,
+                    revokedSessionCount,
                 });
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(
@@ -202,10 +212,12 @@ export function createSecurityRoutes({
                     LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
                     String(timeoutMinutes),
                 );
+            const revokedSessionCount = revokeUserSessions(claims.sub);
             log?.("info", "Updated login session timeout preference.", {
                 ...logMeta,
                 accountId: claims.sub,
                 timeoutMinutes,
+                revokedSessionCount,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { timeoutMinutes } }));

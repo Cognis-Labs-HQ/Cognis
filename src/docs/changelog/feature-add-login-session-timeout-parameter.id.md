@@ -31,3 +31,7 @@ Pembaruan batas waktu Administrasi yang kompatibel kini mempertahankan durasi te
 ## Atur ulang ke batas waktu global
 
 Pengaturan Pengguna kini menyediakan tombol berikon urungkan di samping satuan durasi. Setelah diatur ulang, batas waktu sesi mengikuti nilai bawaan Administrasi saat ini dan berikutnya, bukan durasi khusus.
+
+## Terapkan perubahan batas waktu dengan aman
+
+“Tidak pernah” kini menyembunyikan kolom angka dan dapat disimpan tanpa kesalahan validasi. Pengaturan Pengguna menampilkan pilihan “Tidak pernah” yang dinonaktifkan saat kedaluwarsa dinonaktifkan secara global. Menyimpan atau mengatur ulang batas waktu pribadi mencabut seluruh sesi pengguna yang masih ada.

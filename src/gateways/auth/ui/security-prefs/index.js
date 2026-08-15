@@ -82,6 +82,15 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         }
     }
 
+    function syncLoginSessionTimeoutInputVisibility() {
+        const input = settingsRoot.querySelector(
+            "#settings-login-session-timeout",
+        );
+        if (input instanceof HTMLInputElement) {
+            input.hidden = sessionTimeout?.maximumMinutes === 0;
+        }
+    }
+
     function setLoginSessionTimeoutValue(minutes) {
         const input = settingsRoot.querySelector(
             "#settings-login-session-timeout",
@@ -119,12 +128,16 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         <div class="security-field-row">
           <input id="settings-login-session-timeout" type="number" min="1" step="1" value="${duration.value}"${timeoutDisabled ? " disabled" : ""} />
           <select id="settings-login-session-timeout-unit" class="theme-select"${timeoutDisabled ? " disabled" : ""}>
-            ${["minutes", "hours", "days", "weeks"]
-                .map(
-                    (unit) =>
-                        `<option value="${unit}"${duration.unit === unit ? " selected" : ""}>${escapeHtml(i18n.t(`ui.reuse.duration.${unit}`))}</option>`,
-                )
-                .join("")}
+            ${
+                timeoutDisabled
+                    ? `<option value="never" selected disabled>${escapeHtml(i18n.t("gateway.auth.security.session_timeout_never"))}</option>`
+                    : ["minutes", "hours", "days", "weeks"]
+                          .map(
+                              (unit) =>
+                                  `<option value="${unit}"${duration.unit === unit ? " selected" : ""}>${escapeHtml(i18n.t(`ui.reuse.duration.${unit}`))}</option>`,
+                          )
+                          .join("")
+            }
           </select>
           <button id="settings-login-session-timeout-reset" class="btn-neutral" type="button" title="${escapeHtml(i18n.t("gateway.auth.security.session_timeout_reset"))}" aria-label="${escapeHtml(i18n.t("gateway.auth.security.session_timeout_reset"))}"${usesDefaultSessionTimeout ? " disabled" : ""}>
             <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5a7 7 0 1 1-6.32 4H8L4.5 5.5 1 9h2.6A9 9 0 1 0 12 3v2Z" /></svg>
@@ -159,6 +172,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         }
         panel.innerHTML = renderBody();
         bindPasswordResetButton();
+        syncLoginSessionTimeoutInputVisibility();
         const timeoutInput = settingsRoot.querySelector(
             "#settings-login-session-timeout",
         );

@@ -64,7 +64,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version   |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.8.5`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.8.6`   |
 | Share                 | `src/gateways/share/`         | `1.7.23`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`   |
@@ -86,7 +86,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path       | Version |
 | ---------- | ---------- | ------- |
-| API Server | `src/api/` | `0.3.8` |
+| API Server | `src/api/` | `0.3.9` |
 
 ## Tooling
 
