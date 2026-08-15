@@ -9,10 +9,7 @@
  * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
 
-import {
-    handleProfileAvatarError,
-    hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
@@ -23,6 +20,7 @@ import {
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openSearchPopup } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
+import { ensureNavbarPluginsLoaded } from "/static/layouts/dashboard-layout.js";
 import {
     fetchEmojiUsage,
     loadAllEmojis,
@@ -52,6 +50,15 @@ import { loadChatRoomKey, requireChatRoomKey } from "./chat-loading.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
 
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const handleProfileAvatarError = (event) => profileAvatars().handleError(event);
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
+
 const LAST_OPENED_ROOM_KEY = "messages:last-opened-room";
 const TYPING_TTL_SECONDS = 8;
 const TYPING_IDLE_RESET_MS = (TYPING_TTL_SECONDS - 3) * 1000;
@@ -72,6 +79,8 @@ export async function mount(root, { signal } = {}) {
             "/static/gateways/social/languages",
         ],
     });
+    await ensureNavbarPluginsLoaded();
+    if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
     const {

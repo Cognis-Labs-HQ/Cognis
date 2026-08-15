@@ -1,15 +1,13 @@
-import { apiFetch } from "./api-client.js";
-import { getInitialsText, pickInitialsColor } from "./avatar-utils.js";
-import { escapeHtml } from "./escape-html.js";
-import { renderMarkdown } from "./markdown-renderer.js";
-import { getRoleLabel, normalizeRoleValue } from "./access-role.js";
-import { uiCtx } from "./ui-ctx.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
+import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
 const PREVIEW_ROLE_LABELS = new Set(["teacher", "admin", "owner"]);
 const profileCache = new Map();
-const avatarUrlCache = new Map();
 let previewEl = null;
 let activeLink = null;
 let showTimer = null;
@@ -37,19 +35,6 @@ async function loadProfilePreview(handle) {
     return promise;
 }
 
-async function loadAvatarUrl(avatarKey) {
-    if (!avatarKey) return null;
-    if (avatarUrlCache.has(avatarKey)) return avatarUrlCache.get(avatarKey);
-    const promise = apiFetch(`/api/v1/files/profile/${avatarKey}`)
-        .then(async (res) => {
-            if (!res.ok) return null;
-            return URL.createObjectURL(await res.blob());
-        })
-        .catch(() => null);
-    avatarUrlCache.set(avatarKey, promise);
-    return promise;
-}
-
 function ensurePreview() {
     if (previewEl) return previewEl;
     previewEl = document.createElement("aside");
@@ -64,13 +49,17 @@ function ensurePreview() {
     return previewEl;
 }
 
-function renderAvatar(profile, avatarUrl) {
-    if (avatarUrl) {
-        return `<img class="profile-mini-preview__avatar-img" src="${escapeHtml(avatarUrl)}" alt="" />`;
-    }
-    const label = profile?.displayName || profile?.handle || "";
-    const color = pickInitialsColor(profile?.handle || label);
-    return `<span class="profile-mini-preview__avatar-initials" style="--initials-bg: ${escapeHtml(color)};">${escapeHtml(getInitialsText(label))}</span>`;
+function renderAvatar(profile) {
+    const renderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    return renderer.buildMarkup({
+        avatarKey: profile?.avatarKey,
+        label: profile?.displayName || profile?.handle || "",
+        colorSeed: profile?.handle || profile?.displayName || "",
+        avatarClass: "profile-mini-preview__avatar-content",
+        imageClass: "profile-mini-preview__avatar-img",
+        fallbackClass: "profile-mini-preview__avatar-initials",
+        showAvailability: false,
+    });
 }
 
 function positionPreview(link, preview) {
@@ -106,10 +95,8 @@ async function showPreview(link) {
         if (!profile) scheduleHide();
         return;
     }
-    const avatarUrl = await loadAvatarUrl(profile.avatarKey);
-    if (activeLink !== link) {
-        return;
-    }
+    const avatarRenderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!avatarRenderer) return;
 
     const name = profile.displayName || profile.handle || handle;
     const handleText = profile.handle || handle;
@@ -139,7 +126,7 @@ async function showPreview(link) {
 
     preview.innerHTML = `
         <div class="profile-mini-preview__header">
-            <div class="profile-mini-preview__avatar">${renderAvatar(profile, avatarUrl)}${availabilityMarkup}</div>
+            <div class="profile-mini-preview__avatar">${renderAvatar(profile)}${availabilityMarkup}</div>
             <div class="profile-mini-preview__identity">
                 <strong>${escapeHtml(name)}</strong>
                 <span>@${escapeHtml(handleText)}</span>
@@ -149,6 +136,7 @@ async function showPreview(link) {
         ${profile.bio ? `<div class="profile-mini-preview__bio">${renderMarkdown(profile.bio)}</div>` : ""}
         ${stats ? `<p class="profile-mini-preview__stats">${escapeHtml(stats)}</p>` : ""}
     `;
+    await avatarRenderer.hydrate(preview);
     await availabilityRenderer?.hydrate?.(preview);
     positionPreview(link, preview);
 }

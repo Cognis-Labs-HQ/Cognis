@@ -31,7 +31,6 @@ import {
 } from "./popup-manager-event-utils.js";
 import { createCalendarResponseHandler } from "./popup-manager-response.js";
 import { handlePendingResponseClick } from "./popup-manager-pending-response.js";
-import { bindProfilePreviews } from "/static/reuse/profile-preview.js";
 export function createCalendarPopupManager({
     root,
     signal,
@@ -255,7 +254,6 @@ export function createCalendarPopupManager({
                 });
             };
             const hydrateEventPopupParticipants = (container) => {
-                bindProfilePreviews(i18n);
                 const attendeeList = container.querySelector(
                     ".calendar-participant-list",
                 );
@@ -697,7 +695,6 @@ export function createCalendarPopupManager({
                     );
                 }
                 bindAllDayComposerControls({ overlay, signal });
-                bindProfilePreviews(i18n);
                 renderParticipants(overlay);
                 renderParticipantOptions(overlay);
                 const participantSearch = overlay.querySelector(

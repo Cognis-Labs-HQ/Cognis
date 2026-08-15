@@ -1,9 +1,5 @@
-import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    getInitialsText,
-    pickInitialsColor,
-} from "/static/reuse/avatar-utils.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
@@ -14,30 +10,26 @@ import {
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
+
 const STYLESHEET_HREF =
     "/static/adapters/share/link/ui/share-links-popup/index.css";
 let stylesheetReady = null;
 
 export function buildRecipientAvatarMarkup(options) {
-    const avatarRenderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
-    if (avatarRenderer?.buildMarkup) {
-        return avatarRenderer.buildMarkup(options);
-    }
-    const avatarClass = escapeHtml(options.avatarClass);
-    const fallbackClass = escapeHtml(options.fallbackClass);
-    const color = escapeHtml(pickInitialsColor(options.colorSeed));
-    const initials = escapeHtml(getInitialsText(options.label));
-    return (
-        `<span class="${avatarClass}">` +
-        `<span class="${fallbackClass}" style="--initials-bg: ${color};">` +
-        `${initials}</span></span>`
-    );
+    return buildProfileAvatarMarkup(options);
 }
 
 export function hydrateRecipientAvatars(container) {
-    return uiCtx.capabilities
-        .get("ui:profileAvatarRenderer")
-        ?.hydrate?.(container);
+    return hydrateProfileAvatars(container);
 }
 export function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
