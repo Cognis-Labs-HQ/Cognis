@@ -88,7 +88,7 @@ test("auth security preferences show a non-selectable Never default", () => {
 
 test("auth security preferences show the current session countdown", () => {
     assert.match(SOURCE, /cognis_session_expires_at/);
-    assert.match(SOURCE, /formatCountdown\(remaining\)/);
+    assert.match(SOURCE, /getCountdownParts\(remaining\)/);
     assert.match(SOURCE, /settings-login-session-timeout-countdown/);
     assert.match(SOURCE, /!timeoutDisabled && hasSessionExpiry/);
 });

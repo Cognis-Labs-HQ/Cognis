@@ -22,7 +22,7 @@ import {
     renderAuthLayout,
 } from "/static/reuse/auth-layout.js";
 import { clearStoredAuthSession } from "/static/reuse/auth-session.js";
-import { formatCountdown } from "/static/reuse/countdown.js";
+import { formatCountdownClock } from "/static/gateways/auth/countdown.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import {
     DEFAULT_PASSWORD_POLICY,
@@ -603,7 +603,7 @@ export async function mount(root, { signal } = {}) {
                                 .t("ui.app.register.token_expires_in")
                                 .replace(
                                     "{countdown}",
-                                    formatCountdown(remaining),
+                                    formatCountdownClock(remaining),
                                 );
                         }
                         updateCountdown();

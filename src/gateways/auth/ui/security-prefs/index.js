@@ -4,7 +4,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
-import { formatCountdown } from "/static/reuse/countdown.js";
+import { getCountdownParts } from "/static/gateways/auth/countdown.js";
 import {
     joinDurationMinutes,
     splitDurationMinutes,
@@ -153,7 +153,18 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 remaining > 0
                     ? i18n
                           .t("gateway.auth.security.session_expires_in")
-                          .replace("{countdown}", formatCountdown(remaining))
+                          .replace(
+                              "{countdown}",
+                              getCountdownParts(remaining)
+                                  .map(({ unit, value }) =>
+                                      i18n
+                                          .t(
+                                              `gateway.auth.security.countdown.${unit}.${value === 1 ? "one" : "many"}`,
+                                          )
+                                          .replace("{count}", String(value)),
+                                  )
+                                  .join(", "),
+                          )
                     : i18n.t("gateway.auth.security.session_expired");
             if (remaining <= 0) {
                 window.clearInterval(sessionCountdownTimer);

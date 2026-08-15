@@ -47,3 +47,7 @@ Bootstrap autentikasi kini mempertahankan batas waktu global nol menit yang ters
 ## Tampilkan hitung mundur sesi saat ini
 
 Pengaturan Keamanan Pengguna kini menampilkan sisa waktu sesi saat ini di samping kontrol batas waktu. Hitung mundur menggunakan waktu kedaluwarsa yang dicatat saat sesi diterbitkan dan tidak ditampilkan untuk sesi yang tidak pernah berakhir.
+
+## Simpan logika hitung mundur di Autentikasi
+
+Pemformatan hitung mundur kini berada di gateway Autentikasi, bukan di penggunaan ulang UI inti. Tampilan sesi saat ini menggunakan minggu, hari, jam, menit, dan detik yang mudah dibaca.

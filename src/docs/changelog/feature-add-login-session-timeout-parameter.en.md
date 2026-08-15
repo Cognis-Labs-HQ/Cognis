@@ -47,3 +47,7 @@ Authentication bootstrap now preserves the stored zero-minute global timeout ins
 ## Show the current session countdown
 
 User Security settings now show the current session time remaining beside the timeout controls. The countdown uses the expiry recorded from the issued session and is omitted for sessions that never expire.
+
+## Keep countdown logic in Authentication
+
+Countdown formatting now lives inside the Authentication gateway rather than core UI reuse. The current-session display uses readable weeks, days, hours, minutes, and seconds.

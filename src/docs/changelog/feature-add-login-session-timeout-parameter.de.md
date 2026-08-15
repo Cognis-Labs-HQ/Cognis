@@ -47,3 +47,7 @@ Der Authentifizierungsstart bewahrt jetzt das gespeicherte globale Zeitlimit von
 ## Countdown der aktuellen Sitzung anzeigen
 
 Die Benutzersicherheitseinstellungen zeigen jetzt neben den Zeitlimit-Steuerelementen die verbleibende Zeit der aktuellen Sitzung. Der Countdown verwendet den bei der Sitzungsausgabe gespeicherten Ablaufzeitpunkt und entfällt bei Sitzungen ohne Ablauf.
+
+## Countdown-Logik in der Authentifizierung halten
+
+Die Countdown-Formatierung liegt jetzt im Authentifizierungs-Gateway statt in der allgemeinen UI-Wiederverwendung. Die aktuelle Sitzung wird verständlich in Wochen, Tagen, Stunden, Minuten und Sekunden angezeigt.

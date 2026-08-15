@@ -36,4 +36,14 @@
   <string name="gateway.auth.security.session_timeout_reset_failed">デフォルトのログインセッション期限を読み込めませんでした。</string>
   <string name="gateway.auth.security.session_expires_in">現在のセッションは {countdown} 後に期限切れになります</string>
   <string name="gateway.auth.security.session_expired">現在のセッションは期限切れです</string>
+  <string name="gateway.auth.security.countdown.weeks.one">{count}週間</string>
+  <string name="gateway.auth.security.countdown.weeks.many">{count}週間</string>
+  <string name="gateway.auth.security.countdown.days.one">{count}日</string>
+  <string name="gateway.auth.security.countdown.days.many">{count}日</string>
+  <string name="gateway.auth.security.countdown.hours.one">{count}時間</string>
+  <string name="gateway.auth.security.countdown.hours.many">{count}時間</string>
+  <string name="gateway.auth.security.countdown.minutes.one">{count}分</string>
+  <string name="gateway.auth.security.countdown.minutes.many">{count}分</string>
+  <string name="gateway.auth.security.countdown.seconds.one">{count}秒</string>
+  <string name="gateway.auth.security.countdown.seconds.many">{count}秒</string>
 </resources>
