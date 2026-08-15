@@ -29,6 +29,6 @@
   <string name="gateway.auth.security.keyring_relock">Automatically lock the keyring</string>
   <string name="gateway.auth.security.keyring_logout">At logout</string>
   <string name="gateway.auth.security.keyring_minutes">minutes</string>
-  <string name="gateway.auth.security.session_timeout_label">Login session timeout (minutes)</string>
-  <string name="gateway.auth.security.session_timeout_hint">Applies to your next login. Choose from 1 to {maximum} minutes, the administrator-defined maximum.</string>
+  <string name="gateway.auth.security.session_timeout_label">Login session timeout</string>
+  <string name="gateway.auth.security.session_timeout_disabled">Session timeout is disabled by your administrator.</string>
 </resources>

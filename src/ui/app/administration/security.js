@@ -1,5 +1,9 @@
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import {
+    joinDurationMinutes,
+    splitDurationMinutes,
+} from "../../reuse/duration-input.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
     DEFAULT_PASSWORD_POLICY,
@@ -182,9 +186,46 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     function getLoginSessionTimeoutMinutesValue() {
         const input = root.querySelector("#security-login-session-timeout");
-        return input instanceof HTMLInputElement
-            ? Number.parseInt(input.value, 10)
-            : originalLoginSessionTimeoutMinutes;
+        const unit = root.querySelector("#security-login-session-timeout-unit");
+        if (!(unit instanceof HTMLSelectElement)) {
+            return originalLoginSessionTimeoutMinutes;
+        }
+        return unit.value === "never"
+            ? 0
+            : input instanceof HTMLInputElement
+              ? joinDurationMinutes(input.value, unit.value)
+              : originalLoginSessionTimeoutMinutes;
+    }
+
+    function updateLoginSessionTimeoutControls() {
+        const input = root.querySelector("#security-login-session-timeout");
+        const unit = root.querySelector("#security-login-session-timeout-unit");
+        const warning = root.querySelector(
+            "#security-login-session-timeout-warning",
+        );
+        if (
+            !(input instanceof HTMLInputElement) ||
+            !(unit instanceof HTMLSelectElement)
+        )
+            return;
+        const never = unit.value === "never";
+        input.disabled = never;
+        warning?.toggleAttribute("hidden", !never);
+    }
+
+    function setLoginSessionTimeoutControls(minutes) {
+        const input = root.querySelector("#security-login-session-timeout");
+        const unit = root.querySelector("#security-login-session-timeout-unit");
+        if (
+            !(input instanceof HTMLInputElement) ||
+            !(unit instanceof HTMLSelectElement)
+        ) {
+            return;
+        }
+        const duration = splitDurationMinutes(minutes || 1);
+        input.value = String(duration.value);
+        unit.value = minutes === 0 ? "never" : duration.unit;
+        updateLoginSessionTimeoutControls();
     }
 
     function getPasswordPolicyValue() {
@@ -278,6 +319,9 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const loginTimeoutInput = root.querySelector(
             "#security-login-session-timeout",
         );
+        const loginTimeoutUnit = root.querySelector(
+            "#security-login-session-timeout-unit",
+        );
         if (validationSelect instanceof HTMLSelectElement) {
             const smtpOption = validationSelect.querySelector(
                 "option[value='smtp']",
@@ -304,11 +348,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         if (enforceTfaToggle instanceof HTMLInputElement) {
             enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
         }
-        if (loginTimeoutInput instanceof HTMLInputElement) {
-            loginTimeoutInput.value = String(
-                originalLoginSessionTimeoutMinutes,
-            );
-        }
+        setLoginSessionTimeoutControls(originalLoginSessionTimeoutMinutes);
         for (const { key, id } of POLICY_FIELDS) {
             const policyInput = root.querySelector(`#${id}`);
             if (policyInput instanceof HTMLInputElement) {
@@ -323,6 +363,10 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         teacherApprovalToggle?.addEventListener("change", markDirtyState);
         enforceTfaToggle?.addEventListener("change", markDirtyState);
         loginTimeoutInput?.addEventListener("input", markDirtyState);
+        loginTimeoutUnit?.addEventListener("change", () => {
+            updateLoginSessionTimeoutControls();
+            markDirtyState();
+        });
     }
 
     return {
@@ -426,9 +470,6 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             const enforceTfaToggle = root.querySelector(
                 "#security-enforce-tfa-for-all-users",
             );
-            const loginTimeoutInput = root.querySelector(
-                "#security-login-session-timeout",
-            );
             if (registrationsToggle instanceof HTMLInputElement) {
                 registrationsToggle.checked = currentPublicRegistrationEnabled;
             }
@@ -438,11 +479,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             if (enforceTfaToggle instanceof HTMLInputElement) {
                 enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
             }
-            if (loginTimeoutInput instanceof HTMLInputElement) {
-                loginTimeoutInput.value = String(
-                    originalLoginSessionTimeoutMinutes,
-                );
-            }
+            setLoginSessionTimeoutControls(originalLoginSessionTimeoutMinutes);
             for (const { key, id } of POLICY_FIELDS) {
                 const policyInput = root.querySelector(`#${id}`);
                 if (policyInput instanceof HTMLInputElement) {
@@ -463,6 +500,14 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             </h3>
             <div class="security-field-row">
               <input id="security-login-session-timeout" class="security-policy-number-input" type="number" min="1" step="1" />
+              <select id="security-login-session-timeout-unit" class="theme-select">
+                <option value="minutes">${escapeHtml(i18n.t("ui.reuse.duration.minutes"))}</option>
+                <option value="hours">${escapeHtml(i18n.t("ui.reuse.duration.hours"))}</option>
+                <option value="days">${escapeHtml(i18n.t("ui.reuse.duration.days"))}</option>
+                <option value="weeks">${escapeHtml(i18n.t("ui.reuse.duration.weeks"))}</option>
+                <option value="never">${escapeHtml(i18n.t("ui.app.admin.security.login_session_timeout_never"))}</option>
+              </select>
+              <p id="security-login-session-timeout-warning" class="structured-content__text" hidden>${escapeHtml(i18n.t("ui.app.admin.security.login_session_timeout_never_warning"))}</p>
             </div>
           </div>
           <div class="components-section">

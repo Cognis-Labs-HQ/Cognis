@@ -124,9 +124,12 @@ export function createSecurityRoutes({
                 .catch(() => null);
             const requestedMinutes = Number(stored);
             const timeoutMinutes =
-                Number.isInteger(requestedMinutes) && requestedMinutes >= 1
-                    ? Math.min(requestedMinutes, maximumMinutes)
-                    : maximumMinutes;
+                maximumMinutes === 0
+                    ? 0
+                    : Number.isInteger(requestedMinutes) &&
+                        requestedMinutes >= 1
+                      ? Math.min(requestedMinutes, maximumMinutes)
+                      : maximumMinutes;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({ data: { timeoutMinutes, maximumMinutes } }),
@@ -145,6 +148,7 @@ export function createSecurityRoutes({
             const body = await readJson(req);
             const timeoutMinutes = body.timeoutMinutes;
             if (
+                maximumMinutes === 0 ||
                 !Number.isInteger(timeoutMinutes) ||
                 Number(timeoutMinutes) < 1 ||
                 Number(timeoutMinutes) > maximumMinutes

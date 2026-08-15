@@ -4,6 +4,10 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
+import {
+    joinDurationMinutes,
+    splitDurationMinutes,
+} from "/static/reuse/duration-input.js";
 import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
 
 export function createSettingsSection({ i18n, root, markDirty }) {
@@ -39,11 +43,31 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         originalSessionTimeoutMinutes = sessionTimeout.timeoutMinutes;
     }
 
+    function getTimeoutMinutes() {
+        if (sessionTimeout?.maximumMinutes === 0) {
+            return 0;
+        }
+        const input = settingsRoot.querySelector(
+            "#settings-login-session-timeout",
+        );
+        const unit = settingsRoot.querySelector(
+            "#settings-login-session-timeout-unit",
+        );
+        return input instanceof HTMLInputElement &&
+            unit instanceof HTMLSelectElement
+            ? joinDurationMinutes(input.value, unit.value)
+            : originalSessionTimeoutMinutes;
+    }
+
     function renderBody() {
         if (!capability) {
             return `<p class="structured-content__text">${i18n.t("gateway.auth.security.loading")}</p>`;
         }
         const unsupported = capability.supported !== true;
+        const duration = splitDurationMinutes(
+            sessionTimeout?.timeoutMinutes || 1,
+        );
+        const timeoutDisabled = sessionTimeout?.maximumMinutes === 0;
         return `
       <div class="settings-auth-password-reset">
         <button class="btn-animated btn-cancel" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
@@ -51,8 +75,16 @@ export function createSettingsSection({ i18n, root, markDirty }) {
       </div>
       <div class="security-field-row">
         <label for="settings-login-session-timeout">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_label"))}</label>
-        <input id="settings-login-session-timeout" type="number" min="1" step="1" max="${sessionTimeout?.maximumMinutes ?? 1}" value="${sessionTimeout?.timeoutMinutes ?? ""}" />
-        <p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_hint").replace("{maximum}", String(sessionTimeout?.maximumMinutes ?? "")))}</p>
+        <input id="settings-login-session-timeout" type="number" min="1" step="1" value="${duration.value}"${timeoutDisabled ? " disabled" : ""} />
+        <select id="settings-login-session-timeout-unit" class="theme-select"${timeoutDisabled ? " disabled" : ""}>
+          ${["minutes", "hours", "days", "weeks"]
+              .map(
+                  (unit) =>
+                      `<option value="${unit}"${duration.unit === unit ? " selected" : ""}>${escapeHtml(i18n.t(`ui.reuse.duration.${unit}`))}</option>`,
+              )
+              .join("")}
+        </select>
+        ${timeoutDisabled ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_disabled"))}</p>` : ""}
       </div>
     `;
     }
@@ -85,6 +117,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             "#settings-login-session-timeout",
         );
         timeoutInput?.addEventListener("input", () => markDirty?.());
+        settingsRoot
+            .querySelector("#settings-login-session-timeout-unit")
+            ?.addEventListener("change", () => markDirty?.());
     }
 
     async function loadSubsections() {
@@ -164,7 +199,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             );
             const timeoutDirty =
                 input instanceof HTMLInputElement &&
-                Number(input.value) !== originalSessionTimeoutMinutes;
+                getTimeoutMinutes() !== originalSessionTimeoutMinutes;
             return (
                 timeoutDirty ||
                 (subsectionInstances ?? []).some((section) =>
@@ -178,7 +213,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             );
             if (
                 input instanceof HTMLInputElement &&
-                Number(input.value) !== originalSessionTimeoutMinutes
+                getTimeoutMinutes() !== originalSessionTimeoutMinutes
             ) {
                 const response = await apiFetch(
                     "/api/v1/auth/login-session-timeout",
@@ -186,7 +221,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                         method: "PUT",
                         headers: { "content-type": "application/json" },
                         body: JSON.stringify({
-                            timeoutMinutes: Number(input.value),
+                            timeoutMinutes: getTimeoutMinutes(),
                         }),
                     },
                 );
@@ -203,7 +238,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 "#settings-login-session-timeout",
             );
             if (input instanceof HTMLInputElement) {
-                originalSessionTimeoutMinutes = Number(input.value);
+                originalSessionTimeoutMinutes = getTimeoutMinutes();
             }
             for (const section of subsectionInstances ?? []) {
                 section.commit?.();
@@ -214,7 +249,16 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 "#settings-login-session-timeout",
             );
             if (input instanceof HTMLInputElement) {
-                input.value = String(originalSessionTimeoutMinutes);
+                const duration = splitDurationMinutes(
+                    originalSessionTimeoutMinutes || 1,
+                );
+                const unit = settingsRoot.querySelector(
+                    "#settings-login-session-timeout-unit",
+                );
+                input.value = String(duration.value);
+                if (unit instanceof HTMLSelectElement) {
+                    unit.value = duration.unit;
+                }
             }
             for (const section of subsectionInstances ?? []) {
                 section.discard?.();

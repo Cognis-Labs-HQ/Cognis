@@ -13,7 +13,7 @@ export const MIN_LOGIN_SESSION_TIMEOUT_MINUTES = 1;
 export function normalizeLoginSessionTimeoutMinutes(value: unknown): number {
     const parsed = typeof value === "number" ? value : Number.NaN;
     return Number.isInteger(parsed) &&
-        parsed >= MIN_LOGIN_SESSION_TIMEOUT_MINUTES
+        (parsed === 0 || parsed >= MIN_LOGIN_SESSION_TIMEOUT_MINUTES)
         ? parsed
         : DEFAULT_LOGIN_SESSION_TIMEOUT_MINUTES;
 }

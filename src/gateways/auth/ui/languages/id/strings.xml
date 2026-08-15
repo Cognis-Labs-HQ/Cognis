@@ -29,6 +29,6 @@
   <string name="gateway.auth.security.keyring_relock">Kunci keyring secara otomatis</string>
   <string name="gateway.auth.security.keyring_logout">Saat keluar</string>
   <string name="gateway.auth.security.keyring_minutes">menit</string>
-  <string name="gateway.auth.security.session_timeout_label">Batas waktu sesi login (menit)</string>
-  <string name="gateway.auth.security.session_timeout_hint">Berlaku pada login berikutnya. Pilih 1 hingga {maximum} menit, yaitu batas maksimum yang ditetapkan administrator.</string>
+  <string name="gateway.auth.security.session_timeout_label">Batas waktu sesi login</string>
+  <string name="gateway.auth.security.session_timeout_disabled">Batas waktu sesi dinonaktifkan oleh administrator.</string>
 </resources>
