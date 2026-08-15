@@ -19,3 +19,7 @@ Administrator dapat memilih “Tidak pernah” untuk menonaktifkan kedaluwarsa s
 ## Susun pengaturan keamanan
 
 Pengaturan Keamanan Pengguna kini menampilkan Batas Waktu Sesi Login sebagai subbagian tersendiri, selaras dengan susunannya di Administrasi.
+
+## Lacak perubahan batas waktu dengan andal
+
+Kolom batas waktu sesi kini masuk dalam pelacakan perubahan yang belum disimpan di Administrasi dan Pengaturan Pengguna. Pengaturan Pengguna juga memisahkan tindakan kata sandi dan judul batas waktu dengan jarak antarbagian yang konsisten.

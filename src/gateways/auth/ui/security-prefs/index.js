@@ -10,6 +10,8 @@ import {
 } from "/static/reuse/duration-input.js";
 import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
 
+const LOGIN_SESSION_TIMEOUT_DIRTY_KEY = "auth-login-session-timeout";
+
 export function createSettingsSection({ i18n, root, markDirty }) {
     let capability = null;
     const settingsRoot = root ?? document;
@@ -59,6 +61,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             : originalSessionTimeoutMinutes;
     }
 
+    function syncLoginSessionTimeoutDirtyState() {
+        markDirty?.(
+            LOGIN_SESSION_TIMEOUT_DIRTY_KEY,
+            getTimeoutMinutes() !== originalSessionTimeoutMinutes,
+        );
+    }
+
     function renderBody() {
         if (!capability) {
             return `<p class="structured-content__text">${i18n.t("gateway.auth.security.loading")}</p>`;
@@ -69,7 +78,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         );
         const timeoutDisabled = sessionTimeout?.maximumMinutes === 0;
         return `
-      <div class="settings-auth-password-reset">
+      <div class="components-section settings-auth-password-reset">
         <button class="btn-animated btn-cancel" type="button" id="settings-reset-password-btn"${unsupported ? " disabled" : ""}>${i18n.t("gateway.auth.security.reset_action")}</button>
         ${unsupported ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.external_password_notice"))}</p>` : ""}
       </div>
@@ -118,10 +127,13 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const timeoutInput = settingsRoot.querySelector(
             "#settings-login-session-timeout",
         );
-        timeoutInput?.addEventListener("input", () => markDirty?.());
+        timeoutInput?.addEventListener(
+            "input",
+            syncLoginSessionTimeoutDirtyState,
+        );
         settingsRoot
             .querySelector("#settings-login-session-timeout-unit")
-            ?.addEventListener("change", () => markDirty?.());
+            ?.addEventListener("change", syncLoginSessionTimeoutDirtyState);
     }
 
     async function loadSubsections() {
@@ -241,6 +253,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             );
             if (input instanceof HTMLInputElement) {
                 originalSessionTimeoutMinutes = getTimeoutMinutes();
+                syncLoginSessionTimeoutDirtyState();
             }
             for (const section of subsectionInstances ?? []) {
                 section.commit?.();
@@ -261,6 +274,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 if (unit instanceof HTMLSelectElement) {
                     unit.value = duration.unit;
                 }
+                syncLoginSessionTimeoutDirtyState();
             }
             for (const section of subsectionInstances ?? []) {
                 section.discard?.();

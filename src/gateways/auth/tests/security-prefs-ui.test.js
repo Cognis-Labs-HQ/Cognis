@@ -42,6 +42,16 @@ test("auth security preferences present login timeout as a subsection", () => {
         /<h3 class="components-section-heading">\$\{escapeHtml\(i18n\.t\("gateway\.auth\.security\.session_timeout_label"\)\)\}<\/h3>/,
     );
     assert.match(SOURCE, /settings-login-session-timeout-unit/);
+    assert.match(SOURCE, /components-section settings-auth-password-reset/);
+});
+
+test("auth security preferences register timeout changes by dirty key", () => {
+    assert.match(SOURCE, /LOGIN_SESSION_TIMEOUT_DIRTY_KEY/);
+    assert.match(
+        SOURCE,
+        /markDirty\?\.\(\s*LOGIN_SESSION_TIMEOUT_DIRTY_KEY,\s*getTimeoutMinutes\(\) !== originalSessionTimeoutMinutes,/,
+    );
+    assert.match(SOURCE, /syncLoginSessionTimeoutDirtyState/);
 });
 
 test("keyring settings unlock once before allowing secret changes", () => {

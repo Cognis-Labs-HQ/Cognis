@@ -19,3 +19,7 @@ Administrationen können „Nie“ auswählen, um den Ablauf von Sitzungen zu de
 ## Sicherheitseinstellungen übersichtlich gliedern
 
 Die Sicherheitseinstellungen für Benutzer zeigen das Zeitlimit der Anmeldesitzung jetzt als eigenen Unterabschnitt, entsprechend der Gliederung in der Administration.
+
+## Änderungen am Zeitlimit zuverlässig verfolgen
+
+Die Felder für das Sitzungszeitlimit werden jetzt sowohl in der Administration als auch in den Benutzereinstellungen als ungespeicherte Änderungen erfasst. In den Benutzereinstellungen trennt ein einheitlicher Abschnittsabstand außerdem die Passwortaktion von der Überschrift des Zeitlimits.

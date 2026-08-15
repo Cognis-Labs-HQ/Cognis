@@ -19,3 +19,7 @@ Administrators can select Never to disable session expiry, with a clear warning 
 ## Organize the security settings
 
 User Security settings now show Login Session Timeout as a distinct subsection, matching its organization in Administration.
+
+## Track timeout changes reliably
+
+Session timeout fields now participate in unsaved-change tracking in both Administration and User Settings. User Settings also separates the password action and timeout heading with consistent section spacing.
