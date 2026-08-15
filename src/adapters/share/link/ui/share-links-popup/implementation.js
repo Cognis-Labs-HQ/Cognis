@@ -12,10 +12,6 @@
  * @returns {Promise<void>} Resolves after the popup closes.
  */
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    getInitialsText,
-    pickInitialsColor,
-} from "/static/reuse/avatar-utils.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";

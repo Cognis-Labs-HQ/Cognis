@@ -19,8 +19,6 @@
  */
 
 import { escapeHtml } from "./escape-html.js";
-import { pickInitialsColor } from "./avatar-utils.js";
-import { uiCtx } from "./ui-ctx.js";
 
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
@@ -42,7 +40,7 @@ function getDisplayName(entry) {
 }
 
 function getPointerColor(entry) {
-    return pickInitialsColor(entry?.handle || getDisplayName(entry));
+    return String(entry?.color || "hsl(0, 0%, 42%)");
 }
 
 function normalizeSelectionItems(selection) {

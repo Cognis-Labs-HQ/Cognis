@@ -8,6 +8,8 @@
  * initials when an image is unavailable or fails to load.
  *
  * Public exports:
+ *   getProfileInitials(label) — generates canonical initials for a profile label.
+ *   getProfileInitialsColor(seed) — generates the canonical fallback colour.
  *   fetchProfileAvatarBlobUrl(avatarKey) — fetches the avatar image via
  *     authenticated API and returns a blob: URL, or null if unavailable.
  *     Results are cached per key for the lifetime of the page.
@@ -50,10 +52,6 @@
  */
 
 import { apiFetch } from "/static/reuse/api-client.js";
-import {
-    getInitialsText,
-    pickInitialsColor,
-} from "/static/reuse/avatar-utils.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
@@ -63,6 +61,26 @@ import {
 
 const unavailableAvatarKeys = new Set();
 const avatarBlobUrlCache = new Map();
+
+/** Returns profile initials using the profile adapter's canonical rules. */
+export function getProfileInitials(label) {
+    if (!label) return "?";
+    const clean = String(label).replace(/^@/, "").trim();
+    const parts = clean.split(/[\s._-]+/).filter(Boolean);
+    if (parts.length >= 2) {
+        return (parts[0][0] + parts[1][0]).toUpperCase();
+    }
+    return (parts[0]?.[0] ?? clean[0] ?? "?").toUpperCase();
+}
+
+/** Returns the profile adapter's deterministic initials colour. */
+export function getProfileInitialsColor(seed) {
+    let hash = 0;
+    for (const character of String(seed ?? "")) {
+        hash = (hash * 31 + character.charCodeAt(0)) | 0;
+    }
+    return `hsl(${Math.abs(hash) % 360}, 55%, 42%)`;
+}
 
 /**
  * Builds the authenticated API URL for a stored file by key. Room/chatroom
@@ -98,7 +116,7 @@ function buildInitialsHtml(
     fallbackClass,
     { avatarKey = "", imageClass = "" } = {},
 ) {
-    const color = pickInitialsColor(colorSeed);
+    const color = getProfileInitialsColor(colorSeed);
     const dataAttrs = avatarKey
         ? ` data-avatar-key="${escapeHtml(avatarKey)}"` +
           ` data-avatar-label="${escapeHtml(label)}"` +
@@ -109,7 +127,7 @@ function buildInitialsHtml(
     return (
         `<span class="${escapeHtml(fallbackClass)}"` +
         ` style="--initials-bg: ${escapeHtml(color)};"${dataAttrs}>` +
-        `${escapeHtml(getInitialsText(label))}</span>`
+        `${escapeHtml(getProfileInitials(label))}</span>`
     );
 }
 
@@ -264,7 +282,12 @@ export async function hydrateProfileAvatars(container) {
 
 uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
     buildMarkup: buildProfileAvatarMarkup,
+    fetch: fetchProfileAvatarBlobUrl,
+    getInitials: getProfileInitials,
+    getInitialsColor: getProfileInitialsColor,
+    handleError: handleProfileAvatarError,
     hydrate: hydrateProfileAvatars,
+    isUnavailable: isProfileAvatarUnavailable,
 });
 
 /**

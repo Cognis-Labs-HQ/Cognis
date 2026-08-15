@@ -173,14 +173,17 @@ test("page composer can delegate document scrolling to the page", () => {
     assert.match(changelogsPage, /contentScrolling: false/);
 });
 
-test("page composer resolves edit toggle from the active page root", () => {
+test("page composer keeps its mounted edit toggle across route changes", () => {
     const source = readPageComposerBundle();
 
+    assert.match(source, /let composerEditToggleButton = null;/);
+    assert.match(
+        source,
+        /composerEditToggleButton = root\.querySelector\("#composer-edit-toggle"\);/,
+    );
     assert.match(source, /function getComposerEditToggleButton\(\)/);
-    assert.match(source, /root\.querySelector\("#composer-edit-toggle"\)/);
-    assert.match(source, /document\.getElementById\("composer-edit-toggle"\)/);
+    assert.match(source, /return composerEditToggleButton;/);
     assert.match(source, /const editBtn = getComposerEditToggleButton\(\)/);
-    assert.doesNotMatch(source, /function ensureComposerEditToggleButton\(\)/);
 });
 
 test("page composer always hides layout editing from share guests", () => {

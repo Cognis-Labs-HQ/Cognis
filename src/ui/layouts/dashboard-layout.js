@@ -1,6 +1,5 @@
 import { apiFetch } from "../reuse/api-client.js";
 import { escapeHtml } from "../reuse/escape-html.js";
-import { getInitialsText, pickInitialsColor } from "../reuse/avatar-utils.js";
 import { loadTemplate } from "../reuse/template-loader.js";
 import {
     bindThemeToggle as bindSharedThemeToggle,
@@ -25,9 +24,9 @@ import {
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
 import { createSearchBar } from "../reuse/search-util/popup.js";
 import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
-import { bindProfilePreviews } from "../reuse/profile-preview.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
+import { bindLanguageToggle } from "../reuse/language-toggle.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -125,6 +124,16 @@ async function bindThemeToggle({ usePreferenceApi = true } = {}) {
             await saveUiPreferences({ mode });
         },
     });
+}
+
+function bindSwitcherSettingsLinks(root) {
+    root.querySelector("#theme-toggle")?.addEventListener(
+        "contextmenu",
+        (event) => {
+            event.preventDefault();
+            navigateTo("/settings#appearance");
+        },
+    );
 }
 
 function bindTopbarActions() {
@@ -227,21 +236,10 @@ function bindTopbarActions() {
 }
 
 /**
- * Registered by gateway navbar plugins to supply avatar and profile-link
- * state. The function receives no arguments and returns a plain object with:
- *   - profileAvailable: boolean — whether to show the Profile nav link
- *   - avatarBlobUrl?: string   — a provider-owned blob URL for the avatar
- *
- * Only one provider is active at a time; the most recently registered one
- * wins. Gateways register by calling `registerAvatarProvider` from their
- * navbar plugin module, which is loaded automatically by the dashboard layout.
+ * Refreshes the navbar avatar through the optional profile-owned CTX provider.
+ * The existing image remains mounted while navbar plugins are still loading so
+ * SPA page composition cannot temporarily erase a resolved profile avatar.
  */
-let _avatarProvider = null;
-
-export function registerAvatarProvider(fn) {
-    _avatarProvider = fn;
-}
-
 export async function updateNavbarAvatar() {
     const avatarBtn = document.querySelector(".avatar-button");
     const profileLink = document.querySelector("[data-profile-link]");
@@ -254,12 +252,19 @@ export async function updateNavbarAvatar() {
 
     let profileAvailable = false;
     let avatarBlobUrl = null;
+    let avatarInitials = "?";
+    let avatarColor = null;
+    const avatarProvider = uiCtx.capabilities.get("ui:navbarAvatarProvider");
 
-    if (_avatarProvider) {
+    if (!avatarProvider && avatarBtn.querySelector(".avatar-image")) return;
+
+    if (avatarProvider) {
         try {
-            const result = await _avatarProvider();
+            const result = await avatarProvider();
             profileAvailable = result?.profileAvailable ?? false;
             avatarBlobUrl = result?.avatarBlobUrl ?? null;
+            avatarInitials = result?.avatarInitials ?? avatarInitials;
+            avatarColor = result?.avatarColor ?? avatarColor;
         } catch {
             profileAvailable = false;
         }
@@ -281,8 +286,8 @@ export async function updateNavbarAvatar() {
 
     const initialsEl = document.createElement("span");
     initialsEl.className = "avatar-initials";
-    initialsEl.textContent = getInitialsText(handle);
-    initialsEl.style.background = pickInitialsColor(handle);
+    initialsEl.textContent = avatarInitials;
+    if (avatarColor) initialsEl.style.background = avatarColor;
     avatarBtn.replaceChildren(initialsEl);
     if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
 }
@@ -291,7 +296,7 @@ let navbarPluginsLoaded = false;
 let navbarPluginsLoadPromise = null;
 let releaseChangelogPopupChecked = false;
 
-async function loadNavbarPlugins() {
+export async function ensureNavbarPluginsLoaded() {
     if (navbarPluginsLoaded) return;
     if (navbarPluginsLoadPromise) return navbarPluginsLoadPromise;
     if (!localStorage.getItem("cognis_access_token")) return;
@@ -319,7 +324,7 @@ async function loadNavbarPlugins() {
 }
 
 function completeDeferredLoginSetup() {
-    return loadNavbarPlugins().then(() => {
+    return ensureNavbarPluginsLoaded().then(() => {
         const hasDeferredKeyringSetup = uiCtx.capabilities.get(
             "keyring:hasDeferredSetup",
         );
@@ -343,12 +348,12 @@ function scheduleDeferredLoginSetup(i18n) {
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
     navbarPluginsLoaded = false;
-    loadNavbarPlugins().catch(() => {});
+    ensureNavbarPluginsLoaded().catch(() => {});
 });
 
 function scheduleNavbarEnhancements() {
     const runEnhancements = () => {
-        loadNavbarPlugins()
+        ensureNavbarPluginsLoaded()
             .then(() => {
                 updateNavbarAvatar().catch((error) => {
                     console.warn(
@@ -631,11 +636,12 @@ export async function renderDashboardLayout(root, slots = {}) {
             scheduleNavbarEnhancements();
             scheduleDeferredLoginSetup(i18n);
             initSearchBar(i18n);
-            bindProfilePreviews(i18n);
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
         bindThemeToggle({ usePreferenceApi });
+        bindLanguageToggle({ i18n, navigateTo, showToast });
+        bindSwitcherSettingsLinks(root);
         return;
     }
 
@@ -690,11 +696,12 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyCompactNav(root);
         initRouter(root);
         initSearchBar(i18n);
-        bindProfilePreviews(i18n);
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
     bindThemeToggle({ usePreferenceApi });
+    bindLanguageToggle({ i18n, navigateTo, showToast });
+    bindSwitcherSettingsLinks(root);
     registerServiceWorker();
 }
 

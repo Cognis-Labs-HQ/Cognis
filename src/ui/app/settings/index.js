@@ -19,6 +19,7 @@ import {
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
 import { initLanguagePrefs } from "./language-prefs.js";
+import { initLanguageSwitcherPrefs } from "./language-switcher-prefs.js";
 import { initGeneralPrefs } from "./general-prefs.js";
 import { initDateTimePrefs } from "./datetime-prefs.js";
 import {
@@ -189,6 +190,7 @@ export async function mount(root, { signal } = {}) {
 
     let fontPrefs;
     let languagePrefs;
+    let languageSwitcherPrefs;
     let themePrefs;
     let messageStylePrefs;
     let releaseNotesPrefs;
@@ -487,32 +489,58 @@ export async function mount(root, { signal } = {}) {
             subComposerOptions: {
                 allowCustomization: false,
                 preferenceKey: "settings-language-layout",
-                columns: 2,
                 heading: i18n.t("ui.reuse.language"),
                 elements: [
                     {
-                        id: "available-languages",
-                        label: i18n.t("ui.app.settings.available_languages"),
+                        id: "language-preferences",
+                        label: i18n.t("ui.reuse.language"),
                         render: () => `
-            <div class="settings-language-heading-row components-section-heading">
-              <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+            <div class="settings-language-block">
+              <div class="settings-language-switcher-preference">
+                <h3>${i18n.t("ui.app.settings.always_show_language_switcher")}</h3>
+                <label class="switch">
+                  <input id="pref-always-show-language-switcher" type="checkbox" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="settings-language-tables">
+                <div>
+                  <div class="settings-language-heading-row components-section-heading">
+                    <h3>${i18n.t("ui.app.settings.available_languages")}</h3>
+                  </div>
+                  <table id="available-languages" class="language-table"></table>
+                </div>
+                <div>
+                  <div class="settings-language-heading-row components-section-heading">
+                    <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
+                    <button id="pref-language-sync-from-browser" type="button" class="btn-neutral btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
+                  </div>
+                  <table id="preferred-languages" class="language-table"></table>
+                </div>
+              </div>
             </div>
-            <table id="available-languages" class="language-table"></table>
-          `,
-                    },
-                    {
-                        id: "preferred-languages",
-                        label: i18n.t("ui.app.settings.preferred_languages"),
-                        render: () => `
-            <div class="settings-language-heading-row components-section-heading">
-              <h3>${i18n.t("ui.app.settings.preferred_languages")}</h3>
-              <button id="pref-language-sync-from-browser" type="button" class="btn-animated">${i18n.t("ui.app.settings.sync_from_browser")}</button>
-            </div>
-            <table id="preferred-languages" class="language-table"></table>
           `,
                     },
                 ],
                 onRender: () => {
+                    if (!languageSwitcherPrefs) {
+                        languageSwitcherPrefs = initLanguageSwitcherPrefs(
+                            root,
+                            {
+                                existingPrefs: loadedPrefs,
+                                onDirtyChange: (dirty) =>
+                                    markDirty("language-switcher", dirty),
+                                onCommit: (visible) =>
+                                    window.dispatchEvent(
+                                        new CustomEvent(
+                                            "cognis:language-switcher-visibility",
+                                            { detail: { visible } },
+                                        ),
+                                    ),
+                            },
+                        );
+                    }
+                    languageSwitcherPrefs.bind();
                     if (!languagePrefs) {
                         languagePrefs = initLanguagePrefs(
                             root,
@@ -752,6 +780,10 @@ export async function mount(root, { signal } = {}) {
                 releaseChangelogShow:
                     releaseNotesPrefs?.getShowReleaseChangelogs() ??
                     shouldShowReleaseChangelog(loadedPrefs),
+                alwaysShowLanguageSwitcher:
+                    languageSwitcherPrefs?.getValue() ??
+                    loadedPrefs?.alwaysShowLanguageSwitcher ??
+                    true,
             };
             if (!advancedPrefs?.isDirty()) {
                 prefs = { ...prefs, ...selectedPrefs };
@@ -779,6 +811,10 @@ export async function mount(root, { signal } = {}) {
                     prefs.releaseChangelogShow =
                         selectedPrefs.releaseChangelogShow;
                 }
+                if (languageSwitcherPrefs?.isDirty()) {
+                    prefs.alwaysShowLanguageSwitcher =
+                        selectedPrefs.alwaysShowLanguageSwitcher;
+                }
             }
             await savePrefs(prefs);
             loadedPrefs = prefs;
@@ -801,6 +837,7 @@ export async function mount(root, { signal } = {}) {
             releaseNotesPrefs?.commit();
             datetimePrefs?.commit();
             languagePrefs?.commit();
+            languageSwitcherPrefs?.commit();
             advancedPrefs?.commit(prefs);
             for (const section of contributedSections) {
                 section.commit();
@@ -822,6 +859,7 @@ export async function mount(root, { signal } = {}) {
         onDiscard: () => {
             fontPrefs?.discard();
             languagePrefs?.discard();
+            languageSwitcherPrefs?.discard();
             themePrefs?.discard();
             messageStylePrefs?.discard();
             releaseNotesPrefs?.discard();

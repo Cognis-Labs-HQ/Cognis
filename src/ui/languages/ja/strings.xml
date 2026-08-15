@@ -116,6 +116,7 @@
   <string name="ui.layout.search.no_results">結果が見つかりません。</string>
   <string name="ui.layout.account.aria">アカウントオプション</string>
   <string name="ui.layout.avatar.alt">ユーザーアバター</string>
+  <string name="ui.layout.language.aria">言語を切り替える</string>
   <string name="ui.layout.theme.aria">テーマ切替</string>
   <string name="ui.layout.footer.license">ライセンス</string>
   <string name="ui.layout.footer.changelogs">変更履歴</string>
@@ -390,6 +391,7 @@
   <string name="ui.app.error.code.default">予期しないエラーが発生しました。</string>
   <string name="ui.app.settings.font_preview">フォントプレビュー</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
+  <string name="ui.app.settings.always_show_language_switcher">言語切替を常に表示</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>
   <string name="ui.app.settings.preferred_languages">優先言語</string>
   <string name="ui.app.settings.sync_from_browser">ブラウザーから同期</string>
