@@ -4,6 +4,9 @@ import { createFormBuilder } from "/static/reuse/form-builder.js";
 export async function openAdapterConfig({
     configUrl,
     configPayload,
+    enableUrl,
+    disableUrl,
+    adapterEnabled,
     onSaved,
     i18n,
     escapeHtml,
@@ -109,6 +112,8 @@ export async function openAdapterConfig({
         </div>`;
     }
 
+    let enabled = adapterEnabled === true;
+
     function renderServerList(servers, unify) {
         const rows = servers
             .map(
@@ -124,6 +129,13 @@ export async function openAdapterConfig({
             )
             .join("");
         return `<div class="ldap-setup-popup ldap-server-home">
+          <div class="provider-option-row">
+            <span class="provider-option-label" data-adapter-state>${i18n.t(enabled ? "ui.app.admin.state.active" : "ui.app.admin.state.disabled")}</span>
+            <label class="switch" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
+              <input name="adapterEnabled" type="checkbox"${enabled ? " checked" : ""} />
+              <span class="slider"></span>
+            </label>
+          </div>
           <div class="provider-option-row"><span class="provider-option-label">Unify LDAP sources</span><label class="switch"><input name="unify" type="checkbox"${unify ? " checked" : ""} /><span class="slider"></span></label></div>
           <p class="module-settings-popup-note">When unified, credentials are tried against each server in the order below. Otherwise, every server is shown separately on the Login page.</p>
           <ol class="ldap-server-list">${rows || '<li class="module-settings-popup-note">No LDAP servers configured.</li>'}</ol>
@@ -349,6 +361,41 @@ export async function openAdapterConfig({
         ],
         onOpen: (overlay, _close, api) => {
             if (api.pageId === "servers") {
+                const enabledInput = overlay.querySelector(
+                    '[name="adapterEnabled"]',
+                );
+                enabledInput?.addEventListener("change", async () => {
+                    const nextEnabled = enabledInput.checked;
+                    const controlUrl = nextEnabled ? enableUrl : disableUrl;
+                    if (!controlUrl) {
+                        enabledInput.checked = enabled;
+                        return;
+                    }
+                    enabledInput.disabled = true;
+                    const response = await apiFetch(controlUrl, {
+                        method: "POST",
+                    });
+                    enabledInput.disabled = false;
+                    if (!response.ok) {
+                        enabledInput.checked = enabled;
+                        showToast(i18n.t("ui.reuse.save_failed"), {
+                            variant: "error",
+                        });
+                        return;
+                    }
+                    enabled = nextEnabled;
+                    const stateLabel = overlay.querySelector(
+                        "[data-adapter-state]",
+                    );
+                    if (stateLabel instanceof HTMLElement) {
+                        stateLabel.textContent = i18n.t(
+                            enabled
+                                ? "ui.app.admin.state.active"
+                                : "ui.app.admin.state.disabled",
+                        );
+                    }
+                    await onSaved?.();
+                });
                 const unifyInput = overlay.querySelector('[name="unify"]');
                 unifyInput?.addEventListener("change", () => {
                     unify = unifyInput.checked;

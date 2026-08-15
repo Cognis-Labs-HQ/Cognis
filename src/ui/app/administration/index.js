@@ -713,6 +713,9 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
     await adapterConfigPopup.openAdapterConfig(version ? `${name} v${version}` : name, {
         configUrl,
         testUrl,
+        enableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "enable", adapterOverride),
+        disableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "disable", adapterOverride),
+        adapterEnabled: Boolean(adapterOverride?.active ?? adapterOverride?.enabled),
         onSaved: async () => {
             await reloadAdapters();
             composer.refresh(elements);

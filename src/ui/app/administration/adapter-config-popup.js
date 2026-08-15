@@ -312,7 +312,17 @@ export function createAdapterConfigPopup({
     }
 
     return {
-        async openAdapterConfig(name, { configUrl, testUrl, onSaved } = {}) {
+        async openAdapterConfig(
+            name,
+            {
+                configUrl,
+                testUrl,
+                enableUrl,
+                disableUrl,
+                adapterEnabled,
+                onSaved,
+            } = {},
+        ) {
             if (!configUrl) return;
             const response = await apiFetch(configUrl);
             if (!response.ok) return;
@@ -333,6 +343,9 @@ export function createAdapterConfigPopup({
                 await extension.openAdapterConfig({
                     configUrl,
                     configPayload: payload,
+                    enableUrl,
+                    disableUrl,
+                    adapterEnabled,
                     onSaved,
                     i18n,
                     escapeHtml,

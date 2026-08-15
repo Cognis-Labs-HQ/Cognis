@@ -10,6 +10,10 @@ const adminPopupSource = readFileSync(
     new URL("../app/administration/adapter-config-popup.js", import.meta.url),
     "utf8",
 );
+const administrationSource = readFileSync(
+    new URL("../app/administration/index.js", import.meta.url),
+    "utf8",
+);
 const administrationApiSource = readFileSync(
     new URL("../app/administration/api-loaders.js", import.meta.url),
     "utf8",
@@ -58,6 +62,18 @@ test("LDAP setup manages named, reorderable servers and unified login", () => {
     assert.match(ldapPopupSource, /draggable="true"/);
     assert.match(ldapPopupSource, /addEventListener\("drop"/);
     assert.match(ldapPopupSource, /JSON\.stringify\(\{ unify, servers \}\)/);
+});
+
+test("LDAP setup exposes and updates the adapter power control", () => {
+    assert.match(administrationSource, /enableUrl: resolveAdapterControlUrl/);
+    assert.match(administrationSource, /disableUrl: resolveAdapterControlUrl/);
+    assert.match(adminPopupSource, /adapterEnabled,[\s\S]*onSaved/);
+    assert.match(ldapPopupSource, /name="adapterEnabled" type="checkbox"/);
+    assert.match(
+        ldapPopupSource,
+        /const controlUrl = nextEnabled \? enableUrl : disableUrl/,
+    );
+    assert.match(ldapPopupSource, /apiFetch\(controlUrl, \{\s*method: "POST"/);
 });
 
 test("LDAP setup requires a successful user bind before completion", () => {
