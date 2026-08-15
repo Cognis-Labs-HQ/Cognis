@@ -116,6 +116,7 @@
   <string name="ui.layout.search.no_results">Tidak ada hasil ditemukan.</string>
   <string name="ui.layout.account.aria">Opsi akun</string>
   <string name="ui.layout.avatar.alt">Avatar pengguna</string>
+  <string name="ui.layout.language.aria">Ganti bahasa</string>
   <string name="ui.layout.theme.aria">Ubah tema</string>
   <string name="ui.layout.footer.license">Lisensi</string>
   <string name="ui.layout.footer.changelogs">Log Perubahan</string>
@@ -390,6 +391,7 @@
   <string name="ui.app.error.code.default">Terjadi kesalahan yang tidak terduga.</string>
   <string name="ui.app.settings.font_preview">Pratinjau Font</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
+  <string name="ui.app.settings.always_show_language_switcher">Selalu Tampilkan Pengalih Bahasa</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>
   <string name="ui.app.settings.preferred_languages">Bahasa prioritas</string>
   <string name="ui.app.settings.sync_from_browser">Sinkronkan dari browser</string>

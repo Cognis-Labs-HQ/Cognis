@@ -599,6 +599,13 @@ button.dropdown-item {
 .theme-toggle {
     font-size: 1.25rem;
 }
+.language-toggle img {
+    border-radius: 50%;
+    display: block;
+    height: 28px;
+    object-fit: cover;
+    width: 28px;
+}
 .page-action-dock {
     align-items: center;
     bottom: 18px;
