@@ -1,5 +1,5 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { showToast } from "/static/reuse/toast.js";
-import { hydrateProfileAvatars } from "/static/reuse/avatar-utils.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import {
     HEARTBEAT_INTERVAL_MS,
@@ -7,6 +7,14 @@ import {
     STATE_REFRESH_INTERVAL_MS,
 } from "./constants.js";
 import { createParticipantAvatarEl } from "./jitsi-helpers.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
 
 export function createPreflightHandlers({
     root,

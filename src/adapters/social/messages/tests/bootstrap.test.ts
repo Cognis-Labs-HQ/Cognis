@@ -91,15 +91,6 @@ test("messages avatars fall back after failed image loads", () => {
         resolve(ROOT, "src/adapters/social/profile/ui/profile-avatar.js"),
         "utf8",
     );
-    const capabilityClientSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/avatar-utils.js"),
-        "utf8",
-    );
-
-    assert.match(
-        capabilityClientSource,
-        /uiCtx\.capabilities\.get\("ui:profileAvatarRenderer"\)/,
-    );
     assert.match(sharedSource, /const unavailableAvatarKeys = new Set\(\)/);
     assert.match(sharedSource, /unavailableAvatarKeys\.add\(avatarKey\)/);
     assert.match(sharedSource, /data-avatar-key=/);
@@ -117,7 +108,10 @@ test("messages avatars fall back after failed image loads", () => {
         appSource,
         /root\.addEventListener\("error", handleProfileAvatarError/,
     );
-    assert.match(appSource, /from "\/static\/reuse\/avatar-utils\.js"/);
+    assert.match(
+        appSource,
+        /uiCtx\.capabilities\.get\("ui:profileAvatarRenderer"\)/,
+    );
 });
 
 test("messages reaction chips render hover popup metadata and styles", () => {

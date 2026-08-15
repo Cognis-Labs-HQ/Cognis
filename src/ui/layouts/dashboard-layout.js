@@ -1,6 +1,5 @@
 import { apiFetch } from "../reuse/api-client.js";
 import { escapeHtml } from "../reuse/escape-html.js";
-import { getInitialsText, pickInitialsColor } from "../reuse/avatar-utils.js";
 import { loadTemplate } from "../reuse/template-loader.js";
 import {
     bindThemeToggle as bindSharedThemeToggle,
@@ -25,7 +24,6 @@ import {
 import { ensureFullAccountSession } from "../reuse/auth-session.js";
 import { createSearchBar } from "../reuse/search-util/popup.js";
 import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
-import { bindProfilePreviews } from "../reuse/profile-preview.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 
@@ -243,6 +241,8 @@ export async function updateNavbarAvatar() {
 
     let profileAvailable = false;
     let avatarBlobUrl = null;
+    let avatarInitials = "?";
+    let avatarColor = null;
     const avatarProvider = uiCtx.capabilities.get("ui:navbarAvatarProvider");
 
     if (!avatarProvider && avatarBtn.querySelector(".avatar-image")) return;
@@ -252,6 +252,8 @@ export async function updateNavbarAvatar() {
             const result = await avatarProvider();
             profileAvailable = result?.profileAvailable ?? false;
             avatarBlobUrl = result?.avatarBlobUrl ?? null;
+            avatarInitials = result?.avatarInitials ?? avatarInitials;
+            avatarColor = result?.avatarColor ?? avatarColor;
         } catch {
             profileAvailable = false;
         }
@@ -273,8 +275,8 @@ export async function updateNavbarAvatar() {
 
     const initialsEl = document.createElement("span");
     initialsEl.className = "avatar-initials";
-    initialsEl.textContent = getInitialsText(handle);
-    initialsEl.style.background = pickInitialsColor(handle);
+    initialsEl.textContent = avatarInitials;
+    if (avatarColor) initialsEl.style.background = avatarColor;
     avatarBtn.replaceChildren(initialsEl);
     if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
 }
@@ -623,7 +625,6 @@ export async function renderDashboardLayout(root, slots = {}) {
             scheduleNavbarEnhancements();
             scheduleDeferredLoginSetup(i18n);
             initSearchBar(i18n);
-            bindProfilePreviews(i18n);
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
@@ -682,7 +683,6 @@ export async function renderDashboardLayout(root, slots = {}) {
         applyCompactNav(root);
         initRouter(root);
         initSearchBar(i18n);
-        bindProfilePreviews(i18n);
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);

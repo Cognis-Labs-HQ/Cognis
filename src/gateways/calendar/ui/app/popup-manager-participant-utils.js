@@ -1,7 +1,14 @@
-import {
-    buildProfileAvatarMarkup,
-    hydrateProfileAvatars,
-} from "/static/reuse/avatar-utils.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
 
 /**
  * Participant identifier normalization helpers for calendar popup search.

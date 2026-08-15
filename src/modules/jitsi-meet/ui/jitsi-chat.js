@@ -3,7 +3,6 @@ import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatTime } from "/static/reuse/timestamp.js";
 import { bytesToHex, hexToBytes } from "/static/reuse/crypto-utils.js";
-import { hydrateProfileAvatars } from "/static/reuse/avatar-utils.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { TEXT_ENCODER, CHAT_REFRESH_INTERVAL_MS } from "./constants.js";
@@ -13,6 +12,14 @@ import {
     normalizeChatRoomId,
     resolveMeetingChatRoomId,
 } from "./jitsi-helpers.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
 
 export function createChatHandlers({
     root,

@@ -1,12 +1,18 @@
-import {
-    buildProfileAvatarMarkup,
-    getInitialsText,
-    isProfileAvatarUnavailable,
-    pickInitialsColor,
-} from "/static/reuse/avatar-utils.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { stableJson } from "./message-utils.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
+const getInitialsText = (label) => profileAvatars().getInitials(label);
+const pickInitialsColor = (seed) => profileAvatars().getInitialsColor(seed);
+const isProfileAvatarUnavailable = (key) => profileAvatars().isUnavailable(key);
 
 export function messageRenderSignature(messages, pendingRequest) {
     return stableJson({

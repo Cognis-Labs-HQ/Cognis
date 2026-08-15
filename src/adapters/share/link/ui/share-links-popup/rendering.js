@@ -1,8 +1,5 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    buildProfileAvatarMarkup,
-    hydrateProfileAvatars,
-} from "/static/reuse/avatar-utils.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import { copyTextToClipboard } from "/static/reuse/clipboard.js";
@@ -12,6 +9,16 @@ import {
     bindSecretVisibilityToggles,
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
 
 const STYLESHEET_HREF =
     "/static/adapters/share/link/ui/share-links-popup/index.css";

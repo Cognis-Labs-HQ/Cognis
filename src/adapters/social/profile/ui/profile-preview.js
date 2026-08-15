@@ -1,8 +1,8 @@
-import { apiFetch } from "./api-client.js";
-import { escapeHtml } from "./escape-html.js";
-import { renderMarkdown } from "./markdown-renderer.js";
-import { getRoleLabel, normalizeRoleValue } from "./access-role.js";
-import { uiCtx } from "./ui-ctx.js";
+import { apiFetch } from "/static/reuse/api-client.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
+import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;

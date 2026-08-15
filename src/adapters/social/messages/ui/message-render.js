@@ -1,7 +1,4 @@
-import {
-    buildProfileAvatarMarkup,
-    hydrateProfileAvatars,
-} from "/static/reuse/avatar-utils.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
@@ -19,6 +16,16 @@ import {
     stableJson,
 } from "./message-utils.js";
 import { messageRenderSignature } from "./room-render.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
 
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 const MESSAGE_WRAP_THRESHOLD = 80;

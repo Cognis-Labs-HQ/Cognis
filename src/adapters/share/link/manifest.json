@@ -1,7 +1,7 @@
 {
     "id": "link",
     "name": "Link",
-    "version": "1.1.31",
+    "version": "1.1.32",
     "gateway": "share",
     "required": true,
     "locked": true,

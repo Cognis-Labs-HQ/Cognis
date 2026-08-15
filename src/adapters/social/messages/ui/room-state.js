@@ -1,7 +1,3 @@
-import {
-    handleProfileAvatarError,
-    hydrateProfileAvatars,
-} from "/static/reuse/avatar-utils.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
     MESSAGES_FILE_NAMESPACE_ID,
@@ -26,6 +22,15 @@ import {
     renderRoomList,
     renderThreadHeader,
 } from "./room-render.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const handleProfileAvatarError = (event) => profileAvatars().handleError(event);
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
 
 export function createMessagesRoomState({
     i18n,
