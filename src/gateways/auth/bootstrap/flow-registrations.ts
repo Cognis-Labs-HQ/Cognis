@@ -7,6 +7,7 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 import { issueAccessToken, type AccessRole } from "../access-tokens.js";
+import { LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY } from "../session-timeout.js";
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
@@ -272,7 +273,10 @@ export async function registerAuthBootstrapHook(
                 >("preferences:store");
             const requestedMinutes = Number(
                 await preferenceStore
-                    ?.get(session.accountId, "login-session-timeout-minutes")
+                    ?.get(
+                        session.accountId,
+                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                    )
                     .catch(() => null),
             );
             const ttlSeconds =

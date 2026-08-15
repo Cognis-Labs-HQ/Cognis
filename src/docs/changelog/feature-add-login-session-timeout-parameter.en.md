@@ -27,3 +27,7 @@ Session timeout fields now participate in unsaved-change tracking in both Admini
 ## Preserve user choices and report expiry
 
 Compatible Administration timeout updates now leave each saved user duration unchanged; temporary lower limits cap it without overwriting it. Expired API sessions immediately return users to Login and display the existing session-expired message.
+
+## Reset to the global timeout
+
+User Settings now provides an undo-icon button beside the duration unit. Resetting removes the custom duration behavior so the session timeout follows current and future Administration defaults.

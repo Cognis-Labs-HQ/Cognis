@@ -27,3 +27,7 @@ Die Felder für das Sitzungszeitlimit werden jetzt sowohl in der Administration 
 ## Benutzerauswahl bewahren und Ablauf melden
 
 Kompatible Änderungen des Zeitlimits in der Administration lassen die gespeicherte Dauer jedes Benutzers unverändert; vorübergehend niedrigere Grenzen beschränken sie, ohne sie zu überschreiben. Abgelaufene API-Sitzungen führen Benutzer sofort zur Anmeldung zurück und zeigen den bestehenden Hinweis zum Sitzungsablauf.
+
+## Auf das globale Zeitlimit zurücksetzen
+
+Die Benutzereinstellungen bieten jetzt neben der Zeiteinheit eine Schaltfläche mit Rückgängig-Symbol. Nach dem Zurücksetzen folgt das Sitzungszeitlimit den aktuellen und zukünftigen Standardwerten der Administration statt einer benutzerdefinierten Dauer.

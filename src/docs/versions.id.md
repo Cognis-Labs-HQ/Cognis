@@ -64,7 +64,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi     |
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.7`   |
-| Authentication (auth) | `src/gateways/auth/`          | `1.8.4`   |
+| Authentication (auth) | `src/gateways/auth/`          | `1.8.5`   |
 | Share                 | `src/gateways/share/`         | `1.7.23`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.16`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.4`   |

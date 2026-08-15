@@ -31,4 +31,5 @@
   <string name="gateway.auth.security.keyring_minutes">Minuten</string>
   <string name="gateway.auth.security.session_timeout_label">Zeitlimit der Anmeldesitzung</string>
   <string name="gateway.auth.security.session_timeout_disabled">Das Sitzungszeitlimit wurde von deiner Administration deaktiviert.</string>
+  <string name="gateway.auth.security.session_timeout_reset">Standard-Zeitlimit für Anmeldesitzungen verwenden</string>
 </resources>

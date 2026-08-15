@@ -57,9 +57,17 @@ test("auth security preferences register timeout changes by dirty key", () => {
     assert.match(SOURCE, /LOGIN_SESSION_TIMEOUT_DIRTY_KEY/);
     assert.match(
         SOURCE,
-        /markDirty\?\.\(\s*LOGIN_SESSION_TIMEOUT_DIRTY_KEY,\s*getTimeoutMinutes\(\) !== originalSessionTimeoutMinutes,/,
+        /markDirty\?\.\(\s*LOGIN_SESSION_TIMEOUT_DIRTY_KEY,\s*usesDefaultSessionTimeout !== originalUsesDefaultSessionTimeout \|\|\s*getTimeoutMinutes\(\) !== originalSessionTimeoutMinutes,/,
     );
     assert.match(SOURCE, /syncLoginSessionTimeoutDirtyState/);
+});
+
+test("auth security preferences can reset to the administration default", () => {
+    assert.match(SOURCE, /settings-login-session-timeout-reset/);
+    assert.match(SOURCE, /<svg viewBox="0 0 24 24"/);
+    assert.match(SOURCE, /usesDefaultSessionTimeout = true/);
+    assert.match(SOURCE, /\{ useDefault: true \}/);
+    assert.match(SOURCE, /sessionTimeout\?\.maximumMinutes/);
 });
 
 test("keyring settings unlock once before allowing secret changes", () => {

@@ -27,3 +27,7 @@ Kolom batas waktu sesi kini masuk dalam pelacakan perubahan yang belum disimpan 
 ## Pertahankan pilihan pengguna dan laporkan kedaluwarsa
 
 Pembaruan batas waktu Administrasi yang kompatibel kini mempertahankan durasi tersimpan setiap pengguna; batas sementara yang lebih rendah hanya membatasinya tanpa menimpanya. Sesi API yang kedaluwarsa segera mengembalikan pengguna ke halaman Login dan menampilkan pesan sesi kedaluwarsa yang tersedia.
+
+## Atur ulang ke batas waktu global
+
+Pengaturan Pengguna kini menyediakan tombol berikon urungkan di samping satuan durasi. Setelah diatur ulang, batas waktu sesi mengikuti nilai bawaan Administrasi saat ini dan berikutnya, bukan durasi khusus.

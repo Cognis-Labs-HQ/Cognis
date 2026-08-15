@@ -1,7 +1,7 @@
 {
     "id": "auth",
     "name": "Authentication Gateway",
-    "version": "1.8.4",
+    "version": "1.8.5",
     "publisher": "Cognis Labs HQ",
     "required": true,
     "requires": ["db"]

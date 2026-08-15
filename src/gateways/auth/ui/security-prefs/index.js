@@ -18,6 +18,8 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     let subsectionInstances = null;
     let sessionTimeout = null;
     let originalSessionTimeoutMinutes = null;
+    let usesDefaultSessionTimeout = true;
+    let originalUsesDefaultSessionTimeout = true;
 
     async function loadCapability() {
         const response = await apiFetch(
@@ -43,6 +45,8 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const payload = await response.json();
         sessionTimeout = payload.data;
         originalSessionTimeoutMinutes = sessionTimeout.timeoutMinutes;
+        usesDefaultSessionTimeout = sessionTimeout.usesDefault === true;
+        originalUsesDefaultSessionTimeout = usesDefaultSessionTimeout;
     }
 
     function getTimeoutMinutes() {
@@ -64,8 +68,36 @@ export function createSettingsSection({ i18n, root, markDirty }) {
     function syncLoginSessionTimeoutDirtyState() {
         markDirty?.(
             LOGIN_SESSION_TIMEOUT_DIRTY_KEY,
-            getTimeoutMinutes() !== originalSessionTimeoutMinutes,
+            usesDefaultSessionTimeout !== originalUsesDefaultSessionTimeout ||
+                getTimeoutMinutes() !== originalSessionTimeoutMinutes,
         );
+    }
+
+    function syncLoginSessionTimeoutResetButton() {
+        const button = settingsRoot.querySelector(
+            "#settings-login-session-timeout-reset",
+        );
+        if (button instanceof HTMLButtonElement) {
+            button.disabled = usesDefaultSessionTimeout;
+        }
+    }
+
+    function setLoginSessionTimeoutValue(minutes) {
+        const input = settingsRoot.querySelector(
+            "#settings-login-session-timeout",
+        );
+        const unit = settingsRoot.querySelector(
+            "#settings-login-session-timeout-unit",
+        );
+        if (
+            !(input instanceof HTMLInputElement) ||
+            !(unit instanceof HTMLSelectElement)
+        ) {
+            return;
+        }
+        const duration = splitDurationMinutes(minutes || 1);
+        input.value = String(duration.value);
+        unit.value = duration.unit;
     }
 
     function renderBody() {
@@ -94,6 +126,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 )
                 .join("")}
           </select>
+          <button id="settings-login-session-timeout-reset" class="btn-neutral" type="button" title="${escapeHtml(i18n.t("gateway.auth.security.session_timeout_reset"))}" aria-label="${escapeHtml(i18n.t("gateway.auth.security.session_timeout_reset"))}"${usesDefaultSessionTimeout ? " disabled" : ""}>
+            <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 5a7 7 0 1 1-6.32 4H8L4.5 5.5 1 9h2.6A9 9 0 1 0 12 3v2Z" /></svg>
+          </button>
           ${timeoutDisabled ? `<p class="structured-content__text">${escapeHtml(i18n.t("gateway.auth.security.session_timeout_disabled"))}</p>` : ""}
         </div>
       </div>
@@ -127,13 +162,23 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const timeoutInput = settingsRoot.querySelector(
             "#settings-login-session-timeout",
         );
-        timeoutInput?.addEventListener(
-            "input",
-            syncLoginSessionTimeoutDirtyState,
-        );
+        const markCustomTimeout = () => {
+            usesDefaultSessionTimeout = false;
+            syncLoginSessionTimeoutResetButton();
+            syncLoginSessionTimeoutDirtyState();
+        };
+        timeoutInput?.addEventListener("input", markCustomTimeout);
         settingsRoot
             .querySelector("#settings-login-session-timeout-unit")
-            ?.addEventListener("change", syncLoginSessionTimeoutDirtyState);
+            ?.addEventListener("change", markCustomTimeout);
+        settingsRoot
+            .querySelector("#settings-login-session-timeout-reset")
+            ?.addEventListener("click", () => {
+                usesDefaultSessionTimeout = true;
+                setLoginSessionTimeoutValue(sessionTimeout?.maximumMinutes);
+                syncLoginSessionTimeoutResetButton();
+                syncLoginSessionTimeoutDirtyState();
+            });
     }
 
     async function loadSubsections() {
@@ -213,7 +258,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             );
             const timeoutDirty =
                 input instanceof HTMLInputElement &&
-                getTimeoutMinutes() !== originalSessionTimeoutMinutes;
+                (usesDefaultSessionTimeout !==
+                    originalUsesDefaultSessionTimeout ||
+                    getTimeoutMinutes() !== originalSessionTimeoutMinutes);
             return (
                 timeoutDirty ||
                 (subsectionInstances ?? []).some((section) =>
@@ -227,16 +274,20 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             );
             if (
                 input instanceof HTMLInputElement &&
-                getTimeoutMinutes() !== originalSessionTimeoutMinutes
+                (usesDefaultSessionTimeout !==
+                    originalUsesDefaultSessionTimeout ||
+                    getTimeoutMinutes() !== originalSessionTimeoutMinutes)
             ) {
                 const response = await apiFetch(
                     "/api/v1/auth/login-session-timeout",
                     {
                         method: "PUT",
                         headers: { "content-type": "application/json" },
-                        body: JSON.stringify({
-                            timeoutMinutes: getTimeoutMinutes(),
-                        }),
+                        body: JSON.stringify(
+                            usesDefaultSessionTimeout
+                                ? { useDefault: true }
+                                : { timeoutMinutes: getTimeoutMinutes() },
+                        ),
                     },
                 );
                 if (!response.ok) throw new Error("save_failed");
@@ -253,6 +304,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             );
             if (input instanceof HTMLInputElement) {
                 originalSessionTimeoutMinutes = getTimeoutMinutes();
+                originalUsesDefaultSessionTimeout = usesDefaultSessionTimeout;
                 syncLoginSessionTimeoutDirtyState();
             }
             for (const section of subsectionInstances ?? []) {
@@ -264,16 +316,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 "#settings-login-session-timeout",
             );
             if (input instanceof HTMLInputElement) {
-                const duration = splitDurationMinutes(
-                    originalSessionTimeoutMinutes || 1,
-                );
-                const unit = settingsRoot.querySelector(
-                    "#settings-login-session-timeout-unit",
-                );
-                input.value = String(duration.value);
-                if (unit instanceof HTMLSelectElement) {
-                    unit.value = duration.unit;
-                }
+                usesDefaultSessionTimeout = originalUsesDefaultSessionTimeout;
+                setLoginSessionTimeoutValue(originalSessionTimeoutMinutes);
+                syncLoginSessionTimeoutResetButton();
                 syncLoginSessionTimeoutDirtyState();
             }
             for (const section of subsectionInstances ?? []) {

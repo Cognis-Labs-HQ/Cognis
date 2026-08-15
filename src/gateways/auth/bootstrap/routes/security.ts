@@ -11,6 +11,10 @@ import {
     parsePasswordPolicy,
 } from "../../password-policy.js";
 import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import {
+    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+    LOGIN_SESSION_TIMEOUT_USE_GLOBAL,
+} from "../../session-timeout.js";
 
 export interface SecuritySubsection {
     id: string;
@@ -23,8 +27,6 @@ interface SecuritySettings {
     userValidationMode: "none" | "smtp";
     loginSessionTimeoutMinutes: number;
 }
-
-const LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY = "login-session-timeout-minutes";
 
 interface SecurityRouteDependencies {
     capabilities: CapabilityStore;
@@ -122,6 +124,10 @@ export function createSecurityRoutes({
             const stored = await preferenceStore
                 ?.get(claims.sub, LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY)
                 .catch(() => null);
+            const usesDefault =
+                stored === null ||
+                stored === undefined ||
+                stored === LOGIN_SESSION_TIMEOUT_USE_GLOBAL;
             const requestedMinutes = Number(stored);
             const timeoutMinutes =
                 maximumMinutes === 0
@@ -132,7 +138,9 @@ export function createSecurityRoutes({
                       : maximumMinutes;
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
-                JSON.stringify({ data: { timeoutMinutes, maximumMinutes } }),
+                JSON.stringify({
+                    data: { timeoutMinutes, maximumMinutes, usesDefault },
+                }),
             );
             return true;
         }
@@ -146,6 +154,29 @@ export function createSecurityRoutes({
             const { loginSessionTimeoutMinutes: maximumMinutes } =
                 await readSecuritySettings();
             const body = await readJson(req);
+            if (body.useDefault === true) {
+                await capabilities
+                    .get<UserPreferenceStore>("preferences:store")
+                    ?.set(
+                        claims.sub,
+                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                        LOGIN_SESSION_TIMEOUT_USE_GLOBAL,
+                    );
+                log?.("info", "Reset login session timeout preference.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                });
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        data: {
+                            timeoutMinutes: maximumMinutes,
+                            usesDefault: true,
+                        },
+                    }),
+                );
+                return true;
+            }
             const timeoutMinutes = body.timeoutMinutes;
             if (
                 maximumMinutes === 0 ||
@@ -171,6 +202,11 @@ export function createSecurityRoutes({
                     LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
                     String(timeoutMinutes),
                 );
+            log?.("info", "Updated login session timeout preference.", {
+                ...logMeta,
+                accountId: claims.sub,
+                timeoutMinutes,
+            });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { timeoutMinutes } }));
             return true;
