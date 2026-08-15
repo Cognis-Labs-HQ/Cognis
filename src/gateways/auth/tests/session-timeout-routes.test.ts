@@ -145,3 +145,41 @@ test("resetting a user timeout follows subsequent administration updates", async
     assert.equal(payload.timeoutMinutes, 1440);
     assert.equal(payload.usesDefault, true);
 });
+
+test("timeout updates fail without preference storage and preserve sessions", async () => {
+    const capabilities = new CapabilityStore();
+    capabilities.contribute(
+        "auth:revokeAccessTokensForSubject",
+        revokeAccessTokensForSubject,
+    );
+    const route = createSecurityRoutes({
+        capabilities,
+        securitySubsections: [],
+        registrationsEnabled: async () => false,
+        readSecuritySettings: async () => ({
+            registrationsEnabled: false,
+            userValidationMode: "none",
+            loginSessionTimeoutMinutes: 60,
+        }),
+    });
+    const token = issueAccessToken("storage-less-user", "user", 60);
+    const response = makeResponse();
+
+    await route(
+        makeJsonRequest(
+            "PUT",
+            { timeoutMinutes: 30 },
+            { authorization: `Bearer ${token}` },
+        ),
+        response as unknown as import("node:http").ServerResponse,
+        new URL("/api/v1/auth/login-session-timeout", "http://localhost"),
+        { component: "auth", method: "PUT", path: "session-timeout" },
+    );
+
+    assert.equal(response.status, 503);
+    assert.equal(
+        JSON.parse(response.payload).error.code,
+        "preferences_unavailable",
+    );
+    assert.notEqual(verifyAccessToken(token), null);
+});

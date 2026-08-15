@@ -162,14 +162,26 @@ export function createSecurityRoutes({
             const { loginSessionTimeoutMinutes: maximumMinutes } =
                 await readSecuritySettings();
             const body = await readJson(req);
+            const preferenceStore =
+                capabilities.get<UserPreferenceStore>("preferences:store");
+            if (!preferenceStore) {
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "preferences_unavailable",
+                            message: "Preference storage is unavailable.",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (body.useDefault === true) {
-                await capabilities
-                    .get<UserPreferenceStore>("preferences:store")
-                    ?.set(
-                        claims.sub,
-                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
-                        LOGIN_SESSION_TIMEOUT_USE_GLOBAL,
-                    );
+                await preferenceStore.set(
+                    claims.sub,
+                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                    LOGIN_SESSION_TIMEOUT_USE_GLOBAL,
+                );
                 const revokedSessionCount = revokeUserSessions(claims.sub);
                 log?.("info", "Reset login session timeout preference.", {
                     ...logMeta,
@@ -205,13 +217,11 @@ export function createSecurityRoutes({
                 );
                 return true;
             }
-            await capabilities
-                .get<UserPreferenceStore>("preferences:store")
-                ?.set(
-                    claims.sub,
-                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
-                    String(timeoutMinutes),
-                );
+            await preferenceStore.set(
+                claims.sub,
+                LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                String(timeoutMinutes),
+            );
             const revokedSessionCount = revokeUserSessions(claims.sub);
             log?.("info", "Updated login session timeout preference.", {
                 ...logMeta,

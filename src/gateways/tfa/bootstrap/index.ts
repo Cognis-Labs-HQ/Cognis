@@ -19,6 +19,7 @@ type PendingLoginAttemptInput = {
     displayName: string;
     userValidationMode: "none" | "smtp";
     requiredUserValidation: boolean;
+    ttlSeconds: number | null;
 };
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
@@ -346,6 +347,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         requiredUserValidation:
                             currentSessionResult.requiredUserValidation ===
                             true,
+                        ttlSeconds:
+                            typeof currentSessionResult.ttlSeconds === "number"
+                                ? currentSessionResult.ttlSeconds
+                                : null,
                     });
                     const tfaRequiredResult = {
                         ...currentSessionResult,
@@ -357,9 +362,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     return { sessionResult: tfaRequiredResult };
                 }
                 if (userStatus.requiresSetup) {
-                    const ttlSecondsGetter = ctx.capabilities.get<() => number>(
-                        "auth:getAccessTokenTtlSeconds",
-                    );
                     const issueAccessTokenFn = ctx.capabilities.get<
                         (
                             subject: string,
@@ -373,14 +375,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                             options?: Record<string, unknown>,
                         ) => string
                     >("auth:issueAccessToken");
-                    if (!ttlSecondsGetter || !issueAccessTokenFn) {
+                    if (!issueAccessTokenFn) {
                         const unavailableResult = {
                             outcome: "tfa_unavailable",
                         };
                         stageCtx.data["sessionResult"] = unavailableResult;
                         return { sessionResult: unavailableResult };
                     }
-                    const ttlSeconds = ttlSecondsGetter();
+                    const ttlSeconds =
+                        typeof currentSessionResult.ttlSeconds === "number"
+                            ? currentSessionResult.ttlSeconds
+                            : null;
                     const setupToken = issueAccessTokenFn(
                         accountId,
                         (currentSessionResult.role as

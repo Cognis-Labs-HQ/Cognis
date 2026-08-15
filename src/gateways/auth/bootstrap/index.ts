@@ -73,6 +73,7 @@ export interface PendingTfaLoginAttempt {
     displayName: string;
     userValidationMode: "none" | "smtp";
     requiredUserValidation: boolean;
+    ttlSeconds: number | null;
     expiresAt: number;
 }
 

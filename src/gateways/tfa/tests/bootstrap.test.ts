@@ -151,6 +151,19 @@ test("setup verification route rotates setup-pending tokens", () => {
     assert.match(tfaRoutesSource, /auth:issueAccessToken/);
     assert.match(tfaRoutesSource, /setupPending:\s*false/);
     assert.match(tfaRoutesSource, /responseData\.token\s*=\s*refreshedToken/);
+    assert.match(
+        tfaRoutesSource,
+        /const accessTokenTtlSeconds = claims\.ttlSeconds/,
+    );
+    assert.match(tfaRoutesSource, /responseData\.ttlSeconds/);
+});
+
+test("TFA verification preserves the pending login session TTL", () => {
+    assert.match(
+        tfaRoutesSource,
+        /const accessTokenTtlSeconds = pendingAttempt\.ttlSeconds/,
+    );
+    assert.match(tfaRoutesSource, /ttlSeconds: accessTokenTtlSeconds/);
 });
 
 test("tfa login UI integration unhooks when gateway is disabled", async () => {

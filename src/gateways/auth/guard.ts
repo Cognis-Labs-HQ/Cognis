@@ -1,5 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { verifyAccessToken, type AccessRole } from "./access-tokens.js";
+import {
+    getAccessTokenTtlSeconds,
+    verifyAccessToken,
+    type AccessRole,
+} from "./access-tokens.js";
 import {
     hasMinRole,
     isRoleAllowed,
@@ -103,6 +107,7 @@ interface AuthClaims {
     role: AccessRole;
     providerId: string;
     setupPending: boolean;
+    ttlSeconds: number | null;
 }
 
 function isTfaSetupPendingPathAllowed(
@@ -169,6 +174,7 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
         role: access.role,
         providerId: access.providerId,
         setupPending: access.setupPending,
+        ttlSeconds: getAccessTokenTtlSeconds(token),
     };
 }
 
