@@ -1,52 +1,50 @@
 /**
- * Avatar utilities: initials-based fallback avatar generation.
+ * Profile-avatar capability access for UI consumers.
  *
  * Public exports:
- *   getInitialsText(label) — returns a 1-2 letter initials string for the given profile label.
- *   pickInitialsColor(handle) — returns a deterministic hsl(...) color string for the given handle.
- *   generateInitialsDataUrl(handle, size) — canvas PNG data URL (kept for environments where
- *     a data: URI is acceptable; prefer CSS initials for CSP-restricted pages).
+ *   getInitialsText(label) — asks the profile adapter for canonical initials.
+ *   pickInitialsColor(seed) — asks the profile adapter for the canonical colour.
+ *   generateInitialsDataUrl(label, size) — renders the capability result to a canvas.
  *
  * Usage:
- *   import { getInitialsText, pickInitialsColor } from '../reuse/avatar-utils.js';
- *   span.textContent = getInitialsText('Alice Smith');        // → "AS"
- *   div.style.background = pickInitialsColor('@alice_smith');  // → "hsl(210, 55%, 42%)"
+ *   import { getInitialsText } from './avatar-utils.js';
+ *   badge.textContent = getInitialsText('Alice Smith');
  *
- * @param {string} label — the user's profile name or handle (leading '@' is stripped automatically).
+ * @param {string} label
+ * @returns {string}
  */
+import { uiCtx } from "./ui-ctx.js";
+
+function getProfileAvatarCapability() {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) {
+        throw new Error("The profile avatar UI capability is unavailable");
+    }
+    return capability;
+}
 
 export function getInitialsText(label) {
-    if (!label) return "?";
-    const clean = label.replace(/^@/, "").trim();
-    const parts = clean.split(/[\s._-]+/).filter(Boolean);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return (parts[0]?.[0] ?? clean[0] ?? "?").toUpperCase();
+    return getProfileAvatarCapability().getInitials(label);
 }
 
-export function pickInitialsColor(handle) {
-    let hash = 0;
-    for (const char of handle ?? "") {
-        hash = (hash * 31 + char.charCodeAt(0)) | 0;
-    }
-    const hue = Math.abs(hash) % 360;
-    return `hsl(${hue}, 55%, 42%)`;
+export function pickInitialsColor(seed) {
+    return getProfileAvatarCapability().getInitialsColor(seed);
 }
 
-export function generateInitialsDataUrl(handle, size = 64) {
-    const initials = getInitialsText(handle);
-    const color = pickInitialsColor(handle);
+export function generateInitialsDataUrl(label, size = 64) {
+    const capability = getProfileAvatarCapability();
     const canvas = document.createElement("canvas");
     canvas.width = size;
     canvas.height = size;
-    const ctx = canvas.getContext("2d");
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#ffffff";
-    ctx.font = `bold ${Math.round(size * 0.38)}px sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(initials, size / 2, size / 2);
+    const context = canvas.getContext("2d");
+    context.fillStyle = capability.getInitialsColor(label);
+    context.beginPath();
+    context.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+    context.fill();
+    context.fillStyle = "#ffffff";
+    context.font = `bold ${Math.round(size * 0.38)}px sans-serif`;
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    context.fillText(capability.getInitials(label), size / 2, size / 2);
     return canvas.toDataURL("image/png");
 }

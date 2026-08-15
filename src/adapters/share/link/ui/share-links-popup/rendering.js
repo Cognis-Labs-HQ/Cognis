@@ -1,8 +1,4 @@
 import { escapeHtml } from "/static/reuse/escape-html.js";
-import {
-    getInitialsText,
-    pickInitialsColor,
-} from "/static/reuse/avatar-utils.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
@@ -25,11 +21,10 @@ export function buildRecipientAvatarMarkup(options) {
     }
     const avatarClass = escapeHtml(options.avatarClass);
     const fallbackClass = escapeHtml(options.fallbackClass);
-    const color = escapeHtml(pickInitialsColor(options.colorSeed));
-    const initials = escapeHtml(getInitialsText(options.label));
+    const initials = "?";
     return (
         `<span class="${avatarClass}">` +
-        `<span class="${fallbackClass}" style="--initials-bg: ${color};">` +
+        `<span class="${fallbackClass}">` +
         `${initials}</span></span>`
     );
 }

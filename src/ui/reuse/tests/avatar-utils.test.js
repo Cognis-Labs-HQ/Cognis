@@ -1,11 +1,26 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { getInitialsText } from "../avatar-utils.js";
+import { getInitialsText, pickInitialsColor } from "../avatar-utils.js";
+import { uiCtx } from "../ui-ctx.js";
 
-test("getInitialsText uses profile names and supports single-word initials", () => {
-    assert.equal(getInitialsText("Alice Smith"), "AS");
-    assert.equal(getInitialsText("Prince"), "P");
-    assert.equal(getInitialsText("@alice_smith"), "AS");
-    assert.equal(getInitialsText(""), "?");
+const calls = [];
+uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
+    getInitials(label) {
+        calls.push(["initials", label]);
+        return "CTX";
+    },
+    getInitialsColor(seed) {
+        calls.push(["color", seed]);
+        return "profile-color";
+    },
+});
+
+test("avatar utilities delegate initials and colours to the profile capability", () => {
+    assert.equal(getInitialsText("Alice Smith"), "CTX");
+    assert.equal(pickInitialsColor("alice"), "profile-color");
+    assert.deepEqual(calls, [
+        ["initials", "Alice Smith"],
+        ["color", "alice"],
+    ]);
 });
