@@ -104,6 +104,7 @@ export function createPageComposer(
     let lastObservedCols = 0;
     let gridSection = null;
     let editToggleAbortController = null;
+    let composerEditToggleButton = null;
     let layoutProfiles = { layoutsByGrid: {} };
     let activePresenceTracker = null;
     let composerDestroyed = false;
@@ -579,10 +580,7 @@ export function createPageComposer(
     }
 
     function getComposerEditToggleButton() {
-        return (
-            root.querySelector("#composer-edit-toggle") ??
-            document.getElementById("composer-edit-toggle")
-        );
+        return composerEditToggleButton;
     }
 
     function applyPageOverrides(id) {
@@ -671,6 +669,7 @@ export function createPageComposer(
             requireAccountSession,
             enableAccountEnhancements,
         });
+        composerEditToggleButton = root.querySelector("#composer-edit-toggle");
         pageActions.mount(root, { signal });
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
