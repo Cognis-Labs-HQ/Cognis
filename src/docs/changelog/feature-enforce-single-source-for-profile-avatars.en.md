@@ -11,3 +11,11 @@ Messages, Calendar, Jitsi Meet, Nextcloud Whiteboard, Share, presence displays, 
 ## Navbar avatar remains visible in Study
 
 The Profile navbar plugin now contributes its avatar provider through UI CTX instead of importing layout state. Dashboard shell reuse also preserves an already-resolved avatar while plugins load, so navigation among Study subpages no longer replaces the profile image temporarily.
+
+## Messages load profile avatar support before rooms render
+
+Direct Messages page loads now wait for registered navigation contributions, ensuring the Profile avatar capability is available before rooms with avatars or initials are rendered.
+
+## Study classrooms bind the Profile UI context correctly
+
+Classroom pages now import the UI context as executable module code, so teacher and occupied-seat initials render without a missing-variable error.

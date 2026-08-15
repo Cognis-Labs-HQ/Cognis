@@ -11,3 +11,11 @@ Nachrichten, Kalender, Jitsi Meet, Nextcloud Whiteboard, Teilen, Anwesenheitsanz
 ## Navbar-Avatar bleibt in Study sichtbar
 
 Das Profil-Navbar-Plugin stellt seinen Avatar-Anbieter jetzt über UI CTX bereit, statt Layout-Zustand zu importieren. Bei der Wiederverwendung der Dashboard-Oberfläche bleibt ein bereits aufgelöster Avatar außerdem während des Ladens der Plugins erhalten, sodass die Navigation zwischen Study-Unterseiten das Profilbild nicht mehr vorübergehend ersetzt.
+
+## Nachrichten laden die Profilbild-Unterstützung vor der Raumdarstellung
+
+Direkt geladene Nachrichtenseiten warten nun auf registrierte Navigationsbeiträge. Dadurch ist die Profilbild-Capability verfügbar, bevor Räume mit Bildern oder Initialen dargestellt werden.
+
+## Study-Klassenräume binden den Profil-UI-Kontext korrekt ein
+
+Klassenraumseiten importieren den UI-Kontext nun als ausführbaren Modulcode, sodass Initialen von Lehrkräften und belegten Plätzen ohne Fehler durch eine fehlende Variable dargestellt werden.

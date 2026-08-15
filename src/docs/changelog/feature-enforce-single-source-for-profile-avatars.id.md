@@ -11,3 +11,11 @@ Pesan, Kalender, Jitsi Meet, Nextcloud Whiteboard, Berbagi, tampilan kehadiran, 
 ## Avatar bilah navigasi tetap terlihat di Study
 
 Plugin bilah navigasi Profil kini menyediakan pemasok avatar melalui UI CTX dan tidak lagi mengimpor status tata letak. Penggunaan ulang shell dasbor juga mempertahankan avatar yang telah dimuat selama plugin dimuat, sehingga navigasi antar-subhalaman Study tidak lagi mengganti gambar profil untuk sementara.
+
+## Pesan memuat dukungan avatar profil sebelum merender ruang
+
+Halaman Pesan yang dimuat langsung kini menunggu kontribusi navigasi terdaftar, sehingga kapabilitas avatar Profil tersedia sebelum ruang dengan avatar atau inisial dirender.
+
+## Ruang kelas Study mengikat konteks UI Profil dengan benar
+
+Halaman ruang kelas kini mengimpor konteks UI sebagai kode modul yang dapat dijalankan, sehingga inisial pengajar dan kursi yang terisi dirender tanpa galat variabel yang hilang.
