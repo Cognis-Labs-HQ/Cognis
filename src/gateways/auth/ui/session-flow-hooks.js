@@ -35,6 +35,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 const AUTH_SETUP_CACHE_TTL_MS = 5_000;
 let authSetupCacheExpiresAt = 0;
 let authSetupRequiredCached = false;
+let sessionExpiryNavigationPending = false;
 const accountInfoByAccount = new Map();
 
 function isGuestSession() {
@@ -72,6 +73,7 @@ function clearStoredSession() {
     localStorage.removeItem("cognis_display_name");
     localStorage.removeItem("cognis_role");
     localStorage.removeItem("cognis_is_founder");
+    localStorage.removeItem("cognis_session_expires_at");
     localStorage.removeItem("cognis_provider_id");
     localStorage.removeItem("cognis_user_validation_mode");
     document.cookie = "cognis_access_token=; Path=/; Max-Age=0";
@@ -273,6 +275,21 @@ export function invalidateAuthSetupCache() {
 }
 
 const PUBLIC_AUTH_PATHNAMES = new Set(["/login", "/register"]);
+
+window.addEventListener("cognis:api-access-denied", (event) => {
+    if (
+        event.detail?.status !== 401 ||
+        sessionExpiryNavigationPending ||
+        PUBLIC_AUTH_PATHNAMES.has(window.location.pathname) ||
+        isGuestSession() ||
+        !localStorage.getItem("cognis_access_token")
+    ) {
+        return;
+    }
+    sessionExpiryNavigationPending = true;
+    clearStoredSession();
+    window.location.replace("/login?reason=session_expired");
+});
 
 uiCtx.extendFlow(
     "load-page",

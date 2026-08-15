@@ -29,4 +29,21 @@
   <string name="gateway.auth.security.keyring_relock">Kunci keyring secara otomatis</string>
   <string name="gateway.auth.security.keyring_logout">Saat keluar</string>
   <string name="gateway.auth.security.keyring_minutes">menit</string>
+  <string name="gateway.auth.security.session_timeout_label">Batas waktu sesi login</string>
+  <string name="gateway.auth.security.session_timeout_disabled">Batas waktu sesi dinonaktifkan oleh administrator.</string>
+  <string name="gateway.auth.security.session_timeout_reset">Gunakan Batas Waktu Sesi Login Bawaan</string>
+  <string name="gateway.auth.security.session_timeout_never">Tidak pernah</string>
+  <string name="gateway.auth.security.session_timeout_reset_failed">Batas waktu sesi login bawaan tidak dapat dimuat.</string>
+  <string name="gateway.auth.security.session_expires_in">Sesi saat ini berakhir dalam {countdown}</string>
+  <string name="gateway.auth.security.session_expired">Sesi saat ini telah berakhir</string>
+  <string name="gateway.auth.security.countdown.weeks.one">{count} minggu</string>
+  <string name="gateway.auth.security.countdown.weeks.many">{count} minggu</string>
+  <string name="gateway.auth.security.countdown.days.one">{count} hari</string>
+  <string name="gateway.auth.security.countdown.days.many">{count} hari</string>
+  <string name="gateway.auth.security.countdown.hours.one">{count} jam</string>
+  <string name="gateway.auth.security.countdown.hours.many">{count} jam</string>
+  <string name="gateway.auth.security.countdown.minutes.one">{count} menit</string>
+  <string name="gateway.auth.security.countdown.minutes.many">{count} menit</string>
+  <string name="gateway.auth.security.countdown.seconds.one">{count} detik</string>
+  <string name="gateway.auth.security.countdown.seconds.many">{count} detik</string>
 </resources>

@@ -23,7 +23,7 @@ export interface LoginFlowSessionResult {
     role?: string;
     isFounder?: boolean;
     token?: string;
-    ttlSeconds?: number;
+    ttlSeconds?: number | null;
     loginAttemptId?: string;
     methods?: unknown[];
     userValidationMode?: string;

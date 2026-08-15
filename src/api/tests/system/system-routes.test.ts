@@ -225,6 +225,43 @@ test("system security settings require authentication", async () => {
     assert.match(body, /"unauthorized"/);
 });
 
+test("system security settings accept disabled session expiry", async () => {
+    const token = issueAccessToken("admin-timeout", "admin", 60);
+    let status = 0;
+    let persisted = "";
+    const route = createSystemRoutes(healthService as any, {
+        async get() {
+            return null;
+        },
+        async set(_accountId, _key, value) {
+            persisted = value;
+        },
+        async clearUser() {},
+    });
+
+    await route(
+        {
+            method: "PUT",
+            headers: { authorization: `Bearer ${token}` },
+            [Symbol.asyncIterator]: async function* () {
+                yield Buffer.from(
+                    JSON.stringify({ loginSessionTimeoutMinutes: 0 }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/system/security"),
+    );
+
+    assert.equal(status, 200);
+    assert.equal(JSON.parse(persisted).loginSessionTimeoutMinutes, 0);
+});
+
 test("system security settings sanitize and survive malformed persisted data", async () => {
     const token = issueAccessToken("alice", "user", 60);
     const headers = { authorization: `Bearer ${token}` };

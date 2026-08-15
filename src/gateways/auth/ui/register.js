@@ -22,6 +22,7 @@ import {
     renderAuthLayout,
 } from "/static/reuse/auth-layout.js";
 import { clearStoredAuthSession } from "/static/reuse/auth-session.js";
+import { formatCountdownClock } from "/static/gateways/auth/countdown.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import {
     DEFAULT_PASSWORD_POLICY,
@@ -243,17 +244,6 @@ export async function mount(root, { signal } = {}) {
         );
     })();
     const typingSamples = await loadAuthTypingSamples(i18n);
-
-    function formatCountdown(msRemaining) {
-        if (msRemaining <= 0) return "00:00:00";
-        const totalSeconds = Math.ceil(msRemaining / 1000);
-        const hours = Math.floor(totalSeconds / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        return [hours, minutes, seconds]
-            .map((n) => String(n).padStart(2, "0"))
-            .join(":");
-    }
 
     function createRegisterFormBuilder({
         emailValue,
@@ -613,7 +603,7 @@ export async function mount(root, { signal } = {}) {
                                 .t("ui.app.register.token_expires_in")
                                 .replace(
                                     "{countdown}",
-                                    formatCountdown(remaining),
+                                    formatCountdownClock(remaining),
                                 );
                         }
                         updateCountdown();

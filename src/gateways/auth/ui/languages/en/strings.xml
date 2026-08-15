@@ -29,4 +29,21 @@
   <string name="gateway.auth.security.keyring_relock">Automatically lock the keyring</string>
   <string name="gateway.auth.security.keyring_logout">At logout</string>
   <string name="gateway.auth.security.keyring_minutes">minutes</string>
+  <string name="gateway.auth.security.session_timeout_label">Login Session Timeout</string>
+  <string name="gateway.auth.security.session_timeout_disabled">Session timeout is disabled by your administrator.</string>
+  <string name="gateway.auth.security.session_timeout_reset">Use Default Login Session Timeout</string>
+  <string name="gateway.auth.security.session_timeout_never">Never</string>
+  <string name="gateway.auth.security.session_timeout_reset_failed">Unable to load the default login session timeout.</string>
+  <string name="gateway.auth.security.session_expires_in">Current session expires in {countdown}</string>
+  <string name="gateway.auth.security.session_expired">Current session expired</string>
+  <string name="gateway.auth.security.countdown.weeks.one">{count} week</string>
+  <string name="gateway.auth.security.countdown.weeks.many">{count} weeks</string>
+  <string name="gateway.auth.security.countdown.days.one">{count} day</string>
+  <string name="gateway.auth.security.countdown.days.many">{count} days</string>
+  <string name="gateway.auth.security.countdown.hours.one">{count} hour</string>
+  <string name="gateway.auth.security.countdown.hours.many">{count} hours</string>
+  <string name="gateway.auth.security.countdown.minutes.one">{count} minute</string>
+  <string name="gateway.auth.security.countdown.minutes.many">{count} minutes</string>
+  <string name="gateway.auth.security.countdown.seconds.one">{count} second</string>
+  <string name="gateway.auth.security.countdown.seconds.many">{count} seconds</string>
 </resources>
