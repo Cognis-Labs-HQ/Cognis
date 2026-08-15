@@ -27,7 +27,6 @@
  */
 
 import { apiFetch } from "../api-client.js";
-import { getInitialsText, pickInitialsColor } from "../avatar-utils.js";
 import { escapeHtml } from "../escape-html.js";
 import { createPointerTracker } from "../pointer-tracker.js";
 import { createAdaptivePoller } from "../adaptive-poller.js";
@@ -136,8 +135,8 @@ function defaultRenderPresenceEntry(entry) {
     );
     const handle = String(entry.handle || "").replace(/^[@#]+/, "");
     const active = Boolean(entry.active);
-    const initials = getInitialsText(displayName);
-    const color = pickInitialsColor(handle || displayName);
+    const initials = String(entry.initials || "?");
+    const color = String(entry.color || "hsl(0, 0%, 42%)");
     const classes = ["page-presence__avatar", active ? "is-active" : ""]
         .filter(Boolean)
         .join(" ");

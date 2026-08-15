@@ -44,8 +44,8 @@ export interface PageElement {
 /**
  * A navbar plugin that a gateway contributes to run on every dashboard
  * page. The module at `scriptUrl` is dynamically imported by the dashboard
- * layout after render. It calls `registerAvatarProvider` (exported from
- * the layout) to supply gateway-specific avatar and profile-link logic.
+ * layout after render and contributes any optional UI behavior through
+ * `uiCtx.capabilities`.
  */
 export interface NavbarPlugin {
     /** Browser-absolute URL of the ES module to dynamically import. */
@@ -197,9 +197,8 @@ export class UIRegistry {
 
     /**
      * Registers a navbar plugin that the dashboard layout will dynamically
-     * import on every page. The plugin module should call
-     * `registerAvatarProvider` (exported from dashboard-layout.js) to supply
-     * avatar and profile-link update logic.
+     * import on every page. The plugin module contributes optional navbar
+     * behavior through `uiCtx.capabilities`.
      */
     registerNavbarPlugin(plugin: NavbarPlugin): void {
         this.navbarPlugins.push(plugin);

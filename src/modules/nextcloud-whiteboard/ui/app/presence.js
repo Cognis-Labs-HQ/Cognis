@@ -1,8 +1,15 @@
-import { pickInitialsColor } from "/static/reuse/avatar-utils.js";
-import {
-    buildProfileAvatarMarkup,
-    hydrateProfileAvatars,
-} from "/static/gateways/social/reuse/profile-avatar.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
+const pickInitialsColor = (seed) => profileAvatars().getInitialsColor(seed);
+const hydrateProfileAvatars = (container) =>
+    profileAvatars().hydrate(container);
 
 export function getPointerOffset(canvasInstance) {
     return canvasInstance?.getViewportOffset?.() ?? { x: 0, y: 0 };

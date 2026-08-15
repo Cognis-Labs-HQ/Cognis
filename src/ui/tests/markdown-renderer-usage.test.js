@@ -38,7 +38,7 @@ test("user and admin generated rich-text surfaces use the shared markdown render
         },
         {
             label: "profile preview bios",
-            path: "src/ui/reuse/profile-preview.js",
+            path: "src/adapters/social/profile/ui/profile-preview.js",
             patterns: [
                 /import \{ renderMarkdown \}/,
                 /renderMarkdown\(profile\.bio/,

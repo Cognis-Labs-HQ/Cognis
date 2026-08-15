@@ -1,8 +1,8 @@
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import {
-    getInitialsText,
-    pickInitialsColor,
-} from "/static/reuse/avatar-utils.js";
+    getProfileInitials,
+    getProfileInitialsColor,
+} from "./profile-avatar.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { formatDate } from "/static/reuse/timestamp.js";
@@ -199,8 +199,8 @@ function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
         return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
     }
     const initialsLabel = profile?.displayName || profile?.handle || "";
-    const initials = getInitialsText(initialsLabel);
-    const initialsColor = pickInitialsColor(initialsLabel);
+    const initials = getProfileInitials(initialsLabel);
+    const initialsColor = getProfileInitialsColor(initialsLabel);
     return `<div class="profile-avatar-initials" style="--initials-bg: ${escapeHtml(initialsColor)};">${escapeHtml(initials)}</div>`;
 }
 

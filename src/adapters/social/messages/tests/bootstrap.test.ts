@@ -28,6 +28,23 @@ test("messages asset registrations do not use query-string versioning", () => {
     assert.doesNotMatch(htmlSource, /\?v=/);
 });
 
+test("messages load navbar capabilities before rendering avatar consumers", () => {
+    const appSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/app.js"),
+        "utf8",
+    );
+
+    const capabilityLoad = appSource.indexOf(
+        "await ensureNavbarPluginsLoaded()",
+    );
+    const roomListRender = appSource.indexOf("${renderRoomList({");
+    assert.ok(capabilityLoad >= 0, "messages must load navbar capabilities");
+    assert.ok(
+        capabilityLoad < roomListRender,
+        "avatar capability must load before the initial room list render",
+    );
+});
+
 test("meeting-linked chat reuse does not rename existing group chats", () => {
     const source = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/index.ts"),
@@ -91,15 +108,6 @@ test("messages avatars fall back after failed image loads", () => {
         resolve(ROOT, "src/adapters/social/profile/ui/profile-avatar.js"),
         "utf8",
     );
-    const gatewayExportSource = readFileSync(
-        resolve(ROOT, "src/gateways/social/ui/reuse/profile-avatar.js"),
-        "utf8",
-    );
-
-    assert.match(
-        gatewayExportSource,
-        /static\/adapters\/social\/profile\/profile-avatar\.js/,
-    );
     assert.match(sharedSource, /const unavailableAvatarKeys = new Set\(\)/);
     assert.match(sharedSource, /unavailableAvatarKeys\.add\(avatarKey\)/);
     assert.match(sharedSource, /data-avatar-key=/);
@@ -119,7 +127,7 @@ test("messages avatars fall back after failed image loads", () => {
     );
     assert.match(
         appSource,
-        /from "\/static\/gateways\/social\/reuse\/profile-avatar\.js"/,
+        /uiCtx\.capabilities\.get\("ui:profileAvatarRenderer"\)/,
     );
 });
 
