@@ -35,3 +35,7 @@ Die Benutzereinstellungen bieten jetzt neben der Zeiteinheit eine Schaltfläche 
 ## Änderungen am Zeitlimit sicher anwenden
 
 „Nie“ blendet jetzt das Zahlenfeld aus und lässt sich ohne Validierungsfehler speichern. Die Benutzereinstellungen zeigen eine deaktivierte Auswahl „Nie“, wenn der Ablauf global deaktiviert ist. Das Speichern oder Zurücksetzen eines persönlichen Zeitlimits widerruft alle bestehenden Sitzungen dieses Benutzers.
+
+## Globales Zeitlimit beim Zurücksetzen aktualisieren
+
+Die Schaltfläche zum Zurücksetzen ist jetzt immer verfügbar. Bei jedem Klick wird das aktuelle Zeitlimit der Administration neu geladen und nur dann eine Änderung vorgemerkt, wenn sich der wirksame Wert oder die Bindung an den Standardwert unterscheidet.

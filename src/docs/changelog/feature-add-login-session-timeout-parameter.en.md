@@ -35,3 +35,7 @@ User Settings now provides an undo-icon button beside the duration unit. Resetti
 ## Apply timeout changes securely
 
 Never now hides the numeric field and saves without validation errors. User Settings displays a disabled Never choice when expiry is globally disabled. Saving or resetting a personal timeout revokes every existing session for that user.
+
+## Refresh the global timeout on reset
+
+The reset control is now always available. Each click reloads the latest Administration timeout and stages an update only when the effective value or default-following state differs.

@@ -33,4 +33,5 @@
   <string name="gateway.auth.security.session_timeout_disabled">Batas waktu sesi dinonaktifkan oleh administrator.</string>
   <string name="gateway.auth.security.session_timeout_reset">Gunakan Batas Waktu Sesi Login Bawaan</string>
   <string name="gateway.auth.security.session_timeout_never">Tidak pernah</string>
+  <string name="gateway.auth.security.session_timeout_reset_failed">Batas waktu sesi login bawaan tidak dapat dimuat.</string>
 </resources>

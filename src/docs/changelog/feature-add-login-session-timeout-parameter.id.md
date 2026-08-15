@@ -35,3 +35,7 @@ Pengaturan Pengguna kini menyediakan tombol berikon urungkan di samping satuan d
 ## Terapkan perubahan batas waktu dengan aman
 
 “Tidak pernah” kini menyembunyikan kolom angka dan dapat disimpan tanpa kesalahan validasi. Pengaturan Pengguna menampilkan pilihan “Tidak pernah” yang dinonaktifkan saat kedaluwarsa dinonaktifkan secara global. Menyimpan atau mengatur ulang batas waktu pribadi mencabut seluruh sesi pengguna yang masih ada.
+
+## Segarkan batas waktu global saat mengatur ulang
+
+Kontrol atur ulang kini selalu tersedia. Setiap klik memuat ulang batas waktu Administrasi terbaru dan hanya menyiapkan pembaruan saat nilai efektif atau status mengikuti nilai bawaan berbeda.

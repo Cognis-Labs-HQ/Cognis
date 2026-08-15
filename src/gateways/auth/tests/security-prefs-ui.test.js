@@ -67,7 +67,12 @@ test("auth security preferences can reset to the administration default", () => 
     assert.match(SOURCE, /<svg viewBox="0 0 24 24"/);
     assert.match(SOURCE, /usesDefaultSessionTimeout = true/);
     assert.match(SOURCE, /\{ useDefault: true \}/);
-    assert.match(SOURCE, /sessionTimeout\?\.maximumMinutes/);
+    assert.match(SOURCE, /latestTimeout\.maximumMinutes/);
+    assert.match(SOURCE, /resetLoginSessionTimeoutToGlobal/);
+    assert.match(
+        SOURCE,
+        /aria-label="\$\{escapeHtml\(i18n\.t\("gateway\.auth\.security\.session_timeout_reset"\)\)\}">/,
+    );
 });
 
 test("auth security preferences show a non-selectable Never default", () => {
