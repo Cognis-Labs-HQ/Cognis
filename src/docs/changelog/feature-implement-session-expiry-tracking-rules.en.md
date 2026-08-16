@@ -11,3 +11,7 @@ Lengthening a personal timeout keeps the current session active and displays a n
 ## Keep disabled expiry and login fallback reliable
 
 The global Never setting now overrides existing personal timeouts, and a temporary failure while normalizing a stored preference no longer prevents login.
+
+## Propagate the gateway package version
+
+The aggregate Cognis gateways package and every dependent local component now declare the updated tested version, keeping workspace manifests and the lockfile aligned with the Authentication gateway change.

@@ -11,3 +11,7 @@ Memperpanjang batas waktu pribadi mempertahankan sesi saat ini dan menampilkan p
 ## Menjaga penonaktifan kedaluwarsa dan proses masuk tetap andal
 
 Pengaturan global Tidak Pernah kini mengesampingkan batas waktu pribadi yang ada. Kegagalan sementara saat menormalkan preferensi tersimpan juga tidak lagi mencegah pengguna masuk.
+
+## Menyebarkan versi paket gateway
+
+Paket gabungan gateway Cognis dan setiap komponen lokal yang bergantung padanya kini mendeklarasikan versi teruji terbaru, sehingga manifes workspace dan berkas kunci tetap selaras dengan perubahan gateway Autentikasi.

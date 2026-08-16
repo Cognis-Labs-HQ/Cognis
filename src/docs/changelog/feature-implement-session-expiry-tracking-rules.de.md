@@ -11,3 +11,7 @@ Beim Verlängern eines persönlichen Zeitlimits bleibt die aktuelle Sitzung akti
 ## Deaktivierte Ablaufzeiten und die Anmeldung zuverlässig halten
 
 Die globale Einstellung Nie überschreibt jetzt bestehende persönliche Zeitlimits. Ein vorübergehender Fehler beim Normalisieren einer gespeicherten Einstellung verhindert die Anmeldung nicht mehr.
+
+## Version des Gateway-Pakets weitergeben
+
+Das zusammengefasste Cognis-Gateway-Paket und alle davon abhängigen lokalen Komponenten deklarieren jetzt die aktualisierte getestete Version. Dadurch bleiben Workspace-Manifeste und Sperrdatei mit der Änderung am Authentifizierungs-Gateway synchron.
