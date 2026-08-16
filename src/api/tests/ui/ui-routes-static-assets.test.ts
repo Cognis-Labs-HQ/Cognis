@@ -232,7 +232,7 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
         recorder.headers["content-type"],
         "text/javascript; charset=utf-8",
     );
-    assert.match(recorder.body, /registerAvatarProvider/);
+    assert.match(recorder.body, /ui:navbarAvatarProvider/);
 });
 
 test("GET /static/adapters/share/:method/page.js serves Share adapter pages", async () => {

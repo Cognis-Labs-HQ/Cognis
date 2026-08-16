@@ -1,6 +1,14 @@
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
-import { buildProfileAvatarMarkup } from "/static/gateways/social/reuse/profile-avatar.js";
 import { normalizeUsername } from "/static/reuse/value-normalizers.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const buildProfileAvatarMarkup = (options) =>
+    profileAvatars().buildMarkup(options);
 
 const FALLBACK_MESSAGE_UI_RESOURCES = Object.freeze({
     languageBaseUrls: ["/static/modules/jitsi-meet/languages"],

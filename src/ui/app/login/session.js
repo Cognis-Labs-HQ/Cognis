@@ -9,6 +9,14 @@ export function persistLoginSession(data, storage = localStorage) {
     );
     storage.setItem("cognis_is_founder", data.isFounder ? "true" : "false");
     storage.setItem("cognis_login_time", new Date().toISOString());
+    if (data.ttlSeconds === null) {
+        storage.removeItem("cognis_session_expires_at");
+    } else if (Number.isFinite(data.ttlSeconds)) {
+        storage.setItem(
+            "cognis_session_expires_at",
+            new Date(Date.now() + data.ttlSeconds * 1000).toISOString(),
+        );
+    }
     storage.setItem(
         "cognis_user_validation_mode",
         data.userValidationMode || "none",
@@ -24,6 +32,7 @@ export function clearLoginSession(storage = localStorage) {
         "cognis_provider_id",
         "cognis_is_founder",
         "cognis_login_time",
+        "cognis_session_expires_at",
         "cognis_user_validation_mode",
     ]) {
         storage.removeItem(key);

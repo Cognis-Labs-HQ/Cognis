@@ -159,6 +159,7 @@ export function createTfaRoutes(
                     isFounder: boolean;
                     userValidationMode: "none" | "smtp";
                     requiredUserValidation: boolean;
+                    ttlSeconds: number | null;
                 } | null
             >("tfa:getPendingLoginAttempt");
             const clearPendingLoginAttempt = capabilities.get<
@@ -172,9 +173,6 @@ export function createTfaRoutes(
                     options?: { issuedAt?: number; providerId?: string },
                 ) => string
             >("auth:issueAccessToken");
-            const getAccessTokenTtlSeconds = capabilities.get<() => number>(
-                "auth:getAccessTokenTtlSeconds",
-            );
             const buildCookie = capabilities.get<
                 (
                     req: IncomingMessage,
@@ -186,7 +184,6 @@ export function createTfaRoutes(
                 !getPendingLoginAttempt ||
                 !clearPendingLoginAttempt ||
                 !issueToken ||
-                !getAccessTokenTtlSeconds ||
                 !buildCookie
             ) {
                 res.writeHead(503, { "content-type": "application/json" });
@@ -235,7 +232,7 @@ export function createTfaRoutes(
                 return true;
             }
             clearPendingLoginAttempt(loginAttemptId);
-            const accessTokenTtlSeconds = getAccessTokenTtlSeconds();
+            const accessTokenTtlSeconds = pendingAttempt.ttlSeconds;
             const apiToken = issueToken(
                 pendingAttempt.accountId,
                 pendingAttempt.role as
@@ -266,6 +263,7 @@ export function createTfaRoutes(
                         role: pendingAttempt.role,
                         isFounder: pendingAttempt.isFounder,
                         token: apiToken,
+                        ttlSeconds: accessTokenTtlSeconds,
                         userValidationMode: pendingAttempt.userValidationMode,
                         requiredUserValidation:
                             pendingAttempt.requiredUserValidation,
@@ -381,9 +379,6 @@ export function createTfaRoutes(
                     },
                 ) => string
             >("auth:issueAccessToken");
-            const getAccessTokenTtlSeconds = capabilities.get<() => number>(
-                "auth:getAccessTokenTtlSeconds",
-            );
             const buildCookie = capabilities.get<
                 (
                     req: IncomingMessage,
@@ -431,8 +426,8 @@ export function createTfaRoutes(
             const responseHeaders: Record<string, string> = {
                 "content-type": "application/json",
             };
-            if (issueToken && getAccessTokenTtlSeconds && buildCookie) {
-                const accessTokenTtlSeconds = getAccessTokenTtlSeconds();
+            if (issueToken && buildCookie) {
+                const accessTokenTtlSeconds = claims.ttlSeconds;
                 const refreshedToken = issueToken(
                     claims.sub,
                     claims.role,
@@ -451,6 +446,7 @@ export function createTfaRoutes(
                 responseData.accountId = claims.sub;
                 responseData.role = claims.role;
                 responseData.providerId = claims.providerId;
+                responseData.ttlSeconds = accessTokenTtlSeconds;
             }
             res.writeHead(200, responseHeaders);
             res.end(JSON.stringify({ data: responseData }));

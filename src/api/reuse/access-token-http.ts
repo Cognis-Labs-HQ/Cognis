@@ -24,11 +24,12 @@ export function shouldSetSecureCookie(req: IncomingMessage): boolean {
 
 export function buildAccessTokenCookie(
     token: string,
-    ttlSeconds: number,
+    ttlSeconds: number | null,
     useSecure: boolean,
 ): string {
     const securePart = useSecure ? "; Secure" : "";
-    return `cognis_access_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${ttlSeconds}${securePart}`;
+    const maxAgePart = ttlSeconds === null ? "" : `; Max-Age=${ttlSeconds}`;
+    return `cognis_access_token=${token}; Path=/; HttpOnly; SameSite=Lax${maxAgePart}${securePart}`;
 }
 
 export function extractCookieToken(req: IncomingMessage): string | null {

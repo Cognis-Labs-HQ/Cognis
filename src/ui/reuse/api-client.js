@@ -147,7 +147,7 @@ export async function apiFetch(path, options = {}) {
         ) {
             window.dispatchEvent(
                 new CustomEvent("cognis:api-access-denied", {
-                    detail: { path },
+                    detail: { path, status: response.status },
                 }),
             );
         }

@@ -11,6 +11,7 @@ import {
 } from "../../reuse/route-context.js";
 import {
     defaultSecuritySettings,
+    normalizeLoginSessionTimeoutMinutes,
     normalizeTrustedDomains,
     parseSecuritySettings,
     SECURITY_SETTINGS_KEY,
@@ -62,6 +63,7 @@ function serializeSecuritySettings(input: {
     userValidationMode: "none" | "smtp";
     requireTeacherManualApproval: boolean;
     enforceTfaForAllUsers: boolean;
+    loginSessionTimeoutMinutes: number;
 }): string {
     return JSON.stringify({
         trustedDomains: input.trustedDomains,
@@ -69,6 +71,7 @@ function serializeSecuritySettings(input: {
         userValidationMode: input.userValidationMode,
         requireTeacherManualApproval: input.requireTeacherManualApproval,
         enforceTfaForAllUsers: input.enforceTfaForAllUsers,
+        loginSessionTimeoutMinutes: input.loginSessionTimeoutMinutes,
     });
 }
 
@@ -228,6 +231,29 @@ export function createSystemRoutes(
                 body.requireTeacherManualApproval === false ? false : true;
             const enforceTfaForAllUsers = body.enforceTfaForAllUsers === true;
             if (
+                body.loginSessionTimeoutMinutes !== undefined &&
+                (!Number.isInteger(body.loginSessionTimeoutMinutes) ||
+                    Number(body.loginSessionTimeoutMinutes) < 0)
+            ) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_session_timeout",
+                            message:
+                                "loginSessionTimeoutMinutes must be a non-negative integer.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const loginSessionTimeoutMinutes =
+                body.loginSessionTimeoutMinutes === undefined
+                    ? defaultSecuritySettings().loginSessionTimeoutMinutes
+                    : normalizeLoginSessionTimeoutMinutes(
+                          body.loginSessionTimeoutMinutes,
+                      );
+            if (
                 userValidationMode === "smtp" &&
                 canSendVerificationEmail &&
                 !canSendVerificationEmail()
@@ -262,6 +288,7 @@ export function createSystemRoutes(
                         userValidationMode,
                         requireTeacherManualApproval,
                         enforceTfaForAllUsers,
+                        loginSessionTimeoutMinutes,
                     }),
                 );
             }

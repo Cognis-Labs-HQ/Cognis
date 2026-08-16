@@ -269,6 +269,20 @@ export function verifyAccessToken(
     };
 }
 
+export function getAccessTokenTtlSeconds(token: string): number | null {
+    const stored = getStoredAccessTokenRecord(token);
+    if (!stored || stored.revoked || stored.record.expiresAt === null) {
+        return null;
+    }
+    return Math.max(
+        0,
+        Math.round(
+            (stored.record.expiresAt - (stored.record.issuedAt ?? Date.now())) /
+                1000,
+        ),
+    );
+}
+
 export function consumeAccessToken(token: string): {
     sub: string;
     role: AccessRole;

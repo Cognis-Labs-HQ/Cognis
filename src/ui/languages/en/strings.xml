@@ -116,6 +116,7 @@
   <string name="ui.layout.search.no_results">No results found.</string>
   <string name="ui.layout.account.aria">Account options</string>
   <string name="ui.layout.avatar.alt">User avatar</string>
+  <string name="ui.layout.language.aria">Cycle language</string>
   <string name="ui.layout.theme.aria">Toggle theme</string>
   <string name="ui.layout.footer.license">License</string>
   <string name="ui.layout.footer.changelogs">Changelogs</string>
@@ -390,6 +391,7 @@
   <string name="ui.app.error.code.default">An unexpected error occurred.</string>
   <string name="ui.app.settings.font_preview">Font Preview</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
+  <string name="ui.app.settings.always_show_language_switcher">Always Show Language Switcher</string>
   <string name="ui.app.settings.available_languages">Available languages</string>
   <string name="ui.app.settings.preferred_languages">Preferred languages</string>
   <string name="ui.app.settings.sync_from_browser">Sync from browser</string>
@@ -672,4 +674,12 @@
   <string name="ui.reuse.core">Core</string>
   <string name="ui.app.users.external_password_managed">External users' passwords are managed by their authentication provider.</string>
   <string name="ui.app.admin.db_managed_by_docker">Managed by docker</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Default Login Session Timeout</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">The longest login session users may choose.</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">Never</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">Disabling session timeouts is not recommended in production.</string>
+  <string name="ui.reuse.duration.minutes">Minutes</string>
+  <string name="ui.reuse.duration.hours">Hours</string>
+  <string name="ui.reuse.duration.days">Days</string>
+  <string name="ui.reuse.duration.weeks">Weeks</string>
 </resources>

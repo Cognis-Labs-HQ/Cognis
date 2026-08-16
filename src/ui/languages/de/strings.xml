@@ -116,6 +116,7 @@
   <string name="ui.layout.search.no_results">Keine Ergebnisse gefunden.</string>
   <string name="ui.layout.account.aria">Kontoeinstellungen</string>
   <string name="ui.layout.avatar.alt">Benutzeravatar</string>
+  <string name="ui.layout.language.aria">Sprache wechseln</string>
   <string name="ui.layout.theme.aria">Thema umschalten</string>
   <string name="ui.layout.footer.license">Lizenz</string>
   <string name="ui.layout.footer.changelogs">Änderungsprotokolle</string>
@@ -390,6 +391,7 @@
   <string name="ui.app.error.code.default">Ein unerwarteter Fehler ist aufgetreten.</string>
   <string name="ui.app.settings.font_preview">Schriftvorschau</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
+  <string name="ui.app.settings.always_show_language_switcher">Sprachumschalter immer anzeigen</string>
   <string name="ui.app.settings.available_languages">Verfügbare Sprachen</string>
   <string name="ui.app.settings.preferred_languages">Bevorzugte Sprachen</string>
   <string name="ui.app.settings.sync_from_browser">Mit Browser synchronisieren</string>
@@ -672,4 +674,12 @@
   <string name="ui.reuse.core">Kern</string>
   <string name="ui.app.users.external_password_managed">Passwörter externer Benutzer werden von ihrem Authentifizierungsanbieter verwaltet.</string>
   <string name="ui.app.admin.db_managed_by_docker">Von Docker verwaltet</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Standard-Zeitlimit für Anmeldesitzungen</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">Die längste Anmeldesitzung, die Benutzer auswählen dürfen.</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">Nie</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">Das Deaktivieren von Sitzungszeitlimits wird für Produktionsumgebungen nicht empfohlen.</string>
+  <string name="ui.reuse.duration.minutes">Minuten</string>
+  <string name="ui.reuse.duration.hours">Stunden</string>
+  <string name="ui.reuse.duration.days">Tage</string>
+  <string name="ui.reuse.duration.weeks">Wochen</string>
 </resources>

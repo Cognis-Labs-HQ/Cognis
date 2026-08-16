@@ -23,10 +23,10 @@ test("profile badges render localized title and aria-label attributes", () => {
         "globalThis.testExports = { renderAvatarBadge };\n";
     const context = {
         createFormBuilder() {},
-        getInitialsText() {
+        getProfileInitials() {
             return "";
         },
-        pickInitialsColor() {
+        getProfileInitialsColor() {
             return "#000";
         },
         escapeHtml(value) {

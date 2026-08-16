@@ -21,6 +21,7 @@
  * @returns {Promise<void>}
  */
 
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n, applyDocumentTitle } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -31,6 +32,13 @@ import {
     loadStudySubNavigationModel,
     renderStudySubNavigation,
 } from "/static/modules/study/languages/reuse/study-sub-navigation.js";
+
+const profileAvatars = () => {
+    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    if (!capability) throw new Error("Profile avatar capability unavailable");
+    return capability;
+};
+const getInitialsText = (label) => profileAvatars().getInitials(label);
 
 function normalizeSeatAssignments(rawSeatAssignments) {
     if (!rawSeatAssignments || typeof rawSeatAssignments !== "object") {
@@ -48,14 +56,6 @@ function normalizeSeatAssignments(rawSeatAssignments) {
         seatAssignments[String(accountId)] = normalizedSeatNumber;
     }
     return seatAssignments;
-}
-
-function buildAccountInitials(accountId) {
-    const normalizedAccountId = String(accountId ?? "").trim();
-    if (!normalizedAccountId) {
-        return "??";
-    }
-    return normalizedAccountId.slice(0, 2).toUpperCase();
 }
 
 export async function mountStudyClassroomPage(root, { signal, languageCode }) {
@@ -246,7 +246,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
                     >
                         <span class="study-classroom-seat-icon">🪑</span>
                         <span class="study-classroom-seat-label">${escapeHtml(i18n.t("gateway.study.classroom_seat"))} ${seatNumber + 1}</span>
-                        ${studentAccountId ? `<span class="study-classroom-seat-bag">🎒</span><span class="study-classroom-seat-avatar">${escapeHtml(buildAccountInitials(studentAccountId))}</span>` : '<span class="study-classroom-seat-empty"></span>'}
+                        ${studentAccountId ? `<span class="study-classroom-seat-bag">🎒</span><span class="study-classroom-seat-avatar">${escapeHtml(getInitialsText(studentAccountId))}</span>` : '<span class="study-classroom-seat-empty"></span>'}
                     </button>
                 `;
             })
@@ -281,7 +281,7 @@ export async function mountStudyClassroomPage(root, { signal, languageCode }) {
             <div class="study-classroom-board-area">
                 <div class="study-classroom-board">${escapeHtml(i18n.t("gateway.study.classroom_blackboard"))}</div>
                 <div class="study-classroom-teacher">
-                    <span class="study-classroom-seat-avatar">${escapeHtml(buildAccountInitials(selectedSnapshot.teacherAccountId))}</span>
+                    <span class="study-classroom-seat-avatar">${escapeHtml(getInitialsText(selectedSnapshot.teacherAccountId))}</span>
                     <span>${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(selectedSnapshot.teacherAccountId)}</span>
                 </div>
                 <div class="study-classroom-door" id="study-classroom-door" data-door="true">🚪 ${escapeHtml(i18n.t("gateway.study.classroom_door"))}</div>

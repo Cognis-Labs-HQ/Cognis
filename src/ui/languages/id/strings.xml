@@ -116,6 +116,7 @@
   <string name="ui.layout.search.no_results">Tidak ada hasil ditemukan.</string>
   <string name="ui.layout.account.aria">Opsi akun</string>
   <string name="ui.layout.avatar.alt">Avatar pengguna</string>
+  <string name="ui.layout.language.aria">Ganti bahasa</string>
   <string name="ui.layout.theme.aria">Ubah tema</string>
   <string name="ui.layout.footer.license">Lisensi</string>
   <string name="ui.layout.footer.changelogs">Log Perubahan</string>
@@ -390,6 +391,7 @@
   <string name="ui.app.error.code.default">Terjadi kesalahan yang tidak terduga.</string>
   <string name="ui.app.settings.font_preview">Pratinjau Font</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
+  <string name="ui.app.settings.always_show_language_switcher">Selalu Tampilkan Pengalih Bahasa</string>
   <string name="ui.app.settings.available_languages">Bahasa tersedia</string>
   <string name="ui.app.settings.preferred_languages">Bahasa prioritas</string>
   <string name="ui.app.settings.sync_from_browser">Sinkronkan dari browser</string>
@@ -672,4 +674,12 @@
   <string name="ui.reuse.core">Inti</string>
   <string name="ui.app.users.external_password_managed">Kata sandi pengguna eksternal dikelola oleh penyedia autentikasi mereka.</string>
   <string name="ui.app.admin.db_managed_by_docker">Dikelola oleh Docker</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">Batas Waktu Sesi Login Bawaan</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">Sesi login terlama yang dapat dipilih pengguna.</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">Tidak pernah</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">Menonaktifkan batas waktu sesi tidak disarankan di lingkungan produksi.</string>
+  <string name="ui.reuse.duration.minutes">Menit</string>
+  <string name="ui.reuse.duration.hours">Jam</string>
+  <string name="ui.reuse.duration.days">Hari</string>
+  <string name="ui.reuse.duration.weeks">Minggu</string>
 </resources>

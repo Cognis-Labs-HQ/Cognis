@@ -261,7 +261,10 @@ export function createSessionRoutes({
         }
         if (outcome === "tfa_setup_required") {
             const token = sessionResult.token ?? "";
-            const ttlSeconds = sessionResult.ttlSeconds ?? 0;
+            const ttlSeconds =
+                sessionResult.ttlSeconds === undefined
+                    ? 0
+                    : sessionResult.ttlSeconds;
             log?.(
                 "info",
                 "Login succeeded with pending TFA setup gate (flow).",
@@ -290,6 +293,7 @@ export function createSessionRoutes({
                         role: sessionResult.role,
                         isFounder: sessionResult.isFounder,
                         token,
+                        ttlSeconds,
                         userValidationMode: sessionResult.userValidationMode,
                         requiredUserValidation:
                             sessionResult.requiredUserValidation,
@@ -323,7 +327,10 @@ export function createSessionRoutes({
         }
         if (outcome === "success") {
             const token = sessionResult.token ?? "";
-            const ttlSeconds = sessionResult.ttlSeconds ?? 0;
+            const ttlSeconds =
+                sessionResult.ttlSeconds === undefined
+                    ? 0
+                    : sessionResult.ttlSeconds;
             log?.("info", "Login succeeded (flow).", {
                 ...logMeta,
                 accountId: sessionResult.accountId,
@@ -349,6 +356,7 @@ export function createSessionRoutes({
                         role: sessionResult.role,
                         isFounder: sessionResult.isFounder,
                         token,
+                        ttlSeconds,
                         userValidationMode: sessionResult.userValidationMode,
                         requiredUserValidation:
                             sessionResult.requiredUserValidation,

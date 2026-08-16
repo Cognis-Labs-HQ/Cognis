@@ -116,6 +116,7 @@
   <string name="ui.layout.search.no_results">結果が見つかりません。</string>
   <string name="ui.layout.account.aria">アカウントオプション</string>
   <string name="ui.layout.avatar.alt">ユーザーアバター</string>
+  <string name="ui.layout.language.aria">言語を切り替える</string>
   <string name="ui.layout.theme.aria">テーマ切替</string>
   <string name="ui.layout.footer.license">ライセンス</string>
   <string name="ui.layout.footer.changelogs">変更履歴</string>
@@ -390,6 +391,7 @@
   <string name="ui.app.error.code.default">予期しないエラーが発生しました。</string>
   <string name="ui.app.settings.font_preview">フォントプレビュー</string>
   <string name="ui.app.settings.font_preview_sample">AaBbCc</string>
+  <string name="ui.app.settings.always_show_language_switcher">言語切替を常に表示</string>
   <string name="ui.app.settings.available_languages">利用可能な言語</string>
   <string name="ui.app.settings.preferred_languages">優先言語</string>
   <string name="ui.app.settings.sync_from_browser">ブラウザーから同期</string>
@@ -672,4 +674,12 @@
   <string name="ui.reuse.core">コア</string>
   <string name="ui.app.users.external_password_managed">外部ユーザーのパスワードは認証プロバイダーによって管理されます。</string>
   <string name="ui.app.admin.db_managed_by_docker">Dockerによって管理</string>
+  <string name="ui.app.admin.security.login_session_timeout_label">デフォルトのログインセッション期限</string>
+  <string name="ui.app.admin.security.login_session_timeout_hint">ユーザーが選択できる最長のログインセッションです。</string>
+  <string name="ui.app.admin.security.login_session_timeout_never">なし</string>
+  <string name="ui.app.admin.security.login_session_timeout_never_warning">本番環境でセッション期限を無効にすることは推奨されません。</string>
+  <string name="ui.reuse.duration.minutes">分</string>
+  <string name="ui.reuse.duration.hours">時間</string>
+  <string name="ui.reuse.duration.days">日</string>
+  <string name="ui.reuse.duration.weeks">週間</string>
 </resources>
