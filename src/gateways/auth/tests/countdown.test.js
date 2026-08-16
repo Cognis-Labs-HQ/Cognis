@@ -4,6 +4,7 @@ import {
     formatCountdownClock,
     getCountdownParts,
     getCountdownUrgency,
+    getCountdownUrgencyThresholds,
 } from "../ui/countdown.js";
 
 test("countdown formats remaining time with unbounded hours", () => {
@@ -23,9 +24,16 @@ test("countdown splits remaining session time into readable units", () => {
     assert.deepEqual(getCountdownParts(0), [{ unit: "seconds", value: 0 }]);
 });
 
-test("countdown urgency changes at the live session thresholds", () => {
-    assert.equal(getCountdownUrgency(10_000, 100_000), "normal");
-    assert.equal(getCountdownUrgency(9_999, 100_000), "warning");
-    assert.equal(getCountdownUrgency(2_001, 100_000), "warning");
-    assert.equal(getCountdownUrgency(2_000, 100_000), "danger");
+test("countdown urgency balances short and long sessions", () => {
+    assert.deepEqual(getCountdownUrgencyThresholds(60_000), {
+        warningMilliseconds: 30_000,
+        dangerMilliseconds: 10_000,
+    });
+    assert.deepEqual(getCountdownUrgencyThresholds(28 * 86_400_000), {
+        warningMilliseconds: 86_400_000,
+        dangerMilliseconds: 3_600_000,
+    });
+    assert.equal(getCountdownUrgency(30_001, 60_000), "normal");
+    assert.equal(getCountdownUrgency(30_000, 60_000), "warning");
+    assert.equal(getCountdownUrgency(10_000, 60_000), "danger");
 });
