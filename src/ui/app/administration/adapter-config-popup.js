@@ -324,9 +324,9 @@ export function createAdapterConfigPopup({
                 onSaved,
             } = {},
         ) {
-            if (!configUrl) return;
+            if (!configUrl) return false;
             const response = await apiFetch(configUrl);
-            if (!response.ok) return;
+            if (!response.ok) return false;
             const payload = await response.json();
             const configPopupScriptUrl = String(
                 payload.configPopupScriptUrl ?? "",
@@ -339,7 +339,7 @@ export function createAdapterConfigPopup({
                     showToast(i18n.t("ui.reuse.load_failed"), {
                         variant: "error",
                     });
-                    return;
+                    return false;
                 }
                 await extension.openAdapterConfig({
                     configUrl,
@@ -357,9 +357,9 @@ export function createAdapterConfigPopup({
                     buildConfigPayload,
                     fieldNameToLabel,
                 });
-                return;
+                return true;
             }
-            if (!adapterConfigHasFields(payload)) return;
+            if (!adapterConfigHasFields(payload)) return false;
             const dbData = payload.data ?? {};
             const envData = payload.envValues ?? {};
             const requiredFields = Array.isArray(payload.requiredFields)
@@ -701,6 +701,7 @@ export function createAdapterConfigPopup({
                     }
                 },
             });
+            return true;
         },
     };
 }

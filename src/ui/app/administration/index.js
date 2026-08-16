@@ -68,13 +68,6 @@ let elements = [];
 function adapterCompositeKey(gatewayId, adapterId) {
     return `${gatewayId}:${adapterId}`;
 }
-function adapterHasConfig(adapter) {
-    return Boolean(
-        (typeof adapter?.controls?.config === "string" &&
-            adapter.controls.config.length > 0) ||
-        (Array.isArray(adapter?.schema) && adapter.schema.length > 0),
-    );
-}
 function setModules(nextModules) {
     modules = nextModules;
     moduleById = new Map(
@@ -604,16 +597,15 @@ function bindAdapterRows() {
             }
             e.preventDefault();
             e.stopPropagation();
-            if (!adapterHasConfig(adapter)) {
-                row.open = !row.open;
-                return;
-            }
-            await openAdapterConfig(
+            const openedSettings = await openAdapterConfig(
                 gatewayId,
                 adapterId,
                 adapter.name ?? adapterId,
                 adapter,
             );
+            if (!openedSettings) {
+                row.open = !row.open;
+            }
         }
 
         row.addEventListener("click", handleOpen);
@@ -708,7 +700,7 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
         openPopup,
         showToast,
     });
-    await adapterConfigPopup.openAdapterConfig(name, {
+    return adapterConfigPopup.openAdapterConfig(name, {
         configUrl,
         testUrl,
         enableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "enable", adapterOverride),
