@@ -180,7 +180,7 @@ export function createShareRoutes(input: {
                 return true;
             }
             const enabled = adapterToggleMatch[2] === "enable";
-            input.gateway.setAdapterEnabled(adapterId, enabled);
+            await input.gateway.setAdapterEnabled(adapterId, enabled);
             sendJson(res, 200, { data: { enabled } });
             return true;
         }

@@ -11,6 +11,7 @@ import { ShareTokenStore } from "../gateway/store.js";
 import { GuestProfileStore } from "../gateway/guest-profile-store.js";
 import { ShareApprovalRequestStore } from "../gateway/approval-request-store.js";
 import { CoreShareGateway } from "../gateway/index.js";
+import { ShareAdapterConfigStore } from "../gateway/adapter-config-store.js";
 import { registerShareBootstrapHooks } from "./flow-registrations.js";
 import { createShareRoutes } from "./routes.js";
 import {
@@ -39,12 +40,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const store = new ShareTokenStore(dbExecutor, ctx.log);
     const guestProfileStore = new GuestProfileStore(dbExecutor);
     const approvalRequestStore = new ShareApprovalRequestStore(dbExecutor);
+    const adapterConfigStore = new ShareAdapterConfigStore(dbExecutor);
     const gateway = new CoreShareGateway(
         store,
         guestProfileStore,
         approvalRequestStore,
         undefined,
         ctx.capabilities.get.bind(ctx.capabilities),
+        adapterConfigStore,
     );
     const registerEmailTemplate = ctx.capabilities.get<
         (
@@ -120,7 +123,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         actionLabel: "Open Shared Item",
     }));
     await gateway.ensureSchema();
+    await adapterConfigStore.ensureSchema();
     await gateway.discoverAdapters(SHARE_ADAPTERS_ROOT);
+    await gateway.loadAdapterConfigs();
 
     ctx.capabilities.contribute(
         "share:mintToken",

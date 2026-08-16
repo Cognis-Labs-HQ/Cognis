@@ -81,6 +81,58 @@ test("share gateway tolerates an absent adapter directory", async () => {
     assert.deepEqual(gateway.listAdapters(), []);
 });
 
+test("share adapter power state persists and blocks existing records", async () => {
+    const configs = new Map<string, boolean>();
+    const existingRecord = { metadata: { adapterId: "link" } };
+    const createPersistentGateway = () =>
+        new CoreShareGateway(
+            {
+                getById: async () => existingRecord,
+                resolve: async () => existingRecord,
+                inspect: async () => existingRecord,
+            } as never,
+            { ensureSchema: async () => {} } as never,
+            { ensureSchema: async () => {} } as never,
+            undefined,
+            undefined,
+            {
+                list: async () =>
+                    Array.from(configs, ([adapterId, enabled]) => ({
+                        adapterId,
+                        enabled,
+                    })),
+                save: async (adapterId: string, enabled: boolean) => {
+                    configs.set(adapterId, enabled);
+                },
+            },
+        );
+
+    const firstGateway = createPersistentGateway();
+    await firstGateway.discoverAdapters(path.resolve("src/adapters/share"));
+    await firstGateway.setAdapterEnabled("link", false);
+    assert.equal(firstGateway.isAdapterEnabled("link"), false);
+
+    const restartedGateway = createPersistentGateway();
+    await restartedGateway.discoverAdapters(path.resolve("src/adapters/share"));
+    await restartedGateway.loadAdapterConfigs();
+    assert.equal(restartedGateway.isAdapterEnabled("link"), false);
+    assert.equal(
+        restartedGateway.resolveRecordAdapter({
+            metadata: { adapterId: "link" },
+        }),
+        null,
+    );
+    assert.equal(
+        restartedGateway.resolveRecordAdapter({
+            metadata: { adapterId: "user" },
+        })?.id,
+        "user",
+    );
+    assert.equal(await restartedGateway.getTokenById("share-1"), null);
+    assert.equal(await restartedGateway.resolveToken("token"), null);
+    assert.equal(await restartedGateway.inspectToken("token"), null);
+});
+
 test("permission-only updates preserve existing account unlock grants", async () => {
     let updateInput: Record<string, unknown> | null = null;
     const existing = {

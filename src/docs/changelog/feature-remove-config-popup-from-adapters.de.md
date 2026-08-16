@@ -11,3 +11,7 @@ Das Einstellungsfenster der LDAP-Authentifizierung enthält jetzt einen Ein-/Aus
 ## Komponentensteuerungen bleiben synchron
 
 Die Administration bezeichnet aktive Komponenten jetzt einheitlich als Aktiviert, deaktiviert gesperrte Konfigurationsschalter, aktualisiert Komponentenstatus und Navigation nach Zustandsänderungen, zeigt Manifestdetails für Adapter ohne Einstellungen und erlaubt das Deaktivieren von Share-Methoden. Die Authenticator-App verwendet standardmäßig SHA-256. Adapter-Einstellungstitel wiederholen keine Manifestversionen mehr.
+
+## Dauerhafter Status von Share-Adaptern
+
+Deaktivierte Share-Adapter bleiben nun auch nach einem Serverneustart deaktiviert. Bereits ausgestellte Freigaben werden nicht mehr aufgelöst, solange ihr Adapter deaktiviert ist.

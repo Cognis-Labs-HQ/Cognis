@@ -11,3 +11,7 @@ Popup pengaturan Autentikasi LDAP kini memiliki kontrol daya agar administrator 
 ## Kontrol komponen tetap tersinkronisasi
 
 Administrasi kini secara konsisten menyebut komponen aktif sebagai Diaktifkan, menonaktifkan kontrol konfigurasi yang dikunci, memperbarui kesehatan komponen dan navigasi setelah perubahan daya, menampilkan detail manifes untuk adaptor tanpa pengaturan, dan memungkinkan metode Share dinonaktifkan. Penyiapan Authenticator App menggunakan SHA-256 secara default. Judul pengaturan adaptor tidak lagi mengulang versi manifes.
+
+## Status Adapter Share Tersimpan
+
+Adapter Share yang dinonaktifkan kini tetap nonaktif setelah server dimulai ulang. Share yang telah diterbitkan tidak dapat diselesaikan selama adapternya dinonaktifkan.
