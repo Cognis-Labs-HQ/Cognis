@@ -5,6 +5,7 @@
  * - `DURATION_UNITS` — supported unit identifiers and their minute multipliers.
  * - `splitDurationMinutes` — chooses a concise exact unit/value pair.
  * - `joinDurationMinutes` — converts a value and unit back to minutes.
+ * - `getDurationUnitLimits` — lists units and numeric maxima within a duration.
  *
  * @example
  * const { value, unit } = splitDurationMinutes(120); // { value: 2, unit: "hours" }
@@ -47,4 +48,22 @@ export function joinDurationMinutes(value, unit) {
     return Number.isInteger(number) && number >= 1 && multiplier
         ? number * multiplier
         : Number.NaN;
+}
+
+/**
+ * Lists selectable units and the greatest whole value that fits a duration.
+ *
+ * @param {number} maximumMinutes - Positive maximum duration in whole minutes.
+ * @returns {Array<{ unit: keyof DURATION_UNITS, max: number }>} Eligible units and maxima.
+ */
+export function getDurationUnitLimits(maximumMinutes) {
+    if (!Number.isInteger(maximumMinutes) || maximumMinutes < 1) {
+        return [];
+    }
+    return Object.entries(DURATION_UNITS)
+        .filter(([, multiplier]) => multiplier <= maximumMinutes)
+        .map(([unit, multiplier]) => ({
+            unit,
+            max: Math.floor(maximumMinutes / multiplier),
+        }));
 }
