@@ -6,4 +6,4 @@ Preferensi batas waktu sesi pengguna diutamakan saat lebih singkat daripada bata
 
 ## Menerapkan batas waktu lebih panjang dengan aman
 
-Memperpanjang batas waktu pribadi mempertahankan sesi saat ini dan menampilkan pemberitahuan bahwa perubahan berlaku saat masuk berikutnya. Hitung mundur sesi saat ini berubah menjadi oranye ketika tersisa kurang dari sepuluh persen dan merah ketika tersisa dua persen.
+Memperpanjang batas waktu pribadi mempertahankan sesi saat ini dan menampilkan pemberitahuan bahwa perubahan berlaku saat masuk berikutnya. Warna hitung mundur sesi saat ini diperbarui secara langsung, menjadi oranye ketika tersisa kurang dari sepuluh persen dan merah ketika tersisa dua persen.

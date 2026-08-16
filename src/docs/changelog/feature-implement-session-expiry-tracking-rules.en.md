@@ -6,4 +6,4 @@ User session timeout preferences take precedence when they are shorter than the 
 
 ## Apply longer timeouts safely
 
-Lengthening a personal timeout keeps the current session active and displays a notice that the change applies at the next login. The current-session countdown turns orange below ten percent remaining and red at two percent remaining.
+Lengthening a personal timeout keeps the current session active and displays a notice that the change applies at the next login. The current-session countdown updates its color in real time, turning orange below ten percent remaining and red at two percent remaining.

@@ -4,6 +4,7 @@
  * Public exports:
  * - `formatCountdownClock` — renders milliseconds as an HH:MM:SS clock.
  * - `getCountdownParts` — splits milliseconds into non-zero week-to-second parts.
+ * - `getCountdownUrgency` — resolves warning state from the remaining duration.
  *
  * @example
  * formatCountdownClock(3_661_000); // "01:01:01"
@@ -51,4 +52,21 @@ export function getCountdownParts(milliseconds) {
         }
     }
     return parts;
+}
+
+/**
+ * Resolves the urgency state for a live session countdown.
+ *
+ * @param {number} remainingMilliseconds - Current time remaining.
+ * @param {number} durationMilliseconds - Full issued-session duration.
+ * @returns {"normal"|"warning"|"danger"} Current countdown urgency.
+ */
+export function getCountdownUrgency(
+    remainingMilliseconds,
+    durationMilliseconds,
+) {
+    const remainingFraction = remainingMilliseconds / durationMilliseconds;
+    if (remainingFraction <= 0.02) return "danger";
+    if (remainingFraction < 0.1) return "warning";
+    return "normal";
 }

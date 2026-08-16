@@ -6,4 +6,4 @@ Persönliche Sitzungszeitlimits haben Vorrang, wenn sie kürzer als die Administ
 
 ## Längere Zeitlimits sicher anwenden
 
-Beim Verlängern eines persönlichen Zeitlimits bleibt die aktuelle Sitzung aktiv und ein Hinweis informiert darüber, dass die Änderung bei der nächsten Anmeldung gilt. Der Countdown der aktuellen Sitzung wird unter zehn Prozent Restzeit orange und bei zwei Prozent rot.
+Beim Verlängern eines persönlichen Zeitlimits bleibt die aktuelle Sitzung aktiv und ein Hinweis informiert darüber, dass die Änderung bei der nächsten Anmeldung gilt. Der Countdown der aktuellen Sitzung aktualisiert seine Farbe in Echtzeit und wird unter zehn Prozent Restzeit orange sowie bei zwei Prozent rot.

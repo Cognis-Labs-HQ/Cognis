@@ -96,8 +96,17 @@ test("auth security preferences show the current session countdown", () => {
     assert.match(SOURCE, /settings-login-session-timeout-countdown/);
     assert.match(SOURCE, /!timeoutDisabled && hasSessionExpiry/);
     assert.match(SOURCE, /cognis_login_time/);
-    assert.match(SOURCE, /remainingFraction < 0\.1/);
-    assert.match(SOURCE, /remainingFraction <= 0\.02/);
+    assert.match(SOURCE, /syncCountdownUrgency\(countdown, remaining\)/);
+    assert.match(SOURCE, /window\.setInterval\(updateCountdown, 1000\)/);
+    assert.match(SOURCE, /getCountdownUrgency\(remaining, sessionDuration\)/);
+    assert.match(
+        STYLES,
+        /#settings-login-session-timeout-countdown\.session-expiry-countdown--warning/,
+    );
+    assert.match(
+        STYLES,
+        /#settings-login-session-timeout-countdown\.session-expiry-countdown--danger/,
+    );
     assert.match(STYLES, /session-expiry-countdown--warning/);
     assert.match(STYLES, /session-expiry-countdown--danger/);
 });

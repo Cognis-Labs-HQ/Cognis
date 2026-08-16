@@ -5,7 +5,10 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
-import { getCountdownParts } from "/static/gateways/auth/countdown.js";
+import {
+    getCountdownParts,
+    getCountdownUrgency,
+} from "/static/gateways/auth/countdown.js";
 import {
     getDurationUnitLimits,
     joinDurationMinutes,
@@ -170,6 +173,18 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             localStorage.getItem("cognis_login_time") ?? "",
         );
         const sessionDuration = expiresAt - loggedInAt;
+        function syncCountdownUrgency(countdown, remaining) {
+            const urgency = getCountdownUrgency(remaining, sessionDuration);
+            countdown.classList.remove(
+                "session-expiry-countdown--warning",
+                "session-expiry-countdown--danger",
+            );
+            if (urgency === "danger") {
+                countdown.classList.add("session-expiry-countdown--danger");
+            } else if (urgency === "warning") {
+                countdown.classList.add("session-expiry-countdown--warning");
+            }
+        }
         const updateCountdown = () => {
             const countdown = settingsRoot.querySelector(
                 "#settings-login-session-timeout-countdown",
@@ -180,15 +195,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 return;
             }
             const remaining = expiresAt - Date.now();
-            const remainingFraction = remaining / sessionDuration;
-            countdown.classList.toggle(
-                "session-expiry-countdown--warning",
-                remainingFraction < 0.1 && remainingFraction > 0.02,
-            );
-            countdown.classList.toggle(
-                "session-expiry-countdown--danger",
-                remainingFraction <= 0.02,
-            );
+            syncCountdownUrgency(countdown, remaining);
             countdown.textContent =
                 remaining > 0
                     ? i18n
