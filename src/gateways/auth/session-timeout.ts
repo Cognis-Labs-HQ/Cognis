@@ -10,3 +10,22 @@ export function parseLoginSessionTimeoutMinutes(value: unknown): number {
         ? Number(value)
         : DEFAULT_LOGIN_SESSION_TIMEOUT_MINUTES;
 }
+
+export function resolveLoginSessionTimeoutPreference(
+    stored: string | null | undefined,
+    maximumMinutes: number,
+): { timeoutMinutes: number; shouldPersist: boolean } {
+    const requestedMinutes = Number(stored);
+    const hasPersonalTimeout =
+        stored !== LOGIN_SESSION_TIMEOUT_USE_GLOBAL &&
+        Number.isInteger(requestedMinutes) &&
+        requestedMinutes >= 0;
+    let timeoutMinutes = maximumMinutes;
+    if (maximumMinutes > 0 && hasPersonalTimeout && requestedMinutes > 0) {
+        timeoutMinutes = Math.min(requestedMinutes, maximumMinutes);
+    }
+    return {
+        timeoutMinutes,
+        shouldPersist: stored !== String(timeoutMinutes),
+    };
+}

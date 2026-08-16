@@ -4,8 +4,13 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
-import { getCountdownParts } from "/static/gateways/auth/countdown.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import {
+    getCountdownParts,
+    getCountdownUrgency,
+} from "/static/gateways/auth/countdown.js";
+import {
+    getDurationUnitLimits,
     joinDurationMinutes,
     splitDurationMinutes,
 } from "/static/reuse/duration-input.js";
@@ -89,6 +94,31 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         }
     }
 
+    function syncLoginSessionTimeoutLimit() {
+        const input = settingsRoot.querySelector(
+            "#settings-login-session-timeout",
+        );
+        const unit = settingsRoot.querySelector(
+            "#settings-login-session-timeout-unit",
+        );
+        if (
+            !(input instanceof HTMLInputElement) ||
+            !(unit instanceof HTMLSelectElement)
+        ) {
+            return;
+        }
+        const limit = getDurationUnitLimits(
+            sessionTimeout?.maximumMinutes,
+        ).find(({ unit: candidate }) => candidate === unit.value);
+        if (!limit) {
+            return;
+        }
+        input.max = String(limit.max);
+        if (Number(input.value) > limit.max) {
+            input.value = String(limit.max);
+        }
+    }
+
     async function resetLoginSessionTimeoutToGlobal() {
         try {
             const latestTimeout = await fetchSessionTimeout();
@@ -139,6 +169,22 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const expiresAt = Date.parse(
             localStorage.getItem("cognis_session_expires_at") ?? "",
         );
+        const loggedInAt = Date.parse(
+            localStorage.getItem("cognis_login_time") ?? "",
+        );
+        const sessionDuration = expiresAt - loggedInAt;
+        function syncCountdownUrgency(countdown, remaining) {
+            const urgency = getCountdownUrgency(remaining, sessionDuration);
+            countdown.classList.remove(
+                "session-expiry-countdown--warning",
+                "session-expiry-countdown--danger",
+            );
+            if (urgency === "danger") {
+                countdown.classList.add("session-expiry-countdown--danger");
+            } else if (urgency === "warning") {
+                countdown.classList.add("session-expiry-countdown--warning");
+            }
+        }
         const updateCountdown = () => {
             const countdown = settingsRoot.querySelector(
                 "#settings-login-session-timeout-countdown",
@@ -149,6 +195,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 return;
             }
             const remaining = expiresAt - Date.now();
+            syncCountdownUrgency(countdown, remaining);
             countdown.textContent =
                 remaining > 0
                     ? i18n
@@ -186,6 +233,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             sessionTimeout?.timeoutMinutes || 1,
         );
         const timeoutDisabled = sessionTimeout?.maximumMinutes === 0;
+        const unitLimits = getDurationUnitLimits(
+            sessionTimeout?.maximumMinutes,
+        );
         const hasSessionExpiry = Number.isFinite(
             Date.parse(localStorage.getItem("cognis_session_expires_at") ?? ""),
         );
@@ -202,9 +252,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             ${
                 timeoutDisabled
                     ? `<option value="never" selected disabled>${escapeHtml(i18n.t("gateway.auth.security.session_timeout_never"))}</option>`
-                    : ["minutes", "hours", "days", "weeks"]
+                    : unitLimits
                           .map(
-                              (unit) =>
+                              ({ unit }) =>
                                   `<option value="${unit}"${duration.unit === unit ? " selected" : ""}>${escapeHtml(i18n.t(`ui.reuse.duration.${unit}`))}</option>`,
                           )
                           .join("")
@@ -245,6 +295,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         panel.innerHTML = renderBody();
         bindPasswordResetButton();
         syncLoginSessionTimeoutInputVisibility();
+        syncLoginSessionTimeoutLimit();
         startSessionExpiryCountdown();
         const timeoutInput = settingsRoot.querySelector(
             "#settings-login-session-timeout",
@@ -256,7 +307,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         timeoutInput?.addEventListener("input", markCustomTimeout);
         settingsRoot
             .querySelector("#settings-login-session-timeout-unit")
-            ?.addEventListener("change", markCustomTimeout);
+            ?.addEventListener("change", () => {
+                syncLoginSessionTimeoutLimit();
+                markCustomTimeout();
+            });
         settingsRoot
             .querySelector("#settings-login-session-timeout-reset")
             ?.addEventListener("click", resetLoginSessionTimeoutToGlobal);
@@ -329,6 +383,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             <div id="auth-security-subsections"></div>`;
         },
         async onRender() {
+            await ensurePageStylesheet(
+                "/static/gateways/auth/security-prefs/index.css",
+            );
             await Promise.all([loadCapability(), loadSessionTimeout()]);
             rerender();
             await renderSubsections();
@@ -372,6 +429,15 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                     },
                 );
                 if (!response.ok) throw new Error("save_failed");
+                const payload = await response.json();
+                if (payload.data?.appliesOnNextLogin === true) {
+                    showToast(
+                        i18n.t(
+                            "gateway.auth.security.session_timeout_next_login",
+                        ),
+                        { variant: "warning" },
+                    );
+                }
             }
             for (const section of subsectionInstances ?? []) {
                 if (section.isDirty?.()) {

@@ -24,3 +24,18 @@ test("duration input converts supported units to minutes", () => {
 test("a zero-minute security timeout represents no expiry", () => {
     assert.equal(normalizeLoginSessionTimeoutMinutes(0), 0);
 });
+
+test("duration limits exclude oversized units and calculate whole maxima", async () => {
+    const { getDurationUnitLimits } =
+        await import("../reuse/duration-input.js");
+
+    assert.deepEqual(getDurationUnitLimits(3 * 1440), [
+        { unit: "minutes", max: 4320 },
+        { unit: "hours", max: 72 },
+        { unit: "days", max: 3 },
+    ]);
+    assert.deepEqual(getDurationUnitLimits(10 * 1440).at(-1), {
+        unit: "weeks",
+        max: 1,
+    });
+});

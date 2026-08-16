@@ -6,6 +6,6 @@
     "main": "index.ts",
     "private": true,
     "dependencies": {
-        "@cognis/gateways": "<=0.1.6"
+        "@cognis/gateways": "<=0.1.7"
     }
 }

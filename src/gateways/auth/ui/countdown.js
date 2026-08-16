@@ -4,6 +4,8 @@
  * Public exports:
  * - `formatCountdownClock` — renders milliseconds as an HH:MM:SS clock.
  * - `getCountdownParts` — splits milliseconds into non-zero week-to-second parts.
+ * - `getCountdownUrgencyThresholds` — balances urgency windows for short and long sessions.
+ * - `getCountdownUrgency` — resolves warning state from the remaining duration.
  *
  * @example
  * formatCountdownClock(3_661_000); // "01:01:01"
@@ -51,4 +53,42 @@ export function getCountdownParts(milliseconds) {
         }
     }
     return parts;
+}
+
+/**
+ * Calculates bounded urgency windows for a session duration.
+ *
+ * @param {number} durationMilliseconds - Full issued-session duration.
+ * @returns {{ warningMilliseconds: number, dangerMilliseconds: number }} Urgency thresholds.
+ */
+export function getCountdownUrgencyThresholds(durationMilliseconds) {
+    const warningMilliseconds = Math.min(
+        Math.max(durationMilliseconds * 0.1, 30_000),
+        86_400_000,
+        durationMilliseconds * 0.5,
+    );
+    const dangerMilliseconds = Math.min(
+        Math.max(durationMilliseconds * 0.02, 10_000),
+        3_600_000,
+        durationMilliseconds * 0.2,
+    );
+    return { warningMilliseconds, dangerMilliseconds };
+}
+
+/**
+ * Resolves the urgency state for a live session countdown.
+ *
+ * @param {number} remainingMilliseconds - Current time remaining.
+ * @param {number} durationMilliseconds - Full issued-session duration.
+ * @returns {"normal"|"warning"|"danger"} Current countdown urgency.
+ */
+export function getCountdownUrgency(
+    remainingMilliseconds,
+    durationMilliseconds,
+) {
+    const { warningMilliseconds, dangerMilliseconds } =
+        getCountdownUrgencyThresholds(durationMilliseconds);
+    if (remainingMilliseconds <= dangerMilliseconds) return "danger";
+    if (remainingMilliseconds <= warningMilliseconds) return "warning";
+    return "normal";
 }

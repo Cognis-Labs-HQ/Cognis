@@ -34,6 +34,7 @@
   <string name="gateway.auth.security.session_timeout_reset">Gunakan Batas Waktu Sesi Login Bawaan</string>
   <string name="gateway.auth.security.session_timeout_never">Tidak pernah</string>
   <string name="gateway.auth.security.session_timeout_reset_failed">Batas waktu sesi login bawaan tidak dapat dimuat.</string>
+  <string name="gateway.auth.security.session_timeout_next_login">Batas waktu sesi yang lebih panjang akan berlaku saat Anda masuk berikutnya.</string>
   <string name="gateway.auth.security.session_expires_in">Sesi saat ini berakhir dalam {countdown}</string>
   <string name="gateway.auth.security.session_expired">Sesi saat ini telah berakhir</string>
   <string name="gateway.auth.security.countdown.weeks.one">{count} minggu</string>
