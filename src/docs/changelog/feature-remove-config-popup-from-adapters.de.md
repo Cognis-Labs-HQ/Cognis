@@ -7,3 +7,7 @@ Adapterzeilen öffnen kein Einstellungsfenster mehr, wenn außer dem Betriebssta
 ## LDAP-Ein-/Ausschalter
 
 Das Einstellungsfenster der LDAP-Authentifizierung enthält jetzt einen Ein-/Ausschalter, sodass Administratoren den Adapter direkt in seiner Konfiguration aktivieren oder deaktivieren können.
+
+## Komponentensteuerungen bleiben synchron
+
+Die Administration bezeichnet aktive Komponenten jetzt einheitlich als Aktiviert, deaktiviert gesperrte Konfigurationsschalter, aktualisiert Komponentenstatus und Navigation nach Zustandsänderungen, zeigt Manifestdetails für Adapter ohne Einstellungen und erlaubt das Deaktivieren von Share-Methoden. Die Authenticator-App verwendet standardmäßig SHA-256. Adapter-Einstellungstitel wiederholen keine Manifestversionen mehr.

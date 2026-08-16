@@ -192,7 +192,7 @@
   <string name="ui.app.license.page_title">Lisensi</string>
   <string name="ui.app.license.page_subtitle">Ketentuan lisensi GNU AGPLv3.</string>
   <string name="ui.app.license.load_error">Teks lisensi tidak dapat dimuat.</string>
-  <string name="ui.app.admin.state.active">Aktif</string>
+  <string name="ui.app.admin.state.active">Diaktifkan</string>
   <string name="ui.app.admin.state.available">Tersedia</string>
   <string name="ui.app.admin.state.disabled">Nonaktif</string>
   <string name="ui.app.admin.publisher">Penerbit</string>
@@ -547,7 +547,6 @@
   <string name="ui.app.admin.notif.test_email_required">Alamat email penerima wajib diisi.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Mengganti variabel lingkungan</string>
   <string name="ui.app.admin.notif.required_field">Nilai Wajib</string>
-  <string name="ui.app.admin.notif.enable_provider">Aktifkan Adaptor</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Izinkan Sertifikat Self-Signed</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Nonaktifkan Autentikasi</string>
   <string name="ui.app.admin.notif.smtp_code_length">Panjang Kode</string>

@@ -68,8 +68,8 @@ test("share gateway discovers Link and User method adapters", async () => {
             publisher,
         })),
         [
-            { locked: true, publisher: "Cognis Labs HQ" },
-            { locked: true, publisher: "Cognis Labs HQ" },
+            { locked: false, publisher: "Cognis Labs HQ" },
+            { locked: false, publisher: "Cognis Labs HQ" },
         ],
     );
 });

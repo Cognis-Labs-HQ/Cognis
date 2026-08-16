@@ -239,7 +239,7 @@ export function createAdapterConfigPopup({
         return `
     <div class="provider-popup-form">
       <div class="provider-popup-toggle-row">
-        <span class="provider-popup-toggle-label">${i18n.t("ui.app.admin.notif.enable_provider")}</span>
+        <span class="provider-popup-toggle-label">${i18n.t("ui.app.admin.state.active")}</span>
         <label class="switch provider-popup-switch">
           <input id="enabled" type="checkbox" name="enabled" class="provider-enable-toggle" disabled />
           <span class="slider"></span>
@@ -320,6 +320,7 @@ export function createAdapterConfigPopup({
                 enableUrl,
                 disableUrl,
                 adapterEnabled,
+                adapterLocked,
                 onSaved,
             } = {},
         ) {
@@ -346,6 +347,7 @@ export function createAdapterConfigPopup({
                     enableUrl,
                     disableUrl,
                     adapterEnabled,
+                    adapterLocked,
                     onSaved,
                     i18n,
                     escapeHtml,
@@ -611,18 +613,16 @@ export function createAdapterConfigPopup({
 
                     function syncToggle() {
                         const areAllRequiredFieldsFilled = requiredAllFilled();
-                        toggle.disabled = !areAllRequiredFieldsFilled;
+                        toggle.disabled =
+                            adapterLocked || !areAllRequiredFieldsFilled;
                         if (!areAllRequiredFieldsFilled) {
                             toggle.checked = false;
                         }
                     }
 
-                    const enabledValue = descriptors["enabled"]?.effectiveValue;
-                    const isEnabledByConfig =
-                        enabledValue !== "false" && enabledValue !== false;
                     if (requiredAllFilled()) {
-                        toggle.disabled = false;
-                        toggle.checked = isEnabledByConfig;
+                        toggle.disabled = Boolean(adapterLocked);
+                        toggle.checked = Boolean(adapterEnabled);
                     }
 
                     updateRequiredHighlights();

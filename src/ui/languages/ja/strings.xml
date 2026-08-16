@@ -547,7 +547,6 @@
   <string name="ui.app.admin.notif.test_email_required">受信者のメールアドレスは必須です。</string>
   <string name="ui.app.admin.notif.field_env_conflict">環境変数を上書きしています</string>
   <string name="ui.app.admin.notif.required_field">必須の値</string>
-  <string name="ui.app.admin.notif.enable_provider">アダプターを有効にする</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">自己署名証明書を許可する</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">認証を無効にする</string>
   <string name="ui.app.admin.notif.smtp_code_length">コード長</string>

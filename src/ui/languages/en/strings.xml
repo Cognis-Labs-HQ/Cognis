@@ -192,7 +192,7 @@
   <string name="ui.app.license.page_title">License</string>
   <string name="ui.app.license.page_subtitle">GNU AGPLv3 license terms.</string>
   <string name="ui.app.license.load_error">License text could not be loaded.</string>
-  <string name="ui.app.admin.state.active">Active</string>
+  <string name="ui.app.admin.state.active">Enabled</string>
   <string name="ui.app.admin.state.available">Available</string>
   <string name="ui.app.admin.state.disabled">Disabled</string>
   <string name="ui.app.admin.publisher">Publisher</string>
@@ -547,7 +547,6 @@
   <string name="ui.app.admin.notif.test_email_required">Recipient email address is required.</string>
   <string name="ui.app.admin.notif.field_env_conflict">Overriding env variable</string>
   <string name="ui.app.admin.notif.required_field">Required Value</string>
-  <string name="ui.app.admin.notif.enable_provider">Enable Adapter</string>
   <string name="ui.app.admin.notif.smtp_allow_self_signed">Allow Self-Signed Certificate</string>
   <string name="ui.app.admin.notif.smtp_auth_disabled">Disable Authentication</string>
   <string name="ui.app.admin.notif.smtp_code_length">Code Length</string>

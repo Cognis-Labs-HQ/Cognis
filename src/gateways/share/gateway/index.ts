@@ -58,6 +58,7 @@ export interface ShareVariant {
 
 export class CoreShareGateway {
     private readonly adapters = new Map<string, ShareMethodAdapter>();
+    private readonly disabledAdapters = new Set<string>();
     constructor(
         private readonly store: ShareTokenStore,
         private readonly guestProfileStore: GuestProfileStore,
@@ -127,6 +128,20 @@ export class CoreShareGateway {
         return this.adapters.get(adapterId) ?? null;
     }
 
+    isAdapterEnabled(adapterId: string): boolean {
+        return (
+            this.adapters.has(adapterId) &&
+            !this.disabledAdapters.has(adapterId)
+        );
+    }
+
+    setAdapterEnabled(adapterId: string, enabled: boolean): boolean {
+        if (!this.adapters.has(adapterId)) return false;
+        if (enabled) this.disabledAdapters.delete(adapterId);
+        else this.disabledAdapters.add(adapterId);
+        return true;
+    }
+
     resolveRecordAdapter(record: {
         metadata?: Record<string, string> | null;
     }): ShareMethodAdapter | null {
@@ -141,7 +156,9 @@ export class CoreShareGateway {
         },
     ): { accessControls: Record<string, unknown> } {
         const adapter = this.adapters.get(adapterId);
-        if (!adapter) throw new Error("share_method_not_found");
+        if (!adapter || !this.isAdapterEnabled(adapterId)) {
+            throw new Error("share_method_not_found");
+        }
         return adapter.prepare(input);
     }
 

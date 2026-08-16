@@ -97,6 +97,7 @@ function setAllAdapters(nextAdapters) {
         ]),
     );
 }
+
 async function reloadModules() {
     setModules(await loadModules());
 }
@@ -107,7 +108,7 @@ async function reloadAdapters() {
     setAllAdapters(await loadAllAdapters(gateways));
 }
 async function reloadGatewaysAndAdapters() {
-    await reloadGateways();
+    await Promise.all([reloadGateways(), reloadHealthStatus()]);
     await reloadAdapters();
 }
 
@@ -160,11 +161,7 @@ function resolveAdapterControlUrl(
     return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
 }
 
-/**
- * Synchronizes module, gateway, and adapter toggle controls after UI refresh so checkbox state reflects the latest loaded runtime status. This
- * function queries the current DOM toggle nodes and should run after
- * page-composer rerender/refresh operations.
- */
+/** Synchronizes runtime toggle controls after page-composer refreshes. */
 function syncRuntimeToggleControls() {
     root.querySelectorAll('input[type="checkbox"][data-module]').forEach(
         (toggle) => {
@@ -575,7 +572,7 @@ function bindAdapterToggles() {
                 }
             }
 
-            await reloadAdapters();
+            await reloadGatewaysAndAdapters();
             window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
             window.dispatchEvent(new Event("cognis:navbar-refresh"));
             composer.refresh(elements);
@@ -701,7 +698,6 @@ function bindDependencyLinks() {
 async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = null) {
     const configUrl = resolveAdapterControlUrl(gatewayId, adapterId, "config", adapterOverride);
     const testUrl = resolveAdapterControlUrl(gatewayId, adapterId, "test", adapterOverride);
-    const version = String(adapterOverride?.version ?? "").trim();
     const adapterI18n = await extendI18n(i18n, adapterOverride?.stringsBaseUrl);
     const adapterConfigPopup = createAdapterConfigPopup({
         i18n: adapterI18n,
@@ -710,12 +706,13 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
         openPopup,
         showToast,
     });
-    await adapterConfigPopup.openAdapterConfig(version ? `${name} v${version}` : name, {
+    await adapterConfigPopup.openAdapterConfig(name, {
         configUrl,
         testUrl,
         enableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "enable", adapterOverride),
         disableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "disable", adapterOverride),
         adapterEnabled: Boolean(adapterOverride?.active ?? adapterOverride?.enabled),
+        adapterLocked: Boolean(adapterOverride?.locked),
         onSaved: async () => {
             await reloadAdapters();
             composer.refresh(elements);
