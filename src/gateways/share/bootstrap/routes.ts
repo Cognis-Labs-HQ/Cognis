@@ -126,7 +126,7 @@ export function createShareRoutes(input: {
             sendJson(res, 200, {
                 data: input.gateway.listAdapters().map((adapter) => ({
                     ...adapter,
-                    active: true,
+                    active: input.gateway.isAdapterEnabled(adapter.id),
                     controls: buildGatewayAdapterAdminControls(
                         adapterAdminBase,
                         adapter.id,
@@ -179,6 +179,10 @@ export function createShareRoutes(input: {
                 );
                 return true;
             }
+            const enabled = adapterToggleMatch[2] === "enable";
+            await input.gateway.setAdapterEnabled(adapterId, enabled);
+            sendJson(res, 200, { data: { enabled } });
+            return true;
         }
 
         if (
@@ -187,6 +191,7 @@ export function createShareRoutes(input: {
         ) {
             const deliveryPage = input.gateway
                 .listAdapters()
+                .filter((adapter) => input.gateway.isAdapterEnabled(adapter.id))
                 .map((adapter) => adapter.deliveryPage)
                 .find(
                     (candidate) =>
@@ -225,13 +230,18 @@ export function createShareRoutes(input: {
             const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             sendJson(res, 200, {
-                data: input.gateway.listAdapters().map((adapter) => ({
-                    id: adapter.id,
-                    nameKey: adapter.nameKey,
-                    descriptionKey: adapter.descriptionKey,
-                    pageModuleUrl: adapter.pageModuleUrl,
-                    order: adapter.order,
-                })),
+                data: input.gateway
+                    .listAdapters()
+                    .filter((adapter) =>
+                        input.gateway.isAdapterEnabled(adapter.id),
+                    )
+                    .map((adapter) => ({
+                        id: adapter.id,
+                        nameKey: adapter.nameKey,
+                        descriptionKey: adapter.descriptionKey,
+                        pageModuleUrl: adapter.pageModuleUrl,
+                        order: adapter.order,
+                    })),
             });
             return true;
         }

@@ -359,8 +359,8 @@ test("share bootstrap registers gateway routes and serves share html", async () 
             }),
         ),
         [
-            { id: "link", locked: true },
-            { id: "user", locked: true },
+            { id: "link", locked: false },
+            { id: "user", locked: false },
         ],
     );
     assert.equal(

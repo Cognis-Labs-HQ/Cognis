@@ -68,13 +68,6 @@ let elements = [];
 function adapterCompositeKey(gatewayId, adapterId) {
     return `${gatewayId}:${adapterId}`;
 }
-function adapterHasConfig(adapter) {
-    return Boolean(
-        (typeof adapter?.controls?.config === "string" &&
-            adapter.controls.config.length > 0) ||
-        (Array.isArray(adapter?.schema) && adapter.schema.length > 0),
-    );
-}
 function setModules(nextModules) {
     modules = nextModules;
     moduleById = new Map(
@@ -97,6 +90,7 @@ function setAllAdapters(nextAdapters) {
         ]),
     );
 }
+
 async function reloadModules() {
     setModules(await loadModules());
 }
@@ -107,7 +101,7 @@ async function reloadAdapters() {
     setAllAdapters(await loadAllAdapters(gateways));
 }
 async function reloadGatewaysAndAdapters() {
-    await reloadGateways();
+    await Promise.all([reloadGateways(), reloadHealthStatus()]);
     await reloadAdapters();
 }
 
@@ -160,11 +154,7 @@ function resolveAdapterControlUrl(
     return `/api/v1/gateways/${encodedGatewayId}/adapters/${encodedAdapterId}/${controlName}`;
 }
 
-/**
- * Synchronizes module, gateway, and adapter toggle controls after UI refresh so checkbox state reflects the latest loaded runtime status. This
- * function queries the current DOM toggle nodes and should run after
- * page-composer rerender/refresh operations.
- */
+/** Synchronizes runtime toggle controls after page-composer refreshes. */
 function syncRuntimeToggleControls() {
     root.querySelectorAll('input[type="checkbox"][data-module]').forEach(
         (toggle) => {
@@ -575,7 +565,7 @@ function bindAdapterToggles() {
                 }
             }
 
-            await reloadAdapters();
+            await reloadGatewaysAndAdapters();
             window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
             window.dispatchEvent(new Event("cognis:navbar-refresh"));
             composer.refresh(elements);
@@ -596,8 +586,6 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        if (!adapterHasConfig(adapter)) return;
-
         async function handleOpen(e) {
             if (e.target.closest?.("[data-details-toggle]")) return;
             const switchLabel = row.querySelector(".switch--inline");
@@ -609,12 +597,15 @@ function bindAdapterRows() {
             }
             e.preventDefault();
             e.stopPropagation();
-            await openAdapterConfig(
+            const openedSettings = await openAdapterConfig(
                 gatewayId,
                 adapterId,
                 adapter.name ?? adapterId,
                 adapter,
             );
+            if (!openedSettings) {
+                row.open = !row.open;
+            }
         }
 
         row.addEventListener("click", handleOpen);
@@ -701,7 +692,6 @@ function bindDependencyLinks() {
 async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = null) {
     const configUrl = resolveAdapterControlUrl(gatewayId, adapterId, "config", adapterOverride);
     const testUrl = resolveAdapterControlUrl(gatewayId, adapterId, "test", adapterOverride);
-    const version = String(adapterOverride?.version ?? "").trim();
     const adapterI18n = await extendI18n(i18n, adapterOverride?.stringsBaseUrl);
     const adapterConfigPopup = createAdapterConfigPopup({
         i18n: adapterI18n,
@@ -710,9 +700,13 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
         openPopup,
         showToast,
     });
-    await adapterConfigPopup.openAdapterConfig(version ? `${name} v${version}` : name, {
+    return adapterConfigPopup.openAdapterConfig(name, {
         configUrl,
         testUrl,
+        enableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "enable", adapterOverride),
+        disableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "disable", adapterOverride),
+        adapterEnabled: Boolean(adapterOverride?.active ?? adapterOverride?.enabled),
+        adapterLocked: Boolean(adapterOverride?.locked),
         onSaved: async () => {
             await reloadAdapters();
             composer.refresh(elements);

@@ -3,6 +3,24 @@ import {
     resolveFieldErrorId,
 } from "../../reuse/popup.js";
 
+export function adapterConfigHasFields(payload) {
+    const dataFields = Object.keys(payload.data ?? {});
+    const environmentFields = Object.keys(payload.envValues ?? {});
+    const requiredFields = Array.isArray(payload.requiredFields)
+        ? payload.requiredFields
+        : [];
+    const schemaFields = Array.isArray(payload.schema)
+        ? payload.schema.map((field) => field.key)
+        : [];
+
+    return [
+        ...dataFields,
+        ...environmentFields,
+        ...requiredFields,
+        ...schemaFields,
+    ].some((fieldName) => fieldName !== "enabled");
+}
+
 export function createAdapterConfigPopup({
     i18n,
     escapeHtml,
@@ -221,7 +239,7 @@ export function createAdapterConfigPopup({
         return `
     <div class="provider-popup-form">
       <div class="provider-popup-toggle-row">
-        <span class="provider-popup-toggle-label">${i18n.t("ui.app.admin.notif.enable_provider")}</span>
+        <span class="provider-popup-toggle-label">${i18n.t("ui.app.admin.state.active")}</span>
         <label class="switch provider-popup-switch">
           <input id="enabled" type="checkbox" name="enabled" class="provider-enable-toggle" disabled />
           <span class="slider"></span>
@@ -294,10 +312,21 @@ export function createAdapterConfigPopup({
     }
 
     return {
-        async openAdapterConfig(name, { configUrl, testUrl, onSaved } = {}) {
-            if (!configUrl) return;
+        async openAdapterConfig(
+            name,
+            {
+                configUrl,
+                testUrl,
+                enableUrl,
+                disableUrl,
+                adapterEnabled,
+                adapterLocked,
+                onSaved,
+            } = {},
+        ) {
+            if (!configUrl) return false;
             const response = await apiFetch(configUrl);
-            if (!response.ok) return;
+            if (!response.ok) return false;
             const payload = await response.json();
             const configPopupScriptUrl = String(
                 payload.configPopupScriptUrl ?? "",
@@ -310,11 +339,15 @@ export function createAdapterConfigPopup({
                     showToast(i18n.t("ui.reuse.load_failed"), {
                         variant: "error",
                     });
-                    return;
+                    return false;
                 }
                 await extension.openAdapterConfig({
                     configUrl,
                     configPayload: payload,
+                    enableUrl,
+                    disableUrl,
+                    adapterEnabled,
+                    adapterLocked,
                     onSaved,
                     i18n,
                     escapeHtml,
@@ -324,8 +357,9 @@ export function createAdapterConfigPopup({
                     buildConfigPayload,
                     fieldNameToLabel,
                 });
-                return;
+                return true;
             }
+            if (!adapterConfigHasFields(payload)) return false;
             const dbData = payload.data ?? {};
             const envData = payload.envValues ?? {};
             const requiredFields = Array.isArray(payload.requiredFields)
@@ -579,18 +613,16 @@ export function createAdapterConfigPopup({
 
                     function syncToggle() {
                         const areAllRequiredFieldsFilled = requiredAllFilled();
-                        toggle.disabled = !areAllRequiredFieldsFilled;
+                        toggle.disabled =
+                            adapterLocked || !areAllRequiredFieldsFilled;
                         if (!areAllRequiredFieldsFilled) {
                             toggle.checked = false;
                         }
                     }
 
-                    const enabledValue = descriptors["enabled"]?.effectiveValue;
-                    const isEnabledByConfig =
-                        enabledValue !== "false" && enabledValue !== false;
                     if (requiredAllFilled()) {
-                        toggle.disabled = false;
-                        toggle.checked = isEnabledByConfig;
+                        toggle.disabled = Boolean(adapterLocked);
+                        toggle.checked = Boolean(adapterEnabled);
                     }
 
                     updateRequiredHighlights();
@@ -669,6 +701,7 @@ export function createAdapterConfigPopup({
                     }
                 },
             });
+            return true;
         },
     };
 }
