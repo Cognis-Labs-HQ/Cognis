@@ -160,12 +160,14 @@ export function createSecurityRoutes({
                 .catch(() => null);
             const { timeoutMinutes, shouldPersist } =
                 resolveLoginSessionTimeoutPreference(stored, maximumMinutes);
-            if (shouldPersist && preferenceStore) {
-                await preferenceStore.set(
-                    claims.sub,
-                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
-                    String(timeoutMinutes),
-                );
+            if (shouldPersist && typeof preferenceStore?.set === "function") {
+                await preferenceStore
+                    .set(
+                        claims.sub,
+                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                        String(timeoutMinutes),
+                    )
+                    .catch(() => undefined);
             }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(

@@ -7,3 +7,7 @@ Preferensi batas waktu sesi pengguna diutamakan saat lebih singkat daripada bata
 ## Menerapkan batas waktu lebih panjang dengan aman
 
 Memperpanjang batas waktu pribadi mempertahankan sesi saat ini dan menampilkan pemberitahuan bahwa perubahan berlaku saat masuk berikutnya. Warna hitung mundur diperbarui secara langsung dengan rentang urgensi yang menyesuaikan durasi: sesi singkat tetap memberi peringatan yang berguna, sedangkan sesi empat minggu atau lebih baru menjadi oranye pada hari terakhir dan merah pada jam terakhir.
+
+## Menjaga penonaktifan kedaluwarsa dan proses masuk tetap andal
+
+Pengaturan global Tidak Pernah kini mengesampingkan batas waktu pribadi yang ada. Kegagalan sementara saat menormalkan preferensi tersimpan juga tidak lagi mencegah pengguna masuk.

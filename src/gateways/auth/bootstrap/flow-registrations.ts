@@ -282,12 +282,14 @@ export async function registerAuthBootstrapHook(
                     storedTimeout,
                     securitySettings.loginSessionTimeoutMinutes,
                 );
-            if (shouldPersist && preferenceStore) {
-                await preferenceStore.set(
-                    session.accountId,
-                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
-                    String(timeoutMinutes),
-                );
+            if (shouldPersist && typeof preferenceStore?.set === "function") {
+                await preferenceStore
+                    .set(
+                        session.accountId,
+                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                        String(timeoutMinutes),
+                    )
+                    .catch(() => undefined);
             }
             const ttlSeconds =
                 timeoutMinutes === 0 ? null : timeoutMinutes * 60;

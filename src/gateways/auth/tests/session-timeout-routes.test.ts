@@ -27,8 +27,8 @@ test("session timeout resolution preserves personal sovereignty", () => {
         shouldPersist: true,
     });
     assert.deepEqual(resolveLoginSessionTimeoutPreference("120", 0), {
-        timeoutMinutes: 120,
-        shouldPersist: false,
+        timeoutMinutes: 0,
+        shouldPersist: true,
     });
     assert.deepEqual(resolveLoginSessionTimeoutPreference("0", 240), {
         timeoutMinutes: 240,

@@ -21,9 +21,7 @@ export function resolveLoginSessionTimeoutPreference(
         Number.isInteger(requestedMinutes) &&
         requestedMinutes >= 0;
     let timeoutMinutes = maximumMinutes;
-    if (hasPersonalTimeout && maximumMinutes === 0) {
-        timeoutMinutes = requestedMinutes;
-    } else if (hasPersonalTimeout && requestedMinutes > 0) {
+    if (maximumMinutes > 0 && hasPersonalTimeout && requestedMinutes > 0) {
         timeoutMinutes = Math.min(requestedMinutes, maximumMinutes);
     }
     return {
