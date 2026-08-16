@@ -13,7 +13,7 @@ import {
 import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
 import {
     LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
-    LOGIN_SESSION_TIMEOUT_USE_GLOBAL,
+    resolveLoginSessionTimeoutPreference,
 } from "../../session-timeout.js";
 
 export interface SecuritySubsection {
@@ -132,22 +132,23 @@ export function createSecurityRoutes({
             const stored = await preferenceStore
                 ?.get(claims.sub, LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY)
                 .catch(() => null);
-            const usesDefault =
-                stored === null ||
-                stored === undefined ||
-                stored === LOGIN_SESSION_TIMEOUT_USE_GLOBAL;
-            const requestedMinutes = Number(stored);
-            const timeoutMinutes =
-                maximumMinutes === 0
-                    ? 0
-                    : Number.isInteger(requestedMinutes) &&
-                        requestedMinutes >= 1
-                      ? Math.min(requestedMinutes, maximumMinutes)
-                      : maximumMinutes;
+            const { timeoutMinutes, shouldPersist } =
+                resolveLoginSessionTimeoutPreference(stored, maximumMinutes);
+            if (shouldPersist && preferenceStore) {
+                await preferenceStore.set(
+                    claims.sub,
+                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                    String(timeoutMinutes),
+                );
+            }
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
-                    data: { timeoutMinutes, maximumMinutes, usesDefault },
+                    data: {
+                        timeoutMinutes,
+                        maximumMinutes,
+                        usesDefault: false,
+                    },
                 }),
             );
             return true;
@@ -180,7 +181,7 @@ export function createSecurityRoutes({
                 await preferenceStore.set(
                     claims.sub,
                     LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
-                    LOGIN_SESSION_TIMEOUT_USE_GLOBAL,
+                    String(maximumMinutes),
                 );
                 const revokedSessionCount = revokeUserSessions(claims.sub);
                 log?.("info", "Reset login session timeout preference.", {

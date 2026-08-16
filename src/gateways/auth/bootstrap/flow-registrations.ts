@@ -7,7 +7,10 @@ import {
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
 import { issueAccessToken, type AccessRole } from "../access-tokens.js";
-import { LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY } from "../session-timeout.js";
+import {
+    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+    resolveLoginSessionTimeoutPreference,
+} from "../session-timeout.js";
 import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
@@ -271,24 +274,23 @@ export async function registerAuthBootstrapHook(
                 capabilities.get<
                     import("../../../api/reuse/preference-store.js").UserPreferenceStore
                 >("preferences:store");
-            const requestedMinutes = Number(
-                await preferenceStore
-                    ?.get(
-                        session.accountId,
-                        LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
-                    )
-                    .catch(() => null),
-            );
+            const storedTimeout = await preferenceStore
+                ?.get(session.accountId, LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY)
+                .catch(() => null);
+            const { timeoutMinutes, shouldPersist } =
+                resolveLoginSessionTimeoutPreference(
+                    storedTimeout,
+                    securitySettings.loginSessionTimeoutMinutes,
+                );
+            if (shouldPersist && preferenceStore) {
+                await preferenceStore.set(
+                    session.accountId,
+                    LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
+                    String(timeoutMinutes),
+                );
+            }
             const ttlSeconds =
-                securitySettings.loginSessionTimeoutMinutes === 0
-                    ? null
-                    : Number.isInteger(requestedMinutes) &&
-                        requestedMinutes >= 1
-                      ? Math.min(
-                            requestedMinutes * 60,
-                            securitySettings.loginSessionTimeoutMinutes * 60,
-                        )
-                      : securitySettings.loginSessionTimeoutMinutes * 60;
+                timeoutMinutes === 0 ? null : timeoutMinutes * 60;
             const listedEmails =
                 "emails" in session && Array.isArray(session.emails)
                     ? session.emails.map(String)
