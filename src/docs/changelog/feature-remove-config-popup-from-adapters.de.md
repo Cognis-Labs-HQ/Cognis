@@ -2,7 +2,7 @@
 
 ## Leere Einstellungsfenster entfernt
 
-Adapterzeilen öffnen kein Einstellungsfenster mehr, wenn außer dem Betriebsstatus keine Felder konfiguriert werden können. Diese Adapter lassen sich weiterhin über den vorhandenen Ein-/Ausschalter in der Zeile aktivieren oder deaktivieren.
+Adapterzeilen öffnen kein Einstellungsfenster mehr, wenn außer dem Betriebsstatus keine Felder konfiguriert werden können. Ein Klick auf diese Zeilen klappt ihre Manifestdetails auf; der vorhandene Ein-/Ausschalter aktiviert oder deaktiviert den Adapter.
 
 ## LDAP-Ein-/Ausschalter
 

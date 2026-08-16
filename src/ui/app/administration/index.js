@@ -593,8 +593,6 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        if (!adapterHasConfig(adapter)) return;
-
         async function handleOpen(e) {
             if (e.target.closest?.("[data-details-toggle]")) return;
             const switchLabel = row.querySelector(".switch--inline");
@@ -606,6 +604,10 @@ function bindAdapterRows() {
             }
             e.preventDefault();
             e.stopPropagation();
+            if (!adapterHasConfig(adapter)) {
+                row.open = !row.open;
+                return;
+            }
             await openAdapterConfig(
                 gatewayId,
                 adapterId,

@@ -162,7 +162,7 @@ test("component detail arrows use an independent details hitbox", () => {
     assert.match(source, /adapter:\$\{adapterGatewayId\}:\$\{adapterId\}/);
 });
 
-test("configured adapter rows use the component click behavior even when locked", () => {
+test("adapter rows open configuration or expand manifest details", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/administration/index.js"),
         "utf8",
@@ -171,7 +171,10 @@ test("configured adapter rows use the component click behavior even when locked"
         source,
         /Array\.isArray\(adapter\?\.schema\) && adapter\.schema\.length > 0/,
     );
-    assert.match(source, /if \(!adapterHasConfig\(adapter\)\) return/);
+    assert.match(
+        source,
+        /if \(!adapterHasConfig\(adapter\)\) \{\s*row\.open = !row\.open;\s*return;/,
+    );
     assert.doesNotMatch(
         source,
         /adapter\.locked \|\| !adapterHasConfig\(adapter\)/,
