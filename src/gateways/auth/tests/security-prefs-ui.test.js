@@ -9,6 +9,10 @@ const SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/security-prefs/index.js"),
     "utf8",
 );
+const STYLES = readFileSync(
+    resolve(ROOT, "src/gateways/auth/ui/security-prefs/index.css"),
+    "utf8",
+);
 const PASSWORD_CHANGE_SOURCE = readFileSync(
     resolve(ROOT, "src/gateways/auth/ui/security-prefs/password-change.js"),
     "utf8",
@@ -91,6 +95,17 @@ test("auth security preferences show the current session countdown", () => {
     assert.match(SOURCE, /getCountdownParts\(remaining\)/);
     assert.match(SOURCE, /settings-login-session-timeout-countdown/);
     assert.match(SOURCE, /!timeoutDisabled && hasSessionExpiry/);
+    assert.match(SOURCE, /cognis_login_time/);
+    assert.match(SOURCE, /remainingFraction < 0\.1/);
+    assert.match(SOURCE, /remainingFraction <= 0\.02/);
+    assert.match(STYLES, /session-expiry-countdown--warning/);
+    assert.match(STYLES, /session-expiry-countdown--danger/);
+});
+
+test("longer session preferences defer until the next login", () => {
+    assert.match(SOURCE, /payload\.data\?\.appliesOnNextLogin === true/);
+    assert.match(SOURCE, /session_timeout_next_login/);
+    assert.match(SOURCE, /variant: "warning"/);
 });
 
 test("keyring settings unlock once before allowing secret changes", () => {

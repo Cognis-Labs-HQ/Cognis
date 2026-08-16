@@ -34,6 +34,7 @@
   <string name="gateway.auth.security.session_timeout_reset">デフォルトのログインセッション期限を使用</string>
   <string name="gateway.auth.security.session_timeout_never">なし</string>
   <string name="gateway.auth.security.session_timeout_reset_failed">デフォルトのログインセッション期限を読み込めませんでした。</string>
+  <string name="gateway.auth.security.session_timeout_next_login">延長したセッションタイムアウトは、次回のログイン時から適用されます。</string>
   <string name="gateway.auth.security.session_expires_in">現在のセッションは {countdown} 後に期限切れになります</string>
   <string name="gateway.auth.security.session_expired">現在のセッションは期限切れです</string>
   <string name="gateway.auth.security.countdown.weeks.one">{count}週間</string>

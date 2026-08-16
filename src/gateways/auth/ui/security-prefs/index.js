@@ -4,6 +4,7 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { loadDynamicContributions } from "/static/reuse/dynamic-contribution-loader.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { getCountdownParts } from "/static/gateways/auth/countdown.js";
 import {
     getDurationUnitLimits,
@@ -165,6 +166,10 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         const expiresAt = Date.parse(
             localStorage.getItem("cognis_session_expires_at") ?? "",
         );
+        const loggedInAt = Date.parse(
+            localStorage.getItem("cognis_login_time") ?? "",
+        );
+        const sessionDuration = expiresAt - loggedInAt;
         const updateCountdown = () => {
             const countdown = settingsRoot.querySelector(
                 "#settings-login-session-timeout-countdown",
@@ -175,6 +180,15 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                 return;
             }
             const remaining = expiresAt - Date.now();
+            const remainingFraction = remaining / sessionDuration;
+            countdown.classList.toggle(
+                "session-expiry-countdown--warning",
+                remainingFraction < 0.1 && remainingFraction > 0.02,
+            );
+            countdown.classList.toggle(
+                "session-expiry-countdown--danger",
+                remainingFraction <= 0.02,
+            );
             countdown.textContent =
                 remaining > 0
                     ? i18n
@@ -362,6 +376,9 @@ export function createSettingsSection({ i18n, root, markDirty }) {
             <div id="auth-security-subsections"></div>`;
         },
         async onRender() {
+            await ensurePageStylesheet(
+                "/static/gateways/auth/security-prefs/index.css",
+            );
             await Promise.all([loadCapability(), loadSessionTimeout()]);
             rerender();
             await renderSubsections();
@@ -405,6 +422,15 @@ export function createSettingsSection({ i18n, root, markDirty }) {
                     },
                 );
                 if (!response.ok) throw new Error("save_failed");
+                const payload = await response.json();
+                if (payload.data?.appliesOnNextLogin === true) {
+                    showToast(
+                        i18n.t(
+                            "gateway.auth.security.session_timeout_next_login",
+                        ),
+                        { variant: "warning" },
+                    );
+                }
             }
             for (const section of subsectionInstances ?? []) {
                 if (section.isDirty?.()) {

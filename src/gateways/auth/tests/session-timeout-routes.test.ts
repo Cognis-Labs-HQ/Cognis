@@ -106,6 +106,28 @@ test("a user timeout preference survives compatible administration updates", asy
     );
     assert.equal(updateResponse.status, 200);
     assert.equal(storedTimeout, "90");
+    assert.equal(
+        JSON.parse(updateResponse.payload).data.appliesOnNextLogin,
+        true,
+    );
+    assert.notEqual(verifyAccessToken(token), null);
+
+    const shorterResponse = makeResponse();
+    await route(
+        makeJsonRequest(
+            "PUT",
+            { timeoutMinutes: 30 },
+            { authorization: `Bearer ${token}` },
+        ),
+        shorterResponse as unknown as import("node:http").ServerResponse,
+        new URL("/api/v1/auth/login-session-timeout", "http://localhost"),
+        { component: "auth", method: "PUT", path: "session-timeout" },
+    );
+    assert.equal(shorterResponse.status, 200);
+    assert.equal(
+        JSON.parse(shorterResponse.payload).data.appliesOnNextLogin,
+        false,
+    );
     assert.equal(verifyAccessToken(token), null);
 });
 
@@ -149,14 +171,17 @@ test("resetting adopts the current administration timeout without following incr
 
     assert.equal(resetResponse.status, 200);
     assert.equal(storedTimeout, "720");
-    assert.equal(verifyAccessToken(token), null);
+    assert.equal(
+        JSON.parse(resetResponse.payload).data.appliesOnNextLogin,
+        true,
+    );
+    assert.notEqual(verifyAccessToken(token), null);
     maximumMinutes = 1440;
-    const refreshedToken = issueAccessToken("alice", "user", 60);
     const getResponse = makeResponse();
     await route(
         {
             method: "GET",
-            headers: { authorization: `Bearer ${refreshedToken}` },
+            headers: { authorization: `Bearer ${token}` },
         } as import("node:http").IncomingMessage,
         getResponse as unknown as import("node:http").ServerResponse,
         new URL("/api/v1/auth/login-session-timeout", "http://localhost"),

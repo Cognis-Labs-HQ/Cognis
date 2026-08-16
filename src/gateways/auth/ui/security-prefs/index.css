@@ -1,0 +1,7 @@
+.session-expiry-countdown--warning {
+    color: var(--color-warning-outline-text, #f59e0b);
+}
+
+.session-expiry-countdown--danger {
+    color: var(--color-danger-outline-text, #ef4444);
+}
