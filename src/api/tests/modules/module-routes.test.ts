@@ -222,3 +222,40 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
     assert.equal(uninstallCount, 1);
     assert.equal(uninstalledModuleId, "external");
 });
+
+test("module catalog discovery accepts caller-selected sources", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let selectedSources: string[] | undefined;
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        undefined,
+        undefined,
+        {
+            discover: async (_tokens, sourceUuids) => {
+                selectedSources = sourceUuids;
+                return [];
+            },
+        } as any,
+    );
+    let status = 0;
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({ sourceUuids: ["source-one"] }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/modules/catalog"),
+    );
+    assert.equal(status, 200);
+    assert.deepEqual(selectedSources, ["source-one"]);
+});

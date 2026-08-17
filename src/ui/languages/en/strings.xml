@@ -62,6 +62,8 @@
   <string name="ui.reuse.discard">Discard</string>
   <string name="ui.reuse.done">Done</string>
   <string name="ui.reuse.add">Add</string>
+  <string name="ui.reuse.edit">Edit</string>
+  <string name="ui.reuse.back">Back</string>
   <string name="ui.reuse.remove">Remove</string>
   <string name="ui.reuse.dismiss">Dismiss</string>
   <string name="ui.reuse.copy">Copy</string>
@@ -688,6 +690,12 @@
   <string name="ui.app.modules.available">Available</string>
   <string name="ui.app.modules.categories">Categories</string>
   <string name="ui.app.modules.sources">Module Sources</string>
+  <string name="ui.app.modules.sources_description">Configured sources are queried independently. The default trusted organization is managed by Cognis and cannot be edited.</string>
+  <string name="ui.app.modules.default_source">Default</string>
+  <string name="ui.app.modules.add_source">Add Source</string>
+  <string name="ui.app.modules.source_details">Source Details</string>
+  <string name="ui.app.modules.remove_source">Remove Source</string>
+  <string name="ui.app.modules.remove_source_confirm">Remove this module source?</string>
   <string name="ui.app.modules.trusted">Trusted</string>
   <string name="ui.app.modules.empty">No modules match this view.</string>
   <string name="ui.app.modules.provider">Provider</string>

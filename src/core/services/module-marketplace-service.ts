@@ -121,9 +121,14 @@ export class ModuleMarketplaceService {
 
     async discover(
         tokens: Record<string, string> = {},
+        sourceUuids?: string[],
     ): Promise<MarketplaceModule[]> {
+        const sources = await this.listSources();
+        const selectedSources = sourceUuids
+            ? sources.filter((source) => sourceUuids.includes(source.uuid))
+            : sources;
         const results = await Promise.allSettled(
-            (await this.listSources()).map((source) =>
+            selectedSources.map((source) =>
                 this.discoverSource(
                     source,
                     source.credentialId

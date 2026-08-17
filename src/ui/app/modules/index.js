@@ -24,6 +24,7 @@ let sources = [];
 let category = "all";
 let view = "recommended";
 let selectedModule = null;
+let discoverySequence = 0;
 const MODULE_ICON_FALLBACK_URL = "/assets/reuse/module-icon-unknown.svg";
 
 function renderCard(module) {
@@ -137,47 +138,114 @@ function renderStore() {
     </div>`;
 }
 
-async function openSourceSettings() {
+function renderSourceManager() {
     const rows = sources
         .map((source) => {
-            const trustLabel = source.trusted
-                ? ` · ${escapeHtml(i18n.t("ui.app.modules.trusted"))}`
-                : "";
-            const removeButton = source.trusted
-                ? ""
-                : ` <button class="btn-cancel" type="button" data-remove-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.remove"))}</button>`;
-            return `<li><span>${escapeHtml(source.name)}${trustLabel}</span>${removeButton}</li>`;
+            const controls = source.trusted
+                ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.default_source"))}</span>`
+                : `<span class="module-source-actions"><button class="btn-neutral" type="button" data-edit-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button><button class="btn-cancel" type="button" data-remove-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.remove"))}</button></span>`;
+            return `<li><span class="module-source-summary"><strong>${escapeHtml(source.name)}</strong><small>${escapeHtml(source.homepage ?? `${source.baseUrl}/${source.namespace}`)}</small></span>${controls}</li>`;
         })
         .join("");
+    return `<div class="module-source-manager"><p>${escapeHtml(i18n.t("ui.app.modules.sources_description"))}</p><ul class="module-source-list">${rows}</ul><button type="button" class="btn-confirm module-source-add" data-add-source>${escapeHtml(i18n.t("ui.app.modules.add_source"))}</button></div>`;
+}
+
+function renderSourceForm(source) {
+    return `<form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" value="${escapeHtml(source?.name ?? "")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"><option value="github"${source?.provider === "github" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab"${source?.provider === "gitlab" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" value="${escapeHtml(source?.namespace ?? "")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="${escapeHtml(source?.baseUrl ?? "https://api.github.com")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off"></label></form>`;
+}
+
+async function openSourceSettings() {
+    sources = await loadModuleSources();
+    let selectedSource = null;
     await openPopup({
         title: i18n.t("ui.app.modules.sources"),
-        body: `<div class="module-source-manager"><ul class="module-source-list">${rows}</ul><form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"><option value="github">${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab">${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="https://api.github.com" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off"></label></form></div>`,
-        actions: [
-            { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
+        maxWidth: "760px",
+        pages: [
             {
-                id: "cancel",
-                label: i18n.t("ui.reuse.cancel"),
-                variant: "cancel",
+                id: "sources",
+                title: i18n.t("ui.app.modules.sources"),
+                body: renderSourceManager,
+                actions: [
+                    {
+                        id: "done",
+                        label: i18n.t("ui.reuse.done"),
+                        variant: "neutral",
+                    },
+                ],
+            },
+            {
+                id: "editor",
+                title: i18n.t("ui.app.modules.source_details"),
+                body: () => renderSourceForm(selectedSource),
+                actions: [
+                    {
+                        id: "back",
+                        label: i18n.t("ui.reuse.back"),
+                        variant: "neutral",
+                    },
+                    {
+                        id: "save",
+                        label: i18n.t("ui.reuse.save"),
+                        variant: "confirm",
+                    },
+                ],
             },
         ],
-        onMount(overlay) {
+        onOpen: (overlay, _close, api) => {
+            if (api.pageId !== "sources") return;
+            overlay
+                .querySelector("[data-add-source]")
+                ?.addEventListener("click", () => {
+                    selectedSource = null;
+                    api.setPage("editor");
+                });
+            overlay.querySelectorAll("[data-edit-source]").forEach((button) =>
+                button.addEventListener("click", () => {
+                    selectedSource = sources.find(
+                        (source) => source.uuid === button.dataset.editSource,
+                    );
+                    api.setPage("editor");
+                }),
+            );
             overlay.querySelectorAll("[data-remove-source]").forEach((button) =>
                 button.addEventListener("click", async () => {
+                    const result = await openPopup({
+                        title: i18n.t("ui.app.modules.remove_source"),
+                        body: `<p>${escapeHtml(i18n.t("ui.app.modules.remove_source_confirm"))}</p>`,
+                        actions: [
+                            {
+                                id: "remove",
+                                label: i18n.t("ui.reuse.remove"),
+                                variant: "cancel",
+                            },
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "neutral",
+                            },
+                        ],
+                    });
+                    if (result !== "remove") return;
                     await removeModuleSource(button.dataset.removeSource);
                     sources = await loadModuleSources();
-                    button.closest("li")?.remove();
+                    api.setPage("sources");
                 }),
             );
         },
-        onAction: async (action, overlay) => {
+        onAction: async (action, overlay, api) => {
+            if (action === "back") {
+                api.setPage("sources");
+                return false;
+            }
             if (action !== "save") return true;
             const form = overlay.querySelector("#module-source-form");
             if (!form.reportValidity()) return false;
             const values = Object.fromEntries(new FormData(form));
-            const uuid = crypto.randomUUID();
-            let credentialId;
+            const uuid = selectedSource?.uuid ?? crypto.randomUUID();
+            const credentialId = values.token
+                ? (selectedSource?.credentialId ?? `module-source:${uuid}:pat`)
+                : selectedSource?.credentialId;
             if (values.token) {
-                credentialId = `module-source:${uuid}:pat`;
                 const scope = uiCtx.capabilities.get("keyring:forComponent")?.(
                     i18n.t("ui.app.modules.keyring_component"),
                 );
@@ -198,7 +266,8 @@ async function openSourceSettings() {
             showToast(i18n.t("ui.app.modules.source_saved"), {
                 type: "success",
             });
-            return true;
+            api.setPage("sources");
+            return false;
         },
     });
 }
@@ -234,32 +303,52 @@ async function runLifecycleAction(module, action) {
 }
 
 function refreshMarketplace() {
-    composer.refreshElements(["module-store"]);
+    composer?.refreshElements(["module-store"]);
 }
 
-async function loadMarketplaceCatalog() {
+async function loadKnownModules() {
     const [loadedSources, installed] = await Promise.all([
         loadModuleSources(),
         loadInstalledModules(),
     ]);
     sources = loadedSources;
+    modules = installed;
+    selectedModule = selectedModule
+        ? (modules.find((module) => module.uuid === selectedModule.uuid) ??
+          null)
+        : null;
+    refreshMarketplace();
+}
+
+async function discoverConfiguredSources() {
+    const sequence = ++discoverySequence;
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         i18n.t("ui.app.modules.keyring_component"),
     );
-    const tokens = Object.fromEntries(
-        sources
-            .filter((source) => source.credentialId)
-            .map((source) => [
-                source.credentialId,
-                keyring?.get(source.credentialId) ?? "",
-            ]),
+    await Promise.all(
+        sources.map(async (source) => {
+            const tokens = source.credentialId
+                ? {
+                      [source.credentialId]:
+                          keyring?.get(source.credentialId) ?? "",
+                  }
+                : {};
+            const discovered = await loadAvailableModules(tokens, [
+                source.uuid,
+            ]);
+            if (sequence !== discoverySequence) return;
+            const knownUuids = new Set(modules.map((module) => module.uuid));
+            modules.push(
+                ...discovered.filter((module) => !knownUuids.has(module.uuid)),
+            );
+            refreshMarketplace();
+        }),
     );
-    const available = sources.length ? await loadAvailableModules(tokens) : [];
-    const installedUuids = new Set(installed.map((module) => module.uuid));
-    modules = [
-        ...installed,
-        ...available.filter((module) => !installedUuids.has(module.uuid)),
-    ];
+}
+
+async function refreshMarketplaceData() {
+    await loadKnownModules();
+    await discoverConfiguredSources();
 }
 
 function bindInteractions(root, signal) {
@@ -294,7 +383,7 @@ function bindInteractions(root, signal) {
             if (target.id === "module-source-refresh") {
                 target.disabled = true;
                 try {
-                    await loadMarketplaceCatalog();
+                    await refreshMarketplaceData();
                     selectedModule = null;
                     refreshMarketplace();
                     showToast(i18n.t("ui.app.modules.refresh_complete"), {
@@ -354,7 +443,6 @@ function elements() {
 export async function mount(root, { signal } = {}) {
     i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.modules");
-    await loadMarketplaceCatalog();
     composer = createPageComposer(root, {
         allowCustomization: false,
         preferenceKey: "administration-modules-layout",
@@ -368,6 +456,9 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     bindInteractions(root, signal);
+    void refreshMarketplaceData().catch((error) => {
+        showToast(error.message, { type: "error" });
+    });
 }
 
 await mountWhenDirect(mount);

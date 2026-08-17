@@ -62,6 +62,8 @@
   <string name="ui.reuse.discard">Verwerfen</string>
   <string name="ui.reuse.done">Fertig</string>
   <string name="ui.reuse.add">Hinzufügen</string>
+  <string name="ui.reuse.edit">Bearbeiten</string>
+  <string name="ui.reuse.back">Zurück</string>
   <string name="ui.reuse.remove">Entfernen</string>
   <string name="ui.reuse.dismiss">Schließen</string>
   <string name="ui.reuse.copy">Kopieren</string>
@@ -688,6 +690,12 @@
   <string name="ui.app.modules.available">Verfügbar</string>
   <string name="ui.app.modules.categories">Kategorien</string>
   <string name="ui.app.modules.sources">Modulquellen</string>
+  <string name="ui.app.modules.sources_description">Konfigurierte Quellen werden unabhängig abgefragt. Die vertrauenswürdige Standardorganisation wird von Cognis verwaltet und kann nicht bearbeitet werden.</string>
+  <string name="ui.app.modules.default_source">Standard</string>
+  <string name="ui.app.modules.add_source">Quelle hinzufügen</string>
+  <string name="ui.app.modules.source_details">Quelldetails</string>
+  <string name="ui.app.modules.remove_source">Quelle entfernen</string>
+  <string name="ui.app.modules.remove_source_confirm">Diese Modulquelle entfernen?</string>
   <string name="ui.app.modules.trusted">Vertrauenswürdig</string>
   <string name="ui.app.modules.empty">Keine Module entsprechen dieser Ansicht.</string>
   <string name="ui.app.modules.provider">Anbieter</string>

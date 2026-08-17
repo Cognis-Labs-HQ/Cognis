@@ -40,7 +40,7 @@ test("module marketplace identifies immutable trusted sources", () => {
         "utf8",
     );
     assert.match(source, /source\.trusted/);
-    assert.match(source, /ui\.app\.modules\.trusted/);
+    assert.match(source, /ui\.app\.modules\.default_source/);
 });
 
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
@@ -82,11 +82,30 @@ test("module marketplace refreshes every configured source on demand", () => {
     );
     assert.match(source, /id="module-source-refresh"/);
     assert.match(source, /ui\.reuse\.refresh/);
-    assert.match(source, /async function loadMarketplaceCatalog/);
+    assert.match(source, /async function loadKnownModules/);
+    assert.match(source, /async function discoverConfiguredSources/);
     assert.match(source, /loadModuleSources\(\)/);
-    assert.match(source, /await loadAvailableModules\(tokens\)/);
+    assert.match(
+        source,
+        /await loadAvailableModules\(tokens, \[\s*source\.uuid/,
+    );
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);
+    assert.match(source, /void refreshMarketplaceData\(\)/);
+});
+
+test("module sources use an independent list and editor", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /function renderSourceManager/);
+    assert.match(source, /function renderSourceForm/);
+    assert.match(source, /id: "sources"/);
+    assert.match(source, /id: "editor"/);
+    assert.match(source, /source\.trusted/);
+    assert.match(source, /data-edit-source/);
+    assert.match(source, /data-remove-source/);
 });
 
 test("module marketplace opens repository readmes in a full detail view", () => {
@@ -109,6 +128,6 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /modulesForView\(\)\.flatMap/);
     assert.match(source, /formatTag\(item\)/);
     assert.match(source, /capture: true/);
-    assert.match(source, /composer\.refreshElements\(\["module-store"\]\)/);
+    assert.match(source, /composer\?\.refreshElements\(\["module-store"\]\)/);
     assert.doesNotMatch(source, /composer\.refresh\(elements\(\)\)/);
 });

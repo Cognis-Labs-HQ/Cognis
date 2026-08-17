@@ -62,6 +62,8 @@
   <string name="ui.reuse.discard">元に戻す</string>
   <string name="ui.reuse.done">完了</string>
   <string name="ui.reuse.add">追加</string>
+  <string name="ui.reuse.edit">編集</string>
+  <string name="ui.reuse.back">戻る</string>
   <string name="ui.reuse.remove">削除</string>
   <string name="ui.reuse.dismiss">閉じる</string>
   <string name="ui.reuse.copy">コピー</string>
@@ -688,6 +690,12 @@
   <string name="ui.app.modules.available">利用可能</string>
   <string name="ui.app.modules.categories">カテゴリー</string>
   <string name="ui.app.modules.sources">モジュールソース</string>
+  <string name="ui.app.modules.sources_description">設定されたソースは個別に照会されます。既定の信頼済み組織は Cognis によって管理され、編集できません。</string>
+  <string name="ui.app.modules.default_source">既定</string>
+  <string name="ui.app.modules.add_source">ソースを追加</string>
+  <string name="ui.app.modules.source_details">ソースの詳細</string>
+  <string name="ui.app.modules.remove_source">ソースを削除</string>
+  <string name="ui.app.modules.remove_source_confirm">このモジュールソースを削除しますか？</string>
   <string name="ui.app.modules.trusted">信頼済み</string>
   <string name="ui.app.modules.empty">この表示に一致するモジュールはありません。</string>
   <string name="ui.app.modules.provider">プロバイダー</string>

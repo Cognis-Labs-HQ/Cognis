@@ -62,6 +62,8 @@
   <string name="ui.reuse.discard">Batalkan</string>
   <string name="ui.reuse.done">Selesai</string>
   <string name="ui.reuse.add">Tambah</string>
+  <string name="ui.reuse.edit">Sunting</string>
+  <string name="ui.reuse.back">Kembali</string>
   <string name="ui.reuse.remove">Hapus</string>
   <string name="ui.reuse.dismiss">Tutup</string>
   <string name="ui.reuse.copy">Salin</string>
@@ -688,6 +690,12 @@
   <string name="ui.app.modules.available">Tersedia</string>
   <string name="ui.app.modules.categories">Kategori</string>
   <string name="ui.app.modules.sources">Sumber Modul</string>
+  <string name="ui.app.modules.sources_description">Sumber yang dikonfigurasi diminta secara independen. Organisasi tepercaya bawaan dikelola oleh Cognis dan tidak dapat diedit.</string>
+  <string name="ui.app.modules.default_source">Bawaan</string>
+  <string name="ui.app.modules.add_source">Tambah Sumber</string>
+  <string name="ui.app.modules.source_details">Detail Sumber</string>
+  <string name="ui.app.modules.remove_source">Hapus Sumber</string>
+  <string name="ui.app.modules.remove_source_confirm">Hapus sumber modul ini?</string>
   <string name="ui.app.modules.trusted">Tepercaya</string>
   <string name="ui.app.modules.empty">Tidak ada modul yang cocok dengan tampilan ini.</string>
   <string name="ui.app.modules.provider">Penyedia</string>

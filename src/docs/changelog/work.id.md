@@ -11,3 +11,7 @@ Kartu modul kini mengganti gambar eksternal yang tidak tersedia dengan ikon tand
 ## Segarkan sumber modul
 
 Halaman Modul kini menyediakan kontrol Segarkan di samping Sumber Modul untuk meminta ulang setiap penyedia yang dikonfigurasi dan membangun kembali katalog yang terlihat.
+
+## Kelola dan temukan sumber secara bertahap
+
+Sumber Modul kini terbuka sebagai pengelola daftar dan editor khusus. Organisasi tepercaya bawaan tetap terlihat dan hanya-baca, sedangkan sumber khusus dapat ditambah, disunting, atau dihapus. Halaman Modul langsung menampilkan modul yang sudah diketahui dan menambahkan hasil secara independen saat setiap sumber yang dikonfigurasi merespons.

@@ -96,8 +96,14 @@ export function createModuleRoutes(
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const body = await readJson(req);
+            const sourceUuids = Array.isArray(body.sourceUuids)
+                ? body.sourceUuids.filter(
+                      (value): value is string => typeof value === "string",
+                  )
+                : undefined;
             const data = await marketplace.discover(
                 (body.tokens ?? {}) as Record<string, string>,
+                sourceUuids,
             );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
