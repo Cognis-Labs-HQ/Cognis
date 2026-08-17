@@ -909,6 +909,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     const navItems = [
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
+        `<li><a href="/administration/modules">${i18n.t("ui.reuse.modules")}</a></li>`,
         `<li><button data-composer-scroll="status">${i18n.t("ui.reuse.status")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
         ...topLevelGatewaySections.map(

@@ -188,3 +188,19 @@ test("adapter configuration popups load adapter-owned translations", () => {
     );
     assert.match(source, /i18n: adapterI18n/);
 });
+
+test("administration navigation links to the module marketplace", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/administration/index.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /<a href="\/administration\/modules">\$\{i18n\.t\("ui\.reuse\.modules"\)\}<\/a>/,
+    );
+    const styles = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/layout.css"),
+        "utf8",
+    );
+    assert.match(styles, /\.toolbar button,\s*\.toolbar a/);
+});
