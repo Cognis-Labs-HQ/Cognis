@@ -196,7 +196,7 @@ test("administration navigation links to the module marketplace", () => {
     );
     assert.match(
         source,
-        /<button id="administration-modules" type="button">\$\{i18n\.t\("ui\.reuse\.modules"\)\}<\/button>/,
+        /<button data-composer-scroll="modules">\$\{i18n\.t\("ui\.reuse\.modules"\)\}<\/button>/,
     );
-    assert.match(source, /uiCtx\.capabilities\.get\("ui:navigate"\)/);
+    assert.match(source, /if \(toId !== "modules"\) return true/);
 });

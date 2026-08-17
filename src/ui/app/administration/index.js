@@ -715,30 +715,31 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
     });
 }
 
-async function guardSubPageSwitch() {
-    if (!changesBar?.isAnyDirty()) return true;
-    const result = await openPopup({
-        title: i18n.t("ui.reuse.unsaved_changes"),
-        body: `<p>${i18n.t("ui.reuse.leave_page_warning")}</p>`,
-        variant: "warning",
-        actions: [
-            {
-                id: "discard",
-                label: i18n.t("ui.reuse.discard_and_leave"),
-                variant: "confirm",
-            },
-            {
-                id: "stay",
-                label: i18n.t("ui.reuse.stay"),
-                variant: "cancel",
-            },
-        ],
-    });
-    if (result === "discard") {
+async function guardSubPageSwitch(_fromId, toId) {
+    if (changesBar?.isAnyDirty()) {
+        const result = await openPopup({
+            title: i18n.t("ui.reuse.unsaved_changes"),
+            body: `<p>${i18n.t("ui.reuse.leave_page_warning")}</p>`,
+            variant: "warning",
+            actions: [
+                {
+                    id: "discard",
+                    label: i18n.t("ui.reuse.discard_and_leave"),
+                    variant: "confirm",
+                },
+                {
+                    id: "stay",
+                    label: i18n.t("ui.reuse.stay"),
+                    variant: "cancel",
+                },
+            ],
+        });
+        if (result !== "discard") return false;
         securitySection?.discard();
         changesBar.markDirty("security", false);
-        return true;
     }
+    if (toId !== "modules") return true;
+    await uiCtx.capabilities.get("ui:navigate")?.("/administration/modules");
     return false;
 }
 
@@ -910,7 +911,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     const navItems = [
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
-        `<li><button id="administration-modules" type="button">${i18n.t("ui.reuse.modules")}</button></li>`,
+        `<li><button data-composer-scroll="modules">${i18n.t("ui.reuse.modules")}</button></li>`,
         `<li><button data-composer-scroll="status">${i18n.t("ui.reuse.status")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
         ...topLevelGatewaySections.map(
@@ -955,17 +956,6 @@ export async function mount(rootEl, { signal } = {}) {
         ],
     });
     await composer.init();
-
-    root.querySelector("#administration-modules")?.addEventListener(
-        "click",
-        async () => {
-            if (!(await guardSubPageSwitch())) return;
-            await uiCtx.capabilities.get("ui:navigate")?.(
-                "/administration/modules",
-            );
-        },
-        { signal },
-    );
 
     const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
 
