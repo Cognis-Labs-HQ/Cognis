@@ -30,8 +30,16 @@ Der Empfehlungsstatus stammt nun aus einer von Administratoren konfigurierbaren,
 
 ## Modulinstallation abschließen
 
-Installierte Module werden sofort aktiviert, damit Navigation und Laufzeitbeiträge ohne weiteren manuellen Schritt erscheinen. Marketplace-Bilder laden über öffentliche, nicht erratbare URLs derselben Herkunft.
+Installierte Module werden sofort in die Laufzeit importiert und bleiben deaktiviert, bis ein Administrator sie aktiviert. Marketplace-Bilder laden über öffentliche, nicht erratbare URLs derselben Herkunft.
 
 ## Marketplace-Details verfeinern
 
 Lizenzen werden getrennt von Tags angezeigt, Details nutzen die gesamte Ergebnisbreite und kompakte SVG-Steuerelemente ersetzen textlastige Zurück- und Aktualisierungsaktionen.
+
+## Installation und Aktivierung trennen
+
+Ein installiertes Modul bleibt nun deaktiviert, bis ein Administrator es ausdrücklich aktiviert. Beim Aktivieren oder Deaktivieren werden die Navbar-Plugins im Browser sofort aktualisiert, sodass neue Navigationseinträge ohne Neuladen erscheinen.
+
+## Marketplace-Steuerelemente gestalten
+
+Zurück- und Aktualisierungssteuerung verwenden nun eigene helle und dunkle SVG-Dateien, die zum aktiven Dashboard-Design passen.

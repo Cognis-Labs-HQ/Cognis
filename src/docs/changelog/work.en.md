@@ -30,8 +30,16 @@ Recommended status now comes from an administrator-configurable published UUID l
 
 ## Complete module installation
 
-Installed modules are activated immediately so their navigation and runtime contributions appear without an extra manual step. Marketplace images load through public, unguessable same-origin asset URLs.
+Installed modules are imported into the runtime immediately and remain disabled until an administrator activates them. Marketplace images load through public, unguessable same-origin asset URLs.
 
 ## Refine marketplace details
 
 Licenses are displayed separately from tags, details use the full results width, and compact SVG controls replace text-heavy back and refresh actions.
+
+## Separate installation from activation
+
+Installing a module now leaves it disabled until an administrator explicitly enables it. Enabling or disabling a module refreshes browser navbar plugins immediately so newly registered navigation contributions appear without a page reload.
+
+## Theme marketplace controls
+
+Back and refresh controls now use dedicated light and dark SVG assets selected by the active dashboard theme.

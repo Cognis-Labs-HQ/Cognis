@@ -91,7 +91,7 @@ function renderModuleDetails(module) {
     const license = module.license
         ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
         : "";
-    return `<article class="module-detail"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}"><img src="/static/assets/reuse/arrow-back.svg" alt="${escapeHtml(i18n.t("ui.reuse.back"))}"></button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -153,7 +153,7 @@ function renderStore() {
     return `<div class="module-store-layout">
       ${renderSidebar(categories)}
       <section class="module-store-results">
-        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><img src="/static/assets/reuse/refresh.svg" alt="${escapeHtml(i18n.t("ui.reuse.refresh"))}"></button><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}"><img src="/static/assets/reuse/settings-cog.svg" alt="${escapeHtml(i18n.t("ui.reuse.settings"))}"></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
+        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><span class="module-icon module-icon-refresh" aria-hidden="true"></span></button><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}"><img src="/static/assets/reuse/settings-cog.svg" alt="${escapeHtml(i18n.t("ui.reuse.settings"))}"></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
       </section>
     </div>`;
 }
@@ -350,8 +350,7 @@ async function runLifecycleAction(module, action) {
         const branch = selectedBranch(module);
         await installModule(module, token, branch);
         module.installed = true;
-        await setModuleEnabled(module.id, true);
-        module.status = "enabled";
+        module.status = "disabled";
         module.installedBranch = branch;
         module.installedCommit = module.branches.find(
             (entry) => entry.name === branch,
@@ -361,6 +360,8 @@ async function runLifecycleAction(module, action) {
     if (action === "enable" || action === "disable") {
         await setModuleEnabled(module.id, action === "enable");
         module.status = action === "enable" ? "enabled" : "disabled";
+        window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
+        window.dispatchEvent(new Event("cognis:navbar-refresh"));
     }
     if (action === "uninstall") {
         await uninstallModule(module.uuid);

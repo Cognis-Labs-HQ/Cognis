@@ -150,9 +150,18 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(source, /recommendedModulesUrl/);
     assert.match(source, /id="module-marketplace-settings"/);
     assert.match(source, /settings-cog\.svg/);
-    assert.match(source, /refresh\.svg/);
-    assert.match(source, /arrow-back\.svg/);
+    assert.match(source, /module-icon-refresh/);
+    assert.match(source, /module-icon-back/);
     assert.match(source, /module-detail-license/);
-    assert.match(source, /await setModuleEnabled\(module\.id, true\)/);
+    assert.match(source, /module\.status = "disabled"/);
+    assert.match(source, /cognis:navbar-plugins-refresh/);
+    assert.doesNotMatch(
+        source,
+        /await installModule\(module, token, branch\);[\s\S]{0,150}await setModuleEnabled/,
+    );
     assert.match(marketplaceStyles, /\.module-detail[\s\S]*width: 100%/);
+    assert.match(marketplaceStyles, /arrow-back-light\.svg/);
+    assert.match(marketplaceStyles, /arrow-back-dark\.svg/);
+    assert.match(marketplaceStyles, /refresh-light\.svg/);
+    assert.match(marketplaceStyles, /refresh-dark\.svg/);
 });

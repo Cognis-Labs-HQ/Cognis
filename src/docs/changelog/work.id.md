@@ -30,8 +30,16 @@ Status rekomendasi kini berasal dari daftar UUID terbitan yang dapat dikonfigura
 
 ## Selesaikan instalasi modul
 
-Modul yang dipasang langsung diaktifkan agar navigasi dan kontribusi runtime tampil tanpa langkah manual tambahan. Gambar marketplace dimuat melalui URL publik asal sama yang sulit ditebak.
+Modul yang dipasang langsung diimpor ke runtime dan tetap nonaktif sampai administrator mengaktifkannya. Gambar marketplace dimuat melalui URL publik asal sama yang sulit ditebak.
 
 ## Sempurnakan detail marketplace
 
 Lisensi ditampilkan terpisah dari tag, detail memakai seluruh lebar hasil, dan kontrol SVG ringkas menggantikan tindakan kembali dan segarkan yang panjang.
+
+## Pisahkan pemasangan dari aktivasi
+
+Modul yang dipasang kini tetap nonaktif sampai administrator mengaktifkannya secara eksplisit. Mengaktifkan atau menonaktifkan modul langsung menyegarkan plugin bilah navigasi agar kontribusi navigasi baru tampil tanpa memuat ulang halaman.
+
+## Sesuaikan kontrol marketplace dengan tema
+
+Kontrol kembali dan segarkan kini memakai aset SVG terang dan gelap khusus yang dipilih sesuai tema dasbor aktif.

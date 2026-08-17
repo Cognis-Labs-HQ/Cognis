@@ -42,9 +42,26 @@
     width: 2.5rem;
     padding: 0.45rem;
 }
-.module-icon-button img {
+.module-icon-button img,
+.module-icon {
     width: 1.25rem;
     height: 1.25rem;
+}
+.module-icon {
+    display: inline-block;
+    background: center / contain no-repeat;
+}
+.module-icon-back {
+    background-image: url("/static/assets/reuse/arrow-back-light.svg");
+}
+.module-icon-refresh {
+    background-image: url("/static/assets/reuse/refresh-light.svg");
+}
+body[data-theme="dark"] .module-icon-back {
+    background-image: url("/static/assets/reuse/arrow-back-dark.svg");
+}
+body[data-theme="dark"] .module-icon-refresh {
+    background-image: url("/static/assets/reuse/refresh-dark.svg");
 }
 .module-store-grid {
     display: grid;

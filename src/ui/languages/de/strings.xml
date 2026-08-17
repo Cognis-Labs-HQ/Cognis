@@ -721,7 +721,7 @@
   <string name="ui.app.modules.keyring_component">Modul-Marktplatz</string>
   <string name="ui.app.modules.back_to_modules">Zurück zu Modulen</string>
   <string name="ui.reuse.uninstall">Deinstallieren</string>
-  <string name="ui.app.modules.install_complete">Modul installiert und aktiviert.</string>
+  <string name="ui.app.modules.install_complete">Modul installiert. Aktivieren Sie es, wenn Sie bereit sind.</string>
   <string name="ui.app.modules.enable_complete">Modul aktiviert.</string>
   <string name="ui.app.modules.disable_complete">Modul deaktiviert. Sie können es jetzt deinstallieren.</string>
   <string name="ui.app.modules.uninstall_complete">Modul deinstalliert.</string>
