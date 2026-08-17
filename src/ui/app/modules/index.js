@@ -214,15 +214,17 @@ export async function mount(root, { signal } = {}) {
         ...installed,
         ...available.filter((module) => !installedUuids.has(module.uuid)),
     ];
-    composer = createPageComposer({
-        root,
+    composer = createPageComposer(root, {
+        allowCustomization: false,
         preferenceKey: "administration-modules-layout",
+        i18n,
         pageContext: {
             title: i18n.t("ui.reuse.modules"),
             subtitle: i18n.t("ui.app.modules.subtitle"),
         },
         elements: elements(),
         onRender: bind,
+        signal,
     });
     await composer.init();
 }

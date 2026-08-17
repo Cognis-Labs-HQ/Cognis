@@ -183,10 +183,7 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     gap: 10px;
 }
 
-.toolbar button,
-.toolbar a {
-    display: flex;
-    align-items: center;
+.toolbar button {
     min-height: 44px;
     width: 100%;
     min-width: 150px;
@@ -197,8 +194,7 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     padding: 10px 14px;
 }
 
-.toolbar button:hover,
-.toolbar a:hover {
+.toolbar button:hover {
     color: var(--text);
     border-color: var(--border);
     background: var(--surface-soft);

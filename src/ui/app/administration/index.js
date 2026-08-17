@@ -5,6 +5,7 @@ import {
     extendI18n,
 } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -909,7 +910,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     const navItems = [
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
-        `<li><a href="/administration/modules">${i18n.t("ui.reuse.modules")}</a></li>`,
+        `<li><button id="administration-modules" type="button">${i18n.t("ui.reuse.modules")}</button></li>`,
         `<li><button data-composer-scroll="status">${i18n.t("ui.reuse.status")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
         ...topLevelGatewaySections.map(
@@ -954,6 +955,17 @@ export async function mount(rootEl, { signal } = {}) {
         ],
     });
     await composer.init();
+
+    root.querySelector("#administration-modules")?.addEventListener(
+        "click",
+        async () => {
+            if (!(await guardSubPageSwitch())) return;
+            await uiCtx.capabilities.get("ui:navigate")?.(
+                "/administration/modules",
+            );
+        },
+        { signal },
+    );
 
     const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
 

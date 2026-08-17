@@ -196,11 +196,7 @@ test("administration navigation links to the module marketplace", () => {
     );
     assert.match(
         source,
-        /<a href="\/administration\/modules">\$\{i18n\.t\("ui\.reuse\.modules"\)\}<\/a>/,
+        /<button id="administration-modules" type="button">\$\{i18n\.t\("ui\.reuse\.modules"\)\}<\/button>/,
     );
-    const styles = readFileSync(
-        resolve(ROOT, "src/ui/styles/page-builder/layout.css"),
-        "utf8",
-    );
-    assert.match(styles, /\.toolbar button,\s*\.toolbar a/);
+    assert.match(source, /uiCtx\.capabilities\.get\("ui:navigate"\)/);
 });
