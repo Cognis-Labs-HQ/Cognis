@@ -83,7 +83,7 @@ function resolveModuleAssetUrl(value) {
     }
 }
 
-function visibleModules() {
+function modulesForView() {
     return modules.filter((module) => {
         if (
             view === "installed" &&
@@ -94,32 +94,38 @@ function visibleModules() {
             )
         )
             return false;
-        if (view === "recommended" && !module.recommended) return false;
-        return (
-            category === "all" ||
-            [...(module.categories ?? []), ...(module.tags ?? [])].includes(
-                category,
-            )
-        );
+        if (view === "recommended") return module.recommended;
+        if (view === "available") return !module.installed && !module.status;
+        return true;
     });
+}
+
+function visibleModules() {
+    return modulesForView().filter(
+        (module) =>
+            category === "all" || (module.tags ?? []).includes(category),
+    );
+}
+
+function formatTag(tag) {
+    return String(tag)
+        .split(/[-_\s]+/)
+        .filter(Boolean)
+        .map((part) => part[0].toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
 }
 
 function renderStore() {
     if (selectedModule) return renderModuleDetails(selectedModule);
     const categories = [
-        ...new Set(
-            modules.flatMap((module) => [
-                ...(module.categories ?? []),
-                ...(module.tags ?? []),
-            ]),
-        ),
-    ];
+        ...new Set(modulesForView().flatMap((module) => module.tags ?? [])),
+    ].sort((left, right) => left.localeCompare(right));
     return `<div class="module-store-layout">
       <aside class="module-store-sidebar">
         ${["recommended", "installed", "available"].map((item) => `<button type="button" class="btn-neutral${view === item ? " is-active" : ""}" data-store-view="${item}">${escapeHtml(i18n.t(`ui.app.modules.${item}`))}</button>`).join("")}
         <h3>${escapeHtml(i18n.t("ui.app.modules.categories"))}</h3>
         <button type="button" class="btn-neutral${category === "all" ? " is-active" : ""}" data-store-category="all">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
-        ${categories.map((item) => `<button type="button" class="btn-neutral${category === item ? " is-active" : ""}" data-store-category="${escapeHtml(item)}">${escapeHtml(item)}</button>`).join("")}
+        ${categories.map((item) => `<button type="button" class="btn-neutral${category === item ? " is-active" : ""}" data-store-category="${escapeHtml(item)}">${escapeHtml(formatTag(item))}</button>`).join("")}
       </aside>
       <section class="module-store-results">
         <div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button></div>
@@ -137,7 +143,7 @@ async function openSourceSettings() {
         .join("");
     await openPopup({
         title: i18n.t("ui.app.modules.sources"),
-        body: `<ul class="module-source-list">${rows}</ul><form id="module-source-form" class="stack"><label>${escapeHtml(i18n.t("ui.reuse.name"))}<input name="name" required></label><label>${escapeHtml(i18n.t("ui.app.modules.provider"))}<select name="provider"><option value="github">${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab">${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label>${escapeHtml(i18n.t("ui.app.modules.namespace"))}<input name="namespace" required></label><label>${escapeHtml(i18n.t("ui.app.modules.base_url"))}<input name="baseUrl" type="url" value="https://api.github.com" required></label><label>${escapeHtml(i18n.t("ui.app.modules.pat"))}<input name="token" type="password" autocomplete="off"></label></form>`,
+        body: `<div class="module-source-manager"><ul class="module-source-list">${rows}</ul><form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"><option value="github">${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab">${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="https://api.github.com" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off"></label></form></div>`,
         actions: [
             { id: "save", label: i18n.t("ui.reuse.save"), variant: "confirm" },
             {
@@ -239,6 +245,7 @@ function bindInteractions(root, signal) {
                 event.target.closest(".module-store-card");
             if (!target) return;
             if (target.dataset.storeView) view = target.dataset.storeView;
+            if (target.dataset.storeView) category = "all";
             if (target.dataset.storeCategory)
                 category = target.dataset.storeCategory;
             if (target.id === "module-source-settings") {
@@ -270,7 +277,7 @@ function bindInteractions(root, signal) {
             }
             composer.refresh(elements());
         },
-        { signal },
+        { signal, capture: true },
     );
 }
 

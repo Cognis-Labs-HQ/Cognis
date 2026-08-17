@@ -230,7 +230,24 @@ export class ModuleMarketplaceService {
             !manifest.uuid ||
             !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(manifest.uuid) ||
             !manifest.id ||
-            !manifest.version
+            !manifest.name ||
+            !manifest.version ||
+            !manifest.publisher ||
+            !manifest.summary ||
+            !manifest.description ||
+            !manifest.license ||
+            !manifest.repository ||
+            !manifest.coreApiVersion ||
+            !["core", "extension"].includes(manifest.class) ||
+            !Array.isArray(manifest.capabilities) ||
+            !Array.isArray(manifest.categories) ||
+            manifest.categories.length === 0 ||
+            !Array.isArray(manifest.tags) ||
+            manifest.tags.length === 0 ||
+            typeof manifest.recommended !== "boolean" ||
+            !manifest.entrypoints ||
+            !manifest.assets?.icon ||
+            !manifest.assets?.banner
         ) {
             throw new Error("invalid_module_manifest");
         }

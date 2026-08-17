@@ -46,4 +46,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /data-module-enable/);
     assert.match(source, /data-module-disable/);
     assert.match(source, /data-module-uninstall/);
+    assert.match(source, /modulesForView\(\)\.flatMap/);
+    assert.match(source, /formatTag\(item\)/);
+    assert.match(source, /capture: true/);
 });

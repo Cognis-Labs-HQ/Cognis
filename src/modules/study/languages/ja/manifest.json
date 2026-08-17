@@ -2,7 +2,7 @@
     "id": "study-language-ja",
     "uuid": "e905927f-b133-572a-92ce-2ea8645e5ceb",
     "name": "Cognis Japanese",
-    "version": "1.2.9",
+    "version": "1.2.10",
     "class": "extension",
     "enabledByDefault": true,
     "coreApiVersion": "v1",
@@ -10,8 +10,8 @@
     "requires": ["338b9237-a2c8-5bcf-9437-bccc9abd9a27"],
     "entrypoints": {},
     "publisher": "Cognis Labs HQ",
-    "summary": "Cognis Japanese",
-    "description": "Cognis Japanese",
+    "summary": "Japanese learning content for Cognis Study.",
+    "description": "Adds Japanese libraries, kana activities, classrooms, and learning tools to Study.",
     "categories": ["Productivity"],
     "recommended": false,
     "license": "AGPL-3.0-or-later",
@@ -21,5 +21,7 @@
         "icon": "assets/icon.svg",
         "banner": "assets/banner.svg"
     },
-    "tags": ["language", "learning"]
+    "tags": ["language", "learning"],
+    "homepage": "https://github.com/Cognis-Labs-HQ/study-language-ja#readme",
+    "support": "https://github.com/Cognis-Labs-HQ/study-language-ja/issues"
 }

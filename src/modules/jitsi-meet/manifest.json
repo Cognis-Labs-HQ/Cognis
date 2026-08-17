@@ -2,7 +2,7 @@
     "id": "jitsi-meet",
     "uuid": "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
     "name": "Jitsi Meet",
-    "version": "1.4.51",
+    "version": "1.4.52",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["meeting:video", "meeting:chat", "meeting:moderation"],
@@ -35,8 +35,8 @@
         "0da92508-63fa-53ed-918c-e6f08692a382",
         "social:messages"
     ],
-    "summary": "Jitsi Meet",
-    "description": "Jitsi Meet",
+    "summary": "Secure video meetings integrated with Cognis.",
+    "description": "Create, join, moderate, and share Jitsi meetings from Cognis.",
     "categories": ["Collaboration"],
     "recommended": true,
     "license": "AGPL-3.0-or-later",
@@ -46,5 +46,7 @@
         "icon": "assets/icon.svg",
         "banner": "assets/banner.svg"
     },
-    "tags": ["video", "meetings"]
+    "tags": ["video", "meetings"],
+    "homepage": "https://github.com/Cognis-Labs-HQ/jitsi-meet#readme",
+    "support": "https://github.com/Cognis-Labs-HQ/jitsi-meet/issues"
 }

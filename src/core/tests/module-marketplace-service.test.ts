@@ -52,8 +52,16 @@ test("module marketplace discovers repository manifests", async () => {
                         id: "notes",
                         name: "Notes",
                         version: "1.0.0",
+                        publisher: "Acme",
                         class: "extension",
                         coreApiVersion: "v1",
+                        summary: "Notes",
+                        description: "Shared notes.",
+                        categories: ["Productivity"],
+                        tags: ["notes"],
+                        recommended: false,
+                        license: "MIT",
+                        repository: "https://github.com/acme/notes",
                         capabilities: [],
                         entrypoints: {},
                         assets: {
@@ -71,6 +79,33 @@ test("module marketplace discovers repository manifests", async () => {
             "https://raw.githubusercontent.com/acme/notes/main/assets/icon.svg",
         );
         assert.equal(modules[0].readme, "# Notes\nA useful module.");
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("module marketplace rejects incomplete module registrations", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    await service.saveSource(source);
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input) =>
+        String(input).includes("/repos?")
+            ? new Response(
+                  JSON.stringify([
+                      {
+                          clone_url: "https://github.com/acme/incomplete.git",
+                          default_branch: "main",
+                          full_name: "acme/incomplete",
+                      },
+                  ]),
+              )
+            : new Response(JSON.stringify({ id: "incomplete" }));
+    try {
+        await assert.rejects(service.discover(), /invalid_module_manifest/);
     } finally {
         globalThis.fetch = originalFetch;
     }

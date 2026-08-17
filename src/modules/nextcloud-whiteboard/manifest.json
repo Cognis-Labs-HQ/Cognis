@@ -2,7 +2,7 @@
     "id": "nextcloud-whiteboard",
     "uuid": "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
     "name": "Nextcloud Whiteboard",
-    "version": "2.3.17",
+    "version": "2.3.18",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": [
@@ -24,8 +24,8 @@
         }
     },
     "requires": ["social:profile", "0da92508-63fa-53ed-918c-e6f08692a382"],
-    "summary": "Nextcloud Whiteboard",
-    "description": "Nextcloud Whiteboard",
+    "summary": "Collaborative whiteboards backed by Nextcloud.",
+    "description": "Create and share realtime whiteboards with Cognis access controls.",
     "categories": ["Collaboration"],
     "recommended": true,
     "license": "AGPL-3.0-or-later",
@@ -35,5 +35,7 @@
         "icon": "assets/icon.svg",
         "banner": "assets/banner.svg"
     },
-    "tags": ["whiteboard", "collaboration"]
+    "tags": ["whiteboard", "collaboration"],
+    "homepage": "https://github.com/Cognis-Labs-HQ/nextcloud-whiteboard#readme",
+    "support": "https://github.com/Cognis-Labs-HQ/nextcloud-whiteboard/issues"
 }

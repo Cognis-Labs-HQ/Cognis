@@ -2,7 +2,7 @@
     "id": "analytics",
     "uuid": "e10c016f-8a15-5ec2-8188-c1657dfbe829",
     "name": "Analytics",
-    "version": "2.0.7",
+    "version": "2.0.8",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
@@ -58,8 +58,8 @@
             "sha256": "b54ab131c7aab6bb4919c9390c187d6551c407f4a4e0bd691b33beb51abb3d79"
         }
     ],
-    "summary": "Analytics",
-    "description": "Analytics",
+    "summary": "Privacy-conscious usage insights and administrative reporting.",
+    "description": "Understand Cognis activity through extensible metrics and operational dashboards.",
     "categories": ["Productivity"],
     "recommended": false,
     "license": "AGPL-3.0-or-later",
@@ -69,5 +69,7 @@
         "icon": "assets/icon.svg",
         "banner": "assets/banner.svg"
     },
-    "tags": ["analytics", "insights"]
+    "tags": ["analytics", "insights"],
+    "homepage": "https://github.com/Cognis-Labs-HQ/analytics#readme",
+    "support": "https://github.com/Cognis-Labs-HQ/analytics/issues"
 }
