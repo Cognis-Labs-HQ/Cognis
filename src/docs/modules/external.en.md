@@ -8,6 +8,8 @@ Every module has a human-readable `id` and an RFC 4122 `uuid`. The ID may be ren
 
 One Git repository delivers one module. Its root contains `manifest.json`, `package.json`, `routes.json`, and the optional orchestrator entry points `bootstrap.js`, `api/index.js`, `ui/index.js`, and `cli/index.js`. `bootstrap.js` is the sole system integration entry and receives `ctx`; it may import any file within its repository, but must not import Cognis or another component's internal paths. Export capabilities and flow stages through `ctx`. This narrow entry-point contract lets authors freely reorganize internal files without coupling Cognis to them.
 
+`package.json` must use `"type": "module"` and its version must exactly match `manifest.json`. `routes.json` is always present and contains an array, including an empty array when the module claims no routes. Every declared entry point must resolve to a regular file inside the checkout. Keep orchestration in the declared entry points and place freely organized implementation code behind them; Cognis does not import any other module path.
+
 The manifest declares `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-based `requires`, `entrypoints`, and `assets`. Asset paths are repository-relative. `assets.icon` identifies the square store icon, `assets.banner` identifies the detail hero, and `assets.screenshots` is an ordered gallery. Paths must remain inside the repository.
 
 ## Sources and private repositories
@@ -16,9 +18,13 @@ Administrators add a GitHub organization or GitLab group from Modules in the use
 
 ## Installation and safety
 
-Installation clones the selected HTTPS repository without an interactive credential prompt, validates the downloaded root manifest and immutable UUID, and atomically moves it under the external module root. Updating repeats that operation for the same UUID. Uninstalling removes that UUID's checkout. Enabling remains a separate lifecycle action so code is not executed merely by browsing or installing it. Routes must be declared in `routes.json`; protected core prefixes cannot be claimed.
+Installation clones the selected HTTPS repository without an interactive credential prompt, validates the downloaded root manifest and immutable UUID, and atomically moves it under the external module root. Before committing the checkout, Cognis verifies the package and manifest versions, route declaration, entry points, required artwork, safe repository-relative paths, and every declared SHA-256 file digest. A failed check removes the temporary checkout and leaves the installed version untouched. Updating repeats that operation for the same UUID. Uninstalling removes that UUID's checkout. Enabling remains a separate lifecycle action so code is not executed merely by browsing or installing it. Routes must be declared in `routes.json`; protected core prefixes cannot be claimed.
 
 Repository owners should sign releases, pin dependencies, publish checksums in `files`, avoid generated secrets, and document all requested capabilities. Screenshots must not contain credentials or personal data. Cognis administrators remain responsible for reviewing third-party code before enabling it.
+
+## Extraction checklist
+
+Before moving a bundled module into its own repository, copy the module directory without changing its UUID, retain the readable ID, and preserve the root `manifest.json`, `package.json`, and `routes.json`. Make the repository URL, homepage, and support links point at the new project; keep manifest and package versions synchronized; ensure every declared entry point and asset exists with exact filename casing; regenerate `files` SHA-256 values after the final change; and run the module tests without relying on monorepo-relative imports. Runtime interaction with Cognis and other components must occur only through the bootstrap `ctx` capabilities and flows.
 
 ## Store assets and tags
 

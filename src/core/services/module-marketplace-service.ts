@@ -3,6 +3,7 @@ import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { ModuleManifest } from "../contracts/module-manifest.js";
+import { validateModuleRepository } from "./module-repository-validator.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -96,21 +97,27 @@ export class ModuleMarketplaceService {
             gitEnvironment.GIT_CONFIG_KEY_0 = "http.extraHeader";
             gitEnvironment.GIT_CONFIG_VALUE_0 = `Authorization: Basic ${Buffer.from(`oauth2:${token}`).toString("base64")}`;
         }
-        await execFileAsync(
-            "git",
-            ["clone", "--depth=1", "--", cloneUrl, temporary],
-            {
-                env: gitEnvironment,
-            },
-        );
-        const manifest = this.parseManifest(
-            await readFile(path.join(temporary, "manifest.json"), "utf8"),
-        );
-        if (manifest.uuid !== module.uuid)
-            throw new Error("module_uuid_mismatch");
-        await rm(target, { recursive: true, force: true });
-        await rename(temporary, target);
-        return manifest;
+        try {
+            await execFileAsync(
+                "git",
+                ["clone", "--depth=1", "--", cloneUrl, temporary],
+                {
+                    env: gitEnvironment,
+                },
+            );
+            const manifest = this.parseManifest(
+                await readFile(path.join(temporary, "manifest.json"), "utf8"),
+            );
+            if (manifest.uuid !== module.uuid)
+                throw new Error("module_uuid_mismatch");
+            await validateModuleRepository(temporary, manifest);
+            await rm(target, { recursive: true, force: true });
+            await rename(temporary, target);
+            return manifest;
+        } catch (error) {
+            await rm(temporary, { recursive: true, force: true });
+            throw error;
+        }
     }
 
     async uninstall(uuid: string): Promise<void> {

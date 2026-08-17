@@ -15,3 +15,5 @@ All component manifests now retain readable names and IDs while using stable UUI
 ## Reliable marketplace controls
 
 Module cards, filters, source settings, and lifecycle controls now update the marketplace content immediately without resetting the surrounding page layout. Module details retain the store navigation, and consistently sized cards keep descriptions and lifecycle actions aligned.
+
+External checkouts now pass a repository-readiness gate covering root package and route contracts, declared entry points and artwork, safe paths, and optional file checksums before an install can replace the active checkout.
