@@ -70,7 +70,10 @@ test("module marketplace replaces unavailable icons with the unknown icon", () =
         "utf8",
     );
     assert.match(pageSource, /data-resource-fallback/);
-    assert.match(pageSource, /module-icon-unknown\.svg/);
+    assert.match(
+        pageSource,
+        /\/static\/assets\/reuse\/module-icon-unknown\.svg/,
+    );
     assert.match(errorHandlerSource, /dataset\.resourceFallback/);
     assert.match(fallbackIcon, /class="mark"/);
 });

@@ -19,3 +19,7 @@ Modulquellen werden jetzt in einer eigenen Listen- und Bearbeitungsansicht geöf
 ## Zweige auswählen und Updates erkennen
 
 Marktplatzdetails zeigen jetzt alle Repository-Zweige und wählen automatisch den Standardzweig. Installationen speichern den gewählten Zweig und Commit, sodass Modulkarten und Details eine Aktualisierung anbieten, sobald sich dieser Zweig weiterentwickelt.
+
+## Marketplace-Grafiken sicher bereitstellen
+
+Marketplace-Grafiken werden nun vom Server abgerufen und über authentifizierte URLs derselben Herkunft bereitgestellt. Fehlende Grafiken verwenden das mitgelieferte Fragezeichen-Symbol, ohne die Content Security Policy zu lockern.

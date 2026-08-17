@@ -1,4 +1,5 @@
 import { execFile } from "node:child_process";
+import { createHash } from "node:crypto";
 import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
@@ -40,7 +41,17 @@ export interface MarketplaceModule extends ModuleManifest {
     installedBranch?: string;
     installedCommit?: string;
     updateAvailable: boolean;
+    assetIds?: {
+        icon?: string;
+        banner?: string;
+        screenshots?: string[];
+    };
     readme?: string;
+}
+
+export interface MarketplaceAsset {
+    body: Buffer;
+    contentType: string;
 }
 
 interface ModuleInstallProvenance {
@@ -51,6 +62,8 @@ interface ModuleInstallProvenance {
 }
 
 export class ModuleMarketplaceService {
+    private readonly assets = new Map<string, MarketplaceAsset>();
+
     constructor(
         private readonly statePath: string,
         private readonly installRoot: string,
@@ -231,6 +244,10 @@ export class ModuleMarketplaceService {
         });
     }
 
+    getAsset(id: string): MarketplaceAsset | undefined {
+        return this.assets.get(id);
+    }
+
     private async discoverSource(
         source: ModuleSource,
         token?: string,
@@ -292,32 +309,42 @@ export class ModuleMarketplaceService {
                     ),
                     { headers },
                 );
-                const assets = manifest.assets
+                const assetIds = manifest.assets
                     ? {
                           icon: manifest.assets.icon
-                              ? this.resolveRepositoryAssetUrl(
+                              ? await this.cacheRepositoryAsset(
                                     source,
                                     projectPath,
                                     defaultBranch,
                                     manifest.assets.icon,
+                                    headers,
                                 )
                               : undefined,
                           banner: manifest.assets.banner
-                              ? this.resolveRepositoryAssetUrl(
+                              ? await this.cacheRepositoryAsset(
                                     source,
                                     projectPath,
                                     defaultBranch,
                                     manifest.assets.banner,
+                                    headers,
                                 )
                               : undefined,
-                          screenshots: (manifest.assets.screenshots ?? []).map(
-                              (assetPath) =>
-                                  this.resolveRepositoryAssetUrl(
-                                      source,
-                                      projectPath,
-                                      defaultBranch,
-                                      assetPath,
+                          screenshots: (
+                              await Promise.all(
+                                  (manifest.assets.screenshots ?? []).map(
+                                      (assetPath) =>
+                                          this.cacheRepositoryAsset(
+                                              source,
+                                              projectPath,
+                                              defaultBranch,
+                                              assetPath,
+                                              headers,
+                                          ),
                                   ),
+                              )
+                          ).filter(
+                              (assetId): assetId is string =>
+                                  typeof assetId === "string",
                           ),
                       }
                     : undefined;
@@ -329,7 +356,7 @@ export class ModuleMarketplaceService {
                 )?.commit;
                 return {
                     ...manifest,
-                    assets,
+                    assetIds,
                     cloneUrl,
                     sourceUuid: source.uuid,
                     installed: Boolean(provenance),
@@ -351,6 +378,45 @@ export class ModuleMarketplaceService {
         return candidates.flatMap((result) =>
             result.status === "fulfilled" && result.value ? [result.value] : [],
         );
+    }
+
+    private async cacheRepositoryAsset(
+        source: ModuleSource,
+        projectPath: string,
+        defaultBranch: string,
+        assetPath: string,
+        headers: Record<string, string>,
+    ): Promise<string | undefined> {
+        const assetUrl = this.resolveRepositoryAssetUrl(
+            source,
+            projectPath,
+            defaultBranch,
+            assetPath,
+        );
+        const response = await fetch(assetUrl, { headers }).catch(
+            () => undefined,
+        );
+        if (!response) return undefined;
+        if (!response.ok) return undefined;
+        const contentType = response.headers
+            .get("content-type")
+            ?.split(";", 1)[0]
+            .trim();
+        if (
+            !contentType ||
+            ![
+                "image/svg+xml",
+                "image/png",
+                "image/jpeg",
+                "image/webp",
+            ].includes(contentType)
+        ) {
+            return undefined;
+        }
+        const body = Buffer.from(await response.arrayBuffer());
+        const id = createHash("sha256").update(assetUrl).digest("hex");
+        this.assets.set(id, { body, contentType });
+        return id;
     }
 
     private async discoverBranches(

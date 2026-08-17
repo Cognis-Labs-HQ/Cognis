@@ -19,3 +19,7 @@ Sumber Modul kini terbuka sebagai pengelola daftar dan editor khusus. Organisasi
 ## Pilih cabang dan deteksi pembaruan
 
 Detail marketplace kini menampilkan setiap cabang repositori dan otomatis memilih cabang bawaan. Instalasi mencatat cabang dan commit yang dipilih sehingga kartu dan detail modul dapat menawarkan tindakan Perbarui saat cabang tersebut berubah.
+
+## Sajikan gambar marketplace dengan aman
+
+Gambar marketplace kini diambil oleh server dan disajikan melalui URL asal yang sama dan terautentikasi. Gambar yang hilang memakai ikon tanda tanya bawaan tanpa melonggarkan Content Security Policy.

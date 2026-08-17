@@ -26,13 +26,13 @@ let view = "recommended";
 let selectedModule = null;
 let discoverySequence = 0;
 const selectedBranches = new Map();
-const MODULE_ICON_FALLBACK_URL = "/assets/reuse/module-icon-unknown.svg";
+const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 
 function renderCard(module) {
     const avatarUrl = resolveModuleAssetUrl(module.assets?.icon);
     const avatar = avatarUrl
         ? `<img class="module-store-avatar" src="${escapeHtml(avatarUrl)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy">`
-        : `<span class="module-store-avatar module-store-avatar--fallback">${escapeHtml(module.name.slice(0, 1))}</span>`;
+        : `<img class="module-store-avatar" src="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy">`;
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">

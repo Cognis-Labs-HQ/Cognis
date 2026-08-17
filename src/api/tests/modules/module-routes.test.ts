@@ -233,11 +233,17 @@ test("module catalog discovery accepts caller-selected sources", async () => {
         {
             discover: async (_tokens, sourceUuids) => {
                 selectedSources = sourceUuids;
-                return [];
+                return [
+                    {
+                        id: "notes",
+                        assetIds: { icon: "a".repeat(64) },
+                    },
+                ];
             },
         } as any,
     );
     let status = 0;
+    let responseBody = "";
     await route(
         {
             method: "POST",
@@ -252,12 +258,15 @@ test("module catalog discovery accepts caller-selected sources", async () => {
             writeHead(code: number) {
                 status = code;
             },
-            end() {},
+            end(value: string) {
+                responseBody = value;
+            },
         } as any,
         new URL("http://localhost/api/v1/modules/catalog"),
     );
     assert.equal(status, 200);
     assert.deepEqual(selectedSources, ["source-one"]);
+    assert.match(responseBody, /\/api\/v1\/modules\/catalog\/assets\/a{64}/);
 });
 
 test("module marketplace install forwards the selected branch", async () => {
@@ -298,4 +307,45 @@ test("module marketplace install forwards the selected branch", async () => {
     );
     assert.equal(status, 200);
     assert.equal(installedBranch, "preview");
+});
+
+test("module catalog serves cached images from the same origin", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const assetId = "a".repeat(64);
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        undefined,
+        undefined,
+        {
+            getAsset: (id) =>
+                id === assetId
+                    ? {
+                          body: Buffer.from("<svg/>", "utf8"),
+                          contentType: "image/svg+xml",
+                      }
+                    : undefined,
+        } as any,
+    );
+    let status = 0;
+    let contentType = "";
+    let body = "";
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number, headers: Record<string, string>) {
+                status = code;
+                contentType = headers["content-type"];
+            },
+            end(value: Buffer) {
+                body = value.toString("utf8");
+            },
+        } as any,
+        new URL(`http://localhost/api/v1/modules/catalog/assets/${assetId}`),
+    );
+    assert.equal(status, 200);
+    assert.equal(contentType, "image/svg+xml");
+    assert.equal(body, "<svg/>");
 });

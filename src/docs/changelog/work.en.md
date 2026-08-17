@@ -19,3 +19,7 @@ Module Sources now opens as a dedicated list-and-editor manager. The trusted def
 ## Select branches and detect updates
 
 Marketplace details now list every repository branch and select the repository default automatically. Installs record the chosen branch and commit, allowing module cards and details to offer an Update action whenever that branch advances.
+
+## Serve marketplace artwork safely
+
+Marketplace artwork is now fetched by the server and exposed through authenticated same-origin URLs. Missing artwork uses the bundled question-mark icon without weakening the Content Security Policy.

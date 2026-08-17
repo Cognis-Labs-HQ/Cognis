@@ -29,6 +29,27 @@ export interface ModuleRouteHooks {
     onUninstalled?: (moduleId: string) => Promise<void> | void;
 }
 
+function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
+    module: T,
+): T & { assets?: { icon?: string; banner?: string; screenshots?: string[] } } {
+    const assetIds = module.assetIds as
+        { icon?: string; banner?: string; screenshots?: string[] } | undefined;
+    const assetUrl = (id: string) =>
+        `/api/v1/modules/catalog/assets/${encodeURIComponent(id)}`;
+    return {
+        ...module,
+        assets: assetIds
+            ? {
+                  icon: assetIds.icon ? assetUrl(assetIds.icon) : undefined,
+                  banner: assetIds.banner
+                      ? assetUrl(assetIds.banner)
+                      : undefined,
+                  screenshots: (assetIds.screenshots ?? []).map(assetUrl),
+              }
+            : undefined,
+    };
+}
+
 export function createModuleRoutes(
     moduleService: ModuleService,
     hooks?: ModuleRouteHooks,
@@ -88,6 +109,33 @@ export function createModuleRoutes(
             res.end();
             return true;
         }
+        const assetMatch = url.pathname.match(
+            /^\/api\/v1\/modules\/catalog\/assets\/([a-f0-9]{64})$/,
+        );
+        if (marketplace && assetMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const asset = marketplace.getAsset(assetMatch[1]);
+            if (!asset) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_asset_not_found",
+                            message: "Module asset not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, {
+                "content-type": asset.contentType,
+                "cache-control": "private, max-age=3600",
+                "x-content-type-options": "nosniff",
+            });
+            res.end(asset.body);
+            return true;
+        }
         if (
             marketplace &&
             url.pathname === "/api/v1/modules/catalog" &&
@@ -101,10 +149,12 @@ export function createModuleRoutes(
                       (value): value is string => typeof value === "string",
                   )
                 : undefined;
-            const data = await marketplace.discover(
-                (body.tokens ?? {}) as Record<string, string>,
-                sourceUuids,
-            );
+            const data = (
+                await marketplace.discover(
+                    (body.tokens ?? {}) as Record<string, string>,
+                    sourceUuids,
+                )
+            ).map(withMarketplaceAssetUrls);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
             return true;
