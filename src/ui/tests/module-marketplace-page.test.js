@@ -56,6 +56,25 @@ test("module marketplace does not resolve repository-relative avatars against th
     assert.match(source, /parsed\.protocol === "https:"/);
 });
 
+test("module marketplace replaces unavailable icons with the unknown icon", () => {
+    const pageSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    const errorHandlerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
+        "utf8",
+    );
+    const fallbackIcon = readFileSync(
+        resolve(ROOT, "src/ui/public/assets/reuse/module-icon-unknown.svg"),
+        "utf8",
+    );
+    assert.match(pageSource, /data-resource-fallback/);
+    assert.match(pageSource, /module-icon-unknown\.svg/);
+    assert.match(errorHandlerSource, /dataset\.resourceFallback/);
+    assert.match(fallbackIcon, /class="mark"/);
+});
+
 test("module marketplace opens repository readmes in a full detail view", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

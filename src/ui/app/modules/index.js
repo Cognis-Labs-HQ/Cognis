@@ -24,11 +24,12 @@ let sources = [];
 let category = "all";
 let view = "recommended";
 let selectedModule = null;
+const MODULE_ICON_FALLBACK_URL = "/assets/reuse/module-icon-unknown.svg";
 
 function renderCard(module) {
     const avatarUrl = resolveModuleAssetUrl(module.assets?.icon);
     const avatar = avatarUrl
-        ? `<img class="module-store-avatar" src="${escapeHtml(avatarUrl)}" alt="" loading="lazy">`
+        ? `<img class="module-store-avatar" src="${escapeHtml(avatarUrl)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy">`
         : `<span class="module-store-avatar module-store-avatar--fallback">${escapeHtml(module.name.slice(0, 1))}</span>`;
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
