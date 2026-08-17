@@ -14,4 +14,4 @@ Semua manifes komponen tetap memiliki nama dan ID yang mudah dibaca, tetapi mema
 
 ## Kontrol bursa yang andal
 
-Kartu modul, filter, pengaturan sumber, dan kontrol siklus hidup kini langsung memperbarui isi bursa tanpa mengatur ulang tata letak halaman di sekitarnya.
+Kartu modul, filter, pengaturan sumber, dan kontrol siklus hidup kini langsung memperbarui isi bursa tanpa mengatur ulang tata letak halaman di sekitarnya. Detail modul tetap menampilkan navigasi bursa, sementara ukuran kartu yang konsisten menjaga deskripsi dan tindakan siklus hidup tetap sejajar.

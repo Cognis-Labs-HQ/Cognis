@@ -69,7 +69,7 @@ function renderModuleDetails(module) {
         .filter(Boolean)
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
-    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><button type="button" class="btn-neutral" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div><div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail"><button type="button" class="btn-neutral module-detail-back" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div><div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -115,21 +115,23 @@ function formatTag(tag) {
         .join(" ");
 }
 
+function renderSidebar(categories) {
+    return `<aside class="module-store-sidebar">
+      ${["recommended", "installed", "available"].map((item) => `<button type="button" class="btn-neutral${view === item ? " is-active" : ""}" data-store-view="${item}">${escapeHtml(i18n.t(`ui.app.modules.${item}`))}</button>`).join("")}
+      <h3>${escapeHtml(i18n.t("ui.app.modules.categories"))}</h3>
+      <button type="button" class="btn-neutral${category === "all" ? " is-active" : ""}" data-store-category="all">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
+      ${categories.map((item) => `<button type="button" class="btn-neutral${category === item ? " is-active" : ""}" data-store-category="${escapeHtml(item)}">${escapeHtml(formatTag(item))}</button>`).join("")}
+    </aside>`;
+}
+
 function renderStore() {
-    if (selectedModule) return renderModuleDetails(selectedModule);
     const categories = [
         ...new Set(modulesForView().flatMap((module) => module.tags ?? [])),
     ].sort((left, right) => left.localeCompare(right));
     return `<div class="module-store-layout">
-      <aside class="module-store-sidebar">
-        ${["recommended", "installed", "available"].map((item) => `<button type="button" class="btn-neutral${view === item ? " is-active" : ""}" data-store-view="${item}">${escapeHtml(i18n.t(`ui.app.modules.${item}`))}</button>`).join("")}
-        <h3>${escapeHtml(i18n.t("ui.app.modules.categories"))}</h3>
-        <button type="button" class="btn-neutral${category === "all" ? " is-active" : ""}" data-store-category="all">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
-        ${categories.map((item) => `<button type="button" class="btn-neutral${category === item ? " is-active" : ""}" data-store-category="${escapeHtml(item)}">${escapeHtml(formatTag(item))}</button>`).join("")}
-      </aside>
+      ${renderSidebar(categories)}
       <section class="module-store-results">
-        <div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button></div>
-        <div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>
+        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
       </section>
     </div>`;
 }
@@ -252,6 +254,8 @@ function bindInteractions(root, signal) {
             if (target.dataset.storeView) category = "all";
             if (target.dataset.storeCategory)
                 category = target.dataset.storeCategory;
+            if (target.dataset.storeView || target.dataset.storeCategory)
+                selectedModule = null;
             if (target.id === "module-source-settings") {
                 await openSourceSettings();
                 return;

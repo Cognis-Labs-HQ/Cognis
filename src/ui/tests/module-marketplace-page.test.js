@@ -5,6 +5,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const marketplaceStyles = readFileSync(
+    resolve(ROOT, "src/ui/styles/modules.css"),
+    "utf8",
+);
 
 test("module marketplace passes root and options to the page composer", () => {
     const source = readFileSync(
@@ -16,6 +20,18 @@ test("module marketplace passes root and options to the page composer", () => {
     assert.match(source, /i18n,/);
     assert.match(source, /signal,/);
     assert.match(source, /max: "full"/);
+});
+
+test("module marketplace cards keep consistent content and action geometry", () => {
+    assert.match(marketplaceStyles, /-webkit-line-clamp: 2/);
+    assert.match(
+        marketplaceStyles,
+        /\.module-store-card-actions[\s\S]*flex-wrap: nowrap/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /\.module-store-card-actions button[\s\S]*flex: 1 1 0/,
+    );
 });
 
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
@@ -40,6 +56,8 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderMarkdown\(module\.readme/);
     assert.match(source, /module-detail-screenshots/);
     assert.match(source, /data-module-back/);
+    assert.match(source, /renderSidebar\(categories\)/);
+    assert.match(source, /module-detail-back/);
     assert.match(source, /selectedModule = null/);
     assert.match(source, /target\.classList\.contains\("module-store-card"\)/);
     assert.match(source, /data-module-install/);
