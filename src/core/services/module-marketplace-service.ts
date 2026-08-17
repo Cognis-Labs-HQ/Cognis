@@ -180,12 +180,20 @@ export class ModuleMarketplaceService {
                 );
                 const assets = manifest.assets
                     ? {
-                          avatar: manifest.assets.avatar
+                          icon: manifest.assets.icon
                               ? this.resolveRepositoryAssetUrl(
                                     source,
                                     projectPath,
                                     defaultBranch,
-                                    manifest.assets.avatar,
+                                    manifest.assets.icon,
+                                )
+                              : undefined,
+                          banner: manifest.assets.banner
+                              ? this.resolveRepositoryAssetUrl(
+                                    source,
+                                    projectPath,
+                                    defaultBranch,
+                                    manifest.assets.banner,
                                 )
                               : undefined,
                           screenshots: (manifest.assets.screenshots ?? []).map(

@@ -20,13 +20,15 @@ export interface ModuleManifest {
     summary?: string;
     description?: string;
     categories?: string[];
+    tags?: string[];
     recommended?: boolean;
     license?: string;
     homepage?: string;
     repository?: string;
     support?: string;
     assets?: {
-        avatar?: string;
+        icon?: string;
+        banner?: string;
         screenshots?: string[];
     };
     entrypoints: {

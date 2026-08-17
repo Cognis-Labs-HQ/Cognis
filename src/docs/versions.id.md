@@ -80,13 +80,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen     | Jalur       | Versi    |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.12` |
+| Core Package | `src/core/` | `0.3.13` |
 
 ## API
 
 | Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.10` |
+| API Server | `src/api/` | `0.3.11` |
 
 ## Peralatan
 
@@ -99,7 +99,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.6`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.50` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.16` |
-| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.8`  |
-| Cognis English       | `src/modules/study/languages/en/`   | `1.2.6`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.51` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.17` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.9`  |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.7`  |

@@ -2,7 +2,7 @@
     "id": "nextcloud-whiteboard",
     "uuid": "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
     "name": "Nextcloud Whiteboard",
-    "version": "2.3.16",
+    "version": "2.3.17",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": [
@@ -31,7 +31,9 @@
     "license": "AGPL-3.0-or-later",
     "repository": "https://github.com/Cognis-Labs-HQ/nextcloud-whiteboard",
     "assets": {
-        "avatar": "assets/avatar.png",
-        "screenshots": []
-    }
+        "screenshots": [],
+        "icon": "assets/icon.svg",
+        "banner": "assets/banner.svg"
+    },
+    "tags": ["whiteboard", "collaboration"]
 }

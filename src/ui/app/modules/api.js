@@ -51,3 +51,26 @@ export async function installModule(module, token) {
         }),
     );
 }
+
+export async function setModuleEnabled(moduleId, enabled) {
+    return data(
+        await apiFetch(
+            `/api/v1/modules/${encodeURIComponent(moduleId)}/${enabled ? "enable" : "disable"}`,
+            {
+                method: "POST",
+                headers: enabled
+                    ? { "x-cognis-external-module-disclaimer": "accepted" }
+                    : undefined,
+            },
+        ),
+    );
+}
+
+export async function uninstallModule(moduleUuid) {
+    return data(
+        await apiFetch(
+            `/api/v1/modules/${encodeURIComponent(moduleUuid)}/uninstall`,
+            { method: "DELETE" },
+        ),
+    );
+}

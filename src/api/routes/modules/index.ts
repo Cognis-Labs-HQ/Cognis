@@ -123,6 +123,23 @@ export function createModuleRoutes(
             res.end(JSON.stringify({ data: manifest }));
             return true;
         }
+        const uninstallMatch = url.pathname.match(
+            /^\/api\/v1\/modules\/([^/]+)\/uninstall$/,
+        );
+        if (marketplace && uninstallMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const moduleUuid = decodeURIComponent(uninstallMatch[1]);
+            await marketplace.uninstall(moduleUuid);
+            hooks?.log?.("info", "External module uninstalled.", {
+                ...logMeta,
+                accountId: claims.sub,
+                moduleUuid,
+            });
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
         if (url.pathname === "/api/v1/modules" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;

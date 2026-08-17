@@ -2,7 +2,7 @@
     "id": "study-language-en",
     "uuid": "b1adc29f-9d54-5785-9bea-2ce76f1981e4",
     "name": "Cognis English",
-    "version": "1.2.6",
+    "version": "1.2.7",
     "class": "extension",
     "enabledByDefault": true,
     "coreApiVersion": "v1",
@@ -17,7 +17,9 @@
     "license": "AGPL-3.0-or-later",
     "repository": "https://github.com/Cognis-Labs-HQ/study-language-en",
     "assets": {
-        "avatar": "assets/avatar.png",
-        "screenshots": []
-    }
+        "screenshots": [],
+        "icon": "assets/icon.svg",
+        "banner": "assets/banner.svg"
+    },
+    "tags": ["language", "learning"]
 }

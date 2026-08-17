@@ -10,4 +10,8 @@ Satu repositori Git menyediakan satu modul. Akar repositori memuat `manifest.jso
 
 ## Sumber dan keamanan
 
-Pengelola modul menemukan repositori dalam organisasi GitHub dan grup GitLab. PAT baca-saja yang opsional disimpan di keyring administrator; konfigurasi sumber hanya menyimpan pengenalnya. Instalasi mengklon melalui HTTPS, memvalidasi manifes dan UUID, lalu memindahkan isi secara atomik. Kode baru berjalan setelah diaktifkan secara terpisah. Tinjau kode pihak ketiga sebelum mengaktifkannya.
+Pengelola modul pada menu pengguna menemukan repositori dalam organisasi GitHub dan grup GitLab. PAT baca-saja yang opsional disimpan di keyring administrator; konfigurasi sumber hanya menyimpan pengenalnya. Instalasi mengklon melalui HTTPS, memvalidasi manifes dan UUID, lalu memindahkan isi secara atomik. Kode baru berjalan setelah diaktifkan secara terpisah. Tinjau kode pihak ketiga sebelum mengaktifkannya.
+
+## Aset toko dan tag
+
+Modul dapat mendeklarasikan `tags` yang lebih khusus di samping `categories`; keduanya digunakan untuk penyaringan. Gambar toko berada di `assets/` pada repositori: gunakan `assets/icon.svg` atau `assets/icon.png` sebagai ikon katalog, serta `assets/banner.svg`, `assets/banner.png`, atau `assets/banner.jpg` sebagai gambar utama halaman detail. Nyatakan jalur tersebut sebagai `assets.icon` dan `assets.banner` dalam `manifest.json`. Gambar galeri opsional dicantumkan dalam `assets.screenshots`.

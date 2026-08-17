@@ -80,13 +80,13 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component    | Path        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.12` |
+| Core Package | `src/core/` | `0.3.13` |
 
 ## API
 
 | Component  | Path       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.10` |
+| API Server | `src/api/` | `0.3.11` |
 
 ## Tooling
 
@@ -99,7 +99,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component            | Path                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.6`  |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.50` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.16` |
-| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.8`  |
-| Cognis English       | `src/modules/study/languages/en/`   | `1.2.6`  |
+| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.51` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.17` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.9`  |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.7`  |

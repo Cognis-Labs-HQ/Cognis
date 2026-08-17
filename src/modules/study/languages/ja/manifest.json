@@ -2,7 +2,7 @@
     "id": "study-language-ja",
     "uuid": "e905927f-b133-572a-92ce-2ea8645e5ceb",
     "name": "Cognis Japanese",
-    "version": "1.2.8",
+    "version": "1.2.9",
     "class": "extension",
     "enabledByDefault": true,
     "coreApiVersion": "v1",
@@ -17,7 +17,9 @@
     "license": "AGPL-3.0-or-later",
     "repository": "https://github.com/Cognis-Labs-HQ/study-language-ja",
     "assets": {
-        "avatar": "assets/avatar.png",
-        "screenshots": []
-    }
+        "screenshots": [],
+        "icon": "assets/icon.svg",
+        "banner": "assets/banner.svg"
+    },
+    "tags": ["language", "learning"]
 }

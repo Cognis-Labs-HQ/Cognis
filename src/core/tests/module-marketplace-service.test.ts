@@ -56,7 +56,10 @@ test("module marketplace discovers repository manifests", async () => {
                         coreApiVersion: "v1",
                         capabilities: [],
                         entrypoints: {},
-                        assets: { avatar: "assets/avatar.png" },
+                        assets: {
+                            icon: "assets/icon.svg",
+                            banner: "assets/banner.svg",
+                        },
                     }),
                 );
     try {
@@ -64,8 +67,8 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(modules[0].id, "notes");
         assert.equal(modules[0].sourceUuid, source.uuid);
         assert.equal(
-            modules[0].assets?.avatar,
-            "https://raw.githubusercontent.com/acme/notes/main/assets/avatar.png",
+            modules[0].assets?.icon,
+            "https://raw.githubusercontent.com/acme/notes/main/assets/icon.svg",
         );
         assert.equal(modules[0].readme, "# Notes\nA useful module.");
     } finally {

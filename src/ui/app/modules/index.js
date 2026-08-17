@@ -13,6 +13,8 @@ import {
     loadModuleSources,
     removeModuleSource,
     saveModuleSource,
+    setModuleEnabled,
+    uninstallModule,
 } from "./api.js";
 
 let i18n;
@@ -24,29 +26,37 @@ let view = "recommended";
 let selectedModule = null;
 
 function renderCard(module) {
-    const avatarUrl = resolveModuleAvatarUrl(module.assets?.avatar);
+    const avatarUrl = resolveModuleAssetUrl(module.assets?.icon);
     const avatar = avatarUrl
         ? `<img class="module-store-avatar" src="${escapeHtml(avatarUrl)}" alt="" loading="lazy">`
         : `<span class="module-store-avatar module-store-avatar--fallback">${escapeHtml(module.name.slice(0, 1))}</span>`;
-    return `<article class="module-store-card">
+    return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
         <div class="module-store-card-heading"><h3>${escapeHtml(module.name)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
         <p>${escapeHtml(module.summary ?? module.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(module.version)}</span>
       </div>
-      <div class="module-store-card-actions">
-        <button type="button" class="btn-neutral" data-module-details="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.details"))}</button>
-        <button type="button" class="${module.installed || module.status === "enabled" ? "btn-neutral" : "btn-confirm"}" data-module-action="${module.uuid}"${module.installed || module.status === "enabled" ? " disabled" : ""}>${escapeHtml(i18n.t(module.installed || module.status === "enabled" ? "ui.reuse.installed" : "ui.reuse.install"))}</button>
-      </div>
+      <div class="module-store-card-actions">${renderLifecycleActions(module)}</div>
     </article>`;
 }
 
+function renderLifecycleActions(module) {
+    if (!module.installed && !module.status) {
+        return `<button type="button" class="btn-confirm" data-module-install="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.install"))}</button>`;
+    }
+    if (module.status === "enabled") {
+        return `<button type="button" class="btn-cancel" data-module-disable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.disable"))}</button>`;
+    }
+    return `<button type="button" class="btn-confirm" data-module-enable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.enable"))}</button><button type="button" class="btn-cancel" data-module-uninstall="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.uninstall"))}</button>`;
+}
+
 function renderModuleDetails(module) {
+    const bannerUrl = resolveModuleAssetUrl(module.assets?.banner);
     const screenshots = (module.assets?.screenshots ?? [])
         .map(
             (url) =>
-                `<img class="module-detail-screenshot" src="${escapeHtml(resolveModuleAvatarUrl(url))}" alt="" loading="lazy">`,
+                `<img class="module-detail-screenshot" src="${escapeHtml(resolveModuleAssetUrl(url))}" alt="" loading="lazy">`,
         )
         .join("");
     const metadata = [
@@ -54,14 +64,15 @@ function renderModuleDetails(module) {
         module.version,
         module.license,
         ...(module.categories ?? []),
+        ...(module.tags ?? []),
     ]
         .filter(Boolean)
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
-    return `<article class="module-detail"><header class="module-detail-header"><button type="button" class="btn-neutral" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><button type="button" class="btn-neutral" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div><div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
-function resolveModuleAvatarUrl(value) {
+function resolveModuleAssetUrl(value) {
     const candidate = String(value ?? "").trim();
     if (candidate.startsWith("/")) return candidate;
     try {
@@ -84,14 +95,24 @@ function visibleModules() {
         )
             return false;
         if (view === "recommended" && !module.recommended) return false;
-        return category === "all" || module.categories?.includes(category);
+        return (
+            category === "all" ||
+            [...(module.categories ?? []), ...(module.tags ?? [])].includes(
+                category,
+            )
+        );
     });
 }
 
 function renderStore() {
     if (selectedModule) return renderModuleDetails(selectedModule);
     const categories = [
-        ...new Set(modules.flatMap((module) => module.categories ?? [])),
+        ...new Set(
+            modules.flatMap((module) => [
+                ...(module.categories ?? []),
+                ...(module.tags ?? []),
+            ]),
+        ),
     ];
     return `<div class="module-store-layout">
       <aside class="module-store-sidebar">
@@ -168,64 +189,88 @@ async function openSourceSettings() {
     });
 }
 
-function bind() {
-    document.querySelectorAll("[data-store-view]").forEach((button) =>
-        button.addEventListener("click", () => {
-            view = button.dataset.storeView;
-            composer.refresh(elements());
-        }),
+async function runLifecycleAction(module, action) {
+    if (action === "install") {
+        const source = sources.find(
+            (entry) => entry.uuid === module.sourceUuid,
+        );
+        const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
+            i18n.t("ui.app.modules.keyring_component"),
+        );
+        const token = source?.credentialId
+            ? keyring?.get(source.credentialId)
+            : undefined;
+        await installModule(module, token);
+        module.installed = true;
+        module.status = "disabled";
+    }
+    if (action === "enable" || action === "disable") {
+        await setModuleEnabled(module.id, action === "enable");
+        module.status = action === "enable" ? "enabled" : "disabled";
+    }
+    if (action === "uninstall") {
+        await uninstallModule(module.uuid);
+        module.installed = false;
+        delete module.status;
+    }
+    selectedModule =
+        selectedModule?.uuid === module.uuid ? module : selectedModule;
+    showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
+    composer.refresh(elements());
+}
+
+function bindInteractions(root, signal) {
+    root.addEventListener(
+        "keydown",
+        (event) => {
+            if (!["Enter", " "].includes(event.key)) return;
+            const card = event.target.closest(".module-store-card");
+            if (!card || event.target.closest("button")) return;
+            event.preventDefault();
+            card.click();
+        },
+        { signal },
     );
-    document.querySelectorAll("[data-store-category]").forEach((button) =>
-        button.addEventListener("click", () => {
-            category = button.dataset.storeCategory;
-            composer.refresh(elements());
-        }),
-    );
-    document
-        .querySelector("#module-source-settings")
-        ?.addEventListener("click", openSourceSettings);
-    document.querySelectorAll("[data-module-details]").forEach((button) =>
-        button.addEventListener("click", () => {
-            selectedModule = modules.find(
-                (entry) => entry.uuid === button.dataset.moduleDetails,
-            );
-            if (selectedModule) composer.refresh(elements());
-        }),
-    );
-    document
-        .querySelector("[data-module-back]")
-        ?.addEventListener("click", () => {
-            selectedModule = null;
-            composer.refresh(elements());
-        });
-    document.querySelectorAll("[data-module-action]").forEach((button) =>
-        button.addEventListener("click", async () => {
-            const module = modules.find(
-                (entry) => entry.uuid === button.dataset.moduleAction,
-            );
-            if (!module || module.installed || module.status) return;
-            button.disabled = true;
-            try {
-                const source = sources.find(
-                    (entry) => entry.uuid === module.sourceUuid,
-                );
-                const keyring = uiCtx.capabilities.get(
-                    "keyring:forComponent",
-                )?.(i18n.t("ui.app.modules.keyring_component"));
-                const token = source?.credentialId
-                    ? keyring?.get(source.credentialId)
-                    : undefined;
-                await installModule(module, token);
-                module.installed = true;
-                showToast(i18n.t("ui.app.modules.installed"), {
-                    type: "success",
-                });
-                composer.refresh(elements());
-            } catch (error) {
-                showToast(error.message, { type: "error" });
-                button.disabled = false;
+    root.addEventListener(
+        "click",
+        async (event) => {
+            const target =
+                event.target.closest("button") ??
+                event.target.closest(".module-store-card");
+            if (!target) return;
+            if (target.dataset.storeView) view = target.dataset.storeView;
+            if (target.dataset.storeCategory)
+                category = target.dataset.storeCategory;
+            if (target.id === "module-source-settings") {
+                await openSourceSettings();
+                return;
             }
-        }),
+            if (target.hasAttribute("data-module-back")) selectedModule = null;
+            const action = ["install", "enable", "disable", "uninstall"].find(
+                (name) => target.hasAttribute(`data-module-${name}`),
+            );
+            const moduleUuid = action
+                ? target.dataset[
+                      `module${action[0].toUpperCase()}${action.slice(1)}`
+                  ]
+                : target.dataset.moduleUuid;
+            const module = modules.find((entry) => entry.uuid === moduleUuid);
+            if (action && module) {
+                target.disabled = true;
+                try {
+                    await runLifecycleAction(module, action);
+                } catch (error) {
+                    showToast(error.message, { type: "error" });
+                    target.disabled = false;
+                }
+                return;
+            }
+            if (target.classList.contains("module-store-card")) {
+                selectedModule = module;
+            }
+            composer.refresh(elements());
+        },
+        { signal },
     );
 }
 
@@ -279,10 +324,10 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("ui.app.modules.subtitle"),
         },
         elements: elements(),
-        onRender: bind,
         signal,
     });
     await composer.init();
+    bindInteractions(root, signal);
 }
 
 await mountWhenDirect(mount);

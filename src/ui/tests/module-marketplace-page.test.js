@@ -23,7 +23,7 @@ test("module marketplace does not resolve repository-relative avatars against th
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(source, /const avatarUrl = resolveModuleAvatarUrl/);
+    assert.match(source, /const avatarUrl = resolveModuleAssetUrl/);
     assert.match(
         source,
         /if \(candidate\.startsWith\("\/"\)\) return candidate/,
@@ -36,9 +36,14 @@ test("module marketplace opens repository readmes in a full detail view", () => 
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(source, /data-module-details/);
+    assert.match(source, /data-module-uuid/);
     assert.match(source, /renderMarkdown\(module\.readme/);
     assert.match(source, /module-detail-screenshots/);
     assert.match(source, /data-module-back/);
     assert.match(source, /selectedModule = null/);
+    assert.match(source, /target\.classList\.contains\("module-store-card"\)/);
+    assert.match(source, /data-module-install/);
+    assert.match(source, /data-module-enable/);
+    assert.match(source, /data-module-disable/);
+    assert.match(source, /data-module-uninstall/);
 });
