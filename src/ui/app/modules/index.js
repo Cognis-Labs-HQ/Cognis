@@ -132,7 +132,7 @@ function renderStore() {
     return `<div class="module-store-layout">
       ${renderSidebar(categories)}
       <section class="module-store-results">
-        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
+        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.reuse.refresh"))}</button><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
       </section>
     </div>`;
 }
@@ -237,6 +237,31 @@ function refreshMarketplace() {
     composer.refreshElements(["module-store"]);
 }
 
+async function loadMarketplaceCatalog() {
+    const [loadedSources, installed] = await Promise.all([
+        loadModuleSources(),
+        loadInstalledModules(),
+    ]);
+    sources = loadedSources;
+    const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
+        i18n.t("ui.app.modules.keyring_component"),
+    );
+    const tokens = Object.fromEntries(
+        sources
+            .filter((source) => source.credentialId)
+            .map((source) => [
+                source.credentialId,
+                keyring?.get(source.credentialId) ?? "",
+            ]),
+    );
+    const available = sources.length ? await loadAvailableModules(tokens) : [];
+    const installedUuids = new Set(installed.map((module) => module.uuid));
+    modules = [
+        ...installed,
+        ...available.filter((module) => !installedUuids.has(module.uuid)),
+    ];
+}
+
 function bindInteractions(root, signal) {
     root.addEventListener(
         "keydown",
@@ -264,6 +289,21 @@ function bindInteractions(root, signal) {
                 selectedModule = null;
             if (target.id === "module-source-settings") {
                 await openSourceSettings();
+                return;
+            }
+            if (target.id === "module-source-refresh") {
+                target.disabled = true;
+                try {
+                    await loadMarketplaceCatalog();
+                    selectedModule = null;
+                    refreshMarketplace();
+                    showToast(i18n.t("ui.app.modules.refresh_complete"), {
+                        type: "success",
+                    });
+                } catch (error) {
+                    showToast(error.message, { type: "error" });
+                    target.disabled = false;
+                }
                 return;
             }
             if (target.hasAttribute("data-module-back")) selectedModule = null;
@@ -314,28 +354,7 @@ function elements() {
 export async function mount(root, { signal } = {}) {
     i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.modules");
-    const [loadedSources, installed] = await Promise.all([
-        loadModuleSources(),
-        loadInstalledModules(),
-    ]);
-    sources = loadedSources;
-    const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
-        i18n.t("ui.app.modules.keyring_component"),
-    );
-    const tokens = Object.fromEntries(
-        sources
-            .filter((source) => source.credentialId)
-            .map((source) => [
-                source.credentialId,
-                keyring?.get(source.credentialId) ?? "",
-            ]),
-    );
-    const available = sources.length ? await loadAvailableModules(tokens) : [];
-    const installedUuids = new Set(installed.map((module) => module.uuid));
-    modules = [
-        ...installed,
-        ...available.filter((module) => !installedUuids.has(module.uuid)),
-    ];
+    await loadMarketplaceCatalog();
     composer = createPageComposer(root, {
         allowCustomization: false,
         preferenceKey: "administration-modules-layout",

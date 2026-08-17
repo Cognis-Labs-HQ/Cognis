@@ -7,3 +7,7 @@ The Module Marketplace now ignores repositories that do not provide a complete, 
 ## Fall back from missing icons
 
 Module cards now replace unavailable remote artwork with a theme-aware question-mark icon without opening the runtime error popup.
+
+## Refresh module sources
+
+The Modules page now provides a Refresh control beside Module Sources to re-query every configured provider and rebuild the visible catalog.

@@ -695,6 +695,7 @@
   <string name="ui.app.modules.base_url">URL Dasar API</string>
   <string name="ui.app.modules.pat">Token Akses Pribadi (Opsional)</string>
   <string name="ui.app.modules.source_saved">Sumber modul disimpan.</string>
+  <string name="ui.app.modules.refresh_complete">Sumber modul disegarkan.</string>
   <string name="ui.reuse.install">Instal</string>
   <string name="ui.reuse.installed">Terpasang</string>
   <string name="ui.reuse.all">Semua</string>

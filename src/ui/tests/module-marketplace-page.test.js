@@ -75,6 +75,20 @@ test("module marketplace replaces unavailable icons with the unknown icon", () =
     assert.match(fallbackIcon, /class="mark"/);
 });
 
+test("module marketplace refreshes every configured source on demand", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /id="module-source-refresh"/);
+    assert.match(source, /ui\.reuse\.refresh/);
+    assert.match(source, /async function loadMarketplaceCatalog/);
+    assert.match(source, /loadModuleSources\(\)/);
+    assert.match(source, /await loadAvailableModules\(tokens\)/);
+    assert.match(source, /target\.id === "module-source-refresh"/);
+    assert.match(source, /ui\.app\.modules\.refresh_complete/);
+});
+
 test("module marketplace opens repository readmes in a full detail view", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

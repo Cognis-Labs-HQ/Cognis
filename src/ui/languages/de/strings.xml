@@ -695,6 +695,7 @@
   <string name="ui.app.modules.base_url">API-Basis-URL</string>
   <string name="ui.app.modules.pat">Persönliches Zugriffstoken (optional)</string>
   <string name="ui.app.modules.source_saved">Modulquelle gespeichert.</string>
+  <string name="ui.app.modules.refresh_complete">Modulquellen aktualisiert.</string>
   <string name="ui.reuse.install">Installieren</string>
   <string name="ui.reuse.installed">Installiert</string>
   <string name="ui.reuse.all">Alle</string>

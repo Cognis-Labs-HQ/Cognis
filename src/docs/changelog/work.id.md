@@ -7,3 +7,7 @@ Marketplace Modul kini mengabaikan repositori yang tidak menyediakan manifes mod
 ## Gunakan ikon pengganti
 
 Kartu modul kini mengganti gambar eksternal yang tidak tersedia dengan ikon tanda tanya yang sesuai tema tanpa membuka popup kesalahan runtime.
+
+## Segarkan sumber modul
+
+Halaman Modul kini menyediakan kontrol Segarkan di samping Sumber Modul untuk meminta ulang setiap penyedia yang dikonfigurasi dan membangun kembali katalog yang terlihat.

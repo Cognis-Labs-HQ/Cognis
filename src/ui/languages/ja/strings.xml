@@ -695,6 +695,7 @@
   <string name="ui.app.modules.base_url">API ベース URL</string>
   <string name="ui.app.modules.pat">個人アクセストークン（任意）</string>
   <string name="ui.app.modules.source_saved">モジュールソースを保存しました。</string>
+  <string name="ui.app.modules.refresh_complete">モジュールソースを更新しました。</string>
   <string name="ui.reuse.install">インストール</string>
   <string name="ui.reuse.installed">インストール済み</string>
   <string name="ui.reuse.all">すべて</string>
