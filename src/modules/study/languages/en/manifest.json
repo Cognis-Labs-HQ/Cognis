@@ -2,7 +2,7 @@
     "id": "study-language-en",
     "uuid": "b1adc29f-9d54-5785-9bea-2ce76f1981e4",
     "name": "Cognis English",
-    "version": "1.2.9",
+    "version": "1.2.10",
     "class": "extension",
     "enabledByDefault": true,
     "coreApiVersion": "v1",
@@ -13,7 +13,6 @@
     "summary": "English learning content for Cognis Study.",
     "description": "Adds English libraries, classroom tools, and learning activities to Study.",
     "categories": ["Productivity"],
-    "license": "AGPL-3.0-or-later",
     "repository": "https://github.com/Cognis-Labs-HQ/study-language-en",
     "assets": {
         "screenshots": [],

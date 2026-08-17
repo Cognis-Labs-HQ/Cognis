@@ -34,6 +34,29 @@ test("module routes list modules", async () => {
     assert.match(body, /analytics/);
 });
 
+test("module routes omit Cognis Core from the module catalog", async () => {
+    const route = createModuleRoutes({
+        list: async () => [
+            { id: "cognis-core", class: "core" },
+            { id: "notes", class: "extension" },
+        ],
+    } as any);
+    const token = issueAccessToken("u1", "admin", 60);
+    let body = "";
+    await route(
+        { method: "GET", headers: { authorization: `Bearer ${token}` } } as any,
+        {
+            writeHead() {},
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules"),
+    );
+    assert.doesNotMatch(body, /cognis-core/);
+    assert.match(body, /notes/);
+});
+
 test("module routes log enable operations", async () => {
     const entries: Array<{
         level: string;

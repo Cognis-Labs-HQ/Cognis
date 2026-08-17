@@ -70,6 +70,7 @@ interface ModuleInstallProvenance {
 
 export class ModuleMarketplaceService {
     private readonly assets = new Map<string, MarketplaceAsset>();
+    private catalogMutation: Promise<void> = Promise.resolve();
 
     constructor(
         private readonly statePath: string,
@@ -192,6 +193,9 @@ export class ModuleMarketplaceService {
         await writeFile(this.statePath, JSON.stringify(sources, null, 2), {
             mode: 0o600,
         });
+        await this.pruneCachedSources(
+            new Set(sources.map((source) => source.uuid)),
+        );
     }
 
     async discover(
@@ -202,19 +206,30 @@ export class ModuleMarketplaceService {
         const selectedSources = sourceUuids
             ? sources.filter((source) => sourceUuids.includes(source.uuid))
             : sources;
-        const results = await Promise.allSettled(
-            selectedSources.map((source) =>
-                this.discoverSource(
-                    source,
-                    source.credentialId
-                        ? tokens[source.credentialId]
-                        : undefined,
-                ),
-            ),
+        const configuredSourceUuids = new Set(
+            sources.map((source) => source.uuid),
         );
-        return results.flatMap((result) =>
-            result.status === "fulfilled" ? result.value : [],
+        const results = await Promise.all(
+            selectedSources.map(async (source) => {
+                try {
+                    const modules = await this.discoverSource(
+                        source,
+                        source.credentialId
+                            ? tokens[source.credentialId]
+                            : undefined,
+                    );
+                    await this.replaceCachedSource(
+                        source.uuid,
+                        modules,
+                        configuredSourceUuids,
+                    );
+                    return modules;
+                } catch {
+                    return this.readCachedCatalog([source.uuid]);
+                }
+            }),
         );
+        return results.flat();
     }
 
     async install(
@@ -292,6 +307,7 @@ export class ModuleMarketplaceService {
             recursive: true,
             force: true,
         });
+        await this.updateCachedInstallation(uuid, false);
     }
 
     getAsset(id: string): MarketplaceAsset | undefined {
@@ -336,7 +352,12 @@ export class ModuleMarketplaceService {
                         ? `https://raw.githubusercontent.com/${projectPath}/${defaultBranch}/manifest.json`
                         : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
                 const manifestResponse = await fetch(rawUrl, { headers });
-                if (!manifestResponse.ok) return null;
+                if (manifestResponse.status === 404) return null;
+                if (!manifestResponse.ok) {
+                    throw new Error(
+                        `module_manifest_discovery_failed:${manifestResponse.status}`,
+                    );
+                }
                 let manifest: ModuleManifest;
                 try {
                     manifest = this.parseManifest(
@@ -358,6 +379,12 @@ export class ModuleMarketplaceService {
                         "README.md",
                     ),
                     { headers },
+                );
+                const hasLicenseFile = await this.hasRootLicenseFile(
+                    source,
+                    projectPath,
+                    defaultBranch,
+                    headers,
                 );
                 const assetIds = manifest.assets
                     ? {
@@ -406,6 +433,7 @@ export class ModuleMarketplaceService {
                 )?.commit;
                 return {
                     ...manifest,
+                    license: hasLicenseFile ? manifest.license : undefined,
                     assetIds,
                     cloneUrl,
                     sourceUuid: source.uuid,
@@ -425,9 +453,122 @@ export class ModuleMarketplaceService {
                 };
             }),
         );
+        if (candidates.some((result) => result.status === "rejected")) {
+            throw new Error("module_source_discovery_incomplete");
+        }
         return candidates.flatMap((result) =>
             result.status === "fulfilled" && result.value ? [result.value] : [],
         );
+    }
+
+    private async hasRootLicenseFile(
+        source: ModuleSource,
+        projectPath: string,
+        defaultBranch: string,
+        headers: Record<string, string>,
+    ): Promise<boolean> {
+        for (const filename of ["LICENSE", "LICENSE.md", "LICENSE.txt"]) {
+            const response = await fetch(
+                this.resolveRepositoryAssetUrl(
+                    source,
+                    projectPath,
+                    defaultBranch,
+                    filename,
+                ),
+                { headers },
+            ).catch(() => undefined);
+            if (response?.ok) return true;
+        }
+        return false;
+    }
+
+    private async readCachedCatalog(
+        sourceUuids?: string[],
+    ): Promise<MarketplaceModule[]> {
+        try {
+            const value = JSON.parse(
+                await readFile(`${this.statePath}.catalog`, "utf8"),
+            ) as MarketplaceModule[];
+            if (!Array.isArray(value)) return [];
+            return sourceUuids
+                ? value.filter((module) =>
+                      sourceUuids.includes(module.sourceUuid),
+                  )
+                : value;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+            throw error;
+        }
+    }
+
+    private async replaceCachedSource(
+        sourceUuid: string,
+        modules: MarketplaceModule[],
+        configuredSourceUuids: Set<string>,
+    ): Promise<void> {
+        const replace = async () => {
+            const cached = await this.readCachedCatalog();
+            const retained = cached.filter(
+                (module) =>
+                    module.sourceUuid !== sourceUuid &&
+                    configuredSourceUuids.has(module.sourceUuid),
+            );
+            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await writeFile(
+                `${this.statePath}.catalog`,
+                JSON.stringify([...retained, ...modules], null, 2),
+                { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(replace, replace);
+        await this.catalogMutation;
+    }
+
+    private async updateCachedInstallation(
+        uuid: string,
+        installed: boolean,
+    ): Promise<void> {
+        const update = async () => {
+            const cached = await this.readCachedCatalog();
+            const modules = cached.map((module) =>
+                module.uuid === uuid
+                    ? {
+                          ...module,
+                          installed,
+                          installedBranch: undefined,
+                          installedCommit: undefined,
+                          updateAvailable: false,
+                      }
+                    : module,
+            );
+            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await writeFile(
+                `${this.statePath}.catalog`,
+                JSON.stringify(modules, null, 2),
+                { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(update, update);
+        await this.catalogMutation;
+    }
+
+    private async pruneCachedSources(
+        configuredSourceUuids: Set<string>,
+    ): Promise<void> {
+        const prune = async () => {
+            const cached = await this.readCachedCatalog();
+            const modules = cached.filter((module) =>
+                configuredSourceUuids.has(module.sourceUuid),
+            );
+            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await writeFile(
+                `${this.statePath}.catalog`,
+                JSON.stringify(modules, null, 2),
+                { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(prune, prune);
+        await this.catalogMutation;
     }
 
     private async cacheRepositoryAsset(
@@ -557,7 +698,6 @@ export class ModuleMarketplaceService {
             !manifest.publisher ||
             !manifest.summary ||
             !manifest.description ||
-            !manifest.license ||
             !manifest.repository ||
             !manifest.coreApiVersion ||
             !["core", "extension"].includes(manifest.class) ||

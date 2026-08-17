@@ -43,3 +43,15 @@ Ein installiertes Modul bleibt nun deaktiviert, bis ein Administrator es ausdrü
 ## Marketplace-Steuerelemente gestalten
 
 Zurück- und Aktualisierungssteuerung verwenden nun eigene helle und dunkle SVG-Dateien, die zum aktiven Dashboard-Design passen.
+
+## Entdeckte Module verfügbar halten
+
+Marketplace-Manifeste werden je konfigurierter Quelle zwischengespeichert. Nach der Deinstallation kehrt ein Modul sofort zu Verfügbar zurück, vorübergehende Quellfehler behalten den Eintrag und ein Modul verschwindet erst, wenn alle konfigurierten Quellen seine Abwesenheit erfolgreich bestätigen.
+
+## Core aus Modulen heraushalten
+
+Cognis Core wird nicht mehr in der Modulverwaltung zurückgegeben, da der Plattformkern kein installierbares Modul ist.
+
+## Angegebene Lizenzen prüfen
+
+Lizenzmetadaten werden nur angezeigt, wenn eine erkannte Lizenzdatei im Repository-Stamm vorhanden ist. Die Installationsprüfung lehnt Lizenzangaben ohne diesen Repository-Nachweis ab.

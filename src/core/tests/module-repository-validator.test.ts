@@ -102,6 +102,21 @@ test("module repository validator rejects mismatched packages and files", async 
     }
 });
 
+test("module repository validator requires a root license file when declared", async () => {
+    const fixture = await createRepository();
+    fixture.manifest.license = "MIT";
+    try {
+        await assert.rejects(
+            validateModuleRepository(fixture.root, fixture.manifest),
+            /missing_module_license_file/,
+        );
+        await writeFile(path.join(fixture.root, "LICENSE"), "MIT\n");
+        await validateModuleRepository(fixture.root, fixture.manifest);
+    } finally {
+        await rm(fixture.root, { recursive: true, force: true });
+    }
+});
+
 test("bundled extension modules satisfy the external repository contract", async () => {
     for (const id of ["analytics", "nextcloud-whiteboard"]) {
         const root = path.join(REPOSITORY_ROOT, "src/modules", id);

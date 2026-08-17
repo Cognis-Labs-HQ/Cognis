@@ -2,6 +2,6 @@
     "id": "smtp",
     "uuid": "5054e338-ef3b-5d84-9a99-74d54d30232a",
     "name": "SMTP Email",
-    "version": "0.2.19",
+    "version": "0.2.20",
     "publisher": "Cognis Labs HQ"
 }

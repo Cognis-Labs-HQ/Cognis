@@ -261,12 +261,12 @@ export function createModuleRoutes(
         if (url.pathname === "/api/v1/modules" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const manifests = await moduleService.list();
+            const manifests = (await moduleService.list()).filter(
+                (manifest) => manifest.class !== "core",
+            );
             const data = manifests.map((manifest) => ({
                 ...manifest,
-                status:
-                    hooks?.getStatus?.(manifest.id) ??
-                    (manifest.class === "core" ? "enabled" : "available"),
+                status: hooks?.getStatus?.(manifest.id) ?? "available",
             }));
             hooks?.log?.("debug", "Listed modules.", {
                 ...logMeta,

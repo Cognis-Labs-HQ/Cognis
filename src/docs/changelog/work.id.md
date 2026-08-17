@@ -43,3 +43,15 @@ Modul yang dipasang kini tetap nonaktif sampai administrator mengaktifkannya sec
 ## Sesuaikan kontrol marketplace dengan tema
 
 Kontrol kembali dan segarkan kini memakai aset SVG terang dan gelap khusus yang dipilih sesuai tema dasbor aktif.
+
+## Pertahankan modul yang ditemukan
+
+Manifes marketplace disimpan dalam cache per sumber terkonfigurasi. Mencopot modul segera mengembalikannya ke Tersedia, kegagalan sumber sementara mempertahankan entri cache, dan modul baru menghilang setelah semua sumber terkonfigurasi berhasil memastikan modul tersebut tidak ada.
+
+## Keluarkan core dari daftar modul
+
+Cognis Core tidak lagi dikembalikan oleh daftar administrasi modul karena inti platform bukan modul yang dapat dipasang.
+
+## Verifikasi lisensi yang dinyatakan
+
+Metadata lisensi hanya ditampilkan bila berkas lisensi yang dikenali tersedia di akar repositori. Validasi instalasi menolak metadata lisensi tanpa bukti repositori tersebut.

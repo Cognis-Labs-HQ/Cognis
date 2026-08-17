@@ -43,3 +43,15 @@ Installing a module now leaves it disabled until an administrator explicitly ena
 ## Theme marketplace controls
 
 Back and refresh controls now use dedicated light and dark SVG assets selected by the active dashboard theme.
+
+## Keep discovered modules available
+
+Marketplace manifests are cached per configured source. Uninstalling a module returns it to Available immediately, temporary source failures retain the cached entry, and a module disappears only after every configured source successfully confirms it is absent.
+
+## Keep core out of modules
+
+Cognis Core is no longer returned by the module administration list because the platform core is not an installable module.
+
+## Verify declared licenses
+
+License metadata is displayed only when a recognized license file exists at the repository root. Installation validation rejects declared license metadata without that repository evidence.

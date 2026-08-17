@@ -30,6 +30,9 @@ export async function validateModuleRepository(
     ) {
         throw new Error("invalid_module_asset_convention");
     }
+    if (manifest.license && !(await hasRootLicenseFile(root))) {
+        throw new Error("missing_module_license_file");
+    }
 
     const declaredPaths = [
         ...Object.values(manifest.entrypoints).filter(
@@ -51,6 +54,18 @@ export async function validateModuleRepository(
             throw new Error(`module_file_checksum_mismatch:${file.path}`);
         }
     }
+}
+
+async function hasRootLicenseFile(root: string): Promise<boolean> {
+    for (const filename of ["LICENSE", "LICENSE.md", "LICENSE.txt"]) {
+        try {
+            const status = await lstat(path.join(root, filename));
+            if (status.isFile() && !status.isSymbolicLink()) return true;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+        }
+    }
+    return false;
 }
 
 async function assertRepositoryFile(
