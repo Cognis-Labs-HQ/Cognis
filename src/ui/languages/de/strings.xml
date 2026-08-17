@@ -688,6 +688,7 @@
   <string name="ui.app.modules.available">Verfügbar</string>
   <string name="ui.app.modules.categories">Kategorien</string>
   <string name="ui.app.modules.sources">Modulquellen</string>
+  <string name="ui.app.modules.trusted">Vertrauenswürdig</string>
   <string name="ui.app.modules.empty">Keine Module entsprechen dieser Ansicht.</string>
   <string name="ui.app.modules.provider">Anbieter</string>
   <string name="ui.app.modules.namespace">Organisation oder Gruppe</string>

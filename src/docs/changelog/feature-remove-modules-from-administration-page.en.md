@@ -19,3 +19,5 @@ Module cards, filters, source settings, and lifecycle controls now update the ma
 External checkouts now pass a repository-readiness gate covering root package and route contracts, declared entry points and artwork, safe paths, and optional file checksums before an install can replace the active checkout.
 
 Installed repositories are now discovered as complete runtime components. Their bootstrap entrypoint can contribute routes, UI, documentation, changelogs, capabilities, and flow stages through a tracked `ctx` scope; disabling or uninstalling invokes teardown and removes every tracked contribution.
+
+Jitsi Meet has been removed from the bundled source tree and is now expected to arrive through the marketplace. Cognis Labs HQ on GitHub is always present as an immutable trusted module source.

@@ -6,10 +6,10 @@ import path from "node:path";
 import { ModuleMarketplaceService } from "../index.js";
 
 const source = {
-    uuid: "178271bf-5631-40df-82df-967f8a37a020",
-    name: "Cognis Labs",
+    uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",
+    name: "Additional source",
     provider: "github" as const,
-    namespace: "Cognis-Labs-HQ",
+    namespace: "example",
     baseUrl: "https://api.github.com",
 };
 
@@ -21,8 +21,33 @@ test("module marketplace persists source metadata without PAT values", async () 
     );
     await service.saveSource({ ...source, credentialId: "module-source:pat" });
     assert.deepEqual(await service.listSources(), [
-        { ...source, credentialId: "module-source:pat" },
+        {
+            uuid: "178271bf-5631-40df-82df-967f8a37a020",
+            name: "Cognis Labs HQ",
+            provider: "github",
+            namespace: "Cognis-Labs-HQ",
+            baseUrl: "https://api.github.com",
+            homepage: "https://github.com/Cognis-Labs-HQ",
+            trusted: true,
+            credentialId: undefined,
+        },
+        { ...source, credentialId: "module-source:pat", trusted: false },
     ]);
+});
+
+test("module marketplace always provides an immutable trusted source", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const [trusted] = await service.listSources();
+    assert.equal(trusted.namespace, "Cognis-Labs-HQ");
+    assert.equal(trusted.trusted, true);
+    await assert.rejects(
+        service.removeSource(trusted.uuid),
+        /trusted_module_source_readonly/,
+    );
 });
 
 test("module marketplace discovers repository manifests", async () => {
@@ -31,7 +56,6 @@ test("module marketplace discovers repository manifests", async () => {
         path.join(root, "sources.json"),
         path.join(root, "modules"),
     );
-    await service.saveSource(source);
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input) =>
         String(input).endsWith("/README.md")
@@ -73,7 +97,10 @@ test("module marketplace discovers repository manifests", async () => {
     try {
         const modules = await service.discover();
         assert.equal(modules[0].id, "notes");
-        assert.equal(modules[0].sourceUuid, source.uuid);
+        assert.equal(
+            modules[0].sourceUuid,
+            "178271bf-5631-40df-82df-967f8a37a020",
+        );
         assert.equal(
             modules[0].assets?.icon,
             "https://raw.githubusercontent.com/acme/notes/main/assets/icon.svg",
@@ -90,7 +117,6 @@ test("module marketplace rejects incomplete module registrations", async () => {
         path.join(root, "sources.json"),
         path.join(root, "modules"),
     );
-    await service.saveSource(source);
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input) =>
         String(input).includes("/repos?")

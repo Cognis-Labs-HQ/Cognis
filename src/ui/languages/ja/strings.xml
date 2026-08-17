@@ -688,6 +688,7 @@
   <string name="ui.app.modules.available">利用可能</string>
   <string name="ui.app.modules.categories">カテゴリー</string>
   <string name="ui.app.modules.sources">モジュールソース</string>
+  <string name="ui.app.modules.trusted">信頼済み</string>
   <string name="ui.app.modules.empty">この表示に一致するモジュールはありません。</string>
   <string name="ui.app.modules.provider">プロバイダー</string>
   <string name="ui.app.modules.namespace">組織またはグループ</string>

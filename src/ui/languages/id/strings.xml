@@ -688,6 +688,7 @@
   <string name="ui.app.modules.available">Tersedia</string>
   <string name="ui.app.modules.categories">Kategori</string>
   <string name="ui.app.modules.sources">Sumber Modul</string>
+  <string name="ui.app.modules.trusted">Tepercaya</string>
   <string name="ui.app.modules.empty">Tidak ada modul yang cocok dengan tampilan ini.</string>
   <string name="ui.app.modules.provider">Penyedia</string>
   <string name="ui.app.modules.namespace">Organisasi atau Grup</string>

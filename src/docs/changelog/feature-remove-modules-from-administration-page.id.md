@@ -19,3 +19,5 @@ Kartu modul, filter, pengaturan sumber, dan kontrol siklus hidup kini langsung m
 Checkout eksternal kini melewati pemeriksaan kesiapan repositori untuk kontrak paket dan rute, titik masuk, gambar, jalur aman, serta checksum berkas opsional sebelum dapat menggantikan instalasi aktif.
 
 Repositori terpasang kini ditemukan sebagai komponen runtime lengkap. Titik masuk bootstrap dapat menyumbangkan rute, UI, dokumentasi, catatan perubahan, kapabilitas, dan tahap alur melalui lingkup `ctx` yang dilacak; penonaktifan atau penghapusan membongkar seluruh kontribusi tersebut.
+
+Jitsi Meet telah dihapus dari pohon sumber bawaan dan kini disediakan melalui bursa. Cognis Labs HQ di GitHub selalu tersedia sebagai sumber modul tepercaya yang tidak dapat diubah.

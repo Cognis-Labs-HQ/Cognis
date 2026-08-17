@@ -292,11 +292,7 @@ test("visible search indexes messages without quick reactions and chat names", (
     );
 });
 
-test("visible search indexes meetings calendar notifications and posts", () => {
-    const meetingSource = readFileSync(
-        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
-        "utf8",
-    );
+test("visible search indexes calendar notifications and posts", () => {
     const calendarSource = readFileSync(
         resolve(ROOT, "src/gateways/calendar/ui/calendar-ui-helpers.js"),
         "utf8",
@@ -316,15 +312,6 @@ test("visible search indexes meetings calendar notifications and posts", () => {
     const profileSearchSource = readFileSync(
         resolve(ROOT, "src/adapters/social/profile/ui/search/index.js"),
         "utf8",
-    );
-    assert.match(meetingSource, /dataset\.searchCategory = "Meetings"/);
-    assert.match(
-        readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
-        /registerSearchIndex\("jitsi-meetings"/,
-    );
-    assert.match(
-        readFileSync(resolve(ROOT, "src/modules/jitsi-meet/ui/app.js"), "utf8"),
-        /resultClass: "page"/,
     );
     const calendarNavbarSource = readFileSync(
         resolve(ROOT, "src/gateways/calendar/ui/navbar.js"),

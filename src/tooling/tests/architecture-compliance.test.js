@@ -76,7 +76,6 @@ const LEGACY_FLAT_UI_APP_ENTRIES = new Set([
     "src/adapters/social/messages/ui/app.js",
     "src/adapters/social/profile/ui/app.js",
     "src/adapters/study/classes/ui/app.js",
-    "src/modules/jitsi-meet/ui/app.js",
     "src/modules/study/languages/en/components/alphabet/ui/app.js",
     "src/modules/study/languages/en/components/classroom/ui/app.js",
     "src/modules/study/languages/en/components/library/ui/app.js",

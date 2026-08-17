@@ -37,7 +37,7 @@ function createModuleRuntime() {
     return {
         listManifests: async () => [
             {
-                id: "jitsi-meet",
+                id: "nextcloud-whiteboard",
                 entrypoints: { ui: "./ui/index.html" },
             },
         ],
@@ -51,7 +51,7 @@ test("module ui routes redirect unauthenticated requests to login", async () => 
     await route(
         { headers: {} } as any,
         recorder.res as any,
-        new URL("http://localhost/meetings"),
+        new URL("http://localhost/whiteboards"),
     );
 
     assert.equal(recorder.status, 302);
@@ -69,7 +69,7 @@ test("module ui routes redirect revoked sessions with session_expired reason", a
             headers: { cookie: `cognis_access_token=${token}` },
         } as any,
         recorder.res as any,
-        new URL("http://localhost/meetings"),
+        new URL("http://localhost/whiteboards"),
     );
 
     assert.equal(recorder.status, 302);
@@ -82,7 +82,7 @@ test("module ui routes skip disabled modules when isModuleEnabled returns false"
         undefined,
         undefined,
         undefined,
-        (moduleId) => moduleId !== "jitsi-meet",
+        (moduleId) => moduleId !== "nextcloud-whiteboard",
     );
     const token = issueAccessToken("u-disabled-module", "user", 60);
     const recorder = createResponseRecorder();
@@ -93,7 +93,7 @@ test("module ui routes skip disabled modules when isModuleEnabled returns false"
             headers: { cookie: `cognis_access_token=${token}` },
         } as any,
         recorder.res as any,
-        new URL("http://localhost/meetings"),
+        new URL("http://localhost/whiteboards"),
     );
 
     assert.equal(recorder.status, 302);

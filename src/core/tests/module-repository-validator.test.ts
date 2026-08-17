@@ -103,7 +103,7 @@ test("module repository validator rejects mismatched packages and files", async 
 });
 
 test("bundled extension modules satisfy the external repository contract", async () => {
-    for (const id of ["analytics", "jitsi-meet", "nextcloud-whiteboard"]) {
+    for (const id of ["analytics", "nextcloud-whiteboard"]) {
         const root = path.join(REPOSITORY_ROOT, "src/modules", id);
         const manifest = JSON.parse(
             await readFile(path.join(root, "manifest.json"), "utf8"),

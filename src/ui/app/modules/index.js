@@ -138,10 +138,15 @@ function renderStore() {
 
 async function openSourceSettings() {
     const rows = sources
-        .map(
-            (source) =>
-                `<li>${escapeHtml(source.name)} <button class="btn-cancel" type="button" data-remove-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.remove"))}</button></li>`,
-        )
+        .map((source) => {
+            const trustLabel = source.trusted
+                ? ` · ${escapeHtml(i18n.t("ui.app.modules.trusted"))}`
+                : "";
+            const removeButton = source.trusted
+                ? ""
+                : ` <button class="btn-cancel" type="button" data-remove-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.remove"))}</button>`;
+            return `<li><span>${escapeHtml(source.name)}${trustLabel}</span>${removeButton}</li>`;
+        })
         .join("");
     await openPopup({
         title: i18n.t("ui.app.modules.sources"),

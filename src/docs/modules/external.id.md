@@ -18,7 +18,7 @@ Saat modul dipindahkan ke repositori tersendiri, UUID dan ID yang mudah dibaca t
 
 ## Sumber dan keamanan
 
-Pengelola modul pada menu pengguna menemukan repositori dalam organisasi GitHub dan grup GitLab. PAT baca-saja yang opsional disimpan di keyring administrator; konfigurasi sumber hanya menyimpan pengenalnya. Instalasi mengklon melalui HTTPS, memvalidasi manifes dan UUID, lalu memindahkan isi secara atomik. Kode baru berjalan setelah diaktifkan secara terpisah. Tinjau kode pihak ketiga sebelum mengaktifkannya.
+`https://github.com/Cognis-Labs-HQ` disediakan secara default sebagai sumber tepercaya yang tidak dapat diubah. Pengelola modul pada menu pengguna juga menemukan repositori dalam organisasi GitHub dan grup GitLab lainnya. PAT baca-saja yang opsional disimpan di keyring administrator; konfigurasi sumber hanya menyimpan pengenalnya. Instalasi mengklon melalui HTTPS, memvalidasi manifes dan UUID, lalu memindahkan isi secara atomik. Kode baru berjalan setelah diaktifkan secara terpisah. Tinjau kode pihak ketiga sebelum mengaktifkannya.
 
 ## Aset toko dan tag
 

@@ -15,8 +15,21 @@ export interface ModuleSource {
     provider: ModuleSourceProvider;
     namespace: string;
     baseUrl: string;
+    homepage?: string;
     credentialId?: string;
+    trusted?: boolean;
 }
+
+export const DEFAULT_TRUSTED_MODULE_SOURCE: Readonly<ModuleSource> =
+    Object.freeze({
+        uuid: "178271bf-5631-40df-82df-967f8a37a020",
+        name: "Cognis Labs HQ",
+        provider: "github",
+        namespace: "Cognis-Labs-HQ",
+        baseUrl: "https://api.github.com",
+        homepage: "https://github.com/Cognis-Labs-HQ",
+        trusted: true,
+    });
 
 export interface MarketplaceModule extends ModuleManifest {
     cloneUrl: string;
@@ -34,14 +47,54 @@ export class ModuleMarketplaceService {
     async listSources(): Promise<ModuleSource[]> {
         try {
             const value = JSON.parse(await readFile(this.statePath, "utf8"));
-            return Array.isArray(value) ? value : [];
+            const stored = Array.isArray(value)
+                ? (value as ModuleSource[])
+                : [];
+            const trustedOverride = stored.find(
+                (source) => source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
+            );
+            return [
+                {
+                    ...DEFAULT_TRUSTED_MODULE_SOURCE,
+                    credentialId: trustedOverride?.credentialId,
+                },
+                ...stored.filter(
+                    (source) =>
+                        source.uuid !== DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
+                ),
+            ];
         } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT") return [];
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+                return [{ ...DEFAULT_TRUSTED_MODULE_SOURCE }];
+            }
             throw error;
         }
     }
 
     async saveSource(source: ModuleSource): Promise<ModuleSource> {
+        if (source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid) {
+            const immutableFields = [
+                "name",
+                "provider",
+                "namespace",
+                "baseUrl",
+                "homepage",
+            ] as const;
+            if (
+                immutableFields.some(
+                    (field) =>
+                        source[field] !== DEFAULT_TRUSTED_MODULE_SOURCE[field],
+                )
+            ) {
+                throw new Error("trusted_module_source_readonly");
+            }
+            source = {
+                ...DEFAULT_TRUSTED_MODULE_SOURCE,
+                credentialId: source.credentialId,
+            };
+        } else {
+            source = { ...source, trusted: false };
+        }
         this.assertSource(source);
         const sources = await this.listSources();
         const next = sources.filter((entry) => entry.uuid !== source.uuid);
@@ -54,6 +107,9 @@ export class ModuleMarketplaceService {
     }
 
     async removeSource(uuid: string): Promise<void> {
+        if (uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid) {
+            throw new Error("trusted_module_source_readonly");
+        }
         const sources = (await this.listSources()).filter(
             (source) => source.uuid !== uuid,
         );

@@ -80,7 +80,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.16`   |
+| Core Package   | `src/core/` | `0.3.17`   |
 
 ## API
 
@@ -99,7 +99,6 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント       | パス                                | バージョン |
 | -------------------- | ----------------------------------- | ---------- |
 | Analytics            | `src/modules/analytics/`            | `2.0.9`    |
-| Jitsi Meet           | `src/modules/jitsi-meet/`           | `1.4.53`   |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.19`   |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.10`   |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.8`    |

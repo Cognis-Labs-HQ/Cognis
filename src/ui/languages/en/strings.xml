@@ -688,6 +688,7 @@
   <string name="ui.app.modules.available">Available</string>
   <string name="ui.app.modules.categories">Categories</string>
   <string name="ui.app.modules.sources">Module Sources</string>
+  <string name="ui.app.modules.trusted">Trusted</string>
   <string name="ui.app.modules.empty">No modules match this view.</string>
   <string name="ui.app.modules.provider">Provider</string>
   <string name="ui.app.modules.namespace">Organization or Group</string>

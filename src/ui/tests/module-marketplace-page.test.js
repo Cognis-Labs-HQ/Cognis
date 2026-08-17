@@ -34,6 +34,15 @@ test("module marketplace cards keep consistent content and action geometry", () 
     );
 });
 
+test("module marketplace identifies immutable trusted sources", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /source\.trusted/);
+    assert.match(source, /ui\.app\.modules\.trusted/);
+});
+
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

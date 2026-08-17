@@ -18,7 +18,7 @@ Beim Verschieben in ein eigenes Repository bleiben UUID und lesbare ID unveränd
 
 ## Quellen und Sicherheit
 
-Die Modulverwaltung im Benutzermenü erkennt Repositorys in GitHub-Organisationen und GitLab-Gruppen. Optionale, nur lesende PATs liegen im Schlüsselbund des Administrators; die Quellenkonfiguration speichert lediglich deren Kennung. Installation klont über HTTPS, prüft Manifest und UUID und verschiebt den Inhalt atomar. Code wird erst beim getrennten Aktivieren ausgeführt. Drittcode muss vor der Aktivierung geprüft werden.
+`https://github.com/Cognis-Labs-HQ` ist standardmäßig als unveränderliche vertrauenswürdige Quelle eingerichtet. Die Modulverwaltung im Benutzermenü erkennt außerdem Repositorys in weiteren GitHub-Organisationen und GitLab-Gruppen. Optionale, nur lesende PATs liegen im Schlüsselbund des Administrators; die Quellenkonfiguration speichert lediglich deren Kennung. Installation klont über HTTPS, prüft Manifest und UUID und verschiebt den Inhalt atomar. Code wird erst beim getrennten Aktivieren ausgeführt. Drittcode muss vor der Aktivierung geprüft werden.
 
 ## Store-Grafiken und Tags
 

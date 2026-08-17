@@ -20,14 +20,6 @@ test("user and admin generated rich-text surfaces use the shared markdown render
             ],
         },
         {
-            label: "jitsi meeting chat",
-            path: "src/modules/jitsi-meet/ui/jitsi-chat.js",
-            patterns: [
-                /import \{ renderMarkdown \}/,
-                /renderMarkdown\(\s*String\(message\?\.text/,
-            ],
-        },
-        {
             label: "profile bios and posts",
             path: "src/adapters/social/profile/ui/profile-render.js",
             patterns: [
