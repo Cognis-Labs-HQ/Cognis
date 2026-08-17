@@ -30,3 +30,15 @@ test("module marketplace does not resolve repository-relative avatars against th
     );
     assert.match(source, /parsed\.protocol === "https:"/);
 });
+
+test("module marketplace opens repository readmes in a full detail view", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /data-module-details/);
+    assert.match(source, /renderMarkdown\(module\.readme/);
+    assert.match(source, /module-detail-screenshots/);
+    assert.match(source, /data-module-back/);
+    assert.match(source, /selectedModule = null/);
+});

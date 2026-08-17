@@ -701,4 +701,5 @@
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">Modul-Marktplatz</string>
+  <string name="ui.app.modules.back_to_modules">Zurück zu Modulen</string>
 </resources>

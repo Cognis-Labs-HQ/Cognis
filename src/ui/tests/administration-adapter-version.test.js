@@ -189,14 +189,11 @@ test("adapter configuration popups load adapter-owned translations", () => {
     assert.match(source, /i18n: adapterI18n/);
 });
 
-test("administration navigation links to the module marketplace", () => {
+test("user menu links administrators to the module marketplace", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/administration/index.js"),
+        resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
         "utf8",
     );
-    assert.match(
-        source,
-        /<button data-composer-scroll="modules">\$\{i18n\.t\("ui\.reuse\.modules"\)\}<\/button>/,
-    );
-    assert.match(source, /if \(toId !== "modules"\) return true/);
+    assert.match(source, /href="\/administration\/modules"/);
+    assert.match(source, /data-i18n="ui\.reuse\.modules"/);
 });

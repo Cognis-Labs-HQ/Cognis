@@ -34,29 +34,31 @@ test("module marketplace discovers repository manifests", async () => {
     await service.saveSource(source);
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input) =>
-        String(input).includes("/repos?")
-            ? new Response(
-                  JSON.stringify([
-                      {
-                          clone_url: "https://github.com/acme/notes.git",
-                          default_branch: "main",
-                          full_name: "acme/notes",
-                      },
-                  ]),
-              )
-            : new Response(
-                  JSON.stringify({
-                      uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
-                      id: "notes",
-                      name: "Notes",
-                      version: "1.0.0",
-                      class: "extension",
-                      coreApiVersion: "v1",
-                      capabilities: [],
-                      entrypoints: {},
-                      assets: { avatar: "assets/avatar.png" },
-                  }),
-              );
+        String(input).endsWith("/README.md")
+            ? new Response("# Notes\nA useful module.")
+            : String(input).includes("/repos?")
+              ? new Response(
+                    JSON.stringify([
+                        {
+                            clone_url: "https://github.com/acme/notes.git",
+                            default_branch: "main",
+                            full_name: "acme/notes",
+                        },
+                    ]),
+                )
+              : new Response(
+                    JSON.stringify({
+                        uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                        id: "notes",
+                        name: "Notes",
+                        version: "1.0.0",
+                        class: "extension",
+                        coreApiVersion: "v1",
+                        capabilities: [],
+                        entrypoints: {},
+                        assets: { avatar: "assets/avatar.png" },
+                    }),
+                );
     try {
         const modules = await service.discover();
         assert.equal(modules[0].id, "notes");
@@ -65,6 +67,7 @@ test("module marketplace discovers repository manifests", async () => {
             modules[0].assets?.avatar,
             "https://raw.githubusercontent.com/acme/notes/main/assets/avatar.png",
         );
+        assert.equal(modules[0].readme, "# Notes\nA useful module.");
     } finally {
         globalThis.fetch = originalFetch;
     }

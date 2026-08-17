@@ -5,7 +5,6 @@ import {
     extendI18n,
 } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
-import { uiCtx } from "../../reuse/ui-ctx.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { openPopup } from "../../reuse/popup.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -715,7 +714,7 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
     });
 }
 
-async function guardSubPageSwitch(_fromId, toId) {
+async function guardSubPageSwitch() {
     if (changesBar?.isAnyDirty()) {
         const result = await openPopup({
             title: i18n.t("ui.reuse.unsaved_changes"),
@@ -738,9 +737,7 @@ async function guardSubPageSwitch(_fromId, toId) {
         securitySection?.discard();
         changesBar.markDirty("security", false);
     }
-    if (toId !== "modules") return true;
-    await uiCtx.capabilities.get("ui:navigate")?.("/administration/modules");
-    return false;
+    return true;
 }
 
 export async function mount(rootEl, { signal } = {}) {
@@ -911,7 +908,6 @@ export async function mount(rootEl, { signal } = {}) {
 
     const navItems = [
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
-        `<li><button data-composer-scroll="modules">${i18n.t("ui.reuse.modules")}</button></li>`,
         `<li><button data-composer-scroll="status">${i18n.t("ui.reuse.status")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
         ...topLevelGatewaySections.map(

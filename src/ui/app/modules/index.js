@@ -4,6 +4,7 @@ import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
+import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     installModule,
@@ -20,6 +21,7 @@ let modules = [];
 let sources = [];
 let category = "all";
 let view = "recommended";
+let selectedModule = null;
 
 function renderCard(module) {
     const avatarUrl = resolveModuleAvatarUrl(module.assets?.avatar);
@@ -33,8 +35,30 @@ function renderCard(module) {
         <p>${escapeHtml(module.summary ?? module.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(module.version)}</span>
       </div>
-      <button type="button" class="${module.installed || module.status === "enabled" ? "btn-neutral" : "btn-confirm"}" data-module-action="${module.uuid}">${escapeHtml(i18n.t(module.installed || module.status === "enabled" ? "ui.reuse.installed" : "ui.reuse.install"))}</button>
+      <div class="module-store-card-actions">
+        <button type="button" class="btn-neutral" data-module-details="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.details"))}</button>
+        <button type="button" class="${module.installed || module.status === "enabled" ? "btn-neutral" : "btn-confirm"}" data-module-action="${module.uuid}"${module.installed || module.status === "enabled" ? " disabled" : ""}>${escapeHtml(i18n.t(module.installed || module.status === "enabled" ? "ui.reuse.installed" : "ui.reuse.install"))}</button>
+      </div>
     </article>`;
+}
+
+function renderModuleDetails(module) {
+    const screenshots = (module.assets?.screenshots ?? [])
+        .map(
+            (url) =>
+                `<img class="module-detail-screenshot" src="${escapeHtml(resolveModuleAvatarUrl(url))}" alt="" loading="lazy">`,
+        )
+        .join("");
+    const metadata = [
+        module.publisher,
+        module.version,
+        module.license,
+        ...(module.categories ?? []),
+    ]
+        .filter(Boolean)
+        .map((value) => `<span>${escapeHtml(value)}</span>`)
+        .join("");
+    return `<article class="module-detail"><header class="module-detail-header"><button type="button" class="btn-neutral" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAvatarUrl(value) {
@@ -65,6 +89,7 @@ function visibleModules() {
 }
 
 function renderStore() {
+    if (selectedModule) return renderModuleDetails(selectedModule);
     const categories = [
         ...new Set(modules.flatMap((module) => module.categories ?? [])),
     ];
@@ -159,6 +184,20 @@ function bind() {
     document
         .querySelector("#module-source-settings")
         ?.addEventListener("click", openSourceSettings);
+    document.querySelectorAll("[data-module-details]").forEach((button) =>
+        button.addEventListener("click", () => {
+            selectedModule = modules.find(
+                (entry) => entry.uuid === button.dataset.moduleDetails,
+            );
+            if (selectedModule) composer.refresh(elements());
+        }),
+    );
+    document
+        .querySelector("[data-module-back]")
+        ?.addEventListener("click", () => {
+            selectedModule = null;
+            composer.refresh(elements());
+        });
     document.querySelectorAll("[data-module-action]").forEach((button) =>
         button.addEventListener("click", async () => {
             const module = modules.find(

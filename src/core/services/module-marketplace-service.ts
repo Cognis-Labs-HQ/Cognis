@@ -21,6 +21,7 @@ export interface MarketplaceModule extends ModuleManifest {
     cloneUrl: string;
     sourceUuid: string;
     installed: boolean;
+    readme?: string;
 }
 
 export class ModuleMarketplaceService {
@@ -168,6 +169,15 @@ export class ModuleMarketplaceService {
                 const manifest = this.parseManifest(
                     await manifestResponse.text(),
                 );
+                const readmeResponse = await fetch(
+                    this.resolveRepositoryAssetUrl(
+                        source,
+                        projectPath,
+                        defaultBranch,
+                        "README.md",
+                    ),
+                    { headers },
+                );
                 const assets = manifest.assets
                     ? {
                           avatar: manifest.assets.avatar
@@ -195,6 +205,9 @@ export class ModuleMarketplaceService {
                     cloneUrl,
                     sourceUuid: source.uuid,
                     installed: false,
+                    readme: readmeResponse.ok
+                        ? await readmeResponse.text()
+                        : undefined,
                 };
             }),
         );
