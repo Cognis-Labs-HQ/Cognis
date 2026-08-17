@@ -252,7 +252,7 @@ export class ModuleMarketplaceService {
             !Array.isArray(manifest.tags) ||
             manifest.tags.length === 0 ||
             typeof manifest.recommended !== "boolean" ||
-            !manifest.entrypoints ||
+            !manifest.entrypoints?.bootstrap ||
             !manifest.assets?.icon ||
             !manifest.assets?.banner
         ) {

@@ -21,7 +21,7 @@ function createResponseRecorder(): {
     };
 }
 
-test("module extension routes return module_disabled for disabled modules", async () => {
+test("disabled modules expose no route handlers", async () => {
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
@@ -47,12 +47,7 @@ test("module extension routes return module_disabled for disabled modules", asyn
         new URL("http://localhost/api/v1/modules/analytics/metrics"),
     );
 
-    assert.equal(handled, true);
-    assert.equal(responseRecorder.status, 503);
-    assert.deepEqual(JSON.parse(responseRecorder.payload), {
-        error: {
-            code: "module_disabled",
-            message: "Module disabled",
-        },
-    });
+    assert.equal(handled, false);
+    assert.equal(responseRecorder.status, 0);
+    assert.equal(responseRecorder.payload, "");
 });

@@ -9,6 +9,7 @@ import { isPublicCapability as isPublicCapabilityImpl } from "./is-public-capabi
 import { listFlows as listFlowsImpl } from "./list-flows.js";
 import { listPublicCapabilities as listPublicCapabilitiesImpl } from "./list-public-capabilities.js";
 import { registerFlow as registerFlowImpl } from "./register-flow.js";
+import { removeCapability as removeCapabilityImpl } from "./remove-capability.js";
 import { removeFlowStageHook as removeFlowStageHookImpl } from "./remove-flow-stage-hook.js";
 import { requireCapability as requireCapabilityImpl } from "./require-capability.js";
 import { runFlow as runFlowImpl } from "./run-flow.js";
@@ -38,6 +39,9 @@ export function createCtx(): Ctx {
         },
         contributePublicCapability(key: string, value: unknown): void {
             contributePublicCapabilityImpl(state, key, value);
+        },
+        removeCapability(key: string): boolean {
+            return removeCapabilityImpl(state, key);
         },
         isPublicCapability(key: string): boolean {
             return isPublicCapabilityImpl(state, key);

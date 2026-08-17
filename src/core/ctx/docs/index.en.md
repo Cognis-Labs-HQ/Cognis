@@ -41,6 +41,7 @@ This component has no runtime environment variable configuration.
 ## Extension Points
 
 - Contribute cross-component capabilities via `ctx.contributeCapability(key, value)`.
+- Remove owned capabilities during teardown via `ctx.removeCapability(key)`; scoped module bootstrap performs this automatically.
 - Register new orchestration pipelines via `ctx.registerFlow({ id, stages })`.
 - Inject flow behavior via `ctx.addFlowStageHook(flowId, stageId, hook, handler)`.
 - Remove behavior on component disable via `ctx.removeFlowStageHook(...)` and `ctx.unregisterFlow(...)`.

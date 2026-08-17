@@ -37,18 +37,12 @@ export function bootstrapModule(ctx) {
         return moduleApi.fetchBoardData(whiteboardId);
     };
 
-    systemCtx?.contributePublicCapability?.(
+    ctx.contributePublicCapability(
         "nextcloud-whiteboard:spawnWhiteboardWindow",
         spawnWhiteboardWindow,
     );
-    systemCtx?.contributePublicCapability?.(
-        "whiteboard:getEmbedUrl",
-        getEmbedUrl,
-    );
-    systemCtx?.contributePublicCapability?.(
-        "whiteboard:fetchBoardData",
-        fetchBoardData,
-    );
+    ctx.contributePublicCapability("whiteboard:getEmbedUrl", getEmbedUrl);
+    ctx.contributePublicCapability("whiteboard:fetchBoardData", fetchBoardData);
 
     ctx.flow.extend(
         "bootstrap-platform",

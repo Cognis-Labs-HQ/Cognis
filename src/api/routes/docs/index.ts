@@ -9,6 +9,9 @@ import {
 } from "./store.js";
 
 const SRC_ROOT = join(process.cwd(), "src");
+const EXTERNAL_MODULES_ROOT =
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+    join(process.cwd(), "external-modules");
 export function resolveDocsArchiveRoot(
     environment: NodeJS.ProcessEnv = process.env,
     userHome = homedir(),
@@ -96,15 +99,16 @@ const NOT_FOUND_BODY = JSON.stringify({
 
 export function createDocsRoutes(
     options: {
-        sourceRoot?: string;
+        sourceRoot?: string | string[];
         archiveRoot?: string;
     } = {},
 ) {
     const archiveRoot = options.archiveRoot ?? resolveDocsArchiveRoot();
-    const storedDocsPromise = initializeDocsStore(
-        options.sourceRoot ?? SRC_ROOT,
-        archiveRoot,
-    );
+    const loadStoredDocs = () =>
+        initializeDocsStore(
+            options.sourceRoot ?? [SRC_ROOT, EXTERNAL_MODULES_ROOT],
+            archiveRoot,
+        );
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -113,7 +117,7 @@ export function createDocsRoutes(
         if (req.method !== "GET") return false;
 
         if (url.pathname === "/api/v1/docs") {
-            const index = await collectDocIndex(storedDocsPromise);
+            const index = await collectDocIndex(loadStoredDocs());
             const data = [...index.values()].map(
                 ({ slug, path, group, title, version, versions }) => ({
                     slug,
@@ -143,7 +147,7 @@ export function createDocsRoutes(
             .replace(/\/+/g, "/");
         const langs = resolveLangs(url);
 
-        const index = await collectDocIndex(storedDocsPromise);
+        const index = await collectDocIndex(loadStoredDocs());
         const entry = index.get(rawSlug);
 
         if (!entry) {

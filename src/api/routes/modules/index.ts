@@ -26,6 +26,7 @@ export interface ModuleRouteHooks {
         }>
     >;
     onImported?: (moduleId: string) => Promise<void> | void;
+    onUninstalled?: (moduleId: string) => Promise<void> | void;
 }
 
 export function createModuleRoutes(
@@ -119,6 +120,7 @@ export function createModuleRoutes(
                 accountId: claims.sub,
                 moduleUuid: manifest.uuid,
             });
+            await hooks?.onImported?.(manifest.id);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: manifest }));
             return true;
@@ -130,7 +132,24 @@ export function createModuleRoutes(
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const moduleUuid = decodeURIComponent(uninstallMatch[1]);
+            const manifest = (await moduleService.list()).find(
+                (entry) => entry.uuid === moduleUuid,
+            );
+            if (manifest && hooks?.getStatus?.(manifest.id) === "enabled") {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_enabled",
+                            message:
+                                "Disable the module before uninstalling it.",
+                        },
+                    }),
+                );
+                return true;
+            }
             await marketplace.uninstall(moduleUuid);
+            if (manifest) await hooks?.onUninstalled?.(manifest.id);
             hooks?.log?.("info", "External module uninstalled.", {
                 ...logMeta,
                 accountId: claims.sub,

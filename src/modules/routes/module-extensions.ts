@@ -1,11 +1,14 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type {
     BootstrapLog,
+    Ctx,
+    FlowRegistration,
     ModuleRuntimeGateway,
     RoleAccessPolicy,
     FlowApi,
 } from "@cognis/core";
 import path from "node:path";
+import { stat } from "node:fs/promises";
 import { parseRoleAccessPolicy } from "../../api/reuse/parse-role-access-policy.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import type { UIRegistry } from "../../api/reuse/ui-registry.js";
@@ -109,10 +112,19 @@ interface ModuleBootstrapCtx
         options?: ModuleRouteOptions,
     ): void;
     router: ModuleApiRouter;
+    contributeCapability(key: string, value: unknown): void;
+    contributePublicCapability(key: string, value: unknown): void;
+    registerFlow(flow: FlowRegistration): void;
 }
 
 interface ModuleBootstrapPlugin {
-    bootstrapModule?: (ctx: ModuleBootstrapCtx) => Promise<void> | void;
+    bootstrapModule?: (
+        ctx: ModuleBootstrapCtx,
+    ) =>
+        | Promise<void | (() => void | Promise<void>)>
+        | void
+        | (() => void | Promise<void>);
+    teardownModule?: (ctx: ModuleBootstrapCtx) => Promise<void> | void;
 }
 
 export interface ModuleExtensionOptions {
@@ -142,11 +154,23 @@ export function createModuleExtensionRoutes(
         );
     }
     const { requireRoleAccess } = options.routeContext;
-    const staticDirsRegisteredByModule = new Set<string>();
-    const uiHooksRegisteredByModule = new Set<string>();
+    const loadedModules = new Map<
+        string,
+        {
+            ctx: ModuleBootstrapCtx;
+            plugin: ModuleBootstrapPlugin;
+            dispose?: () => void | Promise<void>;
+            hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
+            capabilities: string[];
+            flows: string[];
+        }
+    >();
     const modulesRoot =
         process.env.COGNIS_MODULES_ROOT ??
         path.resolve(process.cwd(), "src", "modules");
+    const externalModulesRoot =
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+        path.resolve(process.cwd(), "external-modules");
 
     /**
      * Writes a standardized warning when a module declares an invalid access policy.
@@ -174,7 +198,11 @@ export function createModuleExtensionRoutes(
         moduleId: string,
         moduleRoot: string,
         nextHandlers: RouteHandler[],
-        allowUiRegistration: boolean,
+        scope: {
+            hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
+            capabilities: string[];
+            flows: string[];
+        },
     ): ModuleBootstrapCtx {
         function registerApiRoute(
             method: "GET" | "POST",
@@ -211,12 +239,45 @@ export function createModuleExtensionRoutes(
             },
         };
 
-        const flow: FlowApi = options.routeContext.flow;
+        const systemCtx = options.routeContext.getCapability<Ctx>("system:ctx");
+        const baseFlow = options.routeContext.flow;
+        const flow: FlowApi = {
+            exists: baseFlow.exists.bind(baseFlow),
+            run: baseFlow.run.bind(baseFlow),
+            extend(flowId, stageId, hook, handler) {
+                const registered = baseFlow.extend(
+                    flowId,
+                    stageId,
+                    hook,
+                    handler,
+                );
+                if (registered) {
+                    scope.hooks.push({
+                        flowId,
+                        stageId,
+                        hookId: hook.id,
+                    });
+                }
+                return registered;
+            },
+        };
 
         return {
             moduleId,
             moduleRoot,
             flow,
+            contributeCapability(key, value) {
+                systemCtx?.contributeCapability(key, value);
+                scope.capabilities.push(key);
+            },
+            contributePublicCapability(key, value) {
+                systemCtx?.contributePublicCapability(key, value);
+                scope.capabilities.push(key);
+            },
+            registerFlow(flowRegistration) {
+                systemCtx?.registerFlow(flowRegistration);
+                scope.flows.push(flowRegistration.id);
+            },
             getCapability: options.routeContext.getCapability,
             registerApiGet(routePath, handler, routeOptions) {
                 registerApiRoute("GET", routePath, handler, routeOptions);
@@ -226,7 +287,6 @@ export function createModuleExtensionRoutes(
             },
             router,
             registerNavbarPlugin(pluginDef) {
-                if (!allowUiRegistration) return;
                 const pluginConfig =
                     typeof pluginDef === "string"
                         ? { scriptUrl: pluginDef }
@@ -234,39 +294,39 @@ export function createModuleExtensionRoutes(
                 options?.uiRegistry?.registerNavbarPlugin({
                     scriptUrl: pluginConfig.scriptUrl,
                     access: pluginConfig.access,
+                    ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
             registerSpaRoute(route) {
-                if (!allowUiRegistration) return;
                 options?.uiRegistry?.registerSpaRoute({
                     ...route,
+                    ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
             registerSettingsSection(section) {
-                if (!allowUiRegistration) return;
                 options?.uiRegistry?.registerSettingsSection({
                     ...section,
+                    ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
             registerPageExtension(pageId, element) {
-                if (!allowUiRegistration) return;
                 options?.uiRegistry?.registerPageExtension(pageId, {
                     ...element,
+                    ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
             registerAdminSection(section) {
-                if (!allowUiRegistration) return;
                 options?.uiRegistry?.registerAdminSection({
                     ...section,
+                    ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
             registerStaticDir(urlPrefix, absoluteDir) {
-                if (!allowUiRegistration) return;
                 const normalizedPrefix = String(urlPrefix ?? "")
                     .trim()
                     .replace(/^\/+|\/+$/g, "");
@@ -301,26 +361,68 @@ export function createModuleExtensionRoutes(
     }
 
     async function refresh() {
+        for (const [moduleId, loaded] of loadedModules) {
+            for (const teardown of [
+                loaded.dispose,
+                loaded.plugin.teardownModule
+                    ? () => loaded.plugin.teardownModule?.(loaded.ctx)
+                    : undefined,
+            ]) {
+                try {
+                    await teardown?.();
+                } catch (error) {
+                    log?.("error", "Module teardown hook failed.", {
+                        component: "module-extension-routes",
+                        moduleId,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    });
+                }
+            }
+            const systemCtx =
+                options.routeContext.getCapability<Ctx>("system:ctx");
+            for (const hook of loaded.hooks) {
+                systemCtx?.removeFlowStageHook(
+                    hook.flowId,
+                    hook.stageId,
+                    hook.hookId,
+                );
+            }
+            for (const capability of loaded.capabilities) {
+                systemCtx?.removeCapability(capability);
+            }
+            for (const flowId of loaded.flows)
+                systemCtx?.unregisterFlow(flowId);
+            options?.uiRegistry?.unregisterModuleContributions(moduleId);
+        }
+        loadedModules.clear();
         const nextHandlers: RouteHandler[] = [];
         const manifests = await runtime.listManifests();
 
         for (const manifest of manifests) {
-            const moduleRoot = path.resolve(modulesRoot, manifest.id);
-
-            if (!staticDirsRegisteredByModule.has(manifest.id)) {
-                options?.uiRegistry?.registerModuleStaticDir(
-                    manifest.id,
-                    path.join(moduleRoot, "ui"),
-                );
-                staticDirsRegisteredByModule.add(manifest.id);
-            }
-
-            const canRegisterUi = !uiHooksRegisteredByModule.has(manifest.id);
+            if (!isModuleEnabled(manifest.id)) continue;
+            const internalRoot = path.resolve(modulesRoot, manifest.id);
+            const externalRoot = path.resolve(
+                externalModulesRoot,
+                manifest.uuid ?? manifest.id,
+            );
+            const moduleRoot = await stat(externalRoot)
+                .then((entry) =>
+                    entry.isDirectory() ? externalRoot : internalRoot,
+                )
+                .catch(() => internalRoot);
+            options?.uiRegistry?.registerModuleStaticDir(
+                manifest.id,
+                path.join(moduleRoot, "ui"),
+            );
+            const scope = { hooks: [], capabilities: [], flows: [] };
             const moduleCtx = createModuleCtx(
                 manifest.id,
                 moduleRoot,
                 nextHandlers,
-                canRegisterUi,
+                scope,
             );
             const entrypoint = resolveModuleEntrypointPath(
                 moduleRoot,
@@ -348,20 +450,49 @@ export function createModuleExtensionRoutes(
                             },
                         );
                     }
-                    await plugin.bootstrapModule(moduleCtx);
-                    if (canRegisterUi) {
-                        uiHooksRegisteredByModule.add(manifest.id);
-                    }
+                    const result = await plugin.bootstrapModule(moduleCtx);
+                    loadedModules.set(manifest.id, {
+                        ctx: moduleCtx,
+                        plugin,
+                        dispose:
+                            typeof result === "function" ? result : undefined,
+                        ...scope,
+                    });
                     continue;
                 }
-                if (plugin.registerUi && options?.uiRegistry && canRegisterUi) {
+                if (plugin.registerUi && options?.uiRegistry) {
                     plugin.registerUi(moduleCtx);
-                    uiHooksRegisteredByModule.add(manifest.id);
                 }
                 if (typeof plugin.registerApiRoutes === "function") {
                     plugin.registerApiRoutes(moduleCtx.router, moduleCtx);
                 }
+                loadedModules.set(manifest.id, {
+                    ctx: moduleCtx,
+                    plugin,
+                    ...scope,
+                });
             } catch (error) {
+                const systemCtx =
+                    options.routeContext.getCapability<Ctx>("system:ctx");
+                for (const hook of scope.hooks) {
+                    systemCtx?.removeFlowStageHook(
+                        hook.flowId,
+                        hook.stageId,
+                        hook.hookId,
+                    );
+                }
+                for (const capability of scope.capabilities) {
+                    systemCtx?.removeCapability(capability);
+                }
+                for (const flowId of scope.flows) {
+                    systemCtx?.unregisterFlow(flowId);
+                }
+                options?.uiRegistry?.unregisterModuleContributions(manifest.id);
+                for (let index = nextHandlers.length - 1; index >= 0; index--) {
+                    if (nextHandlers[index].moduleId === manifest.id) {
+                        nextHandlers.splice(index, 1);
+                    }
+                }
                 log?.("error", "Failed to load module API route plugin.", {
                     component: "module-extension-routes",
                     moduleId: manifest.id,

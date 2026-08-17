@@ -33,7 +33,7 @@ import { requirePublicEnvironment } from "./reuse/environment.js";
 requirePublicEnvironment();
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
-    private readonly manifests: ModuleManifest[];
+    private manifests: ModuleManifest[];
     private readonly states = new Map<string, ModuleState>();
 
     constructor(manifests: ModuleManifest[]) {
@@ -66,6 +66,9 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
         const modulesRoot =
             process.env.COGNIS_MODULES_ROOT ??
             path.resolve(process.cwd(), "src", "modules");
+        const externalModulesRoot =
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+            path.resolve(process.cwd(), "external-modules");
 
         async function scanManifestDir(dir: string): Promise<void> {
             let dirEntries: Awaited<ReturnType<typeof readdir>>;
@@ -94,7 +97,19 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 );
                 try {
                     const raw = await readFile(manifestPath, "utf8");
-                    manifests.push(JSON.parse(raw));
+                    const manifest = JSON.parse(raw) as ModuleManifest;
+                    if (
+                        manifests.some(
+                            (existing) =>
+                                existing.id === manifest.id ||
+                                existing.uuid === manifest.uuid,
+                        )
+                    ) {
+                        throw new Error(
+                            `duplicate_module_identity:${manifest.id}:${manifest.uuid}`,
+                        );
+                    }
+                    manifests.push(manifest);
                 } catch (error) {
                     if (
                         error instanceof Error &&
@@ -119,13 +134,12 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             }
         }
 
-        await Promise.all([
-            scanManifestDir(modulesRoot),
-            // Study language modules live under study/languages/<code>/ and each
-            // carries its own manifest — scan that nested path so they appear in
-            // the modules list alongside top-level modules.
-            scanManifestDir(path.join(modulesRoot, "study", "languages")),
-        ]);
+        await scanManifestDir(modulesRoot);
+        // Study language modules live under study/languages/<code>/ and each
+        // carries its own manifest — scan that nested path so they appear in
+        // the modules list alongside top-level modules.
+        await scanManifestDir(path.join(modulesRoot, "study", "languages"));
+        await scanManifestDir(externalModulesRoot);
 
         return new InMemoryModuleRuntimeGateway(manifests);
     }
@@ -150,6 +164,25 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
         const state = { moduleId, enabled: false };
         this.states.set(moduleId, state);
         return state;
+    }
+
+    async refresh(): Promise<void> {
+        const refreshed = await InMemoryModuleRuntimeGateway.bootstrap();
+        this.manifests = await refreshed.listManifests();
+        const currentIds = new Set(
+            this.manifests.map((manifest) => manifest.id),
+        );
+        for (const moduleId of this.states.keys()) {
+            if (!currentIds.has(moduleId)) this.states.delete(moduleId);
+        }
+        for (const manifest of this.manifests) {
+            if (!this.states.has(manifest.id)) {
+                this.states.set(manifest.id, {
+                    moduleId: manifest.id,
+                    enabled: manifest.class === "core",
+                });
+            }
+        }
     }
 }
 

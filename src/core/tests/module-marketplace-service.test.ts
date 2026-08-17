@@ -63,7 +63,7 @@ test("module marketplace discovers repository manifests", async () => {
                         license: "MIT",
                         repository: "https://github.com/acme/notes",
                         capabilities: [],
-                        entrypoints: {},
+                        entrypoints: { bootstrap: "./bootstrap.js" },
                         assets: {
                             icon: "assets/icon.svg",
                             banner: "assets/banner.svg",

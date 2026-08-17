@@ -3,6 +3,11 @@ import assert from "node:assert/strict";
 import { createModuleExtensionRoutes } from "../module-extensions.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
+import { UIRegistry } from "../../../api/reuse/ui-registry.js";
+import { createCtx } from "@cognis/core";
+import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 
 test("module extension routes expose module API endpoints", async () => {
     const mockDb = {
@@ -168,18 +173,101 @@ test("module extension routes register module admin sections with enable hooks",
                 registerAdminSection(section: any) {
                     adminSections.push(section);
                 },
+                unregisterModuleContributions() {
+                    adminSections.length = 0;
+                },
             } as any,
         },
     );
     await extensions.refresh();
 
+    assert.equal(adminSections.length, 0);
+    enabled = true;
+    await extensions.refresh();
     assert.equal(adminSections.length, 1);
     assert.equal(adminSections[0].id, "analytics");
     assert.equal(
         adminSections[0].scriptUrl,
         "/static/modules/analytics/admin-section.js",
     );
-    assert.equal(adminSections[0].isEnabled?.(), false);
-    enabled = true;
     assert.equal(adminSections[0].isEnabled?.(), true);
+    enabled = false;
+    await extensions.refresh();
+    assert.equal(adminSections.length, 0);
+});
+
+test("disabling a module removes its routes, UI, capabilities, and flow hooks", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const moduleRoot = path.join(modulesRoot, "owned-module");
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            ctx.contributePublicCapability("owned-module:feature", true);
+            ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
+            ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
+            ctx.registerApiGet("/api/v1/modules/owned", (_req, res) => { res.writeHead(200); res.end("ok"); });
+            return () => { throw new Error("expected teardown failure"); };
+        }`,
+    );
+    const previousModulesRoot = process.env.COGNIS_MODULES_ROOT;
+    process.env.COGNIS_MODULES_ROOT = modulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.registerFlow({ id: "host-flow", stages: ["extensions"] });
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    let enabled = true;
+    const uiRegistry = new UIRegistry();
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "owned-module",
+                    uuid: "b76c6666-b6a7-4c7f-95ac-313fd8f33eb0",
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => enabled,
+        undefined,
+        {
+            routeContext: createDefaultRouteContext({
+                getCapability: (id) => systemCtx.getCapability(id),
+                flow: systemCtx.flow,
+            }),
+            uiRegistry,
+        },
+    );
+    try {
+        await extensions.refresh();
+        assert.equal(systemCtx.hasCapability("owned-module:feature"), true);
+        assert.equal(uiRegistry.listAdminSections().length, 1);
+        assert.deepEqual(
+            (await systemCtx.runFlow("host-flow")).stageResults.extensions,
+            ["active"],
+        );
+
+        enabled = false;
+        await extensions.refresh();
+        assert.equal(systemCtx.hasCapability("owned-module:feature"), false);
+        assert.deepEqual(uiRegistry.listAdminSections(), []);
+        assert.deepEqual(
+            (await systemCtx.runFlow("host-flow")).stageResults.extensions,
+            [],
+        );
+        assert.equal(
+            await extensions.handle(
+                { method: "GET" } as any,
+                {} as any,
+                new URL("http://localhost/api/v1/modules/owned"),
+            ),
+            false,
+        );
+    } finally {
+        if (previousModulesRoot === undefined) {
+            delete process.env.COGNIS_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_MODULES_ROOT = previousModulesRoot;
+        }
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
 });

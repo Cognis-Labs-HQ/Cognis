@@ -1,20 +1,29 @@
 import { registerApiRoutes, registerUi } from "./api/index.js";
 import { registerShareFlowHooks } from "./api/share-hooks.js";
-import { MEETINGS_FLOW_CATALOG, registerCanonicalFlow } from "@cognis/core";
+
+const MEETINGS_FLOW_CATALOG = [
+    {
+        id: "construct-meetings-ui",
+        description: "Build the meetings UI from provider contributions.",
+        stages: ["resolve-providers", "resolve-panels", "compose-surface"],
+    },
+    {
+        id: "create-meeting",
+        description: "Create or join a meeting through the selected provider.",
+        stages: ["validate-request", "provision-session", "finalize-join"],
+    },
+];
 
 export function bootstrapModule(ctx) {
     registerUi(ctx);
     registerApiRoutes(ctx.router, ctx);
 
-    const systemCtx = ctx.getCapability("system:ctx");
-    if (systemCtx) {
-        systemCtx.contributePublicCapability(
-            "meetings:isProviderAvailable",
-            (providerId) => providerId === "jitsi-meet",
-        );
-        for (const flow of MEETINGS_FLOW_CATALOG) {
-            registerCanonicalFlow(systemCtx, flow);
-        }
+    ctx.contributePublicCapability(
+        "meetings:isProviderAvailable",
+        (providerId) => providerId === "jitsi-meet",
+    );
+    for (const flow of MEETINGS_FLOW_CATALOG) {
+        if (!ctx.flow.exists(flow.id)) ctx.registerFlow(flow);
     }
 
     ctx.flow.extend(

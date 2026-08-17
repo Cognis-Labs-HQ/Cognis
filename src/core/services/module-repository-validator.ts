@@ -19,7 +19,8 @@ export async function validateModuleRepository(
     if (
         packageManifest.version !== manifest.version ||
         packageManifest.type !== "module" ||
-        !Array.isArray(routes)
+        !Array.isArray(routes) ||
+        !manifest.entrypoints.bootstrap
     ) {
         throw new Error("invalid_module_repository_layout");
     }

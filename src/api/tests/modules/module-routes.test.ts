@@ -167,3 +167,58 @@ test("module routes run enable tests before enabling modules", async () => {
     );
     assert.equal(enableCalled, false);
 });
+
+test("module uninstall requires disable and triggers runtime teardown", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const uuid = "94d6974b-d836-4653-af9b-8b68774f4458";
+    let enabled = true;
+    let uninstallCount = 0;
+    let uninstalledModuleId = "";
+    const route = createModuleRoutes(
+        {
+            list: async () => [{ id: "external", uuid, class: "extension" }],
+        } as any,
+        {
+            getStatus: () => (enabled ? "enabled" : "disabled"),
+            onUninstalled: async (moduleId) => {
+                uninstalledModuleId = moduleId;
+            },
+        },
+        undefined,
+        {
+            uninstall: async () => {
+                uninstallCount++;
+            },
+        } as any,
+    );
+    const requestUninstall = async () => {
+        let status = 0;
+        let body = "";
+        await route(
+            {
+                method: "DELETE",
+                headers: { authorization: `Bearer ${token}` },
+            } as any,
+            {
+                writeHead(code: number) {
+                    status = code;
+                },
+                end(payload = "") {
+                    body = payload;
+                },
+            } as any,
+            new URL(`http://localhost/api/v1/modules/${uuid}/uninstall`),
+        );
+        return { status, body };
+    };
+
+    const blocked = await requestUninstall();
+    assert.equal(blocked.status, 409);
+    assert.match(blocked.body, /module_enabled/);
+    assert.equal(uninstallCount, 0);
+
+    enabled = false;
+    assert.equal((await requestUninstall()).status, 204);
+    assert.equal(uninstallCount, 1);
+    assert.equal(uninstalledModuleId, "external");
+});

@@ -59,6 +59,37 @@ test("UIRegistry registers and lists admin sections", () => {
     assert.equal(sections[1].id, "s2");
 });
 
+test("UIRegistry removes every contribution owned by a module", () => {
+    const reg = new UIRegistry();
+    reg.registerAdminSection({
+        id: "example-admin",
+        label: "Example",
+        scriptUrl: "/static/modules/example/admin.js",
+        ownerId: "example",
+    });
+    reg.registerPageExtension("dashboard", {
+        id: "example-widget",
+        label: "Example",
+        scriptUrl: "/static/modules/example/widget.js",
+        ownerId: "example",
+    });
+    reg.registerSpaRoute({
+        id: "example-page",
+        pattern: "^/example$",
+        base: "/example",
+        scriptUrl: "/static/modules/example/page.js",
+        ownerId: "example",
+    });
+    reg.registerModuleStaticDir("example", "/srv/example/ui");
+
+    reg.unregisterModuleContributions("example");
+
+    assert.deepEqual(reg.listAdminSections(), []);
+    assert.deepEqual(reg.listPageExtensions("dashboard"), []);
+    assert.deepEqual(reg.listSpaRoutes(), []);
+    assert.equal(reg.resolveModulePath("example/page.js"), undefined);
+});
+
 test("UIRegistry registers and looks up static dirs", () => {
     const reg = new UIRegistry();
     reg.registerStaticDir("notify", "/srv/notify/ui");

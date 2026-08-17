@@ -23,6 +23,7 @@ export interface AdminSection {
      * and merge those strings into the i18n instance passed to this section.
      */
     stringsBaseUrl?: string | string[];
+    ownerId?: string;
 }
 
 /**
@@ -39,6 +40,7 @@ export interface PageElement {
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide extensions while their owner is disabled. */
     isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 /**
@@ -54,6 +56,7 @@ export interface NavbarPlugin {
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide plugins while their owner is disabled. */
     isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 /**
@@ -76,6 +79,7 @@ export interface SpaRoute {
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide routes while owner is disabled. */
     isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 export interface AuthTypingMessage {
@@ -107,6 +111,7 @@ export interface SettingsSection {
     stringsBaseUrl?: string | string[];
     /** Optional runtime predicate used to hide sections while their owner is disabled. */
     isEnabled?: () => boolean;
+    ownerId?: string;
 }
 
 export class UIRegistry {
@@ -239,6 +244,38 @@ export class UIRegistry {
      */
     registerModuleStaticDir(urlPrefix: string, absoluteDir: string): void {
         this.moduleStaticDirs.set(urlPrefix, absoluteDir);
+    }
+
+    unregisterModuleContributions(moduleId: string): void {
+        for (const [id, section] of this.sections) {
+            if (section.ownerId === moduleId) this.sections.delete(id);
+        }
+        for (const [pageId, extensions] of this.pageExtensions) {
+            const retained = extensions.filter(
+                (extension) => extension.ownerId !== moduleId,
+            );
+            if (retained.length) this.pageExtensions.set(pageId, retained);
+            else this.pageExtensions.delete(pageId);
+        }
+        this.removeOwned(this.navbarPlugins, moduleId);
+        this.removeOwned(this.spaRoutes, moduleId);
+        this.removeOwned(this.settingsSections, moduleId);
+        for (const prefix of this.moduleStaticDirs.keys()) {
+            if (prefix === moduleId || prefix.startsWith(`${moduleId}/`)) {
+                this.moduleStaticDirs.delete(prefix);
+            }
+        }
+    }
+
+    private removeOwned<T extends { ownerId?: string }>(
+        registrations: T[],
+        moduleId: string,
+    ): void {
+        for (let index = registrations.length - 1; index >= 0; index--) {
+            if (registrations[index].ownerId === moduleId) {
+                registrations.splice(index, 1);
+            }
+        }
     }
 
     /**

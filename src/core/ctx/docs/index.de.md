@@ -41,6 +41,7 @@ Diese Komponente hat keine Laufzeit-Umgebungsvariablen.
 ## Erweiterungspunkte
 
 - Cross-Component-Capabilities über `ctx.contributeCapability(key, value)` beitragen.
+- Eigene Capabilities beim Rückbau mit `ctx.removeCapability(key)` entfernen; ein bereichsgebundener Modul-Bootstrap erledigt dies automatisch.
 - Neue Orchestrierungs-Pipelines über `ctx.registerFlow({ id, stages })` registrieren.
 - Flow-Verhalten über `ctx.addFlowStageHook(flowId, stageId, hook, handler)` injizieren.
 - Verhalten beim Deaktivieren einer Komponente über `ctx.removeFlowStageHook(...)` und `ctx.unregisterFlow(...)` entfernen.

@@ -2,11 +2,12 @@
     "id": "analytics",
     "uuid": "e10c016f-8a15-5ec2-8188-c1657dfbe829",
     "name": "Analytics",
-    "version": "2.0.8",
+    "version": "2.0.9",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
     "entrypoints": {
+        "bootstrap": "./bootstrap.js",
         "api": "./api/index.js",
         "cli": "./cli/index.js",
         "db": "./db/001_analytics.sql"
@@ -54,8 +55,12 @@
             "sha256": "ce32c37e42fb73ced351b34b3bfd1b08b49912bd1c018280aa28fd096644a114"
         },
         {
-            "path": "content/README.en.md",
+            "path": "docs/standard.en.md",
             "sha256": "b54ab131c7aab6bb4919c9390c187d6551c407f4a4e0bd691b33beb51abb3d79"
+        },
+        {
+            "path": "bootstrap.js",
+            "sha256": "eaeb08f857754a47715259bb3c5fdbed1b718fa6b6a00edcb51759a25f84a0b5"
         }
     ],
     "summary": "Privacy-conscious usage insights and administrative reporting.",

@@ -13,6 +13,16 @@ test("ctx contributes and resolves capabilities", () => {
     });
 });
 
+test("ctx removes private and public capabilities", () => {
+    const ctx = createCtx();
+    ctx.contributePublicCapability("module:example", { enabled: true });
+
+    assert.equal(ctx.removeCapability("module:example"), true);
+    assert.equal(ctx.hasCapability("module:example"), false);
+    assert.equal(ctx.isPublicCapability("module:example"), false);
+    assert.equal(ctx.removeCapability("module:example"), false);
+});
+
 test("ctx requireCapability throws when missing", () => {
     const ctx = createCtx();
     assert.throws(

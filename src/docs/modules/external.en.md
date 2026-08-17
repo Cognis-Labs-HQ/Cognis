@@ -10,6 +10,10 @@ One Git repository delivers one module. Its root contains `manifest.json`, `pack
 
 `package.json` must use `"type": "module"` and its version must exactly match `manifest.json`. `routes.json` is always present and contains an array, including an empty array when the module claims no routes. Every declared entry point must resolve to a regular file inside the checkout. Keep orchestration in the declared entry points and place freely organized implementation code behind them; Cognis does not import any other module path.
 
+Every external module declares `entrypoints.bootstrap`. Cognis imports only that file and calls `bootstrapModule(ctx)` when the module is enabled. The scoped context provides API route registration, module static directories, SPA routes, navigation, settings and page extensions, capability contribution, flow creation and stage injection. Put localized documentation under `docs/` and module release notes under `docs/changelog/`; both are discovered from installed repositories without core path registration. Browser assets remain module-owned and are exposed only through `ctx.registerStaticDir`.
+
+`bootstrapModule` may return a disposer, and a module may additionally export `teardownModule(ctx)`. On disable or uninstall, Cognis invokes those hooks and then removes every route, static directory, UI contribution, capability, created flow, and injected flow stage recorded by the scoped context. Modules must not retain timers, listeners, sockets, or other work after their disposer completes. Contributions made by importing core internals or by bypassing the supplied `ctx` cannot be tracked and are unsupported.
+
 The manifest declares `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-based `requires`, `entrypoints`, and `assets`. Asset paths are repository-relative. `assets.icon` identifies the square store icon, `assets.banner` identifies the detail hero, and `assets.screenshots` is an ordered gallery. Paths must remain inside the repository.
 
 ## Sources and private repositories
@@ -24,7 +28,7 @@ Repository owners should sign releases, pin dependencies, publish checksums in `
 
 ## Extraction checklist
 
-Before moving a bundled module into its own repository, copy the module directory without changing its UUID, retain the readable ID, and preserve the root `manifest.json`, `package.json`, and `routes.json`. Make the repository URL, homepage, and support links point at the new project; keep manifest and package versions synchronized; ensure every declared entry point and asset exists with exact filename casing; regenerate `files` SHA-256 values after the final change; and run the module tests without relying on monorepo-relative imports. Runtime interaction with Cognis and other components must occur only through the bootstrap `ctx` capabilities and flows.
+Before moving a bundled module into its own repository, copy the module directory without changing its UUID, retain the readable ID, and preserve the root `manifest.json`, `package.json`, and `routes.json`. Make the repository URL, homepage, and support links point at the new project; keep manifest and package versions synchronized; ensure every declared entry point and asset exists with exact filename casing; regenerate `files` SHA-256 values after the final change; and run the module tests without relying on monorepo-relative imports. Runtime interaction with Cognis and other components must occur only through the bootstrap `ctx` capabilities and flows. Test enable-disable-enable and uninstall cycles so every contribution is demonstrably removable and repeatable.
 
 ## Store assets and tags
 

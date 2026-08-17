@@ -17,3 +17,5 @@ Alle Komponentenmanifeste behalten lesbare Namen und IDs, verwenden für Abhäng
 Modulkarten, Filter, Quelleneinstellungen und Lebenszyklusaktionen aktualisieren nun sofort den Marktplatzinhalt, ohne das umgebende Seitenlayout zurückzusetzen. Moduldetails behalten die Store-Navigation bei, während einheitlich große Karten Beschreibungen und Lebenszyklusaktionen ausrichten.
 
 Externe Checkouts durchlaufen nun vor dem Ersetzen einer aktiven Installation eine Repository-Prüfung für Paket- und Routenverträge, Einstiegspunkte, Grafiken, sichere Pfade und optionale Datei-Prüfsummen.
+
+Installierte Repositorys werden nun als vollständige Laufzeitkomponenten erkannt. Ihr Bootstrap-Einstiegspunkt kann Routen, UI, Dokumentation, Änderungsnotizen, Fähigkeiten und Flow-Stufen über einen verfolgten `ctx`-Bereich beitragen; Deaktivieren oder Deinstallieren baut alle Beiträge vollständig ab.

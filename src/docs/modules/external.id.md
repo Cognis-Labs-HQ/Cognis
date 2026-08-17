@@ -10,6 +10,8 @@ Satu repositori Git menyediakan satu modul. Akar repositori memuat `manifest.jso
 
 `package.json` memakai `"type": "module"` dan versi yang sama dengan manifes. `routes.json` selalu berisi larik. Sebelum pemasangan, Cognis memeriksa titik masuk, gambar bursa, jalur relatif yang aman, dan checksum SHA-256 yang dideklarasikan; checkout sementara dihapus sepenuhnya jika pemeriksaan gagal.
 
+Setiap modul eksternal mendeklarasikan `entrypoints.bootstrap`. Saat modul diaktifkan, Cognis hanya memanggil `bootstrapModule(ctx)`. Rute, jalur UI, dokumentasi dalam `docs/`, catatan perubahan dalam `docs/changelog/`, kapabilitas, dan ekstensi alur ditemukan dari modul. Saat dinonaktifkan atau dihapus, hook pembongkaran dijalankan dan semua kontribusi yang direkam oleh `ctx` terbatas dihapus.
+
 ## Daftar periksa ekstraksi
 
 Saat modul dipindahkan ke repositori tersendiri, UUID dan ID yang mudah dibaca tidak boleh berubah. Perbarui tautan repositori, beranda, dan dukungan; sinkronkan versi manifes dan paket; buat ulang checksum; serta ganti impor relatif monorepo dengan kapabilitas dan alur `ctx`.

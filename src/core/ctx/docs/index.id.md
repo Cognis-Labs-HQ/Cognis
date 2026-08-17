@@ -41,6 +41,7 @@ Komponen ini tidak memiliki konfigurasi variabel lingkungan runtime.
 ## Titik Ekstensi
 
 - Kontribusikan kapabilitas lintas komponen lewat `ctx.contributeCapability(key, value)`.
+- Hapus kapabilitas milik komponen saat pembongkaran dengan `ctx.removeCapability(key)`; bootstrap modul terbatas melakukannya secara otomatis.
 - Daftarkan pipeline orkestrasi baru lewat `ctx.registerFlow({ id, stages })`.
 - Suntikkan perilaku flow lewat `ctx.addFlowStageHook(flowId, stageId, hook, handler)`.
 - Lepaskan perilaku saat komponen dinonaktifkan lewat `ctx.removeFlowStageHook(...)` dan `ctx.unregisterFlow(...)`.

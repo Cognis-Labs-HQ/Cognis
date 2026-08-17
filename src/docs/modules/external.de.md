@@ -10,6 +10,8 @@ Ein Git-Repository liefert ein Modul. Im Stamm liegen `manifest.json`, `package.
 
 `package.json` verwendet `"type": "module"` und dieselbe Version wie das Manifest. `routes.json` enthält immer ein Array. Vor der Installation prüft Cognis Einstiegspunkte, Store-Grafiken, sichere relative Pfade und deklarierte SHA-256-Prüfsummen; bei einem Fehler wird der temporäre Checkout vollständig entfernt.
 
+Jedes externe Modul deklariert `entrypoints.bootstrap`. Cognis ruft beim Aktivieren ausschließlich `bootstrapModule(ctx)` auf. Routen, UI-Pfade, Dokumentation unter `docs/`, Änderungsnotizen unter `docs/changelog/`, Fähigkeiten und Flow-Erweiterungen werden automatisch aus dem Modul aufgenommen. Beim Deaktivieren oder Deinstallieren werden Rückbau-Hooks ausgeführt und alle über den bereichsgebundenen `ctx` registrierten Beiträge entfernt.
+
 ## Checkliste zur Auslagerung
 
 Beim Verschieben in ein eigenes Repository bleiben UUID und lesbare ID unverändert. Repository-, Homepage- und Support-Links werden aktualisiert, Manifest- und Paketversion synchronisiert, Prüfsummen neu erzeugt und Monorepo-relative Importe durch `ctx`-Fähigkeiten und Abläufe ersetzt.

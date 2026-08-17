@@ -165,6 +165,16 @@ export function buildServer(deps: ApiDependencies) {
                 await deps.persistModuleState?.(moduleId, false);
                 await moduleExtensionRoutes.refresh();
             },
+            onImported: async () => {
+                await deps.moduleRuntimeGateway.refresh?.();
+                await moduleExtensionRoutes.refresh();
+            },
+            onUninstalled: async (moduleId) => {
+                enabledModules.delete(moduleId);
+                await deps.persistModuleState?.(moduleId, false);
+                await deps.moduleRuntimeGateway.refresh?.();
+                await moduleExtensionRoutes.refresh();
+            },
             getStatus: (moduleId) =>
                 enabledModules.has(moduleId) ? "enabled" : "disabled",
             getIntegrityReport: deps.moduleIntegrityChecker,

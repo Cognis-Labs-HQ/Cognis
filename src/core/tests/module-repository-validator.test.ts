@@ -28,6 +28,10 @@ async function createRepository(): Promise<{
     );
     await writeFile(path.join(root, "routes.json"), "[]");
     await writeFile(path.join(root, "api/index.js"), "export default {};\n");
+    await writeFile(
+        path.join(root, "bootstrap.js"),
+        "export function bootstrapModule() {}\n",
+    );
     await writeFile(path.join(root, "assets/icon.svg"), "<svg/>\n");
     await writeFile(path.join(root, "assets/banner.png"), "banner\n");
     const apiDigest = createHash("sha256")
@@ -43,7 +47,10 @@ async function createRepository(): Promise<{
             class: "extension",
             coreApiVersion: "v1",
             capabilities: [],
-            entrypoints: { api: "./api/index.js" },
+            entrypoints: {
+                bootstrap: "./bootstrap.js",
+                api: "./api/index.js",
+            },
             assets: {
                 icon: "assets/icon.svg",
                 banner: "assets/banner.png",

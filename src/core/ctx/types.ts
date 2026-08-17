@@ -83,6 +83,7 @@ export interface FlowApi {
 export interface Ctx {
     contributeCapability(key: string, value: unknown): void;
     contributePublicCapability(key: string, value: unknown): void;
+    removeCapability(key: string): boolean;
     isPublicCapability(key: string): boolean;
     listPublicCapabilities(): string[];
     hasCapability(key: string): boolean;

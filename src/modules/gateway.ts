@@ -10,4 +10,5 @@ export interface ModuleRuntimeGateway {
     installFromZip(binary: Uint8Array): Promise<ModuleManifest>;
     enable(moduleId: string): Promise<ModuleState>;
     disable(moduleId: string): Promise<ModuleState>;
+    refresh?(): Promise<void>;
 }

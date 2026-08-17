@@ -2,7 +2,7 @@
     "id": "nextcloud-whiteboard",
     "uuid": "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
     "name": "Nextcloud Whiteboard",
-    "version": "2.3.18",
+    "version": "2.3.19",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": [
