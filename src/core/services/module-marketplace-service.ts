@@ -168,8 +168,30 @@ export class ModuleMarketplaceService {
                 const manifest = this.parseManifest(
                     await manifestResponse.text(),
                 );
+                const assets = manifest.assets
+                    ? {
+                          avatar: manifest.assets.avatar
+                              ? this.resolveRepositoryAssetUrl(
+                                    source,
+                                    projectPath,
+                                    defaultBranch,
+                                    manifest.assets.avatar,
+                                )
+                              : undefined,
+                          screenshots: (manifest.assets.screenshots ?? []).map(
+                              (assetPath) =>
+                                  this.resolveRepositoryAssetUrl(
+                                      source,
+                                      projectPath,
+                                      defaultBranch,
+                                      assetPath,
+                                  ),
+                          ),
+                      }
+                    : undefined;
                 return {
                     ...manifest,
+                    assets,
                     cloneUrl,
                     sourceUuid: source.uuid,
                     installed: false,
@@ -192,6 +214,25 @@ export class ModuleMarketplaceService {
             throw new Error("invalid_module_manifest");
         }
         return manifest;
+    }
+
+    private resolveRepositoryAssetUrl(
+        source: ModuleSource,
+        projectPath: string,
+        defaultBranch: string,
+        assetPath: string,
+    ): string {
+        const normalizedPath = assetPath.replaceAll("\\", "/");
+        if (
+            normalizedPath.startsWith("/") ||
+            normalizedPath.split("/").includes("..")
+        ) {
+            throw new Error("invalid_module_asset_path");
+        }
+        if (source.provider === "github") {
+            return `https://raw.githubusercontent.com/${projectPath}/${encodeURIComponent(defaultBranch)}/${normalizedPath}`;
+        }
+        return `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/${encodeURIComponent(normalizedPath)}/raw?ref=${encodeURIComponent(defaultBranch)}`;
     }
 
     private assertSource(source: ModuleSource): void {

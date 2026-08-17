@@ -54,12 +54,17 @@ test("module marketplace discovers repository manifests", async () => {
                       coreApiVersion: "v1",
                       capabilities: [],
                       entrypoints: {},
+                      assets: { avatar: "assets/avatar.png" },
                   }),
               );
     try {
         const modules = await service.discover();
         assert.equal(modules[0].id, "notes");
         assert.equal(modules[0].sourceUuid, source.uuid);
+        assert.equal(
+            modules[0].assets?.avatar,
+            "https://raw.githubusercontent.com/acme/notes/main/assets/avatar.png",
+        );
     } finally {
         globalThis.fetch = originalFetch;
     }

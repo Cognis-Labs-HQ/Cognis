@@ -22,8 +22,9 @@ let category = "all";
 let view = "recommended";
 
 function renderCard(module) {
-    const avatar = module.assets?.avatar
-        ? `<img class="module-store-avatar" src="${escapeHtml(module.assets.avatar)}" alt="" loading="lazy">`
+    const avatarUrl = resolveModuleAvatarUrl(module.assets?.avatar);
+    const avatar = avatarUrl
+        ? `<img class="module-store-avatar" src="${escapeHtml(avatarUrl)}" alt="" loading="lazy">`
         : `<span class="module-store-avatar module-store-avatar--fallback">${escapeHtml(module.name.slice(0, 1))}</span>`;
     return `<article class="module-store-card">
       ${avatar}
@@ -34,6 +35,17 @@ function renderCard(module) {
       </div>
       <button type="button" class="${module.installed || module.status === "enabled" ? "btn-neutral" : "btn-confirm"}" data-module-action="${module.uuid}">${escapeHtml(i18n.t(module.installed || module.status === "enabled" ? "ui.reuse.installed" : "ui.reuse.install"))}</button>
     </article>`;
+}
+
+function resolveModuleAvatarUrl(value) {
+    const candidate = String(value ?? "").trim();
+    if (candidate.startsWith("/")) return candidate;
+    try {
+        const parsed = new URL(candidate);
+        return parsed.protocol === "https:" ? parsed.toString() : "";
+    } catch {
+        return "";
+    }
 }
 
 function visibleModules() {
