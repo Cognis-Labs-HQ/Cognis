@@ -11,3 +11,7 @@ Administrator dapat menemukan repositori publik atau privat dengan PAT opsional 
 ## Dependensi UUID
 
 Semua manifes komponen tetap memiliki nama dan ID yang mudah dibaca, tetapi memakai UUID stabil untuk dependensi.
+
+## Kontrol bursa yang andal
+
+Kartu modul, filter, pengaturan sumber, dan kontrol siklus hidup kini langsung memperbarui isi bursa tanpa mengatur ulang tata letak halaman di sekitarnya.

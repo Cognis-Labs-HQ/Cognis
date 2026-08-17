@@ -11,3 +11,7 @@ Administratoren können öffentliche oder private Repositorys mit optionalen, im
 ## UUID-Abhängigkeiten
 
 Alle Komponentenmanifeste behalten lesbare Namen und IDs, verwenden für Abhängigkeiten aber stabile UUIDs.
+
+## Zuverlässige Marktplatz-Steuerung
+
+Modulkarten, Filter, Quelleneinstellungen und Lebenszyklusaktionen aktualisieren nun sofort den Marktplatzinhalt, ohne das umgebende Seitenlayout zurückzusetzen.

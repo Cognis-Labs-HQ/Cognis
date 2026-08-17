@@ -11,3 +11,7 @@ Administrators can discover public or private repositories with optional keyring
 ## UUID dependencies
 
 All component manifests now retain readable names and IDs while using stable UUIDs for dependency declarations.
+
+## Reliable marketplace controls
+
+Module cards, filters, source settings, and lifecycle controls now update the marketplace content immediately without resetting the surrounding page layout.

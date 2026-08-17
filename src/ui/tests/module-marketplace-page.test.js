@@ -49,4 +49,6 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /modulesForView\(\)\.flatMap/);
     assert.match(source, /formatTag\(item\)/);
     assert.match(source, /capture: true/);
+    assert.match(source, /composer\.refreshElements\(\["module-store"\]\)/);
+    assert.doesNotMatch(source, /composer\.refresh\(elements\(\)\)/);
 });

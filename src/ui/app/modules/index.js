@@ -222,7 +222,11 @@ async function runLifecycleAction(module, action) {
     selectedModule =
         selectedModule?.uuid === module.uuid ? module : selectedModule;
     showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
-    composer.refresh(elements());
+    refreshMarketplace();
+}
+
+function refreshMarketplace() {
+    composer.refreshElements(["module-store"]);
 }
 
 function bindInteractions(root, signal) {
@@ -275,7 +279,7 @@ function bindInteractions(root, signal) {
             if (target.classList.contains("module-store-card")) {
                 selectedModule = module;
             }
-            composer.refresh(elements());
+            refreshMarketplace();
         },
         { signal, capture: true },
     );
