@@ -781,8 +781,8 @@ function initSearchBar(i18n) {
                       },
                       {
                           id: "page-modules",
-                          label: `${i18n.t("ui.reuse.administration")} → ${i18n.t("ui.app.admin.components")} → ${i18n.t("ui.reuse.modules")}`,
-                          url: "/administration#components",
+                          label: `${i18n.t("ui.reuse.administration")} → ${i18n.t("ui.reuse.modules")}`,
+                          url: "/administration/modules",
                       },
                   ]
                 : []),

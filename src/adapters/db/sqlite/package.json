@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-db-sqlite",
-    "version": "0.3.9",
+    "version": "0.3.10",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.9",
+        "@cognis/core": "<=0.3.10",
         "@cognis/gateways": "<=0.1.7"
     }
 }

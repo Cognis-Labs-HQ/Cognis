@@ -1,0 +1,13 @@
+# Bursa Modul
+
+## Toko aplikasi khusus
+
+Modul kini memiliki halaman Administrasi terpisah dengan tampilan terpasang, tersedia, rekomendasi, dan kategori serta sumber GitHub dan GitLab yang dapat dikonfigurasi.
+
+## Repositori eksternal
+
+Administrator dapat menemukan repositori publik atau privat dengan PAT opsional yang dilindungi keyring; Cognis memvalidasi manifes dan UUID tetap saat instalasi.
+
+## Dependensi UUID
+
+Semua manifes komponen tetap memiliki nama dan ID yang mudah dibaca, tetapi memakai UUID stabil untuk dependensi.

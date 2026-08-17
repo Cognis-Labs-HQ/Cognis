@@ -1,8 +1,10 @@
 import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
+import path from "node:path";
 import {
     HealthService,
     ModuleService,
+    ModuleMarketplaceService,
     type GatewayRegistry,
     type BootstrapLog,
     type ModuleManifest,
@@ -128,6 +130,12 @@ export function buildServer(deps: ApiDependencies) {
         );
     }
     const moduleService = new ModuleService(deps.moduleRuntimeGateway);
+    const moduleMarketplaceService = new ModuleMarketplaceService(
+        process.env.COGNIS_MODULE_SOURCES_PATH ??
+            path.resolve(process.cwd(), "config", "module-sources.json"),
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+            path.resolve(process.cwd(), "external-modules"),
+    );
     const healthService = deps.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
 
@@ -163,6 +171,7 @@ export function buildServer(deps: ApiDependencies) {
             log,
         },
         routeContext,
+        moduleMarketplaceService,
     );
     const systemRoutes = createSystemRoutes(
         healthService,

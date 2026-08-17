@@ -26,5 +26,11 @@ test("tfa declares notify as a bootstrap dependency", () => {
         readFileSync(resolve(ROOT, "src/gateways/tfa/manifest.json"), "utf8"),
     );
 
-    assert.ok(manifest.requires.includes("notify"));
+    const notifyManifest = JSON.parse(
+        readFileSync(
+            resolve(ROOT, "src/gateways/notify/manifest.json"),
+            "utf8",
+        ),
+    );
+    assert.ok(manifest.requires.includes(notifyManifest.uuid));
 });

@@ -93,8 +93,8 @@ test("active components use health lights and disabled adapters reserve the slot
             healthStatus: {
                 contributions: [
                     {
-                        componentType: "module",
-                        componentId: "active-module",
+                        componentType: "gateway",
+                        componentId: "notify",
                         status: "ok",
                     },
                     {

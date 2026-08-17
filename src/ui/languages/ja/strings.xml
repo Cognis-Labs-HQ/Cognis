@@ -681,4 +681,24 @@
   <string name="ui.reuse.duration.hours">時間</string>
   <string name="ui.reuse.duration.days">日</string>
   <string name="ui.reuse.duration.weeks">週間</string>
+  <string name="ui.page.title.modules">モジュール</string>
+  <string name="ui.app.modules.subtitle">信頼できるリポジトリからモジュールを検索、インストール、管理します。</string>
+  <string name="ui.app.modules.recommended">おすすめ</string>
+  <string name="ui.app.modules.installed">インストール済み</string>
+  <string name="ui.app.modules.available">利用可能</string>
+  <string name="ui.app.modules.categories">カテゴリー</string>
+  <string name="ui.app.modules.sources">モジュールソース</string>
+  <string name="ui.app.modules.empty">この表示に一致するモジュールはありません。</string>
+  <string name="ui.app.modules.provider">プロバイダー</string>
+  <string name="ui.app.modules.namespace">組織またはグループ</string>
+  <string name="ui.app.modules.base_url">API ベース URL</string>
+  <string name="ui.app.modules.pat">個人アクセストークン（任意）</string>
+  <string name="ui.app.modules.source_saved">モジュールソースを保存しました。</string>
+  <string name="ui.reuse.install">インストール</string>
+  <string name="ui.reuse.installed">インストール済み</string>
+  <string name="ui.reuse.all">すべて</string>
+  <string name="ui.reuse.name">名前</string>
+  <string name="ui.app.modules.github">GitHub</string>
+  <string name="ui.app.modules.gitlab">GitLab</string>
+  <string name="ui.app.modules.keyring_component">モジュールストア</string>
 </resources>

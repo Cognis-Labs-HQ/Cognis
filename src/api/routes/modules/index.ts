@@ -1,5 +1,9 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { BootstrapLog, ModuleService } from "@cognis/core";
+import type {
+    BootstrapLog,
+    ModuleMarketplaceService,
+    ModuleService,
+} from "@cognis/core";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -28,6 +32,7 @@ export function createModuleRoutes(
     moduleService: ModuleService,
     hooks?: ModuleRouteHooks,
     routeContext?: RouteContext,
+    marketplace?: ModuleMarketplaceService,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -40,6 +45,84 @@ export function createModuleRoutes(
             method: req.method ?? "GET",
             path: url.pathname,
         };
+        if (marketplace && url.pathname === "/api/v1/modules/sources") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            if (req.method === "GET") {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({ data: await marketplace.listSources() }),
+                );
+                return true;
+            }
+            if (req.method === "POST") {
+                const source = await marketplace.saveSource(
+                    (await readJson(req)) as never,
+                );
+                hooks?.log?.("info", "Module source saved.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    sourceUuid: source.uuid,
+                });
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: source }));
+                return true;
+            }
+        }
+        const sourceDeleteMatch = url.pathname.match(
+            /^\/api\/v1\/modules\/sources\/([^/]+)$/,
+        );
+        if (marketplace && sourceDeleteMatch && req.method === "DELETE") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            await marketplace.removeSource(
+                decodeURIComponent(sourceDeleteMatch[1]),
+            );
+            hooks?.log?.("info", "Module source removed.", {
+                ...logMeta,
+                accountId: claims.sub,
+                sourceUuid: sourceDeleteMatch[1],
+            });
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
+        if (
+            marketplace &&
+            url.pathname === "/api/v1/modules/catalog" &&
+            req.method === "POST"
+        ) {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const data = await marketplace.discover(
+                (body.tokens ?? {}) as Record<string, string>,
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
+            return true;
+        }
+        if (
+            marketplace &&
+            url.pathname === "/api/v1/modules/install" &&
+            req.method === "POST"
+        ) {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const manifest = await marketplace.install(
+                body.module as never,
+                typeof body.token === "string" ? body.token : undefined,
+            );
+            hooks?.log?.("info", "External module installed.", {
+                ...logMeta,
+                accountId: claims.sub,
+                moduleUuid: manifest.uuid,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: manifest }));
+            return true;
+        }
         if (url.pathname === "/api/v1/modules" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;

@@ -1,9 +1,14 @@
 {
     "id": "registration",
+    "uuid": "4160e651-7703-5519-9f02-2a5cac7b1551",
     "name": "Registration Gateway",
-    "version": "1.1.13",
+    "version": "1.1.14",
     "required": false,
-    "requires": ["db", "auth", "notify"],
+    "requires": [
+        "5711a248-4ac9-5d44-98b5-b99bd4c6d722",
+        "a77dac5a-fe42-5bab-8036-54e319cf5313",
+        "433cd9f3-5b80-5e7d-911b-1907b9348f26"
+    ],
     "description": "Registration workflows via pluggable invite/public adapters.",
     "publisher": "Cognis Labs HQ",
     "entrypoints": {

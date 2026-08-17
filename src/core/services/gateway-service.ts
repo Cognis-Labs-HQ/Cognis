@@ -5,6 +5,7 @@ import type { FlowApi } from "../ctx/types.js";
 
 export interface GatewayManifest {
     id: string;
+    uuid?: string;
     name: string;
     version: string;
     description?: string;
@@ -135,6 +136,7 @@ export interface GatewayBootstrapBase {
 
 type GatewayDirectoryManifest = {
     id?: string;
+    uuid?: string;
     required?: boolean;
     requires?: string[];
 };
@@ -262,12 +264,12 @@ export class GatewayService {
             if (b === "db") return 1;
             return a.localeCompare(b);
         };
-        const directoryByGatewayId = new Map(
-            entries.map((entry) => [
-                directoryManifests.get(entry)?.id ?? entry,
-                entry,
-            ]),
-        );
+        const directoryByGatewayId = new Map<string, string>();
+        for (const entry of entries) {
+            const manifest = directoryManifests.get(entry);
+            directoryByGatewayId.set(manifest?.id ?? entry, entry);
+            if (manifest?.uuid) directoryByGatewayId.set(manifest.uuid, entry);
+        }
         const pendingEntries = new Set(entries);
         const orderedEntries: string[] = [];
         while (pendingEntries.size > 0) {
@@ -347,6 +349,7 @@ export class GatewayService {
             ) {
                 ctx.gatewayRegistry.patch(gatewayId, {
                     requires: manifestRequires,
+                    uuid: manifest.uuid,
                 });
             }
             if (adapterGatewayIds.has(gatewayId)) {
@@ -367,7 +370,13 @@ export class GatewayService {
         // Validate cross-gateway dependencies now that all gateways have
         // bootstrapped and registered themselves.
         for (const [gatewayId, meta] of gatewayManifests) {
-            for (const depId of meta.requires) {
+            for (const dependencyReference of meta.requires) {
+                const dependencyDirectory =
+                    directoryByGatewayId.get(dependencyReference);
+                const depId = dependencyDirectory
+                    ? (directoryManifests.get(dependencyDirectory)?.id ??
+                      dependencyDirectory)
+                    : dependencyReference;
                 if (!ctx.gatewayRegistry.get(depId)) {
                     const message = `Gateway "${gatewayId}" requires gateway "${depId}" but it is not registered.`;
                     if (meta.required) {

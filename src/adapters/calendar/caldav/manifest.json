@@ -1,7 +1,8 @@
 {
     "id": "calendar-caldav",
+    "uuid": "f0ba5c33-da53-5b87-ad02-3fc0e18b59f3",
     "name": "CalDAV Adapter",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "gateway": "calendar",
     "description": "Exports private and public calendar feeds for CalDAV clients.",
     "publisher": "Cognis Labs HQ"

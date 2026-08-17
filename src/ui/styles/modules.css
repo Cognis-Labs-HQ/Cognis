@@ -1,0 +1,99 @@
+.module-store-layout {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, 1fr);
+    gap: 1.5rem;
+}
+.module-store-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+.module-store-sidebar button {
+    justify-content: flex-start;
+    width: 100%;
+}
+.module-store-sidebar .is-active {
+    background: var(--accent-color);
+    color: var(--button-text, #fff);
+}
+.module-store-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+.module-store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    gap: 1rem;
+}
+.module-store-results {
+    min-width: 0;
+}
+.module-store-card {
+    display: grid;
+    grid-template-columns: 4rem minmax(0, 1fr);
+    gap: 1rem;
+    align-items: start;
+    padding: 1.1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    background: var(--surface-color);
+}
+.module-store-card > button {
+    grid-column: 2;
+    justify-self: start;
+}
+.module-store-avatar {
+    width: 4rem;
+    height: 4rem;
+    border-radius: 1rem;
+    object-fit: cover;
+}
+.module-store-avatar--fallback {
+    display: grid;
+    place-items: center;
+    background: var(--accent-color);
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+.module-store-card-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.module-store-card-heading h3,
+.module-store-card-copy p {
+    margin: 0;
+}
+.module-store-card-copy {
+    display: grid;
+    gap: 0.5rem;
+}
+.module-store-publisher {
+    color: var(--muted-text-color);
+    font-size: 0.85rem;
+}
+.module-source-list {
+    display: grid;
+    gap: 0.5rem;
+    padding: 0;
+    list-style: none;
+}
+.module-source-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+@media (max-width: 720px) {
+    .module-store-layout {
+        grid-template-columns: 1fr;
+    }
+    .module-store-sidebar {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

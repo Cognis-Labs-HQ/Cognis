@@ -1,7 +1,8 @@
 {
     "id": "analytics",
+    "uuid": "e10c016f-8a15-5ec2-8188-c1657dfbe829",
     "name": "Analytics",
-    "version": "2.0.5",
+    "version": "2.0.6",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
@@ -56,5 +57,15 @@
             "path": "content/README.en.md",
             "sha256": "b54ab131c7aab6bb4919c9390c187d6551c407f4a4e0bd691b33beb51abb3d79"
         }
-    ]
+    ],
+    "summary": "Analytics",
+    "description": "Analytics",
+    "categories": ["Productivity"],
+    "recommended": false,
+    "license": "AGPL-3.0-or-later",
+    "repository": "https://github.com/Cognis-Labs-HQ/analytics",
+    "assets": {
+        "avatar": "assets/avatar.png",
+        "screenshots": []
+    }
 }

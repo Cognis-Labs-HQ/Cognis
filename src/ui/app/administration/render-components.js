@@ -79,7 +79,10 @@ function renderDependencyLinks(ids, scrollPrefix, gateways, i18n, escapeHtml) {
         return i18n.t("ui.app.admin.gateway.no_dependencies");
     }
     const gatewayById = new Map(
-        gateways.map((gateway) => [gateway.id, gateway]),
+        gateways.flatMap((gateway) => [
+            [gateway.id, gateway],
+            ...(gateway.uuid ? [[gateway.uuid, gateway]] : []),
+        ]),
     );
     return ids
         .map((id) => {
@@ -336,15 +339,6 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
 export function renderComponentsContent(modules, gateways, allAdapters, deps) {
     const { i18n } = deps;
     return `
-    <div class="components-section">
-      <div class="integrity-header">
-        <h3 class="components-section-heading">${i18n.t("ui.reuse.modules")}</h3>
-        <button id="import-module-github" class="btn-confirm btn-animated" type="button">${i18n.t("ui.app.admin.import_module_from_github")}</button>
-      </div>
-      <div class="components-section-body">
-        ${renderModulesContent(modules, gateways, deps)}
-      </div>
-    </div>
     <div class="components-section">
       <h3 class="components-section-heading">${i18n.t("ui.app.admin.gateways")}</h3>
       <div class="components-section-body">

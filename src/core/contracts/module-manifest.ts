@@ -1,6 +1,8 @@
 export type ModuleClass = "core" | "extension";
 
 export interface ModuleManifest {
+    /** Immutable identity used by dependency and lifecycle contracts. */
+    uuid: string;
     id: string;
     name: string;
     version: string;
@@ -15,6 +17,18 @@ export interface ModuleManifest {
      * module itself is enabled.
      */
     requires?: string[];
+    summary?: string;
+    description?: string;
+    categories?: string[];
+    recommended?: boolean;
+    license?: string;
+    homepage?: string;
+    repository?: string;
+    support?: string;
+    assets?: {
+        avatar?: string;
+        screenshots?: string[];
+    };
     entrypoints: {
         bootstrap?: string;
         api?: string;

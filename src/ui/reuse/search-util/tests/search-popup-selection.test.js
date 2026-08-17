@@ -14,18 +14,14 @@ test("search popup checked indicator stays centered in selectable rows", () => {
     assert.match(source, /transform: translate\(-50%, -58%\) rotate\(45deg\);/);
 });
 
-test("global search modules result points to Administration components", () => {
+test("global search modules result points to the module marketplace", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
         "utf8",
     );
     assert.match(source, /id: "page-modules"/);
-    assert.match(source, /url: "\/administration#components"/);
-    assert.match(
-        source,
-        /ui\.reuse\.administration[\s\S]*ui\.app\.admin\.components[\s\S]*ui\.reuse\.modules/,
-    );
-    assert.doesNotMatch(source, /url: "\/modules"/);
+    assert.match(source, /url: "\/administration\/modules"/);
+    assert.match(source, /ui\.reuse\.administration[\s\S]*ui\.reuse\.modules/);
 });
 
 test("global search exposes registered categories and match controls", () => {

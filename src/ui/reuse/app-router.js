@@ -267,6 +267,15 @@ const STATIC_ROUTES = [
         load: () => import("../app/invite/index.js"),
     },
     {
+        pattern: /^\/administration\/modules/,
+        base: "/administration/modules",
+        stylesheets: [
+            ...ROUTE_STYLE_BUNDLES.pageSections,
+            "/static/styles/modules.css",
+        ],
+        load: () => import("../app/modules/index.js"),
+    },
+    {
         pattern: /^\/administration/,
         base: "/administration",
         stylesheets: [

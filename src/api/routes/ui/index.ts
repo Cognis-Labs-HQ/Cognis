@@ -24,7 +24,6 @@ import {
 } from "../../reuse/static-asset-response.js";
 import * as htmlResponse from "../../reuse/html-response.js";
 import { handleRegisteredSpaPage } from "./spa-pages.js";
-
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
 const PUBLIC_ROOT = path.join(UI_ROOT, "public");
@@ -42,7 +41,6 @@ const MODULES_ROOT =
 const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
-
 function versionAssetUrl(assetUrl: string): string {
     if (assetUrl.startsWith("/assets/")) return assetUrl;
     if (!assetUrl.startsWith("/static/") && !assetUrl.startsWith("/assets/")) {
@@ -55,7 +53,6 @@ function versionAssetUrl(assetUrl: string): string {
     const separator = assetUrl.includes("?") ? "&" : "?";
     return `${assetUrl}${separator}v=${encodeURIComponent(ASSET_VERSION)}`;
 }
-
 function versionDescriptor<T>(descriptor: T): T {
     if (Array.isArray(descriptor)) {
         return descriptor.map(versionDescriptor) as T;
@@ -324,7 +321,7 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/administration") {
+        if (/^\/administration(?:\/modules)?$/.test(url.pathname)) {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 ctx,
@@ -346,9 +343,13 @@ export function createUiRoutes(
                 return true;
             }
 
+            const administrationPage =
+                url.pathname === "/administration/modules"
+                    ? "modules.html"
+                    : "administration.html";
             await htmlResponse.serveHtmlPage(
                 res,
-                path.join(SERVED_PUBLIC_ROOT, "pages", "administration.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", administrationPage),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,

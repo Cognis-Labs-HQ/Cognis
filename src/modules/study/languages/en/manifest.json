@@ -1,12 +1,23 @@
 {
     "id": "study-language-en",
+    "uuid": "b1adc29f-9d54-5785-9bea-2ce76f1981e4",
     "name": "Cognis English",
-    "version": "1.2.5",
+    "version": "1.2.6",
     "class": "extension",
     "enabledByDefault": true,
     "coreApiVersion": "v1",
     "capabilities": ["study:language", "ui:page"],
-    "requires": ["study"],
+    "requires": ["338b9237-a2c8-5bcf-9437-bccc9abd9a27"],
     "entrypoints": {},
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "summary": "Cognis English",
+    "description": "Cognis English",
+    "categories": ["Productivity"],
+    "recommended": false,
+    "license": "AGPL-3.0-or-later",
+    "repository": "https://github.com/Cognis-Labs-HQ/study-language-en",
+    "assets": {
+        "avatar": "assets/avatar.png",
+        "screenshots": []
+    }
 }

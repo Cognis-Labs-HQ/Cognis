@@ -681,4 +681,24 @@
   <string name="ui.reuse.duration.hours">Jam</string>
   <string name="ui.reuse.duration.days">Hari</string>
   <string name="ui.reuse.duration.weeks">Minggu</string>
+  <string name="ui.page.title.modules">Modul</string>
+  <string name="ui.app.modules.subtitle">Temukan, instal, dan kelola modul dari repositori tepercaya.</string>
+  <string name="ui.app.modules.recommended">Direkomendasikan</string>
+  <string name="ui.app.modules.installed">Terpasang</string>
+  <string name="ui.app.modules.available">Tersedia</string>
+  <string name="ui.app.modules.categories">Kategori</string>
+  <string name="ui.app.modules.sources">Sumber Modul</string>
+  <string name="ui.app.modules.empty">Tidak ada modul yang cocok dengan tampilan ini.</string>
+  <string name="ui.app.modules.provider">Penyedia</string>
+  <string name="ui.app.modules.namespace">Organisasi atau Grup</string>
+  <string name="ui.app.modules.base_url">URL Dasar API</string>
+  <string name="ui.app.modules.pat">Token Akses Pribadi (Opsional)</string>
+  <string name="ui.app.modules.source_saved">Sumber modul disimpan.</string>
+  <string name="ui.reuse.install">Instal</string>
+  <string name="ui.reuse.installed">Terpasang</string>
+  <string name="ui.reuse.all">Semua</string>
+  <string name="ui.reuse.name">Nama</string>
+  <string name="ui.app.modules.github">GitHub</string>
+  <string name="ui.app.modules.gitlab">GitLab</string>
+  <string name="ui.app.modules.keyring_component">Bursa Modul</string>
 </resources>

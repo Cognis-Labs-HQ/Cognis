@@ -681,4 +681,24 @@
   <string name="ui.reuse.duration.hours">Stunden</string>
   <string name="ui.reuse.duration.days">Tage</string>
   <string name="ui.reuse.duration.weeks">Wochen</string>
+  <string name="ui.page.title.modules">Module</string>
+  <string name="ui.app.modules.subtitle">Module aus vertrauenswürdigen Repositorys entdecken, installieren und verwalten.</string>
+  <string name="ui.app.modules.recommended">Empfohlen</string>
+  <string name="ui.app.modules.installed">Installiert</string>
+  <string name="ui.app.modules.available">Verfügbar</string>
+  <string name="ui.app.modules.categories">Kategorien</string>
+  <string name="ui.app.modules.sources">Modulquellen</string>
+  <string name="ui.app.modules.empty">Keine Module entsprechen dieser Ansicht.</string>
+  <string name="ui.app.modules.provider">Anbieter</string>
+  <string name="ui.app.modules.namespace">Organisation oder Gruppe</string>
+  <string name="ui.app.modules.base_url">API-Basis-URL</string>
+  <string name="ui.app.modules.pat">Persönliches Zugriffstoken (optional)</string>
+  <string name="ui.app.modules.source_saved">Modulquelle gespeichert.</string>
+  <string name="ui.reuse.install">Installieren</string>
+  <string name="ui.reuse.installed">Installiert</string>
+  <string name="ui.reuse.all">Alle</string>
+  <string name="ui.reuse.name">Name</string>
+  <string name="ui.app.modules.github">GitHub</string>
+  <string name="ui.app.modules.gitlab">GitLab</string>
+  <string name="ui.app.modules.keyring_component">Modul-Marktplatz</string>
 </resources>

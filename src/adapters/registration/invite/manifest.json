@@ -1,6 +1,7 @@
 {
     "id": "invite",
+    "uuid": "c6a66d9c-d6d1-5762-86d8-c4e1fc8d5088",
     "name": "Invite",
-    "version": "0.1.8",
+    "version": "0.1.9",
     "publisher": "Cognis Labs HQ"
 }

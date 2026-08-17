@@ -1,6 +1,7 @@
 {
     "id": "mariadb",
+    "uuid": "a3496b91-e0a4-5fb8-a315-04dd071f95fc",
     "name": "MariaDB Database",
-    "version": "0.5.4",
+    "version": "0.5.5",
     "publisher": "Cognis Labs HQ"
 }

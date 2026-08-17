@@ -48,6 +48,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
         const manifests: ModuleManifest[] = [
             {
                 id: "cognis-core",
+                uuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
                 name: "Cognis Core",
                 version: "1.0.0",
                 class: "core",

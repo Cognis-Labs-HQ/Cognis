@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-registration-public",
-    "version": "0.1.5",
+    "version": "0.1.6",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.9",
+        "@cognis/core": "<=0.3.10",
         "@cognis/gateways": "<=0.1.7"
     }
 }

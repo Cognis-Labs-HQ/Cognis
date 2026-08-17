@@ -1,12 +1,23 @@
 {
     "id": "study-language-ja",
+    "uuid": "e905927f-b133-572a-92ce-2ea8645e5ceb",
     "name": "Cognis Japanese",
-    "version": "1.2.7",
+    "version": "1.2.8",
     "class": "extension",
     "enabledByDefault": true,
     "coreApiVersion": "v1",
     "capabilities": ["study:language", "ui:page"],
-    "requires": ["study"],
+    "requires": ["338b9237-a2c8-5bcf-9437-bccc9abd9a27"],
     "entrypoints": {},
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "summary": "Cognis Japanese",
+    "description": "Cognis Japanese",
+    "categories": ["Productivity"],
+    "recommended": false,
+    "license": "AGPL-3.0-or-later",
+    "repository": "https://github.com/Cognis-Labs-HQ/study-language-ja",
+    "assets": {
+        "avatar": "assets/avatar.png",
+        "screenshots": []
+    }
 }
