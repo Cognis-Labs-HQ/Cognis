@@ -10,9 +10,11 @@ import {
     installModule,
     loadAvailableModules,
     loadInstalledModules,
+    loadModuleMarketplaceSettings,
     loadModuleSources,
     removeModuleSource,
     saveModuleSource,
+    saveModuleMarketplaceSettings,
     setModuleEnabled,
     uninstallModule,
 } from "./api.js";
@@ -77,7 +79,6 @@ function renderModuleDetails(module) {
     const metadata = [
         module.publisher,
         module.version,
-        module.license,
         ...(module.categories ?? []),
         ...(module.tags ?? []),
     ]
@@ -87,7 +88,10 @@ function renderModuleDetails(module) {
     const branchSelector = module.branches?.length
         ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.branch"))}</span><select data-module-branch="${escapeHtml(module.uuid)}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</select></label>`
         : "";
-    return `<article class="module-detail"><button type="button" class="btn-neutral module-detail-back" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    const license = module.license
+        ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
+        : "";
+    return `<article class="module-detail"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}"><img src="/static/assets/reuse/arrow-back.svg" alt="${escapeHtml(i18n.t("ui.reuse.back"))}"></button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -149,7 +153,7 @@ function renderStore() {
     return `<div class="module-store-layout">
       ${renderSidebar(categories)}
       <section class="module-store-results">
-        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.reuse.refresh"))}</button><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
+        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><img src="/static/assets/reuse/refresh.svg" alt="${escapeHtml(i18n.t("ui.reuse.refresh"))}"></button><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}"><img src="/static/assets/reuse/settings-cog.svg" alt="${escapeHtml(i18n.t("ui.reuse.settings"))}"></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
       </section>
     </div>`;
 }
@@ -170,13 +174,32 @@ function renderSourceForm(source) {
     return `<form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" value="${escapeHtml(source?.name ?? "")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"><option value="github"${source?.provider === "github" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab"${source?.provider === "gitlab" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" value="${escapeHtml(source?.namespace ?? "")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="${escapeHtml(source?.baseUrl ?? "https://api.github.com")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off"></label></form>`;
 }
 
-async function openSourceSettings() {
+async function openSourceSettings(initialPage = "sources") {
     sources = await loadModuleSources();
+    let settings = await loadModuleMarketplaceSettings();
     let selectedSource = null;
     await openPopup({
         title: i18n.t("ui.app.modules.sources"),
         maxWidth: "760px",
         pages: [
+            {
+                id: "settings",
+                title: i18n.t("ui.reuse.settings"),
+                body: () =>
+                    `<form id="module-marketplace-settings-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.app.modules.recommended_url"))}</span><input name="recommendedModulesUrl" type="url" value="${escapeHtml(settings.recommendedModulesUrl)}" required></label></form>`,
+                actions: [
+                    {
+                        id: "sources",
+                        label: i18n.t("ui.app.modules.sources"),
+                        variant: "neutral",
+                    },
+                    {
+                        id: "save-settings",
+                        label: i18n.t("ui.reuse.save"),
+                        variant: "confirm",
+                    },
+                ],
+            },
             {
                 id: "sources",
                 title: i18n.t("ui.app.modules.sources"),
@@ -207,6 +230,7 @@ async function openSourceSettings() {
                 ],
             },
         ],
+        initialPageId: initialPage,
         onOpen: (overlay, _close, api) => {
             if (api.pageId !== "sources") return;
             overlay
@@ -249,6 +273,23 @@ async function openSourceSettings() {
             );
         },
         onAction: async (action, overlay, api) => {
+            if (action === "sources") {
+                api.setPage("sources");
+                return false;
+            }
+            if (action === "save-settings") {
+                const form = overlay.querySelector(
+                    "#module-marketplace-settings-form",
+                );
+                if (!form.reportValidity()) return false;
+                settings = await saveModuleMarketplaceSettings(
+                    Object.fromEntries(new FormData(form)),
+                );
+                showToast(i18n.t("ui.app.modules.settings_saved"), {
+                    type: "success",
+                });
+                return true;
+            }
             if (action === "back") {
                 api.setPage("sources");
                 return false;
@@ -309,7 +350,8 @@ async function runLifecycleAction(module, action) {
         const branch = selectedBranch(module);
         await installModule(module, token, branch);
         module.installed = true;
-        module.status = "disabled";
+        await setModuleEnabled(module.id, true);
+        module.status = "enabled";
         module.installedBranch = branch;
         module.installedCommit = module.branches.find(
             (entry) => entry.name === branch,
@@ -428,6 +470,10 @@ function bindInteractions(root, signal) {
                 selectedModule = null;
             if (target.id === "module-source-settings") {
                 await openSourceSettings();
+                return;
+            }
+            if (target.id === "module-marketplace-settings") {
+                await openSourceSettings("settings");
                 return;
             }
             if (target.id === "module-source-refresh") {

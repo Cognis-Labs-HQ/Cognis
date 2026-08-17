@@ -22,4 +22,16 @@ Marktplatzdetails zeigen jetzt alle Repository-Zweige und wählen automatisch de
 
 ## Marketplace-Grafiken sicher bereitstellen
 
-Marketplace-Grafiken werden nun vom Server abgerufen und über authentifizierte URLs derselben Herkunft bereitgestellt. Fehlende Grafiken verwenden das mitgelieferte Fragezeichen-Symbol, ohne die Content Security Policy zu lockern.
+Marketplace-Grafiken werden nun vom Server abgerufen und über nicht erratbare URLs derselben Herkunft bereitgestellt. Fehlende Grafiken verwenden das mitgelieferte Fragezeichen-Symbol, ohne die Content Security Policy zu lockern.
+
+## Empfohlene Module kuratieren
+
+Der Empfehlungsstatus stammt nun aus einer von Administratoren konfigurierbaren, veröffentlichten UUID-Liste statt aus Modulmanifesten. Die Marketplace-Einstellungen enthalten Empfehlungs- und Quellenkonfiguration.
+
+## Modulinstallation abschließen
+
+Installierte Module werden sofort aktiviert, damit Navigation und Laufzeitbeiträge ohne weiteren manuellen Schritt erscheinen. Marketplace-Bilder laden über öffentliche, nicht erratbare URLs derselben Herkunft.
+
+## Marketplace-Details verfeinern
+
+Lizenzen werden getrennt von Tags angezeigt, Details nutzen die gesamte Ergebnisbreite und kompakte SVG-Steuerelemente ersetzen textlastige Zurück- und Aktualisierungsaktionen.

@@ -54,6 +54,13 @@ export interface MarketplaceAsset {
     contentType: string;
 }
 
+export interface ModuleMarketplaceSettings {
+    recommendedModulesUrl: string;
+}
+
+export const DEFAULT_RECOMMENDED_MODULES_URL =
+    "https://cognis.study/static/recommended-modules.json";
+
 interface ModuleInstallProvenance {
     sourceUuid: string;
     cloneUrl: string;
@@ -68,6 +75,49 @@ export class ModuleMarketplaceService {
         private readonly statePath: string,
         private readonly installRoot: string,
     ) {}
+
+    async getSettings(): Promise<ModuleMarketplaceSettings> {
+        try {
+            return JSON.parse(
+                await readFile(`${this.statePath}.settings`, "utf8"),
+            ) as ModuleMarketplaceSettings;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+            return { recommendedModulesUrl: DEFAULT_RECOMMENDED_MODULES_URL };
+        }
+    }
+
+    async saveSettings(
+        settings: ModuleMarketplaceSettings,
+    ): Promise<ModuleMarketplaceSettings> {
+        const url = new URL(settings.recommendedModulesUrl);
+        if (url.protocol !== "https:")
+            throw new Error("invalid_recommended_modules_url");
+        const value = { recommendedModulesUrl: url.toString() };
+        await mkdir(path.dirname(this.statePath), { recursive: true });
+        await writeFile(
+            `${this.statePath}.settings`,
+            JSON.stringify(value, null, 2),
+            { mode: 0o600 },
+        );
+        return value;
+    }
+
+    async listRecommendedModuleUuids(): Promise<string[]> {
+        const { recommendedModulesUrl } = await this.getSettings();
+        const response = await fetch(recommendedModulesUrl).catch(
+            () => undefined,
+        );
+        if (!response?.ok) return [];
+        const value = (await response.json()) as unknown;
+        return Array.isArray(value)
+            ? value.filter(
+                  (uuid): uuid is string =>
+                      typeof uuid === "string" &&
+                      /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(uuid),
+              )
+            : [];
+    }
 
     async listSources(): Promise<ModuleSource[]> {
         try {
@@ -496,6 +546,8 @@ export class ModuleMarketplaceService {
 
     private parseManifest(raw: string): ModuleManifest {
         const manifest = JSON.parse(raw) as ModuleManifest;
+        delete (manifest as ModuleManifest & { recommended?: unknown })
+            .recommended;
         if (
             !manifest.uuid ||
             !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(manifest.uuid) ||
@@ -514,7 +566,6 @@ export class ModuleMarketplaceService {
             manifest.categories.length === 0 ||
             !Array.isArray(manifest.tags) ||
             manifest.tags.length === 0 ||
-            typeof manifest.recommended !== "boolean" ||
             !manifest.entrypoints?.bootstrap ||
             !manifest.assets?.icon ||
             !manifest.assets?.banner

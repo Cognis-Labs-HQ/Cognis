@@ -22,4 +22,16 @@ Detail marketplace kini menampilkan setiap cabang repositori dan otomatis memili
 
 ## Sajikan gambar marketplace dengan aman
 
-Gambar marketplace kini diambil oleh server dan disajikan melalui URL asal yang sama dan terautentikasi. Gambar yang hilang memakai ikon tanda tanya bawaan tanpa melonggarkan Content Security Policy.
+Gambar marketplace kini diambil oleh server dan disajikan melalui URL asal sama yang sulit ditebak. Gambar yang hilang memakai ikon tanda tanya bawaan tanpa melonggarkan Content Security Policy.
+
+## Kurasi modul rekomendasi
+
+Status rekomendasi kini berasal dari daftar UUID terbitan yang dapat dikonfigurasi administrator, bukan dari manifes modul. Pengaturan marketplace kini memuat konfigurasi rekomendasi dan sumber.
+
+## Selesaikan instalasi modul
+
+Modul yang dipasang langsung diaktifkan agar navigasi dan kontribusi runtime tampil tanpa langkah manual tambahan. Gambar marketplace dimuat melalui URL publik asal sama yang sulit ditebak.
+
+## Sempurnakan detail marketplace
+
+Lisensi ditampilkan terpisah dari tag, detail memakai seluruh lebar hasil, dan kontrol SVG ringkas menggantikan tindakan kembali dan segarkan yang panjang.

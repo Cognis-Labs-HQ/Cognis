@@ -2,7 +2,7 @@
     "id": "analytics",
     "uuid": "e10c016f-8a15-5ec2-8188-c1657dfbe829",
     "name": "Analytics",
-    "version": "2.0.9",
+    "version": "2.0.10",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": ["metrics:read", "ui:admin-section", "db:migrations"],
@@ -66,7 +66,6 @@
     "summary": "Privacy-conscious usage insights and administrative reporting.",
     "description": "Understand Cognis activity through extensible metrics and operational dashboards.",
     "categories": ["Productivity"],
-    "recommended": false,
     "license": "AGPL-3.0-or-later",
     "repository": "https://github.com/Cognis-Labs-HQ/analytics",
     "assets": {

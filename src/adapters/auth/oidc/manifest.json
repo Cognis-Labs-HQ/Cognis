@@ -2,6 +2,6 @@
     "id": "oidc",
     "uuid": "ee1c3aa9-c684-5bd1-880e-e9f56a02bc3f",
     "name": "OIDC SSO Authentication",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "publisher": "Cognis Labs HQ"
 }

@@ -14,6 +14,20 @@ export async function loadModuleSources() {
     return data(await apiFetch("/api/v1/modules/sources"));
 }
 
+export async function loadModuleMarketplaceSettings() {
+    return data(await apiFetch("/api/v1/modules/settings"));
+}
+
+export async function saveModuleMarketplaceSettings(settings) {
+    return data(
+        await apiFetch("/api/v1/modules/settings", {
+            method: "PUT",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(settings),
+        }),
+    );
+}
+
 export async function saveModuleSource(source) {
     return data(
         await apiFetch("/api/v1/modules/sources", {

@@ -50,6 +50,25 @@ test("module marketplace always provides an immutable trusted source", async () 
     );
 });
 
+test("module marketplace stores a configurable recommended list URL", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    assert.equal(
+        (await service.getSettings()).recommendedModulesUrl,
+        "https://cognis.study/static/recommended-modules.json",
+    );
+    await service.saveSettings({
+        recommendedModulesUrl: "https://example.com/modules.json",
+    });
+    assert.equal(
+        (await service.getSettings()).recommendedModulesUrl,
+        "https://example.com/modules.json",
+    );
+});
+
 test("module marketplace discovers repository manifests", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(
@@ -109,7 +128,7 @@ test("module marketplace discovers repository manifests", async () => {
                             description: "Shared notes.",
                             categories: ["Productivity"],
                             tags: ["notes"],
-                            recommended: false,
+                            recommended: true,
                             license: "MIT",
                             repository: "https://github.com/acme/notes",
                             capabilities: [],
@@ -123,6 +142,11 @@ test("module marketplace discovers repository manifests", async () => {
     try {
         const modules = await service.discover();
         assert.equal(modules[0].id, "notes");
+        assert.equal(
+            (modules[0] as (typeof modules)[0] & { recommended?: boolean })
+                .recommended,
+            undefined,
+        );
         assert.equal(
             modules[0].sourceUuid,
             "178271bf-5631-40df-82df-967f8a37a020",

@@ -706,6 +706,9 @@
   <string name="ui.app.modules.base_url">API-Basis-URL</string>
   <string name="ui.app.modules.pat">Persönliches Zugriffstoken (optional)</string>
   <string name="ui.app.modules.source_saved">Modulquelle gespeichert.</string>
+  <string name="ui.app.modules.recommended_url">URL der empfohlenen Module</string>
+  <string name="ui.app.modules.settings_saved">Moduleinstellungen gespeichert.</string>
+  <string name="ui.reuse.license">Lizenz</string>
   <string name="ui.app.modules.refresh_complete">Modulquellen aktualisiert.</string>
   <string name="ui.app.modules.update_complete">Modul aktualisiert.</string>
   <string name="ui.app.modules.disable_before_update">Deaktivieren Sie das Modul vor der Aktualisierung.</string>
@@ -718,7 +721,7 @@
   <string name="ui.app.modules.keyring_component">Modul-Marktplatz</string>
   <string name="ui.app.modules.back_to_modules">Zurück zu Modulen</string>
   <string name="ui.reuse.uninstall">Deinstallieren</string>
-  <string name="ui.app.modules.install_complete">Modul installiert. Aktivieren Sie es, wenn Sie bereit sind.</string>
+  <string name="ui.app.modules.install_complete">Modul installiert und aktiviert.</string>
   <string name="ui.app.modules.enable_complete">Modul aktiviert.</string>
   <string name="ui.app.modules.disable_complete">Modul deaktiviert. Sie können es jetzt deinstallieren.</string>
   <string name="ui.app.modules.uninstall_complete">Modul deinstalliert.</string>

@@ -91,6 +91,23 @@ export function createModuleRoutes(
                 return true;
             }
         }
+        if (marketplace && url.pathname === "/api/v1/modules/settings") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const data =
+                req.method === "PUT"
+                    ? await marketplace.saveSettings(
+                          (await readJson(req)) as never,
+                      )
+                    : req.method === "GET"
+                      ? await marketplace.getSettings()
+                      : null;
+            if (data) {
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data }));
+                return true;
+            }
+        }
         const sourceDeleteMatch = url.pathname.match(
             /^\/api\/v1\/modules\/sources\/([^/]+)$/,
         );
@@ -113,8 +130,6 @@ export function createModuleRoutes(
             /^\/api\/v1\/modules\/catalog\/assets\/([a-f0-9]{64})$/,
         );
         if (marketplace && assetMatch && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "admin");
-            if (!claims) return true;
             const asset = marketplace.getAsset(assetMatch[1]);
             if (!asset) {
                 res.writeHead(404, { "content-type": "application/json" });
@@ -149,12 +164,20 @@ export function createModuleRoutes(
                       (value): value is string => typeof value === "string",
                   )
                 : undefined;
+            const recommended = new Set(
+                await marketplace.listRecommendedModuleUuids(),
+            );
             const data = (
                 await marketplace.discover(
                     (body.tokens ?? {}) as Record<string, string>,
                     sourceUuids,
                 )
-            ).map(withMarketplaceAssetUrls);
+            ).map((module) =>
+                withMarketplaceAssetUrls({
+                    ...module,
+                    recommended: recommended.has(module.uuid),
+                }),
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data }));
             return true;

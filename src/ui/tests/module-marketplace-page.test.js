@@ -140,3 +140,19 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /composer\?\.refreshElements\(\["module-store"\]\)/);
     assert.doesNotMatch(source, /composer\.refresh\(elements\(\)\)/);
 });
+
+test("module marketplace uses curated recommendations and compact details", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /loadModuleMarketplaceSettings/);
+    assert.match(source, /recommendedModulesUrl/);
+    assert.match(source, /id="module-marketplace-settings"/);
+    assert.match(source, /settings-cog\.svg/);
+    assert.match(source, /refresh\.svg/);
+    assert.match(source, /arrow-back\.svg/);
+    assert.match(source, /module-detail-license/);
+    assert.match(source, /await setModuleEnabled\(module\.id, true\)/);
+    assert.match(marketplaceStyles, /\.module-detail[\s\S]*width: 100%/);
+});

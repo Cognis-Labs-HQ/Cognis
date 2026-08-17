@@ -706,6 +706,9 @@
   <string name="ui.app.modules.base_url">URL Dasar API</string>
   <string name="ui.app.modules.pat">Token Akses Pribadi (Opsional)</string>
   <string name="ui.app.modules.source_saved">Sumber modul disimpan.</string>
+  <string name="ui.app.modules.recommended_url">URL Modul Rekomendasi</string>
+  <string name="ui.app.modules.settings_saved">Pengaturan modul disimpan.</string>
+  <string name="ui.reuse.license">Lisensi</string>
   <string name="ui.app.modules.refresh_complete">Sumber modul disegarkan.</string>
   <string name="ui.app.modules.update_complete">Modul diperbarui.</string>
   <string name="ui.app.modules.disable_before_update">Nonaktifkan modul sebelum memperbaruinya.</string>
@@ -718,7 +721,7 @@
   <string name="ui.app.modules.keyring_component">Bursa Modul</string>
   <string name="ui.app.modules.back_to_modules">Kembali ke Modul</string>
   <string name="ui.reuse.uninstall">Copot</string>
-  <string name="ui.app.modules.install_complete">Modul terpasang. Aktifkan saat Anda siap.</string>
+  <string name="ui.app.modules.install_complete">Modul dipasang dan diaktifkan.</string>
   <string name="ui.app.modules.enable_complete">Modul diaktifkan.</string>
   <string name="ui.app.modules.disable_complete">Modul dinonaktifkan. Sekarang Anda dapat mencopotnya.</string>
   <string name="ui.app.modules.uninstall_complete">Modul dicopot.</string>

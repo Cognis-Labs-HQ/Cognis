@@ -32,24 +32,24 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.18` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.19` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.19` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.9`  |
-| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.7`  |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.7`  |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.10` |
+| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.8`  |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.8`  |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.35` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.10` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.7`  |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.7`  |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.19` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.10` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.6`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.5`  |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.10` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.8`  |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.9`  |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.8`  |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.6`  |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.11` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.8`  |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.8`  |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.20` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.11` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.7`  |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.6`  |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.11` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.9`  |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.10` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.9`  |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.7`  |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.61` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.65` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
@@ -80,13 +80,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.21` |
+| Core Package | `src/core/` | `0.3.22` |
 
 ## API
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.15` |
+| API Server | `src/api/` | `0.3.16` |
 
 ## Werkzeuge
 
@@ -98,7 +98,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
-| Analytics            | `src/modules/analytics/`            | `2.0.9`  |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.19` |
-| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.10` |
-| Cognis English       | `src/modules/study/languages/en/`   | `1.2.8`  |
+| Analytics            | `src/modules/analytics/`            | `2.0.10` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.20` |
+| Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.11` |
+| Cognis English       | `src/modules/study/languages/en/`   | `1.2.9`  |

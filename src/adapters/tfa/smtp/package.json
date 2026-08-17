@@ -1,12 +1,12 @@
 {
     "name": "@cognis/adapter-tfa-smtp",
-    "version": "1.0.19",
+    "version": "1.0.20",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.21",
+        "@cognis/core": "<=0.3.22",
         "@cognis/gateways": "<=0.1.7",
-        "@cognis/adapter-notify-smtp": "<=0.2.18"
+        "@cognis/adapter-notify-smtp": "<=0.2.19"
     }
 }

@@ -231,11 +231,13 @@ test("module catalog discovery accepts caller-selected sources", async () => {
         undefined,
         undefined,
         {
+            listRecommendedModuleUuids: async () => ["notes-uuid"],
             discover: async (_tokens, sourceUuids) => {
                 selectedSources = sourceUuids;
                 return [
                     {
                         id: "notes",
+                        uuid: "notes-uuid",
                         assetIds: { icon: "a".repeat(64) },
                     },
                 ];
@@ -310,7 +312,6 @@ test("module marketplace install forwards the selected branch", async () => {
 });
 
 test("module catalog serves cached images from the same origin", async () => {
-    const token = issueAccessToken("admin-user", "admin", 60);
     const assetId = "a".repeat(64);
     const route = createModuleRoutes(
         { list: async () => [] } as any,
@@ -332,7 +333,7 @@ test("module catalog serves cached images from the same origin", async () => {
     await route(
         {
             method: "GET",
-            headers: { authorization: `Bearer ${token}` },
+            headers: {},
         } as any,
         {
             writeHead(code: number, headers: Record<string, string>) {

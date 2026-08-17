@@ -21,7 +21,6 @@ export interface ModuleManifest {
     description?: string;
     categories?: string[];
     tags?: string[];
-    recommended?: boolean;
     license?: string;
     homepage?: string;
     repository?: string;
