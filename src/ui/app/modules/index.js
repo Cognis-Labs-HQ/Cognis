@@ -196,6 +196,11 @@ function elements() {
             id: "module-store",
             label: i18n.t("ui.reuse.modules"),
             pinned: true,
+            gridSize: {
+                default: [12, 8],
+                min: [6, 5],
+                max: "full",
+            },
             render: renderStore,
         },
     ];

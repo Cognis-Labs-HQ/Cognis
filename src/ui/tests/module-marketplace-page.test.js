@@ -15,6 +15,7 @@ test("module marketplace passes root and options to the page composer", () => {
     assert.match(source, /allowCustomization: false/);
     assert.match(source, /i18n,/);
     assert.match(source, /signal,/);
+    assert.match(source, /max: "full"/);
 });
 
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
