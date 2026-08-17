@@ -330,6 +330,26 @@ test("jitsi meetings reset participant state and disable mini chat until ready",
     assert.match(cssSource, /pointer-events: none;/);
 });
 
+test("ending a meeting immediately unloads its chat", () => {
+    const chatSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-chat.js"),
+        "utf8",
+    );
+    const meetingsSource = readFileSync(
+        resolve(ROOT, "src/modules/jitsi-meet/ui/jitsi-meetings.js"),
+        "utf8",
+    );
+
+    assert.match(
+        chatSource,
+        /function unloadNativeChat\(\)[\s\S]*state\.chatRoomId = "";[\s\S]*state\.chatRoomKey = null;[\s\S]*clearNativeChatThread\(\)/,
+    );
+    assert.match(
+        meetingsSource,
+        /async function handleMeetingExit\([\s\S]*?callbacks\.unloadNativeChat\(\);[\s\S]*?keepPresenceAlive/,
+    );
+});
+
 test("meetings page defaults meeting and chat panels to a 70-30 split while keeping them resizable", () => {
     const source = readJitsiUiBundle();
     assert.match(

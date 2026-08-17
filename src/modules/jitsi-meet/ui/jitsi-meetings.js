@@ -99,11 +99,7 @@ export function createMeetingHandlers({
         state.alonePromptDismissedMeetingId = "";
         state.alonePromptBlockedUntil = 0;
         state.meeting = null;
-        state.chatMode = "meeting";
-        state.privateChatUsername = "";
-        state.lastMeetingParticipants = [];
-        callbacks.stopNativeChatPolling();
-        await callbacks.updateNativeChat();
+        callbacks.unloadNativeChat();
     }
 
     function clearRequestedMeetingParameters() {
@@ -336,13 +332,9 @@ export function createMeetingHandlers({
         state.alonePromptDismissedMeetingId = "";
         state.alonePromptBlockedUntil = 0;
         state.meeting = null;
-        state.chatMode = "meeting";
-        state.privateChatUsername = "";
-        state.lastMeetingParticipants = [];
-        callbacks.stopNativeChatPolling();
+        callbacks.unloadNativeChat();
         utils.resetParticipantSelection();
         callbacks.renderParticipants();
-        await callbacks.updateNativeChat();
         void loadActiveMeetings({ resolveRequested: false });
         if (overlayMessageKey) {
             utils.updateOverlay({
@@ -366,6 +358,7 @@ export function createMeetingHandlers({
         honorMeetingClosed = true,
         reportTerminated = false,
     }) {
+        callbacks.unloadNativeChat();
         const leaveState = await callbacks
             .keepPresenceAlive(false, {
                 terminated: reportTerminated,

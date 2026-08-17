@@ -154,6 +154,20 @@ export function createChatHandlers({
         state.chatRefreshTimer = null;
     }
 
+    function unloadNativeChat() {
+        stopNativeChatPolling();
+        state.chatRoomId = "";
+        state.chatRoomKey = null;
+        state.lastMeetingChatRoomId = "";
+        state.lastMeetingParticipants = [];
+        state.chatParticipantEntries = [];
+        state.chatMode = "meeting";
+        state.privateChatUsername = "";
+        renderChatParticipantStrip();
+        setNativeChatReady(false);
+        clearNativeChatThread();
+    }
+
     function applyActiveChatRoom(roomId) {
         if (state.chatRoomId === roomId) return;
         state.chatRoomId = roomId;
@@ -424,6 +438,7 @@ export function createChatHandlers({
         startNativeChatPolling,
         stopNativeChatPolling,
         toggleReaction,
+        unloadNativeChat,
         updateNativeChat,
     };
 }
