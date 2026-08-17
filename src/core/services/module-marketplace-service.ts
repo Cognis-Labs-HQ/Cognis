@@ -122,7 +122,7 @@ export class ModuleMarketplaceService {
     async discover(
         tokens: Record<string, string> = {},
     ): Promise<MarketplaceModule[]> {
-        const results = await Promise.all(
+        const results = await Promise.allSettled(
             (await this.listSources()).map((source) =>
                 this.discoverSource(
                     source,
@@ -132,7 +132,9 @@ export class ModuleMarketplaceService {
                 ),
             ),
         );
-        return results.flat();
+        return results.flatMap((result) =>
+            result.status === "fulfilled" ? result.value : [],
+        );
     }
 
     async install(
@@ -229,9 +231,14 @@ export class ModuleMarketplaceService {
                         : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
                 const manifestResponse = await fetch(rawUrl, { headers });
                 if (!manifestResponse.ok) return null;
-                const manifest = this.parseManifest(
-                    await manifestResponse.text(),
-                );
+                let manifest: ModuleManifest;
+                try {
+                    manifest = this.parseManifest(
+                        await manifestResponse.text(),
+                    );
+                } catch {
+                    return null;
+                }
                 const readmeResponse = await fetch(
                     this.resolveRepositoryAssetUrl(
                         source,

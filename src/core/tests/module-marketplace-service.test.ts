@@ -111,7 +111,7 @@ test("module marketplace discovers repository manifests", async () => {
     }
 });
 
-test("module marketplace rejects incomplete module registrations", async () => {
+test("module marketplace ignores incomplete module registrations", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
@@ -131,7 +131,24 @@ test("module marketplace rejects incomplete module registrations", async () => {
               )
             : new Response(JSON.stringify({ id: "incomplete" }));
     try {
-        await assert.rejects(service.discover(), /invalid_module_manifest/);
+        assert.deepEqual(await service.discover(), []);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("module marketplace tolerates an unavailable source", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => {
+        throw new TypeError("fetch failed");
+    };
+    try {
+        assert.deepEqual(await service.discover(), []);
     } finally {
         globalThis.fetch = originalFetch;
     }
