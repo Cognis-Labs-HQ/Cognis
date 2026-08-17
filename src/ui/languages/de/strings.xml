@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">Zurücksetzen</string>
   <string name="ui.reuse.reset_draft">Entwurf zurücksetzen</string>
   <string name="ui.reuse.refresh">Aktualisieren</string>
+  <string name="ui.reuse.update">Aktualisieren</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Verbindung unterbrochen. Bitte die Seite aktualisieren.</string>
   <string name="ui.reuse.loading">Wird geladen…</string>
   <string name="ui.reuse.loading_joke_1">Cognis sollte nicht so langsam sein, wir haben doch 2026, oder?</string>
@@ -689,6 +690,8 @@
   <string name="ui.app.modules.installed">Installiert</string>
   <string name="ui.app.modules.available">Verfügbar</string>
   <string name="ui.app.modules.categories">Kategorien</string>
+  <string name="ui.app.modules.branch">Zweig</string>
+  <string name="ui.app.modules.default_branch">Standard</string>
   <string name="ui.app.modules.sources">Modulquellen</string>
   <string name="ui.app.modules.sources_description">Konfigurierte Quellen werden unabhängig abgefragt. Die vertrauenswürdige Standardorganisation wird von Cognis verwaltet und kann nicht bearbeitet werden.</string>
   <string name="ui.app.modules.default_source">Standard</string>
@@ -704,6 +707,8 @@
   <string name="ui.app.modules.pat">Persönliches Zugriffstoken (optional)</string>
   <string name="ui.app.modules.source_saved">Modulquelle gespeichert.</string>
   <string name="ui.app.modules.refresh_complete">Modulquellen aktualisiert.</string>
+  <string name="ui.app.modules.update_complete">Modul aktualisiert.</string>
+  <string name="ui.app.modules.disable_before_update">Deaktivieren Sie das Modul vor der Aktualisierung.</string>
   <string name="ui.reuse.install">Installieren</string>
   <string name="ui.reuse.installed">Installiert</string>
   <string name="ui.reuse.all">Alle</string>

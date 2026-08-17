@@ -5,6 +5,6 @@
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.19"
+        "@cognis/core": "<=0.3.20"
     }
 }

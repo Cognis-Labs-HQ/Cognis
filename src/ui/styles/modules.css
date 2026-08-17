@@ -226,6 +226,15 @@
     border-radius: 999px;
     background: var(--surface-soft);
 }
+.module-detail-branch {
+    display: grid;
+    gap: 0.4rem;
+    max-width: 22rem;
+    margin: 1rem 0;
+}
+.module-detail-branch select {
+    width: 100%;
+}
 .module-detail-screenshots {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));

@@ -15,3 +15,7 @@ The Modules page now provides a Refresh control beside Module Sources to re-quer
 ## Manage and discover sources progressively
 
 Module Sources now opens as a dedicated list-and-editor manager. The trusted default organization remains visible and read-only, while custom sources can be added, edited, or removed. The Modules page renders immediately with known modules and adds discoveries independently as each configured source responds.
+
+## Select branches and detect updates
+
+Marketplace details now list every repository branch and select the repository default automatically. Installs record the chosen branch and commit, allowing module cards and details to offer an Update action whenever that branch advances.

@@ -35,7 +35,19 @@ export interface MarketplaceModule extends ModuleManifest {
     cloneUrl: string;
     sourceUuid: string;
     installed: boolean;
+    branches: Array<{ name: string; commit: string }>;
+    defaultBranch: string;
+    installedBranch?: string;
+    installedCommit?: string;
+    updateAvailable: boolean;
     readme?: string;
+}
+
+interface ModuleInstallProvenance {
+    sourceUuid: string;
+    cloneUrl: string;
+    branch: string;
+    commit: string;
 }
 
 export class ModuleMarketplaceService {
@@ -145,12 +157,17 @@ export class ModuleMarketplaceService {
     async install(
         module: MarketplaceModule,
         token?: string,
+        branch?: string,
     ): Promise<ModuleManifest> {
         const target = path.join(this.installRoot, module.uuid);
         const temporary = `${target}.installing`;
         await mkdir(this.installRoot, { recursive: true });
         await rm(temporary, { recursive: true, force: true });
         const cloneUrl = this.assertCloneUrl(module.cloneUrl);
+        const selectedBranch = branch ?? module.defaultBranch;
+        if (!module.branches.some((entry) => entry.name === selectedBranch)) {
+            throw new Error("invalid_module_branch");
+        }
         const gitEnvironment: NodeJS.ProcessEnv = {
             ...process.env,
             GIT_TERMINAL_PROMPT: "0",
@@ -163,7 +180,15 @@ export class ModuleMarketplaceService {
         try {
             await execFileAsync(
                 "git",
-                ["clone", "--depth=1", "--", cloneUrl, temporary],
+                [
+                    "clone",
+                    "--depth=1",
+                    "--branch",
+                    selectedBranch,
+                    "--",
+                    cloneUrl,
+                    temporary,
+                ],
                 {
                     env: gitEnvironment,
                 },
@@ -174,6 +199,22 @@ export class ModuleMarketplaceService {
             if (manifest.uuid !== module.uuid)
                 throw new Error("module_uuid_mismatch");
             await validateModuleRepository(temporary, manifest);
+            const { stdout: commit } = await execFileAsync(
+                "git",
+                ["-C", temporary, "rev-parse", "HEAD"],
+                { env: gitEnvironment },
+            );
+            const provenance: ModuleInstallProvenance = {
+                sourceUuid: module.sourceUuid,
+                cloneUrl,
+                branch: selectedBranch,
+                commit: commit.trim(),
+            };
+            await writeFile(
+                path.join(temporary, ".cognis-install.json"),
+                JSON.stringify(provenance, null, 2),
+                { mode: 0o600 },
+            );
             await rm(target, { recursive: true, force: true });
             await rename(temporary, target);
             return manifest;
@@ -209,15 +250,8 @@ export class ModuleMarketplaceService {
             source.provider === "github"
                 ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=100`
                 : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=100&include_subgroups=true`;
-        const response = await fetch(endpoint, { headers });
-        if (!response.ok)
-            throw new Error(
-                `module_source_discovery_failed:${response.status}`,
-            );
-        const repositories = (await response.json()) as Array<
-            Record<string, unknown>
-        >;
-        const candidates = await Promise.all(
+        const repositories = await this.fetchPaginated(endpoint, headers);
+        const candidates = await Promise.allSettled(
             repositories.map(async (repository) => {
                 const cloneUrl = String(
                     repository.clone_url ?? repository.http_url_to_repo ?? "",
@@ -244,6 +278,11 @@ export class ModuleMarketplaceService {
                 } catch {
                     return null;
                 }
+                const branches = await this.discoverBranches(
+                    source,
+                    projectPath,
+                    headers,
+                );
                 const readmeResponse = await fetch(
                     this.resolveRepositoryAssetUrl(
                         source,
@@ -282,21 +321,111 @@ export class ModuleMarketplaceService {
                           ),
                       }
                     : undefined;
+                const provenance = await this.readInstallProvenance(
+                    manifest.uuid,
+                );
+                const defaultCommit = branches.find(
+                    (branch) => branch.name === defaultBranch,
+                )?.commit;
                 return {
                     ...manifest,
                     assets,
                     cloneUrl,
                     sourceUuid: source.uuid,
-                    installed: false,
+                    installed: Boolean(provenance),
+                    branches,
+                    defaultBranch,
+                    installedBranch: provenance?.branch,
+                    installedCommit: provenance?.commit,
+                    updateAvailable: Boolean(
+                        provenance &&
+                        defaultCommit &&
+                        provenance.commit !== defaultCommit,
+                    ),
                     readme: readmeResponse.ok
                         ? await readmeResponse.text()
                         : undefined,
                 };
             }),
         );
-        return candidates.filter(
-            (entry): entry is MarketplaceModule => entry !== null,
+        return candidates.flatMap((result) =>
+            result.status === "fulfilled" && result.value ? [result.value] : [],
         );
+    }
+
+    private async discoverBranches(
+        source: ModuleSource,
+        projectPath: string,
+        headers: Record<string, string>,
+    ): Promise<Array<{ name: string; commit: string }>> {
+        const endpoint =
+            source.provider === "github"
+                ? `${source.baseUrl}/repos/${projectPath}/branches?per_page=100`
+                : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/branches?per_page=100`;
+        return (await this.fetchPaginated(endpoint, headers))
+            .map((branch) => ({
+                name: String(branch.name ?? ""),
+                commit: String(
+                    (branch.commit as Record<string, unknown> | undefined)
+                        ?.sha ??
+                        (branch.commit as Record<string, unknown> | undefined)
+                            ?.id ??
+                        "",
+                ),
+            }))
+            .filter((branch) => branch.name && branch.commit);
+    }
+
+    private async fetchPaginated(
+        initialUrl: string,
+        headers: Record<string, string>,
+    ): Promise<Array<Record<string, unknown>>> {
+        const results: Array<Record<string, unknown>> = [];
+        let nextUrl = initialUrl;
+        while (nextUrl) {
+            const response = await fetch(nextUrl, { headers });
+            if (!response.ok) {
+                throw new Error(
+                    `module_source_discovery_failed:${response.status}`,
+                );
+            }
+            results.push(
+                ...((await response.json()) as Array<Record<string, unknown>>),
+            );
+            const githubNext = response.headers
+                .get("link")
+                ?.split(",")
+                .map((entry) => entry.trim())
+                .find((entry) => entry.endsWith('rel="next"'))
+                ?.match(/^<([^>]+)>/)?.[1];
+            const gitlabNextPage = response.headers.get("x-next-page");
+            if (githubNext) {
+                nextUrl = githubNext;
+            } else if (gitlabNextPage) {
+                const pagedUrl = new URL(nextUrl);
+                pagedUrl.searchParams.set("page", gitlabNextPage);
+                nextUrl = pagedUrl.toString();
+            } else {
+                nextUrl = "";
+            }
+        }
+        return results;
+    }
+
+    private async readInstallProvenance(
+        uuid: string,
+    ): Promise<ModuleInstallProvenance | null> {
+        try {
+            return JSON.parse(
+                await readFile(
+                    path.join(this.installRoot, uuid, ".cognis-install.json"),
+                    "utf8",
+                ),
+            ) as ModuleInstallProvenance;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") return null;
+            throw error;
+        }
     }
 
     private parseManifest(raw: string): ModuleManifest {

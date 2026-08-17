@@ -42,12 +42,12 @@ export async function loadAvailableModules(tokens, sourceUuids) {
     );
 }
 
-export async function installModule(module, token) {
+export async function installModule(module, token, branch) {
     return data(
         await apiFetch("/api/v1/modules/install", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ module, token }),
+            body: JSON.stringify({ module, token, branch }),
         }),
     );
 }

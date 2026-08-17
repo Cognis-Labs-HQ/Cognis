@@ -259,3 +259,43 @@ test("module catalog discovery accepts caller-selected sources", async () => {
     assert.equal(status, 200);
     assert.deepEqual(selectedSources, ["source-one"]);
 });
+
+test("module marketplace install forwards the selected branch", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let installedBranch = "";
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        undefined,
+        undefined,
+        {
+            install: async (_module, _token, branch) => {
+                installedBranch = branch;
+                return { id: "notes", uuid: "module-uuid" };
+            },
+        } as any,
+    );
+    let status = 0;
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        module: { id: "notes" },
+                        branch: "preview",
+                    }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end() {},
+        } as any,
+        new URL("http://localhost/api/v1/modules/install"),
+    );
+    assert.equal(status, 200);
+    assert.equal(installedBranch, "preview");
+});

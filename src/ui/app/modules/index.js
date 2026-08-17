@@ -25,6 +25,7 @@ let category = "all";
 let view = "recommended";
 let selectedModule = null;
 let discoverySequence = 0;
+const selectedBranches = new Map();
 const MODULE_ICON_FALLBACK_URL = "/assets/reuse/module-icon-unknown.svg";
 
 function renderCard(module) {
@@ -48,9 +49,21 @@ function renderLifecycleActions(module) {
         return `<button type="button" class="btn-confirm" data-module-install="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.install"))}</button>`;
     }
     if (module.status === "enabled") {
-        return `<button type="button" class="btn-cancel" data-module-disable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.disable"))}</button>`;
+        return `${hasModuleUpdate(module) ? `<button type="button" class="btn-confirm" data-module-update="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.update"))}</button>` : ""}<button type="button" class="btn-cancel" data-module-disable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.disable"))}</button>`;
     }
-    return `<button type="button" class="btn-confirm" data-module-enable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.enable"))}</button><button type="button" class="btn-cancel" data-module-uninstall="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.uninstall"))}</button>`;
+    return `${hasModuleUpdate(module) ? `<button type="button" class="btn-confirm" data-module-update="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.update"))}</button>` : ""}<button type="button" class="btn-confirm" data-module-enable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.enable"))}</button><button type="button" class="btn-cancel" data-module-uninstall="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.uninstall"))}</button>`;
+}
+
+function selectedBranch(module) {
+    return selectedBranches.get(module.uuid) ?? module.defaultBranch;
+}
+
+function hasModuleUpdate(module) {
+    if (!module.installedCommit) return false;
+    const branch = module.branches?.find(
+        (entry) => entry.name === selectedBranch(module),
+    );
+    return Boolean(branch?.commit && branch.commit !== module.installedCommit);
 }
 
 function renderModuleDetails(module) {
@@ -71,7 +84,10 @@ function renderModuleDetails(module) {
         .filter(Boolean)
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
-    return `<article class="module-detail"><button type="button" class="btn-neutral module-detail-back" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div><div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    const branchSelector = module.branches?.length
+        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.branch"))}</span><select data-module-branch="${escapeHtml(module.uuid)}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</select></label>`
+        : "";
+    return `<article class="module-detail"><button type="button" class="btn-neutral module-detail-back" data-module-back>${escapeHtml(i18n.t("ui.app.modules.back_to_modules"))}</button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -273,7 +289,14 @@ async function openSourceSettings() {
 }
 
 async function runLifecycleAction(module, action) {
-    if (action === "install") {
+    if (action === "update" && module.status === "enabled") {
+        showToast(i18n.t("ui.app.modules.disable_before_update"), {
+            type: "error",
+        });
+        refreshMarketplace();
+        return;
+    }
+    if (action === "install" || action === "update") {
         const source = sources.find(
             (entry) => entry.uuid === module.sourceUuid,
         );
@@ -283,9 +306,15 @@ async function runLifecycleAction(module, action) {
         const token = source?.credentialId
             ? keyring?.get(source.credentialId)
             : undefined;
-        await installModule(module, token);
+        const branch = selectedBranch(module);
+        await installModule(module, token, branch);
         module.installed = true;
         module.status = "disabled";
+        module.installedBranch = branch;
+        module.installedCommit = module.branches.find(
+            (entry) => entry.name === branch,
+        )?.commit;
+        module.updateAvailable = false;
     }
     if (action === "enable" || action === "disable") {
         await setModuleEnabled(module.id, action === "enable");
@@ -338,9 +367,20 @@ async function discoverConfiguredSources() {
             ]);
             if (sequence !== discoverySequence) return;
             const knownUuids = new Set(modules.map((module) => module.uuid));
-            modules.push(
-                ...discovered.filter((module) => !knownUuids.has(module.uuid)),
-            );
+            discovered.forEach((module) => {
+                const installed = modules.find(
+                    (entry) => entry.uuid === module.uuid,
+                );
+                if (installed) {
+                    const status = installed.status;
+                    Object.assign(installed, module, {
+                        installed: true,
+                        status,
+                    });
+                } else if (!knownUuids.has(module.uuid)) {
+                    modules.push(module);
+                }
+            });
             refreshMarketplace();
         }),
     );
@@ -352,6 +392,16 @@ async function refreshMarketplaceData() {
 }
 
 function bindInteractions(root, signal) {
+    root.addEventListener(
+        "change",
+        (event) => {
+            const selector = event.target.closest("[data-module-branch]");
+            if (!selector) return;
+            selectedBranches.set(selector.dataset.moduleBranch, selector.value);
+            refreshMarketplace();
+        },
+        { signal },
+    );
     root.addEventListener(
         "keydown",
         (event) => {
@@ -396,9 +446,13 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.hasAttribute("data-module-back")) selectedModule = null;
-            const action = ["install", "enable", "disable", "uninstall"].find(
-                (name) => target.hasAttribute(`data-module-${name}`),
-            );
+            const action = [
+                "install",
+                "update",
+                "enable",
+                "disable",
+                "uninstall",
+            ].find((name) => target.hasAttribute(`data-module-${name}`));
             const moduleUuid = action
                 ? target.dataset[
                       `module${action[0].toUpperCase()}${action.slice(1)}`

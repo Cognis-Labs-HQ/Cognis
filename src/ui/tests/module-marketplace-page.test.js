@@ -125,6 +125,12 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /data-module-enable/);
     assert.match(source, /data-module-disable/);
     assert.match(source, /data-module-uninstall/);
+    assert.match(source, /data-module-update/);
+    assert.match(source, /data-module-branch/);
+    assert.match(source, /function selectedBranch/);
+    assert.match(source, /function hasModuleUpdate/);
+    assert.match(source, /module\.defaultBranch/);
+    assert.match(source, /module\.installedCommit/);
     assert.match(source, /modulesForView\(\)\.flatMap/);
     assert.match(source, /formatTag\(item\)/);
     assert.match(source, /capture: true/);

@@ -117,9 +117,29 @@ export function createModuleRoutes(
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const body = await readJson(req);
+            const requestedModule = body.module as { uuid?: string };
+            const installedModule = (await moduleService.list()).find(
+                (entry) => entry.uuid === requestedModule.uuid,
+            );
+            if (
+                installedModule &&
+                hooks?.getStatus?.(installedModule.id) === "enabled"
+            ) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_enabled",
+                            message: "Disable the module before updating it.",
+                        },
+                    }),
+                );
+                return true;
+            }
             const manifest = await marketplace.install(
-                body.module as never,
+                requestedModule as never,
                 typeof body.token === "string" ? body.token : undefined,
+                typeof body.branch === "string" ? body.branch : undefined,
             );
             hooks?.log?.("info", "External module installed.", {
                 ...logMeta,

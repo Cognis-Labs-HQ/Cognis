@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">リセット</string>
   <string name="ui.reuse.reset_draft">下書きをリセット</string>
   <string name="ui.reuse.refresh">更新</string>
+  <string name="ui.reuse.update">更新</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">接続が中断されました。ページを更新してください。</string>
   <string name="ui.reuse.loading">読み込み中…</string>
   <string name="ui.reuse.loading_joke_1">Cognis がこんなに遅いはずないのに…もう 2026 年ですよね？</string>
@@ -689,6 +690,8 @@
   <string name="ui.app.modules.installed">インストール済み</string>
   <string name="ui.app.modules.available">利用可能</string>
   <string name="ui.app.modules.categories">カテゴリー</string>
+  <string name="ui.app.modules.branch">ブランチ</string>
+  <string name="ui.app.modules.default_branch">既定</string>
   <string name="ui.app.modules.sources">モジュールソース</string>
   <string name="ui.app.modules.sources_description">設定されたソースは個別に照会されます。既定の信頼済み組織は Cognis によって管理され、編集できません。</string>
   <string name="ui.app.modules.default_source">既定</string>
@@ -704,6 +707,8 @@
   <string name="ui.app.modules.pat">個人アクセストークン（任意）</string>
   <string name="ui.app.modules.source_saved">モジュールソースを保存しました。</string>
   <string name="ui.app.modules.refresh_complete">モジュールソースを更新しました。</string>
+  <string name="ui.app.modules.update_complete">モジュールを更新しました。</string>
+  <string name="ui.app.modules.disable_before_update">更新する前にモジュールを無効にしてください。</string>
   <string name="ui.reuse.install">インストール</string>
   <string name="ui.reuse.installed">インストール済み</string>
   <string name="ui.reuse.all">すべて</string>

@@ -15,3 +15,7 @@ Die Modulseite bietet jetzt neben den Modulquellen eine Schaltfläche zum Aktual
 ## Quellen verwalten und schrittweise entdecken
 
 Modulquellen werden jetzt in einer eigenen Listen- und Bearbeitungsansicht geöffnet. Die vertrauenswürdige Standardorganisation bleibt sichtbar und schreibgeschützt, während benutzerdefinierte Quellen hinzugefügt, bearbeitet oder entfernt werden können. Die Modulseite erscheint sofort mit bekannten Modulen und ergänzt Funde unabhängig voneinander, sobald die jeweilige konfigurierte Quelle antwortet.
+
+## Zweige auswählen und Updates erkennen
+
+Marktplatzdetails zeigen jetzt alle Repository-Zweige und wählen automatisch den Standardzweig. Installationen speichern den gewählten Zweig und Commit, sodass Modulkarten und Details eine Aktualisierung anbieten, sobald sich dieser Zweig weiterentwickelt.

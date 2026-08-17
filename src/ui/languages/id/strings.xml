@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">Setel ulang</string>
   <string name="ui.reuse.reset_draft">Setel ulang draf</string>
   <string name="ui.reuse.refresh">Segarkan</string>
+  <string name="ui.reuse.update">Perbarui</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Koneksi terputus. Silakan segarkan halaman.</string>
   <string name="ui.reuse.loading">Memuat…</string>
   <string name="ui.reuse.loading_joke_1">Cognis seharusnya tidak selambat ini, ini sudah 2026 kan?</string>
@@ -689,6 +690,8 @@
   <string name="ui.app.modules.installed">Terpasang</string>
   <string name="ui.app.modules.available">Tersedia</string>
   <string name="ui.app.modules.categories">Kategori</string>
+  <string name="ui.app.modules.branch">Cabang</string>
+  <string name="ui.app.modules.default_branch">bawaan</string>
   <string name="ui.app.modules.sources">Sumber Modul</string>
   <string name="ui.app.modules.sources_description">Sumber yang dikonfigurasi diminta secara independen. Organisasi tepercaya bawaan dikelola oleh Cognis dan tidak dapat diedit.</string>
   <string name="ui.app.modules.default_source">Bawaan</string>
@@ -704,6 +707,8 @@
   <string name="ui.app.modules.pat">Token Akses Pribadi (Opsional)</string>
   <string name="ui.app.modules.source_saved">Sumber modul disimpan.</string>
   <string name="ui.app.modules.refresh_complete">Sumber modul disegarkan.</string>
+  <string name="ui.app.modules.update_complete">Modul diperbarui.</string>
+  <string name="ui.app.modules.disable_before_update">Nonaktifkan modul sebelum memperbaruinya.</string>
   <string name="ui.reuse.install">Instal</string>
   <string name="ui.reuse.installed">Terpasang</string>
   <string name="ui.reuse.all">Semua</string>
