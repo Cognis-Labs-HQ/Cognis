@@ -574,7 +574,9 @@ export function createUiRoutes(
             return true;
         }
 
-        const registeredSpaRoute = uiRegistry?.resolveSpaRoute(url.pathname);
+        const registeredSpaRoute = versionDescriptor(
+            uiRegistry?.resolveSpaRoute(url.pathname),
+        );
         if (
             uiRegistry &&
             (await handleRegisteredSpaPage({

@@ -31,3 +31,7 @@ Opening or updating a module detail view now preserves the page position. Every 
 ## Stabilize module detail controls
 
 Module detail pages now use router-backed UUID deep links while remaining inside the page composer. Lifecycle refreshes keep the visible button assortment stable, including while an enabled module is temporarily disabled for an upgrade.
+
+## Bootstrap direct module pages once
+
+Direct loads of external module SPA routes now run through a core entrypoint that imports declared capability providers before the module route. Provider and route URLs use the same asset version as router navigation, preventing intermittent missing capabilities and duplicate navbar contributions.

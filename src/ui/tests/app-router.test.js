@@ -459,3 +459,17 @@ test("navbar avatar refresh preserves a resolved image during SPA plugin loading
     );
     assert.doesNotMatch(profileNavbarSource, /registerAvatarProvider/);
 });
+
+test("direct SPA entry loads capability providers before the route module", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/spa-page-entry.js"),
+        "utf8",
+    );
+    const providerImport = source.indexOf(
+        "await Promise.all(capabilityScripts.map",
+    );
+    const routeImport = source.indexOf("await import(config.scriptUrl)");
+
+    assert.ok(providerImport >= 0);
+    assert.ok(routeImport > providerImport);
+});
