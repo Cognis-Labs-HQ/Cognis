@@ -7,3 +7,7 @@ Modul terpasang kini ditemukan berdasarkan UUID stabilnya di direktori modul eks
 ## Selesaikan bootstrap sebelum permintaan
 
 Cognis kini menunggu pemulihan status modul tersimpan dan bootstrap modul selesai sebelum menerima permintaan. Dengan demikian, skrip dan gaya modul eksternal telah terdaftar sebelum diminta oleh halamannya.
+
+## Sediakan kapabilitas autentikasi
+
+Gateway autentikasi kini menerbitkan fungsi autentikasi permintaan dan akses peran melalui bus kapabilitas. Modul eksternal dapat memulai rute API terlindungi tanpa mengimpor internal gateway, sehingga aset UI dan pendaftaran navigasinya tetap aktif.

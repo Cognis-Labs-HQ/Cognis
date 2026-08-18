@@ -288,6 +288,9 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
         `export function bootstrapModule(ctx) {
+            if (typeof ctx.getCapability("auth:requireAuth") !== "function") {
+                throw new Error("auth capability unavailable");
+            }
             ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/meetings/navbar.js" });
             ctx.registerSpaRoute({ id: "meetings", pattern: "^/meetings$", base: "/meetings", scriptUrl: "/static/modules/meetings/app.js" });
@@ -301,6 +304,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
     process.env.COGNIS_EXTERNAL_MODULES_ROOT = externalModulesRoot;
     const systemCtx = createCtx();
     systemCtx.contributeCapability("system:ctx", systemCtx);
+    const requireAuth = () => ({ sub: "module-user", role: "user" });
     const uiRegistry = new UIRegistry();
     const extensions = createModuleExtensionRoutes(
         {
@@ -316,7 +320,10 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         undefined,
         {
             routeContext: createDefaultRouteContext({
-                getCapability: (id) => systemCtx.getCapability(id),
+                getCapability: (id) =>
+                    id === "auth:requireAuth"
+                        ? (requireAuth as never)
+                        : systemCtx.getCapability(id),
                 flow: systemCtx.flow,
             }),
             uiRegistry,

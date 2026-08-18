@@ -7,3 +7,7 @@ Installierte Module werden jetzt anhand ihrer stabilen UUID im Verzeichnis für 
 ## Modulstart vor Anfragen abschließen
 
 Cognis wartet jetzt, bis gespeicherte Modulzustände wiederhergestellt und Module vollständig gestartet wurden, bevor eine Anfrage verarbeitet wird. Skripte und Styles externer Module sind dadurch registriert, bevor ihre Seiten sie anfordern.
+
+## Authentifizierungsfunktionen bereitstellen
+
+Das Authentifizierungs-Gateway veröffentlicht jetzt seine Funktionen zur Anfrageauthentifizierung und Rollenprüfung über den Capability-Bus. Externe Module können geschützte API-Routen ohne Importe aus Gateway-Interna starten, sodass ihre UI-Ressourcen und Navigationseinträge aktiv bleiben.
