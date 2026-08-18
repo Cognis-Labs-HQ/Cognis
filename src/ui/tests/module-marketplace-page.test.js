@@ -156,7 +156,12 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);
     assert.match(source, /!module\.installed && module\.branches\?\.length/);
-    assert.match(source, /data-module-change-channel/);
+    assert.match(source, /openHamburgerMenu/);
+    assert.match(source, /data-module-menu/);
+    assert.match(
+        source,
+        /id: "force-update"[\s\S]*variant: "danger"[\s\S]*id: "change-channel"[\s\S]*variant: "danger"/,
+    );
     assert.match(source, /async function selectReleaseChannel/);
     assert.match(source, /class="module-release-channel-list"/);
     assert.match(source, /data-release-channel/);

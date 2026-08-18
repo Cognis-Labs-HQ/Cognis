@@ -300,29 +300,6 @@ body[data-theme="dark"] .module-icon-settings {
     border-radius: 0.8rem;
     scroll-snap-align: start;
 }
-.module-detail-advanced {
-    position: relative;
-}
-.module-detail-advanced summary {
-    cursor: pointer;
-    font-size: 1.4rem;
-    list-style: none;
-}
-.module-detail-advanced-menu {
-    position: absolute;
-    z-index: 2;
-    right: 0;
-    display: grid;
-    gap: 0.35rem;
-    min-width: 10rem;
-    padding: 0.35rem;
-    border: 1px solid var(--border-color);
-    border-radius: 0.6rem;
-    background: var(--surface-color);
-}
-.module-detail-advanced-menu button {
-    width: 100%;
-}
 .module-release-channel-list {
     display: grid;
     gap: 0.5rem;

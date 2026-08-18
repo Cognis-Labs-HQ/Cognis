@@ -6,6 +6,7 @@ import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { beginButtonLoading } from "../../reuse/button-loading.js";
+import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     installModule,
@@ -53,7 +54,17 @@ function renderLifecycleActions(module) {
     if (!module.installed && !module.status) {
         return renderLifecycleButton(module, "install", "confirm");
     }
-    const installedState = `<button type="button" class="btn-neutral" disabled>${escapeHtml(i18n.t("ui.reuse.installed"))}</button>`;
+    const pendingAction = pendingModuleActions.get(module.uuid);
+    const installedLabel =
+        pendingAction === "change-channel"
+            ? i18n.t("ui.app.modules.changing_release_channel")
+            : pendingAction === "force-update"
+              ? i18n.t("ui.app.modules.installing")
+              : i18n.t("ui.reuse.installed");
+    const installedPending = ["change-channel", "force-update"].includes(
+        pendingAction,
+    );
+    const installedState = `<button type="button" class="btn-neutral${installedPending ? " button-loading" : ""}" disabled${installedPending ? ' aria-busy="true"' : ""}>${escapeHtml(installedLabel)}</button>`;
     if (module.status === "enabled") {
         return `${installedState}${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "disable", "cancel")}`;
     }
@@ -160,15 +171,8 @@ function renderModuleDetails(module) {
     const license = module.license
         ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
         : "";
-    const forcePending =
-        pendingModuleActions.get(module.uuid) === "force-update";
-    const channelPending =
-        pendingModuleActions.get(module.uuid) === "change-channel";
-    const channelAction = releaseChannels(module).length
-        ? `<button type="button" class="btn-cancel${channelPending ? " button-loading" : ""}" data-module-change-channel="${escapeHtml(module.uuid)}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}${channelPending ? ' aria-busy="true"' : ""}>${escapeHtml(channelPending ? i18n.t("ui.app.modules.changing_release_channel") : i18n.t("ui.app.modules.change_release_channel"))}</button>`
-        : "";
     const advanced = module.installed
-        ? `<details class="module-detail-advanced"><summary aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}">☰</summary><div class="module-detail-advanced-menu"><button type="button" class="btn-cancel${forcePending ? " button-loading" : ""}" data-module-force-update="${escapeHtml(module.uuid)}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}${forcePending ? ' aria-busy="true"' : ""}>${escapeHtml(forcePending ? i18n.t("ui.app.modules.installing") : i18n.t("ui.app.modules.force_update"))}</button>${channelAction}</div></details>`
+        ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
         : "";
     return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong>${module.version ? ` · ${escapeHtml(module.version)}` : ""}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
@@ -671,7 +675,7 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.hasAttribute("data-module-back")) selectedModule = null;
-            const action = [
+            let action = [
                 "install",
                 "update",
                 "force-update",
@@ -680,10 +684,34 @@ function bindInteractions(root, signal) {
                 "disable",
                 "uninstall",
             ].find((name) => target.hasAttribute(`data-module-${name}`));
-            const moduleUuid = action
-                ? target.getAttribute(`data-module-${action}`)
-                : target.dataset.moduleUuid;
+            const moduleUuid = target.dataset.moduleMenu
+                ? target.dataset.moduleMenu
+                : action
+                  ? target.getAttribute(`data-module-${action}`)
+                  : target.dataset.moduleUuid;
             const module = modules.find((entry) => entry.uuid === moduleUuid);
+            if (target.dataset.moduleMenu && module) {
+                const items = [
+                    {
+                        id: "force-update",
+                        label: i18n.t("ui.app.modules.force_update"),
+                        variant: "danger",
+                    },
+                    ...(releaseChannels(module).length
+                        ? [
+                              {
+                                  id: "change-channel",
+                                  label: i18n.t(
+                                      "ui.app.modules.change_release_channel",
+                                  ),
+                                  variant: "danger",
+                              },
+                          ]
+                        : []),
+                ];
+                action = await openHamburgerMenu(target, { items });
+                if (!action) return;
+            }
             if (action && module) {
                 if (pendingModuleActions.has(module.uuid)) return;
                 pendingModuleActions.set(module.uuid, action);

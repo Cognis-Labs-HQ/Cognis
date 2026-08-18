@@ -1,5 +1,9 @@
 # Modul-Marktplatz
 
+## Einheitliche Modulaktionsmenüs
+
+Die Detailansicht installierter Module verwendet nun das gemeinsame verankerte Hamburger-Menü für erweiterte Aktionen und entspricht damit Aussehen und Bedienung der Aktionsmenüs in anderen Bereichen von Cognis.
+
 ## Ein eigener App-Store
 
 Module besitzen nun eine separate Verwaltungsseite mit Ansichten für installierte, verfügbare, empfohlene und kategorisierte Angebote sowie konfigurierbaren GitHub- und GitLab-Quellen.

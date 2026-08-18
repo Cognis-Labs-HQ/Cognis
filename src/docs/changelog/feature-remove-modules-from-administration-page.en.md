@@ -1,5 +1,9 @@
 # Module Marketplace
 
+## Consistent module action menus
+
+Installed-module details now use the shared anchored hamburger menu for advanced actions, matching the appearance and interaction of action menus elsewhere in Cognis.
+
 ## A dedicated app store
 
 Modules now have a separate Administration page with installed, available, recommended, and category views plus configurable GitHub and GitLab sources.

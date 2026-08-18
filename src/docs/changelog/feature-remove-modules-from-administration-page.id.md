@@ -1,5 +1,9 @@
 # Bursa Modul
 
+## Menu tindakan modul yang konsisten
+
+Detail modul yang terpasang kini menggunakan menu hamburger tertambat bersama untuk tindakan lanjutan, sehingga tampilan dan interaksinya konsisten dengan menu tindakan di bagian Cognis lainnya.
+
 ## Toko aplikasi khusus
 
 Modul kini memiliki halaman Administrasi terpisah dengan tampilan terpasang, tersedia, rekomendasi, dan kategori serta sumber GitHub dan GitLab yang dapat dikonfigurasi.
