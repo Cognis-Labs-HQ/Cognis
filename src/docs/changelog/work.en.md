@@ -111,3 +111,7 @@ A module repository may provide a root `media/` directory of supported images an
 ## Retry interrupted module downloads
 
 Module installation now forces Git's more broadly compatible HTTP/1.1 transport and retries transient clone failures such as connection resets, timeouts, DNS failures, and interrupted TLS transfers. Every attempt starts with a clean staging directory, while permanent repository or validation failures still stop immediately and retain their exact diagnostic.
+
+## Fall back to GitHub archives
+
+When repeated transient Git clone failures exhaust their retries, module installation now downloads the selected commit from GitHub's archive service instead. The fallback avoids Git's smart HTTP transport while preserving commit-specific installation provenance and repository validation.

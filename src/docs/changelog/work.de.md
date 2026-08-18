@@ -111,3 +111,7 @@ Ein Modul-Repository kann im Stammverzeichnis `media/` unterstützte Bilder und 
 ## Unterbrochene Modul-Downloads erneut versuchen
 
 Die Modulinstallation erzwingt nun den breiter kompatiblen HTTP/1.1-Transport von Git und wiederholt vorübergehende Klonfehler wie Verbindungsabbrüche, Zeitüberschreitungen, DNS-Fehler und unterbrochene TLS-Übertragungen. Jeder Versuch beginnt mit einem sauberen Staging-Verzeichnis; dauerhafte Repository- oder Validierungsfehler werden weiterhin sofort mit ihrer genauen Diagnose beendet.
+
+## Auf GitHub-Archive ausweichen
+
+Wenn wiederholte vorübergehende Git-Klonfehler alle Versuche ausschöpfen, lädt die Modulinstallation stattdessen den ausgewählten Commit über den Archivdienst von GitHub. Dieser Ersatzweg umgeht Gits Smart-HTTP-Transport und bewahrt zugleich die commitgenaue Installationsherkunft und Repository-Prüfung.

@@ -263,7 +263,10 @@ export class ModuleMarketplaceService {
             ...(module.branches ?? []),
             ...(module.releases ?? []),
         ];
-        if (!installRefs.some((entry) => entry.name === selectedBranch)) {
+        const selectedRef = installRefs.find(
+            (entry) => entry.name === selectedBranch,
+        );
+        if (!selectedRef) {
             throw new Error("invalid_module_branch");
         }
         const gitEnvironment: NodeJS.ProcessEnv = {
@@ -276,11 +279,13 @@ export class ModuleMarketplaceService {
             gitEnvironment.GIT_CONFIG_VALUE_0 = `Authorization: Basic ${Buffer.from(`oauth2:${token}`).toString("base64")}`;
         }
         try {
-            await this.cloneRepository(
+            const commit = await this.cloneRepository(
                 cloneUrl,
                 selectedBranch,
+                selectedRef.commit,
                 temporary,
                 gitEnvironment,
+                token,
             );
             const manifest = this.parseManifest(
                 await readFile(path.join(temporary, "manifest.json"), "utf8"),
@@ -288,16 +293,11 @@ export class ModuleMarketplaceService {
             if (manifest.uuid !== module.uuid)
                 throw new Error("module_uuid_mismatch");
             await validateModuleRepository(temporary, manifest);
-            const { stdout: commit } = await execFileAsync(
-                "git",
-                ["-C", temporary, "rev-parse", "HEAD"],
-                { env: gitEnvironment },
-            );
             const provenance: ModuleInstallProvenance = {
                 sourceUuid: module.sourceUuid,
                 cloneUrl,
                 branch: selectedBranch,
-                commit: commit.trim(),
+                commit,
             };
             await writeFile(
                 path.join(temporary, ".cognis-install.json"),
@@ -316,9 +316,11 @@ export class ModuleMarketplaceService {
     private async cloneRepository(
         cloneUrl: string,
         branch: string,
+        expectedCommit: string,
         temporary: string,
         environment: NodeJS.ProcessEnv,
-    ): Promise<void> {
+        token?: string,
+    ): Promise<string> {
         let lastError: unknown;
         for (let attempt = 1; attempt <= GIT_CLONE_ATTEMPTS; attempt += 1) {
             await rm(temporary, { recursive: true, force: true });
@@ -338,22 +340,69 @@ export class ModuleMarketplaceService {
                     ],
                     { env: environment },
                 );
-                return;
+                const { stdout } = await execFileAsync(
+                    "git",
+                    ["-C", temporary, "rev-parse", "HEAD"],
+                    { env: environment },
+                );
+                return stdout.trim();
             } catch (error) {
                 lastError = error;
                 const output = this.commandFailureText(error);
-                if (
-                    attempt === GIT_CLONE_ATTEMPTS ||
-                    !TRANSIENT_GIT_FAILURE.test(output)
-                ) {
-                    throw error;
-                }
+                if (!TRANSIENT_GIT_FAILURE.test(output)) throw error;
+                if (attempt === GIT_CLONE_ATTEMPTS) break;
                 await new Promise((resolve) =>
                     setTimeout(resolve, GIT_CLONE_RETRY_DELAYS_MS[attempt - 1]),
                 );
             }
         }
-        throw lastError;
+        // GitHub archive fallback
+        try {
+            return await this.downloadGitHubArchive(
+                cloneUrl,
+                expectedCommit,
+                temporary,
+                token,
+            );
+        } catch {
+            // Preserve the primary failure after the GitHub archive fallback above.
+            throw lastError;
+        }
+    }
+
+    private async downloadGitHubArchive(
+        cloneUrl: string,
+        commit: string,
+        temporary: string,
+        token?: string,
+    ): Promise<string> {
+        const parsed = new URL(cloneUrl);
+        const match = parsed.pathname.match(/^\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+        if (parsed.hostname !== "github.com" || !match) {
+            throw new Error("archive_fallback_unavailable");
+        }
+        const archiveUrl = `https://codeload.github.com/${encodeURIComponent(match[1])}/${encodeURIComponent(match[2])}/tar.gz/${encodeURIComponent(commit)}`;
+        const response = await fetch(archiveUrl, {
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        });
+        if (!response.ok) throw new Error("module_archive_download_failed");
+
+        const archivePath = `${temporary}.tar.gz`;
+        await mkdir(temporary, { recursive: true });
+        try {
+            await writeFile(
+                archivePath,
+                Buffer.from(await response.arrayBuffer()),
+            );
+            await execFileAsync(
+                "tar",
+                ["-xzf", archivePath, "--strip-components=1", "-C", temporary],
+                { env: process.env },
+            );
+        } finally {
+            await rm(archivePath, { force: true });
+        }
+        return commit;
     }
 
     private commandFailureText(error: unknown): string {

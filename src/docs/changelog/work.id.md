@@ -111,3 +111,7 @@ Repositori modul dapat menyediakan direktori `media/` di akar berisi gambar dan 
 ## Mencoba kembali unduhan modul yang terputus
 
 Pemasangan modul kini memaksa transport HTTP/1.1 Git yang lebih kompatibel dan mencoba kembali kegagalan klon sementara seperti koneksi terputus, batas waktu, kegagalan DNS, dan transfer TLS yang terganggu. Setiap percobaan dimulai dengan direktori staging yang bersih, sedangkan kegagalan repositori atau validasi permanen tetap dihentikan segera dengan diagnosis yang tepat.
+
+## Gunakan arsip GitHub sebagai cadangan
+
+Jika kegagalan sementara kloning Git terus terjadi hingga semua percobaan habis, instalasi modul kini mengunduh commit terpilih melalui layanan arsip GitHub. Jalur cadangan ini menghindari transportasi HTTP cerdas Git sambil mempertahankan asal instalasi khusus commit dan validasi repositori.
