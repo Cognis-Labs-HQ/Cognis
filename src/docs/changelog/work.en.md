@@ -39,3 +39,7 @@ Direct loads of external module SPA routes now run through a core entrypoint tha
 ## Prepare bundled modules for extraction
 
 Analytics and Nextcloud Whiteboard are now self-contained external-module repositories with dedicated repository metadata, licenses, READMEs, complete integrity inventories, translated distribution guidance, UUID dependencies, and explicit capability requirements.
+
+## Improve module screenshot browsing
+
+Module detail screenshots now stay within a bounded carousel with previous and next controls, faded adjacent previews, animated transitions, and automatic rotation. Manifests marked with the optional `template: true` field are excluded from marketplace results and direct detail views.

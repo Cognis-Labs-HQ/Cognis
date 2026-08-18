@@ -31,8 +31,10 @@ let category = "all";
 let view = "all";
 let selectedModule = null;
 let discoverySequence = 0;
+let refreshScreenshotCarousels = () => {};
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
+const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 
 function formatVersion(version) {
@@ -179,12 +181,18 @@ function releaseChannels(module) {
 
 function renderModuleDetails(module) {
     const bannerUrl = resolveModuleAssetUrl(module.assets?.banner);
-    const screenshots = (module.assets?.screenshots ?? [])
+    const screenshotUrls = (module.assets?.screenshots ?? [])
+        .map(resolveModuleAssetUrl)
+        .filter(Boolean);
+    const screenshots = screenshotUrls
         .map(
-            (url) =>
-                `<img class="module-detail-screenshot" src="${escapeHtml(resolveModuleAssetUrl(url))}" alt="" loading="lazy">`,
+            (url, index) =>
+                `<img class="module-detail-screenshot" data-screenshot-index="${index}" src="${escapeHtml(url)}" alt="" loading="lazy">`,
         )
         .join("");
+    const screenshotCarousel = screenshots
+        ? `<div class="module-detail-screenshots" data-screenshot-carousel="${escapeHtml(module.uuid)}"><button type="button" class="btn-neutral module-screenshot-control is-previous" data-screenshot-step="-1" aria-label="${escapeHtml(i18n.t("ui.reuse.previous"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button><div class="module-screenshot-stage">${screenshots}</div><button type="button" class="btn-neutral module-screenshot-control is-next" data-screenshot-step="1" aria-label="${escapeHtml(i18n.t("ui.reuse.next"))}"><span class="module-icon module-icon-back module-icon-next" aria-hidden="true"></span></button></div>`
+        : "";
     const media = (module.assets?.media ?? [])
         .map((entry) => {
             const url = escapeHtml(resolveModuleAssetUrl(entry.url));
@@ -214,7 +222,46 @@ function renderModuleDetails(module) {
     const advanced = module.installed
         ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
         : "";
-    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+}
+
+function updateScreenshotCarousel(carousel, step = 0) {
+    const screenshots = [
+        ...carousel.querySelectorAll(".module-detail-screenshot"),
+    ];
+    if (!screenshots.length) return;
+    const moduleUuid = carousel.dataset.screenshotCarousel;
+    const current = screenshotIndexes.get(moduleUuid) ?? 0;
+    const next = (current + step + screenshots.length) % screenshots.length;
+    screenshotIndexes.set(moduleUuid, next);
+    screenshots.forEach((screenshot, index) => {
+        const offset = (index - next + screenshots.length) % screenshots.length;
+        screenshot.classList.toggle("is-active", offset === 0);
+        screenshot.classList.toggle("is-next", offset === 1);
+        screenshot.classList.toggle(
+            "is-previous",
+            offset === screenshots.length - 1,
+        );
+        screenshot.setAttribute("aria-hidden", String(offset !== 0));
+    });
+    carousel.classList.toggle("is-single", screenshots.length === 1);
+}
+
+function initializeScreenshotCarousels(root, signal) {
+    const refresh = () =>
+        root
+            .querySelectorAll("[data-screenshot-carousel]")
+            .forEach((carousel) => updateScreenshotCarousel(carousel));
+    refresh();
+    const rotation = window.setInterval(() => {
+        root.querySelectorAll(
+            "[data-screenshot-carousel]:not(.is-single)",
+        ).forEach((carousel) => updateScreenshotCarousel(carousel, 1));
+    }, 5000);
+    signal?.addEventListener("abort", () => window.clearInterval(rotation), {
+        once: true,
+    });
+    return refresh;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -230,6 +277,7 @@ function resolveModuleAssetUrl(value) {
 
 function modulesForView() {
     return modules.filter((module) => {
+        if (module.template === true) return false;
         if (
             view === "installed" &&
             !(
@@ -597,6 +645,7 @@ function refreshMarketplace() {
         top: window.scrollY,
     };
     composer?.refreshElements(["module-store"]);
+    refreshScreenshotCarousels();
     restoreWindowScrollPosition(scrollPosition.left, scrollPosition.top);
 }
 
@@ -622,8 +671,11 @@ async function loadKnownModules() {
     });
     const requestedModuleUuid = detailModuleUuid();
     selectedModule = requestedModuleUuid
-        ? (modules.find((module) => module.uuid === requestedModuleUuid) ??
-          null)
+        ? (modules.find(
+              (module) =>
+                  module.uuid === requestedModuleUuid &&
+                  module.template !== true,
+          ) ?? null)
         : null;
     refreshMarketplace();
 }
@@ -697,6 +749,13 @@ function bindInteractions(root, signal) {
                 event.target.closest("button") ??
                 event.target.closest(".module-store-card");
             if (!target) return;
+            if (target.dataset.screenshotStep) {
+                updateScreenshotCarousel(
+                    target.closest("[data-screenshot-carousel]"),
+                    Number(target.dataset.screenshotStep),
+                );
+                return;
+            }
             if (target.dataset.storeView) view = target.dataset.storeView;
             if (target.dataset.storeView) category = "all";
             if (target.dataset.storeCategory)
@@ -837,6 +896,7 @@ export async function mount(root, { signal } = {}) {
     });
     await composer.init();
     bindInteractions(root, signal);
+    refreshScreenshotCarousels = initializeScreenshotCarousels(root, signal);
     void refreshMarketplaceData().catch((error) => {
         showToast(error.message, { type: "error" });
     });

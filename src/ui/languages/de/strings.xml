@@ -65,6 +65,8 @@
   <string name="ui.reuse.add">Hinzufügen</string>
   <string name="ui.reuse.edit">Bearbeiten</string>
   <string name="ui.reuse.back">Zurück</string>
+  <string name="ui.reuse.previous">Zurück</string>
+  <string name="ui.reuse.next">Weiter</string>
   <string name="ui.reuse.remove">Entfernen</string>
   <string name="ui.reuse.dismiss">Schließen</string>
   <string name="ui.reuse.copy">Kopieren</string>

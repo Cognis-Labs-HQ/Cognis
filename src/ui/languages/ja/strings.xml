@@ -65,6 +65,8 @@
   <string name="ui.reuse.add">追加</string>
   <string name="ui.reuse.edit">編集</string>
   <string name="ui.reuse.back">戻る</string>
+  <string name="ui.reuse.previous">前へ</string>
+  <string name="ui.reuse.next">次へ</string>
   <string name="ui.reuse.remove">削除</string>
   <string name="ui.reuse.dismiss">閉じる</string>
   <string name="ui.reuse.copy">コピー</string>

@@ -39,3 +39,7 @@ Pemuatan langsung rute SPA modul eksternal kini melalui entrypoint inti yang men
 ## Siapkan modul bawaan untuk dipisahkan
 
 Analytics dan Nextcloud Whiteboard kini menjadi repositori modul eksternal mandiri dengan metadata repositori khusus, lisensi, README, inventaris integritas lengkap, panduan distribusi terjemahan, dependensi UUID, dan kebutuhan kapabilitas eksplisit.
+
+## Tingkatkan penjelajahan tangkapan layar modul
+
+Tangkapan layar detail modul kini berada dalam karusel terbatas dengan kontrol sebelumnya dan berikutnya, pratinjau gambar di sebelah yang memudar, transisi animasi, dan rotasi otomatis. Manifes dengan kolom opsional `template: true` tidak ditampilkan dalam hasil marketplace maupun tampilan detail langsung.

@@ -65,6 +65,8 @@
   <string name="ui.reuse.add">Tambah</string>
   <string name="ui.reuse.edit">Sunting</string>
   <string name="ui.reuse.back">Kembali</string>
+  <string name="ui.reuse.previous">Sebelumnya</string>
+  <string name="ui.reuse.next">Berikutnya</string>
   <string name="ui.reuse.remove">Hapus</string>
   <string name="ui.reuse.dismiss">Tutup</string>
   <string name="ui.reuse.copy">Salin</string>

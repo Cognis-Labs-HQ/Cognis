@@ -340,3 +340,27 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(loadingSource, /classList\.add\("button-loading"\)/);
     assert.match(loadingStyles, /@keyframes button-loading-spin/);
 });
+
+test("module details rotate bounded screenshots with manual navigation", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /data-screenshot-step="-1"/);
+    assert.match(source, /data-screenshot-step="1"/);
+    assert.match(source, /window\.setInterval[\s\S]*5000/);
+    assert.match(source, /is-previous/);
+    assert.match(source, /is-next/);
+    assert.match(marketplaceStyles, /max-height: 28rem/);
+    assert.match(marketplaceStyles, /opacity: 0\.24/);
+    assert.match(marketplaceStyles, /transform 420ms ease/);
+});
+
+test("module marketplace omits template manifests", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /module\.template === true/);
+    assert.match(source, /module\.template !== true/);
+});
