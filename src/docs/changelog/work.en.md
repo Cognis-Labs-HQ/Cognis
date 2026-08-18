@@ -35,3 +35,7 @@ Module detail pages now use router-backed UUID deep links while remaining inside
 ## Bootstrap direct module pages once
 
 Direct loads of external module SPA routes now run through a core entrypoint that imports declared capability providers before the module route. Provider and route URLs use the same asset version as router navigation, preventing intermittent missing capabilities and duplicate navbar contributions.
+
+## Prepare bundled modules for extraction
+
+Analytics and Nextcloud Whiteboard are now self-contained external-module repositories with dedicated repository metadata, licenses, READMEs, complete integrity inventories, translated distribution guidance, UUID dependencies, and explicit capability requirements.

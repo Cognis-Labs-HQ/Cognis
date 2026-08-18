@@ -28,3 +28,7 @@ Every board has an owner and an explicit participant allow-list. Cognis checks t
 ## Integration capabilities
 
 The module contributes `nextcloud-whiteboard:api`, `nextcloud-whiteboard:spawnWhiteboardWindow`, `whiteboard:getEmbedUrl`, and `whiteboard:fetchBoardData`. Integrations should use these capabilities instead of hard-coding routes so future render targets can reuse the same access checks.
+
+## Distribusi eksternal
+
+Nextcloud Whiteboard bersifat mandiri untuk dipisahkan ke `Cognis-Labs-HQ/cognis-module-nextcloud-whiteboard`. Manifesnya menyatakan dependensi komponen sebagai UUID secara terpisah dari setiap kapabilitas server dan `ui:*` yang digunakan. Manifes root, paket, rute, lisensi, aset, CLI, API, UI, dokumentasi terjemahan, dan hash integritas didistribusikan bersama.

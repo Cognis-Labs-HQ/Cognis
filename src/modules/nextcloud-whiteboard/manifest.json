@@ -2,7 +2,7 @@
     "id": "nextcloud-whiteboard",
     "uuid": "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
     "name": "Nextcloud Whiteboard",
-    "version": "2.3.21",
+    "version": "2.3.22",
     "class": "extension",
     "coreApiVersion": "v1",
     "capabilities": [
@@ -23,17 +23,234 @@
             "scriptUrl": "/static/modules/nextcloud-whiteboard/admin-section.js"
         }
     },
-    "requires": ["social:profile", "0da92508-63fa-53ed-918c-e6f08692a382"],
+    "requires": [
+        "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+        "0da92508-63fa-53ed-918c-e6f08692a382"
+    ],
     "summary": "Collaborative whiteboards backed by Nextcloud.",
     "description": "Create and share realtime whiteboards with Cognis access controls.",
     "categories": ["Collaboration"],
-    "repository": "https://github.com/Cognis-Labs-HQ/nextcloud-whiteboard",
+    "repository": "https://github.com/Cognis-Labs-HQ/cognis-module-nextcloud-whiteboard",
     "assets": {
         "screenshots": [],
         "icon": "assets/icon.svg",
         "banner": "assets/banner.svg"
     },
     "tags": ["whiteboard", "collaboration"],
-    "homepage": "https://github.com/Cognis-Labs-HQ/nextcloud-whiteboard#readme",
-    "support": "https://github.com/Cognis-Labs-HQ/nextcloud-whiteboard/issues"
+    "homepage": "https://github.com/Cognis-Labs-HQ/cognis-module-nextcloud-whiteboard#readme",
+    "support": "https://github.com/Cognis-Labs-HQ/cognis-module-nextcloud-whiteboard/issues",
+    "requiresCapabilities": [
+        "auth:registerPageScriptOrigins",
+        "db:executor",
+        "files:namespace",
+        "files:registerNamespace",
+        "logging:log",
+        "share:listByResource",
+        "share:openPopup",
+        "share:resolveGuestAccess",
+        "share:resolveGuestId",
+        "share:resolveUserAccess",
+        "social:profileStore",
+        "system:ctx",
+        "ui:profileAvatarRenderer"
+    ],
+    "license": "AGPL-3.0-or-later",
+    "files": [
+        {
+            "path": "LICENSE",
+            "sha256": "8486a10c4393cee1c25392769ddd3b2d6c242d6ec7928e1414efff7dfb2f07ef"
+        },
+        {
+            "path": "README.md",
+            "sha256": "e14bcdeabdfc4ea74fdbf67badd5ab80466af4934101331c4e4be25e71dc81b0"
+        },
+        {
+            "path": "api/access.js",
+            "sha256": "f90ea0e99d3089f265f726222f0ff7d2f06b0f9ddaeef6fc624b360f76e4fec4"
+        },
+        {
+            "path": "api/config-values.js",
+            "sha256": "9eddc899c4bdc7ac9427fba3b67f19d2712b26dd6e0d224ca06c1835882ee700"
+        },
+        {
+            "path": "api/enable-test.js",
+            "sha256": "3cef60fef54de72b9e823e8bfe3a38a4f302565637e2d35c1fc53ba08015416d"
+        },
+        {
+            "path": "api/image-routes.js",
+            "sha256": "b867440cc6d34617268c8bb80377e7bddecd4e616f28d989fe5863cb5ea9d6e1"
+        },
+        {
+            "path": "api/index.js",
+            "sha256": "3c6c39ecf615950bcd89e7fbc50fcd64387945825ed5d48a10b033e5cc275304"
+        },
+        {
+            "path": "api/share-hooks.js",
+            "sha256": "c8974e5390b3149d4c541e7d8738b99f8c2c1e54fccc50095fd87fd6fcba8204"
+        },
+        {
+            "path": "api/store.js",
+            "sha256": "3fd703adc6dc6d84945364c0479e363bfae8387902a175c62cbea532ede0aa81"
+        },
+        {
+            "path": "assets/banner.svg",
+            "sha256": "3b9cc41306b1cf22dcee062ab946dabcd940906d9d929710f9d7467aa25ef33b"
+        },
+        {
+            "path": "assets/icon.svg",
+            "sha256": "dc527e3c57adb784b0d0d434cf01a9c3f7005e4d3d48efdd75c98fe06c54af70"
+        },
+        {
+            "path": "bootstrap.js",
+            "sha256": "dcf90e431b88f612d881f7b9c8b3afcf0d54df7d4e109b749e38bac519da8fb5"
+        },
+        {
+            "path": "cli/index.js",
+            "sha256": "241f1511b44128b182295212af730f6cc468d7c20f6511a69d30cab5e1584d73"
+        },
+        {
+            "path": "docs/standard.de.md",
+            "sha256": "c4013268181d4c1953d67f5712454a1aa33b044fd8fcabd5a980fb23943f82ae"
+        },
+        {
+            "path": "docs/standard.en.md",
+            "sha256": "8ea2d543ac95cd390d3af768abc8591795407ec1b5e3b0b80f41afcb8189f02b"
+        },
+        {
+            "path": "docs/standard.id.md",
+            "sha256": "c770fad3aee1130c07791423392cc4c0c691a62f5fadb72598f12d47e99474e9"
+        },
+        {
+            "path": "docs/standard.ja.md",
+            "sha256": "ad522ce098b74a5acaa93081548375c2e0a8cec8cb0a4772318b5d28f77e95bc"
+        },
+        {
+            "path": "package.json",
+            "sha256": "85f54864f0ba510b68ff0b086f2c3d3ef311b0d04e12844059cad7045155ab78"
+        },
+        {
+            "path": "routes.json",
+            "sha256": "b83fa242293bf36a2ff15c6da019d12977240b96f04d1d03584599804abc686a"
+        },
+        {
+            "path": "tests/api-routes-sharing.test.js",
+            "sha256": "ade20c3456687ee46bdd646f436d5c041825f8fc60dbdabf68e67862eaffddbc"
+        },
+        {
+            "path": "tests/api-routes.test.js",
+            "sha256": "98b2c353c67e86dd43f18cb6fad54bf497f866cd5f89f3a1c5d6ad9b5c510255"
+        },
+        {
+            "path": "tests/language-keys.test.js",
+            "sha256": "eb7e8bfb5e815337d78bce5fb81efccad0f3053fe32e90b8441217ead78a646e"
+        },
+        {
+            "path": "tests/status.test.js",
+            "sha256": "fc11856d4fc4146e23093a2ff4f48b5493075019f511d0fba621063c40729224"
+        },
+        {
+            "path": "tests/store.test.js",
+            "sha256": "91d9330ffb6ca9ab336bd324cd272efb861efd166220908d67f1f05db50e2703"
+        },
+        {
+            "path": "tests/ui-registration.test.js",
+            "sha256": "8660fb31ce742c921ade2ab86af283cf7b462350272659d6d0860c1f8c6313fb"
+        },
+        {
+            "path": "ui/admin-section.js",
+            "sha256": "38a9757e309e3a1037a181d42c4645809955801f3b92b45539b4534a50f45e76"
+        },
+        {
+            "path": "ui/app/api.js",
+            "sha256": "a1756b8c478904bdebd6cd99cefe427a50002ddcf3422449898d6d1346e6a50c"
+        },
+        {
+            "path": "ui/app/clear-canvas.js",
+            "sha256": "be7315aa4d2455d5fbe06d1dd7bfae397f8e9ac56344ca0b3e47189e5ae92e09"
+        },
+        {
+            "path": "ui/app/history-popup.js",
+            "sha256": "91856fdb8e901c7d125d122ae7e5efaee8d43bd70582890d6781f51ce4409cf2"
+        },
+        {
+            "path": "ui/app/index.js",
+            "sha256": "eb27763a0a4024c420f6139fd6b746208f4005294e7551f54e4f1d7a77984eb2"
+        },
+        {
+            "path": "ui/app/overlay.js",
+            "sha256": "bc09b22893c090d2fff01510b41a3347e83f3b49d1adda217ab0fc393d3397f8"
+        },
+        {
+            "path": "ui/app/presence.js",
+            "sha256": "25f1ea5037e0e31fccb6e0d84f830d70734b88725aaea19fcb61d6ae6a979f24"
+        },
+        {
+            "path": "ui/app/realtime.js",
+            "sha256": "80e5220b04f5e849ab4ffe8578400a9028fde6660c1e29b70000530947189ac4"
+        },
+        {
+            "path": "ui/app/render.js",
+            "sha256": "4733777a8e0de3d6985fe8f0dd279761b6c4f8c046ecb2a09e7409a0248ace52"
+        },
+        {
+            "path": "ui/app/search-index.js",
+            "sha256": "b79a8a8005193eec22bf8250f9296868dcdd629300dac2d33211c9ac0be47ba0"
+        },
+        {
+            "path": "ui/app/status.js",
+            "sha256": "1cf8ae9453720a67586f0465b897ee2c70d703a8f8523b1ecac8e7d37efc0913"
+        },
+        {
+            "path": "ui/index.html",
+            "sha256": "82053fb187b5e2711136f072b1e2bed77e063b2e665b0c4c67da9945022cc3cb"
+        },
+        {
+            "path": "ui/languages/de/strings.xml",
+            "sha256": "3b0e5320c8fba8240a84bc2365b73f4de4314bbc3bb67a46a79d371af40e80d3"
+        },
+        {
+            "path": "ui/languages/en/strings.xml",
+            "sha256": "3a7fa7c3bfe7b1aada60aef81d916501e888d262c90bad41c0a616dca2dd3a62"
+        },
+        {
+            "path": "ui/languages/id/strings.xml",
+            "sha256": "69f77d1b18d5fd6286b8d68675d12b09efa697ad9149682416f1a5713b52787d"
+        },
+        {
+            "path": "ui/languages/ja/strings.xml",
+            "sha256": "621eb89d382aed234349f63d2a6fe1872488c31d4ca0f621980a0ad523d65122"
+        },
+        {
+            "path": "ui/navbar.js",
+            "sha256": "227eaaaf5e78fb0726abff78de7dcd88468b6be591366bfa12998d3799be37e7"
+        },
+        {
+            "path": "ui/styles/whiteboards.css",
+            "sha256": "a76e407398d6698e8e6ed87c7fa41332a10afac89c354cbc2bc2a70257fcadf2"
+        },
+        {
+            "path": "ui/whiteboard/canvas-events.js",
+            "sha256": "796e2fd951577ff2c5220d3ac74ac3a489442b5084ae28bc01d3f097f4b68a22"
+        },
+        {
+            "path": "ui/whiteboard/canvas.js",
+            "sha256": "cab1cb98f3855188cf1cda9ef61909b5e247fa93c15637719f889cc289687b3b"
+        },
+        {
+            "path": "ui/whiteboard/clipboard-images.js",
+            "sha256": "1951b99d397605b23d303c830f9775773eb02573b7c20ad68e31c7de765a8c2d"
+        },
+        {
+            "path": "ui/whiteboard/elements.js",
+            "sha256": "1246c532ba5961e8198d64a3efc2b79d11b80e67d45f372d5b2d2cb6e59e64a9"
+        },
+        {
+            "path": "ui/whiteboard/render-scene.js",
+            "sha256": "c8ad90eb8e2846cae5e861b3654754bdf2017b17fbeeba36097fc7e08b8387c8"
+        },
+        {
+            "path": "ui/whiteboard/text-tools.js",
+            "sha256": "3e3dc46db0df272923f67d4c4fafbafb0c36110f3bff44cc3a5d5b8f0e94edc6"
+        }
+    ]
 }

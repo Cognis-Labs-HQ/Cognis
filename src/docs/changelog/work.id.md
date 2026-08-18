@@ -35,3 +35,7 @@ Halaman detail modul kini memakai deep link UUID berbasis router sambil tetap be
 ## Bootstrap halaman modul langsung sekali
 
 Pemuatan langsung rute SPA modul eksternal kini melalui entrypoint inti yang mengimpor penyedia kapabilitas yang dinyatakan sebelum rute modul. URL penyedia dan rute memakai versi aset yang sama dengan navigasi router, mencegah kapabilitas yang sesekali hilang dan kontribusi navbar ganda.
+
+## Siapkan modul bawaan untuk dipisahkan
+
+Analytics dan Nextcloud Whiteboard kini menjadi repositori modul eksternal mandiri dengan metadata repositori khusus, lisensi, README, inventaris integritas lengkap, panduan distribusi terjemahan, dependensi UUID, dan kebutuhan kapabilitas eksplisit.

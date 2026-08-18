@@ -99,7 +99,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen             | Jalur                               | Versi    |
 | -------------------- | ----------------------------------- | -------- |
 | Runtime Modul        | `src/modules/`                      | `0.1.8`  |
-| Analytics            | `src/modules/analytics/`            | `2.0.11` |
-| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.21` |
+| Analytics            | `src/modules/analytics/`            | `2.0.12` |
+| Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.22` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.12` |
 | Cognis English       | `src/modules/study/languages/en/`   | `1.2.10` |
