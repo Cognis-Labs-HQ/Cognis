@@ -194,7 +194,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /loadModuleSources\(\)/);
     assert.match(
         source,
-        /await loadAvailableModules\(tokens, \[\s*source\.uuid/,
+        /loadAvailableModules\(\s*tokens,\s*sources\.map\(\(source\) => source\.uuid\)/,
     );
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);

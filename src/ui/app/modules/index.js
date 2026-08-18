@@ -1,7 +1,6 @@
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { restoreWindowScrollPosition } from "../../reuse/page-composer/dom-position.js";
-import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
@@ -352,7 +351,7 @@ function renderSourceManager() {
     const rows = sources
         .map((source) => {
             const controls = source.trusted
-                ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.default_source"))}</span>`
+                ? `<span class="module-source-actions"><span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.default_source"))}</span><button class="btn-neutral" type="button" data-edit-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button></span>`
                 : `<span class="module-source-actions"><button class="btn-neutral" type="button" data-edit-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button><button class="btn-cancel" type="button" data-remove-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.remove"))}</button></span>`;
             return `<li><span class="module-source-summary"><strong>${escapeHtml(source.name)}</strong><small>${escapeHtml(source.homepage ?? `${source.baseUrl}/${source.namespace}`)}</small></span>${controls}</li>`;
         })
@@ -706,34 +705,33 @@ async function discoverConfiguredSources() {
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         i18n.t("ui.app.modules.keyring_component"),
     );
-    await Promise.all(
-        sources.map(async (source) => {
-            const tokens = source.credentialId
-                ? {
-                      [source.credentialId]:
-                          keyring?.get(source.credentialId) ?? "",
-                  }
-                : {};
-            const discovered = await loadAvailableModules(tokens, [
-                source.uuid,
-            ]);
-            if (sequence !== discoverySequence) return;
-            const knownUuids = new Set(modules.map((module) => module.uuid));
-            discovered.forEach((module) => {
-                const known = modules.find(
-                    (entry) => entry.uuid === module.uuid,
-                );
-                if (known) {
-                    const status = known.status;
-                    Object.assign(known, module);
-                    if (status) known.status = status;
-                } else if (!knownUuids.has(module.uuid)) {
-                    modules.push(module);
-                }
-            });
-            refreshMarketplace();
-        }),
+    const tokens = Object.fromEntries(
+        sources
+            .filter((source) => source.credentialId)
+            .map((source) => [
+                source.credentialId,
+                keyring?.get(source.credentialId) ?? "",
+            ]),
     );
+    const discovered = await loadAvailableModules(
+        tokens,
+        sources.map((source) => source.uuid),
+    );
+    if (sequence !== discoverySequence) return;
+    {
+        const knownUuids = new Set(modules.map((module) => module.uuid));
+        discovered.forEach((module) => {
+            const known = modules.find((entry) => entry.uuid === module.uuid);
+            if (known) {
+                const status = known.status;
+                Object.assign(known, module);
+                if (status) known.status = status;
+            } else if (!knownUuids.has(module.uuid)) {
+                modules.push(module);
+            }
+        });
+        refreshMarketplace();
+    }
 }
 
 async function refreshMarketplaceData() {
@@ -937,4 +935,4 @@ export async function mount(root, { signal } = {}) {
     });
 }
 
-await mountWhenDirect(mount);
+await mount(document.querySelector("#app"));

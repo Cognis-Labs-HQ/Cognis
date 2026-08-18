@@ -470,7 +470,11 @@ export class ModuleMarketplaceService {
                     );
                     const rawUrl =
                         source.provider === "github"
-                            ? `https://raw.githubusercontent.com/${projectPath}/${defaultBranch}/manifest.json`
+                            ? this.resolveGithubManifestUrl(
+                                  source,
+                                  projectPath,
+                                  defaultBranch,
+                              )
                             : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
                     const manifestResponse = await fetch(rawUrl, { headers });
                     if (manifestResponse.status === 404)
@@ -482,9 +486,11 @@ export class ModuleMarketplaceService {
                     }
                     let manifest: ModuleManifest;
                     try {
-                        manifest = this.parseManifest(
-                            await manifestResponse.text(),
+                        const manifestText = await this.readRepositoryFile(
+                            source,
+                            manifestResponse,
                         );
+                        manifest = this.parseManifest(manifestText);
                     } catch {
                         return { cloneUrl, module: null };
                     }
@@ -916,20 +922,27 @@ export class ModuleMarketplaceService {
         return Promise.all(
             refs.map(async (ref) => {
                 const response = await fetch(
-                    this.resolveRepositoryAssetUrl(
-                        source,
-                        projectPath,
-                        ref.name,
-                        "manifest.json",
-                    ),
+                    source.provider === "github"
+                        ? this.resolveGithubManifestUrl(
+                              source,
+                              projectPath,
+                              ref.name,
+                          )
+                        : this.resolveRepositoryAssetUrl(
+                              source,
+                              projectPath,
+                              ref.name,
+                              "manifest.json",
+                          ),
                     { headers },
                 ).catch(() => undefined);
                 if (!response?.ok) return ref;
                 try {
                     return {
                         ...ref,
-                        version: this.parseManifest(await response.text())
-                            .version,
+                        version: this.parseManifest(
+                            await this.readRepositoryFile(source, response),
+                        ).version,
                     };
                 } catch {
                     return ref;
@@ -1077,6 +1090,26 @@ export class ModuleMarketplaceService {
             return `https://raw.githubusercontent.com/${projectPath}/${encodeURIComponent(defaultBranch)}/${normalizedPath}`;
         }
         return `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/${encodeURIComponent(normalizedPath)}/raw?ref=${encodeURIComponent(defaultBranch)}`;
+    }
+
+    private async readRepositoryFile(
+        source: ModuleSource,
+        response: Response,
+    ): Promise<string> {
+        if (source.provider !== "github") return response.text();
+        const payload = (await response.json()) as { content?: unknown };
+        return Buffer.from(
+            String(payload.content ?? "").replace(/\s/g, ""),
+            "base64",
+        ).toString("utf8");
+    }
+
+    private resolveGithubManifestUrl(
+        source: ModuleSource,
+        projectPath: string,
+        reference: string,
+    ): string {
+        return `${source.baseUrl}/repos/${projectPath}/contents/manifest.json?ref=${encodeURIComponent(reference)}`;
     }
 
     private assertSource(source: ModuleSource): void {

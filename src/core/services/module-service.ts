@@ -81,6 +81,12 @@ export class ModuleService {
         return this.runtime.enable(moduleId);
     }
 
+    async requiresExternalAcknowledgement(moduleId: string): Promise<boolean> {
+        if (!this.resolver) return false;
+        const resolvedPath = await this.resolveModulePath(moduleId);
+        return resolvedPath?.kind === "external";
+    }
+
     async disable(
         moduleId: string,
     ): Promise<{ moduleId: string; enabled: boolean }> {

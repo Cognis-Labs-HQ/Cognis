@@ -167,30 +167,37 @@ test("module marketplace discovers repository manifests", async () => {
                         )
                       : new Response(
                             JSON.stringify({
-                                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
-                                id: "notes",
-                                name: moduleName,
-                                version: String(input).includes(
-                                    "/preview/manifest.json",
-                                )
-                                    ? "1.1.0"
-                                    : "1.0.0",
-                                publisher: "Acme",
-                                class: "extension",
-                                coreApiVersion: "v1",
-                                summary: "Notes",
-                                description: moduleDescription,
-                                categories: ["Productivity"],
-                                tags: ["notes"],
-                                recommended: true,
-                                license: "MIT",
-                                repository: "https://github.com/acme/notes",
-                                capabilities: [],
-                                entrypoints: { bootstrap: "./bootstrap.js" },
-                                assets: {
-                                    icon: "assets/icon.svg",
-                                    banner: "assets/banner.svg",
-                                },
+                                content: Buffer.from(
+                                    JSON.stringify({
+                                        uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                                        id: "notes",
+                                        name: moduleName,
+                                        version: String(input).includes(
+                                            "ref=preview",
+                                        )
+                                            ? "1.1.0"
+                                            : "1.0.0",
+                                        publisher: "Acme",
+                                        class: "extension",
+                                        coreApiVersion: "v1",
+                                        summary: "Notes",
+                                        description: moduleDescription,
+                                        categories: ["Productivity"],
+                                        tags: ["notes"],
+                                        recommended: true,
+                                        license: "MIT",
+                                        repository:
+                                            "https://github.com/acme/notes",
+                                        capabilities: [],
+                                        entrypoints: {
+                                            bootstrap: "./bootstrap.js",
+                                        },
+                                        assets: {
+                                            icon: "assets/icon.svg",
+                                            banner: "assets/banner.svg",
+                                        },
+                                    }),
+                                ).toString("base64"),
                             }),
                         );
     try {

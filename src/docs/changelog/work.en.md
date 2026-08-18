@@ -71,3 +71,7 @@ Module cards and detail media now remain hidden until each refreshed image has d
 ## Retain modules through inconclusive scans
 
 Marketplace scans no longer treat an empty repository response, temporary missing manifest, invalid transient response, or source request failure as proof that a previously discovered module was deleted. Cached entries remain visible until their source is explicitly removed, and warning logs identify failed scans and retained module counts.
+
+## Safer, efficient module discovery
+
+Concentrated marketplace refreshes into one authenticated scan, added GitHub user-token support for the trusted source, restored dependency and acknowledgement checks before external code runs, and made GitHub Enterprise manifest requests use the configured API.

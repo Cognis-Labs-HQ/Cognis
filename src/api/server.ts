@@ -171,6 +171,28 @@ export function buildServer(deps: ApiDependencies) {
         moduleService,
         {
             beforeEnable: async (moduleId) => {
+                const manifest = (
+                    await deps.moduleRuntimeGateway.listManifests()
+                ).find((entry) => entry.id === moduleId);
+                for (const reference of manifest?.requires ?? []) {
+                    const dependency = deps.gatewayRegistry
+                        ?.list()
+                        .find(
+                            (entry) =>
+                                entry.id === reference ||
+                                entry.uuid === reference,
+                        );
+                    if (!dependency) {
+                        throw new Error(
+                            `Module ${moduleId} requires unavailable gateway ${reference}`,
+                        );
+                    }
+                    if (dependency.status !== "active") {
+                        throw new Error(
+                            `Module ${moduleId} requires disabled gateway ${dependency.id}`,
+                        );
+                    }
+                }
                 await (
                     deps.runModuleTests ??
                     moduleTestService.run.bind(moduleTestService)

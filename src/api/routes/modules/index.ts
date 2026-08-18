@@ -470,6 +470,24 @@ export function createModuleRoutes(
             url.searchParams.get("acknowledgeExternalDisclaimer") === "true";
 
         if (action === "enable") {
+            if (
+                !acknowledged &&
+                (await moduleService.requiresExternalAcknowledgement?.(
+                    moduleId,
+                ))
+            ) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "external_module_acknowledgement_required",
+                            message:
+                                "External module disclaimer acknowledgement is required.",
+                        },
+                    }),
+                );
+                return true;
+            }
             try {
                 await hooks?.beforeEnable?.(moduleId);
             } catch (error) {
