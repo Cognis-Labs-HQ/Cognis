@@ -691,6 +691,12 @@
   <string name="ui.app.modules.available">利用可能</string>
   <string name="ui.app.modules.categories">カテゴリー</string>
   <string name="ui.app.modules.branch">ブランチ</string>
+  <string name="ui.app.modules.change_release_channel">リリースチャンネルを変更</string>
+  <string name="ui.app.modules.changing_release_channel">リリースチャンネルを変更中</string>
+  <string name="ui.app.modules.installing">インストール中</string>
+  <string name="ui.app.modules.upgrading">アップグレード中</string>
+  <string name="ui.app.modules.downgrading">ダウングレード中</string>
+  <string name="ui.app.modules.change-channel_complete">リリースチャンネルをインストールしました。</string>
   <string name="ui.app.modules.release_channel">リリースチャンネル</string>
   <string name="ui.app.modules.advanced_options">詳細オプション</string>
   <string name="ui.app.modules.force_update">強制更新</string>

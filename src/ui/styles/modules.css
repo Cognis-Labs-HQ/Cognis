@@ -308,11 +308,31 @@ body[data-theme="dark"] .module-icon-settings {
     font-size: 1.4rem;
     list-style: none;
 }
-.module-detail-advanced button {
+.module-detail-advanced-menu {
     position: absolute;
     z-index: 2;
     right: 0;
+    display: grid;
+    gap: 0.35rem;
     min-width: 10rem;
+    padding: 0.35rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.6rem;
+    background: var(--surface-color);
+}
+.module-detail-advanced-menu button {
+    width: 100%;
+}
+.module-release-channel-list {
+    display: grid;
+    gap: 0.5rem;
+    max-height: min(60vh, 24rem);
+    overflow-y: auto;
+    padding: 0.25rem;
+}
+.module-release-channel-list button {
+    width: 100%;
+    text-align: left;
 }
 .module-detail-screenshots {
     display: grid;

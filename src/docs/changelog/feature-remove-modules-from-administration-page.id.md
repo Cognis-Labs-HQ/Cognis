@@ -153,3 +153,7 @@ Deployment Docker kini menyimpan modul eksternal dalam volume bernama khusus yan
 ## Pertahankan aktivasi saat pembaruan paksa
 
 Pembaruan Paksa kini menonaktifkan sementara modul aktif sebelum mengganti checkout-nya, lalu mengaktifkannya kembali. Jika unduhan atau validasi gagal, Cognis tetap mengaktifkan kembali checkout yang ada agar pembaruan paksa yang gagal tidak membuat modul tetap nonaktif secara tidak terduga.
+
+## Ubah kanal rilis secara terarah
+
+Pemilihan kanal rilis untuk modul terpasang kini berada di menu lanjutan. Administrator memilih dari daftar tombol yang dapat digulir dan mengonfirmasi sebelum Cognis otomatis memasang kanal tersebut. Tombol siklus hidup menampilkan Memasang, Meningkatkan, Menurunkan, atau Mengubah Kanal Rilis dengan indikator pemuatan selama proses, lalu berubah menjadi Terpasang setelah berhasil.

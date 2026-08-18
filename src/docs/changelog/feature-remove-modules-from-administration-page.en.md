@@ -153,3 +153,7 @@ Docker deployments now store external modules in a dedicated named volume mounte
 ## Preserve activation during force updates
 
 Force Update now temporarily disables an active module before replacing its checkout and re-enables it afterward. If the download or validation fails, Cognis still re-enables the existing checkout so a failed forced update does not leave the module unexpectedly disabled.
+
+## Change release channels deliberately
+
+Installed modules now move release-channel selection into the advanced menu. Administrators choose from a scrollable button list and confirm before Cognis automatically installs that channel. Lifecycle buttons show Installing, Upgrading, Downgrading, or Changing Release Channel with the loading indicator during work, then settle on Installed after success.

@@ -691,6 +691,12 @@
   <string name="ui.app.modules.available">Available</string>
   <string name="ui.app.modules.categories">Categories</string>
   <string name="ui.app.modules.branch">Branch</string>
+  <string name="ui.app.modules.change_release_channel">Change Release Channel</string>
+  <string name="ui.app.modules.changing_release_channel">Changing Release Channel</string>
+  <string name="ui.app.modules.installing">Installing</string>
+  <string name="ui.app.modules.upgrading">Upgrading</string>
+  <string name="ui.app.modules.downgrading">Downgrading</string>
+  <string name="ui.app.modules.change-channel_complete">Release channel installed.</string>
   <string name="ui.app.modules.release_channel">Release channel</string>
   <string name="ui.app.modules.advanced_options">Advanced options</string>
   <string name="ui.app.modules.force_update">Force update</string>

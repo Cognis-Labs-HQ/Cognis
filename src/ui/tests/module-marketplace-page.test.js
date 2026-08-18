@@ -155,9 +155,18 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderLifecycleButton\(module, "uninstall"/);
     assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);
+    assert.match(source, /!module\.installed && module\.branches\?\.length/);
+    assert.match(source, /data-module-change-channel/);
+    assert.match(source, /async function selectReleaseChannel/);
+    assert.match(source, /class="module-release-channel-list"/);
+    assert.match(source, /data-release-channel/);
     assert.match(
         source,
-        /action === "force-update" && module\.status === "enabled"/,
+        /selectedBranches\.set\(module\.uuid, releaseChannel\)/,
+    );
+    assert.match(
+        source,
+        /\["force-update", "change-channel"\]\.includes\(action\)[\s\S]*module\.status === "enabled"/,
     );
     assert.match(
         source,
@@ -238,6 +247,15 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /pendingModuleActions\.set\(module\.uuid, action\)/);
     assert.match(source, /pendingModuleActions\.delete\(module\.uuid\)/);
     assert.match(source, /isPending \? " button-loading"/);
+    assert.match(source, /ui\.app\.modules\.installing/);
+    assert.match(source, /ui\.app\.modules\.upgrading/);
+    assert.match(source, /ui\.app\.modules\.downgrading/);
+    assert.match(source, /ui\.app\.modules\.changing_release_channel/);
+    assert.match(source, /i18n\.t\("ui\.reuse\.installed"\)/);
+    assert.match(
+        marketplaceStyles,
+        /\.module-release-channel-list[\s\S]*overflow-y: auto/,
+    );
     assert.match(source, /module_lifecycle_action_failed/);
     assert.match(source, /github_connection_timeout/);
     assert.match(source, /github_timeout_warning/);

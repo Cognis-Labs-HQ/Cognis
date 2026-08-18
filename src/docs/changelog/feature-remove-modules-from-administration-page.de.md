@@ -153,3 +153,7 @@ Docker-Bereitstellungen speichern externe Module nun in einem eigenen benannten 
 ## Aktivierung bei erzwungenen Updates bewahren
 
 „Update erzwingen“ deaktiviert ein aktives Modul nun vorübergehend, bevor sein Checkout ersetzt wird, und aktiviert es anschließend erneut. Schlägt der Download oder die Prüfung fehl, aktiviert Cognis den bestehenden Checkout trotzdem wieder, damit ein fehlgeschlagenes erzwungenes Update das Modul nicht unerwartet deaktiviert lässt.
+
+## Veröffentlichungskanäle gezielt wechseln
+
+Bei installierten Modulen befindet sich die Auswahl des Veröffentlichungskanals nun im erweiterten Menü. Administratoren wählen aus einer scrollbaren Schaltflächenliste und bestätigen, bevor Cognis den Kanal automatisch installiert. Lebenszyklus-Schaltflächen zeigen während der Verarbeitung mit Ladeanzeige „Wird installiert“, „Wird aktualisiert“, „Wird herabgestuft“ oder „Veröffentlichungskanal wird gewechselt“ und wechseln nach erfolgreichem Abschluss zu „Installiert“.

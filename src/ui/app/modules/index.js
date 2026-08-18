@@ -53,10 +53,11 @@ function renderLifecycleActions(module) {
     if (!module.installed && !module.status) {
         return renderLifecycleButton(module, "install", "confirm");
     }
+    const installedState = `<button type="button" class="btn-neutral" disabled>${escapeHtml(i18n.t("ui.reuse.installed"))}</button>`;
     if (module.status === "enabled") {
-        return `${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "disable", "cancel")}`;
+        return `${installedState}${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "disable", "cancel")}`;
     }
-    return `${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "enable", "confirm")}${renderLifecycleButton(module, "uninstall", "cancel")}`;
+    return `${installedState}${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "enable", "confirm")}${renderLifecycleButton(module, "uninstall", "cancel")}`;
 }
 
 function renderLifecycleButton(module, action, consequence) {
@@ -76,11 +77,22 @@ function renderLifecycleButton(module, action, consequence) {
                 ? "downgrade"
                 : "upgrade"
             : action;
-    return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(`ui.${["upgrade", "downgrade"].includes(updateDirection) ? "app.modules" : "reuse"}.${updateDirection}`))}</button>`;
+    const labelKey = isPending
+        ? updateDirection === "upgrade"
+            ? "ui.app.modules.upgrading"
+            : updateDirection === "downgrade"
+              ? "ui.app.modules.downgrading"
+              : "ui.app.modules.installing"
+        : `ui.${["upgrade", "downgrade"].includes(updateDirection) ? "app.modules" : "reuse"}.${updateDirection}`;
+    return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(labelKey))}</button>`;
 }
 
 function selectedBranch(module) {
-    return selectedBranches.get(module.uuid) ?? module.defaultBranch;
+    return (
+        selectedBranches.get(module.uuid) ??
+        module.installedBranch ??
+        module.defaultBranch
+    );
 }
 
 function hasModuleUpdate(module) {
@@ -114,6 +126,13 @@ function compareVersions(left, right) {
     return 0;
 }
 
+function releaseChannels(module) {
+    return [...(module.branches ?? []), ...(module.releases ?? [])].filter(
+        (channel, index, entries) =>
+            entries.findIndex((entry) => entry.name === channel.name) === index,
+    );
+}
+
 function renderModuleDetails(module) {
     const bannerUrl = resolveModuleAssetUrl(module.assets?.banner);
     const screenshots = (module.assets?.screenshots ?? [])
@@ -134,16 +153,22 @@ function renderModuleDetails(module) {
         .filter(Boolean)
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
-    const branchSelector = module.branches?.length
-        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}</span><select data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
-        : "";
+    const branchSelector =
+        !module.installed && module.branches?.length
+            ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}</span><select data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
+            : "";
     const license = module.license
         ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
         : "";
     const forcePending =
         pendingModuleActions.get(module.uuid) === "force-update";
+    const channelPending =
+        pendingModuleActions.get(module.uuid) === "change-channel";
+    const channelAction = releaseChannels(module).length
+        ? `<button type="button" class="btn-cancel${channelPending ? " button-loading" : ""}" data-module-change-channel="${escapeHtml(module.uuid)}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}${channelPending ? ' aria-busy="true"' : ""}>${escapeHtml(channelPending ? i18n.t("ui.app.modules.changing_release_channel") : i18n.t("ui.app.modules.change_release_channel"))}</button>`
+        : "";
     const advanced = module.installed
-        ? `<details class="module-detail-advanced"><summary aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}">☰</summary><button type="button" class="btn-confirm${forcePending ? " button-loading" : ""}" data-module-force-update="${escapeHtml(module.uuid)}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}${forcePending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.app.modules.force_update"))}</button></details>`
+        ? `<details class="module-detail-advanced"><summary aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}">☰</summary><div class="module-detail-advanced-menu"><button type="button" class="btn-cancel${forcePending ? " button-loading" : ""}" data-module-force-update="${escapeHtml(module.uuid)}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}${forcePending ? ' aria-busy="true"' : ""}>${escapeHtml(forcePending ? i18n.t("ui.app.modules.installing") : i18n.t("ui.app.modules.force_update"))}</button>${channelAction}</div></details>`
         : "";
     return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong>${module.version ? ` · ${escapeHtml(module.version)}` : ""}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
@@ -366,6 +391,47 @@ async function openMarketplaceSettings(initialPage = "settings") {
     });
 }
 
+async function selectReleaseChannel(module) {
+    const channels = releaseChannels(module);
+    let selectedChannel = module.installedBranch ?? selectedBranch(module);
+    const result = await openPopup({
+        title: i18n.t("ui.app.modules.change_release_channel"),
+        body: `<div class="module-release-channel-list" role="radiogroup" aria-label="${escapeHtml(i18n.t("ui.app.modules.release_channel"))}">${channels.map((channel) => `<button type="button" class="btn-neutral${channel.name === selectedChannel ? " is-active" : ""}" data-release-channel="${escapeHtml(channel.name)}" aria-pressed="${channel.name === selectedChannel}">${escapeHtml(channel.name)}${channel.version ? ` · ${escapeHtml(channel.version)}` : ""}</button>`).join("")}</div>`,
+        actions: [
+            {
+                id: "confirm",
+                label: i18n.t("ui.reuse.confirm"),
+                variant: "cancel",
+            },
+            {
+                id: "cancel",
+                label: i18n.t("ui.reuse.cancel"),
+                variant: "neutral",
+            },
+        ],
+        onOpen: (overlay) => {
+            overlay
+                .querySelectorAll("[data-release-channel]")
+                .forEach((button) =>
+                    button.addEventListener("click", () => {
+                        selectedChannel = button.dataset.releaseChannel;
+                        overlay
+                            .querySelectorAll("[data-release-channel]")
+                            .forEach((entry) => {
+                                const active = entry === button;
+                                entry.classList.toggle("is-active", active);
+                                entry.setAttribute(
+                                    "aria-pressed",
+                                    String(active),
+                                );
+                            });
+                    }),
+                );
+        },
+    });
+    return result === "confirm" ? selectedChannel : null;
+}
+
 async function runLifecycleAction(module, action) {
     if (action === "update" && module.status === "enabled") {
         showToast(i18n.t("ui.app.modules.disable_before_update"), {
@@ -374,9 +440,17 @@ async function runLifecycleAction(module, action) {
         refreshMarketplace();
         return;
     }
-    if (["install", "update", "force-update"].includes(action)) {
+    if (
+        ["install", "update", "force-update", "change-channel"].includes(action)
+    ) {
+        if (action === "change-channel") {
+            const releaseChannel = await selectReleaseChannel(module);
+            if (!releaseChannel) return;
+            selectedBranches.set(module.uuid, releaseChannel);
+        }
         const restoreEnabledState =
-            action === "force-update" && module.status === "enabled";
+            ["force-update", "change-channel"].includes(action) &&
+            module.status === "enabled";
         const channel = [
             ...(module.branches ?? []),
             ...(module.releases ?? []),
@@ -601,6 +675,7 @@ function bindInteractions(root, signal) {
                 "install",
                 "update",
                 "force-update",
+                "change-channel",
                 "enable",
                 "disable",
                 "uninstall",

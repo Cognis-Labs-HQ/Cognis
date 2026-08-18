@@ -691,6 +691,12 @@
   <string name="ui.app.modules.available">Tersedia</string>
   <string name="ui.app.modules.categories">Kategori</string>
   <string name="ui.app.modules.branch">Cabang</string>
+  <string name="ui.app.modules.change_release_channel">Ubah Kanal Rilis</string>
+  <string name="ui.app.modules.changing_release_channel">Mengubah Kanal Rilis</string>
+  <string name="ui.app.modules.installing">Memasang</string>
+  <string name="ui.app.modules.upgrading">Meningkatkan</string>
+  <string name="ui.app.modules.downgrading">Menurunkan</string>
+  <string name="ui.app.modules.change-channel_complete">Kanal rilis terpasang.</string>
   <string name="ui.app.modules.release_channel">Kanal rilis</string>
   <string name="ui.app.modules.advanced_options">Opsi lanjutan</string>
   <string name="ui.app.modules.force_update">Paksa pembaruan</string>

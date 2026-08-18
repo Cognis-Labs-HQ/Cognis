@@ -691,6 +691,12 @@
   <string name="ui.app.modules.available">Verfügbar</string>
   <string name="ui.app.modules.categories">Kategorien</string>
   <string name="ui.app.modules.branch">Zweig</string>
+  <string name="ui.app.modules.change_release_channel">Veröffentlichungskanal wechseln</string>
+  <string name="ui.app.modules.changing_release_channel">Veröffentlichungskanal wird gewechselt</string>
+  <string name="ui.app.modules.installing">Wird installiert</string>
+  <string name="ui.app.modules.upgrading">Wird aktualisiert</string>
+  <string name="ui.app.modules.downgrading">Wird herabgestuft</string>
+  <string name="ui.app.modules.change-channel_complete">Veröffentlichungskanal installiert.</string>
   <string name="ui.app.modules.release_channel">Veröffentlichungskanal</string>
   <string name="ui.app.modules.advanced_options">Erweiterte Optionen</string>
   <string name="ui.app.modules.force_update">Aktualisierung erzwingen</string>
