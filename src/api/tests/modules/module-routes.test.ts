@@ -294,6 +294,45 @@ test("module catalog discovery accepts caller-selected sources", async () => {
     assert.match(responseBody, /\/api\/v1\/modules\/catalog\/assets\/a{64}/);
 });
 
+test("module catalog returns persisted discoveries without refreshing sources", async () => {
+    let discoveryCalled = false;
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        undefined,
+        undefined,
+        {
+            listRecommendedModuleUuids: async () => [],
+            listCachedModules: async () => [
+                {
+                    id: "jitsi-meet",
+                    uuid: "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
+                },
+            ],
+            discover: async () => {
+                discoveryCalled = true;
+                return [];
+            },
+        } as any,
+    );
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let body = "";
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead() {},
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/catalog"),
+    );
+    assert.match(body, /jitsi-meet/);
+    assert.equal(discoveryCalled, false);
+});
+
 test("module marketplace install forwards the selected branch", async () => {
     const token = issueAccessToken("admin-user", "admin", 60);
     let installedBranch = "";

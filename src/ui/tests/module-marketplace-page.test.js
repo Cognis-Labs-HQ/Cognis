@@ -86,6 +86,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /id="module-source-refresh"/);
     assert.match(source, /ui\.reuse\.refresh/);
     assert.match(source, /async function loadKnownModules/);
+    assert.match(source, /loadCachedModules\(\)/);
     assert.match(source, /async function discoverConfiguredSources/);
     assert.match(source, /loadModuleSources\(\)/);
     assert.match(
@@ -95,6 +96,17 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);
     assert.match(source, /void refreshMarketplaceData\(\)/);
+});
+
+test("module installation failures stay local to the marketplace action", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/api.js"),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /installModule[\s\S]*suppressConnectionRecoveryToast: true/,
+    );
 });
 
 test("module sources use an independent list and editor", () => {

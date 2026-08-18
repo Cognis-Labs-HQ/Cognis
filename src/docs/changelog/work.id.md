@@ -79,3 +79,15 @@ Saat modul diaktifkan, semua pengujian JavaScript dan TypeScript standar yang di
 ## Sertakan modul eksternal dalam perintah pengujian inti
 
 Perintah utama `npm test` kini menemukan pengujian di pohon sumber Cognis dan akar checkout modul eksternal yang dikonfigurasi. Checkout di luar repositori juga didukung melalui `COGNIS_EXTERNAL_MODULES_ROOT`.
+
+## Pulihkan katalog marketplace secara langsung
+
+Halaman Modul kini memuat katalog tersimpan per sumber sebelum penemuan latar belakang dimulai, sehingga modul yang sudah dikenal tetap terlihat setelah navigasi dan mulai ulang server. Penyegaran repositori memperbarui kandidat yang berhasil secara terpisah dan mempertahankan entri cache ketika pemeriksaan individual belum memberikan kepastian.
+
+## Pulihkan instalasi Jitsi Meet
+
+Instalasi kini menerima katalog yang dibuat sebelum metadata tag rilis diperkenalkan. Perubahan ini menghapus kerusakan akibat `releases` yang tidak tersedia dan sebelumnya menggagalkan instalasi Jitsi Meet, sementara pemeriksaan repositori terpisah mencegah repositori organisasi lain menyembunyikan Jitsi Meet.
+
+## Tangani kegagalan instalasi secara lokal
+
+Kegagalan instalasi modul yang diharapkan tidak lagi memicu status pemulihan koneksi global atau notifikasi permanen “Koneksi terputus”; tindakan marketplace tetap melaporkan kegagalannya sendiri.

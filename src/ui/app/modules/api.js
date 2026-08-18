@@ -58,6 +58,10 @@ export async function loadAvailableModules(tokens, sourceUuids) {
     );
 }
 
+export async function loadCachedModules() {
+    return data(await apiFetch("/api/v1/modules/catalog"));
+}
+
 export async function installModule(module, token, branch) {
     return data(
         await apiFetch("/api/v1/modules/install", {
@@ -65,6 +69,7 @@ export async function installModule(module, token, branch) {
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ module, token, branch }),
             timeoutMs: MODULE_INSTALL_TIMEOUT_MS,
+            suppressConnectionRecoveryToast: true,
         }),
     );
 }

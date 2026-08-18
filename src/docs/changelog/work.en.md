@@ -79,3 +79,15 @@ Enabling a module now executes every standard JavaScript and TypeScript test sup
 ## Include external modules in the core test command
 
 The root `npm test` runner now discovers tests under both the Cognis source tree and the configured external-module checkout root, including checkouts stored outside the repository through `COGNIS_EXTERNAL_MODULES_ROOT`.
+
+## Restore the marketplace catalog immediately
+
+The Modules page now hydrates from the persisted per-source catalog before background discovery begins, so known modules remain visible across navigation and server restarts. Repository refreshes update successful candidates independently and retain cached entries whenever an individual probe is inconclusive.
+
+## Restore Jitsi Meet installation
+
+Installation now accepts catalogs written before release-tag metadata was introduced. This removes the missing `releases` crash that regressed Jitsi Meet installation, while independent repository probing prevents unrelated organization repositories from hiding Jitsi Meet.
+
+## Keep installation errors local
+
+Expected module installation failures no longer trigger the global connection-interrupted recovery state or permanent toast; the marketplace action continues to report its own failure.

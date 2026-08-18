@@ -233,6 +233,15 @@ export class ModuleMarketplaceService {
         return results.flat();
     }
 
+    async listCachedModules(): Promise<MarketplaceModule[]> {
+        const configuredSourceUuids = new Set(
+            (await this.listSources()).map((source) => source.uuid),
+        );
+        return (await this.readCachedCatalog()).filter((module) =>
+            configuredSourceUuids.has(module.sourceUuid),
+        );
+    }
+
     async install(
         module: MarketplaceModule,
         token?: string,
@@ -244,7 +253,10 @@ export class ModuleMarketplaceService {
         await rm(temporary, { recursive: true, force: true });
         const cloneUrl = this.assertCloneUrl(module.cloneUrl);
         const selectedBranch = branch ?? module.defaultBranch;
-        const installRefs = [...module.branches, ...module.releases];
+        const installRefs = [
+            ...(module.branches ?? []),
+            ...(module.releases ?? []),
+        ];
         if (!installRefs.some((entry) => entry.name === selectedBranch)) {
             throw new Error("invalid_module_branch");
         }
@@ -336,131 +348,150 @@ export class ModuleMarketplaceService {
                 ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=100`
                 : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=100&include_subgroups=true`;
         const repositories = await this.fetchPaginated(endpoint, headers);
-        const candidates = await Promise.allSettled(
+        const candidates = await Promise.all(
             repositories.map(async (repository) => {
                 const cloneUrl = String(
                     repository.clone_url ?? repository.http_url_to_repo ?? "",
                 );
-                const defaultBranch = String(
-                    repository.default_branch ?? "main",
-                );
-                const projectPath = String(
-                    repository.full_name ??
-                        repository.path_with_namespace ??
-                        "",
-                );
-                const rawUrl =
-                    source.provider === "github"
-                        ? `https://raw.githubusercontent.com/${projectPath}/${defaultBranch}/manifest.json`
-                        : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
-                const manifestResponse = await fetch(rawUrl, { headers });
-                if (manifestResponse.status === 404) return null;
-                if (!manifestResponse.ok) {
-                    throw new Error(
-                        `module_manifest_discovery_failed:${manifestResponse.status}`,
-                    );
-                }
-                let manifest: ModuleManifest;
                 try {
-                    manifest = this.parseManifest(
-                        await manifestResponse.text(),
+                    const defaultBranch = String(
+                        repository.default_branch ?? "main",
                     );
-                } catch {
-                    return null;
-                }
-                const [branches, releases] = await Promise.all([
-                    this.discoverBranches(source, projectPath, headers),
-                    this.discoverReleases(source, projectPath, headers),
-                ]);
-                const readmeResponse = await fetch(
-                    this.resolveRepositoryAssetUrl(
+                    const projectPath = String(
+                        repository.full_name ??
+                            repository.path_with_namespace ??
+                            "",
+                    );
+                    const rawUrl =
+                        source.provider === "github"
+                            ? `https://raw.githubusercontent.com/${projectPath}/${defaultBranch}/manifest.json`
+                            : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
+                    const manifestResponse = await fetch(rawUrl, { headers });
+                    if (manifestResponse.status === 404)
+                        return { cloneUrl, module: null, confirmed: true };
+                    if (!manifestResponse.ok) {
+                        throw new Error(
+                            `module_manifest_discovery_failed:${manifestResponse.status}`,
+                        );
+                    }
+                    let manifest: ModuleManifest;
+                    try {
+                        manifest = this.parseManifest(
+                            await manifestResponse.text(),
+                        );
+                    } catch {
+                        return { cloneUrl, module: null, confirmed: true };
+                    }
+                    const [branches, releases] = await Promise.all([
+                        this.discoverBranches(source, projectPath, headers),
+                        this.discoverReleases(source, projectPath, headers),
+                    ]);
+                    const readmeResponse = await fetch(
+                        this.resolveRepositoryAssetUrl(
+                            source,
+                            projectPath,
+                            defaultBranch,
+                            "README.md",
+                        ),
+                        { headers },
+                    );
+                    const hasLicenseFile = await this.hasRootLicenseFile(
                         source,
                         projectPath,
                         defaultBranch,
-                        "README.md",
-                    ),
-                    { headers },
-                );
-                const hasLicenseFile = await this.hasRootLicenseFile(
-                    source,
-                    projectPath,
-                    defaultBranch,
-                    headers,
-                );
-                const assetIds = manifest.assets
-                    ? {
-                          icon: manifest.assets.icon
-                              ? await this.cacheRepositoryAsset(
-                                    source,
-                                    projectPath,
-                                    defaultBranch,
-                                    manifest.assets.icon,
-                                    headers,
-                                )
-                              : undefined,
-                          banner: manifest.assets.banner
-                              ? await this.cacheRepositoryAsset(
-                                    source,
-                                    projectPath,
-                                    defaultBranch,
-                                    manifest.assets.banner,
-                                    headers,
-                                )
-                              : undefined,
-                          screenshots: (
-                              await Promise.all(
-                                  (manifest.assets.screenshots ?? []).map(
-                                      (assetPath) =>
-                                          this.cacheRepositoryAsset(
-                                              source,
-                                              projectPath,
-                                              defaultBranch,
-                                              assetPath,
-                                              headers,
-                                          ),
-                                  ),
-                              )
-                          ).filter(
-                              (assetId): assetId is string =>
-                                  typeof assetId === "string",
-                          ),
-                      }
-                    : undefined;
-                const provenance = await this.readInstallProvenance(
-                    manifest.uuid,
-                );
-                const defaultCommit = branches.find(
-                    (branch) => branch.name === defaultBranch,
-                )?.commit;
-                return {
-                    ...manifest,
-                    license: hasLicenseFile ? manifest.license : undefined,
-                    assetIds,
-                    cloneUrl,
-                    sourceUuid: source.uuid,
-                    installed: Boolean(provenance),
-                    branches,
-                    releases,
-                    defaultBranch,
-                    installedBranch: provenance?.branch,
-                    installedCommit: provenance?.commit,
-                    updateAvailable: Boolean(
-                        provenance &&
-                        defaultCommit &&
-                        provenance.commit !== defaultCommit,
-                    ),
-                    readme: readmeResponse.ok
-                        ? await readmeResponse.text()
-                        : undefined,
-                };
+                        headers,
+                    );
+                    const assetIds = manifest.assets
+                        ? {
+                              icon: manifest.assets.icon
+                                  ? await this.cacheRepositoryAsset(
+                                        source,
+                                        projectPath,
+                                        defaultBranch,
+                                        manifest.assets.icon,
+                                        headers,
+                                    )
+                                  : undefined,
+                              banner: manifest.assets.banner
+                                  ? await this.cacheRepositoryAsset(
+                                        source,
+                                        projectPath,
+                                        defaultBranch,
+                                        manifest.assets.banner,
+                                        headers,
+                                    )
+                                  : undefined,
+                              screenshots: (
+                                  await Promise.all(
+                                      (manifest.assets.screenshots ?? []).map(
+                                          (assetPath) =>
+                                              this.cacheRepositoryAsset(
+                                                  source,
+                                                  projectPath,
+                                                  defaultBranch,
+                                                  assetPath,
+                                                  headers,
+                                              ),
+                                      ),
+                                  )
+                              ).filter(
+                                  (assetId): assetId is string =>
+                                      typeof assetId === "string",
+                              ),
+                          }
+                        : undefined;
+                    const provenance = await this.readInstallProvenance(
+                        manifest.uuid,
+                    );
+                    const defaultCommit = branches.find(
+                        (branch) => branch.name === defaultBranch,
+                    )?.commit;
+                    return {
+                        cloneUrl,
+                        confirmed: true,
+                        module: {
+                            ...manifest,
+                            license: hasLicenseFile
+                                ? manifest.license
+                                : undefined,
+                            assetIds,
+                            cloneUrl,
+                            sourceUuid: source.uuid,
+                            installed: Boolean(provenance),
+                            branches,
+                            releases,
+                            defaultBranch,
+                            installedBranch: provenance?.branch,
+                            installedCommit: provenance?.commit,
+                            updateAvailable: Boolean(
+                                provenance &&
+                                defaultCommit &&
+                                provenance.commit !== defaultCommit,
+                            ),
+                            readme: readmeResponse.ok
+                                ? await readmeResponse.text()
+                                : undefined,
+                        } satisfies MarketplaceModule,
+                    };
+                } catch {
+                    return { cloneUrl, module: null, confirmed: false };
+                }
             }),
         );
-        if (candidates.some((result) => result.status === "rejected")) {
-            throw new Error("module_source_discovery_incomplete");
-        }
-        return candidates.flatMap((result) =>
-            result.status === "fulfilled" && result.value ? [result.value] : [],
+        const cached = await this.readCachedCatalog([source.uuid]);
+        const uncertainCloneUrls = new Set(
+            candidates
+                .filter((candidate) => !candidate.confirmed)
+                .map((candidate) => candidate.cloneUrl),
         );
+        return [
+            ...candidates.flatMap((candidate) =>
+                candidate.module ? [candidate.module] : [],
+            ),
+            ...cached.filter((module) =>
+                uncertainCloneUrls.has(module.cloneUrl),
+            ),
+        ];
     }
 
     private async hasRootLicenseFile(

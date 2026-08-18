@@ -10,6 +10,7 @@ import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
     installModule,
     loadAvailableModules,
+    loadCachedModules,
     loadInstalledModules,
     loadModuleMarketplaceSettings,
     loadModuleSources,
@@ -360,12 +361,23 @@ function refreshMarketplace() {
 }
 
 async function loadKnownModules() {
-    const [loadedSources, installed] = await Promise.all([
+    const [loadedSources, installed, cached] = await Promise.all([
         loadModuleSources(),
         loadInstalledModules(),
+        loadCachedModules(),
     ]);
     sources = loadedSources;
-    modules = installed;
+    modules = [...cached];
+    installed.forEach((installedModule) => {
+        const known = modules.find(
+            (module) => module.uuid === installedModule.uuid,
+        );
+        if (known) {
+            Object.assign(known, installedModule, { installed: true });
+        } else {
+            modules.push(installedModule);
+        }
+    });
     selectedModule = selectedModule
         ? (modules.find((module) => module.uuid === selectedModule.uuid) ??
           null)

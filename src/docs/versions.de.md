@@ -32,24 +32,24 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.22` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.23` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.19` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.13` |
-| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.11` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.11` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.14` |
+| Dateikontingent       | `src/adapters/file/quota/`          | `1.0.12` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.12` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.35` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.14` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.11` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.11` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.23` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.14` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.10` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.9`  |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.14` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.12` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.13` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.12` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.10` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.15` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.12` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.12` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.24` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.15` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.11` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.10` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.15` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.13` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.14` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.13` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.11` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.61` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.65` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
@@ -80,13 +80,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.25` |
+| Core Package | `src/core/` | `0.3.26` |
 
 ## API
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.19` |
+| API Server | `src/api/` | `0.3.20` |
 
 ## Werkzeuge
 

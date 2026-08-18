@@ -154,25 +154,29 @@ export function createModuleRoutes(
         if (
             marketplace &&
             url.pathname === "/api/v1/modules/catalog" &&
-            req.method === "POST"
+            (req.method === "GET" || req.method === "POST")
         ) {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            const body = await readJson(req);
+            const body = req.method === "POST" ? await readJson(req) : {};
             const sourceUuids = Array.isArray(body.sourceUuids)
                 ? body.sourceUuids.filter(
                       (value): value is string => typeof value === "string",
                   )
                 : undefined;
             const recommended = new Set(
-                await marketplace.listRecommendedModuleUuids(),
+                req.method === "POST"
+                    ? await marketplace.listRecommendedModuleUuids()
+                    : [],
             );
-            const data = (
-                await marketplace.discover(
-                    (body.tokens ?? {}) as Record<string, string>,
-                    sourceUuids,
-                )
-            ).map((module) =>
+            const modules =
+                req.method === "POST"
+                    ? await marketplace.discover(
+                          (body.tokens ?? {}) as Record<string, string>,
+                          sourceUuids,
+                      )
+                    : await marketplace.listCachedModules();
+            const data = modules.map((module) =>
                 withMarketplaceAssetUrls({
                     ...module,
                     recommended: recommended.has(module.uuid),

@@ -79,3 +79,15 @@ Beim Aktivieren eines Moduls werden nun alle standardmäßigen JavaScript- und T
 ## Externe Module im Core-Testbefehl berücksichtigen
 
 Der zentrale Befehl `npm test` findet Tests jetzt sowohl im Cognis-Quellbaum als auch im konfigurierten Checkout-Verzeichnis für externe Module. Über `COGNIS_EXTERNAL_MODULES_ROOT` werden auch Verzeichnisse außerhalb des Repositorys berücksichtigt.
+
+## Marketplace-Katalog sofort wiederherstellen
+
+Die Modulseite lädt nun zuerst den gespeicherten Katalog jeder Quelle, bevor die Erkennung im Hintergrund beginnt. Bekannte Module bleiben dadurch bei Navigation und Serverneustarts sichtbar. Repository-Abfragen aktualisieren erfolgreiche Kandidaten unabhängig und behalten zwischengespeicherte Einträge bei nicht eindeutigen Einzelabfragen.
+
+## Installation von Jitsi Meet wiederherstellen
+
+Die Installation akzeptiert nun Kataloge, die vor Einführung der Release-Tag-Metadaten gespeichert wurden. Dadurch entfällt der Fehler wegen fehlender `releases`, der die Installation von Jitsi Meet verhindert hat. Unabhängige Repository-Abfragen verhindern außerdem, dass andere Repositories der Organisation Jitsi Meet ausblenden.
+
+## Installationsfehler lokal behandeln
+
+Erwartete Fehler bei der Modulinstallation lösen nicht mehr den globalen Zustand „Verbindung unterbrochen“ oder eine dauerhafte Benachrichtigung aus; die Marketplace-Aktion meldet den Fehler weiterhin selbst.

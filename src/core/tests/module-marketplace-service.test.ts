@@ -69,6 +69,27 @@ test("module marketplace stores a configurable recommended list URL", async () =
     );
 });
 
+test("module installation accepts cached catalogs created before release discovery", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    await assert.rejects(
+        service.install(
+            {
+                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                cloneUrl: "https://github.com/acme/notes.git",
+                defaultBranch: "main",
+                branches: [],
+            } as any,
+            undefined,
+            "main",
+        ),
+        /invalid_module_branch/,
+    );
+});
+
 test("module marketplace discovers repository manifests", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(
@@ -236,6 +257,62 @@ test("module marketplace tolerates an unavailable source", async () => {
     };
     try {
         assert.deepEqual(await service.discover(), []);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("module marketplace serves persisted results after restart", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const statePath = path.join(root, "sources.json");
+    const catalogModule = {
+        uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+        id: "notes",
+        sourceUuid: source.uuid,
+        cloneUrl: "https://github.com/example/notes.git",
+    };
+    await writeFile(statePath, JSON.stringify([source]));
+    await writeFile(`${statePath}.catalog`, JSON.stringify([catalogModule]));
+    const restarted = new ModuleMarketplaceService(
+        statePath,
+        path.join(root, "modules"),
+    );
+    assert.deepEqual(await restarted.listCachedModules(), [catalogModule]);
+});
+
+test("module marketplace keeps cached repositories whose refresh is inconclusive", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const statePath = path.join(root, "sources.json");
+    const service = new ModuleMarketplaceService(
+        statePath,
+        path.join(root, "modules"),
+    );
+    await writeFile(
+        `${statePath}.catalog`,
+        JSON.stringify([
+            {
+                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                id: "notes",
+                sourceUuid: "178271bf-5631-40df-82df-967f8a37a020",
+                cloneUrl: "https://github.com/acme/notes.git",
+            },
+        ]),
+    );
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (input) =>
+        String(input).includes("/repos?")
+            ? new Response(
+                  JSON.stringify([
+                      {
+                          clone_url: "https://github.com/acme/notes.git",
+                          default_branch: "main",
+                          full_name: "acme/notes",
+                      },
+                  ]),
+              )
+            : new Response("provider error", { status: 500 });
+    try {
+        assert.equal((await service.discover())[0].id, "notes");
     } finally {
         globalThis.fetch = originalFetch;
     }
