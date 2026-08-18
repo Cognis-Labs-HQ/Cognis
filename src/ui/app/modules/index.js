@@ -662,9 +662,14 @@ async function loadKnownModules() {
             (module) => module.uuid === installedModule.uuid,
         );
         if (known) {
-            const catalogAssets = known.assets;
+            const catalogPresentation = {
+                name: known.name,
+                summary: known.summary,
+                description: known.description,
+                assets: known.assets,
+            };
             Object.assign(known, installedModule, { installed: true });
-            if (catalogAssets) known.assets = catalogAssets;
+            Object.assign(known, catalogPresentation);
         } else {
             modules.push(installedModule);
         }

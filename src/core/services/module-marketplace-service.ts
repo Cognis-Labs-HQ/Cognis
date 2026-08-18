@@ -67,6 +67,12 @@ export interface ModuleMarketplaceSettings {
     recommendedModulesUrl: string;
 }
 
+export type ModuleMarketplaceLog = (
+    level: "warn",
+    message: string,
+    meta: Record<string, unknown>,
+) => void;
+
 export const DEFAULT_RECOMMENDED_MODULES_URL =
     "https://cognis.study/static/recommended-modules.json";
 
@@ -84,6 +90,7 @@ export class ModuleMarketplaceService {
     constructor(
         private readonly statePath: string,
         private readonly installRoot: string,
+        private readonly log: ModuleMarketplaceLog = () => undefined,
     ) {}
 
     async getSettings(): Promise<ModuleMarketplaceSettings> {
@@ -218,27 +225,55 @@ export class ModuleMarketplaceService {
         const configuredSourceUuids = new Set(
             sources.map((source) => source.uuid),
         );
-        const results = await Promise.all(
-            selectedSources.map(async (source) => {
-                try {
-                    const modules = await this.discoverSource(
-                        source,
-                        source.credentialId
-                            ? tokens[source.credentialId]
-                            : undefined,
-                    );
-                    await this.replaceCachedSource(
-                        source.uuid,
-                        modules,
-                        configuredSourceUuids,
-                    );
-                    return modules;
-                } catch {
-                    return this.readCachedCatalog([source.uuid]);
+        const discovered: MarketplaceModule[] = [];
+        const claimedUuids = new Map<
+            string,
+            { module: MarketplaceModule; cached: boolean }
+        >();
+        for (const module of await this.readCachedCatalog()) {
+            if (!claimedUuids.has(module.uuid)) {
+                claimedUuids.set(module.uuid, { module, cached: true });
+            }
+        }
+        for (const source of selectedSources) {
+            let modules: MarketplaceModule[];
+            try {
+                modules = await this.discoverSource(
+                    source,
+                    source.credentialId
+                        ? tokens[source.credentialId]
+                        : undefined,
+                );
+            } catch {
+                modules = await this.readCachedCatalog([source.uuid]);
+            }
+            const accepted = modules.filter((module) => {
+                const claim = claimedUuids.get(module.uuid);
+                const claimed = claim?.module;
+                if (!claimed) {
+                    claimedUuids.set(module.uuid, { module, cached: false });
+                    return true;
                 }
-            }),
-        );
-        return results.flat();
+                if (claim.cached && claimed.cloneUrl === module.cloneUrl) {
+                    claimedUuids.set(module.uuid, { module, cached: false });
+                    return true;
+                }
+                this.log("warn", "Duplicate module UUID rejected.", {
+                    moduleUuid: module.uuid,
+                    acceptedCloneUrl: claimed.cloneUrl,
+                    rejectedCloneUrl: module.cloneUrl,
+                    rejectedSourceUuid: source.uuid,
+                });
+                return false;
+            });
+            await this.replaceCachedSource(
+                source.uuid,
+                accepted,
+                configuredSourceUuids,
+            );
+            discovered.push(...accepted);
+        }
+        return discovered;
     }
 
     async listCachedModules(): Promise<MarketplaceModule[]> {
@@ -723,7 +758,7 @@ export class ModuleMarketplaceService {
             return undefined;
         }
         const body = Buffer.from(await response.arrayBuffer());
-        const id = createHash("sha256").update(assetUrl).digest("hex");
+        const id = createHash("sha256").update(body).digest("hex");
         this.assets.set(id, { body, contentType });
         return id;
     }

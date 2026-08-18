@@ -43,3 +43,7 @@ Analytics dan Nextcloud Whiteboard kini menjadi repositori modul eksternal mandi
 ## Tingkatkan penjelajahan tangkapan layar modul
 
 Tangkapan layar detail modul kini berada dalam karusel terbatas dengan kontrol sebelumnya dan berikutnya, pratinjau gambar di sebelah yang memudar, transisi animasi, dan rotasi otomatis. Manifes dengan kolom opsional `template: true` tidak ditampilkan dalam hasil marketplace maupun tampilan detail langsung.
+
+## Terapkan modul marketplace yang unik
+
+Analytics dan Nextcloud Whiteboard telah dipindahkan ke repositori khusus dan tidak lagi dibundel. Penemuan marketplace kini menerima repositori pertama untuk setiap UUID modul, mencatat serta menolak duplikat berikutnya, dan memperbarui metadata tampilan dari repositori yang diterima sambil mempertahankan status siklus hidup instalasi.

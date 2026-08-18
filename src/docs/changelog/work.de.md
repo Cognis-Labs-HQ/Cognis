@@ -43,3 +43,7 @@ Analytics und Nextcloud Whiteboard sind jetzt eigenständige externe Modul-Repos
 ## Durchsuchen von Modul-Screenshots verbessern
 
 Screenshots in der Moduldetailansicht bleiben nun in einem begrenzten Karussell mit Zurück- und Weiter-Steuerung, verblassten benachbarten Vorschauen, animierten Übergängen und automatischer Rotation. Manifeste mit dem optionalen Feld `template: true` werden aus Marktplatzergebnissen und direkten Detailansichten ausgeschlossen.
+
+## Eindeutige Marktplatzmodule erzwingen
+
+Analytics und Nextcloud Whiteboard befinden sich nun in eigenen Repositorys und werden nicht mehr mitgeliefert. Die Marktplatzsuche akzeptiert jetzt das erste Repository für jede Modul-UUID, protokolliert und verwirft spätere Duplikate und aktualisiert Darstellungsmetadaten aus dem akzeptierten Repository, während der installierte Lebenszyklusstatus erhalten bleibt.

@@ -43,3 +43,7 @@ Analytics and Nextcloud Whiteboard are now self-contained external-module reposi
 ## Improve module screenshot browsing
 
 Module detail screenshots now stay within a bounded carousel with previous and next controls, faded adjacent previews, animated transitions, and automatic rotation. Manifests marked with the optional `template: true` field are excluded from marketplace results and direct detail views.
+
+## Enforce unique marketplace modules
+
+Analytics and Nextcloud Whiteboard have moved to their dedicated repositories and are no longer bundled. Marketplace discovery now accepts the first repository for each module UUID, logs and rejects later duplicates, and refreshes presentation metadata from the accepted repository while preserving installed lifecycle state.

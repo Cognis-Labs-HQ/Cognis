@@ -92,9 +92,11 @@ test("module installation accepts cached catalogs created before release discove
 
 test("module marketplace discovers repository manifests", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const warnings: Array<Record<string, unknown>> = [];
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
+        (_level, _message, meta) => warnings.push(meta),
     );
     const installedRoot = path.join(
         root,
@@ -112,13 +114,16 @@ test("module marketplace discovers repository manifests", async () => {
         }),
     );
     const originalFetch = globalThis.fetch;
+    let moduleName = "Notes";
+    let moduleDescription = "Shared notes.";
+    let assetBody = "<svg/>";
     globalThis.fetch = async (input) =>
         String(input).endsWith("/README.md")
             ? new Response("# Notes\nA useful module.")
             : /\/LICENSE(?:\.md|\.txt)?$/.test(String(input))
               ? new Response("", { status: 404 })
               : String(input).includes("/assets/")
-                ? new Response("<svg/>", {
+                ? new Response(assetBody, {
                       headers: { "content-type": "image/svg+xml" },
                   })
                 : String(input).includes("/tags?")
@@ -143,13 +148,19 @@ test("module marketplace discovers repository manifests", async () => {
                                     default_branch: "main",
                                     full_name: "acme/notes",
                                 },
+                                {
+                                    clone_url:
+                                        "https://github.com/acme/duplicate-notes.git",
+                                    default_branch: "main",
+                                    full_name: "acme/duplicate-notes",
+                                },
                             ]),
                         )
                       : new Response(
                             JSON.stringify({
                                 uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
                                 id: "notes",
-                                name: "Notes",
+                                name: moduleName,
                                 version: String(input).includes(
                                     "/preview/manifest.json",
                                 )
@@ -159,7 +170,7 @@ test("module marketplace discovers repository manifests", async () => {
                                 class: "extension",
                                 coreApiVersion: "v1",
                                 summary: "Notes",
-                                description: "Shared notes.",
+                                description: moduleDescription,
                                 categories: ["Productivity"],
                                 tags: ["notes"],
                                 recommended: true,
@@ -175,7 +186,16 @@ test("module marketplace discovers repository manifests", async () => {
                         );
     try {
         const modules = await service.discover();
+        assert.equal(modules.length, 1);
         assert.equal(modules[0].id, "notes");
+        assert.deepEqual(warnings, [
+            {
+                moduleUuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                acceptedCloneUrl: "https://github.com/acme/notes.git",
+                rejectedCloneUrl: "https://github.com/acme/duplicate-notes.git",
+                rejectedSourceUuid: "178271bf-5631-40df-82df-967f8a37a020",
+            },
+        ]);
         assert.equal(
             (modules[0] as (typeof modules)[0] & { recommended?: boolean })
                 .recommended,
@@ -204,6 +224,15 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(modules[0].installedBranch, "main");
         assert.equal(modules[0].installedCommit, "older123");
         assert.equal(modules[0].updateAvailable, false);
+
+        const originalIcon = modules[0].assetIds?.icon;
+        moduleName = "Collaborative Notes";
+        moduleDescription = "Updated shared notes.";
+        assetBody = '<svg id="updated"/>';
+        const refreshed = await service.discover();
+        assert.equal(refreshed[0].name, "Collaborative Notes");
+        assert.equal(refreshed[0].description, "Updated shared notes.");
+        assert.notEqual(refreshed[0].assetIds?.icon, originalIcon);
 
         globalThis.fetch = async () => {
             throw new Error("source unavailable");

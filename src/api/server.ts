@@ -138,6 +138,7 @@ export function buildServer(deps: ApiDependencies) {
             path.resolve(process.cwd(), "config", "module-sources.json"),
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
             path.resolve(process.cwd(), "external-modules"),
+        (level, message, meta) => log(level, message, meta),
     );
     if (deps.discoverModulesOnStartup) {
         void moduleMarketplaceService.discover().catch((error) => {

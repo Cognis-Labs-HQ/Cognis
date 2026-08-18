@@ -154,8 +154,8 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /ui\.reuse\.refresh/);
     assert.match(source, /async function loadKnownModules/);
     assert.match(source, /loadCachedModules\(\)/);
-    assert.match(source, /const catalogAssets = known\.assets/);
-    assert.match(source, /if \(catalogAssets\) known\.assets = catalogAssets/);
+    assert.match(source, /const catalogPresentation =/);
+    assert.match(source, /Object\.assign\(known, catalogPresentation\)/);
     assert.match(source, /async function discoverConfiguredSources/);
     assert.match(source, /loadModuleSources\(\)/);
     assert.match(
@@ -363,4 +363,16 @@ test("module marketplace omits template manifests", () => {
     );
     assert.match(source, /module\.template === true/);
     assert.match(source, /module\.template !== true/);
+});
+
+test("catalog presentation updates win over installed manifest metadata", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /const catalogPresentation =/);
+    assert.match(source, /name: known\.name/);
+    assert.match(source, /description: known\.description/);
+    assert.match(source, /assets: known\.assets/);
+    assert.match(source, /Object\.assign\(known, catalogPresentation\)/);
 });
