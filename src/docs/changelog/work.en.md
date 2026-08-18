@@ -67,3 +67,7 @@ Module source additions, updates, deletions, scans, and scan result counts are n
 ## Prevent module image flashes
 
 Module cards and detail media now remain hidden until each refreshed image has decoded enough to report valid dimensions. Fixed icon dimensions also reserve card space before loading, preventing raw or oversized module artwork from flashing during marketplace refreshes.
+
+## Retain modules through inconclusive scans
+
+Marketplace scans no longer treat an empty repository response, temporary missing manifest, invalid transient response, or source request failure as proof that a previously discovered module was deleted. Cached entries remain visible until their source is explicitly removed, and warning logs identify failed scans and retained module counts.

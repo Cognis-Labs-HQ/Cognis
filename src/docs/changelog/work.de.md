@@ -67,3 +67,7 @@ Hinzufügen, Aktualisieren, Löschen und Scannen von Modulquellen sowie die Anza
 ## Aufblitzen von Modulbildern verhindern
 
 Modulkarten und Detailmedien bleiben nun verborgen, bis jedes aktualisierte Bild gültige Abmessungen meldet. Feste Symbolabmessungen reservieren außerdem den Platz in der Karte vor dem Laden, sodass rohe oder übergroße Modulgrafiken bei Marktplatz-Aktualisierungen nicht mehr kurz aufblitzen.
+
+## Module bei uneindeutigen Scans behalten
+
+Marktplatz-Scans werten eine leere Repository-Antwort, ein vorübergehend fehlendes Manifest, eine vorübergehend ungültige Antwort oder einen fehlgeschlagenen Quellenabruf nicht mehr als Beweis für die Löschung eines zuvor gefundenen Moduls. Zwischengespeicherte Einträge bleiben bis zum ausdrücklichen Entfernen ihrer Quelle sichtbar; Warnprotokolle nennen fehlgeschlagene Scans und die Anzahl beibehaltener Module.

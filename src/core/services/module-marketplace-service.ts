@@ -248,8 +248,21 @@ export class ModuleMarketplaceService {
                         ? tokens[source.credentialId]
                         : undefined,
                 );
-            } catch {
+            } catch (error) {
                 modules = await this.readCachedCatalog([source.uuid]);
+                this.log(
+                    "warn",
+                    "Module source scan failed; cached results retained.",
+                    {
+                        sourceUuid: source.uuid,
+                        sourceName: source.name,
+                        modulesRetained: modules.length,
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
+                    },
+                );
             }
             const accepted = modules.filter((module) => {
                 const claim = claimedUuids.get(module.uuid);
@@ -461,7 +474,7 @@ export class ModuleMarketplaceService {
                             : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
                     const manifestResponse = await fetch(rawUrl, { headers });
                     if (manifestResponse.status === 404)
-                        return { cloneUrl, module: null, confirmed: true };
+                        return { cloneUrl, module: null };
                     if (!manifestResponse.ok) {
                         throw new Error(
                             `module_manifest_discovery_failed:${manifestResponse.status}`,
@@ -473,10 +486,10 @@ export class ModuleMarketplaceService {
                             await manifestResponse.text(),
                         );
                     } catch {
-                        return { cloneUrl, module: null, confirmed: true };
+                        return { cloneUrl, module: null };
                     }
                     if (manifest.class === "core") {
-                        return { cloneUrl, module: null, confirmed: true };
+                        return { cloneUrl, module: null };
                     }
                     const [discoveredBranches, discoveredReleases] =
                         await Promise.all([
@@ -571,7 +584,6 @@ export class ModuleMarketplaceService {
                     )?.version;
                     return {
                         cloneUrl,
-                        confirmed: true,
                         module: {
                             ...manifest,
                             license: hasLicenseFile
@@ -599,24 +611,28 @@ export class ModuleMarketplaceService {
                         } satisfies MarketplaceModule,
                     };
                 } catch {
-                    return { cloneUrl, module: null, confirmed: false };
+                    return { cloneUrl, module: null };
                 }
             }),
         );
         const cached = await this.readCachedCatalog([source.uuid]);
-        const uncertainCloneUrls = new Set(
-            candidates
-                .filter((candidate) => !candidate.confirmed)
-                .map((candidate) => candidate.cloneUrl),
+        const fresh = candidates.flatMap((candidate) =>
+            candidate.module ? [candidate.module] : [],
         );
-        return [
-            ...candidates.flatMap((candidate) =>
-                candidate.module ? [candidate.module] : [],
-            ),
-            ...cached.filter((module) =>
-                uncertainCloneUrls.has(module.cloneUrl),
-            ),
-        ];
+        const refreshedCloneUrls = new Set(
+            fresh.map((module) => module.cloneUrl),
+        );
+        const retained = cached.filter(
+            (module) => !refreshedCloneUrls.has(module.cloneUrl),
+        );
+        if (retained.length > 0) {
+            this.log("warn", "Module scan retained cached entries.", {
+                sourceUuid: source.uuid,
+                sourceName: source.name,
+                modulesRetained: retained.length,
+            });
+        }
+        return [...fresh, ...retained];
     }
 
     private async hasRootLicenseFile(

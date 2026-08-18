@@ -267,11 +267,11 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal((await service.discover())[0].installed, false);
 
         globalThis.fetch = async () => new Response("[]");
-        assert.deepEqual(await service.discover(), []);
+        assert.equal((await service.discover())[0].id, "notes");
         globalThis.fetch = async () => {
             throw new Error("source unavailable");
         };
-        assert.deepEqual(await service.discover(), []);
+        assert.equal((await service.discover())[0].id, "notes");
     } finally {
         globalThis.fetch = originalFetch;
     }
@@ -336,6 +336,33 @@ test("module marketplace serves persisted results after restart", async () => {
         path.join(root, "modules"),
     );
     assert.deepEqual(await restarted.listCachedModules(), [catalogModule]);
+});
+
+test("module marketplace keeps cached modules when a scan returns no repositories", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const statePath = path.join(root, "sources.json");
+    await writeFile(
+        `${statePath}.catalog`,
+        JSON.stringify([
+            {
+                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                id: "notes",
+                sourceUuid: "178271bf-5631-40df-82df-967f8a37a020",
+                cloneUrl: "https://github.com/acme/notes.git",
+            },
+        ]),
+    );
+    const service = new ModuleMarketplaceService(
+        statePath,
+        path.join(root, "modules"),
+    );
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async () => new Response("[]");
+    try {
+        assert.equal((await service.discover())[0].id, "notes");
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
 });
 
 test("module marketplace keeps cached repositories whose refresh is inconclusive", async () => {

@@ -67,3 +67,7 @@ Penambahan, pembaruan, penghapusan, pemindaian sumber modul, serta jumlah hasil 
 ## Cegah kilatan gambar modul
 
 Kartu modul dan media detail kini tetap tersembunyi sampai setiap gambar yang disegarkan melaporkan dimensi yang valid. Dimensi ikon yang tetap juga menyediakan ruang kartu sebelum pemuatan, sehingga gambar modul mentah atau terlalu besar tidak lagi berkedip saat marketplace disegarkan.
+
+## Pertahankan modul saat pemindaian tidak meyakinkan
+
+Pemindaian marketplace tidak lagi menganggap respons repositori kosong, manifes yang sementara hilang, respons sementara yang tidak valid, atau kegagalan permintaan sumber sebagai bukti bahwa modul yang sebelumnya ditemukan telah dihapus. Entri cache tetap terlihat sampai sumbernya dihapus secara eksplisit, dan log peringatan menunjukkan pemindaian yang gagal serta jumlah modul yang dipertahankan.
