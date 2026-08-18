@@ -157,6 +157,7 @@ src/modules/my-module/
   api/
     index.ts
   ui/
+  media/
   cli/
     index.js
   db/
@@ -180,5 +181,6 @@ Optional sibling directories when relevant:
 - `db/` (schema bootstrap or migrations)
 - `tests/` (module-local automated coverage)
 - `content/` (module-owned static content bundles)
+- `media/` (optional root-level images or videos shown as a horizontal gallery in the marketplace detail view; supported formats are SVG, PNG, JPEG, WebP, GIF, MP4, WebM, and Ogg video)
 
 Support directories may sit beside `docs/`, `api/`, and `ui/`, but they must not replace those stable names with custom alternatives.

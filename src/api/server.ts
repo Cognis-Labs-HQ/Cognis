@@ -99,6 +99,7 @@ export interface ApiDependencies {
             labels?: Record<string, string>,
         ): void;
     };
+    discoverModulesOnStartup?: boolean;
 }
 
 /**
@@ -138,6 +139,14 @@ export function buildServer(deps: ApiDependencies) {
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
             path.resolve(process.cwd(), "external-modules"),
     );
+    if (deps.discoverModulesOnStartup) {
+        void moduleMarketplaceService.discover().catch((error) => {
+            log("warn", "Initial module marketplace discovery failed.", {
+                component: "api-modules",
+                error: error instanceof Error ? error.message : String(error),
+            });
+        });
+    }
     const moduleTestService = new ModuleTestService([
         process.env.COGNIS_MODULES_ROOT ??
             path.resolve(process.cwd(), "src", "modules"),

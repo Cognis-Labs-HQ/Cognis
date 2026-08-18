@@ -190,16 +190,16 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(modules[0].license, undefined);
         assert.equal(modules[0].defaultBranch, "main");
         assert.deepEqual(modules[0].branches, [
-            { name: "main", commit: "abc123" },
-            { name: "preview", commit: "def456" },
+            { name: "main", commit: "abc123", version: "1.0.0" },
+            { name: "preview", commit: "def456", version: undefined },
         ]);
         assert.deepEqual(modules[0].releases, [
-            { name: "v1.0.0", commit: "tag123" },
+            { name: "v1.0.0", commit: "tag123", version: "1.0.0" },
         ]);
         assert.equal(modules[0].installed, true);
         assert.equal(modules[0].installedBranch, "main");
         assert.equal(modules[0].installedCommit, "older123");
-        assert.equal(modules[0].updateAvailable, true);
+        assert.equal(modules[0].updateAvailable, false);
 
         globalThis.fetch = async () => {
             throw new Error("source unavailable");

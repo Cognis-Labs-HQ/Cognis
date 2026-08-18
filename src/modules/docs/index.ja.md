@@ -157,6 +157,7 @@ src/modules/my-module/
   api/
     index.ts
   ui/
+  media/
   cli/
     index.js
   db/
@@ -180,5 +181,6 @@ src/modules/my-module/
 - `db/`（スキーマ初期化またはマイグレーション）
 - `tests/`（モジュールローカルの自動テスト）
 - `content/`（モジュール所有の静的コンテンツ束）
+- `media/`（マーケットプレイス詳細画面の横スクロールギャラリーに表示する、リポジトリ直下の任意の画像または動画。SVG、PNG、JPEG、WebP、GIF、MP4、WebM、Ogg 動画に対応）
 
 補助ディレクトリは `docs/`、`api/`、`ui/` の横に置けますが、これらの安定した名前を独自の代替名で置き換えてはいけません。

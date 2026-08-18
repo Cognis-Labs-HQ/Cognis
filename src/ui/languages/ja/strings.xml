@@ -691,7 +691,15 @@
   <string name="ui.app.modules.available">利用可能</string>
   <string name="ui.app.modules.categories">カテゴリー</string>
   <string name="ui.app.modules.branch">ブランチ</string>
-  <string name="ui.app.modules.install_version">インストール版</string>
+  <string name="ui.app.modules.release_channel">リリースチャンネル</string>
+  <string name="ui.app.modules.advanced_options">詳細オプション</string>
+  <string name="ui.app.modules.force_update">強制更新</string>
+  <string name="ui.app.modules.upgrade">アップグレード</string>
+  <string name="ui.app.modules.downgrade">ダウングレード</string>
+  <string name="ui.app.modules.downgrade_title">ダウングレードの確認</string>
+  <string name="ui.app.modules.downgrade_warning">古いリリースをインストールすると、機能やデータ互換性が失われる可能性があります。続行しますか？</string>
+  <string name="ui.app.modules.media">メディア</string>
+  <string name="ui.app.modules.force-update_complete">強制更新が完了しました</string>
   <string name="ui.app.modules.branches">ブランチ</string>
   <string name="ui.app.modules.releases">リリース</string>
   <string name="ui.app.modules.default_branch">既定</string>

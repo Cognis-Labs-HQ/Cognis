@@ -99,3 +99,11 @@ Operasi instalasi, aktivasi, penonaktifan, pembaruan, dan penghapusan yang seles
 ## Pertahankan sinkronisasi tindakan modul
 
 Kemajuan siklus hidup modul kini disimpan berdasarkan UUID modul, bukan hanya pada elemen DOM yang diklik, sehingga kontrol nonaktif dan indikator proses tetap ada saat berpindah antara kartu dan detail. Operasi yang berhasil langsung menampilkan kontrol valid berikutnya. Pemilih rilis tidak lagi memakai kelas mode terang yang bertentangan, dan instalasi gagal kini menampilkan kesalahan server secara tepat sekaligus mencatat log server dan browser terstruktur.
+
+## Membuat pemasangan marketplace tangguh dan sadar rilis
+
+Pemasangan modul kini berjalan sebagai tugas latar belakang yang dipantau sehingga reverse proxy tidak mengubah klon yang berhasil menjadi galat 504. Cognis menyegarkan sumber saat server dimulai, membandingkan versi manifes, mendukung perpindahan kanal rilis, meminta konfirmasi penurunan versi, dan menyediakan pembaruan paksa tingkat lanjut.
+
+## Menambahkan galeri media dan kontrol yang aman untuk tema
+
+Repositori modul dapat menyediakan direktori `media/` di akar berisi gambar dan video yang didukung. Tampilan detail menampilkannya sebagai galeri horizontal, sementara pemilih kanal rilis native memakai warna tema eksplisit tanpa kelas select yang bertentangan.

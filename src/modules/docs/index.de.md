@@ -157,6 +157,7 @@ src/modules/my-module/
   api/
     index.ts
   ui/
+  media/
   cli/
     index.js
   db/
@@ -180,5 +181,6 @@ Optionale Geschwisterverzeichnisse bei Bedarf:
 - `db/` (Schema-Bootstrap oder Migrationen)
 - `tests/` (modullokale automatisierte Abdeckung)
 - `content/` (moduleigene statische Inhaltsbündel)
+- `media/` (optionale Bilder oder Videos im Repository-Stamm für die horizontale Mediengalerie der Marketplace-Detailansicht; unterstützt werden SVG, PNG, JPEG, WebP, GIF, MP4, WebM und Ogg-Video)
 
 Unterstützende Verzeichnisse dürfen neben `docs/`, `api/` und `ui/` liegen, dürfen diese stabilen Namen aber nicht durch benutzerdefinierte Alternativen ersetzen.

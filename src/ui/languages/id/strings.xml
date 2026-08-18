@@ -691,7 +691,15 @@
   <string name="ui.app.modules.available">Tersedia</string>
   <string name="ui.app.modules.categories">Kategori</string>
   <string name="ui.app.modules.branch">Cabang</string>
-  <string name="ui.app.modules.install_version">Versi instalasi</string>
+  <string name="ui.app.modules.release_channel">Kanal rilis</string>
+  <string name="ui.app.modules.advanced_options">Opsi lanjutan</string>
+  <string name="ui.app.modules.force_update">Paksa pembaruan</string>
+  <string name="ui.app.modules.upgrade">Tingkatkan</string>
+  <string name="ui.app.modules.downgrade">Turunkan versi</string>
+  <string name="ui.app.modules.downgrade_title">Konfirmasi penurunan versi</string>
+  <string name="ui.app.modules.downgrade_warning">Memasang rilis lama dapat menghapus fitur atau kompatibilitas data. Lanjutkan?</string>
+  <string name="ui.app.modules.media">Media</string>
+  <string name="ui.app.modules.force-update_complete">Pembaruan paksa selesai</string>
   <string name="ui.app.modules.branches">Cabang</string>
   <string name="ui.app.modules.releases">Rilis</string>
   <string name="ui.app.modules.default_branch">bawaan</string>

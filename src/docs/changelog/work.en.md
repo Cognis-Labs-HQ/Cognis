@@ -99,3 +99,11 @@ Completed install, enable, disable, update, and uninstall operations now update 
 ## Keep module actions synchronized
 
 Module lifecycle progress is now stored by module UUID rather than only on the clicked DOM node, preserving disabled controls and the spinner while moving between cards and details. Successful operations immediately switch to the next valid controls. The release selector no longer applies the conflicting light-mode class, and failed installs now return and display the precise server error while recording structured server and browser logs.
+
+## Make marketplace installation resilient and release-aware
+
+Module installs now run as polled background jobs so reverse proxies cannot turn a healthy clone into a 504. Cognis refreshes configured sources at server startup, compares manifest versions rather than code-only commit changes, supports switching release channels, confirms downgrades, and offers a force-update advanced action.
+
+## Add marketplace media galleries and theme-safe controls
+
+A module repository may provide a root `media/` directory of supported images and videos. The detail view renders those assets in a horizontal gallery, and its native release-channel selector now supplies explicit theme colors without conflicting select classes.

@@ -63,7 +63,20 @@ function renderLifecycleButton(module, action, consequence) {
     const pendingAction = pendingModuleActions.get(module.uuid);
     const isPending = pendingAction === action;
     const isBlocked = Boolean(pendingAction);
-    return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(`ui.reuse.${action}`))}</button>`;
+    const channel = [
+        ...(module.branches ?? []),
+        ...(module.releases ?? []),
+    ].find((entry) => entry.name === selectedBranch(module));
+    const updateDirection =
+        action === "update" && channel?.version
+            ? compareVersions(
+                  channel.version,
+                  module.installedVersion ?? module.version,
+              ) < 0
+                ? "downgrade"
+                : "upgrade"
+            : action;
+    return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(`ui.${["upgrade", "downgrade"].includes(updateDirection) ? "app.modules" : "reuse"}.${updateDirection}`))}</button>`;
 }
 
 function selectedBranch(module) {
@@ -71,12 +84,30 @@ function selectedBranch(module) {
 }
 
 function hasModuleUpdate(module) {
-    if (!module.installedCommit) return false;
+    if (!module.installedVersion && !module.version) return false;
     const branch = [
         ...(module.branches ?? []),
         ...(module.releases ?? []),
     ].find((entry) => entry.name === selectedBranch(module));
-    return Boolean(branch?.commit && branch.commit !== module.installedCommit);
+    return Boolean(
+        branch?.version &&
+        branch.version !== (module.installedVersion ?? module.version),
+    );
+}
+
+function compareVersions(left, right) {
+    const parts = (value) =>
+        String(value ?? "")
+            .replace(/^v/, "")
+            .split(/[.-]/)
+            .map((part) => (/^\d+$/.test(part) ? Number(part) : part));
+    const a = parts(left);
+    const b = parts(right);
+    for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
+        if ((a[index] ?? 0) === (b[index] ?? 0)) continue;
+        return (a[index] ?? 0) > (b[index] ?? 0) ? 1 : -1;
+    }
+    return 0;
 }
 
 function renderModuleDetails(module) {
@@ -87,17 +118,30 @@ function renderModuleDetails(module) {
                 `<img class="module-detail-screenshot" src="${escapeHtml(resolveModuleAssetUrl(url))}" alt="" loading="lazy">`,
         )
         .join("");
+    const media = (module.assets?.media ?? [])
+        .map((entry) => {
+            const url = escapeHtml(resolveModuleAssetUrl(entry.url));
+            return entry.contentType?.startsWith("video/")
+                ? `<video class="module-detail-media-item" controls preload="metadata"><source src="${url}" type="${escapeHtml(entry.contentType)}"></video>`
+                : `<img class="module-detail-media-item" src="${url}" alt="" loading="lazy">`;
+        })
+        .join("");
     const metadata = [...(module.categories ?? []), ...(module.tags ?? [])]
         .filter(Boolean)
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
     const branchSelector = module.branches?.length
-        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.install_version"))}</span><select data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
+        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}</span><select data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
         : "";
     const license = module.license
         ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
         : "";
-    return `<article class="module-detail"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong>${module.version ? ` · ${escapeHtml(module.version)}` : ""}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    const forcePending =
+        pendingModuleActions.get(module.uuid) === "force-update";
+    const advanced = module.installed
+        ? `<details class="module-detail-advanced"><summary aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}">☰</summary><button type="button" class="btn-confirm${forcePending ? " button-loading" : ""}" data-module-force-update="${escapeHtml(module.uuid)}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}${forcePending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.app.modules.force_update"))}</button></details>`
+        : "";
+    return `<article class="module-detail"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong>${module.version ? ` · ${escapeHtml(module.version)}` : ""}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}${advanced}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -326,7 +370,38 @@ async function runLifecycleAction(module, action) {
         refreshMarketplace();
         return;
     }
-    if (action === "install" || action === "update") {
+    if (["install", "update", "force-update"].includes(action)) {
+        const channel = [
+            ...(module.branches ?? []),
+            ...(module.releases ?? []),
+        ].find((entry) => entry.name === selectedBranch(module));
+        if (
+            module.installed &&
+            channel?.version &&
+            compareVersions(
+                channel.version,
+                module.installedVersion ?? module.version,
+            ) < 0
+        ) {
+            const result = await openPopup({
+                title: i18n.t("ui.app.modules.downgrade_title"),
+                body: escapeHtml(i18n.t("ui.app.modules.downgrade_warning")),
+                variant: "warning",
+                actions: [
+                    {
+                        id: "confirm",
+                        label: i18n.t("ui.app.modules.downgrade"),
+                        variant: "cancel",
+                    },
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "neutral",
+                    },
+                ],
+            });
+            if (result !== "confirm") return;
+        }
         const source = sources.find(
             (entry) => entry.uuid === module.sourceUuid,
         );
@@ -345,6 +420,7 @@ async function runLifecycleAction(module, action) {
             ...(module.branches ?? []),
             ...(module.releases ?? []),
         ].find((entry) => entry.name === branch)?.commit;
+        module.installedVersion = channel?.version ?? module.version;
         module.updateAvailable = false;
     }
     if (action === "enable" || action === "disable") {
@@ -504,14 +580,13 @@ function bindInteractions(root, signal) {
             const action = [
                 "install",
                 "update",
+                "force-update",
                 "enable",
                 "disable",
                 "uninstall",
             ].find((name) => target.hasAttribute(`data-module-${name}`));
             const moduleUuid = action
-                ? target.dataset[
-                      `module${action[0].toUpperCase()}${action.slice(1)}`
-                  ]
+                ? target.getAttribute(`data-module-${action}`)
                 : target.dataset.moduleUuid;
             const module = modules.find((entry) => entry.uuid === moduleUuid);
             if (action && module) {

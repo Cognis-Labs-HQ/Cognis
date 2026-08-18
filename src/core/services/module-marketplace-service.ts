@@ -36,16 +36,18 @@ export interface MarketplaceModule extends ModuleManifest {
     cloneUrl: string;
     sourceUuid: string;
     installed: boolean;
-    branches: Array<{ name: string; commit: string }>;
-    releases: Array<{ name: string; commit: string }>;
+    branches: Array<{ name: string; commit: string; version?: string }>;
+    releases: Array<{ name: string; commit: string; version?: string }>;
     defaultBranch: string;
     installedBranch?: string;
     installedCommit?: string;
+    installedVersion?: string;
     updateAvailable: boolean;
     assetIds?: {
         icon?: string;
         banner?: string;
         screenshots?: string[];
+        media?: Array<{ id: string; contentType: string }>;
     };
     readme?: string;
 }
@@ -382,9 +384,30 @@ export class ModuleMarketplaceService {
                     } catch {
                         return { cloneUrl, module: null, confirmed: true };
                     }
+                    if (manifest.class === "core") {
+                        return { cloneUrl, module: null, confirmed: true };
+                    }
+                    const [discoveredBranches, discoveredReleases] =
+                        await Promise.all([
+                            this.discoverBranches(source, projectPath, headers),
+                            this.discoverReleases(source, projectPath, headers),
+                        ]);
                     const [branches, releases] = await Promise.all([
-                        this.discoverBranches(source, projectPath, headers),
-                        this.discoverReleases(source, projectPath, headers),
+                        Promise.resolve(
+                            discoveredBranches.map((branch) => ({
+                                ...branch,
+                                version:
+                                    branch.name === defaultBranch
+                                        ? manifest.version
+                                        : undefined,
+                            })),
+                        ),
+                        this.attachVersions(
+                            source,
+                            projectPath,
+                            discoveredReleases,
+                            headers,
+                        ),
                     ]);
                     const readmeResponse = await fetch(
                         this.resolveRepositoryAssetUrl(
@@ -401,30 +424,38 @@ export class ModuleMarketplaceService {
                         defaultBranch,
                         headers,
                     );
-                    const assetIds = manifest.assets
-                        ? {
-                              icon: manifest.assets.icon
-                                  ? await this.cacheRepositoryAsset(
-                                        source,
-                                        projectPath,
-                                        defaultBranch,
-                                        manifest.assets.icon,
-                                        headers,
-                                    )
-                                  : undefined,
-                              banner: manifest.assets.banner
-                                  ? await this.cacheRepositoryAsset(
-                                        source,
-                                        projectPath,
-                                        defaultBranch,
-                                        manifest.assets.banner,
-                                        headers,
-                                    )
-                                  : undefined,
-                              screenshots: (
-                                  await Promise.all(
-                                      (manifest.assets.screenshots ?? []).map(
-                                          (assetPath) =>
+                    const media = await this.discoverRepositoryMedia(
+                        source,
+                        projectPath,
+                        defaultBranch,
+                        headers,
+                    );
+                    const assetIds =
+                        manifest.assets || media.length
+                            ? {
+                                  icon: manifest.assets.icon
+                                      ? await this.cacheRepositoryAsset(
+                                            source,
+                                            projectPath,
+                                            defaultBranch,
+                                            manifest.assets.icon,
+                                            headers,
+                                        )
+                                      : undefined,
+                                  banner: manifest.assets.banner
+                                      ? await this.cacheRepositoryAsset(
+                                            source,
+                                            projectPath,
+                                            defaultBranch,
+                                            manifest.assets.banner,
+                                            headers,
+                                        )
+                                      : undefined,
+                                  screenshots: (
+                                      await Promise.all(
+                                          (
+                                              manifest.assets.screenshots ?? []
+                                          ).map((assetPath) =>
                                               this.cacheRepositoryAsset(
                                                   source,
                                                   projectPath,
@@ -432,20 +463,24 @@ export class ModuleMarketplaceService {
                                                   assetPath,
                                                   headers,
                                               ),
-                                      ),
-                                  )
-                              ).filter(
-                                  (assetId): assetId is string =>
-                                      typeof assetId === "string",
-                              ),
-                          }
-                        : undefined;
+                                          ),
+                                      )
+                                  ).filter(
+                                      (assetId): assetId is string =>
+                                          typeof assetId === "string",
+                                  ),
+                                  media,
+                              }
+                            : undefined;
                     const provenance = await this.readInstallProvenance(
                         manifest.uuid,
                     );
-                    const defaultCommit = branches.find(
+                    const installedVersion = await this.readInstalledVersion(
+                        manifest.uuid,
+                    );
+                    const defaultVersion = branches.find(
                         (branch) => branch.name === defaultBranch,
-                    )?.commit;
+                    )?.version;
                     return {
                         cloneUrl,
                         confirmed: true,
@@ -463,10 +498,12 @@ export class ModuleMarketplaceService {
                             defaultBranch,
                             installedBranch: provenance?.branch,
                             installedCommit: provenance?.commit,
+                            installedVersion,
                             updateAvailable: Boolean(
                                 provenance &&
-                                defaultCommit &&
-                                provenance.commit !== defaultCommit,
+                                installedVersion &&
+                                defaultVersion &&
+                                installedVersion !== defaultVersion,
                             ),
                             readme: readmeResponse.ok
                                 ? await readmeResponse.text()
@@ -633,6 +670,10 @@ export class ModuleMarketplaceService {
                 "image/png",
                 "image/jpeg",
                 "image/webp",
+                "image/gif",
+                "video/mp4",
+                "video/webm",
+                "video/ogg",
             ].includes(contentType)
         ) {
             return undefined;
@@ -641,6 +682,54 @@ export class ModuleMarketplaceService {
         const id = createHash("sha256").update(assetUrl).digest("hex");
         this.assets.set(id, { body, contentType });
         return id;
+    }
+
+    private async discoverRepositoryMedia(
+        source: ModuleSource,
+        projectPath: string,
+        defaultBranch: string,
+        headers: Record<string, string>,
+    ): Promise<Array<{ id: string; contentType: string }>> {
+        const endpoint =
+            source.provider === "github"
+                ? `${source.baseUrl}/repos/${projectPath}/contents/media?ref=${encodeURIComponent(defaultBranch)}`
+                : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/tree?path=media&ref=${encodeURIComponent(defaultBranch)}&per_page=100`;
+        const response = await fetch(endpoint, { headers }).catch(
+            () => undefined,
+        );
+        if (!response?.ok) return [];
+        const payload = await response.json();
+        if (!Array.isArray(payload)) return [];
+        const entries = payload as Array<Record<string, unknown>>;
+        const cached = await Promise.all(
+            entries
+                .filter((entry) =>
+                    source.provider === "github"
+                        ? entry.type === "file"
+                        : entry.type === "blob",
+                )
+                .map(async (entry) => {
+                    const mediaPath = String(
+                        entry.path ?? `media/${String(entry.name ?? "")}`,
+                    );
+                    const id = await this.cacheRepositoryAsset(
+                        source,
+                        projectPath,
+                        defaultBranch,
+                        mediaPath,
+                        headers,
+                    );
+                    if (!id) return undefined;
+                    return {
+                        id,
+                        contentType: this.assets.get(id)!.contentType,
+                    };
+                }),
+        );
+        return cached.filter(
+            (entry): entry is { id: string; contentType: string } =>
+                entry !== undefined,
+        );
     }
 
     private async discoverBranches(
@@ -664,6 +753,53 @@ export class ModuleMarketplaceService {
                 ),
             }))
             .filter((branch) => branch.name && branch.commit);
+    }
+
+    private async attachVersions<T extends { name: string; commit: string }>(
+        source: ModuleSource,
+        projectPath: string,
+        refs: T[],
+        headers: Record<string, string>,
+    ): Promise<Array<T & { version?: string }>> {
+        return Promise.all(
+            refs.map(async (ref) => {
+                const response = await fetch(
+                    this.resolveRepositoryAssetUrl(
+                        source,
+                        projectPath,
+                        ref.name,
+                        "manifest.json",
+                    ),
+                    { headers },
+                ).catch(() => undefined);
+                if (!response?.ok) return ref;
+                try {
+                    return {
+                        ...ref,
+                        version: this.parseManifest(await response.text())
+                            .version,
+                    };
+                } catch {
+                    return ref;
+                }
+            }),
+        );
+    }
+
+    private async readInstalledVersion(
+        moduleUuid: string,
+    ): Promise<string | undefined> {
+        try {
+            const manifest = this.parseManifest(
+                await readFile(
+                    path.join(this.installRoot, moduleUuid, "manifest.json"),
+                    "utf8",
+                ),
+            );
+            return manifest.version;
+        } catch {
+            return undefined;
+        }
     }
 
     private async discoverReleases(

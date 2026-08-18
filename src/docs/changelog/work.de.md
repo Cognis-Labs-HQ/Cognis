@@ -99,3 +99,11 @@ Abgeschlossene Installations-, Aktivierungs-, Deaktivierungs-, Aktualisierungs- 
 ## Modulaktionen synchron halten
 
 Der Fortschritt von Modulaktionen wird nun anhand der Modul-UUID statt nur am angeklickten DOM-Element gespeichert. Deaktivierte Steuerelemente und der Ladeindikator bleiben dadurch beim Wechsel zwischen Karten- und Detailansicht erhalten. Erfolgreiche Vorgänge zeigen sofort die nächsten gültigen Steuerelemente. Die Release-Auswahl verwendet die kollidierende Hellmodus-Klasse nicht mehr. Fehlgeschlagene Installationen zeigen den genauen Serverfehler an und erzeugen strukturierte Server- und Browserprotokolle.
+
+## Marketplace-Installationen robust und releasebewusst machen
+
+Modulinstallationen laufen nun als abgefragte Hintergrundaufträge, damit Reverse-Proxys einen erfolgreichen Klon nicht mehr in einen 504-Fehler verwandeln. Cognis aktualisiert konfigurierte Quellen beim Serverstart, vergleicht Manifestversionen statt reiner Commitänderungen, unterstützt den Wechsel des Veröffentlichungskanals, bestätigt Herabstufungen und bietet eine erweiterte erzwungene Aktualisierung.
+
+## Mediengalerien und designsichere Steuerelemente hinzufügen
+
+Ein Modul-Repository kann im Stammverzeichnis `media/` unterstützte Bilder und Videos bereitstellen. Die Detailansicht zeigt sie in einer horizontalen Galerie; der native Veröffentlichungskanal-Selektor verwendet explizite Designfarben ohne widersprüchliche Select-Klassen.

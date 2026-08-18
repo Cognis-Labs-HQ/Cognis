@@ -369,7 +369,7 @@ test("module marketplace install forwards the selected branch", async () => {
         } as any,
         new URL("http://localhost/api/v1/modules/install"),
     );
-    assert.equal(status, 200);
+    assert.equal(status, 202);
     assert.equal(installedBranch, "preview");
 });
 
@@ -413,6 +413,24 @@ test("module marketplace reports and logs installation failures", async () => {
             },
         } as any,
         new URL("http://localhost/api/v1/modules/install"),
+    );
+    assert.equal(status, 202);
+    const jobId = JSON.parse(responseBody).data.jobId;
+    await new Promise((resolve) => setImmediate(resolve));
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL(`http://localhost/api/v1/modules/install/${jobId}`),
     );
     assert.equal(status, 422);
     assert.match(responseBody, /manifest checksum mismatch/);

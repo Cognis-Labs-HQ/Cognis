@@ -691,7 +691,15 @@
   <string name="ui.app.modules.available">Available</string>
   <string name="ui.app.modules.categories">Categories</string>
   <string name="ui.app.modules.branch">Branch</string>
-  <string name="ui.app.modules.install_version">Install version</string>
+  <string name="ui.app.modules.release_channel">Release channel</string>
+  <string name="ui.app.modules.advanced_options">Advanced options</string>
+  <string name="ui.app.modules.force_update">Force update</string>
+  <string name="ui.app.modules.upgrade">Upgrade</string>
+  <string name="ui.app.modules.downgrade">Downgrade</string>
+  <string name="ui.app.modules.downgrade_title">Confirm downgrade</string>
+  <string name="ui.app.modules.downgrade_warning">Installing an older release can remove features or data compatibility. Continue?</string>
+  <string name="ui.app.modules.media">Media</string>
+  <string name="ui.app.modules.force-update_complete">Force update complete</string>
   <string name="ui.app.modules.branches">Branches</string>
   <string name="ui.app.modules.releases">Releases</string>
   <string name="ui.app.modules.default_branch">default</string>

@@ -1,6 +1,7 @@
 import { apiFetch } from "../../reuse/api-client.js";
 
 const MODULE_INSTALL_TIMEOUT_MS = 2 * 60 * 1000;
+const MODULE_INSTALL_POLL_MS = 500;
 
 async function data(response) {
     if (!response.ok) {
@@ -72,7 +73,7 @@ export async function loadCachedModules() {
 }
 
 export async function installModule(module, token, branch) {
-    return data(
+    const job = await data(
         await apiFetch("/api/v1/modules/install", {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -81,6 +82,19 @@ export async function installModule(module, token, branch) {
             suppressConnectionRecoveryToast: true,
         }),
     );
+    const deadline = Date.now() + MODULE_INSTALL_TIMEOUT_MS;
+    while (Date.now() < deadline) {
+        await new Promise((resolve) =>
+            setTimeout(resolve, MODULE_INSTALL_POLL_MS),
+        );
+        const response = await apiFetch(
+            `/api/v1/modules/install/${encodeURIComponent(job.jobId)}`,
+            { suppressConnectionRecoveryToast: true },
+        );
+        const result = await data(response);
+        if (result.status === "succeeded") return result.data;
+    }
+    throw new Error("Module installation did not complete within two minutes.");
 }
 
 export async function setModuleEnabled(moduleId, enabled) {

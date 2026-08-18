@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { randomUUID } from "node:crypto";
 import type {
     BootstrapLog,
     ModuleMarketplaceService,
@@ -31,9 +32,22 @@ export interface ModuleRouteHooks {
 
 function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
     module: T,
-): T & { assets?: { icon?: string; banner?: string; screenshots?: string[] } } {
+): T & {
+    assets?: {
+        icon?: string;
+        banner?: string;
+        screenshots?: string[];
+        media?: Array<{ url: string; contentType: string }>;
+    };
+} {
     const assetIds = module.assetIds as
-        { icon?: string; banner?: string; screenshots?: string[] } | undefined;
+        | {
+              icon?: string;
+              banner?: string;
+              screenshots?: string[];
+              media?: Array<{ id: string; contentType: string }>;
+          }
+        | undefined;
     const assetUrl = (id: string) =>
         `/api/v1/modules/catalog/assets/${encodeURIComponent(id)}`;
     return {
@@ -45,6 +59,10 @@ function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
                       ? assetUrl(assetIds.banner)
                       : undefined,
                   screenshots: (assetIds.screenshots ?? []).map(assetUrl),
+                  media: (assetIds.media ?? []).map((entry) => ({
+                      url: assetUrl(entry.id),
+                      contentType: entry.contentType,
+                  })),
               }
             : undefined,
     };
@@ -57,6 +75,12 @@ export function createModuleRoutes(
     marketplace?: ModuleMarketplaceService,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const installJobs = new Map<
+        string,
+        | { status: "pending" }
+        | { status: "succeeded"; data: unknown }
+        | { status: "failed"; message: string }
+    >();
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -151,6 +175,44 @@ export function createModuleRoutes(
             res.end(asset.body);
             return true;
         }
+        const installJobMatch = url.pathname.match(
+            /^\/api\/v1\/modules\/install\/([a-f0-9-]+)$/,
+        );
+        if (marketplace && installJobMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const job = installJobs.get(installJobMatch[1]);
+            if (!job) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_install_job_not_found",
+                            message: "Module installation job not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (job.status === "failed") {
+                installJobs.delete(installJobMatch[1]);
+                res.writeHead(422, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_install_failed",
+                            message: job.message,
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (job.status === "succeeded")
+                installJobs.delete(installJobMatch[1]);
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: job }));
+            return true;
+        }
         if (
             marketplace &&
             url.pathname === "/api/v1/modules/catalog" &&
@@ -213,40 +275,44 @@ export function createModuleRoutes(
                 );
                 return true;
             }
-            try {
-                const manifest = await marketplace.install(
+            const jobId = randomUUID();
+            installJobs.set(jobId, { status: "pending" });
+            void marketplace
+                .install(
                     requestedModule as never,
                     typeof body.token === "string" ? body.token : undefined,
                     typeof body.branch === "string" ? body.branch : undefined,
-                );
-                await hooks?.onImported?.(manifest.id);
-                hooks?.log?.("info", "External module installed.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    moduleId: manifest.id,
-                    moduleUuid: manifest.uuid,
-                });
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: manifest }));
-            } catch (error) {
-                const message =
-                    error instanceof Error ? error.message : String(error);
-                hooks?.log?.("error", "External module installation failed.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    moduleUuid: requestedModule.uuid,
-                    error: message,
-                });
-                res.writeHead(422, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "module_install_failed",
-                            message,
+                )
+                .then(async (manifest) => {
+                    await hooks?.onImported?.(manifest.id);
+                    installJobs.set(jobId, {
+                        status: "succeeded",
+                        data: manifest,
+                    });
+                    hooks?.log?.("info", "External module installed.", {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        moduleId: manifest.id,
+                        moduleUuid: manifest.uuid,
+                    });
+                })
+                .catch((error) => {
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    installJobs.set(jobId, { status: "failed", message });
+                    hooks?.log?.(
+                        "error",
+                        "External module installation failed.",
+                        {
+                            ...logMeta,
+                            accountId: claims.sub,
+                            moduleUuid: requestedModule.uuid,
+                            error: message,
                         },
-                    }),
-                );
-            }
+                    );
+                });
+            res.writeHead(202, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: { jobId, status: "pending" } }));
             return true;
         }
         const uninstallMatch = url.pathname.match(

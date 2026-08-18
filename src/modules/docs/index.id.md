@@ -157,6 +157,7 @@ src/modules/my-module/
   api/
     index.ts
   ui/
+  media/
   cli/
     index.js
   db/
@@ -180,5 +181,6 @@ Direktori saudara opsional jika relevan:
 - `db/` (bootstrap skema atau migrasi)
 - `tests/` (cakupan otomatis lokal modul)
 - `content/` (bundel konten statis milik modul)
+- `media/` (gambar atau video opsional di akar repositori untuk galeri horizontal pada tampilan detail marketplace; format yang didukung: SVG, PNG, JPEG, WebP, GIF, MP4, WebM, dan video Ogg)
 
 Direktori pendukung boleh berada di samping `docs/`, `api/`, dan `ui/`, tetapi tidak boleh mengganti nama stabil tersebut dengan alternatif khusus.
