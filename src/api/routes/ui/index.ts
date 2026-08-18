@@ -1,10 +1,11 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, stat } from "node:fs/promises";
 import path from "node:path";
 import {
     isRoleAllowed,
     type BootstrapLog,
     type LocalAccountStore,
+    type ModuleManifest,
     type ModuleRuntimeGateway,
     type GatewayRegistry,
 } from "@cognis/core";
@@ -38,9 +39,25 @@ const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
 const MODULES_ROOT =
     process.env.COGNIS_MODULES_ROOT ??
     path.resolve(process.cwd(), "src", "modules");
+const EXTERNAL_MODULES_ROOT =
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+    path.resolve(process.cwd(), "external-modules");
 const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
+
+async function resolveModuleRoot(
+    manifest: Pick<ModuleManifest, "id" | "uuid">,
+): Promise<string> {
+    const externalRoot = path.resolve(EXTERNAL_MODULES_ROOT, manifest.uuid);
+    try {
+        const entry = await stat(externalRoot);
+        if (entry.isDirectory()) return externalRoot;
+    } catch {
+        // Missing external-directory fallback: use the bundled path below.
+    }
+    return path.resolve(MODULES_ROOT, manifest.id);
+}
 function versionAssetUrl(assetUrl: string): string {
     if (assetUrl.startsWith("/assets/")) return assetUrl;
     if (!assetUrl.startsWith("/static/") && !assetUrl.startsWith("/assets/")) {
@@ -585,11 +602,8 @@ export function createUiRoutes(
                     continue;
 
                 try {
-                    const routeFile = path.resolve(
-                        MODULES_ROOT,
-                        manifest.id,
-                        "routes.json",
-                    );
+                    const moduleRoot = await resolveModuleRoot(manifest);
+                    const routeFile = path.resolve(moduleRoot, "routes.json");
                     const routes = parseModuleUiRoutes(
                         await readFile(routeFile, "utf8"),
                     );
@@ -624,8 +638,7 @@ export function createUiRoutes(
                         return sendRedirect(res, "/dashboard");
                     }
                     const uiFile = path.resolve(
-                        MODULES_ROOT,
-                        manifest.id,
+                        moduleRoot,
                         manifest.entrypoints.ui,
                     );
                     await htmlResponse.serveHtmlPage(
