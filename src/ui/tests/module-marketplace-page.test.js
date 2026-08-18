@@ -87,6 +87,8 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /ui\.reuse\.refresh/);
     assert.match(source, /async function loadKnownModules/);
     assert.match(source, /loadCachedModules\(\)/);
+    assert.match(source, /const catalogAssets = known\.assets/);
+    assert.match(source, /if \(catalogAssets\) known\.assets = catalogAssets/);
     assert.match(source, /async function discoverConfiguredSources/);
     assert.match(source, /loadModuleSources\(\)/);
     assert.match(

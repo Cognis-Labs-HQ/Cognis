@@ -474,7 +474,9 @@ async function loadKnownModules() {
             (module) => module.uuid === installedModule.uuid,
         );
         if (known) {
+            const catalogAssets = known.assets;
             Object.assign(known, installedModule, { installed: true });
+            if (catalogAssets) known.assets = catalogAssets;
         } else {
             modules.push(installedModule);
         }

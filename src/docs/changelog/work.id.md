@@ -123,3 +123,7 @@ Konteks bootstrap modul eksternal kini menerima semua metode HTTP yang didukung 
 ## Selaraskan kontrol detail modul
 
 Menu hamburger lanjutan kini berada dalam baris navigasi atas bersama kontrol Kembali pada detail modul, sedangkan tindakan instalasi dan siklus hidup tetap berada dalam baris tindakan tersendiri.
+
+## Pertahankan modul dan gambar terpasang
+
+Deployment Docker kini menyimpan modul eksternal dalam volume bernama khusus yang dipasang pada akar modul eksternal yang dikonfigurasi, sehingga modul terpasang tetap tersedia setelah kontainer aplikasi dibangun ulang. Rekonsiliasi marketplace juga mempertahankan URL ikon dan banner yang diproksi katalog saat status manifes terpasang digabungkan, sehingga gambar tidak lagi menghilang sampai halaman disegarkan.

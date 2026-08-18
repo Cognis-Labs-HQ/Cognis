@@ -123,3 +123,7 @@ The external-module bootstrap context now ingests every supported HTTP method, n
 ## Align module detail controls
 
 The advanced hamburger menu now shares the top navigation row with the Back control in module details, leaving install and lifecycle actions in their own action row.
+
+## Persist installed modules and artwork
+
+Docker deployments now store external modules in a dedicated named volume mounted at the configured external-module root, so rebuilding the application container preserves installed modules. Marketplace reconciliation also retains catalog-proxied icon and banner URLs when installed manifest state is merged, preventing artwork from disappearing until a page refresh.

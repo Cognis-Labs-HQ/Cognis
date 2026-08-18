@@ -123,3 +123,7 @@ Der Bootstrap-Kontext externer Module nimmt nun alle unterstützten HTTP-Methode
 ## Moduldetail-Steuerung ausrichten
 
 Das erweiterte Hamburger-Menü befindet sich nun zusammen mit der Zurück-Steuerung in der oberen Navigationszeile der Moduldetails. Installations- und Lebenszyklusaktionen bleiben in einer eigenen Aktionszeile.
+
+## Installierte Module und Grafiken bewahren
+
+Docker-Bereitstellungen speichern externe Module nun in einem eigenen benannten Volume, das am konfigurierten Stammverzeichnis für externe Module eingehängt ist. Dadurch bleiben installierte Module beim Neubau des Anwendungscontainers erhalten. Der Marketplace behält außerdem die über den Katalog bereitgestellten Symbol- und Banner-URLs beim Zusammenführen des installierten Manifestzustands bei, sodass Grafiken nicht mehr bis zur nächsten Seitenaktualisierung verschwinden.
