@@ -72,6 +72,7 @@ interface ModuleUiRegistrationContext {
         scriptUrl: string;
         stylesheets?: string[];
         access?: RoleAccessPolicy;
+        requiredCapabilities?: string[];
     }): void;
     registerSettingsSection(section: {
         id: string;
@@ -237,7 +238,7 @@ export function createModuleExtensionRoutes(
     }
 
     function createModuleCtx(
-        moduleId: string,
+        manifest: { id: string; requiresCapabilities?: string[] },
         moduleRoot: string,
         nextHandlers: RouteHandler[],
         scope: {
@@ -246,6 +247,7 @@ export function createModuleExtensionRoutes(
             flows: string[];
         },
     ): ModuleBootstrapCtx {
+        const moduleId = manifest.id;
         function registerApiRoute(
             method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
             routePath: string,
@@ -380,6 +382,11 @@ export function createModuleExtensionRoutes(
             registerSpaRoute(route) {
                 options?.uiRegistry?.registerSpaRoute({
                     ...route,
+                    requiredCapabilities:
+                        route.requiredCapabilities ??
+                        manifest.requiresCapabilities?.filter((capability) =>
+                            capability.startsWith("ui:"),
+                        ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
@@ -506,7 +513,7 @@ export function createModuleExtensionRoutes(
             );
             const scope = { hooks: [], capabilities: [], flows: [] };
             const moduleCtx = createModuleCtx(
-                manifest.id,
+                manifest,
                 moduleRoot,
                 nextHandlers,
                 scope,

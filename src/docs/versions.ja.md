@@ -86,7 +86,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.3.27`   |
+| API Server     | `src/api/` | `0.3.28`   |
 
 ## ツール
 
@@ -98,7 +98,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント       | パス                                | バージョン |
 | -------------------- | ----------------------------------- | ---------- |
-| モジュールランタイム | `src/modules/`                      | `0.1.7`    |
+| モジュールランタイム | `src/modules/`                      | `0.1.8`    |
 | Analytics            | `src/modules/analytics/`            | `2.0.11`   |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.21`   |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.12`   |

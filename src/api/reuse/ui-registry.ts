@@ -52,6 +52,8 @@ export interface PageElement {
 export interface NavbarPlugin {
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
+    /** UI capabilities contributed when this plugin is imported. */
+    providesCapabilities?: string[];
     /** Optional role access policy for this plugin. */
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide plugins while their owner is disabled. */
@@ -75,6 +77,10 @@ export interface SpaRoute {
     scriptUrl: string;
     /** Optional stylesheet URLs to ensure before mount. */
     stylesheets?: string[];
+    /** UI capabilities that must be contributed before importing the route. */
+    requiredCapabilities?: string[];
+    /** Provider scripts selected by core for the required UI capabilities. */
+    capabilityScripts?: string[];
     /** Optional role access policy for this route. */
     access?: RoleAccessPolicy;
     /** Optional runtime predicate used to hide routes while owner is disabled. */
@@ -319,7 +325,24 @@ export class UIRegistry {
     }
 
     listSpaRoutes(): SpaRoute[] {
-        return this.resolveDescriptor([...this.spaRoutes]);
+        return this.resolveDescriptor(
+            this.spaRoutes.map((route) => ({
+                ...route,
+                capabilityScripts: (route.requiredCapabilities ?? []).map(
+                    (capability) => {
+                        const provider = this.navbarPlugins.find((plugin) =>
+                            plugin.providesCapabilities?.includes(capability),
+                        );
+                        if (!provider) {
+                            throw new Error(
+                                `Required UI capability "${capability}" has no active provider.`,
+                            );
+                        }
+                        return provider.scriptUrl;
+                    },
+                ),
+            })),
+        );
     }
 
     resolveSpaRoute(pathname: string): SpaRoute | undefined {

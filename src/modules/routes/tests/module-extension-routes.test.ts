@@ -306,12 +306,17 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
     systemCtx.contributeCapability("system:ctx", systemCtx);
     const requireAuth = () => ({ sub: "module-user", role: "user" });
     const uiRegistry = new UIRegistry();
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/profile-avatar.js",
+        providesCapabilities: ["ui:profileAvatarRenderer"],
+    });
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
                 {
                     id: "meetings",
                     uuid: moduleUuid,
+                    requiresCapabilities: ["ui:profileAvatarRenderer"],
                     entrypoints: { bootstrap: "./bootstrap.js" },
                 },
             ],
@@ -331,8 +336,11 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
     );
     try {
         await extensions.refresh();
-        assert.equal(uiRegistry.listNavbarPlugins().length, 1);
+        assert.equal(uiRegistry.listNavbarPlugins().length, 2);
         assert.equal(uiRegistry.listSpaRoutes()[0].base, "/meetings");
+        assert.deepEqual(uiRegistry.listSpaRoutes()[0].capabilityScripts, [
+            "/static/profile-avatar.js",
+        ]);
         assert.equal(uiRegistry.listAuthTypingMessages().length, 1);
         assert.equal(systemCtx.getCapability("meetings:provider"), "external");
 

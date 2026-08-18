@@ -11,3 +11,7 @@ Cognis now waits for persisted module state restoration and module bootstrap to 
 ## Provide authentication capabilities to modules
 
 The authentication gateway now publishes its request authentication and role-access functions through the capability bus. External modules can bootstrap their protected API routes without importing gateway internals, allowing their UI assets and navigation registrations to remain active.
+
+## Load only declared UI capabilities
+
+Modules can declare `requiresCapabilities` in their manifest. Before mounting a module route, Cognis imports only the registered provider scripts for its declared `ui:*` capabilities, ensuring required UI services are ready without granting unrelated integrations.

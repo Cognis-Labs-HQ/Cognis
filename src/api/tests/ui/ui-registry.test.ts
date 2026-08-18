@@ -170,6 +170,27 @@ test("UIRegistry registers and lists SPA routes", () => {
     assert.equal(reg.resolveSpaRoute("/settings"), undefined);
 });
 
+test("UIRegistry selects only declared UI capability provider scripts", () => {
+    const reg = new UIRegistry();
+    reg.registerNavbarPlugin({
+        scriptUrl: "/profile.js",
+        providesCapabilities: ["ui:profileAvatarRenderer"],
+    });
+    reg.registerNavbarPlugin({
+        scriptUrl: "/unrelated.js",
+        providesCapabilities: ["ui:unrelated"],
+    });
+    reg.registerSpaRoute({
+        id: "meetings",
+        pattern: "^/meetings$",
+        base: "/meetings",
+        scriptUrl: "/meetings.js",
+        requiredCapabilities: ["ui:profileAvatarRenderer"],
+    });
+
+    assert.deepEqual(reg.listSpaRoutes()[0].capabilityScripts, ["/profile.js"]);
+});
+
 test("UIRegistry registers and lists auth typing messages", () => {
     const reg = new UIRegistry();
     reg.registerAuthTypingMessage({

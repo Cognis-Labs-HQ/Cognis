@@ -55,7 +55,11 @@ export interface SocialAdapterBootstrapCtx {
         adapterId: string,
         absoluteDir: string,
     ): void;
-    registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
+    registerNavbarPlugin(
+        scriptUrl: string,
+        isEnabled?: () => boolean,
+        providesCapabilities?: string[],
+    ): void;
     registerSpaRoute?(route: {
         id: string;
         pattern: string;
