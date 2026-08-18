@@ -34,6 +34,19 @@ const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 
+function renderAvailableVersion(module) {
+    if (!module.installed) return "";
+    const currentVersion = module.installedVersion ?? module.version;
+    const channel = releaseChannels(module).find(
+        (entry) => entry.name === selectedBranch(module),
+    );
+    if (!channel?.version || channel.version === currentVersion) return "";
+    const isDowngrade = compareVersions(channel.version, currentVersion) < 0;
+    const icon = isDowngrade ? "arrow-down" : "arrow-up";
+    const version = `v${String(channel.version).replace(/^v/, "")}`;
+    return `<span class="module-available-version${isDowngrade ? " is-downgrade" : ""}"><img src="/static/assets/reuse/${icon}.svg" alt="" aria-hidden="true"><span>${escapeHtml(version)}</span></span>`;
+}
+
 function renderCard(module) {
     const avatarUrl = resolveModuleAssetUrl(module.assets?.icon);
     const avatar = avatarUrl
@@ -45,6 +58,7 @@ function renderCard(module) {
         <div class="module-store-card-heading"><h3>${escapeHtml(module.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
         <p>${escapeHtml(module.summary ?? module.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(module.installed ? (module.installedVersion ?? module.version) : module.version)}</span>
+        ${renderAvailableVersion(module)}
       </div>
       <div class="module-store-card-actions">${renderLifecycleActions(module)}</div>
     </article>`;
@@ -183,7 +197,7 @@ function renderModuleDetails(module) {
         : (releaseChannels(module).find(
               (channel) => channel.name === displayedChannel,
           )?.version ?? module.version);
-    const release = `<p class="module-detail-release"><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, v${escapeHtml(String(displayedVersion).replace(/^v/, ""))}` : ""}${renderRestartWarning(module)}</p>`;
+    const release = `<div class="module-detail-release"><p><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, v${escapeHtml(String(displayedVersion).replace(/^v/, ""))}` : ""}${renderRestartWarning(module)}</p>${renderAvailableVersion(module)}</div>`;
     const advanced = module.installed
         ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
         : "";

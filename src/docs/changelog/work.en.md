@@ -19,3 +19,7 @@ Modules can declare `requiresCapabilities` in their manifest. Before mounting a 
 ## Inspect and document capabilities
 
 Owners can list all registered capability IDs through `GET /api/v1/system/capabilities` or `cognisctl system:capabilities`. Module, Authentication gateway, and Profile adapter documentation now records requirement declarations and the capabilities each provider contributes.
+
+## Show release version direction
+
+Installed module cards and detail views now place the selected channel's different version beneath the current version. Upgrades use an upward arrow, while an uncommon channel downgrade uses a downward arrow in a light orange pill.

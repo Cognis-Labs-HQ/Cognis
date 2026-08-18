@@ -19,3 +19,7 @@ Modul dapat menyatakan `requiresCapabilities` dalam manifesnya. Sebelum memasang
 ## Periksa dan dokumentasikan kapabilitas
 
 Owner dapat mencantumkan semua ID kapabilitas terdaftar melalui `GET /api/v1/system/capabilities` atau `cognisctl system:capabilities`. Dokumentasi modul, gateway Autentikasi, dan adapter Profil kini mencatat deklarasi kebutuhan serta kapabilitas yang disediakan setiap penyedia.
+
+## Tampilkan arah versi rilis
+
+Kartu dan tampilan detail modul terpasang kini menempatkan versi saluran terpilih yang berbeda di bawah versi saat ini. Peningkatan memakai panah ke atas, sedangkan penurunan versi yang jarang terjadi memakai panah ke bawah dalam pil oranye muda.

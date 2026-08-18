@@ -34,6 +34,31 @@ test("module marketplace cards keep consistent content and action geometry", () 
     );
 });
 
+test("module cards and details show upgrade and downgrade versions", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    const upArrow = readFileSync(
+        resolve(ROOT, "src/ui/public/assets/reuse/arrow-up.svg"),
+        "utf8",
+    );
+    const downArrow = readFileSync(
+        resolve(ROOT, "src/ui/public/assets/reuse/arrow-down.svg"),
+        "utf8",
+    );
+
+    assert.match(source, /function renderAvailableVersion/);
+    assert.match(source, /compareVersions\(channel\.version, currentVersion\)/);
+    assert.match(source, /module-available-version/);
+    assert.match(source, /is-downgrade/);
+    assert.match(source, /\$\{renderAvailableVersion\(module\)\}/);
+    assert.match(marketplaceStyles, /background: #ffedd5/);
+    assert.match(marketplaceStyles, /border-radius: 999px/);
+    assert.match(upArrow, /M8 13V3/);
+    assert.match(downArrow, /M8 3v10/);
+});
+
 test("module marketplace identifies immutable trusted sources", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
