@@ -24,7 +24,7 @@ let composer;
 let modules = [];
 let sources = [];
 let category = "all";
-let view = "recommended";
+let view = "all";
 let selectedModule = null;
 let discoverySequence = 0;
 const selectedBranches = new Map();
@@ -122,6 +122,10 @@ function modulesForView() {
     });
 }
 
+function viewLabel(item) {
+    return i18n.t(item === "all" ? "ui.reuse.all" : `ui.app.modules.${item}`);
+}
+
 function visibleModules() {
     return modulesForView().filter(
         (module) =>
@@ -139,7 +143,7 @@ function formatTag(tag) {
 
 function renderSidebar(categories) {
     return `<aside class="module-store-sidebar">
-      ${["recommended", "installed", "available"].map((item) => `<button type="button" class="btn-neutral${view === item ? " is-active" : ""}" data-store-view="${item}">${escapeHtml(i18n.t(`ui.app.modules.${item}`))}</button>`).join("")}
+      ${["all", "recommended", "installed", "available"].map((item) => `<button type="button" class="btn-neutral${view === item ? " is-active" : ""}" data-store-view="${item}">${escapeHtml(viewLabel(item))}</button>`).join("")}
       <h3>${escapeHtml(i18n.t("ui.app.modules.categories"))}</h3>
       <button type="button" class="btn-neutral${category === "all" ? " is-active" : ""}" data-store-category="all">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
       ${categories.map((item) => `<button type="button" class="btn-neutral${category === item ? " is-active" : ""}" data-store-category="${escapeHtml(item)}">${escapeHtml(formatTag(item))}</button>`).join("")}
@@ -153,7 +157,7 @@ function renderStore() {
     return `<div class="module-store-layout">
       ${renderSidebar(categories)}
       <section class="module-store-results">
-        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t(`ui.app.modules.${view}`))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><span class="module-icon module-icon-refresh" aria-hidden="true"></span></button><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}"><img src="/static/assets/reuse/settings-cog.svg" alt="${escapeHtml(i18n.t("ui.reuse.settings"))}"></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
+        ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(viewLabel(view))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><span class="module-icon module-icon-refresh" aria-hidden="true"></span></button><button id="module-source-settings" class="btn-neutral" type="button">${escapeHtml(i18n.t("ui.app.modules.sources"))}</button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}"><img src="/static/assets/reuse/settings-cog.svg" alt="${escapeHtml(i18n.t("ui.reuse.settings"))}"></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
       </section>
     </div>`;
 }

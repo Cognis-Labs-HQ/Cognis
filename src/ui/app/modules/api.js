@@ -1,5 +1,7 @@
 import { apiFetch } from "../../reuse/api-client.js";
 
+const MODULE_INSTALL_TIMEOUT_MS = 10 * 60 * 1000;
+
 async function data(response) {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     if (response.status === 204) return null;
@@ -62,6 +64,7 @@ export async function installModule(module, token, branch) {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ module, token, branch }),
+            timeoutMs: MODULE_INSTALL_TIMEOUT_MS,
         }),
     );
 }

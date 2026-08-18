@@ -55,3 +55,11 @@ Cognis Core tidak lagi dikembalikan oleh daftar administrasi modul karena inti p
 ## Verifikasi lisensi yang dinyatakan
 
 Metadata lisensi hanya ditampilkan bila berkas lisensi yang dikenali tersedia di akar repositori. Validasi instalasi menolak metadata lisensi tanpa bukti repositori tersebut.
+
+## Beri waktu untuk pemasangan modul
+
+Pemasangan marketplace kini memakai jendela permintaan sepuluh menit agar kloning dan validasi repositori besar seperti Jitsi Meet tidak gagal karena batas waktu API umum tiga puluh detik.
+
+## Tampilkan semua modul terlebih dahulu
+
+Filter status modul kini memiliki Semua dan memilihnya secara bawaan sehingga modul terpasang, tersedia, dan direkomendasikan tampil bersama saat halaman dibuka.

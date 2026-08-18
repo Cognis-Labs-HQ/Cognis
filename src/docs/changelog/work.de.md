@@ -55,3 +55,11 @@ Cognis Core wird nicht mehr in der Modulverwaltung zurückgegeben, da der Plattf
 ## Angegebene Lizenzen prüfen
 
 Lizenzmetadaten werden nur angezeigt, wenn eine erkannte Lizenzdatei im Repository-Stamm vorhanden ist. Die Installationsprüfung lehnt Lizenzangaben ohne diesen Repository-Nachweis ab.
+
+## Zeit für Modulinstallationen
+
+Marketplace-Installationen verwenden nun ein zehnminütiges Anfragefenster, damit das Klonen und Prüfen größerer Repositorys wie Jitsi Meet nicht am allgemeinen API-Zeitlimit von dreißig Sekunden scheitert.
+
+## Zuerst alle Module anzeigen
+
+Der Modulstatusfilter enthält nun Alle und wählt diese Ansicht standardmäßig aus, sodass installierte, verfügbare und empfohlene Module beim Öffnen gemeinsam erscheinen.

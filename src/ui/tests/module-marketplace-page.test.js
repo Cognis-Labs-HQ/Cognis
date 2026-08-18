@@ -165,3 +165,22 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(marketplaceStyles, /refresh-light\.svg/);
     assert.match(marketplaceStyles, /refresh-dark\.svg/);
 });
+
+test("module marketplace defaults to all statuses and allows slow installs", () => {
+    const pageSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    const apiSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/api.js"),
+        "utf8",
+    );
+    assert.match(pageSource, /let view = "all"/);
+    assert.match(
+        pageSource,
+        /\["all", "recommended", "installed", "available"\]/,
+    );
+    assert.match(pageSource, /item === "all" \? "ui\.reuse\.all"/);
+    assert.match(apiSource, /MODULE_INSTALL_TIMEOUT_MS = 10 \* 60 \* 1000/);
+    assert.match(apiSource, /timeoutMs: MODULE_INSTALL_TIMEOUT_MS/);
+});

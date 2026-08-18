@@ -55,3 +55,11 @@ Cognis Core is no longer returned by the module administration list because the 
 ## Verify declared licenses
 
 License metadata is displayed only when a recognized license file exists at the repository root. Installation validation rejects declared license metadata without that repository evidence.
+
+## Allow module installation time
+
+Marketplace installs now use a ten-minute request window so cloning and validating larger repositories such as Jitsi Meet does not fail at the generic thirty-second API timeout.
+
+## Show all modules first
+
+The module status filter now includes All and selects it by default, presenting installed, available, and recommended modules together when the page opens.
