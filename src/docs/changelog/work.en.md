@@ -23,3 +23,7 @@ Owners can list all registered capability IDs through `GET /api/v1/system/capabi
 ## Show release version direction
 
 Installed module cards and detail views now place the selected channel's different version beneath the current version. Upgrades use an upward arrow, while an uncommon channel downgrade uses a downward arrow in a light orange pill.
+
+## Keep module details stable
+
+Opening or updating a module detail view now preserves the page position. Every displayed version uses a `v` prefix, and updating an enabled module performs the disable, install, and re-enable sequence in one action.

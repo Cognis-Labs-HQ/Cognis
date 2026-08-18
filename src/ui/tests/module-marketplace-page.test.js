@@ -59,6 +59,26 @@ test("module cards and details show upgrade and downgrade versions", () => {
     assert.match(downArrow, /M8 3v10/);
 });
 
+test("module details preserve position and update enabled modules atomically", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /function formatVersion/);
+    assert.match(source, /return normalized \? `v\$\{normalized\}` : ""/);
+    assert.match(source, /restoreWindowScrollPosition/);
+    assert.match(
+        source,
+        /\["update", "force-update", "change-channel"\]\.includes\(action\)/,
+    );
+    assert.match(
+        source,
+        /await setModuleEnabled\(module\.id, false\)[\s\S]*await installModule[\s\S]*await setModuleEnabled\(module\.id, true\)/,
+    );
+    assert.doesNotMatch(source, /disable_before_update/);
+});
+
 test("module marketplace identifies immutable trusted sources", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
@@ -196,7 +216,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.match(
         source,
-        /\["force-update", "change-channel"\]\.includes\(action\)[\s\S]*module\.status === "enabled"/,
+        /\["update", "force-update", "change-channel"\]\.includes\(action\)[\s\S]*module\.status === "enabled"/,
     );
     assert.match(
         source,

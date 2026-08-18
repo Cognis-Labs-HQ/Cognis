@@ -1,5 +1,6 @@
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
+import { restoreWindowScrollPosition } from "../../reuse/page-composer/dom-position.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -34,6 +35,11 @@ const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 
+function formatVersion(version) {
+    const normalized = String(version ?? "").replace(/^v/, "");
+    return normalized ? `v${normalized}` : "";
+}
+
 function renderAvailableVersion(module) {
     if (!module.installed) return "";
     const currentVersion = module.installedVersion ?? module.version;
@@ -43,7 +49,7 @@ function renderAvailableVersion(module) {
     if (!channel?.version || channel.version === currentVersion) return "";
     const isDowngrade = compareVersions(channel.version, currentVersion) < 0;
     const icon = isDowngrade ? "arrow-down" : "arrow-up";
-    const version = `v${String(channel.version).replace(/^v/, "")}`;
+    const version = formatVersion(channel.version);
     return `<span class="module-available-version${isDowngrade ? " is-downgrade" : ""}"><img src="/static/assets/reuse/${icon}.svg" alt="" aria-hidden="true"><span>${escapeHtml(version)}</span></span>`;
 }
 
@@ -57,7 +63,7 @@ function renderCard(module) {
       <div class="module-store-card-copy">
         <div class="module-store-card-heading"><h3>${escapeHtml(module.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
         <p>${escapeHtml(module.summary ?? module.description ?? "")}</p>
-        <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(module.installed ? (module.installedVersion ?? module.version) : module.version)}</span>
+        <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(formatVersion(module.installed ? (module.installedVersion ?? module.version) : module.version))}</span>
         ${renderAvailableVersion(module)}
       </div>
       <div class="module-store-card-actions">${renderLifecycleActions(module)}</div>
@@ -197,7 +203,7 @@ function renderModuleDetails(module) {
         : (releaseChannels(module).find(
               (channel) => channel.name === displayedChannel,
           )?.version ?? module.version);
-    const release = `<div class="module-detail-release"><p><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, v${escapeHtml(String(displayedVersion).replace(/^v/, ""))}` : ""}${renderRestartWarning(module)}</p>${renderAvailableVersion(module)}</div>`;
+    const release = `<div class="module-detail-release"><p><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, ${escapeHtml(formatVersion(displayedVersion))}` : ""}${renderRestartWarning(module)}</p>${renderAvailableVersion(module)}</div>`;
     const advanced = module.installed
         ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
         : "";
@@ -427,7 +433,7 @@ async function selectReleaseChannel(module) {
     let selectedChannel = module.installedBranch ?? selectedBranch(module);
     const result = await openPopup({
         title: i18n.t("ui.app.modules.change_release_channel"),
-        body: `<div class="module-release-channel-list" role="radiogroup" aria-label="${escapeHtml(i18n.t("ui.app.modules.release_channel"))}">${channels.map((channel) => `<button type="button" class="btn-neutral${channel.name === selectedChannel ? " is-active" : ""}" data-release-channel="${escapeHtml(channel.name)}" aria-pressed="${channel.name === selectedChannel}">${escapeHtml(channel.name)}${channel.version ? ` · ${escapeHtml(channel.version)}` : ""}</button>`).join("")}</div>`,
+        body: `<div class="module-release-channel-list" role="radiogroup" aria-label="${escapeHtml(i18n.t("ui.app.modules.release_channel"))}">${channels.map((channel) => `<button type="button" class="btn-neutral${channel.name === selectedChannel ? " is-active" : ""}" data-release-channel="${escapeHtml(channel.name)}" aria-pressed="${channel.name === selectedChannel}">${escapeHtml(channel.name)}${channel.version ? ` · ${escapeHtml(formatVersion(channel.version))}` : ""}</button>`).join("")}</div>`,
         actions: [
             {
                 id: "confirm",
@@ -464,13 +470,6 @@ async function selectReleaseChannel(module) {
 }
 
 async function runLifecycleAction(module, action) {
-    if (action === "update" && module.status === "enabled") {
-        showToast(i18n.t("ui.app.modules.disable_before_update"), {
-            type: "error",
-        });
-        refreshMarketplace();
-        return;
-    }
     if (
         ["install", "update", "force-update", "change-channel"].includes(action)
     ) {
@@ -480,7 +479,7 @@ async function runLifecycleAction(module, action) {
             selectedBranches.set(module.uuid, releaseChannel);
         }
         const restoreEnabledState =
-            ["force-update", "change-channel"].includes(action) &&
+            ["update", "force-update", "change-channel"].includes(action) &&
             module.status === "enabled";
         const channel = [
             ...(module.branches ?? []),
@@ -588,7 +587,12 @@ async function runLifecycleAction(module, action) {
 }
 
 function refreshMarketplace() {
+    const scrollPosition = {
+        left: window.scrollX,
+        top: window.scrollY,
+    };
     composer?.refreshElements(["module-store"]);
+    restoreWindowScrollPosition(scrollPosition.left, scrollPosition.top);
 }
 
 async function loadKnownModules() {

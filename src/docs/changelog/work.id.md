@@ -23,3 +23,7 @@ Owner dapat mencantumkan semua ID kapabilitas terdaftar melalui `GET /api/v1/sys
 ## Tampilkan arah versi rilis
 
 Kartu dan tampilan detail modul terpasang kini menempatkan versi saluran terpilih yang berbeda di bawah versi saat ini. Peningkatan memakai panah ke atas, sedangkan penurunan versi yang jarang terjadi memakai panah ke bawah dalam pil oranye muda.
+
+## Pertahankan detail modul stabil
+
+Membuka atau memperbarui tampilan detail modul kini mempertahankan posisi halaman. Setiap versi yang ditampilkan memakai awalan `v`, dan pembaruan modul aktif menjalankan urutan nonaktifkan, pasang, lalu aktifkan kembali dalam satu tindakan.
