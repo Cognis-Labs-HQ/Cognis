@@ -1,5 +1,9 @@
 # Bursa Modul
 
+## Status kanal rilis yang jelas
+
+Pilihan kanal rilis kini memakai kontrol netral dengan status terpilih yang mudah dikenali. Detail modul menampilkan kanal terpasang beserta versi manifes sebenarnya, sedangkan modul yang diperbarui menampilkan peringatan mulai ulang hingga kontainer Cognis dimulai ulang dan semua rute yang disuntikkan diaktifkan.
+
 ## Menu tindakan modul yang konsisten
 
 Detail modul yang terpasang kini menggunakan menu hamburger tertambat bersama untuk tindakan lanjutan, sehingga tampilan dan interaksinya konsisten dengan menu tindakan di bagian Cognis lainnya.

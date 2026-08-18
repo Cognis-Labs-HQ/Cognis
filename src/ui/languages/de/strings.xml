@@ -698,6 +698,7 @@
   <string name="ui.app.modules.downgrading">Wird herabgestuft</string>
   <string name="ui.app.modules.change-channel_complete">Veröffentlichungskanal installiert.</string>
   <string name="ui.app.modules.release_channel">Veröffentlichungskanal</string>
+  <string name="ui.app.modules.restart_required">Starten Sie den Cognis-Container neu, um diese Modulaktualisierung und ihre eingebundenen Routen zu aktivieren.</string>
   <string name="ui.app.modules.advanced_options">Erweiterte Optionen</string>
   <string name="ui.app.modules.force_update">Aktualisierung erzwingen</string>
   <string name="ui.app.modules.upgrade">Aktualisieren</string>

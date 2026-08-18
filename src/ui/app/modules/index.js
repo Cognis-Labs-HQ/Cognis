@@ -42,12 +42,18 @@ function renderCard(module) {
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
-        <div class="module-store-card-heading"><h3>${escapeHtml(module.name)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
+        <div class="module-store-card-heading"><h3>${escapeHtml(module.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
         <p>${escapeHtml(module.summary ?? module.description ?? "")}</p>
-        <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(module.version)}</span>
+        <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(module.installed ? (module.installedVersion ?? module.version) : module.version)}</span>
       </div>
       <div class="module-store-card-actions">${renderLifecycleActions(module)}</div>
     </article>`;
+}
+
+function renderRestartWarning(module) {
+    if (!module.restartRequired) return "";
+    const message = escapeHtml(i18n.t("ui.app.modules.restart_required"));
+    return `<span class="module-restart-warning" role="img" aria-label="${message}" title="${message}">!</span>`;
 }
 
 function renderLifecycleActions(module) {
@@ -171,10 +177,17 @@ function renderModuleDetails(module) {
     const license = module.license
         ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
         : "";
+    const displayedChannel = selectedBranch(module);
+    const displayedVersion = module.installed
+        ? (module.installedVersion ?? module.version)
+        : (releaseChannels(module).find(
+              (channel) => channel.name === displayedChannel,
+          )?.version ?? module.version);
+    const release = `<p class="module-detail-release"><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, v${escapeHtml(String(displayedVersion).replace(/^v/, ""))}` : ""}${renderRestartWarning(module)}</p>`;
     const advanced = module.installed
         ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
         : "";
-    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong>${module.version ? ` · ${escapeHtml(module.version)}` : ""}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -405,7 +418,7 @@ async function selectReleaseChannel(module) {
             {
                 id: "confirm",
                 label: i18n.t("ui.reuse.confirm"),
-                variant: "cancel",
+                variant: "confirm",
             },
             {
                 id: "cancel",
@@ -502,7 +515,13 @@ async function runLifecycleAction(module, action) {
             refreshMarketplace();
         }
         try {
-            await installModule(module, token, branch);
+            const installedManifest = await installModule(
+                module,
+                token,
+                branch,
+            );
+            module.version = installedManifest.version;
+            module.restartRequired = installedManifest.restartRequired;
         } finally {
             if (restoreEnabledState) {
                 await setModuleEnabled(module.id, true);
@@ -516,7 +535,7 @@ async function runLifecycleAction(module, action) {
             ...(module.branches ?? []),
             ...(module.releases ?? []),
         ].find((entry) => entry.name === branch)?.commit;
-        module.installedVersion = channel?.version ?? module.version;
+        module.installedVersion = module.version;
         module.updateAvailable = false;
     }
     if (action === "enable" || action === "disable") {
@@ -544,6 +563,11 @@ async function runLifecycleAction(module, action) {
     window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
     window.dispatchEvent(new Event("cognis:navbar-refresh"));
     showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
+    if (module.restartRequired) {
+        showToast(i18n.t("ui.app.modules.restart_required"), {
+            type: "warning",
+        });
+    }
     void loadKnownModules().catch((error) => {
         showToast(error.message, { type: "error" });
     });
@@ -704,7 +728,6 @@ function bindInteractions(root, signal) {
                                   label: i18n.t(
                                       "ui.app.modules.change_release_channel",
                                   ),
-                                  variant: "danger",
                               },
                           ]
                         : []),

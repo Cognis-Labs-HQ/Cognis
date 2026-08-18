@@ -1,5 +1,9 @@
 # Modul-Marktplatz
 
+## Eindeutiger Veröffentlichungskanal
+
+Veröffentlichungskanäle verwenden nun neutrale Bedienelemente mit einer klar erkennbaren Auswahl. Die Moduldetails zeigen den installierten Kanal zusammen mit der tatsächlichen Manifestversion; aktualisierte Module tragen bis zum Neustart des Cognis-Containers und der Aktivierung aller eingebundenen Routen einen Neustarthinweis.
+
 ## Einheitliche Modulaktionsmenüs
 
 Die Detailansicht installierter Module verwendet nun das gemeinsame verankerte Hamburger-Menü für erweiterte Aktionen und entspricht damit Aussehen und Bedienung der Aktionsmenüs in anderen Bereichen von Cognis.

@@ -698,6 +698,7 @@
   <string name="ui.app.modules.downgrading">Menurunkan</string>
   <string name="ui.app.modules.change-channel_complete">Kanal rilis terpasang.</string>
   <string name="ui.app.modules.release_channel">Kanal rilis</string>
+  <string name="ui.app.modules.restart_required">Mulai ulang kontainer Cognis untuk mengaktifkan pembaruan modul ini beserta rute yang disuntikkannya.</string>
   <string name="ui.app.modules.advanced_options">Opsi lanjutan</string>
   <string name="ui.app.modules.force_update">Paksa pembaruan</string>
   <string name="ui.app.modules.upgrade">Tingkatkan</string>

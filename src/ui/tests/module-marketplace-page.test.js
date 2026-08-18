@@ -160,7 +160,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /data-module-menu/);
     assert.match(
         source,
-        /id: "force-update"[\s\S]*variant: "danger"[\s\S]*id: "change-channel"[\s\S]*variant: "danger"/,
+        /id: "force-update"[\s\S]*variant: "danger"[\s\S]*id: "change-channel"/,
     );
     assert.match(source, /async function selectReleaseChannel/);
     assert.match(source, /class="module-release-channel-list"/);
@@ -175,7 +175,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.match(
         source,
-        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\(module, token, branch\)[\s\S]*setModuleEnabled\(module\.id, true\)/,
+        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*setModuleEnabled\(module\.id, true\)/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
@@ -256,6 +256,12 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /ui\.app\.modules\.upgrading/);
     assert.match(source, /ui\.app\.modules\.downgrading/);
     assert.match(source, /ui\.app\.modules\.changing_release_channel/);
+    assert.match(source, /variant: "confirm"/);
+    assert.match(source, /module\.restartRequired/);
+    assert.match(source, /ui\.app\.modules\.restart_required/);
+    assert.match(source, /module-detail-release/);
+    assert.match(source, /module-release-channel-list/);
+    assert.match(marketplaceStyles, /button\.is-active/);
     assert.match(source, /i18n\.t\("ui\.reuse\.installed"\)/);
     assert.match(
         marketplaceStyles,

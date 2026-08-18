@@ -440,14 +440,11 @@ export class ModuleMarketplaceService {
                             this.discoverReleases(source, projectPath, headers),
                         ]);
                     const [branches, releases] = await Promise.all([
-                        Promise.resolve(
-                            discoveredBranches.map((branch) => ({
-                                ...branch,
-                                version:
-                                    branch.name === defaultBranch
-                                        ? manifest.version
-                                        : undefined,
-                            })),
+                        this.attachVersions(
+                            source,
+                            projectPath,
+                            discoveredBranches,
+                            headers,
                         ),
                         this.attachVersions(
                             source,

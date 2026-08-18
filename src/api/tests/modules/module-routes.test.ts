@@ -502,6 +502,63 @@ test("module marketplace identifies GitHub connection timeouts in jobs and logs"
     assert.equal(entries[0].meta?.knownCause, "container_network_mtu");
 });
 
+test("module updates report that a container restart is required", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const moduleUuid = "94d6974b-d836-4653-af9b-8b68774f4458";
+    let responseBody = "";
+    const route = createModuleRoutes(
+        {
+            list: async () => [
+                { id: "meetings", uuid: moduleUuid, class: "extension" },
+            ],
+        } as any,
+        {
+            getStatus: () => "disabled",
+            onImported: async () => {},
+        },
+        undefined,
+        {
+            install: async () => ({
+                id: "meetings",
+                uuid: moduleUuid,
+                class: "extension",
+                version: "2.0.0",
+            }),
+        } as any,
+    );
+    const response = {
+        writeHead() {},
+        end(payload: string) {
+            responseBody = payload;
+        },
+    } as any;
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({ module: { uuid: moduleUuid } }),
+                );
+            },
+        } as any,
+        response,
+        new URL("http://localhost/api/v1/modules/install"),
+    );
+    const jobId = JSON.parse(responseBody).data.jobId;
+    await new Promise((resolve) => setImmediate(resolve));
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        response,
+        new URL(`http://localhost/api/v1/modules/install/${jobId}`),
+    );
+
+    assert.equal(JSON.parse(responseBody).data.data.restartRequired, true);
+});
+
 test("module catalog serves cached images from the same origin", async () => {
     const assetId = "a".repeat(64);
     const route = createModuleRoutes(

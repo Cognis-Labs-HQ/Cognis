@@ -81,6 +81,7 @@ export function createModuleRoutes(
         | { status: "succeeded"; data: unknown }
         | { status: "failed"; message: string; code?: string }
     >();
+    const restartRequiredModules = new Set<string>();
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -241,6 +242,7 @@ export function createModuleRoutes(
             const data = modules.map((module) =>
                 withMarketplaceAssetUrls({
                     ...module,
+                    restartRequired: restartRequiredModules.has(module.uuid),
                     recommended: recommended.has(module.uuid),
                 }),
             );
@@ -285,15 +287,20 @@ export function createModuleRoutes(
                 )
                 .then(async (manifest) => {
                     await hooks?.onImported?.(manifest.id);
+                    const restartRequired = Boolean(installedModule);
+                    if (restartRequired) {
+                        restartRequiredModules.add(manifest.uuid);
+                    }
                     installJobs.set(jobId, {
                         status: "succeeded",
-                        data: manifest,
+                        data: { ...manifest, restartRequired },
                     });
                     hooks?.log?.("info", "External module installed.", {
                         ...logMeta,
                         accountId: claims.sub,
                         moduleId: manifest.id,
                         moduleUuid: manifest.uuid,
+                        restartRequired,
                     });
                 })
                 .catch((error) => {
@@ -362,6 +369,7 @@ export function createModuleRoutes(
             );
             const data = manifests.map((manifest) => ({
                 ...manifest,
+                restartRequired: restartRequiredModules.has(manifest.uuid),
                 status: hooks?.getStatus?.(manifest.id) ?? "available",
             }));
             hooks?.log?.("debug", "Listed modules.", {

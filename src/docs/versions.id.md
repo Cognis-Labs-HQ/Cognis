@@ -80,13 +80,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen     | Jalur       | Versi    |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.31` |
+| Core Package | `src/core/` | `0.3.32` |
 
 ## API
 
 | Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.24` |
+| API Server | `src/api/` | `0.3.25` |
 
 ## Peralatan
 

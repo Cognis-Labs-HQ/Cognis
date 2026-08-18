@@ -698,6 +698,7 @@
   <string name="ui.app.modules.downgrading">Downgrading</string>
   <string name="ui.app.modules.change-channel_complete">Release channel installed.</string>
   <string name="ui.app.modules.release_channel">Release channel</string>
+  <string name="ui.app.modules.restart_required">Restart the Cognis container to activate this module update and its injected routes.</string>
   <string name="ui.app.modules.advanced_options">Advanced options</string>
   <string name="ui.app.modules.force_update">Force update</string>
   <string name="ui.app.modules.upgrade">Upgrade</string>

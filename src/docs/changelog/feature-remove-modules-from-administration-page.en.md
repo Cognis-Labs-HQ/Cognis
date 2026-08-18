@@ -1,5 +1,9 @@
 # Module Marketplace
 
+## Clear release-channel state
+
+Release-channel choices now use neutral controls with an unmistakable selected state. Module details show the installed channel and its actual manifest version together, while updated modules display a restart warning until the Cognis container restarts and activates every injected route.
+
 ## Consistent module action menus
 
 Installed-module details now use the shared anchored hamburger menu for advanced actions, matching the appearance and interaction of action menus elsewhere in Cognis.

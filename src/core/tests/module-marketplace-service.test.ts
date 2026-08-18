@@ -150,7 +150,11 @@ test("module marketplace discovers repository manifests", async () => {
                                 uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
                                 id: "notes",
                                 name: "Notes",
-                                version: "1.0.0",
+                                version: String(input).includes(
+                                    "/preview/manifest.json",
+                                )
+                                    ? "1.1.0"
+                                    : "1.0.0",
                                 publisher: "Acme",
                                 class: "extension",
                                 coreApiVersion: "v1",
@@ -191,7 +195,7 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(modules[0].defaultBranch, "main");
         assert.deepEqual(modules[0].branches, [
             { name: "main", commit: "abc123", version: "1.0.0" },
-            { name: "preview", commit: "def456", version: undefined },
+            { name: "preview", commit: "def456", version: "1.1.0" },
         ]);
         assert.deepEqual(modules[0].releases, [
             { name: "v1.0.0", commit: "tag123", version: "1.0.0" },
