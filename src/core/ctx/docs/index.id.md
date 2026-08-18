@@ -73,3 +73,9 @@ if (ctx.flow.exists("construct-settings-ui")) {
     );
 }
 ```
+
+## Deklarasi kapabilitas modul
+
+Modul menyatakan layanan yang digunakan melalui field manifes tingkat atas `requiresCapabilities`. Kapabilitas server memakai ID terdaftar, misalnya `auth:requireAuth`; kapabilitas peramban memakai namespace `ui:`, misalnya `ui:profileAvatarRenderer`. Cognis menghubungkan kebutuhan UI yang dinyatakan ke rute SPA modul dan hanya mengimpor skrip penyedia terdaftar yang cocok sebelum memasang rute.
+
+Penyedia harus menerbitkan ID kapabilitas dalam dokumentasi komponennya dan mendaftarkan penyedia peramban melalui `providesCapabilities`. Operator pemilik dapat memeriksa registri aktif melalui `GET /api/v1/system/capabilities` atau `cognisctl system:capabilities`.

@@ -38,6 +38,44 @@ test("system route handles healthcheck endpoint", async () => {
     assert.match(body, /uptimeMs/);
 });
 
+test("owner can list every registered capability", async () => {
+    const route = createSystemRoutes(
+        healthService as any,
+        undefined,
+        undefined,
+        createDefaultRouteContext({
+            getCapability: (id) =>
+                id === "system:listCapabilities"
+                    ? () => ["auth:requireAuth", "ui:profileAvatarRenderer"]
+                    : undefined,
+        }),
+    );
+    const token = issueAccessToken("owner", "owner", 60);
+    let status = 0;
+    let body = "";
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/system/capabilities"),
+    );
+
+    assert.equal(status, 200);
+    assert.deepEqual(JSON.parse(body).data, [
+        "auth:requireAuth",
+        "ui:profileAvatarRenderer",
+    ]);
+});
+
 test("system route exposes env-backed ui config", async () => {
     process.env.COGNIS_UI_DEMO_MODE = "true";
     const route = createSystemRoutes(healthService as any);

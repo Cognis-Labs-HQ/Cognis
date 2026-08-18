@@ -285,6 +285,17 @@ test("ctx listPublicCapabilities returns sorted list of public keys only", () =>
     assert.equal(publicKeys.includes("z:private"), false);
 });
 
+test("ctx lists every registered capability without exposing values", () => {
+    const ctx = createCtx();
+    ctx.contributeCapability("private:second", { secret: true });
+    ctx.contributePublicCapability("public:first", () => undefined);
+
+    assert.deepEqual(ctx.listCapabilities(), [
+        "private:second",
+        "public:first",
+    ]);
+});
+
 test("ctx public capabilities are still accessible via standard capability methods", () => {
     const ctx = createCtx();
     const executor = {

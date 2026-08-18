@@ -104,6 +104,10 @@ export class CapabilityStore {
         }
         return this.store.get(key) as T;
     }
+
+    list(): string[] {
+        return Array.from(this.store.keys()).sort();
+    }
 }
 
 /**

@@ -80,19 +80,19 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.32` |
+| Core Package | `src/core/` | `0.3.33` |
 
 ## API
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.28` |
+| API Server | `src/api/` | `0.3.29` |
 
 ## Werkzeuge
 
 | Komponente | Pfad               | Version |
 | ---------- | ------------------ | ------- |
-| Cognis CLI | `src/tooling/cli/` | `0.2.3` |
+| Cognis CLI | `src/tooling/cli/` | `0.2.4` |
 
 ## Module
 

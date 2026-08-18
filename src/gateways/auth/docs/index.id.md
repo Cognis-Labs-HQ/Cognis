@@ -12,7 +12,7 @@ Gateway menemukan adapter dengan memindai `src/adapters/auth/` saat bootstrap. S
 - Mengelola status aktif/nonaktif adapter yang dipersistensikan di `auth_adapter_configs`.
 - Memverifikasi kredensial dengan mendelegasikan ke adapter yang diaktifkan untuk penyedia yang diminta.
 - Menerbitkan token akses setelah autentikasi berhasil melalui `issueAccessToken`.
-- Berkontribusi `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, dan `auth:registerPageScriptOrigins` ke capability store.
+- Menyediakan kumpulan kapabilitas terdokumentasi: `auth:accountStore`, `auth:createLocalAdmin`, `auth:getLoginMethods`, `auth:registerPageScriptOrigins`, `auth:issueAccessToken`, `auth:getAuthClaims`, `auth:requireAuth`, `auth:requireRoleAccess`, `auth:revokeAccessTokensForSubject`, `auth:revokeSetupPendingAccessTokens`, dan `auth:routeContext`.
 - Mendaftarkan semua route API autentikasi dan route admin adapter.
 
 Tidak bertanggung jawab atas: menyimpan data profil pengguna (itu tugas gateway profil), manajemen sesi di luar penerbitan token, atau logika bisnis non-autentikasi.

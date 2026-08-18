@@ -15,3 +15,7 @@ The authentication gateway now publishes its request authentication and role-acc
 ## Load only declared UI capabilities
 
 Modules can declare `requiresCapabilities` in their manifest. Before mounting a module route, Cognis imports only the registered provider scripts for its declared `ui:*` capabilities, ensuring required UI services are ready without granting unrelated integrations.
+
+## Inspect and document capabilities
+
+Owners can list all registered capability IDs through `GET /api/v1/system/capabilities` or `cognisctl system:capabilities`. Module, Authentication gateway, and Profile adapter documentation now records requirement declarations and the capabilities each provider contributes.

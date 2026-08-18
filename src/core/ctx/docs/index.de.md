@@ -73,3 +73,9 @@ if (ctx.flow.exists("construct-settings-ui")) {
     );
 }
 ```
+
+## Capability-Deklarationen für Module
+
+Module deklarieren verwendete Dienste im obersten Manifestfeld `requiresCapabilities`. Server-Capabilities verwenden ihre registrierten IDs, beispielsweise `auth:requireAuth`; Browser-Capabilities verwenden den Namensraum `ui:`, beispielsweise `ui:profileAvatarRenderer`. Cognis ordnet deklarierte UI-Anforderungen den SPA-Routen des Moduls zu und importiert vor dem Einhängen ausschließlich passende registrierte Anbieter-Skripte.
+
+Anbieter müssen die Capability-ID in ihrer Komponentendokumentation veröffentlichen und Browser-Anbieter über `providesCapabilities` registrieren. Betreiber können die aktive Registrierung als Owner mit `GET /api/v1/system/capabilities` oder mit `cognisctl system:capabilities` prüfen.

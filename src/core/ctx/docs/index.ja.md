@@ -73,3 +73,9 @@ if (ctx.flow.exists("construct-settings-ui")) {
     );
 }
 ```
+
+## モジュールのケイパビリティ宣言
+
+モジュールは、使用するサービスをマニフェスト最上位の `requiresCapabilities` で宣言します。サーバーケイパビリティは `auth:requireAuth` などの登録 ID を使用し、ブラウザーケイパビリティは `ui:profileAvatarRenderer` などの `ui:` 名前空間を使用します。Cognis は宣言された UI 要件をモジュールの SPA ルートへ関連付け、ルートのマウント前に一致する登録済みプロバイダースクリプトだけを読み込みます。
+
+プロバイダーはコンポーネント文書にケイパビリティ ID を記載し、ブラウザープロバイダーは `providesCapabilities` で登録する必要があります。Owner は `GET /api/v1/system/capabilities` または `cognisctl system:capabilities` で稼働中の登録一覧を確認できます。

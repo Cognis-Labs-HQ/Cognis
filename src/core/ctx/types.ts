@@ -86,6 +86,7 @@ export interface Ctx {
     removeCapability(key: string): boolean;
     isPublicCapability(key: string): boolean;
     listPublicCapabilities(): string[];
+    listCapabilities(): string[];
     hasCapability(key: string): boolean;
     getCapability<T>(key: string): T | undefined;
     requireCapability<T>(key: string): T;

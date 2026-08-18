@@ -15,3 +15,7 @@ Gateway autentikasi kini menerbitkan fungsi autentikasi permintaan dan akses per
 ## Muat hanya kapabilitas UI yang dinyatakan
 
 Modul dapat menyatakan `requiresCapabilities` dalam manifesnya. Sebelum memasang rute modul, Cognis hanya mengimpor skrip penyedia terdaftar untuk kapabilitas `ui:*` yang dinyatakan, sehingga layanan UI yang diperlukan siap tanpa memberikan integrasi yang tidak terkait.
+
+## Periksa dan dokumentasikan kapabilitas
+
+Owner dapat mencantumkan semua ID kapabilitas terdaftar melalui `GET /api/v1/system/capabilities` atau `cognisctl system:capabilities`. Dokumentasi modul, gateway Autentikasi, dan adapter Profil kini mencatat deklarasi kebutuhan serta kapabilitas yang disediakan setiap penyedia.

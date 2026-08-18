@@ -7,6 +7,7 @@ import { hasCapability as hasCapabilityImpl } from "./has-capability.js";
 import { hasFlow as hasFlowImpl } from "./has-flow.js";
 import { isPublicCapability as isPublicCapabilityImpl } from "./is-public-capability.js";
 import { listFlows as listFlowsImpl } from "./list-flows.js";
+import { listCapabilities as listCapabilitiesImpl } from "./list-capabilities.js";
 import { listPublicCapabilities as listPublicCapabilitiesImpl } from "./list-public-capabilities.js";
 import { registerFlow as registerFlowImpl } from "./register-flow.js";
 import { removeCapability as removeCapabilityImpl } from "./remove-capability.js";
@@ -48,6 +49,9 @@ export function createCtx(): Ctx {
         },
         listPublicCapabilities(): string[] {
             return listPublicCapabilitiesImpl(state);
+        },
+        listCapabilities(): string[] {
+            return listCapabilitiesImpl(state);
         },
         hasCapability(key: string): boolean {
             return hasCapabilityImpl(state, key);

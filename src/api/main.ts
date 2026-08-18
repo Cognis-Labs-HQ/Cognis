@@ -265,6 +265,15 @@ systemCtx.contributePublicCapability(
     "system:health:contribute",
     healthService.contribute.bind(healthService),
 );
+const listRegisteredCapabilities = (): string[] =>
+    Array.from(
+        new Set([...capabilities.list(), ...systemCtx.listCapabilities()]),
+    ).sort();
+capabilities.contribute("system:listCapabilities", listRegisteredCapabilities);
+systemCtx.contributeCapability(
+    "system:listCapabilities",
+    listRegisteredCapabilities,
+);
 
 const gatewaysRoot =
     process.env.COGNIS_GATEWAYS_ROOT ??
