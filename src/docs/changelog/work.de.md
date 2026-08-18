@@ -71,3 +71,11 @@ Die Modulsuche erfasst nun Repository-Tags zusätzlich zu Branches; die Detailau
 ## Marketplace-Einstellungen zusammenführen
 
 Modulquellen befinden sich jetzt ausschließlich als eigener Abschnitt im Einstellungsdialog des Marketplace. Anbieter und Version werden getrennt von Kategorie-Tags angezeigt, und das Einstellungssymbol unterstützt helle und dunkle Designs.
+
+## Module vor der Aktivierung testen
+
+Beim Aktivieren eines Moduls werden nun alle standardmäßigen JavaScript- und TypeScript-Tests aus seinem Checkout ausgeführt, bevor sich der Laufzeitstatus ändert. Ein fehlgeschlagener oder abgelaufener Test verhindert die Aktivierung und meldet den Modultestfehler.
+
+## Externe Module im Core-Testbefehl berücksichtigen
+
+Der zentrale Befehl `npm test` findet Tests jetzt sowohl im Cognis-Quellbaum als auch im konfigurierten Checkout-Verzeichnis für externe Module. Über `COGNIS_EXTERNAL_MODULES_ROOT` werden auch Verzeichnisse außerhalb des Repositorys berücksichtigt.

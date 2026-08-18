@@ -2,7 +2,7 @@
     "id": "totp",
     "uuid": "59b9bd4d-ee22-596b-9b7f-eab5b120e3d7",
     "name": "TOTP",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "gateway": "tfa",
     "description": "Time-based one-time password adapter for authenticator-app verification.",
     "publisher": "Cognis Labs HQ"

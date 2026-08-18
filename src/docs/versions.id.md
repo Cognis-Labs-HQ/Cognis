@@ -32,24 +32,24 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.21` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.22` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.19` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.12` |
-| Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.10` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.10` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.13` |
+| Kuota Berkas          | `src/adapters/file/quota/`          | `1.0.11` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.11` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.35` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.13` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.10` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.10` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.22` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.13` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.9`  |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.8`  |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.13` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.11` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.12` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.11` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.9`  |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.14` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.11` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.11` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.23` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.14` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.10` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.9`  |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.14` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.12` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.13` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.12` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.10` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.61` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.65` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
@@ -80,13 +80,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen     | Jalur       | Versi    |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.24` |
+| Core Package | `src/core/` | `0.3.25` |
 
 ## API
 
 | Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.18` |
+| API Server | `src/api/` | `0.3.19` |
 
 ## Peralatan
 

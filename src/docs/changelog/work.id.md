@@ -71,3 +71,11 @@ Penemuan modul kini menyertakan tag repositori bersama cabang, sementara pemilih
 ## Satukan pengaturan marketplace
 
 Sumber Modul kini hanya tersedia sebagai bagian khusus dalam dialog pengaturan marketplace. Penyedia dan versi dipisahkan dari tag kategori, serta ikon pengaturan mendukung tema terang dan gelap.
+
+## Uji modul sebelum aktivasi
+
+Saat modul diaktifkan, semua pengujian JavaScript dan TypeScript standar yang disediakan checkout modul kini dijalankan sebelum status runtime berubah. Pengujian yang gagal atau kehabisan waktu akan membatalkan aktivasi dan melaporkan kegagalan pengujian modul.
+
+## Sertakan modul eksternal dalam perintah pengujian inti
+
+Perintah utama `npm test` kini menemukan pengujian di pohon sumber Cognis dan akar checkout modul eksternal yang dikonfigurasi. Checkout di luar repositori juga didukung melalui `COGNIS_EXTERNAL_MODULES_ROOT`.

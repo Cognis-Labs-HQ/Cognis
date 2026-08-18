@@ -5,6 +5,7 @@ import {
     HealthService,
     ModuleService,
     ModuleMarketplaceService,
+    ModuleTestService,
     type GatewayRegistry,
     type BootstrapLog,
     type ModuleManifest,
@@ -33,6 +34,7 @@ export interface ApiDependencies {
     healthService?: HealthService;
     log?: BootstrapLog;
     validateModuleEnable?: (moduleId: string) => Promise<void> | void;
+    runModuleTests?: (moduleId: string) => Promise<void>;
     moduleIntegrityChecker?: () => Promise<
         Array<{
             moduleId: string;
@@ -136,6 +138,12 @@ export function buildServer(deps: ApiDependencies) {
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
             path.resolve(process.cwd(), "external-modules"),
     );
+    const moduleTestService = new ModuleTestService([
+        process.env.COGNIS_MODULES_ROOT ??
+            path.resolve(process.cwd(), "src", "modules"),
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+            path.resolve(process.cwd(), "external-modules"),
+    ]);
     const healthService = deps.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
 
@@ -152,7 +160,13 @@ export function buildServer(deps: ApiDependencies) {
     const moduleRoutes = createModuleRoutes(
         moduleService,
         {
-            beforeEnable: deps.validateModuleEnable,
+            beforeEnable: async (moduleId) => {
+                await (
+                    deps.runModuleTests ??
+                    moduleTestService.run.bind(moduleTestService)
+                )(moduleId);
+                await deps.validateModuleEnable?.(moduleId);
+            },
             onEnabled: async (moduleId) => {
                 enabledModules.add(moduleId);
                 await deps.onModuleStateChanged?.(moduleId, true);

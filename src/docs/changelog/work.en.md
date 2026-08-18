@@ -71,3 +71,11 @@ Module discovery now includes repository tags alongside branches, while the deta
 ## Consolidate marketplace settings
 
 Module Sources now lives solely as a dedicated section of the marketplace settings popup. Detail metadata separates provider and version from category tags, and the settings control now has light- and dark-theme artwork.
+
+## Test modules before activation
+
+Enabling a module now executes every standard JavaScript and TypeScript test supplied by its checkout before changing runtime state. Any failing or timed-out test rejects activation and reports the module test failure.
+
+## Include external modules in the core test command
+
+The root `npm test` runner now discovers tests under both the Cognis source tree and the configured external-module checkout root, including checkouts stored outside the repository through `COGNIS_EXTERNAL_MODULES_ROOT`.
