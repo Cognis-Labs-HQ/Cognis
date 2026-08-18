@@ -112,6 +112,6 @@ Repositori modul dapat menyediakan direktori `media/` di akar berisi gambar dan 
 
 Pemasangan modul kini memaksa transport HTTP/1.1 Git yang lebih kompatibel dan mencoba kembali kegagalan klon sementara seperti koneksi terputus, batas waktu, kegagalan DNS, dan transfer TLS yang terganggu. Setiap percobaan dimulai dengan direktori staging yang bersih, sedangkan kegagalan repositori atau validasi permanen tetap dihentikan segera dengan diagnosis yang tepat.
 
-## Gunakan arsip GitHub sebagai cadangan
+## Cegah TLS macet di kontainer
 
-Jika kegagalan sementara kloning Git terus terjadi hingga semua percobaan habis, instalasi modul kini mengunduh commit terpilih melalui layanan arsip GitHub. Jalur cadangan ini menghindari transportasi HTTP cerdas Git sambil mempertahankan asal instalasi khusus commit dan validasi repositori.
+Jaringan Compose Cognis kini menggunakan MTU bridge yang lebih kecil agar paket TLS ClientHello mencapai layanan eksternal secara utuh pada host dengan MTU uplink, VPN, atau terowongan yang lebih kecil. Perubahan ini mengatasi koneksi GitHub yang terhenti saat handshake TLS dari dalam kontainer aplikasi.

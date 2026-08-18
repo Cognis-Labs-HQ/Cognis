@@ -112,6 +112,6 @@ Ein Modul-Repository kann im Stammverzeichnis `media/` unterstützte Bilder und 
 
 Die Modulinstallation erzwingt nun den breiter kompatiblen HTTP/1.1-Transport von Git und wiederholt vorübergehende Klonfehler wie Verbindungsabbrüche, Zeitüberschreitungen, DNS-Fehler und unterbrochene TLS-Übertragungen. Jeder Versuch beginnt mit einem sauberen Staging-Verzeichnis; dauerhafte Repository- oder Validierungsfehler werden weiterhin sofort mit ihrer genauen Diagnose beendet.
 
-## Auf GitHub-Archive ausweichen
+## TLS-Blockaden im Container verhindern
 
-Wenn wiederholte vorübergehende Git-Klonfehler alle Versuche ausschöpfen, lädt die Modulinstallation stattdessen den ausgewählten Commit über den Archivdienst von GitHub. Dieser Ersatzweg umgeht Gits Smart-HTTP-Transport und bewahrt zugleich die commitgenaue Installationsherkunft und Repository-Prüfung.
+Cognis-Compose-Netzwerke verwenden nun eine kleinere Bridge-MTU, damit TLS-ClientHello-Pakete externe Dienste auf Hosts mit einer kleineren Uplink-, VPN- oder Tunnel-MTU unbeschädigt erreichen. Dadurch werden GitHub-Verbindungen behoben, die innerhalb des Anwendungscontainers beim TLS-Handshake stehen blieben.

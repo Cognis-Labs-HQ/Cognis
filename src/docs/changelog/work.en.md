@@ -112,6 +112,6 @@ A module repository may provide a root `media/` directory of supported images an
 
 Module installation now forces Git's more broadly compatible HTTP/1.1 transport and retries transient clone failures such as connection resets, timeouts, DNS failures, and interrupted TLS transfers. Every attempt starts with a clean staging directory, while permanent repository or validation failures still stop immediately and retain their exact diagnostic.
 
-## Fall back to GitHub archives
+## Prevent container TLS stalls
 
-When repeated transient Git clone failures exhaust their retries, module installation now downloads the selected commit from GitHub's archive service instead. The fallback avoids Git's smart HTTP transport while preserving commit-specific installation provenance and repository validation.
+Cognis Compose networks now use a reduced bridge MTU so TLS ClientHello packets reach external services intact on hosts whose uplink, VPN, or tunnel has a smaller MTU. This addresses GitHub connections that stalled during the TLS handshake from inside the application container.
