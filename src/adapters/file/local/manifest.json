@@ -2,7 +2,7 @@
     "id": "local",
     "uuid": "1a6feee8-ee9d-501f-9627-f97eb12d9780",
     "name": "Local File Storage",
-    "version": "0.1.11",
+    "version": "0.1.12",
     "publisher": "Cognis Labs HQ",
     "locked": true
 }

@@ -691,6 +691,9 @@
   <string name="ui.app.modules.available">利用可能</string>
   <string name="ui.app.modules.categories">カテゴリー</string>
   <string name="ui.app.modules.branch">ブランチ</string>
+  <string name="ui.app.modules.install_version">インストール版</string>
+  <string name="ui.app.modules.branches">ブランチ</string>
+  <string name="ui.app.modules.releases">リリース</string>
   <string name="ui.app.modules.default_branch">既定</string>
   <string name="ui.app.modules.sources">モジュールソース</string>
   <string name="ui.app.modules.sources_description">設定されたソースは個別に照会されます。既定の信頼済み組織は Cognis によって管理され、編集できません。</string>

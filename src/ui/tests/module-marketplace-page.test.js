@@ -104,8 +104,9 @@ test("module sources use an independent list and editor", () => {
     );
     assert.match(source, /function renderSourceManager/);
     assert.match(source, /function renderSourceForm/);
-    assert.match(source, /id: "sources"/);
+    assert.match(source, /module-settings-sources/);
     assert.match(source, /id: "editor"/);
+    assert.doesNotMatch(source, /id="module-source-settings"/);
     assert.match(source, /source\.trusted/);
     assert.match(source, /data-edit-source/);
     assert.match(source, /data-remove-source/);
@@ -149,7 +150,7 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(source, /loadModuleMarketplaceSettings/);
     assert.match(source, /recommendedModulesUrl/);
     assert.match(source, /id="module-marketplace-settings"/);
-    assert.match(source, /settings-cog\.svg/);
+    assert.match(source, /module-icon-settings/);
     assert.match(source, /module-icon-refresh/);
     assert.match(source, /module-icon-back/);
     assert.match(source, /module-detail-license/);
@@ -164,9 +165,11 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(marketplaceStyles, /arrow-back-dark\.svg/);
     assert.match(marketplaceStyles, /refresh-light\.svg/);
     assert.match(marketplaceStyles, /refresh-dark\.svg/);
+    assert.match(marketplaceStyles, /settings-cog-light\.svg/);
+    assert.match(marketplaceStyles, /settings-cog-dark\.svg/);
 });
 
-test("module marketplace defaults to all statuses and allows slow installs", () => {
+test("module marketplace defaults to all statuses and bounds installs", () => {
     const pageSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
@@ -181,6 +184,26 @@ test("module marketplace defaults to all statuses and allows slow installs", () 
         /\["all", "recommended", "installed", "available"\]/,
     );
     assert.match(pageSource, /item === "all" \? "ui\.reuse\.all"/);
-    assert.match(apiSource, /MODULE_INSTALL_TIMEOUT_MS = 10 \* 60 \* 1000/);
+    assert.match(apiSource, /MODULE_INSTALL_TIMEOUT_MS = 2 \* 60 \* 1000/);
     assert.match(apiSource, /timeoutMs: MODULE_INSTALL_TIMEOUT_MS/);
+});
+
+test("module marketplace exposes releases and pending action feedback", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    const loadingSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/button-loading.js"),
+        "utf8",
+    );
+    const loadingStyles = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/button-loading.css"),
+        "utf8",
+    );
+    assert.match(source, /module\.releases/);
+    assert.match(source, /ui\.app\.modules\.releases/);
+    assert.match(source, /beginButtonLoading\(target\)/);
+    assert.match(loadingSource, /classList\.add\("button-loading"\)/);
+    assert.match(loadingStyles, /@keyframes button-loading-spin/);
 });

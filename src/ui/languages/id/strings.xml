@@ -691,6 +691,9 @@
   <string name="ui.app.modules.available">Tersedia</string>
   <string name="ui.app.modules.categories">Kategori</string>
   <string name="ui.app.modules.branch">Cabang</string>
+  <string name="ui.app.modules.install_version">Versi instalasi</string>
+  <string name="ui.app.modules.branches">Cabang</string>
+  <string name="ui.app.modules.releases">Rilis</string>
   <string name="ui.app.modules.default_branch">bawaan</string>
   <string name="ui.app.modules.sources">Sumber Modul</string>
   <string name="ui.app.modules.sources_description">Sumber yang dikonfigurasi diminta secara independen. Organisasi tepercaya bawaan dikelola oleh Cognis dan tidak dapat diedit.</string>

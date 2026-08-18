@@ -691,6 +691,9 @@
   <string name="ui.app.modules.available">Verfügbar</string>
   <string name="ui.app.modules.categories">Kategorien</string>
   <string name="ui.app.modules.branch">Zweig</string>
+  <string name="ui.app.modules.install_version">Installationsversion</string>
+  <string name="ui.app.modules.branches">Branches</string>
+  <string name="ui.app.modules.releases">Veröffentlichungen</string>
   <string name="ui.app.modules.default_branch">Standard</string>
   <string name="ui.app.modules.sources">Modulquellen</string>
   <string name="ui.app.modules.sources_description">Konfigurierte Quellen werden unabhängig abgefragt. Die vertrauenswürdige Standardorganisation wird von Cognis verwaltet und kann nicht bearbeitet werden.</string>

@@ -37,6 +37,7 @@ export interface MarketplaceModule extends ModuleManifest {
     sourceUuid: string;
     installed: boolean;
     branches: Array<{ name: string; commit: string }>;
+    releases: Array<{ name: string; commit: string }>;
     defaultBranch: string;
     installedBranch?: string;
     installedCommit?: string;
@@ -243,7 +244,8 @@ export class ModuleMarketplaceService {
         await rm(temporary, { recursive: true, force: true });
         const cloneUrl = this.assertCloneUrl(module.cloneUrl);
         const selectedBranch = branch ?? module.defaultBranch;
-        if (!module.branches.some((entry) => entry.name === selectedBranch)) {
+        const installRefs = [...module.branches, ...module.releases];
+        if (!installRefs.some((entry) => entry.name === selectedBranch)) {
             throw new Error("invalid_module_branch");
         }
         const gitEnvironment: NodeJS.ProcessEnv = {
@@ -366,11 +368,10 @@ export class ModuleMarketplaceService {
                 } catch {
                     return null;
                 }
-                const branches = await this.discoverBranches(
-                    source,
-                    projectPath,
-                    headers,
-                );
+                const [branches, releases] = await Promise.all([
+                    this.discoverBranches(source, projectPath, headers),
+                    this.discoverReleases(source, projectPath, headers),
+                ]);
                 const readmeResponse = await fetch(
                     this.resolveRepositoryAssetUrl(
                         source,
@@ -439,6 +440,7 @@ export class ModuleMarketplaceService {
                     sourceUuid: source.uuid,
                     installed: Boolean(provenance),
                     branches,
+                    releases,
                     defaultBranch,
                     installedBranch: provenance?.branch,
                     installedCommit: provenance?.commit,
@@ -631,6 +633,28 @@ export class ModuleMarketplaceService {
                 ),
             }))
             .filter((branch) => branch.name && branch.commit);
+    }
+
+    private async discoverReleases(
+        source: ModuleSource,
+        projectPath: string,
+        headers: Record<string, string>,
+    ): Promise<Array<{ name: string; commit: string }>> {
+        const endpoint =
+            source.provider === "github"
+                ? `${source.baseUrl}/repos/${projectPath}/tags?per_page=100`
+                : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/tags?per_page=100`;
+        return (await this.fetchPaginated(endpoint, headers))
+            .map((tag) => ({
+                name: String(tag.name ?? ""),
+                commit: String(
+                    (tag.commit as Record<string, unknown> | undefined)?.sha ??
+                        (tag.commit as Record<string, unknown> | undefined)
+                            ?.id ??
+                        "",
+                ),
+            }))
+            .filter((tag) => tag.name && tag.commit);
     }
 
     private async fetchPaginated(

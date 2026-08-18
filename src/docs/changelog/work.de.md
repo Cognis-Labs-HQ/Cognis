@@ -63,3 +63,11 @@ Marketplace-Installationen verwenden nun ein zehnminütiges Anfragefenster, dami
 ## Zuerst alle Module anzeigen
 
 Der Modulstatusfilter enthält nun Alle und wählt diese Ansicht standardmäßig aus, sodass installierte, verfügbare und empfohlene Module beim Öffnen gemeinsam erscheinen.
+
+## Veröffentlichungen mit direkter Rückmeldung installieren
+
+Die Modulsuche erfasst nun Repository-Tags zusätzlich zu Branches; die Detailauswahl verwendet weiterhin standardmäßig den Standard-Branch des Repositorys. Schaltflächen für Lebenszyklusaktionen zeigen einen integrierten Fortschrittsindikator, und Installationen verwenden ein begrenztes Zeitfenster von zwei Minuten.
+
+## Marketplace-Einstellungen zusammenführen
+
+Modulquellen befinden sich jetzt ausschließlich als eigener Abschnitt im Einstellungsdialog des Marketplace. Anbieter und Version werden getrennt von Kategorie-Tags angezeigt, und das Einstellungssymbol unterstützt helle und dunkle Designs.

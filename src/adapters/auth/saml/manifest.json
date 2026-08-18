@@ -2,6 +2,6 @@
     "id": "saml",
     "uuid": "222920d3-eae9-5712-8699-3c55102655a4",
     "name": "SAML Authentication",
-    "version": "0.1.9",
+    "version": "0.1.10",
     "publisher": "Cognis Labs HQ"
 }

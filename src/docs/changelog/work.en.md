@@ -58,8 +58,16 @@ License metadata is displayed only when a recognized license file exists at the 
 
 ## Allow module installation time
 
-Marketplace installs now use a ten-minute request window so cloning and validating larger repositories such as Jitsi Meet does not fail at the generic thirty-second API timeout.
+Marketplace installs now use a two-minute request window so cloning and validating larger repositories such as Jitsi Meet does not fail at the generic thirty-second API timeout.
 
 ## Show all modules first
 
 The module status filter now includes All and selects it by default, presenting installed, available, and recommended modules together when the page opens.
+
+## Install releases with responsive feedback
+
+Module discovery now includes repository tags alongside branches, while the detail selector still defaults to the repository's default branch. Lifecycle buttons show an in-button progress spinner, and module installation uses a bounded two-minute request window suitable for repositories within the supported size.
+
+## Consolidate marketplace settings
+
+Module Sources now lives solely as a dedicated section of the marketplace settings popup. Detail metadata separates provider and version from category tags, and the settings control now has light- and dark-theme artwork.

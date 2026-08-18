@@ -58,8 +58,16 @@ Metadata lisensi hanya ditampilkan bila berkas lisensi yang dikenali tersedia di
 
 ## Beri waktu untuk pemasangan modul
 
-Pemasangan marketplace kini memakai jendela permintaan sepuluh menit agar kloning dan validasi repositori besar seperti Jitsi Meet tidak gagal karena batas waktu API umum tiga puluh detik.
+Pemasangan marketplace kini memakai jendela permintaan dua menit agar kloning dan validasi repositori besar seperti Jitsi Meet tidak gagal karena batas waktu API umum tiga puluh detik.
 
 ## Tampilkan semua modul terlebih dahulu
 
 Filter status modul kini memiliki Semua dan memilihnya secara bawaan sehingga modul terpasang, tersedia, dan direkomendasikan tampil bersama saat halaman dibuka.
+
+## Instal rilis dengan umpan balik responsif
+
+Penemuan modul kini menyertakan tag repositori bersama cabang, sementara pemilih detail tetap menggunakan cabang bawaan repositori secara default. Tombol siklus hidup menampilkan indikator proses di dalam tombol, dan instalasi modul memakai batas waktu permintaan dua menit.
+
+## Satukan pengaturan marketplace
+
+Sumber Modul kini hanya tersedia sebagai bagian khusus dalam dialog pengaturan marketplace. Penyedia dan versi dipisahkan dari tag kategori, serta ikon pengaturan mendukung tema terang dan gelap.

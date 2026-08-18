@@ -100,48 +100,54 @@ test("module marketplace discovers repository manifests", async () => {
                 ? new Response("<svg/>", {
                       headers: { "content-type": "image/svg+xml" },
                   })
-                : String(input).includes("/branches?")
+                : String(input).includes("/tags?")
                   ? new Response(
                         JSON.stringify([
-                            { name: "main", commit: { sha: "abc123" } },
-                            { name: "preview", commit: { sha: "def456" } },
+                            { name: "v1.0.0", commit: { sha: "tag123" } },
                         ]),
                     )
-                  : String(input).includes("/repos?")
+                  : String(input).includes("/branches?")
                     ? new Response(
                           JSON.stringify([
-                              {
-                                  clone_url:
-                                      "https://github.com/acme/notes.git",
-                                  default_branch: "main",
-                                  full_name: "acme/notes",
-                              },
+                              { name: "main", commit: { sha: "abc123" } },
+                              { name: "preview", commit: { sha: "def456" } },
                           ]),
                       )
-                    : new Response(
-                          JSON.stringify({
-                              uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
-                              id: "notes",
-                              name: "Notes",
-                              version: "1.0.0",
-                              publisher: "Acme",
-                              class: "extension",
-                              coreApiVersion: "v1",
-                              summary: "Notes",
-                              description: "Shared notes.",
-                              categories: ["Productivity"],
-                              tags: ["notes"],
-                              recommended: true,
-                              license: "MIT",
-                              repository: "https://github.com/acme/notes",
-                              capabilities: [],
-                              entrypoints: { bootstrap: "./bootstrap.js" },
-                              assets: {
-                                  icon: "assets/icon.svg",
-                                  banner: "assets/banner.svg",
-                              },
-                          }),
-                      );
+                    : String(input).includes("/repos?")
+                      ? new Response(
+                            JSON.stringify([
+                                {
+                                    clone_url:
+                                        "https://github.com/acme/notes.git",
+                                    default_branch: "main",
+                                    full_name: "acme/notes",
+                                },
+                            ]),
+                        )
+                      : new Response(
+                            JSON.stringify({
+                                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                                id: "notes",
+                                name: "Notes",
+                                version: "1.0.0",
+                                publisher: "Acme",
+                                class: "extension",
+                                coreApiVersion: "v1",
+                                summary: "Notes",
+                                description: "Shared notes.",
+                                categories: ["Productivity"],
+                                tags: ["notes"],
+                                recommended: true,
+                                license: "MIT",
+                                repository: "https://github.com/acme/notes",
+                                capabilities: [],
+                                entrypoints: { bootstrap: "./bootstrap.js" },
+                                assets: {
+                                    icon: "assets/icon.svg",
+                                    banner: "assets/banner.svg",
+                                },
+                            }),
+                        );
     try {
         const modules = await service.discover();
         assert.equal(modules[0].id, "notes");
@@ -165,6 +171,9 @@ test("module marketplace discovers repository manifests", async () => {
         assert.deepEqual(modules[0].branches, [
             { name: "main", commit: "abc123" },
             { name: "preview", commit: "def456" },
+        ]);
+        assert.deepEqual(modules[0].releases, [
+            { name: "v1.0.0", commit: "tag123" },
         ]);
         assert.equal(modules[0].installed, true);
         assert.equal(modules[0].installedBranch, "main");
