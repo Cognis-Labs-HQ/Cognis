@@ -213,19 +213,40 @@ export function createModuleRoutes(
                 );
                 return true;
             }
-            const manifest = await marketplace.install(
-                requestedModule as never,
-                typeof body.token === "string" ? body.token : undefined,
-                typeof body.branch === "string" ? body.branch : undefined,
-            );
-            hooks?.log?.("info", "External module installed.", {
-                ...logMeta,
-                accountId: claims.sub,
-                moduleUuid: manifest.uuid,
-            });
-            await hooks?.onImported?.(manifest.id);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: manifest }));
+            try {
+                const manifest = await marketplace.install(
+                    requestedModule as never,
+                    typeof body.token === "string" ? body.token : undefined,
+                    typeof body.branch === "string" ? body.branch : undefined,
+                );
+                await hooks?.onImported?.(manifest.id);
+                hooks?.log?.("info", "External module installed.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    moduleId: manifest.id,
+                    moduleUuid: manifest.uuid,
+                });
+                res.writeHead(200, { "content-type": "application/json" });
+                res.end(JSON.stringify({ data: manifest }));
+            } catch (error) {
+                const message =
+                    error instanceof Error ? error.message : String(error);
+                hooks?.log?.("error", "External module installation failed.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    moduleUuid: requestedModule.uuid,
+                    error: message,
+                });
+                res.writeHead(422, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_install_failed",
+                            message,
+                        },
+                    }),
+                );
+            }
             return true;
         }
         const uninstallMatch = url.pathname.match(

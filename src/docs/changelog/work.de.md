@@ -94,4 +94,8 @@ Erwartete Fehler bei der Modulinstallation lösen nicht mehr den globalen Zustan
 
 ## Änderungen am Modul-Lebenszyklus sofort veröffentlichen
 
-Abgeschlossene Installations-, Aktivierungs-, Deaktivierungs-, Aktualisierungs- und Deinstallationsvorgänge aktualisieren den Marketplace jetzt sofort, veröffentlichen ein strukturiertes Lebenszyklusereignis, erneuern die Navigationsregistrierungen und gleichen den Zustand ohne Neuladen der Seite mit dem Server ab. Die Versionsauswahl der Detailansicht verwendet außerdem das gemeinsame Design für Auswahllisten.
+Abgeschlossene Installations-, Aktivierungs-, Deaktivierungs-, Aktualisierungs- und Deinstallationsvorgänge aktualisieren den Marketplace jetzt sofort, veröffentlichen ein strukturiertes Lebenszyklusereignis, erneuern die Navigationsregistrierungen und gleichen den Zustand ohne Neuladen der Seite mit dem Server ab. Die Versionsauswahl der Detailansicht folgt außerdem dem aktiven Design.
+
+## Modulaktionen synchron halten
+
+Der Fortschritt von Modulaktionen wird nun anhand der Modul-UUID statt nur am angeklickten DOM-Element gespeichert. Deaktivierte Steuerelemente und der Ladeindikator bleiben dadurch beim Wechsel zwischen Karten- und Detailansicht erhalten. Erfolgreiche Vorgänge zeigen sofort die nächsten gültigen Steuerelemente. Die Release-Auswahl verwendet die kollidierende Hellmodus-Klasse nicht mehr. Fehlgeschlagene Installationen zeigen den genauen Serverfehler an und erzeugen strukturierte Server- und Browserprotokolle.

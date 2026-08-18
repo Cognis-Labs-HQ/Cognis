@@ -94,4 +94,8 @@ Expected module installation failures no longer trigger the global connection-in
 
 ## Publish module lifecycle changes immediately
 
-Completed install, enable, disable, update, and uninstall operations now update the marketplace immediately, publish a structured lifecycle event, refresh navbar registrations, and reconcile against authoritative server state without requiring a page reload. The detail-view version selector also uses the shared themed-select styling.
+Completed install, enable, disable, update, and uninstall operations now update the marketplace immediately, publish a structured lifecycle event, refresh navbar registrations, and reconcile against authoritative server state without requiring a page reload. The detail-view version selector also follows the active theme.
+
+## Keep module actions synchronized
+
+Module lifecycle progress is now stored by module UUID rather than only on the clicked DOM node, preserving disabled controls and the spinner while moving between cards and details. Successful operations immediately switch to the next valid controls. The release selector no longer applies the conflicting light-mode class, and failed installs now return and display the precise server error while recording structured server and browser logs.

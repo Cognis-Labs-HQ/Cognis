@@ -373,6 +373,64 @@ test("module marketplace install forwards the selected branch", async () => {
     assert.equal(installedBranch, "preview");
 });
 
+test("module marketplace reports and logs installation failures", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const entries: Array<{ message: string; meta?: Record<string, unknown> }> =
+        [];
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        {
+            log: (_level, message, meta) => entries.push({ message, meta }),
+        },
+        undefined,
+        {
+            install: async () => {
+                throw new Error("manifest checksum mismatch");
+            },
+        } as any,
+    );
+    let status = 0;
+    let responseBody = "";
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        module: { uuid: "module-uuid" },
+                        branch: "main",
+                    }),
+                );
+            },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/install"),
+    );
+    assert.equal(status, 422);
+    assert.match(responseBody, /manifest checksum mismatch/);
+    assert.deepEqual(entries, [
+        {
+            message: "External module installation failed.",
+            meta: {
+                component: "api-modules",
+                method: "POST",
+                path: "/api/v1/modules/install",
+                accountId: "admin-user",
+                moduleUuid: "module-uuid",
+                error: "manifest checksum mismatch",
+            },
+        },
+    ]);
+});
+
 test("module catalog serves cached images from the same origin", async () => {
     const assetId = "a".repeat(64);
     const route = createModuleRoutes(

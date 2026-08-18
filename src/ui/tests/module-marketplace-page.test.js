@@ -107,6 +107,8 @@ test("module installation failures stay local to the marketplace action", () => 
         source,
         /installModule[\s\S]*suppressConnectionRecoveryToast: true/,
     );
+    assert.match(source, /detail\?\.message/);
+    assert.match(source, /error\.code = detail\?\.code/);
 });
 
 test("module sources use an independent list and editor", () => {
@@ -137,13 +139,13 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /module-detail-back/);
     assert.match(source, /selectedModule = null/);
     assert.match(source, /target\.classList\.contains\("module-store-card"\)/);
-    assert.match(source, /data-module-install/);
-    assert.match(source, /data-module-enable/);
-    assert.match(source, /data-module-disable/);
-    assert.match(source, /data-module-uninstall/);
-    assert.match(source, /data-module-update/);
+    assert.match(source, /renderLifecycleButton\(module, "install"/);
+    assert.match(source, /renderLifecycleButton\(module, "enable"/);
+    assert.match(source, /renderLifecycleButton\(module, "disable"/);
+    assert.match(source, /renderLifecycleButton\(module, "uninstall"/);
+    assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);
-    assert.match(source, /class="theme-select" data-module-branch/);
+    assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
     assert.match(source, /function hasModuleUpdate/);
     assert.match(source, /module\.defaultBranch/);
@@ -219,6 +221,10 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /module\.releases/);
     assert.match(source, /ui\.app\.modules\.releases/);
     assert.match(source, /beginButtonLoading\(target\)/);
+    assert.match(source, /pendingModuleActions\.set\(module\.uuid, action\)/);
+    assert.match(source, /pendingModuleActions\.delete\(module\.uuid\)/);
+    assert.match(source, /isPending \? " button-loading"/);
+    assert.match(source, /Module lifecycle action failed/);
     assert.match(loadingSource, /classList\.add\("button-loading"\)/);
     assert.match(loadingStyles, /@keyframes button-loading-spin/);
 });

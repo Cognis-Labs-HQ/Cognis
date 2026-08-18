@@ -94,4 +94,8 @@ Kegagalan instalasi modul yang diharapkan tidak lagi memicu status pemulihan kon
 
 ## Publikasikan perubahan siklus hidup modul secara langsung
 
-Operasi instalasi, aktivasi, penonaktifan, pembaruan, dan penghapusan yang selesai kini langsung memperbarui marketplace, menerbitkan peristiwa siklus hidup terstruktur, menyegarkan pendaftaran navigasi, dan menyelaraskan status otoritatif dari server tanpa memuat ulang halaman. Pemilih versi pada tampilan detail juga menggunakan gaya pemilih bertema bersama.
+Operasi instalasi, aktivasi, penonaktifan, pembaruan, dan penghapusan yang selesai kini langsung memperbarui marketplace, menerbitkan peristiwa siklus hidup terstruktur, menyegarkan pendaftaran navigasi, dan menyelaraskan status otoritatif dari server tanpa memuat ulang halaman. Pemilih versi pada tampilan detail juga mengikuti tema aktif.
+
+## Pertahankan sinkronisasi tindakan modul
+
+Kemajuan siklus hidup modul kini disimpan berdasarkan UUID modul, bukan hanya pada elemen DOM yang diklik, sehingga kontrol nonaktif dan indikator proses tetap ada saat berpindah antara kartu dan detail. Operasi yang berhasil langsung menampilkan kontrol valid berikutnya. Pemilih rilis tidak lagi memakai kelas mode terang yang bertentangan, dan instalasi gagal kini menampilkan kesalahan server secara tepat sekaligus mencatat log server dan browser terstruktur.

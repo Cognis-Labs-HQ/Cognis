@@ -30,6 +30,7 @@ let view = "all";
 let selectedModule = null;
 let discoverySequence = 0;
 const selectedBranches = new Map();
+const pendingModuleActions = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 
 function renderCard(module) {
@@ -50,12 +51,19 @@ function renderCard(module) {
 
 function renderLifecycleActions(module) {
     if (!module.installed && !module.status) {
-        return `<button type="button" class="btn-confirm" data-module-install="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.install"))}</button>`;
+        return renderLifecycleButton(module, "install", "confirm");
     }
     if (module.status === "enabled") {
-        return `${hasModuleUpdate(module) ? `<button type="button" class="btn-confirm" data-module-update="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.update"))}</button>` : ""}<button type="button" class="btn-cancel" data-module-disable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.disable"))}</button>`;
+        return `${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "disable", "cancel")}`;
     }
-    return `${hasModuleUpdate(module) ? `<button type="button" class="btn-confirm" data-module-update="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.update"))}</button>` : ""}<button type="button" class="btn-confirm" data-module-enable="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.enable"))}</button><button type="button" class="btn-cancel" data-module-uninstall="${module.uuid}">${escapeHtml(i18n.t("ui.reuse.uninstall"))}</button>`;
+    return `${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "enable", "confirm")}${renderLifecycleButton(module, "uninstall", "cancel")}`;
+}
+
+function renderLifecycleButton(module, action, consequence) {
+    const pendingAction = pendingModuleActions.get(module.uuid);
+    const isPending = pendingAction === action;
+    const isBlocked = Boolean(pendingAction);
+    return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(`ui.reuse.${action}`))}</button>`;
 }
 
 function selectedBranch(module) {
@@ -84,7 +92,7 @@ function renderModuleDetails(module) {
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
     const branchSelector = module.branches?.length
-        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.install_version"))}</span><select class="theme-select" data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
+        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.install_version"))}</span><select data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
         : "";
     const license = module.license
         ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
@@ -507,13 +515,24 @@ function bindInteractions(root, signal) {
                 : target.dataset.moduleUuid;
             const module = modules.find((entry) => entry.uuid === moduleUuid);
             if (action && module) {
+                if (pendingModuleActions.has(module.uuid)) return;
+                pendingModuleActions.set(module.uuid, action);
                 const finishLoading = beginButtonLoading(target);
+                refreshMarketplace();
                 try {
                     await runLifecycleAction(module, action);
                 } catch (error) {
+                    console.error("Module lifecycle action failed.", {
+                        action,
+                        moduleId: module.id,
+                        moduleUuid: module.uuid,
+                        error,
+                    });
                     showToast(error.message, { type: "error" });
                 } finally {
+                    pendingModuleActions.delete(module.uuid);
                     finishLoading();
+                    refreshMarketplace();
                 }
                 return;
             }

@@ -3,7 +3,16 @@ import { apiFetch } from "../../reuse/api-client.js";
 const MODULE_INSTALL_TIMEOUT_MS = 2 * 60 * 1000;
 
 async function data(response) {
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        const detail = payload?.error;
+        const error = new Error(
+            detail?.message ?? `Request failed with HTTP ${response.status}`,
+        );
+        error.code = detail?.code;
+        error.status = response.status;
+        throw error;
+    }
     if (response.status === 204) return null;
     return (await response.json()).data;
 }
