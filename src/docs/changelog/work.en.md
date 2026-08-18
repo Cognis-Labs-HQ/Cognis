@@ -107,3 +107,7 @@ Module installs now run as polled background jobs so reverse proxies cannot turn
 ## Add marketplace media galleries and theme-safe controls
 
 A module repository may provide a root `media/` directory of supported images and videos. The detail view renders those assets in a horizontal gallery, and its native release-channel selector now supplies explicit theme colors without conflicting select classes.
+
+## Retry interrupted module downloads
+
+Module installation now forces Git's more broadly compatible HTTP/1.1 transport and retries transient clone failures such as connection resets, timeouts, DNS failures, and interrupted TLS transfers. Every attempt starts with a clean staging directory, while permanent repository or validation failures still stop immediately and retain their exact diagnostic.

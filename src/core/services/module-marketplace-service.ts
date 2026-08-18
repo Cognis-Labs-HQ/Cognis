@@ -7,6 +7,10 @@ import type { ModuleManifest } from "../contracts/module-manifest.js";
 import { validateModuleRepository } from "./module-repository-validator.js";
 
 const execFileAsync = promisify(execFile);
+const GIT_CLONE_ATTEMPTS = 3;
+const GIT_CLONE_RETRY_DELAYS_MS = [250, 1_000];
+const TRANSIENT_GIT_FAILURE =
+    /connection reset|recv failure|could not resolve host|failed to connect|connection timed out|operation timed out|tls connection|gnutls|http\/2 stream|remote end hung up|unexpected disconnect/i;
 
 export type ModuleSourceProvider = "github" | "gitlab";
 
@@ -272,20 +276,11 @@ export class ModuleMarketplaceService {
             gitEnvironment.GIT_CONFIG_VALUE_0 = `Authorization: Basic ${Buffer.from(`oauth2:${token}`).toString("base64")}`;
         }
         try {
-            await execFileAsync(
-                "git",
-                [
-                    "clone",
-                    "--depth=1",
-                    "--branch",
-                    selectedBranch,
-                    "--",
-                    cloneUrl,
-                    temporary,
-                ],
-                {
-                    env: gitEnvironment,
-                },
+            await this.cloneRepository(
+                cloneUrl,
+                selectedBranch,
+                temporary,
+                gitEnvironment,
             );
             const manifest = this.parseManifest(
                 await readFile(path.join(temporary, "manifest.json"), "utf8"),
@@ -316,6 +311,61 @@ export class ModuleMarketplaceService {
             await rm(temporary, { recursive: true, force: true });
             throw error;
         }
+    }
+
+    private async cloneRepository(
+        cloneUrl: string,
+        branch: string,
+        temporary: string,
+        environment: NodeJS.ProcessEnv,
+    ): Promise<void> {
+        let lastError: unknown;
+        for (let attempt = 1; attempt <= GIT_CLONE_ATTEMPTS; attempt += 1) {
+            await rm(temporary, { recursive: true, force: true });
+            try {
+                await execFileAsync(
+                    "git",
+                    [
+                        "-c",
+                        "http.version=HTTP/1.1",
+                        "clone",
+                        "--depth=1",
+                        "--branch",
+                        branch,
+                        "--",
+                        cloneUrl,
+                        temporary,
+                    ],
+                    { env: environment },
+                );
+                return;
+            } catch (error) {
+                lastError = error;
+                const output = this.commandFailureText(error);
+                if (
+                    attempt === GIT_CLONE_ATTEMPTS ||
+                    !TRANSIENT_GIT_FAILURE.test(output)
+                ) {
+                    throw error;
+                }
+                await new Promise((resolve) =>
+                    setTimeout(resolve, GIT_CLONE_RETRY_DELAYS_MS[attempt - 1]),
+                );
+            }
+        }
+        throw lastError;
+    }
+
+    private commandFailureText(error: unknown): string {
+        if (!(error instanceof Error)) return String(error);
+        const commandError = error as Error & {
+            stdout?: string | Buffer;
+            stderr?: string | Buffer;
+        };
+        return [commandError.message, commandError.stdout, commandError.stderr]
+            .filter(Boolean)
+            .map(String)
+            .join("\n");
     }
 
     async uninstall(uuid: string): Promise<void> {

@@ -107,3 +107,7 @@ Pemasangan modul kini berjalan sebagai tugas latar belakang yang dipantau sehing
 ## Menambahkan galeri media dan kontrol yang aman untuk tema
 
 Repositori modul dapat menyediakan direktori `media/` di akar berisi gambar dan video yang didukung. Tampilan detail menampilkannya sebagai galeri horizontal, sementara pemilih kanal rilis native memakai warna tema eksplisit tanpa kelas select yang bertentangan.
+
+## Mencoba kembali unduhan modul yang terputus
+
+Pemasangan modul kini memaksa transport HTTP/1.1 Git yang lebih kompatibel dan mencoba kembali kegagalan klon sementara seperti koneksi terputus, batas waktu, kegagalan DNS, dan transfer TLS yang terganggu. Setiap percobaan dimulai dengan direktori staging yang bersih, sedangkan kegagalan repositori atau validasi permanen tetap dihentikan segera dengan diagnosis yang tepat.

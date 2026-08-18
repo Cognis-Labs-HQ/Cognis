@@ -107,3 +107,7 @@ Modulinstallationen laufen nun als abgefragte Hintergrundaufträge, damit Revers
 ## Mediengalerien und designsichere Steuerelemente hinzufügen
 
 Ein Modul-Repository kann im Stammverzeichnis `media/` unterstützte Bilder und Videos bereitstellen. Die Detailansicht zeigt sie in einer horizontalen Galerie; der native Veröffentlichungskanal-Selektor verwendet explizite Designfarben ohne widersprüchliche Select-Klassen.
+
+## Unterbrochene Modul-Downloads erneut versuchen
+
+Die Modulinstallation erzwingt nun den breiter kompatiblen HTTP/1.1-Transport von Git und wiederholt vorübergehende Klonfehler wie Verbindungsabbrüche, Zeitüberschreitungen, DNS-Fehler und unterbrochene TLS-Übertragungen. Jeder Versuch beginnt mit einem sauberen Staging-Verzeichnis; dauerhafte Repository- oder Validierungsfehler werden weiterhin sofort mit ihrer genauen Diagnose beendet.
