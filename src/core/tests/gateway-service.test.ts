@@ -9,6 +9,28 @@ import {
     GatewayService,
 } from "../services/gateway-service.js";
 
+test("gateway bootstrap ignores infrastructure directories without manifests", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
+    const gatewaysRoot = path.join(root, "gateways");
+    await mkdir(path.join(gatewaysRoot, "reuse"), { recursive: true });
+    await writeFile(
+        path.join(gatewaysRoot, "reuse", "bootstrap-loader.ts"),
+        "export const load = () => undefined;",
+    );
+    const logMessages: string[] = [];
+    const service = new GatewayService(new GatewayRegistry());
+
+    const required = await service.bootstrap(gatewaysRoot, {
+        gatewayRegistry: new GatewayRegistry(),
+        capabilities: new CapabilityStore(),
+        flow: {} as never,
+        log: (_level, message) => logMessages.push(message),
+    });
+
+    assert.deepEqual(required, []);
+    assert.deepEqual(logMessages, []);
+});
+
 test("gateway bootstrap derives hasAdapters from adapter parent manifests", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");

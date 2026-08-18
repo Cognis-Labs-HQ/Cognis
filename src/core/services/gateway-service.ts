@@ -255,10 +255,9 @@ export class GatewayService {
                     entry,
                     JSON.parse(raw) as GatewayDirectoryManifest,
                 );
-            } catch {
-                directoryManifests.set(entry, {});
-            }
+            } catch {}
         }
+        entries = entries.filter((entry) => directoryManifests.has(entry));
         const compareBootstrapPriority = (a: string, b: string) => {
             if (a === "files") return -1;
             if (b === "files") return 1;

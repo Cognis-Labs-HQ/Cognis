@@ -47,3 +47,7 @@ Screenshots in der Moduldetailansicht bleiben nun in einem begrenzten Karussell 
 ## Eindeutige Marktplatzmodule erzwingen
 
 Analytics und Nextcloud Whiteboard befinden sich nun in eigenen Repositorys und werden nicht mehr mitgeliefert. Die Marktplatzsuche akzeptiert jetzt das erste Repository für jede Modul-UUID, protokolliert und verwirft spätere Duplikate und aktualisiert Darstellungsmetadaten aus dem akzeptierten Repository, während der installierte Lebenszyklusstatus erhalten bleibt.
+
+## Infrastrukturverzeichnisse der Gateways ignorieren
+
+Die automatische Gateway-Erkennung startet jetzt nur Verzeichnisse mit einem Gateway-Manifest. Dadurch wird das Infrastrukturverzeichnis `gateways/reuse` in Produktions-Builds nicht mehr als Gateway importiert.

@@ -47,3 +47,7 @@ Module detail screenshots now stay within a bounded carousel with previous and n
 ## Enforce unique marketplace modules
 
 Analytics and Nextcloud Whiteboard have moved to their dedicated repositories and are no longer bundled. Marketplace discovery now accepts the first repository for each module UUID, logs and rejects later duplicates, and refreshes presentation metadata from the accepted repository while preserving installed lifecycle state.
+
+## Ignore gateway infrastructure directories
+
+Gateway auto-discovery now bootstraps only directories that contain a gateway manifest, preventing the `gateways/reuse` infrastructure directory from being imported as a gateway in production builds.

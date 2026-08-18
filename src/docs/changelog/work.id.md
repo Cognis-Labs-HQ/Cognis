@@ -47,3 +47,7 @@ Tangkapan layar detail modul kini berada dalam karusel terbatas dengan kontrol s
 ## Terapkan modul marketplace yang unik
 
 Analytics dan Nextcloud Whiteboard telah dipindahkan ke repositori khusus dan tidak lagi dibundel. Penemuan marketplace kini menerima repositori pertama untuk setiap UUID modul, mencatat serta menolak duplikat berikutnya, dan memperbarui metadata tampilan dari repositori yang diterima sambil mempertahankan status siklus hidup instalasi.
+
+## Abaikan direktori infrastruktur gateway
+
+Penemuan gateway otomatis kini hanya menjalankan direktori yang memiliki manifes gateway, sehingga direktori infrastruktur `gateways/reuse` tidak lagi diimpor sebagai gateway dalam build produksi.
