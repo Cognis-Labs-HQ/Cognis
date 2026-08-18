@@ -51,3 +51,7 @@ Analytics dan Nextcloud Whiteboard telah dipindahkan ke repositori khusus dan ti
 ## Abaikan direktori infrastruktur gateway
 
 Penemuan gateway otomatis kini hanya menjalankan direktori yang memiliki manifes gateway, sehingga direktori infrastruktur `gateways/reuse` tidak lagi diimpor sebagai gateway dalam build produksi.
+
+## Perjelas umpan balik siklus hidup modul
+
+Penonaktifan modul kini dicatat sebagai peringatan dan penghapusan modul eksternal dicatat secara eksplisit. Penyegaran marketplace menampilkan satu pemberitahuan selesai untuk setiap klik, sedangkan modul tetap terlihat kecuali manifesnya secara eksplisit menetapkan `template` ke `true`.

@@ -361,8 +361,21 @@ test("module marketplace omits template manifests", () => {
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(source, /module\.template === true/);
-    assert.match(source, /module\.template !== true/);
+    assert.match(source, /return module\.template !== true/);
+    assert.match(source, /isVisibleMarketplaceModule\(module\)/);
+});
+
+test("module marketplace refresh actions emit one completion result", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /if \(marketplaceRefreshPending\) return/);
+    assert.match(source, /marketplaceRefreshPending = true/);
+    assert.match(
+        source,
+        /finally \{\s*marketplaceRefreshPending = false;\s*\}/,
+    );
 });
 
 test("catalog presentation updates win over installed manifest metadata", () => {

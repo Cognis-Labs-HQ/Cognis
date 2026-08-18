@@ -978,7 +978,9 @@ export class ModuleMarketplaceService {
             manifest.tags.length === 0 ||
             !manifest.entrypoints?.bootstrap ||
             !manifest.assets?.icon ||
-            !manifest.assets?.banner
+            !manifest.assets?.banner ||
+            (manifest.template !== undefined &&
+                typeof manifest.template !== "boolean")
         ) {
             throw new Error("invalid_module_manifest");
         }

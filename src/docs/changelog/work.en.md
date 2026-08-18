@@ -51,3 +51,7 @@ Analytics and Nextcloud Whiteboard have moved to their dedicated repositories an
 ## Ignore gateway infrastructure directories
 
 Gateway auto-discovery now bootstraps only directories that contain a gateway manifest, preventing the `gateways/reuse` infrastructure directory from being imported as a gateway in production builds.
+
+## Clarify module lifecycle feedback
+
+Module disable operations are now warning-level events and external-module deletion is logged explicitly. Marketplace refresh actions emit one completion toast per click, while modules remain visible unless their manifest explicitly sets `template` to `true`.

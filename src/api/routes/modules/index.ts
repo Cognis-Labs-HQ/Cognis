@@ -352,9 +352,10 @@ export function createModuleRoutes(
             }
             await marketplace.uninstall(moduleUuid);
             if (manifest) await hooks?.onUninstalled?.(manifest.id);
-            hooks?.log?.("info", "External module uninstalled.", {
+            hooks?.log?.("warn", "External module deleted.", {
                 ...logMeta,
                 accountId: claims.sub,
+                moduleId: manifest?.id,
                 moduleUuid,
             });
             res.writeHead(204);
@@ -461,12 +462,16 @@ export function createModuleRoutes(
 
         if (action === "enable") await hooks?.onEnabled?.(moduleId);
         if (action === "disable") await hooks?.onDisabled?.(moduleId);
-        hooks?.log?.("info", `Module ${action}d.`, {
-            ...logMeta,
-            accountId: claims.sub,
-            moduleId,
-            acknowledgedExternalDisclaimer: acknowledged,
-        });
+        hooks?.log?.(
+            action === "disable" ? "warn" : "info",
+            `Module ${action}d.`,
+            {
+                ...logMeta,
+                accountId: claims.sub,
+                moduleId,
+                acknowledgedExternalDisclaimer: acknowledged,
+            },
+        );
 
         res.writeHead(200, { "content-type": "application/json" });
         res.end(JSON.stringify({ data: result }));

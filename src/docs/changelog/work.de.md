@@ -51,3 +51,7 @@ Analytics und Nextcloud Whiteboard befinden sich nun in eigenen Repositorys und 
 ## Infrastrukturverzeichnisse der Gateways ignorieren
 
 Die automatische Gateway-Erkennung startet jetzt nur Verzeichnisse mit einem Gateway-Manifest. Dadurch wird das Infrastrukturverzeichnis `gateways/reuse` in Produktions-Builds nicht mehr als Gateway importiert.
+
+## Rückmeldungen zum Modul-Lebenszyklus verdeutlichen
+
+Das Deaktivieren von Modulen wird nun als Warnung protokolliert und das Löschen externer Module ausdrücklich erfasst. Marktplatz-Aktualisierungen zeigen pro Klick genau eine Abschlussmeldung, während Module sichtbar bleiben, sofern ihr Manifest `template` nicht ausdrücklich auf `true` setzt.

@@ -110,6 +110,34 @@ test("module routes log enable operations", async () => {
     ]);
 });
 
+test("module routes warn when modules are disabled", async () => {
+    const entries: Array<{ level: string; message: string }> = [];
+    const route = createModuleRoutes(
+        {
+            list: async () => [],
+            disable: async (moduleId: string) => ({
+                moduleId,
+                enabled: false,
+            }),
+        } as any,
+        {
+            log: (level, message) => entries.push({ level, message }),
+        },
+    );
+    const token = issueAccessToken("admin-user", "admin", 60);
+
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        { writeHead() {}, end() {} } as any,
+        new URL("http://localhost/api/v1/modules/jitsi-meet/disable"),
+    );
+
+    assert.deepEqual(entries, [{ level: "warn", message: "Module disabled." }]);
+});
+
 test("module routes support github imports", async () => {
     const route = createModuleRoutes({
         list: async () => [],
@@ -197,6 +225,7 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
     let enabled = true;
     let uninstallCount = 0;
     let uninstalledModuleId = "";
+    const logEntries: Array<{ level: string; message: string }> = [];
     const route = createModuleRoutes(
         {
             list: async () => [{ id: "external", uuid, class: "extension" }],
@@ -206,6 +235,7 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
             onUninstalled: async (moduleId) => {
                 uninstalledModuleId = moduleId;
             },
+            log: (level, message) => logEntries.push({ level, message }),
         },
         undefined,
         {
@@ -244,6 +274,9 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
     assert.equal((await requestUninstall()).status, 204);
     assert.equal(uninstallCount, 1);
     assert.equal(uninstalledModuleId, "external");
+    assert.deepEqual(logEntries, [
+        { level: "warn", message: "External module deleted." },
+    ]);
 });
 
 test("module catalog discovery accepts caller-selected sources", async () => {

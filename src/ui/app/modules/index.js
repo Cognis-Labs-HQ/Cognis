@@ -31,6 +31,7 @@ let category = "all";
 let view = "all";
 let selectedModule = null;
 let discoverySequence = 0;
+let marketplaceRefreshPending = false;
 let refreshScreenshotCarousels = () => {};
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
@@ -277,7 +278,7 @@ function resolveModuleAssetUrl(value) {
 
 function modulesForView() {
     return modules.filter((module) => {
-        if (module.template === true) return false;
+        if (!isVisibleMarketplaceModule(module)) return false;
         if (
             view === "installed" &&
             !(
@@ -291,6 +292,10 @@ function modulesForView() {
         if (view === "available") return !module.installed && !module.status;
         return true;
     });
+}
+
+function isVisibleMarketplaceModule(module) {
+    return module.template !== true;
 }
 
 function viewLabel(item) {
@@ -679,7 +684,7 @@ async function loadKnownModules() {
         ? (modules.find(
               (module) =>
                   module.uuid === requestedModuleUuid &&
-                  module.template !== true,
+                  isVisibleMarketplaceModule(module),
           ) ?? null)
         : null;
     refreshMarketplace();
@@ -772,6 +777,8 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.id === "module-source-refresh") {
+                if (marketplaceRefreshPending) return;
+                marketplaceRefreshPending = true;
                 target.disabled = true;
                 try {
                     await refreshMarketplaceData();
@@ -783,6 +790,8 @@ function bindInteractions(root, signal) {
                 } catch (error) {
                     showToast(error.message, { type: "error" });
                     target.disabled = false;
+                } finally {
+                    marketplaceRefreshPending = false;
                 }
                 return;
             }
