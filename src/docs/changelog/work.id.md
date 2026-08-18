@@ -27,3 +27,7 @@ Kartu dan tampilan detail modul terpasang kini menempatkan versi saluran terpili
 ## Pertahankan detail modul stabil
 
 Membuka atau memperbarui tampilan detail modul kini mempertahankan posisi halaman. Setiap versi yang ditampilkan memakai awalan `v`, dan pembaruan modul aktif menjalankan urutan nonaktifkan, pasang, lalu aktifkan kembali dalam satu tindakan.
+
+## Stabilkan kontrol detail modul
+
+Halaman detail modul kini memakai deep link UUID berbasis router sambil tetap berada di Page Composer. Penyegaran siklus hidup mempertahankan susunan tombol yang terlihat, termasuk saat modul aktif dinonaktifkan sementara untuk peningkatan.

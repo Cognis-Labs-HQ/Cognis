@@ -77,6 +77,28 @@ test("module details preserve position and update enabled modules atomically", (
         /await setModuleEnabled\(module\.id, false\)[\s\S]*await installModule[\s\S]*await setModuleEnabled\(module\.id, true\)/,
     );
     assert.doesNotMatch(source, /disable_before_update/);
+    assert.doesNotMatch(
+        source,
+        /setModuleEnabled\(module\.id, false\);\s*module\.status = "disabled"/,
+    );
+});
+
+test("module details use composer refreshes and SPA deep links", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+
+    assert.match(source, /createPageComposer\(root, \{/);
+    assert.match(source, /composer\?\.refreshElements\(\["module-store"\]\)/);
+    assert.match(source, /function detailModuleUuid/);
+    assert.match(source, /ui:navigate/);
+    assert.match(
+        source,
+        /`\/administration\/modules\/\$\{encodeURIComponent\(module\.uuid\)\}`/,
+    );
+    assert.match(source, /"\/administration\/modules"/);
+    assert.doesNotMatch(source, /selectedModule = module/);
 });
 
 test("module marketplace identifies immutable trusted sources", () => {

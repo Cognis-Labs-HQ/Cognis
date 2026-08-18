@@ -27,3 +27,7 @@ Installed module cards and detail views now place the selected channel's differe
 ## Keep module details stable
 
 Opening or updating a module detail view now preserves the page position. Every displayed version uses a `v` prefix, and updating an enabled module performs the disable, install, and re-enable sequence in one action.
+
+## Stabilize module detail controls
+
+Module detail pages now use router-backed UUID deep links while remaining inside the page composer. Lifecycle refreshes keep the visible button assortment stable, including while an enabled module is temporarily disabled for an upgrade.

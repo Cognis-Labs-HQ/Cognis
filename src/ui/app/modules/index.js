@@ -40,6 +40,13 @@ function formatVersion(version) {
     return normalized ? `v${normalized}` : "";
 }
 
+function detailModuleUuid() {
+    const match = window.location.pathname.match(
+        /^\/administration\/modules\/([^/]+)\/?$/,
+    );
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
 function renderAvailableVersion(module) {
     if (!module.installed) return "";
     const currentVersion = module.installedVersion ?? module.version;
@@ -524,8 +531,6 @@ async function runLifecycleAction(module, action) {
         const branch = selectedBranch(module);
         if (restoreEnabledState) {
             await setModuleEnabled(module.id, false);
-            module.status = "disabled";
-            refreshMarketplace();
         }
         try {
             const installedManifest = await installModule(
@@ -615,8 +620,9 @@ async function loadKnownModules() {
             modules.push(installedModule);
         }
     });
-    selectedModule = selectedModule
-        ? (modules.find((module) => module.uuid === selectedModule.uuid) ??
+    const requestedModuleUuid = detailModuleUuid();
+    selectedModule = requestedModuleUuid
+        ? (modules.find((module) => module.uuid === requestedModuleUuid) ??
           null)
         : null;
     refreshMarketplace();
@@ -716,7 +722,12 @@ function bindInteractions(root, signal) {
                 }
                 return;
             }
-            if (target.hasAttribute("data-module-back")) selectedModule = null;
+            if (target.hasAttribute("data-module-back")) {
+                await uiCtx.capabilities.get("ui:navigate")?.(
+                    "/administration/modules",
+                );
+                return;
+            }
             let action = [
                 "install",
                 "update",
@@ -783,7 +794,10 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.classList.contains("module-store-card")) {
-                selectedModule = module;
+                await uiCtx.capabilities.get("ui:navigate")?.(
+                    `/administration/modules/${encodeURIComponent(module.uuid)}`,
+                );
+                return;
             }
             refreshMarketplace();
         },

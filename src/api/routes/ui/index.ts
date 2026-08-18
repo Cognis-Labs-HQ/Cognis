@@ -49,12 +49,14 @@ const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
 async function resolveModuleRoot(
     manifest: Pick<ModuleManifest, "id" | "uuid">,
 ): Promise<string> {
-    const externalRoot = path.resolve(EXTERNAL_MODULES_ROOT, manifest.uuid);
-    try {
-        const entry = await stat(externalRoot);
-        if (entry.isDirectory()) return externalRoot;
-    } catch {
-        // Missing external-directory fallback: use the bundled path below.
+    if (manifest.uuid) {
+        const externalRoot = path.resolve(EXTERNAL_MODULES_ROOT, manifest.uuid);
+        try {
+            const entry = await stat(externalRoot);
+            if (entry.isDirectory()) return externalRoot;
+        } catch {
+            // Missing external-directory fallback: use the bundled path below.
+        }
     }
     return path.resolve(MODULES_ROOT, manifest.id);
 }
@@ -338,7 +340,7 @@ export function createUiRoutes(
             return true;
         }
 
-        if (/^\/administration(?:\/modules)?$/.test(url.pathname)) {
+        if (/^\/administration(?:\/modules(?:\/[^/]+)?)?$/.test(url.pathname)) {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 ctx,
@@ -360,10 +362,11 @@ export function createUiRoutes(
                 return true;
             }
 
-            const administrationPage =
-                url.pathname === "/administration/modules"
-                    ? "modules.html"
-                    : "administration.html";
+            const administrationPage = url.pathname.startsWith(
+                "/administration/modules",
+            )
+                ? "modules.html"
+                : "administration.html";
             await htmlResponse.serveHtmlPage(
                 res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", administrationPage),

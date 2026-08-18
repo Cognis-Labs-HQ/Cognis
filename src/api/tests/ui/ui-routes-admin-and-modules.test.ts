@@ -145,6 +145,25 @@ test("administration page is visible to admins only", async () => {
     assert.match(adminRes.body, /id="app"/);
 });
 
+test("module detail deep links serve the modules SPA entry", async () => {
+    const route = createUiRoutes();
+    const adminToken = issueAccessToken("u1", "admin", 60);
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            headers: { cookie: `cognis_access_token=${adminToken}` },
+        } as any,
+        recorder.res as any,
+        new URL(
+            "http://localhost/administration/modules/11111111-2222-4333-8444-555555555555",
+        ),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /static\/app\/modules\/index\.js/);
+});
+
 test("users page is visible to admins only", async () => {
     const route = createUiRoutes();
     const anonymous = createResponseRecorder();
