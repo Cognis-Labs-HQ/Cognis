@@ -63,3 +63,7 @@ Die integrierte Empfehlungsliste enthält jetzt die veröffentlichten Modul-UUID
 ## Protokollierung des Modul-Lebenszyklus erweitern
 
 Hinzufügen, Aktualisieren, Löschen und Scannen von Modulquellen sowie die Anzahl der Scanergebnisse werden jetzt mit passender Priorität protokolliert; Validierungs- und Aktivierungsfehler erscheinen als Fehler. Die Marktplatz-Bildsuche verwendet außerdem ein passendes PNG oder ein anderes unterstütztes Bild, wenn das Manifest eine fehlende Dateiendung nennt. Dadurch werden die Jitsi-Meet-Grafiken wieder angezeigt, solange dessen Manifest noch auf nicht vorhandene SVG-Dateien verweist.
+
+## Aufblitzen von Modulbildern verhindern
+
+Modulkarten und Detailmedien bleiben nun verborgen, bis jedes aktualisierte Bild gültige Abmessungen meldet. Feste Symbolabmessungen reservieren außerdem den Platz in der Karte vor dem Laden, sodass rohe oder übergroße Modulgrafiken bei Marktplatz-Aktualisierungen nicht mehr kurz aufblitzen.

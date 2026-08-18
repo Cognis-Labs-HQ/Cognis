@@ -63,3 +63,7 @@ Daftar rekomendasi bawaan kini memuat UUID modul Jitsi Meet, Nextcloud Whiteboar
 ## Perluas pencatatan siklus hidup modul
 
 Penambahan, pembaruan, penghapusan, pemindaian sumber modul, serta jumlah hasil pemindaian kini dicatat dengan tingkat yang sesuai, sedangkan kegagalan validasi dan pengaktifan dicatat sebagai kesalahan. Penemuan gambar marketplace juga menggunakan PNG yang cocok atau gambar lain yang didukung ketika manifes menyebut ekstensi yang tidak ada, sehingga gambar Jitsi Meet kembali tampil selama manifesnya masih menunjuk ke berkas SVG yang tidak tersedia.
+
+## Cegah kilatan gambar modul
+
+Kartu modul dan media detail kini tetap tersembunyi sampai setiap gambar yang disegarkan melaporkan dimensi yang valid. Dimensi ikon yang tetap juga menyediakan ruang kartu sebelum pemuatan, sehingga gambar modul mentah atau terlalu besar tidak lagi berkedip saat marketplace disegarkan.

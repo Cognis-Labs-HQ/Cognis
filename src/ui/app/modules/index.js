@@ -25,6 +25,7 @@ import {
 
 let i18n;
 let composer;
+let pageRoot;
 let modules = [];
 let sources = [];
 let category = "all";
@@ -66,8 +67,8 @@ function renderAvailableVersion(module) {
 function renderCard(module) {
     const avatarUrl = resolveModuleAssetUrl(module.assets?.icon);
     const avatar = avatarUrl
-        ? `<img class="module-store-avatar" src="${escapeHtml(avatarUrl)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy">`
-        : `<img class="module-store-avatar" src="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy">`;
+        ? `<img class="module-store-avatar module-picture" src="${escapeHtml(avatarUrl)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`
+        : `<img class="module-store-avatar module-picture" src="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`;
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
@@ -188,7 +189,7 @@ function renderModuleDetails(module) {
     const screenshots = screenshotUrls
         .map(
             (url, index) =>
-                `<img class="module-detail-screenshot" data-screenshot-index="${index}" src="${escapeHtml(url)}" alt="" loading="lazy">`,
+                `<img class="module-detail-screenshot module-picture" data-screenshot-index="${index}" src="${escapeHtml(url)}" alt="" loading="lazy">`,
         )
         .join("");
     const screenshotCarousel = screenshots
@@ -199,7 +200,7 @@ function renderModuleDetails(module) {
             const url = escapeHtml(resolveModuleAssetUrl(entry.url));
             return entry.contentType?.startsWith("video/")
                 ? `<video class="module-detail-media-item" controls preload="metadata"><source src="${url}" type="${escapeHtml(entry.contentType)}"></video>`
-                : `<img class="module-detail-media-item" src="${url}" alt="" loading="lazy">`;
+                : `<img class="module-detail-media-item module-picture" src="${url}" alt="" loading="lazy">`;
         })
         .join("");
     const metadata = [...(module.categories ?? []), ...(module.tags ?? [])]
@@ -223,7 +224,16 @@ function renderModuleDetails(module) {
     const advanced = module.installed
         ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
         : "";
-    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+}
+
+function revealLoadedModulePictures(root) {
+    if (!root) return;
+    root.querySelectorAll(".module-picture").forEach((picture) => {
+        if (picture.complete && picture.naturalWidth > 0) {
+            picture.classList.add("is-loaded");
+        }
+    });
 }
 
 function updateScreenshotCarousel(carousel, step = 0) {
@@ -650,6 +660,7 @@ function refreshMarketplace() {
         top: window.scrollY,
     };
     composer?.refreshElements(["module-store"]);
+    revealLoadedModulePictures(pageRoot);
     refreshScreenshotCarousels();
     restoreWindowScrollPosition(scrollPosition.left, scrollPosition.top);
 }
@@ -731,6 +742,15 @@ async function refreshMarketplaceData() {
 }
 
 function bindInteractions(root, signal) {
+    root.addEventListener(
+        "load",
+        (event) => {
+            if (event.target.matches?.(".module-picture")) {
+                event.target.classList.add("is-loaded");
+            }
+        },
+        { capture: true, signal },
+    );
     root.addEventListener(
         "change",
         (event) => {
@@ -895,6 +915,7 @@ function elements() {
 }
 
 export async function mount(root, { signal } = {}) {
+    pageRoot = root;
     i18n = await createI18n();
     applyDocumentTitle(i18n, "ui.page.title.modules");
     composer = createPageComposer(root, {

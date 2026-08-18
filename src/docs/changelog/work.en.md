@@ -63,3 +63,7 @@ The built-in recommendation list now includes the published Jitsi Meet, Nextclou
 ## Expand module lifecycle logging
 
 Module source additions, updates, deletions, scans, and scan result counts are now logged with appropriate severity, while validation and enable failures are recorded as errors. Marketplace image discovery also falls back to a matching PNG or other supported image when a repository manifest names a missing extension, restoring Jitsi Meet artwork while its manifest still points at absent SVG files.
+
+## Prevent module image flashes
+
+Module cards and detail media now remain hidden until each refreshed image has decoded enough to report valid dimensions. Fixed icon dimensions also reserve card space before loading, preventing raw or oversized module artwork from flashing during marketplace refreshes.

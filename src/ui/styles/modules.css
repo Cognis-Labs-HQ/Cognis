@@ -124,6 +124,12 @@ body[data-theme="dark"] .module-icon-settings {
     border-radius: 1rem;
     object-fit: cover;
 }
+.module-picture {
+    visibility: hidden;
+}
+.module-picture.is-loaded {
+    visibility: visible;
+}
 .module-store-card-heading {
     display: flex;
     align-items: center;

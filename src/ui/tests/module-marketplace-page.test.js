@@ -159,6 +159,26 @@ test("module marketplace replaces unavailable icons with the unknown icon", () =
     assert.match(fallbackIcon, /class="mark"/);
 });
 
+test("module pictures remain hidden until their refreshed image is ready", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /module-store-avatar module-picture/);
+    assert.match(source, /width="64" height="64"/);
+    assert.match(source, /function revealLoadedModulePictures/);
+    assert.match(source, /picture\.complete && picture\.naturalWidth > 0/);
+    assert.match(source, /event\.target\.classList\.add\("is-loaded"\)/);
+    assert.match(
+        marketplaceStyles,
+        /\.module-picture\s*{[^}]*visibility: hidden/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /\.module-picture\.is-loaded\s*{[^}]*visibility: visible/,
+    );
+});
+
 test("module marketplace refreshes every configured source on demand", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
