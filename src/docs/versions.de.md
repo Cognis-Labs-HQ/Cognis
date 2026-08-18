@@ -80,13 +80,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.30` |
+| Core Package | `src/core/` | `0.3.31` |
 
 ## API
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.23` |
+| API Server | `src/api/` | `0.3.24` |
 
 ## Werkzeuge
 
@@ -98,6 +98,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente           | Pfad                                | Version  |
 | -------------------- | ----------------------------------- | -------- |
+| Modullaufzeit        | `src/modules/`                      | `0.1.7`  |
 | Analytics            | `src/modules/analytics/`            | `2.0.11` |
 | Nextcloud Whiteboard | `src/modules/nextcloud-whiteboard/` | `2.3.21` |
 | Cognis Japanese      | `src/modules/study/languages/ja/`   | `1.2.12` |

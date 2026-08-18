@@ -259,6 +259,7 @@ export class UIRegistry {
         }
         this.removeOwned(this.navbarPlugins, moduleId);
         this.removeOwned(this.spaRoutes, moduleId);
+        this.removeOwned(this.authTypingMessages, moduleId);
         this.removeOwned(this.settingsSections, moduleId);
         for (const prefix of this.moduleStaticDirs.keys()) {
             if (prefix === moduleId || prefix.startsWith(`${moduleId}/`)) {

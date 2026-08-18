@@ -727,6 +727,8 @@
   <string name="ui.reuse.installed">Installiert</string>
   <string name="ui.reuse.all">Alle</string>
   <string name="ui.reuse.name">Name</string>
+  <string name="ui.app.modules.install_timeout">Die Modulinstallation wurde nicht innerhalb von zwei Minuten abgeschlossen.</string>
+  <string name="ui.app.modules.github_timeout_warning">GitHub konnte die TLS-Verbindung aus dem Anwendungscontainer nicht abschließen. Prüfen Sie die MTU des Host- oder Docker-Netzwerks, insbesondere bei Verwendung eines VPN oder Tunnels, und versuchen Sie es erneut.</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">Modul-Marktplatz</string>

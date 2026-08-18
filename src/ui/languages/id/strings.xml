@@ -727,6 +727,8 @@
   <string name="ui.reuse.installed">Terpasang</string>
   <string name="ui.reuse.all">Semua</string>
   <string name="ui.reuse.name">Nama</string>
+  <string name="ui.app.modules.install_timeout">Instalasi modul tidak selesai dalam dua menit.</string>
+  <string name="ui.app.modules.github_timeout_warning">GitHub tidak menyelesaikan koneksi TLS dari kontainer aplikasi. Periksa MTU jaringan host atau Docker, terutama saat menggunakan VPN atau terowongan, lalu coba lagi.</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">Bursa Modul</string>

@@ -101,11 +101,15 @@ function compareVersions(left, right) {
             .replace(/^v/, "")
             .split(/[.-]/)
             .map((part) => (/^\d+$/.test(part) ? Number(part) : part));
-    const a = parts(left);
-    const b = parts(right);
-    for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
-        if ((a[index] ?? 0) === (b[index] ?? 0)) continue;
-        return (a[index] ?? 0) > (b[index] ?? 0) ? 1 : -1;
+    const leftParts = parts(left);
+    const rightParts = parts(right);
+    for (
+        let index = 0;
+        index < Math.max(leftParts.length, rightParts.length);
+        index += 1
+    ) {
+        if ((leftParts[index] ?? 0) === (rightParts[index] ?? 0)) continue;
+        return (leftParts[index] ?? 0) > (rightParts[index] ?? 0) ? 1 : -1;
     }
     return 0;
 }
@@ -141,7 +145,7 @@ function renderModuleDetails(module) {
     const advanced = module.installed
         ? `<details class="module-detail-advanced"><summary aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}">☰</summary><button type="button" class="btn-confirm${forcePending ? " button-loading" : ""}" data-module-force-update="${escapeHtml(module.uuid)}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}${forcePending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t("ui.app.modules.force_update"))}</button></details>`
         : "";
-    return `<article class="module-detail"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong>${module.version ? ` · ${escapeHtml(module.version)}` : ""}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}${advanced}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong>${module.version ? ` · ${escapeHtml(module.version)}` : ""}</p>${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshots ? `<div class="module-detail-screenshots">${screenshots}</div>` : ""}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -597,13 +601,20 @@ function bindInteractions(root, signal) {
                 try {
                     await runLifecycleAction(module, action);
                 } catch (error) {
-                    console.error("Module lifecycle action failed.", {
+                    console.error("module_lifecycle_action_failed", {
                         action,
                         moduleId: module.id,
                         moduleUuid: module.uuid,
                         error,
                     });
-                    showToast(error.message, { type: "error" });
+                    showToast(
+                        error.code === "github_connection_timeout"
+                            ? i18n.t("ui.app.modules.github_timeout_warning")
+                            : error.code === "module_install_timeout"
+                              ? i18n.t("ui.app.modules.install_timeout")
+                              : error.message,
+                        { type: "error" },
+                    );
                 } finally {
                     pendingModuleActions.delete(module.uuid);
                     finishLoading();

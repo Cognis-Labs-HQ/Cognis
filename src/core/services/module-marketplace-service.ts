@@ -5,9 +5,11 @@ import path from "node:path";
 import { promisify } from "node:util";
 import type { ModuleManifest } from "../contracts/module-manifest.js";
 import { validateModuleRepository } from "./module-repository-validator.js";
+import { commandFailureText } from "./reuse/command-failure-text.js";
 
 const execFileAsync = promisify(execFile);
 const GIT_CLONE_ATTEMPTS = 3;
+const GIT_CLONE_TIMEOUT_MS = 30_000;
 const GIT_CLONE_RETRY_DELAYS_MS = [250, 1_000];
 const TRANSIENT_GIT_FAILURE =
     /connection reset|recv failure|could not resolve host|failed to connect|connection timed out|operation timed out|tls connection|gnutls|http\/2 stream|remote end hung up|unexpected disconnect/i;
@@ -336,16 +338,23 @@ export class ModuleMarketplaceService {
                         cloneUrl,
                         temporary,
                     ],
-                    { env: environment },
+                    { env: environment, timeout: GIT_CLONE_TIMEOUT_MS },
                 );
                 return;
             } catch (error) {
                 lastError = error;
-                const output = this.commandFailureText(error);
+                const output = commandFailureText(error);
                 if (
                     attempt === GIT_CLONE_ATTEMPTS ||
                     !TRANSIENT_GIT_FAILURE.test(output)
                 ) {
+                    if (
+                        new URL(cloneUrl).hostname === "github.com" &&
+                        /timed out|operation timed out/i.test(output)
+                    ) {
+                        (error as Error & { code?: string }).code =
+                            "github_connection_timeout";
+                    }
                     throw error;
                 }
                 await new Promise((resolve) =>
@@ -354,18 +363,6 @@ export class ModuleMarketplaceService {
             }
         }
         throw lastError;
-    }
-
-    private commandFailureText(error: unknown): string {
-        if (!(error instanceof Error)) return String(error);
-        const commandError = error as Error & {
-            stdout?: string | Buffer;
-            stderr?: string | Buffer;
-        };
-        return [commandError.message, commandError.stdout, commandError.stderr]
-            .filter(Boolean)
-            .map(String)
-            .join("\n");
     }
 
     async uninstall(uuid: string): Promise<void> {

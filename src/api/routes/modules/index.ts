@@ -79,7 +79,7 @@ export function createModuleRoutes(
         string,
         | { status: "pending" }
         | { status: "succeeded"; data: unknown }
-        | { status: "failed"; message: string }
+        | { status: "failed"; message: string; code?: string }
     >();
     return async (
         req: IncomingMessage,
@@ -200,7 +200,7 @@ export function createModuleRoutes(
                 res.end(
                     JSON.stringify({
                         error: {
-                            code: "module_install_failed",
+                            code: job.code ?? "module_install_failed",
                             message: job.message,
                         },
                     }),
@@ -299,7 +299,8 @@ export function createModuleRoutes(
                 .catch((error) => {
                     const message =
                         error instanceof Error ? error.message : String(error);
-                    installJobs.set(jobId, { status: "failed", message });
+                    const code = (error as { code?: string }).code;
+                    installJobs.set(jobId, { status: "failed", message, code });
                     hooks?.log?.(
                         "error",
                         "External module installation failed.",
@@ -307,6 +308,10 @@ export function createModuleRoutes(
                             ...logMeta,
                             accountId: claims.sub,
                             moduleUuid: requestedModule.uuid,
+                            ...(code ? { code } : {}),
+                            ...(code === "github_connection_timeout"
+                                ? { knownCause: "container_network_mtu" }
+                                : {}),
                             error: message,
                         },
                     );

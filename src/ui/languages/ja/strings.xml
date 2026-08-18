@@ -727,6 +727,8 @@
   <string name="ui.reuse.installed">インストール済み</string>
   <string name="ui.reuse.all">すべて</string>
   <string name="ui.reuse.name">名前</string>
+  <string name="ui.app.modules.install_timeout">モジュールのインストールが2分以内に完了しませんでした。</string>
+  <string name="ui.app.modules.github_timeout_warning">アプリケーションコンテナから GitHub への TLS 接続が完了しませんでした。特に VPN またはトンネルを使用している場合は、ホストまたは Docker ネットワークの MTU を確認してから再試行してください。</string>
   <string name="ui.app.modules.github">GitHub</string>
   <string name="ui.app.modules.gitlab">GitLab</string>
   <string name="ui.app.modules.keyring_component">モジュールストア</string>

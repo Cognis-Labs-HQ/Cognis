@@ -277,3 +277,80 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
         await rm(modulesRoot, { recursive: true, force: true });
     }
 });
+
+test("external module bootstrap ingests navigation, SPA routes, and ctx capabilities", async () => {
+    const externalModulesRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-external-modules-"),
+    );
+    const moduleUuid = "f055f2e5-227a-5fb4-b934-5397ec32cf2d";
+    const moduleRoot = path.join(externalModulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
+            ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/meetings/navbar.js" });
+            ctx.registerSpaRoute({ id: "meetings", pattern: "^/meetings$", base: "/meetings", scriptUrl: "/static/modules/meetings/app.js" });
+            ctx.registerAuthTypingMessage({ id: "meetings-ready", textKey: "module.meetings.ready" });
+            ctx.capabilities.contribute("meetings:provider", "external");
+            ctx.router.put("/api/v1/modules/meetings/config", (_req, res) => { res.writeHead(204); res.end(); });
+        }`,
+    );
+    const previousExternalModulesRoot =
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = externalModulesRoot;
+    const systemCtx = createCtx();
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    const uiRegistry = new UIRegistry();
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "meetings",
+                    uuid: moduleUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        {
+            routeContext: createDefaultRouteContext({
+                getCapability: (id) => systemCtx.getCapability(id),
+                flow: systemCtx.flow,
+            }),
+            uiRegistry,
+        },
+    );
+    try {
+        await extensions.refresh();
+        assert.equal(uiRegistry.listNavbarPlugins().length, 1);
+        assert.equal(uiRegistry.listSpaRoutes()[0].base, "/meetings");
+        assert.equal(uiRegistry.listAuthTypingMessages().length, 1);
+        assert.equal(systemCtx.getCapability("meetings:provider"), "external");
+
+        let status = 0;
+        assert.equal(
+            await extensions.handle(
+                { method: "PUT" } as any,
+                {
+                    writeHead(code: number) {
+                        status = code;
+                    },
+                    end() {},
+                } as any,
+                new URL("http://localhost/api/v1/modules/meetings/config"),
+            ),
+            true,
+        );
+        assert.equal(status, 204);
+    } finally {
+        if (previousExternalModulesRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT =
+                previousExternalModulesRoot;
+        }
+        await rm(externalModulesRoot, { recursive: true, force: true });
+    }
+});

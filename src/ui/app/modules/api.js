@@ -94,7 +94,12 @@ export async function installModule(module, token, branch) {
         const result = await data(response);
         if (result.status === "succeeded") return result.data;
     }
-    throw new Error("Module installation did not complete within two minutes.");
+    const error = new Error("module_install_timeout");
+    error.code = "module_install_timeout";
+    if (new URL(module.cloneUrl).hostname === "github.com") {
+        error.code = "github_connection_timeout";
+    }
+    throw error;
 }
 
 export async function setModuleEnabled(moduleId, enabled) {

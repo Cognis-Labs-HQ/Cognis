@@ -225,8 +225,13 @@ body[data-theme="dark"] .module-icon-settings {
 .module-detail-license {
     color: var(--muted-text-color);
 }
+.module-detail-navigation {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 .module-detail-back {
-    justify-self: start;
+    flex: 0 0 auto;
 }
 .module-detail-banner {
     width: 100%;

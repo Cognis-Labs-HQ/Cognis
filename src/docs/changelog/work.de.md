@@ -112,6 +112,14 @@ Ein Modul-Repository kann im Stammverzeichnis `media/` unterstützte Bilder und 
 
 Die Modulinstallation erzwingt nun den breiter kompatiblen HTTP/1.1-Transport von Git und wiederholt vorübergehende Klonfehler wie Verbindungsabbrüche, Zeitüberschreitungen, DNS-Fehler und unterbrochene TLS-Übertragungen. Jeder Versuch beginnt mit einem sauberen Staging-Verzeichnis; dauerhafte Repository- oder Validierungsfehler werden weiterhin sofort mit ihrer genauen Diagnose beendet.
 
-## TLS-Blockaden im Container verhindern
+## GitHub-Zeitüberschreitungen erkennen
 
-Cognis-Compose-Netzwerke verwenden nun eine kleinere Bridge-MTU, damit TLS-ClientHello-Pakete externe Dienste auf Hosts mit einer kleineren Uplink-, VPN- oder Tunnel-MTU unbeschädigt erreichen. Dadurch werden GitHub-Verbindungen behoben, die innerhalb des Anwendungscontainers beim TLS-Handshake stehen blieben.
+Moduldownloads beenden nun einen festgefahrenen GitHub-Klonversuch nach dreißig Sekunden, wiederholen vorübergehende Fehler und erfassen die bekannte Ursache einer Container-Netzwerk-MTU in strukturierten Serverprotokollen. Administratoren erhalten eine gezielte Benachrichtigung zur Prüfung der Host- oder Docker-Netzwerk-MTU, anstatt dass Cognis die Bereitstellungsnetzwerke überschreibt.
+
+## Externe Module vollständig laden
+
+Der Bootstrap-Kontext externer Module nimmt nun alle unterstützten HTTP-Methoden sowie Navbar-, SPA-Routen-, Einstellungs-, Administrations-, Seiten-, Authentifizierungstext-, statische Ressourcen-, Flow-, Protokollierungs- und bereichsgebundenen Capability-Beiträge auf. Externe Meeting-Anbieter können Navigation und Routen damit über dieselben entfernbaren Verträge wie integrierte Komponenten registrieren.
+
+## Moduldetail-Steuerung ausrichten
+
+Das erweiterte Hamburger-Menü befindet sich nun zusammen mit der Zurück-Steuerung in der oberen Navigationszeile der Moduldetails. Installations- und Lebenszyklusaktionen bleiben in einer eigenen Aktionszeile.

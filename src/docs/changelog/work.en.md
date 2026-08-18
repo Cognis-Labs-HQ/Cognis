@@ -112,6 +112,14 @@ A module repository may provide a root `media/` directory of supported images an
 
 Module installation now forces Git's more broadly compatible HTTP/1.1 transport and retries transient clone failures such as connection resets, timeouts, DNS failures, and interrupted TLS transfers. Every attempt starts with a clean staging directory, while permanent repository or validation failures still stop immediately and retain their exact diagnostic.
 
-## Prevent container TLS stalls
+## Diagnose GitHub timeouts
 
-Cognis Compose networks now use a reduced bridge MTU so TLS ClientHello packets reach external services intact on hosts whose uplink, VPN, or tunnel has a smaller MTU. This addresses GitHub connections that stalled during the TLS handshake from inside the application container.
+Module downloads now stop a stalled GitHub clone attempt after thirty seconds, retry transient failures, and record the known container-network MTU cause in structured server logs. Administrators receive a focused toast that recommends checking the host or Docker network MTU instead of Cognis overriding deployment networking.
+
+## Complete external module loading
+
+The external-module bootstrap context now ingests every supported HTTP method, navbar and SPA route registrations, settings, administration, page, authentication-typing, static-resource, flow, logging, and scoped capability contributions. External meeting providers can therefore register navigation and routes through the same removable contracts as bundled components.
+
+## Align module detail controls
+
+The advanced hamburger menu now shares the top navigation row with the Back control in module details, leaving install and lifecycle actions in their own action row.

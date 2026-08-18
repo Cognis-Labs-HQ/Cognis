@@ -137,6 +137,14 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /data-module-back/);
     assert.match(source, /renderSidebar\(categories\)/);
     assert.match(source, /module-detail-back/);
+    assert.match(
+        source,
+        /module-detail-navigation[\s\S]*module-detail-back[\s\S]*\$\{advanced\}/,
+    );
+    assert.doesNotMatch(
+        source,
+        /module-detail-actions[^`]*renderLifecycleActions\(module\)\}\$\{advanced\}/,
+    );
     assert.match(source, /selectedModule = null/);
     assert.match(source, /target\.classList\.contains\("module-store-card"\)/);
     assert.match(source, /renderLifecycleButton\(module, "install"/);
@@ -224,7 +232,9 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /pendingModuleActions\.set\(module\.uuid, action\)/);
     assert.match(source, /pendingModuleActions\.delete\(module\.uuid\)/);
     assert.match(source, /isPending \? " button-loading"/);
-    assert.match(source, /Module lifecycle action failed/);
+    assert.match(source, /module_lifecycle_action_failed/);
+    assert.match(source, /github_connection_timeout/);
+    assert.match(source, /github_timeout_warning/);
     assert.match(loadingSource, /classList\.add\("button-loading"\)/);
     assert.match(loadingStyles, /@keyframes button-loading-spin/);
 });

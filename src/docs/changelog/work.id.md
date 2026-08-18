@@ -112,6 +112,14 @@ Repositori modul dapat menyediakan direktori `media/` di akar berisi gambar dan 
 
 Pemasangan modul kini memaksa transport HTTP/1.1 Git yang lebih kompatibel dan mencoba kembali kegagalan klon sementara seperti koneksi terputus, batas waktu, kegagalan DNS, dan transfer TLS yang terganggu. Setiap percobaan dimulai dengan direktori staging yang bersih, sedangkan kegagalan repositori atau validasi permanen tetap dihentikan segera dengan diagnosis yang tepat.
 
-## Cegah TLS macet di kontainer
+## Diagnosis batas waktu GitHub
 
-Jaringan Compose Cognis kini menggunakan MTU bridge yang lebih kecil agar paket TLS ClientHello mencapai layanan eksternal secara utuh pada host dengan MTU uplink, VPN, atau terowongan yang lebih kecil. Perubahan ini mengatasi koneksi GitHub yang terhenti saat handshake TLS dari dalam kontainer aplikasi.
+Unduhan modul kini menghentikan upaya kloning GitHub yang macet setelah tiga puluh detik, mencoba kembali kegagalan sementara, dan mencatat penyebab MTU jaringan kontainer yang dikenal dalam log server terstruktur. Administrator menerima toast khusus yang menyarankan pemeriksaan MTU jaringan host atau Docker, bukan Cognis yang menimpa jaringan deployment.
+
+## Muat modul eksternal sepenuhnya
+
+Konteks bootstrap modul eksternal kini menerima semua metode HTTP yang didukung serta kontribusi navbar, rute SPA, pengaturan, administrasi, halaman, teks autentikasi, sumber daya statis, flow, logging, dan capability tercakup. Penyedia rapat eksternal dapat mendaftarkan navigasi dan rute melalui kontrak yang dapat dilepas seperti komponen bawaan.
+
+## Selaraskan kontrol detail modul
+
+Menu hamburger lanjutan kini berada dalam baris navigasi atas bersama kontrol Kembali pada detail modul, sedangkan tindakan instalasi dan siklus hidup tetap berada dalam baris tindakan tersendiri.

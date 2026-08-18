@@ -449,6 +449,59 @@ test("module marketplace reports and logs installation failures", async () => {
     ]);
 });
 
+test("module marketplace identifies GitHub connection timeouts in jobs and logs", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const entries: Array<{ meta?: Record<string, unknown> }> = [];
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        {
+            log: (_level, _message, meta) => entries.push({ meta }),
+        },
+        undefined,
+        {
+            install: async () => {
+                const error = new Error("git clone timed out");
+                (error as Error & { code?: string }).code =
+                    "github_connection_timeout";
+                throw error;
+            },
+        } as any,
+    );
+    let responseBody = "";
+    const response = {
+        writeHead() {},
+        end(payload: string) {
+            responseBody = payload;
+        },
+    } as any;
+    await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({ module: { uuid: "module-uuid" } }),
+                );
+            },
+        } as any,
+        response,
+        new URL("http://localhost/api/v1/modules/install"),
+    );
+    const jobId = JSON.parse(responseBody).data.jobId;
+    await new Promise((resolve) => setImmediate(resolve));
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        response,
+        new URL(`http://localhost/api/v1/modules/install/${jobId}`),
+    );
+
+    assert.match(responseBody, /github_connection_timeout/);
+    assert.equal(entries[0].meta?.knownCause, "container_network_mtu");
+});
+
 test("module catalog serves cached images from the same origin", async () => {
     const assetId = "a".repeat(64);
     const route = createModuleRoutes(

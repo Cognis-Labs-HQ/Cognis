@@ -42,6 +42,21 @@ interface ModuleApiRouter {
         handler: RouteHandler["handler"],
         options?: ModuleRouteOptions,
     ): void;
+    put(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
+    patch(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
+    delete(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
 }
 
 interface ModuleUiRegistrationContext {
@@ -82,12 +97,24 @@ interface ModuleUiRegistrationContext {
         stringsBaseUrl?: string;
     }): void;
     registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerAuthTypingMessage(message: {
+        id: string;
+        textKey: string;
+        access?: RoleAccessPolicy;
+    }): void;
 }
 
 interface ModuleApiRegistrationContext {
     moduleId: string;
     moduleRoot: string;
     getCapability<T>(capabilityId: string): T | undefined;
+    capabilities: {
+        contribute(key: string, value: unknown): void;
+        get<T>(key: string): T | undefined;
+        has(key: string): boolean;
+        require<T>(key: string): T;
+    };
+    log?: BootstrapLog;
 }
 
 interface ModulePlugin {
@@ -107,6 +134,21 @@ interface ModuleBootstrapCtx
         options?: ModuleRouteOptions,
     ): void;
     registerApiPost(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
+    registerApiPut(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
+    registerApiPatch(
+        routePath: string,
+        handler: RouteHandler["handler"],
+        options?: ModuleRouteOptions,
+    ): void;
+    registerApiDelete(
         routePath: string,
         handler: RouteHandler["handler"],
         options?: ModuleRouteOptions,
@@ -176,7 +218,7 @@ export function createModuleExtensionRoutes(
      * Writes a standardized warning when a module declares an invalid access policy.
      */
     function logInvalidAccessPolicy(
-        method: "GET" | "POST",
+        method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
         moduleId: string,
         routePath: string,
         access: unknown,
@@ -205,7 +247,7 @@ export function createModuleExtensionRoutes(
         },
     ): ModuleBootstrapCtx {
         function registerApiRoute(
-            method: "GET" | "POST",
+            method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
             routePath: string,
             handler: RouteHandler["handler"],
             routeOptions?: ModuleRouteOptions,
@@ -237,6 +279,15 @@ export function createModuleExtensionRoutes(
             post(routePath, handler, routeOptions) {
                 registerApiRoute("POST", routePath, handler, routeOptions);
             },
+            put(routePath, handler, routeOptions) {
+                registerApiRoute("PUT", routePath, handler, routeOptions);
+            },
+            patch(routePath, handler, routeOptions) {
+                registerApiRoute("PATCH", routePath, handler, routeOptions);
+            },
+            delete(routePath, handler, routeOptions) {
+                registerApiRoute("DELETE", routePath, handler, routeOptions);
+            },
         };
 
         const systemCtx = options.routeContext.getCapability<Ctx>("system:ctx");
@@ -266,6 +317,25 @@ export function createModuleExtensionRoutes(
             moduleId,
             moduleRoot,
             flow,
+            log,
+            capabilities: {
+                contribute(key, value) {
+                    systemCtx?.contributeCapability(key, value);
+                    scope.capabilities.push(key);
+                },
+                get: options.routeContext.getCapability,
+                has(key) {
+                    return systemCtx?.hasCapability(key) ?? false;
+                },
+                require(key) {
+                    if (!systemCtx) {
+                        throw new Error(
+                            `Required capability "${key}" is not available.`,
+                        );
+                    }
+                    return systemCtx.requireCapability(key);
+                },
+            },
             contributeCapability(key, value) {
                 systemCtx?.contributeCapability(key, value);
                 scope.capabilities.push(key);
@@ -284,6 +354,15 @@ export function createModuleExtensionRoutes(
             },
             registerApiPost(routePath, handler, routeOptions) {
                 registerApiRoute("POST", routePath, handler, routeOptions);
+            },
+            registerApiPut(routePath, handler, routeOptions) {
+                registerApiRoute("PUT", routePath, handler, routeOptions);
+            },
+            registerApiPatch(routePath, handler, routeOptions) {
+                registerApiRoute("PATCH", routePath, handler, routeOptions);
+            },
+            registerApiDelete(routePath, handler, routeOptions) {
+                registerApiRoute("DELETE", routePath, handler, routeOptions);
             },
             router,
             registerNavbarPlugin(pluginDef) {
@@ -337,6 +416,14 @@ export function createModuleExtensionRoutes(
                     fullPrefix,
                     absoluteDir,
                 );
+            },
+            registerAuthTypingMessage(message) {
+                options?.uiRegistry?.registerAuthTypingMessage({
+                    ...message,
+                    ownerType: "module",
+                    ownerId: moduleId,
+                    isEnabled: () => isModuleEnabled(moduleId),
+                });
             },
         };
     }

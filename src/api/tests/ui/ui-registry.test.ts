@@ -80,6 +80,12 @@ test("UIRegistry removes every contribution owned by a module", () => {
         scriptUrl: "/static/modules/example/page.js",
         ownerId: "example",
     });
+    reg.registerAuthTypingMessage({
+        id: "example-ready",
+        textKey: "module.example.ready",
+        ownerType: "module",
+        ownerId: "example",
+    });
     reg.registerModuleStaticDir("example", "/srv/example/ui");
 
     reg.unregisterModuleContributions("example");
@@ -87,6 +93,7 @@ test("UIRegistry removes every contribution owned by a module", () => {
     assert.deepEqual(reg.listAdminSections(), []);
     assert.deepEqual(reg.listPageExtensions("dashboard"), []);
     assert.deepEqual(reg.listSpaRoutes(), []);
+    assert.deepEqual(reg.listAuthTypingMessages(), []);
     assert.equal(reg.resolveModulePath("example/page.js"), undefined);
 });
 
