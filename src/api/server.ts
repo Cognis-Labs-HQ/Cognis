@@ -246,7 +246,7 @@ export function buildServer(deps: ApiDependencies) {
         : null;
     const searchRoutes = createSearchRoutes(deps.searchProfiles, routeContext);
 
-    Promise.all([
+    const runtimeStateReady = Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
         deps.loadModuleStates?.() ?? Promise.resolve([]),
         deps.loadGatewayStates?.() ?? Promise.resolve([]),
@@ -309,6 +309,7 @@ export function buildServer(deps: ApiDependencies) {
         });
 
     const server = createServer(async (req, res) => {
+        await runtimeStateReady;
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         let responseBytes = 0;

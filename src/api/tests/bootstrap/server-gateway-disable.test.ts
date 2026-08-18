@@ -1,6 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import {
+    createCtx,
     GatewayRegistry,
     HealthService,
     type ModuleRuntimeGateway,
@@ -8,6 +12,7 @@ import {
 import { buildServer } from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
+import { UIRegistry } from "../../reuse/ui-registry.js";
 
 function listen(server: import("node:http").Server): Promise<number> {
     return new Promise((resolve, reject) => {
@@ -34,6 +39,61 @@ function close(server: import("node:http").Server): Promise<void> {
         });
     });
 }
+
+test("buildServer loads external module assets before accepting requests", async () => {
+    const externalRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-server-external-module-"),
+    );
+    const uuid = "11111111-2222-4333-8444-555555555555";
+    const moduleRoot = path.join(externalRoot, uuid);
+    await mkdir(path.join(moduleRoot, "ui"), { recursive: true });
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        `export function bootstrapModule(ctx) {
+            ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
+        }`,
+    );
+    await writeFile(path.join(moduleRoot, "ui", "app.js"), "export {};");
+    const previousExternalRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = externalRoot;
+    const systemCtx = createCtx();
+    systemCtx.contributeCapability("system:ctx", systemCtx);
+    const server = buildServer({
+        moduleRuntimeGateway: {
+            listManifests: async () => [
+                {
+                    id: "jitsi-meet",
+                    uuid,
+                    class: "extension",
+                    enabledByDefault: true,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as unknown as ModuleRuntimeGateway,
+        uiRegistry: new UIRegistry(),
+        routeContext: createDefaultRouteContext({
+            getCapability: (id) => systemCtx.getCapability(id),
+            flow: systemCtx.flow,
+        }),
+    });
+
+    try {
+        const port = await listen(server);
+        const response = await fetch(
+            `http://127.0.0.1:${port}/static/modules/jitsi-meet/app.js`,
+        );
+        assert.equal(response.status, 200);
+        assert.equal(await response.text(), "export {};");
+    } finally {
+        await close(server);
+        await rm(externalRoot, { recursive: true, force: true });
+        if (previousExternalRoot === undefined) {
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        } else {
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousExternalRoot;
+        }
+    }
+});
 
 test("buildServer returns gateway_disabled for disabled gateway prefixes", async () => {
     const routeRegistry = new RouteRegistry();
