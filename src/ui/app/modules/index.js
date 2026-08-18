@@ -84,7 +84,7 @@ function renderModuleDetails(module) {
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
     const branchSelector = module.branches?.length
-        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.install_version"))}</span><select data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
+        ? `<label class="module-detail-branch"><span>${escapeHtml(i18n.t("ui.app.modules.install_version"))}</span><select class="theme-select" data-module-branch="${escapeHtml(module.uuid)}"><optgroup label="${escapeHtml(i18n.t("ui.app.modules.branches"))}">${module.branches.map((branch) => `<option value="${escapeHtml(branch.name)}"${branch.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(branch.name)}${branch.name === module.defaultBranch ? ` (${escapeHtml(i18n.t("ui.app.modules.default_branch"))})` : ""}</option>`).join("")}</optgroup>${module.releases?.length ? `<optgroup label="${escapeHtml(i18n.t("ui.app.modules.releases"))}">${module.releases.map((release) => `<option value="${escapeHtml(release.name)}"${release.name === selectedBranch(module) ? " selected" : ""}>${escapeHtml(release.name)}</option>`).join("")}</optgroup>` : ""}</select></label>`
         : "";
     const license = module.license
         ? `<p class="module-detail-license"><strong>${escapeHtml(i18n.t("ui.reuse.license"))}:</strong> ${escapeHtml(module.license)}</p>`
@@ -342,8 +342,6 @@ async function runLifecycleAction(module, action) {
     if (action === "enable" || action === "disable") {
         await setModuleEnabled(module.id, action === "enable");
         module.status = action === "enable" ? "enabled" : "disabled";
-        window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
-        window.dispatchEvent(new Event("cognis:navbar-refresh"));
     }
     if (action === "uninstall") {
         await uninstallModule(module.uuid);
@@ -352,8 +350,23 @@ async function runLifecycleAction(module, action) {
     }
     selectedModule =
         selectedModule?.uuid === module.uuid ? module : selectedModule;
-    showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
     refreshMarketplace();
+    window.dispatchEvent(
+        new CustomEvent("cognis:module-lifecycle-changed", {
+            detail: {
+                action,
+                moduleId: module.id,
+                moduleUuid: module.uuid,
+                status: module.status ?? "available",
+            },
+        }),
+    );
+    window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
+    window.dispatchEvent(new Event("cognis:navbar-refresh"));
+    showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
+    void loadKnownModules().catch((error) => {
+        showToast(error.message, { type: "error" });
+    });
 }
 
 function refreshMarketplace() {
@@ -404,15 +417,13 @@ async function discoverConfiguredSources() {
             if (sequence !== discoverySequence) return;
             const knownUuids = new Set(modules.map((module) => module.uuid));
             discovered.forEach((module) => {
-                const installed = modules.find(
+                const known = modules.find(
                     (entry) => entry.uuid === module.uuid,
                 );
-                if (installed) {
-                    const status = installed.status;
-                    Object.assign(installed, module, {
-                        installed: true,
-                        status,
-                    });
+                if (known) {
+                    const status = known.status;
+                    Object.assign(known, module);
+                    if (status) known.status = status;
                 } else if (!knownUuids.has(module.uuid)) {
                     modules.push(module);
                 }

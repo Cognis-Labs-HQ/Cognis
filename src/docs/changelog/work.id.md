@@ -91,3 +91,7 @@ Instalasi kini menerima katalog yang dibuat sebelum metadata tag rilis diperkena
 ## Tangani kegagalan instalasi secara lokal
 
 Kegagalan instalasi modul yang diharapkan tidak lagi memicu status pemulihan koneksi global atau notifikasi permanen “Koneksi terputus”; tindakan marketplace tetap melaporkan kegagalannya sendiri.
+
+## Publikasikan perubahan siklus hidup modul secara langsung
+
+Operasi instalasi, aktivasi, penonaktifan, pembaruan, dan penghapusan yang selesai kini langsung memperbarui marketplace, menerbitkan peristiwa siklus hidup terstruktur, menyegarkan pendaftaran navigasi, dan menyelaraskan status otoritatif dari server tanpa memuat ulang halaman. Pemilih versi pada tampilan detail juga menggunakan gaya pemilih bertema bersama.

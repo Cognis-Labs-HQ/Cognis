@@ -91,3 +91,7 @@ Installation now accepts catalogs written before release-tag metadata was introd
 ## Keep installation errors local
 
 Expected module installation failures no longer trigger the global connection-interrupted recovery state or permanent toast; the marketplace action continues to report its own failure.
+
+## Publish module lifecycle changes immediately
+
+Completed install, enable, disable, update, and uninstall operations now update the marketplace immediately, publish a structured lifecycle event, refresh navbar registrations, and reconcile against authoritative server state without requiring a page reload. The detail-view version selector also uses the shared themed-select styling.

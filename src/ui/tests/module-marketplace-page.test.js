@@ -143,6 +143,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /data-module-uninstall/);
     assert.match(source, /data-module-update/);
     assert.match(source, /data-module-branch/);
+    assert.match(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
     assert.match(source, /function hasModuleUpdate/);
     assert.match(source, /module\.defaultBranch/);
@@ -168,6 +169,8 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(source, /module-detail-license/);
     assert.match(source, /module\.status = "disabled"/);
     assert.match(source, /cognis:navbar-plugins-refresh/);
+    assert.match(source, /cognis:module-lifecycle-changed/);
+    assert.match(source, /void loadKnownModules\(\)\.catch/);
     assert.doesNotMatch(
         source,
         /await installModule\(module, token, branch\);[\s\S]{0,150}await setModuleEnabled/,

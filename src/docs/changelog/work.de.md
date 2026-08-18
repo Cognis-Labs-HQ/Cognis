@@ -91,3 +91,7 @@ Die Installation akzeptiert nun Kataloge, die vor Einführung der Release-Tag-Me
 ## Installationsfehler lokal behandeln
 
 Erwartete Fehler bei der Modulinstallation lösen nicht mehr den globalen Zustand „Verbindung unterbrochen“ oder eine dauerhafte Benachrichtigung aus; die Marketplace-Aktion meldet den Fehler weiterhin selbst.
+
+## Änderungen am Modul-Lebenszyklus sofort veröffentlichen
+
+Abgeschlossene Installations-, Aktivierungs-, Deaktivierungs-, Aktualisierungs- und Deinstallationsvorgänge aktualisieren den Marketplace jetzt sofort, veröffentlichen ein strukturiertes Lebenszyklusereignis, erneuern die Navigationsregistrierungen und gleichen den Zustand ohne Neuladen der Seite mit dem Server ab. Die Versionsauswahl der Detailansicht verwendet außerdem das gemeinsame Design für Auswahllisten.
