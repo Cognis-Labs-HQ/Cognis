@@ -55,3 +55,7 @@ Die automatische Gateway-Erkennung startet jetzt nur Verzeichnisse mit einem Gat
 ## Rückmeldungen zum Modul-Lebenszyklus verdeutlichen
 
 Das Deaktivieren von Modulen wird nun als Warnung protokolliert und das Löschen externer Module ausdrücklich erfasst. Marktplatz-Aktualisierungen zeigen pro Klick genau eine Abschlussmeldung, während Module sichtbar bleiben, sofern ihr Manifest `template` nicht ausdrücklich auf `true` setzt.
+
+## Cognis-HQ-Module empfehlen
+
+Die integrierte Empfehlungsliste enthält jetzt die veröffentlichten Modul-UUIDs für Jitsi Meet, Nextcloud Whiteboard und Analytics aus der Organisation Cognis Labs HQ.

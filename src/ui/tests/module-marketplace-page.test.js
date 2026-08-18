@@ -110,6 +110,20 @@ test("module marketplace identifies immutable trusted sources", () => {
     assert.match(source, /ui\.app\.modules\.default_source/);
 });
 
+test("recommended modules include the published Cognis HQ modules", () => {
+    const recommended = JSON.parse(
+        readFileSync(
+            resolve(ROOT, "src/ui/public/recommended-modules.json"),
+            "utf8",
+        ),
+    );
+    assert.deepEqual(recommended, [
+        "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
+        "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
+        "e10c016f-8a15-5ec2-8188-c1657dfbe829",
+    ]);
+});
+
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

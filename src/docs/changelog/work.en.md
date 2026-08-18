@@ -55,3 +55,7 @@ Gateway auto-discovery now bootstraps only directories that contain a gateway ma
 ## Clarify module lifecycle feedback
 
 Module disable operations are now warning-level events and external-module deletion is logged explicitly. Marketplace refresh actions emit one completion toast per click, while modules remain visible unless their manifest explicitly sets `template` to `true`.
+
+## Recommend Cognis HQ modules
+
+The built-in recommendation list now includes the published Jitsi Meet, Nextcloud Whiteboard, and Analytics module UUIDs from the Cognis Labs HQ organization.

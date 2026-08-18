@@ -55,3 +55,7 @@ Penemuan gateway otomatis kini hanya menjalankan direktori yang memiliki manifes
 ## Perjelas umpan balik siklus hidup modul
 
 Penonaktifan modul kini dicatat sebagai peringatan dan penghapusan modul eksternal dicatat secara eksplisit. Penyegaran marketplace menampilkan satu pemberitahuan selesai untuk setiap klik, sedangkan modul tetap terlihat kecuali manifesnya secara eksplisit menetapkan `template` ke `true`.
+
+## Rekomendasikan modul Cognis HQ
+
+Daftar rekomendasi bawaan kini memuat UUID modul Jitsi Meet, Nextcloud Whiteboard, dan Analytics yang diterbitkan oleh organisasi Cognis Labs HQ.
