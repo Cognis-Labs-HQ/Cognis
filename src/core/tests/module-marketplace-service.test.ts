@@ -93,10 +93,17 @@ test("module installation accepts cached catalogs created before release discove
 test("module marketplace discovers repository manifests", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const warnings: Array<Record<string, unknown>> = [];
+    const scanLogs: Array<{ message: string; meta: Record<string, unknown> }> =
+        [];
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
-        (_level, _message, meta) => warnings.push(meta),
+        (level, message, meta) => {
+            if (level === "info") scanLogs.push({ message, meta });
+            if (level === "warn" && "rejectedCloneUrl" in meta) {
+                warnings.push(meta);
+            }
+        },
     );
     const installedRoot = path.join(
         root,
@@ -116,16 +123,18 @@ test("module marketplace discovers repository manifests", async () => {
     const originalFetch = globalThis.fetch;
     let moduleName = "Notes";
     let moduleDescription = "Shared notes.";
-    let assetBody = "<svg/>";
+    let assetBody = "png-one";
     globalThis.fetch = async (input) =>
         String(input).endsWith("/README.md")
             ? new Response("# Notes\nA useful module.")
             : /\/LICENSE(?:\.md|\.txt)?$/.test(String(input))
               ? new Response("", { status: 404 })
               : String(input).includes("/assets/")
-                ? new Response(assetBody, {
-                      headers: { "content-type": "image/svg+xml" },
-                  })
+                ? String(input).endsWith(".svg")
+                    ? new Response("", { status: 404 })
+                    : new Response(assetBody, {
+                          headers: { "content-type": "image/png" },
+                      })
                 : String(input).includes("/tags?")
                   ? new Response(
                         JSON.stringify([
@@ -186,6 +195,22 @@ test("module marketplace discovers repository manifests", async () => {
                         );
     try {
         const modules = await service.discover();
+        assert.deepEqual(
+            scanLogs.map(({ message, meta }) => ({
+                message,
+                modulesFound: meta.modulesFound,
+            })),
+            [
+                {
+                    message: "Module source scan started.",
+                    modulesFound: undefined,
+                },
+                {
+                    message: "Module source scan completed.",
+                    modulesFound: 1,
+                },
+            ],
+        );
         assert.equal(modules.length, 1);
         assert.equal(modules[0].id, "notes");
         assert.deepEqual(warnings, [
@@ -208,7 +233,7 @@ test("module marketplace discovers repository manifests", async () => {
         assert.match(modules[0].assetIds?.icon ?? "", /^[a-f0-9]{64}$/);
         assert.equal(
             service.getAsset(modules[0].assetIds?.icon ?? "")?.contentType,
-            "image/svg+xml",
+            "image/png",
         );
         assert.equal(modules[0].readme, "# Notes\nA useful module.");
         assert.equal(modules[0].license, undefined);
@@ -228,7 +253,7 @@ test("module marketplace discovers repository manifests", async () => {
         const originalIcon = modules[0].assetIds?.icon;
         moduleName = "Collaborative Notes";
         moduleDescription = "Updated shared notes.";
-        assetBody = '<svg id="updated"/>';
+        assetBody = "png-two";
         const refreshed = await service.discover();
         assert.equal(refreshed[0].name, "Collaborative Notes");
         assert.equal(refreshed[0].description, "Updated shared notes.");

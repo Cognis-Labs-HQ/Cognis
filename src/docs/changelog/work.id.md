@@ -59,3 +59,7 @@ Penonaktifan modul kini dicatat sebagai peringatan dan penghapusan modul ekstern
 ## Rekomendasikan modul Cognis HQ
 
 Daftar rekomendasi bawaan kini memuat UUID modul Jitsi Meet, Nextcloud Whiteboard, dan Analytics yang diterbitkan oleh organisasi Cognis Labs HQ.
+
+## Perluas pencatatan siklus hidup modul
+
+Penambahan, pembaruan, penghapusan, pemindaian sumber modul, serta jumlah hasil pemindaian kini dicatat dengan tingkat yang sesuai, sedangkan kegagalan validasi dan pengaktifan dicatat sebagai kesalahan. Penemuan gambar marketplace juga menggunakan PNG yang cocok atau gambar lain yang didukung ketika manifes menyebut ekstensi yang tidak ada, sehingga gambar Jitsi Meet kembali tampil selama manifesnya masih menunjuk ke berkas SVG yang tidak tersedia.

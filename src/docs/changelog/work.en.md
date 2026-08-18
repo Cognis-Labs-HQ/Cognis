@@ -59,3 +59,7 @@ Module disable operations are now warning-level events and external-module delet
 ## Recommend Cognis HQ modules
 
 The built-in recommendation list now includes the published Jitsi Meet, Nextcloud Whiteboard, and Analytics module UUIDs from the Cognis Labs HQ organization.
+
+## Expand module lifecycle logging
+
+Module source additions, updates, deletions, scans, and scan result counts are now logged with appropriate severity, while validation and enable failures are recorded as errors. Marketplace image discovery also falls back to a matching PNG or other supported image when a repository manifest names a missing extension, restoring Jitsi Meet artwork while its manifest still points at absent SVG files.

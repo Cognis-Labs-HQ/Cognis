@@ -103,14 +103,22 @@ export function createModuleRoutes(
                 return true;
             }
             if (req.method === "POST") {
-                const source = await marketplace.saveSource(
-                    (await readJson(req)) as never,
+                const body = await readJson(req);
+                const existingSource = (await marketplace.listSources()).some(
+                    (entry) => entry.uuid === body.uuid,
                 );
-                hooks?.log?.("info", "Module source saved.", {
-                    ...logMeta,
-                    accountId: claims.sub,
-                    sourceUuid: source.uuid,
-                });
+                const source = await marketplace.saveSource(body as never);
+                hooks?.log?.(
+                    "info",
+                    existingSource
+                        ? "Module source updated."
+                        : "Module source added.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        sourceUuid: source.uuid,
+                    },
+                );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: source }));
                 return true;
@@ -142,7 +150,7 @@ export function createModuleRoutes(
             await marketplace.removeSource(
                 decodeURIComponent(sourceDeleteMatch[1]),
             );
-            hooks?.log?.("info", "Module source removed.", {
+            hooks?.log?.("warn", "Module source deleted.", {
                 ...logMeta,
                 accountId: claims.sub,
                 sourceUuid: sourceDeleteMatch[1],
@@ -239,6 +247,18 @@ export function createModuleRoutes(
                           sourceUuids,
                       )
                     : await marketplace.listCachedModules();
+            hooks?.log?.(
+                "info",
+                req.method === "POST"
+                    ? "Module source scan completed."
+                    : "Listed cached module discoveries.",
+                {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    sourceUuids,
+                    modulesFound: modules.length,
+                },
+            );
             const data = modules.map((module) =>
                 withMarketplaceAssetUrls({
                     ...module,
@@ -450,15 +470,37 @@ export function createModuleRoutes(
             url.searchParams.get("acknowledgeExternalDisclaimer") === "true";
 
         if (action === "enable") {
-            await hooks?.beforeEnable?.(moduleId);
+            try {
+                await hooks?.beforeEnable?.(moduleId);
+            } catch (error) {
+                hooks?.log?.("error", "Module enable validation failed.", {
+                    ...logMeta,
+                    accountId: claims.sub,
+                    moduleId,
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                throw error;
+            }
         }
 
-        const result =
-            action === "enable"
-                ? await moduleService.enable(moduleId, {
-                      acknowledgeExternalDisclaimer: acknowledged,
-                  })
-                : await moduleService.disable(moduleId);
+        let result;
+        try {
+            result =
+                action === "enable"
+                    ? await moduleService.enable(moduleId, {
+                          acknowledgeExternalDisclaimer: acknowledged,
+                      })
+                    : await moduleService.disable(moduleId);
+        } catch (error) {
+            hooks?.log?.("error", `Module ${action} failed.`, {
+                ...logMeta,
+                accountId: claims.sub,
+                moduleId,
+                error: error instanceof Error ? error.message : String(error),
+            });
+            throw error;
+        }
 
         if (action === "enable") await hooks?.onEnabled?.(moduleId);
         if (action === "disable") await hooks?.onDisabled?.(moduleId);

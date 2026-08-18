@@ -68,7 +68,7 @@ export interface ModuleMarketplaceSettings {
 }
 
 export type ModuleMarketplaceLog = (
-    level: "warn",
+    level: "info" | "warn",
     message: string,
     meta: Record<string, unknown>,
 ) => void;
@@ -236,6 +236,10 @@ export class ModuleMarketplaceService {
             }
         }
         for (const source of selectedSources) {
+            this.log("info", "Module source scan started.", {
+                sourceUuid: source.uuid,
+                sourceName: source.name,
+            });
             let modules: MarketplaceModule[];
             try {
                 modules = await this.discoverSource(
@@ -271,6 +275,11 @@ export class ModuleMarketplaceService {
                 accepted,
                 configuredSourceUuids,
             );
+            this.log("info", "Module source scan completed.", {
+                sourceUuid: source.uuid,
+                sourceName: source.name,
+                modulesFound: accepted.length,
+            });
             discovered.push(...accepted);
         }
         return discovered;
@@ -513,7 +522,7 @@ export class ModuleMarketplaceService {
                         manifest.assets || media.length
                             ? {
                                   icon: manifest.assets.icon
-                                      ? await this.cacheRepositoryAsset(
+                                      ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
                                             defaultBranch,
@@ -522,7 +531,7 @@ export class ModuleMarketplaceService {
                                         )
                                       : undefined,
                                   banner: manifest.assets.banner
-                                      ? await this.cacheRepositoryAsset(
+                                      ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
                                             defaultBranch,
@@ -761,6 +770,54 @@ export class ModuleMarketplaceService {
         const id = createHash("sha256").update(body).digest("hex");
         this.assets.set(id, { body, contentType });
         return id;
+    }
+
+    private async cacheRepositoryImageAsset(
+        source: ModuleSource,
+        projectPath: string,
+        defaultBranch: string,
+        assetPath: string,
+        headers: Record<string, string>,
+    ): Promise<string | undefined> {
+        const declared = await this.cacheRepositoryAsset(
+            source,
+            projectPath,
+            defaultBranch,
+            assetPath,
+            headers,
+        );
+        if (declared) return declared;
+        const extension = path.posix.extname(assetPath);
+        const basename = extension
+            ? assetPath.slice(0, -extension.length)
+            : assetPath;
+        for (const fallbackExtension of [
+            ".png",
+            ".webp",
+            ".jpg",
+            ".jpeg",
+            ".svg",
+        ]) {
+            if (fallbackExtension === extension.toLowerCase()) continue;
+            const fallbackPath = `${basename}${fallbackExtension}`;
+            const fallback = await this.cacheRepositoryAsset(
+                source,
+                projectPath,
+                defaultBranch,
+                fallbackPath,
+                headers,
+            );
+            if (fallback) {
+                this.log("warn", "Module image asset used a fallback path.", {
+                    sourceUuid: source.uuid,
+                    projectPath,
+                    declaredPath: assetPath,
+                    resolvedPath: fallbackPath,
+                });
+                return fallback;
+            }
+        }
+        return undefined;
     }
 
     private async discoverRepositoryMedia(

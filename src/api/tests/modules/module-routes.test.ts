@@ -188,6 +188,7 @@ test("module routes support github imports", async () => {
 
 test("module routes run enable tests before enabling modules", async () => {
     let enableCalled = false;
+    const errors: Array<{ level: string; message: string }> = [];
     const route = createModuleRoutes(
         {
             list: async () => [],
@@ -201,6 +202,7 @@ test("module routes run enable tests before enabling modules", async () => {
             beforeEnable: async () => {
                 throw new Error("enable test failed");
             },
+            log: (level, message) => errors.push({ level, message }),
         },
     );
 
@@ -217,6 +219,55 @@ test("module routes run enable tests before enabling modules", async () => {
         /enable test failed/,
     );
     assert.equal(enableCalled, false);
+    assert.deepEqual(errors, [
+        { level: "error", message: "Module enable validation failed." },
+    ]);
+});
+
+test("module source mutations and scans emit lifecycle logs", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const logs: Array<{ level: string; message: string; count?: unknown }> = [];
+    const source = {
+        uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",
+        name: "Additional source",
+    };
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        {
+            log: (level, message, meta) =>
+                logs.push({ level, message, count: meta?.modulesFound }),
+        },
+        undefined,
+        {
+            listSources: async () => [],
+            saveSource: async () => source,
+            removeSource: async () => undefined,
+            listRecommendedModuleUuids: async () => [],
+            discover: async () => [{ uuid: "module-one" }],
+        } as any,
+    );
+    const request = async (method: string, pathname: string, body?: unknown) =>
+        route(
+            {
+                method,
+                headers: { authorization: `Bearer ${token}` },
+                async *[Symbol.asyncIterator]() {
+                    if (body) yield Buffer.from(JSON.stringify(body));
+                },
+            } as any,
+            { writeHead() {}, end() {} } as any,
+            new URL(`http://localhost${pathname}`),
+        );
+
+    await request("POST", "/api/v1/modules/sources", source);
+    await request("DELETE", `/api/v1/modules/sources/${source.uuid}`);
+    await request("POST", "/api/v1/modules/catalog", {});
+
+    assert.deepEqual(logs, [
+        { level: "info", message: "Module source added.", count: undefined },
+        { level: "warn", message: "Module source deleted.", count: undefined },
+        { level: "info", message: "Module source scan completed.", count: 1 },
+    ]);
 });
 
 test("module uninstall requires disable and triggers runtime teardown", async () => {
