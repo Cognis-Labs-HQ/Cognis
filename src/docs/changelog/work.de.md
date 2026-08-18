@@ -127,3 +127,7 @@ Das erweiterte Hamburger-Menü befindet sich nun zusammen mit der Zurück-Steuer
 ## Installierte Module und Grafiken bewahren
 
 Docker-Bereitstellungen speichern externe Module nun in einem eigenen benannten Volume, das am konfigurierten Stammverzeichnis für externe Module eingehängt ist. Dadurch bleiben installierte Module beim Neubau des Anwendungscontainers erhalten. Der Marketplace behält außerdem die über den Katalog bereitgestellten Symbol- und Banner-URLs beim Zusammenführen des installierten Manifestzustands bei, sodass Grafiken nicht mehr bis zur nächsten Seitenaktualisierung verschwinden.
+
+## Aktivierung bei erzwungenen Updates bewahren
+
+„Update erzwingen“ deaktiviert ein aktives Modul nun vorübergehend, bevor sein Checkout ersetzt wird, und aktiviert es anschließend erneut. Schlägt der Download oder die Prüfung fehl, aktiviert Cognis den bestehenden Checkout trotzdem wieder, damit ein fehlgeschlagenes erzwungenes Update das Modul nicht unerwartet deaktiviert lässt.

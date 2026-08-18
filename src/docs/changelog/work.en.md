@@ -127,3 +127,7 @@ The advanced hamburger menu now shares the top navigation row with the Back cont
 ## Persist installed modules and artwork
 
 Docker deployments now store external modules in a dedicated named volume mounted at the configured external-module root, so rebuilding the application container preserves installed modules. Marketplace reconciliation also retains catalog-proxied icon and banner URLs when installed manifest state is merged, preventing artwork from disappearing until a page refresh.
+
+## Preserve activation during force updates
+
+Force Update now temporarily disables an active module before replacing its checkout and re-enables it afterward. If the download or validation fails, Cognis still re-enables the existing checkout so a failed forced update does not leave the module unexpectedly disabled.

@@ -375,6 +375,8 @@ async function runLifecycleAction(module, action) {
         return;
     }
     if (["install", "update", "force-update"].includes(action)) {
+        const restoreEnabledState =
+            action === "force-update" && module.status === "enabled";
         const channel = [
             ...(module.branches ?? []),
             ...(module.releases ?? []),
@@ -416,9 +418,21 @@ async function runLifecycleAction(module, action) {
             ? keyring?.get(source.credentialId)
             : undefined;
         const branch = selectedBranch(module);
-        await installModule(module, token, branch);
+        if (restoreEnabledState) {
+            await setModuleEnabled(module.id, false);
+            module.status = "disabled";
+            refreshMarketplace();
+        }
+        try {
+            await installModule(module, token, branch);
+        } finally {
+            if (restoreEnabledState) {
+                await setModuleEnabled(module.id, true);
+                module.status = "enabled";
+            }
+        }
         module.installed = true;
-        module.status = "disabled";
+        if (!restoreEnabledState) module.status = "disabled";
         module.installedBranch = branch;
         module.installedCommit = [
             ...(module.branches ?? []),

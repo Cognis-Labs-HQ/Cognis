@@ -127,3 +127,7 @@ Menu hamburger lanjutan kini berada dalam baris navigasi atas bersama kontrol Ke
 ## Pertahankan modul dan gambar terpasang
 
 Deployment Docker kini menyimpan modul eksternal dalam volume bernama khusus yang dipasang pada akar modul eksternal yang dikonfigurasi, sehingga modul terpasang tetap tersedia setelah kontainer aplikasi dibangun ulang. Rekonsiliasi marketplace juga mempertahankan URL ikon dan banner yang diproksi katalog saat status manifes terpasang digabungkan, sehingga gambar tidak lagi menghilang sampai halaman disegarkan.
+
+## Pertahankan aktivasi saat pembaruan paksa
+
+Pembaruan Paksa kini menonaktifkan sementara modul aktif sebelum mengganti checkout-nya, lalu mengaktifkannya kembali. Jika unduhan atau validasi gagal, Cognis tetap mengaktifkan kembali checkout yang ada agar pembaruan paksa yang gagal tidak membuat modul tetap nonaktif secara tidak terduga.

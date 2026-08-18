@@ -155,6 +155,14 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderLifecycleButton\(module, "uninstall"/);
     assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);
+    assert.match(
+        source,
+        /action === "force-update" && module\.status === "enabled"/,
+    );
+    assert.match(
+        source,
+        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\(module, token, branch\)[\s\S]*setModuleEnabled\(module\.id, true\)/,
+    );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
     assert.match(source, /function hasModuleUpdate/);
@@ -183,10 +191,6 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(source, /cognis:navbar-plugins-refresh/);
     assert.match(source, /cognis:module-lifecycle-changed/);
     assert.match(source, /void loadKnownModules\(\)\.catch/);
-    assert.doesNotMatch(
-        source,
-        /await installModule\(module, token, branch\);[\s\S]{0,150}await setModuleEnabled/,
-    );
     assert.match(marketplaceStyles, /\.module-detail[\s\S]*width: 100%/);
     assert.match(marketplaceStyles, /arrow-back-light\.svg/);
     assert.match(marketplaceStyles, /arrow-back-dark\.svg/);
