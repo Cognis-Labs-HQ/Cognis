@@ -345,3 +345,7 @@ Pengaktifan modul eksternal kini memerlukan persetujuan sebelum pengujian modul 
 ## Menata internal pemuat modul
 
 Semua layanan Core yang tersisa untuk siklus hidup modul dan pelaksana pengujian kini berada bersama di bawah `services/module-loader/`, dengan pengujian yang mencerminkan struktur tersebut. Dokumentasi modul eksternal dan kerangka bahasa Study kini lengkap dan tersinkron secara struktural dalam setiap bahasa yang didukung.
+
+## Menjaga navigasi Modul tetap ringkas
+
+Halaman Modul kini mengaktifkan tata letak navigasi subhalaman milik penyusun halaman. Menu samping hanya memakai lebar yang diperlukan oleh isi navigasinya, sehingga sisa ruang tersedia untuk hasil modul.

@@ -957,6 +957,7 @@ export async function mount(root, { signal } = {}) {
         applyDocumentTitle(i18n, "ui.page.title.modules");
         composer = createPageComposer(root, {
             allowCustomization: false,
+            subPageNavigation: true,
             preferenceKey: "administration-modules-layout",
             i18n,
             pageContext: {

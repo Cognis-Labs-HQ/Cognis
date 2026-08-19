@@ -345,3 +345,7 @@ External enablement now requires acknowledgement before module tests run, and un
 ## Organize module loader internals
 
 All remaining Core module lifecycle and test-runner services now live together under `services/module-loader/`, with their tests mirroring that structure. External-module and Study language framework documentation is now comprehensive and structurally synchronized in every supported language.
+
+## Keep Modules navigation compact
+
+The Modules page now enables the page composer’s sub-page navigation layout, keeping its side menu only as wide as its navigation content requires and preserving the remaining width for module results.

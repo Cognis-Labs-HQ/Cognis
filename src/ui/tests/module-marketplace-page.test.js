@@ -284,6 +284,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderDetailActions\(selectedModule\)/);
     assert.match(source, /function refreshDetailActions\(\)/);
     assert.match(source, /floatingMenu: \[/);
+    assert.match(source, /subPageNavigation: true/);
     assert.doesNotMatch(source, /toolbarScrollable:/);
     assert.doesNotMatch(source, /contentScrolling:/);
     assert.doesNotMatch(marketplaceStyles, /\.module-store-sidebar/);

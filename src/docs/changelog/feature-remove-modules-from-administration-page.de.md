@@ -345,3 +345,7 @@ Die Aktivierung externer Module erfordert nun die Bestätigung, bevor Modultests
 ## Interna des Modul-Laders organisieren
 
 Alle verbleibenden Core-Dienste für den Modul-Lebenszyklus und die Testausführung liegen nun gemeinsam unter `services/module-loader/`; ihre Tests spiegeln diese Struktur wider. Die Dokumentation für externe Module und das Study-Sprachframework ist nun in jeder unterstützten Sprache umfassend und strukturell synchronisiert.
+
+## Modulnavigation kompakt halten
+
+Die Seite „Module“ verwendet jetzt das Unternavigationslayout des Seiten-Composers. Dadurch bleibt das Seitenmenü nur so breit, wie es sein Navigationsinhalt erfordert, und die verbleibende Breite steht den Modulergebnissen zur Verfügung.
