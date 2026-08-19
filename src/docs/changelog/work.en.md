@@ -111,3 +111,7 @@ Release channel, upgrade, and downgrade installs now persist their selected bran
 ## Keep module details stable
 
 Module detail actions now use the composer floating menu, while the status and category navigation uses the balanced scrollable side toolbar. Detail selection survives refreshes, lifecycle events, and toasts; only explicit navigation leaves the detail view.
+
+## Align module actions
+
+Floating module actions now share a consistent height and vertical alignment, including the back control. The advanced hamburger remains in the detail header so its popup anchors predictably, and lightweight action refreshes avoid redrawing the entire module card for unrelated clicks.

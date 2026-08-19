@@ -270,6 +270,15 @@ body[data-theme="dark"] .module-icon-settings {
 .module-detail-back {
     flex: 0 0 auto;
 }
+[data-floating-slot="module-actions"] {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+[data-floating-slot="module-actions"] > button {
+    min-height: 2.75rem;
+    margin: 0;
+}
 .module-detail-banner {
     width: 100%;
     max-height: 22rem;
@@ -278,7 +287,17 @@ body[data-theme="dark"] .module-icon-settings {
     border-radius: 1rem;
 }
 .module-detail-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
     min-width: 0;
+}
+.module-detail-header > div {
+    min-width: 0;
+}
+.module-detail-advanced {
+    flex: 0 0 auto;
 }
 .module-detail-header h2 {
     margin-top: 0;

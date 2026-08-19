@@ -173,10 +173,17 @@ test("module pictures remain hidden until their refreshed image is ready", () =>
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
+    const carouselSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/carousel.js"),
+        "utf8",
+    );
     assert.match(source, /module-store-avatar module-picture/);
     assert.match(source, /width="64" height="64"/);
-    assert.match(source, /function revealLoadedModulePictures/);
-    assert.match(source, /picture\.complete && picture\.naturalWidth > 0/);
+    assert.match(carouselSource, /function revealLoadedModulePictures/);
+    assert.match(
+        carouselSource,
+        /picture\.complete && picture\.naturalWidth > 0/,
+    );
     assert.match(source, /event\.target\.classList\.add\("is-loaded"\)/);
     assert.match(
         marketplaceStyles,
@@ -250,8 +257,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /data-module-back/);
     assert.match(source, /renderSidebar\(categories\)/);
     assert.match(source, /module-detail-back/);
+    assert.match(source, /module-detail-advanced/);
     assert.match(source, /getFloatingSlot\(pageRoot, "module-actions"\)/);
     assert.match(source, /renderDetailActions\(selectedModule\)/);
+    assert.match(source, /function refreshDetailActions\(\)/);
     assert.match(source, /floatingMenu: \[/);
     assert.match(source, /toolbarScrollable: true/);
     assert.match(source, /contentScrolling: false/);
@@ -270,6 +279,14 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /!module\.installed && module\.branches\?\.length/);
     assert.match(source, /openHamburgerMenu/);
     assert.match(source, /data-module-menu/);
+    assert.match(
+        marketplaceStyles,
+        /\[data-floating-slot="module-actions"\][\s\S]*align-items: center/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /\.module-detail-header[\s\S]*justify-content: space-between/,
+    );
     assert.match(
         source,
         /id: "force-update"[\s\S]*variant: "danger"[\s\S]*id: "change-channel"/,
@@ -393,11 +410,15 @@ test("module details rotate bounded screenshots with manual navigation", () => {
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
+    const carouselSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/carousel.js"),
+        "utf8",
+    );
     assert.match(source, /data-screenshot-step="-1"/);
     assert.match(source, /data-screenshot-step="1"/);
-    assert.match(source, /window\.setInterval[\s\S]*5000/);
-    assert.match(source, /is-previous/);
-    assert.match(source, /is-next/);
+    assert.match(carouselSource, /window\.setInterval[\s\S]*5000/);
+    assert.match(carouselSource, /is-previous/);
+    assert.match(carouselSource, /is-next/);
     assert.match(marketplaceStyles, /max-height: 28rem/);
     assert.match(marketplaceStyles, /opacity: 0\.24/);
     assert.match(marketplaceStyles, /transform 420ms ease/);

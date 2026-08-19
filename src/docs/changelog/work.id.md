@@ -111,3 +111,7 @@ Instalasi perubahan kanal rilis, peningkatan, dan penurunan kini menyimpan branc
 ## Pertahankan detail modul
 
 Tindakan detail modul kini memakai menu mengambang composer, sedangkan navigasi status dan kategori memakai toolbar samping yang seimbang dan dapat digulir. Pilihan detail bertahan saat penyegaran, peristiwa siklus hidup, dan toast; hanya navigasi eksplisit yang meninggalkan tampilan detail.
+
+## Selaraskan tindakan modul
+
+Tindakan modul mengambang kini memiliki tinggi dan perataan vertikal yang konsisten, termasuk kontrol kembali. Menu hamburger lanjutan tetap berada di header detail agar popup tertambat dengan baik, dan pembaruan tindakan ringan menghindari penggambaran ulang seluruh kartu modul untuk klik yang tidak terkait.

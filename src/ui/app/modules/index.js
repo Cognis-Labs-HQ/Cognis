@@ -13,6 +13,11 @@ import { beginPageLoading } from "../../reuse/page-entry.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
+    initializeScreenshotCarousels,
+    revealLoadedModulePictures,
+    updateScreenshotCarousel,
+} from "./carousel.js";
+import {
     installModule,
     loadAvailableModules,
     loadCachedModules,
@@ -229,63 +234,15 @@ function renderModuleDetails(module) {
               (channel) => channel.name === displayedChannel,
           )?.version ?? module.version);
     const release = `<div class="module-detail-release"><p><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, ${escapeHtml(formatVersion(displayedVersion))}` : ""}${renderRestartWarning(module)}</p>${renderAvailableVersion(module)}</div>`;
-    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    const advanced =
+        module.installed && !module.restartRequired
+            ? `<button type="button" class="btn-neutral module-icon-button module-detail-advanced" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
+            : "";
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${advanced}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
 }
 
 function renderDetailActions(module) {
-    const advanced =
-        module.installed && !module.restartRequired
-            ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
-            : "";
-    return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${renderLifecycleActions(module)}${advanced}`;
-}
-
-function revealLoadedModulePictures(root) {
-    if (!root) return;
-    root.querySelectorAll(".module-picture").forEach((picture) => {
-        if (picture.complete && picture.naturalWidth > 0) {
-            picture.classList.add("is-loaded");
-        }
-    });
-}
-
-function updateScreenshotCarousel(carousel, step = 0) {
-    const screenshots = [
-        ...carousel.querySelectorAll(".module-detail-screenshot"),
-    ];
-    if (!screenshots.length) return;
-    const moduleUuid = carousel.dataset.screenshotCarousel;
-    const current = screenshotIndexes.get(moduleUuid) ?? 0;
-    const next = (current + step + screenshots.length) % screenshots.length;
-    screenshotIndexes.set(moduleUuid, next);
-    screenshots.forEach((screenshot, index) => {
-        const offset = (index - next + screenshots.length) % screenshots.length;
-        screenshot.classList.toggle("is-active", offset === 0);
-        screenshot.classList.toggle("is-next", offset === 1);
-        screenshot.classList.toggle(
-            "is-previous",
-            offset === screenshots.length - 1,
-        );
-        screenshot.setAttribute("aria-hidden", String(offset !== 0));
-    });
-    carousel.classList.toggle("is-single", screenshots.length === 1);
-}
-
-function initializeScreenshotCarousels(root, signal) {
-    const refresh = () =>
-        root
-            .querySelectorAll("[data-screenshot-carousel]")
-            .forEach((carousel) => updateScreenshotCarousel(carousel));
-    refresh();
-    const rotation = window.setInterval(() => {
-        root.querySelectorAll(
-            "[data-screenshot-carousel]:not(.is-single)",
-        ).forEach((carousel) => updateScreenshotCarousel(carousel, 1));
-    }, 5000);
-    signal?.addEventListener("abort", () => window.clearInterval(rotation), {
-        once: true,
-    });
-    return refresh;
+    return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${renderLifecycleActions(module)}`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -704,6 +661,13 @@ function refreshMarketplace() {
         ].sort((left, right) => left.localeCompare(right));
         sidebar.outerHTML = renderSidebar(categories);
     }
+    refreshDetailActions();
+    revealLoadedModulePictures(pageRoot);
+    refreshScreenshotCarousels();
+    restoreWindowScrollPosition(scrollPosition.left, scrollPosition.top);
+}
+
+function refreshDetailActions() {
     const actions = getFloatingSlot(pageRoot, "module-actions");
     if (actions) {
         actions.innerHTML = selectedModule
@@ -711,9 +675,6 @@ function refreshMarketplace() {
             : "";
         actions.hidden = !selectedModule;
     }
-    revealLoadedModulePictures(pageRoot);
-    refreshScreenshotCarousels();
-    restoreWindowScrollPosition(scrollPosition.left, scrollPosition.top);
 }
 
 async function loadKnownModules() {
@@ -832,6 +793,7 @@ function bindInteractions(root, signal) {
             if (target.dataset.screenshotStep) {
                 updateScreenshotCarousel(
                     target.closest("[data-screenshot-carousel]"),
+                    screenshotIndexes,
                     Number(target.dataset.screenshotStep),
                 );
                 return;
@@ -840,8 +802,11 @@ function bindInteractions(root, signal) {
             if (target.dataset.storeView) category = "all";
             if (target.dataset.storeCategory)
                 category = target.dataset.storeCategory;
-            if (target.dataset.storeView || target.dataset.storeCategory)
+            if (target.dataset.storeView || target.dataset.storeCategory) {
                 selectedModule = null;
+                refreshMarketplace();
+                return;
+            }
             if (target.id === "module-marketplace-settings") {
                 await openMarketplaceSettings();
                 return;
@@ -911,7 +876,7 @@ function bindInteractions(root, signal) {
                 if (pendingModuleActions.has(module.uuid)) return;
                 pendingModuleActions.set(module.uuid, action);
                 const finishLoading = beginButtonLoading(target);
-                refreshMarketplace();
+                refreshDetailActions();
                 try {
                     await runLifecycleAction(module, action);
                 } catch (error) {
@@ -932,7 +897,7 @@ function bindInteractions(root, signal) {
                 } finally {
                     pendingModuleActions.delete(module.uuid);
                     finishLoading();
-                    refreshMarketplace();
+                    refreshDetailActions();
                 }
                 return;
             }
@@ -942,7 +907,6 @@ function bindInteractions(root, signal) {
                 );
                 return;
             }
-            refreshMarketplace();
         },
         { signal, capture: true },
     );
@@ -1002,6 +966,7 @@ export async function mount(root, { signal } = {}) {
         refreshScreenshotCarousels = initializeScreenshotCarousels(
             root,
             signal,
+            screenshotIndexes,
         );
         void loadKnownModules().catch((error) => {
             showToast(error.message, { type: "error" });

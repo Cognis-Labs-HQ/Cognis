@@ -111,3 +111,7 @@ Installationen durch Release-Kanalwechsel, Upgrades und Downgrades speichern nun
 ## Moduldetails stabil halten
 
 Aktionen in Moduldetails verwenden nun das schwebende Composer-Menü, während Status- und Kategorienavigation die ausgewogene, scrollbare Seitenleiste nutzt. Die Detailauswahl bleibt bei Aktualisierungen, Lebenszyklusereignissen und Hinweisen erhalten; nur eine ausdrückliche Navigation verlässt die Detailansicht.
+
+## Modulaktionen ausrichten
+
+Schwebende Modulaktionen haben nun eine einheitliche Höhe und vertikale Ausrichtung, einschließlich der Zurück-Steuerung. Das erweiterte Hamburger-Menü bleibt im Detailkopf, damit sein Popup zuverlässig verankert ist. Leichte Aktionsaktualisierungen vermeiden das Neuzeichnen der gesamten Modulkarte bei nicht zugehörigen Klicks.
