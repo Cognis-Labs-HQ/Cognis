@@ -50,8 +50,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.14`   |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.13`   |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.11`   |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.61`   |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.65`   |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.62`   |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.66`   |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34`   |
 | User Share            | `src/adapters/share/user/`          | `1.1.19`   |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10`   |
@@ -64,7 +64,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`    |
-| Authentication (auth) | `src/gateways/auth/`          | `1.9.9`    |
+| Authentication (auth) | `src/gateways/auth/`          | `1.9.10`   |
 | Share                 | `src/gateways/share/`         | `1.7.26`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`   |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`    |
@@ -74,7 +74,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Logging               | `src/gateways/logging/`       | `1.5.12`   |
 | Observability         | `src/gateways/observability/` | `1.0.6`    |
 | Study                 | `src/gateways/study/`         | `1.5.11`   |
-| Calendar              | `src/gateways/calendar/`      | `1.4.102`  |
+| Calendar              | `src/gateways/calendar/`      | `1.4.103`  |
 
 ## コア契約
 

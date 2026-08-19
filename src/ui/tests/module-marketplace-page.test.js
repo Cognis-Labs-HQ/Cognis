@@ -268,8 +268,8 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderDetailActions\(selectedModule\)/);
     assert.match(source, /function refreshDetailActions\(\)/);
     assert.match(source, /floatingMenu: \[/);
-    assert.match(source, /toolbarScrollable: true/);
-    assert.match(source, /contentScrolling: false/);
+    assert.match(source, /toolbarScrollable: false/);
+    assert.match(source, /contentScrolling: true/);
     assert.doesNotMatch(
         source,
         /module-detail-actions[^`]*renderLifecycleActions\(module\)\}\$\{advanced\}/,

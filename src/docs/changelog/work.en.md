@@ -151,3 +151,7 @@ Enabling a module no longer activates disabled gateways to satisfy its manifest.
 ## Fill module card actions
 
 Module card action buttons now divide the full available row evenly. Cards with one, two, or three actions no longer leave unused button-sized gaps or wrap a lone action onto another row.
+
+## Stabilize module SPA navigation
+
+Module-provided SPA pages now preserve authenticated sessions when a module endpoint alone returns an authorization error; Cognis verifies the account session before treating it as expired. The Profile availability menu also remounts idempotently after dashboard shell refreshes and waits for its stylesheet, preventing missing or duplicated presence controls. The Modules navigation toolbar now grows to its natural height without its own vertical scrollbar, while overflowing main content scrolls within the matching content panel.

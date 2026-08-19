@@ -151,3 +151,7 @@ Beim Aktivieren eines Moduls werden deaktivierte Gateways nicht mehr automatisch
 ## Modulaktionen füllen die Karte
 
 Die Aktionsschaltflächen einer Modulkarte teilen nun die gesamte verfügbare Zeile gleichmäßig auf. Karten mit einer, zwei oder drei Aktionen lassen keine ungenutzten Schaltflächenlücken mehr und verschieben keine einzelne Aktion in eine neue Zeile.
+
+## SPA-Navigation für Module stabilisieren
+
+Von Modulen bereitgestellte SPA-Seiten behalten authentifizierte Sitzungen nun bei, wenn nur ein Modulendpunkt einen Autorisierungsfehler zurückgibt; Cognis prüft die Kontositzung, bevor sie als abgelaufen gilt. Das Profil-Verfügbarkeitsmenü wird nach Aktualisierungen der Dashboard-Hülle außerdem idempotent neu eingebunden und wartet auf sein Stylesheet, wodurch fehlende oder doppelte Anwesenheitssteuerelemente vermieden werden. Die Modulnavigation wächst nun ohne eigene vertikale Bildlaufleiste auf ihre natürliche Höhe, während überlaufender Hauptinhalt im dazu passenden Inhaltsbereich scrollt.

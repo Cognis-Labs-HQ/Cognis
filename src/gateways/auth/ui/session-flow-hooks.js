@@ -103,6 +103,7 @@ uiCtx.extendFlow(
         try {
             const response = await apiFetch(
                 "/api/v1/users/" + encodeURIComponent(account) + "/info",
+                { suppressAccessDeniedEvent: true },
             );
             if (response.ok) {
                 const payload = await response.json().catch(() => null);
@@ -276,7 +277,7 @@ export function invalidateAuthSetupCache() {
 
 const PUBLIC_AUTH_PATHNAMES = new Set(["/login", "/register"]);
 
-window.addEventListener("cognis:api-access-denied", (event) => {
+window.addEventListener("cognis:api-access-denied", async (event) => {
     if (
         event.detail?.status !== 401 ||
         sessionExpiryNavigationPending ||
@@ -287,8 +288,24 @@ window.addEventListener("cognis:api-access-denied", (event) => {
         return;
     }
     sessionExpiryNavigationPending = true;
-    clearStoredSession();
-    window.location.replace("/login?reason=session_expired");
+    try {
+        const flowResult = await uiCtx.runFlow("authenticate-session", {});
+        const session = getFirstResult(
+            flowResult?.stageResults ?? {},
+            "resolve-session",
+        );
+        if (session?.authenticated === true) {
+            sessionExpiryNavigationPending = false;
+            return;
+        }
+        clearStoredSession();
+        window.location.replace(
+            session?.redirectTo ?? "/login?reason=session_expired",
+        );
+    } catch (error) {
+        console.error("[auth-gateway]:session-revalidation-failed", { error });
+        sessionExpiryNavigationPending = false;
+    }
 });
 
 uiCtx.extendFlow(

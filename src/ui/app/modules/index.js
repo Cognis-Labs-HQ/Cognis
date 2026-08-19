@@ -948,8 +948,8 @@ export async function mount(root, { signal } = {}) {
                     render: () => renderSidebar([]),
                 },
             ],
-            toolbarScrollable: true,
-            contentScrolling: false,
+            toolbarScrollable: false,
+            contentScrolling: true,
             floatingMenu: [
                 {
                     id: "module-actions",

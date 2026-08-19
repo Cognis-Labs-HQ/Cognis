@@ -18,6 +18,17 @@ test("availability menu presents every status with a matching dot", () => {
     assert.doesNotMatch(template, /data-availability-option="/);
 });
 
+test("availability menu remounts idempotently after SPA shell refreshes", () => {
+    const navbar = readFileSync(resolve(PROFILE_ROOT, "ui/navbar.js"), "utf8");
+
+    assert.match(navbar, /ensureAvailabilityStylesheet/);
+    assert.match(navbar, /querySelectorAll\("\.availability-menu-item"\)/);
+    assert.match(navbar, /existingItems\.slice\(1\)/);
+    assert.match(navbar, /matchingStylesheets\.forEach/);
+    assert.match(navbar, /if \(availabilityMountPromise\)/);
+    assert.match(navbar, /"cognis:navbar-refresh"/);
+});
+
 test("availability menu uses borderless controls and hover outlines", () => {
     const styles = readFileSync(
         resolve(PROFILE_ROOT, "ui/availability.css"),

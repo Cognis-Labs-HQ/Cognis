@@ -17,16 +17,55 @@ import {
     STATUS_OPTIONS,
 } from "./availability.js";
 
-const availabilityStylesheet = document.createElement("link");
-availabilityStylesheet.rel = "stylesheet";
-availabilityStylesheet.href =
+const AVAILABILITY_STYLESHEET_URL =
     "/static/adapters/social/profile/availability.css";
-document.head.append(availabilityStylesheet);
 
-async function mountAvailabilityControl() {
+function ensureAvailabilityStylesheet() {
+    const matchingStylesheets = [
+        ...document.head.querySelectorAll(
+            `link[rel="stylesheet"][href="${AVAILABILITY_STYLESHEET_URL}"]`,
+        ),
+    ];
+    const existing = matchingStylesheets.shift();
+    matchingStylesheets.forEach((stylesheet) => stylesheet.remove());
+    if (existing?.sheet) return Promise.resolve();
+    const stylesheet = existing ?? document.createElement("link");
+    if (!existing) {
+        stylesheet.rel = "stylesheet";
+        stylesheet.href = AVAILABILITY_STYLESHEET_URL;
+        document.head.append(stylesheet);
+    }
+    return new Promise((resolve) => {
+        stylesheet.addEventListener("load", resolve, { once: true });
+        stylesheet.addEventListener(
+            "error",
+            () => {
+                console.error(
+                    "[social-profile]:availability-stylesheet-load-failed",
+                    { stylesheetUrl: AVAILABILITY_STYLESHEET_URL },
+                );
+                resolve();
+            },
+            { once: true },
+        );
+    });
+}
+
+let availabilityMountPromise = null;
+
+async function performAvailabilityControlMount() {
     const button = document.querySelector(".avatar-button");
     const dropdown = document.querySelector("#profile-dropdown");
     if (!button || !dropdown) return;
+    await ensureAvailabilityStylesheet();
+    const existingItems = [
+        ...dropdown.querySelectorAll(".availability-menu-item"),
+    ];
+    if (existingItems.length) {
+        existingItems.slice(1).forEach((item) => item.remove());
+        await refreshAvailabilityIndicators();
+        return;
+    }
 
     if (!button.querySelector(".availability-indicator")) {
         button.insertAdjacentHTML("beforeend", availabilityIndicatorMarkup(""));
@@ -102,6 +141,14 @@ async function mountAvailabilityControl() {
         });
 }
 
+function mountAvailabilityControl() {
+    if (availabilityMountPromise) return availabilityMountPromise;
+    availabilityMountPromise = performAvailabilityControlMount().finally(() => {
+        availabilityMountPromise = null;
+    });
+    return availabilityMountPromise;
+}
+
 function updateAvailabilitySelection(container, indicator, status, i18n) {
     const label = i18n.t(`ui.app.profile.availability.${status}`);
     const value = container.querySelector(".availability-menu-value");
@@ -156,4 +203,13 @@ uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
 });
 
 registerSearchIndexing();
-mountAvailabilityControl();
+mountAvailabilityControl().catch((error) => {
+    console.error("[social-profile]:availability-menu-mount-failed", { error });
+});
+window.addEventListener("cognis:navbar-refresh", () => {
+    mountAvailabilityControl().catch((error) => {
+        console.error("[social-profile]:availability-menu-refresh-failed", {
+            error,
+        });
+    });
+});
