@@ -127,3 +127,7 @@ Eine ausdrückliche Katalogaktualisierung umgeht jetzt die normale Wartezeit fü
 ## Ausgewählte Downgrade-Revision installieren
 
 Herabstufungen installieren jetzt genau den vom aktualisierten Katalog angegebenen Commit, selbst wenn der Branch vor Installationsbeginn fortschreitet. Die Herabstufungsanzeige besitzt ein eigenes dunkles Design, und Moduldetail-Kopfzeilen erhalten einen undurchsichtigen Hintergrund, damit Bannerbilder nicht durch die fixierte Anwendungskopfzeile scheinen.
+
+## Branch-Versionen über Commits auflösen
+
+Die Marketplace-Erkennung liest jetzt jedes Branch- und Release-Manifest über die unveränderliche Commit-SHA des Anbieters statt über den veränderlichen Branch-Namen. Dadurch werden veraltete Antworten der GitHub Contents API oder zwischengeschalteter Caches vermieden, und Katalogversion, angezeigte Aktualisierungsrichtung und installierte Revision stimmen mit dem vom Anbieter gelieferten Branch-Commit überein.

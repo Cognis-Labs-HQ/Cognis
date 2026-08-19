@@ -819,6 +819,7 @@ export class ModuleMarketplaceService {
                         cloneUrl,
                         module: {
                             ...manifest,
+                            version: defaultVersion ?? manifest.version,
                             license: hasLicenseFile
                                 ? manifest.license
                                 : undefined,
@@ -1275,12 +1276,12 @@ export class ModuleMarketplaceService {
                         ? this.resolveGithubManifestUrl(
                               source,
                               projectPath,
-                              ref.name,
+                              ref.commit,
                           )
                         : this.resolveRepositoryAssetUrl(
                               source,
                               projectPath,
-                              ref.name,
+                              ref.commit,
                               "manifest.json",
                           ),
                     { headers },

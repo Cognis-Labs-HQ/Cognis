@@ -127,3 +127,7 @@ An explicit catalog refresh now bypasses the normal provider scan cooldown and r
 ## Install the selected downgrade revision
 
 Downgrades now install the exact commit advertised by the refreshed catalog even if the branch advances before the install begins. The downgrade indicator has a dedicated dark theme, and module detail headers receive an opaque backing so banner artwork cannot show through the sticky application header.
+
+## Resolve branch versions by commit
+
+Marketplace discovery now reads each branch and release manifest through its immutable provider commit SHA instead of the mutable branch name. This avoids stale GitHub Contents API or intermediary cache responses and makes the catalog version, displayed update direction, and installed revision agree with the branch commit returned by the provider.

@@ -401,7 +401,7 @@ test("module marketplace discovers repository manifests", async () => {
                                         id: "notes",
                                         name: moduleName,
                                         version: String(input).includes(
-                                            "ref=preview",
+                                            "ref=def456",
                                         )
                                             ? "1.1.0"
                                             : mainVersion,
@@ -483,6 +483,7 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(modules[0].readme, "# Notes\nA useful module.");
         assert.equal(modules[0].license, undefined);
         assert.equal(modules[0].defaultBranch, "main");
+        assert.equal(modules[0].version, "1.0.0");
         assert.deepEqual(modules[0].branches, [
             { name: "main", commit: "abc123", version: "1.0.0" },
             { name: "preview", commit: "def456", version: "1.1.0" },
@@ -507,6 +508,7 @@ test("module marketplace discovers repository manifests", async () => {
         const forced = await service.discover({}, undefined, true);
         assert.equal(forced[0].name, "Collaborative Notes");
         assert.equal(forced[0].description, "Updated shared notes.");
+        assert.equal(forced[0].version, "1.1.0");
         assert.equal(
             forced[0].branches.find((branch) => branch.name === "main")
                 ?.version,

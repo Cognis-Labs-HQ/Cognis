@@ -127,3 +127,7 @@ Penyegaran katalog secara eksplisit kini melewati jeda pemindaian penyedia biasa
 ## Pasang revisi penurunan yang dipilih
 
 Penurunan versi kini memasang commit tepat yang diumumkan katalog terbaru meskipun cabang bergerak maju sebelum pemasangan dimulai. Indikator penurunan memiliki tema gelap khusus, dan header detail modul mendapat latar buram agar gambar banner tidak terlihat menembus header aplikasi yang melekat.
+
+## Selesaikan versi cabang melalui commit
+
+Penemuan marketplace kini membaca setiap manifes cabang dan rilis melalui SHA commit penyedia yang tidak berubah, bukan nama cabang yang dapat berubah. Hal ini menghindari respons usang dari GitHub Contents API atau cache perantara serta menyelaraskan versi katalog, arah pembaruan yang ditampilkan, dan revisi terpasang dengan commit cabang dari penyedia.
