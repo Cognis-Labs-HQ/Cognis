@@ -115,3 +115,7 @@ Tindakan detail modul kini memakai menu mengambang composer, sedangkan navigasi 
 ## Selaraskan tindakan modul
 
 Tindakan modul mengambang kini memiliki tinggi dan perataan vertikal yang konsisten, termasuk kontrol kembali. Menu hamburger lanjutan tetap berada di header detail agar popup tertambat dengan baik, dan pembaruan tindakan ringan menghindari penggambaran ulang seluruh kartu modul untuk klik yang tidak terkait.
+
+## Petakan tindakan modul dengan jelas
+
+Tindakan pada kartu modul kini dibungkus ke kolom kisi yang mudah dibaca agar label Terpasang, Peningkatan atau Penurunan, Aktifkan, dan Copot tetap terhubung dengan kontrol yang berbeda. Mengaktifkan modul kini mengaktifkan dan menyimpan dependensi gateway yang dinonaktifkan, sedangkan dependensi yang benar-benar tidak tersedia menghasilkan respons khusus yang dapat ditindaklanjuti alih-alih galat 400 umum.

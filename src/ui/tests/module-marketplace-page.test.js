@@ -28,12 +28,9 @@ test("module marketplace cards keep consistent content and action geometry", () 
     assert.match(marketplaceStyles, /-webkit-line-clamp: 2/);
     assert.match(
         marketplaceStyles,
-        /\.module-store-card-actions[\s\S]*flex-wrap: nowrap/,
+        /\.module-store-card-actions[\s\S]*grid-template-columns: repeat\(auto-fit, minmax\(7rem, 1fr\)\)/,
     );
-    assert.match(
-        marketplaceStyles,
-        /\.module-store-card-actions button[\s\S]*flex: 1 1 0/,
-    );
+    assert.doesNotMatch(marketplaceStyles, /flex-wrap: nowrap/);
 });
 
 test("module cards and details show upgrade and downgrade versions", () => {

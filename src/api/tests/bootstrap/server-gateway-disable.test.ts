@@ -9,7 +9,7 @@ import {
     HealthService,
     type ModuleRuntimeGateway,
 } from "@cognis/core";
-import { buildServer } from "../../server.js";
+import { buildServer, enableModuleGatewayDependencies } from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
@@ -39,6 +39,31 @@ function close(server: import("node:http").Server): Promise<void> {
         });
     });
 }
+
+test("module dependencies activate and persist disabled gateways", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "file",
+        uuid: "e87418db-9aa2-51c6-b85a-95b5ec099b6c",
+        name: "File Gateway",
+        version: "1.0.0",
+    });
+    registry.disable("file");
+    const persisted: Array<[string, boolean]> = [];
+
+    await enableModuleGatewayDependencies(
+        "nextcloud-whiteboard",
+        ["e87418db-9aa2-51c6-b85a-95b5ec099b6c"],
+        registry,
+        async (gatewayId, enabled) => {
+            persisted.push([gatewayId, enabled]);
+        },
+        () => {},
+    );
+
+    assert.equal(registry.get("file")?.status, "active");
+    assert.deepEqual(persisted, [["file", true]]);
+});
 
 test("buildServer loads external module assets before accepting requests", async () => {
     const externalRoot = await mkdtemp(

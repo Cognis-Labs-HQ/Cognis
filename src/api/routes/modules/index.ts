@@ -30,6 +30,15 @@ export interface ModuleRouteHooks {
     onUninstalled?: (moduleId: string) => Promise<void> | void;
 }
 
+export class ModuleEnableValidationError extends Error {
+    constructor(
+        readonly code: string,
+        message: string,
+    ) {
+        super(message);
+    }
+}
+
 function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
     module: T,
 ): T & {
@@ -551,6 +560,20 @@ export function createModuleRoutes(
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
+                if (error instanceof ModuleEnableValidationError) {
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: error.code,
+                                message: error.message,
+                            },
+                        }),
+                    );
+                    return true;
+                }
                 throw error;
             }
         }

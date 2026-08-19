@@ -115,3 +115,7 @@ Module detail actions now use the composer floating menu, while the status and c
 ## Align module actions
 
 Floating module actions now share a consistent height and vertical alignment, including the back control. The advanced hamburger remains in the detail header so its popup anchors predictably, and lightweight action refreshes avoid redrawing the entire module card for unrelated clicks.
+
+## Map module actions clearly
+
+Module card actions now wrap into readable grid columns so Installed, Upgrade or Downgrade, Enable, and Uninstall labels remain attached to distinct controls. Enabling a module now activates and persists its disabled gateway dependencies, while genuinely missing dependencies return a specific actionable response instead of a generic 400 error.

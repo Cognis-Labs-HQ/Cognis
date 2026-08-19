@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createModuleRoutes } from "../../routes/modules/index.js";
+import {
+    createModuleRoutes,
+    ModuleEnableValidationError,
+} from "../../routes/modules/index.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 
 test("module routes list modules", async () => {
@@ -222,6 +225,53 @@ test("module routes run enable tests before enabling modules", async () => {
     assert.deepEqual(errors, [
         { level: "error", message: "Module enable validation failed." },
     ]);
+});
+
+test("module routes return actionable dependency validation errors", async () => {
+    const route = createModuleRoutes(
+        {
+            list: async () => [],
+            enable: async () => {
+                throw new Error("enable_must_not_run");
+            },
+        } as any,
+        {
+            beforeEnable: async () => {
+                throw new ModuleEnableValidationError(
+                    "module_dependency_unavailable",
+                    "Module whiteboard requires unavailable gateway file",
+                );
+            },
+        },
+    );
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let status = 0;
+    let body = "";
+
+    const handled = await route(
+        {
+            method: "POST",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/whiteboard/enable"),
+    );
+
+    assert.equal(handled, true);
+    assert.equal(status, 409);
+    assert.deepEqual(JSON.parse(body), {
+        error: {
+            code: "module_dependency_unavailable",
+            message: "Module whiteboard requires unavailable gateway file",
+        },
+    });
 });
 
 test("module source mutations and scans emit lifecycle logs", async () => {

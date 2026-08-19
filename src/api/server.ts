@@ -11,7 +11,10 @@ import {
     type ModuleManifest,
     type ModuleRuntimeGateway,
 } from "@cognis/core";
-import { createModuleRoutes } from "./routes/modules/index.js";
+import {
+    createModuleRoutes,
+    ModuleEnableValidationError,
+} from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
 import { createDocsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
@@ -102,6 +105,36 @@ export interface ApiDependencies {
     discoverModulesOnStartup?: boolean;
 }
 
+export async function enableModuleGatewayDependencies(
+    moduleId: string,
+    requires: readonly string[],
+    registry: GatewayRegistry | undefined,
+    persistGatewayState: ApiDependencies["persistGatewayState"],
+    log: BootstrapLog,
+): Promise<void> {
+    for (const reference of requires) {
+        const dependency = registry
+            ?.list()
+            .find(
+                (entry) => entry.id === reference || entry.uuid === reference,
+            );
+        if (!dependency) {
+            throw new ModuleEnableValidationError(
+                "module_dependency_unavailable",
+                `Module ${moduleId} requires unavailable gateway ${reference}`,
+            );
+        }
+        if (dependency.status === "active") continue;
+        registry?.enable(dependency.id);
+        await persistGatewayState?.(dependency.id, true);
+        log("info", "Enabled gateway required by module.", {
+            component: "api-modules",
+            moduleId,
+            gatewayId: dependency.id,
+        });
+    }
+}
+
 /**
  * Resolves a module's startup enabled state from highest to lowest priority:
  * core-module requirement, persisted runtime override, then manifest default.
@@ -174,25 +207,13 @@ export function buildServer(deps: ApiDependencies) {
                 const manifest = (
                     await deps.moduleRuntimeGateway.listManifests()
                 ).find((entry) => entry.id === moduleId);
-                for (const reference of manifest?.requires ?? []) {
-                    const dependency = deps.gatewayRegistry
-                        ?.list()
-                        .find(
-                            (entry) =>
-                                entry.id === reference ||
-                                entry.uuid === reference,
-                        );
-                    if (!dependency) {
-                        throw new Error(
-                            `Module ${moduleId} requires unavailable gateway ${reference}`,
-                        );
-                    }
-                    if (dependency.status !== "active") {
-                        throw new Error(
-                            `Module ${moduleId} requires disabled gateway ${dependency.id}`,
-                        );
-                    }
-                }
+                await enableModuleGatewayDependencies(
+                    moduleId,
+                    manifest?.requires ?? [],
+                    deps.gatewayRegistry,
+                    deps.persistGatewayState,
+                    log,
+                );
                 await (
                     deps.runModuleTests ??
                     moduleTestService.run.bind(moduleTestService)
