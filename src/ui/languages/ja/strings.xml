@@ -698,6 +698,8 @@
   <string name="ui.app.modules.installing">インストール中</string>
   <string name="ui.app.modules.upgrading">アップグレード中</string>
   <string name="ui.app.modules.downgrading">ダウングレード中</string>
+  <string name="ui.app.modules.upgrade_complete">モジュールをアップグレードしました。</string>
+  <string name="ui.app.modules.downgrade_complete">モジュールをダウングレードしました。</string>
   <string name="ui.app.modules.change-channel_complete">リリースチャンネルをインストールしました。</string>
   <string name="ui.app.modules.release_channel">リリースチャンネル</string>
   <string name="ui.app.modules.restart_required">このモジュール更新と追加されたルートを有効にするには、Cognis コンテナを再起動してください。</string>

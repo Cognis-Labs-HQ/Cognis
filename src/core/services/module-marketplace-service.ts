@@ -347,6 +347,7 @@ export class ModuleMarketplaceService {
     async discover(
         tokens: Record<string, string> = {},
         sourceUuids?: string[],
+        forceRefresh = false,
     ): Promise<MarketplaceModule[]> {
         const sources = await this.listSources();
         const selectedSources = (
@@ -370,6 +371,7 @@ export class ModuleMarketplaceService {
             const lastAttemptAt = (await this.readScanAttempts())[source.uuid];
             let modules: MarketplaceModule[];
             if (
+                !forceRefresh &&
                 lastAttemptAt &&
                 Date.now() - Date.parse(lastAttemptAt) < SOURCE_SCAN_INTERVAL_MS
             ) {

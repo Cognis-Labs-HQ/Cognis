@@ -207,8 +207,9 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /loadModuleSources\(\)/);
     assert.match(
         source,
-        /loadAvailableModules\(\s*tokens,\s*sources\.map\(\(source\) => source\.uuid\)/,
+        /loadAvailableModules\(\s*tokens,\s*sources\.map\(\(source\) => source\.uuid\),\s*forceRefresh/,
     );
+    assert.match(source, /discoverConfiguredSources\(true\)/);
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);
     assert.match(source, /await refreshMarketplaceData\(\)/);
@@ -378,6 +379,12 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /ui\.app\.modules\.releases/);
     assert.match(source, /beginButtonLoading\(target\)/);
     assert.match(source, /pendingModuleActions\.set\(module\.uuid, action\)/);
+    assert.match(source, /function moduleChangeDirection/);
+    assert.match(source, /action = changeDirection/);
+    assert.match(
+        readFileSync(resolve(ROOT, "src/ui/languages/en/strings.xml"), "utf8"),
+        /ui\.app\.modules\.downgrade_complete/,
+    );
     assert.match(source, /pendingModuleActions\.delete\(module\.uuid\)/);
     assert.match(source, /isPending \? " button-loading"/);
     assert.match(source, /ui\.app\.modules\.installing/);

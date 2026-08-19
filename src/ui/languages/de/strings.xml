@@ -698,6 +698,8 @@
   <string name="ui.app.modules.installing">Wird installiert</string>
   <string name="ui.app.modules.upgrading">Wird aktualisiert</string>
   <string name="ui.app.modules.downgrading">Wird herabgestuft</string>
+  <string name="ui.app.modules.upgrade_complete">Modul aktualisiert.</string>
+  <string name="ui.app.modules.downgrade_complete">Modul herabgestuft.</string>
   <string name="ui.app.modules.change-channel_complete">Veröffentlichungskanal installiert.</string>
   <string name="ui.app.modules.release_channel">Veröffentlichungskanal</string>
   <string name="ui.app.modules.restart_required">Starten Sie den Cognis-Container neu, um diese Modulaktualisierung und ihre eingebundenen Routen zu aktivieren.</string>

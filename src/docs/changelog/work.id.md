@@ -119,3 +119,7 @@ Tindakan modul mengambang kini memiliki tinggi dan perataan vertikal yang konsis
 ## Petakan tindakan modul dengan jelas
 
 Tindakan pada kartu modul kini dibungkus ke kolom kisi yang mudah dibaca agar label Terpasang, Peningkatan atau Penurunan, Aktifkan, dan Copot tetap terhubung dengan kontrol yang berbeda. Mengaktifkan modul kini mengaktifkan dan menyimpan dependensi gateway yang dinonaktifkan, sedangkan dependensi yang benar-benar tidak tersedia menghasilkan respons khusus yang dapat ditindaklanjuti alih-alih galat 400 umum.
+
+## Segarkan versi kanal rilis
+
+Penyegaran katalog secara eksplisit kini melewati jeda pemindaian penyedia biasa dan membaca ulang setiap manifes cabang. Jika cabang yang dipilih menyamai versi terpasang, Cognis segera menghapus tindakan penurunan versi yang usang. Penurunan versi yang sebenarnya kini memasang cabang terpilih dan melaporkan Menurunkan serta Versi modul diturunkan secara terpisah dari peningkatan.

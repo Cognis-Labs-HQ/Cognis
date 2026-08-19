@@ -125,19 +125,8 @@ function renderLifecycleButton(module, action, consequence) {
     const pendingAction = pendingModuleActions.get(module.uuid);
     const isPending = pendingAction === action;
     const isBlocked = Boolean(pendingAction);
-    const channel = [
-        ...(module.branches ?? []),
-        ...(module.releases ?? []),
-    ].find((entry) => entry.name === selectedBranch(module));
     const updateDirection =
-        action === "update" && channel?.version
-            ? compareVersions(
-                  channel.version,
-                  module.installedVersion ?? module.version,
-              ) < 0
-                ? "downgrade"
-                : "upgrade"
-            : action;
+        action === "update" ? moduleChangeDirection(module) : action;
     const labelKey = isPending
         ? updateDirection === "upgrade"
             ? "ui.app.modules.upgrading"
@@ -164,8 +153,23 @@ function hasModuleUpdate(module) {
     ].find((entry) => entry.name === selectedBranch(module));
     return Boolean(
         branch?.version &&
-        branch.version !== (module.installedVersion ?? module.version),
+        compareVersions(
+            branch.version,
+            module.installedVersion ?? module.version,
+        ) !== 0,
     );
+}
+
+function moduleChangeDirection(module, branch = selectedBranch(module)) {
+    const channel = releaseChannels(module).find(
+        (entry) => entry.name === branch,
+    );
+    if (!channel?.version) return "update";
+    const comparison = compareVersions(
+        channel.version,
+        module.installedVersion ?? module.version,
+    );
+    return comparison < 0 ? "downgrade" : comparison > 0 ? "upgrade" : "none";
 }
 
 function compareVersions(left, right) {
@@ -542,18 +546,8 @@ async function runLifecycleAction(module, action) {
         const restoreEnabledState =
             ["update", "force-update", "change-channel"].includes(action) &&
             module.status === "enabled";
-        const channel = [
-            ...(module.branches ?? []),
-            ...(module.releases ?? []),
-        ].find((entry) => entry.name === branch);
-        if (
-            module.installed &&
-            channel?.version &&
-            compareVersions(
-                channel.version,
-                module.installedVersion ?? module.version,
-            ) < 0
-        ) {
+        const changeDirection = moduleChangeDirection(module, branch);
+        if (module.installed && changeDirection === "downgrade") {
             const result = await openPopup({
                 title: i18n.t("ui.app.modules.downgrade_title"),
                 body: escapeHtml(i18n.t("ui.app.modules.downgrade_warning")),
@@ -612,6 +606,9 @@ async function runLifecycleAction(module, action) {
         module.installedVersion = module.version;
         module.updateAvailable = false;
         selectedBranches.set(module.uuid, branch);
+        if (action === "update" && changeDirection !== "none") {
+            action = changeDirection;
+        }
     }
     if (action === "enable" || action === "disable") {
         await setModuleEnabled(module.id, action === "enable");
@@ -713,7 +710,7 @@ async function loadKnownModules() {
     refreshMarketplace();
 }
 
-async function discoverConfiguredSources() {
+async function discoverConfiguredSources(forceRefresh = false) {
     const sequence = ++discoverySequence;
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         i18n.t("ui.app.modules.keyring_component"),
@@ -729,6 +726,7 @@ async function discoverConfiguredSources() {
     const discovered = await loadAvailableModules(
         tokens,
         sources.map((source) => source.uuid),
+        forceRefresh,
     );
     if (sequence !== discoverySequence) return;
     {
@@ -749,7 +747,7 @@ async function discoverConfiguredSources() {
 
 async function refreshMarketplaceData() {
     await loadKnownModules();
-    await discoverConfiguredSources();
+    await discoverConfiguredSources(true);
 }
 
 function bindInteractions(root, signal) {

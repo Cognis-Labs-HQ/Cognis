@@ -119,3 +119,7 @@ Schwebende Modulaktionen haben nun eine einheitliche Höhe und vertikale Ausrich
 ## Modulaktionen eindeutig zuordnen
 
 Aktionen auf Modulkarten werden jetzt in lesbare Rasterspalten umgebrochen, damit Installiert, Upgrade oder Downgrade, Aktivieren und Deinstallieren eindeutig getrennten Steuerelementen zugeordnet bleiben. Beim Aktivieren eines Moduls werden deaktivierte Gateway-Abhängigkeiten aktiviert und gespeichert; tatsächlich fehlende Abhängigkeiten liefern statt eines allgemeinen 400-Fehlers eine konkrete, umsetzbare Antwort.
+
+## Versionen der Veröffentlichungskanäle aktualisieren
+
+Eine ausdrückliche Katalogaktualisierung umgeht jetzt die normale Wartezeit für Anbieter-Scans und liest jedes Branch-Manifest erneut. Wenn ein ausgewählter Branch die installierte Version erreicht, entfernt Cognis die veraltete Herabstufungsaktion sofort. Tatsächliche Herabstufungen installieren nun den ausgewählten Branch und werden mit Wird herabgestuft und Modul herabgestuft klar von Upgrades unterschieden.

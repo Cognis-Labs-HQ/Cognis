@@ -149,6 +149,29 @@ test("module marketplace persists scan throttling across service restarts", asyn
     }
 });
 
+test("forced catalog refresh bypasses persisted scan throttling", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const originalFetch = globalThis.fetch;
+    let requests = 0;
+    globalThis.fetch = async () => {
+        requests += 1;
+        return new Response("[]", {
+            headers: { "content-type": "application/json" },
+        });
+    };
+    try {
+        await service.discover();
+        await service.discover({}, undefined, true);
+        assert.equal(requests, 2);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("credential updates bypass scan throttling and authenticate immediately", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(
@@ -277,6 +300,7 @@ test("module marketplace discovers repository manifests", async () => {
     const originalFetch = globalThis.fetch;
     let moduleName = "Notes";
     let moduleDescription = "Shared notes.";
+    let mainVersion = "1.0.0";
     let assetBody = "png-one";
     globalThis.fetch = async (input) =>
         String(input).endsWith("/README.md")
@@ -330,7 +354,7 @@ test("module marketplace discovers repository manifests", async () => {
                                             "ref=preview",
                                         )
                                             ? "1.1.0"
-                                            : "1.0.0",
+                                            : mainVersion,
                                         publisher: "Acme",
                                         class: "extension",
                                         coreApiVersion: "v1",
@@ -424,11 +448,20 @@ test("module marketplace discovers repository manifests", async () => {
         const originalIcon = modules[0].assetIds?.icon;
         moduleName = "Collaborative Notes";
         moduleDescription = "Updated shared notes.";
+        mainVersion = "1.1.0";
         assetBody = "png-two";
         const refreshed = await service.discover();
         assert.equal(refreshed[0].name, "Notes");
         assert.equal(refreshed[0].description, "Shared notes.");
         assert.equal(refreshed[0].assetIds?.icon, originalIcon);
+        const forced = await service.discover({}, undefined, true);
+        assert.equal(forced[0].name, "Collaborative Notes");
+        assert.equal(forced[0].description, "Updated shared notes.");
+        assert.equal(
+            forced[0].branches.find((branch) => branch.name === "main")
+                ?.version,
+            "1.1.0",
+        );
 
         globalThis.fetch = async () => {
             throw new Error("source unavailable");

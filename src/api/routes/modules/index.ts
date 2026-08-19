@@ -283,6 +283,7 @@ export function createModuleRoutes(
                     ? await marketplace.discover(
                           (body.tokens ?? {}) as Record<string, string>,
                           sourceUuids,
+                          body.forceRefresh === true,
                       )
                     : await marketplace.listCachedModules();
             hooks?.log?.(

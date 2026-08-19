@@ -383,14 +383,16 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
 test("module catalog discovery accepts caller-selected sources", async () => {
     const token = issueAccessToken("admin-user", "admin", 60);
     let selectedSources: string[] | undefined;
+    let forceRefresh = false;
     const route = createModuleRoutes(
         { list: async () => [] } as any,
         undefined,
         undefined,
         {
             listRecommendedModuleUuids: async () => ["notes-uuid"],
-            discover: async (_tokens, sourceUuids) => {
+            discover: async (_tokens, sourceUuids, force) => {
                 selectedSources = sourceUuids;
+                forceRefresh = force;
                 return [
                     {
                         id: "notes",
@@ -409,7 +411,10 @@ test("module catalog discovery accepts caller-selected sources", async () => {
             headers: { authorization: `Bearer ${token}` },
             async *[Symbol.asyncIterator]() {
                 yield Buffer.from(
-                    JSON.stringify({ sourceUuids: ["source-one"] }),
+                    JSON.stringify({
+                        sourceUuids: ["source-one"],
+                        forceRefresh: true,
+                    }),
                 );
             },
         } as any,
@@ -425,6 +430,7 @@ test("module catalog discovery accepts caller-selected sources", async () => {
     );
     assert.equal(status, 200);
     assert.deepEqual(selectedSources, ["source-one"]);
+    assert.equal(forceRefresh, true);
     assert.match(responseBody, /\/api\/v1\/modules\/catalog\/assets\/a{64}/);
 });
 

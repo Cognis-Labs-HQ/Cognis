@@ -68,12 +68,16 @@ export async function removeModuleSource(uuid) {
     );
 }
 
-export async function loadAvailableModules(tokens, sourceUuids) {
+export async function loadAvailableModules(
+    tokens,
+    sourceUuids,
+    forceRefresh = false,
+) {
     return data(
         await apiFetch("/api/v1/modules/catalog", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ tokens, sourceUuids }),
+            body: JSON.stringify({ tokens, sourceUuids, forceRefresh }),
         }),
     );
 }

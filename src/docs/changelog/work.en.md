@@ -119,3 +119,7 @@ Floating module actions now share a consistent height and vertical alignment, in
 ## Map module actions clearly
 
 Module card actions now wrap into readable grid columns so Installed, Upgrade or Downgrade, Enable, and Uninstall labels remain attached to distinct controls. Enabling a module now activates and persists its disabled gateway dependencies, while genuinely missing dependencies return a specific actionable response instead of a generic 400 error.
+
+## Refresh release-channel versions
+
+An explicit catalog refresh now bypasses the normal provider scan cooldown and re-reads every branch manifest. If a selected branch catches up to the installed version, Cognis immediately removes the stale downgrade action. Actual downgrades now run the selected branch installation and report Downgrading and Module downgraded separately from upgrades.
