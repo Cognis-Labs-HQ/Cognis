@@ -341,3 +341,7 @@ Module können unter `ui.preferences` bearbeitbare boolesche, Text- und Zahlenwe
 ## Sicherere Lebenszyklusaktionen
 
 Die Aktivierung externer Module erfordert nun die Bestätigung, bevor Modultests ausgeführt werden, und die Deinstallation akzeptiert nur kanonische UUID-Installationspfade. Erfolgreiche Marktplatzprüfungen entfernen zurückgezogene Repositorys; bei nicht eindeutigen Aktualisierungen bleibt der letzte bekannte Eintrag erhalten.
+
+## Interna des Modul-Laders organisieren
+
+Alle verbleibenden Core-Dienste für den Modul-Lebenszyklus und die Testausführung liegen nun gemeinsam unter `services/module-loader/`; ihre Tests spiegeln diese Struktur wider. Die Dokumentation für externe Module und das Study-Sprachframework ist nun in jeder unterstützten Sprache umfassend und strukturell synchronisiert.

@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { ModuleService, type ModuleRuntimeGateway } from "../index.js";
+import { ModuleService, type ModuleRuntimeGateway } from "../../index.js";
 
 function runtime(manifests: any[]): ModuleRuntimeGateway {
     return {

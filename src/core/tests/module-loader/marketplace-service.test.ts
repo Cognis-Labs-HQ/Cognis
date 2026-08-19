@@ -8,7 +8,7 @@ import { promisify } from "node:util";
 import {
     DEFAULT_TRUSTED_MODULE_SOURCE,
     ModuleMarketplaceService,
-} from "../index.js";
+} from "../../index.js";
 
 const source = {
     uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",

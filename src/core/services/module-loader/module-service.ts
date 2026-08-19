@@ -10,8 +10,8 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import type { ModuleRuntimeGateway } from "../contracts/modules/runtime-gateway.js";
-import type { ModuleManifest } from "../contracts/module-manifest.js";
+import type { ModuleRuntimeGateway } from "../../contracts/modules/runtime-gateway.js";
+import type { ModuleManifest } from "../../contracts/module-manifest.js";
 
 export interface ModulePathResolver {
     externalModulesPath: string;

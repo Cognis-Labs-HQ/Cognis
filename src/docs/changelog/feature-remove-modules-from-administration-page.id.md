@@ -341,3 +341,7 @@ Modul dapat mendeklarasikan preferensi boolean, teks, dan angka yang dapat diedi
 ## Operasi siklus hidup yang lebih aman
 
 Pengaktifan modul eksternal kini memerlukan persetujuan sebelum pengujian modul berjalan, dan pencopotan hanya menerima jalur pemasangan UUID kanonis. Pemindaian bursa yang berhasil menghapus repositori yang ditarik, sedangkan penyegaran yang tidak meyakinkan mempertahankan entri terakhir.
+
+## Menata internal pemuat modul
+
+Semua layanan Core yang tersisa untuk siklus hidup modul dan pelaksana pengujian kini berada bersama di bawah `services/module-loader/`, dengan pengujian yang mencerminkan struktur tersebut. Dokumentasi modul eksternal dan kerangka bahasa Study kini lengkap dan tersinkron secara struktural dalam setiap bahasa yang didukung.

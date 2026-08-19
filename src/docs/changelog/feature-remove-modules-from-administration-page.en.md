@@ -341,3 +341,7 @@ Modules can declare administrator-editable boolean, text, and numeric preference
 ## Safer lifecycle operations
 
 External enablement now requires acknowledgement before module tests run, and uninstall accepts only canonical UUID install paths. Successful marketplace scans remove withdrawn repositories while inconclusive repository refreshes retain their last known entry.
+
+## Organize module loader internals
+
+All remaining Core module lifecycle and test-runner services now live together under `services/module-loader/`, with their tests mirroring that structure. External-module and Study language framework documentation is now comprehensive and structurally synchronized in every supported language.

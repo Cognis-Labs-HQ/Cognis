@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { ModuleTestService, discoverTestFiles } from "../index.js";
+import { ModuleTestService, discoverTestFiles } from "../../index.js";
 
 async function createModule(testBody: string) {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-module-tests-"));
