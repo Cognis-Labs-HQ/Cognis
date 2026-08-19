@@ -103,3 +103,7 @@ Marketplace-Zugangsdatenkennungen werden nun zusätzlich im Cache des Modulverze
 ## PAT-Berechtigungen angeben
 
 Hinweise zu Zugangsdaten sind in der Oberfläche nun kurz. Serverprotokolle nennen das genaue Problem sowie die erforderlichen fein abgestuften GitHub-Berechtigungen (Repository-Zugriff, Metadaten lesen, Inhalte lesen), den klassischen Bereich repo für private Repositorys, die Organisations-SSO-Freigabe und offizielle Dokumentationsverweise.
+
+## Release-Wechsel stabilisieren
+
+Installationen durch Release-Kanalwechsel, Upgrades und Downgrades speichern nun den gewählten Branch, Commit und die Version vor dem Neustart. Neustarthinweise erscheinen nur für zuvor aktivierte Module, betroffene Module lehnen bis zum Neustart weitere Lebenszyklusaktionen ab und unveränderte oder abgebrochene Kanalwechsel kollidieren nicht mit späteren Aktionen.

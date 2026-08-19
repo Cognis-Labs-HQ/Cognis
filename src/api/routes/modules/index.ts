@@ -68,6 +68,19 @@ function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
     };
 }
 
+function sendRestartRequired(res: ServerResponse): void {
+    res.writeHead(409, { "content-type": "application/json" });
+    res.end(
+        JSON.stringify({
+            error: {
+                code: "module_restart_required",
+                message:
+                    "Restart the server before performing another module action.",
+            },
+        }),
+    );
+}
+
 export function createModuleRoutes(
     moduleService: ModuleService,
     hooks?: ModuleRouteHooks,
@@ -295,6 +308,13 @@ export function createModuleRoutes(
             if (!claims) return true;
             const body = await readJson(req);
             const requestedModule = body.module as { uuid?: string };
+            if (
+                requestedModule.uuid &&
+                restartRequiredModules.has(requestedModule.uuid)
+            ) {
+                sendRestartRequired(res);
+                return true;
+            }
             const installedModule = (await moduleService.list()).find(
                 (entry) => entry.uuid === requestedModule.uuid,
             );
@@ -323,7 +343,9 @@ export function createModuleRoutes(
                 )
                 .then(async (manifest) => {
                     await hooks?.onImported?.(manifest.id);
-                    const restartRequired = Boolean(installedModule);
+                    const restartRequired = Boolean(
+                        installedModule && body.wasEnabled === true,
+                    );
                     if (restartRequired) {
                         restartRequiredModules.add(manifest.uuid);
                     }
@@ -370,6 +392,10 @@ export function createModuleRoutes(
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             const moduleUuid = decodeURIComponent(uninstallMatch[1]);
+            if (restartRequiredModules.has(moduleUuid)) {
+                sendRestartRequired(res);
+                return true;
+            }
             const manifest = (await moduleService.list()).find(
                 (entry) => entry.uuid === moduleUuid,
             );
@@ -484,6 +510,17 @@ export function createModuleRoutes(
         const acknowledged =
             req.headers["x-cognis-external-module-disclaimer"] === "accepted" ||
             url.searchParams.get("acknowledgeExternalDisclaimer") === "true";
+
+        const lifecycleManifest = (await moduleService.list()).find(
+            (manifest) => manifest.id === moduleId,
+        );
+        if (
+            lifecycleManifest &&
+            restartRequiredModules.has(lifecycleManifest.uuid)
+        ) {
+            sendRestartRequired(res);
+            return true;
+        }
 
         if (action === "enable") {
             if (

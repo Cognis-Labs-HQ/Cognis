@@ -82,12 +82,12 @@ export async function loadCachedModules() {
     return data(await apiFetch("/api/v1/modules/catalog"));
 }
 
-export async function installModule(module, token, branch) {
+export async function installModule(module, token, branch, wasEnabled) {
     const job = await data(
         await apiFetch("/api/v1/modules/install", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ module, token, branch }),
+            body: JSON.stringify({ module, token, branch, wasEnabled }),
             timeoutMs: MODULE_INSTALL_TIMEOUT_MS,
             suppressConnectionRecoveryToast: true,
         }),

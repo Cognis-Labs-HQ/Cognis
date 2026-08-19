@@ -622,7 +622,10 @@ test("module updates report that a container restart is required", async () => {
             headers: { authorization: `Bearer ${token}` },
             async *[Symbol.asyncIterator]() {
                 yield Buffer.from(
-                    JSON.stringify({ module: { uuid: moduleUuid } }),
+                    JSON.stringify({
+                        module: { uuid: moduleUuid },
+                        wasEnabled: true,
+                    }),
                 );
             },
         } as any,

@@ -276,10 +276,12 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /async function selectReleaseChannel/);
     assert.match(source, /class="module-release-channel-list"/);
     assert.match(source, /data-release-channel/);
+    assert.match(source, /selectedBranches\.set\(module\.uuid, branch\)/);
     assert.match(
         source,
-        /selectedBranches\.set\(module\.uuid, releaseChannel\)/,
+        /if \(releaseChannel === module\.installedBranch\) return/,
     );
+    assert.match(source, /if \(module\.restartRequired\) return/);
     assert.match(
         source,
         /\["update", "force-update", "change-channel"\]\.includes\(action\)[\s\S]*module\.status === "enabled"/,

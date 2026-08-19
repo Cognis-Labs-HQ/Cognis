@@ -103,3 +103,7 @@ Pengenal kredensial marketplace kini juga disimpan dalam cache direktori modul. 
 ## Rujuk izin PAT
 
 Peringatan kredensial di antarmuka kini ringkas. Log server mencatat masalah validasi secara tepat serta izin GitHub fine-grained yang diperlukan (akses repositori, baca Metadata, baca Contents), cakupan klasik repo untuk repositori privat, otorisasi SSO organisasi, dan rujukan dokumentasi resmi.
+
+## Stabilkan perubahan rilis
+
+Instalasi perubahan kanal rilis, peningkatan, dan penurunan kini menyimpan branch, commit, dan versi yang dipilih sebelum mulai ulang. Peringatan mulai ulang hanya muncul untuk modul yang sebelumnya aktif, modul terdampak menolak tindakan siklus hidup lain hingga mulai ulang, dan perubahan kanal tanpa perubahan atau yang dibatalkan tidak bertabrakan dengan tindakan berikutnya.

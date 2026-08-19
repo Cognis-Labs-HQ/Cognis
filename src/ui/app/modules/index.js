@@ -90,6 +90,9 @@ function renderRestartWarning(module) {
 }
 
 function renderLifecycleActions(module) {
+    if (module.restartRequired) {
+        return `<button type="button" class="btn-neutral" disabled>${escapeHtml(i18n.t("ui.app.modules.restart_required"))}</button>`;
+    }
     if (!module.installed && !module.status) {
         return renderLifecycleButton(module, "install", "confirm");
     }
@@ -566,13 +569,16 @@ async function selectReleaseChannel(module) {
 }
 
 async function runLifecycleAction(module, action) {
+    if (module.restartRequired) return;
     if (
         ["install", "update", "force-update", "change-channel"].includes(action)
     ) {
+        let branch = selectedBranch(module);
         if (action === "change-channel") {
             const releaseChannel = await selectReleaseChannel(module);
             if (!releaseChannel) return;
-            selectedBranches.set(module.uuid, releaseChannel);
+            if (releaseChannel === module.installedBranch) return;
+            branch = releaseChannel;
         }
         const restoreEnabledState =
             ["update", "force-update", "change-channel"].includes(action) &&
@@ -580,7 +586,7 @@ async function runLifecycleAction(module, action) {
         const channel = [
             ...(module.branches ?? []),
             ...(module.releases ?? []),
-        ].find((entry) => entry.name === selectedBranch(module));
+        ].find((entry) => entry.name === branch);
         if (
             module.installed &&
             channel?.version &&
@@ -617,7 +623,6 @@ async function runLifecycleAction(module, action) {
         const token = source?.credentialId
             ? keyring?.get(source.credentialId)
             : undefined;
-        const branch = selectedBranch(module);
         if (restoreEnabledState) {
             await setModuleEnabled(module.id, false);
         }
@@ -626,17 +631,20 @@ async function runLifecycleAction(module, action) {
                 module,
                 token,
                 branch,
+                restoreEnabledState,
             );
             module.version = installedManifest.version;
             module.restartRequired = installedManifest.restartRequired;
         } finally {
-            if (restoreEnabledState) {
+            if (restoreEnabledState && !module.restartRequired) {
                 await setModuleEnabled(module.id, true);
                 module.status = "enabled";
             }
         }
         module.installed = true;
-        if (!restoreEnabledState) module.status = "disabled";
+        if (module.restartRequired || !restoreEnabledState) {
+            module.status = "disabled";
+        }
         module.installedBranch = branch;
         module.installedCommit = [
             ...(module.branches ?? []),
@@ -644,6 +652,7 @@ async function runLifecycleAction(module, action) {
         ].find((entry) => entry.name === branch)?.commit;
         module.installedVersion = module.version;
         module.updateAvailable = false;
+        selectedBranches.set(module.uuid, branch);
     }
     if (action === "enable" || action === "disable") {
         await setModuleEnabled(module.id, action === "enable");

@@ -103,3 +103,7 @@ Marketplace credential identifiers are now mirrored into the module directory ca
 ## Reference PAT permissions
 
 Credential warnings are now concise in the UI. Server logs identify the exact validation issue and list the required GitHub fine-grained permissions (repository access, Metadata read, Contents read), classic repo scope for private repositories, organization SSO authorization, and official documentation references.
+
+## Stabilize release changes
+
+Release channel, upgrade, and downgrade installs now persist their selected branch, commit, and version before restart. Restart warnings are raised only for previously enabled modules, affected modules reject further lifecycle actions until restart, and no-op or cancelled channel changes do not collide with later actions.

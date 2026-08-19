@@ -527,6 +527,12 @@ export class ModuleMarketplaceService {
             );
             await rm(target, { recursive: true, force: true });
             await rename(temporary, target);
+            await this.updateCachedInstallState(
+                module.uuid,
+                selectedBranch,
+                provenance.commit,
+                manifest.version,
+            );
             return manifest;
         } catch (error) {
             await rm(temporary, { recursive: true, force: true });
@@ -985,6 +991,40 @@ export class ModuleMarketplaceService {
                 this.catalogPath,
                 JSON.stringify(modules, null, 2),
                 { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(update, update);
+        await this.catalogMutation;
+    }
+
+    private async updateCachedInstallState(
+        uuid: string,
+        branch: string,
+        commit: string,
+        version: string,
+    ): Promise<void> {
+        const update = async () => {
+            const cached = await this.readCachedCatalog();
+            const modules = cached.map((module) =>
+                module.uuid === uuid
+                    ? {
+                          ...module,
+                          installed: true,
+                          installedBranch: branch,
+                          installedCommit: commit,
+                          installedVersion: version,
+                          version,
+                          updateAvailable: false,
+                      }
+                    : module,
+            );
+            await mkdir(this.cacheRoot, { recursive: true });
+            await writeFile(
+                this.catalogPath,
+                JSON.stringify(modules, null, 2),
+                {
+                    mode: 0o600,
+                },
             );
         };
         this.catalogMutation = this.catalogMutation.then(update, update);
