@@ -91,3 +91,7 @@ Sumber bawaan Cognis Labs HQ kini menerima pembaruan PAT sementara bidang identi
 ## Gunakan kredensial GitHub segera
 
 Bidang PAT yang telah dikonfigurasi menampilkan nilai tersamar tanpa mengungkap rahasia. Menyimpan kredensial baru menghapus masa tunggu pemindaian sumber tersebut, sehingga permintaan marketplace berikutnya langsung memakai otorisasi GitHub yang baru.
+
+## Validasi token penyedia
+
+PAT marketplace baru diperiksa terhadap namespace penyedia yang dikonfigurasi sebelum disimpan. Kredensial yang tidak valid, tidak berwenang, tidak dapat diperiksa, atau cakupannya kurang menampilkan peringatan terlokalisasi dan membiarkan editor sumber tetap terbuka.

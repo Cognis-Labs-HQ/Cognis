@@ -92,6 +92,22 @@ export function createModuleRoutes(
             method: req.method ?? "GET",
             path: url.pathname,
         };
+        if (
+            marketplace &&
+            url.pathname === "/api/v1/modules/sources/validate-credential" &&
+            req.method === "POST"
+        ) {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const body = await readJson(req);
+            const data = await marketplace.validateSourceCredential(
+                body.source as never,
+                String(body.token ?? ""),
+            );
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
+            return true;
+        }
         if (marketplace && url.pathname === "/api/v1/modules/sources") {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;

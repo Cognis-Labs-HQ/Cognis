@@ -172,6 +172,39 @@ test("credential updates bypass scan throttling and authenticate immediately", a
     }
 });
 
+test("GitHub credential validation requires private repository scope", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const originalFetch = globalThis.fetch;
+    globalThis.fetch = async (_input, init) => {
+        assert.equal(
+            new Headers(init?.headers).get("authorization"),
+            "Bearer limited-token",
+        );
+        return new Response("[]", {
+            headers: { "x-oauth-scopes": "read:org, public_repo" },
+        });
+    };
+    try {
+        assert.deepEqual(
+            await service.validateSourceCredential(
+                { ...DEFAULT_TRUSTED_MODULE_SOURCE },
+                "limited-token",
+            ),
+            {
+                valid: false,
+                warnings: ["github_repo_scope_missing"],
+                scopes: ["read:org", "public_repo"],
+            },
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("module installation accepts cached catalogs created before release discovery", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(

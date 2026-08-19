@@ -68,6 +68,12 @@ export interface ModuleMarketplaceSettings {
     recommendedModulesUrl: string;
 }
 
+export interface ModuleCredentialValidation {
+    valid: boolean;
+    warnings: string[];
+    scopes: string[];
+}
+
 export type ModuleMarketplaceLog = (
     level: "info" | "warn",
     message: string,
@@ -199,6 +205,62 @@ export class ModuleMarketplaceService {
         });
         await this.clearScanAttempt(source.uuid);
         return source;
+    }
+
+    async validateSourceCredential(
+        source: ModuleSource,
+        token: string,
+    ): Promise<ModuleCredentialValidation> {
+        this.assertSource(source);
+        const normalizedToken = token.trim();
+        if (!normalizedToken) {
+            return { valid: false, warnings: ["credential_empty"], scopes: [] };
+        }
+        const headers: Record<string, string> = {
+            accept: "application/json",
+            "user-agent": "cognis-module-marketplace",
+        };
+        if (source.provider === "github") {
+            headers.authorization = `Bearer ${normalizedToken}`;
+        } else {
+            headers["private-token"] = normalizedToken;
+        }
+        const endpoint =
+            source.provider === "github"
+                ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=1&type=all`
+                : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=1&include_subgroups=true`;
+        const response = await fetch(endpoint, { headers }).catch(
+            () => undefined,
+        );
+        if (!response) {
+            return {
+                valid: false,
+                warnings: ["credential_check_unavailable"],
+                scopes: [],
+            };
+        }
+        const scopes = (response.headers.get("x-oauth-scopes") ?? "")
+            .split(",")
+            .map((scope) => scope.trim())
+            .filter(Boolean);
+        const warnings: string[] = [];
+        if (response.status === 401) warnings.push("credential_invalid");
+        if (response.status === 403) warnings.push("source_access_denied");
+        if (
+            source.provider === "github" &&
+            scopes.length > 0 &&
+            !scopes.includes("repo")
+        ) {
+            warnings.push("github_repo_scope_missing");
+        }
+        if (!response.ok && warnings.length === 0) {
+            warnings.push("source_access_failed");
+        }
+        return {
+            valid: response.ok && warnings.length === 0,
+            warnings,
+            scopes,
+        };
     }
 
     async removeSource(uuid: string): Promise<void> {

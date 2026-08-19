@@ -21,6 +21,7 @@ import {
     saveModuleMarketplaceSettings,
     setModuleEnabled,
     uninstallModule,
+    validateModuleSourceCredential,
 } from "./api.js";
 
 let i18n;
@@ -480,6 +481,25 @@ async function openMarketplaceSettings(initialPage = "settings") {
                 ? (selectedSource?.credentialId ?? `module-source:${uuid}:pat`)
                 : selectedSource?.credentialId;
             if (tokenChanged) {
+                const validation = await validateModuleSourceCredential(
+                    {
+                        uuid,
+                        name: sourceValues.name,
+                        provider: sourceValues.provider,
+                        namespace: sourceValues.namespace,
+                        baseUrl: sourceValues.baseUrl,
+                    },
+                    values.token,
+                );
+                if (!validation.valid) {
+                    showToast(
+                        i18n.t(
+                            `ui.app.modules.${validation.warnings[0] ?? "credential_invalid"}`,
+                        ),
+                        { type: "warning" },
+                    );
+                    return false;
+                }
                 const scope = uiCtx.capabilities.get("keyring:forComponent")?.(
                     i18n.t("ui.app.modules.keyring_component"),
                 );

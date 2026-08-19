@@ -747,4 +747,10 @@
   <string name="ui.app.modules.enable_complete">Modul diaktifkan.</string>
   <string name="ui.app.modules.disable_complete">Modul dinonaktifkan. Sekarang Anda dapat mencopotnya.</string>
   <string name="ui.app.modules.uninstall_complete">Modul dicopot.</string>
+  <string name="ui.app.modules.credential_empty">Masukkan token akses pribadi sebelum memvalidasinya.</string>
+  <string name="ui.app.modules.credential_check_unavailable">Token tidak dapat diperiksa karena penyedia tidak tersedia.</string>
+  <string name="ui.app.modules.credential_invalid">Penyedia menolak token akses pribadi ini.</string>
+  <string name="ui.app.modules.source_access_denied">Token ini tidak dapat mengakses namespace repositori yang dikonfigurasi. Periksa otorisasi organisasi dan izin repositorinya.</string>
+  <string name="ui.app.modules.github_repo_scope_missing">Token GitHub ini memerlukan cakupan repo untuk memuat repositori privat.</string>
+  <string name="ui.app.modules.source_access_failed">Penyedia tidak dapat memverifikasi akses dengan token ini.</string>
 </resources>

@@ -91,3 +91,7 @@ The built-in Cognis Labs HQ source now accepts PAT updates while keeping its ide
 ## Apply GitHub credentials now
 
 Configured PAT fields display a masked value without revealing the secret. Saving a new credential clears that source scan cooldown, so the next marketplace request immediately uses the new GitHub authorization instead of returning a prior unauthenticated result.
+
+## Validate provider tokens
+
+New marketplace PATs are checked against their configured provider namespace before storage. Invalid, unauthorized, unavailable, or insufficiently scoped credentials produce a localized warning toast and keep the source editor open for correction.

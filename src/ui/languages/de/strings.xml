@@ -747,4 +747,10 @@
   <string name="ui.app.modules.enable_complete">Modul aktiviert.</string>
   <string name="ui.app.modules.disable_complete">Modul deaktiviert. Sie können es jetzt deinstallieren.</string>
   <string name="ui.app.modules.uninstall_complete">Modul deinstalliert.</string>
+  <string name="ui.app.modules.credential_empty">Geben Sie vor der Prüfung ein persönliches Zugriffstoken ein.</string>
+  <string name="ui.app.modules.credential_check_unavailable">Das Token konnte nicht geprüft werden, da der Anbieter nicht erreichbar ist.</string>
+  <string name="ui.app.modules.credential_invalid">Der Anbieter hat dieses persönliche Zugriffstoken abgelehnt.</string>
+  <string name="ui.app.modules.source_access_denied">Dieses Token kann nicht auf den konfigurierten Repository-Namensraum zugreifen. Prüfen Sie die Organisationsfreigabe und Repository-Berechtigungen.</string>
+  <string name="ui.app.modules.github_repo_scope_missing">Dieses GitHub-Token benötigt den Bereich repo, um private Repositorys zu laden.</string>
+  <string name="ui.app.modules.source_access_failed">Der Anbieter konnte den Zugriff mit diesem Token nicht bestätigen.</string>
 </resources>

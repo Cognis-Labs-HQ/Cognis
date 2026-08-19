@@ -747,4 +747,10 @@
   <string name="ui.app.modules.enable_complete">Module activated.</string>
   <string name="ui.app.modules.disable_complete">Module disabled. You can now uninstall it.</string>
   <string name="ui.app.modules.uninstall_complete">Module uninstalled.</string>
+  <string name="ui.app.modules.credential_empty">Enter a personal access token before validating it.</string>
+  <string name="ui.app.modules.credential_check_unavailable">The token could not be checked because the provider is unavailable.</string>
+  <string name="ui.app.modules.credential_invalid">The provider rejected this personal access token.</string>
+  <string name="ui.app.modules.source_access_denied">This token cannot access the configured repository namespace. Check its organization authorization and repository permissions.</string>
+  <string name="ui.app.modules.github_repo_scope_missing">This GitHub token requires the repo scope to load private repositories.</string>
+  <string name="ui.app.modules.source_access_failed">The provider could not verify access with this token.</string>
 </resources>

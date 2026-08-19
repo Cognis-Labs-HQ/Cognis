@@ -50,6 +50,16 @@ export async function saveModuleSource(source) {
     );
 }
 
+export async function validateModuleSourceCredential(source, token) {
+    return data(
+        await apiFetch("/api/v1/modules/sources/validate-credential", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ source, token }),
+        }),
+    );
+}
+
 export async function removeModuleSource(uuid) {
     return data(
         await apiFetch(`/api/v1/modules/sources/${encodeURIComponent(uuid)}`, {
