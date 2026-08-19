@@ -131,3 +131,7 @@ Herabstufungen installieren jetzt genau den vom aktualisierten Katalog angegeben
 ## Branch-Versionen über Commits auflösen
 
 Die Marketplace-Erkennung liest jetzt jedes Branch- und Release-Manifest über die unveränderliche Commit-SHA des Anbieters statt über den veränderlichen Branch-Namen. Dadurch werden veraltete Antworten der GitHub Contents API oder zwischengeschalteter Caches vermieden, und Katalogversion, angezeigte Aktualisierungsrichtung und installierte Revision stimmen mit dem vom Anbieter gelieferten Branch-Commit überein.
+
+## Modulabhängigkeiten vor der Installation prüfen
+
+Modulmanifeste können erforderliche Kernkomponenten jetzt über eine stabile UUID oder eine ältere ID angeben. Cognis prüft das verbindliche Manifest aus dem ausgecheckten Repository, bevor ein installiertes Modul ersetzt wird. Die Installation schlägt mit einem konkreten Fehler fehl, wenn eine referenzierte Komponente fehlt oder deaktiviert ist; aktive UUID-Abhängigkeiten werden normal installiert.

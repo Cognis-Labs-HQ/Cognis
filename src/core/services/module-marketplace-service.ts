@@ -475,6 +475,7 @@ export class ModuleMarketplaceService {
         module: MarketplaceModule,
         token?: string,
         branch?: string,
+        validateDependencies?: (manifest: ModuleManifest) => Promise<void>,
     ): Promise<ModuleManifest> {
         const target = path.join(this.installRoot, module.uuid);
         const temporary = `${target}.installing`;
@@ -515,6 +516,7 @@ export class ModuleMarketplaceService {
             if (manifest.uuid !== module.uuid)
                 throw new Error("module_uuid_mismatch");
             await validateModuleRepository(temporary, manifest);
+            await validateDependencies?.(manifest);
             const { stdout: commit } = await execFileAsync(
                 "git",
                 ["-C", temporary, "rev-parse", "HEAD"],

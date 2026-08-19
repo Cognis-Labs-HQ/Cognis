@@ -9,7 +9,11 @@ import {
     HealthService,
     type ModuleRuntimeGateway,
 } from "@cognis/core";
-import { buildServer, enableModuleGatewayDependencies } from "../../server.js";
+import {
+    assertModuleInstallDependencies,
+    buildServer,
+    enableModuleGatewayDependencies,
+} from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
@@ -63,6 +67,46 @@ test("module dependencies activate and persist disabled gateways", async () => {
 
     assert.equal(registry.get("file")?.status, "active");
     assert.deepEqual(persisted, [["file", true]]);
+});
+
+test("module installation resolves active dependencies by component UUID", () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "study",
+        uuid: "338b9237-a2c8-5bcf-9437-bccc9abd9a27",
+        name: "Study Gateway",
+        version: "1.0.0",
+    });
+
+    assert.doesNotThrow(() =>
+        assertModuleInstallDependencies(
+            "study-language",
+            ["338b9237-a2c8-5bcf-9437-bccc9abd9a27"],
+            registry,
+        ),
+    );
+    registry.disable("study");
+    assert.throws(
+        () =>
+            assertModuleInstallDependencies(
+                "study-language",
+                ["338b9237-a2c8-5bcf-9437-bccc9abd9a27"],
+                registry,
+            ),
+        (error: unknown) =>
+            (error as { code?: string }).code === "module_dependency_disabled",
+    );
+    assert.throws(
+        () =>
+            assertModuleInstallDependencies(
+                "study-language",
+                ["aaaaaaaa-bbbb-5ccc-8ddd-eeeeeeeeeeee"],
+                registry,
+            ),
+        (error: unknown) =>
+            (error as { code?: string }).code ===
+            "module_dependency_unavailable",
+    );
 });
 
 test("buildServer loads external module assets before accepting requests", async () => {

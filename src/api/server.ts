@@ -135,6 +135,32 @@ export async function enableModuleGatewayDependencies(
     }
 }
 
+export function assertModuleInstallDependencies(
+    moduleId: string,
+    requires: readonly string[],
+    registry: GatewayRegistry | undefined,
+): void {
+    for (const reference of requires) {
+        const dependency = registry
+            ?.list()
+            .find(
+                (entry) => entry.id === reference || entry.uuid === reference,
+            );
+        if (!dependency) {
+            throw new ModuleEnableValidationError(
+                "module_dependency_unavailable",
+                `Module ${moduleId} requires unavailable component ${reference}`,
+            );
+        }
+        if (dependency.status !== "active") {
+            throw new ModuleEnableValidationError(
+                "module_dependency_disabled",
+                `Module ${moduleId} requires disabled component ${dependency.id}`,
+            );
+        }
+    }
+}
+
 /**
  * Resolves a module's startup enabled state from highest to lowest priority:
  * core-module requirement, persisted runtime override, then manifest default.
@@ -203,6 +229,13 @@ export function buildServer(deps: ApiDependencies) {
     const moduleRoutes = createModuleRoutes(
         moduleService,
         {
+            validateInstallDependencies: async (manifest) => {
+                assertModuleInstallDependencies(
+                    manifest.id,
+                    manifest.requires ?? [],
+                    deps.gatewayRegistry,
+                );
+            },
             beforeEnable: async (moduleId) => {
                 const manifest = (
                     await deps.moduleRuntimeGateway.listManifests()

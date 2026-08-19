@@ -476,14 +476,25 @@ test("module catalog returns persisted discoveries without refreshing sources", 
 test("module marketplace install forwards the selected branch", async () => {
     const token = issueAccessToken("admin-user", "admin", 60);
     let installedBranch = "";
+    let validatedRequires: string[] = [];
     const route = createModuleRoutes(
         { list: async () => [] } as any,
-        undefined,
+        {
+            validateInstallDependencies: async (manifest) => {
+                validatedRequires = manifest.requires ?? [];
+            },
+        },
         undefined,
         {
-            install: async (_module, _token, branch) => {
+            install: async (_module, _token, branch, validateDependencies) => {
                 installedBranch = branch;
-                return { id: "notes", uuid: "module-uuid" };
+                const manifest = {
+                    id: "notes",
+                    uuid: "module-uuid",
+                    requires: ["338b9237-a2c8-5bcf-9437-bccc9abd9a27"],
+                };
+                await validateDependencies(manifest);
+                return manifest;
             },
         } as any,
     );
@@ -511,6 +522,9 @@ test("module marketplace install forwards the selected branch", async () => {
     );
     assert.equal(status, 202);
     assert.equal(installedBranch, "preview");
+    assert.deepEqual(validatedRequires, [
+        "338b9237-a2c8-5bcf-9437-bccc9abd9a27",
+    ]);
 });
 
 test("module marketplace reports and logs installation failures", async () => {

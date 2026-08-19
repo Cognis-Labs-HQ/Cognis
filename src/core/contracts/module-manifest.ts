@@ -14,9 +14,8 @@ export interface ModuleManifest {
     coreApiVersion: string;
     capabilities: string[];
     /**
-     * Gateway IDs that this module depends on. The admin UI surfaces these as
-     * dependencies and prompts to enable any disabled dependency before the
-     * module itself is enabled.
+     * Stable UUIDs (or legacy IDs) of core components required by this module.
+     * Every dependency must exist and be active before installation.
      */
     requires?: string[];
     summary?: string;

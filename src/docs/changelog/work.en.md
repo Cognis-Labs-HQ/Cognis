@@ -131,3 +131,7 @@ Downgrades now install the exact commit advertised by the refreshed catalog even
 ## Resolve branch versions by commit
 
 Marketplace discovery now reads each branch and release manifest through its immutable provider commit SHA instead of the mutable branch name. This avoids stale GitHub Contents API or intermediary cache responses and makes the catalog version, displayed update direction, and installed revision agree with the branch commit returned by the provider.
+
+## Validate module dependencies before installation
+
+Module manifests may now declare required core components by stable UUID or legacy ID. Cognis validates the authoritative manifest from the checked-out repository before replacing an installed module; installation fails with a specific error when a referenced component is missing or disabled, while active UUID dependencies install normally.

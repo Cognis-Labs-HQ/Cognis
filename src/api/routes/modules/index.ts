@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
 import type {
     BootstrapLog,
+    ModuleManifest,
     ModuleMarketplaceService,
     ModuleService,
 } from "@cognis/core";
@@ -12,6 +13,9 @@ import {
 import { readJson } from "../../reuse/read-json.js";
 
 export interface ModuleRouteHooks {
+    validateInstallDependencies?: (
+        manifest: ModuleManifest,
+    ) => Promise<void> | void;
     beforeEnable?: (moduleId: string) => Promise<void> | void;
     onEnabled?: (moduleId: string) => Promise<void> | void;
     onDisabled?: (moduleId: string) => Promise<void> | void;
@@ -350,6 +354,9 @@ export function createModuleRoutes(
                     requestedModule as never,
                     typeof body.token === "string" ? body.token : undefined,
                     typeof body.branch === "string" ? body.branch : undefined,
+                    async (manifest) => {
+                        await hooks?.validateInstallDependencies?.(manifest);
+                    },
                 )
                 .then(async (manifest) => {
                     await hooks?.onImported?.(manifest.id);

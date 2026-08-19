@@ -131,3 +131,7 @@ Penurunan versi kini memasang commit tepat yang diumumkan katalog terbaru meskip
 ## Selesaikan versi cabang melalui commit
 
 Penemuan marketplace kini membaca setiap manifes cabang dan rilis melalui SHA commit penyedia yang tidak berubah, bukan nama cabang yang dapat berubah. Hal ini menghindari respons usang dari GitHub Contents API atau cache perantara serta menyelaraskan versi katalog, arah pembaruan yang ditampilkan, dan revisi terpasang dengan commit cabang dari penyedia.
+
+## Validasi dependensi modul sebelum pemasangan
+
+Manifes modul kini dapat mendeklarasikan komponen inti yang diperlukan melalui UUID stabil atau ID lama. Cognis memvalidasi manifes otoritatif dari repositori yang telah di-checkout sebelum mengganti modul terpasang; pemasangan gagal dengan galat khusus jika komponen yang dirujuk tidak ada atau dinonaktifkan, sedangkan dependensi UUID aktif dipasang secara normal.
