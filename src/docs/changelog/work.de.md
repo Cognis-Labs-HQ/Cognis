@@ -87,3 +87,7 @@ Nach Serverneustarts werden Module zuerst aus dem gespeicherten Marketplace-Kata
 ## Autorität des Quellcaches
 
 Die integrierte Quelle Cognis Labs HQ akzeptiert nun PAT-Aktualisierungen, während ihre Identitätsfelder gesperrt bleiben. Doppelte Modul-UUIDs werden zugunsten der Cognis-Quelle aufgelöst. Kataloge, Scan-Metadaten und Assets liegen im konfigurierten Modulverzeichnis unter .cache.
+
+## GitHub-Zugang sofort nutzen
+
+Konfigurierte PAT-Felder zeigen einen maskierten Wert, ohne das Geheimnis offenzulegen. Beim Speichern neuer Zugangsdaten wird die Scan-Sperrzeit dieser Quelle gelöscht, sodass die nächste Marketplace-Anfrage sofort die neue GitHub-Autorisierung verwendet.

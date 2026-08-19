@@ -38,6 +38,7 @@ const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
+const STORED_PAT_MASK = "****";
 
 function formatVersion(version) {
     const normalized = String(version ?? "").replace(/^v/, "");
@@ -362,7 +363,8 @@ function renderSourceManager() {
 
 function renderSourceForm(source) {
     const locked = source?.trusted ? " disabled" : "";
-    return `<form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" value="${escapeHtml(source?.name ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"${locked}><option value="github"${source?.provider === "github" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab"${source?.provider === "gitlab" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" value="${escapeHtml(source?.namespace ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="${escapeHtml(source?.baseUrl ?? "https://api.github.com")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off"></label></form>`;
+    const tokenValue = source?.credentialId ? STORED_PAT_MASK : "";
+    return `<form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" value="${escapeHtml(source?.name ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"${locked}><option value="github"${source?.provider === "github" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab"${source?.provider === "gitlab" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" value="${escapeHtml(source?.namespace ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="${escapeHtml(source?.baseUrl ?? "https://api.github.com")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off" value="${tokenValue}"></label></form>`;
 }
 
 async function openMarketplaceSettings(initialPage = "settings") {
@@ -472,10 +474,12 @@ async function openMarketplaceSettings(initialPage = "settings") {
                 ? selectedSource
                 : values;
             const uuid = selectedSource?.uuid ?? crypto.randomUUID();
-            const credentialId = values.token
+            const tokenChanged =
+                values.token && values.token !== STORED_PAT_MASK;
+            const credentialId = tokenChanged
                 ? (selectedSource?.credentialId ?? `module-source:${uuid}:pat`)
                 : selectedSource?.credentialId;
-            if (values.token) {
+            if (tokenChanged) {
                 const scope = uiCtx.capabilities.get("keyring:forComponent")?.(
                     i18n.t("ui.app.modules.keyring_component"),
                 );

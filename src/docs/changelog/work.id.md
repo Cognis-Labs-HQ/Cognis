@@ -87,3 +87,7 @@ Setelah server dimulai ulang, data modul terlebih dahulu dimuat dari katalog mar
 ## Otoritas cache sumber
 
 Sumber bawaan Cognis Labs HQ kini menerima pembaruan PAT sementara bidang identitasnya tetap terkunci. UUID modul duplikat dipilih dari sumber Cognis, dan katalog marketplace, metadata pemindaian, serta aset disimpan di bawah direktori modul yang dikonfigurasi pada .cache.
+
+## Gunakan kredensial GitHub segera
+
+Bidang PAT yang telah dikonfigurasi menampilkan nilai tersamar tanpa mengungkap rahasia. Menyimpan kredensial baru menghapus masa tunggu pemindaian sumber tersebut, sehingga permintaan marketplace berikutnya langsung memakai otorisasi GitHub yang baru.

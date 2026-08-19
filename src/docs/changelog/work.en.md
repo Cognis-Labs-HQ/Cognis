@@ -87,3 +87,7 @@ Marketplace catalog data remains the first source of module results after server
 ## Correct source cache authority
 
 The built-in Cognis Labs HQ source now accepts PAT updates while keeping its identity fields locked. Duplicate module UUIDs resolve to the Cognis source, and marketplace catalogs, scan metadata, and assets are stored under the configured module directory at .cache.
+
+## Apply GitHub credentials now
+
+Configured PAT fields display a masked value without revealing the secret. Saving a new credential clears that source scan cooldown, so the next marketplace request immediately uses the new GitHub authorization instead of returning a prior unauthenticated result.

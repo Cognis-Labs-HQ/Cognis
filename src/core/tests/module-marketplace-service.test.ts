@@ -143,6 +143,35 @@ test("module marketplace persists scan throttling across service restarts", asyn
     }
 });
 
+test("credential updates bypass scan throttling and authenticate immediately", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const originalFetch = globalThis.fetch;
+    const authorizations: Array<string | null> = [];
+    globalThis.fetch = async (_input, init) => {
+        authorizations.push(new Headers(init?.headers).get("authorization"));
+        return new Response("[]", {
+            headers: { "content-type": "application/json" },
+        });
+    };
+    try {
+        await service.discover();
+        await service.saveSource({
+            uuid: DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
+            credentialId: "module-source:trusted:pat",
+        } as any);
+        await service.discover({
+            "module-source:trusted:pat": "github-secret",
+        });
+        assert.deepEqual(authorizations, [null, "Bearer github-secret"]);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("module installation accepts cached catalogs created before release discovery", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(

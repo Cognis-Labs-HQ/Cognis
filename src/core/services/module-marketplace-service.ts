@@ -197,6 +197,7 @@ export class ModuleMarketplaceService {
         await writeFile(this.statePath, JSON.stringify(next, null, 2), {
             mode: 0o600,
         });
+        await this.clearScanAttempt(source.uuid);
         return source;
     }
 
@@ -752,6 +753,22 @@ export class ModuleMarketplaceService {
         const update = async () => {
             const attempts = await this.readScanAttempts();
             attempts[sourceUuid] = new Date().toISOString();
+            await mkdir(this.cacheRoot, { recursive: true });
+            await writeFile(
+                this.scanAttemptsPath,
+                JSON.stringify(attempts, null, 2),
+                { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(update, update);
+        await this.catalogMutation;
+    }
+
+    private async clearScanAttempt(sourceUuid: string): Promise<void> {
+        const update = async () => {
+            const attempts = await this.readScanAttempts();
+            if (!(sourceUuid in attempts)) return;
+            delete attempts[sourceUuid];
             await mkdir(this.cacheRoot, { recursive: true });
             await writeFile(
                 this.scanAttemptsPath,
