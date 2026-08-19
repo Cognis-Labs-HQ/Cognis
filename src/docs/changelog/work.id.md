@@ -163,3 +163,7 @@ Kartu konten Modul kini mempertahankan judul Modul yang tetap, sedangkan filter 
 ## Hapus modul bahasa bawaan
 
 Cognis English dan Cognis Japanese kini dipasang secara eksklusif dari repositori marketplace mandirinya. Workspace modul bawaan telah dihapus; penemuan runtime, perutean UI, pemeriksaan integritas, plugin CLI, dan pendaftaran bahasa Study kini hanya menggunakan pemasangan beralamat UUID di bawah `COGNIS_EXTERNAL_MODULES_ROOT`. Aset navigasi Study bersama kini dimiliki oleh gateway Study.
+
+## Gunakan gaya navigasi Modul standar
+
+Navigasi samping Modul kini sepenuhnya mengandalkan tata letak toolbar, jarak, status aktif, perilaku responsif, dan pengaturan gulir bawaan milik page composer tanpa menerapkan penggantian gaya khusus halaman.

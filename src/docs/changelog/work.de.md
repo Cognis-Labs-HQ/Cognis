@@ -163,3 +163,7 @@ Die Inhaltskarte der Module behält nun die feste Überschrift „Module“, wä
 ## Gebündelte Sprachmodule entfernen
 
 Cognis Englisch und Cognis Japanisch werden nun ausschließlich aus ihren eigenständigen Marketplace-Repositorys installiert. Der gebündelte Modul-Workspace wurde entfernt; Laufzeiterkennung, UI-Routing, Integritätsprüfungen, CLI-Erweiterungen und die Registrierung von Study-Sprachen verwenden nur noch UUID-adressierte Installationen unter `COGNIS_EXTERNAL_MODULES_ROOT`. Gemeinsam genutzte Study-Navigationsressourcen gehören nun dem Study-Gateway.
+
+## Standardgestaltung für die Modulnavigation verwenden
+
+Die seitliche Modulnavigation verwendet nun vollständig das etablierte Toolbar-Layout des Seiten-Composers einschließlich Abständen, aktivem Zustand, responsivem Verhalten und Bildlaufvorgaben, statt seitenspezifische Überschreibungen anzuwenden.

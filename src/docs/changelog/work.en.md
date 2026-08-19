@@ -163,3 +163,7 @@ The Modules content card now keeps the stable Modules heading while status filte
 ## Remove bundled language modules
 
 Cognis English and Cognis Japanese now install exclusively from their standalone marketplace repositories. The bundled module workspace was removed, and runtime discovery, UI routing, integrity checks, CLI plugins, and Study language registration now consume only UUID-addressed installations under `COGNIS_EXTERNAL_MODULES_ROOT`. Shared Study navigation assets are now owned by the Study gateway.
+
+## Use the standard Modules navigation styling
+
+The Modules side navigation now relies entirely on the page composer's established toolbar layout, spacing, active state, responsive behavior, and scrolling defaults instead of applying page-specific overrides.
