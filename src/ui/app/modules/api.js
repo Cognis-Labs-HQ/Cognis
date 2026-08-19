@@ -22,6 +22,27 @@ export async function loadInstalledModules() {
     return data(await apiFetch("/api/v1/modules"));
 }
 
+export async function loadModulePreferences(moduleId) {
+    return data(
+        await apiFetch(
+            `/api/v1/modules/${encodeURIComponent(moduleId)}/preferences`,
+        ),
+    );
+}
+
+export async function saveModulePreferences(moduleId, values) {
+    return data(
+        await apiFetch(
+            `/api/v1/modules/${encodeURIComponent(moduleId)}/preferences`,
+            {
+                method: "PUT",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(values),
+            },
+        ),
+    );
+}
+
 export async function loadModuleSources() {
     return data(await apiFetch("/api/v1/modules/sources"));
 }

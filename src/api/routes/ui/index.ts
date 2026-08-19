@@ -25,6 +25,7 @@ import {
 } from "../../reuse/static-asset-response.js";
 import * as htmlResponse from "../../reuse/html-response.js";
 import { handleRegisteredSpaPage } from "./spa-pages.js";
+import { versionDescriptor } from "./asset-versioning.js";
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
 const PUBLIC_ROOT = path.join(UI_ROOT, "public");
@@ -53,35 +54,6 @@ async function resolveModuleRoot(
         throw new Error(`module_root_missing:${manifest.id}`);
     return externalRoot;
 }
-function versionAssetUrl(assetUrl: string): string {
-    if (assetUrl.startsWith("/assets/")) return assetUrl;
-    if (!assetUrl.startsWith("/static/") && !assetUrl.startsWith("/assets/")) {
-        return assetUrl;
-    }
-    const pathname = new URL(assetUrl, "http://localhost").pathname;
-    if (!/\.(?:css|html|jpe?g|js|json|mjs|png|svg|webp|xml)$/.test(pathname)) {
-        return assetUrl;
-    }
-    const separator = assetUrl.includes("?") ? "&" : "?";
-    return `${assetUrl}${separator}v=${encodeURIComponent(ASSET_VERSION)}`;
-}
-function versionDescriptor<T>(descriptor: T): T {
-    if (Array.isArray(descriptor)) {
-        return descriptor.map(versionDescriptor) as T;
-    }
-    if (descriptor && typeof descriptor === "object") {
-        return Object.fromEntries(
-            Object.entries(descriptor).map(([key, value]) => [
-                key,
-                typeof value === "string"
-                    ? versionAssetUrl(value)
-                    : versionDescriptor(value),
-            ]),
-        ) as T;
-    }
-    return descriptor;
-}
-
 async function serveVersionedAsset(
     req: IncomingMessage,
     res: ServerResponse,
@@ -569,6 +541,7 @@ export function createUiRoutes(
 
         const registeredSpaRoute = versionDescriptor(
             uiRegistry?.resolveSpaRoute(url.pathname),
+            ASSET_VERSION,
         );
         if (
             uiRegistry &&
@@ -786,7 +759,11 @@ export function createUiRoutes(
                 );
             }
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: versionDescriptor(sections) }));
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(sections, ASSET_VERSION),
+                }),
+            );
             return true;
         }
 
@@ -802,7 +779,11 @@ export function createUiRoutes(
                     isRoleAllowed(claims.role, plugin.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: versionDescriptor(plugins) }));
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(plugins, ASSET_VERSION),
+                }),
+            );
             return true;
         }
 
@@ -815,7 +796,11 @@ export function createUiRoutes(
                     isRoleAllowed(claims.role, route.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: versionDescriptor(routes) }));
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(routes, ASSET_VERSION),
+                }),
+            );
             return true;
         }
 

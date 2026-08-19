@@ -598,7 +598,7 @@ test("module marketplace serves persisted results after restart", async () => {
     assert.deepEqual(await restarted.listCachedModules(), [catalogModule]);
 });
 
-test("module marketplace keeps cached modules when a scan returns no repositories", async () => {
+test("module marketplace removes cached modules when a successful scan returns no repositories", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const statePath = path.join(root, "sources.json");
     await mkdir(path.join(root, "modules", ".cache"), { recursive: true });
@@ -620,7 +620,7 @@ test("module marketplace keeps cached modules when a scan returns no repositorie
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async () => new Response("[]");
     try {
-        assert.equal((await service.discover())[0].id, "notes");
+        assert.deepEqual(await service.discover(), []);
     } finally {
         globalThis.fetch = originalFetch;
     }

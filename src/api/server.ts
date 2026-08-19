@@ -263,12 +263,19 @@ export function buildServer(deps: ApiDependencies) {
             "route_context_missing: auth route context is required in ApiDependencies",
         );
     }
-    const moduleService = new ModuleService(deps.moduleRuntimeGateway);
+    const externalModulesRoot =
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+        path.resolve(process.cwd(), "external-modules");
+    const moduleService = new ModuleService(deps.moduleRuntimeGateway, {
+        externalModulesPath: externalModulesRoot,
+        enabledPointersPath:
+            process.env.COGNIS_ENABLED_MODULES_ROOT ??
+            path.resolve(process.cwd(), "config", "enabled-modules"),
+    });
     const moduleMarketplaceService = new ModuleMarketplaceService(
         process.env.COGNIS_MODULE_SOURCES_PATH ??
             path.resolve(process.cwd(), "config", "module-sources.json"),
-        process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
-            path.resolve(process.cwd(), "external-modules"),
+        externalModulesRoot,
         (level, message, meta) => log(level, message, meta),
     );
     if (deps.discoverModulesOnStartup) {
@@ -279,10 +286,7 @@ export function buildServer(deps: ApiDependencies) {
             });
         });
     }
-    const moduleTestService = new ModuleTestService([
-        process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
-            path.resolve(process.cwd(), "external-modules"),
-    ]);
+    const moduleTestService = new ModuleTestService([externalModulesRoot]);
     const healthService = deps.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
 
@@ -348,6 +352,30 @@ export function buildServer(deps: ApiDependencies) {
             getStatus: (moduleId) =>
                 enabledModules.has(moduleId) ? "enabled" : "disabled",
             getIntegrityReport: deps.moduleIntegrityChecker,
+            getPreferences: async (accountId, moduleId) => {
+                const raw = await deps.preferenceStore?.get(
+                    accountId,
+                    `module:${moduleId}`,
+                );
+                if (!raw) return {};
+                try {
+                    const value = JSON.parse(raw) as unknown;
+                    return value &&
+                        typeof value === "object" &&
+                        !Array.isArray(value)
+                        ? (value as Record<string, unknown>)
+                        : {};
+                } catch {
+                    return {};
+                }
+            },
+            setPreferences: async (accountId, moduleId, values) => {
+                await deps.preferenceStore?.set(
+                    accountId,
+                    `module:${moduleId}`,
+                    JSON.stringify(values),
+                );
+            },
             log,
         },
         routeContext,

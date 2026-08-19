@@ -33,3 +33,7 @@ Before moving a bundled module into its own repository, copy the module director
 ## Store assets and tags
 
 A module may declare `tags` alongside its broader `categories`; both participate in marketplace filtering. Store artwork lives at the repository root under `assets/`: provide `assets/icon.svg` or `assets/icon.png` for the catalog icon, and `assets/banner.svg`, `assets/banner.png`, or `assets/banner.jpg` for the detail-page hero. Declare the chosen paths as `assets.icon` and `assets.banner` in `manifest.json`. Optional gallery images are listed in `assets.screenshots`. Keep artwork free of secrets and personal data.
+
+## Module preferences
+
+A module can expose administrator-editable settings with `ui.preferences`. Each definition contains a stable `key`, localized `label`, optional `description`, a `type` of `boolean`, `string`, or `number`, and an optional matching `default`. Cognis shows Settings in the installed-module detail view only when definitions exist, loads values for the signed-in administrator, filters writes to declared keys, and persists them through the preference-store capability. Modules should read their values through ctx-backed module preference capabilities rather than importing a concrete store.

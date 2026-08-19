@@ -131,23 +131,6 @@
     text-decoration: none;
 }
 
-.page-presence__avatar-img {
-    border: 2px solid var(--panel-border, rgba(148, 163, 184, 0.35));
-    border-radius: 999px;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
-    display: block;
-    height: 2rem;
-    object-fit: cover;
-    width: 2rem;
-}
-
-.page-presence__avatar-img.is-active {
-    border-color: #22c55e;
-    box-shadow:
-        0 0 0 2px color-mix(in srgb, #22c55e 35%, transparent),
-        0 8px 20px rgba(15, 23, 42, 0.12);
-}
-
 .page-presence__avatar {
     align-items: center;
     background: var(--initials-bg, var(--accent));

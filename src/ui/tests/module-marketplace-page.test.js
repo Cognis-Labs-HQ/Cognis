@@ -407,7 +407,10 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /function moduleChangeDirection/);
     assert.match(source, /action = changeDirection/);
     assert.match(
-        readFileSync(resolve(ROOT, "src/ui/languages/en/strings.xml"), "utf8"),
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/languages/en/strings.xml"),
+            "utf8",
+        ),
         /ui\.app\.modules\.downgrade_complete/,
     );
     assert.match(source, /pendingModuleActions\.delete\(module\.uuid\)/);

@@ -1,91 +1,13 @@
-import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { promisify } from "node:util";
-import type { ModuleManifest } from "../contracts/module-manifest.js";
-import { validateModuleRepository } from "./module-repository-validator.js";
-import { commandFailureText } from "./reuse/command-failure-text.js";
-
-const execFileAsync = promisify(execFile);
-const GIT_CLONE_ATTEMPTS = 3;
-const GIT_CLONE_TIMEOUT_MS = 30_000;
-const GIT_CLONE_RETRY_DELAYS_MS = [250, 1_000];
-const TRANSIENT_GIT_FAILURE =
-    /connection reset|recv failure|could not resolve host|failed to connect|connection timed out|operation timed out|tls connection|gnutls|http\/2 stream|remote end hung up|unexpected disconnect/i;
-const SOURCE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
-const GITHUB_PAT_PERMISSION_DOCS =
-    "https://docs.github.com/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens";
-const GITHUB_SSO_DOCS =
-    "https://docs.github.com/authentication/authenticating-with-single-sign-on/authorizing-a-personal-access-token-for-use-with-single-sign-on";
-
-export type ModuleSourceProvider = "github" | "gitlab";
-
-export interface ModuleSource {
-    uuid: string;
-    name: string;
-    provider: ModuleSourceProvider;
-    namespace: string;
-    baseUrl: string;
-    homepage?: string;
-    credentialId?: string;
-    trusted?: boolean;
-}
-
-export const DEFAULT_TRUSTED_MODULE_SOURCE: Readonly<ModuleSource> =
-    Object.freeze({
-        uuid: "178271bf-5631-40df-82df-967f8a37a020",
-        name: "Cognis Labs HQ",
-        provider: "github",
-        namespace: "Cognis-Labs-HQ",
-        baseUrl: "https://api.github.com",
-        homepage: "https://github.com/Cognis-Labs-HQ",
-        trusted: true,
-    });
-
-export interface MarketplaceModule extends ModuleManifest {
-    cloneUrl: string;
-    sourceUuid: string;
-    installed: boolean;
-    branches: Array<{ name: string; commit: string; version?: string }>;
-    releases: Array<{ name: string; commit: string; version?: string }>;
-    defaultBranch: string;
-    installedBranch?: string;
-    installedCommit?: string;
-    installedVersion?: string;
-    updateAvailable: boolean;
-    assetIds?: {
-        icon?: string;
-        banner?: string;
-        screenshots?: string[];
-        media?: Array<{ id: string; contentType: string }>;
-    };
-    readme?: string;
-}
-
-export interface MarketplaceAsset {
-    body: Buffer;
-    contentType: string;
-}
-
-export interface ModuleMarketplaceSettings {
-    recommendedModulesUrl: string;
-}
-
-export interface ModuleCredentialValidation {
-    valid: boolean;
-    warnings: string[];
-    scopes: string[];
-}
-
-export type ModuleMarketplaceLog = (
-    level: "info" | "warn",
-    message: string,
-    meta: Record<string, unknown>,
-) => void;
-
-export const DEFAULT_RECOMMENDED_MODULES_URL =
-    "https://cognis.study/static/recommended-modules.json";
+import type { ModuleManifest } from "../../contracts/module-manifest.js";
+import type {
+    MarketplaceAsset,
+    MarketplaceModule,
+    ModuleMarketplaceLog,
+    ModuleSource,
+} from "./marketplace-service.js";
 
 interface ModuleInstallProvenance {
     sourceUuid: string;
@@ -94,576 +16,33 @@ interface ModuleInstallProvenance {
     commit: string;
 }
 
-export class ModuleMarketplaceService {
-    private readonly assets = new Map<string, MarketplaceAsset>();
-    private catalogMutation: Promise<void> = Promise.resolve();
+export class MarketplaceServiceBase {
+    protected readonly assets = new Map<string, MarketplaceAsset>();
+    protected catalogMutation: Promise<void> = Promise.resolve();
 
     constructor(
-        private readonly statePath: string,
-        private readonly installRoot: string,
-        private readonly log: ModuleMarketplaceLog = () => undefined,
+        protected readonly statePath: string,
+        protected readonly installRoot: string,
+        protected readonly log: ModuleMarketplaceLog = () => undefined,
     ) {}
 
-    private get cacheRoot(): string {
+    protected get cacheRoot(): string {
         return path.join(this.installRoot, ".cache");
     }
-
-    private get catalogPath(): string {
+    protected get catalogPath(): string {
         return path.join(this.cacheRoot, "catalog.json");
     }
-
-    private get scanAttemptsPath(): string {
+    protected get scanAttemptsPath(): string {
         return path.join(this.cacheRoot, "scan-attempts.json");
     }
-
-    private get assetCacheRoot(): string {
+    protected get assetCacheRoot(): string {
         return path.join(this.cacheRoot, "assets");
     }
-
-    private get credentialBindingsPath(): string {
+    protected get credentialBindingsPath(): string {
         return path.join(this.cacheRoot, "credential-bindings.json");
     }
 
-    async getSettings(): Promise<ModuleMarketplaceSettings> {
-        try {
-            return JSON.parse(
-                await readFile(`${this.statePath}.settings`, "utf8"),
-            ) as ModuleMarketplaceSettings;
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
-            return { recommendedModulesUrl: DEFAULT_RECOMMENDED_MODULES_URL };
-        }
-    }
-
-    async saveSettings(
-        settings: ModuleMarketplaceSettings,
-    ): Promise<ModuleMarketplaceSettings> {
-        const url = new URL(settings.recommendedModulesUrl);
-        if (url.protocol !== "https:")
-            throw new Error("invalid_recommended_modules_url");
-        const value = { recommendedModulesUrl: url.toString() };
-        await mkdir(path.dirname(this.statePath), { recursive: true });
-        await writeFile(
-            `${this.statePath}.settings`,
-            JSON.stringify(value, null, 2),
-            { mode: 0o600 },
-        );
-        return value;
-    }
-
-    async listRecommendedModuleUuids(): Promise<string[]> {
-        const { recommendedModulesUrl } = await this.getSettings();
-        const response = await fetch(recommendedModulesUrl).catch(
-            () => undefined,
-        );
-        if (!response?.ok) return [];
-        const value = (await response.json()) as unknown;
-        return Array.isArray(value)
-            ? value.filter(
-                  (uuid): uuid is string =>
-                      typeof uuid === "string" &&
-                      /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(uuid),
-              )
-            : [];
-    }
-
-    async listSources(): Promise<ModuleSource[]> {
-        try {
-            const value = JSON.parse(await readFile(this.statePath, "utf8"));
-            const stored = Array.isArray(value)
-                ? (value as ModuleSource[])
-                : [];
-            const trustedOverride = stored.find(
-                (source) => source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
-            );
-            const credentialBindings = await this.readCredentialBindings();
-            return [
-                {
-                    ...DEFAULT_TRUSTED_MODULE_SOURCE,
-                    credentialId:
-                        trustedOverride?.credentialId ??
-                        credentialBindings[DEFAULT_TRUSTED_MODULE_SOURCE.uuid],
-                },
-                ...stored.filter(
-                    (source) =>
-                        source.uuid !== DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
-                ),
-            ];
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-                const credentialBindings = await this.readCredentialBindings();
-                return [
-                    {
-                        ...DEFAULT_TRUSTED_MODULE_SOURCE,
-                        credentialId:
-                            credentialBindings[
-                                DEFAULT_TRUSTED_MODULE_SOURCE.uuid
-                            ],
-                    },
-                ];
-            }
-            throw error;
-        }
-    }
-
-    async saveSource(source: ModuleSource): Promise<ModuleSource> {
-        if (source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid) {
-            source = {
-                ...DEFAULT_TRUSTED_MODULE_SOURCE,
-                credentialId: source.credentialId,
-            };
-        } else {
-            source = { ...source, trusted: false };
-        }
-        this.assertSource(source);
-        const sources = await this.listSources();
-        const next = sources.filter((entry) => entry.uuid !== source.uuid);
-        next.push(source);
-        await mkdir(path.dirname(this.statePath), { recursive: true });
-        await writeFile(this.statePath, JSON.stringify(next, null, 2), {
-            mode: 0o600,
-        });
-        await this.saveCredentialBinding(source.uuid, source.credentialId);
-        await this.clearScanAttempt(source.uuid);
-        return source;
-    }
-
-    async validateSourceCredential(
-        source: ModuleSource,
-        token: string,
-    ): Promise<ModuleCredentialValidation> {
-        this.assertSource(source);
-        const normalizedToken = token.trim();
-        if (!normalizedToken) {
-            return { valid: false, warnings: ["credential_empty"], scopes: [] };
-        }
-        const headers: Record<string, string> = {
-            accept: "application/json",
-            "user-agent": "cognis-module-marketplace",
-        };
-        if (source.provider === "github") {
-            headers.authorization = `Bearer ${normalizedToken}`;
-        } else {
-            headers["private-token"] = normalizedToken;
-        }
-        const endpoint =
-            source.provider === "github"
-                ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=1&type=all`
-                : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=1&include_subgroups=true`;
-        const response = await fetch(endpoint, { headers }).catch(
-            () => undefined,
-        );
-        if (!response) {
-            return {
-                valid: false,
-                warnings: ["credential_check_unavailable"],
-                scopes: [],
-            };
-        }
-        const scopes = (response.headers.get("x-oauth-scopes") ?? "")
-            .split(",")
-            .map((scope) => scope.trim())
-            .filter(Boolean);
-        const warnings: string[] = [];
-        if (response.status === 401) warnings.push("credential_invalid");
-        if (response.status === 403) warnings.push("source_access_denied");
-        if (
-            source.provider === "github" &&
-            scopes.length > 0 &&
-            !scopes.includes("repo")
-        ) {
-            warnings.push("github_repo_scope_missing");
-        }
-        if (!response.ok && warnings.length === 0) {
-            warnings.push("source_access_failed");
-        }
-        if (source.provider === "github" && response.ok) {
-            const repositories = (await response.json()) as Array<{
-                full_name?: unknown;
-            }>;
-            const repository = String(repositories[0]?.full_name ?? "");
-            if (repository) {
-                const contentsResponse = await fetch(
-                    `${source.baseUrl}/repos/${repository}/contents/manifest.json`,
-                    { headers },
-                ).catch(() => undefined);
-                if (contentsResponse?.status === 403) {
-                    warnings.push("github_contents_read_missing");
-                }
-            }
-        }
-        if (warnings.length > 0) {
-            this.log("warn", "Module source credential validation failed.", {
-                sourceUuid: source.uuid,
-                sourceName: source.name,
-                provider: source.provider,
-                namespace: source.namespace,
-                issues: warnings,
-                grantedClassicScopes: scopes,
-                requiredPermissions:
-                    source.provider === "github"
-                        ? {
-                              fineGrained:
-                                  "Repository access to every module repository; Metadata: read; Contents: read",
-                              classic: "repo scope for private repositories",
-                              organization:
-                                  "Authorize the token for organization SSO when SAML SSO is enforced",
-                          }
-                        : {
-                              token: "read_api and read_repository",
-                          },
-                references:
-                    source.provider === "github"
-                        ? [GITHUB_PAT_PERMISSION_DOCS, GITHUB_SSO_DOCS]
-                        : [
-                              "https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes",
-                          ],
-            });
-        }
-        return {
-            valid: response.ok && warnings.length === 0,
-            warnings,
-            scopes,
-        };
-    }
-
-    async removeSource(uuid: string): Promise<void> {
-        if (uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid) {
-            throw new Error("trusted_module_source_readonly");
-        }
-        const sources = (await this.listSources()).filter(
-            (source) => source.uuid !== uuid,
-        );
-        await mkdir(path.dirname(this.statePath), { recursive: true });
-        await writeFile(this.statePath, JSON.stringify(sources, null, 2), {
-            mode: 0o600,
-        });
-        await this.saveCredentialBinding(uuid, undefined);
-        await this.pruneCachedSources(
-            new Set(sources.map((source) => source.uuid)),
-        );
-    }
-
-    async discover(
-        tokens: Record<string, string> = {},
-        sourceUuids?: string[],
-        forceRefresh = false,
-    ): Promise<MarketplaceModule[]> {
-        const sources = await this.listSources();
-        const selectedSources = (
-            sourceUuids
-                ? sources.filter((source) => sourceUuids.includes(source.uuid))
-                : sources
-        ).sort(
-            (left, right) =>
-                Number(Boolean(right.trusted)) - Number(Boolean(left.trusted)),
-        );
-        const configuredSourceUuids = new Set(
-            sources.map((source) => source.uuid),
-        );
-        const discovered: MarketplaceModule[] = [];
-        const claimedUuids = new Map<
-            string,
-            { module: MarketplaceModule; cached: boolean }
-        >();
-        for (const source of selectedSources) {
-            const cachedModules = await this.readCachedCatalog([source.uuid]);
-            const lastAttemptAt = (await this.readScanAttempts())[source.uuid];
-            let modules: MarketplaceModule[];
-            if (
-                !forceRefresh &&
-                lastAttemptAt &&
-                Date.now() - Date.parse(lastAttemptAt) < SOURCE_SCAN_INTERVAL_MS
-            ) {
-                this.log("info", "Module source scan served from cache.", {
-                    sourceUuid: source.uuid,
-                    sourceName: source.name,
-                    modulesFound: cachedModules.length,
-                    nextScanAt: new Date(
-                        Date.parse(lastAttemptAt) + SOURCE_SCAN_INTERVAL_MS,
-                    ).toISOString(),
-                });
-                modules = cachedModules;
-            } else {
-                await this.recordScanAttempt(source.uuid);
-                this.log("info", "Module source scan started.", {
-                    sourceUuid: source.uuid,
-                    sourceName: source.name,
-                });
-                try {
-                    modules = await this.discoverSource(
-                        source,
-                        source.credentialId
-                            ? tokens[source.credentialId]
-                            : undefined,
-                    );
-                } catch (error) {
-                    modules = cachedModules;
-                    this.log(
-                        "warn",
-                        "Module source scan failed; cached results retained.",
-                        {
-                            sourceUuid: source.uuid,
-                            sourceName: source.name,
-                            modulesRetained: modules.length,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
-                        },
-                    );
-                }
-            }
-            const accepted = modules.filter((module) => {
-                const claim = claimedUuids.get(module.uuid);
-                const claimed = claim?.module;
-                if (!claimed) {
-                    claimedUuids.set(module.uuid, { module, cached: false });
-                    return true;
-                }
-                if (claim.cached && claimed.cloneUrl === module.cloneUrl) {
-                    claimedUuids.set(module.uuid, { module, cached: false });
-                    return true;
-                }
-                this.log("warn", "Duplicate module UUID rejected.", {
-                    moduleUuid: module.uuid,
-                    acceptedCloneUrl: claimed.cloneUrl,
-                    rejectedCloneUrl: module.cloneUrl,
-                    rejectedSourceUuid: source.uuid,
-                });
-                return false;
-            });
-            await this.replaceCachedSource(
-                source.uuid,
-                accepted,
-                configuredSourceUuids,
-            );
-            this.log("info", "Module source scan completed.", {
-                sourceUuid: source.uuid,
-                sourceName: source.name,
-                modulesFound: accepted.length,
-            });
-            discovered.push(...accepted);
-        }
-        return discovered;
-    }
-
-    async listCachedModules(): Promise<MarketplaceModule[]> {
-        const sources = await this.listSources();
-        const configuredSourceUuids = new Set(
-            sources.map((source) => source.uuid),
-        );
-        const priority = new Map(
-            sources.map((source) => [source.uuid, source.trusted ? 0 : 1]),
-        );
-        const claimed = new Set<string>();
-        return (await this.readCachedCatalog())
-            .filter((module) => configuredSourceUuids.has(module.sourceUuid))
-            .sort(
-                (left, right) =>
-                    (priority.get(left.sourceUuid) ?? 1) -
-                    (priority.get(right.sourceUuid) ?? 1),
-            )
-            .filter((module) => {
-                if (claimed.has(module.uuid)) return false;
-                claimed.add(module.uuid);
-                return true;
-            });
-    }
-
-    async install(
-        module: MarketplaceModule,
-        token?: string,
-        branch?: string,
-        validateDependencies?: (manifest: ModuleManifest) => Promise<void>,
-    ): Promise<ModuleManifest> {
-        const target = path.join(this.installRoot, module.uuid);
-        const temporary = `${target}.installing`;
-        await mkdir(this.installRoot, { recursive: true });
-        await rm(temporary, { recursive: true, force: true });
-        const cloneUrl = this.assertCloneUrl(module.cloneUrl);
-        const selectedBranch = branch ?? module.defaultBranch;
-        const installRefs = [
-            ...(module.branches ?? []),
-            ...(module.releases ?? []),
-        ];
-        const selectedRef = installRefs.find(
-            (entry) => entry.name === selectedBranch,
-        );
-        if (!selectedRef) {
-            throw new Error("invalid_module_branch");
-        }
-        const gitEnvironment: NodeJS.ProcessEnv = {
-            ...process.env,
-            GIT_TERMINAL_PROMPT: "0",
-        };
-        if (token) {
-            gitEnvironment.GIT_CONFIG_COUNT = "1";
-            gitEnvironment.GIT_CONFIG_KEY_0 = "http.extraHeader";
-            gitEnvironment.GIT_CONFIG_VALUE_0 = `Authorization: Basic ${Buffer.from(`oauth2:${token}`).toString("base64")}`;
-        }
-        try {
-            await this.cloneRepository(
-                cloneUrl,
-                selectedBranch,
-                selectedRef.commit,
-                temporary,
-                gitEnvironment,
-            );
-            const manifest = this.parseManifest(
-                await readFile(path.join(temporary, "manifest.json"), "utf8"),
-            );
-            if (manifest.uuid !== module.uuid)
-                throw new Error("module_uuid_mismatch");
-            await validateModuleRepository(temporary, manifest);
-            await validateDependencies?.(manifest);
-            const { stdout: commit } = await execFileAsync(
-                "git",
-                ["-C", temporary, "rev-parse", "HEAD"],
-                { env: gitEnvironment },
-            );
-            const provenance: ModuleInstallProvenance = {
-                sourceUuid: module.sourceUuid,
-                cloneUrl,
-                branch: selectedBranch,
-                commit: commit.trim(),
-            };
-            await writeFile(
-                path.join(temporary, ".cognis-install.json"),
-                JSON.stringify(provenance, null, 2),
-                { mode: 0o600 },
-            );
-            await rm(target, { recursive: true, force: true });
-            await rename(temporary, target);
-            await this.updateCachedInstallState(
-                module.uuid,
-                selectedBranch,
-                provenance.commit,
-                manifest.version,
-            );
-            return manifest;
-        } catch (error) {
-            await rm(temporary, { recursive: true, force: true });
-            throw error;
-        }
-    }
-
-    private async cloneRepository(
-        cloneUrl: string,
-        branch: string,
-        expectedCommit: string,
-        temporary: string,
-        environment: NodeJS.ProcessEnv,
-    ): Promise<void> {
-        if (!/^[a-f0-9]{7,64}$/i.test(expectedCommit)) {
-            throw new Error("invalid_module_commit");
-        }
-        let lastError: unknown;
-        for (let attempt = 1; attempt <= GIT_CLONE_ATTEMPTS; attempt += 1) {
-            await rm(temporary, { recursive: true, force: true });
-            try {
-                await execFileAsync(
-                    "git",
-                    [
-                        "-c",
-                        "http.version=HTTP/1.1",
-                        "clone",
-                        "--depth=1",
-                        "--branch",
-                        branch,
-                        "--",
-                        cloneUrl,
-                        temporary,
-                    ],
-                    { env: environment, timeout: GIT_CLONE_TIMEOUT_MS },
-                );
-                const { stdout: clonedCommit } = await execFileAsync(
-                    "git",
-                    ["-C", temporary, "rev-parse", "HEAD"],
-                    { env: environment },
-                );
-                if (clonedCommit.trim() !== expectedCommit) {
-                    await execFileAsync(
-                        "git",
-                        [
-                            "-C",
-                            temporary,
-                            "fetch",
-                            "--depth=1",
-                            "origin",
-                            expectedCommit,
-                        ],
-                        { env: environment, timeout: GIT_CLONE_TIMEOUT_MS },
-                    );
-                    await execFileAsync(
-                        "git",
-                        [
-                            "-C",
-                            temporary,
-                            "checkout",
-                            "--detach",
-                            expectedCommit,
-                        ],
-                        { env: environment },
-                    );
-                }
-                return;
-            } catch (error) {
-                lastError = error;
-                const output = commandFailureText(error);
-                if (
-                    attempt === GIT_CLONE_ATTEMPTS ||
-                    !TRANSIENT_GIT_FAILURE.test(output)
-                ) {
-                    if (
-                        new URL(cloneUrl).hostname === "github.com" &&
-                        /timed out|operation timed out/i.test(output)
-                    ) {
-                        (error as Error & { code?: string }).code =
-                            "github_connection_timeout";
-                    }
-                    throw error;
-                }
-                await new Promise((resolve) =>
-                    setTimeout(resolve, GIT_CLONE_RETRY_DELAYS_MS[attempt - 1]),
-                );
-            }
-        }
-        throw lastError;
-    }
-
-    async uninstall(uuid: string): Promise<void> {
-        await rm(path.join(this.installRoot, uuid), {
-            recursive: true,
-            force: true,
-        });
-        await this.updateCachedInstallation(uuid, false);
-    }
-
-    async getAsset(id: string): Promise<MarketplaceAsset | undefined> {
-        const cached = this.assets.get(id);
-        if (cached) return cached;
-        try {
-            const [body, metadata] = await Promise.all([
-                readFile(path.join(this.assetCacheRoot, id)),
-                readFile(path.join(this.assetCacheRoot, `${id}.json`), "utf8"),
-            ]);
-            const { contentType } = JSON.parse(metadata) as {
-                contentType?: unknown;
-            };
-            if (typeof contentType !== "string") return undefined;
-            const asset = { body, contentType };
-            this.assets.set(id, asset);
-            return asset;
-        } catch (error) {
-            if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-                return undefined;
-            }
-            throw error;
-        }
-    }
-
-    private async discoverSource(
+    protected async discoverSource(
         source: ModuleSource,
         token?: string,
     ): Promise<MarketplaceModule[]> {
@@ -855,23 +234,18 @@ export class ModuleMarketplaceService {
         const fresh = candidates.flatMap((candidate) =>
             candidate.module ? [candidate.module] : [],
         );
-        const refreshedCloneUrls = new Set(
-            fresh.map((module) => module.cloneUrl),
+        const inconclusiveCloneUrls = new Set(
+            candidates
+                .filter((candidate) => !candidate.module)
+                .map((candidate) => candidate.cloneUrl),
         );
-        const retained = cached.filter(
-            (module) => !refreshedCloneUrls.has(module.cloneUrl),
+        const retained = cached.filter((module) =>
+            inconclusiveCloneUrls.has(module.cloneUrl),
         );
-        if (retained.length > 0) {
-            this.log("warn", "Module scan retained cached entries.", {
-                sourceUuid: source.uuid,
-                sourceName: source.name,
-                modulesRetained: retained.length,
-            });
-        }
         return [...fresh, ...retained];
     }
 
-    private async hasRootLicenseFile(
+    protected async hasRootLicenseFile(
         source: ModuleSource,
         projectPath: string,
         defaultBranch: string,
@@ -892,7 +266,7 @@ export class ModuleMarketplaceService {
         return false;
     }
 
-    private async readCachedCatalog(
+    protected async readCachedCatalog(
         sourceUuids?: string[],
     ): Promise<MarketplaceModule[]> {
         try {
@@ -911,7 +285,7 @@ export class ModuleMarketplaceService {
         }
     }
 
-    private async readScanAttempts(): Promise<Record<string, string>> {
+    protected async readScanAttempts(): Promise<Record<string, string>> {
         try {
             const value = JSON.parse(
                 await readFile(this.scanAttemptsPath, "utf8"),
@@ -925,7 +299,7 @@ export class ModuleMarketplaceService {
         }
     }
 
-    private async readCredentialBindings(): Promise<Record<string, string>> {
+    protected async readCredentialBindings(): Promise<Record<string, string>> {
         try {
             const value = JSON.parse(
                 await readFile(this.credentialBindingsPath, "utf8"),
@@ -939,7 +313,7 @@ export class ModuleMarketplaceService {
         }
     }
 
-    private async saveCredentialBinding(
+    protected async saveCredentialBinding(
         sourceUuid: string,
         credentialId?: string,
     ): Promise<void> {
@@ -958,7 +332,7 @@ export class ModuleMarketplaceService {
         await this.catalogMutation;
     }
 
-    private async recordScanAttempt(sourceUuid: string): Promise<void> {
+    protected async recordScanAttempt(sourceUuid: string): Promise<void> {
         const update = async () => {
             const attempts = await this.readScanAttempts();
             attempts[sourceUuid] = new Date().toISOString();
@@ -973,7 +347,7 @@ export class ModuleMarketplaceService {
         await this.catalogMutation;
     }
 
-    private async clearScanAttempt(sourceUuid: string): Promise<void> {
+    protected async clearScanAttempt(sourceUuid: string): Promise<void> {
         const update = async () => {
             const attempts = await this.readScanAttempts();
             if (!(sourceUuid in attempts)) return;
@@ -989,7 +363,7 @@ export class ModuleMarketplaceService {
         await this.catalogMutation;
     }
 
-    private async replaceCachedSource(
+    protected async replaceCachedSource(
         sourceUuid: string,
         modules: MarketplaceModule[],
         configuredSourceUuids: Set<string>,
@@ -1012,7 +386,7 @@ export class ModuleMarketplaceService {
         await this.catalogMutation;
     }
 
-    private async updateCachedInstallation(
+    protected async updateCachedInstallation(
         uuid: string,
         installed: boolean,
     ): Promise<void> {
@@ -1040,7 +414,7 @@ export class ModuleMarketplaceService {
         await this.catalogMutation;
     }
 
-    private async updateCachedInstallState(
+    protected async updateCachedInstallState(
         uuid: string,
         branch: string,
         commit: string,
@@ -1074,7 +448,7 @@ export class ModuleMarketplaceService {
         await this.catalogMutation;
     }
 
-    private async pruneCachedSources(
+    protected async pruneCachedSources(
         configuredSourceUuids: Set<string>,
     ): Promise<void> {
         const prune = async () => {
@@ -1093,7 +467,7 @@ export class ModuleMarketplaceService {
         await this.catalogMutation;
     }
 
-    private async cacheRepositoryAsset(
+    protected async cacheRepositoryAsset(
         source: ModuleSource,
         projectPath: string,
         defaultBranch: string,
@@ -1146,7 +520,7 @@ export class ModuleMarketplaceService {
         return id;
     }
 
-    private async cacheRepositoryImageAsset(
+    protected async cacheRepositoryImageAsset(
         source: ModuleSource,
         projectPath: string,
         defaultBranch: string,
@@ -1194,7 +568,7 @@ export class ModuleMarketplaceService {
         return undefined;
     }
 
-    private async discoverRepositoryMedia(
+    protected async discoverRepositoryMedia(
         source: ModuleSource,
         projectPath: string,
         defaultBranch: string,
@@ -1242,7 +616,7 @@ export class ModuleMarketplaceService {
         );
     }
 
-    private async discoverBranches(
+    protected async discoverBranches(
         source: ModuleSource,
         projectPath: string,
         headers: Record<string, string>,
@@ -1265,7 +639,7 @@ export class ModuleMarketplaceService {
             .filter((branch) => branch.name && branch.commit);
     }
 
-    private async attachVersions<T extends { name: string; commit: string }>(
+    protected async attachVersions<T extends { name: string; commit: string }>(
         source: ModuleSource,
         projectPath: string,
         refs: T[],
@@ -1303,7 +677,7 @@ export class ModuleMarketplaceService {
         );
     }
 
-    private async readInstalledVersion(
+    protected async readInstalledVersion(
         moduleUuid: string,
     ): Promise<string | undefined> {
         try {
@@ -1319,7 +693,7 @@ export class ModuleMarketplaceService {
         }
     }
 
-    private async discoverReleases(
+    protected async discoverReleases(
         source: ModuleSource,
         projectPath: string,
         headers: Record<string, string>,
@@ -1341,7 +715,7 @@ export class ModuleMarketplaceService {
             .filter((tag) => tag.name && tag.commit);
     }
 
-    private async fetchPaginated(
+    protected async fetchPaginated(
         initialUrl: string,
         headers: Record<string, string>,
     ): Promise<Array<Record<string, unknown>>> {
@@ -1377,7 +751,7 @@ export class ModuleMarketplaceService {
         return results;
     }
 
-    private async readInstallProvenance(
+    protected async readInstallProvenance(
         uuid: string,
     ): Promise<ModuleInstallProvenance | null> {
         try {
@@ -1393,7 +767,7 @@ export class ModuleMarketplaceService {
         }
     }
 
-    private parseManifest(raw: string): ModuleManifest {
+    protected parseManifest(raw: string): ModuleManifest {
         const manifest = JSON.parse(raw) as ModuleManifest;
         delete (manifest as ModuleManifest & { recommended?: unknown })
             .recommended;
@@ -1425,7 +799,7 @@ export class ModuleMarketplaceService {
         return manifest;
     }
 
-    private resolveRepositoryAssetUrl(
+    protected resolveRepositoryAssetUrl(
         source: ModuleSource,
         projectPath: string,
         defaultBranch: string,
@@ -1444,7 +818,7 @@ export class ModuleMarketplaceService {
         return `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/${encodeURIComponent(normalizedPath)}/raw?ref=${encodeURIComponent(defaultBranch)}`;
     }
 
-    private async readRepositoryFile(
+    protected async readRepositoryFile(
         source: ModuleSource,
         response: Response,
     ): Promise<string> {
@@ -1456,7 +830,7 @@ export class ModuleMarketplaceService {
         ).toString("utf8");
     }
 
-    private resolveGithubManifestUrl(
+    protected resolveGithubManifestUrl(
         source: ModuleSource,
         projectPath: string,
         reference: string,
@@ -1464,7 +838,7 @@ export class ModuleMarketplaceService {
         return `${source.baseUrl}/repos/${projectPath}/contents/manifest.json?ref=${encodeURIComponent(reference)}`;
     }
 
-    private assertSource(source: ModuleSource): void {
+    protected assertSource(source: ModuleSource): void {
         if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(source.uuid))
             throw new Error("invalid_source_uuid");
         const url = new URL(source.baseUrl);
@@ -1472,7 +846,7 @@ export class ModuleMarketplaceService {
             throw new Error("invalid_module_source");
     }
 
-    private assertCloneUrl(cloneUrl: string): string {
+    protected assertCloneUrl(cloneUrl: string): string {
         const parsed = new URL(cloneUrl);
         if (
             parsed.protocol !== "https:" ||

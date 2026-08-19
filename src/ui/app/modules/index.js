@@ -31,6 +31,7 @@ import {
     uninstallModule,
     validateModuleSourceCredential,
 } from "./api.js";
+import { openModulePreferences } from "./preferences.js";
 
 let i18n;
 let composer;
@@ -246,7 +247,11 @@ function renderModuleDetails(module) {
 }
 
 function renderDetailActions(module) {
-    return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${renderLifecycleActions(module)}`;
+    const settings =
+        module.installed && module.ui?.preferences?.length
+            ? `<button type="button" class="btn-neutral" data-module-preferences="${escapeHtml(module.uuid)}">${escapeHtml(i18n.t("ui.reuse.settings"))}</button>`
+            : "";
+    return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${settings}${renderLifecycleActions(module)}`;
 }
 
 function resolveModuleAssetUrl(value) {
@@ -302,7 +307,7 @@ function formatTag(tag) {
 }
 
 function renderSidebar(categories) {
-    return `<aside class="module-store-sidebar">
+    return `<aside data-module-sidebar>
       ${["all", "recommended", "installed", "available"].map((item) => `<button type="button" class="btn-neutral${view === item ? " is-active" : ""}" data-store-view="${item}">${escapeHtml(viewLabel(item))}</button>`).join("")}
       <h3>${escapeHtml(i18n.t("ui.app.modules.categories"))}</h3>
       <button type="button" class="btn-neutral${category === "all" ? " is-active" : ""}" data-store-category="all">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
@@ -651,7 +656,7 @@ function refreshMarketplace() {
         top: window.scrollY,
     };
     composer?.refreshElements(["module-store"]);
-    const sidebar = pageRoot?.querySelector(".module-store-sidebar");
+    const sidebar = pageRoot?.querySelector("[data-module-sidebar]");
     if (sidebar) {
         const categories = [
             ...new Set(modulesForView().flatMap((module) => module.tags ?? [])),
@@ -834,6 +839,22 @@ function bindInteractions(root, signal) {
                 );
                 return;
             }
+            if (target.dataset.modulePreferences) {
+                const module = modules.find(
+                    (entry) => entry.uuid === target.dataset.modulePreferences,
+                );
+                if (module) {
+                    await openModulePreferences(module, {
+                        title: i18n.t("ui.app.modules.preferences_title"),
+                        save: i18n.t("ui.reuse.save"),
+                        cancel: i18n.t("ui.reuse.cancel"),
+                    });
+                    showToast(i18n.t("ui.app.modules.preferences_saved"), {
+                        type: "success",
+                    });
+                }
+                return;
+            }
             let action = [
                 "install",
                 "update",
@@ -930,7 +951,9 @@ export async function mount(root, { signal } = {}) {
     const finishPageLoading = beginPageLoading();
     try {
         pageRoot = root;
-        i18n = await createI18n();
+        i18n = await createI18n({
+            componentStringBaseUrls: ["/static/app/modules/languages"],
+        });
         applyDocumentTitle(i18n, "ui.page.title.modules");
         composer = createPageComposer(root, {
             allowCustomization: false,

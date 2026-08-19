@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { lstat, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { ModuleManifest } from "../contracts/module-manifest.js";
+import type { ModuleManifest } from "../../contracts/module-manifest.js";
 
 const ICON_PATTERN = /^assets\/icon\.(?:svg|png)$/i;
 const BANNER_PATTERN = /^assets\/banner\.(?:svg|png|jpe?g)$/i;

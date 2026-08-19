@@ -6,7 +6,7 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import type { ModuleManifest } from "../contracts/module-manifest.js";
-import { validateModuleRepository } from "../services/module-repository-validator.js";
+import { validateModuleRepository } from "../services/module-loader/repository-validator.js";
 
 const REPOSITORY_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),

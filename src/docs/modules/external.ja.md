@@ -23,3 +23,7 @@
 ## ストア画像とタグ
 
 モジュールは広い分類の `categories` に加えて、詳しい `tags` を宣言でき、どちらも絞り込みに使われます。ストア画像はリポジトリの `assets/` に置きます。カタログ用には `assets/icon.svg` または `assets/icon.png`、詳細ページのヒーロー画像には `assets/banner.svg`、`assets/banner.png`、`assets/banner.jpg` を使用し、`manifest.json` の `assets.icon` と `assets.banner` に選んだパスを指定します。任意のギャラリー画像は `assets.screenshots` に列挙します。
+
+## モジュール設定
+
+モジュールは `ui.preferences` で管理者が編集できる設定を公開できます。各定義には安定した `key`、ローカライズ済みの `label`、任意の `description`、`boolean`・`string`・`number` のいずれかの `type`、型に合う任意の `default` を指定します。Cognis は定義がある場合だけインストール済みモジュールの詳細に設定を表示し、ログイン中の管理者の値を読み込み、宣言済みキーだけを書き込み、設定ストア Capability で永続化します。モジュールは具体的なストアを import せず、ctx ベースのモジュール Capability を通じて値を読み取ります。

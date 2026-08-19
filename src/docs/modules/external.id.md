@@ -23,3 +23,7 @@ Saat modul dipindahkan ke repositori tersendiri, UUID dan ID yang mudah dibaca t
 ## Aset toko dan tag
 
 Modul dapat mendeklarasikan `tags` yang lebih khusus di samping `categories`; keduanya digunakan untuk penyaringan. Gambar toko berada di `assets/` pada repositori: gunakan `assets/icon.svg` atau `assets/icon.png` sebagai ikon katalog, serta `assets/banner.svg`, `assets/banner.png`, atau `assets/banner.jpg` sebagai gambar utama halaman detail. Nyatakan jalur tersebut sebagai `assets.icon` dan `assets.banner` dalam `manifest.json`. Gambar galeri opsional dicantumkan dalam `assets.screenshots`.
+
+## Preferensi modul
+
+Modul dapat menyediakan pengaturan yang dapat diedit administrator melalui `ui.preferences`. Setiap definisi berisi `key` stabil, `label` terlokalisasi, `description` opsional, `type` berupa `boolean`, `string`, atau `number`, serta `default` opsional yang sesuai. Cognis hanya menampilkan Pengaturan pada detail modul terpasang bila definisi tersedia, memuat nilai administrator yang masuk, membatasi penulisan pada kunci yang dideklarasikan, dan menyimpannya melalui kapabilitas penyimpanan preferensi. Modul membaca nilainya melalui kapabilitas modul berbasis ctx, bukan mengimpor penyimpanan konkret.

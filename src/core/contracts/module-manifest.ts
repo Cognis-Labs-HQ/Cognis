@@ -40,6 +40,14 @@ export interface ModuleManifest {
     };
     ui?: {
         authTypingMessages?: string[];
+        /** Administrator-editable preferences owned by this module. */
+        preferences?: Array<{
+            key: string;
+            label: string;
+            description?: string;
+            type: "boolean" | "string" | "number";
+            default?: boolean | string | number;
+        }>;
     };
     files?: Array<{
         path: string;

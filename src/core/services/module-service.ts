@@ -54,7 +54,7 @@ export class ModuleService {
         this.assertToggleAllowed(found);
         if (!this.resolver) return this.runtime.enable(moduleId);
 
-        const resolvedPath = await this.resolveModulePath(moduleId);
+        const resolvedPath = await this.resolveModulePath(moduleId, found.uuid);
         if (!resolvedPath)
             throw new Error(
                 `Module artifact not found in configured module paths: ${moduleId}`,
@@ -65,7 +65,8 @@ export class ModuleService {
                 `External module ${moduleId} requires disclaimer acknowledgement before enabling`,
             );
         }
-        this.assertSupportedArchive(resolvedPath.path);
+        if (resolvedPath.archive)
+            this.assertSupportedArchive(resolvedPath.path);
 
         const activationPath = await this.materializeActivationPath(
             moduleId,
@@ -79,7 +80,14 @@ export class ModuleService {
 
     async requiresExternalAcknowledgement(moduleId: string): Promise<boolean> {
         if (!this.resolver) return false;
-        const resolvedPath = await this.resolveModulePath(moduleId);
+        const manifest = (await this.runtime.listManifests()).find(
+            (entry) => entry.id === moduleId,
+        );
+        if (!manifest) return false;
+        const resolvedPath = await this.resolveModulePath(
+            moduleId,
+            manifest.uuid,
+        );
         return resolvedPath !== null;
     }
 
@@ -149,7 +157,8 @@ export class ModuleService {
 
     private async resolveModulePath(
         moduleId: string,
-    ): Promise<{ path: string } | null> {
+        moduleUuid: string,
+    ): Promise<{ path: string; archive: boolean } | null> {
         const externalItems = await this.safeReaddir(
             this.resolver!.externalModulesPath,
         );
@@ -157,10 +166,24 @@ export class ModuleService {
             (item) =>
                 item === `${moduleId}.zip` || item === `${moduleId}.tar.gz`,
         );
-        if (!artifact) return null;
-        return {
-            path: path.join(this.resolver!.externalModulesPath, artifact),
-        };
+        if (artifact) {
+            return {
+                path: path.join(this.resolver!.externalModulesPath, artifact),
+                archive: true,
+            };
+        }
+        const installedDirectory = externalItems.find(
+            (item) => item === moduleUuid || item === moduleId,
+        );
+        return installedDirectory
+            ? {
+                  path: path.join(
+                      this.resolver!.externalModulesPath,
+                      installedDirectory,
+                  ),
+                  archive: false,
+              }
+            : null;
     }
 
     private assertSupportedArchive(filePath: string): void {
@@ -172,8 +195,9 @@ export class ModuleService {
 
     private async materializeActivationPath(
         moduleId: string,
-        resolved: { path: string },
+        resolved: { path: string; archive: boolean },
     ): Promise<string> {
+        if (!resolved.archive) return resolved.path;
         const extractRoot = path.join(this.runtimeExtractPath, moduleId);
         await rm(extractRoot, { recursive: true, force: true });
         await mkdir(extractRoot, { recursive: true });

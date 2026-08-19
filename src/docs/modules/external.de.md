@@ -23,3 +23,7 @@ Beim Verschieben in ein eigenes Repository bleiben UUID und lesbare ID unveränd
 ## Store-Grafiken und Tags
 
 Ein Modul kann zusätzlich zu allgemeinen `categories` genauere `tags` angeben; beide werden für die Filterung verwendet. Grafiken liegen im Repository unter `assets/`: `assets/icon.svg` oder `assets/icon.png` dient als Katalogsymbol, `assets/banner.svg`, `assets/banner.png` oder `assets/banner.jpg` als Titelbild der Detailseite. Die gewählten Pfade werden in `manifest.json` als `assets.icon` und `assets.banner` angegeben. Optionale Galeriebilder stehen in `assets.screenshots`.
+
+## Moduleinstellungen
+
+Ein Modul kann mit `ui.preferences` von Administratoren bearbeitbare Einstellungen bereitstellen. Jede Definition enthält einen stabilen `key`, eine lokalisierte `label`, eine optionale `description`, einen `type` (`boolean`, `string` oder `number`) und optional einen passenden `default`. Cognis zeigt Einstellungen in der Detailansicht installierter Module nur bei vorhandenen Definitionen, lädt Werte für den angemeldeten Administrator, beschränkt Schreibvorgänge auf deklarierte Schlüssel und speichert sie über die Einstellungsspeicher-Capability. Module lesen Werte über ctx-gestützte Modul-Capabilities statt durch Import eines konkreten Speichers.
