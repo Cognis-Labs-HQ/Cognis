@@ -110,6 +110,7 @@ export interface ApiDependencies {
 export interface CoreComponentDependency {
     id: string;
     uuid: string;
+    name: string;
     gatewayId?: string;
 }
 
@@ -135,16 +136,19 @@ export async function discoverCoreComponentDependencies(
             const manifest = JSON.parse(await readFile(entryPath, "utf8")) as {
                 id?: unknown;
                 uuid?: unknown;
+                name?: unknown;
                 gateway?: unknown;
             };
             if (
                 typeof manifest.id !== "string" ||
-                typeof manifest.uuid !== "string"
+                typeof manifest.uuid !== "string" ||
+                typeof manifest.name !== "string"
             )
                 continue;
             components.push({
                 id: manifest.id,
                 uuid: manifest.uuid,
+                name: manifest.name,
                 ...(typeof manifest.gateway === "string"
                     ? { gatewayId: manifest.gateway }
                     : {}),
@@ -155,14 +159,12 @@ export async function discoverCoreComponentDependencies(
     return components;
 }
 
-export async function enableModuleGatewayDependencies(
+export function assertModuleEnableDependencies(
     moduleId: string,
     requires: readonly string[],
     registry: GatewayRegistry | undefined,
-    persistGatewayState: ApiDependencies["persistGatewayState"],
-    log: BootstrapLog,
     components: readonly CoreComponentDependency[] = [],
-): Promise<void> {
+): void {
     for (const reference of requires) {
         const directGateway = registry
             ?.list()
@@ -184,13 +186,10 @@ export async function enableModuleGatewayDependencies(
             );
         }
         if (dependency.status === "active") continue;
-        registry?.enable(dependency.id);
-        await persistGatewayState?.(dependency.id, true);
-        log("info", "Enabled gateway required by module.", {
-            component: "api-modules",
-            moduleId,
-            gatewayId: dependency.id,
-        });
+        throw new ModuleEnableValidationError(
+            "module_dependency_disabled",
+            `Module ${moduleId} requires disabled component ${component?.name ?? dependency.name}`,
+        );
     }
 }
 
@@ -224,7 +223,7 @@ export function assertModuleInstallDependencies(
         ) {
             throw new ModuleEnableValidationError(
                 "module_dependency_disabled",
-                `Module ${moduleId} requires disabled component ${dependency?.id ?? component?.id}`,
+                `Module ${moduleId} requires disabled component ${component?.name ?? dependency?.name}`,
             );
         }
     }
@@ -314,12 +313,10 @@ export function buildServer(deps: ApiDependencies) {
                 const manifest = (
                     await deps.moduleRuntimeGateway.listManifests()
                 ).find((entry) => entry.id === moduleId);
-                await enableModuleGatewayDependencies(
+                assertModuleEnableDependencies(
                     moduleId,
                     manifest?.requires ?? [],
                     deps.gatewayRegistry,
-                    deps.persistGatewayState,
-                    log,
                     await coreComponentDependencies,
                 );
                 await (

@@ -140,6 +140,10 @@ Module manifests may now declare required core components by stable UUID or lega
 
 Jitsi Meet and Nextcloud Whiteboard correctly require the Social Profile adapter UUID, while Jitsi also requires the Social Messages adapter UUID. Installation now auto-discovers adapter manifests and resolves these UUIDs through their owning gateway, accepting them when that gateway is active and rejecting them when it is disabled or absent.
 
-## Enable modules with adapter dependencies
+## Resolve enablement adapter dependencies
 
-Module enablement now uses the same discovered core-component catalog as installation. Adapter UUID requirements such as Social Profile and Social Messages resolve to their owning Social gateway; Cognis activates and persists that gateway when necessary instead of incorrectly reporting the adapter UUID as an unavailable gateway.
+Module enablement now uses the same discovered core-component catalog as installation. Adapter UUID requirements such as Social Profile and Social Messages resolve to their owning Social gateway instead of being incorrectly reported as unavailable gateways.
+
+## Respect intentionally disabled dependencies
+
+Enabling a module no longer activates disabled gateways to satisfy its manifest. Cognis leaves the dependency disabled, rejects enablement, and returns the human-readable component name—such as Profile Adapter or File Gateway—so the Modules page can toast a clear corrective message.

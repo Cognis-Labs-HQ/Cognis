@@ -140,6 +140,10 @@ Modulmanifeste können erforderliche Kernkomponenten jetzt über eine stabile UU
 
 Jitsi Meet und Nextcloud Whiteboard benötigen korrekt die UUID des Social-Profile-Adapters; Jitsi benötigt zusätzlich die UUID des Social-Messages-Adapters. Die Installation erkennt Adaptermanifeste jetzt automatisch und löst diese UUIDs über ihr zuständiges Gateway auf. Bei aktivem Gateway werden sie akzeptiert, bei deaktiviertem oder fehlendem Gateway abgelehnt.
 
-## Module mit Adapterabhängigkeiten aktivieren
+## Adapterabhängigkeiten bei der Aktivierung auflösen
 
-Die Modulaktivierung verwendet jetzt denselben erkannten Kernkomponentenkatalog wie die Installation. Adapter-UUID-Anforderungen wie Social Profile und Social Messages werden ihrem zuständigen Social-Gateway zugeordnet. Cognis aktiviert und speichert dieses Gateway bei Bedarf, statt die Adapter-UUID fälschlich als nicht verfügbares Gateway zu melden.
+Die Modulaktivierung verwendet jetzt denselben erkannten Kernkomponentenkatalog wie die Installation. Adapter-UUID-Anforderungen wie Social Profile und Social Messages werden ihrem zuständigen Social-Gateway zugeordnet, statt fälschlich als nicht verfügbare Gateways gemeldet zu werden.
+
+## Absichtlich deaktivierte Abhängigkeiten respektieren
+
+Beim Aktivieren eines Moduls werden deaktivierte Gateways nicht mehr automatisch aktiviert, um dessen Manifest zu erfüllen. Cognis lässt die Abhängigkeit deaktiviert, lehnt die Aktivierung ab und gibt den lesbaren Komponentennamen wie Profile Adapter oder File Gateway zurück, damit die Modulseite eine klare Korrekturmeldung anzeigen kann.

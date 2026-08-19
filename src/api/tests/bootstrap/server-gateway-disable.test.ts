@@ -11,9 +11,9 @@ import {
 } from "@cognis/core";
 import {
     assertModuleInstallDependencies,
+    assertModuleEnableDependencies,
     buildServer,
     discoverCoreComponentDependencies,
-    enableModuleGatewayDependencies,
 } from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
@@ -45,7 +45,7 @@ function close(server: import("node:http").Server): Promise<void> {
     });
 }
 
-test("module dependencies activate and persist disabled gateways", async () => {
+test("module enablement rejects disabled gateway dependencies by name", () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "file",
@@ -54,20 +54,16 @@ test("module dependencies activate and persist disabled gateways", async () => {
         version: "1.0.0",
     });
     registry.disable("file");
-    const persisted: Array<[string, boolean]> = [];
-
-    await enableModuleGatewayDependencies(
-        "nextcloud-whiteboard",
-        ["e87418db-9aa2-51c6-b85a-95b5ec099b6c"],
-        registry,
-        async (gatewayId, enabled) => {
-            persisted.push([gatewayId, enabled]);
-        },
-        () => {},
+    assert.throws(
+        () =>
+            assertModuleEnableDependencies(
+                "nextcloud-whiteboard",
+                ["e87418db-9aa2-51c6-b85a-95b5ec099b6c"],
+                registry,
+            ),
+        /requires disabled component File Gateway/,
     );
-
-    assert.equal(registry.get("file")?.status, "active");
-    assert.deepEqual(persisted, [["file", true]]);
+    assert.equal(registry.get("file")?.status, "disabled");
 });
 
 test("module installation resolves active dependencies by component UUID", () => {
@@ -122,6 +118,7 @@ test("module installation resolves adapter UUIDs through their owning gateway", 
         {
             id: "social-profile",
             uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+            name: "Profile Adapter",
             gatewayId: "social",
         },
     ];
@@ -148,7 +145,7 @@ test("module installation resolves adapter UUIDs through their owning gateway", 
     );
 });
 
-test("module enablement resolves adapter UUIDs through their owning gateway", async () => {
+test("module enablement rejects disabled adapter dependencies by name", () => {
     const registry = new GatewayRegistry();
     registry.register({
         id: "social",
@@ -157,25 +154,24 @@ test("module enablement resolves adapter UUIDs through their owning gateway", as
         version: "1.0.0",
     });
     registry.disable("social");
-    const persisted: Array<[string, boolean]> = [];
-
-    await enableModuleGatewayDependencies(
-        "jitsi-meet",
-        ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
-        registry,
-        async (gatewayId, enabled) => persisted.push([gatewayId, enabled]),
-        () => {},
-        [
-            {
-                id: "social-profile",
-                uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
-                gatewayId: "social",
-            },
-        ],
+    assert.throws(
+        () =>
+            assertModuleEnableDependencies(
+                "jitsi-meet",
+                ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
+                registry,
+                [
+                    {
+                        id: "social-profile",
+                        uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+                        name: "Profile Adapter",
+                        gatewayId: "social",
+                    },
+                ],
+            ),
+        /requires disabled component Profile Adapter/,
     );
-
-    assert.equal(registry.get("social")?.status, "active");
-    assert.deepEqual(persisted, [["social", true]]);
+    assert.equal(registry.get("social")?.status, "disabled");
 });
 
 test("core component discovery reads adapter dependency identities", async () => {
@@ -186,6 +182,7 @@ test("core component discovery reads adapter dependency identities", async () =>
         {
             id: "social-profile",
             uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+            name: "Profile Adapter",
             gatewayId: "social",
         },
     ]);
