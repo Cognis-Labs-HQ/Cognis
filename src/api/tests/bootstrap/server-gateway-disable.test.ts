@@ -12,6 +12,7 @@ import {
 import {
     assertModuleInstallDependencies,
     buildServer,
+    discoverCoreComponentDependencies,
     enableModuleGatewayDependencies,
 } from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
@@ -107,6 +108,57 @@ test("module installation resolves active dependencies by component UUID", () =>
             (error as { code?: string }).code ===
             "module_dependency_unavailable",
     );
+});
+
+test("module installation resolves adapter UUIDs through their owning gateway", () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "social",
+        uuid: "e8732526-8976-54ef-828b-ed0dfe21bd9e",
+        name: "Social Gateway",
+        version: "1.0.0",
+    });
+    const components = [
+        {
+            id: "social-profile",
+            uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+            gatewayId: "social",
+        },
+    ];
+
+    assert.doesNotThrow(() =>
+        assertModuleInstallDependencies(
+            "jitsi-meet",
+            ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
+            registry,
+            components,
+        ),
+    );
+    registry.disable("social");
+    assert.throws(
+        () =>
+            assertModuleInstallDependencies(
+                "jitsi-meet",
+                ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
+                registry,
+                components,
+            ),
+        (error: unknown) =>
+            (error as { code?: string }).code === "module_dependency_disabled",
+    );
+});
+
+test("core component discovery reads adapter dependency identities", async () => {
+    const components = await discoverCoreComponentDependencies([
+        path.resolve(import.meta.dirname, "../../../adapters/social/profile"),
+    ]);
+    assert.deepEqual(components, [
+        {
+            id: "social-profile",
+            uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+            gatewayId: "social",
+        },
+    ]);
 });
 
 test("buildServer loads external module assets before accepting requests", async () => {

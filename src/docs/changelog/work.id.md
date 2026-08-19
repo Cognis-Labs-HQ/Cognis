@@ -135,3 +135,7 @@ Penemuan marketplace kini membaca setiap manifes cabang dan rilis melalui SHA co
 ## Validasi dependensi modul sebelum pemasangan
 
 Manifes modul kini dapat mendeklarasikan komponen inti yang diperlukan melalui UUID stabil atau ID lama. Cognis memvalidasi manifes otoritatif dari repositori yang telah di-checkout sebelum mengganti modul terpasang; pemasangan gagal dengan galat khusus jika komponen yang dirujuk tidak ada atau dinonaktifkan, sedangkan dependensi UUID aktif dipasang secara normal.
+
+## Selesaikan dependensi UUID adapter
+
+Jitsi Meet dan Nextcloud Whiteboard dengan benar memerlukan UUID adapter Profil Sosial, sedangkan Jitsi juga memerlukan UUID adapter Pesan Sosial. Pemasangan kini menemukan manifes adapter secara otomatis dan menyelesaikan UUID tersebut melalui gateway pemiliknya, menerimanya saat gateway aktif serta menolaknya saat dinonaktifkan atau tidak ada.

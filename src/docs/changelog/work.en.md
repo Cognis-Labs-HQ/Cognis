@@ -135,3 +135,7 @@ Marketplace discovery now reads each branch and release manifest through its imm
 ## Validate module dependencies before installation
 
 Module manifests may now declare required core components by stable UUID or legacy ID. Cognis validates the authoritative manifest from the checked-out repository before replacing an installed module; installation fails with a specific error when a referenced component is missing or disabled, while active UUID dependencies install normally.
+
+## Resolve adapter UUID dependencies
+
+Jitsi Meet and Nextcloud Whiteboard correctly require the Social Profile adapter UUID, while Jitsi also requires the Social Messages adapter UUID. Installation now auto-discovers adapter manifests and resolves these UUIDs through their owning gateway, accepting them when that gateway is active and rejecting them when it is disabled or absent.

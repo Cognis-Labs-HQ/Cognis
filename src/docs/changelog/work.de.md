@@ -135,3 +135,7 @@ Die Marketplace-Erkennung liest jetzt jedes Branch- und Release-Manifest über d
 ## Modulabhängigkeiten vor der Installation prüfen
 
 Modulmanifeste können erforderliche Kernkomponenten jetzt über eine stabile UUID oder eine ältere ID angeben. Cognis prüft das verbindliche Manifest aus dem ausgecheckten Repository, bevor ein installiertes Modul ersetzt wird. Die Installation schlägt mit einem konkreten Fehler fehl, wenn eine referenzierte Komponente fehlt oder deaktiviert ist; aktive UUID-Abhängigkeiten werden normal installiert.
+
+## Adapter-UUID-Abhängigkeiten auflösen
+
+Jitsi Meet und Nextcloud Whiteboard benötigen korrekt die UUID des Social-Profile-Adapters; Jitsi benötigt zusätzlich die UUID des Social-Messages-Adapters. Die Installation erkennt Adaptermanifeste jetzt automatisch und löst diese UUIDs über ihr zuständiges Gateway auf. Bei aktivem Gateway werden sie akzeptiert, bei deaktiviertem oder fehlendem Gateway abgelehnt.

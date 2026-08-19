@@ -1,6 +1,8 @@
 import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
     HealthService,
     ModuleService,
@@ -105,6 +107,54 @@ export interface ApiDependencies {
     discoverModulesOnStartup?: boolean;
 }
 
+export interface CoreComponentDependency {
+    id: string;
+    uuid: string;
+    gatewayId?: string;
+}
+
+export async function discoverCoreComponentDependencies(
+    roots: readonly string[],
+): Promise<CoreComponentDependency[]> {
+    const components: CoreComponentDependency[] = [];
+    const visit = async (root: string): Promise<void> => {
+        let entries;
+        try {
+            entries = await readdir(root, { withFileTypes: true });
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+            throw error;
+        }
+        for (const entry of entries) {
+            const entryPath = path.join(root, entry.name);
+            if (entry.isDirectory()) {
+                await visit(entryPath);
+                continue;
+            }
+            if (entry.name !== "manifest.json") continue;
+            const manifest = JSON.parse(await readFile(entryPath, "utf8")) as {
+                id?: unknown;
+                uuid?: unknown;
+                gateway?: unknown;
+            };
+            if (
+                typeof manifest.id !== "string" ||
+                typeof manifest.uuid !== "string"
+            )
+                continue;
+            components.push({
+                id: manifest.id,
+                uuid: manifest.uuid,
+                ...(typeof manifest.gateway === "string"
+                    ? { gatewayId: manifest.gateway }
+                    : {}),
+            });
+        }
+    };
+    for (const root of roots) await visit(root);
+    return components;
+}
+
 export async function enableModuleGatewayDependencies(
     moduleId: string,
     requires: readonly string[],
@@ -139,6 +189,7 @@ export function assertModuleInstallDependencies(
     moduleId: string,
     requires: readonly string[],
     registry: GatewayRegistry | undefined,
+    components: readonly CoreComponentDependency[] = [],
 ): void {
     for (const reference of requires) {
         const dependency = registry
@@ -146,16 +197,25 @@ export function assertModuleInstallDependencies(
             .find(
                 (entry) => entry.id === reference || entry.uuid === reference,
             );
-        if (!dependency) {
+        const component = components.find(
+            (entry) => entry.id === reference || entry.uuid === reference,
+        );
+        if (!dependency && !component) {
             throw new ModuleEnableValidationError(
                 "module_dependency_unavailable",
                 `Module ${moduleId} requires unavailable component ${reference}`,
             );
         }
-        if (dependency.status !== "active") {
+        const owningGateway = component?.gatewayId
+            ? registry?.get(component.gatewayId)
+            : undefined;
+        if (
+            dependency?.status === "disabled" ||
+            (component?.gatewayId && owningGateway?.status !== "active")
+        ) {
             throw new ModuleEnableValidationError(
                 "module_dependency_disabled",
-                `Module ${moduleId} requires disabled component ${dependency.id}`,
+                `Module ${moduleId} requires disabled component ${dependency?.id ?? component?.id}`,
             );
         }
     }
@@ -185,6 +245,10 @@ function isUiStaticAssetRequest(pathname: string): boolean {
 
 export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
+    const coreComponentDependencies = discoverCoreComponentDependencies([
+        fileURLToPath(new URL("../gateways", import.meta.url)),
+        fileURLToPath(new URL("../adapters", import.meta.url)),
+    ]);
     const routeContext = deps.routeContext;
     if (!routeContext) {
         throw new Error(
@@ -234,6 +298,7 @@ export function buildServer(deps: ApiDependencies) {
                     manifest.id,
                     manifest.requires ?? [],
                     deps.gatewayRegistry,
+                    await coreComponentDependencies,
                 );
             },
             beforeEnable: async (moduleId) => {
