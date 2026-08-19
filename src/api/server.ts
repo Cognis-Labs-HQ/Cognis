@@ -161,17 +161,26 @@ export async function enableModuleGatewayDependencies(
     registry: GatewayRegistry | undefined,
     persistGatewayState: ApiDependencies["persistGatewayState"],
     log: BootstrapLog,
+    components: readonly CoreComponentDependency[] = [],
 ): Promise<void> {
     for (const reference of requires) {
-        const dependency = registry
+        const directGateway = registry
             ?.list()
             .find(
                 (entry) => entry.id === reference || entry.uuid === reference,
             );
+        const component = components.find(
+            (entry) => entry.id === reference || entry.uuid === reference,
+        );
+        const dependency =
+            directGateway ??
+            (component?.gatewayId
+                ? registry?.get(component.gatewayId)
+                : undefined);
         if (!dependency) {
             throw new ModuleEnableValidationError(
                 "module_dependency_unavailable",
-                `Module ${moduleId} requires unavailable gateway ${reference}`,
+                `Module ${moduleId} requires unavailable component ${reference}`,
             );
         }
         if (dependency.status === "active") continue;
@@ -311,6 +320,7 @@ export function buildServer(deps: ApiDependencies) {
                     deps.gatewayRegistry,
                     deps.persistGatewayState,
                     log,
+                    await coreComponentDependencies,
                 );
                 await (
                     deps.runModuleTests ??

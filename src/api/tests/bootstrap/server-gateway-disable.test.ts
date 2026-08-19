@@ -148,6 +148,36 @@ test("module installation resolves adapter UUIDs through their owning gateway", 
     );
 });
 
+test("module enablement resolves adapter UUIDs through their owning gateway", async () => {
+    const registry = new GatewayRegistry();
+    registry.register({
+        id: "social",
+        uuid: "e8732526-8976-54ef-828b-ed0dfe21bd9e",
+        name: "Social Gateway",
+        version: "1.0.0",
+    });
+    registry.disable("social");
+    const persisted: Array<[string, boolean]> = [];
+
+    await enableModuleGatewayDependencies(
+        "jitsi-meet",
+        ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
+        registry,
+        async (gatewayId, enabled) => persisted.push([gatewayId, enabled]),
+        () => {},
+        [
+            {
+                id: "social-profile",
+                uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
+                gatewayId: "social",
+            },
+        ],
+    );
+
+    assert.equal(registry.get("social")?.status, "active");
+    assert.deepEqual(persisted, [["social", true]]);
+});
+
 test("core component discovery reads adapter dependency identities", async () => {
     const components = await discoverCoreComponentDependencies([
         path.resolve(import.meta.dirname, "../../../adapters/social/profile"),

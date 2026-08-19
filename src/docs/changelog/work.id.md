@@ -139,3 +139,7 @@ Manifes modul kini dapat mendeklarasikan komponen inti yang diperlukan melalui U
 ## Selesaikan dependensi UUID adapter
 
 Jitsi Meet dan Nextcloud Whiteboard dengan benar memerlukan UUID adapter Profil Sosial, sedangkan Jitsi juga memerlukan UUID adapter Pesan Sosial. Pemasangan kini menemukan manifes adapter secara otomatis dan menyelesaikan UUID tersebut melalui gateway pemiliknya, menerimanya saat gateway aktif serta menolaknya saat dinonaktifkan atau tidak ada.
+
+## Aktifkan modul dengan dependensi adapter
+
+Pengaktifan modul kini menggunakan katalog komponen inti yang ditemukan seperti pada pemasangan. Persyaratan UUID adapter seperti Profil Sosial dan Pesan Sosial diselesaikan ke gateway Sosial pemiliknya; Cognis mengaktifkan dan menyimpan gateway tersebut bila diperlukan alih-alih salah melaporkan UUID adapter sebagai gateway yang tidak tersedia.
