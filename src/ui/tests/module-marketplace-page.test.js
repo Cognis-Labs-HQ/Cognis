@@ -110,6 +110,8 @@ test("module marketplace identifies immutable trusted sources", () => {
     );
     assert.match(source, /source\.trusted/);
     assert.match(source, /ui\.app\.modules\.default_source/);
+    assert.match(source, /const locked = source\?\.trusted/);
+    assert.match(source, /const sourceValues = selectedSource\?\.trusted/);
 });
 
 test("recommended modules include the published Cognis HQ modules", () => {

@@ -83,3 +83,7 @@ Pemuatan langsung halaman Modul kini selalu mengakhiri tugas pemuatan yang dilac
 ## Simpan dan batasi pemindaian
 
 Setelah server dimulai ulang, data modul terlebih dahulu dimuat dari katalog marketplace yang tersimpan. Pemindaian otomatis saat halaman atau server dimulai tidak lagi memakai kuota penyedia. Percobaan pemindaian disimpan dengan interval satu jam agar penyegaran berulang memakai kembali katalog di cakram.
+
+## Otoritas cache sumber
+
+Sumber bawaan Cognis Labs HQ kini menerima pembaruan PAT sementara bidang identitasnya tetap terkunci. UUID modul duplikat dipilih dari sumber Cognis, dan katalog marketplace, metadata pemindaian, serta aset disimpan di bawah direktori modul yang dikonfigurasi pada .cache.

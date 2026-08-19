@@ -83,3 +83,7 @@ Direct Modules page loads now always release their tracked loading task after th
 ## Persist and throttle scans
 
 Marketplace catalog data remains the first source of module results after server restarts. Automatic page-load and startup scans no longer consume provider quotas, and source scan attempts are persisted with a one-hour interval so repeated refreshes reuse the on-disk catalog.
+
+## Correct source cache authority
+
+The built-in Cognis Labs HQ source now accepts PAT updates while keeping its identity fields locked. Duplicate module UUIDs resolve to the Cognis source, and marketplace catalogs, scan metadata, and assets are stored under the configured module directory at .cache.

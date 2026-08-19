@@ -3,7 +3,10 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { ModuleMarketplaceService } from "../index.js";
+import {
+    DEFAULT_TRUSTED_MODULE_SOURCE,
+    ModuleMarketplaceService,
+} from "../index.js";
 
 const source = {
     uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",
@@ -47,6 +50,51 @@ test("module marketplace always provides an immutable trusted source", async () 
     await assert.rejects(
         service.removeSource(trusted.uuid),
         /trusted_module_source_readonly/,
+    );
+});
+
+test("trusted source updates accept credentials without mutable metadata", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const saved = await service.saveSource({
+        uuid: DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
+        credentialId: "module-source:trusted:pat",
+    } as any);
+    assert.equal(saved.name, "Cognis Labs HQ");
+    assert.equal(saved.credentialId, "module-source:trusted:pat");
+});
+
+test("cached UUID collisions prefer the trusted Cognis source", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const statePath = path.join(root, "sources.json");
+    const cacheRoot = path.join(root, "modules", ".cache");
+    await mkdir(cacheRoot, { recursive: true });
+    await writeFile(statePath, JSON.stringify([source]));
+    await writeFile(
+        path.join(cacheRoot, "catalog.json"),
+        JSON.stringify([
+            {
+                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                id: "imposter",
+                sourceUuid: source.uuid,
+            },
+            {
+                uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+                id: "trusted",
+                sourceUuid: DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
+            },
+        ]),
+    );
+    const modules = await new ModuleMarketplaceService(
+        statePath,
+        path.join(root, "modules"),
+    ).listCachedModules();
+    assert.deepEqual(
+        modules.map((module) => module.id),
+        ["trusted"],
     );
 });
 
@@ -373,7 +421,11 @@ test("module marketplace serves persisted results after restart", async () => {
         cloneUrl: "https://github.com/example/notes.git",
     };
     await writeFile(statePath, JSON.stringify([source]));
-    await writeFile(`${statePath}.catalog`, JSON.stringify([catalogModule]));
+    await mkdir(path.join(root, "modules", ".cache"), { recursive: true });
+    await writeFile(
+        path.join(root, "modules", ".cache", "catalog.json"),
+        JSON.stringify([catalogModule]),
+    );
     const restarted = new ModuleMarketplaceService(
         statePath,
         path.join(root, "modules"),
@@ -384,8 +436,9 @@ test("module marketplace serves persisted results after restart", async () => {
 test("module marketplace keeps cached modules when a scan returns no repositories", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const statePath = path.join(root, "sources.json");
+    await mkdir(path.join(root, "modules", ".cache"), { recursive: true });
     await writeFile(
-        `${statePath}.catalog`,
+        path.join(root, "modules", ".cache", "catalog.json"),
         JSON.stringify([
             {
                 uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
@@ -415,8 +468,9 @@ test("module marketplace keeps cached repositories whose refresh is inconclusive
         statePath,
         path.join(root, "modules"),
     );
+    await mkdir(path.join(root, "modules", ".cache"), { recursive: true });
     await writeFile(
-        `${statePath}.catalog`,
+        path.join(root, "modules", ".cache", "catalog.json"),
         JSON.stringify([
             {
                 uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",

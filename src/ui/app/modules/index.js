@@ -361,7 +361,8 @@ function renderSourceManager() {
 }
 
 function renderSourceForm(source) {
-    return `<form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" value="${escapeHtml(source?.name ?? "")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"><option value="github"${source?.provider === "github" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab"${source?.provider === "gitlab" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" value="${escapeHtml(source?.namespace ?? "")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="${escapeHtml(source?.baseUrl ?? "https://api.github.com")}" required></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off"></label></form>`;
+    const locked = source?.trusted ? " disabled" : "";
+    return `<form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" value="${escapeHtml(source?.name ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"${locked}><option value="github"${source?.provider === "github" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab"${source?.provider === "gitlab" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" value="${escapeHtml(source?.namespace ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="${escapeHtml(source?.baseUrl ?? "https://api.github.com")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off"></label></form>`;
 }
 
 async function openMarketplaceSettings(initialPage = "settings") {
@@ -467,6 +468,9 @@ async function openMarketplaceSettings(initialPage = "settings") {
             const form = overlay.querySelector("#module-source-form");
             if (!form.reportValidity()) return false;
             const values = Object.fromEntries(new FormData(form));
+            const sourceValues = selectedSource?.trusted
+                ? selectedSource
+                : values;
             const uuid = selectedSource?.uuid ?? crypto.randomUUID();
             const credentialId = values.token
                 ? (selectedSource?.credentialId ?? `module-source:${uuid}:pat`)
@@ -476,16 +480,16 @@ async function openMarketplaceSettings(initialPage = "settings") {
                     i18n.t("ui.app.modules.keyring_component"),
                 );
                 await scope?.set(credentialId, values.token, {
-                    label: values.name,
-                    source: values.provider,
+                    label: sourceValues.name,
+                    source: sourceValues.provider,
                 });
             }
             await saveModuleSource({
                 uuid,
-                name: values.name,
-                provider: values.provider,
-                namespace: values.namespace,
-                baseUrl: values.baseUrl,
+                name: sourceValues.name,
+                provider: sourceValues.provider,
+                namespace: sourceValues.namespace,
+                baseUrl: sourceValues.baseUrl,
                 credentialId,
             });
             sources = await loadModuleSources();

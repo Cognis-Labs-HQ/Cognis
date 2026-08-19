@@ -94,6 +94,22 @@ export class ModuleMarketplaceService {
         private readonly log: ModuleMarketplaceLog = () => undefined,
     ) {}
 
+    private get cacheRoot(): string {
+        return path.join(this.installRoot, ".cache");
+    }
+
+    private get catalogPath(): string {
+        return path.join(this.cacheRoot, "catalog.json");
+    }
+
+    private get scanAttemptsPath(): string {
+        return path.join(this.cacheRoot, "scan-attempts.json");
+    }
+
+    private get assetCacheRoot(): string {
+        return path.join(this.cacheRoot, "assets");
+    }
+
     async getSettings(): Promise<ModuleMarketplaceSettings> {
         try {
             return JSON.parse(
@@ -166,21 +182,6 @@ export class ModuleMarketplaceService {
 
     async saveSource(source: ModuleSource): Promise<ModuleSource> {
         if (source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid) {
-            const immutableFields = [
-                "name",
-                "provider",
-                "namespace",
-                "baseUrl",
-                "homepage",
-            ] as const;
-            if (
-                immutableFields.some(
-                    (field) =>
-                        source[field] !== DEFAULT_TRUSTED_MODULE_SOURCE[field],
-                )
-            ) {
-                throw new Error("trusted_module_source_readonly");
-            }
             source = {
                 ...DEFAULT_TRUSTED_MODULE_SOURCE,
                 credentialId: source.credentialId,
@@ -220,9 +221,14 @@ export class ModuleMarketplaceService {
         sourceUuids?: string[],
     ): Promise<MarketplaceModule[]> {
         const sources = await this.listSources();
-        const selectedSources = sourceUuids
-            ? sources.filter((source) => sourceUuids.includes(source.uuid))
-            : sources;
+        const selectedSources = (
+            sourceUuids
+                ? sources.filter((source) => sourceUuids.includes(source.uuid))
+                : sources
+        ).sort(
+            (left, right) =>
+                Number(Boolean(right.trusted)) - Number(Boolean(left.trusted)),
+        );
         const configuredSourceUuids = new Set(
             sources.map((source) => source.uuid),
         );
@@ -231,14 +237,10 @@ export class ModuleMarketplaceService {
             string,
             { module: MarketplaceModule; cached: boolean }
         >();
-        for (const module of await this.readCachedCatalog()) {
-            if (!claimedUuids.has(module.uuid)) {
-                claimedUuids.set(module.uuid, { module, cached: true });
-            }
-        }
         for (const source of selectedSources) {
             const cachedModules = await this.readCachedCatalog([source.uuid]);
             const lastAttemptAt = (await this.readScanAttempts())[source.uuid];
+            let modules: MarketplaceModule[];
             if (
                 lastAttemptAt &&
                 Date.now() - Date.parse(lastAttemptAt) < SOURCE_SCAN_INTERVAL_MS
@@ -251,37 +253,36 @@ export class ModuleMarketplaceService {
                         Date.parse(lastAttemptAt) + SOURCE_SCAN_INTERVAL_MS,
                     ).toISOString(),
                 });
-                discovered.push(...cachedModules);
-                continue;
-            }
-            await this.recordScanAttempt(source.uuid);
-            this.log("info", "Module source scan started.", {
-                sourceUuid: source.uuid,
-                sourceName: source.name,
-            });
-            let modules: MarketplaceModule[];
-            try {
-                modules = await this.discoverSource(
-                    source,
-                    source.credentialId
-                        ? tokens[source.credentialId]
-                        : undefined,
-                );
-            } catch (error) {
-                modules = await this.readCachedCatalog([source.uuid]);
-                this.log(
-                    "warn",
-                    "Module source scan failed; cached results retained.",
-                    {
-                        sourceUuid: source.uuid,
-                        sourceName: source.name,
-                        modulesRetained: modules.length,
-                        error:
-                            error instanceof Error
-                                ? error.message
-                                : String(error),
-                    },
-                );
+                modules = cachedModules;
+            } else {
+                await this.recordScanAttempt(source.uuid);
+                this.log("info", "Module source scan started.", {
+                    sourceUuid: source.uuid,
+                    sourceName: source.name,
+                });
+                try {
+                    modules = await this.discoverSource(
+                        source,
+                        source.credentialId
+                            ? tokens[source.credentialId]
+                            : undefined,
+                    );
+                } catch (error) {
+                    modules = cachedModules;
+                    this.log(
+                        "warn",
+                        "Module source scan failed; cached results retained.",
+                        {
+                            sourceUuid: source.uuid,
+                            sourceName: source.name,
+                            modulesRetained: modules.length,
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                }
             }
             const accepted = modules.filter((module) => {
                 const claim = claimedUuids.get(module.uuid);
@@ -318,12 +319,26 @@ export class ModuleMarketplaceService {
     }
 
     async listCachedModules(): Promise<MarketplaceModule[]> {
+        const sources = await this.listSources();
         const configuredSourceUuids = new Set(
-            (await this.listSources()).map((source) => source.uuid),
+            sources.map((source) => source.uuid),
         );
-        return (await this.readCachedCatalog()).filter((module) =>
-            configuredSourceUuids.has(module.sourceUuid),
+        const priority = new Map(
+            sources.map((source) => [source.uuid, source.trusted ? 0 : 1]),
         );
+        const claimed = new Set<string>();
+        return (await this.readCachedCatalog())
+            .filter((module) => configuredSourceUuids.has(module.sourceUuid))
+            .sort(
+                (left, right) =>
+                    (priority.get(left.sourceUuid) ?? 1) -
+                    (priority.get(right.sourceUuid) ?? 1),
+            )
+            .filter((module) => {
+                if (claimed.has(module.uuid)) return false;
+                claimed.add(module.uuid);
+                return true;
+            });
     }
 
     async install(
@@ -454,11 +469,8 @@ export class ModuleMarketplaceService {
         if (cached) return cached;
         try {
             const [body, metadata] = await Promise.all([
-                readFile(path.join(`${this.statePath}.assets`, id)),
-                readFile(
-                    path.join(`${this.statePath}.assets`, `${id}.json`),
-                    "utf8",
-                ),
+                readFile(path.join(this.assetCacheRoot, id)),
+                readFile(path.join(this.assetCacheRoot, `${id}.json`), "utf8"),
             ]);
             const { contentType } = JSON.parse(metadata) as {
                 contentType?: unknown;
@@ -708,7 +720,7 @@ export class ModuleMarketplaceService {
     ): Promise<MarketplaceModule[]> {
         try {
             const value = JSON.parse(
-                await readFile(`${this.statePath}.catalog`, "utf8"),
+                await readFile(this.catalogPath, "utf8"),
             ) as MarketplaceModule[];
             if (!Array.isArray(value)) return [];
             return sourceUuids
@@ -725,7 +737,7 @@ export class ModuleMarketplaceService {
     private async readScanAttempts(): Promise<Record<string, string>> {
         try {
             const value = JSON.parse(
-                await readFile(`${this.statePath}.catalog-meta`, "utf8"),
+                await readFile(this.scanAttemptsPath, "utf8"),
             ) as unknown;
             return value && typeof value === "object" && !Array.isArray(value)
                 ? (value as Record<string, string>)
@@ -740,9 +752,9 @@ export class ModuleMarketplaceService {
         const update = async () => {
             const attempts = await this.readScanAttempts();
             attempts[sourceUuid] = new Date().toISOString();
-            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await mkdir(this.cacheRoot, { recursive: true });
             await writeFile(
-                `${this.statePath}.catalog-meta`,
+                this.scanAttemptsPath,
                 JSON.stringify(attempts, null, 2),
                 { mode: 0o600 },
             );
@@ -763,9 +775,9 @@ export class ModuleMarketplaceService {
                     module.sourceUuid !== sourceUuid &&
                     configuredSourceUuids.has(module.sourceUuid),
             );
-            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await mkdir(this.cacheRoot, { recursive: true });
             await writeFile(
-                `${this.statePath}.catalog`,
+                this.catalogPath,
                 JSON.stringify([...retained, ...modules], null, 2),
                 { mode: 0o600 },
             );
@@ -791,9 +803,9 @@ export class ModuleMarketplaceService {
                       }
                     : module,
             );
-            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await mkdir(this.cacheRoot, { recursive: true });
             await writeFile(
-                `${this.statePath}.catalog`,
+                this.catalogPath,
                 JSON.stringify(modules, null, 2),
                 { mode: 0o600 },
             );
@@ -810,9 +822,9 @@ export class ModuleMarketplaceService {
             const modules = cached.filter((module) =>
                 configuredSourceUuids.has(module.sourceUuid),
             );
-            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await mkdir(this.cacheRoot, { recursive: true });
             await writeFile(
-                `${this.statePath}.catalog`,
+                this.catalogPath,
                 JSON.stringify(modules, null, 2),
                 { mode: 0o600 },
             );
@@ -861,7 +873,7 @@ export class ModuleMarketplaceService {
         const body = Buffer.from(await response.arrayBuffer());
         const id = createHash("sha256").update(body).digest("hex");
         this.assets.set(id, { body, contentType });
-        const assetRoot = `${this.statePath}.assets`;
+        const assetRoot = this.assetCacheRoot;
         await mkdir(assetRoot, { recursive: true });
         await Promise.all([
             writeFile(path.join(assetRoot, id), body, { mode: 0o600 }),
