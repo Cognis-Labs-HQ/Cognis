@@ -107,3 +107,7 @@ Peringatan kredensial di antarmuka kini ringkas. Log server mencatat masalah val
 ## Stabilkan perubahan rilis
 
 Instalasi perubahan kanal rilis, peningkatan, dan penurunan kini menyimpan branch, commit, dan versi yang dipilih sebelum mulai ulang. Peringatan mulai ulang hanya muncul untuk modul yang sebelumnya aktif, modul terdampak menolak tindakan siklus hidup lain hingga mulai ulang, dan perubahan kanal tanpa perubahan atau yang dibatalkan tidak bertabrakan dengan tindakan berikutnya.
+
+## Pertahankan detail modul
+
+Tindakan detail modul kini memakai menu mengambang composer, sedangkan navigasi status dan kategori memakai toolbar samping yang seimbang dan dapat digulir. Pilihan detail bertahan saat penyegaran, peristiwa siklus hidup, dan toast; hanya navigasi eksplisit yang meninggalkan tampilan detail.

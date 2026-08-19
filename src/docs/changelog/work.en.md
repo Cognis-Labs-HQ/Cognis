@@ -107,3 +107,7 @@ Credential warnings are now concise in the UI. Server logs identify the exact va
 ## Stabilize release changes
 
 Release channel, upgrade, and downgrade installs now persist their selected branch, commit, and version before restart. Restart warnings are raised only for previously enabled modules, affected modules reject further lifecycle actions until restart, and no-op or cancelled channel changes do not collide with later actions.
+
+## Keep module details stable
+
+Module detail actions now use the composer floating menu, while the status and category navigation uses the balanced scrollable side toolbar. Detail selection survives refreshes, lifecycle events, and toasts; only explicit navigation leaves the detail view.

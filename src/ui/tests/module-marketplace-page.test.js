@@ -250,10 +250,11 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /data-module-back/);
     assert.match(source, /renderSidebar\(categories\)/);
     assert.match(source, /module-detail-back/);
-    assert.match(
-        source,
-        /module-detail-navigation[\s\S]*module-detail-back[\s\S]*\$\{advanced\}/,
-    );
+    assert.match(source, /getFloatingSlot\(pageRoot, "module-actions"\)/);
+    assert.match(source, /renderDetailActions\(selectedModule\)/);
+    assert.match(source, /floatingMenu: \[/);
+    assert.match(source, /toolbarScrollable: true/);
+    assert.match(source, /contentScrolling: false/);
     assert.doesNotMatch(
         source,
         /module-detail-actions[^`]*renderLifecycleActions\(module\)\}\$\{advanced\}/,

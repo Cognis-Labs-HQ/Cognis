@@ -107,3 +107,7 @@ Hinweise zu Zugangsdaten sind in der Oberfläche nun kurz. Serverprotokolle nenn
 ## Release-Wechsel stabilisieren
 
 Installationen durch Release-Kanalwechsel, Upgrades und Downgrades speichern nun den gewählten Branch, Commit und die Version vor dem Neustart. Neustarthinweise erscheinen nur für zuvor aktivierte Module, betroffene Module lehnen bis zum Neustart weitere Lebenszyklusaktionen ab und unveränderte oder abgebrochene Kanalwechsel kollidieren nicht mit späteren Aktionen.
+
+## Moduldetails stabil halten
+
+Aktionen in Moduldetails verwenden nun das schwebende Composer-Menü, während Status- und Kategorienavigation die ausgewogene, scrollbare Seitenleiste nutzt. Die Detailauswahl bleibt bei Aktualisierungen, Lebenszyklusereignissen und Hinweisen erhalten; nur eine ausdrückliche Navigation verlässt die Detailansicht.

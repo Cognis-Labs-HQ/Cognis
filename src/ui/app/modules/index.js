@@ -1,6 +1,9 @@
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
-import { restoreWindowScrollPosition } from "../../reuse/page-composer/dom-position.js";
+import {
+    getFloatingSlot,
+    restoreWindowScrollPosition,
+} from "../../reuse/page-composer/dom-position.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
@@ -226,10 +229,15 @@ function renderModuleDetails(module) {
               (channel) => channel.name === displayedChannel,
           )?.version ?? module.version);
     const release = `<div class="module-detail-release"><p><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, ${escapeHtml(formatVersion(displayedVersion))}` : ""}${renderRestartWarning(module)}</p>${renderAvailableVersion(module)}</div>`;
-    const advanced = module.installed
-        ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
-        : "";
-    return `<article class="module-detail"><div class="module-detail-navigation"><button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${advanced}</div>${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}<div class="module-detail-actions">${renderLifecycleActions(module)}</div></div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div></header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+}
+
+function renderDetailActions(module) {
+    const advanced =
+        module.installed && !module.restartRequired
+            ? `<button type="button" class="btn-neutral module-icon-button" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
+            : "";
+    return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${renderLifecycleActions(module)}${advanced}`;
 }
 
 function revealLoadedModulePictures(root) {
@@ -342,15 +350,9 @@ function renderSidebar(categories) {
 }
 
 function renderStore() {
-    const categories = [
-        ...new Set(modulesForView().flatMap((module) => module.tags ?? [])),
-    ].sort((left, right) => left.localeCompare(right));
-    return `<div class="module-store-layout">
-      ${renderSidebar(categories)}
-      <section class="module-store-results">
+    return `<section class="module-store-results">
         ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(viewLabel(view))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><span class="module-icon module-icon-refresh" aria-hidden="true"></span></button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}"><span class="module-icon module-icon-settings" aria-hidden="true"></span></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
-      </section>
-    </div>`;
+      </section>`;
 }
 
 function renderSourceManager() {
@@ -695,12 +697,27 @@ function refreshMarketplace() {
         top: window.scrollY,
     };
     composer?.refreshElements(["module-store"]);
+    const sidebar = pageRoot?.querySelector(".module-store-sidebar");
+    if (sidebar) {
+        const categories = [
+            ...new Set(modulesForView().flatMap((module) => module.tags ?? [])),
+        ].sort((left, right) => left.localeCompare(right));
+        sidebar.outerHTML = renderSidebar(categories);
+    }
+    const actions = getFloatingSlot(pageRoot, "module-actions");
+    if (actions) {
+        actions.innerHTML = selectedModule
+            ? renderDetailActions(selectedModule)
+            : "";
+        actions.hidden = !selectedModule;
+    }
     revealLoadedModulePictures(pageRoot);
     refreshScreenshotCarousels();
     restoreWindowScrollPosition(scrollPosition.left, scrollPosition.top);
 }
 
 async function loadKnownModules() {
+    const selectedModuleUuid = selectedModule?.uuid ?? detailModuleUuid();
     const [loadedSources, installed, cached] = await Promise.all([
         loadModuleSources(),
         loadInstalledModules(),
@@ -725,11 +742,10 @@ async function loadKnownModules() {
             modules.push(installedModule);
         }
     });
-    const requestedModuleUuid = detailModuleUuid();
-    selectedModule = requestedModuleUuid
+    selectedModule = selectedModuleUuid
         ? (modules.find(
               (module) =>
-                  module.uuid === requestedModuleUuid &&
+                  module.uuid === selectedModuleUuid &&
                   isVisibleMarketplaceModule(module),
           ) ?? null)
         : null;
@@ -836,7 +852,6 @@ function bindInteractions(root, signal) {
                 target.disabled = true;
                 try {
                     await refreshMarketplaceData();
-                    selectedModule = null;
                     refreshMarketplace();
                     showToast(i18n.t("ui.app.modules.refresh_complete"), {
                         type: "success",
@@ -850,6 +865,7 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.hasAttribute("data-module-back")) {
+                selectedModule = null;
                 await uiCtx.capabilities.get("ui:navigate")?.(
                     "/administration/modules",
                 );
@@ -963,6 +979,22 @@ export async function mount(root, { signal } = {}) {
                 subtitle: i18n.t("ui.app.modules.subtitle"),
             },
             elements: elements(),
+            toolbar: [
+                {
+                    id: "module-navigation",
+                    label: i18n.t("ui.reuse.navigation"),
+                    render: () => renderSidebar([]),
+                },
+            ],
+            toolbarScrollable: true,
+            contentScrolling: false,
+            floatingMenu: [
+                {
+                    id: "module-actions",
+                    label: i18n.t("ui.reuse.actions"),
+                    render: () => "",
+                },
+            ],
             signal,
         });
         await composer.init();
