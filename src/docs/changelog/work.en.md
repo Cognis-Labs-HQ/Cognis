@@ -79,3 +79,7 @@ Concentrated marketplace refreshes into one authenticated scan, added GitHub use
 ## Finish direct module loading
 
 Direct Modules page loads now always release their tracked loading task after the page composer finishes or fails, preventing the loading wheel from remaining visible after a browser refresh.
+
+## Persist and throttle scans
+
+Marketplace catalog data remains the first source of module results after server restarts. Automatic page-load and startup scans no longer consume provider quotas, and source scan attempts are persisted with a one-hour interval so repeated refreshes reuse the on-disk catalog.

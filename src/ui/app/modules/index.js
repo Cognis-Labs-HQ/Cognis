@@ -936,7 +936,7 @@ export async function mount(root, { signal } = {}) {
             root,
             signal,
         );
-        void refreshMarketplaceData().catch((error) => {
+        void loadKnownModules().catch((error) => {
             showToast(error.message, { type: "error" });
         });
     } finally {

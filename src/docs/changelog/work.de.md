@@ -79,3 +79,7 @@ Marketplace-Aktualisierungen wurden in einem authentifizierten Scan gebündelt, 
 ## Direktes Modulladen abschließen
 
 Beim direkten Laden der Modulseite wird die erfasste Ladeaufgabe nach Abschluss oder Fehlschlagen des Seitenaufbaus immer beendet. Dadurch bleibt das Ladesymbol nach einer Browser-Aktualisierung nicht mehr sichtbar.
+
+## Scans speichern und begrenzen
+
+Nach Serverneustarts werden Module zuerst aus dem gespeicherten Marketplace-Katalog geladen. Automatische Scans beim Seitenladen und Serverstart verbrauchen keine Anbieter-Kontingente mehr. Scanversuche werden mit einem einstündigen Intervall gespeichert, sodass wiederholte Aktualisierungen den Katalog auf dem Datenträger verwenden.

@@ -477,7 +477,7 @@ const profileLifecycle = capabilities.get<{
 }>("social:profileLifecycle");
 
 const server = buildServer({
-    discoverModulesOnStartup: true,
+    discoverModulesOnStartup: false,
     moduleRuntimeGateway: runtime,
     accountStore,
     preferenceStore,

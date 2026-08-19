@@ -200,7 +200,8 @@ test("module marketplace refreshes every configured source on demand", () => {
     );
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);
-    assert.match(source, /void refreshMarketplaceData\(\)/);
+    assert.match(source, /await refreshMarketplaceData\(\)/);
+    assert.match(source, /void loadKnownModules\(\)\.catch/);
 });
 
 test("module installation failures stay local to the marketplace action", () => {

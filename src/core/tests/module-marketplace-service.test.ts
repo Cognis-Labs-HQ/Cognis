@@ -69,6 +69,32 @@ test("module marketplace stores a configurable recommended list URL", async () =
     );
 });
 
+test("module marketplace persists scan throttling across service restarts", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const statePath = path.join(root, "sources.json");
+    const originalFetch = globalThis.fetch;
+    let requests = 0;
+    globalThis.fetch = async () => {
+        requests += 1;
+        return new Response("[]", {
+            headers: { "content-type": "application/json" },
+        });
+    };
+    try {
+        await new ModuleMarketplaceService(
+            statePath,
+            path.join(root, "modules"),
+        ).discover();
+        await new ModuleMarketplaceService(
+            statePath,
+            path.join(root, "modules"),
+        ).discover();
+        assert.equal(requests, 1);
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
 test("module installation accepts cached catalogs created before release discovery", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(
@@ -239,8 +265,18 @@ test("module marketplace discovers repository manifests", async () => {
         );
         assert.match(modules[0].assetIds?.icon ?? "", /^[a-f0-9]{64}$/);
         assert.equal(
-            service.getAsset(modules[0].assetIds?.icon ?? "")?.contentType,
+            (await service.getAsset(modules[0].assetIds?.icon ?? ""))
+                ?.contentType,
             "image/png",
+        );
+        assert.equal(
+            (
+                await new ModuleMarketplaceService(
+                    path.join(root, "sources.json"),
+                    path.join(root, "modules"),
+                ).getAsset(modules[0].assetIds?.icon ?? "")
+            )?.body.toString(),
+            "png-one",
         );
         assert.equal(modules[0].readme, "# Notes\nA useful module.");
         assert.equal(modules[0].license, undefined);
@@ -262,9 +298,9 @@ test("module marketplace discovers repository manifests", async () => {
         moduleDescription = "Updated shared notes.";
         assetBody = "png-two";
         const refreshed = await service.discover();
-        assert.equal(refreshed[0].name, "Collaborative Notes");
-        assert.equal(refreshed[0].description, "Updated shared notes.");
-        assert.notEqual(refreshed[0].assetIds?.icon, originalIcon);
+        assert.equal(refreshed[0].name, "Notes");
+        assert.equal(refreshed[0].description, "Shared notes.");
+        assert.equal(refreshed[0].assetIds?.icon, originalIcon);
 
         globalThis.fetch = async () => {
             throw new Error("source unavailable");

@@ -163,7 +163,7 @@ export function createModuleRoutes(
             /^\/api\/v1\/modules\/catalog\/assets\/([a-f0-9]{64})$/,
         );
         if (marketplace && assetMatch && req.method === "GET") {
-            const asset = marketplace.getAsset(assetMatch[1]);
+            const asset = await marketplace.getAsset(assetMatch[1]);
             if (!asset) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(

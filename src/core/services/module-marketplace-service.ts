@@ -13,6 +13,7 @@ const GIT_CLONE_TIMEOUT_MS = 30_000;
 const GIT_CLONE_RETRY_DELAYS_MS = [250, 1_000];
 const TRANSIENT_GIT_FAILURE =
     /connection reset|recv failure|could not resolve host|failed to connect|connection timed out|operation timed out|tls connection|gnutls|http\/2 stream|remote end hung up|unexpected disconnect/i;
+const SOURCE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
 
 export type ModuleSourceProvider = "github" | "gitlab";
 
@@ -236,6 +237,24 @@ export class ModuleMarketplaceService {
             }
         }
         for (const source of selectedSources) {
+            const cachedModules = await this.readCachedCatalog([source.uuid]);
+            const lastAttemptAt = (await this.readScanAttempts())[source.uuid];
+            if (
+                lastAttemptAt &&
+                Date.now() - Date.parse(lastAttemptAt) < SOURCE_SCAN_INTERVAL_MS
+            ) {
+                this.log("info", "Module source scan served from cache.", {
+                    sourceUuid: source.uuid,
+                    sourceName: source.name,
+                    modulesFound: cachedModules.length,
+                    nextScanAt: new Date(
+                        Date.parse(lastAttemptAt) + SOURCE_SCAN_INTERVAL_MS,
+                    ).toISOString(),
+                });
+                discovered.push(...cachedModules);
+                continue;
+            }
+            await this.recordScanAttempt(source.uuid);
             this.log("info", "Module source scan started.", {
                 sourceUuid: source.uuid,
                 sourceName: source.name,
@@ -430,8 +449,30 @@ export class ModuleMarketplaceService {
         await this.updateCachedInstallation(uuid, false);
     }
 
-    getAsset(id: string): MarketplaceAsset | undefined {
-        return this.assets.get(id);
+    async getAsset(id: string): Promise<MarketplaceAsset | undefined> {
+        const cached = this.assets.get(id);
+        if (cached) return cached;
+        try {
+            const [body, metadata] = await Promise.all([
+                readFile(path.join(`${this.statePath}.assets`, id)),
+                readFile(
+                    path.join(`${this.statePath}.assets`, `${id}.json`),
+                    "utf8",
+                ),
+            ]);
+            const { contentType } = JSON.parse(metadata) as {
+                contentType?: unknown;
+            };
+            if (typeof contentType !== "string") return undefined;
+            const asset = { body, contentType };
+            this.assets.set(id, asset);
+            return asset;
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") {
+                return undefined;
+            }
+            throw error;
+        }
     }
 
     private async discoverSource(
@@ -681,6 +722,35 @@ export class ModuleMarketplaceService {
         }
     }
 
+    private async readScanAttempts(): Promise<Record<string, string>> {
+        try {
+            const value = JSON.parse(
+                await readFile(`${this.statePath}.catalog-meta`, "utf8"),
+            ) as unknown;
+            return value && typeof value === "object" && !Array.isArray(value)
+                ? (value as Record<string, string>)
+                : {};
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
+            throw error;
+        }
+    }
+
+    private async recordScanAttempt(sourceUuid: string): Promise<void> {
+        const update = async () => {
+            const attempts = await this.readScanAttempts();
+            attempts[sourceUuid] = new Date().toISOString();
+            await mkdir(path.dirname(this.statePath), { recursive: true });
+            await writeFile(
+                `${this.statePath}.catalog-meta`,
+                JSON.stringify(attempts, null, 2),
+                { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(update, update);
+        await this.catalogMutation;
+    }
+
     private async replaceCachedSource(
         sourceUuid: string,
         modules: MarketplaceModule[],
@@ -791,6 +861,16 @@ export class ModuleMarketplaceService {
         const body = Buffer.from(await response.arrayBuffer());
         const id = createHash("sha256").update(body).digest("hex");
         this.assets.set(id, { body, contentType });
+        const assetRoot = `${this.statePath}.assets`;
+        await mkdir(assetRoot, { recursive: true });
+        await Promise.all([
+            writeFile(path.join(assetRoot, id), body, { mode: 0o600 }),
+            writeFile(
+                path.join(assetRoot, `${id}.json`),
+                JSON.stringify({ contentType }),
+                { mode: 0o600 },
+            ),
+        ]);
         return id;
     }
 

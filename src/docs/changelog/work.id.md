@@ -79,3 +79,7 @@ Penyegaran marketplace dipusatkan dalam satu pemindaian terautentikasi, token pe
 ## Selesaikan pemuatan modul langsung
 
 Pemuatan langsung halaman Modul kini selalu mengakhiri tugas pemuatan yang dilacak setelah penyusun halaman selesai atau gagal, sehingga roda pemuatan tidak terus terlihat setelah penyegaran browser.
+
+## Simpan dan batasi pemindaian
+
+Setelah server dimulai ulang, data modul terlebih dahulu dimuat dari katalog marketplace yang tersimpan. Pemindaian otomatis saat halaman atau server dimulai tidak lagi memakai kuota penyedia. Percobaan pemindaian disimpan dengan interval satu jam agar penyegaran berulang memakai kembali katalog di cakram.
