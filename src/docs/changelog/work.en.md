@@ -155,3 +155,7 @@ Module card action buttons now divide the full available row evenly. Cards with 
 ## Stabilize module SPA navigation
 
 Module-provided SPA pages now preserve authenticated sessions when a module endpoint alone returns an authorization error; Cognis verifies the account session before treating it as expired. The Profile availability menu also remounts idempotently after dashboard shell refreshes and waits for its stylesheet, preventing missing or duplicated presence controls. The Modules navigation toolbar now grows to its natural height without its own vertical scrollbar, while overflowing main content scrolls within the matching content panel.
+
+## Correct Modules heading and pointer setup
+
+The Modules content card now keeps the stable Modules heading while status filters remain in navigation. Shared pointer tracking now imports its CTX capability bus explicitly, preventing module-provided pages from failing during direct mounts.

@@ -155,3 +155,7 @@ Die Aktionsschaltflächen einer Modulkarte teilen nun die gesamte verfügbare Ze
 ## SPA-Navigation für Module stabilisieren
 
 Von Modulen bereitgestellte SPA-Seiten behalten authentifizierte Sitzungen nun bei, wenn nur ein Modulendpunkt einen Autorisierungsfehler zurückgibt; Cognis prüft die Kontositzung, bevor sie als abgelaufen gilt. Das Profil-Verfügbarkeitsmenü wird nach Aktualisierungen der Dashboard-Hülle außerdem idempotent neu eingebunden und wartet auf sein Stylesheet, wodurch fehlende oder doppelte Anwesenheitssteuerelemente vermieden werden. Die Modulnavigation wächst nun ohne eigene vertikale Bildlaufleiste auf ihre natürliche Höhe, während überlaufender Hauptinhalt im dazu passenden Inhaltsbereich scrollt.
+
+## Modulüberschrift und Zeigerinitialisierung korrigieren
+
+Die Inhaltskarte der Module behält nun die feste Überschrift „Module“, während Statusfilter in der Navigation verbleiben. Die gemeinsame Zeigerverfolgung importiert ihren CTX-Fähigkeitsbus nun ausdrücklich, sodass von Modulen bereitgestellte Seiten bei direktem Aufruf nicht mehr fehlschlagen.

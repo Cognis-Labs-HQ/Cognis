@@ -33,6 +33,22 @@ test("module marketplace cards keep consistent content and action geometry", () 
     assert.doesNotMatch(marketplaceStyles, /flex-wrap: nowrap/);
 });
 
+test("module marketplace content keeps a stable Modules heading", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+
+    assert.match(
+        source,
+        /<h2>\$\{escapeHtml\(i18n\.t\("ui\.reuse\.modules"\)\)\}<\/h2>/,
+    );
+    assert.doesNotMatch(
+        source,
+        /<h2>\$\{escapeHtml\(viewLabel\(view\)\)\}<\/h2>/,
+    );
+});
+
 test("module cards and details show upgrade and downgrade versions", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

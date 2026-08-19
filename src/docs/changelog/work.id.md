@@ -155,3 +155,7 @@ Tombol aksi kartu modul kini membagi seluruh baris yang tersedia secara merata. 
 ## Stabilkan navigasi SPA modul
 
 Halaman SPA yang disediakan modul kini mempertahankan sesi terautentikasi ketika hanya titik akhir modul yang mengembalikan kesalahan otorisasi; Cognis memverifikasi sesi akun sebelum menganggapnya kedaluwarsa. Menu ketersediaan Profil juga dipasang ulang secara idempoten setelah penyegaran kerangka dasbor dan menunggu lembar gayanya, sehingga kontrol kehadiran tidak hilang atau muncul ganda. Bilah navigasi Modul kini tumbuh hingga tinggi alaminya tanpa bilah gulir vertikal sendiri, sedangkan konten utama yang melampaui tinggi tersebut bergulir di panel konten yang sepadan.
+
+## Perbaiki judul Modul dan penyiapan penunjuk
+
+Kartu konten Modul kini mempertahankan judul Modul yang tetap, sedangkan filter status tetap berada di navigasi. Pelacakan penunjuk bersama kini mengimpor bus kapabilitas CTX secara eksplisit sehingga halaman yang disediakan modul tidak gagal saat dimuat langsung.
