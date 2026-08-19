@@ -123,3 +123,7 @@ Module card actions now wrap into readable grid columns so Installed, Upgrade or
 ## Refresh release-channel versions
 
 An explicit catalog refresh now bypasses the normal provider scan cooldown and re-reads every branch manifest. If a selected branch catches up to the installed version, Cognis immediately removes the stale downgrade action. Actual downgrades now run the selected branch installation and report Downgrading and Module downgraded separately from upgrades.
+
+## Install the selected downgrade revision
+
+Downgrades now install the exact commit advertised by the refreshed catalog even if the branch advances before the install begins. The downgrade indicator has a dedicated dark theme, and module detail headers receive an opaque backing so banner artwork cannot show through the sticky application header.

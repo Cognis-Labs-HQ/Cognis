@@ -123,3 +123,7 @@ Tindakan pada kartu modul kini dibungkus ke kolom kisi yang mudah dibaca agar la
 ## Segarkan versi kanal rilis
 
 Penyegaran katalog secara eksplisit kini melewati jeda pemindaian penyedia biasa dan membaca ulang setiap manifes cabang. Jika cabang yang dipilih menyamai versi terpasang, Cognis segera menghapus tindakan penurunan versi yang usang. Penurunan versi yang sebenarnya kini memasang cabang terpilih dan melaporkan Menurunkan serta Versi modul diturunkan secara terpisah dari peningkatan.
+
+## Pasang revisi penurunan yang dipilih
+
+Penurunan versi kini memasang commit tepat yang diumumkan katalog terbaru meskipun cabang bergerak maju sebelum pemasangan dimulai. Indikator penurunan memiliki tema gelap khusus, dan header detail modul mendapat latar buram agar gambar banner tidak terlihat menembus header aplikasi yang melekat.

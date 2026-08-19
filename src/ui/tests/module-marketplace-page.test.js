@@ -54,6 +54,14 @@ test("module cards and details show upgrade and downgrade versions", () => {
     assert.match(source, /\$\{renderAvailableVersion\(module\)\}/);
     assert.match(marketplaceStyles, /background: #ffedd5/);
     assert.match(marketplaceStyles, /border-radius: 999px/);
+    assert.match(
+        marketplaceStyles,
+        /body\[data-theme="dark"\] \.module-available-version\.is-downgrade/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /body:has\(\.module-detail\) \.global-topbar[\s\S]*background-color/,
+    );
     assert.match(upArrow, /M8 13V3/);
     assert.match(downArrow, /M8 3v10/);
 });

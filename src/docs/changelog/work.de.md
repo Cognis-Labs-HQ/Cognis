@@ -123,3 +123,7 @@ Aktionen auf Modulkarten werden jetzt in lesbare Rasterspalten umgebrochen, dami
 ## Versionen der Veröffentlichungskanäle aktualisieren
 
 Eine ausdrückliche Katalogaktualisierung umgeht jetzt die normale Wartezeit für Anbieter-Scans und liest jedes Branch-Manifest erneut. Wenn ein ausgewählter Branch die installierte Version erreicht, entfernt Cognis die veraltete Herabstufungsaktion sofort. Tatsächliche Herabstufungen installieren nun den ausgewählten Branch und werden mit Wird herabgestuft und Modul herabgestuft klar von Upgrades unterschieden.
+
+## Ausgewählte Downgrade-Revision installieren
+
+Herabstufungen installieren jetzt genau den vom aktualisierten Katalog angegebenen Commit, selbst wenn der Branch vor Installationsbeginn fortschreitet. Die Herabstufungsanzeige besitzt ein eigenes dunkles Design, und Moduldetail-Kopfzeilen erhalten einen undurchsichtigen Hintergrund, damit Bannerbilder nicht durch die fixierte Anwendungskopfzeile scheinen.

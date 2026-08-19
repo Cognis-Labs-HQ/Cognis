@@ -486,7 +486,10 @@ export class ModuleMarketplaceService {
             ...(module.branches ?? []),
             ...(module.releases ?? []),
         ];
-        if (!installRefs.some((entry) => entry.name === selectedBranch)) {
+        const selectedRef = installRefs.find(
+            (entry) => entry.name === selectedBranch,
+        );
+        if (!selectedRef) {
             throw new Error("invalid_module_branch");
         }
         const gitEnvironment: NodeJS.ProcessEnv = {
@@ -502,6 +505,7 @@ export class ModuleMarketplaceService {
             await this.cloneRepository(
                 cloneUrl,
                 selectedBranch,
+                selectedRef.commit,
                 temporary,
                 gitEnvironment,
             );
@@ -545,9 +549,13 @@ export class ModuleMarketplaceService {
     private async cloneRepository(
         cloneUrl: string,
         branch: string,
+        expectedCommit: string,
         temporary: string,
         environment: NodeJS.ProcessEnv,
     ): Promise<void> {
+        if (!/^[a-f0-9]{7,64}$/i.test(expectedCommit)) {
+            throw new Error("invalid_module_commit");
+        }
         let lastError: unknown;
         for (let attempt = 1; attempt <= GIT_CLONE_ATTEMPTS; attempt += 1) {
             await rm(temporary, { recursive: true, force: true });
@@ -567,6 +575,36 @@ export class ModuleMarketplaceService {
                     ],
                     { env: environment, timeout: GIT_CLONE_TIMEOUT_MS },
                 );
+                const { stdout: clonedCommit } = await execFileAsync(
+                    "git",
+                    ["-C", temporary, "rev-parse", "HEAD"],
+                    { env: environment },
+                );
+                if (clonedCommit.trim() !== expectedCommit) {
+                    await execFileAsync(
+                        "git",
+                        [
+                            "-C",
+                            temporary,
+                            "fetch",
+                            "--depth=1",
+                            "origin",
+                            expectedCommit,
+                        ],
+                        { env: environment, timeout: GIT_CLONE_TIMEOUT_MS },
+                    );
+                    await execFileAsync(
+                        "git",
+                        [
+                            "-C",
+                            temporary,
+                            "checkout",
+                            "--detach",
+                            expectedCommit,
+                        ],
+                        { env: environment },
+                    );
+                }
                 return;
             } catch (error) {
                 lastError = error;
