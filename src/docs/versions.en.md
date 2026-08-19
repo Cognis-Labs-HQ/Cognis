@@ -32,24 +32,24 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.23` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.2.24` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.19` |
-| Local File Storage    | `src/adapters/file/local/`          | `0.1.14` |
-| File Quota            | `src/adapters/file/quota/`          | `1.0.12` |
-| Local Auth            | `src/adapters/auth/local/`          | `0.3.12` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.15` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.13` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.3.13` |
 | User Keyring          | `src/adapters/auth/keyring/`        | `1.0.35` |
-| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.15` |
-| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.12` |
-| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.12` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.24` |
-| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.15` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.11` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.10` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.15` |
-| Memory Database       | `src/adapters/db/memory/`           | `0.1.13` |
-| Registration Invite   | `src/adapters/registration/invite/` | `0.1.14` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.13` |
-| Public Registration   | `src/adapters/registration/public/` | `0.1.11` |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.16` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.13` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.13` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.0.25` |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.16` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.12` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.11` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.16` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.14` |
+| Registration Invite   | `src/adapters/registration/invite/` | `0.1.15` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.14` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.12` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.62` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.66` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
@@ -73,31 +73,23 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/`  | `1.1.14`  |
 | Logging               | `src/gateways/logging/`       | `1.5.12`  |
 | Observability         | `src/gateways/observability/` | `1.0.6`   |
-| Study                 | `src/gateways/study/`         | `1.5.11`  |
+| Study                 | `src/gateways/study/`         | `1.5.12`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.103` |
 
 ## Core contracts
 
 | Component    | Path        | Version  |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.50` |
+| Core Package | `src/core/` | `0.3.51` |
 
 ## API
 
 | Component  | Path       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.52` |
+| API Server | `src/api/` | `0.3.53` |
 
 ## Tooling
 
 | Component  | Path               | Version |
 | ---------- | ------------------ | ------- |
-| Cognis CLI | `src/tooling/cli/` | `0.2.4` |
-
-## Modules
-
-| Component       | Path                              | Version  |
-| --------------- | --------------------------------- | -------- |
-| Module Runtime  | `src/modules/`                    | `0.1.8`  |
-| Cognis Japanese | `src/modules/study/languages/ja/` | `1.2.12` |
-| Cognis English  | `src/modules/study/languages/en/` | `1.2.10` |
+| Cognis CLI | `src/tooling/cli/` | `0.2.5` |

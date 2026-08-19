@@ -8,8 +8,7 @@
         "src/core",
         "src/adapters/*/*",
         "src/tooling/*",
-        "src/gateways",
-        "src/modules"
+        "src/gateways"
     ],
     "scripts": {
         "build": "npm run build:ui && npm run build:server",
@@ -21,7 +20,7 @@
         "lint": "node ./src/tooling/scripts/lint-placeholder.mjs && node ./src/tooling/scripts/lint-readable.mjs",
         "test": "node --import tsx src/tooling/scripts/run-tests.ts",
         "start": "node --import tsx src/api/main.ts",
-        "start:production": "COGNIS_UI_ASSET_MANIFEST=dist/ui/asset-manifest.json COGNIS_UI_DIST_ROOT=dist/ui COGNIS_MODULES_ROOT=dist/server/src/modules COGNIS_GATEWAYS_ROOT=dist/server/src/gateways COGNIS_ADAPTERS_ROOT=dist/server/src/adapters node dist/server/src/api/main.js",
+        "start:production": "COGNIS_UI_ASSET_MANIFEST=dist/ui/asset-manifest.json COGNIS_UI_DIST_ROOT=dist/ui COGNIS_GATEWAYS_ROOT=dist/server/src/gateways COGNIS_ADAPTERS_ROOT=dist/server/src/adapters node dist/server/src/api/main.js",
         "ci:test": "npm run typecheck && npm test",
         "cli": "node --import tsx src/tooling/cli/index.ts"
     },

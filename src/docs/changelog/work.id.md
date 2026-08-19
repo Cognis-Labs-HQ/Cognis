@@ -159,3 +159,7 @@ Halaman SPA yang disediakan modul kini mempertahankan sesi terautentikasi ketika
 ## Perbaiki judul Modul dan penyiapan penunjuk
 
 Kartu konten Modul kini mempertahankan judul Modul yang tetap, sedangkan filter status tetap berada di navigasi. Pelacakan penunjuk bersama kini mengimpor bus kapabilitas CTX secara eksplisit sehingga halaman yang disediakan modul tidak gagal saat dimuat langsung.
+
+## Hapus modul bahasa bawaan
+
+Cognis English dan Cognis Japanese kini dipasang secara eksklusif dari repositori marketplace mandirinya. Workspace modul bawaan telah dihapus; penemuan runtime, perutean UI, pemeriksaan integritas, plugin CLI, dan pendaftaran bahasa Study kini hanya menggunakan pemasangan beralamat UUID di bawah `COGNIS_EXTERNAL_MODULES_ROOT`. Aset navigasi Study bersama kini dimiliki oleh gateway Study.

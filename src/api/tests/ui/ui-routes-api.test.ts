@@ -270,7 +270,7 @@ test("GET registered SPA route serves the dashboard shell on refresh", async () 
     assert.match(recorder.body, /<div id="app"/);
     assert.match(
         recorder.body,
-        /src="\/static\/gateways\/share\/ui\/app\/shares\/index\.js"/,
+        /"scriptUrl":"\/static\/gateways\/share\/ui\/app\/shares\/index\.js\?v=development"/,
     );
     assert.match(
         recorder.body,

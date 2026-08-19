@@ -159,3 +159,7 @@ Module-provided SPA pages now preserve authenticated sessions when a module endp
 ## Correct Modules heading and pointer setup
 
 The Modules content card now keeps the stable Modules heading while status filters remain in navigation. Shared pointer tracking now imports its CTX capability bus explicitly, preventing module-provided pages from failing during direct mounts.
+
+## Remove bundled language modules
+
+Cognis English and Cognis Japanese now install exclusively from their standalone marketplace repositories. The bundled module workspace was removed, and runtime discovery, UI routing, integrity checks, CLI plugins, and Study language registration now consume only UUID-addressed installations under `COGNIS_EXTERNAL_MODULES_ROOT`. Shared Study navigation assets are now owned by the Study gateway.

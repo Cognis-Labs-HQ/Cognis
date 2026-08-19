@@ -4,18 +4,16 @@ import {
     readFile,
     readdir,
     rm,
-    stat,
     symlink,
     unlink,
     writeFile,
 } from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import type { ModuleRuntimeGateway } from "../../modules/gateway.js";
+import type { ModuleRuntimeGateway } from "../contracts/modules/runtime-gateway.js";
 import type { ModuleManifest } from "../contracts/module-manifest.js";
 
 export interface ModulePathResolver {
-    internalModulesPath: string;
     externalModulesPath: string;
     enabledPointersPath: string;
     runtimeExtractPath?: string;
@@ -62,14 +60,12 @@ export class ModuleService {
                 `Module artifact not found in configured module paths: ${moduleId}`,
             );
 
-        if (resolvedPath.kind === "external") {
-            if (!options?.acknowledgeExternalDisclaimer) {
-                throw new Error(
-                    `External module ${moduleId} requires disclaimer acknowledgement before enabling`,
-                );
-            }
-            this.assertSupportedArchive(resolvedPath.path);
+        if (!options?.acknowledgeExternalDisclaimer) {
+            throw new Error(
+                `External module ${moduleId} requires disclaimer acknowledgement before enabling`,
+            );
         }
+        this.assertSupportedArchive(resolvedPath.path);
 
         const activationPath = await this.materializeActivationPath(
             moduleId,
@@ -84,7 +80,7 @@ export class ModuleService {
     async requiresExternalAcknowledgement(moduleId: string): Promise<boolean> {
         if (!this.resolver) return false;
         const resolvedPath = await this.resolveModulePath(moduleId);
-        return resolvedPath?.kind === "external";
+        return resolvedPath !== null;
     }
 
     async disable(
@@ -153,14 +149,7 @@ export class ModuleService {
 
     private async resolveModulePath(
         moduleId: string,
-    ): Promise<{ kind: "internal" | "external"; path: string } | null> {
-        const internalPath = path.join(
-            this.resolver!.internalModulesPath,
-            moduleId,
-        );
-        if (await this.existsDirectory(internalPath))
-            return { kind: "internal", path: internalPath };
-
+    ): Promise<{ path: string } | null> {
         const externalItems = await this.safeReaddir(
             this.resolver!.externalModulesPath,
         );
@@ -170,7 +159,6 @@ export class ModuleService {
         );
         if (!artifact) return null;
         return {
-            kind: "external",
             path: path.join(this.resolver!.externalModulesPath, artifact),
         };
     }
@@ -184,10 +172,8 @@ export class ModuleService {
 
     private async materializeActivationPath(
         moduleId: string,
-        resolved: { kind: "internal" | "external"; path: string },
+        resolved: { path: string },
     ): Promise<string> {
-        if (resolved.kind === "internal") return resolved.path;
-
         const extractRoot = path.join(this.runtimeExtractPath, moduleId);
         await rm(extractRoot, { recursive: true, force: true });
         await mkdir(extractRoot, { recursive: true });
@@ -264,15 +250,6 @@ export class ModuleService {
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
             throw error;
-        }
-    }
-
-    private async existsDirectory(candidate: string): Promise<boolean> {
-        try {
-            const info = await stat(candidate);
-            return info.isDirectory();
-        } catch {
-            return false;
         }
     }
 

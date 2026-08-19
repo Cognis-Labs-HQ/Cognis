@@ -4,11 +4,10 @@ set -Eeuo pipefail
 LOG_FILE_PATH="${LOG_FILE:-/app/logs/app.log}"
 
 # These paths are properties of the image layout, not deployment configuration.
-export COGNIS_MODULES_ROOT="/app/dist/server/src/modules"
 export COGNIS_GATEWAYS_ROOT="/app/dist/server/src/gateways"
 export COGNIS_ADAPTERS_ROOT="/app/dist/server/src/adapters"
 export COGNIS_CLI_TOKEN_PATH="/app/config/cli-access.token"
-readonly COGNIS_MODULES_ROOT COGNIS_GATEWAYS_ROOT COGNIS_ADAPTERS_ROOT COGNIS_CLI_TOKEN_PATH
+readonly COGNIS_GATEWAYS_ROOT COGNIS_ADAPTERS_ROOT COGNIS_CLI_TOKEN_PATH
 
 app_log() {
   local level="$1"

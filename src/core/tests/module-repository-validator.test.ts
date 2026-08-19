@@ -116,24 +116,3 @@ test("module repository validator requires a root license file when declared", a
         await rm(fixture.root, { recursive: true, force: true });
     }
 });
-
-test("bundled extension modules satisfy the external repository contract", async () => {
-    for (const id of ["analytics", "nextcloud-whiteboard"]) {
-        const root = path.join(REPOSITORY_ROOT, "src/modules", id);
-        const manifest = JSON.parse(
-            await readFile(path.join(root, "manifest.json"), "utf8"),
-        ) as ModuleManifest & { requiresCapabilities?: string[] };
-        await validateModuleRepository(root, manifest);
-        assert.match(
-            manifest.repository ?? "",
-            new RegExp(`cognis-module-${id}$`),
-        );
-        assert.ok(manifest.license);
-        assert.ok(manifest.requiresCapabilities?.length);
-        assert.ok(
-            (manifest.requires ?? []).every((dependency) =>
-                /^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(dependency),
-            ),
-        );
-    }
-});

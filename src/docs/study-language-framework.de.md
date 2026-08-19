@@ -37,7 +37,7 @@ Eine Kindkomponente ist eine eigenständig lieferbare Lernfunktion für eine bes
 
 ### Verzeichnisstruktur
 
-Sprachmodule leben unter `src/modules/study/languages/<code>/`. Kindkomponenten leben unter `components/<id>/` innerhalb des Sprachmoduls.
+Sprachmodule sind eigenständige Repositorys, die über den Modul-Marktplatz installiert werden. Kindkomponenten leben unter `components/<id>/` innerhalb ihres Repositorys.
 
 ## API-Routen
 

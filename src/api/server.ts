@@ -20,7 +20,7 @@ import {
 import { createSystemRoutes } from "./routes/system/index.js";
 import { createDocsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
-import { createModuleExtensionRoutes } from "../modules/routes/module-extensions.js";
+import { createModuleExtensionRoutes } from "./reuse/module-extension-routes.js";
 import type { LocalAccountStore } from "@cognis/core";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
@@ -280,8 +280,6 @@ export function buildServer(deps: ApiDependencies) {
         });
     }
     const moduleTestService = new ModuleTestService([
-        process.env.COGNIS_MODULES_ROOT ??
-            path.resolve(process.cwd(), "src", "modules"),
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
             path.resolve(process.cwd(), "external-modules"),
     ]);

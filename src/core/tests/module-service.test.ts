@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readlink, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { ModuleService, type ModuleRuntimeGateway } from "../index.js";
@@ -122,43 +122,8 @@ test("module service blocks toggling core modules", async () => {
     await assert.rejects(() => service.enable("auth-core"));
 });
 
-test("module lifecycle writes nginx-style pointer for internal modules", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-modules-"));
-    const internalModulesPath = path.join(root, "internal");
-    const externalModulesPath = path.join(root, "external");
-    const enabledPointersPath = path.join(root, "enabled.d");
-    await mkdir(path.join(internalModulesPath, "analytics"), {
-        recursive: true,
-    });
-
-    const service = new ModuleService(
-        runtime([
-            {
-                id: "analytics",
-                name: "Analytics",
-                version: "1.0.0",
-                class: "extension",
-                coreApiVersion: "v1",
-                capabilities: [],
-                entrypoints: {},
-            },
-        ]),
-        { internalModulesPath, externalModulesPath, enabledPointersPath },
-    );
-
-    await service.enable("analytics");
-    const target = await readlink(
-        path.join(enabledPointersPath, "analytics.load"),
-    );
-    assert.match(target, /analytics$/);
-
-    const disabled = await service.disable("analytics");
-    assert.equal(disabled.enabled, false);
-});
-
 test("external modules require disclaimer acknowledgement", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-modules-"));
-    const internalModulesPath = path.join(root, "internal");
     const externalModulesPath = path.join(root, "external");
     const enabledPointersPath = path.join(root, "enabled.d");
     await mkdir(externalModulesPath, { recursive: true });
@@ -179,7 +144,7 @@ test("external modules require disclaimer acknowledgement", async () => {
                 entrypoints: {},
             },
         ]),
-        { internalModulesPath, externalModulesPath, enabledPointersPath },
+        { externalModulesPath, enabledPointersPath },
     );
 
     await assert.rejects(() => service.enable("weather-pack"));

@@ -231,42 +231,6 @@ test("docs search indexes navigation titles and document contents", () => {
     assert.match(source, /changelogItems/);
 });
 
-test("whiteboard search indexes board filenames and stored canvas contents", () => {
-    const source = ["index.js", "search-index.js"]
-        .map((fileName) =>
-            readFileSync(
-                resolve(
-                    ROOT,
-                    `src/modules/nextcloud-whiteboard/ui/app/${fileName}`,
-                ),
-                "utf8",
-            ),
-        )
-        .join("\n");
-    const navbarSource = readFileSync(
-        resolve(ROOT, "src/modules/nextcloud-whiteboard/ui/navbar.js"),
-        "utf8",
-    );
-    assert.match(source, /registerSearchIndex\("nextcloud-whiteboard"/);
-    assert.match(source, /collectWhiteboardSearchGroups/);
-    assert.match(source, /externalPath/);
-    assert.match(source, /resultClass: "page"/);
-    assert.match(source, /resultClass: "text"/);
-    assert.match(source, /showDescription: false/);
-    assert.match(source, /showMatchSnippet: false/);
-    assert.match(source, /JSON\.stringify\(getSavedElements\(\)/);
-    assert.match(
-        navbarSource,
-        /registerSearchIndex\(\s*"nextcloud-whiteboard-navbar"/,
-    );
-    assert.match(navbarSource, /collectWhiteboardNavbarSearchGroups/);
-    assert.match(navbarSource, /category: "Pages"/);
-    assert.match(navbarSource, /category: "Whiteboards"/);
-    assert.match(navbarSource, /showDescription: false/);
-    assert.match(navbarSource, /showMatchSnippet: false/);
-    assert.match(navbarSource, /fetchVisibleWhiteboards/);
-});
-
 test("visible search indexes messages without quick reactions and chat names", () => {
     const messageSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
@@ -364,10 +328,7 @@ test("study content and sub-navigation participate in global search", () => {
         "utf8",
     );
     const subNavigationSource = readFileSync(
-        resolve(
-            ROOT,
-            "src/modules/study/languages/reuse/study-sub-navigation.js",
-        ),
+        resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
         "utf8",
     );
     const studyNavbarSource = readFileSync(

@@ -17,19 +17,6 @@ test("classes page redirects non-teachers back to dashboard", () => {
     );
 });
 
-test("hiragana component stylesheet does not override shared study sub-navigation layout", () => {
-    const source = readFileSync(
-        resolve(
-            ROOT,
-            "src/modules/study/languages/ja/components/hiragana-alphabet/ui/hiragana.css",
-        ),
-        "utf8",
-    );
-    assert.doesNotMatch(source, /\.study-page-subnav\s*\{/);
-    assert.doesNotMatch(source, /\.study-subnav-modules\s*\{/);
-    assert.doesNotMatch(source, /\.study-subnav-language-options\s*\{/);
-});
-
 test("study hub detects native library child component by descriptor id", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/study.js"),

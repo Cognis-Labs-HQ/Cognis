@@ -53,7 +53,7 @@ npm run cli      # node --import tsx src/tooling/cli/index.ts
 `cognisctl` is the primary operational control surface. It auto-discovers command modules from:
 
 - `src/tooling/cli/commands/` — core built-in commands
-- Any `cli/index.js` exported by an installed module under `COGNIS_MODULES_ROOT`
+- Any `cli/index.js` exported by an installed module under `COGNIS_EXTERNAL_MODULES_ROOT`
 
 Commands are grouped by namespace:
 
@@ -75,9 +75,9 @@ Built-in `cognisctl` commands can render response-aware terminal output with hea
 
 ## Configuration
 
-| Variable                   | Default       | Description                                                                            |
-| -------------------------- | ------------- | -------------------------------------------------------------------------------------- |
-| `COGNIS_CLI_TOKEN_PATH`    | —             | Path to a file containing the API token used by `cognisctl` for authenticated commands |
-| `COGNIS_MODULES_ROOT`      | `src/modules` | Used by the CLI to discover module-contributed subcommands                             |
-| `COGNIS_GATEWAY_CLI_PATHS` | —             | Optional path list for gateway-contributed CLI commands                                |
-| `COGNIS_ADAPTER_CLI_PATHS` | —             | Optional path list for adapter-contributed CLI commands                                |
+| Variable                       | Default            | Description                                                                            |
+| ------------------------------ | ------------------ | -------------------------------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH`        | —                  | Path to a file containing the API token used by `cognisctl` for authenticated commands |
+| `COGNIS_EXTERNAL_MODULES_ROOT` | `external-modules` | Used by the CLI to discover module-contributed subcommands                             |
+| `COGNIS_GATEWAY_CLI_PATHS`     | —                  | Optional path list for gateway-contributed CLI commands                                |
+| `COGNIS_ADAPTER_CLI_PATHS`     | —                  | Optional path list for adapter-contributed CLI commands                                |

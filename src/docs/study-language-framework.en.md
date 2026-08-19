@@ -142,10 +142,10 @@ startup
 
 ### Directory structure
 
-Language modules live under `src/modules/study/languages/<code>/`. Each language directory contains:
+Language modules are standalone repositories installed through the Module Marketplace. Each repository contains:
 
 ```
-src/modules/study/languages/ja/
+cognis-module-japanese-learning/
   package.json          ← version + main field
   index.ts              ← exports createLanguageModule + bootstrapLanguageModule
   data/
@@ -179,7 +179,7 @@ src/modules/study/languages/ja/
     standard.en.md      ← language-specific contributor guide
 ```
 
-The `data/` directory is the canonical source for all language content. The `LanguageLibraryStore` (from `src/modules/study/languages/reuse/library-store.ts`) loads these files at bootstrap and exposes them via the library API. **Do not store language data anywhere other than `data/`.** Child component UI files must fetch data from the library API; they must never embed language data directly.
+The `data/` directory is the canonical source for all language content. The module-owned library store loads these files at bootstrap and exposes them through the library API. **Do not store language data anywhere other than `data/`.** Child component UI files must fetch data from the library API; they must never embed language data directly.
 
 Child components may themselves contain sub-components for deeply nested functionality (e.g. a Kanji explorer with separate stroke-order and vocabulary sub-sections). The `pageUrl` for such sub-components would include an additional path segment, and the child component's own UI handles any internal sub-navigation.
 
@@ -191,14 +191,14 @@ Language modules have no global environment variables. Each module's `package.js
 
 ### Adding a new language
 
-1. Create `src/modules/study/languages/<code>/package.json` with a `main` field.
-2. Export `createLanguageModule()` and `bootstrapLanguageModule(ctx)` from the main entry point.
-3. Implement the `LanguageModule` interface.
-4. Run the Study gateway bootstrap; the new language is auto-discovered.
+1. Create a standalone module repository with `manifest.json` and `package.json`.
+2. Export `bootstrapModule(ctx)` from the manifest bootstrap entry point.
+3. Contribute a `study:language:<code>` capability containing the language descriptor and child components.
+4. Publish the repository through a configured Module Marketplace source.
 
 ### Adding a child component to an existing language
 
-1. Create `src/modules/study/languages/<code>/components/<component-id>/index.ts`.
+1. Create `components/<component-id>/index.ts` in the language module repository.
 2. Export a `registerComponent(ctx)` function that calls `ctx.registerChildRoute()` and returns a `LanguageChildComponent` descriptor.
 3. Call `registerComponent(ctx)` from `bootstrapLanguageModule(ctx)` in the parent language's `index.ts`.
 4. Add the UI page under `components/<component-id>/ui/`.
@@ -221,5 +221,4 @@ If a child component itself requires sub-sections (e.g. stroke order and vocabul
 - Library data is holistic and language-aware: language is modeled as a record field (for example `language`) rather than a hard route split per language.
 - Every language module should register a **Classroom** child component route so both teachers and students can access language-scoped class views.
 - Classroom pages must include a class selector, seat-capacity visualization, and role-based behavior (teacher management controls vs. student read-mostly + leave flow).
-- The shared `mountStudyLibraryPage` function from `src/modules/study/languages/reuse/library-page.js` provides the standard Library CRUD UI. Language modules must use this shared function for their Library child component rather than duplicating the UI logic.
-- The shared `mountStudyClassroomPage` function from `src/modules/study/languages/reuse/classroom-page.js` provides the standard Classroom UI. Language modules must use this shared function for their Classroom child component rather than duplicating the UI logic.
+- Language modules own their Library and Classroom UI implementations and expose them through their declared child-component routes.

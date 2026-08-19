@@ -36,9 +36,6 @@ const IS_PRODUCTION_BUILD = Boolean(process.env.COGNIS_UI_ASSET_MANIFEST);
 const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
     ? PRODUCTION_PUBLIC_ROOT
     : PUBLIC_ROOT;
-const MODULES_ROOT =
-    process.env.COGNIS_MODULES_ROOT ??
-    path.resolve(process.cwd(), "src", "modules");
 const EXTERNAL_MODULES_ROOT =
     process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
     path.resolve(process.cwd(), "external-modules");
@@ -49,16 +46,12 @@ const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
 async function resolveModuleRoot(
     manifest: Pick<ModuleManifest, "id" | "uuid">,
 ): Promise<string> {
-    if (manifest.uuid) {
-        const externalRoot = path.resolve(EXTERNAL_MODULES_ROOT, manifest.uuid);
-        try {
-            const entry = await stat(externalRoot);
-            if (entry.isDirectory()) return externalRoot;
-        } catch {
-            // Missing external-directory fallback: use the bundled path below.
-        }
-    }
-    return path.resolve(MODULES_ROOT, manifest.id);
+    if (!manifest.uuid) throw new Error(`module_uuid_required:${manifest.id}`);
+    const externalRoot = path.resolve(EXTERNAL_MODULES_ROOT, manifest.uuid);
+    const entry = await stat(externalRoot);
+    if (!entry.isDirectory())
+        throw new Error(`module_root_missing:${manifest.id}`);
+    return externalRoot;
 }
 function versionAssetUrl(assetUrl: string): string {
     if (assetUrl.startsWith("/assets/")) return assetUrl;

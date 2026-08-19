@@ -63,9 +63,6 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 publisher: "Cognis Labs HQ",
             },
         ];
-        const modulesRoot =
-            process.env.COGNIS_MODULES_ROOT ??
-            path.resolve(process.cwd(), "src", "modules");
         const externalModulesRoot =
             process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
             path.resolve(process.cwd(), "external-modules");
@@ -134,11 +131,6 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             }
         }
 
-        await scanManifestDir(modulesRoot);
-        // Study language modules live under study/languages/<code>/ and each
-        // carries its own manifest — scan that nested path so they appear in
-        // the modules list alongside top-level modules.
-        await scanManifestDir(path.join(modulesRoot, "study", "languages"));
         await scanManifestDir(externalModulesRoot);
 
         return new InMemoryModuleRuntimeGateway(manifests);
@@ -565,10 +557,11 @@ const server = buildServer({
         }>;
         for (const manifest of manifests) {
             for (const file of manifest.files ?? []) {
+                if (!manifest.uuid) continue;
                 const candidate = path.resolve(
-                    process.env.COGNIS_MODULES_ROOT ??
-                        path.resolve(process.cwd(), "src", "modules"),
-                    manifest.id,
+                    process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+                        path.resolve(process.cwd(), "external-modules"),
+                    manifest.uuid,
                     file.path,
                 );
                 try {

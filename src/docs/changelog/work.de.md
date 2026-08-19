@@ -159,3 +159,7 @@ Von Modulen bereitgestellte SPA-Seiten behalten authentifizierte Sitzungen nun b
 ## Modulüberschrift und Zeigerinitialisierung korrigieren
 
 Die Inhaltskarte der Module behält nun die feste Überschrift „Module“, während Statusfilter in der Navigation verbleiben. Die gemeinsame Zeigerverfolgung importiert ihren CTX-Fähigkeitsbus nun ausdrücklich, sodass von Modulen bereitgestellte Seiten bei direktem Aufruf nicht mehr fehlschlagen.
+
+## Gebündelte Sprachmodule entfernen
+
+Cognis Englisch und Cognis Japanisch werden nun ausschließlich aus ihren eigenständigen Marketplace-Repositorys installiert. Der gebündelte Modul-Workspace wurde entfernt; Laufzeiterkennung, UI-Routing, Integritätsprüfungen, CLI-Erweiterungen und die Registrierung von Study-Sprachen verwenden nur noch UUID-adressierte Installationen unter `COGNIS_EXTERNAL_MODULES_ROOT`. Gemeinsam genutzte Study-Navigationsressourcen gehören nun dem Study-Gateway.

@@ -28,7 +28,7 @@ New or reorganised components should converge on the same top-level concern name
 | Platform / core layer | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` holds developer docs, `src/api/` HTTP/server code, and `src/ui/` browser assets. `src/core/` remains the provider-agnostic contract and service layer. |
 | Gateway               | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Keep gateway-owned server handlers, route registration, and bootstrap helpers under `api/`; keep admin/browser assets under `ui/`.                                 |
 | Adapter               | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | Use `api/` for adapter-owned bootstrap or server helpers and `ui/` for adapter-owned browser assets when the adapter exposes them.                                 |
-| Module                | `src/modules/<id>/`            | `docs/`, `api/`, `ui/` | `docs/` and `ui/` are the stable homes for module docs and browser assets. `api/` is the stable home for module-owned server code.                                 |
+| Module                | `<module-repository>/`         | `docs/`, `api/`, `ui/` | `docs/` and `ui/` are the stable homes for module docs and browser assets. `api/` is the stable home for module-owned server code.                                 |
 
 Support directories such as `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/`, and `reuse/` may live beside those roots, but they complement them and must not replace them. For new or reorganised components, prefer `api/routes/` over a top-level `routes/` sibling and `docs/index.<lang>.md` over custom documentation entry filenames.
 
@@ -61,7 +61,7 @@ Different component types warrant different depth:
 | Platform / core | `src/docs/` platform docs      | All sections fully                                            |
 | Gateway         | `src/gateways/<id>/docs/`      | Lighter Architecture; include Configuration + API Routes      |
 | Adapter         | `src/adapters/<gw>/<id>/docs/` | Full standard (all applicable sections)                       |
-| Module          | `src/modules/<id>/docs/`       | Full standard; include API Routes when the module serves them |
+| Module          | `<module-repository>/docs/`    | Full standard; include API Routes when the module serves them |
 
 ### Code snippets
 

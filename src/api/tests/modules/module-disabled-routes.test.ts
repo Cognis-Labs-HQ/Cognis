@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createModuleExtensionRoutes } from "../module-extensions.js";
-import { createDefaultRouteContext } from "../../../api/reuse/route-context.js";
+import { createModuleExtensionRoutes } from "../../reuse/module-extension-routes.js";
+import { createDefaultRouteContext } from "../../reuse/route-context.js";
 
 function createResponseRecorder(): {
     status: number;

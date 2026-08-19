@@ -6,26 +6,6 @@ import { createUiRoutes } from "../../routes/ui/index.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
 
-test("module ui routes can be published outside /modules prefix", async () => {
-    const route = createUiRoutes({
-        listManifests: async () => [
-            {
-                id: "analytics",
-                entrypoints: { ui: "./ui/pages/analytics.html" },
-            },
-        ],
-    } as any);
-    const token = issueAccessToken("u1", "admin", 60);
-    const recorder = createResponseRecorder();
-    await route(
-        { headers: { cookie: `cognis_access_token=${token}` } } as any,
-        recorder.res as any,
-        new URL("http://localhost/analytics"),
-    );
-    assert.equal(recorder.status, 200);
-    assert.match(recorder.body, /Analytics Module/);
-});
-
 test("module ui routes resolve installed external modules by UUID", async (t) => {
     const uuid = "11111111-2222-4333-8444-555555555555";
     const moduleRoot = path.resolve("external-modules", uuid);
@@ -59,56 +39,6 @@ test("module ui routes resolve installed external modules by UUID", async (t) =>
 
     assert.equal(recorder.status, 200);
     assert.match(recorder.body, /External meeting module/);
-});
-
-test("module ui routes honor role access policies declared in routes.json", async () => {
-    const route = createUiRoutes({
-        listManifests: async () => [
-            {
-                id: "analytics",
-                entrypoints: { ui: "./ui/pages/analytics.html" },
-            },
-        ],
-    } as any);
-    const userToken = issueAccessToken("u1", "user", 60);
-    const userRecorder = createResponseRecorder();
-    await route(
-        { headers: { cookie: `cognis_access_token=${userToken}` } } as any,
-        userRecorder.res as any,
-        new URL("http://localhost/analytics"),
-    );
-    assert.equal(userRecorder.status, 302);
-    assert.equal(userRecorder.headers.location, "/dashboard");
-
-    const ownerToken = issueAccessToken("u1", "owner", 60);
-    const ownerRecorder = createResponseRecorder();
-    await route(
-        { headers: { cookie: `cognis_access_token=${ownerToken}` } } as any,
-        ownerRecorder.res as any,
-        new URL("http://localhost/analytics"),
-    );
-    assert.equal(ownerRecorder.status, 200);
-    assert.match(ownerRecorder.body, /Analytics Module/);
-});
-
-test("module ui routes fail closed on invalid role access policies in routes.json", async () => {
-    const route = createUiRoutes({
-        listManifests: async () => [
-            {
-                id: "analytics-invalid-policy",
-                entrypoints: { ui: "./ui/pages/analytics.html" },
-            },
-        ],
-    } as any);
-    const ownerToken = issueAccessToken("u1", "owner", 60);
-    const ownerRecorder = createResponseRecorder();
-    await route(
-        { headers: { cookie: `cognis_access_token=${ownerToken}` } } as any,
-        ownerRecorder.res as any,
-        new URL("http://localhost/analytics-invalid-policy"),
-    );
-    assert.equal(ownerRecorder.status, 302);
-    assert.equal(ownerRecorder.headers.location, "/dashboard");
 });
 
 test("administration page is visible to admins only", async () => {

@@ -12,7 +12,6 @@ ENV NODE_ENV=production \
   LOG_FILE=/app/logs/app.log \
   COGNIS_ACCESS_TOKEN_TTL_SECONDS=43200 \
   MEDIA_LOCATION=/app/media \
-  COGNIS_MODULES_ROOT=/app/dist/server/src/modules \
   COGNIS_EXTERNAL_MODULES_ROOT=/app/external-modules \
   COGNIS_GATEWAYS_ROOT=/app/dist/server/src/gateways \
   COGNIS_ADAPTERS_ROOT=/app/dist/server/src/adapters \

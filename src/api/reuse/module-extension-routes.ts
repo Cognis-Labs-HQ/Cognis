@@ -208,9 +208,6 @@ export function createModuleExtensionRoutes(
             flows: string[];
         }
     >();
-    const modulesRoot =
-        process.env.COGNIS_MODULES_ROOT ??
-        path.resolve(process.cwd(), "src", "modules");
     const externalModulesRoot =
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules");
@@ -497,16 +494,23 @@ export function createModuleExtensionRoutes(
 
         for (const manifest of manifests) {
             if (!isModuleEnabled(manifest.id)) continue;
-            const internalRoot = path.resolve(modulesRoot, manifest.id);
-            const externalRoot = path.resolve(
-                externalModulesRoot,
-                manifest.uuid ?? manifest.id,
-            );
-            const moduleRoot = await stat(externalRoot)
-                .then((entry) =>
-                    entry.isDirectory() ? externalRoot : internalRoot,
-                )
-                .catch(() => internalRoot);
+            if (!manifest.uuid) {
+                log?.("error", "External module is missing its UUID.", {
+                    component: "module-extension-routes",
+                    moduleId: manifest.id,
+                });
+                continue;
+            }
+            const moduleRoot = path.resolve(externalModulesRoot, manifest.uuid);
+            const moduleRootEntry = await stat(moduleRoot).catch(() => null);
+            if (!moduleRootEntry?.isDirectory()) {
+                log?.("error", "External module directory is unavailable.", {
+                    component: "module-extension-routes",
+                    moduleId: manifest.id,
+                    moduleUuid: manifest.uuid,
+                });
+                continue;
+            }
             options?.uiRegistry?.registerModuleStaticDir(
                 manifest.id,
                 path.join(moduleRoot, "ui"),

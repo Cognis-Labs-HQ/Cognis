@@ -37,7 +37,7 @@ Komponen anak adalah fitur belajar yang dapat dikirimkan secara mandiri untuk ba
 
 ### Struktur Direktori
 
-Modul bahasa berada di `src/modules/study/languages/<code>/`. Komponen anak berada di `components/<id>/` dalam modul bahasa.
+Modul bahasa adalah repositori mandiri yang dipasang melalui Marketplace Modul. Komponen anak berada di `components/<id>/` dalam repositorinya.
 
 ## Rute API
 
