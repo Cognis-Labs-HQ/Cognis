@@ -95,3 +95,7 @@ Configured PAT fields display a masked value without revealing the secret. Savin
 ## Validate provider tokens
 
 New marketplace PATs are checked against their configured provider namespace before storage. Invalid, unauthorized, unavailable, or insufficiently scoped credentials produce a localized warning toast and keep the source editor open for correction.
+
+## Retain PAT configuration
+
+Marketplace credential identifiers are now mirrored into the module directory cache. The built-in Cognis source restores its configured PAT marker after a server or container restart without storing the PAT itself outside the user keyring.

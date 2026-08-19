@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -65,6 +65,12 @@ test("trusted source updates accept credentials without mutable metadata", async
     } as any);
     assert.equal(saved.name, "Cognis Labs HQ");
     assert.equal(saved.credentialId, "module-source:trusted:pat");
+    await rm(path.join(root, "sources.json"));
+    const [restartedSource] = await new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    ).listSources();
+    assert.equal(restartedSource.credentialId, "module-source:trusted:pat");
 });
 
 test("cached UUID collisions prefer the trusted Cognis source", async () => {

@@ -116,6 +116,10 @@ export class ModuleMarketplaceService {
         return path.join(this.cacheRoot, "assets");
     }
 
+    private get credentialBindingsPath(): string {
+        return path.join(this.cacheRoot, "credential-bindings.json");
+    }
+
     async getSettings(): Promise<ModuleMarketplaceSettings> {
         try {
             return JSON.parse(
@@ -168,10 +172,13 @@ export class ModuleMarketplaceService {
             const trustedOverride = stored.find(
                 (source) => source.uuid === DEFAULT_TRUSTED_MODULE_SOURCE.uuid,
             );
+            const credentialBindings = await this.readCredentialBindings();
             return [
                 {
                     ...DEFAULT_TRUSTED_MODULE_SOURCE,
-                    credentialId: trustedOverride?.credentialId,
+                    credentialId:
+                        trustedOverride?.credentialId ??
+                        credentialBindings[DEFAULT_TRUSTED_MODULE_SOURCE.uuid],
                 },
                 ...stored.filter(
                     (source) =>
@@ -180,7 +187,16 @@ export class ModuleMarketplaceService {
             ];
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-                return [{ ...DEFAULT_TRUSTED_MODULE_SOURCE }];
+                const credentialBindings = await this.readCredentialBindings();
+                return [
+                    {
+                        ...DEFAULT_TRUSTED_MODULE_SOURCE,
+                        credentialId:
+                            credentialBindings[
+                                DEFAULT_TRUSTED_MODULE_SOURCE.uuid
+                            ],
+                    },
+                ];
             }
             throw error;
         }
@@ -203,6 +219,7 @@ export class ModuleMarketplaceService {
         await writeFile(this.statePath, JSON.stringify(next, null, 2), {
             mode: 0o600,
         });
+        await this.saveCredentialBinding(source.uuid, source.credentialId);
         await this.clearScanAttempt(source.uuid);
         return source;
     }
@@ -274,6 +291,7 @@ export class ModuleMarketplaceService {
         await writeFile(this.statePath, JSON.stringify(sources, null, 2), {
             mode: 0o600,
         });
+        await this.saveCredentialBinding(uuid, undefined);
         await this.pruneCachedSources(
             new Set(sources.map((source) => source.uuid)),
         );
@@ -809,6 +827,39 @@ export class ModuleMarketplaceService {
             if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
             throw error;
         }
+    }
+
+    private async readCredentialBindings(): Promise<Record<string, string>> {
+        try {
+            const value = JSON.parse(
+                await readFile(this.credentialBindingsPath, "utf8"),
+            ) as unknown;
+            return value && typeof value === "object" && !Array.isArray(value)
+                ? (value as Record<string, string>)
+                : {};
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
+            throw error;
+        }
+    }
+
+    private async saveCredentialBinding(
+        sourceUuid: string,
+        credentialId?: string,
+    ): Promise<void> {
+        const update = async () => {
+            const bindings = await this.readCredentialBindings();
+            if (credentialId) bindings[sourceUuid] = credentialId;
+            else delete bindings[sourceUuid];
+            await mkdir(this.cacheRoot, { recursive: true });
+            await writeFile(
+                this.credentialBindingsPath,
+                JSON.stringify(bindings, null, 2),
+                { mode: 0o600 },
+            );
+        };
+        this.catalogMutation = this.catalogMutation.then(update, update);
+        await this.catalogMutation;
     }
 
     private async recordScanAttempt(sourceUuid: string): Promise<void> {

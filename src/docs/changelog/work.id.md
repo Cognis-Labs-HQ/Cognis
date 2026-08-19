@@ -95,3 +95,7 @@ Bidang PAT yang telah dikonfigurasi menampilkan nilai tersamar tanpa mengungkap 
 ## Validasi token penyedia
 
 PAT marketplace baru diperiksa terhadap namespace penyedia yang dikonfigurasi sebelum disimpan. Kredensial yang tidak valid, tidak berwenang, tidak dapat diperiksa, atau cakupannya kurang menampilkan peringatan terlokalisasi dan membiarkan editor sumber tetap terbuka.
+
+## Pertahankan konfigurasi PAT
+
+Pengenal kredensial marketplace kini juga disimpan dalam cache direktori modul. Sumber bawaan Cognis memulihkan penanda PAT yang telah dikonfigurasi setelah server atau kontainer dimulai ulang tanpa menyimpan PAT di luar keyring pengguna.

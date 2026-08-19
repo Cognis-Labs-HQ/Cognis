@@ -95,3 +95,7 @@ Konfigurierte PAT-Felder zeigen einen maskierten Wert, ohne das Geheimnis offenz
 ## Anbieter-Token prüfen
 
 Neue Marketplace-PATs werden vor dem Speichern gegen den konfigurierten Anbieter-Namensraum geprüft. Ungültige, nicht autorisierte, nicht prüfbare oder unzureichend berechtigte Zugangsdaten zeigen eine lokalisierte Warnung und lassen den Quelleneditor zur Korrektur geöffnet.
+
+## PAT-Konfiguration behalten
+
+Marketplace-Zugangsdatenkennungen werden nun zusätzlich im Cache des Modulverzeichnisses gespeichert. Die integrierte Cognis-Quelle stellt ihre konfigurierte PAT-Markierung nach einem Server- oder Containerneustart wieder her, ohne das PAT außerhalb des Benutzer-Schlüsselbunds zu speichern.
