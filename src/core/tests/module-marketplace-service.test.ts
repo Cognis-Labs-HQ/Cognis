@@ -180,9 +180,13 @@ test("credential updates bypass scan throttling and authenticate immediately", a
 
 test("GitHub credential validation requires private repository scope", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const warnings: Array<Record<string, unknown>> = [];
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
+        (level, _message, meta) => {
+            if (level === "warn") warnings.push(meta);
+        },
     );
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (_input, init) => {
@@ -205,6 +209,14 @@ test("GitHub credential validation requires private repository scope", async () 
                 warnings: ["github_repo_scope_missing"],
                 scopes: ["read:org", "public_repo"],
             },
+        );
+        assert.deepEqual(warnings[0].issues, ["github_repo_scope_missing"]);
+        assert.match(
+            String(
+                (warnings[0].requiredPermissions as { fineGrained: string })
+                    .fineGrained,
+            ),
+            /Metadata: read; Contents: read/,
         );
     } finally {
         globalThis.fetch = originalFetch;

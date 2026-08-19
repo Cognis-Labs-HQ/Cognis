@@ -753,4 +753,5 @@
   <string name="ui.app.modules.source_access_denied">Dieses Token kann nicht auf den konfigurierten Repository-Namensraum zugreifen. Prüfen Sie die Organisationsfreigabe und Repository-Berechtigungen.</string>
   <string name="ui.app.modules.github_repo_scope_missing">Dieses GitHub-Token benötigt den Bereich repo, um private Repositorys zu laden.</string>
   <string name="ui.app.modules.source_access_failed">Der Anbieter konnte den Zugriff mit diesem Token nicht bestätigen.</string>
+  <string name="ui.app.modules.credential_validation_warning">Die PAT-Prüfung ist fehlgeschlagen. Die erforderlichen Berechtigungen stehen im Serverprotokoll.</string>
 </resources>

@@ -14,6 +14,10 @@ const GIT_CLONE_RETRY_DELAYS_MS = [250, 1_000];
 const TRANSIENT_GIT_FAILURE =
     /connection reset|recv failure|could not resolve host|failed to connect|connection timed out|operation timed out|tls connection|gnutls|http\/2 stream|remote end hung up|unexpected disconnect/i;
 const SOURCE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
+const GITHUB_PAT_PERMISSION_DOCS =
+    "https://docs.github.com/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens";
+const GITHUB_SSO_DOCS =
+    "https://docs.github.com/authentication/authenticating-with-single-sign-on/authorizing-a-personal-access-token-for-use-with-single-sign-on";
 
 export type ModuleSourceProvider = "github" | "gitlab";
 
@@ -272,6 +276,49 @@ export class ModuleMarketplaceService {
         }
         if (!response.ok && warnings.length === 0) {
             warnings.push("source_access_failed");
+        }
+        if (source.provider === "github" && response.ok) {
+            const repositories = (await response.json()) as Array<{
+                full_name?: unknown;
+            }>;
+            const repository = String(repositories[0]?.full_name ?? "");
+            if (repository) {
+                const contentsResponse = await fetch(
+                    `${source.baseUrl}/repos/${repository}/contents/manifest.json`,
+                    { headers },
+                ).catch(() => undefined);
+                if (contentsResponse?.status === 403) {
+                    warnings.push("github_contents_read_missing");
+                }
+            }
+        }
+        if (warnings.length > 0) {
+            this.log("warn", "Module source credential validation failed.", {
+                sourceUuid: source.uuid,
+                sourceName: source.name,
+                provider: source.provider,
+                namespace: source.namespace,
+                issues: warnings,
+                grantedClassicScopes: scopes,
+                requiredPermissions:
+                    source.provider === "github"
+                        ? {
+                              fineGrained:
+                                  "Repository access to every module repository; Metadata: read; Contents: read",
+                              classic: "repo scope for private repositories",
+                              organization:
+                                  "Authorize the token for organization SSO when SAML SSO is enforced",
+                          }
+                        : {
+                              token: "read_api and read_repository",
+                          },
+                references:
+                    source.provider === "github"
+                        ? [GITHUB_PAT_PERMISSION_DOCS, GITHUB_SSO_DOCS]
+                        : [
+                              "https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes",
+                          ],
+            });
         }
         return {
             valid: response.ok && warnings.length === 0,

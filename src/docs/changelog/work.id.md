@@ -99,3 +99,7 @@ PAT marketplace baru diperiksa terhadap namespace penyedia yang dikonfigurasi se
 ## Pertahankan konfigurasi PAT
 
 Pengenal kredensial marketplace kini juga disimpan dalam cache direktori modul. Sumber bawaan Cognis memulihkan penanda PAT yang telah dikonfigurasi setelah server atau kontainer dimulai ulang tanpa menyimpan PAT di luar keyring pengguna.
+
+## Rujuk izin PAT
+
+Peringatan kredensial di antarmuka kini ringkas. Log server mencatat masalah validasi secara tepat serta izin GitHub fine-grained yang diperlukan (akses repositori, baca Metadata, baca Contents), cakupan klasik repo untuk repositori privat, otorisasi SSO organisasi, dan rujukan dokumentasi resmi.

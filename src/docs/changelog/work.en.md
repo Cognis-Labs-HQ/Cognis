@@ -99,3 +99,7 @@ New marketplace PATs are checked against their configured provider namespace bef
 ## Retain PAT configuration
 
 Marketplace credential identifiers are now mirrored into the module directory cache. The built-in Cognis source restores its configured PAT marker after a server or container restart without storing the PAT itself outside the user keyring.
+
+## Reference PAT permissions
+
+Credential warnings are now concise in the UI. Server logs identify the exact validation issue and list the required GitHub fine-grained permissions (repository access, Metadata read, Contents read), classic repo scope for private repositories, organization SSO authorization, and official documentation references.

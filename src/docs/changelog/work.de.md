@@ -99,3 +99,7 @@ Neue Marketplace-PATs werden vor dem Speichern gegen den konfigurierten Anbieter
 ## PAT-Konfiguration behalten
 
 Marketplace-Zugangsdatenkennungen werden nun zusätzlich im Cache des Modulverzeichnisses gespeichert. Die integrierte Cognis-Quelle stellt ihre konfigurierte PAT-Markierung nach einem Server- oder Containerneustart wieder her, ohne das PAT außerhalb des Benutzer-Schlüsselbunds zu speichern.
+
+## PAT-Berechtigungen angeben
+
+Hinweise zu Zugangsdaten sind in der Oberfläche nun kurz. Serverprotokolle nennen das genaue Problem sowie die erforderlichen fein abgestuften GitHub-Berechtigungen (Repository-Zugriff, Metadaten lesen, Inhalte lesen), den klassischen Bereich repo für private Repositorys, die Organisations-SSO-Freigabe und offizielle Dokumentationsverweise.

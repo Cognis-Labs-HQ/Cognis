@@ -493,9 +493,7 @@ async function openMarketplaceSettings(initialPage = "settings") {
                 );
                 if (!validation.valid) {
                     showToast(
-                        i18n.t(
-                            `ui.app.modules.${validation.warnings[0] ?? "credential_invalid"}`,
-                        ),
+                        i18n.t("ui.app.modules.credential_validation_warning"),
                         { type: "warning" },
                     );
                     return false;

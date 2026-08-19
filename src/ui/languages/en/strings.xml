@@ -753,4 +753,5 @@
   <string name="ui.app.modules.source_access_denied">This token cannot access the configured repository namespace. Check its organization authorization and repository permissions.</string>
   <string name="ui.app.modules.github_repo_scope_missing">This GitHub token requires the repo scope to load private repositories.</string>
   <string name="ui.app.modules.source_access_failed">The provider could not verify access with this token.</string>
+  <string name="ui.app.modules.credential_validation_warning">PAT validation failed. Check the server log for required permissions.</string>
 </resources>

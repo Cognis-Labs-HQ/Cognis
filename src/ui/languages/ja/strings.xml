@@ -753,4 +753,5 @@
   <string name="ui.app.modules.source_access_denied">このトークンでは設定済みリポジトリ名前空間にアクセスできません。組織の承認とリポジトリ権限を確認してください。</string>
   <string name="ui.app.modules.github_repo_scope_missing">プライベートリポジトリを読み込むには、この GitHub トークンに repo スコープが必要です。</string>
   <string name="ui.app.modules.source_access_failed">プロバイダーはこのトークンによるアクセスを確認できませんでした。</string>
+  <string name="ui.app.modules.credential_validation_warning">PAT の検証に失敗しました。必要な権限はサーバーログで確認してください。</string>
 </resources>

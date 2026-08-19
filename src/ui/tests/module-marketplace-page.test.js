@@ -116,6 +116,7 @@ test("module marketplace identifies immutable trusted sources", () => {
     assert.match(source, /values\.token !== STORED_PAT_MASK/);
     assert.match(source, /await validateModuleSourceCredential/);
     assert.match(source, /if \(!validation\.valid\)/);
+    assert.match(source, /credential_validation_warning/);
 });
 
 test("recommended modules include the published Cognis HQ modules", () => {
