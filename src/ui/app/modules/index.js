@@ -6,6 +6,7 @@ import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { beginButtonLoading } from "../../reuse/button-loading.js";
+import { beginPageLoading } from "../../reuse/page-entry.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
@@ -913,26 +914,34 @@ function elements() {
 }
 
 export async function mount(root, { signal } = {}) {
-    pageRoot = root;
-    i18n = await createI18n();
-    applyDocumentTitle(i18n, "ui.page.title.modules");
-    composer = createPageComposer(root, {
-        allowCustomization: false,
-        preferenceKey: "administration-modules-layout",
-        i18n,
-        pageContext: {
-            title: i18n.t("ui.reuse.modules"),
-            subtitle: i18n.t("ui.app.modules.subtitle"),
-        },
-        elements: elements(),
-        signal,
-    });
-    await composer.init();
-    bindInteractions(root, signal);
-    refreshScreenshotCarousels = initializeScreenshotCarousels(root, signal);
-    void refreshMarketplaceData().catch((error) => {
-        showToast(error.message, { type: "error" });
-    });
+    const finishPageLoading = beginPageLoading();
+    try {
+        pageRoot = root;
+        i18n = await createI18n();
+        applyDocumentTitle(i18n, "ui.page.title.modules");
+        composer = createPageComposer(root, {
+            allowCustomization: false,
+            preferenceKey: "administration-modules-layout",
+            i18n,
+            pageContext: {
+                title: i18n.t("ui.reuse.modules"),
+                subtitle: i18n.t("ui.app.modules.subtitle"),
+            },
+            elements: elements(),
+            signal,
+        });
+        await composer.init();
+        bindInteractions(root, signal);
+        refreshScreenshotCarousels = initializeScreenshotCarousels(
+            root,
+            signal,
+        );
+        void refreshMarketplaceData().catch((error) => {
+            showToast(error.message, { type: "error" });
+        });
+    } finally {
+        finishPageLoading();
+    }
 }
 
 await mount(document.querySelector("#app"));

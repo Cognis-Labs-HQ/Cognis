@@ -75,3 +75,7 @@ Marktplatz-Scans werten eine leere Repository-Antwort, ein vorübergehend fehlen
 ## Sicherere, effiziente Modulsuche
 
 Marketplace-Aktualisierungen wurden in einem authentifizierten Scan gebündelt, Benutzer-Token für GitHub an der vertrauenswürdigen Quelle ergänzt, Abhängigkeits- und Bestätigungsprüfungen vor der Ausführung externen Codes wiederhergestellt und Manifestanfragen für GitHub Enterprise auf die konfigurierte API umgestellt.
+
+## Direktes Modulladen abschließen
+
+Beim direkten Laden der Modulseite wird die erfasste Ladeaufgabe nach Abschluss oder Fehlschlagen des Seitenaufbaus immer beendet. Dadurch bleibt das Ladesymbol nach einer Browser-Aktualisierung nicht mehr sichtbar.

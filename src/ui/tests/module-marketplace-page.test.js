@@ -20,6 +20,8 @@ test("module marketplace passes root and options to the page composer", () => {
     assert.match(source, /i18n,/);
     assert.match(source, /signal,/);
     assert.match(source, /max: "full"/);
+    assert.match(source, /const finishPageLoading = beginPageLoading\(\)/);
+    assert.match(source, /finally \{\s*finishPageLoading\(\)/);
 });
 
 test("module marketplace cards keep consistent content and action geometry", () => {

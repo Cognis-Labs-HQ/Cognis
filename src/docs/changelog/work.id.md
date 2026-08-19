@@ -75,3 +75,7 @@ Pemindaian marketplace tidak lagi menganggap respons repositori kosong, manifes 
 ## Penemuan modul lebih aman dan efisien
 
 Penyegaran marketplace dipusatkan dalam satu pemindaian terautentikasi, token pengguna GitHub ditambahkan untuk sumber tepercaya, pemeriksaan dependensi dan persetujuan dipulihkan sebelum kode eksternal dijalankan, serta permintaan manifes GitHub Enterprise memakai API yang dikonfigurasi.
+
+## Selesaikan pemuatan modul langsung
+
+Pemuatan langsung halaman Modul kini selalu mengakhiri tugas pemuatan yang dilacak setelah penyusun halaman selesai atau gagal, sehingga roda pemuatan tidak terus terlihat setelah penyegaran browser.

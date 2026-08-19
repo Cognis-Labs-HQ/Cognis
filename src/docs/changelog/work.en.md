@@ -75,3 +75,7 @@ Marketplace scans no longer treat an empty repository response, temporary missin
 ## Safer, efficient module discovery
 
 Concentrated marketplace refreshes into one authenticated scan, added GitHub user-token support for the trusted source, restored dependency and acknowledgement checks before external code runs, and made GitHub Enterprise manifest requests use the configured API.
+
+## Finish direct module loading
+
+Direct Modules page loads now always release their tracked loading task after the page composer finishes or fails, preventing the loading wheel from remaining visible after a browser refresh.
