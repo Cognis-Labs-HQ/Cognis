@@ -147,3 +147,7 @@ Die Modulaktivierung verwendet jetzt denselben erkannten Kernkomponentenkatalog 
 ## Absichtlich deaktivierte Abhängigkeiten respektieren
 
 Beim Aktivieren eines Moduls werden deaktivierte Gateways nicht mehr automatisch aktiviert, um dessen Manifest zu erfüllen. Cognis lässt die Abhängigkeit deaktiviert, lehnt die Aktivierung ab und gibt den lesbaren Komponentennamen wie Profile Adapter oder File Gateway zurück, damit die Modulseite eine klare Korrekturmeldung anzeigen kann.
+
+## Modulaktionen füllen die Karte
+
+Die Aktionsschaltflächen einer Modulkarte teilen nun die gesamte verfügbare Zeile gleichmäßig auf. Karten mit einer, zwei oder drei Aktionen lassen keine ungenutzten Schaltflächenlücken mehr und verschieben keine einzelne Aktion in eine neue Zeile.

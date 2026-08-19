@@ -28,7 +28,7 @@ test("module marketplace cards keep consistent content and action geometry", () 
     assert.match(marketplaceStyles, /-webkit-line-clamp: 2/);
     assert.match(
         marketplaceStyles,
-        /\.module-store-card-actions[\s\S]*grid-template-columns: repeat\(auto-fit, minmax\(7rem, 1fr\)\)/,
+        /\.module-store-card-actions[\s\S]*grid-auto-columns: minmax\(0, 1fr\)[\s\S]*grid-auto-flow: column/,
     );
     assert.doesNotMatch(marketplaceStyles, /flex-wrap: nowrap/);
 });

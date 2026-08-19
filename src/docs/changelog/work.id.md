@@ -147,3 +147,7 @@ Pengaktifan modul kini menggunakan katalog komponen inti yang ditemukan seperti 
 ## Hormati dependensi yang sengaja dinonaktifkan
 
 Mengaktifkan modul tidak lagi mengaktifkan gateway yang dinonaktifkan untuk memenuhi manifesnya. Cognis membiarkan dependensi tetap nonaktif, menolak pengaktifan, dan mengembalikan nama komponen yang mudah dibaca—seperti Profile Adapter atau File Gateway—agar halaman Modul dapat menampilkan pesan koreksi yang jelas.
+
+## Penuhi kartu dengan aksi modul
+
+Tombol aksi kartu modul kini membagi seluruh baris yang tersedia secara merata. Kartu dengan satu, dua, atau tiga aksi tidak lagi menyisakan celah sebesar tombol atau memindahkan satu aksi ke baris berikutnya.

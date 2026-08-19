@@ -147,3 +147,7 @@ Module enablement now uses the same discovered core-component catalog as install
 ## Respect intentionally disabled dependencies
 
 Enabling a module no longer activates disabled gateways to satisfy its manifest. Cognis leaves the dependency disabled, rejects enablement, and returns the human-readable component name—such as Profile Adapter or File Gateway—so the Modules page can toast a clear corrective message.
+
+## Fill module card actions
+
+Module card action buttons now divide the full available row evenly. Cards with one, two, or three actions no longer leave unused button-sized gaps or wrap a lone action onto another row.
