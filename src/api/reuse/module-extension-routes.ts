@@ -157,9 +157,6 @@ interface ModuleBootstrapCtx
     router: ModuleApiRouter;
     contributeCapability(key: string, value: unknown): void;
     contributePublicCapability(key: string, value: unknown): void;
-    preferences: {
-        get(): Promise<Record<string, unknown>>;
-    };
     registerFlow(flow: FlowRegistration): void;
 }
 
@@ -178,7 +175,6 @@ export interface ModuleExtensionOptions {
     routeContext: RouteContext;
     bootstrapTimeoutMs?: number;
     onBootstrapFailed?: (moduleId: string) => Promise<void> | void;
-    getPreferences?: (moduleId: string) => Promise<Record<string, unknown>>;
 }
 
 export interface ModuleExtensionRoutes {
@@ -334,10 +330,6 @@ export function createModuleExtensionRoutes(
             moduleRoot,
             flow,
             log,
-            preferences: {
-                get: () =>
-                    options.getPreferences?.(moduleId) ?? Promise.resolve({}),
-            },
             capabilities: {
                 contribute(key, value) {
                     requireActiveBootstrap();

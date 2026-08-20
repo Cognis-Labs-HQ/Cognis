@@ -40,14 +40,15 @@ export interface ModuleManifest {
     };
     ui?: {
         authTypingMessages?: string[];
-        /** Administrator-editable preferences owned by this module. */
+        /** Fields rendered by Cognis for the module-owned configuration API. */
         preferences?: Array<{
             key: string;
-            label: string;
-            description?: string;
+            labelKey: string;
+            descriptionKey?: string;
             type: "boolean" | "string" | "number";
             default?: boolean | string | number;
         }>;
+        stringsBaseUrl?: string;
     };
     files?: Array<{
         path: string;

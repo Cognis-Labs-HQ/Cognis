@@ -22,18 +22,18 @@ export async function loadInstalledModules() {
     return data(await apiFetch("/api/v1/modules"));
 }
 
-export async function loadModulePreferences(moduleId) {
+export async function loadModuleConfig(moduleId) {
     return data(
         await apiFetch(
-            `/api/v1/modules/${encodeURIComponent(moduleId)}/preferences`,
+            `/api/v1/modules/${encodeURIComponent(moduleId)}/config`,
         ),
     );
 }
 
-export async function saveModulePreferences(moduleId, values) {
+export async function saveModuleConfig(moduleId, values) {
     return data(
         await apiFetch(
-            `/api/v1/modules/${encodeURIComponent(moduleId)}/preferences`,
+            `/api/v1/modules/${encodeURIComponent(moduleId)}/config`,
             {
                 method: "PUT",
                 headers: { "content-type": "application/json" },

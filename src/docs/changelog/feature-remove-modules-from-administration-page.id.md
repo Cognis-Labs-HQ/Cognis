@@ -384,4 +384,4 @@ Adaptor profil kini mengklaim slot menu ketersediaan secara sinkron sebelum memu
 
 ## Menerapkan pengaturan modul dengan sengaja
 
-Pengaturan modul kini memfokuskan kontrol formulir pertama alih-alih membuka deskriptornya, menampilkan umpan balik sukses hanya setelah Simpan selesai, dan mempertahankan satu konfigurasi untuk seluruh runtime. Modul eksternal membaca nilai terkini yang sama melalui `ctx.preferences.get()`; penyimpanan memuat ulang ekstensi modul yang aktif agar konfigurasi operasional baru berlaku tanpa memulai ulang server, sekaligus menghilangkan jalur konfigurasi per administrator atau konfigurasi lama yang paralel.
+Pengaturan modul kini memfokuskan kontrol formulir pertama alih-alih membuka deskriptornya dan hanya menampilkan umpan balik sukses setelah Simpan selesai. Cognis merender bidang yang dideklarasikan dalam manifes, memuat nilainya dari endpoint milik modul `GET /api/v1/modules/<id>/config`, dan menulis perubahan dengan `PUT` ke endpoint tersebut sehingga modul tetap menjadi satu-satunya otoritas untuk validasi, penerapan, dan penyimpanan.

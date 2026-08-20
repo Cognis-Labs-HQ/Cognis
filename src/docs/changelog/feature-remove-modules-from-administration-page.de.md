@@ -384,4 +384,4 @@ Der Profiladapter reserviert den Platz für das Verfügbarkeitsmenü nun synchro
 
 ## Moduleinstellungen gezielt anwenden
 
-Moduleinstellungen fokussieren nun das erste Formularfeld, statt dessen Beschreibung zu öffnen, zeigen eine Erfolgsmeldung nur nach abgeschlossenem Speichern und bewahren eine laufzeitweit gemeinsame Konfiguration. Externe Module lesen dieselben aktuellen Werte über `ctx.preferences.get()`; das Speichern lädt aktivierte Modulerweiterungen neu, damit die neue Betriebskonfiguration ohne Serverneustart wirksam wird und parallele administratorbezogene oder alte Konfigurationspfade entfallen.
+Moduleinstellungen fokussieren nun das erste Formularfeld, statt dessen Beschreibung zu öffnen, und zeigen eine Erfolgsmeldung nur nach abgeschlossenem Speichern. Cognis rendert die im Manifest deklarierten Felder, lädt ihre Werte vom moduleigenen Endpunkt `GET /api/v1/modules/<id>/config` und schreibt Änderungen mit `PUT` an diesen Endpunkt, sodass allein das Modul für Validierung, Anwendung und Speicherung zuständig bleibt.

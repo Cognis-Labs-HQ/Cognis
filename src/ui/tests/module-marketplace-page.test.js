@@ -28,6 +28,14 @@ const filterSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/filters.js"),
     "utf8",
 );
+const moduleApiSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/api.js"),
+    "utf8",
+);
+const modulePreferencesSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/preferences.js"),
+    "utf8",
+);
 
 test("modules navigation derives its width from its content", () => {
     assert.match(
@@ -77,6 +85,17 @@ test("module preference fields use stable popup layout and descriptor tooltips",
         marketplaceSource,
         /const didSave = await openModulePreferences[\s\S]*if \(didSave\)[\s\S]*preferences_saved/,
     );
+});
+
+test("module settings use manifest translations and module-owned config routes", () => {
+    assert.match(
+        moduleApiSource,
+        /\/modules\/\$\{encodeURIComponent\(moduleId\)\}\/config/,
+    );
+    assert.match(moduleApiSource, /method: "PUT"/);
+    assert.match(modulePreferencesSource, /definition\.labelKey/);
+    assert.match(modulePreferencesSource, /definition\.descriptionKey/);
+    assert.match(modulePreferencesSource, /module\.ui\?\.stringsBaseUrl/);
 });
 
 test("module filters include modules matching any active category", () => {

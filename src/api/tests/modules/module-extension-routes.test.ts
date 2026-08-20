@@ -166,7 +166,6 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             ctx.registerSpaRoute({ id: "meetings", pattern: "^/meetings$", base: "/meetings", scriptUrl: "/static/modules/meetings/app.js" });
             ctx.registerAuthTypingMessage({ id: "meetings-ready", textKey: "module.meetings.ready" });
             ctx.capabilities.contribute("meetings:provider", "external");
-            ctx.capabilities.contribute("meetings:configured-url", (await ctx.preferences.get()).instanceUrl);
             ctx.router.put("/api/v1/modules/meetings/config", (_req, res) => { res.writeHead(204); res.end(); });
         }`,
     );
@@ -203,9 +202,6 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
                 flow: systemCtx.flow,
             }),
             uiRegistry,
-            getPreferences: async () => ({
-                instanceUrl: "https://meet.example.com",
-            }),
         },
     );
     try {
@@ -217,10 +213,6 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         ]);
         assert.equal(uiRegistry.listAuthTypingMessages().length, 1);
         assert.equal(systemCtx.getCapability("meetings:provider"), "external");
-        assert.equal(
-            systemCtx.getCapability("meetings:configured-url"),
-            "https://meet.example.com",
-        );
 
         let status = 0;
         assert.equal(

@@ -32,12 +32,6 @@ export interface ModuleRouteHooks {
     >;
     onImported?: (moduleId: string) => Promise<void> | void;
     onUninstalled?: (moduleId: string) => Promise<void> | void;
-    getPreferences?: (moduleId: string) => Promise<Record<string, unknown>>;
-    setPreferences?: (
-        moduleId: string,
-        values: Record<string, unknown>,
-    ) => Promise<void>;
-    onPreferencesChanged?: (moduleId: string) => Promise<void> | void;
 }
 
 export class ModuleEnableValidationError extends Error {
@@ -124,49 +118,6 @@ export function createModuleRoutes(
             method: req.method ?? "GET",
             path: url.pathname,
         };
-        const preferencesMatch = url.pathname.match(
-            /^\/api\/v1\/modules\/([^/]+)\/preferences$/,
-        );
-        if (preferencesMatch && ["GET", "PUT"].includes(req.method ?? "")) {
-            const claims = ctx.requireAuth(req, res, "admin");
-            if (!claims) return true;
-            const moduleId = decodeURIComponent(preferencesMatch[1]);
-            const manifest = (await moduleService.list()).find(
-                (entry) => entry.id === moduleId,
-            );
-            if (!manifest) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "module_not_found",
-                            message: "Module not found.",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const definitions = manifest.ui?.preferences ?? [];
-            if (req.method === "PUT") {
-                const submitted = await readJson(req);
-                const values = Object.fromEntries(
-                    definitions
-                        .filter((definition) =>
-                            Object.hasOwn(submitted, definition.key),
-                        )
-                        .map((definition) => [
-                            definition.key,
-                            submitted[definition.key],
-                        ]),
-                );
-                await hooks?.setPreferences?.(moduleId, values);
-                await hooks?.onPreferencesChanged?.(moduleId);
-            }
-            const stored = (await hooks?.getPreferences?.(moduleId)) ?? {};
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { definitions, values: stored } }));
-            return true;
-        }
         if (
             marketplace &&
             url.pathname === "/api/v1/modules/sources/validate-credential" &&

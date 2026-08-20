@@ -823,6 +823,7 @@ function bindInteractions(root, signal) {
                 );
                 if (module) {
                     const didSave = await openModulePreferences(module, {
+                        i18n,
                         title: i18n.t("ui.app.modules.preferences_title"),
                         save: i18n.t("ui.reuse.save"),
                         cancel: i18n.t("ui.reuse.cancel"),

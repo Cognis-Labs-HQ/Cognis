@@ -1,7 +1,8 @@
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { openPopup } from "../../reuse/popup.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
-import { loadModulePreferences, saveModulePreferences } from "./api.js";
+import { extendI18n } from "../../reuse/i18n.js";
+import { loadModuleConfig, saveModuleConfig } from "./api.js";
 
 export function renderModulePreferenceField(
     definition,
@@ -24,16 +25,24 @@ export function renderModulePreferenceField(
 }
 
 export async function openModulePreferences(module, labels) {
-    const payload = await loadModulePreferences(module.id);
-    const definitions = payload.definitions ?? [];
+    const definitions = module.ui?.preferences ?? [];
     if (!definitions.length) return;
+    const values = await loadModuleConfig(module.id);
+    const moduleI18n = await extendI18n(labels.i18n, module.ui?.stringsBaseUrl);
+    const localizedDefinitions = definitions.map((definition) => ({
+        ...definition,
+        label: moduleI18n.t(definition.labelKey),
+        description: definition.descriptionKey
+            ? moduleI18n.t(definition.descriptionKey)
+            : undefined,
+    }));
     const action = await openPopup({
         title: labels.title,
-        body: `<form class="module-settings-popup-fields" data-module-preferences>${definitions
+        body: `<form class="module-settings-popup-fields" data-module-preferences>${localizedDefinitions
             .map((definition) =>
                 renderModulePreferenceField(
                     definition,
-                    payload.values?.[definition.key] ?? definition.default,
+                    values?.[definition.key] ?? definition.default,
                     labels.information,
                 ),
             )
@@ -47,7 +56,7 @@ export async function openModulePreferences(module, labels) {
             if (action !== "save") return;
             const form = overlay.querySelector("[data-module-preferences]");
             const values = Object.fromEntries(
-                definitions.map((definition) => {
+                localizedDefinitions.map((definition) => {
                     const input = form.elements.namedItem(definition.key);
                     const value =
                         definition.type === "boolean"
@@ -58,7 +67,7 @@ export async function openModulePreferences(module, labels) {
                     return [definition.key, value];
                 }),
             );
-            await saveModulePreferences(module.id, values);
+            await saveModuleConfig(module.id, values);
         },
     });
     return action === "save";

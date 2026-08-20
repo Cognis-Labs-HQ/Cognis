@@ -384,4 +384,4 @@ The profile adapter now claims the availability menu slot synchronously before l
 
 ## Apply module settings deliberately
 
-Module settings now focus the first form control instead of opening its descriptor, show success feedback only after Save completes, and persist one runtime-wide configuration. External modules read those same current values through `ctx.preferences.get()`, and saving reloads enabled module extensions so the new operational configuration takes effect without a server restart, eliminating parallel per-administrator or legacy configuration paths.
+Module settings now focus the first form control instead of opening its descriptor and show success feedback only after Save completes. Cognis renders manifest-declared fields, loads their values from the module-owned `GET /api/v1/modules/<id>/config` endpoint, and writes changes with `PUT` to that endpoint so the module remains the sole authority for validation, application, and persistence.
