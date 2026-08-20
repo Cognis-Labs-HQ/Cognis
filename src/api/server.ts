@@ -232,11 +232,10 @@ export function assertModuleInstallDependencies(
 export function assertModuleCapabilityDependencies(
     moduleId: string,
     requiresCapabilities: readonly string[],
-    getCapability: (capabilityId: string) => unknown,
+    isCapabilityAvailable: (capabilityId: string) => boolean,
 ): void {
     for (const capability of requiresCapabilities) {
-        if (capability.startsWith("ui:")) continue;
-        if (getCapability(capability) !== undefined) continue;
+        if (isCapabilityAvailable(capability)) continue;
         throw new ModuleEnableValidationError(
             "module_capability_unavailable",
             `Module ${moduleId} requires unavailable capability ${capability}`,
@@ -344,7 +343,13 @@ export function buildServer(deps: ApiDependencies) {
                 assertModuleCapabilityDependencies(
                     moduleId,
                     manifest?.requiresCapabilities ?? [],
-                    routeContext.getCapability,
+                    (capabilityId) =>
+                        capabilityId.startsWith("ui:")
+                            ? (deps.uiRegistry?.hasActiveCapabilityProvider(
+                                  capabilityId,
+                              ) ?? false)
+                            : routeContext.getCapability(capabilityId) !==
+                              undefined,
                 );
                 await (
                     deps.runModuleTests ??

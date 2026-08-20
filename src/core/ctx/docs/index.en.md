@@ -171,6 +171,6 @@ returns `false`, and `run()` rejects immediately.
 
 ## Module capability declarations
 
-Modules declare consumed services with the top-level manifest field `requiresCapabilities`. Server capabilities use their registered IDs (for example `auth:requireAuth`); browser capabilities use the `ui:` namespace (for example `ui:profileAvatarRenderer`). Cognis attaches declared UI requirements to the module's SPA routes and imports only matching registered provider scripts before mounting the route. Enablement validates server capabilities against the server context, while `ui:` capabilities are resolved separately through the UI registry.
+Modules declare consumed services with the top-level manifest field `requiresCapabilities`. Server capabilities use their registered IDs (for example `auth:requireAuth`); browser capabilities use the `ui:` namespace (for example `ui:profileAvatarRenderer`). Cognis attaches declared UI requirements to the module's SPA routes and imports only matching registered provider scripts before mounting the route. Enablement resolves server capabilities through the server context and `ui:` capabilities through active UI registry providers; SPA routing rechecks browser providers before mounting.
 
 Providers must publish the capability ID in their component documentation and, for browser providers, register it through `providesCapabilities`. Operators can inspect the live registry with `GET /api/v1/system/capabilities` as an owner or `cognisctl system:capabilities`.

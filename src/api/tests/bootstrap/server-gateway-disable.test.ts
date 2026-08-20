@@ -20,21 +20,23 @@ import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 
-test("module enable validation separates browser and server capabilities", () => {
+test("module enable validation resolves browser and server capabilities", () => {
     assert.doesNotThrow(() =>
         assertModuleCapabilityDependencies(
-            "jitsi-meet",
+            "external-module",
             ["ui:profileAvatarRenderer", "auth:requireAuth"],
             (capabilityId) =>
-                capabilityId === "auth:requireAuth" ? () => true : undefined,
+                ["ui:profileAvatarRenderer", "auth:requireAuth"].includes(
+                    capabilityId,
+                ),
         ),
     );
     assert.throws(
         () =>
             assertModuleCapabilityDependencies(
-                "jitsi-meet",
-                ["auth:requireAuth"],
-                () => undefined,
+                "external-module",
+                ["ui:missingRenderer"],
+                () => false,
             ),
         (error) =>
             (error as { code?: string }).code ===
@@ -148,7 +150,7 @@ test("module installation resolves adapter UUIDs through their owning gateway", 
 
     assert.doesNotThrow(() =>
         assertModuleInstallDependencies(
-            "jitsi-meet",
+            "external-module",
             ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
             registry,
             components,
@@ -158,7 +160,7 @@ test("module installation resolves adapter UUIDs through their owning gateway", 
     assert.throws(
         () =>
             assertModuleInstallDependencies(
-                "jitsi-meet",
+                "external-module",
                 ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
                 registry,
                 components,
@@ -180,7 +182,7 @@ test("module enablement rejects disabled adapter dependencies by name", () => {
     assert.throws(
         () =>
             assertModuleEnableDependencies(
-                "jitsi-meet",
+                "external-module",
                 ["4387fae9-26dd-5a80-84b2-e5f4833b7fb9"],
                 registry,
                 [
@@ -233,7 +235,7 @@ test("buildServer loads external module assets before accepting requests", async
         moduleRuntimeGateway: {
             listManifests: async () => [
                 {
-                    id: "jitsi-meet",
+                    id: "external-module",
                     uuid,
                     class: "extension",
                     enabledByDefault: true,
@@ -251,7 +253,7 @@ test("buildServer loads external module assets before accepting requests", async
     try {
         const port = await listen(server);
         const response = await fetch(
-            `http://127.0.0.1:${port}/static/modules/jitsi-meet/app.js`,
+            `http://127.0.0.1:${port}/static/modules/external-module/app.js`,
         );
         assert.equal(response.status, 200);
         assert.equal(await response.text(), "export {};");

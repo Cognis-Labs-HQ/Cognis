@@ -372,4 +372,4 @@ Gateway bootstrap now preserves manifest UUID metadata even for components with 
 
 ## Separate browser capability validation
 
-Module enablement now validates only server capabilities against the server context. Browser-only `ui:` requirements, such as Jitsi Meet’s profile avatar renderer, remain resolved by the UI registry before the SPA route mounts instead of incorrectly blocking module activation.
+Module enablement now validates server and browser capabilities through their owning runtime contexts. Browser-only `ui:` requirements are resolved against active UI registry providers during enablement and again before the SPA route mounts, rather than being bypassed or looked up in the server context.

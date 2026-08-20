@@ -372,4 +372,4 @@ Bootstrap gateway kini mempertahankan metadata UUID manifes bahkan untuk kompone
 
 ## Memisahkan validasi kapabilitas peramban
 
-Aktivasi modul kini hanya memvalidasi kapabilitas server terhadap konteks server. Kebutuhan khusus peramban dalam namespace `ui:`, seperti perender avatar profil Jitsi Meet, tetap diselesaikan oleh registri UI sebelum rute SPA dipasang dan tidak lagi keliru memblokir aktivasi modul.
+Aktivasi modul kini memvalidasi kapabilitas server dan peramban melalui konteks runtime pemiliknya masing-masing. Kebutuhan khusus peramban dalam namespace `ui:` diselesaikan terhadap penyedia registri UI yang aktif saat aktivasi dan kembali sebelum rute SPA dipasang, bukan dilewati atau dicari dalam konteks server.

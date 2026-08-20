@@ -372,4 +372,4 @@ Der Gateway-Start bewahrt nun UUID-Metadaten aus Manifesten auch für Komponente
 
 ## Browser-Capability-Prüfung trennen
 
-Bei der Modulaktivierung werden nun nur Server-Capabilities gegen den Serverkontext geprüft. Reine Browseranforderungen im Namensraum `ui:`, etwa der Profilbild-Renderer von Jitsi Meet, werden weiterhin vor dem Einhängen der SPA-Route durch die UI-Registry aufgelöst, statt die Modulaktivierung fälschlich zu blockieren.
+Bei der Modulaktivierung werden Server- und Browser-Capabilities nun über ihre jeweils zuständigen Laufzeitkontexte geprüft. Reine Browseranforderungen im Namensraum `ui:` werden bei der Aktivierung gegen aktive Anbieter der UI-Registry und erneut vor dem Einhängen der SPA-Route aufgelöst, statt umgangen oder im Serverkontext gesucht zu werden.

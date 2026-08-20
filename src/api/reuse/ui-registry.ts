@@ -324,6 +324,14 @@ export class UIRegistry {
         return this.resolveDescriptor([...this.navbarPlugins]);
     }
 
+    hasActiveCapabilityProvider(capabilityId: string): boolean {
+        return this.navbarPlugins.some(
+            (plugin) =>
+                plugin.providesCapabilities?.includes(capabilityId) &&
+                (!plugin.isEnabled || plugin.isEnabled()),
+        );
+    }
+
     listSpaRoutes(): SpaRoute[] {
         const activeProviders = this.navbarPlugins.filter(
             (plugin) => !plugin.isEnabled || plugin.isEnabled(),

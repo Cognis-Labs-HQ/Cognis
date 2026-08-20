@@ -189,6 +189,11 @@ test("UIRegistry selects only declared UI capability provider scripts", () => {
     });
 
     assert.deepEqual(reg.listSpaRoutes()[0].capabilityScripts, ["/profile.js"]);
+    assert.equal(
+        reg.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
+        true,
+    );
+    assert.equal(reg.hasActiveCapabilityProvider("ui:missing"), false);
 });
 
 test("UIRegistry omits routes whose UI capability provider is inactive", () => {
@@ -207,6 +212,10 @@ test("UIRegistry omits routes whose UI capability provider is inactive", () => {
     });
 
     assert.deepEqual(reg.listSpaRoutes(), []);
+    assert.equal(
+        reg.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
+        false,
+    );
     assert.equal(reg.resolveSpaRoute("/meetings"), undefined);
 });
 
