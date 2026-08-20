@@ -60,6 +60,13 @@ body[data-theme="dark"] .module-icon-settings {
     width: fit-content;
     min-width: 0;
 }
+[data-module-sidebar] button.is-active {
+    border-color: var(--accent-color);
+    background: var(--surface-soft);
+    box-shadow: inset 0.25rem 0 0 var(--accent-color);
+    color: var(--text-color);
+    font-weight: 700;
+}
 .module-settings-sources {
     margin-block-start: 1.5rem;
     padding-block-start: 1rem;

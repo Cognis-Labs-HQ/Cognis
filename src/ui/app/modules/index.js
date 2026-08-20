@@ -32,6 +32,12 @@ import {
     validateModuleSourceCredential,
 } from "./api.js";
 import { resolveSourceToken } from "./credentials.js";
+import {
+    applyModuleFilterSelection,
+    createModuleFilters,
+    filterModules,
+    renderModuleFilters,
+} from "./filters.js";
 import { detailModuleUuid, formatVersion } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
 
@@ -40,8 +46,7 @@ let composer;
 let pageRoot;
 let modules = [];
 let sources = [];
-let category = "all";
-let view = "all";
+const filters = createModuleFilters();
 let selectedModule = null;
 let discoverySequence = 0;
 let marketplaceRefreshPending = false;
@@ -255,37 +260,12 @@ function resolveModuleAssetUrl(value) {
     }
 }
 
-function modulesForView() {
-    return modules.filter((module) => {
-        if (!isVisibleMarketplaceModule(module)) return false;
-        if (
-            view === "installed" &&
-            !(
-                module.installed ||
-                module.status === "enabled" ||
-                module.status === "disabled"
-            )
-        )
-            return false;
-        if (view === "recommended") return module.recommended;
-        if (view === "available") return !module.installed && !module.status;
-        return true;
-    });
-}
-
 function isVisibleMarketplaceModule(module) {
     return module.template !== true;
 }
 
-function viewLabel(item) {
-    return i18n.t(item === "all" ? "ui.reuse.all" : `ui.app.modules.${item}`);
-}
-
 function visibleModules() {
-    return modulesForView().filter(
-        (module) =>
-            category === "all" || (module.tags ?? []).includes(category),
-    );
+    return filterModules(modules, filters);
 }
 
 function formatTag(tag) {
@@ -297,12 +277,11 @@ function formatTag(tag) {
 }
 
 function renderSidebar(categories) {
-    return `<aside data-module-sidebar>
-      ${["all", "recommended", "installed", "available"].map((item) => `<button type="button" class="btn-neutral${view === item ? " is-active" : ""}" data-store-view="${item}">${escapeHtml(viewLabel(item))}</button>`).join("")}
-      <h3>${escapeHtml(i18n.t("ui.app.modules.categories"))}</h3>
-      <button type="button" class="btn-neutral${category === "all" ? " is-active" : ""}" data-store-category="all">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
-      ${categories.map((item) => `<button type="button" class="btn-neutral${category === item ? " is-active" : ""}" data-store-category="${escapeHtml(item)}">${escapeHtml(formatTag(item))}</button>`).join("")}
-    </aside>`;
+    return renderModuleFilters(categories, filters, {
+        i18n,
+        escapeHtml,
+        formatTag,
+    });
 }
 
 function renderStore() {
@@ -650,7 +629,12 @@ function refreshMarketplace() {
     const sidebar = pageRoot?.querySelector("[data-module-sidebar]");
     if (sidebar) {
         const categories = [
-            ...new Set(modulesForView().flatMap((module) => module.tags ?? [])),
+            ...new Set(
+                filterModules(modules, {
+                    ...filters,
+                    categories: new Set(),
+                }).flatMap((module) => module.tags ?? []),
+            ),
         ].sort((left, right) => left.localeCompare(right));
         sidebar.outerHTML = renderSidebar(categories);
     }
@@ -795,11 +779,7 @@ function bindInteractions(root, signal) {
                 );
                 return;
             }
-            if (target.dataset.storeView) view = target.dataset.storeView;
-            if (target.dataset.storeView) category = "all";
-            if (target.dataset.storeCategory)
-                category = target.dataset.storeCategory;
-            if (target.dataset.storeView || target.dataset.storeCategory) {
+            if (applyModuleFilterSelection(filters, target.dataset)) {
                 selectedModule = null;
                 refreshMarketplace();
                 return;

@@ -3,10 +3,20 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+    applyModuleFilterSelection,
+    createModuleFilters,
+    filterModules,
+    renderModuleFilters,
+} from "../app/modules/filters.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const marketplaceStyles = readFileSync(
     resolve(ROOT, "src/ui/styles/modules.css"),
+    "utf8",
+);
+const filterSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/filters.js"),
     "utf8",
 );
 
@@ -18,6 +28,62 @@ test("modules navigation derives its width from its content", () => {
     assert.match(
         marketplaceStyles,
         /\[data-module-sidebar\] button\s*{[^}]*width: fit-content;[^}]*min-width: 0/,
+    );
+});
+
+test("module filters combine multiple active categories", () => {
+    const filters = createModuleFilters();
+    assert.equal(
+        applyModuleFilterSelection(filters, { storeCategory: "productivity" }),
+        true,
+    );
+    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
+    const modules = [
+        {
+            id: "notes",
+            tags: ["productivity", "collaboration"],
+        },
+        { id: "tasks", tags: ["productivity"] },
+    ];
+
+    assert.deepEqual(
+        filterModules(modules, filters).map((module) => module.id),
+        ["notes"],
+    );
+    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
+    assert.deepEqual(
+        filterModules(modules, filters).map((module) => module.id),
+        ["notes", "tasks"],
+    );
+});
+
+test("module filters expose every selected state", () => {
+    const filters = createModuleFilters();
+    applyModuleFilterSelection(filters, { storeView: "installed" });
+    applyModuleFilterSelection(filters, { storeCategory: "productivity" });
+    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
+    const html = renderModuleFilters(
+        ["productivity", "collaboration"],
+        filters,
+        {
+            i18n: { t: (key) => key },
+            escapeHtml: (value) => value,
+            formatTag: (value) => value,
+        },
+    );
+
+    assert.match(html, /data-store-view="installed" aria-pressed="true"/);
+    assert.match(
+        html,
+        /data-store-category="productivity" aria-pressed="true"/,
+    );
+    assert.match(
+        html,
+        /data-store-category="collaboration" aria-pressed="true"/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /\[data-module-sidebar\] button\.is-active\s*{[^}]*border-color: var\(--accent-color\)/,
     );
 });
 
@@ -360,8 +426,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /function hasModuleUpdate/);
     assert.match(source, /module\.defaultBranch/);
     assert.match(source, /module\.installedCommit/);
-    assert.match(source, /modulesForView\(\)\.flatMap/);
-    assert.match(source, /formatTag\(item\)/);
+    assert.match(source, /filterModules\(modules, \{/);
+    assert.match(source, /categories: new Set\(\)/);
+    assert.match(source, /formatTag,/);
+    assert.match(filterSource, /formatTag\(item\)/);
     assert.match(source, /capture: true/);
     assert.match(source, /composer\?\.refreshElements\(\["module-store"\]\)/);
     assert.doesNotMatch(source, /composer\.refresh\(elements\(\)\)/);
@@ -393,20 +461,13 @@ test("module marketplace uses curated recommendations and compact details", () =
 });
 
 test("module marketplace defaults to all statuses and bounds installs", () => {
-    const pageSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
     const apiSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/api.js"),
         "utf8",
     );
-    assert.match(pageSource, /let view = "all"/);
-    assert.match(
-        pageSource,
-        /\["all", "recommended", "installed", "available"\]/,
-    );
-    assert.match(pageSource, /item === "all" \? "ui\.reuse\.all"/);
+    const filters = createModuleFilters();
+    assert.equal(filters.view, "all");
+    assert.equal(filters.categories.size, 0);
     assert.match(apiSource, /MODULE_INSTALL_TIMEOUT_MS = 2 \* 60 \* 1000/);
     assert.match(apiSource, /timeoutMs: MODULE_INSTALL_TIMEOUT_MS/);
 });
