@@ -51,8 +51,14 @@ function renderHealthLight(componentHealth, isActive, escapeHtml) {
     return `<span class="component-health-light component-health-light--${status}" role="img" aria-label="${escapeHtml(status)}"${title}></span>`;
 }
 
-function renderAdapterDetailsList(adapter, adapterId, i18n, escapeHtml) {
-    return renderDetailRows([
+function renderAdapterDetailsList(
+    adapter,
+    adapterId,
+    componentResolver,
+    i18n,
+    escapeHtml,
+) {
+    const pairs = [
         [i18n.t("ui.reuse.id"), escapeHtml(adapterId)],
         [
             i18n.t("ui.reuse.version"),
@@ -62,7 +68,19 @@ function renderAdapterDetailsList(adapter, adapterId, i18n, escapeHtml) {
             i18n.t("ui.app.admin.publisher"),
             escapeHtml(adapter.publisher || i18n.t("ui.app.admin.unknown")),
         ],
-    ]);
+    ];
+    if (adapter.requires?.length) {
+        pairs.push([
+            i18n.t("ui.app.admin.gateway.dependencies"),
+            renderDependencyLinks(
+                adapter.requires,
+                componentResolver,
+                i18n,
+                escapeHtml,
+            ),
+        ]);
+    }
+    return renderDetailRows(pairs);
 }
 
 function renderDetailRows(pairs) {
@@ -74,116 +92,56 @@ function renderDetailRows(pairs) {
         .join("");
 }
 
-function renderDependencyLinks(ids, scrollPrefix, gateways, i18n, escapeHtml) {
+export function createComponentDependencyResolver(modules, gateways, adapters) {
+    const componentsByUuid = new Map();
+    modules.forEach((moduleRecord) => {
+        if (!moduleRecord.uuid) return;
+        componentsByUuid.set(moduleRecord.uuid, {
+            name: moduleRecord.name,
+            href: `/administration/modules/${encodeURIComponent(moduleRecord.uuid)}`,
+        });
+    });
+    gateways.forEach((gateway) => {
+        if (!gateway.uuid) return;
+        componentsByUuid.set(gateway.uuid, {
+            name: gateway.name,
+            href: `#gateway-${gateway.id}`,
+            scrollTarget: `gateway-${gateway.id}`,
+        });
+    });
+    adapters.forEach((adapter) => {
+        if (!adapter.uuid) return;
+        const adapterId = resolveAdapterId(adapter);
+        const gatewayId = adapter._gatewayId ?? adapter.gateway;
+        const target = buildScrollTargetId(gatewayId, adapterId);
+        componentsByUuid.set(adapter.uuid, {
+            name: adapter.name ?? adapterId,
+            href: `#${target}`,
+            scrollTarget: target,
+        });
+    });
+    return (uuid) => componentsByUuid.get(uuid) ?? null;
+}
+
+function renderDependencyLinks(ids, componentResolver, i18n, escapeHtml) {
     if (!ids || ids.length === 0) {
         return i18n.t("ui.app.admin.gateway.no_dependencies");
     }
-    const gatewayById = new Map(
-        gateways.flatMap((gateway) => [
-            [gateway.id, gateway],
-            ...(gateway.uuid ? [[gateway.uuid, gateway]] : []),
-        ]),
-    );
     return ids
-        .map((id) => {
-            const dependency = gatewayById.get(id);
-            const label = dependency
-                ? escapeHtml(dependency.name)
-                : escapeHtml(id);
-            return `<a class="dependency-link" href="#" data-scroll-to="${escapeHtml(scrollPrefix)}${escapeHtml(id)}">${label}</a>`;
+        .map((uuid) => {
+            const dependency = componentResolver(uuid);
+            if (!dependency) return escapeHtml(uuid);
+            const scrollAttribute = dependency.scrollTarget
+                ? ` data-scroll-to="${escapeHtml(dependency.scrollTarget)}"`
+                : "";
+            return `<a class="dependency-link" href="${escapeHtml(dependency.href)}"${scrollAttribute}>${escapeHtml(dependency.name)}</a>`;
         })
         .join(", ");
 }
 
-function renderDetailsList(
-    moduleRecord,
-    gateways,
-    healthStatus,
-    i18n,
-    escapeHtml,
-) {
-    const pairs = [
-        [i18n.t("ui.reuse.id"), moduleRecord.id],
-        [i18n.t("ui.reuse.version"), moduleRecord.version],
-        [
-            i18n.t("ui.app.admin.publisher"),
-            moduleRecord.publisher || i18n.t("ui.app.admin.unknown"),
-        ],
-        [i18n.t("ui.reuse.class"), moduleRecord.class],
-        [
-            i18n.t("ui.app.admin.capabilities"),
-            (moduleRecord.capabilities || []).join(", ") ||
-                i18n.t("ui.app.admin.none"),
-        ],
-    ];
-    const depsKey = i18n.t("ui.app.admin.gateway.dependencies");
-    if (moduleRecord.requires && moduleRecord.requires.length > 0) {
-        pairs.push([
-            depsKey,
-            renderDependencyLinks(
-                moduleRecord.requires,
-                "gateway-",
-                gateways,
-                i18n,
-                escapeHtml,
-            ),
-        ]);
-    }
-    return renderDetailRows(pairs);
-}
-
-function renderModulesContent(modules, gateways, deps) {
-    const {
-        i18n,
-        escapeHtml,
-        resolveModuleConfigScriptUrl,
-        isModuleEnabled,
-        healthStatus,
-    } = deps;
-    return modules
-        .map((moduleRecord) => {
-            const pill = getStatePill(moduleRecord.status, i18n);
-            const disableBlocked = moduleRecord.class === "core";
-            const toggleTitle = i18n.t("ui.app.admin.toggle_module");
-            const componentConfigScriptUrl =
-                resolveModuleConfigScriptUrl(moduleRecord);
-            const configAttributes =
-                componentConfigScriptUrl.length > 0
-                    ? ` data-module-config-script-url="${escapeHtml(componentConfigScriptUrl)}"`
-                    : "";
-            const isEnabled = isModuleEnabled(moduleRecord);
-            const healthLight = renderHealthLight(
-                resolveComponentHealth(healthStatus, "module", moduleRecord.id),
-                isEnabled,
-                escapeHtml,
-            );
-
-            return `
-        <details class="module-row" data-module="${moduleRecord.id}"${configAttributes}>
-          <summary class="module-row-summary">
-            <span class="module-row-title"><strong>${moduleRecord.name}</strong></span>
-            <div class="module-row-controls">
-              <span class="state-pill ${pill.className}">${pill.label}</span>
-              ${healthLight}
-              <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
-                <input type="checkbox" data-module="${moduleRecord.id}" ${isModuleEnabled(moduleRecord) ? "checked" : ""} ${disableBlocked ? "disabled" : ""} />
-                <span class="slider"></span>
-              </label>
-              <span class="module-chevron" role="button" tabindex="0" data-details-toggle aria-label="${escapeHtml(i18n.t("ui.reuse.details"))}">▾</span>
-            </div>
-          </summary>
-          <div class="module-meta">
-            <ul class="module-details">${renderDetailsList(moduleRecord, gateways, healthStatus, i18n, escapeHtml)}</ul>
-          </div>
-        </details>
-      `;
-        })
-        .join("");
-}
-
 function renderGatewayDetailsList(
     gateway,
-    gateways,
+    componentResolver,
     healthStatus,
     i18n,
     escapeHtml,
@@ -212,8 +170,7 @@ function renderGatewayDetailsList(
         i18n.t("ui.app.admin.gateway.dependencies"),
         renderDependencyLinks(
             gateway.requires,
-            "gateway-",
-            gateways,
+            componentResolver,
             i18n,
             escapeHtml,
         ),
@@ -234,6 +191,7 @@ function renderInlineAdapters(
     i18n,
     escapeHtml,
     healthStatus,
+    componentResolver,
 ) {
     if (!adapters || adapters.length === 0) return "";
     const rows = adapters
@@ -262,7 +220,7 @@ function renderInlineAdapters(
             </div>
           </summary>
           <div class="module-meta adapter-inline-meta">
-            <ul class="module-details">${renderAdapterDetailsList(adapter, adapterId, i18n, escapeHtml)}</ul>
+            <ul class="module-details">${renderAdapterDetailsList(adapter, adapterId, componentResolver, i18n, escapeHtml)}</ul>
           </div>
         </details>
       `;
@@ -277,7 +235,7 @@ function renderInlineAdapters(
 }
 
 function renderGatewaysContent(gateways, allAdapters, deps) {
-    const { i18n, escapeHtml, healthStatus } = deps;
+    const { i18n, escapeHtml, healthStatus, componentResolver } = deps;
     if (!gateways.length) {
         return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
     }
@@ -327,8 +285,8 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
             </div>
           </summary>
           <div class="module-meta">
-            <ul class="module-details">${renderGatewayDetailsList(gateway, gateways, healthStatus, i18n, escapeHtml)}</ul>
-            ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, i18n, escapeHtml, healthStatus)}
+            <ul class="module-details">${renderGatewayDetailsList(gateway, componentResolver, healthStatus, i18n, escapeHtml)}</ul>
+            ${renderInlineAdapters(gatewayAdapters, gateway.id, isGatewayDisabled, i18n, escapeHtml, healthStatus, componentResolver)}
           </div>
         </details>
       `;
@@ -338,11 +296,16 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
 
 export function renderComponentsContent(modules, gateways, allAdapters, deps) {
     const { i18n } = deps;
+    const componentResolver = createComponentDependencyResolver(
+        modules,
+        gateways,
+        allAdapters,
+    );
     return `
     <div class="components-section">
       <h3 class="components-section-heading">${i18n.t("ui.app.admin.gateways")}</h3>
       <div class="components-section-body">
-        ${renderGatewaysContent(gateways, allAdapters, deps)}
+        ${renderGatewaysContent(gateways, allAdapters, { ...deps, componentResolver })}
       </div>
     </div>
   `;

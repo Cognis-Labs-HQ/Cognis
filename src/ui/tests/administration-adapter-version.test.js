@@ -57,6 +57,62 @@ test("administration adapters expose version metadata in details", () => {
     );
 });
 
+test("component dependencies resolve UUIDs across gateways, adapters, and external modules", () => {
+    const moduleUuid = "71567e48-480a-45a5-a853-8c96d6ab9973";
+    const gatewayUuid = "433cd9f3-5b80-5e7d-911b-1907b9348f26";
+    const adapterUuid = "5054e338-ef3b-5d84-9a99-74d54d30232a";
+    const html = renderComponentsContent(
+        [{ uuid: moduleUuid, name: "External Meetings" }],
+        [
+            {
+                id: "notify",
+                uuid: gatewayUuid,
+                name: "Notifications",
+                status: "active",
+                hasAdapters: true,
+                requires: [moduleUuid],
+            },
+        ],
+        [
+            {
+                _gatewayId: "notify",
+                id: "smtp",
+                uuid: adapterUuid,
+                name: "SMTP Email",
+                active: true,
+                requires: [gatewayUuid],
+            },
+        ],
+        { i18n, escapeHtml, healthStatus: { contributions: [] } },
+    );
+
+    assert.match(
+        html,
+        new RegExp(
+            `href="/administration/modules/${moduleUuid}"[^>]*>External Meetings</a>`,
+        ),
+    );
+    assert.match(
+        html,
+        /href="#gateway-notify" data-scroll-to="gateway-notify">Notifications<\/a>/,
+    );
+});
+
+test("modules navigation uses a compact desktop toolbar", () => {
+    const styles = readFileSync(
+        resolve(ROOT, "src/ui/styles/modules.css"),
+        "utf8",
+    );
+    assert.match(
+        styles,
+        /body:has\(\.module-store-results\) \.main-window--with-toolbar\s*{[^}]*grid-template-columns: minmax\(0, 11rem\) minmax\(0, 1fr\)/,
+    );
+    assert.match(
+        styles,
+        /body:has\(\.module-store-results\) \.toolbar button\s*{[^}]*min-width: 0/,
+    );
+});
+
 test("database gateway heading explains that Docker manages its driver", () => {
     const html = renderComponentsContent(
         [],

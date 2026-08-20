@@ -50,6 +50,15 @@ body[data-theme="dark"] .module-icon-settings {
 .module-store-results {
     min-width: 0;
 }
+body:has(.module-store-results) .main-window--with-toolbar {
+    grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+}
+body:has(.module-store-results) .toolbar > * {
+    padding-inline: 0.75rem;
+}
+body:has(.module-store-results) .toolbar button {
+    min-width: 0;
+}
 .module-settings-sources {
     margin-block-start: 1.5rem;
     padding-block-start: 1rem;

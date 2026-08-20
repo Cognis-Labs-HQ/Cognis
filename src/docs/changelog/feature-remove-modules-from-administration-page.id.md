@@ -353,3 +353,7 @@ Halaman Modul kini mengaktifkan tata letak navigasi subhalaman milik penyusun ha
 ## Pemuatan marketplace yang aman
 
 Halaman Modul kini mencegah pemuatan langsung saat diimpor oleh router dan mengambil kredensial repositori melalui keyring, sehingga brankas yang terkunci dapat dibuka sebelum penemuan privat atau instalasi. Berkas repositori dan aset tampilan GitHub kini memakai host API yang dikonfigurasi untuk setiap sumber, termasuk GitHub Enterprise.
+
+## Navigasi ringkas dan nama dependensi
+
+Halaman Modul kini menggunakan menu samping yang lebih sempit. Administrasi menerjemahkan dependensi komponen yang hanya disimpan sebagai UUID menjadi nama gateway, adapter, serta modul bawaan atau eksternal yang terpasang, sekaligus mempertahankan tautan ke komponen tersebut.

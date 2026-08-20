@@ -353,3 +353,7 @@ The Modules page now enables the page composer’s sub-page navigation layout, k
 ## Secure marketplace loading
 
 The Modules page now suppresses its direct-load mount during router imports and resolves repository credentials through the keyring, allowing locked vaults to be unlocked before private discovery or installation. GitHub repository files and presentation assets now use each source’s configured API host, including GitHub Enterprise.
+
+## Compact navigation and dependency names
+
+The Modules page now uses a narrower side menu. Administration resolves UUID-only component dependencies to the names of installed gateways, adapters, and bundled or external modules, while preserving links to the resolved component.

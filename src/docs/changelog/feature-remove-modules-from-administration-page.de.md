@@ -353,3 +353,7 @@ Die Seite „Module“ verwendet jetzt das Unternavigationslayout des Seiten-Com
 ## Sicheres Laden des Marktplatzes
 
 Die Modulseite unterdrückt nun ihr direktes Einbinden während Router-Importen und löst Repository-Zugangsdaten über den Schlüsselbund auf, sodass gesperrte Tresore vor privater Erkennung oder Installation entsperrt werden können. GitHub-Repository-Dateien und Präsentationsmedien verwenden jetzt den konfigurierten API-Host jeder Quelle, einschließlich GitHub Enterprise.
+
+## Kompakte Navigation und Abhängigkeiten
+
+Die Modulseite verwendet jetzt ein schmaleres Seitenmenü. Die Administration löst ausschließlich als UUID gespeicherte Komponentenabhängigkeiten in die Namen installierter Gateways, Adapter sowie gebündelter oder externer Module auf und behält Links zur aufgelösten Komponente bei.
