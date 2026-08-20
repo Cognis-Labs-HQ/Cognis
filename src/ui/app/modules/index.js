@@ -822,15 +822,17 @@ function bindInteractions(root, signal) {
                     (entry) => entry.uuid === target.dataset.modulePreferences,
                 );
                 if (module) {
-                    await openModulePreferences(module, {
+                    const didSave = await openModulePreferences(module, {
                         title: i18n.t("ui.app.modules.preferences_title"),
                         save: i18n.t("ui.reuse.save"),
                         cancel: i18n.t("ui.reuse.cancel"),
                         information: i18n.t("ui.reuse.more_information"),
                     });
-                    showToast(i18n.t("ui.app.modules.preferences_saved"), {
-                        type: "success",
-                    });
+                    if (didSave) {
+                        showToast(i18n.t("ui.app.modules.preferences_saved"), {
+                            type: "success",
+                        });
+                    }
                 }
                 return;
             }

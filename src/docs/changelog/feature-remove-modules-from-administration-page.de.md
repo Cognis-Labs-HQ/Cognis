@@ -381,3 +381,7 @@ Modulkonfigurationsfenster verwenden nun eine einheitliche Feldbreite und ausger
 ## Verfügbarkeitssteuerung einmalig halten
 
 Der Profiladapter reserviert den Platz für das Verfügbarkeitsmenü nun synchron, bevor Stile, Übersetzungen oder Vorlagen geladen werden. Gleichzeitige Navbar-Plugin-Instanzen verwenden diesen Platz gemeinsam, entfernen veraltete Duplikate und geben eine fehlgeschlagene Reservierung für einen erneuten Versuch frei. Dadurch entstehen nach Modul- oder SPA-Aktualisierungen keine doppelten Verfügbarkeitsmenüs mehr.
+
+## Moduleinstellungen gezielt anwenden
+
+Moduleinstellungen fokussieren nun das erste Formularfeld, statt dessen Beschreibung zu öffnen, zeigen eine Erfolgsmeldung nur nach abgeschlossenem Speichern und bewahren eine laufzeitweit gemeinsame Konfiguration. Externe Module lesen dieselben aktuellen Werte über `ctx.preferences.get()`; das Speichern lädt aktivierte Modulerweiterungen neu, damit die neue Betriebskonfiguration ohne Serverneustart wirksam wird und parallele administratorbezogene oder alte Konfigurationspfade entfallen.

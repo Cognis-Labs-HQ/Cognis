@@ -381,3 +381,7 @@ Popup konfigurasi modul kini memakai geometri bidang lebar penuh yang konsisten 
 ## Menjaga kontrol ketersediaan tetap tunggal
 
 Adaptor profil kini mengklaim slot menu ketersediaan secara sinkron sebelum memuat gaya, terjemahan, atau templat. Instans plugin navbar yang berjalan bersamaan menggunakan ulang slot tersebut, menghapus duplikat lama, dan melepaskan klaim yang gagal agar dapat dicoba kembali, sehingga dropdown ketersediaan tidak lagi berlipat setelah penyegaran modul atau SPA.
+
+## Menerapkan pengaturan modul dengan sengaja
+
+Pengaturan modul kini memfokuskan kontrol formulir pertama alih-alih membuka deskriptornya, menampilkan umpan balik sukses hanya setelah Simpan selesai, dan mempertahankan satu konfigurasi untuk seluruh runtime. Modul eksternal membaca nilai terkini yang sama melalui `ctx.preferences.get()`; penyimpanan memuat ulang ekstensi modul yang aktif agar konfigurasi operasional baru berlaku tanpa memulai ulang server, sekaligus menghilangkan jalur konfigurasi per administrator atau konfigurasi lama yang paralel.

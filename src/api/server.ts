@@ -303,6 +303,34 @@ export function buildServer(deps: ApiDependencies) {
     const moduleTestService = new ModuleTestService([externalModulesRoot]);
     const healthService = deps.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
+    const moduleConfigAccountId = "system:module-config";
+    const getModulePreferences = async (
+        moduleId: string,
+    ): Promise<Record<string, unknown>> => {
+        const raw = await deps.preferenceStore?.get(
+            moduleConfigAccountId,
+            `module:${moduleId}`,
+        );
+        if (!raw) return {};
+        try {
+            const value = JSON.parse(raw) as unknown;
+            return value && typeof value === "object" && !Array.isArray(value)
+                ? (value as Record<string, unknown>)
+                : {};
+        } catch {
+            return {};
+        }
+    };
+    const setModulePreferences = async (
+        moduleId: string,
+        values: Record<string, unknown>,
+    ): Promise<void> => {
+        await deps.preferenceStore?.set(
+            moduleConfigAccountId,
+            `module:${moduleId}`,
+            JSON.stringify(values),
+        );
+    };
 
     const moduleExtensionRoutes = createModuleExtensionRoutes(
         deps.moduleRuntimeGateway,
@@ -311,6 +339,7 @@ export function buildServer(deps: ApiDependencies) {
         {
             uiRegistry: deps.uiRegistry,
             routeContext,
+            getPreferences: getModulePreferences,
             onBootstrapFailed: async (moduleId) => {
                 enabledModules.delete(moduleId);
                 await deps.onModuleStateChanged?.(moduleId, false);
@@ -382,29 +411,10 @@ export function buildServer(deps: ApiDependencies) {
             getStatus: (moduleId) =>
                 enabledModules.has(moduleId) ? "enabled" : "disabled",
             getIntegrityReport: deps.moduleIntegrityChecker,
-            getPreferences: async (accountId, moduleId) => {
-                const raw = await deps.preferenceStore?.get(
-                    accountId,
-                    `module:${moduleId}`,
-                );
-                if (!raw) return {};
-                try {
-                    const value = JSON.parse(raw) as unknown;
-                    return value &&
-                        typeof value === "object" &&
-                        !Array.isArray(value)
-                        ? (value as Record<string, unknown>)
-                        : {};
-                } catch {
-                    return {};
-                }
-            },
-            setPreferences: async (accountId, moduleId, values) => {
-                await deps.preferenceStore?.set(
-                    accountId,
-                    `module:${moduleId}`,
-                    JSON.stringify(values),
-                );
+            getPreferences: getModulePreferences,
+            setPreferences: setModulePreferences,
+            onPreferencesChanged: async () => {
+                await moduleExtensionRoutes.refresh();
             },
             log,
         },

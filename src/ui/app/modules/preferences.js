@@ -27,7 +27,7 @@ export async function openModulePreferences(module, labels) {
     const payload = await loadModulePreferences(module.id);
     const definitions = payload.definitions ?? [];
     if (!definitions.length) return;
-    await openPopup({
+    const action = await openPopup({
         title: labels.title,
         body: `<form class="module-settings-popup-fields" data-module-preferences>${definitions
             .map((definition) =>
@@ -61,4 +61,5 @@ export async function openModulePreferences(module, labels) {
             await saveModulePreferences(module.id, values);
         },
     });
+    return action === "save";
 }

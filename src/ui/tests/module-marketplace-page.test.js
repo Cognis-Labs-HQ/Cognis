@@ -65,6 +65,18 @@ test("module preference fields use stable popup layout and descriptor tooltips",
         /renderInfoTooltip\([\s\S]*description[\s\S]*ui\.reuse\.more_information/,
     );
     assert.doesNotMatch(popupSource, /module-settings-popup-description/);
+    assert.match(
+        popupSource,
+        /querySelector\("input, textarea, select"\) \?\?[\s\S]*button:not\(\.popup-close-btn\)/,
+    );
+    const marketplaceSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(
+        marketplaceSource,
+        /const didSave = await openModulePreferences[\s\S]*if \(didSave\)[\s\S]*preferences_saved/,
+    );
 });
 
 test("module filters include modules matching any active category", () => {

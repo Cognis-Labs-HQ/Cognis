@@ -381,3 +381,7 @@ Module configuration popups now use consistent full-width field geometry and ali
 ## Keep availability controls singular
 
 The profile adapter now claims the availability menu slot synchronously before loading styles, translations, or templates. Concurrent navbar plugin instances reuse that slot, remove stale duplicates, and release a failed claim for retry, preventing duplicate availability dropdowns after module or SPA refreshes.
+
+## Apply module settings deliberately
+
+Module settings now focus the first form control instead of opening its descriptor, show success feedback only after Save completes, and persist one runtime-wide configuration. External modules read those same current values through `ctx.preferences.get()`, and saving reloads enabled module extensions so the new operational configuration takes effect without a server restart, eliminating parallel per-administrator or legacy configuration paths.

@@ -72,7 +72,7 @@ test("disabling a module removes its routes, UI, capabilities, and flow hooks", 
     await mkdir(moduleRoot);
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
-        `export function bootstrapModule(ctx) {
+        `export async function bootstrapModule(ctx) {
             ctx.contributePublicCapability("owned-module:feature", true);
             ctx.flow.extend("host-flow", "extensions", { id: "owned-module:hook" }, () => "active");
             ctx.registerAdminSection({ id: "owned-module", label: "Owned", scriptUrl: "/static/modules/owned-module/admin.js" });
@@ -157,7 +157,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
     await mkdir(moduleRoot);
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
-        `export function bootstrapModule(ctx) {
+        `export async function bootstrapModule(ctx) {
             if (typeof ctx.getCapability("auth:requireAuth") !== "function") {
                 throw new Error("auth capability unavailable");
             }
@@ -166,6 +166,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             ctx.registerSpaRoute({ id: "meetings", pattern: "^/meetings$", base: "/meetings", scriptUrl: "/static/modules/meetings/app.js" });
             ctx.registerAuthTypingMessage({ id: "meetings-ready", textKey: "module.meetings.ready" });
             ctx.capabilities.contribute("meetings:provider", "external");
+            ctx.capabilities.contribute("meetings:configured-url", (await ctx.preferences.get()).instanceUrl);
             ctx.router.put("/api/v1/modules/meetings/config", (_req, res) => { res.writeHead(204); res.end(); });
         }`,
     );
@@ -202,6 +203,9 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
                 flow: systemCtx.flow,
             }),
             uiRegistry,
+            getPreferences: async () => ({
+                instanceUrl: "https://meet.example.com",
+            }),
         },
     );
     try {
@@ -213,6 +217,10 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         ]);
         assert.equal(uiRegistry.listAuthTypingMessages().length, 1);
         assert.equal(systemCtx.getCapability("meetings:provider"), "external");
+        assert.equal(
+            systemCtx.getCapability("meetings:configured-url"),
+            "https://meet.example.com",
+        );
 
         let status = 0;
         assert.equal(

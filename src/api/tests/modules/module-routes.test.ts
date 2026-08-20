@@ -6,6 +6,69 @@ import {
 } from "../../routes/modules/index.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 
+test("module preference writes target the module runtime configuration", async () => {
+    const writes: Array<{
+        moduleId: string;
+        values: Record<string, unknown>;
+    }> = [];
+    const refreshedModules: string[] = [];
+    const route = createModuleRoutes(
+        {
+            list: async () => [
+                {
+                    id: "external-module",
+                    ui: {
+                        preferences: [{ key: "instanceUrl", type: "string" }],
+                    },
+                },
+            ],
+        } as any,
+        {
+            getPreferences: async () => ({ instanceUrl: "invalid.example" }),
+            setPreferences: async (moduleId, values) => {
+                writes.push({ moduleId, values });
+            },
+            onPreferencesChanged: (moduleId) => {
+                refreshedModules.push(moduleId);
+            },
+        },
+    );
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let responseBody = "";
+    await route(
+        {
+            method: "PUT",
+            headers: { authorization: `Bearer ${token}` },
+            async *[Symbol.asyncIterator]() {
+                yield Buffer.from(
+                    JSON.stringify({
+                        instanceUrl: "https://broken.example",
+                        undeclared: "ignored",
+                    }),
+                );
+            },
+        } as any,
+        {
+            writeHead() {},
+            end(payload: string) {
+                responseBody = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/external-module/preferences"),
+    );
+
+    assert.deepEqual(writes, [
+        {
+            moduleId: "external-module",
+            values: { instanceUrl: "https://broken.example" },
+        },
+    ]);
+    assert.deepEqual(JSON.parse(responseBody).data.values, {
+        instanceUrl: "invalid.example",
+    });
+    assert.deepEqual(refreshedModules, ["external-module"]);
+});
+
 test("module routes list modules", async () => {
     const route = createModuleRoutes({
         list: async () => [

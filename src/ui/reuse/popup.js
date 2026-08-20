@@ -673,9 +673,9 @@ export async function openPopup({
             overlay.classList.add("popup-overlay--visible");
         });
 
-        const firstFocusable = overlay.querySelector(
-            "input, textarea, select, button:not(.popup-close-btn)",
-        );
+        const firstFocusable =
+            overlay.querySelector("input, textarea, select") ??
+            overlay.querySelector("button:not(.popup-close-btn)");
         firstFocusable?.focus();
     });
 }

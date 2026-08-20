@@ -32,15 +32,12 @@ export interface ModuleRouteHooks {
     >;
     onImported?: (moduleId: string) => Promise<void> | void;
     onUninstalled?: (moduleId: string) => Promise<void> | void;
-    getPreferences?: (
-        accountId: string,
-        moduleId: string,
-    ) => Promise<Record<string, unknown>>;
+    getPreferences?: (moduleId: string) => Promise<Record<string, unknown>>;
     setPreferences?: (
-        accountId: string,
         moduleId: string,
         values: Record<string, unknown>,
     ) => Promise<void>;
+    onPreferencesChanged?: (moduleId: string) => Promise<void> | void;
 }
 
 export class ModuleEnableValidationError extends Error {
@@ -162,10 +159,10 @@ export function createModuleRoutes(
                             submitted[definition.key],
                         ]),
                 );
-                await hooks?.setPreferences?.(claims.sub, moduleId, values);
+                await hooks?.setPreferences?.(moduleId, values);
+                await hooks?.onPreferencesChanged?.(moduleId);
             }
-            const stored =
-                (await hooks?.getPreferences?.(claims.sub, moduleId)) ?? {};
+            const stored = (await hooks?.getPreferences?.(moduleId)) ?? {};
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { definitions, values: stored } }));
             return true;
