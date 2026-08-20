@@ -57,8 +57,16 @@ function makeAdapterCtx(
                 ) => Promise<boolean>,
                 gatewayId?: string,
             ) => routeRegistry.register(handler, gatewayId ?? "social"),
-            registerNavbarPlugin: (scriptUrl: string) =>
-                uiRegistry?.registerNavbarPlugin({ scriptUrl }),
+            registerNavbarPlugin: (
+                scriptUrl: string,
+                isEnabled?: () => boolean,
+                providesCapabilities?: string[],
+            ) =>
+                uiRegistry?.registerNavbarPlugin({
+                    scriptUrl,
+                    isEnabled,
+                    providesCapabilities,
+                }),
             registerStaticDir: (prefix: string, dir: string) =>
                 uiRegistry?.registerStaticDir(prefix, dir),
             registerAdapterStaticDir: (gw: string, ad: string, dir: string) =>
@@ -181,6 +189,10 @@ test("profile adapter bootstrap registers navbar plugin that resolves within sta
         plugins.length > 0,
         "profile adapter must register at least one navbar plugin",
     );
+    assert.deepEqual(plugins[0].providesCapabilities, [
+        "ui:profileAvatarRenderer",
+        "social:profileUiClient",
+    ]);
 
     const staticDir = uiRegistry.getAdapterStaticDir("social", "profile");
     assert.ok(staticDir, "profile adapter must register an adapter static dir");

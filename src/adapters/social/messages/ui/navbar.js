@@ -1,6 +1,10 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerSearchIndexing } from "./search/index.js";
 import "./chat-loading.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { messagesUiClient } from "./client.js";
+
+uiCtx.capabilities.contribute("social:messagesUiClient", messagesUiClient);
 
 const messagesLink = document.querySelector("[data-messages-link]");
 

@@ -130,3 +130,7 @@ The profile menu shows the current availability and lets the signed-in user choo
 ## Provided UI capabilities
 
 The profile navbar plugin provides `ui:profileAvatarRenderer`. Modules that render profile avatars must declare this ID in `requiresCapabilities`; Cognis then loads the provider before mounting their SPA routes.
+
+### Browser client capability
+
+`social:profileUiClient` is contributed by the profile navbar provider and exposes `getCurrentProfile()` so browser modules obtain profile data through the owning adapter client.

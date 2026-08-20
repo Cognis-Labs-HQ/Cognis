@@ -430,12 +430,20 @@ test("module marketplace discovers repository manifests", async () => {
                                     JSON.stringify({
                                         uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
                                         id: "notes",
-                                        name: moduleName,
-                                        version: String(input).includes(
-                                            "ref=def456",
+                                        name: String(input).includes(
+                                            "ref=preview",
                                         )
-                                            ? "1.1.0"
-                                            : mainVersion,
+                                            ? "Preview Notes"
+                                            : moduleName,
+                                        version:
+                                            String(input).includes(
+                                                "ref=def456",
+                                            ) ||
+                                            String(input).includes(
+                                                "ref=preview",
+                                            )
+                                                ? "1.1.0"
+                                                : mainVersion,
                                         publisher: "Acme",
                                         class: "extension",
                                         coreApiVersion: "v1",
@@ -545,6 +553,19 @@ test("module marketplace discovers repository manifests", async () => {
                 ?.version,
             "1.1.0",
         );
+        await writeFile(
+            path.join(installedRoot, ".cognis-install.json"),
+            JSON.stringify({
+                sourceUuid: "178271bf-5631-40df-82df-967f8a37a020",
+                cloneUrl: "https://github.com/acme/notes.git",
+                branch: "preview",
+                commit: "def456",
+            }),
+        );
+        const preview = await service.discover({}, undefined, true);
+        assert.equal(preview[0].name, "Preview Notes");
+        assert.equal(preview[0].installedBranch, "preview");
+        assert.equal(preview[0].version, "1.1.0");
 
         globalThis.fetch = async () => {
             throw new Error("source unavailable");

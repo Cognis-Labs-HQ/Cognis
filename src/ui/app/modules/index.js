@@ -658,8 +658,10 @@ function refreshDetailActions() {
     }
 }
 
-async function loadKnownModules() {
-    const selectedModuleUuid = selectedModule?.uuid ?? detailModuleUuid();
+async function loadKnownModules(restoreDetailRoute = false) {
+    const selectedModuleUuid =
+        selectedModule?.uuid ??
+        (restoreDetailRoute ? detailModuleUuid() : null);
     const [loadedSources, installed, cached] = await Promise.all([
         loadModuleSources(),
         loadInstalledModules(),
@@ -696,6 +698,7 @@ async function loadKnownModules() {
 
 async function discoverConfiguredSources(forceRefresh = false) {
     const sequence = ++discoverySequence;
+    const selectedModuleUuid = selectedModule?.uuid;
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         i18n.t("ui.app.modules.keyring_component"),
     );
@@ -728,6 +731,10 @@ async function discoverConfiguredSources(forceRefresh = false) {
                 modules.push(module);
             }
         });
+        selectedModule = selectedModuleUuid
+            ? (modules.find((module) => module.uuid === selectedModuleUuid) ??
+              null)
+            : null;
         refreshMarketplace();
     }
 }
@@ -971,7 +978,7 @@ export async function mount(root, { signal } = {}) {
             signal,
             screenshotIndexes,
         );
-        void loadKnownModules().catch((error) => {
+        void loadKnownModules(true).catch((error) => {
             showToast(error.message, { type: "error" });
         });
     } finally {

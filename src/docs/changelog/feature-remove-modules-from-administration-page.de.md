@@ -393,3 +393,11 @@ Cognis rendert nun die in Modulmanifesten deklarierten Felder und lädt sowie sp
 ## Module erhalten Protokollierungs- und Feedbackprozesse des Hosts
 
 Modulserverkontexte schreiben nun zugeordnete Einträge in das Anwendungsprotokoll. Browsermodule können Host-Funktionen für authentifizierte Serverprotokollierung, thematisierte Hinweise und Laufzeitfehlerdialoge nutzen, statt Betriebsfehler nur in der Browserkonsole zu hinterlassen.
+
+## Installierten Veröffentlichungskanal aktualisieren
+
+Die Marketplace-Aktualisierung liest nun zuerst den aktiven Branch oder das aktive Release eines installierten Moduls und erst danach den Repository-Standard, einschließlich Manifest, Version, README und Präsentationsmedien. Die Aktualisierung bewahrt die Startansicht, hält eine geöffnete Detailansicht ausgewählt und zeichnet deren schwebende Aktionen aus dem aktualisierten Lebenszyklusstatus neu.
+
+## Modul-UI-Clients und lokalisierte Konfiguration bereitstellen
+
+Profil, Nachrichten, Dateien und Freigaben veröffentlichen ihre Browserclients nun als aktive UI-Capabilities. Externe Routen können dadurch Gateway-eigene Daten verwenden, ohne mit dem Navbar-Start zu konkurrieren oder Gateway-Endpunkte direkt aufzurufen. Sprachpakete installierter Module bleiben vor dem Bootstrap verfügbar; Moduleinstellungen lösen diese Texte auf und lesen sowie schreiben über den moduleigenen `/config`-Endpunkt.

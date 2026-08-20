@@ -643,6 +643,26 @@ test("module marketplace refresh actions emit one completion result", () => {
     );
 });
 
+test("module refresh preserves its current view and redraws detail actions", () => {
+    const marketplaceSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(marketplaceSource, /loadKnownModules\(true\)/);
+    assert.match(
+        marketplaceSource,
+        /async function loadKnownModules\(restoreDetailRoute = false\)/,
+    );
+    assert.match(
+        marketplaceSource,
+        /selectedModule = selectedModuleUuid[\s\S]*refreshMarketplace\(\)/,
+    );
+    assert.match(
+        marketplaceSource,
+        /function refreshMarketplace\(\)[\s\S]*refreshDetailActions\(\)/,
+    );
+});
+
 test("catalog presentation updates win over installed manifest metadata", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

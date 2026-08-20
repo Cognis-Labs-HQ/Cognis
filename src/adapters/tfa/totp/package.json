@@ -5,8 +5,8 @@
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.58",
+        "@cognis/core": "<=0.3.59",
         "qrcode": "^1.5.4",
-        "@cognis/gateways": "<=0.1.8"
+        "@cognis/gateways": "<=0.1.9"
     }
 }

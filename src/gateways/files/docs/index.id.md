@@ -97,3 +97,7 @@ Komponen sebaiknya menggunakan `files:namespace` untuk operasi file rutin melalu
 | Variabel         | Default      | Deskripsi                                                                                           |
 | ---------------- | ------------ | --------------------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Direktori root untuk penyimpanan media; unggahan masuk ke `$MEDIA_LOCATION/uploads/<namespace>/...` |
+
+### Kapabilitas klien browser
+
+`files:uiClient` dikontribusikan oleh penyedia UI Berkas dan menyediakan penyelesaian URL berkas bernamespace bagi modul browser.

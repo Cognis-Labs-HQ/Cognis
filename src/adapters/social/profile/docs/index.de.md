@@ -57,3 +57,7 @@ Das Profilmenü zeigt die aktuelle Verfügbarkeit und ermöglicht angemeldeten B
 ## Bereitgestellte UI-Capabilities
 
 Das Profil-Navbar-Plugin stellt `ui:profileAvatarRenderer` bereit. Module, die Profilbilder darstellen, müssen diese ID in `requiresCapabilities` deklarieren; Cognis lädt den Anbieter dann vor dem Einhängen ihrer SPA-Routen.
+
+### Browserclient-Capability
+
+`social:profileUiClient` wird vom Profil-Navigationsanbieter bereitgestellt und bietet `getCurrentProfile()`, damit Browsermodule Profildaten über den Client des zuständigen Adapters beziehen.

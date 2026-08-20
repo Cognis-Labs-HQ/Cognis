@@ -8,6 +8,7 @@ import {
 } from "./profile-avatar.js";
 import { bindProfilePreviews } from "./profile-preview.js";
 import { registerSearchIndexing } from "./search/index.js";
+import { profileUiClient } from "./client.js";
 import {
     availabilityIndicatorMarkup,
     fetchAvailability,
@@ -19,6 +20,8 @@ import {
 
 const AVAILABILITY_STYLESHEET_URL =
     "/static/adapters/social/profile/availability.css";
+
+uiCtx.capabilities.contribute("social:profileUiClient", profileUiClient);
 
 function ensureAvailabilityStylesheet() {
     const matchingStylesheets = [

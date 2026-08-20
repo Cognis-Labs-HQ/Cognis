@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import {
     isRoleAllowed,
@@ -26,6 +26,10 @@ import {
 import * as htmlResponse from "../../reuse/html-response.js";
 import { handleRegisteredSpaPage } from "./spa-pages.js";
 import { versionDescriptor } from "./asset-versioning.js";
+import {
+    resolveModuleRoot,
+    serveDeclaredModuleStrings,
+} from "./module-string-assets.js";
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
 const PUBLIC_ROOT = path.join(UI_ROOT, "public");
@@ -37,23 +41,10 @@ const IS_PRODUCTION_BUILD = Boolean(process.env.COGNIS_UI_ASSET_MANIFEST);
 const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
     ? PRODUCTION_PUBLIC_ROOT
     : PUBLIC_ROOT;
-const EXTERNAL_MODULES_ROOT =
-    process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
-    path.resolve(process.cwd(), "external-modules");
 const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
 
-async function resolveModuleRoot(
-    manifest: Pick<ModuleManifest, "id" | "uuid">,
-): Promise<string> {
-    if (!manifest.uuid) throw new Error(`module_uuid_required:${manifest.id}`);
-    const externalRoot = path.resolve(EXTERNAL_MODULES_ROOT, manifest.uuid);
-    const entry = await stat(externalRoot);
-    if (!entry.isDirectory())
-        throw new Error(`module_root_missing:${manifest.id}`);
-    return externalRoot;
-}
 async function serveVersionedAsset(
     req: IncomingMessage,
     res: ServerResponse,
@@ -910,6 +901,17 @@ export function createUiRoutes(
                 );
                 return true;
             }
+            if (
+                await serveDeclaredModuleStrings(
+                    req,
+                    res,
+                    url,
+                    urlPath,
+                    runtime,
+                    ctx,
+                )
+            )
+                return true;
             res.writeHead(404, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

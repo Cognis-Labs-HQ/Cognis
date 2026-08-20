@@ -393,3 +393,11 @@ Cognis now renders fields declared by module manifests while loading and saving 
 ## Give modules host logging and feedback processes
 
 Module server contexts now write scoped entries to the application logger. Browser modules can use host capabilities for authenticated server logging, themed toasts, and runtime error popups instead of leaving operational failures only in the browser console.
+
+## Refresh the installed release channel
+
+Marketplace refresh now reads an installed module's active branch or release before the repository default, including its manifest, version, README, and presentation assets. Refresh preserves the home view, keeps an open detail view selected, and redraws its floating actions from the refreshed lifecycle state.
+
+## Supply module UI clients and localized configuration
+
+Profile, Messages, Files, and Share now publish their browser clients as active UI capabilities, so external routes can use gateway-owned data without racing navbar startup or calling gateway endpoints directly. Installed module language bundles remain available before bootstrap, and module settings resolve those strings while reading and writing the module-owned `/config` endpoint.

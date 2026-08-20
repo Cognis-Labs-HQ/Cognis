@@ -84,6 +84,7 @@ export class MarketplaceServiceBase {
                                   defaultBranch,
                               )
                             : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
+                    // default-manifest block: establishes the immutable UUID used for provenance lookup.
                     const manifestResponse = await fetch(rawUrl, { headers });
                     if (manifestResponse.status === 404)
                         return { cloneUrl, module: null };
@@ -104,6 +105,42 @@ export class MarketplaceServiceBase {
                     }
                     if (manifest.class === "core") {
                         return { cloneUrl, module: null };
+                    }
+                    const provenance = await this.readInstallProvenance(
+                        manifest.uuid,
+                    );
+                    let catalogRef = provenance?.branch || defaultBranch;
+                    if (catalogRef !== defaultBranch) {
+                        const channelManifestResponse = await fetch(
+                            source.provider === "github"
+                                ? this.resolveGithubManifestUrl(
+                                      source,
+                                      projectPath,
+                                      catalogRef,
+                                  )
+                                : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(catalogRef)}`,
+                            { headers },
+                        );
+                        if (channelManifestResponse.ok) {
+                            try {
+                                const channelManifest = this.parseManifest(
+                                    await this.readRepositoryFile(
+                                        source,
+                                        channelManifestResponse,
+                                    ),
+                                );
+                                if (channelManifest.uuid === manifest.uuid) {
+                                    manifest = channelManifest;
+                                } else {
+                                    catalogRef = defaultBranch;
+                                }
+                            } catch {
+                                // Fall back to the default-manifest block above.
+                                catalogRef = defaultBranch;
+                            }
+                        } else {
+                            catalogRef = defaultBranch;
+                        }
                     }
                     const [discoveredBranches, discoveredReleases] =
                         await Promise.all([
@@ -128,7 +165,7 @@ export class MarketplaceServiceBase {
                         this.resolveRepositoryAssetUrl(
                             source,
                             projectPath,
-                            defaultBranch,
+                            catalogRef,
                             "README.md",
                         ),
                         { headers },
@@ -136,13 +173,13 @@ export class MarketplaceServiceBase {
                     const hasLicenseFile = await this.hasRootLicenseFile(
                         source,
                         projectPath,
-                        defaultBranch,
+                        catalogRef,
                         headers,
                     );
                     const media = await this.discoverRepositoryMedia(
                         source,
                         projectPath,
-                        defaultBranch,
+                        catalogRef,
                         headers,
                     );
                     const assetIds =
@@ -152,7 +189,7 @@ export class MarketplaceServiceBase {
                                       ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
-                                            defaultBranch,
+                                            catalogRef,
                                             manifest.assets.icon,
                                             headers,
                                         )
@@ -161,7 +198,7 @@ export class MarketplaceServiceBase {
                                       ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
-                                            defaultBranch,
+                                            catalogRef,
                                             manifest.assets.banner,
                                             headers,
                                         )
@@ -174,7 +211,7 @@ export class MarketplaceServiceBase {
                                               this.cacheRepositoryAsset(
                                                   source,
                                                   projectPath,
-                                                  defaultBranch,
+                                                  catalogRef,
                                                   assetPath,
                                                   headers,
                                               ),
@@ -187,20 +224,17 @@ export class MarketplaceServiceBase {
                                   media,
                               }
                             : undefined;
-                    const provenance = await this.readInstallProvenance(
-                        manifest.uuid,
-                    );
                     const installedVersion = await this.readInstalledVersion(
                         manifest.uuid,
                     );
-                    const defaultVersion = branches.find(
-                        (branch) => branch.name === defaultBranch,
+                    const channelVersion = [...branches, ...releases].find(
+                        (channel) => channel.name === catalogRef,
                     )?.version;
                     return {
                         cloneUrl,
                         module: {
                             ...manifest,
-                            version: defaultVersion ?? manifest.version,
+                            version: channelVersion ?? manifest.version,
                             license: hasLicenseFile
                                 ? manifest.license
                                 : undefined,
@@ -217,8 +251,8 @@ export class MarketplaceServiceBase {
                             updateAvailable: Boolean(
                                 provenance &&
                                 installedVersion &&
-                                defaultVersion &&
-                                installedVersion !== defaultVersion,
+                                channelVersion &&
+                                installedVersion !== channelVersion,
                             ),
                             readme: readmeResponse.ok
                                 ? await this.readRepositoryFile(

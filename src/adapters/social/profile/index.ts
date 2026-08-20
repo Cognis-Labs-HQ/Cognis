@@ -489,7 +489,7 @@ export async function bootstrapSocialAdapter(
     ctx.registerNavbarPlugin(
         "/static/adapters/social/profile/navbar.js",
         undefined,
-        ["ui:profileAvatarRenderer"],
+        ["ui:profileAvatarRenderer", "social:profileUiClient"],
     );
     ctx.registerAuthTypingMessage?.({
         id: "profile-social-space",

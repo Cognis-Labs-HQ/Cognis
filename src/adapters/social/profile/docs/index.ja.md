@@ -47,3 +47,7 @@
 ## 提供する UI ケイパビリティ
 
 プロフィールのナビゲーションバープラグインは `ui:profileAvatarRenderer` を提供します。プロフィール画像を描画するモジュールは、この ID を `requiresCapabilities` で宣言する必要があり、Cognis は SPA ルートのマウント前にプロバイダーを読み込みます。
+
+### ブラウザークライアント機能
+
+`social:profileUiClient` は Profile ナビゲーションプロバイダーが提供し、ブラウザーモジュールが所有アダプターのクライアント経由でプロフィールデータを取得できる `getCurrentProfile()` を公開します。

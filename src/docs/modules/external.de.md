@@ -41,3 +41,7 @@ Ein Modul kann mit `ui.preferences` vom Administrator bearbeitbare Einstellungen
 ## Protokollierung und Benutzerfeedback
 
 Serverseitiger Start- und Routencode schreibt strukturierte Anwendungsprotokolle über `ctx.log(level, message, meta)`. Cognis ordnet jeden Eintrag dem Modul zu, bevor er an das Logging-Gateway weitergegeben wird. Browsercode bezieht `ui:log`, `ui:showToast` und `ui:openErrorPopup` aus `uiCtx.capabilities`; `ui:log` leitet authentifizierte Einträge an das Serverprotokoll weiter, während die Feedback-Funktionen die thematisierte und barrierefreie Oberfläche des Hosts verwenden. Module müssen diese Prozesse nutzen, statt sich bei Betriebsfehlern auf die Browserkonsole zu verlassen oder eigene Benachrichtigungsoberflächen zu implementieren.
+
+## Veröffentlichungskanal-Aktualisierung und Browserclients
+
+Bei einem installierten Modul löst die Katalogaktualisierung zuerst den installierten Branch oder das Release auf und verwendet den Standardbranch des Repositorys nur, wenn kein Kanal gespeichert ist. Module beziehen Gateway-eigene Browserdaten über deklarierte `uiCtx.capabilities`-Clients; aktuelle Hostclients sind `social:profileUiClient`, `social:messagesUiClient`, `files:uiClient` und `share:uiClient`. Jede benötigte UI-Capability muss deklariert werden, damit Cognis ihren aktiven Anbieter vor dem Einhängen der Modulroute lädt.

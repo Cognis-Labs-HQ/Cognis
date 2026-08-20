@@ -47,3 +47,7 @@ Menu profil menampilkan ketersediaan saat ini dan memungkinkan pengguna yang mas
 ## Kapabilitas UI yang disediakan
 
 Plugin navbar profil menyediakan `ui:profileAvatarRenderer`. Modul yang merender avatar profil harus menyatakan ID ini dalam `requiresCapabilities`; Cognis kemudian memuat penyedia sebelum memasang rute SPA modul.
+
+### Kapabilitas klien browser
+
+`social:profileUiClient` dikontribusikan oleh penyedia navbar Profil dan menyediakan `getCurrentProfile()` agar modul browser memperoleh data profil melalui klien adaptor pemilik.

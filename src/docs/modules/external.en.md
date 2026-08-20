@@ -41,3 +41,7 @@ A module can expose administrator-editable settings with `ui.preferences`. Each 
 ## Logging and user feedback
 
 Server bootstrap and route code writes structured application logs through `ctx.log(level, message, meta)`. Cognis scopes each entry to the module before forwarding it to the Logging gateway. Browser code obtains `ui:log`, `ui:showToast`, and `ui:openErrorPopup` from `uiCtx.capabilities`; `ui:log` forwards authenticated entries to the server log, while the feedback capabilities use the host's themed and accessible UI. Modules must use these processes instead of relying on browser console output for operational failures or implementing their own notification surfaces.
+
+## Release-channel refresh and browser clients
+
+For an installed module, catalog refresh resolves the installed branch or release first and uses the repository default branch only when no channel is recorded. Modules consume gateway-owned browser data through declared `uiCtx.capabilities` clients; current host clients include `social:profileUiClient`, `social:messagesUiClient`, `files:uiClient`, and `share:uiClient`. Declare every required UI capability so Cognis loads its active provider before mounting the module route.

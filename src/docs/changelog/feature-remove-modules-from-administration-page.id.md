@@ -393,3 +393,11 @@ Cognis kini merender bidang yang dideklarasikan manifes modul sambil memuat dan 
 ## Berikan proses logging dan umpan balik host kepada modul
 
 Konteks server modul kini menulis entri terlingkup ke pencatat aplikasi. Modul browser dapat memakai kapabilitas host untuk logging server terautentikasi, toast bertema, dan popup kesalahan runtime alih-alih membiarkan kegagalan operasional hanya di konsol browser.
+
+## Segarkan kanal rilis yang terpasang
+
+Penyegaran Marketplace kini membaca cabang atau rilis aktif modul terpasang sebelum nilai bawaan repositori, termasuk manifes, versi, README, dan aset presentasinya. Penyegaran mempertahankan tampilan beranda, menjaga tampilan detail yang terbuka tetap dipilih, dan menggambar ulang aksi mengambang berdasarkan status siklus hidup terbaru.
+
+## Sediakan klien UI modul dan konfigurasi terlokalisasi
+
+Profil, Pesan, Berkas, dan Berbagi kini menerbitkan klien browser sebagai kapabilitas UI aktif, sehingga rute eksternal dapat memakai data milik gateway tanpa berlomba dengan startup navbar atau memanggil endpoint gateway secara langsung. Bundel bahasa modul terpasang tetap tersedia sebelum bootstrap, dan pengaturan modul menyelesaikan string tersebut sambil membaca serta menulis endpoint `/config` milik modul.

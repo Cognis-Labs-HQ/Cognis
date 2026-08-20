@@ -50,8 +50,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.15` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.14` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.12` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.63` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.67` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.64` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.68` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -65,11 +65,11 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`   |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.10`  |
-| Share                 | `src/gateways/share/`         | `1.7.26`  |
+| Share                 | `src/gateways/share/`         | `1.7.27`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`   |
 | Social                | `src/gateways/social/`        | `1.2.14`  |
-| File Storage (files)  | `src/gateways/files/`         | `2.1.6`   |
+| File Storage (files)  | `src/gateways/files/`         | `2.1.7`   |
 | Registration          | `src/gateways/registration/`  | `1.1.14`  |
 | Logging               | `src/gateways/logging/`       | `1.5.13`  |
 | Observability         | `src/gateways/observability/` | `1.0.6`   |
@@ -80,13 +80,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen     | Jalur       | Versi    |
 | ------------ | ----------- | -------- |
-| Core Package | `src/core/` | `0.3.58` |
+| Core Package | `src/core/` | `0.3.59` |
 
 ## API
 
 | Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.70` |
+| API Server | `src/api/` | `0.3.71` |
 
 ## Peralatan
 

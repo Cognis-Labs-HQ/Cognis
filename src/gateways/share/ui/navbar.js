@@ -1,4 +1,8 @@
 import { createI18n } from "/static/reuse/i18n.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { shareUiClient } from "./client.js";
+
+uiCtx.capabilities.contribute("share:uiClient", shareUiClient);
 
 async function registerSharesMenuEntry() {
     const dropdown = document.querySelector("#profile-dropdown");

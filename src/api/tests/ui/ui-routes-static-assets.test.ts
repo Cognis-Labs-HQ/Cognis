@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { brotliCompressSync, gzipSync } from "node:zlib";
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
@@ -336,4 +336,45 @@ test("GET /static/modules/unknown/file.js returns 404 for unregistered module pr
 
     assert.ok(handled);
     assert.equal(recorder.status, 404);
+});
+
+test("installed module string bundles are served before module bootstrap", async () => {
+    const uuid = "f055f2e5-227a-5fb4-b934-5397ec32cf2d";
+    const moduleRoot = path.resolve("external-modules", uuid);
+    const stringsPath = path.join(moduleRoot, "ui/languages/en/strings.xml");
+    await mkdir(path.dirname(stringsPath), { recursive: true });
+    await writeFile(
+        stringsPath,
+        '<resources><string name="module.title">Meetings</string></resources>',
+    );
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "meetings",
+                uuid,
+                entrypoints: { ui: "./ui/app.js" },
+                ui: {
+                    stringsBaseUrl: "/static/modules/meetings/languages",
+                },
+            },
+        ],
+    } as any);
+    const recorder = createResponseRecorder();
+
+    try {
+        assert.equal(
+            await route(
+                { headers: {} } as any,
+                recorder.res as any,
+                new URL(
+                    "http://localhost/static/modules/meetings/languages/en/strings.xml",
+                ),
+            ),
+            true,
+        );
+        assert.equal(recorder.status, 200);
+        assert.match(recorder.body, /module\.title/);
+    } finally {
+        await rm(moduleRoot, { recursive: true, force: true });
+    }
 });
