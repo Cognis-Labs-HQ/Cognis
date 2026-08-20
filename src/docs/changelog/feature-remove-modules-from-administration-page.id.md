@@ -360,4 +360,4 @@ Menu samping halaman Modul kini menyesuaikan lebarnya secara dinamis dengan item
 
 ## Memperkuat aktivasi modul runtime
 
-Bootstrap modul eksternal kini memiliki batas waktu yang aman, modul yang gagal dinonaktifkan, kapabilitas server yang dideklarasikan divalidasi sebelum aktivasi, dan rute SPA tidak dapat memuat kapabilitas dari penyedia yang tidak aktif. Deskriptor bahasa Study diperbarui setelah pembaruan modul.
+Bootstrap modul eksternal kini memiliki batas waktu yang aman, modul yang gagal dinonaktifkan, kapabilitas server yang dideklarasikan divalidasi sebelum aktivasi, dan rute SPA tidak dapat memuat kapabilitas dari penyedia yang tidak aktif. Deskriptor bahasa Study diperbarui setelah pembaruan modul. Bootstrap yang melewati batas waktu juga dicegah mendaftarkan rute atau kapabilitas setelah tenggatnya.

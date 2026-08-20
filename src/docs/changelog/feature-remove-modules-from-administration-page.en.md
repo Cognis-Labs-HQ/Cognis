@@ -360,4 +360,4 @@ The Modules page side menu now sizes dynamically to its longest item, matching t
 
 ## Harden runtime module activation
 
-External module bootstrap now times out safely, failed modules are disabled, declared server capabilities are validated before activation, and SPA routes cannot load capabilities from inactive providers. Study language descriptors refresh after module updates.
+External module bootstrap now times out safely, failed modules are disabled, declared server capabilities are validated before activation, and SPA routes cannot load capabilities from inactive providers. Study language descriptors refresh after module updates. Timed-out bootstraps are also prevented from registering routes or capabilities after their deadline.

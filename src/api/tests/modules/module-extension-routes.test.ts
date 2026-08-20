@@ -15,7 +15,11 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
     await mkdir(moduleRoot);
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
-        "export async function bootstrapModule() { await new Promise(() => {}); }",
+        `export async function bootstrapModule(ctx) {
+            await new Promise((resolve) => setTimeout(resolve, 30));
+            ctx.contributePublicCapability("stalled-module:late", true);
+            ctx.registerApiGet("/api/v1/modules/stalled/late", () => {});
+        }`,
     );
     const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
     process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
@@ -44,6 +48,15 @@ test("a timed-out module bootstrap is disabled without blocking refresh", async 
     try {
         await extensions.refresh();
         assert.deepEqual(failed, ["stalled-module"]);
+        await new Promise((resolve) => setTimeout(resolve, 40));
+        assert.equal(
+            await extensions.handle(
+                { method: "GET" } as any,
+                {} as any,
+                new URL("http://localhost/api/v1/modules/stalled/late"),
+            ),
+            false,
+        );
     } finally {
         if (previousModulesRoot === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;

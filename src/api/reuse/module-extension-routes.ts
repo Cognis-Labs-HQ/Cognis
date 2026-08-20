@@ -242,18 +242,27 @@ export function createModuleExtensionRoutes(
         moduleRoot: string,
         nextHandlers: RouteHandler[],
         scope: {
+            active: boolean;
             hooks: Array<{ flowId: string; stageId: string; hookId: string }>;
             capabilities: string[];
             flows: string[];
         },
     ): ModuleBootstrapCtx {
         const moduleId = manifest.id;
+        function requireActiveBootstrap() {
+            if (scope.active) return;
+            throw new Error(
+                `Module ${moduleId} attempted registration after bootstrap ended.`,
+            );
+        }
+
         function registerApiRoute(
             method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
             routePath: string,
             handler: RouteHandler["handler"],
             routeOptions?: ModuleRouteOptions,
         ) {
+            requireActiveBootstrap();
             const parsedAccess = parseRoleAccessPolicy(routeOptions?.access);
             if (parsedAccess.invalid) {
                 logInvalidAccessPolicy(
@@ -298,6 +307,7 @@ export function createModuleExtensionRoutes(
             exists: baseFlow.exists.bind(baseFlow),
             run: baseFlow.run.bind(baseFlow),
             extend(flowId, stageId, hook, handler) {
+                requireActiveBootstrap();
                 const registered = baseFlow.extend(
                     flowId,
                     stageId,
@@ -322,6 +332,7 @@ export function createModuleExtensionRoutes(
             log,
             capabilities: {
                 contribute(key, value) {
+                    requireActiveBootstrap();
                     systemCtx?.contributeCapability(key, value);
                     scope.capabilities.push(key);
                 },
@@ -339,14 +350,17 @@ export function createModuleExtensionRoutes(
                 },
             },
             contributeCapability(key, value) {
+                requireActiveBootstrap();
                 systemCtx?.contributeCapability(key, value);
                 scope.capabilities.push(key);
             },
             contributePublicCapability(key, value) {
+                requireActiveBootstrap();
                 systemCtx?.contributePublicCapability(key, value);
                 scope.capabilities.push(key);
             },
             registerFlow(flowRegistration) {
+                requireActiveBootstrap();
                 systemCtx?.registerFlow(flowRegistration);
                 scope.flows.push(flowRegistration.id);
             },
@@ -368,6 +382,7 @@ export function createModuleExtensionRoutes(
             },
             router,
             registerNavbarPlugin(pluginDef) {
+                requireActiveBootstrap();
                 const pluginConfig =
                     typeof pluginDef === "string"
                         ? { scriptUrl: pluginDef }
@@ -380,6 +395,7 @@ export function createModuleExtensionRoutes(
                 });
             },
             registerSpaRoute(route) {
+                requireActiveBootstrap();
                 options?.uiRegistry?.registerSpaRoute({
                     ...route,
                     requiredCapabilities:
@@ -392,6 +408,7 @@ export function createModuleExtensionRoutes(
                 });
             },
             registerSettingsSection(section) {
+                requireActiveBootstrap();
                 options?.uiRegistry?.registerSettingsSection({
                     ...section,
                     ownerId: moduleId,
@@ -399,6 +416,7 @@ export function createModuleExtensionRoutes(
                 });
             },
             registerPageExtension(pageId, element) {
+                requireActiveBootstrap();
                 options?.uiRegistry?.registerPageExtension(pageId, {
                     ...element,
                     ownerId: moduleId,
@@ -406,6 +424,7 @@ export function createModuleExtensionRoutes(
                 });
             },
             registerAdminSection(section) {
+                requireActiveBootstrap();
                 options?.uiRegistry?.registerAdminSection({
                     ...section,
                     ownerId: moduleId,
@@ -413,6 +432,7 @@ export function createModuleExtensionRoutes(
                 });
             },
             registerStaticDir(urlPrefix, absoluteDir) {
+                requireActiveBootstrap();
                 const normalizedPrefix = String(urlPrefix ?? "")
                     .trim()
                     .replace(/^\/+|\/+$/g, "");
@@ -425,6 +445,7 @@ export function createModuleExtensionRoutes(
                 );
             },
             registerAuthTypingMessage(message) {
+                requireActiveBootstrap();
                 options?.uiRegistry?.registerAuthTypingMessage({
                     ...message,
                     ownerType: "module",
@@ -543,7 +564,12 @@ export function createModuleExtensionRoutes(
                 manifest.id,
                 path.join(moduleRoot, "ui"),
             );
-            const scope = { hooks: [], capabilities: [], flows: [] };
+            const scope = {
+                active: true,
+                hooks: [],
+                capabilities: [],
+                flows: [],
+            };
             const moduleCtx = createModuleCtx(
                 manifest,
                 moduleRoot,
@@ -580,6 +606,7 @@ export function createModuleExtensionRoutes(
                         plugin,
                         moduleCtx,
                     );
+                    scope.active = false;
                     loadedModules.set(manifest.id, {
                         ctx: moduleCtx,
                         plugin,
@@ -595,12 +622,14 @@ export function createModuleExtensionRoutes(
                 if (typeof plugin.registerApiRoutes === "function") {
                     plugin.registerApiRoutes(moduleCtx.router, moduleCtx);
                 }
+                scope.active = false;
                 loadedModules.set(manifest.id, {
                     ctx: moduleCtx,
                     plugin,
                     ...scope,
                 });
             } catch (error) {
+                scope.active = false;
                 const systemCtx =
                     options.routeContext.getCapability<Ctx>("system:ctx");
                 for (const hook of scope.hooks) {
