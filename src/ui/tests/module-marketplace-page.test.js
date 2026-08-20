@@ -674,3 +674,13 @@ test("catalog presentation updates win over installed manifest metadata", () => 
     assert.match(source, /assets: known\.assets/);
     assert.match(source, /Object\.assign\(known, catalogPresentation\)/);
 });
+
+test("modules page aborts direct-mount interactions before SPA remount", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(source, /replaceMountScope\(pageMountController, signal\)/);
+    assert.match(source, /bindInteractions\(root, mountSignal\)/);
+    assert.match(source, /signal:\s*mountSignal/);
+});

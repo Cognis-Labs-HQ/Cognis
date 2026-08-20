@@ -10,6 +10,7 @@ import { showToast } from "../../reuse/toast.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { beginButtonLoading } from "../../reuse/button-loading.js";
 import { beginPageLoading } from "../../reuse/page-entry.js";
+import { replaceMountScope } from "../../reuse/mount-scope.js";
 import { openHamburgerMenu } from "../../reuse/hamburger-menu.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import {
@@ -51,6 +52,7 @@ let selectedModule = null;
 let discoverySequence = 0;
 let marketplaceRefreshPending = false;
 let refreshScreenshotCarousels = () => {};
+let pageMountController = null;
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const screenshotIndexes = new Map();
@@ -938,6 +940,8 @@ function elements() {
 
 export async function mount(root, { signal } = {}) {
     if (globalThis.__spaRouter && !signal) return;
+    pageMountController = replaceMountScope(pageMountController, signal);
+    const mountSignal = pageMountController.signal;
     const finishPageLoading = beginPageLoading();
     try {
         pageRoot = root;
@@ -969,13 +973,13 @@ export async function mount(root, { signal } = {}) {
                     render: () => "",
                 },
             ],
-            signal,
+            signal: mountSignal,
         });
         await composer.init();
-        bindInteractions(root, signal);
+        bindInteractions(root, mountSignal);
         refreshScreenshotCarousels = initializeScreenshotCarousels(
             root,
-            signal,
+            mountSignal,
             screenshotIndexes,
         );
         void loadKnownModules(true).catch((error) => {

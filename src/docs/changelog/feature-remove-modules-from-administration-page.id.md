@@ -409,3 +409,7 @@ Pemasangan modul langsung dan melalui router kini menunggu setiap penyedia kapab
 ## Memuat penyedia kapabilitas mandiri dan navbar bersama-sama
 
 Katalog penyedia browser kini mencakup klien berbasis navbar dan penyedia host mandiri. Karena itu, rute modul menerima klien Files dan kapabilitas umpan balik sebelum mount, alih-alih hanya mengandalkan penemuan navbar.
+
+## Menjaga pengaturan modul tetap ter-mount sekali
+
+Halaman Modul kini membatalkan lingkup interaksi pemuatan langsung sebelumnya sebelum remount SPA. Membuka rute detail modul tidak lagi menyisakan handler pengaturan dari tampilan beranda, sehingga satu klik hanya membuka satu popup.

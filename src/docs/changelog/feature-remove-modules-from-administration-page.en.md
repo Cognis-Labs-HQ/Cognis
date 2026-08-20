@@ -409,3 +409,7 @@ Direct and routed module mounts now wait for every active navbar capability prov
 ## Load standalone and navbar capability providers together
 
 The browser provider catalog now includes both navbar-backed clients and standalone host providers. Module routes therefore receive the Files client and feedback capabilities before mounting instead of relying on navbar discovery alone.
+
+## Keep module settings single-mounted
+
+The Modules page now aborts its previous direct-load interaction scope before an SPA remount. Opening a module detail route no longer leaves the home-view settings handler attached, so one settings click opens exactly one popup.

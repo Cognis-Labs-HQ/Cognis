@@ -409,3 +409,7 @@ Direkte und geroutete Modulaufrufe warten nun vor dem Import der Moduloberfläch
 ## Eigenständige und Navbar-Capability-Provider gemeinsam laden
 
 Der Browser-Provider-Katalog umfasst nun sowohl Navbar-gebundene Clients als auch eigenständige Host-Provider. Modulrouten erhalten dadurch den Files-Client und Feedback-Capabilities vor dem Mounten, statt sich allein auf die Navbar-Erkennung zu verlassen.
+
+## Moduleinstellungen nur einmal mounten
+
+Die Modulseite beendet nun vor einem SPA-Remount ihren vorherigen Interaktionsbereich des Direktaufrufs. Beim Öffnen einer Moduldetailroute bleibt dadurch kein Einstellungen-Handler der Startansicht aktiv, sodass ein Klick genau ein Popup öffnet.
