@@ -31,24 +31,29 @@ test("modules navigation derives its width from its content", () => {
     );
 });
 
-test("module filters combine multiple active categories", () => {
+test("module filters include modules matching any active category", () => {
     const filters = createModuleFilters();
     assert.equal(
         applyModuleFilterSelection(filters, { storeCategory: "productivity" }),
         true,
     );
-    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
     const modules = [
         {
             id: "notes",
             tags: ["productivity", "collaboration"],
         },
         { id: "tasks", tags: ["productivity"] },
+        { id: "meetings", tags: ["collaboration"] },
     ];
 
     assert.deepEqual(
         filterModules(modules, filters).map((module) => module.id),
-        ["notes"],
+        ["notes", "tasks"],
+    );
+    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
+    assert.deepEqual(
+        filterModules(modules, filters).map((module) => module.id),
+        ["notes", "tasks", "meetings"],
     );
     applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
     assert.deepEqual(

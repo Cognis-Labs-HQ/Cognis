@@ -39,7 +39,10 @@ export function filterModules(modules, filters) {
             return false;
         }
         const tags = new Set(module.tags ?? []);
-        return [...filters.categories].every((category) => tags.has(category));
+        return (
+            filters.categories.size === 0 ||
+            [...filters.categories].some((category) => tags.has(category))
+        );
     });
 }
 
