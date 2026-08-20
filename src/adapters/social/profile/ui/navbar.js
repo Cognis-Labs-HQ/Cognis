@@ -57,7 +57,6 @@ async function performAvailabilityControlMount() {
     const button = document.querySelector(".avatar-button");
     const dropdown = document.querySelector("#profile-dropdown");
     if (!button || !dropdown) return;
-    await ensureAvailabilityStylesheet();
     const existingItems = [
         ...dropdown.querySelectorAll(".availability-menu-item"),
     ];
@@ -67,78 +66,92 @@ async function performAvailabilityControlMount() {
         return;
     }
 
-    if (!button.querySelector(".availability-indicator")) {
-        button.insertAdjacentHTML("beforeend", availabilityIndicatorMarkup(""));
-    }
-    const indicator = button.querySelector(".availability-indicator");
-    const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
-    });
-    bindProfilePreviews(i18n);
     const statusItem = document.createElement("li");
     statusItem.className = "availability-menu-item";
-    const menuTemplateResponse = await fetch(
-        "/static/adapters/social/profile/availability-menu.html",
-    );
-    statusItem.innerHTML = await menuTemplateResponse.text();
     dropdown.prepend(statusItem);
-    applyStaticTranslations(i18n, statusItem);
 
-    const statusToggle = statusItem.querySelector(".availability-menu-toggle");
-    const statusOptions = statusItem.querySelector(
-        ".availability-menu-options",
-    );
-    const optionTemplate = statusOptions.querySelector(
-        "[data-availability-option-template]",
-    );
-    for (const status of STATUS_OPTIONS) {
-        const fragment = optionTemplate.content.cloneNode(true);
-        const option = fragment.querySelector(".availability-menu-option");
-        option.dataset.availabilityOption = status;
-        option.querySelector(
-            ".availability-menu-dot",
-        ).dataset.availabilityStatus = status;
-        option.querySelector("[data-availability-label]").textContent = i18n.t(
-            `ui.app.profile.availability.${status}`,
+    try {
+        await ensureAvailabilityStylesheet();
+
+        if (!button.querySelector(".availability-indicator")) {
+            button.insertAdjacentHTML(
+                "beforeend",
+                availabilityIndicatorMarkup(""),
+            );
+        }
+        const indicator = button.querySelector(".availability-indicator");
+        const i18n = await createI18n({
+            componentStringBaseUrls: [
+                "/static/adapters/social/profile/languages",
+            ],
+        });
+        bindProfilePreviews(i18n);
+        const menuTemplateResponse = await fetch(
+            "/static/adapters/social/profile/availability-menu.html",
         );
-        statusOptions.append(fragment);
-    }
-    optionTemplate.remove();
-    const availability = await fetchAvailability();
-    updateAvailabilitySelection(
-        statusItem,
-        indicator,
-        availability?.status ?? "free",
-        i18n,
-    );
-    subscribeAvailabilityUpdates((updatedAvailability) => {
-        if (!updatedAvailability?.status) return;
+        statusItem.innerHTML = await menuTemplateResponse.text();
+        applyStaticTranslations(i18n, statusItem);
+
+        const statusToggle = statusItem.querySelector(
+            ".availability-menu-toggle",
+        );
+        const statusOptions = statusItem.querySelector(
+            ".availability-menu-options",
+        );
+        const optionTemplate = statusOptions.querySelector(
+            "[data-availability-option-template]",
+        );
+        for (const status of STATUS_OPTIONS) {
+            const fragment = optionTemplate.content.cloneNode(true);
+            const option = fragment.querySelector(".availability-menu-option");
+            option.dataset.availabilityOption = status;
+            option.querySelector(
+                ".availability-menu-dot",
+            ).dataset.availabilityStatus = status;
+            option.querySelector("[data-availability-label]").textContent =
+                i18n.t(`ui.app.profile.availability.${status}`);
+            statusOptions.append(fragment);
+        }
+        optionTemplate.remove();
+        const availability = await fetchAvailability();
         updateAvailabilitySelection(
             statusItem,
             indicator,
-            updatedAvailability.status,
+            availability?.status ?? "free",
             i18n,
         );
-    });
-
-    statusToggle.addEventListener("click", () => {
-        const shouldOpen = statusOptions.hidden;
-        statusOptions.hidden = !shouldOpen;
-        statusToggle.setAttribute("aria-expanded", String(shouldOpen));
-    });
-
-    statusItem
-        .querySelectorAll("[data-availability-option]")
-        .forEach((option) => {
-            option.addEventListener("click", async () => {
-                const selectedStatus = option.dataset.availabilityOption;
-                if (await setManualAvailability(selectedStatus)) {
-                    await refreshAvailabilityIndicators();
-                    statusOptions.hidden = true;
-                    statusToggle.setAttribute("aria-expanded", "false");
-                }
-            });
+        subscribeAvailabilityUpdates((updatedAvailability) => {
+            if (!updatedAvailability?.status) return;
+            updateAvailabilitySelection(
+                statusItem,
+                indicator,
+                updatedAvailability.status,
+                i18n,
+            );
         });
+
+        statusToggle.addEventListener("click", () => {
+            const shouldOpen = statusOptions.hidden;
+            statusOptions.hidden = !shouldOpen;
+            statusToggle.setAttribute("aria-expanded", String(shouldOpen));
+        });
+
+        statusItem
+            .querySelectorAll("[data-availability-option]")
+            .forEach((option) => {
+                option.addEventListener("click", async () => {
+                    const selectedStatus = option.dataset.availabilityOption;
+                    if (await setManualAvailability(selectedStatus)) {
+                        await refreshAvailabilityIndicators();
+                        statusOptions.hidden = true;
+                        statusToggle.setAttribute("aria-expanded", "false");
+                    }
+                });
+            });
+    } catch (error) {
+        statusItem.remove();
+        throw error;
+    }
 }
 
 function mountAvailabilityControl() {

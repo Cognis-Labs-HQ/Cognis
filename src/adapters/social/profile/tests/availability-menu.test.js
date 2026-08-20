@@ -26,6 +26,11 @@ test("availability menu remounts idempotently after SPA shell refreshes", () => 
     assert.match(navbar, /existingItems\.slice\(1\)/);
     assert.match(navbar, /matchingStylesheets\.forEach/);
     assert.match(navbar, /if \(availabilityMountPromise\)/);
+    assert.match(
+        navbar,
+        /dropdown\.prepend\(statusItem\);[\s\S]*await ensureAvailabilityStylesheet\(\)/,
+    );
+    assert.match(navbar, /catch \(error\) \{[\s\S]*statusItem\.remove\(\)/);
     assert.match(navbar, /"cognis:navbar-refresh"/);
 });
 

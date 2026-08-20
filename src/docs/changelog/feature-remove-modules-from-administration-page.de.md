@@ -377,3 +377,7 @@ Bei der Modulaktivierung werden Server- und Browser-Capabilities nun über ihre 
 ## Modulkonfigurationsfelder stabilisieren
 
 Modulkonfigurationsfenster verwenden nun eine einheitliche Feldbreite und ausgerichtete boolesche Steuerelemente. Jede deklarierte Feldbeschreibung erscheint über das wiederverwendbare Informationsfenster neben ihrer Beschriftung, statt Höhe oder Ausrichtung des Formulars zu verändern.
+
+## Verfügbarkeitssteuerung einmalig halten
+
+Der Profiladapter reserviert den Platz für das Verfügbarkeitsmenü nun synchron, bevor Stile, Übersetzungen oder Vorlagen geladen werden. Gleichzeitige Navbar-Plugin-Instanzen verwenden diesen Platz gemeinsam, entfernen veraltete Duplikate und geben eine fehlgeschlagene Reservierung für einen erneuten Versuch frei. Dadurch entstehen nach Modul- oder SPA-Aktualisierungen keine doppelten Verfügbarkeitsmenüs mehr.

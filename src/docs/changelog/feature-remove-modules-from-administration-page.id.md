@@ -377,3 +377,7 @@ Aktivasi modul kini memvalidasi kapabilitas server dan peramban melalui konteks 
 ## Menstabilkan bidang konfigurasi modul
 
 Popup konfigurasi modul kini memakai geometri bidang lebar penuh yang konsisten dan kontrol boolean yang sejajar. Setiap deskripsi bidang yang dideklarasikan ditampilkan melalui popup informasi yang dapat digunakan kembali di samping label, tanpa mengubah tinggi formulir atau perataan input.
+
+## Menjaga kontrol ketersediaan tetap tunggal
+
+Adaptor profil kini mengklaim slot menu ketersediaan secara sinkron sebelum memuat gaya, terjemahan, atau templat. Instans plugin navbar yang berjalan bersamaan menggunakan ulang slot tersebut, menghapus duplikat lama, dan melepaskan klaim yang gagal agar dapat dicoba kembali, sehingga dropdown ketersediaan tidak lagi berlipat setelah penyegaran modul atau SPA.

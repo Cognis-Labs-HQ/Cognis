@@ -377,3 +377,7 @@ Module enablement now validates server and browser capabilities through their ow
 ## Stabilize module configuration fields
 
 Module configuration popups now use consistent full-width field geometry and aligned boolean controls. Every declared field description is presented through the reusable information popup beside its label instead of changing the form’s height or input alignment.
+
+## Keep availability controls singular
+
+The profile adapter now claims the availability menu slot synchronously before loading styles, translations, or templates. Concurrent navbar plugin instances reuse that slot, remove stale duplicates, and release a failed claim for retry, preventing duplicate availability dropdowns after module or SPA refreshes.
