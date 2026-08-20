@@ -16,6 +16,7 @@ test("module marketplace passes root and options to the page composer", () => {
         "utf8",
     );
     assert.match(source, /createPageComposer\(root, \{/);
+    assert.match(source, /if \(globalThis\.__spaRouter && !signal\) return/);
     assert.match(source, /allowCustomization: false/);
     assert.match(source, /i18n,/);
     assert.match(source, /signal,/);
@@ -87,9 +88,16 @@ test("module details preserve position and update enabled modules atomically", (
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
+    const presentationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/presentation.js"),
+        "utf8",
+    );
 
-    assert.match(source, /function formatVersion/);
-    assert.match(source, /return normalized \? `v\$\{normalized\}` : ""/);
+    assert.match(presentationSource, /function formatVersion/);
+    assert.match(
+        presentationSource,
+        /return normalized \? `v\$\{normalized\}` : ""/,
+    );
     assert.match(source, /restoreWindowScrollPosition/);
     assert.match(
         source,
@@ -111,10 +119,14 @@ test("module details use composer refreshes and SPA deep links", () => {
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
+    const presentationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/presentation.js"),
+        "utf8",
+    );
 
     assert.match(source, /createPageComposer\(root, \{/);
     assert.match(source, /composer\?\.refreshElements\(\["module-store"\]\)/);
-    assert.match(source, /function detailModuleUuid/);
+    assert.match(presentationSource, /function detailModuleUuid/);
     assert.match(source, /ui:navigate/);
     assert.match(
         source,

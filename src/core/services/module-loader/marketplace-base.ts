@@ -221,7 +221,10 @@ export class MarketplaceServiceBase {
                                 installedVersion !== defaultVersion,
                             ),
                             readme: readmeResponse.ok
-                                ? await readmeResponse.text()
+                                ? await this.readRepositoryFile(
+                                      source,
+                                      readmeResponse,
+                                  )
                                 : undefined,
                         } satisfies MarketplaceModule,
                     };
@@ -485,10 +488,13 @@ export class MarketplaceServiceBase {
         );
         if (!response) return undefined;
         if (!response.ok) return undefined;
-        const contentType = response.headers
-            .get("content-type")
-            ?.split(";", 1)[0]
-            .trim();
+        const githubPayload =
+            source.provider === "github"
+                ? ((await response.json()) as { content?: unknown })
+                : undefined;
+        const contentType = githubPayload
+            ? this.repositoryAssetContentType(assetPath)
+            : response.headers.get("content-type")?.split(";", 1)[0].trim();
         if (
             !contentType ||
             ![
@@ -504,7 +510,12 @@ export class MarketplaceServiceBase {
         ) {
             return undefined;
         }
-        const body = Buffer.from(await response.arrayBuffer());
+        const body = githubPayload
+            ? Buffer.from(
+                  String(githubPayload.content ?? "").replace(/\s/g, ""),
+                  "base64",
+              )
+            : Buffer.from(await response.arrayBuffer());
         const id = createHash("sha256").update(body).digest("hex");
         this.assets.set(id, { body, contentType });
         const assetRoot = this.assetCacheRoot;
@@ -813,7 +824,10 @@ export class MarketplaceServiceBase {
             throw new Error("invalid_module_asset_path");
         }
         if (source.provider === "github") {
-            return `https://raw.githubusercontent.com/${projectPath}/${encodeURIComponent(defaultBranch)}/${normalizedPath}`;
+            return `${source.baseUrl}/repos/${projectPath}/contents/${normalizedPath
+                .split("/")
+                .map(encodeURIComponent)
+                .join("/")}?ref=${encodeURIComponent(defaultBranch)}`;
         }
         return `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/${encodeURIComponent(normalizedPath)}/raw?ref=${encodeURIComponent(defaultBranch)}`;
     }
@@ -828,6 +842,23 @@ export class MarketplaceServiceBase {
             String(payload.content ?? "").replace(/\s/g, ""),
             "base64",
         ).toString("utf8");
+    }
+
+    protected repositoryAssetContentType(assetPath: string): string {
+        const extension = path.extname(assetPath).toLowerCase();
+        return (
+            {
+                ".svg": "image/svg+xml",
+                ".png": "image/png",
+                ".jpg": "image/jpeg",
+                ".jpeg": "image/jpeg",
+                ".webp": "image/webp",
+                ".gif": "image/gif",
+                ".mp4": "video/mp4",
+                ".webm": "video/webm",
+                ".ogg": "video/ogg",
+            }[extension] ?? "application/octet-stream"
+        );
     }
 
     protected resolveGithubManifestUrl(

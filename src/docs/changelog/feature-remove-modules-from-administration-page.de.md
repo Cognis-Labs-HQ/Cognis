@@ -349,3 +349,7 @@ Alle verbleibenden Core-Dienste für den Modul-Lebenszyklus und die Testausführ
 ## Modulnavigation kompakt halten
 
 Die Seite „Module“ verwendet jetzt das Unternavigationslayout des Seiten-Composers. Dadurch bleibt das Seitenmenü nur so breit, wie es sein Navigationsinhalt erfordert, und die verbleibende Breite steht den Modulergebnissen zur Verfügung.
+
+## Sicheres Laden des Marktplatzes
+
+Die Modulseite unterdrückt nun ihr direktes Einbinden während Router-Importen und löst Repository-Zugangsdaten über den Schlüsselbund auf, sodass gesperrte Tresore vor privater Erkennung oder Installation entsperrt werden können. GitHub-Repository-Dateien und Präsentationsmedien verwenden jetzt den konfigurierten API-Host jeder Quelle, einschließlich GitHub Enterprise.

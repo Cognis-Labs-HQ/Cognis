@@ -349,3 +349,7 @@ Semua layanan Core yang tersisa untuk siklus hidup modul dan pelaksana pengujian
 ## Menjaga navigasi Modul tetap ringkas
 
 Halaman Modul kini mengaktifkan tata letak navigasi subhalaman milik penyusun halaman. Menu samping hanya memakai lebar yang diperlukan oleh isi navigasinya, sehingga sisa ruang tersedia untuk hasil modul.
+
+## Pemuatan marketplace yang aman
+
+Halaman Modul kini mencegah pemuatan langsung saat diimpor oleh router dan mengambil kredensial repositori melalui keyring, sehingga brankas yang terkunci dapat dibuka sebelum penemuan privat atau instalasi. Berkas repositori dan aset tampilan GitHub kini memakai host API yang dikonfigurasi untuk setiap sumber, termasuk GitHub Enterprise.

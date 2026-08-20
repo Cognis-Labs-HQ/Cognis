@@ -249,6 +249,28 @@ test("GitHub credential validation requires private repository scope", async () 
     }
 });
 
+test("GitHub repository assets use the configured API host", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const url = (service as any).resolveRepositoryAssetUrl(
+        {
+            ...source,
+            baseUrl: "https://github.example.test/api/v3",
+        },
+        "acme/notes",
+        "main",
+        "assets/icon.svg",
+    );
+
+    assert.equal(
+        url,
+        "https://github.example.test/api/v3/repos/acme/notes/contents/assets/icon.svg?ref=main",
+    );
+});
+
 test("module installation accepts cached catalogs created before release discovery", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
     const service = new ModuleMarketplaceService(
@@ -353,16 +375,25 @@ test("module marketplace discovers repository manifests", async () => {
     let mainVersion = "1.0.0";
     let assetBody = "png-one";
     globalThis.fetch = async (input) =>
-        String(input).endsWith("/README.md")
-            ? new Response("# Notes\nA useful module.")
-            : /\/LICENSE(?:\.md|\.txt)?$/.test(String(input))
+        String(input).includes("/README.md?")
+            ? new Response(
+                  JSON.stringify({
+                      content: Buffer.from(
+                          "# Notes\nA useful module.",
+                      ).toString("base64"),
+                  }),
+              )
+            : /\/LICENSE(?:\.md|\.txt)?(?:\?|$)/.test(String(input))
               ? new Response("", { status: 404 })
               : String(input).includes("/assets/")
-                ? String(input).endsWith(".svg")
+                ? String(input).includes(".svg?")
                     ? new Response("", { status: 404 })
-                    : new Response(assetBody, {
-                          headers: { "content-type": "image/png" },
-                      })
+                    : new Response(
+                          JSON.stringify({
+                              content:
+                                  Buffer.from(assetBody).toString("base64"),
+                          }),
+                      )
                 : String(input).includes("/tags?")
                   ? new Response(
                         JSON.stringify([

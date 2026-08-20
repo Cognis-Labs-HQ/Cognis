@@ -31,6 +31,8 @@ import {
     uninstallModule,
     validateModuleSourceCredential,
 } from "./api.js";
+import { resolveSourceToken } from "./credentials.js";
+import { detailModuleUuid, formatVersion } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
 
 let i18n;
@@ -49,18 +51,6 @@ const pendingModuleActions = new Map();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 const STORED_PAT_MASK = "****";
-
-function formatVersion(version) {
-    const normalized = String(version ?? "").replace(/^v/, "");
-    return normalized ? `v${normalized}` : "";
-}
-
-function detailModuleUuid() {
-    const match = window.location.pathname.match(
-        /^\/administration\/modules\/([^/]+)\/?$/,
-    );
-    return match ? decodeURIComponent(match[1]) : null;
-}
 
 function renderAvailableVersion(module) {
     if (!module.installed) return "";
@@ -578,9 +568,10 @@ async function runLifecycleAction(module, action) {
         const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
             i18n.t("ui.app.modules.keyring_component"),
         );
-        const token = source?.credentialId
-            ? keyring?.get(source.credentialId)
-            : undefined;
+        const token = await resolveSourceToken(keyring, source, {
+            action: i18n.t("ui.app.modules.installing"),
+            process: module.name,
+        });
         if (restoreEnabledState) {
             await setModuleEnabled(module.id, false);
         }
@@ -720,14 +711,17 @@ async function discoverConfiguredSources(forceRefresh = false) {
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
         i18n.t("ui.app.modules.keyring_component"),
     );
-    const tokens = Object.fromEntries(
-        sources
-            .filter((source) => source.credentialId)
-            .map((source) => [
-                source.credentialId,
-                keyring?.get(source.credentialId) ?? "",
-            ]),
+    const credentialSources = sources.filter((source) => source.credentialId);
+    const resolvedTokens = await Promise.all(
+        credentialSources.map(async (source) => [
+            source.credentialId,
+            (await resolveSourceToken(keyring, source, {
+                action: i18n.t("ui.app.modules.refresh_complete"),
+                process: source.namespace,
+            })) ?? "",
+        ]),
     );
+    const tokens = Object.fromEntries(resolvedTokens);
     const discovered = await loadAvailableModules(
         tokens,
         sources.map((source) => source.uuid),
@@ -948,6 +942,7 @@ function elements() {
 }
 
 export async function mount(root, { signal } = {}) {
+    if (globalThis.__spaRouter && !signal) return;
     const finishPageLoading = beginPageLoading();
     try {
         pageRoot = root;

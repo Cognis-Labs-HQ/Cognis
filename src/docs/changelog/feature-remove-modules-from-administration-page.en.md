@@ -349,3 +349,7 @@ All remaining Core module lifecycle and test-runner services now live together u
 ## Keep Modules navigation compact
 
 The Modules page now enables the page composer’s sub-page navigation layout, keeping its side menu only as wide as its navigation content requires and preserving the remaining width for module results.
+
+## Secure marketplace loading
+
+The Modules page now suppresses its direct-load mount during router imports and resolves repository credentials through the keyring, allowing locked vaults to be unlocked before private discovery or installation. GitHub repository files and presentation assets now use each source’s configured API host, including GitHub Enterprise.
