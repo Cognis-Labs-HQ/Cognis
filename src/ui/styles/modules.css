@@ -50,13 +50,14 @@ body[data-theme="dark"] .module-icon-settings {
 .module-store-results {
     min-width: 0;
 }
-body:has(.module-store-results) .main-window--with-toolbar {
-    grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+[data-module-sidebar] {
+    display: grid;
+    justify-items: start;
+    width: max-content;
+    max-width: 100%;
 }
-body:has(.module-store-results) .toolbar > * {
-    padding-inline: 0.75rem;
-}
-body:has(.module-store-results) .toolbar button {
+[data-module-sidebar] button {
+    width: fit-content;
     min-width: 0;
 }
 .module-settings-sources {

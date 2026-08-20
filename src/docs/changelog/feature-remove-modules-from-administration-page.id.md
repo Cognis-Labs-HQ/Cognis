@@ -356,4 +356,4 @@ Halaman Modul kini mencegah pemuatan langsung saat diimpor oleh router dan menga
 
 ## Navigasi ringkas dan nama dependensi
 
-Halaman Modul kini menggunakan menu samping yang lebih sempit. Administrasi menerjemahkan dependensi komponen yang hanya disimpan sebagai UUID menjadi nama gateway, adapter, serta modul bawaan atau eksternal yang terpasang, sekaligus mempertahankan tautan ke komponen tersebut.
+Menu samping halaman Modul kini menyesuaikan lebarnya secara dinamis dengan item terpanjang, sama seperti navigasi Dokumentasi, bukan menggunakan lebar tetap. Administrasi menerjemahkan dependensi komponen yang hanya disimpan sebagai UUID menjadi nama gateway, adapter, serta modul bawaan atau eksternal yang terpasang, sekaligus mempertahankan tautan ke komponen tersebut.

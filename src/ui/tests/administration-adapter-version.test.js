@@ -98,21 +98,6 @@ test("component dependencies resolve UUIDs across gateways, adapters, and extern
     );
 });
 
-test("modules navigation uses a compact desktop toolbar", () => {
-    const styles = readFileSync(
-        resolve(ROOT, "src/ui/styles/modules.css"),
-        "utf8",
-    );
-    assert.match(
-        styles,
-        /body:has\(\.module-store-results\) \.main-window--with-toolbar\s*{[^}]*grid-template-columns: minmax\(0, 11rem\) minmax\(0, 1fr\)/,
-    );
-    assert.match(
-        styles,
-        /body:has\(\.module-store-results\) \.toolbar button\s*{[^}]*min-width: 0/,
-    );
-});
-
 test("database gateway heading explains that Docker manages its driver", () => {
     const html = renderComponentsContent(
         [],

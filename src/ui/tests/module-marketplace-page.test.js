@@ -10,6 +10,17 @@ const marketplaceStyles = readFileSync(
     "utf8",
 );
 
+test("modules navigation derives its width from its content", () => {
+    assert.match(
+        marketplaceStyles,
+        /\[data-module-sidebar\]\s*{[^}]*width: max-content;[^}]*max-width: 100%/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /\[data-module-sidebar\] button\s*{[^}]*width: fit-content;[^}]*min-width: 0/,
+    );
+});
+
 test("module marketplace passes root and options to the page composer", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
