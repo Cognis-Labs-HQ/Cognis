@@ -427,4 +427,10 @@ test("host UI capability providers satisfy module routes and supply their script
     assert.deepEqual(registry.listSpaRoutes()[0].capabilityScripts, [
         "/static/reuse/feedback-capabilities.js",
     ]);
+    assert.deepEqual(
+        registry
+            .listCapabilityProviders()
+            .map((provider) => provider.scriptUrl),
+        ["/static/reuse/feedback-capabilities.js"],
+    );
 });

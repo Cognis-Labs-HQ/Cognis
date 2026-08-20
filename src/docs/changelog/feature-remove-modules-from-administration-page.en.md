@@ -405,3 +405,7 @@ Profile, Messages, Files, and Share now publish their browser clients as active 
 ## Await all module browser clients
 
 Direct and routed module mounts now wait for every active navbar capability provider before importing module UI, ensuring Files, Profile, Messages, Share, feedback, and any other declared host clients are ready. Documentation now has a hidden canonical structure and an automated heading-convention audit across every real non-changelog document.
+
+## Load standalone and navbar capability providers together
+
+The browser provider catalog now includes both navbar-backed clients and standalone host providers. Module routes therefore receive the Files client and feedback capabilities before mounting instead of relying on navbar discovery alone.

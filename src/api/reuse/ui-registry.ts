@@ -331,6 +331,10 @@ export class UIRegistry {
         return this.resolveDescriptor([...this.navbarPlugins]);
     }
 
+    listCapabilityProviders(): UiCapabilityProvider[] {
+        return this.resolveDescriptor(this.listActiveCapabilityProviders());
+    }
+
     registerCapabilityProvider(provider: UiCapabilityProvider): void {
         this.capabilityProviders.push(provider);
     }

@@ -405,3 +405,7 @@ Profil, Nachrichten, Dateien und Freigaben veröffentlichen ihre Browserclients 
 ## Alle Modul-Browserclients abwarten
 
 Direkte und geroutete Modulaufrufe warten nun vor dem Import der Moduloberfläche auf alle aktiven Navbar-Capability-Anbieter. Dadurch sind Files, Profile, Messages, Share, Feedback und weitere deklarierte Hostclients rechtzeitig verfügbar. Die Dokumentation besitzt nun eine verborgene kanonische Struktur und eine automatisierte Überschriftenprüfung für jedes echte Nicht-Changelog-Dokument.
+
+## Eigenständige und Navbar-Capability-Provider gemeinsam laden
+
+Der Browser-Provider-Katalog umfasst nun sowohl Navbar-gebundene Clients als auch eigenständige Host-Provider. Modulrouten erhalten dadurch den Files-Client und Feedback-Capabilities vor dem Mounten, statt sich allein auf die Navbar-Erkennung zu verlassen.

@@ -2,7 +2,7 @@
  * Loads every active host browser capability provider before dependent UI mounts.
  *
  * Public exports:
- * - `ensureUiProvidersLoaded()` — fetches and imports all active navbar provider scripts once.
+ * - `ensureUiProvidersLoaded()` — fetches and imports all active provider scripts once.
  * - `invalidateUiProviders()` — clears readiness so changed lifecycle state is reloaded.
  *
  * @example
@@ -33,7 +33,7 @@ export async function ensureUiProvidersLoaded() {
     )
         return;
     providersLoadPromise = (async () => {
-        const response = await apiFetch("/api/v1/ui/navbar-plugins");
+        const response = await apiFetch("/api/v1/ui/capability-providers");
         if (!response.ok) {
             throw new Error(
                 `UI provider discovery failed with HTTP ${response.status}`,

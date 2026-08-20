@@ -26,6 +26,7 @@ import {
 import * as htmlResponse from "../../reuse/html-response.js";
 import { handleRegisteredSpaPage } from "./spa-pages.js";
 import { versionDescriptor } from "./asset-versioning.js";
+import { serveProviders } from "./capability-providers.js";
 import {
     resolveModuleRoot,
     serveDeclaredModuleStrings,
@@ -198,10 +199,8 @@ export function createUiRoutes(
                 "application/manifest+json; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method },
-                // Allow the browser HTTP cache and the service worker
-                // stale-while-revalidate strategy to retain the manifest,
-                // while still requiring revalidation on every use so updates
-                // (icons, name, shortcuts) roll out promptly.
+                // Let browser and service-worker caches retain the manifest,
+                // while revalidation rolls out icon, name, and shortcut updates.
                 "public, max-age=0, must-revalidate",
             );
             return true;
@@ -777,6 +776,9 @@ export function createUiRoutes(
             );
             return true;
         }
+
+        if (serveProviders(req, res, url, ctx, uiRegistry, ASSET_VERSION))
+            return true;
 
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");

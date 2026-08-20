@@ -405,3 +405,7 @@ Profil, Pesan, Berkas, dan Berbagi kini menerbitkan klien browser sebagai kapabi
 ## Tunggu semua klien browser modul
 
 Pemasangan modul langsung dan melalui router kini menunggu setiap penyedia kapabilitas navbar aktif sebelum mengimpor UI modul, sehingga Files, Profile, Messages, Share, umpan balik, dan klien host lain yang dideklarasikan telah siap. Dokumentasi kini memiliki struktur kanonis tersembunyi dan audit konvensi heading otomatis untuk setiap dokumen nyata non-changelog.
+
+## Memuat penyedia kapabilitas mandiri dan navbar bersama-sama
+
+Katalog penyedia browser kini mencakup klien berbasis navbar dan penyedia host mandiri. Karena itu, rute modul menerima klien Files dan kapabilitas umpan balik sebelum mount, alih-alih hanya mengandalkan penemuan navbar.

@@ -36,6 +36,43 @@ test("GET /api/v1/ui/navbar-plugins returns registered navbar plugins for authen
     );
 });
 
+test("GET /api/v1/ui/capability-providers returns navbar and standalone providers", async () => {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/files/provider.js",
+        providesCapabilities: ["files:uiClient"],
+    });
+    uiRegistry.registerCapabilityProvider({
+        scriptUrl: "/static/reuse/feedback-capabilities.js",
+        providesCapabilities: ["ui:showToast"],
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+    const userToken = issueAccessToken("u1", "user", 60);
+    const recorder = createResponseRecorder();
+
+    const handled = await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${userToken}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/capability-providers"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    const payload = JSON.parse(recorder.body);
+    assert.deepEqual(
+        payload.data.map(
+            (provider: { scriptUrl: string }) => provider.scriptUrl,
+        ),
+        [
+            "/static/gateways/files/provider.js?v=development",
+            "/static/reuse/feedback-capabilities.js?v=development",
+        ],
+    );
+});
+
 test("GET /api/v1/ui/page-extensions/:pageId filters extensions by access policy", async () => {
     const uiRegistry = new UIRegistry();
     uiRegistry.registerPageExtension("dashboard", {

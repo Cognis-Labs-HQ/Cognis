@@ -46,3 +46,11 @@ test("direct and routed module mounts await active UI providers", () => {
         /await ensureHostUiProviders\(\);\s*mod = await route\.load/,
     );
 });
+
+test("the host loader requests navbar and standalone capability providers", () => {
+    const loader = readFileSync(
+        resolve(ROOT, "src/ui/reuse/ui-provider-loader.js"),
+        "utf8",
+    );
+    assert.match(loader, /\/api\/v1\/ui\/capability-providers/);
+});
