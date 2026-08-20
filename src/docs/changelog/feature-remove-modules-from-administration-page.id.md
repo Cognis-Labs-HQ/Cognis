@@ -373,3 +373,7 @@ Bootstrap gateway kini mempertahankan metadata UUID manifes bahkan untuk kompone
 ## Memisahkan validasi kapabilitas peramban
 
 Aktivasi modul kini memvalidasi kapabilitas server dan peramban melalui konteks runtime pemiliknya masing-masing. Kebutuhan khusus peramban dalam namespace `ui:` diselesaikan terhadap penyedia registri UI yang aktif saat aktivasi dan kembali sebelum rute SPA dipasang, bukan dilewati atau dicari dalam konteks server.
+
+## Menstabilkan bidang konfigurasi modul
+
+Popup konfigurasi modul kini memakai geometri bidang lebar penuh yang konsisten dan kontrol boolean yang sejajar. Setiap deskripsi bidang yang dideklarasikan ditampilkan melalui popup informasi yang dapat digunakan kembali di samping label, tanpa mengubah tinggi formulir atau perataan input.

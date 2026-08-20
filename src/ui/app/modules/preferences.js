@@ -1,16 +1,26 @@
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { openPopup } from "../../reuse/popup.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import { loadModulePreferences, saveModulePreferences } from "./api.js";
 
-function renderField(definition, value) {
+export function renderModulePreferenceField(
+    definition,
+    value,
+    informationLabel,
+) {
     const id = `module-preference-${definition.key}`;
-    const description = definition.description
-        ? `<small>${escapeHtml(definition.description)}</small>`
+    const descriptor = definition.description
+        ? renderInfoTooltip(
+              definition.description,
+              informationLabel,
+              `${id}-descriptor`,
+          )
         : "";
+    const label = `<span class="module-settings-popup-label-row"><span class="module-settings-popup-label">${escapeHtml(definition.label)}</span>${descriptor}</span>`;
     if (definition.type === "boolean") {
-        return `<label for="${escapeHtml(id)}"><input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="checkbox"${value ? " checked" : ""}> ${escapeHtml(definition.label)}${description}</label>`;
+        return `<label class="module-settings-popup-field module-settings-popup-field--boolean" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="checkbox"${value ? " checked" : ""}></label>`;
     }
-    return `<label for="${escapeHtml(id)}"><span>${escapeHtml(definition.label)}</span><input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="${definition.type === "number" ? "number" : "text"}" value="${escapeHtml(value ?? "")}">${description}</label>`;
+    return `<label class="module-settings-popup-field" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="${definition.type === "number" ? "number" : "text"}" value="${escapeHtml(value ?? "")}"></label>`;
 }
 
 export async function openModulePreferences(module, labels) {
@@ -19,11 +29,12 @@ export async function openModulePreferences(module, labels) {
     if (!definitions.length) return;
     await openPopup({
         title: labels.title,
-        body: `<form data-module-preferences>${definitions
+        body: `<form class="module-settings-popup-fields" data-module-preferences>${definitions
             .map((definition) =>
-                renderField(
+                renderModulePreferenceField(
                     definition,
                     payload.values?.[definition.key] ?? definition.default,
+                    labels.information,
                 ),
             )
             .join("")}</form>`,

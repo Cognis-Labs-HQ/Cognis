@@ -9,10 +9,19 @@ import {
     filterModules,
     renderModuleFilters,
 } from "../app/modules/filters.js";
+import { renderModulePreferenceField } from "../app/modules/preferences.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const marketplaceStyles = readFileSync(
     resolve(ROOT, "src/ui/styles/modules.css"),
+    "utf8",
+);
+const popupStyles = readFileSync(
+    resolve(ROOT, "src/ui/styles/popup.css"),
+    "utf8",
+);
+const popupSource = readFileSync(
+    resolve(ROOT, "src/ui/reuse/popup.js"),
     "utf8",
 );
 const filterSource = readFileSync(
@@ -29,6 +38,33 @@ test("modules navigation derives its width from its content", () => {
         marketplaceStyles,
         /\[data-module-sidebar\] button\s*{[^}]*width: fit-content;[^}]*min-width: 0/,
     );
+});
+
+test("module preference fields use stable popup layout and descriptor tooltips", () => {
+    const field = renderModulePreferenceField(
+        {
+            key: "instance-url",
+            label: "Instance URL",
+            description: "HTTPS deployment URL",
+            type: "string",
+        },
+        "https://meet.example.com",
+        "More information",
+    );
+
+    assert.match(field, /module-settings-popup-field/);
+    assert.match(field, /module-settings-popup-label-row/);
+    assert.match(field, /class="info-tooltip"/);
+    assert.doesNotMatch(field, /<small>/);
+    assert.match(
+        popupStyles,
+        /module-settings-popup-field > input:not\(\[type="checkbox"\]\)/,
+    );
+    assert.match(
+        popupSource,
+        /renderInfoTooltip\([\s\S]*description[\s\S]*ui\.reuse\.more_information/,
+    );
+    assert.doesNotMatch(popupSource, /module-settings-popup-description/);
 });
 
 test("module filters include modules matching any active category", () => {

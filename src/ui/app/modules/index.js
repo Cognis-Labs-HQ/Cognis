@@ -826,6 +826,7 @@ function bindInteractions(root, signal) {
                         title: i18n.t("ui.app.modules.preferences_title"),
                         save: i18n.t("ui.reuse.save"),
                         cancel: i18n.t("ui.reuse.cancel"),
+                        information: i18n.t("ui.reuse.more_information"),
                     });
                     showToast(i18n.t("ui.app.modules.preferences_saved"), {
                         type: "success",

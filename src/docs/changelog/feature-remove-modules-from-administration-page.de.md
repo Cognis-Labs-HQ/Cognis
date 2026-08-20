@@ -373,3 +373,7 @@ Der Gateway-Start bewahrt nun UUID-Metadaten aus Manifesten auch für Komponente
 ## Browser-Capability-Prüfung trennen
 
 Bei der Modulaktivierung werden Server- und Browser-Capabilities nun über ihre jeweils zuständigen Laufzeitkontexte geprüft. Reine Browseranforderungen im Namensraum `ui:` werden bei der Aktivierung gegen aktive Anbieter der UI-Registry und erneut vor dem Einhängen der SPA-Route aufgelöst, statt umgangen oder im Serverkontext gesucht zu werden.
+
+## Modulkonfigurationsfelder stabilisieren
+
+Modulkonfigurationsfenster verwenden nun eine einheitliche Feldbreite und ausgerichtete boolesche Steuerelemente. Jede deklarierte Feldbeschreibung erscheint über das wiederverwendbare Informationsfenster neben ihrer Beschriftung, statt Höhe oder Ausrichtung des Formulars zu verändern.

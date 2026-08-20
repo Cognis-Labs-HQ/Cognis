@@ -373,3 +373,7 @@ Gateway bootstrap now preserves manifest UUID metadata even for components with 
 ## Separate browser capability validation
 
 Module enablement now validates server and browser capabilities through their owning runtime contexts. Browser-only `ui:` requirements are resolved against active UI registry providers during enablement and again before the SPA route mounts, rather than being bypassed or looked up in the server context.
+
+## Stabilize module configuration fields
+
+Module configuration popups now use consistent full-width field geometry and aligned boolean controls. Every declared field description is presented through the reusable information popup beside its label instead of changing the form’s height or input alignment.

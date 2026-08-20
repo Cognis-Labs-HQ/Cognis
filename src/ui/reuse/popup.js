@@ -87,6 +87,7 @@
  */
 
 import { createI18n } from "./i18n.js";
+import { renderInfoTooltip } from "./info-tooltip.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
 
 let stylesheetReady = null;
@@ -774,16 +775,19 @@ export async function openConfigFormPopup({
             const description = field.descriptionKey
                 ? i18n.t(field.descriptionKey)
                 : "";
-            const descriptionBlock = description
-                ? `<p class="module-settings-popup-description">${escapeHtml(description)}</p>`
+            const descriptorTooltip = description
+                ? renderInfoTooltip(
+                      description,
+                      i18n.t("ui.reuse.more_information"),
+                      `${fieldId}-descriptor`,
+                  )
                 : "";
             const inputType = ["url", "number", "password"].includes(field.type)
                 ? field.type
                 : "text";
             return `
       <label class="module-settings-popup-field">
-        <span class="module-settings-popup-label">${escapeHtml(label)}</span>
-        ${descriptionBlock}
+        <span class="module-settings-popup-label-row"><span class="module-settings-popup-label">${escapeHtml(label)}</span>${descriptorTooltip}</span>
         <input id="${escapeHtml(fieldId)}" type="${escapeHtml(inputType)}" value="${escapeHtml(value)}" placeholder="${escapeHtml(placeholder)}" />
       </label>
     `;
