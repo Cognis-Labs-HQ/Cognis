@@ -385,3 +385,11 @@ Der Profiladapter reserviert den Platz für das Verfügbarkeitsmenü nun synchro
 ## Moduleinstellungen gezielt anwenden
 
 Moduleinstellungen fokussieren nun das erste Formularfeld, statt dessen Beschreibung zu öffnen, und zeigen eine Erfolgsmeldung nur nach abgeschlossenem Speichern. Cognis rendert die im Manifest deklarierten Felder, lädt ihre Werte vom moduleigenen Endpunkt `GET /api/v1/modules/<id>/config` und schreibt Änderungen mit `PUT` an diesen Endpunkt, sodass allein das Modul für Validierung, Anwendung und Speicherung zuständig bleibt.
+
+## Moduleigene Konfigurationsendpunkte verwenden
+
+Cognis rendert nun die in Modulmanifesten deklarierten Felder und lädt sowie speichert Werte über den moduleigenen `GET`- und `PUT`-Konfigurationsendpunkt. Module bleiben für Validierung, Anwendung und Speicherung ihrer Betriebseinstellungen zuständig; Cognis führt keine parallele, einstellungsbasierte Konfiguration mehr.
+
+## Module erhalten Protokollierungs- und Feedbackprozesse des Hosts
+
+Modulserverkontexte schreiben nun zugeordnete Einträge in das Anwendungsprotokoll. Browsermodule können Host-Funktionen für authentifizierte Serverprotokollierung, thematisierte Hinweise und Laufzeitfehlerdialoge nutzen, statt Betriebsfehler nur in der Browserkonsole zu hinterlassen.
