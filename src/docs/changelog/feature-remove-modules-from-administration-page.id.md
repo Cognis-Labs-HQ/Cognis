@@ -365,3 +365,7 @@ Bootstrap modul eksternal kini memiliki batas waktu yang aman, modul yang gagal 
 ## Membuka pengaturan modul dengan cepat
 
 Modul terpasang yang mendeklarasikan preferensi yang dapat diedit administrator kini menampilkan kontrol pengaturan SVG bertema tepat di sebelah kanan menu opsi lanjutan. Kontrol ini membuka popup konfigurasi yang sudah ada agar nilai dapat diubah dan disimpan.
+
+## Menyelesaikan setiap dependensi komponen
+
+Bootstrap gateway kini mempertahankan metadata UUID manifes bahkan untuk komponen tanpa dependensi, sehingga Administrasi menyelesaikan setiap UUID menjadi nama dan tautan komponennya. Tautan adaptor membuka gateway pemilik dan menggulir ke adaptor, tautan modul membuka detail modul, dan pemeriksaan repositori mewajibkan dependensi manifes berbasis UUID saja.

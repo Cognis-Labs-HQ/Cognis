@@ -70,7 +70,7 @@ test("component dependencies resolve UUIDs across gateways, adapters, and extern
                 name: "Notifications",
                 status: "active",
                 hasAdapters: true,
-                requires: [moduleUuid],
+                requires: [moduleUuid, adapterUuid],
             },
         ],
         [
@@ -95,6 +95,10 @@ test("component dependencies resolve UUIDs across gateways, adapters, and extern
     assert.match(
         html,
         /href="#gateway-notify" data-scroll-to="gateway-notify">Notifications<\/a>/,
+    );
+    assert.match(
+        html,
+        /href="#adapter-notify:smtp" data-scroll-to="adapter-notify:smtp">SMTP Email<\/a>/,
     );
 });
 

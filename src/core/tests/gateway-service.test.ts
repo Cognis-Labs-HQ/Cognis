@@ -64,6 +64,38 @@ test("gateway bootstrap derives hasAdapters from adapter parent manifests", asyn
     assert.equal(registry.get("example")?.hasAdapters, true);
 });
 
+test("gateway bootstrap preserves UUIDs for gateways without dependencies", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
+    const gatewaysRoot = path.join(root, "gateways");
+    const gatewayRoot = path.join(gatewaysRoot, "database");
+    const gatewayUuid = "5711a248-4ac9-5d44-98b5-b99bd4c6d722";
+    await mkdir(gatewayRoot, { recursive: true });
+    await writeFile(
+        path.join(gatewayRoot, "manifest.json"),
+        JSON.stringify({
+            id: "database",
+            uuid: gatewayUuid,
+            required: true,
+            requires: [],
+        }),
+    );
+    await writeFile(
+        path.join(gatewayRoot, "bootstrap.ts"),
+        'export async function bootstrap(ctx) { ctx.gatewayRegistry.register({ id: "database", name: "Database Gateway", version: "1.0.0" }); }',
+    );
+    const registry = new GatewayRegistry();
+    const service = new GatewayService(registry);
+
+    await service.bootstrap(gatewaysRoot, {
+        gatewayRegistry: registry,
+        capabilities: new CapabilityStore(),
+        flow: {} as never,
+    });
+
+    assert.equal(registry.get("database")?.uuid, gatewayUuid);
+    assert.deepEqual(registry.get("database")?.requires, []);
+});
+
 test("gateway bootstrap reports the root error when a required gateway fails", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
@@ -163,15 +195,20 @@ test("logging capability replaces the bootstrap logger for later gateways", asyn
 test("gateway bootstrap initializes declared dependencies first", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gateways-"));
     const gatewaysRoot = path.join(root, "gateways");
-    for (const gatewayId of ["logging", "db"]) {
+    const gatewayUuids = {
+        logging: "592c26c3-40f4-51b6-b503-9c9ce134c523",
+        db: "5711a248-4ac9-5d44-98b5-b99bd4c6d722",
+    };
+    for (const gatewayId of ["logging", "db"] as const) {
         const gatewayRoot = path.join(gatewaysRoot, gatewayId);
         await mkdir(gatewayRoot, { recursive: true });
         await writeFile(
             path.join(gatewayRoot, "manifest.json"),
             JSON.stringify({
                 id: gatewayId,
+                uuid: gatewayUuids[gatewayId],
                 required: true,
-                requires: gatewayId === "logging" ? ["db"] : [],
+                requires: gatewayId === "logging" ? [gatewayUuids.db] : [],
             }),
         );
         await writeFile(

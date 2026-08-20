@@ -346,10 +346,7 @@ export class GatewayService {
             const manifestRequires = Array.isArray(manifest.requires)
                 ? manifest.requires
                 : [];
-            if (
-                manifestRequires.length > 0 &&
-                ctx.gatewayRegistry.get(gatewayId)
-            ) {
+            if (ctx.gatewayRegistry.get(gatewayId)) {
                 ctx.gatewayRegistry.patch(gatewayId, {
                     requires: manifestRequires,
                     uuid: manifest.uuid,

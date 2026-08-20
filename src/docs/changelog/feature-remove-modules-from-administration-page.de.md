@@ -365,3 +365,7 @@ Das Starten externer Module wird nun sicher zeitlich begrenzt, fehlgeschlagene M
 ## Moduleinstellungen schnell öffnen
 
 Installierte Module mit bearbeitbaren Administratoreinstellungen zeigen nun direkt rechts neben dem Menü für erweiterte Optionen ein themenfähiges SVG-Einstellungssymbol. Es öffnet das vorhandene Konfigurationsfenster, in dem Werte geändert und gespeichert werden können.
+
+## Alle Komponentenabhängigkeiten auflösen
+
+Der Gateway-Start bewahrt nun UUID-Metadaten aus Manifesten auch für Komponenten ohne Abhängigkeiten, sodass die Administration jede UUID als Komponentenname und Link darstellt. Adapterlinks klappen das zugehörige Gateway auf und scrollen zum Adapter, Modullinks öffnen die Moduldetails und Repository-Prüfungen erzwingen ausschließlich UUID-basierte Manifestabhängigkeiten.

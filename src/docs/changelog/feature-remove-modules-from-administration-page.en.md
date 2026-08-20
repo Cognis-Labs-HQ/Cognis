@@ -365,3 +365,7 @@ External module bootstrap now times out safely, failed modules are disabled, dec
 ## Open module settings quickly
 
 Installed modules that declare administrator-editable preferences now show a themed SVG settings control immediately to the right of the advanced-options menu. The control opens the existing configuration popup so values can be modified and persisted.
+
+## Resolve every component dependency
+
+Gateway bootstrap now preserves manifest UUID metadata even for components with no dependencies, so Administration resolves every UUID to its component name and link. Adapter links expand their owning gateway and scroll to the adapter, module links open the module detail, and repository checks enforce UUID-only manifest dependencies.
