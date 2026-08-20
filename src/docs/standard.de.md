@@ -109,3 +109,7 @@ Alle vier Sprachen (en, de, ja, id) sind für alle in der Benutzeroberfläche si
 Jeder Zeichenkettenwert in einem übersetzten Dokument muss in der Sprache verfasst sein, die diese Datei repräsentiert. Die einzigen Ausnahmen sind Markennamen (`Cognis`), universelle technische Abkürzungen (`LDAP`, `TLS`, `STARTTLS`), Formatplatzhalter und der lateinische Slogan (`Disce. Loquere. Vive.`).
 
 Wenn Sie ein Markdown-Dokument ändern, für das übersetzte Varianten existieren, aktualisieren Sie die entsprechenden Sprachdateien in derselben Änderung, damit alle unterstützten Sprachen synchron bleiben.
+
+## Konvention für Funktionsdokumentation
+
+Die verborgene Beitragsvorlage `.github/DOCUMENTATION_TEMPLATE.en.md` definiert die verbindliche Eröffnungsstruktur jeder echten Dokumentationsdatei. Direkt nach der H1 folgt eine informative Aussage darüber, was die dokumentierte Funktion oder Oberfläche leistet. Die nächste H2 enthält konkrete Verwendungsbeispiele für Importe, Capability-Auflösungen, Routenaufrufe, Konfiguration und erwartete Ergebnisse. Die folgende H2 beginnt die vollständige technische Spezifikation; Eingaben, Ausgaben, Lebenszyklus, Validierung, Autorisierung, Fehler, Nebenwirkungen, Persistenz, Sicherheit, Bereinigung und Erweiterungsdetails gehören dort hinein oder in untergeordnete H3-Abschnitte. Der Architekturtest vergleicht die ersten drei Überschriftenebenen jeder Nicht-Changelog-Dokumentation mit der verborgenen Vorlage.

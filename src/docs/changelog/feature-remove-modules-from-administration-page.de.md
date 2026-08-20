@@ -401,3 +401,7 @@ Die Marketplace-Aktualisierung liest nun zuerst den aktiven Branch oder das akti
 ## Modul-UI-Clients und lokalisierte Konfiguration bereitstellen
 
 Profil, Nachrichten, Dateien und Freigaben veröffentlichen ihre Browserclients nun als aktive UI-Capabilities. Externe Routen können dadurch Gateway-eigene Daten verwenden, ohne mit dem Navbar-Start zu konkurrieren oder Gateway-Endpunkte direkt aufzurufen. Sprachpakete installierter Module bleiben vor dem Bootstrap verfügbar; Moduleinstellungen lösen diese Texte auf und lesen sowie schreiben über den moduleigenen `/config`-Endpunkt.
+
+## Alle Modul-Browserclients abwarten
+
+Direkte und geroutete Modulaufrufe warten nun vor dem Import der Moduloberfläche auf alle aktiven Navbar-Capability-Anbieter. Dadurch sind Files, Profile, Messages, Share, Feedback und weitere deklarierte Hostclients rechtzeitig verfügbar. Die Dokumentation besitzt nun eine verborgene kanonische Struktur und eine automatisierte Überschriftenprüfung für jedes echte Nicht-Changelog-Dokument.

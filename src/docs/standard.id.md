@@ -109,3 +109,7 @@ Semua empat bahasa (en, de, ja, id) diperlukan untuk string apapun yang terlihat
 Setiap nilai string dalam dokumen yang diterjemahkan harus ditulis dalam bahasa yang diwakili file tersebut. Satu-satunya pengecualian adalah nama merek (`Cognis`), akronim teknis universal (`LDAP`, `TLS`, `STARTTLS`), placeholder format, dan tagline Latin (`Disce. Loquere. Vive.`).
 
 Jika Anda mengubah dokumen Markdown yang memiliki varian terjemahan, perbarui file bahasa terkait dalam perubahan yang sama agar semua bahasa yang didukung tetap selaras.
+
+## Konvensi dokumentasi fungsi
+
+Templat kontribusi tersembunyi `.github/DOCUMENTATION_TEMPLATE.en.md` menentukan urutan pembuka wajib untuk setiap berkas dokumentasi nyata. Tepat setelah H1, awali dengan pernyataan informatif tentang apa yang dicapai fungsi atau permukaan yang didokumentasikan. H2 berikutnya berisi contoh penggunaan konkret untuk impor, pencarian kapabilitas, panggilan rute, konfigurasi, dan hasil yang diharapkan. H2 setelahnya memulai spesifikasi teknis lengkap; tempatkan seluruh input, output, perilaku siklus hidup, validasi, otorisasi, kesalahan, efek samping, persistensi, keamanan, pembersihan, dan detail ekstensi di sana atau pada subbagian H3. Pengujian arsitektur membandingkan tiga tingkat heading pertama setiap dokumen non-changelog dengan templat tersembunyi.

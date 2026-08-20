@@ -41,7 +41,7 @@
 
 import { ensurePageStylesheet, preparePageStylesheets } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
-import { beginPageLoading } from "./page-entry.js";
+import { beginPageLoading, ensureHostUiProviders } from "./page-entry.js";
 import { getCurrentRoutePath } from "./route-path.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 import {
@@ -406,6 +406,7 @@ async function loadRoute(path) {
     globalThis.__spaRouter = true;
     let mod;
     try {
+        await ensureHostUiProviders();
         mod = await route.load(path);
     } catch (error) {
         console.error("[router] route load error for", path, error);

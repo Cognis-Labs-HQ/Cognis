@@ -401,3 +401,7 @@ Marketplace refresh now reads an installed module's active branch or release bef
 ## Supply module UI clients and localized configuration
 
 Profile, Messages, Files, and Share now publish their browser clients as active UI capabilities, so external routes can use gateway-owned data without racing navbar startup or calling gateway endpoints directly. Installed module language bundles remain available before bootstrap, and module settings resolve those strings while reading and writing the module-owned `/config` endpoint.
+
+## Await all module browser clients
+
+Direct and routed module mounts now wait for every active navbar capability provider before importing module UI, ensuring Files, Profile, Messages, Share, feedback, and any other declared host clients are ready. Documentation now has a hidden canonical structure and an automated heading-convention audit across every real non-changelog document.

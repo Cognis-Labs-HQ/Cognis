@@ -109,3 +109,7 @@ All four languages (en, de, ja, id) are required for any string visible in the U
 Every string value in a translated doc must be written in the language that file represents. The only exceptions are brand names (`Cognis`), universal technical acronyms (`LDAP`, `TLS`, `STARTTLS`), format placeholders, and the Latin tagline (`Disce. Loquere. Vive.`).
 
 When changing a Markdown doc that has translated variants, update the corresponding language files in the same change so all supported languages stay in sync.
+
+## Function documentation convention
+
+The hidden contributor template at `.github/DOCUMENTATION_TEMPLATE.en.md` defines the mandatory opening sequence for every real documentation file. Begin directly after the H1 with an informative statement of what the documented function or surface accomplishes. The next H2 contains concrete usage examples for imports, capability lookups, route calls, configuration, and expected results. The following H2 begins the exhaustive technical specification; place all inputs, outputs, lifecycle behavior, validation, authorization, errors, side effects, persistence, security, cleanup, and extension details there or in its H3 subsections. The architecture test compares every non-changelog doc's first three heading levels with the hidden template.

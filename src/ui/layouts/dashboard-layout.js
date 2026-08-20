@@ -27,6 +27,10 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
+import {
+    ensureUiProvidersLoaded,
+    invalidateUiProviders,
+} from "../reuse/ui-provider-loader.js";
 
 capturePwaInstallPrompt();
 const DASHBOARD_LAYOUT_TEMPLATE_PROMISE = loadTemplate("dashboard-layout");
@@ -292,35 +296,10 @@ export async function updateNavbarAvatar() {
     if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
 }
 
-let navbarPluginsLoaded = false;
-let navbarPluginsLoadPromise = null;
 let releaseChangelogPopupChecked = false;
 
 export async function ensureNavbarPluginsLoaded() {
-    if (navbarPluginsLoaded) return;
-    if (navbarPluginsLoadPromise) return navbarPluginsLoadPromise;
-    if (!localStorage.getItem("cognis_access_token")) return;
-    navbarPluginsLoadPromise = (async () => {
-        try {
-            const res = await apiFetch("/api/v1/ui/navbar-plugins");
-            if (!res.ok) return;
-            const payload = await res.json();
-            const plugins = Array.isArray(payload.data) ? payload.data : [];
-            await Promise.all(
-                plugins.map((plugin) =>
-                    plugin?.scriptUrl
-                        ? import(plugin.scriptUrl).catch(() => {})
-                        : null,
-                ),
-            );
-            navbarPluginsLoaded = true;
-        } catch {
-            // navbar plugin loading is best-effort; layout continues without them
-        } finally {
-            navbarPluginsLoadPromise = null;
-        }
-    })();
-    return navbarPluginsLoadPromise;
+    return ensureUiProvidersLoaded();
 }
 
 function completeDeferredLoginSetup() {
@@ -347,7 +326,7 @@ function scheduleDeferredLoginSetup(i18n) {
 }
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
-    navbarPluginsLoaded = false;
+    invalidateUiProviders();
     ensureNavbarPluginsLoaded().catch(() => {});
 });
 

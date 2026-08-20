@@ -401,3 +401,7 @@ Penyegaran Marketplace kini membaca cabang atau rilis aktif modul terpasang sebe
 ## Sediakan klien UI modul dan konfigurasi terlokalisasi
 
 Profil, Pesan, Berkas, dan Berbagi kini menerbitkan klien browser sebagai kapabilitas UI aktif, sehingga rute eksternal dapat memakai data milik gateway tanpa berlomba dengan startup navbar atau memanggil endpoint gateway secara langsung. Bundel bahasa modul terpasang tetap tersedia sebelum bootstrap, dan pengaturan modul menyelesaikan string tersebut sambil membaca serta menulis endpoint `/config` milik modul.
+
+## Tunggu semua klien browser modul
+
+Pemasangan modul langsung dan melalui router kini menunggu setiap penyedia kapabilitas navbar aktif sebelum mengimpor UI modul, sehingga Files, Profile, Messages, Share, umpan balik, dan klien host lain yang dideklarasikan telah siap. Dokumentasi kini memiliki struktur kanonis tersembunyi dan audit konvensi heading otomatis untuk setiap dokumen nyata non-changelog.
