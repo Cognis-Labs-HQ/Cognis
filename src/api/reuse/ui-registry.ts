@@ -325,23 +325,28 @@ export class UIRegistry {
     }
 
     listSpaRoutes(): SpaRoute[] {
+        const activeProviders = this.navbarPlugins.filter(
+            (plugin) => !plugin.isEnabled || plugin.isEnabled(),
+        );
         return this.resolveDescriptor(
-            this.spaRoutes.map((route) => ({
-                ...route,
-                capabilityScripts: (route.requiredCapabilities ?? []).map(
-                    (capability) => {
-                        const provider = this.navbarPlugins.find((plugin) =>
+            this.spaRoutes.flatMap((route) => {
+                if (route.isEnabled && !route.isEnabled()) return [];
+                const providers = (route.requiredCapabilities ?? []).map(
+                    (capability) =>
+                        activeProviders.find((plugin) =>
                             plugin.providesCapabilities?.includes(capability),
-                        );
-                        if (!provider) {
-                            throw new Error(
-                                `Required UI capability "${capability}" has no active provider.`,
-                            );
-                        }
-                        return provider.scriptUrl;
+                        ),
+                );
+                if (providers.some((provider) => !provider)) return [];
+                return [
+                    {
+                        ...route,
+                        capabilityScripts: providers.map(
+                            (provider) => provider!.scriptUrl,
+                        ),
                     },
-                ),
-            })),
+                ];
+            }),
         );
     }
 

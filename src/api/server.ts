@@ -297,6 +297,11 @@ export function buildServer(deps: ApiDependencies) {
         {
             uiRegistry: deps.uiRegistry,
             routeContext,
+            onBootstrapFailed: async (moduleId) => {
+                enabledModules.delete(moduleId);
+                await deps.onModuleStateChanged?.(moduleId, false);
+                await deps.persistModuleState?.(moduleId, false);
+            },
         },
     );
 
@@ -321,6 +326,14 @@ export function buildServer(deps: ApiDependencies) {
                     deps.gatewayRegistry,
                     await coreComponentDependencies,
                 );
+                for (const capability of manifest?.requiresCapabilities ?? []) {
+                    if (routeContext.getCapability(capability) !== undefined)
+                        continue;
+                    throw new ModuleEnableValidationError(
+                        "module_capability_unavailable",
+                        `Module ${moduleId} requires unavailable capability ${capability}`,
+                    );
+                }
                 await (
                     deps.runModuleTests ??
                     moduleTestService.run.bind(moduleTestService)

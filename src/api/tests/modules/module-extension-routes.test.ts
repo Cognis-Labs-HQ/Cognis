@@ -8,6 +8,50 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+test("a timed-out module bootstrap is disabled without blocking refresh", async () => {
+    const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
+    const moduleUuid = "41ad9d2b-463e-4f50-8a62-f02d02d5e303";
+    const moduleRoot = path.join(modulesRoot, moduleUuid);
+    await mkdir(moduleRoot);
+    await writeFile(
+        path.join(moduleRoot, "bootstrap.js"),
+        "export async function bootstrapModule() { await new Promise(() => {}); }",
+    );
+    const previousModulesRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+    process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
+    const failed: string[] = [];
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "stalled-module",
+                    uuid: moduleUuid,
+                    entrypoints: { bootstrap: "./bootstrap.js" },
+                },
+            ],
+        } as any,
+        () => true,
+        undefined,
+        {
+            routeContext: createDefaultRouteContext(),
+            bootstrapTimeoutMs: 10,
+            onBootstrapFailed: (moduleId) => {
+                failed.push(moduleId);
+            },
+        },
+    );
+
+    try {
+        await extensions.refresh();
+        assert.deepEqual(failed, ["stalled-module"]);
+    } finally {
+        if (previousModulesRoot === undefined)
+            delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
+        else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousModulesRoot;
+        await rm(modulesRoot, { recursive: true, force: true });
+    }
+});
+
 test("disabling a module removes its routes, UI, capabilities, and flow hooks", async () => {
     const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
     const moduleUuid = "b76c6666-b6a7-4c7f-95ac-313fd8f33eb0";

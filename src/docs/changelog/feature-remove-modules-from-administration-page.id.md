@@ -357,3 +357,7 @@ Halaman Modul kini mencegah pemuatan langsung saat diimpor oleh router dan menga
 ## Navigasi ringkas dan nama dependensi
 
 Menu samping halaman Modul kini menyesuaikan lebarnya secara dinamis dengan item terpanjang, sama seperti navigasi Dokumentasi, bukan menggunakan lebar tetap. Administrasi menerjemahkan dependensi komponen yang hanya disimpan sebagai UUID menjadi nama gateway, adapter, serta modul bawaan atau eksternal yang terpasang, sekaligus mempertahankan tautan ke komponen tersebut. Filter status dan kategori menandai setiap pilihan aktif dengan jelas, dan administrator dapat menggabungkan beberapa kategori untuk menyertakan modul yang cocok dengan salah satu tag terpilih.
+
+## Memperkuat aktivasi modul runtime
+
+Bootstrap modul eksternal kini memiliki batas waktu yang aman, modul yang gagal dinonaktifkan, kapabilitas server yang dideklarasikan divalidasi sebelum aktivasi, dan rute SPA tidak dapat memuat kapabilitas dari penyedia yang tidak aktif. Deskriptor bahasa Study diperbarui setelah pembaruan modul.

@@ -191,6 +191,25 @@ test("UIRegistry selects only declared UI capability provider scripts", () => {
     assert.deepEqual(reg.listSpaRoutes()[0].capabilityScripts, ["/profile.js"]);
 });
 
+test("UIRegistry omits routes whose UI capability provider is inactive", () => {
+    const reg = new UIRegistry();
+    reg.registerNavbarPlugin({
+        scriptUrl: "/profile.js",
+        providesCapabilities: ["ui:profileAvatarRenderer"],
+        isEnabled: () => false,
+    });
+    reg.registerSpaRoute({
+        id: "meetings",
+        pattern: "^/meetings$",
+        base: "/meetings",
+        scriptUrl: "/meetings.js",
+        requiredCapabilities: ["ui:profileAvatarRenderer"],
+    });
+
+    assert.deepEqual(reg.listSpaRoutes(), []);
+    assert.equal(reg.resolveSpaRoute("/meetings"), undefined);
+});
+
 test("UIRegistry registers and lists auth typing messages", () => {
     const reg = new UIRegistry();
     reg.registerAuthTypingMessage({

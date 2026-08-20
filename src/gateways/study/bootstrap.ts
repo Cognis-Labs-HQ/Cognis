@@ -230,37 +230,31 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             if (!languageCode) continue;
             const moduleId =
                 descriptor?.moduleId ?? `study-language-${languageCode}`;
-            if (
-                !gateway
-                    .listRegisteredLanguageModules()
-                    .some((language) => language.code === languageCode)
-            ) {
-                gateway.registerLanguageModule(
-                    {
-                        languageCode,
-                        languageName: String(
-                            descriptor?.name ??
-                                descriptor?.languageName ??
-                                languageCode,
+            gateway.registerLanguageModule(
+                {
+                    languageCode,
+                    languageName: String(
+                        descriptor?.name ??
+                            descriptor?.languageName ??
+                            languageCode,
+                    ),
+                    languageFlag: String(
+                        descriptor?.flag ?? descriptor?.languageFlag ?? "",
+                    ),
+                    version: String(descriptor?.version ?? "0.0.0"),
+                    listChildComponents: () =>
+                        (descriptor?.childComponents ?? []).map(
+                            (component) => ({
+                                ...component,
+                                label:
+                                    component.label ??
+                                    component.labelKey ??
+                                    component.id,
+                            }),
                         ),
-                        languageFlag: String(
-                            descriptor?.flag ?? descriptor?.languageFlag ?? "",
-                        ),
-                        version: String(descriptor?.version ?? "0.0.0"),
-                        listChildComponents: () =>
-                            (descriptor?.childComponents ?? []).map(
-                                (component) => ({
-                                    ...component,
-                                    label:
-                                        component.label ??
-                                        component.labelKey ??
-                                        component.id,
-                                }),
-                            ),
-                    },
-                    { moduleId },
-                );
-            }
+                },
+                { moduleId },
+            );
             gateway.setLanguageModuleEnabled(moduleId, true);
         }
     };

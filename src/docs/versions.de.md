@@ -73,7 +73,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration          | `src/gateways/registration/`  | `1.1.14`  |
 | Logging               | `src/gateways/logging/`       | `1.5.12`  |
 | Observability         | `src/gateways/observability/` | `1.0.6`   |
-| Study                 | `src/gateways/study/`         | `1.5.12`  |
+| Study                 | `src/gateways/study/`         | `1.5.13`  |
 | Calendar              | `src/gateways/calendar/`      | `1.4.103` |
 
 ## Kernverträge
@@ -86,7 +86,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.59` |
+| API Server | `src/api/` | `0.3.60` |
 
 ## Werkzeuge
 

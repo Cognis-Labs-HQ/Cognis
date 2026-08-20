@@ -173,6 +173,8 @@ interface ModuleBootstrapPlugin {
 export interface ModuleExtensionOptions {
     uiRegistry?: UIRegistry;
     routeContext: RouteContext;
+    bootstrapTimeoutMs?: number;
+    onBootstrapFailed?: (moduleId: string) => Promise<void> | void;
 }
 
 export interface ModuleExtensionRoutes {
@@ -190,6 +192,7 @@ export function createModuleExtensionRoutes(
     log?: BootstrapLog,
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
+    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 10_000;
     let handlers: RouteHandler[] = [];
     if (!options?.routeContext) {
         throw new Error(
@@ -451,6 +454,31 @@ export function createModuleExtensionRoutes(
         return null;
     }
 
+    async function bootstrapWithTimeout(
+        plugin: ModuleBootstrapPlugin,
+        moduleCtx: ModuleBootstrapCtx,
+    ): Promise<void | (() => void | Promise<void>)> {
+        let timer: NodeJS.Timeout | undefined;
+        try {
+            return await Promise.race([
+                plugin.bootstrapModule!(moduleCtx),
+                new Promise<never>((_resolve, reject) => {
+                    timer = setTimeout(
+                        () =>
+                            reject(
+                                new Error(
+                                    `Module bootstrap timed out after ${bootstrapTimeoutMs}ms`,
+                                ),
+                            ),
+                        bootstrapTimeoutMs,
+                    );
+                }),
+            ]);
+        } finally {
+            if (timer) clearTimeout(timer);
+        }
+    }
+
     async function refresh() {
         for (const [moduleId, loaded] of loadedModules) {
             for (const teardown of [
@@ -548,7 +576,10 @@ export function createModuleExtensionRoutes(
                             },
                         );
                     }
-                    const result = await plugin.bootstrapModule(moduleCtx);
+                    const result = await bootstrapWithTimeout(
+                        plugin,
+                        moduleCtx,
+                    );
                     loadedModules.set(manifest.id, {
                         ctx: moduleCtx,
                         plugin,
@@ -598,6 +629,7 @@ export function createModuleExtensionRoutes(
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
+                await options.onBootstrapFailed?.(manifest.id);
             }
         }
 

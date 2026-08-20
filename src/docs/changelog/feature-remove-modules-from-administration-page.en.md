@@ -357,3 +357,7 @@ The Modules page now suppresses its direct-load mount during router imports and 
 ## Compact navigation and dependency names
 
 The Modules page side menu now sizes dynamically to its longest item, matching the Documentation navigation rather than using a fixed width. Administration resolves UUID-only component dependencies to the names of installed gateways, adapters, and bundled or external modules, while preserving links to the resolved component. Status and category filters visibly identify every active selection, and administrators can combine multiple categories to include modules matching any selected tag.
+
+## Harden runtime module activation
+
+External module bootstrap now times out safely, failed modules are disabled, declared server capabilities are validated before activation, and SPA routes cannot load capabilities from inactive providers. Study language descriptors refresh after module updates.

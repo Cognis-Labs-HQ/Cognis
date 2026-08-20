@@ -357,3 +357,7 @@ Die Modulseite unterdrückt nun ihr direktes Einbinden während Router-Importen 
 ## Kompakte Navigation und Abhängigkeiten
 
 Das Seitenmenü der Modulseite passt seine Breite jetzt dynamisch an den längsten Eintrag an und entspricht damit der Dokumentationsnavigation, statt eine feste Breite zu verwenden. Die Administration löst ausschließlich als UUID gespeicherte Komponentenabhängigkeiten in die Namen installierter Gateways, Adapter sowie gebündelter oder externer Module auf und behält Links zur aufgelösten Komponente bei. Status- und Kategoriefilter kennzeichnen jede aktive Auswahl sichtbar, und Administratoren können mehrere Kategorien kombinieren, um Module einzubeziehen, die einem der ausgewählten Tags entsprechen.
+
+## Aktivierung von Laufzeitmodulen absichern
+
+Das Starten externer Module wird nun sicher zeitlich begrenzt, fehlgeschlagene Module werden deaktiviert, deklarierte Server-Fähigkeiten werden vor der Aktivierung geprüft und SPA-Routen können keine Fähigkeiten inaktiver Anbieter laden. Study-Sprachbeschreibungen werden nach Modulaktualisierungen erneuert.

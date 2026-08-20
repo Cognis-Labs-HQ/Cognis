@@ -201,6 +201,31 @@ test("study child components come from installed language capabilities", async (
         ),
         true,
     );
+
+    systemCtx.contributePublicCapability("study:language:ja", {
+        ...japaneseLanguageCapability,
+        childComponents: [
+            {
+                id: "updated-library",
+                label: "Updated Library",
+                pageUrl: "/study/library",
+            },
+        ],
+    });
+    const refreshedResponse = new ResponseRecorder();
+    await dispatchRoute(
+        routeRegistry,
+        new RequestRecorder({ method: "GET", bearerToken: userBearerToken }),
+        refreshedResponse,
+        new URL("http://localhost/api/v1/study/languages/ja/modules"),
+    );
+    const refreshedPayload = JSON.parse(refreshedResponse.payload) as {
+        data: Array<{ id: string }>;
+    };
+    assert.deepEqual(
+        refreshedPayload.data.map((component) => component.id),
+        ["updated-library"],
+    );
 });
 
 test("study adapter routes announce controls and support disable toggles", async () => {
