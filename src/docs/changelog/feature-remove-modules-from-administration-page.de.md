@@ -361,3 +361,7 @@ Das Seitenmenü der Modulseite passt seine Breite jetzt dynamisch an den längst
 ## Aktivierung von Laufzeitmodulen absichern
 
 Das Starten externer Module wird nun sicher zeitlich begrenzt, fehlgeschlagene Module werden deaktiviert, deklarierte Server-Fähigkeiten werden vor der Aktivierung geprüft und SPA-Routen können keine Fähigkeiten inaktiver Anbieter laden. Study-Sprachbeschreibungen werden nach Modulaktualisierungen erneuert. Zeitlich abgelaufene Startvorgänge können nach ihrer Frist außerdem keine Routen oder Fähigkeiten registrieren.
+
+## Moduleinstellungen schnell öffnen
+
+Installierte Module mit bearbeitbaren Administratoreinstellungen zeigen nun direkt rechts neben dem Menü für erweiterte Optionen ein themenfähiges SVG-Einstellungssymbol. Es öffnet das vorhandene Konfigurationsfenster, in dem Werte geändert und gespeichert werden können.

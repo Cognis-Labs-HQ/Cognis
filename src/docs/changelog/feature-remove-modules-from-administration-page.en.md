@@ -361,3 +361,7 @@ The Modules page side menu now sizes dynamically to its longest item, matching t
 ## Harden runtime module activation
 
 External module bootstrap now times out safely, failed modules are disabled, declared server capabilities are validated before activation, and SPA routes cannot load capabilities from inactive providers. Study language descriptors refresh after module updates. Timed-out bootstraps are also prevented from registering routes or capabilities after their deadline.
+
+## Open module settings quickly
+
+Installed modules that declare administrator-editable preferences now show a themed SVG settings control immediately to the right of the advanced-options menu. The control opens the existing configuration popup so values can be modified and persisted.

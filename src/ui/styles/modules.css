@@ -303,7 +303,13 @@ body[data-theme="light"]:has(.module-detail) .global-topbar {
 .module-detail-header > div {
     min-width: 0;
 }
-.module-detail-advanced {
+.module-detail-header-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 0.5rem;
+}
+.module-detail-advanced,
+.module-detail-settings {
     flex: 0 0 auto;
 }
 .module-detail-header h2 {

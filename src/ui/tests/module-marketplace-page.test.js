@@ -374,6 +374,14 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderSidebar\(categories\)/);
     assert.match(source, /module-detail-back/);
     assert.match(source, /module-detail-advanced/);
+    assert.match(
+        source,
+        /module-detail-header-actions[^`]*\$\{advanced\}\$\{settings\}/,
+    );
+    assert.match(
+        source,
+        /module-detail-settings[^`]*data-module-preferences[^`]*module-icon-settings/,
+    );
     assert.match(source, /getFloatingSlot\(pageRoot, "module-actions"\)/);
     assert.match(source, /renderDetailActions\(selectedModule\)/);
     assert.match(source, /function refreshDetailActions\(\)/);
