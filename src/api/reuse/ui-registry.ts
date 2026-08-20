@@ -61,6 +61,12 @@ export interface NavbarPlugin {
     ownerId?: string;
 }
 
+export interface UiCapabilityProvider {
+    scriptUrl: string;
+    providesCapabilities: string[];
+    isEnabled?: () => boolean;
+}
+
 /**
  * A client-side SPA route contributed by a gateway or adapter. The app router
  * fetches these routes at runtime and dynamically imports `scriptUrl` when a
@@ -128,6 +134,7 @@ export class UIRegistry {
     private readonly moduleStaticDirs = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
+    private readonly capabilityProviders: UiCapabilityProvider[] = [];
     private readonly spaRoutes: SpaRoute[] = [];
     private readonly authTypingMessages: AuthTypingMessage[] = [];
     private readonly settingsSections: SettingsSection[] = [];
@@ -324,18 +331,24 @@ export class UIRegistry {
         return this.resolveDescriptor([...this.navbarPlugins]);
     }
 
+    registerCapabilityProvider(provider: UiCapabilityProvider): void {
+        this.capabilityProviders.push(provider);
+    }
+
+    private listActiveCapabilityProviders(): UiCapabilityProvider[] {
+        return [...this.navbarPlugins, ...this.capabilityProviders].filter(
+            (provider) => !provider.isEnabled || provider.isEnabled(),
+        );
+    }
+
     hasActiveCapabilityProvider(capabilityId: string): boolean {
-        return this.navbarPlugins.some(
-            (plugin) =>
-                plugin.providesCapabilities?.includes(capabilityId) &&
-                (!plugin.isEnabled || plugin.isEnabled()),
+        return this.listActiveCapabilityProviders().some((plugin) =>
+            plugin.providesCapabilities?.includes(capabilityId),
         );
     }
 
     listSpaRoutes(): SpaRoute[] {
-        const activeProviders = this.navbarPlugins.filter(
-            (plugin) => !plugin.isEnabled || plugin.isEnabled(),
-        );
+        const activeProviders = this.listActiveCapabilityProviders();
         return this.resolveDescriptor(
             this.spaRoutes.flatMap((route) => {
                 if (route.isEnabled && !route.isEnabled()) return [];

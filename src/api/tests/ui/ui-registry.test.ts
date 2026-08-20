@@ -408,3 +408,23 @@ test("GET /api/v1/ui/auth-typing-messages includes enabled module manifest messa
         },
     ]);
 });
+
+test("host UI capability providers satisfy module routes and supply their script", () => {
+    const registry = new UIRegistry();
+    registry.registerCapabilityProvider({
+        scriptUrl: "/static/reuse/feedback-capabilities.js",
+        providesCapabilities: ["ui:showToast"],
+    });
+    registry.registerSpaRoute({
+        id: "external-module",
+        pattern: "^/external$",
+        base: "/external",
+        scriptUrl: "/static/modules/external/index.js",
+        requiredCapabilities: ["ui:showToast"],
+    });
+
+    assert.equal(registry.hasActiveCapabilityProvider("ui:showToast"), true);
+    assert.deepEqual(registry.listSpaRoutes()[0].capabilityScripts, [
+        "/static/reuse/feedback-capabilities.js",
+    ]);
+});

@@ -21,6 +21,7 @@ import {
     openRuntimeErrorPopup,
 } from "./runtime-error-popup.js";
 import { uiCtx } from "./ui-ctx.js";
+import "./feedback-capabilities.js";
 
 const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;

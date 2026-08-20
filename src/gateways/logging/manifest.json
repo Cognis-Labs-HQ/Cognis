@@ -2,7 +2,7 @@
     "id": "logging",
     "uuid": "841f0923-f341-582c-a9ee-c2de6b911c95",
     "name": "Logging Gateway",
-    "version": "1.5.12",
+    "version": "1.5.13",
     "required": true,
     "requires": [
         "5711a248-4ac9-5d44-98b5-b99bd4c6d722",

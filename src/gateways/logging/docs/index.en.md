@@ -97,3 +97,7 @@ The DB gateway uses the shared logger for its own events but records only summar
 | `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotate the active log file when it reaches this size (bytes)             |
 | `LOG_ROTATE_MAX_FILES` | `10`                | Number of rotated log archives to keep (`0` keeps none)                  |
 | `LOG_ROTATE_COMPRESS`  | `true`              | When `true`, rotated logs are gzip-compressed (`.gz`)                    |
+
+### Browser log ingestion
+
+Authenticated browser components submit structured entries with `POST /api/v1/logging/entries` using `{ level, message, meta }`. The gateway validates the level and message, attaches the authenticated account and browser source, and writes the entry through `logging:log`.

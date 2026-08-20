@@ -215,6 +215,10 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/feedback-capabilities.js",
+    providesCapabilities: ["ui:log", "ui:showToast", "ui:openErrorPopup"],
+});
 const healthService = new HealthService();
 
 const gatewayService = new GatewayService(gatewayRegistry);

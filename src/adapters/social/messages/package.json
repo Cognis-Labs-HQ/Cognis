@@ -7,7 +7,7 @@
     "private": true,
     "dependencies": {
         "@cognis/adapter-social-profile": "<=1.1.63",
-        "@cognis/gateways": "<=0.1.7",
+        "@cognis/gateways": "<=0.1.8",
         "@cognis/adapter-auth-keyring": "<=1.0.35"
     }
 }

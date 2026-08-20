@@ -37,3 +37,7 @@ A module may declare `tags` alongside its broader `categories`; both participate
 ## Module preferences
 
 A module can expose administrator-editable settings with `ui.preferences`. Each field declares a stable `key`, a localized `labelKey`, an optional `descriptionKey`, a `type` of `boolean`, `string`, or `number`, and an optional matching `default`; `ui.stringsBaseUrl` identifies the module-owned translations. Cognis renders this manifest contract in the installed-module detail view, polls `GET /api/v1/modules/<id>/config`, and submits changes with `PUT` to that same module-owned endpoint. The module validates, applies, and persists its operational configuration. It must not provide a second settings UI or use Cognis user preferences as configuration storage.
+
+## Logging and user feedback
+
+Server bootstrap and route code writes structured application logs through `ctx.log(level, message, meta)`. Cognis scopes each entry to the module before forwarding it to the Logging gateway. Browser code obtains `ui:log`, `ui:showToast`, and `ui:openErrorPopup` from `uiCtx.capabilities`; `ui:log` forwards authenticated entries to the server log, while the feedback capabilities use the host's themed and accessible UI. Modules must use these processes instead of relying on browser console output for operational failures or implementing their own notification surfaces.

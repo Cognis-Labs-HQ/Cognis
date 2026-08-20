@@ -302,6 +302,13 @@ export function createModuleExtensionRoutes(
         };
 
         const systemCtx = options.routeContext.getCapability<Ctx>("system:ctx");
+        const moduleLog: BootstrapLog = (level, message, meta) => {
+            log?.(level, message, {
+                ...meta,
+                component: `module:${moduleId}`,
+                moduleId,
+            });
+        };
         const baseFlow = options.routeContext.flow;
         const flow: FlowApi = {
             exists: baseFlow.exists.bind(baseFlow),
@@ -329,7 +336,7 @@ export function createModuleExtensionRoutes(
             moduleId,
             moduleRoot,
             flow,
-            log,
+            log: moduleLog,
             capabilities: {
                 contribute(key, value) {
                     requireActiveBootstrap();

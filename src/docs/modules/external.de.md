@@ -37,3 +37,7 @@ Ein Modul kann `tags` neben seinem umfassenderen `categories` deklarieren. beide
 ## Moduleinstellungen
 
 Ein Modul kann mit `ui.preferences` vom Administrator bearbeitbare Einstellungen bereitstellen. Jedes Feld deklariert einen stabilen `key`, einen lokalisierten `labelKey`, einen optionalen `descriptionKey`, einen `type` aus `boolean`, `string` oder `number` und einen optionalen passenden `default`; `ui.stringsBaseUrl` bezeichnet die moduleigenen Übersetzungen. Cognis rendert diesen Manifestvertrag in der Detailansicht des installierten Moduls, fragt `GET /api/v1/modules/<id>/config` ab und sendet Änderungen mit `PUT` an denselben moduleigenen Endpunkt. Das Modul validiert, übernimmt und speichert seine Betriebskonfiguration. Es darf weder eine zweite Einstellungsoberfläche anbieten noch Cognis-Benutzereinstellungen als Konfigurationsspeicher verwenden.
+
+## Protokollierung und Benutzerfeedback
+
+Serverseitiger Start- und Routencode schreibt strukturierte Anwendungsprotokolle über `ctx.log(level, message, meta)`. Cognis ordnet jeden Eintrag dem Modul zu, bevor er an das Logging-Gateway weitergegeben wird. Browsercode bezieht `ui:log`, `ui:showToast` und `ui:openErrorPopup` aus `uiCtx.capabilities`; `ui:log` leitet authentifizierte Einträge an das Serverprotokoll weiter, während die Feedback-Funktionen die thematisierte und barrierefreie Oberfläche des Hosts verwenden. Module müssen diese Prozesse nutzen, statt sich bei Betriebsfehlern auf die Browserkonsole zu verlassen oder eigene Benachrichtigungsoberflächen zu implementieren.

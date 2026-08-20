@@ -165,6 +165,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/meetings/navbar.js" });
             ctx.registerSpaRoute({ id: "meetings", pattern: "^/meetings$", base: "/meetings", scriptUrl: "/static/modules/meetings/app.js" });
             ctx.registerAuthTypingMessage({ id: "meetings-ready", textKey: "module.meetings.ready" });
+            ctx.log("info", "Meetings module started.", { operation: "bootstrap" });
             ctx.capabilities.contribute("meetings:provider", "external");
             ctx.router.put("/api/v1/modules/meetings/config", (_req, res) => { res.writeHead(204); res.end(); });
         }`,
@@ -180,6 +181,11 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         scriptUrl: "/static/profile-avatar.js",
         providesCapabilities: ["ui:profileAvatarRenderer"],
     });
+    const logEntries: Array<{
+        level: string;
+        message: string;
+        meta?: Record<string, unknown>;
+    }> = [];
     const extensions = createModuleExtensionRoutes(
         {
             listManifests: async () => [
@@ -192,7 +198,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             ],
         } as any,
         () => true,
-        undefined,
+        (level, message, meta) => logEntries.push({ level, message, meta }),
         {
             routeContext: createDefaultRouteContext({
                 getCapability: (id) =>
@@ -213,6 +219,20 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         ]);
         assert.equal(uiRegistry.listAuthTypingMessages().length, 1);
         assert.equal(systemCtx.getCapability("meetings:provider"), "external");
+        assert.deepEqual(
+            logEntries.find(
+                ({ message }) => message === "Meetings module started.",
+            ),
+            {
+                level: "info",
+                message: "Meetings module started.",
+                meta: {
+                    operation: "bootstrap",
+                    component: "module:meetings",
+                    moduleId: "meetings",
+                },
+            },
+        );
 
         let status = 0;
         assert.equal(
