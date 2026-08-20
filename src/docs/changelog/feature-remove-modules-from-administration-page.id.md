@@ -369,3 +369,7 @@ Modul terpasang yang mendeklarasikan preferensi yang dapat diedit administrator 
 ## Menyelesaikan setiap dependensi komponen
 
 Bootstrap gateway kini mempertahankan metadata UUID manifes bahkan untuk komponen tanpa dependensi, sehingga Administrasi menyelesaikan setiap UUID menjadi nama dan tautan komponennya. Tautan adaptor membuka gateway pemilik dan menggulir ke adaptor, tautan modul membuka detail modul, dan pemeriksaan repositori mewajibkan dependensi manifes berbasis UUID saja.
+
+## Memisahkan validasi kapabilitas peramban
+
+Aktivasi modul kini hanya memvalidasi kapabilitas server terhadap konteks server. Kebutuhan khusus peramban dalam namespace `ui:`, seperti perender avatar profil Jitsi Meet, tetap diselesaikan oleh registri UI sebelum rute SPA dipasang dan tidak lagi keliru memblokir aktivasi modul.

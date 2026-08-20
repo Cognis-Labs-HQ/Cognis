@@ -369,3 +369,7 @@ Installierte Module mit bearbeitbaren Administratoreinstellungen zeigen nun dire
 ## Alle Komponentenabhängigkeiten auflösen
 
 Der Gateway-Start bewahrt nun UUID-Metadaten aus Manifesten auch für Komponenten ohne Abhängigkeiten, sodass die Administration jede UUID als Komponentenname und Link darstellt. Adapterlinks klappen das zugehörige Gateway auf und scrollen zum Adapter, Modullinks öffnen die Moduldetails und Repository-Prüfungen erzwingen ausschließlich UUID-basierte Manifestabhängigkeiten.
+
+## Browser-Capability-Prüfung trennen
+
+Bei der Modulaktivierung werden nun nur Server-Capabilities gegen den Serverkontext geprüft. Reine Browseranforderungen im Namensraum `ui:`, etwa der Profilbild-Renderer von Jitsi Meet, werden weiterhin vor dem Einhängen der SPA-Route durch die UI-Registry aufgelöst, statt die Modulaktivierung fälschlich zu blockieren.

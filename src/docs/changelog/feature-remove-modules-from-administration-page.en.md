@@ -369,3 +369,7 @@ Installed modules that declare administrator-editable preferences now show a the
 ## Resolve every component dependency
 
 Gateway bootstrap now preserves manifest UUID metadata even for components with no dependencies, so Administration resolves every UUID to its component name and link. Adapter links expand their owning gateway and scroll to the adapter, module links open the module detail, and repository checks enforce UUID-only manifest dependencies.
+
+## Separate browser capability validation
+
+Module enablement now validates only server capabilities against the server context. Browser-only `ui:` requirements, such as Jitsi Meet’s profile avatar renderer, remain resolved by the UI registry before the SPA route mounts instead of incorrectly blocking module activation.

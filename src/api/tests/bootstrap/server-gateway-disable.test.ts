@@ -12,12 +12,35 @@ import {
 import {
     assertModuleInstallDependencies,
     assertModuleEnableDependencies,
+    assertModuleCapabilityDependencies,
     buildServer,
     discoverCoreComponentDependencies,
 } from "../../server.js";
 import { RouteRegistry } from "../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
+
+test("module enable validation separates browser and server capabilities", () => {
+    assert.doesNotThrow(() =>
+        assertModuleCapabilityDependencies(
+            "jitsi-meet",
+            ["ui:profileAvatarRenderer", "auth:requireAuth"],
+            (capabilityId) =>
+                capabilityId === "auth:requireAuth" ? () => true : undefined,
+        ),
+    );
+    assert.throws(
+        () =>
+            assertModuleCapabilityDependencies(
+                "jitsi-meet",
+                ["auth:requireAuth"],
+                () => undefined,
+            ),
+        (error) =>
+            (error as { code?: string }).code ===
+            "module_capability_unavailable",
+    );
+});
 
 function listen(server: import("node:http").Server): Promise<number> {
     return new Promise((resolve, reject) => {

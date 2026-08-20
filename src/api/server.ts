@@ -229,6 +229,21 @@ export function assertModuleInstallDependencies(
     }
 }
 
+export function assertModuleCapabilityDependencies(
+    moduleId: string,
+    requiresCapabilities: readonly string[],
+    getCapability: (capabilityId: string) => unknown,
+): void {
+    for (const capability of requiresCapabilities) {
+        if (capability.startsWith("ui:")) continue;
+        if (getCapability(capability) !== undefined) continue;
+        throw new ModuleEnableValidationError(
+            "module_capability_unavailable",
+            `Module ${moduleId} requires unavailable capability ${capability}`,
+        );
+    }
+}
+
 /**
  * Resolves a module's startup enabled state from highest to lowest priority:
  * core-module requirement, persisted runtime override, then manifest default.
@@ -326,14 +341,11 @@ export function buildServer(deps: ApiDependencies) {
                     deps.gatewayRegistry,
                     await coreComponentDependencies,
                 );
-                for (const capability of manifest?.requiresCapabilities ?? []) {
-                    if (routeContext.getCapability(capability) !== undefined)
-                        continue;
-                    throw new ModuleEnableValidationError(
-                        "module_capability_unavailable",
-                        `Module ${moduleId} requires unavailable capability ${capability}`,
-                    );
-                }
+                assertModuleCapabilityDependencies(
+                    moduleId,
+                    manifest?.requiresCapabilities ?? [],
+                    routeContext.getCapability,
+                );
                 await (
                     deps.runModuleTests ??
                     moduleTestService.run.bind(moduleTestService)
