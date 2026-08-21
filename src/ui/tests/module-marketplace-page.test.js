@@ -434,6 +434,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
+    const presentationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/presentation.js"),
+        "utf8",
+    );
     assert.match(source, /data-module-uuid/);
     assert.match(source, /renderMarkdown\(module\.readme/);
     assert.match(source, /module-detail-screenshots/);
@@ -503,9 +507,9 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
-    assert.match(source, /function hasModuleUpdate/);
+    assert.match(presentationSource, /function hasModuleUpdate/);
     assert.match(source, /module\.defaultBranch/);
-    assert.match(source, /module\.installedCommit/);
+    assert.match(presentationSource, /module\.installedCommit/);
     assert.match(source, /filterModules\(modules, \{/);
     assert.match(source, /categories: new Set\(\)/);
     assert.match(source, /formatTag,/);
@@ -565,11 +569,15 @@ test("module marketplace exposes releases and pending action feedback", () => {
         resolve(ROOT, "src/ui/styles/reuse/button-loading.css"),
         "utf8",
     );
+    const presentationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/presentation.js"),
+        "utf8",
+    );
     assert.match(source, /module\.releases/);
     assert.match(source, /ui\.app\.modules\.releases/);
     assert.match(source, /beginButtonLoading\(target\)/);
     assert.match(source, /pendingModuleActions\.set\(module\.uuid, action\)/);
-    assert.match(source, /function moduleChangeDirection/);
+    assert.match(presentationSource, /function moduleChangeDirection/);
     assert.match(source, /action = changeDirection/);
     assert.match(
         readFileSync(

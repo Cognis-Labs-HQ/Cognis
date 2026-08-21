@@ -413,3 +413,7 @@ Katalog penyedia browser kini mencakup klien berbasis navbar dan penyedia host m
 ## Menjaga pengaturan modul tetap ter-mount sekali
 
 Halaman Modul kini membatalkan lingkup interaksi pemuatan langsung sebelumnya sebelum remount SPA. Membuka rute detail modul tidak lagi menyisakan handler pengaturan dari tampilan beranda, sehingga satu klik hanya membuka satu popup.
+
+## Mendeteksi pembaruan modul pada cabang default
+
+Penyegaran katalog kini membandingkan commit dan versi terpasang dengan kepala cabang yang dipilih. Commit baru pada cabang default menghasilkan tindakan Perbarui meski tanpa kenaikan versi, sedangkan versi manifes yang lebih baru menghasilkan tindakan Upgrade dan indikator versi tersedia.

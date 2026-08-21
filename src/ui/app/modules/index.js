@@ -39,7 +39,13 @@ import {
     filterModules,
     renderModuleFilters,
 } from "./filters.js";
-import { detailModuleUuid, formatVersion } from "./presentation.js";
+import {
+    compareVersions,
+    detailModuleUuid,
+    formatVersion,
+    hasModuleUpdate,
+    moduleChangeDirection,
+} from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
 
 let i18n;
@@ -114,9 +120,9 @@ function renderLifecycleActions(module) {
     );
     const installedState = `<button type="button" class="btn-neutral${installedPending ? " button-loading" : ""}" disabled${installedPending ? ' aria-busy="true"' : ""}>${escapeHtml(installedLabel)}</button>`;
     if (module.status === "enabled") {
-        return `${installedState}${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "disable", "cancel")}`;
+        return `${installedState}${hasModuleUpdate(module, selectedBranch(module)) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "disable", "cancel")}`;
     }
-    return `${installedState}${hasModuleUpdate(module) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "enable", "confirm")}${renderLifecycleButton(module, "uninstall", "cancel")}`;
+    return `${installedState}${hasModuleUpdate(module, selectedBranch(module)) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "enable", "confirm")}${renderLifecycleButton(module, "uninstall", "cancel")}`;
 }
 
 function renderLifecycleButton(module, action, consequence) {
@@ -124,7 +130,9 @@ function renderLifecycleButton(module, action, consequence) {
     const isPending = pendingAction === action;
     const isBlocked = Boolean(pendingAction);
     const updateDirection =
-        action === "update" ? moduleChangeDirection(module) : action;
+        action === "update"
+            ? moduleChangeDirection(module, selectedBranch(module))
+            : action;
     const labelKey = isPending
         ? updateDirection === "upgrade"
             ? "ui.app.modules.upgrading"
@@ -141,52 +149,6 @@ function selectedBranch(module) {
         module.installedBranch ??
         module.defaultBranch
     );
-}
-
-function hasModuleUpdate(module) {
-    if (!module.installedVersion && !module.version) return false;
-    const branch = [
-        ...(module.branches ?? []),
-        ...(module.releases ?? []),
-    ].find((entry) => entry.name === selectedBranch(module));
-    return Boolean(
-        branch?.version &&
-        compareVersions(
-            branch.version,
-            module.installedVersion ?? module.version,
-        ) !== 0,
-    );
-}
-
-function moduleChangeDirection(module, branch = selectedBranch(module)) {
-    const channel = releaseChannels(module).find(
-        (entry) => entry.name === branch,
-    );
-    if (!channel?.version) return "update";
-    const comparison = compareVersions(
-        channel.version,
-        module.installedVersion ?? module.version,
-    );
-    return comparison < 0 ? "downgrade" : comparison > 0 ? "upgrade" : "none";
-}
-
-function compareVersions(left, right) {
-    const parts = (value) =>
-        String(value ?? "")
-            .replace(/^v/, "")
-            .split(/[.-]/)
-            .map((part) => (/^\d+$/.test(part) ? Number(part) : part));
-    const leftParts = parts(left);
-    const rightParts = parts(right);
-    for (
-        let index = 0;
-        index < Math.max(leftParts.length, rightParts.length);
-        index += 1
-    ) {
-        if ((leftParts[index] ?? 0) === (rightParts[index] ?? 0)) continue;
-        return (leftParts[index] ?? 0) > (rightParts[index] ?? 0) ? 1 : -1;
-    }
-    return 0;
 }
 
 function releaseChannels(module) {

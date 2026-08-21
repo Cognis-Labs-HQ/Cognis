@@ -413,3 +413,7 @@ The browser provider catalog now includes both navbar-backed clients and standal
 ## Keep module settings single-mounted
 
 The Modules page now aborts its previous direct-load interaction scope before an SPA remount. Opening a module detail route no longer leaves the home-view settings handler attached, so one settings click opens exactly one popup.
+
+## Detect default-branch module updates
+
+Catalog refresh now compares the installed commit and version with the selected branch head. New default-branch commits produce an Update action even without a version bump, while newer manifest versions produce the Upgrade action and available-version indicator.

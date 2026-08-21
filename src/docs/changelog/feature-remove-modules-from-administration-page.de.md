@@ -413,3 +413,7 @@ Der Browser-Provider-Katalog umfasst nun sowohl Navbar-gebundene Clients als auc
 ## Moduleinstellungen nur einmal mounten
 
 Die Modulseite beendet nun vor einem SPA-Remount ihren vorherigen Interaktionsbereich des Direktaufrufs. Beim Öffnen einer Moduldetailroute bleibt dadurch kein Einstellungen-Handler der Startansicht aktiv, sodass ein Klick genau ein Popup öffnet.
+
+## Modulaktualisierungen im Standard-Branch erkennen
+
+Die Katalogaktualisierung vergleicht nun den installierten Commit und die Version mit dem Kopf des ausgewählten Branches. Neue Commits im Standard-Branch erzeugen auch ohne Versionssprung eine Aktualisieren-Aktion; neuere Manifest-Versionen zeigen die Upgrade-Aktion und die verfügbare Version.
