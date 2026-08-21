@@ -693,4 +693,5 @@
   <string name="ui.reuse.all">Alle</string>
   <string name="ui.reuse.name">Name</string>
   <string name="ui.reuse.uninstall">Deinstallieren</string>
+  <string name="ui.reuse.toggle_secret_visibility">Sichtbarkeit des Geheimnisses umschalten</string>
 </resources>

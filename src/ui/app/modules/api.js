@@ -109,6 +109,12 @@ export async function loadCachedModules() {
     return data(await apiFetch("/api/v1/modules/catalog"));
 }
 
+export async function loadModuleAsset(assetUrl) {
+    const response = await apiFetch(assetUrl);
+    if (!response.ok) return null;
+    return URL.createObjectURL(await response.blob());
+}
+
 export async function installModule(module, token, branch, wasEnabled) {
     const job = await data(
         await apiFetch("/api/v1/modules/install", {

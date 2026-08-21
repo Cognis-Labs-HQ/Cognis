@@ -693,4 +693,5 @@
   <string name="ui.reuse.all">Semua</string>
   <string name="ui.reuse.name">Nama</string>
   <string name="ui.reuse.uninstall">Copot</string>
+  <string name="ui.reuse.toggle_secret_visibility">Alihkan visibilitas rahasia</string>
 </resources>

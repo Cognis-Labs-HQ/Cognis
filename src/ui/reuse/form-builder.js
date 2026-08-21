@@ -1,10 +1,4 @@
 /**
- * Percentage threshold for showing the near-limit counter state.
- * When 10% or fewer characters remain available, near-limit styling is applied.
- */
-const NEAR_LIMIT_THRESHOLD = 0.1;
-
-/**
  * Reusable form builder and validator for dashboard and auth pages.
  *
  * Builds form markup from a structured field schema and attaches runtime
@@ -50,8 +44,10 @@ const NEAR_LIMIT_THRESHOLD = 0.1;
  *   includeSubmitButton?: boolean,
  *   fields: Array<{
  *     name: string,
- *     labelKey: string,
- *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea',
+ *     labelKey?: string,
+ *     label?: string,
+ *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea'|'checkbox',
+ *     secret?: boolean,
  *     required?: boolean,
  *     disabled?: boolean,
  *     value?: string,
@@ -75,6 +71,18 @@ const NEAR_LIMIT_THRESHOLD = 0.1;
  * }} options
  * @returns {{ render: () => string, attach: (formElement: HTMLFormElement, attachOptions?: { signal?: AbortSignal }) => { validateField: (fieldName: string, forceTouched?: boolean) => boolean, validateAll: (forceTouched?: boolean) => boolean, getValues: () => Record<string, string>, detach: () => void } }}
  */
+
+import {
+    bindSecretVisibilityToggles,
+    ensureSecretVisibilityStyles,
+} from "./secret-visibility-toggle.js";
+
+/**
+ * Percentage threshold for showing the near-limit counter state.
+ * When 10% or fewer characters remain available, near-limit styling is applied.
+ */
+const NEAR_LIMIT_THRESHOLD = 0.1;
+
 export function createFormBuilder(ctx, options) {
     const i18n = ctx?.i18n;
     const escapeHtml = ctx?.escapeHtml;
@@ -118,7 +126,7 @@ export function createFormBuilder(ctx, options) {
         }
         const type = String(fieldConfig?.type ?? "text").trim();
         const inputId = `form-builder-${fieldName}`;
-        const label = i18n.t(fieldConfig.labelKey);
+        const label = fieldConfig.label ?? i18n.t(fieldConfig.labelKey);
         const required = fieldConfig.required === true;
         const disabled = fieldConfig.disabled === true;
         const maxCharacters = Number(fieldConfig.maxCharacters ?? 0);
@@ -187,7 +195,7 @@ export function createFormBuilder(ctx, options) {
                 ? `<ul class="form-builder-criteria-list form-builder-criteria-list--inline">${criteriaItems}</ul>`
                 : "";
 
-        const inputMarkup =
+        const plainInputMarkup =
             type === "select"
                 ? `<select id="${escapeHtml(inputId)}" name="${escapeHtml(fieldName)}" class="form-builder-input theme-select"${attributes.join("")}>
             ${(Array.isArray(fieldConfig.options) ? fieldConfig.options : [])
@@ -229,10 +237,13 @@ export function createFormBuilder(ctx, options) {
                   : `<input
           id="${escapeHtml(inputId)}"
           name="${escapeHtml(fieldName)}"
-          type="${escapeHtml(type)}"
+          type="${escapeHtml(fieldConfig.secret ? "password" : type)}"
           class="form-builder-input"
-          value="${escapeHtml(value)}"${attributes.join("")}
+          ${type === "checkbox" && value === "true" ? "checked" : `value="${escapeHtml(value)}"`}${fieldConfig.secret ? " data-secret-visibility-input" : ""}${attributes.join("")}
         />`;
+        const inputMarkup = fieldConfig.secret
+            ? `<span class="secret-visibility-control">${plainInputMarkup}<button type="button" class="secret-visibility-toggle" data-secret-visibility-toggle="${escapeHtml(inputId)}" aria-controls="${escapeHtml(inputId)}" aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.toggle_secret_visibility"))}"><span class="secret-visibility-eye" aria-hidden="true"></span></button></span>`
+            : plainInputMarkup;
         const counterMarkup = hasMaxCharacters
             ? `<span class="form-builder-char-counter" data-form-builder-char-counter="${escapeHtml(fieldName)}">${escapeHtml(String(value.length))} / ${escapeHtml(String(maxCharacters))}</span>`
             : "";
@@ -276,7 +287,10 @@ export function createFormBuilder(ctx, options) {
                 fieldInput instanceof HTMLInputElement ||
                 fieldInput instanceof HTMLSelectElement ||
                 fieldInput instanceof HTMLTextAreaElement
-                    ? String(fieldInput.value ?? "")
+                    ? fieldInput instanceof HTMLInputElement &&
+                      fieldInput.type === "checkbox"
+                        ? String(fieldInput.checked)
+                        : String(fieldInput.value ?? "")
                     : "";
         }
         return fieldValues;
@@ -346,6 +360,11 @@ export function createFormBuilder(ctx, options) {
     }
 
     function attach(formElement, attachOptions = {}) {
+        ensureSecretVisibilityStyles();
+        const detachSecretVisibility = bindSecretVisibilityToggles({
+            root: formElement,
+            signal: attachOptions.signal,
+        });
         const touchedFieldNames = new Set();
 
         function updateCriterionVisualState(
@@ -521,7 +540,7 @@ export function createFormBuilder(ctx, options) {
             validateField,
             validateAll,
             getValues: () => createFieldValues(formElement),
-            detach: () => undefined,
+            detach: detachSecretVisibility,
         };
     }
 

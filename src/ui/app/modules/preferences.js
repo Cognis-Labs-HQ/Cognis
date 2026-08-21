@@ -1,6 +1,7 @@
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { openPopup } from "../../reuse/popup.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
+import { createFormBuilder } from "../../reuse/form-builder.js";
 import { extendI18n } from "../../reuse/i18n.js";
 import { loadModuleConfig, saveModuleConfig } from "./api.js";
 
@@ -44,26 +45,6 @@ export async function assertRequiredModulePreferences(
     throw error;
 }
 
-export function renderModulePreferenceField(
-    definition,
-    value,
-    informationLabel,
-) {
-    const id = `module-preference-${definition.key}`;
-    const descriptor = definition.description
-        ? renderInfoTooltip(
-              definition.description,
-              informationLabel,
-              `${id}-descriptor`,
-          )
-        : "";
-    const label = `<span class="module-settings-popup-label-row"><span class="module-settings-popup-label">${escapeHtml(definition.label)}</span>${descriptor}</span>`;
-    if (definition.type === "boolean") {
-        return `<label class="module-settings-popup-field module-settings-popup-field--boolean" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="checkbox"${value ? " checked" : ""}></label>`;
-    }
-    return `<label class="module-settings-popup-field" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="${definition.type === "number" ? "number" : "text"}" value="${escapeHtml(value ?? "")}"${definition.required ? " required" : ""}></label>`;
-}
-
 export function readModulePreferenceValues(form, definitions) {
     return Object.fromEntries(
         definitions.map((definition) => {
@@ -91,30 +72,61 @@ export async function openModulePreferences(module, labels) {
             ? moduleI18n.t(definition.descriptionKey)
             : undefined,
     }));
+    const formBuilder = createFormBuilder(
+        { i18n: moduleI18n, escapeHtml, renderInfoTooltip },
+        {
+            formId: "module-preferences-form",
+            formClassName: "module-settings-popup-fields",
+            includeSubmitButton: false,
+            fields: localizedDefinitions.map((definition) => ({
+                name: definition.key,
+                label: definition.label,
+                type:
+                    definition.type === "boolean"
+                        ? "checkbox"
+                        : definition.type,
+                secret: definition.secret === true,
+                required:
+                    definition.required === true &&
+                    definition.type !== "boolean",
+                value: String(
+                    values?.[definition.key] ?? definition.default ?? "",
+                ),
+                infoTooltip: definition.description
+                    ? {
+                          text: definition.description,
+                          ariaLabel: labels.information,
+                          id: `module-preference-${definition.key}-descriptor`,
+                      }
+                    : undefined,
+            })),
+        },
+    );
+    let formController;
+    let savedValues = null;
     const action = await openPopup({
         title: labels.title,
-        body: `<form class="module-settings-popup-fields" data-module-preferences>${localizedDefinitions
-            .map((definition) =>
-                renderModulePreferenceField(
-                    definition,
-                    values?.[definition.key] ?? definition.default,
-                    labels.information,
-                ),
-            )
-            .join("")}</form>`,
+        body: formBuilder.render(),
         actions: [
             { id: "save", label: labels.save, variant: "confirm" },
             { id: "cancel", label: labels.cancel, variant: "neutral" },
         ],
         closeProtection: true,
+        onOpen: (overlay) => {
+            const form = overlay.querySelector("#module-preferences-form");
+            formController = formBuilder.attach(form);
+        },
         onAction: async (action, overlay) => {
             if (action !== "save") return;
-            const form = overlay.querySelector("[data-module-preferences]");
-            await saveModuleConfig(
-                module.id,
-                readModulePreferenceValues(form, localizedDefinitions),
+            if (!formController?.validateAll(true)) return false;
+            const form = overlay.querySelector("#module-preferences-form");
+            savedValues = readModulePreferenceValues(
+                form,
+                localizedDefinitions,
             );
+            await saveModuleConfig(module.id, savedValues);
         },
     });
-    return action === "save";
+    formController?.detach();
+    return action === "save" ? savedValues : null;
 }

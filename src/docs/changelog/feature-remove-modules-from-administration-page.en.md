@@ -469,3 +469,7 @@ The Files gateway now registers its UI directory under the `files` gateway key t
 ## Harden marketplace installation and assets
 
 Marketplace assets now have strict download limits and require administrator authentication. Module UUID and ID validation, per-module installation serialization, runtime route protection, and activation failure reporting prevent unsafe or misleading lifecycle states.
+
+## Restore module assets and configuration
+
+Authenticated marketplace assets now load through the API client instead of unauthenticated browser media requests. Required module settings use the reusable form builder, support concealed secret fields, remain available after configuration, and are preserved when modules are disabled.

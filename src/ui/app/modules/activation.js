@@ -2,6 +2,7 @@ import { setModuleEnabled } from "./api.js";
 import { enableModuleWithIntegrityAcknowledgement } from "./integrity.js";
 import {
     assertRequiredModulePreferences,
+    missingRequiredModulePreferenceKeys,
     openModulePreferences,
 } from "./preferences.js";
 
@@ -31,33 +32,53 @@ export function enableModuleWithIntegrityCheck(moduleId, i18n) {
 
 export async function activateModule(module, i18n) {
     const requiredMessage = i18n.t("ui.app.modules.config_required");
-    const configRouteAvailable = await assertRequiredModulePreferences(
-        module,
-        requiredMessage,
-    );
-    const result = await enableModuleWithIntegrityCheck(module.id, i18n);
-    if (configRouteAvailable) return result;
+    let configRouteAvailable = true;
     try {
-        await assertRequiredModulePreferences(module, requiredMessage);
+        configRouteAvailable = await assertRequiredModulePreferences(
+            module,
+            requiredMessage,
+        );
     } catch (error) {
-        if (error.code !== "module_config_required") {
-            await setModuleEnabled(module.id, false);
-            throw error;
-        }
+        if (error.code !== "module_config_required") throw error;
+        const savedValues = await openModulePreferences(
+            module,
+            modulePreferenceLabels(i18n),
+        );
+        if (!savedValues) return null;
+        assertSavedRequiredPreferences(module, savedValues, requiredMessage);
+    }
+    if (!configRouteAvailable) {
+        const result = await enableModuleWithIntegrityCheck(module.id, i18n);
         try {
-            const saved = await openModulePreferences(
+            const savedValues = await openModulePreferences(
                 module,
                 modulePreferenceLabels(i18n),
             );
-            if (!saved) {
+            if (!savedValues) {
                 await setModuleEnabled(module.id, false);
                 return null;
             }
-            await assertRequiredModulePreferences(module, requiredMessage);
+            assertSavedRequiredPreferences(
+                module,
+                savedValues,
+                requiredMessage,
+            );
         } catch (setupError) {
             await setModuleEnabled(module.id, false);
             throw setupError;
         }
+        return result;
     }
-    return result;
+    return enableModuleWithIntegrityCheck(module.id, i18n);
+}
+
+function assertSavedRequiredPreferences(module, values, message) {
+    const missingKeys = missingRequiredModulePreferenceKeys(
+        module.ui?.preferences ?? [],
+        values,
+    );
+    if (!missingKeys.length) return;
+    const validationError = new Error(message);
+    validationError.code = "module_config_required";
+    throw validationError;
 }

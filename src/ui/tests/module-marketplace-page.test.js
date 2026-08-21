@@ -13,7 +13,6 @@ import {
     assertRequiredModulePreferences,
     missingRequiredModulePreferenceKeys,
     readModulePreferenceValues,
-    renderModulePreferenceField,
 } from "../app/modules/preferences.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -53,26 +52,17 @@ test("modules navigation derives its width from its content", () => {
     );
 });
 
-test("module preference fields use stable popup layout and descriptor tooltips", () => {
-    const field = renderModulePreferenceField(
-        {
-            key: "instance-url",
-            label: "Instance URL",
-            description: "HTTPS deployment URL",
-            type: "string",
-        },
-        "https://meet.example.com",
-        "More information",
-    );
-
-    assert.match(field, /module-settings-popup-field/);
-    assert.match(field, /module-settings-popup-label-row/);
-    assert.match(field, /class="info-tooltip"/);
-    assert.doesNotMatch(field, /<small>/);
+test("module preference fields use the form builder and secret controls", () => {
+    assert.match(modulePreferencesSource, /createFormBuilder/);
     assert.match(
-        popupStyles,
-        /module-settings-popup-field > input:not\(\[type="checkbox"\]\)/,
+        modulePreferencesSource,
+        /secret: definition\.secret === true/,
     );
+    assert.match(
+        modulePreferencesSource,
+        /required:\s*definition\.required === true/,
+    );
+    assert.match(modulePreferencesSource, /renderInfoTooltip/);
     assert.match(
         popupSource,
         /renderInfoTooltip\([\s\S]*description[\s\S]*ui\.reuse\.more_information/,
@@ -325,12 +315,16 @@ test("module marketplace does not resolve repository-relative avatars against th
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
+    const assetSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/assets.js"),
+        "utf8",
+    );
     assert.match(source, /const avatarUrl = resolveModuleAssetUrl/);
     assert.match(
-        source,
+        assetSource,
         /if \(candidate\.startsWith\("\/"\)\) return candidate/,
     );
-    assert.match(source, /parsed\.protocol === "https:"/);
+    assert.match(assetSource, /parsed\.protocol === "https:"/);
 });
 
 test("module marketplace replaces unavailable icons with the unknown icon", () => {
@@ -723,19 +717,7 @@ test("required module configuration distinguishes unset values from valid false 
         }),
         [],
     );
-    assert.match(
-        renderModulePreferenceField(
-            {
-                key: "instanceUrl",
-                type: "string",
-                label: "Instance URL",
-                required: true,
-            },
-            "",
-            "Information",
-        ),
-        / required>/,
-    );
+    assert.match(modulePreferencesSource, /definition\.required === true/);
     const marketplaceSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
@@ -815,7 +797,7 @@ test("disabled modules defer required config checks when their owned route is no
     assert.match(modulePreferencesSource, /readModulePreferenceValues/);
     assert.match(
         marketplaceSource,
-        /if \(wasDisabled\)[\s\S]*enableModuleWithIntegrityCheck[\s\S]*openModulePreferences[\s\S]*finally[\s\S]*setModuleEnabled\(module\.id, false\)/,
+        /if \(wasDisabled\)[\s\S]*enableModuleWithIntegrityCheck[\s\S]*openModulePreferences[\s\S]*wasDisabled && !didSave/,
     );
 });
 

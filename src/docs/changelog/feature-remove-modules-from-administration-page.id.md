@@ -469,3 +469,7 @@ Gateway Files kini mendaftarkan direktori UI dengan kunci gateway `files` yang m
 ## Amankan instalasi dan aset marketplace
 
 Aset marketplace kini memiliki batas unduhan ketat dan memerlukan autentikasi administrator. Validasi UUID dan ID modul, serialisasi instalasi per modul, perlindungan rute runtime, serta pelaporan kegagalan aktivasi mencegah status siklus hidup yang tidak aman atau menyesatkan.
+
+## Pulihkan aset dan konfigurasi modul
+
+Aset marketplace terautentikasi kini dimuat melalui klien API, bukan permintaan media browser tanpa autentikasi. Pengaturan modul wajib memakai pembuat formulir yang dapat digunakan ulang, mendukung bidang rahasia tersembunyi, tetap tersedia setelah dikonfigurasi, dan dipertahankan saat modul dinonaktifkan.

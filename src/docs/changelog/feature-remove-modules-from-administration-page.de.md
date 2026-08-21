@@ -469,3 +469,7 @@ Das Files-Gateway registriert sein UI-Verzeichnis nun unter dem Gateway-Schlüss
 ## Marketplace-Installation und Assets absichern
 
 Marketplace-Assets haben jetzt strenge Downloadlimits und erfordern eine Administratorauthentifizierung. Modul-UUID- und ID-Prüfungen, die Serialisierung pro Modul, geschützte Laufzeitrouten und gemeldete Aktivierungsfehler verhindern unsichere oder irreführende Lebenszykluszustände.
+
+## Modul-Assets und Konfiguration wiederherstellen
+
+Authentifizierte Marketplace-Assets werden jetzt über den API-Client statt über nicht authentifizierte Medienanfragen des Browsers geladen. Erforderliche Moduleinstellungen verwenden den wiederverwendbaren Formulargenerator, unterstützen verdeckte Geheimfelder, bleiben nach der Konfiguration verfügbar und werden beim Deaktivieren von Modulen beibehalten.

@@ -49,6 +49,8 @@ export interface ModuleManifest {
             default?: boolean | string | number;
             /** Prevents enablement until the module-owned config supplies a value. */
             required?: boolean;
+            /** Conceals a string value behind the standard visibility control. */
+            secret?: boolean;
         }>;
         stringsBaseUrl?: string;
     };

@@ -53,6 +53,11 @@ import {
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
 import { confirmModuleUninstall } from "./uninstall.js";
+import {
+    clearAuthenticatedModuleAssets,
+    loadAuthenticatedModuleAssets,
+    resolveModuleAssetUrl,
+} from "./assets.js";
 
 let i18n;
 let composer;
@@ -221,17 +226,6 @@ function renderModuleDetails(module) {
 
 function renderDetailActions(module) {
     return `<button type="button" class="btn-neutral module-icon-button module-detail-back" data-module-back title="${escapeHtml(i18n.t("ui.reuse.back"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.back"))}"><span class="module-icon module-icon-back" aria-hidden="true"></span></button>${renderLifecycleActions(module)}`;
-}
-
-function resolveModuleAssetUrl(value) {
-    const candidate = String(value ?? "").trim();
-    if (candidate.startsWith("/")) return candidate;
-    try {
-        const parsed = new URL(candidate);
-        return parsed.protocol === "https:" ? parsed.toString() : "";
-    } catch {
-        return "";
-    }
 }
 
 function isVisibleMarketplaceModule(module) {
@@ -654,6 +648,7 @@ async function loadKnownModules(restoreDetailRoute = false) {
     ]);
     sources = loadedSources;
     modules = [...cached];
+    await loadAuthenticatedModuleAssets(modules);
     installed.forEach((installedModule) => {
         const known = modules.find(
             (module) => module.uuid === installedModule.uuid,
@@ -704,6 +699,7 @@ async function discoverConfiguredSources(forceRefresh = false) {
         forceRefresh,
     );
     if (sequence !== discoverySequence) return;
+    await loadAuthenticatedModuleAssets(discovered);
     {
         const knownUuids = new Set(modules.map((module) => module.uuid));
         discovered.forEach((module) => {
@@ -829,11 +825,13 @@ function bindInteractions(root, signal) {
                             modulePreferenceLabels(i18n),
                         );
                     } finally {
-                        if (wasDisabled) {
+                        if (wasDisabled && !didSave) {
                             await setModuleEnabled(module.id, false);
                         }
                     }
                     if (didSave) {
+                        module.status = "enabled";
+                        refreshMarketplace();
                         showToast(i18n.t("ui.app.modules.preferences_saved"), {
                             type: "success",
                         });
@@ -937,6 +935,9 @@ export async function mount(root, { signal } = {}) {
     if (globalThis.__spaRouter && !signal) return;
     pageMountController = replaceMountScope(pageMountController, signal);
     const mountSignal = pageMountController.signal;
+    mountSignal.addEventListener("abort", clearAuthenticatedModuleAssets, {
+        once: true,
+    });
     const finishPageLoading = beginPageLoading();
     try {
         pageRoot = root;
