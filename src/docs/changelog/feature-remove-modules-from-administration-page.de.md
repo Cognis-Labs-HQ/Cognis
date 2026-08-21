@@ -461,3 +461,7 @@ Die Profilavatar-Fähigkeit stellt nun eigene begrenzte Geometrie für Bilder, I
 ## Bereinigung bei der Moduldeinstallation ausdrücklich steuern
 
 Die Deinstallation entfernt nun immer die Konfiguration im Modul-Checkout und verlangt vor dem Löschen eine Bestätigung. Ein optionales Kontrollkästchen übergibt `deleteContent: true` an den Deinstallations-Hook des Moduls, um Inhalte dauerhaft zu entfernen; die reine Einstellungsbereinigung erfolgt bei jeder Deinstallation, sodass nach einer Neuinstallation eine erneute Konfiguration erforderlich ist.
+
+## Files-UI-Provider über den kanonischen Pfad bereitstellen
+
+Das Files-Gateway registriert sein UI-Verzeichnis nun unter dem Gateway-Schlüssel `files`, der `/static/gateways/files/*` bedient. Direkte und SPA-Modulaufrufe können `provider.js` zuverlässig importieren, bevor `files:uiClient` aufgelöst wird.

@@ -461,3 +461,7 @@ Kapabilitas avatar profil kini menyediakan geometri terbatasnya sendiri untuk ga
 ## Membuat pembersihan pencopotan modul eksplisit
 
 Pencopotan kini selalu menghapus konfigurasi lokal checkout dan meminta konfirmasi sebelum penghapusan. Kotak centang opsional meneruskan `deleteContent: true` ke hook pencopotan modul untuk menghapus konten secara permanen; pembersihan pengaturan tetap berjalan pada setiap pencopotan sehingga pemasangan ulang memerlukan konfigurasi kembali.
+
+## Menyajikan penyedia UI Files dari jalur kanonis
+
+Gateway Files kini mendaftarkan direktori UI dengan kunci gateway `files` yang melayani `/static/gateways/files/*`. Mount modul langsung dan SPA dapat mengimpor `provider.js` secara andal sebelum menyelesaikan `files:uiClient`.

@@ -461,3 +461,7 @@ The profile avatar capability now supplies its own bounded image, initials, and 
 ## Make module uninstall cleanup explicit
 
 Uninstall now always removes checkout-local configuration and asks for confirmation before deletion. An optional checkbox forwards `deleteContent: true` to the module uninstall hook for permanent content removal; settings-only cleanup runs on every uninstall so reinstalling requires configuration again.
+
+## Serve the Files UI provider from its canonical path
+
+The Files gateway now registers its UI directory under the `files` gateway key that backs `/static/gateways/files/*`. Direct and SPA module mounts can import `provider.js` reliably before resolving `files:uiClient`.
