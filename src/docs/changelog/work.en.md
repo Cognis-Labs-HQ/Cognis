@@ -12,6 +12,10 @@ Marketplace repository pagination now bypasses intermediary HTTP caches so a man
 
 Share guest renderers now receive standalone profile capabilities and fully loaded avatar styles before mounting. Gateway-owned share controls consistently display the localized Share label beside the canonical share icon.
 
-## Module styles contained
+## UI ownership clarified
 
-Declared module route styles now load in a lower cascade layer. Modules retain control of their page content while Cognis keeps authoritative styling over the shell, navigation, and profile avatar.
+SPA route cleanup now preserves shell-owned stylesheets. The module contract clearly separates host-owned reusable UI and navigation from module-namespaced content styling.
+
+## Installation failures protected
+
+Module installation polling now returns stable public error codes without exposing internal filesystem, repository, or validation details.

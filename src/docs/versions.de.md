@@ -50,7 +50,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.16` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.67` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.68` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.71` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |

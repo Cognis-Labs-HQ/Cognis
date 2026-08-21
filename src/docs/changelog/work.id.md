@@ -12,6 +12,10 @@ Paginasi repositori Marketplace kini melewati singgahan HTTP perantara agar peny
 
 Perender tamu berbagi kini menerima kapabilitas profil mandiri dan gaya avatar yang telah dimuat sepenuhnya sebelum dipasang. Kontrol berbagi milik gateway secara konsisten menampilkan label Bagikan yang dilokalkan di samping ikon berbagi kanonis.
 
-## Gaya modul dibatasi
+## Kepemilikan UI diperjelas
 
-Gaya rute modul yang dideklarasikan kini dimuat pada lapisan kaskade yang lebih rendah. Modul tetap mengendalikan konten halamannya, sedangkan Cognis mempertahankan gaya yang berwenang atas shell, navigasi, dan avatar profil.
+Pembersihan rute SPA kini mempertahankan stylesheet milik shell. Kontrak modul memisahkan UI dan navigasi pakai ulang milik host secara jelas dari gaya konten dengan namespace modul.
+
+## Kegagalan instalasi dilindungi
+
+Polling instalasi modul kini mengembalikan kode galat publik yang stabil tanpa mengekspos detail internal sistem berkas, repositori, atau validasi.

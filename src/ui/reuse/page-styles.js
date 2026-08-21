@@ -18,8 +18,6 @@
  *   preparePageStylesheets(hrefs) — loads a route's complete stylesheet set
  *                                and returns a commit callback that removes
  *                                prior-route styles after the new page mounts.
- *                                Module-owned styles load in a lower cascade
- *                                layer so they cannot override host shell rules.
  *
  * Usage:
  *   import { ensurePageStylesheet } from '../reuse/page-styles.js';
@@ -33,75 +31,11 @@
  */
 
 const _pending = new Map();
-const _initialPageStylesheets = new Set(
-    [...document.head.querySelectorAll('link[rel="stylesheet"][href]')].map(
-        (link) => new URL(link.href, window.location.origin).pathname,
-    ),
-);
-const _managedPageStylesheets = new Set(_initialPageStylesheets);
-const MODULE_STYLESHEET_PREFIX = "/static/modules/";
-
-function isModuleStylesheet(href) {
-    return new URL(href, window.location.origin).pathname.startsWith(
-        MODULE_STYLESHEET_PREFIX,
-    );
-}
-
-function ensureLayeredModuleStylesheet(href) {
-    const existing = [
-        ...document.head.querySelectorAll("style[data-module-stylesheet]"),
-    ].find((style) => style.dataset.moduleStylesheet === href);
-    if (existing) return Promise.resolve();
-
-    const preload = document.createElement("link");
-    preload.rel = "preload";
-    preload.as = "style";
-    preload.href = href;
-    const ready = new Promise((resolve) => {
-        const finish = () => {
-            const style = document.createElement("style");
-            style.dataset.moduleStylesheet = href;
-            style.textContent = `@import url(${JSON.stringify(href)}) layer(cognis-module-route);`;
-            document.head.append(style);
-            for (const link of document.head.querySelectorAll(
-                'link[rel="stylesheet"][href]',
-            )) {
-                if (
-                    new URL(link.href, window.location.origin).pathname ===
-                    new URL(href, window.location.origin).pathname
-                ) {
-                    link.remove();
-                }
-            }
-            preload.remove();
-            resolve();
-        };
-        preload.addEventListener("load", finish, { once: true });
-        preload.addEventListener(
-            "error",
-            (error) => {
-                console.error(
-                    "[page-styles] failed to preload module stylesheet:",
-                    href,
-                    error,
-                );
-                finish();
-            },
-            { once: true },
-        );
-    });
-    document.head.append(preload);
-    return ready;
-}
+// Styles present when the shell boots belong to Cognis and remain mounted.
+const _managedPageStylesheets = new Set();
 
 export function ensurePageStylesheet(href) {
     if (_pending.has(href)) return _pending.get(href);
-
-    if (isModuleStylesheet(href)) {
-        const ready = ensureLayeredModuleStylesheet(href);
-        _pending.set(href, ready);
-        return ready;
-    }
 
     const existing = document.head.querySelector(
         `link[rel="stylesheet"][href="${href}"]`,
@@ -158,18 +92,6 @@ export async function preparePageStylesheets(hrefs) {
                     staleStylesheet
                 ) {
                     link.remove();
-                }
-            }
-            for (const style of document.head.querySelectorAll(
-                "style[data-module-stylesheet]",
-            )) {
-                if (
-                    new URL(
-                        style.dataset.moduleStylesheet,
-                        window.location.origin,
-                    ).pathname === staleStylesheet
-                ) {
-                    style.remove();
                 }
             }
             _pending.delete(staleStylesheet);

@@ -47,6 +47,34 @@ export class ModuleEnableValidationError extends Error {
     }
 }
 
+const PUBLIC_INSTALL_ERROR_CODES = new Set([
+    "github_connection_timeout",
+    "invalid_module_asset_convention",
+    "invalid_module_asset_path",
+    "invalid_module_branch",
+    "invalid_module_commit",
+    "invalid_module_manifest",
+    "invalid_module_repository_layout",
+    "invalid_module_repository_path",
+    "invalid_module_source",
+    "missing_module_license_file",
+    "module_id_conflict",
+    "module_uuid_mismatch",
+    "unsupported_clone_url",
+]);
+
+function publicInstallErrorCode(error: unknown): string | undefined {
+    const explicitCode = (error as { code?: unknown })?.code;
+    if (
+        typeof explicitCode === "string" &&
+        PUBLIC_INSTALL_ERROR_CODES.has(explicitCode)
+    ) {
+        return explicitCode;
+    }
+    const message = error instanceof Error ? error.message : "";
+    return PUBLIC_INSTALL_ERROR_CODES.has(message) ? message : undefined;
+}
+
 function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
     module: T,
 ): T & {
@@ -403,10 +431,14 @@ export function createModuleRoutes(
                     });
                 })
                 .catch((error) => {
-                    const message =
+                    const internalMessage =
                         error instanceof Error ? error.message : String(error);
-                    const code = (error as { code?: string }).code;
-                    installJobs.set(jobId, { status: "failed", message, code });
+                    const code = publicInstallErrorCode(error);
+                    installJobs.set(jobId, {
+                        status: "failed",
+                        message: "Module installation failed.",
+                        code,
+                    });
                     hooks?.log?.(
                         "error",
                         "External module installation failed.",
@@ -418,7 +450,7 @@ export function createModuleRoutes(
                             ...(code === "github_connection_timeout"
                                 ? { knownCause: "container_network_mtu" }
                                 : {}),
-                            error: message,
+                            error: internalMessage,
                         },
                     );
                 });

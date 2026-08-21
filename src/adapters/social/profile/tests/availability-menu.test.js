@@ -21,14 +21,14 @@ test("availability menu presents every status with a matching dot", () => {
 test("availability menu remounts idempotently after SPA shell refreshes", () => {
     const navbar = readFileSync(resolve(PROFILE_ROOT, "ui/navbar.js"), "utf8");
 
-    assert.match(navbar, /ensureAvailabilityStylesheet/);
+    assert.match(navbar, /ensureProfileAvatarStyles/);
     assert.match(navbar, /querySelectorAll\("\.availability-menu-item"\)/);
     assert.match(navbar, /existingItems\.slice\(1\)/);
-    assert.match(navbar, /matchingStylesheets\.forEach/);
+    assert.doesNotMatch(navbar, /matchingStylesheets/);
     assert.match(navbar, /if \(availabilityMountPromise\)/);
     assert.match(
         navbar,
-        /dropdown\.prepend\(statusItem\);[\s\S]*await ensureAvailabilityStylesheet\(\)/,
+        /dropdown\.prepend\(statusItem\);[\s\S]*await ensureProfileAvatarStyles\(\)/,
     );
     assert.match(navbar, /catch \(error\) \{[\s\S]*statusItem\.remove\(\)/);
     assert.match(navbar, /"cognis:navbar-refresh"/);

@@ -121,12 +121,18 @@ test("navbar plugins mount after the shell and can recover pre-mount imports", (
     assert.match(share, /cognis:navbar-refresh/);
 });
 
-test("module route styles remain below host shell styles in the cascade", () => {
+test("SPA route cleanup preserves shell-owned stylesheets", () => {
     const pageStyles = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-styles.js"),
         "utf8",
     );
-    assert.match(pageStyles, /MODULE_STYLESHEET_PREFIX = "\/static\/modules\/"/);
-    assert.match(pageStyles, /layer\(cognis-module-route\)/);
-    assert.match(pageStyles, /style\[data-module-stylesheet\]/);
+    assert.match(pageStyles, /const _managedPageStylesheets = new Set\(\)/);
+    assert.doesNotMatch(
+        pageStyles,
+        /_managedPageStylesheets = new Set\(_initialPageStylesheets\)/,
+    );
+    assert.match(
+        pageStyles,
+        /destinationStylesheets\.forEach\(\(href\) => _managedPageStylesheets\.add\(href\)\)/,
+    );
 });

@@ -12,6 +12,10 @@ Die Seitennavigation für Marketplace-Repositorys umgeht nun zwischengeschaltete
 
 Renderer für Freigabegäste erhalten nun eigenständige Profilfunktionen und vollständig geladene Avatar-Stile, bevor sie eingebunden werden. Vom Gateway bereitgestellte Freigabesteuerelemente zeigen einheitlich die lokalisierte Bezeichnung „Teilen“ neben dem kanonischen Freigabesymbol.
 
-## Modulstile eingegrenzt
+## UI-Eigentum geklärt
 
-Deklarierte Stile für Modulrouten werden nun in einer niedrigeren Kaskadenebene geladen. Module behalten die Kontrolle über ihren Seiteninhalt, während Cognis die maßgeblichen Stile für Oberfläche, Navigation und Profilavatar beibehält.
+Die Bereinigung von SPA-Routen bewahrt nun hosteigene Stylesheets. Der Modulvertrag trennt wiederverwendbare UI und Navigation des Hosts klar von modulnamensräumigen Inhaltsstilen.
+
+## Installationsfehler geschützt
+
+Die Abfrage von Modulinstallationen liefert nun stabile öffentliche Fehlercodes, ohne interne Details zu Dateisystem, Repository oder Validierung offenzulegen.

@@ -674,7 +674,8 @@ test("module marketplace reports and logs installation failures", async () => {
         new URL(`http://localhost/api/v1/modules/install/${jobId}`),
     );
     assert.equal(status, 422);
-    assert.match(responseBody, /manifest checksum mismatch/);
+    assert.doesNotMatch(responseBody, /manifest checksum mismatch/);
+    assert.match(responseBody, /Module installation failed\./);
     assert.deepEqual(entries, [
         {
             message: "External module installation failed.",

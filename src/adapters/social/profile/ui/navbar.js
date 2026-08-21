@@ -3,6 +3,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import "./provider.js";
 import { applyStaticTranslations, createI18n } from "/static/reuse/i18n.js";
 import {
+    ensureProfileAvatarStyles,
     fetchProfileAvatarBlobUrl,
     getProfileInitials,
     getProfileInitialsColor,
@@ -17,40 +18,6 @@ import {
     subscribeAvailabilityUpdates,
     STATUS_OPTIONS,
 } from "./availability.js";
-
-const AVAILABILITY_STYLESHEET_URL =
-    "/static/adapters/social/profile/availability.css";
-
-function ensureAvailabilityStylesheet() {
-    const matchingStylesheets = [
-        ...document.head.querySelectorAll(
-            `link[rel="stylesheet"][href="${AVAILABILITY_STYLESHEET_URL}"]`,
-        ),
-    ];
-    const existing = matchingStylesheets.shift();
-    matchingStylesheets.forEach((stylesheet) => stylesheet.remove());
-    if (existing?.sheet) return Promise.resolve();
-    const stylesheet = existing ?? document.createElement("link");
-    if (!existing) {
-        stylesheet.rel = "stylesheet";
-        stylesheet.href = AVAILABILITY_STYLESHEET_URL;
-        document.head.append(stylesheet);
-    }
-    return new Promise((resolve) => {
-        stylesheet.addEventListener("load", resolve, { once: true });
-        stylesheet.addEventListener(
-            "error",
-            () => {
-                console.error(
-                    "[social-profile]:availability-stylesheet-load-failed",
-                    { stylesheetUrl: AVAILABILITY_STYLESHEET_URL },
-                );
-                resolve();
-            },
-            { once: true },
-        );
-    });
-}
 
 let availabilityMountPromise = null;
 
@@ -72,7 +39,7 @@ async function performAvailabilityControlMount() {
     dropdown.prepend(statusItem);
 
     try {
-        await ensureAvailabilityStylesheet();
+        await ensureProfileAvatarStyles();
         button.classList.add("availability-avatar");
 
         if (!button.querySelector(".availability-indicator")) {
