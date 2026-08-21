@@ -196,14 +196,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.registerPrefix("/api/v1/files", "files");
     const uiDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
     ctx.uiRegistry?.registerStaticDir("gateways/files", uiDir);
-    ctx.uiRegistry?.registerNavbarPlugin({
+    ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/files/provider.js",
         providesCapabilities: ["files:uiClient"],
     });
     ctx.gatewayRegistry.register({
         id: "files",
         name: "File Storage Gateway",
-        version: "2.1.7",
+        version: "2.1.8",
         required: true,
         description:
             "Provides namespaced, ACL- and quota-enforced file storage for uploads, plus local file logging helpers.",

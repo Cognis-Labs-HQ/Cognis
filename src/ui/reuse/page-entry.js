@@ -314,19 +314,22 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
     const finishPageLoading = beginPageLoading();
     let mountError = null;
     try {
-        await ensureHostUiProviders();
         const root = document.querySelector(rootSelector);
+        const mountWithProviders = async (mountRoot) => {
+            await ensureHostUiProviders();
+            return mount(mountRoot);
+        };
         if (uiCtx.flowExists("load-page")) {
             const flowResult = await uiCtx.runFlow("load-page", {
-                mount,
+                mount: mountWithProviders,
                 root,
             });
             const mountResults = flowResult?.stageResults?.["mount-page"] ?? [];
             if (mountResults.length === 0) {
-                await mount(root);
+                await mountWithProviders(root);
             }
         } else {
-            await mount(root);
+            await mountWithProviders(root);
         }
     } catch (error) {
         console.error("[page-entry] Direct mount failed.", {

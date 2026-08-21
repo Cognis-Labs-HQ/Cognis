@@ -40,10 +40,17 @@ test("direct and routed module mounts await active UI providers", () => {
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
-    assert.match(pageEntry, /await ensureHostUiProviders\(\)/);
+    assert.match(
+        pageEntry,
+        /mountWithProviders[\s\S]*await ensureHostUiProviders\(\)[\s\S]*mount: mountWithProviders/,
+    );
     assert.match(
         router,
         /await ensureHostUiProviders\(\);\s*mod = await route\.load/,
+    );
+    assert.match(
+        router,
+        /runFlow\("authenticate-session"[\s\S]*await ensureHostUiProviders\(\)/,
     );
 });
 
@@ -59,6 +66,25 @@ test("the host loader requests navbar and standalone capability providers", () =
         /!localStorage\.getItem\("cognis_access_token"\)/,
     );
     assert.match(loader, /response\.status === 401/);
+    assert.match(
+        loader,
+        /"ui:ensureNavbarPluginsLoaded",\s*ensureNavbarPluginsLoaded/,
+    );
+});
+
+test("the files client is a standalone provider independent of navbar mount", () => {
+    const filesBootstrap = readFileSync(
+        resolve(ROOT, "src/gateways/files/bootstrap.ts"),
+        "utf8",
+    );
+    assert.match(
+        filesBootstrap,
+        /registerCapabilityProvider\(\{[\s\S]*files:uiClient/,
+    );
+    assert.doesNotMatch(
+        filesBootstrap,
+        /registerNavbarPlugin\(\{[\s\S]*files:uiClient/,
+    );
 });
 
 test("navbar plugins mount after the shell and can recover pre-mount imports", () => {

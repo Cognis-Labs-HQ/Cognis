@@ -425,3 +425,7 @@ Authentifizierte vollständige Aktualisierungen laden Capability-Provider nun ü
 ## Profilpräsenz gestalten und Modulwechsel sofort übernehmen
 
 Die Profilavatar-Capability lädt nun vor der Hydrierung ihr eigenes Verfügbarkeits-Stylesheet. Dadurch bleiben Präsenzkarten in Modulen korrekt begrenzt und ihre Statusanzeigen sichtbar. Vor der Validierung eines Ersatzes aktualisiert die Modulaktivierung außerdem den installierten Laufzeitstatus, sodass Deinstallation, Neuinstallation und Aktivierung keinen Serverneustart mehr erfordern.
+
+## Browser-Capabilities nach Sitzungsauthentifizierung erneut laden
+
+Direkte und SPA-Seitenaufrufe laden Host-UI-Provider nun erneut, nachdem der Authentifizierungsablauf die Browsersitzung hergestellt hat. Über Cookies wiederhergestellte Seiten setzen den Modul-Mount nicht mehr nach einer frühen, nicht authentifizierten Provider-Anfrage fort; außerdem ruft die Navbar-Loader-Capability jetzt tatsächlich den Navbar-Plugin-Loader statt nur den Provider-Loader auf.

@@ -425,3 +425,7 @@ Penyegaran penuh yang terautentikasi kini memuat penyedia kapabilitas melalui co
 ## Menjaga gaya kehadiran profil dan pergantian modul tetap aktif
 
 Kapabilitas avatar profil kini memuat stylesheet ketersediaannya sendiri sebelum hidrasi, sehingga kartu kehadiran milik modul tetap dibatasi dan indikator statusnya kembali terlihat. Pengaktifan modul juga menyegarkan status runtime terpasang sebelum memvalidasi pengganti, jadi menghapus, memasang ulang, dan mengaktifkan modul tidak lagi memerlukan restart server.
+
+## Mencoba ulang kapabilitas browser setelah autentikasi sesi
+
+Pemuatan halaman langsung dan SPA kini memuat ulang penyedia UI host setelah alur autentikasi membentuk sesi browser. Halaman yang dipulihkan melalui cookie tidak lagi melanjutkan mount modul setelah permintaan penyedia awal yang belum terautentikasi, dan kapabilitas pemuat navbar kini menjalankan pemuat plugin navbar, bukan hanya pemuat penyedia.

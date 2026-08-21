@@ -425,3 +425,7 @@ Modules ページは SPA の再マウント前に、以前の直接読み込み�
 ## プロフィールのプレゼンス表示とモジュール再導入を安定化
 
 プロフィールアバター Capability は Hydration 前に専用の Availability Stylesheet を読み込むようになり、モジュール内のプレゼンスカードのサイズ制約とステータス表示が復元されます。また、モジュール有効化時に置換後の検証より先にインストール済み Runtime 状態を更新するため、アンインストール、再インストール、有効化の後にサーバーを再起動する必要がなくなりました。
+
+## セッション認証後にブラウザー Capability を再読み込み
+
+直接読み込みと SPA のページマウントは、認証 Flow がブラウザーセッションを確立した後に Host UI Provider を再読み込みするようになりました。Cookie から復元したページが未認証の早期 Provider リクエスト後にそのままモジュールをマウントすることを防ぎ、Navbar Loader Capability も Provider 専用 Loader ではなく Navbar Plugin Loader を正しく呼び出します。

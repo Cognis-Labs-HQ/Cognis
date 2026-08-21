@@ -69,12 +69,12 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`   |
 | Social                | `src/gateways/social/`        | `1.2.14`  |
-| File Storage (files)  | `src/gateways/files/`         | `2.1.7`   |
+| File Storage (files)  | `src/gateways/files/`         | `2.1.8`   |
 | Registration          | `src/gateways/registration/`  | `1.1.14`  |
 | Logging               | `src/gateways/logging/`       | `1.5.13`  |
 | Observability         | `src/gateways/observability/` | `1.0.6`   |
 | Study                 | `src/gateways/study/`         | `1.5.13`  |
-| Calendar              | `src/gateways/calendar/`      | `1.4.103` |
+| Calendar              | `src/gateways/calendar/`      | `1.4.104` |
 
 ## Kernverträge
 

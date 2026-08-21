@@ -438,6 +438,11 @@ async function loadRoute(path) {
         ? null
         : ((authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
 
+    await ensureHostUiProviders();
+    if (signal.aborted || navigationSequence !== _navigationSequence) {
+        return false;
+    }
+
     const isGuestContentPath =
         uiCtx.capabilities.get("session:isGuestAllowedPath")?.(
             new URL(path, window.location.origin).pathname +

@@ -97,5 +97,5 @@ export function invalidateNavbarPlugins() {
 
 uiCtx.capabilities.contribute(
     "ui:ensureNavbarPluginsLoaded",
-    ensureUiProvidersLoaded,
+    ensureNavbarPluginsLoaded,
 );

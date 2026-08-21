@@ -2,7 +2,7 @@
     "id": "files",
     "uuid": "8f3102a7-88c8-56f9-a4ee-ba602dd35d36",
     "name": "File Storage Gateway",
-    "version": "2.1.7",
+    "version": "2.1.8",
     "required": true,
     "description": "Provides namespaced, ACL- and quota-enforced file storage for uploads and application logging.",
     "publisher": "Cognis Labs HQ",

@@ -425,3 +425,7 @@ Authenticated hard refreshes now load capability providers through the session c
 ## Keep profile presence styled and module replacement live
 
 The profile avatar capability now loads its own availability stylesheet before hydration, keeping module-owned presence cards constrained and restoring their status indicators. Module enablement refreshes installed runtime state before validating the replacement, so uninstalling, reinstalling, and enabling a module no longer requires a server restart.
+
+## Retry browser capabilities after session authentication
+
+Direct and SPA page mounts now reload host UI providers after the authentication flow establishes the browser session. Cookie-restored pages no longer continue into module mounts after an early unauthenticated provider request, and the navbar loader capability now invokes the navbar plugin loader rather than the provider-only loader.
