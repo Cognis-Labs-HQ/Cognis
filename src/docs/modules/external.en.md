@@ -47,3 +47,7 @@ Server bootstrap and route code writes structured application logs through `ctx.
 For an installed module, catalog refresh resolves the installed branch or release first and uses the repository default branch only when no channel is recorded. Modules consume gateway-owned browser data through declared `uiCtx.capabilities` clients; current host clients include `social:profileUiClient`, `social:messagesUiClient`, `files:uiClient`, and `share:uiClient`. Declare every required UI capability so Cognis loads its active provider before mounting the module route.
 
 Modules that persist configuration or content outside their checkout must export `uninstallModule(ctx, { deleteContent })` from the declared bootstrap entrypoint. The hook always clears persisted configuration; it removes module-owned records and files only when `deleteContent` is true. Cognis invokes the hook before deleting the checkout, while capabilities remain available through `ctx.getCapability`.
+
+## UI viewport ownership
+
+Module page code owns only the root passed to its `mount()` function. It must not mutate `document.body`, `document.head`, the dashboard shell, navigation, or account controls. Global behavior must be contributed through declared `uiCtx` capabilities or flows with removable hooks. Declared `/static/modules/` stylesheets are placed in a lower cascade layer so host shell and profile styles remain authoritative while module styles continue to control their page viewport.

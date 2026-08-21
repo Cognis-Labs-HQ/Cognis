@@ -47,3 +47,7 @@ Kode bootstrap dan rute server menulis log aplikasi terstruktur melalui `ctx.log
 Untuk modul terpasang, penyegaran katalog menyelesaikan cabang atau rilis yang terpasang terlebih dahulu dan hanya memakai cabang bawaan repositori ketika tidak ada kanal yang tercatat. Modul memakai data browser milik gateway melalui klien `uiCtx.capabilities` yang dideklarasikan; klien host saat ini mencakup `social:profileUiClient`, `social:messagesUiClient`, `files:uiClient`, dan `share:uiClient`. Deklarasikan setiap kapabilitas UI yang dibutuhkan agar Cognis memuat penyedia aktifnya sebelum memasang rute modul.
 
 Modul yang menyimpan konfigurasi atau konten di luar checkout harus mengekspor `uninstallModule(ctx, { deleteContent })` dari entrypoint bootstrap yang dideklarasikan. Hook selalu menghapus konfigurasi tersimpan; rekaman dan berkas milik modul hanya dihapus ketika `deleteContent` bernilai benar. Cognis memanggil hook sebelum menghapus checkout, sementara kapabilitas tetap tersedia melalui `ctx.getCapability`.
+
+## Kepemilikan viewport UI
+
+Kode halaman modul hanya memiliki akar yang diteruskan ke fungsi `mount()`. Kode tersebut tidak boleh mengubah `document.body`, `document.head`, shell dasbor, navigasi, atau kontrol akun. Perilaku global harus dikontribusikan melalui kapabilitas atau flow `uiCtx` yang dideklarasikan dengan hook yang dapat dilepas. Stylesheet `/static/modules/` yang dideklarasikan ditempatkan pada lapisan kaskade yang lebih rendah agar gaya shell host dan profil tetap berwenang sementara gaya modul tetap mengendalikan viewport halamannya.
