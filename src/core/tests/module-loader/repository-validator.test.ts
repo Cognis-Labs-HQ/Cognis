@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import {
+    mkdtemp,
+    mkdir,
+    readFile,
+    rm,
+    symlink,
+    writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -63,6 +70,21 @@ async function createRepository(): Promise<{
 test("module repository validator accepts a portable repository", async () => {
     const fixture = await createRepository();
     try {
+        await validateModuleRepository(fixture.root, fixture.manifest);
+    } finally {
+        await rm(fixture.root, { recursive: true, force: true });
+    }
+});
+
+test("module repository validator ignores the root README alias", async () => {
+    const fixture = await createRepository();
+    try {
+        await writeFile(path.join(fixture.root, "README.en.md"), "# Example\n");
+        await symlink("README.en.md", path.join(fixture.root, "README.md"));
+        fixture.manifest.files?.push({
+            path: "README.md",
+            sha256: createHash("sha256").update("# Example\n").digest("hex"),
+        });
         await validateModuleRepository(fixture.root, fixture.manifest);
     } finally {
         await rm(fixture.root, { recursive: true, force: true });

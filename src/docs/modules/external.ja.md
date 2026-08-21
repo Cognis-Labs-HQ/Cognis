@@ -32,7 +32,7 @@ Cognis には、デフォルトで、`https://github.com/Cognis-Labs-HQ` 組織�
 
 ## アセットとタグを保存する
 
-モジュールは、より広範な `categories` と一緒に `tags` を宣言できます。どちらもマーケットプレイスのフィルタリングに参加します。アートワークは `assets/` の下のリポジトリ ルートに保存されます。カタログ アイコンには `assets/icon.svg` または `assets/icon.png` を、詳細ページのヒーローには `assets/banner.svg`、`assets/banner.png`、または `assets/banner.jpg` を指定します。選択したパスを `manifest.json` で `assets.icon` および `assets.banner` として宣言します。オプションのギャラリー画像は `assets.screenshots` にリストされています。アートワークには秘密や個人データが含まれないようにしてください。 インストール済みモジュールの詳細ページは、現在の UI 言語に対応する `README.<locale>.md` を選び、続いて `README.en.md`、`README.md`、カタログ説明の順にフォールバックします。
+モジュールは、より広範な `categories` と一緒に `tags` を宣言できます。どちらもマーケットプレイスのフィルタリングに参加します。アートワークは `assets/` の下のリポジトリ ルートに保存されます。カタログ アイコンには `assets/icon.svg` または `assets/icon.png` を、詳細ページのヒーローには `assets/banner.svg`、`assets/banner.png`、または `assets/banner.jpg` を指定します。選択したパスを `manifest.json` で `assets.icon` および `assets.banner` として宣言します。オプションのギャラリー画像は `assets.screenshots` にリストされています。アートワークには秘密や個人データが含まれないようにしてください。 インストール済みモジュールの詳細ページは、現在の UI 言語に対応する `README.<locale>.md` を選び、続いて `README.en.md`、`README.md`、カタログ説明の順にフォールバックします。 ルートの任意の互換エイリアス `README.md` は必須ではなくチェックサム検証の対象にもなりません。ローカライズされた `README.<locale>.md` は引き続きマニフェストの整合性一覧に含められます。
 
 ## モジュールの設定
 

@@ -32,7 +32,7 @@ Before moving a bundled module into its own repository, copy the module director
 
 ## Store assets and tags
 
-A module may declare `tags` alongside its broader `categories`; both participate in marketplace filtering. Store artwork lives at the repository root under `assets/`: provide `assets/icon.svg` or `assets/icon.png` for the catalog icon, and `assets/banner.svg`, `assets/banner.png`, or `assets/banner.jpg` for the detail-page hero. Declare the chosen paths as `assets.icon` and `assets.banner` in `manifest.json`. Optional gallery images are listed in `assets.screenshots`. Keep artwork free of secrets and personal data. Installed module detail pages select `README.<locale>.md` for the active UI language, then fall back to `README.en.md`, `README.md`, and the catalog description in that order.
+A module may declare `tags` alongside its broader `categories`; both participate in marketplace filtering. Store artwork lives at the repository root under `assets/`: provide `assets/icon.svg` or `assets/icon.png` for the catalog icon, and `assets/banner.svg`, `assets/banner.png`, or `assets/banner.jpg` for the detail-page hero. Declare the chosen paths as `assets.icon` and `assets.banner` in `manifest.json`. Optional gallery images are listed in `assets.screenshots`. Keep artwork free of secrets and personal data. Installed module detail pages select `README.<locale>.md` for the active UI language, then fall back to `README.en.md`, `README.md`, and the catalog description in that order. The optional root `README.md` compatibility alias is not required or checksum-validated; localized `README.<locale>.md` files remain eligible for the manifest integrity inventory.
 
 ## Module preferences
 

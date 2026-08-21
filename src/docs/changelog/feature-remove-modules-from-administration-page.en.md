@@ -488,7 +488,7 @@ Password-type module settings now display a concealed saved-value mask and satis
 
 ## Restore recommendations and localize marketplace metadata
 
-The published recommendation UUIDs remain in the default catalog. Marketplace cards, details, categories, and tags now resolve localization keys from each manifest through its declared module string bundle. Modules that omit `ui.stringsBaseUrl` now use the standard `ui/languages` bundle automatically, and unresolved literals remain visible instead of becoming empty text. Module artwork object URLs now remain cached across SPA transitions to prevent fallback-image flashes, and installed README variants follow the active UI language with English fallback.
+The published recommendation UUIDs remain in the default catalog. Marketplace cards, details, categories, and tags now resolve localization keys from each manifest through its declared module string bundle. Modules that omit `ui.stringsBaseUrl` now use the standard `ui/languages` bundle automatically, and unresolved literals remain visible instead of becoming empty text. Module artwork object URLs now remain cached across SPA transitions to prevent fallback-image flashes, and installed README variants follow the active UI language with English fallback. The installer no longer treats the optional root `README.md` compatibility alias as a required integrity file, allowing it to be a symlink to a localized English README.
 
 ## Correct authenticated module administration
 

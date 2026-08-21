@@ -46,6 +46,9 @@ export async function validateModuleRepository(
         await assertRepositoryFile(root, declaredPath);
     }
     for (const file of manifest.files ?? []) {
+        if (file.path.replace(/^\.\//, "").toLowerCase() === "readme.md") {
+            continue;
+        }
         const filePath = await assertRepositoryFile(root, file.path);
         const digest = createHash("sha256")
             .update(await readFile(filePath))
