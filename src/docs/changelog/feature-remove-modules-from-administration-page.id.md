@@ -433,3 +433,7 @@ Pemuatan halaman langsung dan SPA kini memuat ulang penyedia UI host setelah alu
 ## Mewajibkan konfigurasi modul sebelum pengaktifan
 
 Deskriptor pengaturan modul kini dapat mendeklarasikan `required: true`. Halaman Modul membaca endpoint `/config` milik modul sebelum mengaktifkan dan memblokir pengaktifan selama nilai string, angka, atau boolean yang wajib belum ditetapkan; kontrol teks dan angka yang wajib juga ditandai untuk validasi formulir yang aksesibel.
+
+## Memerlukan persetujuan untuk risiko integritas modul
+
+Setiap berkas modul diperiksa sebelum pengaktifan. Cognis memblokir pengaktifan dan menampilkan berkas yang hilang, deklarasi SHASUM yang tidak ada, serta ketidakcocokan checksum dalam peringatan risiko. Hanya tindakan tegas “Saya memahami risikonya” yang mengizinkan server melanjutkan, dan persetujuan tersebut dicatat.

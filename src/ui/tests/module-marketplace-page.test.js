@@ -257,7 +257,7 @@ test("module details preserve position and update enabled modules atomically", (
     );
     assert.match(
         source,
-        /await setModuleEnabled\(module\.id, false\)[\s\S]*await installModule[\s\S]*await setModuleEnabled\(module\.id, true\)/,
+        /await setModuleEnabled\(module\.id, false\)[\s\S]*await installModule[\s\S]*await enableWithIntegrityCheck\(\)/,
     );
     assert.doesNotMatch(source, /disable_before_update/);
     assert.doesNotMatch(
@@ -506,7 +506,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.match(
         source,
-        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*setModuleEnabled\(module\.id, true\)/,
+        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableWithIntegrityCheck\(\)/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
@@ -739,5 +739,32 @@ test("required module configuration distinguishes unset values from valid false 
     assert.match(
         marketplaceSource,
         /action === "enable"[\s\S]*assertRequiredModulePreferences/,
+    );
+});
+
+test("module enablement presents and acknowledges SHASUM integrity risks", () => {
+    const marketplaceSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    const integritySource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/integrity.js"),
+        "utf8",
+    );
+    const apiSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/api.js"),
+        "utf8",
+    );
+    assert.match(
+        marketplaceSource,
+        /action === "enable"[\s\S]*enableWithIntegrityCheck/,
+    );
+    assert.match(integritySource, /entry\.status === "missing_shasum"/);
+    assert.match(integritySource, /entry\.status === "missing"/);
+    assert.match(integritySource, /labels\.mismatch/);
+    assert.match(integritySource, /variant: "cancel"/);
+    assert.match(
+        apiSource,
+        /"x-cognis-module-integrity-risk":\s*`accepted:\$\{integrityAcknowledgementToken\}`/,
     );
 });

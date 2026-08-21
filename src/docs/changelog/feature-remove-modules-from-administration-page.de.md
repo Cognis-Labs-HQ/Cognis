@@ -433,3 +433,7 @@ Direkte und SPA-Seitenaufrufe laden Host-UI-Provider nun erneut, nachdem der Aut
 ## Modulkonfiguration vor der Aktivierung verlangen
 
 Beschreibungen von Moduleinstellungen können nun `required: true` deklarieren. Die Modulseite liest vor der Aktivierung den moduleigenen `/config`-Endpunkt und blockiert sie, solange ein erforderlicher Zeichenfolgen-, Zahlen- oder boolescher Wert fehlt; erforderliche Text- und Zahlenfelder werden außerdem für die barrierefreie Formularvalidierung markiert.
+
+## Bestätigung bei Risiken für die Modulintegrität verlangen
+
+Vor der Aktivierung wird jede Moduldatei geprüft. Cognis blockiert die Aktivierung und zeigt fehlende Dateien, fehlende SHASUM-Deklarationen und Prüfsummenabweichungen in einer Risikowarnung an. Nur die ausdrückliche Aktion „Ich bestätige das Risiko“ erlaubt dem Server fortzufahren; die Bestätigung wird protokolliert.

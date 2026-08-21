@@ -66,4 +66,12 @@
   <string name="ui.app.modules.preferences_title">Module settings</string>
   <string name="ui.app.modules.preferences_saved">Module settings saved.</string>
   <string name="ui.app.modules.config_required">Set every required module setting before enabling this module.</string>
+  <string name="ui.app.modules.integrity_title">Module integrity warning</string>
+  <string name="ui.app.modules.integrity_warning">Some module files are missing SHASUMs, are missing from disk, or do not match their declared SHASUMs. Enabling modified or unverified code can compromise this Cognis installation and its data.</string>
+  <string name="ui.app.modules.integrity_missing_shasum">Missing SHASUM</string>
+  <string name="ui.app.modules.integrity_missing_file">Declared file is missing</string>
+  <string name="ui.app.modules.integrity_mismatch">SHASUM mismatch</string>
+  <string name="ui.app.modules.integrity_acknowledge">I acknowledge the risk</string>
+  <string name="ui.app.modules.integrity_expected">Expected</string>
+  <string name="ui.app.modules.integrity_actual">Actual</string>
 </resources>

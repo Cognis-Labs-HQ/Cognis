@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import type {
     BootstrapLog,
     ModuleManifest,
@@ -25,9 +25,9 @@ export interface ModuleRouteHooks {
         Array<{
             moduleId: string;
             file: string;
-            expected: string;
+            expected: string | null;
             actual: string | null;
-            status: "ok" | "mismatch" | "missing";
+            status: "ok" | "mismatch" | "missing" | "missing_shasum";
         }>
     >;
     onImported?: (moduleId: string) => Promise<void> | void;
@@ -527,6 +527,9 @@ export function createModuleRoutes(
         const acknowledged =
             req.headers["x-cognis-external-module-disclaimer"] === "accepted" ||
             url.searchParams.get("acknowledgeExternalDisclaimer") === "true";
+        const integrityAcknowledgement = String(
+            req.headers["x-cognis-module-integrity-risk"] ?? "",
+        );
 
         const lifecycleManifest = (await moduleService.list()).find(
             (manifest) => manifest.id === moduleId,
@@ -540,6 +543,44 @@ export function createModuleRoutes(
         }
 
         if (action === "enable") {
+            const integrityFailures = (
+                (await hooks?.getIntegrityReport?.()) ?? []
+            ).filter(
+                (entry) => entry.moduleId === moduleId && entry.status !== "ok",
+            );
+            const integrityToken = createHash("sha256")
+                .update(JSON.stringify(integrityFailures))
+                .digest("hex");
+            if (
+                integrityFailures.length &&
+                integrityAcknowledgement !== `accepted:${integrityToken}`
+            ) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_integrity_acknowledgement_required",
+                            message:
+                                "Module files have missing or mismatched SHASUMs.",
+                            integrityFailures,
+                            integrityToken,
+                        },
+                    }),
+                );
+                return true;
+            }
+            if (integrityFailures.length) {
+                hooks?.log?.(
+                    "warn",
+                    "Module integrity risk acknowledged before enablement.",
+                    {
+                        ...logMeta,
+                        accountId: claims.sub,
+                        moduleId,
+                        integrityFailures,
+                    },
+                );
+            }
             if (
                 !acknowledged &&
                 (await moduleService.requiresExternalAcknowledgement?.(

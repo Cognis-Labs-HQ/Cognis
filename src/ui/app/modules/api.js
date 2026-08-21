@@ -12,6 +12,8 @@ async function data(response) {
         );
         error.code = detail?.code;
         error.status = response.status;
+        error.integrityFailures = detail?.integrityFailures;
+        error.integrityToken = detail?.integrityToken;
         throw error;
     }
     if (response.status === 204) return null;
@@ -137,14 +139,25 @@ export async function installModule(module, token, branch, wasEnabled) {
     throw error;
 }
 
-export async function setModuleEnabled(moduleId, enabled) {
+export async function setModuleEnabled(
+    moduleId,
+    enabled,
+    { integrityAcknowledgementToken = "" } = {},
+) {
     return data(
         await apiFetch(
             `/api/v1/modules/${encodeURIComponent(moduleId)}/${enabled ? "enable" : "disable"}`,
             {
                 method: "POST",
                 headers: enabled
-                    ? { "x-cognis-external-module-disclaimer": "accepted" }
+                    ? {
+                          "x-cognis-external-module-disclaimer": "accepted",
+                          ...(integrityAcknowledgementToken
+                              ? {
+                                    "x-cognis-module-integrity-risk": `accepted:${integrityAcknowledgementToken}`,
+                                }
+                              : {}),
+                      }
                     : undefined,
             },
         ),

@@ -32,6 +32,7 @@ import {
     uninstallModule,
     validateModuleSourceCredential,
 } from "./api.js";
+import { enableModuleWithIntegrityAcknowledgement } from "./integrity.js";
 import { resolveSourceToken } from "./credentials.js";
 import {
     applyModuleFilterSelection,
@@ -478,11 +479,25 @@ async function selectReleaseChannel(module) {
 
 async function runLifecycleAction(module, action) {
     if (module.restartRequired) return;
+    const enableWithIntegrityCheck = () =>
+        enableModuleWithIntegrityAcknowledgement(module.id, {
+            title: i18n.t("ui.app.modules.integrity_title"),
+            warning: i18n.t("ui.app.modules.integrity_warning"),
+            missingShasum: i18n.t("ui.app.modules.integrity_missing_shasum"),
+            missingFile: i18n.t("ui.app.modules.integrity_missing_file"),
+            mismatch: i18n.t("ui.app.modules.integrity_mismatch"),
+            expected: i18n.t("ui.app.modules.integrity_expected"),
+            actual: i18n.t("ui.app.modules.integrity_actual"),
+            acknowledge: i18n.t("ui.app.modules.integrity_acknowledge"),
+            cancel: i18n.t("ui.reuse.cancel"),
+        });
     if (action === "enable") {
         await assertRequiredModulePreferences(
             module,
             i18n.t("ui.app.modules.config_required"),
         );
+        const result = await enableWithIntegrityCheck();
+        if (!result) return;
     }
     if (
         ["install", "update", "force-update", "change-channel"].includes(action)
@@ -542,8 +557,8 @@ async function runLifecycleAction(module, action) {
             module.restartRequired = installedManifest.restartRequired;
         } finally {
             if (restoreEnabledState && !module.restartRequired) {
-                await setModuleEnabled(module.id, true);
-                module.status = "enabled";
+                const enabled = await enableWithIntegrityCheck();
+                if (enabled) module.status = "enabled";
             }
         }
         module.installed = true;
@@ -562,8 +577,10 @@ async function runLifecycleAction(module, action) {
             action = changeDirection;
         }
     }
+    if (action === "disable") {
+        await setModuleEnabled(module.id, false);
+    }
     if (action === "enable" || action === "disable") {
-        await setModuleEnabled(module.id, action === "enable");
         module.status = action === "enable" ? "enabled" : "disabled";
     }
     if (action === "uninstall") {

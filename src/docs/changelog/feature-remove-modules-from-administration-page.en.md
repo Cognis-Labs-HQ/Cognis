@@ -433,3 +433,7 @@ Direct and SPA page mounts now reload host UI providers after the authentication
 ## Require module configuration before enablement
 
 Module preference descriptors can now declare `required: true`. The Modules page reads the module-owned `/config` endpoint before enabling and blocks activation while any required string, number, or boolean value is unset; required text and number controls are also marked for accessible form validation.
+
+## Require acknowledgement for module integrity risks
+
+Every module file is checked before enablement. Cognis blocks activation and shows missing files, missing SHASUM declarations, and checksum mismatches in a risk warning; only the explicit “I acknowledge the risk” action permits the server to proceed, and the acknowledgement is logged.

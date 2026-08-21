@@ -44,9 +44,9 @@ export interface ApiDependencies {
         Array<{
             moduleId: string;
             file: string;
-            expected: string;
+            expected: string | null;
             actual: string | null;
-            status: "ok" | "mismatch" | "missing";
+            status: "ok" | "mismatch" | "missing" | "missing_shasum";
         }>
     >;
     loadModuleStates?: () => Promise<

@@ -456,3 +456,18 @@ body[data-theme="light"]:has(.module-detail) .global-topbar {
         flex: 1;
     }
 }
+
+.module-integrity-failures {
+    display: grid;
+    gap: 0.5rem;
+    max-height: min(18rem, 45vh);
+    margin: 1rem 0 0;
+    padding-left: 1.25rem;
+    overflow: auto;
+}
+
+.module-integrity-failures li {
+    display: grid;
+    gap: 0.125rem;
+    overflow-wrap: anywhere;
+}

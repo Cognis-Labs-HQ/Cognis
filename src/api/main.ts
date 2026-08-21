@@ -555,19 +555,58 @@ const server = buildServer({
         const report = [] as Array<{
             moduleId: string;
             file: string;
-            expected: string;
+            expected: string | null;
             actual: string | null;
-            status: "ok" | "mismatch" | "missing";
+            status: "ok" | "mismatch" | "missing" | "missing_shasum";
         }>;
         for (const manifest of manifests) {
+            if (!manifest.uuid) continue;
+            const moduleRoot = path.resolve(
+                process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+                    path.resolve(process.cwd(), "external-modules"),
+                manifest.uuid,
+            );
+            const declaredFiles = new Set(
+                (manifest.files ?? []).map((file) =>
+                    file.path.replaceAll("\\", "/").replace(/^\.\//, ""),
+                ),
+            );
+            const visit = async (directory: string, prefix = "") => {
+                for (const entry of await readdir(directory, {
+                    withFileTypes: true,
+                }).catch(() => [])) {
+                    if (!prefix && entry.name === ".git") continue;
+                    const relativePath = prefix
+                        ? `${prefix}/${entry.name}`
+                        : entry.name;
+                    const candidate = path.join(directory, entry.name);
+                    if (entry.isDirectory()) {
+                        await visit(candidate, relativePath);
+                        continue;
+                    }
+                    if (
+                        relativePath === "manifest.json" ||
+                        declaredFiles.has(relativePath)
+                    ) {
+                        continue;
+                    }
+                    const actual = entry.isFile()
+                        ? createHash("sha256")
+                              .update(await readFile(candidate))
+                              .digest("hex")
+                        : null;
+                    report.push({
+                        moduleId: manifest.id,
+                        file: relativePath,
+                        expected: null,
+                        actual,
+                        status: "missing_shasum",
+                    });
+                }
+            };
+            await visit(moduleRoot);
             for (const file of manifest.files ?? []) {
-                if (!manifest.uuid) continue;
-                const candidate = path.resolve(
-                    process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
-                        path.resolve(process.cwd(), "external-modules"),
-                    manifest.uuid,
-                    file.path,
-                );
+                const candidate = path.resolve(moduleRoot, file.path);
                 try {
                     const raw = await readFile(candidate);
                     const actual = createHash("sha256")

@@ -66,4 +66,12 @@
   <string name="ui.app.modules.preferences_title">モジュール設定</string>
   <string name="ui.app.modules.preferences_saved">モジュール設定を保存しました。</string>
   <string name="ui.app.modules.config_required">このモジュールを有効にする前に、必須のモジュール設定をすべて指定してください。</string>
+  <string name="ui.app.modules.integrity_title">モジュール整合性の警告</string>
+  <string name="ui.app.modules.integrity_warning">一部のモジュールファイルに SHASUM がない、ディスク上に存在しない、または宣言された SHASUM と一致しません。変更済みまたは未検証のコードを有効にすると、この Cognis 環境とデータが危険にさらされる可能性があります。</string>
+  <string name="ui.app.modules.integrity_missing_shasum">SHASUM がありません</string>
+  <string name="ui.app.modules.integrity_missing_file">宣言されたファイルがありません</string>
+  <string name="ui.app.modules.integrity_mismatch">SHASUM が一致しません</string>
+  <string name="ui.app.modules.integrity_acknowledge">リスクを理解して続行します</string>
+  <string name="ui.app.modules.integrity_expected">期待値</string>
+  <string name="ui.app.modules.integrity_actual">実際の値</string>
 </resources>

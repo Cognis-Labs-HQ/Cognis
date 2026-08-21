@@ -113,6 +113,78 @@ test("module routes log enable operations", async () => {
     ]);
 });
 
+test("module enablement requires explicit acknowledgement of integrity failures", async () => {
+    let enabled = false;
+    const route = createModuleRoutes(
+        {
+            list: async () => [
+                { id: "whiteboard", uuid: "module-uuid", class: "extension" },
+            ],
+            enable: async () => {
+                enabled = true;
+                return { moduleId: "whiteboard", enabled: true };
+            },
+        } as any,
+        {
+            getIntegrityReport: async () => [
+                {
+                    moduleId: "whiteboard",
+                    file: "ui/app.js",
+                    expected: "expected",
+                    actual: "actual",
+                    status: "mismatch",
+                },
+                {
+                    moduleId: "whiteboard",
+                    file: "ui/new.js",
+                    expected: null,
+                    actual: "actual",
+                    status: "missing_shasum",
+                },
+            ],
+        },
+    );
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const request = async (integrityToken = "") => {
+        let status = 0;
+        let body = "";
+        await route(
+            {
+                method: "POST",
+                headers: {
+                    authorization: `Bearer ${token}`,
+                    ...(integrityToken
+                        ? {
+                              "x-cognis-module-integrity-risk": `accepted:${integrityToken}`,
+                          }
+                        : {}),
+                },
+            } as any,
+            {
+                writeHead(code: number) {
+                    status = code;
+                },
+                end(payload = "") {
+                    body = payload;
+                },
+            } as any,
+            new URL("http://localhost/api/v1/modules/whiteboard/enable"),
+        );
+        return { status, body };
+    };
+
+    const blocked = await request();
+    assert.equal(blocked.status, 409);
+    assert.equal(enabled, false);
+    assert.match(blocked.body, /module_integrity_acknowledgement_required/);
+    assert.match(blocked.body, /missing_shasum/);
+
+    const integrityToken = JSON.parse(blocked.body).error.integrityToken;
+    const accepted = await request(integrityToken);
+    assert.equal(accepted.status, 200);
+    assert.equal(enabled, true);
+});
+
 test("module routes warn when modules are disabled", async () => {
     const entries: Array<{ level: string; message: string }> = [];
     const route = createModuleRoutes(

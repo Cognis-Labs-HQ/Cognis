@@ -66,4 +66,12 @@
   <string name="ui.app.modules.preferences_title">Pengaturan modul</string>
   <string name="ui.app.modules.preferences_saved">Pengaturan modul disimpan.</string>
   <string name="ui.app.modules.config_required">Tetapkan semua pengaturan modul yang wajib sebelum mengaktifkan modul ini.</string>
+  <string name="ui.app.modules.integrity_title">Peringatan integritas modul</string>
+  <string name="ui.app.modules.integrity_warning">Sebagian berkas modul tidak memiliki SHASUM, hilang dari disk, atau tidak cocok dengan SHASUM yang dideklarasikan. Mengaktifkan kode yang diubah atau belum diverifikasi dapat membahayakan instalasi Cognis ini dan datanya.</string>
+  <string name="ui.app.modules.integrity_missing_shasum">SHASUM tidak ada</string>
+  <string name="ui.app.modules.integrity_missing_file">Berkas yang dideklarasikan hilang</string>
+  <string name="ui.app.modules.integrity_mismatch">SHASUM tidak cocok</string>
+  <string name="ui.app.modules.integrity_acknowledge">Saya memahami risikonya</string>
+  <string name="ui.app.modules.integrity_expected">Diharapkan</string>
+  <string name="ui.app.modules.integrity_actual">Aktual</string>
 </resources>
