@@ -481,3 +481,7 @@ Protected marketplace artwork is never assigned directly to browser media elemen
 ## Complete module source controls
 
 Module source settings now use the shared form builder and offer a Scan Private Repositories slider that requires a PAT. Release-channel changes no longer mistake their temporary checkout for an ID collision, and Cognis serves the default recommendation list with the Jitsi Meet, Nextcloud Whiteboard, and Japanese module UUIDs.
+
+## Preserve module passwords during updates
+
+Password-type module settings now display a concealed saved-value mask and satisfy required validation through the module’s configured-state response. Unchanged masks submit an empty replacement so modules preserve the stored password. Marketplace loading indicators remain inline while neighboring actions compress, and connection-interruption reporting is deduplicated across UI bundles.

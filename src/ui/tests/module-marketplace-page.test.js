@@ -61,7 +61,7 @@ test("module preference fields use the form builder and secret controls", () => 
     assert.match(modulePreferencesSource, /createFormBuilder/);
     assert.match(
         modulePreferencesSource,
-        /secret: definition\.secret === true/,
+        /secret: definition\.type === "password"/,
     );
     assert.match(
         modulePreferencesSource,
@@ -722,12 +722,14 @@ test("required module configuration distinguishes unset values from valid false 
         { key: "meetingPrefix", type: "string" },
         { key: "recording", type: "boolean", required: true },
         { key: "capacity", type: "number", required: true },
+        { key: "apiKey", type: "password", required: true },
     ];
     assert.deepEqual(
         missingRequiredModulePreferenceKeys(definitions, {
             instanceUrl: " ",
             recording: false,
             capacity: Number.NaN,
+            apiKeyConfigured: true,
         }),
         ["instanceUrl", "capacity"],
     );
@@ -736,10 +738,12 @@ test("required module configuration distinguishes unset values from valid false 
             instanceUrl: "https://meet.example.com",
             recording: false,
             capacity: 0,
+            apiKeyConfigured: true,
         }),
         [],
     );
     assert.match(modulePreferencesSource, /definition\.required === true/);
+    assert.match(modulePreferencesSource, /return "\*\*\*\*"/);
     const marketplaceSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
@@ -760,12 +764,30 @@ test("required module configuration distinguishes unset values from valid false 
                 },
             },
             [
-                { key: "apiKey", type: "string" },
+                { key: "apiKey", type: "password" },
                 { key: "enabled", type: "boolean" },
                 { key: "limit", type: "number" },
             ],
         ),
         { apiKey: "secret-value", enabled: false, limit: 12 },
+    );
+    inputs.apiKey.value = "****";
+    assert.deepEqual(
+        readModulePreferenceValues(
+            {
+                elements: {
+                    namedItem(key) {
+                        return inputs[key];
+                    },
+                },
+            },
+            [{ key: "apiKey", type: "password" }],
+        ),
+        { apiKey: "" },
+    );
+    assert.match(
+        marketplaceStyles,
+        /\.module-store-card-actions \.button-loading[\s\S]*white-space: nowrap/,
     );
 });
 

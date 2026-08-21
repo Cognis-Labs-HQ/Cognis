@@ -50,6 +50,18 @@ export async function activateModule(module, i18n) {
     if (!configRouteAvailable) {
         const result = await enableModuleWithIntegrityCheck(module.id, i18n);
         try {
+            const configuredAfterEnable = await assertRequiredModulePreferences(
+                module,
+                requiredMessage,
+            );
+            if (configuredAfterEnable) return result;
+        } catch (configError) {
+            if (configError.code !== "module_config_required") {
+                await setModuleEnabled(module.id, false);
+                throw configError;
+            }
+        }
+        try {
             const savedValues = await openModulePreferences(
                 module,
                 modulePreferenceLabels(i18n),

@@ -481,3 +481,7 @@ Geschützte Marketplace-Grafiken werden niemals direkt Browser-Medienelementen z
 ## Modulquellen-Steuerung vervollständigen
 
 Die Einstellungen für Modulquellen verwenden jetzt den gemeinsamen Formulargenerator und bieten einen Schieberegler zum Durchsuchen privater Repositories, der ein PAT erfordert. Änderungen des Veröffentlichungskanals verwechseln den temporären Checkout nicht mehr mit einem ID-Konflikt, und Cognis stellt die Standardempfehlungsliste mit den UUIDs der Module Jitsi Meet, Nextcloud Whiteboard und Japanisch bereit.
+
+## Modulpasswörter bei Aktualisierungen erhalten
+
+Moduleinstellungen vom Typ `password` zeigen jetzt eine verdeckte Maske für gespeicherte Werte und erfüllen die Pflichtfeldprüfung über den konfigurierten Zustand des Moduls. Unveränderte Masken senden einen leeren Ersatz, damit Module das gespeicherte Passwort beibehalten. Ladeanzeigen im Marketplace bleiben in einer Zeile, während benachbarte Aktionen schmaler werden, und Meldungen über Verbindungsunterbrechungen werden über UI-Bundles hinweg dedupliziert.

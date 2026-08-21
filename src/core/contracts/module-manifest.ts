@@ -45,12 +45,10 @@ export interface ModuleManifest {
             key: string;
             labelKey: string;
             descriptionKey?: string;
-            type: "boolean" | "string" | "number";
+            type: "boolean" | "string" | "number" | "password";
             default?: boolean | string | number;
             /** Prevents enablement until the module-owned config supplies a value. */
             required?: boolean;
-            /** Conceals a string value behind the standard visibility control. */
-            secret?: boolean;
         }>;
         stringsBaseUrl?: string;
     };

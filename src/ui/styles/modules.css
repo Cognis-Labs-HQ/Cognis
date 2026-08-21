@@ -108,6 +108,17 @@ body[data-theme="dark"] .module-icon-settings {
 .module-store-card-actions button {
     min-width: 0;
 }
+.module-store-card-actions .button-loading,
+[data-floating-slot="module-actions"] > .button-loading {
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+.module-store-card-actions:has(.button-loading) button:not(.button-loading),
+[data-floating-slot="module-actions"]:has(.button-loading)
+    > button:not(.button-loading) {
+    min-width: 0;
+    padding-inline: 0.65rem;
+}
 .module-store-avatar {
     width: 4rem;
     height: 4rem;
@@ -283,7 +294,9 @@ body[data-theme="light"]:has(.module-detail) .global-topbar {
     gap: 0.5rem;
 }
 [data-floating-slot="module-actions"] > button {
+    flex: 1 1 auto;
     min-height: 2.75rem;
+    min-width: 0;
     margin: 0;
 }
 .module-detail-banner {

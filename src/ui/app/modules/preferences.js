@@ -10,6 +10,12 @@ export function missingRequiredModulePreferenceKeys(definitions, values) {
         .filter((definition) => definition.required)
         .filter((definition) => {
             const value = values?.[definition.key];
+            if (
+                definition.type === "password" &&
+                values?.[`${definition.key}Configured`] === true
+            ) {
+                return false;
+            }
             if (definition.type === "boolean")
                 return typeof value !== "boolean";
             if (definition.type === "number") {
@@ -45,16 +51,23 @@ export async function assertRequiredModulePreferences(
     throw error;
 }
 
-export function readModulePreferenceValues(form, definitions) {
+export function readModulePreferenceValues(
+    form,
+    definitions,
+    { preservePasswordMask = false } = {},
+) {
     return Object.fromEntries(
         definitions.map((definition) => {
             const input = form.elements.namedItem(definition.key);
-            const value =
+            let value =
                 definition.type === "boolean"
                     ? input.checked
                     : definition.type === "number"
                       ? Number(input.value)
                       : input.value;
+            if (definition.type === "password" && value === "****") {
+                value = preservePasswordMask ? value : "";
+            }
             return [definition.key, value];
         }),
     );
@@ -72,6 +85,17 @@ export async function openModulePreferences(module, labels) {
             ? moduleI18n.t(definition.descriptionKey)
             : undefined,
     }));
+    const fieldValue = (definition) => {
+        const value = values?.[definition.key] ?? definition.default ?? "";
+        if (
+            definition.type === "password" &&
+            !value &&
+            values?.[`${definition.key}Configured`] === true
+        ) {
+            return "****";
+        }
+        return value;
+    };
     const formBuilder = createFormBuilder(
         { i18n: moduleI18n, escapeHtml, renderInfoTooltip },
         {
@@ -85,13 +109,11 @@ export async function openModulePreferences(module, labels) {
                     definition.type === "boolean"
                         ? "checkbox"
                         : definition.type,
-                secret: definition.secret === true,
+                secret: definition.type === "password",
                 required:
                     definition.required === true &&
                     definition.type !== "boolean",
-                value: String(
-                    values?.[definition.key] ?? definition.default ?? "",
-                ),
+                value: String(fieldValue(definition)),
                 infoTooltip: definition.description
                     ? {
                           text: definition.description,
@@ -120,11 +142,16 @@ export async function openModulePreferences(module, labels) {
             if (action !== "save") return;
             if (!formController?.validateAll(true)) return false;
             const form = overlay.querySelector("#module-preferences-form");
-            savedValues = readModulePreferenceValues(
+            const submittedValues = readModulePreferenceValues(
                 form,
                 localizedDefinitions,
             );
-            await saveModuleConfig(module.id, savedValues);
+            savedValues = readModulePreferenceValues(
+                form,
+                localizedDefinitions,
+                { preservePasswordMask: true },
+            );
+            await saveModuleConfig(module.id, submittedValues);
         },
     });
     formController?.detach();

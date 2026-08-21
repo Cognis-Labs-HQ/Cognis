@@ -481,3 +481,7 @@ Ilustrasi marketplace terlindungi tidak pernah ditetapkan langsung ke elemen med
 ## Lengkapi kontrol sumber modul
 
 Pengaturan sumber modul kini memakai pembuat formulir bersama dan menyediakan slider Pindai Repositori Privat yang mewajibkan PAT. Perubahan kanal rilis tidak lagi menganggap checkout sementara sebagai konflik ID, dan Cognis menyajikan daftar rekomendasi bawaan berisi UUID modul Jitsi Meet, Nextcloud Whiteboard, dan bahasa Jepang.
+
+## Pertahankan kata sandi modul saat pembaruan
+
+Pengaturan modul bertipe `password` kini menampilkan masker nilai tersimpan yang tersembunyi dan memenuhi validasi wajib melalui respons status terkonfigurasi modul. Masker yang tidak berubah mengirim pengganti kosong agar modul mempertahankan kata sandi tersimpan. Indikator pemuatan marketplace tetap sebaris sementara tindakan di sebelahnya dipadatkan, dan pelaporan gangguan koneksi dideduplikasi di seluruh bundel UI.
