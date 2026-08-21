@@ -396,3 +396,41 @@ test("installed module string bundles are served before module bootstrap", async
         await rm(moduleRoot, { recursive: true, force: true });
     }
 });
+
+test("installed modules use their conventional language bundle when undeclared", async () => {
+    const uuid = "d7425ca1-6895-4aa3-a87f-2ed6d7698d01";
+    const moduleRoot = path.resolve("external-modules", uuid);
+    const stringsPath = path.join(moduleRoot, "ui/languages/en/strings.xml");
+    await mkdir(path.dirname(stringsPath), { recursive: true });
+    await writeFile(
+        stringsPath,
+        '<resources><string name="module.example.name">Example</string></resources>',
+    );
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "example",
+                uuid,
+                entrypoints: { bootstrap: "./bootstrap.js" },
+            },
+        ],
+    } as any);
+    const recorder = createResponseRecorder();
+
+    try {
+        assert.equal(
+            await route(
+                { headers: {} } as any,
+                recorder.res as any,
+                new URL(
+                    "http://localhost/static/modules/example/languages/en/strings.xml",
+                ),
+            ),
+            true,
+        );
+        assert.equal(recorder.status, 200);
+        assert.match(recorder.body, /module\.example\.name/);
+    } finally {
+        await rm(moduleRoot, { recursive: true, force: true });
+    }
+});

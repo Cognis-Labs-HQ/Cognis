@@ -37,10 +37,10 @@ export async function serveDeclaredModuleStrings(
     const manifest = (await runtime?.listManifests())?.find(
         (entry) => entry.id === moduleId,
     );
-    const stringsPrefix = manifest?.ui?.stringsBaseUrl?.replace(
-        /^\/static\/modules\//,
-        "",
-    );
+    const stringsPrefix = (
+        manifest?.ui?.stringsBaseUrl ??
+        (manifest ? `/static/modules/${manifest.id}/languages` : undefined)
+    )?.replace(/^\/static\/modules\//, "");
     if (
         !manifest ||
         !stringsPrefix ||

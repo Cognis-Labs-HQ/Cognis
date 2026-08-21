@@ -369,6 +369,26 @@ test("module presentation resolves manifest localization keys", async () => {
     );
 });
 
+test("module presentation discovers conventional strings and preserves unresolved values", async () => {
+    const module = {
+        id: "example",
+        name: "module.example.name",
+        summary: "Literal summary",
+    };
+    let requestedStringsBaseUrl;
+    await localizeModulePresentation(
+        module,
+        { locale: "en", t: () => "" },
+        async (_baseI18n, stringsBaseUrl) => {
+            requestedStringsBaseUrl = stringsBaseUrl;
+            return { locale: "en", t: () => "" };
+        },
+    );
+    assert.equal(requestedStringsBaseUrl, "/static/modules/example/languages");
+    assert.equal(module.localizedPresentation.name, "module.example.name");
+    assert.equal(module.localizedPresentation.summary, "Literal summary");
+});
+
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
     const source = readFileSync(
         resolve(ROOT, "src/ui/app/modules/index.js"),

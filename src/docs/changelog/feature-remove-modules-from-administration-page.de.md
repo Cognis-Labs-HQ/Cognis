@@ -488,7 +488,7 @@ Moduleinstellungen vom Typ `password` zeigen jetzt eine verdeckte Maske für ges
 
 ## Empfehlungen wiederherstellen und Marketplace-Metadaten lokalisieren
 
-Die veröffentlichten Empfehlungs-UUIDs bleiben im Standardkatalog enthalten. Marketplace-Karten, Details, Kategorien und Schlagwörter lösen jetzt Lokalisierungsschlüssel aus jedem Manifest über dessen deklariertes Modul-Stringpaket auf.
+Die veröffentlichten Empfehlungs-UUIDs bleiben im Standardkatalog enthalten. Marketplace-Karten, Details, Kategorien und Schlagwörter lösen jetzt Lokalisierungsschlüssel aus jedem Manifest über dessen deklariertes Modul-Stringpaket auf. Module ohne `ui.stringsBaseUrl` verwenden jetzt automatisch das Standardpaket unter `ui/languages`; nicht aufgelöste Werte bleiben sichtbar, statt als leerer Text zu erscheinen.
 
 ## Authentifizierte Modulverwaltung korrigieren
 

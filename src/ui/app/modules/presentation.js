@@ -1,7 +1,8 @@
 import { extendI18n } from "../../reuse/i18n.js";
 
 function resolveManifestString(moduleI18n, value) {
-    return typeof value === "string" ? moduleI18n.t(value) : value;
+    if (typeof value !== "string") return value;
+    return moduleI18n.t(value) || value;
 }
 
 export async function localizeModulePresentation(
@@ -9,7 +10,10 @@ export async function localizeModulePresentation(
     baseI18n,
     extend = extendI18n,
 ) {
-    const moduleI18n = await extend(baseI18n, module.ui?.stringsBaseUrl);
+    const stringsBaseUrl =
+        module.ui?.stringsBaseUrl ??
+        (module.id ? `/static/modules/${module.id}/languages` : undefined);
+    const moduleI18n = await extend(baseI18n, stringsBaseUrl);
     module.localizedPresentation = {
         name: resolveManifestString(moduleI18n, module.name),
         summary: resolveManifestString(moduleI18n, module.summary),

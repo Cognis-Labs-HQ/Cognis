@@ -488,7 +488,7 @@ Pengaturan modul bertipe `password` kini menampilkan masker nilai tersimpan yang
 
 ## Pulihkan rekomendasi dan lokalkan metadata marketplace
 
-UUID rekomendasi yang dipublikasikan tetap tersedia dalam katalog bawaan. Kartu, detail, kategori, dan tag marketplace kini menyelesaikan kunci pelokalan dari setiap manifes melalui bundel string modul yang dideklarasikan.
+UUID rekomendasi yang dipublikasikan tetap tersedia dalam katalog bawaan. Kartu, detail, kategori, dan tag marketplace kini menyelesaikan kunci pelokalan dari setiap manifes melalui bundel string modul yang dideklarasikan. Modul yang tidak mencantumkan `ui.stringsBaseUrl` kini otomatis memakai bundel standar `ui/languages`; nilai yang tidak terselesaikan tetap terlihat dan tidak menjadi teks kosong.
 
 ## Perbaiki administrasi modul terautentikasi
 

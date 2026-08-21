@@ -488,7 +488,7 @@ Password-type module settings now display a concealed saved-value mask and satis
 
 ## Restore recommendations and localize marketplace metadata
 
-The published recommendation UUIDs remain in the default catalog. Marketplace cards, details, categories, and tags now resolve localization keys from each manifest through its declared module string bundle.
+The published recommendation UUIDs remain in the default catalog. Marketplace cards, details, categories, and tags now resolve localization keys from each manifest through its declared module string bundle. Modules that omit `ui.stringsBaseUrl` now use the standard `ui/languages` bundle automatically, and unresolved literals remain visible instead of becoming empty text.
 
 ## Correct authenticated module administration
 
