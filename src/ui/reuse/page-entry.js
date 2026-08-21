@@ -23,6 +23,7 @@ import {
     openRuntimeErrorPopup,
 } from "./runtime-error-popup.js";
 import { uiCtx } from "./ui-ctx.js";
+import "./page-flow-catalog.js";
 import "./feedback-capabilities.js";
 import { ensureUiProvidersLoaded } from "./ui-provider-loader.js";
 

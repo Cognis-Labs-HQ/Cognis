@@ -489,3 +489,7 @@ Pengaturan modul bertipe `password` kini menampilkan masker nilai tersimpan yang
 ## Hapus asumsi identitas modul
 
 Nilai bawaan marketplace, pengujian, dan dokumentasi kini menggunakan kontrak serta data uji modul yang generik. Dokumen rekomendasi dimulai dalam keadaan kosong agar setiap penerapan memilih UUID modul secara eksplisit tanpa Cognis mengasumsikan identitas atau tujuan modul apa pun.
+
+## Perbaiki administrasi modul terautentikasi
+
+Penemuan penyedia kapabilitas kini menunggu sesi pengguna yang sudah masuk. Filter modul meninggalkan URL detail, pengaturan sumber menerima dependensi pelokalannya secara eksplisit, dan pencopotan menghapus konfigurasi modul sebelum instalasi dihapus. Teks penghapusan data tidak lagi berasumsi tentang data yang disimpan modul.

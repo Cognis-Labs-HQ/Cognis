@@ -19,7 +19,7 @@ let settingsFormBuilder = null;
 let sourceFormController = null;
 let settingsFormController = null;
 
-function renderSourceManager() {
+function renderSourceManager(i18n) {
     const rows = sources
         .map((source) => {
             const controls = source.trusted
@@ -31,7 +31,7 @@ function renderSourceManager() {
     return `<div class="module-source-manager"><p>${escapeHtml(i18n.t("ui.app.modules.sources_description"))}</p><ul class="module-source-list">${rows}</ul><button type="button" class="btn-confirm module-source-add" data-add-source>${escapeHtml(i18n.t("ui.app.modules.add_source"))}</button></div>`;
 }
 
-function renderSourceForm(source) {
+function renderSourceForm(i18n, source) {
     const tokenValue = source?.credentialId ? STORED_PAT_MASK : "";
     const locked = source?.trusted === true;
     const scanPrivateRepos = source?.scanPrivateRepos === true;
@@ -103,7 +103,7 @@ function renderSourceForm(source) {
     return sourceFormBuilder.render();
 }
 
-function renderMarketplaceSettingsForm(settings) {
+function renderMarketplaceSettingsForm(i18n, settings) {
     settingsFormBuilder = createFormBuilder(
         { i18n, escapeHtml },
         {
@@ -136,7 +136,7 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
                 id: "settings",
                 title: i18n.t("ui.reuse.settings"),
                 body: () =>
-                    `${renderMarketplaceSettingsForm(settings)}<section class="module-settings-sources"><h3>${escapeHtml(i18n.t("ui.app.modules.sources"))}</h3>${renderSourceManager()}</section>`,
+                    `${renderMarketplaceSettingsForm(i18n, settings)}<section class="module-settings-sources"><h3>${escapeHtml(i18n.t("ui.app.modules.sources"))}</h3>${renderSourceManager(i18n)}</section>`,
                 actions: [
                     {
                         id: "save-settings",
@@ -148,7 +148,7 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
             {
                 id: "editor",
                 title: i18n.t("ui.app.modules.source_details"),
-                body: () => renderSourceForm(selectedSource),
+                body: () => renderSourceForm(i18n, selectedSource),
                 actions: [
                     {
                         id: "back",

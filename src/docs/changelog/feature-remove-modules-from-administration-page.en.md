@@ -489,3 +489,7 @@ Password-type module settings now display a concealed saved-value mask and satis
 ## Remove assumed module identities
 
 Marketplace defaults, tests, and documentation now use generic module contracts and fixtures. The recommendation document starts empty so deployments explicitly choose module UUIDs instead of Cognis assuming any module identity or purpose.
+
+## Correct authenticated module administration
+
+Capability-provider discovery now waits for a logged-in session. Module filters leave detail URLs, source settings receive their localization dependency explicitly, and uninstall operations clear module configuration before removing the installation. Data-deletion wording no longer assumes what a module stores.

@@ -50,6 +50,7 @@ export async function ensureUiProvidersLoaded() {
     if (providersLoaded) return;
     if (providersLoadPromise) return providersLoadPromise;
     if (typeof localStorage === "undefined") return;
+    if (!localStorage.getItem("cognis_access_token")) return;
     providersLoadPromise = (async () => {
         providersLoaded = await importCatalog(
             "/api/v1/ui/capability-providers",
@@ -69,6 +70,7 @@ export async function ensureNavbarPluginsLoaded() {
     if (navbarPluginsLoaded) return;
     if (navbarPluginsLoadPromise) return navbarPluginsLoadPromise;
     if (typeof localStorage === "undefined") return;
+    if (!localStorage.getItem("cognis_access_token")) return;
     navbarPluginsLoadPromise = (async () => {
         navbarPluginsLoaded = await importCatalog("/api/v1/ui/navbar-plugins");
     })().finally(() => {

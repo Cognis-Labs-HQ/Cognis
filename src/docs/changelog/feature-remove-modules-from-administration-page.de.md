@@ -489,3 +489,7 @@ Moduleinstellungen vom Typ `password` zeigen jetzt eine verdeckte Maske für ges
 ## Angenommene Modulidentitäten entfernen
 
 Marketplace-Standardwerte, Tests und Dokumentation verwenden jetzt generische Modulverträge und Testdaten. Das Empfehlungsdokument ist zunächst leer, damit Bereitstellungen Modul-UUIDs ausdrücklich auswählen, statt dass Cognis eine Modulidentität oder einen Zweck voraussetzt.
+
+## Authentifizierte Modulverwaltung korrigieren
+
+Die Ermittlung von Capability-Providern wartet jetzt auf eine angemeldete Sitzung. Modulfilter verlassen Detail-URLs, Modulquellen-Einstellungen erhalten ihre Lokalisierungsabhängigkeit ausdrücklich, und Deinstallationen löschen die Modulkonfiguration vor dem Entfernen der Installation. Der Hinweis zur Datenlöschung macht keine Annahmen mehr darüber, was ein Modul speichert.

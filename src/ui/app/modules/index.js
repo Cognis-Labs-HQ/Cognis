@@ -26,6 +26,7 @@ import {
     loadModuleSources,
     setModuleEnabled,
     uninstallModule,
+    deleteModuleConfig,
 } from "./api.js";
 import {
     activateModule,
@@ -390,6 +391,7 @@ async function runLifecycleAction(module, action) {
     if (action === "uninstall") {
         const options = await confirmModuleUninstall(i18n);
         if (!options) return;
+        await deleteModuleConfig(module.id);
         await uninstallModule(module.uuid, options);
         module.installed = false;
         delete module.status;
@@ -602,7 +604,9 @@ function bindInteractions(root, signal) {
             }
             if (applyModuleFilterSelection(filters, target.dataset)) {
                 selectedModule = null;
-                refreshMarketplace();
+                await uiCtx.capabilities.get("ui:navigate")?.(
+                    "/administration/modules",
+                );
                 return;
             }
             if (target.id === "module-marketplace-settings") {

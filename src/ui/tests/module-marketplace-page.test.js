@@ -434,6 +434,11 @@ test("module sources use an independent list and editor", () => {
     );
     assert.match(sourceSettingsSource, /function renderSourceManager/);
     assert.match(sourceSettingsSource, /function renderSourceForm/);
+    assert.match(sourceSettingsSource, /function renderSourceManager\(i18n\)/);
+    assert.match(
+        sourceSettingsSource,
+        /renderSourceForm\(i18n, selectedSource\)/,
+    );
     assert.match(sourceSettingsSource, /module-settings-sources/);
     assert.match(sourceSettingsSource, /id: "editor"/);
     assert.doesNotMatch(sourceSettingsSource, /id="module-source-settings"/);
@@ -479,6 +484,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
         /module-detail-actions[^`]*renderLifecycleActions\(module\)\}\$\{advanced\}/,
     );
     assert.match(source, /selectedModule = null/);
+    assert.match(
+        source,
+        /applyModuleFilterSelection[\s\S]*selectedModule = null;[\s\S]*"\/administration\/modules"/,
+    );
     assert.match(source, /target\.classList\.contains\("module-store-card"\)/);
     assert.match(source, /renderLifecycleButton\(module, "install"/);
     assert.match(source, /renderLifecycleButton\(module, "enable"/);
@@ -486,6 +495,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderLifecycleButton\(module, "uninstall"/);
     assert.match(source, /confirmModuleUninstall\(i18n\)/);
     assert.match(source, /uninstallModule\(module\.uuid, options\)/);
+    assert.match(
+        source,
+        /deleteModuleConfig\(module\.id\);[\s\S]*uninstallModule\(module\.uuid, options\)/,
+    );
     assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);
     assert.match(source, /!module\.installed && module\.branches\?\.length/);

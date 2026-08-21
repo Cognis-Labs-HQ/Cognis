@@ -45,6 +45,15 @@ export async function saveModuleConfig(moduleId, values) {
     );
 }
 
+export async function deleteModuleConfig(moduleId) {
+    const response = await apiFetch(
+        `/api/v1/modules/${encodeURIComponent(moduleId)}/config`,
+        { method: "DELETE" },
+    );
+    if (response.status === 404) return null;
+    return data(response);
+}
+
 export async function loadModuleSources() {
     return data(await apiFetch("/api/v1/modules/sources"));
 }
