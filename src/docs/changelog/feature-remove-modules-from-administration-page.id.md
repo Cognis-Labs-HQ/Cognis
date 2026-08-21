@@ -28,7 +28,7 @@ Checkout eksternal kini melewati pemeriksaan kesiapan repositori untuk kontrak p
 
 Repositori terpasang kini ditemukan sebagai komponen runtime lengkap. Titik masuk bootstrap dapat menyumbangkan rute, UI, dokumentasi, catatan perubahan, kapabilitas, dan tahap alur melalui lingkup `ctx` yang dilacak; penonaktifan atau penghapusan membongkar seluruh kontribusi tersebut.
 
-Jitsi Meet telah dihapus dari pohon sumber bawaan dan kini disediakan melalui bursa. Cognis Labs HQ di GitHub selalu tersedia sebagai sumber modul tepercaya yang tidak dapat diubah.
+Implementasi modul bawaan telah dihapus dari pohon sumber dan kini disediakan melalui marketplace. Cognis Labs HQ di GitHub selalu tersedia sebagai sumber modul tepercaya yang tidak dapat diubah.
 
 ## Lewati repositori tidak valid
 
@@ -88,7 +88,7 @@ Metadata lisensi hanya ditampilkan bila berkas lisensi yang dikenali tersedia di
 
 ## Beri waktu untuk pemasangan modul
 
-Pemasangan marketplace kini memakai jendela permintaan dua menit agar kloning dan validasi repositori besar seperti Jitsi Meet tidak gagal karena batas waktu API umum tiga puluh detik.
+Pemasangan marketplace kini memakai jendela permintaan dua menit agar kloning dan validasi repositori besar tidak gagal karena batas waktu API umum tiga puluh detik.
 
 ## Tampilkan semua modul terlebih dahulu
 
@@ -114,9 +114,9 @@ Perintah utama `npm test` kini menemukan pengujian di pohon sumber Cognis dan ak
 
 Halaman Modul kini memuat katalog tersimpan per sumber sebelum penemuan latar belakang dimulai, sehingga modul yang sudah dikenal tetap terlihat setelah navigasi dan mulai ulang server. Penyegaran repositori memperbarui kandidat yang berhasil secara terpisah dan mempertahankan entri cache ketika pemeriksaan individual belum memberikan kepastian.
 
-## Pulihkan instalasi Jitsi Meet
+## Pulihkan kompatibilitas katalog
 
-Instalasi kini menerima katalog yang dibuat sebelum metadata tag rilis diperkenalkan. Perubahan ini menghapus kerusakan akibat `releases` yang tidak tersedia dan sebelumnya menggagalkan instalasi Jitsi Meet, sementara pemeriksaan repositori terpisah mencegah repositori organisasi lain menyembunyikan Jitsi Meet.
+Instalasi menerima katalog dari sebelum metadata tag rilis diperkenalkan, sementara pemeriksaan repositori terpisah mencegah repositori lain menyembunyikan entri katalog yang valid.
 
 ## Tangani kegagalan instalasi secara lokal
 
@@ -204,7 +204,7 @@ Pemuatan langsung rute SPA modul eksternal kini melalui entrypoint inti yang men
 
 ## Siapkan modul bawaan untuk dipisahkan
 
-Analytics dan Nextcloud Whiteboard kini menjadi repositori modul eksternal mandiri dengan metadata repositori khusus, lisensi, README, inventaris integritas lengkap, panduan distribusi terjemahan, dependensi UUID, dan kebutuhan kapabilitas eksplisit.
+Repositori modul eksternal dapat menyediakan metadata, lisensi, README, inventaris integritas lengkap, panduan distribusi terjemahan, dependensi UUID, dan kebutuhan kapabilitas eksplisit.
 
 ## Tingkatkan penjelajahan tangkapan layar modul
 
@@ -212,7 +212,7 @@ Tangkapan layar detail modul kini berada dalam karusel terbatas dengan kontrol s
 
 ## Terapkan modul marketplace yang unik
 
-Analytics dan Nextcloud Whiteboard telah dipindahkan ke repositori khusus dan tidak lagi dibundel. Penemuan marketplace kini menerima repositori pertama untuk setiap UUID modul, mencatat serta menolak duplikat berikutnya, dan memperbarui metadata tampilan dari repositori yang diterima sambil mempertahankan status siklus hidup instalasi.
+Modul eksternal dapat dipindahkan ke repositori khusus tanpa dibundel. Penemuan marketplace menerima repositori pertama untuk setiap UUID, mencatat dan menolak duplikat berikutnya, serta memperbarui metadata tampilan sambil mempertahankan status siklus hidup.
 
 ## Abaikan direktori infrastruktur gateway
 
@@ -224,11 +224,11 @@ Penonaktifan modul kini dicatat sebagai peringatan dan penghapusan modul ekstern
 
 ## Rekomendasikan modul Cognis HQ
 
-Daftar rekomendasi bawaan kini memuat UUID modul Jitsi Meet, Nextcloud Whiteboard, dan Analytics yang diterbitkan oleh organisasi Cognis Labs HQ.
+Dokumen rekomendasi bawaan disajikan oleh Cognis dan hanya berisi nilai UUID modul yang dikonfigurasi secara eksplisit.
 
 ## Perluas pencatatan siklus hidup modul
 
-Penambahan, pembaruan, penghapusan, pemindaian sumber modul, serta jumlah hasil pemindaian kini dicatat dengan tingkat yang sesuai, sedangkan kegagalan validasi dan pengaktifan dicatat sebagai kesalahan. Penemuan gambar marketplace juga menggunakan PNG yang cocok atau gambar lain yang didukung ketika manifes menyebut ekstensi yang tidak ada, sehingga gambar Jitsi Meet kembali tampil selama manifesnya masih menunjuk ke berkas SVG yang tidak tersedia.
+Penambahan, pembaruan, penghapusan, pemindaian sumber, dan jumlah hasil dicatat dengan tingkat yang sesuai; kegagalan validasi dan pengaktifan dicatat sebagai kesalahan. Penemuan gambar dapat memakai ekstensi lain yang didukung jika ekstensi aset yang dideklarasikan tidak tersedia.
 
 ## Cegah kilatan gambar modul
 
@@ -304,7 +304,7 @@ Manifes modul kini dapat mendeklarasikan komponen inti yang diperlukan melalui U
 
 ## Selesaikan dependensi UUID adapter
 
-Jitsi Meet dan Nextcloud Whiteboard dengan benar memerlukan UUID adapter Profil Sosial, sedangkan Jitsi juga memerlukan UUID adapter Pesan Sosial. Pemasangan kini menemukan manifes adapter secara otomatis dan menyelesaikan UUID tersebut melalui gateway pemiliknya, menerimanya saat gateway aktif serta menolaknya saat dinonaktifkan atau tidak ada.
+Instalasi menemukan manifes komponen secara otomatis dan menyelesaikan dependensi UUID melalui gateway pemiliknya, menerima dependensi aktif serta menolak yang dinonaktifkan atau tidak ada.
 
 ## Selesaikan dependensi adapter saat pengaktifan
 
@@ -328,7 +328,7 @@ Kartu konten Modul kini mempertahankan judul Modul yang tetap, sedangkan filter 
 
 ## Hapus modul bahasa bawaan
 
-Cognis English dan Cognis Japanese kini dipasang secara eksklusif dari repositori marketplace mandirinya. Workspace modul bawaan telah dihapus; penemuan runtime, perutean UI, pemeriksaan integritas, plugin CLI, dan pendaftaran bahasa Study kini hanya menggunakan pemasangan beralamat UUID di bawah `COGNIS_EXTERNAL_MODULES_ROOT`. Aset navigasi Study bersama kini dimiliki oleh gateway Study.
+Modul eksternal dipasang secara eksklusif dari repositori marketplace mandiri. Penemuan runtime, perutean UI, pemeriksaan integritas, plugin CLI, dan pendaftaran komponen hanya memakai instalasi beralamat UUID di bawah `COGNIS_EXTERNAL_MODULES_ROOT`.
 
 ## Gunakan gaya navigasi Modul standar
 
@@ -480,8 +480,12 @@ Ilustrasi marketplace terlindungi tidak pernah ditetapkan langsung ke elemen med
 
 ## Lengkapi kontrol sumber modul
 
-Pengaturan sumber modul kini memakai pembuat formulir bersama dan menyediakan slider Pindai Repositori Privat yang mewajibkan PAT. Perubahan kanal rilis tidak lagi menganggap checkout sementara sebagai konflik ID, dan Cognis menyajikan daftar rekomendasi bawaan berisi UUID modul Jitsi Meet, Nextcloud Whiteboard, dan bahasa Jepang.
+Pengaturan sumber modul memakai pembuat formulir bersama dan menyediakan slider Pindai Repositori Privat yang mewajibkan PAT. Perubahan kanal rilis tidak lagi menganggap checkout sementara sebagai konflik ID, dan Cognis menyajikan dokumen rekomendasi bawaan yang dapat dikonfigurasi.
 
 ## Pertahankan kata sandi modul saat pembaruan
 
 Pengaturan modul bertipe `password` kini menampilkan masker nilai tersimpan yang tersembunyi dan memenuhi validasi wajib melalui respons status terkonfigurasi modul. Masker yang tidak berubah mengirim pengganti kosong agar modul mempertahankan kata sandi tersimpan. Indikator pemuatan marketplace tetap sebaris sementara tindakan di sebelahnya dipadatkan, dan pelaporan gangguan koneksi dideduplikasi di seluruh bundel UI.
+
+## Hapus asumsi identitas modul
+
+Nilai bawaan marketplace, pengujian, dan dokumentasi kini menggunakan kontrak serta data uji modul yang generik. Dokumen rekomendasi dimulai dalam keadaan kosong agar setiap penerapan memilih UUID modul secara eksplisit tanpa Cognis mengasumsikan identitas atau tujuan modul apa pun.

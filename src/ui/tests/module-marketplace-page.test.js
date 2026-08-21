@@ -304,18 +304,14 @@ test("module marketplace identifies immutable trusted sources", () => {
     assert.match(sourceSettingsSource, /credential_validation_warning/);
 });
 
-test("recommended modules include the published Cognis HQ modules", () => {
+test("recommended modules do not assume module identities", () => {
     const recommended = JSON.parse(
         readFileSync(
             resolve(ROOT, "src/ui/public/recommended-modules.json"),
             "utf8",
         ),
     );
-    assert.deepEqual(recommended, [
-        "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
-        "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
-        "e10c016f-8a15-5ec2-8188-c1657dfbe829",
-    ]);
+    assert.deepEqual(recommended, []);
 });
 
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
@@ -797,7 +793,7 @@ test("disabled modules defer required config checks when their owned route is no
         "utf8",
     );
     const module = {
-        id: "jitsi-meet",
+        id: "example-module",
         ui: {
             preferences: [
                 { key: "instanceUrl", type: "string", required: true },

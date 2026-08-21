@@ -28,7 +28,7 @@ Externe Checkouts durchlaufen nun vor dem Ersetzen einer aktiven Installation ei
 
 Installierte Repositorys werden nun als vollständige Laufzeitkomponenten erkannt. Ihr Bootstrap-Einstiegspunkt kann Routen, UI, Dokumentation, Änderungsnotizen, Fähigkeiten und Flow-Stufen über einen verfolgten `ctx`-Bereich beitragen; Deaktivieren oder Deinstallieren baut alle Beiträge vollständig ab.
 
-Jitsi Meet wurde aus dem gebündelten Quellbaum entfernt und wird nun über den Marktplatz bereitgestellt. Cognis Labs HQ auf GitHub ist immer als unveränderliche vertrauenswürdige Modulquelle vorhanden.
+Gebündelte Modulimplementierungen wurden aus dem Quellbaum entfernt und werden nun über den Marketplace bereitgestellt. Cognis Labs HQ auf GitHub ist immer als unveränderliche vertrauenswürdige Modulquelle vorhanden.
 
 ## Ungültige Repositorys überspringen
 
@@ -88,7 +88,7 @@ Lizenzmetadaten werden nur angezeigt, wenn eine erkannte Lizenzdatei im Reposito
 
 ## Zeit für Modulinstallationen
 
-Marketplace-Installationen verwenden nun ein zehnminütiges Anfragefenster, damit das Klonen und Prüfen größerer Repositorys wie Jitsi Meet nicht am allgemeinen API-Zeitlimit von dreißig Sekunden scheitert.
+Marketplace-Installationen verwenden nun ein zweiminütiges Anfragefenster, damit das Klonen und Prüfen größerer Repositorys nicht am allgemeinen API-Zeitlimit von dreißig Sekunden scheitert.
 
 ## Zuerst alle Module anzeigen
 
@@ -114,9 +114,9 @@ Der zentrale Befehl `npm test` findet Tests jetzt sowohl im Cognis-Quellbaum als
 
 Die Modulseite lädt nun zuerst den gespeicherten Katalog jeder Quelle, bevor die Erkennung im Hintergrund beginnt. Bekannte Module bleiben dadurch bei Navigation und Serverneustarts sichtbar. Repository-Abfragen aktualisieren erfolgreiche Kandidaten unabhängig und behalten zwischengespeicherte Einträge bei nicht eindeutigen Einzelabfragen.
 
-## Installation von Jitsi Meet wiederherstellen
+## Katalogkompatibilität wiederherstellen
 
-Die Installation akzeptiert nun Kataloge, die vor Einführung der Release-Tag-Metadaten gespeichert wurden. Dadurch entfällt der Fehler wegen fehlender `releases`, der die Installation von Jitsi Meet verhindert hat. Unabhängige Repository-Abfragen verhindern außerdem, dass andere Repositories der Organisation Jitsi Meet ausblenden.
+Die Installation akzeptiert Kataloge aus der Zeit vor den Release-Tag-Metadaten, während unabhängige Repository-Abfragen verhindern, dass andere Repositorys gültige Katalogeinträge ausblenden.
 
 ## Installationsfehler lokal behandeln
 
@@ -204,7 +204,7 @@ Direkte Aufrufe externer Modul-SPA-Routen verwenden jetzt einen Core-Einstiegspu
 
 ## Mitgelieferte Module auslagern
 
-Analytics und Nextcloud Whiteboard sind jetzt eigenständige externe Modul-Repositories mit eigener Repository-Metadaten, Lizenzen, READMEs, vollständigen Integritätslisten, übersetzten Bereitstellungshinweisen, UUID-Abhängigkeiten und expliziten Capability-Anforderungen.
+Externe Modul-Repositorys können eigene Metadaten, Lizenzen, READMEs, vollständige Integritätslisten, übersetzte Bereitstellungshinweise, UUID-Abhängigkeiten und explizite Capability-Anforderungen bereitstellen.
 
 ## Durchsuchen von Modul-Screenshots verbessern
 
@@ -212,7 +212,7 @@ Screenshots in der Moduldetailansicht bleiben nun in einem begrenzten Karussell 
 
 ## Eindeutige Marktplatzmodule erzwingen
 
-Analytics und Nextcloud Whiteboard befinden sich nun in eigenen Repositorys und werden nicht mehr mitgeliefert. Die Marktplatzsuche akzeptiert jetzt das erste Repository für jede Modul-UUID, protokolliert und verwirft spätere Duplikate und aktualisiert Darstellungsmetadaten aus dem akzeptierten Repository, während der installierte Lebenszyklusstatus erhalten bleibt.
+Externe Module können in eigene Repositorys verschoben werden, ohne mitgeliefert zu werden. Die Marketplace-Erkennung akzeptiert das erste Repository pro Modul-UUID, protokolliert und verwirft spätere Duplikate und aktualisiert Darstellungsmetadaten bei erhaltenem Lebenszyklusstatus.
 
 ## Infrastrukturverzeichnisse der Gateways ignorieren
 
@@ -224,11 +224,11 @@ Das Deaktivieren von Modulen wird nun als Warnung protokolliert und das Löschen
 
 ## Cognis-HQ-Module empfehlen
 
-Die integrierte Empfehlungsliste enthält jetzt die veröffentlichten Modul-UUIDs für Jitsi Meet, Nextcloud Whiteboard und Analytics aus der Organisation Cognis Labs HQ.
+Das integrierte Empfehlungsdokument wird von Cognis bereitgestellt und enthält nur ausdrücklich konfigurierte Modul-UUID-Werte.
 
 ## Protokollierung des Modul-Lebenszyklus erweitern
 
-Hinzufügen, Aktualisieren, Löschen und Scannen von Modulquellen sowie die Anzahl der Scanergebnisse werden jetzt mit passender Priorität protokolliert; Validierungs- und Aktivierungsfehler erscheinen als Fehler. Die Marktplatz-Bildsuche verwendet außerdem ein passendes PNG oder ein anderes unterstütztes Bild, wenn das Manifest eine fehlende Dateiendung nennt. Dadurch werden die Jitsi-Meet-Grafiken wieder angezeigt, solange dessen Manifest noch auf nicht vorhandene SVG-Dateien verweist.
+Hinzufügen, Aktualisieren, Löschen und Scannen von Modulquellen sowie Ergebniszahlen werden mit passender Priorität protokolliert; Validierungs- und Aktivierungsfehler erscheinen als Fehler. Die Bildsuche kann eine andere unterstützte Erweiterung verwenden, wenn die deklarierte Asset-Erweiterung fehlt.
 
 ## Aufblitzen von Modulbildern verhindern
 
@@ -304,7 +304,7 @@ Modulmanifeste können erforderliche Kernkomponenten jetzt über eine stabile UU
 
 ## Adapter-UUID-Abhängigkeiten auflösen
 
-Jitsi Meet und Nextcloud Whiteboard benötigen korrekt die UUID des Social-Profile-Adapters; Jitsi benötigt zusätzlich die UUID des Social-Messages-Adapters. Die Installation erkennt Adaptermanifeste jetzt automatisch und löst diese UUIDs über ihr zuständiges Gateway auf. Bei aktivem Gateway werden sie akzeptiert, bei deaktiviertem oder fehlendem Gateway abgelehnt.
+Die Installation erkennt Komponentenmanifeste automatisch und löst deklarierte UUID-Abhängigkeiten über die zuständigen Gateways auf; aktive Abhängigkeiten werden akzeptiert, deaktivierte oder fehlende abgelehnt.
 
 ## Adapterabhängigkeiten bei der Aktivierung auflösen
 
@@ -328,7 +328,7 @@ Die Inhaltskarte der Module behält nun die feste Überschrift „Module“, wä
 
 ## Gebündelte Sprachmodule entfernen
 
-Cognis Englisch und Cognis Japanisch werden nun ausschließlich aus ihren eigenständigen Marketplace-Repositorys installiert. Der gebündelte Modul-Workspace wurde entfernt; Laufzeiterkennung, UI-Routing, Integritätsprüfungen, CLI-Erweiterungen und die Registrierung von Study-Sprachen verwenden nur noch UUID-adressierte Installationen unter `COGNIS_EXTERNAL_MODULES_ROOT`. Gemeinsam genutzte Study-Navigationsressourcen gehören nun dem Study-Gateway.
+Externe Module werden ausschließlich aus eigenständigen Marketplace-Repositorys installiert. Laufzeiterkennung, UI-Routing, Integritätsprüfungen, CLI-Plugins und Komponentenregistrierung verwenden nur UUID-adressierte Installationen unter `COGNIS_EXTERNAL_MODULES_ROOT`.
 
 ## Standardgestaltung für die Modulnavigation verwenden
 
@@ -480,8 +480,12 @@ Geschützte Marketplace-Grafiken werden niemals direkt Browser-Medienelementen z
 
 ## Modulquellen-Steuerung vervollständigen
 
-Die Einstellungen für Modulquellen verwenden jetzt den gemeinsamen Formulargenerator und bieten einen Schieberegler zum Durchsuchen privater Repositories, der ein PAT erfordert. Änderungen des Veröffentlichungskanals verwechseln den temporären Checkout nicht mehr mit einem ID-Konflikt, und Cognis stellt die Standardempfehlungsliste mit den UUIDs der Module Jitsi Meet, Nextcloud Whiteboard und Japanisch bereit.
+Die Einstellungen für Modulquellen verwenden den gemeinsamen Formulargenerator und bieten einen Schieberegler zum Durchsuchen privater Repositorys, der ein PAT erfordert. Änderungen des Veröffentlichungskanals verwechseln den temporären Checkout nicht mehr mit einem ID-Konflikt, und Cognis stellt das konfigurierbare Standardempfehlungsdokument bereit.
 
 ## Modulpasswörter bei Aktualisierungen erhalten
 
 Moduleinstellungen vom Typ `password` zeigen jetzt eine verdeckte Maske für gespeicherte Werte und erfüllen die Pflichtfeldprüfung über den konfigurierten Zustand des Moduls. Unveränderte Masken senden einen leeren Ersatz, damit Module das gespeicherte Passwort beibehalten. Ladeanzeigen im Marketplace bleiben in einer Zeile, während benachbarte Aktionen schmaler werden, und Meldungen über Verbindungsunterbrechungen werden über UI-Bundles hinweg dedupliziert.
+
+## Angenommene Modulidentitäten entfernen
+
+Marketplace-Standardwerte, Tests und Dokumentation verwenden jetzt generische Modulverträge und Testdaten. Das Empfehlungsdokument ist zunächst leer, damit Bereitstellungen Modul-UUIDs ausdrücklich auswählen, statt dass Cognis eine Modulidentität oder einen Zweck voraussetzt.

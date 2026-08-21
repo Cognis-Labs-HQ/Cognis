@@ -26,7 +26,7 @@ test("disabled modules expose no route handlers", async () => {
         {
             listManifests: async () => [
                 {
-                    id: "analytics",
+                    id: "example-module",
                     entrypoints: { api: "./api/index.js" },
                 },
             ],
@@ -44,7 +44,7 @@ test("disabled modules expose no route handlers", async () => {
             headers: {},
         } as never,
         responseRecorder as never,
-        new URL("http://localhost/api/v1/modules/analytics/metrics"),
+        new URL("http://localhost/api/v1/modules/example-module/route"),
     );
 
     assert.equal(handled, false);

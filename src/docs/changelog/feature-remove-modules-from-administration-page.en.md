@@ -28,7 +28,7 @@ External checkouts now pass a repository-readiness gate covering root package an
 
 Installed repositories are now discovered as complete runtime components. Their bootstrap entrypoint can contribute routes, UI, documentation, changelogs, capabilities, and flow stages through a tracked `ctx` scope; disabling or uninstalling invokes teardown and removes every tracked contribution.
 
-Jitsi Meet has been removed from the bundled source tree and is now expected to arrive through the marketplace. Cognis Labs HQ on GitHub is always present as an immutable trusted module source.
+Bundled module implementations have been removed from the source tree and are now expected to arrive through the marketplace. Cognis Labs HQ on GitHub is always present as an immutable trusted module source.
 
 ## Skip invalid repositories
 
@@ -88,7 +88,7 @@ License metadata is displayed only when a recognized license file exists at the 
 
 ## Allow module installation time
 
-Marketplace installs now use a two-minute request window so cloning and validating larger repositories such as Jitsi Meet does not fail at the generic thirty-second API timeout.
+Marketplace installs now use a two-minute request window so cloning and validating larger repositories does not fail at the generic thirty-second API timeout.
 
 ## Show all modules first
 
@@ -114,9 +114,9 @@ The root `npm test` runner now discovers tests under both the Cognis source tree
 
 The Modules page now hydrates from the persisted per-source catalog before background discovery begins, so known modules remain visible across navigation and server restarts. Repository refreshes update successful candidates independently and retain cached entries whenever an individual probe is inconclusive.
 
-## Restore Jitsi Meet installation
+## Restore catalog compatibility
 
-Installation now accepts catalogs written before release-tag metadata was introduced. This removes the missing `releases` crash that regressed Jitsi Meet installation, while independent repository probing prevents unrelated organization repositories from hiding Jitsi Meet.
+Installation accepts catalogs written before release-tag metadata was introduced, while independent repository probing prevents unrelated organization repositories from hiding valid catalog entries.
 
 ## Keep installation errors local
 
@@ -202,9 +202,9 @@ Module detail pages now use router-backed UUID deep links while remaining inside
 
 Direct loads of external module SPA routes now run through a core entrypoint that imports declared capability providers before the module route. Provider and route URLs use the same asset version as router navigation, preventing intermittent missing capabilities and duplicate navbar contributions.
 
-## Prepare bundled modules for extraction
+## Prepare external repositories
 
-Analytics and Nextcloud Whiteboard are now self-contained external-module repositories with dedicated repository metadata, licenses, READMEs, complete integrity inventories, translated distribution guidance, UUID dependencies, and explicit capability requirements.
+External-module repositories can provide dedicated repository metadata, licenses, READMEs, complete integrity inventories, translated distribution guidance, UUID dependencies, and explicit capability requirements.
 
 ## Improve module screenshot browsing
 
@@ -212,7 +212,7 @@ Module detail screenshots now stay within a bounded carousel with previous and n
 
 ## Enforce unique marketplace modules
 
-Analytics and Nextcloud Whiteboard have moved to their dedicated repositories and are no longer bundled. Marketplace discovery now accepts the first repository for each module UUID, logs and rejects later duplicates, and refreshes presentation metadata from the accepted repository while preserving installed lifecycle state.
+External modules can move to dedicated repositories without being bundled. Marketplace discovery accepts the first repository for each module UUID, logs and rejects later duplicates, and refreshes presentation metadata while preserving installed lifecycle state.
 
 ## Ignore gateway infrastructure directories
 
@@ -222,13 +222,13 @@ Gateway auto-discovery now bootstraps only directories that contain a gateway ma
 
 Module disable operations are now warning-level events and external-module deletion is logged explicitly. Marketplace refresh actions emit one completion toast per click, while modules remain visible unless their manifest explicitly sets `template` to `true`.
 
-## Recommend Cognis HQ modules
+## Serve configurable recommendations
 
-The built-in recommendation list now includes the published Jitsi Meet, Nextcloud Whiteboard, and Analytics module UUIDs from the Cognis Labs HQ organization.
+The built-in recommendation document is served by Cognis and contains only explicitly configured module UUID values.
 
 ## Expand module lifecycle logging
 
-Module source additions, updates, deletions, scans, and scan result counts are now logged with appropriate severity, while validation and enable failures are recorded as errors. Marketplace image discovery also falls back to a matching PNG or other supported image when a repository manifest names a missing extension, restoring Jitsi Meet artwork while its manifest still points at absent SVG files.
+Module source additions, updates, deletions, scans, and scan result counts are logged with appropriate severity, while validation and enable failures are recorded as errors. Marketplace image discovery can use another supported image extension when a declared asset extension is unavailable.
 
 ## Prevent module image flashes
 
@@ -304,7 +304,7 @@ Module manifests may now declare required core components by stable UUID or lega
 
 ## Resolve adapter UUID dependencies
 
-Jitsi Meet and Nextcloud Whiteboard correctly require the Social Profile adapter UUID, while Jitsi also requires the Social Messages adapter UUID. Installation now auto-discovers adapter manifests and resolves these UUIDs through their owning gateway, accepting them when that gateway is active and rejecting them when it is disabled or absent.
+Installation auto-discovers component manifests and resolves declared UUID dependencies through their owning gateways, accepting active dependencies and rejecting disabled or missing dependencies.
 
 ## Resolve enablement adapter dependencies
 
@@ -326,9 +326,9 @@ Module-provided SPA pages now preserve authenticated sessions when a module endp
 
 The Modules content card now keeps the stable Modules heading while status filters remain in navigation. Shared pointer tracking now imports its CTX capability bus explicitly, preventing module-provided pages from failing during direct mounts.
 
-## Remove bundled language modules
+## Remove bundled modules
 
-Cognis English and Cognis Japanese now install exclusively from their standalone marketplace repositories. The bundled module workspace was removed, and runtime discovery, UI routing, integrity checks, CLI plugins, and Study language registration now consume only UUID-addressed installations under `COGNIS_EXTERNAL_MODULES_ROOT`. Shared Study navigation assets are now owned by the Study gateway.
+External modules install exclusively from standalone marketplace repositories. Runtime discovery, UI routing, integrity checks, CLI plugins, and component registration consume only UUID-addressed installations under `COGNIS_EXTERNAL_MODULES_ROOT`.
 
 ## Use the standard Modules navigation styling
 
@@ -480,8 +480,12 @@ Protected marketplace artwork is never assigned directly to browser media elemen
 
 ## Complete module source controls
 
-Module source settings now use the shared form builder and offer a Scan Private Repositories slider that requires a PAT. Release-channel changes no longer mistake their temporary checkout for an ID collision, and Cognis serves the default recommendation list with the Jitsi Meet, Nextcloud Whiteboard, and Japanese module UUIDs.
+Module source settings use the shared form builder and offer a Scan Private Repositories slider that requires a PAT. Release-channel changes no longer mistake their temporary checkout for an ID collision, and Cognis serves the configurable default recommendation document.
 
 ## Preserve module passwords during updates
 
 Password-type module settings now display a concealed saved-value mask and satisfy required validation through the module’s configured-state response. Unchanged masks submit an empty replacement so modules preserve the stored password. Marketplace loading indicators remain inline while neighboring actions compress, and connection-interruption reporting is deduplicated across UI bundles.
+
+## Remove assumed module identities
+
+Marketplace defaults, tests, and documentation now use generic module contracts and fixtures. The recommendation document starts empty so deployments explicitly choose module UUIDs instead of Cognis assuming any module identity or purpose.

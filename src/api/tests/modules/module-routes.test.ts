@@ -9,7 +9,7 @@ import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 test("module routes list modules", async () => {
     const route = createModuleRoutes({
         list: async () => [
-            { id: "analytics", version: "1.0.0", class: "extension" },
+            { id: "example-module", version: "1.0.0", class: "extension" },
         ],
         enable: async () => ({ moduleId: "x", enabled: true }),
         disable: async () => ({ moduleId: "x", enabled: false }),
@@ -34,7 +34,7 @@ test("module routes list modules", async () => {
 
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(body, /analytics/);
+    assert.match(body, /example-module/);
 });
 
 test("module routes omit Cognis Core from the module catalog", async () => {
@@ -93,7 +93,7 @@ test("module routes log enable operations", async () => {
             },
             end() {},
         } as any,
-        new URL("http://localhost/api/v1/modules/analytics/enable"),
+        new URL("http://localhost/api/v1/modules/example-module/enable"),
     );
 
     assert.equal(status, 200);
@@ -104,9 +104,9 @@ test("module routes log enable operations", async () => {
             meta: {
                 component: "api-modules",
                 method: "POST",
-                path: "/api/v1/modules/analytics/enable",
+                path: "/api/v1/modules/example-module/enable",
                 accountId: "admin-user",
-                moduleId: "analytics",
+                moduleId: "example-module",
                 acknowledgedExternalDisclaimer: false,
             },
         },
@@ -118,24 +118,28 @@ test("module enablement requires explicit acknowledgement of integrity failures"
     const route = createModuleRoutes(
         {
             list: async () => [
-                { id: "whiteboard", uuid: "module-uuid", class: "extension" },
+                {
+                    id: "example-module",
+                    uuid: "module-uuid",
+                    class: "extension",
+                },
             ],
             enable: async () => {
                 enabled = true;
-                return { moduleId: "whiteboard", enabled: true };
+                return { moduleId: "example-module", enabled: true };
             },
         } as any,
         {
             getIntegrityReport: async () => [
                 {
-                    moduleId: "whiteboard",
+                    moduleId: "example-module",
                     file: "ui/app.js",
                     expected: "expected",
                     actual: "actual",
                     status: "mismatch",
                 },
                 {
-                    moduleId: "whiteboard",
+                    moduleId: "example-module",
                     file: "ui/new.js",
                     expected: null,
                     actual: "actual",
@@ -168,7 +172,7 @@ test("module enablement requires explicit acknowledgement of integrity failures"
                     body = payload;
                 },
             } as any,
-            new URL("http://localhost/api/v1/modules/whiteboard/enable"),
+            new URL("http://localhost/api/v1/modules/example-module/enable"),
         );
         return { status, body };
     };
@@ -207,7 +211,7 @@ test("module routes warn when modules are disabled", async () => {
             headers: { authorization: `Bearer ${token}` },
         } as any,
         { writeHead() {}, end() {} } as any,
-        new URL("http://localhost/api/v1/modules/jitsi-meet/disable"),
+        new URL("http://localhost/api/v1/modules/example-module/disable"),
     );
 
     assert.deepEqual(entries, [{ level: "warn", message: "Module disabled." }]);
@@ -219,8 +223,8 @@ test("module routes support github imports", async () => {
         enable: async () => ({ moduleId: "x", enabled: true }),
         disable: async () => ({ moduleId: "x", enabled: false }),
         importFromGithub: async () => ({
-            id: "jitsi-meet",
-            name: "Jitsi Meet",
+            id: "example-module",
+            name: "Example Module",
             version: "1.0.0",
             class: "extension",
             coreApiVersion: "v1",
@@ -239,7 +243,7 @@ test("module routes support github imports", async () => {
             [Symbol.asyncIterator]: async function* () {
                 yield Buffer.from(
                     JSON.stringify({
-                        repositoryUrl: "https://github.com/acme/jitsi-meet",
+                        repositoryUrl: "https://github.com/acme/example-module",
                         versionTag: "v1.0.0",
                     }),
                 );
@@ -258,7 +262,7 @@ test("module routes support github imports", async () => {
 
     assert.equal(handled, true);
     assert.equal(status, 200);
-    assert.match(body, /jitsi-meet/);
+    assert.match(body, /example-module/);
 });
 
 test("module routes run enable tests before enabling modules", async () => {
@@ -289,7 +293,7 @@ test("module routes run enable tests before enabling modules", async () => {
                 headers: { authorization: `Bearer ${token}` },
             } as any,
             { writeHead() {}, end() {} } as any,
-            new URL("http://localhost/api/v1/modules/jitsi-meet/enable"),
+            new URL("http://localhost/api/v1/modules/example-module/enable"),
         ),
         /enable test failed/,
     );
@@ -311,7 +315,7 @@ test("module routes return actionable dependency validation errors", async () =>
             beforeEnable: async () => {
                 throw new ModuleEnableValidationError(
                     "module_dependency_unavailable",
-                    "Module whiteboard requires unavailable gateway file",
+                    "Module example-module has an unavailable dependency",
                 );
             },
         },
@@ -333,7 +337,7 @@ test("module routes return actionable dependency validation errors", async () =>
                 body = payload;
             },
         } as any,
-        new URL("http://localhost/api/v1/modules/whiteboard/enable"),
+        new URL("http://localhost/api/v1/modules/example-module/enable"),
     );
 
     assert.equal(handled, true);
@@ -341,7 +345,7 @@ test("module routes return actionable dependency validation errors", async () =>
     assert.deepEqual(JSON.parse(body), {
         error: {
             code: "module_dependency_unavailable",
-            message: "Module whiteboard requires unavailable gateway file",
+            message: "Module example-module has an unavailable dependency",
         },
     });
 });
@@ -527,7 +531,7 @@ test("module catalog returns persisted discoveries without refreshing sources", 
             listRecommendedModuleUuids: async () => [],
             listCachedModules: async () => [
                 {
-                    id: "jitsi-meet",
+                    id: "example-module",
                     uuid: "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
                 },
             ],
@@ -552,7 +556,7 @@ test("module catalog returns persisted discoveries without refreshing sources", 
         } as any,
         new URL("http://localhost/api/v1/modules/catalog"),
     );
-    assert.match(body, /jitsi-meet/);
+    assert.match(body, /example-module/);
     assert.equal(discoveryCalled, false);
 });
 

@@ -245,12 +245,6 @@
     min-width: 0;
 }
 
-.module-settings-popup-field--boolean {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-}
-
 .popup-summary-list {
     margin: 10px 0;
     padding-left: 18px;
