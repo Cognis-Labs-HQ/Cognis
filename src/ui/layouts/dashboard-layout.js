@@ -608,7 +608,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         if (
             enableAccountEnhancements &&
             (showTopbar || showNavbar) &&
-            !uiCtx.capabilities.get("session:isGuest")?.() === true
+            uiCtx.capabilities.get("session:isGuest")?.() !== true
         ) {
             updateNavbarAvatar().catch((error) => {
                 console.warn(
@@ -664,7 +664,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (
         enableAccountEnhancements &&
         (showTopbar || showNavbar) &&
-        !uiCtx.capabilities.get("session:isGuest")?.() === true
+        uiCtx.capabilities.get("session:isGuest")?.() !== true
     ) {
         bindTopbarActions();
         updateNavbarAvatar().catch((error) => {

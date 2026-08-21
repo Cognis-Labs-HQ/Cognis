@@ -807,7 +807,10 @@ export class MarketplaceServiceBase {
         const results: Array<Record<string, unknown>> = [];
         let nextUrl = initialUrl;
         while (nextUrl) {
-            const response = await fetch(nextUrl, { headers });
+            const response = await fetch(nextUrl, {
+                headers,
+                cache: "no-store",
+            });
             if (!response.ok) {
                 throw new Error(
                     `module_source_discovery_failed:${response.status}`,

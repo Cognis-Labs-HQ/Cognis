@@ -387,8 +387,12 @@ test("module marketplace discovers repository manifests", async () => {
     let moduleDescription = "Shared notes.";
     let mainVersion = "1.0.0";
     let assetBody = "png-one";
-    globalThis.fetch = async (input) =>
-        String(input).includes("/README.md?")
+    const branchRequestCaches: Array<RequestCache | undefined> = [];
+    globalThis.fetch = async (input, init) => {
+        if (String(input).includes("/branches?")) {
+            branchRequestCaches.push(init?.cache);
+        }
+        return String(input).includes("/README.md?")
             ? new Response(
                   JSON.stringify({
                       content: Buffer.from(
@@ -480,6 +484,7 @@ test("module marketplace discovers repository manifests", async () => {
                                 ).toString("base64"),
                             }),
                         );
+    };
     try {
         const modules = await service.discover();
         assert.deepEqual(
@@ -544,6 +549,8 @@ test("module marketplace discovers repository manifests", async () => {
             { name: "main", commit: "abc123", version: "1.0.0" },
             { name: "preview", commit: "def456", version: "1.1.0" },
         ]);
+        assert.ok(branchRequestCaches.length > 0);
+        assert.deepEqual(new Set(branchRequestCaches), new Set(["no-store"]));
         assert.deepEqual(modules[0].releases, [
             { name: "v1.0.0", commit: "tag123", version: "1.0.0" },
         ]);

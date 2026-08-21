@@ -102,6 +102,14 @@ test("dashboard resolves guest sessions through the auth capability", () => {
         "utf8",
     );
     assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(
+        layoutSource,
+        /capabilities\.get\("session:isGuest"\)\?\.\(\) !== true/,
+    );
+    assert.doesNotMatch(
+        layoutSource,
+        /!uiCtx\.capabilities\.get\("session:isGuest"\)/,
+    );
     assert.doesNotMatch(layoutSource, /account-context/);
 });
 
