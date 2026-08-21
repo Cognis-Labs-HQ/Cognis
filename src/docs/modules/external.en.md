@@ -36,7 +36,7 @@ A module may declare `tags` alongside its broader `categories`; both participate
 
 ## Module preferences
 
-A module can expose administrator-editable settings with `ui.preferences`. Each field declares a stable `key`, a localized `labelKey`, an optional `descriptionKey`, a `type` of `boolean`, `string`, or `number`, and an optional matching `default`; `ui.stringsBaseUrl` identifies the module-owned translations. Cognis renders this manifest contract in the installed-module detail view, polls `GET /api/v1/modules/<id>/config`, and submits changes with `PUT` to that same module-owned endpoint. The module validates, applies, and persists its operational configuration. It must not provide a second settings UI or use Cognis user preferences as configuration storage.
+A module can expose administrator-editable settings with `ui.preferences`. Each field declares a stable `key`, a localized `labelKey`, an optional `descriptionKey`, a `type` of `boolean`, `string`, or `number`, an optional matching `default`, and `required: true` when enablement must be blocked until the module-owned config endpoint returns a value; `ui.stringsBaseUrl` identifies the module-owned translations. Cognis renders this manifest contract in the installed-module detail view, polls `GET /api/v1/modules/<id>/config`, and submits changes with `PUT` to that same module-owned endpoint. The module validates, applies, and persists its operational configuration. It must not provide a second settings UI or use Cognis user preferences as configuration storage.
 
 ## Logging and user feedback
 

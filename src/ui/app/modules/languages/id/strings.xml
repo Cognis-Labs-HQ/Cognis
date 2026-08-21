@@ -65,4 +65,5 @@
   <string name="ui.app.modules.credential_validation_warning">Validasi PAT gagal. Periksa log server untuk izin yang diperlukan.</string>
   <string name="ui.app.modules.preferences_title">Pengaturan modul</string>
   <string name="ui.app.modules.preferences_saved">Pengaturan modul disimpan.</string>
+  <string name="ui.app.modules.config_required">Tetapkan semua pengaturan modul yang wajib sebelum mengaktifkan modul ini.</string>
 </resources>

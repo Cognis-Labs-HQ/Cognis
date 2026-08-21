@@ -4,6 +4,36 @@ import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import { extendI18n } from "../../reuse/i18n.js";
 import { loadModuleConfig, saveModuleConfig } from "./api.js";
 
+export function missingRequiredModulePreferenceKeys(definitions, values) {
+    return definitions
+        .filter((definition) => definition.required)
+        .filter((definition) => {
+            const value = values?.[definition.key];
+            if (definition.type === "boolean")
+                return typeof value !== "boolean";
+            if (definition.type === "number") {
+                return typeof value !== "number" || !Number.isFinite(value);
+            }
+            return typeof value !== "string" || value.trim().length === 0;
+        })
+        .map((definition) => definition.key);
+}
+
+export async function assertRequiredModulePreferences(module, message) {
+    const definitions = module.ui?.preferences ?? [];
+    if (!definitions.some((definition) => definition.required)) return;
+    const values = await loadModuleConfig(module.id);
+    const missingKeys = missingRequiredModulePreferenceKeys(
+        definitions,
+        values,
+    );
+    if (!missingKeys.length) return;
+    const error = new Error(message);
+    error.code = "module_config_required";
+    error.missingKeys = missingKeys;
+    throw error;
+}
+
 export function renderModulePreferenceField(
     definition,
     value,
@@ -21,7 +51,7 @@ export function renderModulePreferenceField(
     if (definition.type === "boolean") {
         return `<label class="module-settings-popup-field module-settings-popup-field--boolean" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="checkbox"${value ? " checked" : ""}></label>`;
     }
-    return `<label class="module-settings-popup-field" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="${definition.type === "number" ? "number" : "text"}" value="${escapeHtml(value ?? "")}"></label>`;
+    return `<label class="module-settings-popup-field" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="${definition.type === "number" ? "number" : "text"}" value="${escapeHtml(value ?? "")}"${definition.required ? " required" : ""}></label>`;
 }
 
 export async function openModulePreferences(module, labels) {

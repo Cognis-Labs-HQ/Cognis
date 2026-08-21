@@ -9,7 +9,10 @@ import {
     filterModules,
     renderModuleFilters,
 } from "../app/modules/filters.js";
-import { renderModulePreferenceField } from "../app/modules/preferences.js";
+import {
+    missingRequiredModulePreferenceKeys,
+    renderModulePreferenceField,
+} from "../app/modules/preferences.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const marketplaceStyles = readFileSync(
@@ -691,4 +694,50 @@ test("modules page aborts direct-mount interactions before SPA remount", () => {
     assert.match(source, /replaceMountScope\(pageMountController, signal\)/);
     assert.match(source, /bindInteractions\(root, mountSignal\)/);
     assert.match(source, /signal:\s*mountSignal/);
+});
+
+test("required module configuration distinguishes unset values from valid false values", () => {
+    const definitions = [
+        { key: "instanceUrl", type: "string", required: true },
+        { key: "meetingPrefix", type: "string" },
+        { key: "recording", type: "boolean", required: true },
+        { key: "capacity", type: "number", required: true },
+    ];
+    assert.deepEqual(
+        missingRequiredModulePreferenceKeys(definitions, {
+            instanceUrl: " ",
+            recording: false,
+            capacity: Number.NaN,
+        }),
+        ["instanceUrl", "capacity"],
+    );
+    assert.deepEqual(
+        missingRequiredModulePreferenceKeys(definitions, {
+            instanceUrl: "https://meet.example.com",
+            recording: false,
+            capacity: 0,
+        }),
+        [],
+    );
+    assert.match(
+        renderModulePreferenceField(
+            {
+                key: "instanceUrl",
+                type: "string",
+                label: "Instance URL",
+                required: true,
+            },
+            "",
+            "Information",
+        ),
+        / required>/,
+    );
+    const marketplaceSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(
+        marketplaceSource,
+        /action === "enable"[\s\S]*assertRequiredModulePreferences/,
+    );
 });

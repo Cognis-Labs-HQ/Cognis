@@ -47,6 +47,8 @@ export interface ModuleManifest {
             descriptionKey?: string;
             type: "boolean" | "string" | "number";
             default?: boolean | string | number;
+            /** Prevents enablement until the module-owned config supplies a value. */
+            required?: boolean;
         }>;
         stringsBaseUrl?: string;
     };

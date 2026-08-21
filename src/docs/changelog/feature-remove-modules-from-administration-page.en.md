@@ -429,3 +429,7 @@ The profile avatar capability now loads its own availability stylesheet before h
 ## Retry browser capabilities after session authentication
 
 Direct and SPA page mounts now reload host UI providers after the authentication flow establishes the browser session. Cookie-restored pages no longer continue into module mounts after an early unauthenticated provider request, and the navbar loader capability now invokes the navbar plugin loader rather than the provider-only loader.
+
+## Require module configuration before enablement
+
+Module preference descriptors can now declare `required: true`. The Modules page reads the module-owned `/config` endpoint before enabling and blocks activation while any required string, number, or boolean value is unset; required text and number controls are also marked for accessible form validation.

@@ -65,4 +65,5 @@
   <string name="ui.app.modules.credential_validation_warning">Die PAT-Prüfung ist fehlgeschlagen. Die erforderlichen Berechtigungen stehen im Serverprotokoll.</string>
   <string name="ui.app.modules.preferences_title">Moduleinstellungen</string>
   <string name="ui.app.modules.preferences_saved">Moduleinstellungen gespeichert.</string>
+  <string name="ui.app.modules.config_required">Legen Sie vor der Aktivierung dieses Moduls alle erforderlichen Moduleinstellungen fest.</string>
 </resources>

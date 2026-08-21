@@ -46,7 +46,10 @@ import {
     hasModuleUpdate,
     moduleChangeDirection,
 } from "./presentation.js";
-import { openModulePreferences } from "./preferences.js";
+import {
+    assertRequiredModulePreferences,
+    openModulePreferences,
+} from "./preferences.js";
 
 let i18n;
 let composer;
@@ -475,6 +478,12 @@ async function selectReleaseChannel(module) {
 
 async function runLifecycleAction(module, action) {
     if (module.restartRequired) return;
+    if (action === "enable") {
+        await assertRequiredModulePreferences(
+            module,
+            i18n.t("ui.app.modules.config_required"),
+        );
+    }
     if (
         ["install", "update", "force-update", "change-channel"].includes(action)
     ) {

@@ -429,3 +429,7 @@ Kapabilitas avatar profil kini memuat stylesheet ketersediaannya sendiri sebelum
 ## Mencoba ulang kapabilitas browser setelah autentikasi sesi
 
 Pemuatan halaman langsung dan SPA kini memuat ulang penyedia UI host setelah alur autentikasi membentuk sesi browser. Halaman yang dipulihkan melalui cookie tidak lagi melanjutkan mount modul setelah permintaan penyedia awal yang belum terautentikasi, dan kapabilitas pemuat navbar kini menjalankan pemuat plugin navbar, bukan hanya pemuat penyedia.
+
+## Mewajibkan konfigurasi modul sebelum pengaktifan
+
+Deskriptor pengaturan modul kini dapat mendeklarasikan `required: true`. Halaman Modul membaca endpoint `/config` milik modul sebelum mengaktifkan dan memblokir pengaktifan selama nilai string, angka, atau boolean yang wajib belum ditetapkan; kontrol teks dan angka yang wajib juga ditandai untuk validasi formulir yang aksesibel.

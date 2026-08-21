@@ -2,7 +2,7 @@
     "id": "quota",
     "uuid": "c67ae40b-970c-5fc6-ba8c-06e512ffac80",
     "name": "File Storage Quotas",
-    "version": "1.0.13",
+    "version": "1.0.14",
     "publisher": "Cognis Labs HQ",
     "locked": true
 }

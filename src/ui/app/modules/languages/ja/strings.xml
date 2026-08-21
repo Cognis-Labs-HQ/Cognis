@@ -65,4 +65,5 @@
   <string name="ui.app.modules.credential_validation_warning">PAT の検証に失敗しました。必要な権限はサーバーログで確認してください。</string>
   <string name="ui.app.modules.preferences_title">モジュール設定</string>
   <string name="ui.app.modules.preferences_saved">モジュール設定を保存しました。</string>
+  <string name="ui.app.modules.config_required">このモジュールを有効にする前に、必須のモジュール設定をすべて指定してください。</string>
 </resources>

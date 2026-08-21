@@ -429,3 +429,7 @@ Die Profilavatar-Capability lädt nun vor der Hydrierung ihr eigenes Verfügbark
 ## Browser-Capabilities nach Sitzungsauthentifizierung erneut laden
 
 Direkte und SPA-Seitenaufrufe laden Host-UI-Provider nun erneut, nachdem der Authentifizierungsablauf die Browsersitzung hergestellt hat. Über Cookies wiederhergestellte Seiten setzen den Modul-Mount nicht mehr nach einer frühen, nicht authentifizierten Provider-Anfrage fort; außerdem ruft die Navbar-Loader-Capability jetzt tatsächlich den Navbar-Plugin-Loader statt nur den Provider-Loader auf.
+
+## Modulkonfiguration vor der Aktivierung verlangen
+
+Beschreibungen von Moduleinstellungen können nun `required: true` deklarieren. Die Modulseite liest vor der Aktivierung den moduleigenen `/config`-Endpunkt und blockiert sie, solange ein erforderlicher Zeichenfolgen-, Zahlen- oder boolescher Wert fehlt; erforderliche Text- und Zahlenfelder werden außerdem für die barrierefreie Formularvalidierung markiert.
