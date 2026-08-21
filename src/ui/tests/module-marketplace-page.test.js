@@ -41,6 +41,10 @@ const modulePreferencesSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/preferences.js"),
     "utf8",
 );
+const sourceSettingsSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/source-settings.js"),
+    "utf8",
+);
 
 test("modules navigation derives its width from its content", () => {
     assert.match(
@@ -286,15 +290,18 @@ test("module marketplace identifies immutable trusted sources", () => {
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(source, /source\.trusted/);
-    assert.match(source, /ui\.app\.modules\.default_source/);
-    assert.match(source, /const locked = source\?\.trusted/);
-    assert.match(source, /const sourceValues = selectedSource\?\.trusted/);
-    assert.match(source, /const STORED_PAT_MASK = "\*\*\*\*"/);
-    assert.match(source, /values\.token !== STORED_PAT_MASK/);
-    assert.match(source, /await validateModuleSourceCredential/);
-    assert.match(source, /if \(!validation\.valid\)/);
-    assert.match(source, /credential_validation_warning/);
+    assert.match(sourceSettingsSource, /source\.trusted/);
+    assert.match(sourceSettingsSource, /ui\.app\.modules\.default_source/);
+    assert.match(sourceSettingsSource, /const locked = source\?\.trusted/);
+    assert.match(
+        sourceSettingsSource,
+        /const sourceValues = selectedSource\?\.trusted/,
+    );
+    assert.match(sourceSettingsSource, /const STORED_PAT_MASK = "\*\*\*\*"/);
+    assert.match(sourceSettingsSource, /values\.token !== STORED_PAT_MASK/);
+    assert.match(sourceSettingsSource, /await validateModuleSourceCredential/);
+    assert.match(sourceSettingsSource, /if \(!validation\.valid\)/);
+    assert.match(sourceSettingsSource, /credential_validation_warning/);
 });
 
 test("recommended modules include the published Cognis HQ modules", () => {
@@ -429,14 +436,14 @@ test("module sources use an independent list and editor", () => {
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(source, /function renderSourceManager/);
-    assert.match(source, /function renderSourceForm/);
-    assert.match(source, /module-settings-sources/);
-    assert.match(source, /id: "editor"/);
-    assert.doesNotMatch(source, /id="module-source-settings"/);
-    assert.match(source, /source\.trusted/);
-    assert.match(source, /data-edit-source/);
-    assert.match(source, /data-remove-source/);
+    assert.match(sourceSettingsSource, /function renderSourceManager/);
+    assert.match(sourceSettingsSource, /function renderSourceForm/);
+    assert.match(sourceSettingsSource, /module-settings-sources/);
+    assert.match(sourceSettingsSource, /id: "editor"/);
+    assert.doesNotMatch(sourceSettingsSource, /id="module-source-settings"/);
+    assert.match(sourceSettingsSource, /source\.trusted/);
+    assert.match(sourceSettingsSource, /data-edit-source/);
+    assert.match(sourceSettingsSource, /data-remove-source/);
 });
 
 test("module marketplace opens repository readmes in a full detail view", () => {
@@ -536,8 +543,12 @@ test("module marketplace uses curated recommendations and compact details", () =
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(source, /loadModuleMarketplaceSettings/);
-    assert.match(source, /recommendedModulesUrl/);
+    assert.match(sourceSettingsSource, /loadModuleMarketplaceSettings/);
+    assert.match(sourceSettingsSource, /recommendedModulesUrl/);
+    assert.match(sourceSettingsSource, /createFormBuilder/);
+    assert.match(sourceSettingsSource, /name: "scanPrivateRepos"/);
+    assert.match(sourceSettingsSource, /slider: true/);
+    assert.match(sourceSettingsSource, /setFieldRequired\(\s*"token"/);
     assert.match(source, /id="module-marketplace-settings"/);
     assert.match(source, /module-icon-settings/);
     assert.match(source, /module-icon-refresh/);

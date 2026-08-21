@@ -25,7 +25,11 @@ test("module marketplace persists source metadata without PAT values", async () 
         path.join(root, "sources.json"),
         path.join(root, "modules"),
     );
-    await service.saveSource({ ...source, credentialId: "module-source:pat" });
+    await service.saveSource({
+        ...source,
+        credentialId: "module-source:pat",
+        scanPrivateRepos: true,
+    });
     assert.deepEqual(await service.listSources(), [
         {
             uuid: "178271bf-5631-40df-82df-967f8a37a020",
@@ -37,7 +41,12 @@ test("module marketplace persists source metadata without PAT values", async () 
             trusted: true,
             credentialId: undefined,
         },
-        { ...source, credentialId: "module-source:pat", trusted: false },
+        {
+            ...source,
+            credentialId: "module-source:pat",
+            scanPrivateRepos: true,
+            trusted: false,
+        },
     ]);
 });
 

@@ -77,4 +77,5 @@
   <string name="ui.app.modules.uninstall_title">Modul deinstallieren</string>
   <string name="ui.app.modules.uninstall_warning">Bei der Deinstallation wird die gespeicherte Modulkonfiguration immer gelöscht. Nach einer erneuten Installation muss das Modul neu eingerichtet werden.</string>
   <string name="ui.app.modules.uninstall_delete_content">Zusätzlich Modulinhalte wie Besprechungen und Dateien dauerhaft löschen</string>
+  <string name="ui.app.modules.scan_private_repos">Private Repositorys durchsuchen</string>
 </resources>

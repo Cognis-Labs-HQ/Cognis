@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { stat } from "node:fs/promises";
 import path from "node:path";
+export { uiStaticPath } from "./static-path.js";
 import type { ModuleManifest, ModuleRuntimeGateway } from "@cognis/core";
 import type { RouteContext } from "../../reuse/route-context.js";
 import {

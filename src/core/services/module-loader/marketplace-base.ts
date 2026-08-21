@@ -65,7 +65,15 @@ export class MarketplaceServiceBase {
             source.provider === "github"
                 ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=100`
                 : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=100&include_subgroups=true`;
-        const repositories = await this.fetchPaginated(endpoint, headers);
+        const repositories = (
+            await this.fetchPaginated(endpoint, headers)
+        ).filter(
+            (repository) =>
+                source.scanPrivateRepos === true ||
+                (repository.private !== true &&
+                    repository.visibility !== "private" &&
+                    repository.visibility !== "internal"),
+        );
         const candidates = await Promise.all(
             repositories.map(async (repository) => {
                 const cloneUrl = String(
@@ -939,7 +947,12 @@ export class MarketplaceServiceBase {
         if (!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(source.uuid))
             throw new Error("invalid_source_uuid");
         const url = new URL(source.baseUrl);
-        if (url.protocol !== "https:" || !source.namespace.trim())
+        if (
+            url.protocol !== "https:" ||
+            !source.namespace.trim() ||
+            (source.scanPrivateRepos !== undefined &&
+                typeof source.scanPrivateRepos !== "boolean")
+        )
             throw new Error("invalid_module_source");
     }
 

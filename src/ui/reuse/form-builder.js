@@ -48,6 +48,7 @@
  *     label?: string,
  *     type?: 'text'|'email'|'password'|'number'|'url'|'select'|'textarea'|'checkbox',
  *     secret?: boolean,
+ *     slider?: boolean,
  *     required?: boolean,
  *     disabled?: boolean,
  *     value?: string,
@@ -69,7 +70,7 @@
  *     infoTooltip?: { text: string, ariaLabel?: string, id?: string },
  *   }>,
  * }} options
- * @returns {{ render: () => string, attach: (formElement: HTMLFormElement, attachOptions?: { signal?: AbortSignal }) => { validateField: (fieldName: string, forceTouched?: boolean) => boolean, validateAll: (forceTouched?: boolean) => boolean, getValues: () => Record<string, string>, detach: () => void } }}
+ * @returns {{ render: () => string, attach: (formElement: HTMLFormElement, attachOptions?: { signal?: AbortSignal }) => { validateField: (fieldName: string, forceTouched?: boolean) => boolean, validateAll: (forceTouched?: boolean) => boolean, setFieldRequired: (fieldName: string, required: boolean) => boolean, getValues: () => Record<string, string>, detach: () => void } }}
  */
 
 import {
@@ -243,7 +244,9 @@ export function createFormBuilder(ctx, options) {
         />`;
         const inputMarkup = fieldConfig.secret
             ? `<span class="secret-visibility-control">${plainInputMarkup}<button type="button" class="secret-visibility-toggle" data-secret-visibility-toggle="${escapeHtml(inputId)}" aria-controls="${escapeHtml(inputId)}" aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.toggle_secret_visibility"))}"><span class="secret-visibility-eye" aria-hidden="true"></span></button></span>`
-            : plainInputMarkup;
+            : fieldConfig.slider && type === "checkbox"
+              ? `<span class="switch">${plainInputMarkup}<span class="slider"></span></span>`
+              : plainInputMarkup;
         const counterMarkup = hasMaxCharacters
             ? `<span class="form-builder-char-counter" data-form-builder-char-counter="${escapeHtml(fieldName)}">${escapeHtml(String(value.length))} / ${escapeHtml(String(maxCharacters))}</span>`
             : "";
@@ -483,6 +486,35 @@ export function createFormBuilder(ctx, options) {
             );
         }
 
+        function setFieldRequired(fieldName, required) {
+            const fieldConfig = fields.find(
+                (entry) => entry.name === fieldName,
+            );
+            const fieldInput = formElement.elements.namedItem(fieldName);
+            if (!fieldConfig || !(fieldInput instanceof HTMLElement)) {
+                return false;
+            }
+            fieldConfig.required = required === true;
+            fieldInput.toggleAttribute("required", fieldConfig.required);
+            const label = formElement.querySelector(
+                `[data-form-builder-field="${CSS.escape(fieldName)}"] .form-builder-label-text`,
+            );
+            const existingFlag = label?.querySelector(
+                "[data-form-builder-required]",
+            );
+            if (fieldConfig.required && !existingFlag) {
+                const requiredFlag = document.createElement("span");
+                requiredFlag.className = "form-builder-required-flag";
+                requiredFlag.dataset.formBuilderRequired = fieldName;
+                requiredFlag.setAttribute("aria-hidden", "true");
+                requiredFlag.textContent = " *";
+                label?.appendChild(requiredFlag);
+            } else if (!fieldConfig.required) {
+                existingFlag?.remove();
+            }
+            return validateField(fieldName, false);
+        }
+
         const listenerOptions = attachOptions.signal
             ? { signal: attachOptions.signal }
             : undefined;
@@ -539,6 +571,7 @@ export function createFormBuilder(ctx, options) {
         return {
             validateField,
             validateAll,
+            setFieldRequired,
             getValues: () => createFieldValues(formElement),
             detach: detachSecretVisibility,
         };

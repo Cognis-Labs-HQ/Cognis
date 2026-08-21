@@ -477,3 +477,7 @@ Authentifizierte Marketplace-Assets werden jetzt über den API-Client statt übe
 ## Marketplace-Assets in der SPA stabilisieren
 
 Geschützte Marketplace-Grafiken werden niemals direkt Browser-Medienelementen zugewiesen. Die SPA-Navigation bricht nun veraltetes Laden von Assets ab, unterdrückt Autorisierungsereignisse untergeordneter Assets und widerruft verspätete Objekt-URLs, ohne Laufzeitfehler-Popups auszulösen.
+
+## Modulquellen-Steuerung vervollständigen
+
+Die Einstellungen für Modulquellen verwenden jetzt den gemeinsamen Formulargenerator und bieten einen Schieberegler zum Durchsuchen privater Repositories, der ein PAT erfordert. Änderungen des Veröffentlichungskanals verwechseln den temporären Checkout nicht mehr mit einem ID-Konflikt, und Cognis stellt die Standardempfehlungsliste mit den UUIDs der Module Jitsi Meet, Nextcloud Whiteboard und Japanisch bereit.

@@ -37,6 +37,7 @@ export interface ModuleSource {
     baseUrl: string;
     homepage?: string;
     credentialId?: string;
+    scanPrivateRepos?: boolean;
     trusted?: boolean;
 }
 
@@ -163,6 +164,9 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                     credentialId:
                         trustedOverride?.credentialId ??
                         credentialBindings[DEFAULT_TRUSTED_MODULE_SOURCE.uuid],
+                    ...(trustedOverride?.scanPrivateRepos === true
+                        ? { scanPrivateRepos: true }
+                        : {}),
                 },
                 ...stored.filter(
                     (source) =>
@@ -191,6 +195,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             source = {
                 ...DEFAULT_TRUSTED_MODULE_SOURCE,
                 credentialId: source.credentialId,
+                scanPrivateRepos: source.scanPrivateRepos === true,
             };
         } else {
             source = { ...source, trusted: false };
@@ -528,7 +533,13 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 withFileTypes: true,
             });
             for (const entry of installedEntries) {
-                if (!entry.isDirectory() || entry.name === module.uuid)
+                if (
+                    !entry.isDirectory() ||
+                    entry.name === module.uuid ||
+                    !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+                        entry.name,
+                    )
+                )
                     continue;
                 const installedManifest = await readFile(
                     path.join(this.installRoot, entry.name, "manifest.json"),

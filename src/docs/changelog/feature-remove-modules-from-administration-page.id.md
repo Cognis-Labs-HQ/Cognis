@@ -477,3 +477,7 @@ Aset marketplace terautentikasi kini dimuat melalui klien API, bukan permintaan 
 ## Stabilkan aset marketplace SPA
 
 Ilustrasi marketplace terlindungi tidak pernah ditetapkan langsung ke elemen media browser. Navigasi SPA kini membatalkan pemuatan aset yang usang, menekan peristiwa otorisasi aset turunan, dan mencabut URL objek yang terlambat tanpa memunculkan popup kesalahan runtime.
+
+## Lengkapi kontrol sumber modul
+
+Pengaturan sumber modul kini memakai pembuat formulir bersama dan menyediakan slider Pindai Repositori Privat yang mewajibkan PAT. Perubahan kanal rilis tidak lagi menganggap checkout sementara sebagai konflik ID, dan Cognis menyajikan daftar rekomendasi bawaan berisi UUID modul Jitsi Meet, Nextcloud Whiteboard, dan bahasa Jepang.

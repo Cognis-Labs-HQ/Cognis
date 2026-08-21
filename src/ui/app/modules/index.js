@@ -23,14 +23,9 @@ import {
     loadAvailableModules,
     loadCachedModules,
     loadInstalledModules,
-    loadModuleMarketplaceSettings,
     loadModuleSources,
-    removeModuleSource,
-    saveModuleSource,
-    saveModuleMarketplaceSettings,
     setModuleEnabled,
     uninstallModule,
-    validateModuleSourceCredential,
 } from "./api.js";
 import {
     activateModule,
@@ -53,6 +48,7 @@ import {
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
 import { confirmModuleUninstall } from "./uninstall.js";
+import { openMarketplaceSettings } from "./source-settings.js";
 import {
     clearAuthenticatedModuleAssets,
     loadAuthenticatedModuleAssets,
@@ -74,7 +70,6 @@ const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
-const STORED_PAT_MASK = "****";
 
 function renderAvailableVersion(module) {
     if (!module.installed) return "";
@@ -256,180 +251,6 @@ function renderStore() {
     return `<section class="module-store-results">
         ${selectedModule ? renderModuleDetails(selectedModule) : `<div class="module-store-toolbar"><h2>${escapeHtml(i18n.t("ui.reuse.modules"))}</h2><div class="module-store-toolbar-actions"><button id="module-source-refresh" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.refresh"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.refresh"))}"><span class="module-icon module-icon-refresh" aria-hidden="true"></span></button><button id="module-marketplace-settings" class="btn-neutral module-icon-button" type="button" title="${escapeHtml(i18n.t("ui.reuse.settings"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}"><span class="module-icon module-icon-settings" aria-hidden="true"></span></button></div></div><div class="module-store-grid">${visibleModules().map(renderCard).join("") || `<p>${escapeHtml(i18n.t("ui.app.modules.empty"))}</p>`}</div>`}
       </section>`;
-}
-
-function renderSourceManager() {
-    const rows = sources
-        .map((source) => {
-            const controls = source.trusted
-                ? `<span class="module-source-actions"><span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.default_source"))}</span><button class="btn-neutral" type="button" data-edit-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button></span>`
-                : `<span class="module-source-actions"><button class="btn-neutral" type="button" data-edit-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.edit"))}</button><button class="btn-cancel" type="button" data-remove-source="${escapeHtml(source.uuid)}">${escapeHtml(i18n.t("ui.reuse.remove"))}</button></span>`;
-            return `<li><span class="module-source-summary"><strong>${escapeHtml(source.name)}</strong><small>${escapeHtml(source.homepage ?? `${source.baseUrl}/${source.namespace}`)}</small></span>${controls}</li>`;
-        })
-        .join("");
-    return `<div class="module-source-manager"><p>${escapeHtml(i18n.t("ui.app.modules.sources_description"))}</p><ul class="module-source-list">${rows}</ul><button type="button" class="btn-confirm module-source-add" data-add-source>${escapeHtml(i18n.t("ui.app.modules.add_source"))}</button></div>`;
-}
-
-function renderSourceForm(source) {
-    const locked = source?.trusted ? " disabled" : "";
-    const tokenValue = source?.credentialId ? STORED_PAT_MASK : "";
-    return `<form id="module-source-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.reuse.name"))}</span><input name="name" value="${escapeHtml(source?.name ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.provider"))}</span><select name="provider"${locked}><option value="github"${source?.provider === "github" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.github"))}</option><option value="gitlab"${source?.provider === "gitlab" ? " selected" : ""}>${escapeHtml(i18n.t("ui.app.modules.gitlab"))}</option></select></label><label><span>${escapeHtml(i18n.t("ui.app.modules.namespace"))}</span><input name="namespace" value="${escapeHtml(source?.namespace ?? "")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.base_url"))}</span><input name="baseUrl" type="url" value="${escapeHtml(source?.baseUrl ?? "https://api.github.com")}" required${locked}></label><label><span>${escapeHtml(i18n.t("ui.app.modules.pat"))}</span><input name="token" type="password" autocomplete="off" value="${tokenValue}"></label></form>`;
-}
-
-async function openMarketplaceSettings(initialPage = "settings") {
-    sources = await loadModuleSources();
-    let settings = await loadModuleMarketplaceSettings();
-    let selectedSource = null;
-    await openPopup({
-        title: i18n.t("ui.reuse.settings"),
-        maxWidth: "760px",
-        pages: [
-            {
-                id: "settings",
-                title: i18n.t("ui.reuse.settings"),
-                body: () =>
-                    `<form id="module-marketplace-settings-form" class="module-source-form"><label><span>${escapeHtml(i18n.t("ui.app.modules.recommended_url"))}</span><input name="recommendedModulesUrl" type="url" value="${escapeHtml(settings.recommendedModulesUrl)}" required></label></form><section class="module-settings-sources"><h3>${escapeHtml(i18n.t("ui.app.modules.sources"))}</h3>${renderSourceManager()}</section>`,
-                actions: [
-                    {
-                        id: "save-settings",
-                        label: i18n.t("ui.reuse.save"),
-                        variant: "confirm",
-                    },
-                ],
-            },
-            {
-                id: "editor",
-                title: i18n.t("ui.app.modules.source_details"),
-                body: () => renderSourceForm(selectedSource),
-                actions: [
-                    {
-                        id: "back",
-                        label: i18n.t("ui.reuse.back"),
-                        variant: "neutral",
-                    },
-                    {
-                        id: "save",
-                        label: i18n.t("ui.reuse.save"),
-                        variant: "confirm",
-                    },
-                ],
-            },
-        ],
-        initialPageId: initialPage,
-        onOpen: (overlay, _close, api) => {
-            if (api.pageId !== "settings") return;
-            overlay
-                .querySelector("[data-add-source]")
-                ?.addEventListener("click", () => {
-                    selectedSource = null;
-                    api.setPage("editor");
-                });
-            overlay.querySelectorAll("[data-edit-source]").forEach((button) =>
-                button.addEventListener("click", () => {
-                    selectedSource = sources.find(
-                        (source) => source.uuid === button.dataset.editSource,
-                    );
-                    api.setPage("editor");
-                }),
-            );
-            overlay.querySelectorAll("[data-remove-source]").forEach((button) =>
-                button.addEventListener("click", async () => {
-                    const result = await openPopup({
-                        title: i18n.t("ui.app.modules.remove_source"),
-                        body: `<p>${escapeHtml(i18n.t("ui.app.modules.remove_source_confirm"))}</p>`,
-                        actions: [
-                            {
-                                id: "remove",
-                                label: i18n.t("ui.reuse.remove"),
-                                variant: "cancel",
-                            },
-                            {
-                                id: "cancel",
-                                label: i18n.t("ui.reuse.cancel"),
-                                variant: "neutral",
-                            },
-                        ],
-                    });
-                    if (result !== "remove") return;
-                    await removeModuleSource(button.dataset.removeSource);
-                    sources = await loadModuleSources();
-                    api.setPage("settings");
-                }),
-            );
-        },
-        onAction: async (action, overlay, api) => {
-            if (action === "save-settings") {
-                const form = overlay.querySelector(
-                    "#module-marketplace-settings-form",
-                );
-                if (!form.reportValidity()) return false;
-                settings = await saveModuleMarketplaceSettings(
-                    Object.fromEntries(new FormData(form)),
-                );
-                showToast(i18n.t("ui.app.modules.settings_saved"), {
-                    type: "success",
-                });
-                return true;
-            }
-            if (action === "back") {
-                api.setPage("settings");
-                return false;
-            }
-            if (action !== "save") return true;
-            const form = overlay.querySelector("#module-source-form");
-            if (!form.reportValidity()) return false;
-            const values = Object.fromEntries(new FormData(form));
-            const sourceValues = selectedSource?.trusted
-                ? selectedSource
-                : values;
-            const uuid = selectedSource?.uuid ?? crypto.randomUUID();
-            const tokenChanged =
-                values.token && values.token !== STORED_PAT_MASK;
-            const credentialId = tokenChanged
-                ? (selectedSource?.credentialId ?? `module-source:${uuid}:pat`)
-                : selectedSource?.credentialId;
-            if (tokenChanged) {
-                const validation = await validateModuleSourceCredential(
-                    {
-                        uuid,
-                        name: sourceValues.name,
-                        provider: sourceValues.provider,
-                        namespace: sourceValues.namespace,
-                        baseUrl: sourceValues.baseUrl,
-                    },
-                    values.token,
-                );
-                if (!validation.valid) {
-                    showToast(
-                        i18n.t("ui.app.modules.credential_validation_warning"),
-                        { type: "warning" },
-                    );
-                    return false;
-                }
-                const scope = uiCtx.capabilities.get("keyring:forComponent")?.(
-                    i18n.t("ui.app.modules.keyring_component"),
-                );
-                await scope?.set(credentialId, values.token, {
-                    label: sourceValues.name,
-                    source: sourceValues.provider,
-                });
-            }
-            await saveModuleSource({
-                uuid,
-                name: sourceValues.name,
-                provider: sourceValues.provider,
-                namespace: sourceValues.namespace,
-                baseUrl: sourceValues.baseUrl,
-                credentialId,
-            });
-            sources = await loadModuleSources();
-            showToast(i18n.t("ui.app.modules.source_saved"), {
-                type: "success",
-            });
-            api.setPage("settings");
-            return false;
-        },
-    });
 }
 
 async function selectReleaseChannel(module) {
@@ -785,7 +606,7 @@ function bindInteractions(root, signal) {
                 return;
             }
             if (target.id === "module-marketplace-settings") {
-                await openMarketplaceSettings();
+                sources = await openMarketplaceSettings(i18n);
                 return;
             }
             if (target.id === "module-source-refresh") {

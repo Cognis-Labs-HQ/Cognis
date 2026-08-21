@@ -30,10 +30,10 @@ import { serveProviders } from "./capability-providers.js";
 import {
     resolveModuleRoot,
     serveDeclaredModuleStrings,
+    uiStaticPath as staticPath,
 } from "./module-string-assets.js";
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
-const PUBLIC_ROOT = path.join(UI_ROOT, "public");
 const PRODUCTION_UI_ROOT = path.resolve(
     process.env.COGNIS_UI_DIST_ROOT ?? path.join(process.cwd(), "dist", "ui"),
 );
@@ -41,7 +41,7 @@ const PRODUCTION_PUBLIC_ROOT = path.join(PRODUCTION_UI_ROOT, "public");
 const IS_PRODUCTION_BUILD = Boolean(process.env.COGNIS_UI_ASSET_MANIFEST);
 const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
     ? PRODUCTION_PUBLIC_ROOT
-    : PUBLIC_ROOT;
+    : path.join(UI_ROOT, "public");
 const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
@@ -981,10 +981,7 @@ export function createUiRoutes(
             return true;
         }
 
-        const filePath =
-            relative.startsWith("assets/") || relative.startsWith("templates/")
-                ? path.join(SERVED_PUBLIC_ROOT, relative)
-                : path.join(STATIC_ROOT, relative);
+        const filePath = staticPath(relative, STATIC_ROOT, SERVED_PUBLIC_ROOT);
 
         await serveVersionedAsset(
             req,

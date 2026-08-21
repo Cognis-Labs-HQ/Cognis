@@ -77,4 +77,5 @@
   <string name="ui.app.modules.uninstall_title">Uninstall module</string>
   <string name="ui.app.modules.uninstall_warning">Uninstalling always clears this module’s saved configuration. The module will require setup again if reinstalled.</string>
   <string name="ui.app.modules.uninstall_delete_content">Also permanently delete module content, such as meetings and files</string>
+  <string name="ui.app.modules.scan_private_repos">Scan Private Repositories</string>
 </resources>

@@ -477,3 +477,7 @@ Authenticated marketplace assets now load through the API client instead of unau
 ## Stabilize SPA marketplace assets
 
 Protected marketplace artwork is never assigned directly to browser media elements. SPA navigation now cancels stale asset hydration, suppresses subordinate asset authorization events, and revokes late object URLs without raising runtime error popups.
+
+## Complete module source controls
+
+Module source settings now use the shared form builder and offer a Scan Private Repositories slider that requires a PAT. Release-channel changes no longer mistake their temporary checkout for an ID collision, and Cognis serves the default recommendation list with the Jitsi Meet, Nextcloud Whiteboard, and Japanese module UUIDs.
