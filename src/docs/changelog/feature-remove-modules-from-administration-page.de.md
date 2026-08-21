@@ -421,3 +421,7 @@ Die Katalogaktualisierung vergleicht nun den installierten Commit und die Versio
 ## Capability- und Navbar-Aktualisierungszyklen stabilisieren
 
 Authentifizierte vollständige Aktualisierungen laden Capability-Provider nun über das Sitzungscookie vor dem Mounten von Modulen, während visuelle Navbar-Plugins auf die Dashboard-Shell warten. Benannte Browser-Capabilities wie `share:openPopup` werden unabhängig vom Präfix über die UI-Registry aufgelöst; Messages und Shares erholen sich nach frühen Provider-Imports zuverlässig.
+
+## Profilpräsenz gestalten und Modulwechsel sofort übernehmen
+
+Die Profilavatar-Capability lädt nun vor der Hydrierung ihr eigenes Verfügbarkeits-Stylesheet. Dadurch bleiben Präsenzkarten in Modulen korrekt begrenzt und ihre Statusanzeigen sichtbar. Vor der Validierung eines Ersatzes aktualisiert die Modulaktivierung außerdem den installierten Laufzeitstatus, sodass Deinstallation, Neuinstallation und Aktivierung keinen Serverneustart mehr erfordern.

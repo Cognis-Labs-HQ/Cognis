@@ -50,8 +50,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.15` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.14` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.12` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.64` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.69` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.65` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.70` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -86,7 +86,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi    |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.73` |
+| API Server | `src/api/` | `0.3.74` |
 
 ## Peralatan
 

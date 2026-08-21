@@ -330,6 +330,7 @@ export function buildServer(deps: ApiDependencies) {
                 );
             },
             beforeEnable: async (moduleId) => {
+                await deps.moduleRuntimeGateway.refresh?.();
                 const manifest = (
                     await deps.moduleRuntimeGateway.listManifests()
                 ).find((entry) => entry.id === moduleId);

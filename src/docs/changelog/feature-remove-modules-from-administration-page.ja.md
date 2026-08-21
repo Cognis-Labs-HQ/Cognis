@@ -421,3 +421,7 @@ Modules ページは SPA の再マウント前に、以前の直接読み込み�
 ## Capability と Navbar の更新ライフサイクルを安定化
 
 認証済みのハード更新では、モジュールのマウント前にセッション Cookie を使って Capability Provider を読み込み、表示用 Navbar Plugin は Dashboard Shell の生成後に読み込むようになりました。`share:openPopup` のような名前付きブラウザー Capability は接頭辞に依存せず UI Registry で解決され、Messages と Shares は Provider が先にインポートされても正しく復旧します。
+
+## プロフィールのプレゼンス表示とモジュール再導入を安定化
+
+プロフィールアバター Capability は Hydration 前に専用の Availability Stylesheet を読み込むようになり、モジュール内のプレゼンスカードのサイズ制約とステータス表示が復元されます。また、モジュール有効化時に置換後の検証より先にインストール済み Runtime 状態を更新するため、アンインストール、再インストール、有効化の後にサーバーを再起動する必要がなくなりました。

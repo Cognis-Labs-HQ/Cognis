@@ -421,3 +421,7 @@ Catalog refresh now compares the installed commit and version with the selected 
 ## Stabilize capability and navbar refresh lifecycles
 
 Authenticated hard refreshes now load capability providers through the session cookie before module mounts, while visual navbar plugins wait until the dashboard shell exists. Named browser capabilities such as `share:openPopup` resolve through the UI registry regardless of prefix, and Messages and Shares recover cleanly after early provider imports.
+
+## Keep profile presence styled and module replacement live
+
+The profile avatar capability now loads its own availability stylesheet before hydration, keeping module-owned presence cards constrained and restoring their status indicators. Module enablement refreshes installed runtime state before validating the replacement, so uninstalling, reinstalling, and enabling a module no longer requires a server restart.

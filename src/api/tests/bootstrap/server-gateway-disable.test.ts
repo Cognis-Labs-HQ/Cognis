@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -41,6 +42,22 @@ test("module enable validation resolves browser and server capabilities", () => 
         (error) =>
             (error as { code?: string }).code ===
             "module_capability_unavailable",
+    );
+});
+
+test("module enablement refreshes installed runtime state before validation", () => {
+    const source = readFileSync(
+        path.resolve(import.meta.dirname, "../../server.ts"),
+        "utf8",
+    );
+    const beforeEnable = source.slice(
+        source.indexOf("beforeEnable: async (moduleId)"),
+        source.indexOf("onEnabled: async (moduleId)"),
+    );
+    assert.ok(
+        beforeEnable.indexOf("moduleRuntimeGateway.refresh") <
+            beforeEnable.indexOf("moduleRuntimeGateway.listManifests"),
+        "runtime refresh must precede manifest validation",
     );
 });
 
