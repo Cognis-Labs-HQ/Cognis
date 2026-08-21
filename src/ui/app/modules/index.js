@@ -32,7 +32,11 @@ import {
     uninstallModule,
     validateModuleSourceCredential,
 } from "./api.js";
-import { enableModuleWithIntegrityAcknowledgement } from "./integrity.js";
+import {
+    activateModule,
+    enableModuleWithIntegrityCheck,
+    modulePreferenceLabels,
+} from "./activation.js";
 import { resolveSourceToken } from "./credentials.js";
 import {
     applyModuleFilterSelection,
@@ -47,10 +51,7 @@ import {
     hasModuleUpdate,
     moduleChangeDirection,
 } from "./presentation.js";
-import {
-    assertRequiredModulePreferences,
-    openModulePreferences,
-} from "./preferences.js";
+import { openModulePreferences } from "./preferences.js";
 
 let i18n;
 let composer;
@@ -479,24 +480,8 @@ async function selectReleaseChannel(module) {
 
 async function runLifecycleAction(module, action) {
     if (module.restartRequired) return;
-    const enableWithIntegrityCheck = () =>
-        enableModuleWithIntegrityAcknowledgement(module.id, {
-            title: i18n.t("ui.app.modules.integrity_title"),
-            warning: i18n.t("ui.app.modules.integrity_warning"),
-            missingShasum: i18n.t("ui.app.modules.integrity_missing_shasum"),
-            missingFile: i18n.t("ui.app.modules.integrity_missing_file"),
-            mismatch: i18n.t("ui.app.modules.integrity_mismatch"),
-            expected: i18n.t("ui.app.modules.integrity_expected"),
-            actual: i18n.t("ui.app.modules.integrity_actual"),
-            acknowledge: i18n.t("ui.app.modules.integrity_acknowledge"),
-            cancel: i18n.t("ui.reuse.cancel"),
-        });
     if (action === "enable") {
-        await assertRequiredModulePreferences(
-            module,
-            i18n.t("ui.app.modules.config_required"),
-        );
-        const result = await enableWithIntegrityCheck();
+        const result = await activateModule(module, i18n);
         if (!result) return;
     }
     if (
@@ -557,7 +542,10 @@ async function runLifecycleAction(module, action) {
             module.restartRequired = installedManifest.restartRequired;
         } finally {
             if (restoreEnabledState && !module.restartRequired) {
-                const enabled = await enableWithIntegrityCheck();
+                const enabled = await enableModuleWithIntegrityCheck(
+                    module.id,
+                    i18n,
+                );
                 if (enabled) module.status = "enabled";
             }
         }
@@ -819,13 +807,10 @@ function bindInteractions(root, signal) {
                     (entry) => entry.uuid === target.dataset.modulePreferences,
                 );
                 if (module) {
-                    const didSave = await openModulePreferences(module, {
-                        i18n,
-                        title: i18n.t("ui.app.modules.preferences_title"),
-                        save: i18n.t("ui.reuse.save"),
-                        cancel: i18n.t("ui.reuse.cancel"),
-                        information: i18n.t("ui.reuse.more_information"),
-                    });
+                    const didSave = await openModulePreferences(
+                        module,
+                        modulePreferenceLabels(i18n),
+                    );
                     if (didSave) {
                         showToast(i18n.t("ui.app.modules.preferences_saved"), {
                             type: "success",

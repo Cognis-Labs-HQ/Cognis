@@ -437,3 +437,7 @@ Beschreibungen von Moduleinstellungen können nun `required: true` deklarieren. 
 ## Bestätigung bei Risiken für die Modulintegrität verlangen
 
 Vor der Aktivierung wird jede Moduldatei geprüft. Cognis blockiert die Aktivierung und zeigt fehlende Dateien, fehlende SHASUM-Deklarationen und Prüfsummenabweichungen in einer Risikowarnung an. Nur die ausdrückliche Aktion „Ich bestätige das Risiko“ erlaubt dem Server fortzufahren; die Bestätigung wird protokolliert.
+
+## Neu aktivierte Module transaktional konfigurieren
+
+Deaktivierte Module scheitern nicht mehr an der Aktivierung, wenn ihr moduleigener `/config`-Endpunkt noch nicht eingebunden ist. Cognis schließt zuerst die abgesicherte Aktivierungsanfrage ab und öffnet danach die erforderlichen Einstellungen, sobald die Modulroute vorhanden ist. Wird die Einrichtung abgebrochen oder schlägt sie fehl, wird das Modul wieder deaktiviert und bleibt nie ohne erforderliche Konfiguration aktiv.

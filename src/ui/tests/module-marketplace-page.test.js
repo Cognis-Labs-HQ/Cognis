@@ -10,6 +10,7 @@ import {
     renderModuleFilters,
 } from "../app/modules/filters.js";
 import {
+    assertRequiredModulePreferences,
     missingRequiredModulePreferenceKeys,
     renderModulePreferenceField,
 } from "../app/modules/preferences.js";
@@ -257,7 +258,7 @@ test("module details preserve position and update enabled modules atomically", (
     );
     assert.match(
         source,
-        /await setModuleEnabled\(module\.id, false\)[\s\S]*await installModule[\s\S]*await enableWithIntegrityCheck\(\)/,
+        /await setModuleEnabled\(module\.id, false\)[\s\S]*await installModule[\s\S]*await enableModuleWithIntegrityCheck\(/,
     );
     assert.doesNotMatch(source, /disable_before_update/);
     assert.doesNotMatch(
@@ -506,7 +507,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     );
     assert.match(
         source,
-        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableWithIntegrityCheck\(\)/,
+        /setModuleEnabled\(module\.id, false\)[\s\S]*installModule\([\s\S]*module,[\s\S]*token,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /function selectedBranch/);
@@ -736,9 +737,47 @@ test("required module configuration distinguishes unset values from valid false 
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
+    assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
+});
+
+test("disabled modules defer required config checks when their owned route is not mounted", async () => {
+    const module = {
+        id: "jitsi-meet",
+        ui: {
+            preferences: [
+                { key: "instanceUrl", type: "string", required: true },
+            ],
+        },
+    };
+    assert.equal(
+        await assertRequiredModulePreferences(
+            module,
+            "Configuration required",
+            () =>
+                Promise.reject(
+                    Object.assign(new Error("Route not found"), {
+                        status: 404,
+                    }),
+                ),
+        ),
+        false,
+    );
+    await assert.rejects(
+        () =>
+            assertRequiredModulePreferences(
+                module,
+                "Configuration required",
+                () => Promise.resolve({ instanceUrl: "" }),
+            ),
+        (error) => error.code === "module_config_required",
+    );
+    const activationSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/activation.js"),
+        "utf8",
+    );
     assert.match(
-        marketplaceSource,
-        /action === "enable"[\s\S]*assertRequiredModulePreferences/,
+        activationSource,
+        /configRouteAvailable[\s\S]*openModulePreferences[\s\S]*setModuleEnabled\(module\.id, false\)/,
     );
 });
 
@@ -755,10 +794,7 @@ test("module enablement presents and acknowledges SHASUM integrity risks", () =>
         resolve(ROOT, "src/ui/app/modules/api.js"),
         "utf8",
     );
-    assert.match(
-        marketplaceSource,
-        /action === "enable"[\s\S]*enableWithIntegrityCheck/,
-    );
+    assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
     assert.match(integritySource, /entry\.status === "missing_shasum"/);
     assert.match(integritySource, /entry\.status === "missing"/);
     assert.match(integritySource, /labels\.mismatch/);

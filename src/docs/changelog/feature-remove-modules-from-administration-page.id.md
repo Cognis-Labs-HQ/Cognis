@@ -437,3 +437,7 @@ Deskriptor pengaturan modul kini dapat mendeklarasikan `required: true`. Halaman
 ## Memerlukan persetujuan untuk risiko integritas modul
 
 Setiap berkas modul diperiksa sebelum pengaktifan. Cognis memblokir pengaktifan dan menampilkan berkas yang hilang, deklarasi SHASUM yang tidak ada, serta ketidakcocokan checksum dalam peringatan risiko. Hanya tindakan tegas “Saya memahami risikonya” yang mengizinkan server melanjutkan, dan persetujuan tersebut dicatat.
+
+## Mengonfigurasi modul yang baru diaktifkan secara transaksional
+
+Modul nonaktif tidak lagi gagal diaktifkan ketika rute `/config` milik modul belum di-mount. Cognis terlebih dahulu menyelesaikan permintaan pengaktifan yang terlindungi, lalu membuka pengaturan wajib segera setelah rute modul tersedia. Membatalkan atau menggagalkan penyiapan akan menonaktifkan modul kembali sehingga modul tidak pernah dibiarkan aktif tanpa konfigurasi wajib.

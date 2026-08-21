@@ -437,3 +437,7 @@ Module preference descriptors can now declare `required: true`. The Modules page
 ## Require acknowledgement for module integrity risks
 
 Every module file is checked before enablement. Cognis blocks activation and shows missing files, missing SHASUM declarations, and checksum mismatches in a risk warning; only the explicit “I acknowledge the risk” action permits the server to proceed, and the acknowledgement is logged.
+
+## Configure newly enabled modules transactionally
+
+Disabled modules no longer fail enablement when their module-owned `/config` route is not mounted yet. Cognis completes the guarded enable request first, then opens required settings as soon as the module route exists; cancelling or failing setup disables the module again so it is never left active without required configuration.

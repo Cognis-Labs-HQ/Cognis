@@ -19,15 +19,25 @@ export function missingRequiredModulePreferenceKeys(definitions, values) {
         .map((definition) => definition.key);
 }
 
-export async function assertRequiredModulePreferences(module, message) {
+export async function assertRequiredModulePreferences(
+    module,
+    message,
+    loadConfig = loadModuleConfig,
+) {
     const definitions = module.ui?.preferences ?? [];
-    if (!definitions.some((definition) => definition.required)) return;
-    const values = await loadModuleConfig(module.id);
+    if (!definitions.some((definition) => definition.required)) return true;
+    let values;
+    try {
+        values = await loadConfig(module.id);
+    } catch (error) {
+        if (error?.status === 404) return false;
+        throw error;
+    }
     const missingKeys = missingRequiredModulePreferenceKeys(
         definitions,
         values,
     );
-    if (!missingKeys.length) return;
+    if (!missingKeys.length) return true;
     const error = new Error(message);
     error.code = "module_config_required";
     error.missingKeys = missingKeys;
