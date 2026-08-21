@@ -579,6 +579,19 @@ async function runLifecycleAction(module, action) {
     selectedModule =
         selectedModule?.uuid === module.uuid ? module : selectedModule;
     refreshMarketplace();
+    dispatchLifecycleRefresh(module, action);
+    showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
+    if (module.restartRequired) {
+        showToast(i18n.t("ui.app.modules.restart_required"), {
+            type: "warning",
+        });
+    }
+    void loadKnownModules().catch((error) => {
+        showToast(error.message, { type: "error" });
+    });
+}
+
+function dispatchLifecycleRefresh(module, action) {
     window.dispatchEvent(
         new CustomEvent("cognis:module-lifecycle-changed", {
             detail: {
@@ -591,15 +604,6 @@ async function runLifecycleAction(module, action) {
     );
     window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
     window.dispatchEvent(new Event("cognis:navbar-refresh"));
-    showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
-    if (module.restartRequired) {
-        showToast(i18n.t("ui.app.modules.restart_required"), {
-            type: "warning",
-        });
-    }
-    void loadKnownModules().catch((error) => {
-        showToast(error.message, { type: "error" });
-    });
 }
 
 function refreshMarketplace() {
@@ -807,11 +811,26 @@ function bindInteractions(root, signal) {
                     (entry) => entry.uuid === target.dataset.modulePreferences,
                 );
                 if (module) {
+                    const wasDisabled = module.status !== "enabled";
                     const didSave = await openModulePreferences(
                         module,
                         modulePreferenceLabels(i18n),
+                        {
+                            onConfigRouteUnavailable: async () => {
+                                await enableModuleWithIntegrityCheck(
+                                    module.id,
+                                    i18n,
+                                );
+                                return () => setModuleEnabled(module.id, false);
+                            },
+                        },
                     );
                     if (didSave) {
+                        if (wasDisabled) {
+                            module.status = "enabled";
+                            await loadKnownModules(true);
+                            dispatchLifecycleRefresh(module, "enable");
+                        }
                         showToast(i18n.t("ui.app.modules.preferences_saved"), {
                             type: "success",
                         });

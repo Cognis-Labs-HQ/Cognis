@@ -741,6 +741,10 @@ test("required module configuration distinguishes unset values from valid false 
 });
 
 test("disabled modules defer required config checks when their owned route is not mounted", async () => {
+    const marketplaceSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
     const module = {
         id: "jitsi-meet",
         ui: {
@@ -779,6 +783,22 @@ test("disabled modules defer required config checks when their owned route is no
         activationSource,
         /configRouteAvailable[\s\S]*openModulePreferences[\s\S]*setModuleEnabled\(module\.id, false\)/,
     );
+    assert.doesNotMatch(
+        activationSource,
+        /if \(!result \|\| configRouteAvailable\)/,
+    );
+    assert.match(
+        modulePreferencesSource,
+        /onConfigRouteUnavailable[\s\S]*saveModuleConfig\(module\.id, values\)/,
+    );
+    assert.match(
+        marketplaceSource,
+        /onConfigRouteUnavailable[\s\S]*enableModuleWithIntegrityCheck[\s\S]*setModuleEnabled\(module\.id, false\)/,
+    );
+    assert.match(
+        marketplaceSource,
+        /if \(wasDisabled\)[\s\S]*loadKnownModules\(true\)[\s\S]*dispatchLifecycleRefresh\(module, "enable"\)/,
+    );
 });
 
 test("module enablement presents and acknowledges SHASUM integrity risks", () => {
@@ -799,6 +819,10 @@ test("module enablement presents and acknowledges SHASUM integrity risks", () =>
     assert.match(integritySource, /entry\.status === "missing"/);
     assert.match(integritySource, /labels\.mismatch/);
     assert.match(integritySource, /variant: "cancel"/);
+    assert.match(
+        integritySource,
+        /await setModuleEnabled\(moduleId, true\);[\s\S]*return true/,
+    );
     assert.match(
         apiSource,
         /"x-cognis-module-integrity-risk":\s*`accepted:\$\{integrityAcknowledgementToken\}`/,

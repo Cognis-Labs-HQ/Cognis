@@ -36,7 +36,7 @@ export async function activateModule(module, i18n) {
         requiredMessage,
     );
     const result = await enableModuleWithIntegrityCheck(module.id, i18n);
-    if (!result || configRouteAvailable) return result;
+    if (configRouteAvailable) return result;
     try {
         await assertRequiredModulePreferences(module, requiredMessage);
     } catch (error) {

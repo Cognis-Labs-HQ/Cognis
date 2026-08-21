@@ -64,10 +64,22 @@ export function renderModulePreferenceField(
     return `<label class="module-settings-popup-field" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="${definition.type === "number" ? "number" : "text"}" value="${escapeHtml(value ?? "")}"${definition.required ? " required" : ""}></label>`;
 }
 
-export async function openModulePreferences(module, labels) {
+export async function openModulePreferences(
+    module,
+    labels,
+    { onConfigRouteUnavailable } = {},
+) {
     const definitions = module.ui?.preferences ?? [];
     if (!definitions.length) return;
-    const values = await loadModuleConfig(module.id);
+    let configRouteAvailable = true;
+    let values;
+    try {
+        values = await loadModuleConfig(module.id);
+    } catch (error) {
+        if (error?.status !== 404 || !onConfigRouteUnavailable) throw error;
+        configRouteAvailable = false;
+        values = {};
+    }
     const moduleI18n = await extendI18n(labels.i18n, module.ui?.stringsBaseUrl);
     const localizedDefinitions = definitions.map((definition) => ({
         ...definition,
@@ -107,7 +119,16 @@ export async function openModulePreferences(module, labels) {
                     return [definition.key, value];
                 }),
             );
-            await saveModuleConfig(module.id, values);
+            let rollback;
+            try {
+                if (!configRouteAvailable) {
+                    rollback = await onConfigRouteUnavailable();
+                }
+                await saveModuleConfig(module.id, values);
+            } catch (error) {
+                await rollback?.();
+                throw error;
+            }
         },
     });
     return action === "save";

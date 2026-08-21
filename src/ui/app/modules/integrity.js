@@ -21,7 +21,8 @@ export async function enableModuleWithIntegrityAcknowledgement(
     labels,
 ) {
     try {
-        return await setModuleEnabled(moduleId, true);
+        await setModuleEnabled(moduleId, true);
+        return true;
     } catch (error) {
         if (
             error.code !== "module_integrity_acknowledgement_required" ||
@@ -47,8 +48,9 @@ export async function enableModuleWithIntegrityAcknowledgement(
             ],
         });
         if (action !== "acknowledge") return null;
-        return setModuleEnabled(moduleId, true, {
+        await setModuleEnabled(moduleId, true, {
             integrityAcknowledgementToken: error.integrityToken,
         });
+        return true;
     }
 }
