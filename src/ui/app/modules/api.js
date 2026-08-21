@@ -109,8 +109,17 @@ export async function loadCachedModules() {
     return data(await apiFetch("/api/v1/modules/catalog"));
 }
 
-export async function loadModuleAsset(assetUrl) {
-    const response = await apiFetch(assetUrl);
+export async function loadModuleAsset(assetUrl, { signal } = {}) {
+    let response;
+    try {
+        response = await apiFetch(assetUrl, {
+            signal,
+            suppressAccessDeniedEvent: true,
+        });
+    } catch (error) {
+        if (error?.name === "AbortError") return null;
+        throw error;
+    }
     if (!response.ok) return null;
     return URL.createObjectURL(await response.blob());
 }

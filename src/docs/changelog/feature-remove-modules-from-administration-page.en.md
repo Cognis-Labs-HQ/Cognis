@@ -473,3 +473,7 @@ Marketplace assets now have strict download limits and require administrator aut
 ## Restore module assets and configuration
 
 Authenticated marketplace assets now load through the API client instead of unauthenticated browser media requests. Required module settings use the reusable form builder, support concealed secret fields, remain available after configuration, and are preserved when modules are disabled.
+
+## Stabilize SPA marketplace assets
+
+Protected marketplace artwork is never assigned directly to browser media elements. SPA navigation now cancels stale asset hydration, suppresses subordinate asset authorization events, and revokes late object URLs without raising runtime error popups.

@@ -473,3 +473,7 @@ Marketplace-Assets haben jetzt strenge Downloadlimits und erfordern eine Adminis
 ## Modul-Assets und Konfiguration wiederherstellen
 
 Authentifizierte Marketplace-Assets werden jetzt über den API-Client statt über nicht authentifizierte Medienanfragen des Browsers geladen. Erforderliche Moduleinstellungen verwenden den wiederverwendbaren Formulargenerator, unterstützen verdeckte Geheimfelder, bleiben nach der Konfiguration verfügbar und werden beim Deaktivieren von Modulen beibehalten.
+
+## Marketplace-Assets in der SPA stabilisieren
+
+Geschützte Marketplace-Grafiken werden niemals direkt Browser-Medienelementen zugewiesen. Die SPA-Navigation bricht nun veraltetes Laden von Assets ab, unterdrückt Autorisierungsereignisse untergeordneter Assets und widerruft verspätete Objekt-URLs, ohne Laufzeitfehler-Popups auszulösen.

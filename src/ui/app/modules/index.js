@@ -637,7 +637,10 @@ function refreshDetailActions() {
     }
 }
 
-async function loadKnownModules(restoreDetailRoute = false) {
+async function loadKnownModules(
+    restoreDetailRoute = false,
+    signal = pageMountController?.signal,
+) {
     const selectedModuleUuid =
         selectedModule?.uuid ??
         (restoreDetailRoute ? detailModuleUuid() : null);
@@ -648,7 +651,8 @@ async function loadKnownModules(restoreDetailRoute = false) {
     ]);
     sources = loadedSources;
     modules = [...cached];
-    await loadAuthenticatedModuleAssets(modules);
+    await loadAuthenticatedModuleAssets(modules, { signal });
+    if (signal?.aborted) return;
     installed.forEach((installedModule) => {
         const known = modules.find(
             (module) => module.uuid === installedModule.uuid,
@@ -676,7 +680,10 @@ async function loadKnownModules(restoreDetailRoute = false) {
     refreshMarketplace();
 }
 
-async function discoverConfiguredSources(forceRefresh = false) {
+async function discoverConfiguredSources(
+    forceRefresh = false,
+    signal = pageMountController?.signal,
+) {
     const sequence = ++discoverySequence;
     const selectedModuleUuid = selectedModule?.uuid;
     const keyring = uiCtx.capabilities.get("keyring:forComponent")?.(
@@ -698,8 +705,9 @@ async function discoverConfiguredSources(forceRefresh = false) {
         sources.map((source) => source.uuid),
         forceRefresh,
     );
-    if (sequence !== discoverySequence) return;
-    await loadAuthenticatedModuleAssets(discovered);
+    if (sequence !== discoverySequence || signal?.aborted) return;
+    await loadAuthenticatedModuleAssets(discovered, { signal });
+    if (signal?.aborted) return;
     {
         const knownUuids = new Set(modules.map((module) => module.uuid));
         discovered.forEach((module) => {
@@ -978,7 +986,7 @@ export async function mount(root, { signal } = {}) {
             mountSignal,
             screenshotIndexes,
         );
-        void loadKnownModules(true).catch((error) => {
+        void loadKnownModules(true, mountSignal).catch((error) => {
             showToast(error.message, { type: "error" });
         });
     } finally {

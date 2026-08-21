@@ -14,6 +14,7 @@ import {
     missingRequiredModulePreferenceKeys,
     readModulePreferenceValues,
 } from "../app/modules/preferences.js";
+import { resolveModuleAssetUrl } from "../app/modules/assets.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const marketplaceStyles = readFileSync(
@@ -324,7 +325,17 @@ test("module marketplace does not resolve repository-relative avatars against th
         assetSource,
         /if \(candidate\.startsWith\("\/"\)\) return candidate/,
     );
+    assert.match(
+        assetSource,
+        /if \(candidate\.startsWith\("\/api\/"\)\) return ""/,
+    );
     assert.match(assetSource, /parsed\.protocol === "https:"/);
+    assert.match(moduleApiSource, /suppressAccessDeniedEvent: true/);
+    assert.equal(
+        resolveModuleAssetUrl("/api/v1/modules/catalog/assets/asset-id"),
+        "",
+    );
+    assert.equal(resolveModuleAssetUrl("/static/icon.svg"), "/static/icon.svg");
 });
 
 test("module marketplace replaces unavailable icons with the unknown icon", () => {
@@ -657,10 +668,10 @@ test("module refresh preserves its current view and redraws detail actions", () 
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(marketplaceSource, /loadKnownModules\(true\)/);
+    assert.match(marketplaceSource, /loadKnownModules\(true, mountSignal\)/);
     assert.match(
         marketplaceSource,
-        /async function loadKnownModules\(restoreDetailRoute = false\)/,
+        /async function loadKnownModules\([\s\S]*restoreDetailRoute = false[\s\S]*signal = pageMountController\?\.signal/,
     );
     assert.match(
         marketplaceSource,

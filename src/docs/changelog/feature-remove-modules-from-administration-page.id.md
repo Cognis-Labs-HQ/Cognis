@@ -473,3 +473,7 @@ Aset marketplace kini memiliki batas unduhan ketat dan memerlukan autentikasi ad
 ## Pulihkan aset dan konfigurasi modul
 
 Aset marketplace terautentikasi kini dimuat melalui klien API, bukan permintaan media browser tanpa autentikasi. Pengaturan modul wajib memakai pembuat formulir yang dapat digunakan ulang, mendukung bidang rahasia tersembunyi, tetap tersedia setelah dikonfigurasi, dan dipertahankan saat modul dinonaktifkan.
+
+## Stabilkan aset marketplace SPA
+
+Ilustrasi marketplace terlindungi tidak pernah ditetapkan langsung ke elemen media browser. Navigasi SPA kini membatalkan pemuatan aset yang usang, menekan peristiwa otorisasi aset turunan, dan mencabut URL objek yang terlambat tanpa memunculkan popup kesalahan runtime.
