@@ -448,8 +448,8 @@ Generated `.cognis-install.json` metadata is now excluded from SHASUM completene
 
 ## Configure disabled modules before activation
 
-When a module-owned configuration route is unavailable, Cognis now opens the settings form with its manifest defaults and activates the module only when the form is saved. The values are then written immediately through the mounted module route, allowing required API keys to be saved without exposing a 404 error or caching them in the browser.
+Every module settings popup now loads and saves values through the same module-owned `/config` endpoint and the same typed form-value reader. When settings are opened for a disabled module, Cognis mounts the route only for the configuration operation and restores the disabled state afterward, so saving an API key does not silently enable the module.
 
 ## Complete required setup after empty enable responses
 
-The activation flow now continues required-configuration setup when the enable endpoint correctly returns an empty success response. Settings remain available from the module detail cog and failed or cancelled required setup still rolls the module back to disabled.
+The direct activation flow now continues required-configuration setup when the enable endpoint correctly returns an empty success response. Submitted strings, booleans, and numbers are sent through the same configuration mechanism used by the detail settings cog; failed or cancelled required setup still rolls the module back to disabled.

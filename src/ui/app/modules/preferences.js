@@ -64,22 +64,25 @@ export function renderModulePreferenceField(
     return `<label class="module-settings-popup-field" for="${escapeHtml(id)}">${label}<input id="${escapeHtml(id)}" name="${escapeHtml(definition.key)}" type="${definition.type === "number" ? "number" : "text"}" value="${escapeHtml(value ?? "")}"${definition.required ? " required" : ""}></label>`;
 }
 
-export async function openModulePreferences(
-    module,
-    labels,
-    { onConfigRouteUnavailable } = {},
-) {
+export function readModulePreferenceValues(form, definitions) {
+    return Object.fromEntries(
+        definitions.map((definition) => {
+            const input = form.elements.namedItem(definition.key);
+            const value =
+                definition.type === "boolean"
+                    ? input.checked
+                    : definition.type === "number"
+                      ? Number(input.value)
+                      : input.value;
+            return [definition.key, value];
+        }),
+    );
+}
+
+export async function openModulePreferences(module, labels) {
     const definitions = module.ui?.preferences ?? [];
     if (!definitions.length) return;
-    let configRouteAvailable = true;
-    let values;
-    try {
-        values = await loadModuleConfig(module.id);
-    } catch (error) {
-        if (error?.status !== 404 || !onConfigRouteUnavailable) throw error;
-        configRouteAvailable = false;
-        values = {};
-    }
+    const values = await loadModuleConfig(module.id);
     const moduleI18n = await extendI18n(labels.i18n, module.ui?.stringsBaseUrl);
     const localizedDefinitions = definitions.map((definition) => ({
         ...definition,
@@ -107,28 +110,10 @@ export async function openModulePreferences(
         onAction: async (action, overlay) => {
             if (action !== "save") return;
             const form = overlay.querySelector("[data-module-preferences]");
-            const values = Object.fromEntries(
-                localizedDefinitions.map((definition) => {
-                    const input = form.elements.namedItem(definition.key);
-                    const value =
-                        definition.type === "boolean"
-                            ? input.checked
-                            : definition.type === "number"
-                              ? Number(input.value)
-                              : input.value;
-                    return [definition.key, value];
-                }),
+            await saveModuleConfig(
+                module.id,
+                readModulePreferenceValues(form, localizedDefinitions),
             );
-            let rollback;
-            try {
-                if (!configRouteAvailable) {
-                    rollback = await onConfigRouteUnavailable();
-                }
-                await saveModuleConfig(module.id, values);
-            } catch (error) {
-                await rollback?.();
-                throw error;
-            }
         },
     });
     return action === "save";

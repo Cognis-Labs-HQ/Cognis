@@ -448,8 +448,8 @@ Generierte `.cognis-install.json`-Metadaten werden nun von den SHASUM-Vollständ
 
 ## Deaktivierte Module vor der Aktivierung konfigurieren
 
-Wenn eine moduleigene Konfigurationsroute nicht verfügbar ist, öffnet Cognis nun das Einstellungsformular mit den Standardwerten des Manifests und aktiviert das Modul erst beim Speichern. Anschließend werden die Werte sofort über die eingebundene Modulroute geschrieben, sodass erforderliche API-Schlüssel ohne 404-Fehler oder Zwischenspeicherung im Browser gespeichert werden können.
+Alle Moduleinstellungsdialoge laden und speichern Werte nun über denselben moduleigenen `/config`-Endpunkt und dieselbe typisierte Formularauswertung. Werden die Einstellungen eines deaktivierten Moduls geöffnet, bindet Cognis die Route nur für den Konfigurationsvorgang ein und stellt danach den deaktivierten Zustand wieder her, sodass das Speichern eines API-Schlüssels das Modul nicht stillschweigend aktiviert.
 
 ## Erforderliche Einrichtung nach leeren Aktivierungsantworten abschließen
 
-Der Aktivierungsablauf setzt die erforderliche Konfiguration nun fort, wenn der Aktivierungsendpunkt ordnungsgemäß eine leere Erfolgsantwort liefert. Die Einstellungen bleiben über das Zahnrad in den Moduldetails erreichbar; eine fehlgeschlagene oder abgebrochene erforderliche Einrichtung setzt das Modul weiterhin auf deaktiviert zurück.
+Der direkte Aktivierungsablauf setzt die erforderliche Konfiguration nun fort, wenn der Aktivierungsendpunkt ordnungsgemäß eine leere Erfolgsantwort liefert. Übermittelte Zeichenfolgen, Wahrheitswerte und Zahlen verwenden denselben Konfigurationsmechanismus wie das Einstellungszahnrad in den Moduldetails; eine fehlgeschlagene oder abgebrochene Einrichtung setzt das Modul weiterhin auf deaktiviert zurück.

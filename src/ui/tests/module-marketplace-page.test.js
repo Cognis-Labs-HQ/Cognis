@@ -12,6 +12,7 @@ import {
 import {
     assertRequiredModulePreferences,
     missingRequiredModulePreferenceKeys,
+    readModulePreferenceValues,
     renderModulePreferenceField,
 } from "../app/modules/preferences.js";
 
@@ -87,7 +88,7 @@ test("module preference fields use stable popup layout and descriptor tooltips",
     );
     assert.match(
         marketplaceSource,
-        /const didSave = await openModulePreferences[\s\S]*if \(didSave\)[\s\S]*preferences_saved/,
+        /didSave = await openModulePreferences[\s\S]*if \(didSave\)[\s\S]*preferences_saved/,
     );
 });
 
@@ -738,6 +739,28 @@ test("required module configuration distinguishes unset values from valid false 
         "utf8",
     );
     assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
+    const inputs = {
+        apiKey: { value: "secret-value" },
+        enabled: { checked: false },
+        limit: { value: "12" },
+    };
+    assert.deepEqual(
+        readModulePreferenceValues(
+            {
+                elements: {
+                    namedItem(key) {
+                        return inputs[key];
+                    },
+                },
+            },
+            [
+                { key: "apiKey", type: "string" },
+                { key: "enabled", type: "boolean" },
+                { key: "limit", type: "number" },
+            ],
+        ),
+        { apiKey: "secret-value", enabled: false, limit: 12 },
+    );
 });
 
 test("disabled modules defer required config checks when their owned route is not mounted", async () => {
@@ -787,17 +810,10 @@ test("disabled modules defer required config checks when their owned route is no
         activationSource,
         /if \(!result \|\| configRouteAvailable\)/,
     );
-    assert.match(
-        modulePreferencesSource,
-        /onConfigRouteUnavailable[\s\S]*saveModuleConfig\(module\.id, values\)/,
-    );
+    assert.match(modulePreferencesSource, /readModulePreferenceValues/);
     assert.match(
         marketplaceSource,
-        /onConfigRouteUnavailable[\s\S]*enableModuleWithIntegrityCheck[\s\S]*setModuleEnabled\(module\.id, false\)/,
-    );
-    assert.match(
-        marketplaceSource,
-        /if \(wasDisabled\)[\s\S]*loadKnownModules\(true\)[\s\S]*dispatchLifecycleRefresh\(module, "enable"\)/,
+        /if \(wasDisabled\)[\s\S]*enableModuleWithIntegrityCheck[\s\S]*openModulePreferences[\s\S]*finally[\s\S]*setModuleEnabled\(module\.id, false\)/,
     );
 });
 

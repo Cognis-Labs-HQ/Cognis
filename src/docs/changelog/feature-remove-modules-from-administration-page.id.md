@@ -448,8 +448,8 @@ Metadata `.cognis-install.json` yang dihasilkan kini dikecualikan dari pemeriksa
 
 ## Mengonfigurasi modul nonaktif sebelum aktivasi
 
-Saat rute konfigurasi milik modul belum tersedia, Cognis kini membuka formulir pengaturan dengan nilai bawaan manifes dan baru mengaktifkan modul ketika formulir disimpan. Nilai kemudian langsung ditulis melalui rute modul yang telah dipasang, sehingga kunci API wajib dapat disimpan tanpa galat 404 atau penyimpanan sementara di peramban.
+Setiap popup pengaturan modul kini memuat dan menyimpan nilai melalui endpoint `/config` milik modul dan pembaca nilai formulir bertipe yang sama. Saat pengaturan dibuka untuk modul nonaktif, Cognis memasang rute hanya selama operasi konfigurasi lalu memulihkan keadaan nonaktif, sehingga menyimpan kunci API tidak mengaktifkan modul secara diam-diam.
 
 ## Menyelesaikan penyiapan wajib setelah respons aktivasi kosong
 
-Alur aktivasi kini melanjutkan penyiapan konfigurasi wajib ketika endpoint aktivasi mengembalikan respons sukses kosong yang valid. Pengaturan tetap dapat dibuka melalui ikon roda gigi pada detail modul, dan penyiapan wajib yang gagal atau dibatalkan tetap mengembalikan modul ke keadaan nonaktif.
+Alur aktivasi langsung kini melanjutkan penyiapan konfigurasi wajib ketika endpoint aktivasi mengembalikan respons sukses kosong yang valid. String, boolean, dan angka yang dikirim menggunakan mekanisme konfigurasi yang sama dengan ikon pengaturan pada detail modul; penyiapan yang gagal atau dibatalkan tetap mengembalikan modul ke keadaan nonaktif.

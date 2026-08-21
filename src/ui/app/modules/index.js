@@ -812,25 +812,25 @@ function bindInteractions(root, signal) {
                 );
                 if (module) {
                     const wasDisabled = module.status !== "enabled";
-                    const didSave = await openModulePreferences(
-                        module,
-                        modulePreferenceLabels(i18n),
-                        {
-                            onConfigRouteUnavailable: async () => {
-                                await enableModuleWithIntegrityCheck(
-                                    module.id,
-                                    i18n,
-                                );
-                                return () => setModuleEnabled(module.id, false);
-                            },
-                        },
-                    );
-                    if (didSave) {
+                    if (wasDisabled) {
+                        const enabled = await enableModuleWithIntegrityCheck(
+                            module.id,
+                            i18n,
+                        );
+                        if (!enabled) return;
+                    }
+                    let didSave;
+                    try {
+                        didSave = await openModulePreferences(
+                            module,
+                            modulePreferenceLabels(i18n),
+                        );
+                    } finally {
                         if (wasDisabled) {
-                            module.status = "enabled";
-                            await loadKnownModules(true);
-                            dispatchLifecycleRefresh(module, "enable");
+                            await setModuleEnabled(module.id, false);
                         }
+                    }
+                    if (didSave) {
                         showToast(i18n.t("ui.app.modules.preferences_saved"), {
                             type: "success",
                         });
