@@ -45,6 +45,7 @@ import {
     detailModuleUuid,
     formatVersion,
     hasModuleUpdate,
+    localizeModulePresentation,
     moduleChangeDirection,
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
@@ -86,6 +87,7 @@ function renderAvailableVersion(module) {
 }
 
 function renderCard(module) {
+    const presentation = module.localizedPresentation ?? module;
     const avatarUrl = resolveModuleAssetUrl(module.assets?.icon);
     const avatar = avatarUrl
         ? `<img class="module-store-avatar module-picture" src="${escapeHtml(avatarUrl)}" data-resource-fallback="${MODULE_ICON_FALLBACK_URL}" alt="" loading="lazy" width="64" height="64">`
@@ -93,8 +95,8 @@ function renderCard(module) {
     return `<article class="module-store-card" data-module-uuid="${module.uuid}" tabindex="0">
       ${avatar}
       <div class="module-store-card-copy">
-        <div class="module-store-card-heading"><h3>${escapeHtml(module.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
-        <p>${escapeHtml(module.summary ?? module.description ?? "")}</p>
+        <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
+        <p>${escapeHtml(presentation.summary ?? presentation.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(formatVersion(module.installed ? (module.installedVersion ?? module.version) : module.version))}</span>
         ${renderAvailableVersion(module)}
       </div>
@@ -166,6 +168,7 @@ function releaseChannels(module) {
 }
 
 function renderModuleDetails(module) {
+    const presentation = module.localizedPresentation ?? module;
     const bannerUrl = resolveModuleAssetUrl(module.assets?.banner);
     const screenshotUrls = (module.assets?.screenshots ?? [])
         .map(resolveModuleAssetUrl)
@@ -187,7 +190,10 @@ function renderModuleDetails(module) {
                 : `<img class="module-detail-media-item module-picture" src="${url}" alt="" loading="lazy">`;
         })
         .join("");
-    const metadata = [...(module.categories ?? []), ...(module.tags ?? [])]
+    const metadata = [
+        ...(presentation.categories ?? []),
+        ...(presentation.tags ?? []),
+    ]
         .filter(Boolean)
         .map((value) => `<span>${escapeHtml(value)}</span>`)
         .join("");
@@ -217,7 +223,7 @@ function renderModuleDetails(module) {
         advanced || settings
             ? `<div class="module-detail-header-actions">${advanced}${settings}</div>`
             : "";
-    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(module.name)}</h2><p>${escapeHtml(module.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? module.description ?? "")}</div></article>`;
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2><p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? presentation.description ?? "")}</div></article>`;
 }
 
 function renderDetailActions(module) {
@@ -233,6 +239,15 @@ function visibleModules() {
 }
 
 function formatTag(tag) {
+    for (const module of modules) {
+        for (const field of ["categories", "tags"]) {
+            const index = (module[field] ?? []).indexOf(tag);
+            const localized = module.localizedPresentation?.[field]?.[index];
+            if (localized && localized !== tag) return localized;
+        }
+    }
+    const localized = i18n.t(tag);
+    if (localized !== tag) return localized;
     return String(tag)
         .split(/[-_\s]+/)
         .filter(Boolean)
@@ -493,6 +508,10 @@ async function loadKnownModules(
             modules.push(installedModule);
         }
     });
+    await Promise.all(
+        modules.map((module) => localizeModulePresentation(module, i18n)),
+    );
+    if (signal?.aborted) return;
     selectedModule = selectedModuleUuid
         ? (modules.find(
               (module) =>
@@ -543,6 +562,10 @@ async function discoverConfiguredSources(
                 modules.push(module);
             }
         });
+        await Promise.all(
+            modules.map((module) => localizeModulePresentation(module, i18n)),
+        );
+        if (sequence !== discoverySequence || signal?.aborted) return;
         selectedModule = selectedModuleUuid
             ? (modules.find((module) => module.uuid === selectedModuleUuid) ??
               null)

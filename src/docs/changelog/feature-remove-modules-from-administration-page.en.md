@@ -486,9 +486,9 @@ Module source settings use the shared form builder and offer a Scan Private Repo
 
 Password-type module settings now display a concealed saved-value mask and satisfy required validation through the module’s configured-state response. Unchanged masks submit an empty replacement so modules preserve the stored password. Marketplace loading indicators remain inline while neighboring actions compress, and connection-interruption reporting is deduplicated across UI bundles.
 
-## Remove assumed module identities
+## Restore recommendations and localize marketplace metadata
 
-Marketplace defaults, tests, and documentation now use generic module contracts and fixtures. The recommendation document starts empty so deployments explicitly choose module UUIDs instead of Cognis assuming any module identity or purpose.
+The published recommendation UUIDs remain in the default catalog. Marketplace cards, details, categories, and tags now resolve localization keys from each manifest through its declared module string bundle.
 
 ## Correct authenticated module administration
 

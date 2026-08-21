@@ -15,6 +15,7 @@ import {
     readModulePreferenceValues,
 } from "../app/modules/preferences.js";
 import { resolveModuleAssetUrl } from "../app/modules/assets.js";
+import { localizeModulePresentation } from "../app/modules/presentation.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const marketplaceStyles = readFileSync(
@@ -304,14 +305,68 @@ test("module marketplace identifies immutable trusted sources", () => {
     assert.match(sourceSettingsSource, /credential_validation_warning/);
 });
 
-test("recommended modules do not assume module identities", () => {
+test("recommended modules retain the published defaults", () => {
     const recommended = JSON.parse(
         readFileSync(
             resolve(ROOT, "src/ui/public/recommended-modules.json"),
             "utf8",
         ),
     );
-    assert.deepEqual(recommended, []);
+    assert.deepEqual(recommended, [
+        "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
+        "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
+        "e10c016f-8a15-5ec2-8188-c1657dfbe829",
+    ]);
+});
+
+test("module presentation resolves manifest localization keys", async () => {
+    const module = {
+        name: "module.example.name",
+        summary: "module.example.summary",
+        description: "module.example.description",
+        categories: ["module.example.category"],
+        tags: ["module.example.tag"],
+        ui: { stringsBaseUrl: "/static/modules/example/languages" },
+    };
+    const translations = new Map([
+        ["module.example.name", "Localized name"],
+        ["module.example.summary", "Localized summary"],
+        ["module.example.description", "Localized description"],
+        ["module.example.category", "Localized category"],
+        ["module.example.tag", "Localized tag"],
+    ]);
+    let requestedStringsBaseUrl;
+    await localizeModulePresentation(
+        module,
+        { locale: "en", t: (key) => key },
+        async (_baseI18n, stringsBaseUrl) => {
+            requestedStringsBaseUrl = stringsBaseUrl;
+            return {
+                locale: "en",
+                t: (key) => translations.get(key) ?? key,
+            };
+        },
+    );
+    assert.equal(requestedStringsBaseUrl, "/static/modules/example/languages");
+    assert.deepEqual(module.localizedPresentation, {
+        name: "Localized name",
+        summary: "Localized summary",
+        description: "Localized description",
+        categories: ["Localized category"],
+        tags: ["Localized tag"],
+    });
+    const marketplaceSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.match(
+        marketplaceSource,
+        /presentation = module\.localizedPresentation \?\? module/,
+    );
+    assert.match(
+        marketplaceSource,
+        /module\.localizedPresentation\?\.\[field\]\?\.\[index\]/,
+    );
 });
 
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {

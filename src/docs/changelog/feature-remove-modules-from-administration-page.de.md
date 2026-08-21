@@ -486,9 +486,9 @@ Die Einstellungen für Modulquellen verwenden den gemeinsamen Formulargenerator 
 
 Moduleinstellungen vom Typ `password` zeigen jetzt eine verdeckte Maske für gespeicherte Werte und erfüllen die Pflichtfeldprüfung über den konfigurierten Zustand des Moduls. Unveränderte Masken senden einen leeren Ersatz, damit Module das gespeicherte Passwort beibehalten. Ladeanzeigen im Marketplace bleiben in einer Zeile, während benachbarte Aktionen schmaler werden, und Meldungen über Verbindungsunterbrechungen werden über UI-Bundles hinweg dedupliziert.
 
-## Angenommene Modulidentitäten entfernen
+## Empfehlungen wiederherstellen und Marketplace-Metadaten lokalisieren
 
-Marketplace-Standardwerte, Tests und Dokumentation verwenden jetzt generische Modulverträge und Testdaten. Das Empfehlungsdokument ist zunächst leer, damit Bereitstellungen Modul-UUIDs ausdrücklich auswählen, statt dass Cognis eine Modulidentität oder einen Zweck voraussetzt.
+Die veröffentlichten Empfehlungs-UUIDs bleiben im Standardkatalog enthalten. Marketplace-Karten, Details, Kategorien und Schlagwörter lösen jetzt Lokalisierungsschlüssel aus jedem Manifest über dessen deklariertes Modul-Stringpaket auf.
 
 ## Authentifizierte Modulverwaltung korrigieren
 

@@ -1,3 +1,29 @@
+import { extendI18n } from "../../reuse/i18n.js";
+
+function resolveManifestString(moduleI18n, value) {
+    return typeof value === "string" ? moduleI18n.t(value) : value;
+}
+
+export async function localizeModulePresentation(
+    module,
+    baseI18n,
+    extend = extendI18n,
+) {
+    const moduleI18n = await extend(baseI18n, module.ui?.stringsBaseUrl);
+    module.localizedPresentation = {
+        name: resolveManifestString(moduleI18n, module.name),
+        summary: resolveManifestString(moduleI18n, module.summary),
+        description: resolveManifestString(moduleI18n, module.description),
+        categories: (module.categories ?? []).map((value) =>
+            resolveManifestString(moduleI18n, value),
+        ),
+        tags: (module.tags ?? []).map((value) =>
+            resolveManifestString(moduleI18n, value),
+        ),
+    };
+    return module;
+}
+
 export function formatVersion(version) {
     const normalized = String(version ?? "").replace(/^v/, "");
     return normalized ? `v${normalized}` : "";

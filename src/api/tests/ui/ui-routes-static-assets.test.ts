@@ -18,7 +18,11 @@ test("GET /static/recommended-modules.json serves the default catalog", async ()
 
     assert.ok(handled);
     assert.equal(recorder.status, 200);
-    assert.deepEqual(JSON.parse(recorder.body), []);
+    assert.deepEqual(JSON.parse(recorder.body), [
+        "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
+        "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
+        "e10c016f-8a15-5ec2-8188-c1657dfbe829",
+    ]);
 });
 
 test("GET /static/reuse/ rejects directories before committing a response", async () => {

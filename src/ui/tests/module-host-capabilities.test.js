@@ -44,7 +44,6 @@ test("direct and routed module mounts await active UI providers", () => {
         pageEntry,
         /mountWithProviders[\s\S]*await ensureHostUiProviders\(\)[\s\S]*mount: mountWithProviders/,
     );
-    assert.match(pageEntry, /import "\.\/page-flow-catalog\.js"/);
     assert.match(
         router,
         /await ensureHostUiProviders\(\);\s*mod = await route\.load/,

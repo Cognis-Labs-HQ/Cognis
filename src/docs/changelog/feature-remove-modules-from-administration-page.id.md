@@ -486,9 +486,9 @@ Pengaturan sumber modul memakai pembuat formulir bersama dan menyediakan slider 
 
 Pengaturan modul bertipe `password` kini menampilkan masker nilai tersimpan yang tersembunyi dan memenuhi validasi wajib melalui respons status terkonfigurasi modul. Masker yang tidak berubah mengirim pengganti kosong agar modul mempertahankan kata sandi tersimpan. Indikator pemuatan marketplace tetap sebaris sementara tindakan di sebelahnya dipadatkan, dan pelaporan gangguan koneksi dideduplikasi di seluruh bundel UI.
 
-## Hapus asumsi identitas modul
+## Pulihkan rekomendasi dan lokalkan metadata marketplace
 
-Nilai bawaan marketplace, pengujian, dan dokumentasi kini menggunakan kontrak serta data uji modul yang generik. Dokumen rekomendasi dimulai dalam keadaan kosong agar setiap penerapan memilih UUID modul secara eksplisit tanpa Cognis mengasumsikan identitas atau tujuan modul apa pun.
+UUID rekomendasi yang dipublikasikan tetap tersedia dalam katalog bawaan. Kartu, detail, kategori, dan tag marketplace kini menyelesaikan kunci pelokalan dari setiap manifes melalui bundel string modul yang dideklarasikan.
 
 ## Perbaiki administrasi modul terautentikasi
 
