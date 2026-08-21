@@ -7,3 +7,7 @@ Shell dasbor kini menginisialisasi penyempurnaan akun yang telah masuk dengan be
 ## Kanal rilis disegarkan tanpa singgahan
 
 Paginasi repositori Marketplace kini melewati singgahan HTTP perantara agar penyegaran manual segera mengambil cabang dan tag modul yang baru dibuat.
+
+## Kapabilitas dan kontrol berbagi diseragamkan
+
+Perender tamu berbagi kini menerima kapabilitas profil mandiri dan gaya avatar yang telah dimuat sepenuhnya sebelum dipasang. Kontrol berbagi milik gateway secara konsisten menampilkan label Bagikan yang dilokalkan di samping ikon berbagi kanonis.

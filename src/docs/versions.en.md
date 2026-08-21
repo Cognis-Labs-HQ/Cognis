@@ -50,7 +50,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration Invite   | `src/adapters/registration/invite/` | `0.1.16` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.15` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.13` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.66` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `1.1.67` |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.0.71` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
@@ -65,10 +65,10 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`   |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.10`  |
-| Share                 | `src/gateways/share/`         | `1.7.29`  |
+| Share                 | `src/gateways/share/`         | `1.7.30`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`   |
-| Social                | `src/gateways/social/`        | `1.2.14`  |
+| Social                | `src/gateways/social/`        | `1.2.15`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.1.9`   |
 | Registration          | `src/gateways/registration/`  | `1.1.14`  |
 | Logging               | `src/gateways/logging/`       | `1.5.13`  |

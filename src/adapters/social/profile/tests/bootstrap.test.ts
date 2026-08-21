@@ -67,6 +67,8 @@ function makeAdapterCtx(
                     isEnabled,
                     providesCapabilities,
                 }),
+            registerCapabilityProvider: (provider) =>
+                uiRegistry?.registerCapabilityProvider(provider),
             registerStaticDir: (prefix: string, dir: string) =>
                 uiRegistry?.registerStaticDir(prefix, dir),
             registerAdapterStaticDir: (gw: string, ad: string, dir: string) =>
@@ -75,6 +77,7 @@ function makeAdapterCtx(
                 m: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(m),
             isGatewayEnabled: () => true,
+            isAdapterEnabled: () => true,
         },
         gateway,
         registeredAdapters,
@@ -179,7 +182,7 @@ test("profile adapter bootstrap registers static dir and navbar.js exists on dis
     );
 });
 
-test("profile adapter bootstrap registers navbar plugin that resolves within static dir", async () => {
+test("profile adapter registers standalone capabilities and navbar behavior", async () => {
     const uiRegistry = new UIRegistry();
     const { ctx } = makeAdapterCtx({ uiRegistry });
     await bootstrapSocialAdapter(ctx);
@@ -189,7 +192,11 @@ test("profile adapter bootstrap registers navbar plugin that resolves within sta
         plugins.length > 0,
         "profile adapter must register at least one navbar plugin",
     );
-    assert.deepEqual(plugins[0].providesCapabilities, [
+    assert.deepEqual(plugins[0].providesCapabilities, undefined);
+
+    const providers = uiRegistry.listCapabilityProviders();
+    assert.equal(providers.length, 1);
+    assert.deepEqual(providers[0].providesCapabilities, [
         "ui:profileAvatarRenderer",
         "social:profileUiClient",
     ]);
@@ -211,6 +218,11 @@ test("profile adapter bootstrap registers navbar plugin that resolves within sta
             `file referenced by navbar plugin scriptUrl must exist on disk: ${resolvedPath}`,
         );
     }
+    const providerPath = path.join(
+        staticDir,
+        providers[0].scriptUrl.slice(urlPrefix.length),
+    );
+    await assert.doesNotReject(access(providerPath));
 });
 
 test("user availability capability resolves calendar-aware status", async () => {

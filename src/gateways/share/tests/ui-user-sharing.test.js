@@ -347,6 +347,16 @@ test("share buttons use the neutral consequence style", () => {
     assert.match(shareButtonSource, /"btn-confirm", "btn-neutral"/);
 });
 
+test("share buttons always render the gateway-localized label with a share icon", () => {
+    assert.match(
+        shareButtonSource,
+        /componentStringBaseUrls:[\s\S]*gateways\/share\/languages/,
+    );
+    assert.match(shareButtonSource, /shareI18n\.t\("share\.action"\)/);
+    assert.match(shareButtonSource, /createElementNS\([\s\S]*svg/);
+    assert.doesNotMatch(shareButtonSource, /icon = "🔗"/);
+});
+
 test("anonymous share guests activate a temporary unlocked keyring", () => {
     assert.doesNotMatch(sessionFlowSource, /account-context/);
     assert.match(sessionFlowSource, /guestKeyring: shareData\.guestKeyring/);

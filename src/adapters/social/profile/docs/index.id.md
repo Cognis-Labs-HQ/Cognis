@@ -50,4 +50,4 @@ Plugin navbar profil menyediakan `ui:profileAvatarRenderer`. Modul yang merender
 
 ### Kapabilitas klien browser
 
-`social:profileUiClient` dikontribusikan oleh penyedia navbar Profil dan menyediakan `getCurrentProfile()` agar modul browser memperoleh data profil melalui klien adaptor pemilik.
+`social:profileUiClient` dikontribusikan oleh penyedia Profil mandiri sebelum halaman yang bergantung dipasang dan menyediakan `getCurrentProfile()` agar modul browser memperoleh data profil melalui klien adaptor pemilik.

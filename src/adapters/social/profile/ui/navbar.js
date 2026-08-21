@@ -1,5 +1,6 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import "./provider.js";
 import { applyStaticTranslations, createI18n } from "/static/reuse/i18n.js";
 import {
     fetchProfileAvatarBlobUrl,
@@ -8,7 +9,6 @@ import {
 } from "./profile-avatar.js";
 import { bindProfilePreviews } from "./profile-preview.js";
 import { registerSearchIndexing } from "./search/index.js";
-import { profileUiClient } from "./client.js";
 import {
     availabilityIndicatorMarkup,
     fetchAvailability,
@@ -20,8 +20,6 @@ import {
 
 const AVAILABILITY_STYLESHEET_URL =
     "/static/adapters/social/profile/availability.css";
-
-uiCtx.capabilities.contribute("social:profileUiClient", profileUiClient);
 
 function ensureAvailabilityStylesheet() {
     const matchingStylesheets = [

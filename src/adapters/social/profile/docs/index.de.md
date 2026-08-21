@@ -60,4 +60,4 @@ Das Profil-Navbar-Plugin stellt `ui:profileAvatarRenderer` bereit. Module, die P
 
 ### Browserclient-Capability
 
-`social:profileUiClient` wird vom Profil-Navigationsanbieter bereitgestellt und bietet `getCurrentProfile()`, damit Browsermodule Profildaten über den Client des zuständigen Adapters beziehen.
+`social:profileUiClient` wird vor dem Einhängen abhängiger Seiten von einem eigenständigen Profilanbieter bereitgestellt und bietet `getCurrentProfile()`, damit Browsermodule Profildaten über den Client des zuständigen Adapters beziehen.

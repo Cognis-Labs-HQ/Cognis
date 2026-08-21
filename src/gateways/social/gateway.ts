@@ -60,6 +60,11 @@ export interface SocialAdapterBootstrapCtx {
         isEnabled?: () => boolean,
         providesCapabilities?: string[],
     ): void;
+    registerCapabilityProvider?(provider: {
+        scriptUrl: string;
+        providesCapabilities: string[];
+        isEnabled?: () => boolean;
+    }): void;
     registerSpaRoute?(route: {
         id: string;
         pattern: string;

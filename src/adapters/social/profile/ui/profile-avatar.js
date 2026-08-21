@@ -66,6 +66,11 @@ const availabilityStylesReady = ensurePageStylesheet(
     "/static/adapters/social/profile/availability.css",
 );
 
+/** Waits until the profile avatar and availability styles are ready. */
+export async function ensureProfileAvatarStyles() {
+    await availabilityStylesReady;
+}
+
 /** Returns profile initials using the profile adapter's canonical rules. */
 export function getProfileInitials(label) {
     if (!label) return "?";
@@ -272,7 +277,7 @@ export function buildProfileAvatarMarkup({
  * @returns {Promise<void>}
  */
 export async function hydrateProfileAvatars(container) {
-    await availabilityStylesReady;
+    await ensureProfileAvatarStyles();
     const placeholders = Array.from(
         container.querySelectorAll(
             "[data-avatar-key][data-avatar-image-class]",

@@ -90,6 +90,21 @@ test("the files client is a standalone provider independent of navbar mount", ()
     );
 });
 
+test("the profile client is a standalone provider independent of navbar mount", () => {
+    const profileBootstrap = readFileSync(
+        resolve(ROOT, "src/adapters/social/profile/index.ts"),
+        "utf8",
+    );
+    assert.match(
+        profileBootstrap,
+        /registerCapabilityProvider\?\.\(\{[\s\S]*social:profileUiClient/,
+    );
+    assert.match(
+        profileBootstrap,
+        /registerNavbarPlugin\("\/static\/adapters\/social\/profile\/navbar\.js"\)/,
+    );
+});
+
 test("navbar plugins mount after the shell and can recover pre-mount imports", () => {
     const messages = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/navbar.js"),

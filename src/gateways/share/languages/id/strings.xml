@@ -1,6 +1,7 @@
 <resources>
   <string name="share.page_title">Konten Bersama</string>
   <string name="share.subtitle">Konten Bersama</string>
+  <string name="share.action">Bagikan</string>
   <string name="share.loading">Sedang memuat konten bersama…</string>
   <string name="share.error.invalid_token">Tautan bagikan ini tidak valid atau sudah kedaluwarsa.</string>
   <string name="share.error.keyring_locked">Berbagi telah dibuka, tetapi kata sandinya tidak dapat disimpan ke gantungan kunci Anda.</string>

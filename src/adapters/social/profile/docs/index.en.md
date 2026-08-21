@@ -133,4 +133,4 @@ The profile navbar plugin provides `ui:profileAvatarRenderer`. Modules that rend
 
 ### Browser client capability
 
-`social:profileUiClient` is contributed by the profile navbar provider and exposes `getCurrentProfile()` so browser modules obtain profile data through the owning adapter client.
+`social:profileUiClient` is contributed by a standalone profile provider before dependent pages mount and exposes `getCurrentProfile()` so browser modules obtain profile data through the owning adapter client.

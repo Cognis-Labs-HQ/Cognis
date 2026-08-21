@@ -26,7 +26,6 @@
  *     );
  *     shareButton = shareButtonModule.mountShareButton({
  *       container: stageHeader,
- *       label: i18n.t("module.jitsi_meet.share.button"),
  *       onClick: () => openShareLinksPopup(...),
  *       signal,
  *     });
@@ -36,13 +35,18 @@
  *
  * @param {{
  *   container: Element,
- *   label: string,
  *   onClick: (event: MouseEvent) => void,
  *   id?: string,
  *   signal?: AbortSignal,
  * }} options
  * @returns {HTMLButtonElement | null}
  */
+
+import { createI18n } from "/static/reuse/i18n.js";
+
+const shareI18n = await createI18n({
+    componentStringBaseUrls: ["/static/gateways/share/languages"],
+});
 
 const GUEST_SESSION_ACTIVE_STORAGE_KEY = "cognis_share_guest_token_active";
 
@@ -66,11 +70,9 @@ export function isViewingAsGuest() {
 
 export function mountShareButton({
     container,
-    label,
     onClick,
     id = "share-gateway-share-btn",
     className = "btn-animated",
-    icon = "🔗",
     title = "",
     signal,
 } = {}) {
@@ -90,7 +92,33 @@ export function mountShareButton({
                 ),
         );
     button.className = [...classes, "btn-neutral"].join(" ");
-    button.textContent = `${icon ? `${icon} ` : ""}${label ?? ""}`;
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.classList.add("share-button-icon");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("width", "18");
+    icon.setAttribute("height", "18");
+    icon.setAttribute("fill", "none");
+    icon.setAttribute("stroke", "currentColor");
+    icon.setAttribute("stroke-width", "1.5");
+    icon.setAttribute("aria-hidden", "true");
+    for (const pathData of [
+        "M9 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z",
+        "M19 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z",
+        "M19 18.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z",
+        "m8.6 10.5 5.8-3.5",
+        "m8.6 13.5 5.8 3.5",
+    ]) {
+        const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path",
+        );
+        path.setAttribute("d", pathData);
+        path.setAttribute("stroke-linecap", "round");
+        icon.append(path);
+    }
+    const label = document.createElement("span");
+    label.textContent = shareI18n.t("share.action");
+    button.append(icon, label);
     if (title) {
         button.title = title;
         button.setAttribute("aria-label", title);

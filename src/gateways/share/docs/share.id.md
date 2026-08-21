@@ -24,7 +24,7 @@ Token tamu dibatasi ke satu record share, kedaluwarsa cepat (maksimal empat jam 
 
 ## Kontrol berbagi
 
-Catatan berbagi kini membawa kontrol akses milik gateway: izin baca/tulis, penerima bertipe untuk pengguna dalam aplikasi, grup/kelas, dan penerima email, perlindungan kata sandi opsional, serta penanda watermark untuk berbagi hanya-baca. Gateway Share menyediakan rute umum untuk membuat dan memperbarui token sehingga modul meminta berbagi melalui `ctx` atau `/api/v1/share/tokens` dan tidak memiliki pengiriman penerima atau pengeditan izin sendiri. Berbagi hanya-baca memakai watermark secara default, sementara berbagi dengan izin tulis menghapus default itu kecuali pemanggil secara eksplisit mempertahankannya.
+Catatan berbagi kini membawa kontrol akses milik gateway: izin baca/tulis, penerima bertipe untuk pengguna dalam aplikasi, grup/kelas, dan penerima email, perlindungan kata sandi opsional, serta penanda watermark untuk berbagi hanya-baca. Gateway Share menyediakan rute umum untuk membuat dan memperbarui token sehingga modul meminta berbagi melalui `ctx` atau `/api/v1/share/tokens` dan tidak memiliki pengiriman penerima atau pengeditan izin sendiri. Berbagi hanya-baca memakai watermark secara default, sementara berbagi dengan izin tulis menghapus default itu kecuali pemanggil secara eksplisit mempertahankannya. Perender tombol milik gateway selalu memasangkan ikon berbagi kanonis dengan label Bagikan yang dilokalkan.
 
 ## Adapter metode berbagi
 
