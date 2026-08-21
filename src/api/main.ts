@@ -28,6 +28,7 @@ import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
+import { isExcludedModuleIntegrityFile } from "./reuse/module-integrity.js";
 import { requirePublicEnvironment } from "./reuse/environment.js";
 
 requirePublicEnvironment();
@@ -585,7 +586,7 @@ const server = buildServer({
                         continue;
                     }
                     if (
-                        relativePath === "manifest.json" ||
+                        isExcludedModuleIntegrityFile(relativePath) ||
                         declaredFiles.has(relativePath)
                     ) {
                         continue;

@@ -441,3 +441,7 @@ Setiap berkas modul diperiksa sebelum pengaktifan. Cognis memblokir pengaktifan 
 ## Mengonfigurasi modul yang baru diaktifkan secara transaksional
 
 Modul nonaktif tidak lagi gagal diaktifkan ketika rute `/config` milik modul belum di-mount. Cognis terlebih dahulu menyelesaikan permintaan pengaktifan yang terlindungi, lalu membuka pengaturan wajib segera setelah rute modul tersedia. Membatalkan atau menggagalkan penyiapan akan menonaktifkan modul kembali sehingga modul tidak pernah dibiarkan aktif tanpa konfigurasi wajib.
+
+## Mengecualikan metadata instalasi dari pemeriksaan integritas modul
+
+Metadata `.cognis-install.json` yang dihasilkan kini dikecualikan dari pemeriksaan kelengkapan SHASUM, termasuk salinan dalam jalur ekstraksi bertingkat. Peringatan integritas tetap berfokus pada berkas yang dikirim modul, bukan catatan instalasi Cognis.

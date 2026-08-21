@@ -441,3 +441,7 @@ Every module file is checked before enablement. Cognis blocks activation and sho
 ## Configure newly enabled modules transactionally
 
 Disabled modules no longer fail enablement when their module-owned `/config` route is not mounted yet. Cognis completes the guarded enable request first, then opens required settings as soon as the module route exists; cancelling or failing setup disables the module again so it is never left active without required configuration.
+
+## Exclude installation metadata from module integrity checks
+
+Generated `.cognis-install.json` metadata is now excluded from SHASUM completeness checks, including copies in nested extraction paths. Integrity warnings remain focused on module-delivered files rather than Cognis installation records.

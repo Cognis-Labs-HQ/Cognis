@@ -441,3 +441,7 @@ Vor der Aktivierung wird jede Moduldatei geprüft. Cognis blockiert die Aktivier
 ## Neu aktivierte Module transaktional konfigurieren
 
 Deaktivierte Module scheitern nicht mehr an der Aktivierung, wenn ihr moduleigener `/config`-Endpunkt noch nicht eingebunden ist. Cognis schließt zuerst die abgesicherte Aktivierungsanfrage ab und öffnet danach die erforderlichen Einstellungen, sobald die Modulroute vorhanden ist. Wird die Einrichtung abgebrochen oder schlägt sie fehl, wird das Modul wieder deaktiviert und bleibt nie ohne erforderliche Konfiguration aktiv.
+
+## Installationsmetadaten von Modulintegritätsprüfungen ausschließen
+
+Generierte `.cognis-install.json`-Metadaten werden nun von den SHASUM-Vollständigkeitsprüfungen ausgeschlossen, einschließlich Kopien in verschachtelten Extraktionspfaden. Integritätswarnungen konzentrieren sich damit auf vom Modul gelieferte Dateien statt auf Cognis-Installationsdatensätze.
