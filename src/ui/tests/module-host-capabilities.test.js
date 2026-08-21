@@ -65,6 +65,10 @@ test("the host loader requests navbar and standalone capability providers", () =
     assert.match(loader, /response\.status === 401/);
     assert.match(
         loader,
+        /"ui:ensureProvidersLoaded",\s*ensureUiProvidersLoaded/,
+    );
+    assert.match(
+        loader,
         /"ui:ensureNavbarPluginsLoaded",\s*ensureNavbarPluginsLoaded/,
     );
 });

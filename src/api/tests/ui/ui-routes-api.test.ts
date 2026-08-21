@@ -76,6 +76,32 @@ test("GET /api/v1/ui/capability-providers returns navbar and standalone provider
     );
 });
 
+test("GET /api/v1/ui/capability-providers accepts scoped share guests", async () => {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerCapabilityProvider({
+        scriptUrl: "/static/profile-avatar.js",
+        providesCapabilities: ["ui:profileAvatarRenderer"],
+    });
+    const route = createUiRoutes(undefined, uiRegistry);
+    const guestToken = issueAccessToken("share:example:guest", "user", 60, {
+        providerId: "share",
+        purpose: "share",
+    });
+    const recorder = createResponseRecorder();
+
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${guestToken}` },
+        } as any,
+        recorder.res as any,
+        new URL("http://localhost/api/v1/ui/capability-providers"),
+    );
+
+    assert.equal(recorder.status, 200);
+    assert.match(recorder.body, /profile-avatar/);
+});
+
 test("GET /api/v1/ui/page-extensions/:pageId filters extensions by access policy", async () => {
     const uiRegistry = new UIRegistry();
     uiRegistry.registerPageExtension("dashboard", {

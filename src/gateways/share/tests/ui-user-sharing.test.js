@@ -85,6 +85,13 @@ test("public Share page disables page layout editing", () => {
     );
 });
 
+test("public Share page loads host capability providers after guest authentication", () => {
+    assert.match(
+        shareAppSource,
+        /if \(!session\?\.authenticated\)[\s\S]*ui:ensureProvidersLoaded[\s\S]*mountScriptUrl/,
+    );
+});
+
 test("share popup owns user recipient search and selection", () => {
     assert.match(popupSource, /share-links-user-search/);
     assert.match(popupSource, /data-share-user-id/);

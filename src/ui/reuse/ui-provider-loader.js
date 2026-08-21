@@ -98,6 +98,10 @@ export function invalidateNavbarPlugins() {
 }
 
 uiCtx.capabilities.contribute(
+    "ui:ensureProvidersLoaded",
+    ensureUiProvidersLoaded,
+);
+uiCtx.capabilities.contribute(
     "ui:ensureNavbarPluginsLoaded",
     ensureNavbarPluginsLoaded,
 );

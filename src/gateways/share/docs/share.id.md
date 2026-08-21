@@ -10,7 +10,7 @@ Sumber daya bersama dibuka di `/share/:token`. Halaman ini memakai page composer
 
 ## Sesi Tamu
 
-Saat token share di-resolve, gateway Share sekarang menerbitkan token akses tamu berumur pendek (`purpose: share`) yang terikat ke record share tersebut (`sub: share:<shareId>`). Halaman share menukar token ini sementara ke `localStorage` agar panggilan API dari halaman bersama yang dipasang berjalan sebagai sesi tamu anonim, lalu memulihkan token sebelumnya saat halaman ditutup.
+Saat token share di-resolve, gateway Share sekarang menerbitkan token akses tamu berumur pendek (`purpose: share`) yang terikat ke record share tersebut (`sub: share:<shareId>`). Halaman share menukar token ini sementara ke `localStorage` agar panggilan API dari halaman bersama yang dipasang berjalan sebagai sesi tamu anonim, lalu memulihkan token sebelumnya saat halaman ditutup. Setelah token tamu terbatas aktif, halaman Bagikan memuat penyedia kapabilitas UI host sebelum mengimpor perender sumber daya sehingga komponen bersama dapat memakai kapabilitas yang dideklarasikan seperti perenderan avatar profil.
 
 Tamu anonim tidak pernah membuka keyring akun. Share mengaktifkan keyring tamu yang dikirim menggunakan materi sesi dari server, menjaganya tetap terbuka tanpa kata sandi pengguna selama sesi tamu, lalu menghapus brankas terenkripsi khusus sesi saat sesi berakhir. Pencarian dan penyimpanan keyring akun hanya tersedia bagi pengunjung yang masuk dengan sesi akun non-tamu tervalidasi, termasuk setelah halaman tamu disegarkan.
 

@@ -177,6 +177,8 @@ export async function mount(
         return;
     }
 
+    await uiCtx.capabilities.get("ui:ensureProvidersLoaded")?.();
+
     if (shareContext.contentUrl && shareContext.directAccess === true) {
         const navigated = await navigateTo(shareContext.contentUrl);
         if (navigated) return;

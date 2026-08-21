@@ -10,7 +10,7 @@ Shared resources open on `/share/:token`. The page uses the standard page compos
 
 ## Guest Sessions
 
-When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload.
+When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.
 
 Anonymous guests never unlock an account keyring. Share activates the delivered guest keyring with its server-issued session material, keeps it unlocked without a user password for the guest session, and deletes its session-only encrypted vault when that session ends. Account keyring lookup and persistence remain available only when the visitor entered with a validated non-guest account session, including after a guest page refresh.
 
