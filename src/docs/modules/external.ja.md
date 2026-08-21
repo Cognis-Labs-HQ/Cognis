@@ -45,3 +45,5 @@ Cognis には、デフォルトで、`https://github.com/Cognis-Labs-HQ` 組織�
 ## リリースチャンネル更新とブラウザークライアント
 
 インストール済みモジュールでは、カタログ更新がインストール済みのブランチまたはリリースを最初に解決し、チャンネルが記録されていない場合だけリポジトリの既定ブランチを使用します。モジュールは宣言済みの `uiCtx.capabilities` クライアントを通じてゲートウェイ所有のブラウザーデータを利用します。現在のホストクライアントには `social:profileUiClient`、`social:messagesUiClient`、`files:uiClient`、`share:uiClient` があります。Cognis がモジュールルートをマウントする前に有効なプロバイダーを読み込めるよう、必要な UI 機能をすべて宣言してください。
+
+チェックアウト外に設定やコンテンツを保存するモジュールは、宣言済みの bootstrap エントリーポイントから `uninstallModule(ctx, { deleteContent })` をエクスポートする必要があります。このフックは保存済み設定を常に消去し、`deleteContent` が true の場合にのみモジュール所有のレコードとファイルを削除します。Cognis はチェックアウト削除前にフックを呼び出し、機能は `ctx.getCapability` から利用できます。

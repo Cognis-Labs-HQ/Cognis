@@ -476,6 +476,8 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderLifecycleButton\(module, "enable"/);
     assert.match(source, /renderLifecycleButton\(module, "disable"/);
     assert.match(source, /renderLifecycleButton\(module, "uninstall"/);
+    assert.match(source, /confirmModuleUninstall\(i18n\)/);
+    assert.match(source, /uninstallModule\(module\.uuid, options\)/);
     assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);
     assert.match(source, /!module\.installed && module\.branches\?\.length/);

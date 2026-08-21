@@ -453,3 +453,11 @@ Setiap popup pengaturan modul kini memuat dan menyimpan nilai melalui endpoint `
 ## Menyelesaikan penyiapan wajib setelah respons aktivasi kosong
 
 Alur aktivasi langsung kini melanjutkan penyiapan konfigurasi wajib ketika endpoint aktivasi mengembalikan respons sukses kosong yang valid. String, boolean, dan angka yang dikirim menggunakan mekanisme konfigurasi yang sama dengan ikon pengaturan pada detail modul; penyiapan yang gagal atau dibatalkan tetap mengembalikan modul ke keadaan nonaktif.
+
+## Menstabilkan avatar kehadiran dan lampu status
+
+Kapabilitas avatar profil kini menyediakan geometri terbatasnya sendiri untuk gambar, inisial, dan indikator ketersediaan, bukan bergantung pada CSS modul. Avatar kehadiran tetap bulat dan terbatas pada halaman modul eksternal, sementara avatar tertaut, tidak tertaut, dan bilah navigasi semuanya memperoleh lampu status yang terlihat.
+
+## Membuat pembersihan pencopotan modul eksplisit
+
+Pencopotan kini selalu menghapus konfigurasi lokal checkout dan meminta konfirmasi sebelum penghapusan. Kotak centang opsional meneruskan `deleteContent: true` ke hook pencopotan modul untuk menghapus konten secara permanen; pembersihan pengaturan tetap berjalan pada setiap pencopotan sehingga pemasangan ulang memerlukan konfigurasi kembali.

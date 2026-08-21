@@ -168,6 +168,13 @@ interface ModuleBootstrapPlugin {
         | void
         | (() => void | Promise<void>);
     teardownModule?: (ctx: ModuleBootstrapCtx) => Promise<void> | void;
+    uninstallModule?: (
+        ctx: Pick<
+            ModuleBootstrapCtx,
+            "moduleId" | "moduleRoot" | "getCapability" | "log"
+        >,
+        options: { deleteContent: boolean },
+    ) => Promise<void> | void;
 }
 
 export interface ModuleExtensionOptions {
@@ -184,6 +191,10 @@ export interface ModuleExtensionRoutes {
         url: URL,
     ): Promise<boolean>;
     refresh(): Promise<void>;
+    uninstall(
+        moduleId: string,
+        options: { deleteContent: boolean },
+    ): Promise<boolean>;
 }
 
 export function createModuleExtensionRoutes(
@@ -674,7 +685,38 @@ export function createModuleExtensionRoutes(
         handlers = nextHandlers;
     }
 
+    async function uninstall(
+        moduleId: string,
+        uninstallOptions: { deleteContent: boolean },
+    ) {
+        const manifest = (await runtime.listManifests()).find(
+            (entry) => entry.id === moduleId,
+        );
+        if (!manifest?.uuid) return false;
+        const moduleRoot = path.resolve(externalModulesRoot, manifest.uuid);
+        const entrypoint = resolveModuleEntrypointPath(
+            moduleRoot,
+            manifest.entrypoints,
+        );
+        if (!entrypoint) return false;
+        const plugin = (await import(
+            `${entrypoint.path}?uninstall=${Date.now()}`
+        )) as ModuleBootstrapPlugin;
+        if (typeof plugin.uninstallModule !== "function") return false;
+        await plugin.uninstallModule(
+            {
+                moduleId,
+                moduleRoot,
+                getCapability: options.routeContext.getCapability,
+                log,
+            },
+            uninstallOptions,
+        );
+        return true;
+    }
+
     return {
+        uninstall,
         async handle(req, res, url) {
             const method = (req.method || "GET").toUpperCase();
             const match = handlers.find(

@@ -453,3 +453,11 @@ Alle Moduleinstellungsdialoge laden und speichern Werte nun über denselben modu
 ## Erforderliche Einrichtung nach leeren Aktivierungsantworten abschließen
 
 Der direkte Aktivierungsablauf setzt die erforderliche Konfiguration nun fort, wenn der Aktivierungsendpunkt ordnungsgemäß eine leere Erfolgsantwort liefert. Übermittelte Zeichenfolgen, Wahrheitswerte und Zahlen verwenden denselben Konfigurationsmechanismus wie das Einstellungszahnrad in den Moduldetails; eine fehlgeschlagene oder abgebrochene Einrichtung setzt das Modul weiterhin auf deaktiviert zurück.
+
+## Präsenzavatare und Statusanzeigen stabilisieren
+
+Die Profilavatar-Fähigkeit stellt nun eigene begrenzte Geometrie für Bilder, Initialen und Verfügbarkeitsanzeigen bereit, statt von Modul-CSS abhängig zu sein. Präsenzavatare bleiben auf externen Modulseiten rund und begrenzt; verknüpfte, unverknüpfte und Navigationsleisten-Avatare erhalten eine sichtbare Statusanzeige.
+
+## Bereinigung bei der Moduldeinstallation ausdrücklich steuern
+
+Die Deinstallation entfernt nun immer die Konfiguration im Modul-Checkout und verlangt vor dem Löschen eine Bestätigung. Ein optionales Kontrollkästchen übergibt `deleteContent: true` an den Deinstallations-Hook des Moduls, um Inhalte dauerhaft zu entfernen; die reine Einstellungsbereinigung erfolgt bei jeder Deinstallation, sodass nach einer Neuinstallation eine erneute Konfiguration erforderlich ist.

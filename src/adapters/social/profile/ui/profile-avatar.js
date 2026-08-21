@@ -224,13 +224,16 @@ export function buildProfileAvatarMarkup({
     showAvailability = true,
 }) {
     const safeColorSeed = colorSeed || label;
+    const rendererAvatarClass = `${avatarClass} profile-capability-avatar`;
+    const rendererImageClass = `${imageClass} profile-capability-avatar-image`;
+    const rendererFallbackClass = `${fallbackClass} profile-capability-avatar-initials`;
     const canHydrate = avatarKey && !unavailableAvatarKeys.has(avatarKey);
     const avatarContent = canHydrate
-        ? buildInitialsHtml(label, safeColorSeed, fallbackClass, {
+        ? buildInitialsHtml(label, safeColorSeed, rendererFallbackClass, {
               avatarKey,
-              imageClass,
+              imageClass: rendererImageClass,
           })
-        : buildInitialsHtml(label, safeColorSeed, fallbackClass);
+        : buildInitialsHtml(label, safeColorSeed, rendererFallbackClass);
     const profileLink = profileHandle
         ? `/profile/${encodeURIComponent(
               String(profileHandle).replace(/^@/, ""),
@@ -238,7 +241,7 @@ export function buildProfileAvatarMarkup({
         : "";
     if (profileLink) {
         const classes = [
-            avatarClass,
+            rendererAvatarClass,
             linkClass,
             showAvailability && "availability-avatar",
         ]
@@ -251,7 +254,13 @@ export function buildProfileAvatarMarkup({
             `${showAvailability ? availabilityIndicatorMarkup(profileHandle) : ""}</a>`
         );
     }
-    return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
+    const classes = [
+        rendererAvatarClass,
+        showAvailability && "availability-avatar",
+    ]
+        .filter(Boolean)
+        .join(" ");
+    return `<span class="${escapeHtml(classes)}">${avatarContent}${showAvailability ? availabilityIndicatorMarkup("") : ""}</span>`;
 }
 
 /**

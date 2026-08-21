@@ -74,4 +74,7 @@
   <string name="ui.app.modules.integrity_acknowledge">Saya memahami risikonya</string>
   <string name="ui.app.modules.integrity_expected">Diharapkan</string>
   <string name="ui.app.modules.integrity_actual">Aktual</string>
+  <string name="ui.app.modules.uninstall_title">Copot modul</string>
+  <string name="ui.app.modules.uninstall_warning">Pencopotan selalu menghapus konfigurasi modul yang tersimpan. Modul harus disiapkan kembali jika dipasang ulang.</string>
+  <string name="ui.app.modules.uninstall_delete_content">Hapus juga konten modul secara permanen, seperti rapat dan berkas</string>
 </resources>

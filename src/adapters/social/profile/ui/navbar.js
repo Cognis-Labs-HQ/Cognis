@@ -75,6 +75,7 @@ async function performAvailabilityControlMount() {
 
     try {
         await ensureAvailabilityStylesheet();
+        button.classList.add("availability-avatar");
 
         if (!button.querySelector(".availability-indicator")) {
             button.insertAdjacentHTML(

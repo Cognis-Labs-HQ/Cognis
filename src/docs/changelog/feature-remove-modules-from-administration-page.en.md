@@ -453,3 +453,11 @@ Every module settings popup now loads and saves values through the same module-o
 ## Complete required setup after empty enable responses
 
 The direct activation flow now continues required-configuration setup when the enable endpoint correctly returns an empty success response. Submitted strings, booleans, and numbers are sent through the same configuration mechanism used by the detail settings cog; failed or cancelled required setup still rolls the module back to disabled.
+
+## Stabilize presence avatars and status lights
+
+The profile avatar capability now supplies its own bounded image, initials, and availability-indicator geometry instead of depending on module CSS. Presence avatars remain circular and constrained in external module pages, while linked, unlinked, and navbar avatars all receive a visible status light.
+
+## Make module uninstall cleanup explicit
+
+Uninstall now always removes checkout-local configuration and asks for confirmation before deletion. An optional checkbox forwards `deleteContent: true` to the module uninstall hook for permanent content removal; settings-only cleanup runs on every uninstall so reinstalling requires configuration again.

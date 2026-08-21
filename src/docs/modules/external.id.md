@@ -45,3 +45,5 @@ Kode bootstrap dan rute server menulis log aplikasi terstruktur melalui `ctx.log
 ## Penyegaran kanal rilis dan klien browser
 
 Untuk modul terpasang, penyegaran katalog menyelesaikan cabang atau rilis yang terpasang terlebih dahulu dan hanya memakai cabang bawaan repositori ketika tidak ada kanal yang tercatat. Modul memakai data browser milik gateway melalui klien `uiCtx.capabilities` yang dideklarasikan; klien host saat ini mencakup `social:profileUiClient`, `social:messagesUiClient`, `files:uiClient`, dan `share:uiClient`. Deklarasikan setiap kapabilitas UI yang dibutuhkan agar Cognis memuat penyedia aktifnya sebelum memasang rute modul.
+
+Modul yang menyimpan konfigurasi atau konten di luar checkout harus mengekspor `uninstallModule(ctx, { deleteContent })` dari entrypoint bootstrap yang dideklarasikan. Hook selalu menghapus konfigurasi tersimpan; rekaman dan berkas milik modul hanya dihapus ketika `deleteContent` bernilai benar. Cognis memanggil hook sebelum menghapus checkout, sementara kapabilitas tetap tersedia melalui `ctx.getCapability`.

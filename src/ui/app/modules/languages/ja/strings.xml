@@ -74,4 +74,7 @@
   <string name="ui.app.modules.integrity_acknowledge">リスクを理解して続行します</string>
   <string name="ui.app.modules.integrity_expected">期待値</string>
   <string name="ui.app.modules.integrity_actual">実際の値</string>
+  <string name="ui.app.modules.uninstall_title">モジュールをアンインストール</string>
+  <string name="ui.app.modules.uninstall_warning">アンインストールすると、保存済みのモジュール設定は常に削除されます。再インストール後は再設定が必要です。</string>
+  <string name="ui.app.modules.uninstall_delete_content">会議やファイルなどのモジュールコンテンツも完全に削除する</string>
 </resources>

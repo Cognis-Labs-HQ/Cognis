@@ -164,11 +164,18 @@ export async function setModuleEnabled(
     );
 }
 
-export async function uninstallModule(moduleUuid) {
+export async function uninstallModule(
+    moduleUuid,
+    { deleteContent = false } = {},
+) {
     return data(
         await apiFetch(
             `/api/v1/modules/${encodeURIComponent(moduleUuid)}/uninstall`,
-            { method: "DELETE" },
+            {
+                method: "DELETE",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify({ deleteContent }),
+            },
         ),
     );
 }

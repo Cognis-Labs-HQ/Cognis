@@ -74,4 +74,7 @@
   <string name="ui.app.modules.integrity_acknowledge">I acknowledge the risk</string>
   <string name="ui.app.modules.integrity_expected">Expected</string>
   <string name="ui.app.modules.integrity_actual">Actual</string>
+  <string name="ui.app.modules.uninstall_title">Uninstall module</string>
+  <string name="ui.app.modules.uninstall_warning">Uninstalling always clears this module’s saved configuration. The module will require setup again if reinstalled.</string>
+  <string name="ui.app.modules.uninstall_delete_content">Also permanently delete module content, such as meetings and files</string>
 </resources>

@@ -52,6 +52,7 @@ import {
     moduleChangeDirection,
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
+import { confirmModuleUninstall } from "./uninstall.js";
 
 let i18n;
 let composer;
@@ -572,7 +573,9 @@ async function runLifecycleAction(module, action) {
         module.status = action === "enable" ? "enabled" : "disabled";
     }
     if (action === "uninstall") {
-        await uninstallModule(module.uuid);
+        const options = await confirmModuleUninstall(i18n);
+        if (!options) return;
+        await uninstallModule(module.uuid, options);
         module.installed = false;
         delete module.status;
     }

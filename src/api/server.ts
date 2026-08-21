@@ -373,6 +373,8 @@ export function buildServer(deps: ApiDependencies) {
                 await deps.moduleRuntimeGateway.refresh?.();
                 await moduleExtensionRoutes.refresh();
             },
+            beforeUninstall: (moduleId, options) =>
+                moduleExtensionRoutes.uninstall(moduleId, options),
             onUninstalled: async (moduleId) => {
                 enabledModules.delete(moduleId);
                 await deps.persistModuleState?.(moduleId, false);

@@ -31,6 +31,10 @@ export interface ModuleRouteHooks {
         }>
     >;
     onImported?: (moduleId: string) => Promise<void> | void;
+    beforeUninstall?: (
+        moduleId: string,
+        options: { deleteContent: boolean },
+    ) => Promise<boolean | void> | boolean | void;
     onUninstalled?: (moduleId: string) => Promise<void> | void;
 }
 
@@ -429,6 +433,29 @@ export function createModuleRoutes(
                 );
                 return true;
             }
+            const body = await readJson(req).catch(() => ({}));
+            const deleteContent = body?.deleteContent === true;
+            if (manifest) {
+                const cleanupSupported = await hooks?.beforeUninstall?.(
+                    manifest.id,
+                    {
+                        deleteContent,
+                    },
+                );
+                if (deleteContent && cleanupSupported === false) {
+                    res.writeHead(409, { "content-type": "application/json" });
+                    res.end(
+                        JSON.stringify({
+                            error: {
+                                code: "module_content_cleanup_unavailable",
+                                message:
+                                    "This module must provide an uninstallModule hook before Cognis can delete its external content.",
+                            },
+                        }),
+                    );
+                    return true;
+                }
+            }
             await marketplace.uninstall(moduleUuid);
             if (manifest) await hooks?.onUninstalled?.(manifest.id);
             hooks?.log?.("warn", "External module deleted.", {
@@ -436,6 +463,7 @@ export function createModuleRoutes(
                 accountId: claims.sub,
                 moduleId: manifest?.id,
                 moduleUuid,
+                deleteContent,
             });
             res.writeHead(204);
             res.end();

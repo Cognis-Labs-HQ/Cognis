@@ -398,6 +398,7 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
     let enabled = true;
     let uninstallCount = 0;
     let uninstalledModuleId = "";
+    let deleteContent = false;
     const logEntries: Array<{ level: string; message: string }> = [];
     const route = createModuleRoutes(
         {
@@ -405,6 +406,10 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
         } as any,
         {
             getStatus: () => (enabled ? "enabled" : "disabled"),
+            beforeUninstall: async (_moduleId, options) => {
+                deleteContent = options.deleteContent;
+                return true;
+            },
             onUninstalled: async (moduleId) => {
                 uninstalledModuleId = moduleId;
             },
@@ -417,13 +422,18 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
             },
         } as any,
     );
-    const requestUninstall = async () => {
+    const requestUninstall = async (removeContent = false) => {
         let status = 0;
         let body = "";
         await route(
             {
                 method: "DELETE",
                 headers: { authorization: `Bearer ${token}` },
+                async *[Symbol.asyncIterator]() {
+                    yield Buffer.from(
+                        JSON.stringify({ deleteContent: removeContent }),
+                    );
+                },
             } as any,
             {
                 writeHead(code: number) {
@@ -444,9 +454,10 @@ test("module uninstall requires disable and triggers runtime teardown", async ()
     assert.equal(uninstallCount, 0);
 
     enabled = false;
-    assert.equal((await requestUninstall()).status, 204);
+    assert.equal((await requestUninstall(true)).status, 204);
     assert.equal(uninstallCount, 1);
     assert.equal(uninstalledModuleId, "external");
+    assert.equal(deleteContent, true);
     assert.deepEqual(logEntries, [
         { level: "warn", message: "External module deleted." },
     ]);

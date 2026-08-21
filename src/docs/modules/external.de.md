@@ -45,3 +45,5 @@ Serverseitiger Start- und Routencode schreibt strukturierte Anwendungsprotokolle
 ## Veröffentlichungskanal-Aktualisierung und Browserclients
 
 Bei einem installierten Modul löst die Katalogaktualisierung zuerst den installierten Branch oder das Release auf und verwendet den Standardbranch des Repositorys nur, wenn kein Kanal gespeichert ist. Module beziehen Gateway-eigene Browserdaten über deklarierte `uiCtx.capabilities`-Clients; aktuelle Hostclients sind `social:profileUiClient`, `social:messagesUiClient`, `files:uiClient` und `share:uiClient`. Jede benötigte UI-Capability muss deklariert werden, damit Cognis ihren aktiven Anbieter vor dem Einhängen der Modulroute lädt.
+
+Module, die Konfiguration oder Inhalte außerhalb ihres Checkouts speichern, müssen `uninstallModule(ctx, { deleteContent })` aus dem deklarierten Bootstrap-Einstiegspunkt exportieren. Der Hook löscht immer die gespeicherte Konfiguration; moduleigene Datensätze und Dateien entfernt er nur, wenn `deleteContent` wahr ist. Cognis ruft den Hook vor dem Löschen des Checkouts auf, während Fähigkeiten über `ctx.getCapability` verfügbar bleiben.
