@@ -343,12 +343,12 @@ export function buildServer(deps: ApiDependencies) {
                     moduleId,
                     manifest?.requiresCapabilities ?? [],
                     (capabilityId) =>
-                        capabilityId.startsWith("ui:")
-                            ? (deps.uiRegistry?.hasActiveCapabilityProvider(
-                                  capabilityId,
-                              ) ?? false)
-                            : routeContext.getCapability(capabilityId) !==
-                              undefined,
+                        routeContext.getCapability(capabilityId) !==
+                            undefined ||
+                        (deps.uiRegistry?.hasActiveCapabilityProvider(
+                            capabilityId,
+                        ) ??
+                            false),
                 );
                 await (
                     deps.runModuleTests ??

@@ -417,3 +417,7 @@ Modules ページは SPA の再マウント前に、以前の直接読み込み�
 ## デフォルトブランチのモジュール更新を検出
 
 カタログ更新時に、インストール済みの Commit とバージョンを選択中ブランチの最新状態と比較するようになりました。デフォルトブランチに新しい Commit があればバージョン変更がなくても更新アクションを表示し、Manifest のバージョンが新しければ Upgrade アクションと利用可能バージョンを表示します。
+
+## Capability と Navbar の更新ライフサイクルを安定化
+
+認証済みのハード更新では、モジュールのマウント前にセッション Cookie を使って Capability Provider を読み込み、表示用 Navbar Plugin は Dashboard Shell の生成後に読み込むようになりました。`share:openPopup` のような名前付きブラウザー Capability は接頭辞に依存せず UI Registry で解決され、Messages と Shares は Provider が先にインポートされても正しく復旧します。

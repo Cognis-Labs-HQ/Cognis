@@ -417,3 +417,7 @@ Halaman Modul kini membatalkan lingkup interaksi pemuatan langsung sebelumnya se
 ## Mendeteksi pembaruan modul pada cabang default
 
 Penyegaran katalog kini membandingkan commit dan versi terpasang dengan kepala cabang yang dipilih. Commit baru pada cabang default menghasilkan tindakan Perbarui meski tanpa kenaikan versi, sedangkan versi manifes yang lebih baru menghasilkan tindakan Upgrade dan indikator versi tersedia.
+
+## Menstabilkan siklus penyegaran kapabilitas dan navbar
+
+Penyegaran penuh yang terautentikasi kini memuat penyedia kapabilitas melalui cookie sesi sebelum modul di-mount, sementara plugin navbar visual menunggu shell dasbor tersedia. Kapabilitas browser bernama seperti `share:openPopup` diselesaikan melalui registri UI tanpa bergantung pada prefiks, dan Messages serta Shares pulih dengan benar setelah impor penyedia dini.

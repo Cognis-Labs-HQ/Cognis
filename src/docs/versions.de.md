@@ -51,7 +51,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.14` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.12` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `1.1.64` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.68` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.0.69` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.34` |
 | User Share            | `src/adapters/share/user/`          | `1.1.19` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.3.10` |
@@ -65,7 +65,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | --------------------- | ----------------------------- | --------- |
 | Database (db)         | `src/gateways/db/`            | `1.3.8`   |
 | Authentication (auth) | `src/gateways/auth/`          | `1.9.10`  |
-| Share                 | `src/gateways/share/`         | `1.7.27`  |
+| Share                 | `src/gateways/share/`         | `1.7.28`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.1.18`  |
 | Notification (notify) | `src/gateways/notify/`        | `1.5.5`   |
 | Social                | `src/gateways/social/`        | `1.2.14`  |
@@ -86,7 +86,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version  |
 | ---------- | ---------- | -------- |
-| API Server | `src/api/` | `0.3.72` |
+| API Server | `src/api/` | `0.3.73` |
 
 ## Werkzeuge
 

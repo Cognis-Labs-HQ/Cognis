@@ -42,6 +42,9 @@ test("GET /api/v1/ui/capability-providers returns navbar and standalone provider
         scriptUrl: "/static/gateways/files/provider.js",
         providesCapabilities: ["files:uiClient"],
     });
+    uiRegistry.registerNavbarPlugin({
+        scriptUrl: "/static/gateways/calendar/navbar.js",
+    });
     uiRegistry.registerCapabilityProvider({
         scriptUrl: "/static/reuse/feedback-capabilities.js",
         providesCapabilities: ["ui:showToast"],

@@ -24,4 +24,7 @@ async function registerSharesMenuEntry() {
 
 if (typeof document !== "undefined") {
     void registerSharesMenuEntry();
+    window.addEventListener("cognis:navbar-refresh", () => {
+        void registerSharesMenuEntry();
+    });
 }

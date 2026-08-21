@@ -28,7 +28,9 @@ import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
 import {
+    ensureNavbarPluginsLoaded as loadNavbarPlugins,
     ensureUiProvidersLoaded,
+    invalidateNavbarPlugins,
     invalidateUiProviders,
 } from "../reuse/ui-provider-loader.js";
 
@@ -299,7 +301,8 @@ export async function updateNavbarAvatar() {
 let releaseChangelogPopupChecked = false;
 
 export async function ensureNavbarPluginsLoaded() {
-    return ensureUiProvidersLoaded();
+    await ensureUiProvidersLoaded();
+    return loadNavbarPlugins();
 }
 
 function completeDeferredLoginSetup() {
@@ -327,6 +330,7 @@ function scheduleDeferredLoginSetup(i18n) {
 
 window.addEventListener("cognis:navbar-plugins-refresh", () => {
     invalidateUiProviders();
+    invalidateNavbarPlugins();
     ensureNavbarPluginsLoaded().catch(() => {});
 });
 

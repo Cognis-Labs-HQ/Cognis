@@ -332,7 +332,11 @@ export class UIRegistry {
     }
 
     listCapabilityProviders(): UiCapabilityProvider[] {
-        return this.resolveDescriptor(this.listActiveCapabilityProviders());
+        return this.resolveDescriptor(
+            this.listActiveCapabilityProviders().filter(
+                (provider) => provider.providesCapabilities?.length,
+            ),
+        );
     }
 
     registerCapabilityProvider(provider: UiCapabilityProvider): void {

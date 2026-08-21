@@ -408,7 +408,9 @@ export function createModuleExtensionRoutes(
                     requiredCapabilities:
                         route.requiredCapabilities ??
                         manifest.requiresCapabilities?.filter((capability) =>
-                            capability.startsWith("ui:"),
+                            options?.uiRegistry?.hasActiveCapabilityProvider(
+                                capability,
+                            ),
                         ),
                     ownerId: moduleId,
                     isEnabled: () => isModuleEnabled(moduleId),

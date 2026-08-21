@@ -6,9 +6,8 @@ import { messagesUiClient } from "./client.js";
 
 uiCtx.capabilities.contribute("social:messagesUiClient", messagesUiClient);
 
-const messagesLink = document.querySelector("[data-messages-link]");
-
 async function syncMessagesLink() {
+    const messagesLink = document.querySelector("[data-messages-link]");
     if (!messagesLink) return;
     try {
         const response = await apiFetch("/api/v1/social/messages/ping");

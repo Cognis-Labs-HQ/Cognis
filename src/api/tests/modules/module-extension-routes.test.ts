@@ -181,6 +181,10 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         scriptUrl: "/static/profile-avatar.js",
         providesCapabilities: ["ui:profileAvatarRenderer"],
     });
+    uiRegistry.registerCapabilityProvider({
+        scriptUrl: "/static/share-popup.js",
+        providesCapabilities: ["share:openPopup"],
+    });
     const logEntries: Array<{
         level: string;
         message: string;
@@ -192,7 +196,10 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
                 {
                     id: "meetings",
                     uuid: moduleUuid,
-                    requiresCapabilities: ["ui:profileAvatarRenderer"],
+                    requiresCapabilities: [
+                        "ui:profileAvatarRenderer",
+                        "share:openPopup",
+                    ],
                     entrypoints: { bootstrap: "./bootstrap.js" },
                 },
             ],
@@ -216,6 +223,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
         assert.equal(uiRegistry.listSpaRoutes()[0].base, "/meetings");
         assert.deepEqual(uiRegistry.listSpaRoutes()[0].capabilityScripts, [
             "/static/profile-avatar.js",
+            "/static/share-popup.js",
         ]);
         assert.equal(uiRegistry.listAuthTypingMessages().length, 1);
         assert.equal(systemCtx.getCapability("meetings:provider"), "external");

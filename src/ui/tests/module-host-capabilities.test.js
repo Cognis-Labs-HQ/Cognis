@@ -53,4 +53,26 @@ test("the host loader requests navbar and standalone capability providers", () =
         "utf8",
     );
     assert.match(loader, /\/api\/v1\/ui\/capability-providers/);
+    assert.match(loader, /\/api\/v1\/ui\/navbar-plugins/);
+    assert.doesNotMatch(
+        loader,
+        /!localStorage\.getItem\("cognis_access_token"\)/,
+    );
+    assert.match(loader, /response\.status === 401/);
+});
+
+test("navbar plugins mount after the shell and can recover pre-mount imports", () => {
+    const messages = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/navbar.js"),
+        "utf8",
+    );
+    const share = readFileSync(
+        resolve(ROOT, "src/gateways/share/ui/navbar.js"),
+        "utf8",
+    );
+    assert.match(
+        messages,
+        /function syncMessagesLink\(\)[\s\S]*document\.querySelector/,
+    );
+    assert.match(share, /cognis:navbar-refresh/);
 });

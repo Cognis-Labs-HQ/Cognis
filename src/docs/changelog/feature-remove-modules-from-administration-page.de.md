@@ -417,3 +417,7 @@ Die Modulseite beendet nun vor einem SPA-Remount ihren vorherigen Interaktionsbe
 ## Modulaktualisierungen im Standard-Branch erkennen
 
 Die Katalogaktualisierung vergleicht nun den installierten Commit und die Version mit dem Kopf des ausgewählten Branches. Neue Commits im Standard-Branch erzeugen auch ohne Versionssprung eine Aktualisieren-Aktion; neuere Manifest-Versionen zeigen die Upgrade-Aktion und die verfügbare Version.
+
+## Capability- und Navbar-Aktualisierungszyklen stabilisieren
+
+Authentifizierte vollständige Aktualisierungen laden Capability-Provider nun über das Sitzungscookie vor dem Mounten von Modulen, während visuelle Navbar-Plugins auf die Dashboard-Shell warten. Benannte Browser-Capabilities wie `share:openPopup` werden unabhängig vom Präfix über die UI-Registry aufgelöst; Messages und Shares erholen sich nach frühen Provider-Imports zuverlässig.

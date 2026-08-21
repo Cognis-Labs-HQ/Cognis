@@ -417,3 +417,7 @@ The Modules page now aborts its previous direct-load interaction scope before an
 ## Detect default-branch module updates
 
 Catalog refresh now compares the installed commit and version with the selected branch head. New default-branch commits produce an Update action even without a version bump, while newer manifest versions produce the Upgrade action and available-version indicator.
+
+## Stabilize capability and navbar refresh lifecycles
+
+Authenticated hard refreshes now load capability providers through the session cookie before module mounts, while visual navbar plugins wait until the dashboard shell exists. Named browser capabilities such as `share:openPopup` resolve through the UI registry regardless of prefix, and Messages and Shares recover cleanly after early provider imports.

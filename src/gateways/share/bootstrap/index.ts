@@ -295,6 +295,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     uiHooks.registerNavbarPlugin(
         "/static/adapters/share/link/ui/share-links-popup/index.js",
+        () => gateway.isAdapterEnabled("link"),
+        ["share:openPopup", "share:openLinksPopup"],
     );
 
     ctx.routeRegistry.registerPrefix("/api/v1/share", "share");

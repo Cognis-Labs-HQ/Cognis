@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+const bootstrapSource = await readFile(
+    new URL("../bootstrap/index.ts", import.meta.url),
+    "utf8",
+);
+
 const popupSource = await Promise.all(
     ["index.js", "implementation.js", "rendering.js"].map((fileName) =>
         readFile(
@@ -25,6 +30,13 @@ const userPageSource = await readFile(
     new URL("../../../adapters/share/user/page.js", import.meta.url),
     "utf8",
 );
+
+test("link share popup is an active browser capability provider", () => {
+    assert.match(
+        bootstrapSource,
+        /share-links-popup\/index\.js"[\s\S]*isAdapterEnabled\("link"\)[\s\S]*"share:openPopup"/,
+    );
+});
 const sessionFlowSource = await readFile(
     new URL("../ui/session-flow-hooks.js", import.meta.url),
     "utf8",
