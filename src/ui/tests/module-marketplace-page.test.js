@@ -15,7 +15,10 @@ import {
     readModulePreferenceValues,
 } from "../app/modules/preferences.js";
 import { resolveModuleAssetUrl } from "../app/modules/assets.js";
-import { localizeModulePresentation } from "../app/modules/presentation.js";
+import {
+    localizeModulePresentation,
+    resolveLocalizedReadme,
+} from "../app/modules/presentation.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const marketplaceStyles = readFileSync(
@@ -532,7 +535,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
         "utf8",
     );
     assert.match(source, /data-module-uuid/);
-    assert.match(source, /renderMarkdown\(module\.readme/);
+    assert.match(
+        source,
+        /renderMarkdown\(resolveLocalizedReadme\(module, i18n\.locale\)\)/,
+    );
     assert.match(source, /module-detail-screenshots/);
     assert.match(source, /data-module-back/);
     assert.match(source, /renderSidebar\(categories\)/);
@@ -620,6 +626,23 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /capture: true/);
     assert.match(source, /composer\?\.refreshElements\(\["module-store"\]\)/);
     assert.doesNotMatch(source, /composer\.refresh\(elements\(\)\)/);
+});
+
+test("module details select localized readmes with English fallback", () => {
+    const module = {
+        readmes: {
+            en: "# English",
+            ja: "# 日本語",
+            default: "# Default",
+        },
+        readme: "# Catalog fallback",
+    };
+    assert.equal(resolveLocalizedReadme(module, "ja-JP"), "# 日本語");
+    assert.equal(resolveLocalizedReadme(module, "de-DE"), "# English");
+    assert.equal(
+        resolveLocalizedReadme({ readme: "# Catalog fallback" }, "de"),
+        "# Catalog fallback",
+    );
 });
 
 test("module marketplace uses curated recommendations and compact details", () => {
@@ -798,6 +821,10 @@ test("modules page aborts direct-mount interactions before SPA remount", () => {
     assert.match(source, /replaceMountScope\(pageMountController, signal\)/);
     assert.match(source, /bindInteractions\(root, mountSignal\)/);
     assert.match(source, /signal:\s*mountSignal/);
+    assert.doesNotMatch(
+        source,
+        /mountSignal\.addEventListener\("abort", clearAuthenticatedModuleAssets/,
+    );
 });
 
 test("required module configuration distinguishes unset values from valid false values", () => {

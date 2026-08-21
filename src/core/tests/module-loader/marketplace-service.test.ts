@@ -378,6 +378,10 @@ test("module marketplace discovers repository manifests", async () => {
             commit: "older123",
         }),
     );
+    await Promise.all([
+        writeFile(path.join(installedRoot, "README.en.md"), "# English"),
+        writeFile(path.join(installedRoot, "README.ja.md"), "# 日本語"),
+    ]);
     const originalFetch = globalThis.fetch;
     let moduleName = "Notes";
     let moduleDescription = "Shared notes.";
@@ -529,6 +533,10 @@ test("module marketplace discovers repository manifests", async () => {
             "png-one",
         );
         assert.equal(modules[0].readme, "# Notes\nA useful module.");
+        assert.deepEqual(modules[0].readmes, {
+            en: "# English",
+            ja: "# 日本語",
+        });
         assert.equal(modules[0].license, undefined);
         assert.equal(modules[0].defaultBranch, "main");
         assert.equal(modules[0].version, "1.0.0");

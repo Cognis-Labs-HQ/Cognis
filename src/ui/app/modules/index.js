@@ -47,12 +47,12 @@ import {
     hasModuleUpdate,
     localizeModulePresentation,
     moduleChangeDirection,
+    resolveLocalizedReadme,
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
 import { confirmModuleUninstall } from "./uninstall.js";
 import { openMarketplaceSettings } from "./source-settings.js";
 import {
-    clearAuthenticatedModuleAssets,
     loadAuthenticatedModuleAssets,
     resolveModuleAssetUrl,
 } from "./assets.js";
@@ -223,7 +223,7 @@ function renderModuleDetails(module) {
         advanced || settings
             ? `<div class="module-detail-header-actions">${advanced}${settings}</div>`
             : "";
-    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2><p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(module.readme ?? presentation.description ?? "")}</div></article>`;
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2><p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(resolveLocalizedReadme(module, i18n.locale))}</div></article>`;
 }
 
 function renderDetailActions(module) {
@@ -791,9 +791,6 @@ export async function mount(root, { signal } = {}) {
     if (globalThis.__spaRouter && !signal) return;
     pageMountController = replaceMountScope(pageMountController, signal);
     const mountSignal = pageMountController.signal;
-    mountSignal.addEventListener("abort", clearAuthenticatedModuleAssets, {
-        once: true,
-    });
     const finishPageLoading = beginPageLoading();
     try {
         pageRoot = root;

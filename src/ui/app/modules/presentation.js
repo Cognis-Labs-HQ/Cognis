@@ -28,6 +28,21 @@ export async function localizeModulePresentation(
     return module;
 }
 
+export function resolveLocalizedReadme(module, locale) {
+    const normalizedLocale = String(locale ?? "en").toLowerCase();
+    const baseLocale = normalizedLocale.split("-")[0];
+    return (
+        module.readmes?.[normalizedLocale] ??
+        module.readmes?.[baseLocale] ??
+        module.readmes?.en ??
+        module.readmes?.default ??
+        module.readme ??
+        module.localizedPresentation?.description ??
+        module.description ??
+        ""
+    );
+}
+
 export function formatVersion(version) {
     const normalized = String(version ?? "").replace(/^v/, "");
     return normalized ? `v${normalized}` : "";

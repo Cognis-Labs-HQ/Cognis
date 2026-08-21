@@ -70,6 +70,7 @@ export interface MarketplaceModule extends ModuleManifest {
         media?: Array<{ id: string; contentType: string }>;
     };
     readme?: string;
+    readmes?: Record<string, string>;
 }
 
 export interface MarketplaceAsset {
@@ -430,7 +431,9 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             });
             discovered.push(...accepted);
         }
-        return discovered;
+        return Promise.all(
+            discovered.map((module) => this.attachInstalledReadmes(module)),
+        );
     }
 
     async listCachedModules(): Promise<MarketplaceModule[]> {
@@ -442,7 +445,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             sources.map((source) => [source.uuid, source.trusted ? 0 : 1]),
         );
         const claimed = new Set<string>();
-        return (await this.readCachedCatalog())
+        const modules = (await this.readCachedCatalog())
             .filter((module) => configuredSourceUuids.has(module.sourceUuid))
             .sort(
                 (left, right) =>
@@ -454,6 +457,39 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 claimed.add(module.uuid);
                 return true;
             });
+        return Promise.all(
+            modules.map((module) => this.attachInstalledReadmes(module)),
+        );
+    }
+
+    private async attachInstalledReadmes(
+        module: MarketplaceModule,
+    ): Promise<MarketplaceModule> {
+        const moduleRoot = path.join(this.installRoot, module.uuid);
+        try {
+            const readmeNames = (await readdir(moduleRoot)).filter((name) =>
+                /^README(?:\.[A-Za-z0-9-]+)?\.md$/i.test(name),
+            );
+            const readmes = Object.fromEntries(
+                await Promise.all(
+                    readmeNames.map(async (name) => {
+                        const locale =
+                            name
+                                .match(/^README\.([A-Za-z0-9-]+)\.md$/i)?.[1]
+                                ?.toLowerCase() ?? "default";
+                        return [
+                            locale,
+                            await readFile(path.join(moduleRoot, name), "utf8"),
+                        ];
+                    }),
+                ),
+            );
+            return Object.keys(readmes).length
+                ? { ...module, readmes }
+                : module;
+        } catch {
+            return module;
+        }
     }
 
     async install(
