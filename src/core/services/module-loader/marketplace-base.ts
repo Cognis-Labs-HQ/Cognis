@@ -16,6 +16,10 @@ interface ModuleInstallProvenance {
     commit: string;
 }
 
+const MAX_MARKETPLACE_ASSET_BYTES = 10 * 1024 * 1024;
+const CANONICAL_UUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export class MarketplaceServiceBase {
     protected readonly assets = new Map<string, MarketplaceAsset>();
     protected catalogMutation: Promise<void> = Promise.resolve();
@@ -522,6 +526,14 @@ export class MarketplaceServiceBase {
         );
         if (!response) return undefined;
         if (!response.ok) return undefined;
+        const declaredLength = Number(response.headers.get("content-length"));
+        if (
+            Number.isFinite(declaredLength) &&
+            declaredLength > MAX_MARKETPLACE_ASSET_BYTES
+        ) {
+            await response.body?.cancel();
+            return undefined;
+        }
         const githubPayload =
             source.provider === "github"
                 ? ((await response.json()) as { content?: unknown })
@@ -549,7 +561,9 @@ export class MarketplaceServiceBase {
                   String(githubPayload.content ?? "").replace(/\s/g, ""),
                   "base64",
               )
-            : Buffer.from(await response.arrayBuffer());
+            : await this.readBoundedAsset(response);
+        if (!body || body.length > MAX_MARKETPLACE_ASSET_BYTES)
+            return undefined;
         const id = createHash("sha256").update(body).digest("hex");
         this.assets.set(id, { body, contentType });
         const assetRoot = this.assetCacheRoot;
@@ -563,6 +577,24 @@ export class MarketplaceServiceBase {
             ),
         ]);
         return id;
+    }
+
+    private async readBoundedAsset(response: Response): Promise<Buffer | null> {
+        if (!response.body) return Buffer.alloc(0);
+        const reader = response.body.getReader();
+        const chunks: Uint8Array[] = [];
+        let size = 0;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            size += value.byteLength;
+            if (size > MAX_MARKETPLACE_ASSET_BYTES) {
+                await reader.cancel();
+                return null;
+            }
+            chunks.push(value);
+        }
+        return Buffer.concat(chunks, size);
     }
 
     protected async cacheRepositoryImageAsset(
@@ -818,7 +850,7 @@ export class MarketplaceServiceBase {
             .recommended;
         if (
             !manifest.uuid ||
-            !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(manifest.uuid) ||
+            !CANONICAL_UUID.test(manifest.uuid) ||
             !manifest.id ||
             !manifest.name ||
             !manifest.version ||

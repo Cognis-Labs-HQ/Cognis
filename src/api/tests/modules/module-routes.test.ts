@@ -800,6 +800,7 @@ test("module updates report that a container restart is required", async () => {
 });
 
 test("module catalog serves cached images from the same origin", async () => {
+    const token = issueAccessToken("u1", "admin", 60);
     const assetId = "a".repeat(64);
     const route = createModuleRoutes(
         { list: async () => [] } as any,
@@ -821,7 +822,7 @@ test("module catalog serves cached images from the same origin", async () => {
     await route(
         {
             method: "GET",
-            headers: {},
+            headers: { authorization: `Bearer ${token}` },
         } as any,
         {
             writeHead(code: number, headers: Record<string, string>) {

@@ -209,6 +209,8 @@ export function createModuleRoutes(
             /^\/api\/v1\/modules\/catalog\/assets\/([a-f0-9]{64})$/,
         );
         if (marketplace && assetMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
             const asset = await marketplace.getAsset(assetMatch[1]);
             if (!asset) {
                 res.writeHead(404, { "content-type": "application/json" });
@@ -336,6 +338,24 @@ export function createModuleRoutes(
             const installedModule = (await moduleService.list()).find(
                 (entry) => entry.uuid === requestedModule.uuid,
             );
+            const collidingModule = (await moduleService.list()).find(
+                (entry) =>
+                    entry.id === (body.module as { id?: string }).id &&
+                    entry.uuid !== requestedModule.uuid,
+            );
+            if (collidingModule) {
+                res.writeHead(409, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_id_conflict",
+                            message:
+                                "A different module already uses this module ID.",
+                        },
+                    }),
+                );
+                return true;
+            }
             if (
                 installedModule &&
                 hooks?.getStatus?.(installedModule.id) === "enabled"

@@ -1,6 +1,13 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import {
+    mkdir,
+    readFile,
+    readdir,
+    rename,
+    rm,
+    writeFile,
+} from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import type { ModuleManifest } from "../../contracts/module-manifest.js";
@@ -96,6 +103,7 @@ interface ModuleInstallProvenance {
 }
 
 export class ModuleMarketplaceService extends MarketplaceServiceBase {
+    private readonly installationLocks = new Map<string, Promise<void>>();
     async getSettings(): Promise<ModuleMarketplaceSettings> {
         try {
             return JSON.parse(
@@ -449,6 +457,35 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         branch?: string,
         validateDependencies?: (manifest: ModuleManifest) => Promise<void>,
     ): Promise<ModuleManifest> {
+        const previous =
+            this.installationLocks.get(module.uuid) ?? Promise.resolve();
+        let release!: () => void;
+        const current = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        this.installationLocks.set(module.uuid, current);
+        await previous;
+        try {
+            return await this.installUnlocked(
+                module,
+                token,
+                branch,
+                validateDependencies,
+            );
+        } finally {
+            release();
+            if (this.installationLocks.get(module.uuid) === current) {
+                this.installationLocks.delete(module.uuid);
+            }
+        }
+    }
+
+    private async installUnlocked(
+        module: MarketplaceModule,
+        token?: string,
+        branch?: string,
+        validateDependencies?: (manifest: ModuleManifest) => Promise<void>,
+    ): Promise<ModuleManifest> {
         const target = path.join(this.installRoot, module.uuid);
         const temporary = `${target}.installing`;
         await mkdir(this.installRoot, { recursive: true });
@@ -487,6 +524,22 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             );
             if (manifest.uuid !== module.uuid)
                 throw new Error("module_uuid_mismatch");
+            const installedEntries = await readdir(this.installRoot, {
+                withFileTypes: true,
+            });
+            for (const entry of installedEntries) {
+                if (!entry.isDirectory() || entry.name === module.uuid)
+                    continue;
+                const installedManifest = await readFile(
+                    path.join(this.installRoot, entry.name, "manifest.json"),
+                    "utf8",
+                )
+                    .then((raw) => this.parseManifest(raw))
+                    .catch(() => null);
+                if (installedManifest?.id === manifest.id) {
+                    throw new Error("module_id_conflict");
+                }
+            }
             await validateModuleRepository(temporary, manifest);
             await validateDependencies?.(manifest);
             const { stdout: commit } = await execFileAsync(

@@ -190,7 +190,7 @@ export interface ModuleExtensionRoutes {
         res: ServerResponse,
         url: URL,
     ): Promise<boolean>;
-    refresh(): Promise<void>;
+    refresh(options?: { throwOnFailure?: boolean }): Promise<void>;
     uninstall(
         moduleId: string,
         options: { deleteContent: boolean },
@@ -274,6 +274,20 @@ export function createModuleExtensionRoutes(
             routeOptions?: ModuleRouteOptions,
         ) {
             requireActiveBootstrap();
+            const protectedPrefixes = [
+                "/api/v1/system",
+                "/api/v1/auth",
+                "/api/v1/users",
+                "/public",
+                "/ui",
+            ];
+            if (
+                protectedPrefixes.some((prefix) => routePath.startsWith(prefix))
+            ) {
+                throw new Error(
+                    `Module ${moduleId} attempts to register protected route: ${routePath}`,
+                );
+            }
             const parsedAccess = parseRoleAccessPolicy(routeOptions?.access);
             if (parsedAccess.invalid) {
                 logInvalidAccessPolicy(
@@ -520,7 +534,7 @@ export function createModuleExtensionRoutes(
         }
     }
 
-    async function refresh() {
+    async function refresh(refreshOptions?: { throwOnFailure?: boolean }) {
         for (const [moduleId, loaded] of loadedModules) {
             for (const teardown of [
                 loaded.dispose,
@@ -679,6 +693,7 @@ export function createModuleExtensionRoutes(
                         error instanceof Error ? error.message : String(error),
                 });
                 await options.onBootstrapFailed?.(manifest.id);
+                if (refreshOptions?.throwOnFailure) throw error;
             }
         }
 

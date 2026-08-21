@@ -465,3 +465,7 @@ Uninstall now always removes checkout-local configuration and asks for confirmat
 ## Serve the Files UI provider from its canonical path
 
 The Files gateway now registers its UI directory under the `files` gateway key that backs `/static/gateways/files/*`. Direct and SPA module mounts can import `provider.js` reliably before resolving `files:uiClient`.
+
+## Harden marketplace installation and assets
+
+Marketplace assets now have strict download limits and require administrator authentication. Module UUID and ID validation, per-module installation serialization, runtime route protection, and activation failure reporting prevent unsafe or misleading lifecycle states.

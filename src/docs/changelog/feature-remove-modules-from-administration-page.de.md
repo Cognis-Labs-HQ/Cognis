@@ -465,3 +465,7 @@ Die Deinstallation entfernt nun immer die Konfiguration im Modul-Checkout und ve
 ## Files-UI-Provider über den kanonischen Pfad bereitstellen
 
 Das Files-Gateway registriert sein UI-Verzeichnis nun unter dem Gateway-Schlüssel `files`, der `/static/gateways/files/*` bedient. Direkte und SPA-Modulaufrufe können `provider.js` zuverlässig importieren, bevor `files:uiClient` aufgelöst wird.
+
+## Marketplace-Installation und Assets absichern
+
+Marketplace-Assets haben jetzt strenge Downloadlimits und erfordern eine Administratorauthentifizierung. Modul-UUID- und ID-Prüfungen, die Serialisierung pro Modul, geschützte Laufzeitrouten und gemeldete Aktivierungsfehler verhindern unsichere oder irreführende Lebenszykluszustände.

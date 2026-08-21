@@ -361,7 +361,7 @@ export function buildServer(deps: ApiDependencies) {
                 enabledModules.add(moduleId);
                 await deps.onModuleStateChanged?.(moduleId, true);
                 await deps.persistModuleState?.(moduleId, true);
-                await moduleExtensionRoutes.refresh();
+                await moduleExtensionRoutes.refresh({ throwOnFailure: true });
             },
             onDisabled: async (moduleId) => {
                 enabledModules.delete(moduleId);

@@ -465,3 +465,7 @@ Pencopotan kini selalu menghapus konfigurasi lokal checkout dan meminta konfirma
 ## Menyajikan penyedia UI Files dari jalur kanonis
 
 Gateway Files kini mendaftarkan direktori UI dengan kunci gateway `files` yang melayani `/static/gateways/files/*`. Mount modul langsung dan SPA dapat mengimpor `provider.js` secara andal sebelum menyelesaikan `files:uiClient`.
+
+## Amankan instalasi dan aset marketplace
+
+Aset marketplace kini memiliki batas unduhan ketat dan memerlukan autentikasi administrator. Validasi UUID dan ID modul, serialisasi instalasi per modul, perlindungan rute runtime, serta pelaporan kegagalan aktivasi mencegah status siklus hidup yang tidak aman atau menyesatkan.
