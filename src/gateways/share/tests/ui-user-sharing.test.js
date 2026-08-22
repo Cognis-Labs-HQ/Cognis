@@ -105,7 +105,7 @@ test("public Share page disables page layout editing", () => {
 test("public Share page loads host capability providers after guest authentication", () => {
     assert.match(
         shareAppSource,
-        /if \(!session\?\.authenticated\)[\s\S]*ui:ensureProvidersLoaded[\s\S]*mountScriptUrl/,
+        /if \(!session\?\.authenticated\)[\s\S]*ui:ensureProvidersLoaded[\s\S]*force: true[\s\S]*mountScriptUrl/,
     );
 });
 

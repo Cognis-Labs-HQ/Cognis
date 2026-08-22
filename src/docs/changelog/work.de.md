@@ -23,3 +23,7 @@ Die Abfrage von Modulinstallationen liefert nun stabile öffentliche Fehlercodes
 ## Modulvoraussetzungen wiederhergestellt
 
 Der herkömmliche README-Alias im Stammverzeichnis nimmt nicht mehr an Modul-Integritätsprüfungen teil, Konfigurationsabfragen deaktivierter Module zeigen erwartete fehlende Routen nicht mehr als Fehler an, und das Share-Gateway veröffentlicht nun seine kanonische Browser-Trigger-Capability für abhängige Module.
+
+## Anbieter für Freigabeseiten aktualisiert
+
+Freigabeseiten aktualisieren nun die Host-Capability-Anbieter nach Aktivierung ihrer begrenzten Gastsitzung, und Cognis veröffentlicht einen validierten Laufzeit-Ressourcenlader für Modulseiten.

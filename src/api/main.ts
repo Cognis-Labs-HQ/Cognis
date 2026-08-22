@@ -220,6 +220,10 @@ uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/feedback-capabilities.js",
     providesCapabilities: ["ui:log", "ui:showToast", "ui:openErrorPopup"],
 });
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/resource-loader.js",
+    providesCapabilities: ["ui:resourceLoader"],
+});
 const healthService = new HealthService();
 
 const gatewayService = new GatewayService(gatewayRegistry);

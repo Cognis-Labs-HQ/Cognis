@@ -22,6 +22,7 @@ for (const capability of [
     "ui:log",
     "ui:showToast",
     "ui:openErrorPopup",
+    "ui:resourceLoader",
 ]) {
     test(`host registers the module UI capability ${capability}`, () => {
         assert.match(
@@ -63,6 +64,7 @@ test("the host loader requests navbar and standalone capability providers", () =
     assert.match(loader, /\/api\/v1\/ui\/navbar-plugins/);
     assert.match(loader, /!localStorage\.getItem\("cognis_access_token"\)/);
     assert.match(loader, /response\.status === 401/);
+    assert.match(loader, /if \(force\) providersLoaded = false/);
     assert.match(
         loader,
         /"ui:ensureProvidersLoaded",\s*ensureUiProvidersLoaded/,
@@ -71,6 +73,17 @@ test("the host loader requests navbar and standalone capability providers", () =
         loader,
         /"ui:ensureNavbarPluginsLoaded",\s*ensureNavbarPluginsLoaded/,
     );
+});
+
+test("the host resource loader validates and owns external scripts", () => {
+    const loader = readFileSync(
+        resolve(ROOT, "src/ui/reuse/resource-loader.js"),
+        "utf8",
+    );
+    assert.match(loader, /RESOURCE_ID_PATTERN/);
+    assert.match(loader, /\["http:", "https:"\]\.includes\(url\.protocol\)/);
+    assert.match(loader, /resources\.set\(normalizedId, resource\)/);
+    assert.match(loader, /ui:resourceLoader/);
 });
 
 test("the files client is a standalone provider independent of navbar mount", () => {

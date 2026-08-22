@@ -23,3 +23,7 @@ Polling instalasi modul kini mengembalikan kode galat publik yang stabil tanpa m
 ## Prasyarat modul dipulihkan
 
 Alias README konvensional di direktori akar tidak lagi mengikuti pemeriksaan integritas modul, pemeriksaan konfigurasi modul nonaktif tidak lagi menampilkan rute hilang yang diharapkan sebagai galat, dan gateway Share kini menerbitkan kapabilitas pemicu browser kanonis untuk modul dependen.
+
+## Penyedia halaman bersama disegarkan
+
+Halaman berbagi kini menyegarkan penyedia kapabilitas host setelah mengaktifkan sesi tamu terbatas, dan Cognis menerbitkan pemuat sumber daya runtime tervalidasi yang dibutuhkan halaman modul.

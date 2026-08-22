@@ -46,7 +46,9 @@ async function importCatalog(endpoint) {
  *
  * @returns {Promise<void>}
  */
-export async function ensureUiProvidersLoaded() {
+export async function ensureUiProvidersLoaded({ force = false } = {}) {
+    if (force && providersLoadPromise) await providersLoadPromise;
+    if (force) providersLoaded = false;
     if (providersLoaded) return;
     if (providersLoadPromise) return providersLoadPromise;
     if (typeof localStorage === "undefined") return;

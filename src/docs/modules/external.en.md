@@ -51,3 +51,5 @@ Modules that persist configuration or content outside their checkout must export
 ## UI viewport ownership
 
 Cognis owns the dashboard shell and every reusable component emitted by a host capability, including the structural `profile-capability-*` avatar classes. A module owns only descendants it renders inside the content root passed to `mount()`. Every module selector must end at a module-namespaced class or ID; a host theme selector may appear only as an ancestor of that module-owned target. Modules may pass their own layout classes to host renderers, but must not copy host stylesheets, redefine host capability classes, select shell elements, or mutate `document.body` or `document.head`. Application-wide behavior belongs in declared `uiCtx` capabilities or flows with removable hooks.
+
+Modules that must load a runtime script declare `ui:resourceLoader` and call its validated, reference-counted `loadScript({ id, src, globalName })` method. They must dispose the returned handle during unmount and must not append scripts directly to the document.

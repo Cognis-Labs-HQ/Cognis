@@ -23,3 +23,7 @@ Module installation polling now returns stable public error codes without exposi
 ## Module prerequisites restored
 
 The conventional root README alias no longer participates in module integrity checks, disabled module configuration probes no longer surface expected missing-route errors, and the Share gateway now publishes its canonical browser trigger capability for dependent modules.
+
+## Shared-page providers refreshed
+
+Share pages now refresh host capability providers after activating their scoped guest session, and Cognis publishes a validated runtime resource loader required by module pages.
