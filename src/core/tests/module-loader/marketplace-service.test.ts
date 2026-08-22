@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { execFile } from "node:child_process";
+import { execFile, spawnSync } from "node:child_process";
 import { promisify } from "node:util";
 import {
     DEFAULT_TRUSTED_MODULE_SOURCE,
@@ -18,6 +18,7 @@ const source = {
     baseUrl: "https://api.github.com",
 };
 const execFileAsync = promisify(execFile);
+const gitAvailable = spawnSync("git", ["--version"]).status === 0;
 
 test("module marketplace persists source metadata without PAT values", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
@@ -301,52 +302,65 @@ test("module installation accepts cached catalogs created before release discove
     );
 });
 
-test("module checkout installs the catalog commit when a branch has advanced", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
-    const repository = path.join(root, "repository");
-    const checkout = path.join(root, "checkout");
-    await mkdir(repository);
-    await execFileAsync("git", ["init", "-b", "main"], { cwd: repository });
-    await execFileAsync("git", ["config", "user.email", "tests@cognis.dev"], {
-        cwd: repository,
-    });
-    await execFileAsync("git", ["config", "user.name", "Cognis Tests"], {
-        cwd: repository,
-    });
-    const manifestPath = path.join(repository, "manifest.json");
-    await writeFile(manifestPath, JSON.stringify({ version: "1.4.57" }));
-    await execFileAsync("git", ["add", "manifest.json"], { cwd: repository });
-    await execFileAsync("git", ["commit", "-m", "older release"], {
-        cwd: repository,
-    });
-    const { stdout: olderCommit } = await execFileAsync(
-        "git",
-        ["rev-parse", "HEAD"],
-        { cwd: repository },
-    );
-    await writeFile(manifestPath, JSON.stringify({ version: "1.4.58" }));
-    await execFileAsync("git", ["commit", "-am", "newer release"], {
-        cwd: repository,
-    });
-    const service = new ModuleMarketplaceService(
-        path.join(root, "sources.json"),
-        path.join(root, "modules"),
-    );
+test(
+    "module checkout installs the catalog commit when a branch has advanced",
+    { skip: !gitAvailable },
+    async () => {
+        const root = await mkdtemp(
+            path.join(os.tmpdir(), "cognis-marketplace-"),
+        );
+        const repository = path.join(root, "repository");
+        const checkout = path.join(root, "checkout");
+        await mkdir(repository);
+        await execFileAsync("git", ["init", "-b", "main"], { cwd: repository });
+        await execFileAsync(
+            "git",
+            ["config", "user.email", "tests@cognis.dev"],
+            {
+                cwd: repository,
+            },
+        );
+        await execFileAsync("git", ["config", "user.name", "Cognis Tests"], {
+            cwd: repository,
+        });
+        const manifestPath = path.join(repository, "manifest.json");
+        await writeFile(manifestPath, JSON.stringify({ version: "1.4.57" }));
+        await execFileAsync("git", ["add", "manifest.json"], {
+            cwd: repository,
+        });
+        await execFileAsync("git", ["commit", "-m", "older release"], {
+            cwd: repository,
+        });
+        const { stdout: olderCommit } = await execFileAsync(
+            "git",
+            ["rev-parse", "HEAD"],
+            { cwd: repository },
+        );
+        await writeFile(manifestPath, JSON.stringify({ version: "1.4.58" }));
+        await execFileAsync("git", ["commit", "-am", "newer release"], {
+            cwd: repository,
+        });
+        const service = new ModuleMarketplaceService(
+            path.join(root, "sources.json"),
+            path.join(root, "modules"),
+        );
 
-    await (service as any).cloneRepository(
-        repository,
-        "main",
-        olderCommit.trim(),
-        checkout,
-        { ...process.env, GIT_TERMINAL_PROMPT: "0" },
-    );
+        await (service as any).cloneRepository(
+            repository,
+            "main",
+            olderCommit.trim(),
+            checkout,
+            { ...process.env, GIT_TERMINAL_PROMPT: "0" },
+        );
 
-    assert.equal(
-        JSON.parse(await readFile(path.join(checkout, "manifest.json"), "utf8"))
-            .version,
-        "1.4.57",
-    );
-});
+        assert.equal(
+            JSON.parse(
+                await readFile(path.join(checkout, "manifest.json"), "utf8"),
+            ).version,
+            "1.4.57",
+        );
+    },
+);
 
 test("module marketplace discovers repository manifests", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
