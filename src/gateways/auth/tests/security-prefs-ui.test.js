@@ -147,7 +147,7 @@ test("keyring settings unlock once before allowing secret changes", () => {
     assert.match(KEYRING_SETTINGS_SOURCE, /settings-keyring-section/);
     assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-log-previous/);
     assert.match(KEYRING_SETTINGS_SOURCE, /data-keyring-log-next/);
-    assert.match(KEYRING_SETTINGS_SOURCE, /eventPageSize = 25/);
+    assert.match(KEYRING_SETTINGS_SOURCE, /eventPageSize = 10/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:listEvents/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:changePassword/);
     assert.match(KEYRING_SETTINGS_SOURCE, /keyring:clear/);
