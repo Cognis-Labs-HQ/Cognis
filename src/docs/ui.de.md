@@ -40,3 +40,7 @@ Gateways injizieren Admin-Panels und seitenspezifische UI-Beiträge zur Laufzeit
 | `ui.reuse.generic.*` | Kontextfreie eigenständige Aktionswörter (speichern, verwerfen, zurücksetzen) |
 | `ui.app.<page>.*`    | Seitenspezifischer Text                                                       |
 | `ui.layout.*`        | Layout-Shell-Text und ARIA-Labels                                             |
+
+## Navigationsreihenfolge
+
+Angemeldete Benutzer können primäre Navigationslinks in ihre bevorzugte Reihenfolge ziehen. Cognis speichert die geordnete Routenliste in den `ui-preferences` des Kontos, wendet sie beim Start der Oberfläche erneut an und platziert neu beigesteuerte Links hinter bekannten gespeicherten Links, bis der Benutzer sie neu anordnet.

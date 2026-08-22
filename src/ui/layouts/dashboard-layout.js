@@ -27,6 +27,7 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
+import { bindNavigationOrdering } from "../reuse/navigation-order.js";
 import {
     ensureNavbarPluginsLoaded as loadNavbarPlugins,
     ensureUiProvidersLoaded,
@@ -140,6 +141,15 @@ function bindSwitcherSettingsLinks(root) {
             navigateTo("/settings#appearance");
         },
     );
+}
+
+async function bindPrimaryNavigationOrdering(root, i18n) {
+    await bindNavigationOrdering(root.querySelector(".topnav"), {
+        loadPreferences: loadUiPreferences,
+        savePreferences: saveUiPreferences,
+        onSaveError: () =>
+            showToast(i18n.t("ui.reuse.error"), { variant: "error" }),
+    });
 }
 
 function bindTopbarActions() {
@@ -624,6 +634,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         bindHeaderScrollState(root);
         bindThemeToggle({ usePreferenceApi });
         bindLanguageToggle({ i18n, navigateTo, showToast });
+        await bindPrimaryNavigationOrdering(root, i18n);
         bindSwitcherSettingsLinks(root);
         return;
     }
@@ -684,6 +695,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     bindHeaderScrollState(root);
     bindThemeToggle({ usePreferenceApi });
     bindLanguageToggle({ i18n, navigateTo, showToast });
+    await bindPrimaryNavigationOrdering(root, i18n);
     bindSwitcherSettingsLinks(root);
     registerServiceWorker();
 }

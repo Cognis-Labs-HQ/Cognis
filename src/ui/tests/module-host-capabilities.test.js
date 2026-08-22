@@ -13,6 +13,15 @@ const sources = [
 ].map((path) => readFileSync(resolve(ROOT, path), "utf8"));
 const providerCatalog = sources.join("\n");
 
+test("UI capabilities share one global context across asset bundles", () => {
+    const uiContext = readFileSync(
+        resolve(ROOT, "src/ui/reuse/ui-ctx.js"),
+        "utf8",
+    );
+    assert.match(uiContext, /Symbol\.for\("cognis\.uiCtx"\)/);
+    assert.match(uiContext, /globalThis\[UI_CTX_KEY\]/);
+});
+
 for (const capability of [
     "ui:profileAvatarRenderer",
     "social:profileUiClient",

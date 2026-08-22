@@ -307,7 +307,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.7.32",
+        version: "1.7.33",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

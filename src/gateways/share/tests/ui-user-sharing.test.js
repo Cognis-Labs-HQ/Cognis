@@ -370,8 +370,8 @@ test("share buttons always render the gateway-localized label with a share icon"
         /componentStringBaseUrls:[\s\S]*gateways\/share\/languages/,
     );
     assert.match(shareButtonSource, /shareI18n\.t\("share\.action"\)/);
-    assert.match(shareButtonSource, /createElementNS\([\s\S]*svg/);
-    assert.doesNotMatch(shareButtonSource, /icon = "🔗"/);
+    assert.match(shareButtonSource, /share-button-icon/);
+    assert.match(shareButtonSource, /share-button\.css/);
 });
 
 test("anonymous share guests activate a temporary unlocked keyring", () => {

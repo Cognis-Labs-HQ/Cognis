@@ -27,3 +27,7 @@ Der herkömmliche README-Alias im Stammverzeichnis nimmt nicht mehr an Modul-Int
 ## Anbieter für Freigabeseiten aktualisiert
 
 Freigabeseiten aktualisieren nun die Host-Capability-Anbieter nach Aktivierung ihrer begrenzten Gastsitzung, und Cognis veröffentlicht einen validierten Laufzeit-Ressourcenlader für Modulseiten.
+
+## Navigation und Modul-UI stabilisiert
+
+Primäre Navigationslinks können nun in eine kontoweise gespeicherte Reihenfolge gezogen werden. Ein einziger Browser-Capability-Kontext umfasst kompilierte und statische Assets, erhält Profilanbieter bei der Modulnavigation und Freigabesteuerungen verwenden das etablierte themenabhängige Freigabe-Asset.

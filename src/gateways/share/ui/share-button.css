@@ -1,0 +1,12 @@
+.share-button-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    background: center / contain no-repeat
+        url("/static/assets/reuse/share-dark.svg");
+}
+
+html[data-theme="light"] .share-button-icon {
+    background-image: url("/static/assets/reuse/share-light.svg");
+}

@@ -27,3 +27,7 @@ Alias README konvensional di direktori akar tidak lagi mengikuti pemeriksaan int
 ## Penyedia halaman bersama disegarkan
 
 Halaman berbagi kini menyegarkan penyedia kapabilitas host setelah mengaktifkan sesi tamu terbatas, dan Cognis menerbitkan pemuat sumber daya runtime tervalidasi yang dibutuhkan halaman modul.
+
+## Navigasi dan UI modul distabilkan
+
+Tautan navigasi utama kini dapat diseret ke urutan yang disimpan per akun. Satu konteks kapabilitas browser kini mencakup aset terkompilasi dan statis, mempertahankan penyedia profil selama navigasi modul, sedangkan kontrol Bagikan memakai aset Bagikan bertema yang telah ditetapkan.

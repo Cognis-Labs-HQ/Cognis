@@ -27,3 +27,7 @@ The conventional root README alias no longer participates in module integrity ch
 ## Shared-page providers refreshed
 
 Share pages now refresh host capability providers after activating their scoped guest session, and Cognis publishes a validated runtime resource loader required by module pages.
+
+## Navigation and module UI stabilized
+
+Primary navigation links can now be dragged into an account-persisted order. A single browser capability context now spans compiled and static assets, preserving profile providers across module navigation, while Share controls use the established themed Share asset.

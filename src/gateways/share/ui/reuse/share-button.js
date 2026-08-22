@@ -43,6 +43,9 @@
  */
 
 import { createI18n } from "/static/reuse/i18n.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
+
+await ensurePageStylesheet("/static/gateways/share/ui/share-button.css");
 
 const shareI18n = await createI18n({
     componentStringBaseUrls: ["/static/gateways/share/languages"],
@@ -92,30 +95,13 @@ export function mountShareButton({
                 ),
         );
     button.className = [...classes, "btn-neutral"].join(" ");
-    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    icon.classList.add("share-button-icon");
-    icon.setAttribute("viewBox", "0 0 24 24");
-    icon.setAttribute("width", "18");
-    icon.setAttribute("height", "18");
-    icon.setAttribute("fill", "none");
-    icon.setAttribute("stroke", "currentColor");
-    icon.setAttribute("stroke-width", "1.5");
+    const icon = document.createElement("span");
+    icon.className = "share-button-icon";
     icon.setAttribute("aria-hidden", "true");
-    for (const pathData of [
-        "M9 12a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z",
-        "M19 5.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z",
-        "M19 18.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z",
-        "m8.6 10.5 5.8-3.5",
-        "m8.6 13.5 5.8 3.5",
-    ]) {
-        const path = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path",
-        );
-        path.setAttribute("d", pathData);
-        path.setAttribute("stroke-linecap", "round");
-        icon.append(path);
-    }
+    /*
+     * The gateway asset is the canonical icon used by module Share controls;
+     * CSS selects its light/dark variant from the active Cognis theme.
+     */
     const label = document.createElement("span");
     label.textContent = shareI18n.t("share.action");
     button.append(icon, label);

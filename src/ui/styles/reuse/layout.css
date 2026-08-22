@@ -294,6 +294,11 @@
     opacity: 0.92;
     padding: 6px 2px;
     white-space: nowrap;
+    cursor: grab;
+}
+.topnav a.is-dragging {
+    cursor: grabbing;
+    opacity: 0.55;
 }
 .topnav a:hover,
 .topnav a.active {

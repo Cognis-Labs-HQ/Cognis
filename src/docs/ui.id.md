@@ -36,3 +36,7 @@ Semua teks yang terlihat pengguna melewati sistem i18n di `src/ui/reuse/i18n.js`
 | `ui.reuse.generic.*` | Kata aksi mandiri bebas konteks (simpan, buang, atur ulang) |
 | `ui.app.<page>.*`    | Teks spesifik halaman                                       |
 | `ui.layout.*`        | Teks shell layout dan label ARIA                            |
+
+## Urutan navigasi
+
+Pengguna yang masuk dapat menyeret tautan navigasi utama ke urutan pilihan mereka. Cognis menyimpan daftar rute terurut dalam `ui-preferences` akun, menerapkannya kembali saat shell dimulai, dan menempatkan tautan kontribusi baru setelah tautan tersimpan yang dikenal sampai pengguna mengurutkannya kembali.
