@@ -19,6 +19,7 @@
  */
 
 import { escapeHtml } from "./escape-html.js";
+import { uiCtx } from "./ui-ctx.js";
 
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];

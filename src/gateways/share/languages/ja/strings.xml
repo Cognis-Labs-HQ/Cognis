@@ -1,6 +1,7 @@
 <resources>
   <string name="share.page_title">共有コンテンツ</string>
   <string name="share.subtitle">共有コンテンツ</string>
+  <string name="share.action">共有</string>
   <string name="share.loading">共有コンテンツを読み込んでいます…</string>
   <string name="share.error.invalid_token">この共有リンクは無効か、期限切れです。</string>
   <string name="share.error.keyring_locked">共有のロックは解除されましたが、パスワードをキーリングに保存できませんでした。</string>

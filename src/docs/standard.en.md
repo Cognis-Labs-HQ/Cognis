@@ -28,7 +28,7 @@ New or reorganised components should converge on the same top-level concern name
 | Platform / core layer | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` holds developer docs, `src/api/` HTTP/server code, and `src/ui/` browser assets. `src/core/` remains the provider-agnostic contract and service layer. |
 | Gateway               | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Keep gateway-owned server handlers, route registration, and bootstrap helpers under `api/`; keep admin/browser assets under `ui/`.                                 |
 | Adapter               | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | Use `api/` for adapter-owned bootstrap or server helpers and `ui/` for adapter-owned browser assets when the adapter exposes them.                                 |
-| Module                | `src/modules/<id>/`            | `docs/`, `api/`, `ui/` | `docs/` and `ui/` are the stable homes for module docs and browser assets. `api/` is the stable home for module-owned server code.                                 |
+| Module                | `<module-repository>/`         | `docs/`, `api/`, `ui/` | `docs/` and `ui/` are the stable homes for module docs and browser assets. `api/` is the stable home for module-owned server code.                                 |
 
 Support directories such as `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/`, and `reuse/` may live beside those roots, but they complement them and must not replace them. For new or reorganised components, prefer `api/routes/` over a top-level `routes/` sibling and `docs/index.<lang>.md` over custom documentation entry filenames.
 
@@ -61,7 +61,7 @@ Different component types warrant different depth:
 | Platform / core | `src/docs/` platform docs      | All sections fully                                            |
 | Gateway         | `src/gateways/<id>/docs/`      | Lighter Architecture; include Configuration + API Routes      |
 | Adapter         | `src/adapters/<gw>/<id>/docs/` | Full standard (all applicable sections)                       |
-| Module          | `src/modules/<id>/docs/`       | Full standard; include API Routes when the module serves them |
+| Module          | `<module-repository>/docs/`    | Full standard; include API Routes when the module serves them |
 
 ### Code snippets
 
@@ -109,3 +109,7 @@ All four languages (en, de, ja, id) are required for any string visible in the U
 Every string value in a translated doc must be written in the language that file represents. The only exceptions are brand names (`Cognis`), universal technical acronyms (`LDAP`, `TLS`, `STARTTLS`), format placeholders, and the Latin tagline (`Disce. Loquere. Vive.`).
 
 When changing a Markdown doc that has translated variants, update the corresponding language files in the same change so all supported languages stay in sync.
+
+## Function documentation convention
+
+The hidden contributor template at `.github/DOCUMENTATION_TEMPLATE.en.md` defines the mandatory opening sequence for every real documentation file. Begin directly after the H1 with an informative statement of what the documented function or surface accomplishes. The next H2 contains concrete usage examples for imports, capability lookups, route calls, configuration, and expected results. The following H2 begins the exhaustive technical specification; place all inputs, outputs, lifecycle behavior, validation, authorization, errors, side effects, persistence, security, cleanup, and extension details there or in its H3 subsections. The architecture test compares every non-changelog doc's first three heading levels with the hidden template.

@@ -67,3 +67,7 @@ Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokolli
 | `LOG_ROTATE_MAX_BYTES` | `10485760`          | Rotiert die aktive Logdatei bei Erreichen dieser Größe (Bytes)         |
 | `LOG_ROTATE_MAX_FILES` | `10`                | Anzahl aufbewahrter rotierter Logarchive (`0` = keine)                 |
 | `LOG_ROTATE_COMPRESS`  | `true`              | Wenn `true`, werden rotierte Logs als gzip (`.gz`) komprimiert         |
+
+### Browserprotokolle erfassen
+
+Authentifizierte Browserkomponenten senden strukturierte Einträge mit `POST /api/v1/logging/entries` im Format `{ level, message, meta }`. Das Gateway validiert Stufe und Nachricht, ergänzt das authentifizierte Konto sowie die Browserquelle und schreibt den Eintrag über `logging:log`.

@@ -53,6 +53,7 @@
 
 import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
     availabilityIndicatorMarkup,
@@ -61,6 +62,14 @@ import {
 
 const unavailableAvatarKeys = new Set();
 const avatarBlobUrlCache = new Map();
+const availabilityStylesReady = ensurePageStylesheet(
+    "/static/adapters/social/profile/availability.css",
+);
+
+/** Waits until the profile avatar and availability styles are ready. */
+export async function ensureProfileAvatarStyles() {
+    await availabilityStylesReady;
+}
 
 /** Returns profile initials using the profile adapter's canonical rules. */
 export function getProfileInitials(label) {
@@ -220,13 +229,16 @@ export function buildProfileAvatarMarkup({
     showAvailability = true,
 }) {
     const safeColorSeed = colorSeed || label;
+    const rendererAvatarClass = `${avatarClass} profile-capability-avatar`;
+    const rendererImageClass = `${imageClass} profile-capability-avatar-image`;
+    const rendererFallbackClass = `${fallbackClass} profile-capability-avatar-initials`;
     const canHydrate = avatarKey && !unavailableAvatarKeys.has(avatarKey);
     const avatarContent = canHydrate
-        ? buildInitialsHtml(label, safeColorSeed, fallbackClass, {
+        ? buildInitialsHtml(label, safeColorSeed, rendererFallbackClass, {
               avatarKey,
-              imageClass,
+              imageClass: rendererImageClass,
           })
-        : buildInitialsHtml(label, safeColorSeed, fallbackClass);
+        : buildInitialsHtml(label, safeColorSeed, rendererFallbackClass);
     const profileLink = profileHandle
         ? `/profile/${encodeURIComponent(
               String(profileHandle).replace(/^@/, ""),
@@ -234,7 +246,7 @@ export function buildProfileAvatarMarkup({
         : "";
     if (profileLink) {
         const classes = [
-            avatarClass,
+            rendererAvatarClass,
             linkClass,
             showAvailability && "availability-avatar",
         ]
@@ -247,7 +259,13 @@ export function buildProfileAvatarMarkup({
             `${showAvailability ? availabilityIndicatorMarkup(profileHandle) : ""}</a>`
         );
     }
-    return `<span class="${escapeHtml(avatarClass)}">${avatarContent}</span>`;
+    const classes = [
+        rendererAvatarClass,
+        showAvailability && "availability-avatar",
+    ]
+        .filter(Boolean)
+        .join(" ");
+    return `<span class="${escapeHtml(classes)}">${avatarContent}${showAvailability ? availabilityIndicatorMarkup("") : ""}</span>`;
 }
 
 /**
@@ -259,6 +277,7 @@ export function buildProfileAvatarMarkup({
  * @returns {Promise<void>}
  */
 export async function hydrateProfileAvatars(container) {
+    await ensureProfileAvatarStyles();
     const placeholders = Array.from(
         container.querySelectorAll(
             "[data-avatar-key][data-avatar-image-class]",

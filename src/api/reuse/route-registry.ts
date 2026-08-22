@@ -53,4 +53,8 @@ export class RouteRegistry {
     getEntries(): readonly RouteEntry[] {
         return this.entries;
     }
+
+    getClaimedPrefixes(): readonly string[] {
+        return this.prefixEntries.map(({ prefix }) => prefix);
+    }
 }

@@ -59,6 +59,44 @@ test("UIRegistry registers and lists admin sections", () => {
     assert.equal(sections[1].id, "s2");
 });
 
+test("UIRegistry removes every contribution owned by a module", () => {
+    const reg = new UIRegistry();
+    reg.registerAdminSection({
+        id: "example-admin",
+        label: "Example",
+        scriptUrl: "/static/modules/example/admin.js",
+        ownerId: "example",
+    });
+    reg.registerPageExtension("dashboard", {
+        id: "example-widget",
+        label: "Example",
+        scriptUrl: "/static/modules/example/widget.js",
+        ownerId: "example",
+    });
+    reg.registerSpaRoute({
+        id: "example-page",
+        pattern: "^/example$",
+        base: "/example",
+        scriptUrl: "/static/modules/example/page.js",
+        ownerId: "example",
+    });
+    reg.registerAuthTypingMessage({
+        id: "example-ready",
+        textKey: "module.example.ready",
+        ownerType: "module",
+        ownerId: "example",
+    });
+    reg.registerModuleStaticDir("example", "/srv/example/ui");
+
+    reg.unregisterModuleContributions("example");
+
+    assert.deepEqual(reg.listAdminSections(), []);
+    assert.deepEqual(reg.listPageExtensions("dashboard"), []);
+    assert.deepEqual(reg.listSpaRoutes(), []);
+    assert.deepEqual(reg.listAuthTypingMessages(), []);
+    assert.equal(reg.resolveModulePath("example/page.js"), undefined);
+});
+
 test("UIRegistry registers and looks up static dirs", () => {
     const reg = new UIRegistry();
     reg.registerStaticDir("notify", "/srv/notify/ui");
@@ -130,6 +168,55 @@ test("UIRegistry registers and lists SPA routes", () => {
         "messages-page",
     );
     assert.equal(reg.resolveSpaRoute("/settings"), undefined);
+});
+
+test("UIRegistry selects only declared UI capability provider scripts", () => {
+    const reg = new UIRegistry();
+    reg.registerNavbarPlugin({
+        scriptUrl: "/profile.js",
+        providesCapabilities: ["ui:profileAvatarRenderer"],
+    });
+    reg.registerNavbarPlugin({
+        scriptUrl: "/unrelated.js",
+        providesCapabilities: ["ui:unrelated"],
+    });
+    reg.registerSpaRoute({
+        id: "meetings",
+        pattern: "^/meetings$",
+        base: "/meetings",
+        scriptUrl: "/meetings.js",
+        requiredCapabilities: ["ui:profileAvatarRenderer"],
+    });
+
+    assert.deepEqual(reg.listSpaRoutes()[0].capabilityScripts, ["/profile.js"]);
+    assert.equal(
+        reg.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
+        true,
+    );
+    assert.equal(reg.hasActiveCapabilityProvider("ui:missing"), false);
+});
+
+test("UIRegistry omits routes whose UI capability provider is inactive", () => {
+    const reg = new UIRegistry();
+    reg.registerNavbarPlugin({
+        scriptUrl: "/profile.js",
+        providesCapabilities: ["ui:profileAvatarRenderer"],
+        isEnabled: () => false,
+    });
+    reg.registerSpaRoute({
+        id: "meetings",
+        pattern: "^/meetings$",
+        base: "/meetings",
+        scriptUrl: "/meetings.js",
+        requiredCapabilities: ["ui:profileAvatarRenderer"],
+    });
+
+    assert.deepEqual(reg.listSpaRoutes(), []);
+    assert.equal(
+        reg.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
+        false,
+    );
+    assert.equal(reg.resolveSpaRoute("/meetings"), undefined);
 });
 
 test("UIRegistry registers and lists auth typing messages", () => {
@@ -320,4 +407,30 @@ test("GET /api/v1/ui/auth-typing-messages includes enabled module manifest messa
             ownerId: "calendar",
         },
     ]);
+});
+
+test("host UI capability providers satisfy module routes and supply their script", () => {
+    const registry = new UIRegistry();
+    registry.registerCapabilityProvider({
+        scriptUrl: "/static/reuse/feedback-capabilities.js",
+        providesCapabilities: ["ui:showToast"],
+    });
+    registry.registerSpaRoute({
+        id: "external-module",
+        pattern: "^/external$",
+        base: "/external",
+        scriptUrl: "/static/modules/external/index.js",
+        requiredCapabilities: ["ui:showToast"],
+    });
+
+    assert.equal(registry.hasActiveCapabilityProvider("ui:showToast"), true);
+    assert.deepEqual(registry.listSpaRoutes()[0].capabilityScripts, [
+        "/static/reuse/feedback-capabilities.js",
+    ]);
+    assert.deepEqual(
+        registry
+            .listCapabilityProviders()
+            .map((provider) => provider.scriptUrl),
+        ["/static/reuse/feedback-capabilities.js"],
+    );
 });

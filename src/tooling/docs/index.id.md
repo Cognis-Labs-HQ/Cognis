@@ -31,9 +31,9 @@ Perintah bawaan `cognisctl` dapat merender keluaran terminal yang memahami respo
 
 ## Konfigurasi
 
-| Variabel                   | Default       | Keterangan                                                                   |
-| -------------------------- | ------------- | ---------------------------------------------------------------------------- |
-| `COGNIS_CLI_TOKEN_PATH`    | —             | Path ke file yang berisi token API untuk perintah `cognisctl` terautentikasi |
-| `COGNIS_MODULES_ROOT`      | `src/modules` | Digunakan untuk menemukan subperintah modul                                  |
-| `COGNIS_GATEWAY_CLI_PATHS` | —             | Daftar path opsional untuk subperintah gateway                               |
-| `COGNIS_ADAPTER_CLI_PATHS` | —             | Daftar path opsional untuk subperintah adapter                               |
+| Variabel                       | Default            | Keterangan                                                                   |
+| ------------------------------ | ------------------ | ---------------------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH`        | —                  | Path ke file yang berisi token API untuk perintah `cognisctl` terautentikasi |
+| `COGNIS_EXTERNAL_MODULES_ROOT` | `external-modules` | Digunakan untuk menemukan subperintah modul                                  |
+| `COGNIS_GATEWAY_CLI_PATHS`     | —                  | Daftar path opsional untuk subperintah gateway                               |
+| `COGNIS_ADAPTER_CLI_PATHS`     | —                  | Daftar path opsional untuk subperintah adapter                               |

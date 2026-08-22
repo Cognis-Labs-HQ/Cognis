@@ -5,6 +5,7 @@ import {
     isRoleAllowed,
     type BootstrapLog,
     type LocalAccountStore,
+    type ModuleManifest,
     type ModuleRuntimeGateway,
     type GatewayRegistry,
 } from "@cognis/core";
@@ -24,10 +25,15 @@ import {
 } from "../../reuse/static-asset-response.js";
 import * as htmlResponse from "../../reuse/html-response.js";
 import { handleRegisteredSpaPage } from "./spa-pages.js";
-
+import { versionDescriptor } from "./asset-versioning.js";
+import { serveProviders } from "./capability-providers.js";
+import {
+    resolveModuleRoot,
+    serveDeclaredModuleStrings,
+    uiStaticPath as staticPath,
+} from "./module-string-assets.js";
 const UI_ROOT = path.resolve(process.cwd(), "src", "ui");
 const STATIC_ROOT = UI_ROOT;
-const PUBLIC_ROOT = path.join(UI_ROOT, "public");
 const PRODUCTION_UI_ROOT = path.resolve(
     process.env.COGNIS_UI_DIST_ROOT ?? path.join(process.cwd(), "dist", "ui"),
 );
@@ -35,43 +41,10 @@ const PRODUCTION_PUBLIC_ROOT = path.join(PRODUCTION_UI_ROOT, "public");
 const IS_PRODUCTION_BUILD = Boolean(process.env.COGNIS_UI_ASSET_MANIFEST);
 const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
     ? PRODUCTION_PUBLIC_ROOT
-    : PUBLIC_ROOT;
-const MODULES_ROOT =
-    process.env.COGNIS_MODULES_ROOT ??
-    path.resolve(process.cwd(), "src", "modules");
+    : path.join(UI_ROOT, "public");
 const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
 const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
 const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
-
-function versionAssetUrl(assetUrl: string): string {
-    if (assetUrl.startsWith("/assets/")) return assetUrl;
-    if (!assetUrl.startsWith("/static/") && !assetUrl.startsWith("/assets/")) {
-        return assetUrl;
-    }
-    const pathname = new URL(assetUrl, "http://localhost").pathname;
-    if (!/\.(?:css|html|jpe?g|js|json|mjs|png|svg|webp|xml)$/.test(pathname)) {
-        return assetUrl;
-    }
-    const separator = assetUrl.includes("?") ? "&" : "?";
-    return `${assetUrl}${separator}v=${encodeURIComponent(ASSET_VERSION)}`;
-}
-
-function versionDescriptor<T>(descriptor: T): T {
-    if (Array.isArray(descriptor)) {
-        return descriptor.map(versionDescriptor) as T;
-    }
-    if (descriptor && typeof descriptor === "object") {
-        return Object.fromEntries(
-            Object.entries(descriptor).map(([key, value]) => [
-                key,
-                typeof value === "string"
-                    ? versionAssetUrl(value)
-                    : versionDescriptor(value),
-            ]),
-        ) as T;
-    }
-    return descriptor;
-}
 
 async function serveVersionedAsset(
     req: IncomingMessage,
@@ -226,10 +199,8 @@ export function createUiRoutes(
                 "application/manifest+json; charset=utf-8",
                 log,
                 { path: url.pathname, method: req.method },
-                // Allow the browser HTTP cache and the service worker
-                // stale-while-revalidate strategy to retain the manifest,
-                // while still requiring revalidation on every use so updates
-                // (icons, name, shortcuts) roll out promptly.
+                // Let browser and service-worker caches retain the manifest,
+                // while revalidation rolls out icon, name, and shortcut updates.
                 "public, max-age=0, must-revalidate",
             );
             return true;
@@ -324,7 +295,7 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/administration") {
+        if (/^\/administration(?:\/modules(?:\/[^/]+)?)?$/.test(url.pathname)) {
             const loginRedirect = await resolveLoginRedirectLocation(
                 req,
                 ctx,
@@ -346,9 +317,14 @@ export function createUiRoutes(
                 return true;
             }
 
+            const administrationPage = url.pathname.startsWith(
+                "/administration/modules",
+            )
+                ? "modules.html"
+                : "administration.html";
             await htmlResponse.serveHtmlPage(
                 res,
-                path.join(SERVED_PUBLIC_ROOT, "pages", "administration.html"),
+                path.join(SERVED_PUBLIC_ROOT, "pages", administrationPage),
                 log,
                 { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
@@ -553,7 +529,10 @@ export function createUiRoutes(
             return true;
         }
 
-        const registeredSpaRoute = uiRegistry?.resolveSpaRoute(url.pathname);
+        const registeredSpaRoute = versionDescriptor(
+            uiRegistry?.resolveSpaRoute(url.pathname),
+            ASSET_VERSION,
+        );
         if (
             uiRegistry &&
             (await handleRegisteredSpaPage({
@@ -584,11 +563,8 @@ export function createUiRoutes(
                     continue;
 
                 try {
-                    const routeFile = path.resolve(
-                        MODULES_ROOT,
-                        manifest.id,
-                        "routes.json",
-                    );
+                    const moduleRoot = await resolveModuleRoot(manifest);
+                    const routeFile = path.resolve(moduleRoot, "routes.json");
                     const routes = parseModuleUiRoutes(
                         await readFile(routeFile, "utf8"),
                     );
@@ -623,8 +599,7 @@ export function createUiRoutes(
                         return sendRedirect(res, "/dashboard");
                     }
                     const uiFile = path.resolve(
-                        MODULES_ROOT,
-                        manifest.id,
+                        moduleRoot,
                         manifest.entrypoints.ui,
                     );
                     await htmlResponse.serveHtmlPage(
@@ -774,7 +749,11 @@ export function createUiRoutes(
                 );
             }
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: versionDescriptor(sections) }));
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(sections, ASSET_VERSION),
+                }),
+            );
             return true;
         }
 
@@ -790,9 +769,16 @@ export function createUiRoutes(
                     isRoleAllowed(claims.role, plugin.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: versionDescriptor(plugins) }));
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(plugins, ASSET_VERSION),
+                }),
+            );
             return true;
         }
+
+        if (serveProviders(req, res, url, ctx, uiRegistry, ASSET_VERSION))
+            return true;
 
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
@@ -803,7 +789,11 @@ export function createUiRoutes(
                     isRoleAllowed(claims.role, route.access),
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: versionDescriptor(routes) }));
+            res.end(
+                JSON.stringify({
+                    data: versionDescriptor(routes, ASSET_VERSION),
+                }),
+            );
             return true;
         }
 
@@ -913,6 +903,17 @@ export function createUiRoutes(
                 );
                 return true;
             }
+            if (
+                await serveDeclaredModuleStrings(
+                    req,
+                    res,
+                    url,
+                    urlPath,
+                    runtime,
+                    ctx,
+                )
+            )
+                return true;
             res.writeHead(404, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -980,10 +981,7 @@ export function createUiRoutes(
             return true;
         }
 
-        const filePath =
-            relative.startsWith("assets/") || relative.startsWith("templates/")
-                ? path.join(SERVED_PUBLIC_ROOT, relative)
-                : path.join(STATIC_ROOT, relative);
+        const filePath = staticPath(relative, STATIC_ROOT, SERVED_PUBLIC_ROOT);
 
         await serveVersionedAsset(
             req,

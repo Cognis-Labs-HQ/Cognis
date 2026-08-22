@@ -65,6 +65,7 @@ function logicalSlug(sourceRoot: string, fileStem: string): string {
         .replace(/\/docs\//g, "/")
         .replace(/\/docs$/, "");
     slug = slug.replace(/\/index$/, "") || slug;
+    slug = slug.replace(/^([^/]+)\/changelog\//, "changelog/$1/");
     return slug || "index";
 }
 
@@ -243,41 +244,43 @@ async function archivedDocs(
 }
 
 export async function initializeDocsStore(
-    sourceRoot: string,
+    sourceRoot: string | string[],
     archiveRoot: string,
 ): Promise<Map<string, StoredDoc>> {
-    const repositoryRoot = dirname(sourceRoot);
-    const discoveredDocs = await sourceDocs(sourceRoot);
     const storedDocs = new Map<string, StoredDoc>();
-    for (const doc of discoveredDocs) {
-        const version = await componentVersion(
-            doc.componentRoot,
-            repositoryRoot,
-        );
-        const versionDirectory = join(archiveRoot, doc.slug, version);
-        await mkdir(versionDirectory, { recursive: true });
-        for (const sourceFile of doc.files) {
-            const destination = join(
-                versionDirectory,
-                `${languageFromPath(sourceFile)}.md`,
+    for (const root of Array.isArray(sourceRoot) ? sourceRoot : [sourceRoot]) {
+        const repositoryRoot = dirname(root);
+        const discoveredDocs = await sourceDocs(root);
+        for (const doc of discoveredDocs) {
+            const version = await componentVersion(
+                doc.componentRoot,
+                repositoryRoot,
             );
-            try {
-                await writeFile(destination, await readFile(sourceFile), {
-                    flag: "wx",
-                });
-            } catch (error) {
-                if ((error as NodeJS.ErrnoException).code !== "EEXIST")
-                    throw error;
+            const versionDirectory = join(archiveRoot, doc.slug, version);
+            await mkdir(versionDirectory, { recursive: true });
+            for (const sourceFile of doc.files) {
+                const destination = join(
+                    versionDirectory,
+                    `${languageFromPath(sourceFile)}.md`,
+                );
+                try {
+                    await writeFile(destination, await readFile(sourceFile), {
+                        flag: "wx",
+                    });
+                } catch (error) {
+                    if ((error as NodeJS.ErrnoException).code !== "EEXIST")
+                        throw error;
+                }
             }
+            storedDocs.set(doc.slug, {
+                fileStem: doc.fileStem,
+                slug: doc.slug,
+                title: doc.title,
+                group: doc.group,
+                version,
+                versions: await availableVersions(archiveRoot, doc.slug),
+            });
         }
-        storedDocs.set(doc.slug, {
-            fileStem: doc.fileStem,
-            slug: doc.slug,
-            title: doc.title,
-            group: doc.group,
-            version,
-            versions: await availableVersions(archiveRoot, doc.slug),
-        });
     }
     for (const doc of await archivedDocs(archiveRoot)) {
         if (!storedDocs.has(doc.slug)) storedDocs.set(doc.slug, doc);

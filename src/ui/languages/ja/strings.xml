@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">リセット</string>
   <string name="ui.reuse.reset_draft">下書きをリセット</string>
   <string name="ui.reuse.refresh">更新</string>
+  <string name="ui.reuse.update">更新</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">接続が中断されました。ページを更新してください。</string>
   <string name="ui.reuse.loading">読み込み中…</string>
   <string name="ui.reuse.loading_joke_1">Cognis がこんなに遅いはずないのに…もう 2026 年ですよね？</string>
@@ -62,6 +63,10 @@
   <string name="ui.reuse.discard">元に戻す</string>
   <string name="ui.reuse.done">完了</string>
   <string name="ui.reuse.add">追加</string>
+  <string name="ui.reuse.edit">編集</string>
+  <string name="ui.reuse.back">戻る</string>
+  <string name="ui.reuse.previous">前へ</string>
+  <string name="ui.reuse.next">次へ</string>
   <string name="ui.reuse.remove">削除</string>
   <string name="ui.reuse.dismiss">閉じる</string>
   <string name="ui.reuse.copy">コピー</string>
@@ -681,4 +686,12 @@
   <string name="ui.reuse.duration.hours">時間</string>
   <string name="ui.reuse.duration.days">日</string>
   <string name="ui.reuse.duration.weeks">週間</string>
+  <string name="ui.page.title.modules">モジュール</string>
+  <string name="ui.reuse.license">ライセンス</string>
+  <string name="ui.reuse.install">インストール</string>
+  <string name="ui.reuse.installed">インストール済み</string>
+  <string name="ui.reuse.all">すべて</string>
+  <string name="ui.reuse.name">名前</string>
+  <string name="ui.reuse.uninstall">アンインストール</string>
+  <string name="ui.reuse.toggle_secret_visibility">シークレットの表示を切り替える</string>
 </resources>

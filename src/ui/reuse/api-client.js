@@ -19,10 +19,15 @@ const RETRYABLE_SERVER_STATUS_MESSAGE_REGEX = new RegExp(
 const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS = 5_000;
 const API_REQUEST_TIMEOUT_MS = 30_000;
 const connectionRecoveryFailureMarker = Symbol("connectionRecoveryFailure");
+const connectionRecoveryStateKey = Symbol.for("cognis.connectionRecoveryState");
+const connectionRecoveryState =
+    globalThis[connectionRecoveryStateKey] ??
+    (globalThis[connectionRecoveryStateKey] = {
+        didShowToast: false,
+        lastSignalAt: 0,
+    });
 
 let connectionRecoveryPrompt = "";
-let didShowConnectionRecoveryToast = false;
-let lastConnectionRecoverySignalAt = 0;
 
 export function configureConnectionRecoveryPrompt(message) {
     if (typeof message !== "string") return;
@@ -43,9 +48,10 @@ function requestTargetsApi(path) {
 }
 
 function showConnectionRecoveryToast() {
-    lastConnectionRecoverySignalAt = Date.now();
-    if (didShowConnectionRecoveryToast || !connectionRecoveryPrompt) return;
-    didShowConnectionRecoveryToast = true;
+    if (connectionRecoveryState.didShowToast || !connectionRecoveryPrompt)
+        return;
+    connectionRecoveryState.didShowToast = true;
+    connectionRecoveryState.lastSignalAt = Date.now();
     showToast(connectionRecoveryPrompt, {
         variant: "warning",
         permanent: true,
@@ -79,8 +85,8 @@ function isRetryableServerStatusCode(status) {
 
 function isRecentConnectionRecoverySignal() {
     return (
-        lastConnectionRecoverySignalAt > 0 &&
-        Date.now() - lastConnectionRecoverySignalAt <=
+        connectionRecoveryState.lastSignalAt > 0 &&
+        Date.now() - connectionRecoveryState.lastSignalAt <=
             CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS
     );
 }

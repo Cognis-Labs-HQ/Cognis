@@ -71,7 +71,6 @@ Token expiry is controlled by `COGNIS_ACCESS_TOKEN_TTL_SECONDS` (default: `43200
 | `COGNIS_CLI_TOKEN_PATH`           | `/app/config/cli-access.token` | Path for the CLI bootstrap token            |
 | `COGNIS_GATEWAYS_ROOT`            | `src/gateways`                 | Root directory for gateway discovery        |
 | `COGNIS_ADAPTERS_ROOT`            | `src/adapters`                 | Root directory for adapter discovery        |
-| `COGNIS_MODULES_ROOT`             | `src/modules`                  | Root directory for module discovery         |
 | `PORT`                            | `3000`                         | HTTP port                                   |
 | `LISTEN_HOST`                     | `0.0.0.0`                      | Bind address                                |
 

@@ -154,6 +154,46 @@ function createLoggingRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        if (
+            url.pathname === "/api/v1/logging/entries" &&
+            req.method === "POST"
+        ) {
+            const claims = ctx.requireAuth(req, res, "user");
+            if (!claims) return true;
+            const body = (await readJson(req)) as Record<string, unknown>;
+            const level = String(body.level ?? "info") as LogLevel;
+            const message = String(body.message ?? "").trim();
+            if (
+                !ALLOWED_LEVELS.has(level) ||
+                !message ||
+                message.length > 2000
+            ) {
+                res.writeHead(400, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "invalid_log_entry",
+                            message: "A valid level and message are required.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            const submittedMeta =
+                body.meta &&
+                typeof body.meta === "object" &&
+                !Array.isArray(body.meta)
+                    ? (body.meta as Record<string, unknown>)
+                    : {};
+            log?.(level, message, {
+                ...submittedMeta,
+                source: "browser",
+                accountId: claims.sub,
+            });
+            res.writeHead(204);
+            res.end();
+            return true;
+        }
         if (url.pathname !== "/api/v1/logging/stream" || req.method !== "GET") {
             return false;
         }

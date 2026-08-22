@@ -97,3 +97,7 @@ Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files
 | Variable         | Standard     | Beschreibung                                                                                       |
 | ---------------- | ------------ | -------------------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Stammverzeichnis für Medienspeicherung; Uploads gehen an `$MEDIA_LOCATION/uploads/<namespace>/...` |
+
+### Browserclient-Capability
+
+`files:uiClient` wird vom Files-UI-Anbieter bereitgestellt und löst namensraumbezogene Datei-URLs für Browsermodule auf.

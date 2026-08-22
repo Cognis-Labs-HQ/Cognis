@@ -22,6 +22,7 @@ test("page composer pointer tracker is opt-in through presence tracking", () => 
 
     assert.match(pointerSource, /export function createPointerTracker/);
     assert.match(pointerSource, /from "\.\/escape-html\.js"/);
+    assert.match(pointerSource, /import \{ uiCtx \} from "\.\/ui-ctx\.js"/);
     assert.doesNotMatch(pointerSource, /profileAvatarRenderer|avatar-utils/);
     assert.match(pointerSource, /entry\?\.color/);
     assert.match(pointerSource, /contentGrid\.addEventListener\("pointermove"/);

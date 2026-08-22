@@ -1,7 +1,9 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+import "./provider.js";
 import { applyStaticTranslations, createI18n } from "/static/reuse/i18n.js";
 import {
+    ensureProfileAvatarStyles,
     fetchProfileAvatarBlobUrl,
     getProfileInitials,
     getProfileInitialsColor,
@@ -17,89 +19,116 @@ import {
     STATUS_OPTIONS,
 } from "./availability.js";
 
-const availabilityStylesheet = document.createElement("link");
-availabilityStylesheet.rel = "stylesheet";
-availabilityStylesheet.href =
-    "/static/adapters/social/profile/availability.css";
-document.head.append(availabilityStylesheet);
+let availabilityMountPromise = null;
 
-async function mountAvailabilityControl() {
+async function performAvailabilityControlMount() {
     const button = document.querySelector(".avatar-button");
     const dropdown = document.querySelector("#profile-dropdown");
     if (!button || !dropdown) return;
-
-    if (!button.querySelector(".availability-indicator")) {
-        button.insertAdjacentHTML("beforeend", availabilityIndicatorMarkup(""));
+    const existingItems = [
+        ...dropdown.querySelectorAll(".availability-menu-item"),
+    ];
+    if (existingItems.length) {
+        existingItems.slice(1).forEach((item) => item.remove());
+        await refreshAvailabilityIndicators();
+        return;
     }
-    const indicator = button.querySelector(".availability-indicator");
-    const i18n = await createI18n({
-        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
-    });
-    bindProfilePreviews(i18n);
+
     const statusItem = document.createElement("li");
     statusItem.className = "availability-menu-item";
-    const menuTemplateResponse = await fetch(
-        "/static/adapters/social/profile/availability-menu.html",
-    );
-    statusItem.innerHTML = await menuTemplateResponse.text();
     dropdown.prepend(statusItem);
-    applyStaticTranslations(i18n, statusItem);
 
-    const statusToggle = statusItem.querySelector(".availability-menu-toggle");
-    const statusOptions = statusItem.querySelector(
-        ".availability-menu-options",
-    );
-    const optionTemplate = statusOptions.querySelector(
-        "[data-availability-option-template]",
-    );
-    for (const status of STATUS_OPTIONS) {
-        const fragment = optionTemplate.content.cloneNode(true);
-        const option = fragment.querySelector(".availability-menu-option");
-        option.dataset.availabilityOption = status;
-        option.querySelector(
-            ".availability-menu-dot",
-        ).dataset.availabilityStatus = status;
-        option.querySelector("[data-availability-label]").textContent = i18n.t(
-            `ui.app.profile.availability.${status}`,
+    try {
+        await ensureProfileAvatarStyles();
+        button.classList.add("availability-avatar");
+
+        if (!button.querySelector(".availability-indicator")) {
+            button.insertAdjacentHTML(
+                "beforeend",
+                availabilityIndicatorMarkup(""),
+            );
+        }
+        const indicator = button.querySelector(".availability-indicator");
+        const i18n = await createI18n({
+            componentStringBaseUrls: [
+                "/static/adapters/social/profile/languages",
+            ],
+        });
+        bindProfilePreviews(i18n);
+        const menuTemplateResponse = await fetch(
+            "/static/adapters/social/profile/availability-menu.html",
         );
-        statusOptions.append(fragment);
-    }
-    optionTemplate.remove();
-    const availability = await fetchAvailability();
-    updateAvailabilitySelection(
-        statusItem,
-        indicator,
-        availability?.status ?? "free",
-        i18n,
-    );
-    subscribeAvailabilityUpdates((updatedAvailability) => {
-        if (!updatedAvailability?.status) return;
+        statusItem.innerHTML = await menuTemplateResponse.text();
+        applyStaticTranslations(i18n, statusItem);
+
+        const statusToggle = statusItem.querySelector(
+            ".availability-menu-toggle",
+        );
+        const statusOptions = statusItem.querySelector(
+            ".availability-menu-options",
+        );
+        const optionTemplate = statusOptions.querySelector(
+            "[data-availability-option-template]",
+        );
+        for (const status of STATUS_OPTIONS) {
+            const fragment = optionTemplate.content.cloneNode(true);
+            const option = fragment.querySelector(".availability-menu-option");
+            option.dataset.availabilityOption = status;
+            option.querySelector(
+                ".availability-menu-dot",
+            ).dataset.availabilityStatus = status;
+            option.querySelector("[data-availability-label]").textContent =
+                i18n.t(`ui.app.profile.availability.${status}`);
+            statusOptions.append(fragment);
+        }
+        optionTemplate.remove();
+        const availability = await fetchAvailability();
         updateAvailabilitySelection(
             statusItem,
             indicator,
-            updatedAvailability.status,
+            availability?.status ?? "free",
             i18n,
         );
-    });
-
-    statusToggle.addEventListener("click", () => {
-        const shouldOpen = statusOptions.hidden;
-        statusOptions.hidden = !shouldOpen;
-        statusToggle.setAttribute("aria-expanded", String(shouldOpen));
-    });
-
-    statusItem
-        .querySelectorAll("[data-availability-option]")
-        .forEach((option) => {
-            option.addEventListener("click", async () => {
-                const selectedStatus = option.dataset.availabilityOption;
-                if (await setManualAvailability(selectedStatus)) {
-                    await refreshAvailabilityIndicators();
-                    statusOptions.hidden = true;
-                    statusToggle.setAttribute("aria-expanded", "false");
-                }
-            });
+        subscribeAvailabilityUpdates((updatedAvailability) => {
+            if (!updatedAvailability?.status) return;
+            updateAvailabilitySelection(
+                statusItem,
+                indicator,
+                updatedAvailability.status,
+                i18n,
+            );
         });
+
+        statusToggle.addEventListener("click", () => {
+            const shouldOpen = statusOptions.hidden;
+            statusOptions.hidden = !shouldOpen;
+            statusToggle.setAttribute("aria-expanded", String(shouldOpen));
+        });
+
+        statusItem
+            .querySelectorAll("[data-availability-option]")
+            .forEach((option) => {
+                option.addEventListener("click", async () => {
+                    const selectedStatus = option.dataset.availabilityOption;
+                    if (await setManualAvailability(selectedStatus)) {
+                        await refreshAvailabilityIndicators();
+                        statusOptions.hidden = true;
+                        statusToggle.setAttribute("aria-expanded", "false");
+                    }
+                });
+            });
+    } catch (error) {
+        statusItem.remove();
+        throw error;
+    }
+}
+
+function mountAvailabilityControl() {
+    if (availabilityMountPromise) return availabilityMountPromise;
+    availabilityMountPromise = performAvailabilityControlMount().finally(() => {
+        availabilityMountPromise = null;
+    });
+    return availabilityMountPromise;
 }
 
 function updateAvailabilitySelection(container, indicator, status, i18n) {
@@ -156,4 +185,13 @@ uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
 });
 
 registerSearchIndexing();
-mountAvailabilityControl();
+mountAvailabilityControl().catch((error) => {
+    console.error("[social-profile]:availability-menu-mount-failed", { error });
+});
+window.addEventListener("cognis:navbar-refresh", () => {
+    mountAvailabilityControl().catch((error) => {
+        console.error("[social-profile]:availability-menu-refresh-failed", {
+            error,
+        });
+    });
+});

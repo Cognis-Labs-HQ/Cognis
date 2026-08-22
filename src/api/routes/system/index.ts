@@ -82,6 +82,9 @@ export function createSystemRoutes(
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const listCapabilities = ctx.getCapability<() => string[]>(
+        "system:listCapabilities",
+    );
     const canSendVerificationEmail = ctx.getCapability<() => boolean>(
         "notify:canSendVerificationEmail",
     );
@@ -123,6 +126,23 @@ export function createSystemRoutes(
             log?.("debug", "Served health status.", logMeta);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: await healthService.status() }));
+            return true;
+        }
+
+        if (
+            url.pathname === "/api/v1/system/capabilities" &&
+            req.method === "GET"
+        ) {
+            const claims = ctx.requireAuth(req, res, "owner");
+            if (!claims) return true;
+            const data = listCapabilities?.() ?? [];
+            log?.("debug", "Listed registered capabilities.", {
+                ...logMeta,
+                accountId: claims.sub,
+                count: data.length,
+            });
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
             return true;
         }
 

@@ -3,21 +3,17 @@ import { fileURLToPath } from "node:url";
 import { readFile } from "node:fs/promises";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
+import type { Ctx } from "@cognis/core";
 import { readJson } from "../../api/reuse/read-json.js";
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import {
     resolveRouteContext,
     type RouteContext,
 } from "../../api/reuse/route-context.js";
-import { CoreStudyGateway } from "./gateway.js";
+import { CoreStudyGateway, type LanguageChildComponent } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 
 const GATEWAY_ROOT = path.dirname(fileURLToPath(import.meta.url));
-const MODULES_ROOT =
-    process.env.COGNIS_MODULES_ROOT ??
-    path.resolve(GATEWAY_ROOT, "../../modules");
-const LANGUAGE_MODULES_ROOT = path.resolve(MODULES_ROOT, "study", "languages");
-
 export type {
     StudyAdapterBootstrapCtx,
     StudyAdapter,
@@ -205,19 +201,70 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const gateway = new CoreStudyGateway();
     const adaptersRoot = path.join(ctx.adaptersRoot, "study");
 
-    await Promise.all([
-        gateway.discoverAdapters(adaptersRoot),
-        gateway.discoverLanguageModules(LANGUAGE_MODULES_ROOT),
-    ]);
-    ctx.log?.(
-        "info",
-        "Study gateway: adapters and language modules discovered.",
-        {
-            component: "study-gateway",
-            adaptersRoot,
-            adapterCount: gateway.listAdapters().length,
-        },
-    );
+    const syncLanguageCapabilities = (): void => {
+        const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
+        const capabilityIds =
+            systemCtx?.listCapabilities() ?? ctx.capabilities.list();
+        for (const capabilityId of capabilityIds.filter((id) =>
+            /^study:language:[^:]+$/.test(id),
+        )) {
+            const descriptor = (systemCtx?.getCapability(capabilityId) ??
+                ctx.capabilities.get(capabilityId)) as
+                | {
+                      code?: string;
+                      languageCode?: string;
+                      name?: string;
+                      languageName?: string;
+                      flag?: string;
+                      languageFlag?: string;
+                      version?: string;
+                      moduleId?: string;
+                      childComponents?: Array<
+                          LanguageChildComponent & { labelKey?: string }
+                      >;
+                  }
+                | undefined;
+            const languageCode = String(
+                descriptor?.code ?? descriptor?.languageCode ?? "",
+            ).trim();
+            if (!languageCode) continue;
+            const moduleId =
+                descriptor?.moduleId ?? `study-language-${languageCode}`;
+            gateway.registerLanguageModule(
+                {
+                    languageCode,
+                    languageName: String(
+                        descriptor?.name ??
+                            descriptor?.languageName ??
+                            languageCode,
+                    ),
+                    languageFlag: String(
+                        descriptor?.flag ?? descriptor?.languageFlag ?? "",
+                    ),
+                    version: String(descriptor?.version ?? "0.0.0"),
+                    listChildComponents: () =>
+                        (descriptor?.childComponents ?? []).map(
+                            (component) => ({
+                                ...component,
+                                label:
+                                    component.label ??
+                                    component.labelKey ??
+                                    component.id,
+                            }),
+                        ),
+                },
+                { moduleId },
+            );
+            gateway.setLanguageModuleEnabled(moduleId, true);
+        }
+    };
+
+    await gateway.discoverAdapters(adaptersRoot);
+    ctx.log?.("info", "Study gateway: adapters discovered.", {
+        component: "study-gateway",
+        adaptersRoot,
+        adapterCount: gateway.listAdapters().length,
+    });
 
     const syncModuleEnabledState = (
         moduleId: string,
@@ -241,6 +288,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const isLanguageEnabled = async (
         languageCode: string,
     ): Promise<boolean> => {
+        syncLanguageCapabilities();
         const languageModule = gateway
             .listRegisteredLanguageModules()
             .find((candidate) => candidate.code === languageCode);
@@ -249,63 +297,37 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     };
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "study");
 
-    await Promise.all([
-        gateway.bootstrapAdapters(adaptersRoot, {
-            ...uiHooks,
-            gateway,
-            capabilities: ctx.capabilities,
-            gatewayRegistry: ctx.gatewayRegistry,
-            flow: ctx.flow,
-            registerRoute: (handler, gatewayId) =>
-                ctx.routeRegistry.register(handler, gatewayId ?? "study"),
-            registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
-                if (!ctx.uiRegistry?.registerAdapterStaticDir) {
-                    ctx.log?.(
-                        "warn",
-                        "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
-                        {
-                            component: "study-gateway",
-                            gatewayId,
-                            adapterId,
-                            dir,
-                        },
-                    );
-                    return;
-                }
-                ctx.uiRegistry.registerAdapterStaticDir(
-                    gatewayId,
-                    adapterId,
-                    dir,
-                );
-            },
-            log: ctx.log,
-        }),
-        gateway.bootstrapLanguageModules(LANGUAGE_MODULES_ROOT, {
-            capabilities: ctx.capabilities,
-            registerChildRoute: (handler) =>
-                ctx.routeRegistry.register(handler, "study"),
-            registerStaticDir: (prefix, dir) => {
-                if (prefix.startsWith("modules/")) {
-                    ctx.uiRegistry?.registerModuleStaticDir(
-                        prefix.slice("modules/".length),
+    await gateway.bootstrapAdapters(adaptersRoot, {
+        ...uiHooks,
+        gateway,
+        capabilities: ctx.capabilities,
+        gatewayRegistry: ctx.gatewayRegistry,
+        flow: ctx.flow,
+        registerRoute: (handler, gatewayId) =>
+            ctx.routeRegistry.register(handler, gatewayId ?? "study"),
+        registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
+            if (!ctx.uiRegistry?.registerAdapterStaticDir) {
+                ctx.log?.(
+                    "warn",
+                    "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
+                    {
+                        component: "study-gateway",
+                        gatewayId,
+                        adapterId,
                         dir,
-                    );
-                } else {
-                    ctx.uiRegistry?.registerStaticDir(prefix, dir);
-                }
-            },
-            log: ctx.log,
-        }),
-    ]);
-
-    ctx.log?.(
-        "info",
-        "Study gateway: adapters and language modules bootstrapped.",
-        {
-            component: "study-gateway",
-            adapterCount: gateway.listAdapters().length,
+                    },
+                );
+                return;
+            }
+            ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
         },
-    );
+        log: ctx.log,
+    });
+
+    ctx.log?.("info", "Study gateway: adapters bootstrapped.", {
+        component: "study-gateway",
+        adapterCount: gateway.listAdapters().length,
+    });
 
     ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
 
@@ -349,6 +371,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             return false;
         const claims = routeHelpers.requireAuth(req, res);
         if (!claims) return true;
+        syncLanguageCapabilities();
         const languages = gateway
             .listRegisteredLanguageModules()
             .filter((language) => language.enabled)
@@ -383,7 +406,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "study",
         name: "Study Gateway",
-        version: "1.5.9",
+        version: "1.5.12",
         description:
             "Per-language classes, teacher assignments, and learning progress.",
         publisher: "Cognis Labs HQ",

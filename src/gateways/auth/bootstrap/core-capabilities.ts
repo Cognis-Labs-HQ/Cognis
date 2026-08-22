@@ -37,6 +37,15 @@ export async function registerAuthBootstrapHook({
     );
     ctx.capabilities.contribute("auth:issueAccessToken", issueAccessToken);
     ctx.capabilities.contribute(
+        "auth:getAuthClaims",
+        routeContext.getAuthClaims,
+    );
+    ctx.capabilities.contribute("auth:requireAuth", routeContext.requireAuth);
+    ctx.capabilities.contribute(
+        "auth:requireRoleAccess",
+        routeContext.requireRoleAccess,
+    );
+    ctx.capabilities.contribute(
         "auth:revokeAccessTokensForSubject",
         revokeAccessTokensForSubject,
     );

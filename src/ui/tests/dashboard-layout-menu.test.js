@@ -102,6 +102,14 @@ test("dashboard resolves guest sessions through the auth capability", () => {
         "utf8",
     );
     assert.match(layoutSource, /capabilities\.get\("session:isGuest"\)/);
+    assert.match(
+        layoutSource,
+        /capabilities\.get\("session:isGuest"\)\?\.\(\) !== true/,
+    );
+    assert.doesNotMatch(
+        layoutSource,
+        /!uiCtx\.capabilities\.get\("session:isGuest"\)/,
+    );
     assert.doesNotMatch(layoutSource, /account-context/);
 });
 
@@ -189,6 +197,25 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
         layoutSource.includes('existingThemeToggle?.removeAttribute("hidden")'),
         "dashboard layout should unhide the existing theme toggle when the page enables it",
     );
+});
+
+test("primary navigation supports persisted drag ordering", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const orderingSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/navigation-order.js"),
+        "utf8",
+    );
+    assert.match(layoutSource, /bindNavigationOrdering/);
+    assert.match(orderingSource, /navigationOrder/);
+    assert.match(orderingSource, /addEventListener\("dragstart"/);
+    assert.match(orderingSource, /addEventListener\("dragover"/);
+    assert.match(orderingSource, /navigation-drag-handle/);
+    assert.match(orderingSource, /draggable = false/);
+    assert.match(orderingSource, /savePreferences/);
+    assert.match(orderingSource, /MutationObserver/);
 });
 
 test("profile dropdown opens on hover or click and closes only on click away", () => {

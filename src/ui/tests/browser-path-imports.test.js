@@ -5,7 +5,7 @@ import { dirname, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-const SOURCE_ROOTS = ["src/ui", "src/gateways", "src/adapters", "src/modules"];
+const SOURCE_ROOTS = ["src/ui", "src/gateways", "src/adapters"];
 const IMPORT_PATTERN =
     /^\s*(?:import|export)\s+(?:[^"']*?\s+from\s+)?["']([^"']+)["']/gm;
 const DYNAMIC_IMPORT_PATTERN = /\bimport\(\s*["']([^"']+)["']\s*\)/g;
@@ -50,14 +50,6 @@ function resolveStaticPath(staticPath) {
             pathParts[3],
         );
         const remainder = pathParts.slice(4);
-        return [
-            resolve(componentRoot, "ui", ...remainder),
-            resolve(componentRoot, ...remainder),
-        ].find(existsSync);
-    }
-    if (surface === "modules") {
-        const componentRoot = resolve(ROOT, "src/modules", pathParts[2]);
-        const remainder = pathParts.slice(3);
         return [
             resolve(componentRoot, "ui", ...remainder),
             resolve(componentRoot, ...remainder),

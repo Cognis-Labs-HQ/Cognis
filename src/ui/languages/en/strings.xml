@@ -48,6 +48,7 @@
   <string name="ui.reuse.reset">Reset</string>
   <string name="ui.reuse.reset_draft">Reset Draft</string>
   <string name="ui.reuse.refresh">Refresh</string>
+  <string name="ui.reuse.update">Update</string>
   <string name="ui.reuse.connection_lost_refresh_prompt">Connection Interrupted. Please Refresh the Page.</string>
   <string name="ui.reuse.loading">Loading…</string>
   <string name="ui.reuse.loading_joke_1">Cognis shouldn't be this slow, isn't it 2026?</string>
@@ -62,6 +63,10 @@
   <string name="ui.reuse.discard">Discard</string>
   <string name="ui.reuse.done">Done</string>
   <string name="ui.reuse.add">Add</string>
+  <string name="ui.reuse.edit">Edit</string>
+  <string name="ui.reuse.back">Back</string>
+  <string name="ui.reuse.previous">Previous</string>
+  <string name="ui.reuse.next">Next</string>
   <string name="ui.reuse.remove">Remove</string>
   <string name="ui.reuse.dismiss">Dismiss</string>
   <string name="ui.reuse.copy">Copy</string>
@@ -681,4 +686,12 @@
   <string name="ui.reuse.duration.hours">Hours</string>
   <string name="ui.reuse.duration.days">Days</string>
   <string name="ui.reuse.duration.weeks">Weeks</string>
+  <string name="ui.page.title.modules">Modules</string>
+  <string name="ui.reuse.license">License</string>
+  <string name="ui.reuse.install">Install</string>
+  <string name="ui.reuse.installed">Installed</string>
+  <string name="ui.reuse.all">All</string>
+  <string name="ui.reuse.name">Name</string>
+  <string name="ui.reuse.uninstall">Uninstall</string>
+  <string name="ui.reuse.toggle_secret_visibility">Toggle Secret Visibility</string>
 </resources>

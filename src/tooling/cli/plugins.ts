@@ -42,11 +42,9 @@ function configuredModuleRoots(): string[] {
     return uniquePaths([
         ...splitConfiguredPaths(
             process.env.COGNIS_MODULE_CLI_PATHS ??
-                process.env.COGNIS_MODULES_ROOT,
+                process.env.COGNIS_EXTERNAL_MODULES_ROOT,
         ),
-        path.resolve(process.cwd(), "modules"),
-        path.resolve(process.cwd(), "src", "modules"),
-        path.resolve(import.meta.dirname, "..", "..", "modules"),
+        path.resolve(process.cwd(), "external-modules"),
     ]);
 }
 

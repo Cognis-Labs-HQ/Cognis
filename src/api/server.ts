@@ -1,18 +1,26 @@
 import { createSearchRoutes } from "./routes/search/index.js";
 import { createServer } from "node:http";
+import { readFile, readdir } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
     HealthService,
     ModuleService,
+    ModuleMarketplaceService,
+    ModuleTestService,
     type GatewayRegistry,
     type BootstrapLog,
     type ModuleManifest,
     type ModuleRuntimeGateway,
 } from "@cognis/core";
-import { createModuleRoutes } from "./routes/modules/index.js";
+import {
+    createModuleRoutes,
+    ModuleEnableValidationError,
+} from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
 import { createDocsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
-import { createModuleExtensionRoutes } from "../modules/routes/module-extensions.js";
+import { createModuleExtensionRoutes } from "./reuse/module-extension-routes.js";
 import type { LocalAccountStore } from "@cognis/core";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
@@ -31,13 +39,14 @@ export interface ApiDependencies {
     healthService?: HealthService;
     log?: BootstrapLog;
     validateModuleEnable?: (moduleId: string) => Promise<void> | void;
+    runModuleTests?: (moduleId: string) => Promise<void>;
     moduleIntegrityChecker?: () => Promise<
         Array<{
             moduleId: string;
             file: string;
-            expected: string;
+            expected: string | null;
             actual: string | null;
-            status: "ok" | "mismatch" | "missing";
+            status: "ok" | "mismatch" | "missing" | "missing_shasum";
         }>
     >;
     loadModuleStates?: () => Promise<
@@ -95,6 +104,143 @@ export interface ApiDependencies {
             labels?: Record<string, string>,
         ): void;
     };
+    discoverModulesOnStartup?: boolean;
+}
+
+export interface CoreComponentDependency {
+    id: string;
+    uuid: string;
+    name: string;
+    gatewayId?: string;
+}
+
+export async function discoverCoreComponentDependencies(
+    roots: readonly string[],
+): Promise<CoreComponentDependency[]> {
+    const components: CoreComponentDependency[] = [];
+    const visit = async (root: string): Promise<void> => {
+        let entries;
+        try {
+            entries = await readdir(root, { withFileTypes: true });
+        } catch (error) {
+            if ((error as NodeJS.ErrnoException).code === "ENOENT") return;
+            throw error;
+        }
+        for (const entry of entries) {
+            const entryPath = path.join(root, entry.name);
+            if (entry.isDirectory()) {
+                await visit(entryPath);
+                continue;
+            }
+            if (entry.name !== "manifest.json") continue;
+            const manifest = JSON.parse(await readFile(entryPath, "utf8")) as {
+                id?: unknown;
+                uuid?: unknown;
+                name?: unknown;
+                gateway?: unknown;
+            };
+            if (
+                typeof manifest.id !== "string" ||
+                typeof manifest.uuid !== "string" ||
+                typeof manifest.name !== "string"
+            )
+                continue;
+            components.push({
+                id: manifest.id,
+                uuid: manifest.uuid,
+                name: manifest.name,
+                ...(typeof manifest.gateway === "string"
+                    ? { gatewayId: manifest.gateway }
+                    : {}),
+            });
+        }
+    };
+    for (const root of roots) await visit(root);
+    return components;
+}
+
+export function assertModuleEnableDependencies(
+    moduleId: string,
+    requires: readonly string[],
+    registry: GatewayRegistry | undefined,
+    components: readonly CoreComponentDependency[] = [],
+): void {
+    for (const reference of requires) {
+        const directGateway = registry
+            ?.list()
+            .find(
+                (entry) => entry.id === reference || entry.uuid === reference,
+            );
+        const component = components.find(
+            (entry) => entry.id === reference || entry.uuid === reference,
+        );
+        const dependency =
+            directGateway ??
+            (component?.gatewayId
+                ? registry?.get(component.gatewayId)
+                : undefined);
+        if (!dependency) {
+            throw new ModuleEnableValidationError(
+                "module_dependency_unavailable",
+                `Module ${moduleId} requires unavailable component ${reference}`,
+            );
+        }
+        if (dependency.status === "active") continue;
+        throw new ModuleEnableValidationError(
+            "module_dependency_disabled",
+            `Module ${moduleId} requires disabled component ${component?.name ?? dependency.name}`,
+        );
+    }
+}
+
+export function assertModuleInstallDependencies(
+    moduleId: string,
+    requires: readonly string[],
+    registry: GatewayRegistry | undefined,
+    components: readonly CoreComponentDependency[] = [],
+): void {
+    for (const reference of requires) {
+        const dependency = registry
+            ?.list()
+            .find(
+                (entry) => entry.id === reference || entry.uuid === reference,
+            );
+        const component = components.find(
+            (entry) => entry.id === reference || entry.uuid === reference,
+        );
+        if (!dependency && !component) {
+            throw new ModuleEnableValidationError(
+                "module_dependency_unavailable",
+                `Module ${moduleId} requires unavailable component ${reference}`,
+            );
+        }
+        const owningGateway = component?.gatewayId
+            ? registry?.get(component.gatewayId)
+            : undefined;
+        if (
+            dependency?.status === "disabled" ||
+            (component?.gatewayId && owningGateway?.status !== "active")
+        ) {
+            throw new ModuleEnableValidationError(
+                "module_dependency_disabled",
+                `Module ${moduleId} requires disabled component ${component?.name ?? dependency?.name}`,
+            );
+        }
+    }
+}
+
+export function assertModuleCapabilityDependencies(
+    moduleId: string,
+    requiresCapabilities: readonly string[],
+    isCapabilityAvailable: (capabilityId: string) => boolean,
+): void {
+    for (const capability of requiresCapabilities) {
+        if (isCapabilityAvailable(capability)) continue;
+        throw new ModuleEnableValidationError(
+            "module_capability_unavailable",
+            `Module ${moduleId} requires unavailable capability ${capability}`,
+        );
+    }
 }
 
 /**
@@ -121,16 +267,42 @@ function isUiStaticAssetRequest(pathname: string): boolean {
 
 export function buildServer(deps: ApiDependencies) {
     const log = deps.log ?? (() => undefined);
+    const coreComponentDependencies = discoverCoreComponentDependencies([
+        fileURLToPath(new URL("../gateways", import.meta.url)),
+        fileURLToPath(new URL("../adapters", import.meta.url)),
+    ]);
     const routeContext = deps.routeContext;
     if (!routeContext) {
         throw new Error(
             "route_context_missing: auth route context is required in ApiDependencies",
         );
     }
-    const moduleService = new ModuleService(deps.moduleRuntimeGateway);
+    const externalModulesRoot =
+        process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+        path.resolve(process.cwd(), "external-modules");
+    const moduleService = new ModuleService(deps.moduleRuntimeGateway, {
+        externalModulesPath: externalModulesRoot,
+        enabledPointersPath:
+            process.env.COGNIS_ENABLED_MODULES_ROOT ??
+            path.resolve(process.cwd(), "config", "enabled-modules"),
+    });
+    const moduleMarketplaceService = new ModuleMarketplaceService(
+        process.env.COGNIS_MODULE_SOURCES_PATH ??
+            path.resolve(process.cwd(), "config", "module-sources.json"),
+        externalModulesRoot,
+        (level, message, meta) => log(level, message, meta),
+    );
+    if (deps.discoverModulesOnStartup) {
+        void moduleMarketplaceService.discover().catch((error) => {
+            log("warn", "Initial module marketplace discovery failed.", {
+                component: "api-modules",
+                error: error instanceof Error ? error.message : String(error),
+            });
+        });
+    }
+    const moduleTestService = new ModuleTestService([externalModulesRoot]);
     const healthService = deps.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
-
     const moduleExtensionRoutes = createModuleExtensionRoutes(
         deps.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
@@ -138,23 +310,88 @@ export function buildServer(deps: ApiDependencies) {
         {
             uiRegistry: deps.uiRegistry,
             routeContext,
+            getProtectedRoutePrefixes: () =>
+                deps.routeRegistry?.getClaimedPrefixes() ?? [],
+            onBootstrapFailed: async (moduleId) => {
+                enabledModules.delete(moduleId);
+                await deps.onModuleStateChanged?.(moduleId, false);
+                await deps.persistModuleState?.(moduleId, false);
+            },
         },
     );
 
     const moduleRoutes = createModuleRoutes(
         moduleService,
         {
-            beforeEnable: deps.validateModuleEnable,
+            validateInstallDependencies: async (manifest) => {
+                assertModuleInstallDependencies(
+                    manifest.id,
+                    manifest.requires ?? [],
+                    deps.gatewayRegistry,
+                    await coreComponentDependencies,
+                );
+            },
+            beforeEnable: async (moduleId) => {
+                await deps.moduleRuntimeGateway.refresh?.();
+                const manifest = (
+                    await deps.moduleRuntimeGateway.listManifests()
+                ).find((entry) => entry.id === moduleId);
+                assertModuleEnableDependencies(
+                    moduleId,
+                    manifest?.requires ?? [],
+                    deps.gatewayRegistry,
+                    await coreComponentDependencies,
+                );
+                assertModuleCapabilityDependencies(
+                    moduleId,
+                    manifest?.requiresCapabilities ?? [],
+                    (capabilityId) =>
+                        routeContext.getCapability(capabilityId) !==
+                            undefined ||
+                        (deps.uiRegistry?.hasActiveCapabilityProvider(
+                            capabilityId,
+                        ) ??
+                            false),
+                );
+                await (
+                    deps.runModuleTests ??
+                    moduleTestService.run.bind(moduleTestService)
+                )(moduleId);
+                await deps.validateModuleEnable?.(moduleId);
+            },
             onEnabled: async (moduleId) => {
                 enabledModules.add(moduleId);
-                await deps.onModuleStateChanged?.(moduleId, true);
-                await deps.persistModuleState?.(moduleId, true);
-                await moduleExtensionRoutes.refresh();
+                try {
+                    await deps.onModuleStateChanged?.(moduleId, true);
+                    await deps.persistModuleState?.(moduleId, true);
+                    await moduleExtensionRoutes.refresh({
+                        throwOnFailure: true,
+                    });
+                } catch (error) {
+                    enabledModules.delete(moduleId);
+                    await deps.onModuleStateChanged?.(moduleId, false);
+                    await deps.persistModuleState?.(moduleId, false);
+                    await moduleExtensionRoutes.refresh();
+                    throw error;
+                }
             },
             onDisabled: async (moduleId) => {
                 enabledModules.delete(moduleId);
+                deps.uiRegistry?.unregisterModuleContributions(moduleId);
+                await moduleExtensionRoutes.refresh();
                 await deps.onModuleStateChanged?.(moduleId, false);
                 await deps.persistModuleState?.(moduleId, false);
+            },
+            onImported: async () => {
+                await deps.moduleRuntimeGateway.refresh?.();
+                await moduleExtensionRoutes.refresh();
+            },
+            beforeUninstall: (moduleId, options) =>
+                moduleExtensionRoutes.uninstall(moduleId, options),
+            onUninstalled: async (moduleId) => {
+                enabledModules.delete(moduleId);
+                await deps.persistModuleState?.(moduleId, false);
+                await deps.moduleRuntimeGateway.refresh?.();
                 await moduleExtensionRoutes.refresh();
             },
             getStatus: (moduleId) =>
@@ -163,6 +400,7 @@ export function buildServer(deps: ApiDependencies) {
             log,
         },
         routeContext,
+        moduleMarketplaceService,
     );
     const systemRoutes = createSystemRoutes(
         healthService,
@@ -204,7 +442,7 @@ export function buildServer(deps: ApiDependencies) {
         : null;
     const searchRoutes = createSearchRoutes(deps.searchProfiles, routeContext);
 
-    Promise.all([
+    const runtimeStateReady = Promise.all([
         deps.moduleRuntimeGateway.listManifests(),
         deps.loadModuleStates?.() ?? Promise.resolve([]),
         deps.loadGatewayStates?.() ?? Promise.resolve([]),
@@ -267,6 +505,7 @@ export function buildServer(deps: ApiDependencies) {
         });
 
     const server = createServer(async (req, res) => {
+        await runtimeStateReady;
         const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         let responseBytes = 0;

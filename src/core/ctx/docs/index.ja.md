@@ -41,6 +41,7 @@ flow は `context.ctx.runFlow(...)` で別 flow を呼び出せます。例: ロ
 ## 拡張ポイント
 
 - `ctx.contributeCapability(key, value)` でクロスコンポーネント capability を提供する。
+- 終了処理では `ctx.removeCapability(key)` で所有する capability を削除する。スコープ付きモジュールブートストラップでは自動的に処理される。
 - `ctx.registerFlow({ id, stages })` で新しいオーケストレーション pipeline を登録する。
 - `ctx.addFlowStageHook(flowId, stageId, hook, handler)` で flow 振る舞いを注入する。
 - 無効化時は `ctx.removeFlowStageHook(...)` と `ctx.unregisterFlow(...)` で振る舞いを解除する。
@@ -72,3 +73,9 @@ if (ctx.flow.exists("construct-settings-ui")) {
     );
 }
 ```
+
+## モジュールのケイパビリティ宣言
+
+モジュールは、使用するサービスをマニフェスト最上位の `requiresCapabilities` で宣言します。サーバーケイパビリティは `auth:requireAuth` などの登録 ID を使用し、ブラウザーケイパビリティは `ui:profileAvatarRenderer` などの `ui:` 名前空間を使用します。Cognis は宣言された UI 要件をモジュールの SPA ルートへ関連付け、ルートのマウント前に一致する登録済みプロバイダースクリプトだけを読み込みます。有効化時にはサーバー機能をサーバーコンテキストで、`ui:` 機能を UI レジストリのアクティブなプロバイダーで解決します。SPA ルーティングはマウント前にブラウザープロバイダーを再確認します。
+
+プロバイダーはコンポーネント文書にケイパビリティ ID を記載し、ブラウザープロバイダーは `providesCapabilities` で登録する必要があります。Owner は `GET /api/v1/system/capabilities` または `cognisctl system:capabilities` で稼働中の登録一覧を確認できます。

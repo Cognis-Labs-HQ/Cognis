@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
+const bootstrapSource = await readFile(
+    new URL("../bootstrap/index.ts", import.meta.url),
+    "utf8",
+);
+
 const popupSource = await Promise.all(
     ["index.js", "implementation.js", "rendering.js"].map((fileName) =>
         readFile(
@@ -17,6 +22,10 @@ const apiSource = await readFile(
     new URL("../ui/reuse/share-api.js", import.meta.url),
     "utf8",
 );
+const providerSource = await readFile(
+    new URL("../ui/provider.js", import.meta.url),
+    "utf8",
+);
 const linkPageSource = await readFile(
     new URL("../../../adapters/share/link/page.js", import.meta.url),
     "utf8",
@@ -25,6 +34,26 @@ const userPageSource = await readFile(
     new URL("../../../adapters/share/user/page.js", import.meta.url),
     "utf8",
 );
+
+test("link share popup is an active browser capability provider", () => {
+    assert.match(
+        bootstrapSource,
+        /share-links-popup\/index\.js"[\s\S]*isAdapterEnabled\("link"\)[\s\S]*"share:openPopup"/,
+    );
+});
+
+test("share gateway provides its canonical trigger renderer", () => {
+    assert.match(
+        bootstrapSource,
+        /providesCapabilities: \["share:uiGateway"\]/,
+    );
+    assert.match(providerSource, /mountShareButton/);
+    assert.match(providerSource, /mountTrigger\(container, options = \{\}\)/);
+    assert.match(
+        providerSource,
+        /uiCtx\.capabilities\.contribute\("share:uiGateway", shareUiGateway\)/,
+    );
+});
 const sessionFlowSource = await readFile(
     new URL("../ui/session-flow-hooks.js", import.meta.url),
     "utf8",
@@ -70,6 +99,13 @@ test("public Share page disables page layout editing", () => {
     assert.match(
         shareAppSource,
         /authenticated: true, shareContext: routedShareContext/,
+    );
+});
+
+test("public Share page loads host capability providers after guest authentication", () => {
+    assert.match(
+        shareAppSource,
+        /if \(!session\?\.authenticated\)[\s\S]*ui:ensureProvidersLoaded[\s\S]*force: true[\s\S]*mountScriptUrl/,
     );
 });
 
@@ -326,6 +362,17 @@ test("logged-in share recipients keep their account session", () => {
 test("share buttons use the neutral consequence style", () => {
     assert.match(shareButtonSource, /\[\.\.\.classes, "btn-neutral"\]/);
     assert.match(shareButtonSource, /"btn-confirm", "btn-neutral"/);
+});
+
+test("share buttons always render the gateway-localized label with a share icon", () => {
+    assert.match(
+        shareButtonSource,
+        /componentStringBaseUrls:[\s\S]*gateways\/share\/languages/,
+    );
+    assert.match(shareButtonSource, /shareI18n\.t\("share\.action"\)/);
+    assert.match(shareButtonSource, /share-button-icon/);
+    assert.match(shareButtonSource, /icon\.textContent = "🔗"/);
+    assert.match(shareButtonSource, /share-button\.css/);
 });
 
 test("anonymous share guests activate a temporary unlocked keyring", () => {

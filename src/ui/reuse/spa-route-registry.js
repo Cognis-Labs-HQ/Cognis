@@ -28,6 +28,11 @@ function normalizeRoute(rawRoute) {
               .map((stylesheetUrl) => String(stylesheetUrl ?? "").trim())
               .filter(Boolean)
         : [];
+    const capabilityScripts = Array.isArray(rawRoute?.capabilityScripts)
+        ? rawRoute.capabilityScripts
+              .map((script) => String(script ?? "").trim())
+              .filter(Boolean)
+        : [];
     if (!patternSource || !basePath || !scriptUrl) {
         return null;
     }
@@ -37,7 +42,14 @@ function normalizeRoute(rawRoute) {
             pattern: routePattern,
             base: basePath,
             stylesheets,
-            load: async () => import(scriptUrl),
+            load: async () => {
+                await Promise.all(
+                    capabilityScripts.map(
+                        (providerScript) => import(providerScript),
+                    ),
+                );
+                return import(scriptUrl);
+            },
         };
     } catch (error) {
         const errorMessage =

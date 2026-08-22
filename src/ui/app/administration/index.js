@@ -715,30 +715,29 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
 }
 
 async function guardSubPageSwitch() {
-    if (!changesBar?.isAnyDirty()) return true;
-    const result = await openPopup({
-        title: i18n.t("ui.reuse.unsaved_changes"),
-        body: `<p>${i18n.t("ui.reuse.leave_page_warning")}</p>`,
-        variant: "warning",
-        actions: [
-            {
-                id: "discard",
-                label: i18n.t("ui.reuse.discard_and_leave"),
-                variant: "confirm",
-            },
-            {
-                id: "stay",
-                label: i18n.t("ui.reuse.stay"),
-                variant: "cancel",
-            },
-        ],
-    });
-    if (result === "discard") {
+    if (changesBar?.isAnyDirty()) {
+        const result = await openPopup({
+            title: i18n.t("ui.reuse.unsaved_changes"),
+            body: `<p>${i18n.t("ui.reuse.leave_page_warning")}</p>`,
+            variant: "warning",
+            actions: [
+                {
+                    id: "discard",
+                    label: i18n.t("ui.reuse.discard_and_leave"),
+                    variant: "confirm",
+                },
+                {
+                    id: "stay",
+                    label: i18n.t("ui.reuse.stay"),
+                    variant: "cancel",
+                },
+            ],
+        });
+        if (result !== "discard") return false;
         securitySection?.discard();
         changesBar.markDirty("security", false);
-        return true;
     }
-    return false;
+    return true;
 }
 
 export async function mount(rootEl, { signal } = {}) {

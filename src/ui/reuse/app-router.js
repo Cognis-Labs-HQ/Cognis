@@ -41,7 +41,7 @@
 
 import { ensurePageStylesheet, preparePageStylesheets } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
-import { beginPageLoading } from "./page-entry.js";
+import { beginPageLoading, ensureHostUiProviders } from "./page-entry.js";
 import { getCurrentRoutePath } from "./route-path.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 import {
@@ -267,6 +267,15 @@ const STATIC_ROUTES = [
         load: () => import("../app/invite/index.js"),
     },
     {
+        pattern: /^\/administration\/modules/,
+        base: "/administration/modules",
+        stylesheets: [
+            ...ROUTE_STYLE_BUNDLES.pageSections,
+            "/static/styles/modules.css",
+        ],
+        load: () => import("../app/modules/index.js"),
+    },
+    {
         pattern: /^\/administration/,
         base: "/administration",
         stylesheets: [
@@ -397,6 +406,7 @@ async function loadRoute(path) {
     globalThis.__spaRouter = true;
     let mod;
     try {
+        await ensureHostUiProviders();
         mod = await route.load(path);
     } catch (error) {
         console.error("[router] route load error for", path, error);
@@ -427,6 +437,11 @@ async function loadRoute(path) {
     const session = route.public
         ? null
         : ((authResult?.stageResults?.["resolve-session"] ?? [])[0] ?? null);
+
+    await ensureHostUiProviders();
+    if (signal.aborted || navigationSequence !== _navigationSequence) {
+        return false;
+    }
 
     const isGuestContentPath =
         uiCtx.capabilities.get("session:isGuestAllowedPath")?.(

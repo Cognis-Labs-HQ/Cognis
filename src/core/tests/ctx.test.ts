@@ -13,6 +13,16 @@ test("ctx contributes and resolves capabilities", () => {
     });
 });
 
+test("ctx removes private and public capabilities", () => {
+    const ctx = createCtx();
+    ctx.contributePublicCapability("module:example", { enabled: true });
+
+    assert.equal(ctx.removeCapability("module:example"), true);
+    assert.equal(ctx.hasCapability("module:example"), false);
+    assert.equal(ctx.isPublicCapability("module:example"), false);
+    assert.equal(ctx.removeCapability("module:example"), false);
+});
+
 test("ctx requireCapability throws when missing", () => {
     const ctx = createCtx();
     assert.throws(
@@ -273,6 +283,17 @@ test("ctx listPublicCapabilities returns sorted list of public keys only", () =>
         "logging:logger",
     ]);
     assert.equal(publicKeys.includes("z:private"), false);
+});
+
+test("ctx lists every registered capability without exposing values", () => {
+    const ctx = createCtx();
+    ctx.contributeCapability("private:second", { secret: true });
+    ctx.contributePublicCapability("public:first", () => undefined);
+
+    assert.deepEqual(ctx.listCapabilities(), [
+        "private:second",
+        "public:first",
+    ]);
 });
 
 test("ctx public capabilities are still accessible via standard capability methods", () => {

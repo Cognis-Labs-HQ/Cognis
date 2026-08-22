@@ -546,6 +546,7 @@ export async function bootstrapSocialAdapter(
     ctx.registerNavbarPlugin(
         "/static/adapters/social/messages/navbar.js",
         () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+        ["social:messagesUiClient"],
     );
 
     ctx.log?.("info", "Messages adapter: initialized.", {

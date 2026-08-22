@@ -2,10 +2,28 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
 import { brotliCompressSync, gzipSync } from "node:zlib";
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import { UIRegistry } from "../../reuse/ui-registry.js";
 import { createResponseRecorder } from "./ui-routes-test-helpers.js";
+
+test("GET /static/recommended-modules.json serves the default catalog", async () => {
+    const route = createUiRoutes();
+    const recorder = createResponseRecorder();
+    const handled = await route(
+        { headers: {} } as any,
+        recorder.res as any,
+        new URL("http://localhost/static/recommended-modules.json"),
+    );
+
+    assert.ok(handled);
+    assert.equal(recorder.status, 200);
+    assert.deepEqual(JSON.parse(recorder.body), [
+        "f055f2e5-227a-5fb4-b934-5397ec32cf2d",
+        "5bb6105d-14d2-5d9d-a284-b2969fb4e35d",
+        "e10c016f-8a15-5ec2-8188-c1657dfbe829",
+    ]);
+});
 
 test("GET /static/reuse/ rejects directories before committing a response", async () => {
     const route = createUiRoutes();
@@ -323,75 +341,6 @@ test("GET /static/adapters/share/link/ui/share-links-popup/index.css serves Link
     assert.match(recorder.body, /share-links-popup/);
 });
 
-test("GET /static/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js serves module assets", async () => {
-    const uiRegistry = new UIRegistry();
-    const hiraganaUiDir = path.resolve(
-        process.cwd(),
-        "src",
-        "modules",
-        "study",
-        "languages",
-        "ja",
-        "components",
-        "hiragana-alphabet",
-        "ui",
-    );
-    uiRegistry.registerModuleStaticDir(
-        "study/languages/ja/components/hiragana-alphabet/ui",
-        hiraganaUiDir,
-    );
-    const route = createUiRoutes(undefined, uiRegistry);
-
-    const recorder = createResponseRecorder();
-    const handled = await route(
-        { headers: {} } as any,
-        recorder.res as any,
-        new URL(
-            "http://localhost/static/modules/study/languages/ja/components/hiragana-alphabet/ui/app.js",
-        ),
-    );
-
-    assert.ok(handled);
-    assert.equal(recorder.status, 200);
-    assert.equal(
-        recorder.headers["content-type"],
-        "text/javascript; charset=utf-8",
-    );
-});
-
-test("GET /static/modules/study/languages/reuse/study-sub-navigation.js serves shared Study language assets", async () => {
-    const uiRegistry = new UIRegistry();
-    const studyLanguageReuseDir = path.resolve(
-        process.cwd(),
-        "src",
-        "modules",
-        "study",
-        "languages",
-        "reuse",
-    );
-    uiRegistry.registerModuleStaticDir(
-        "study/languages/reuse",
-        studyLanguageReuseDir,
-    );
-    const route = createUiRoutes(undefined, uiRegistry);
-
-    const recorder = createResponseRecorder();
-    const handled = await route(
-        { headers: {} } as any,
-        recorder.res as any,
-        new URL(
-            "http://localhost/static/modules/study/languages/reuse/study-sub-navigation.js",
-        ),
-    );
-
-    assert.ok(handled);
-    assert.equal(recorder.status, 200);
-    assert.equal(
-        recorder.headers["content-type"],
-        "text/javascript; charset=utf-8",
-    );
-});
-
 test("GET /static/modules/unknown/file.js returns 404 for unregistered module prefix", async () => {
     const uiRegistry = new UIRegistry();
     const route = createUiRoutes(undefined, uiRegistry);
@@ -405,4 +354,83 @@ test("GET /static/modules/unknown/file.js returns 404 for unregistered module pr
 
     assert.ok(handled);
     assert.equal(recorder.status, 404);
+});
+
+test("installed module string bundles are served before module bootstrap", async () => {
+    const uuid = "f055f2e5-227a-5fb4-b934-5397ec32cf2d";
+    const moduleRoot = path.resolve("external-modules", uuid);
+    const stringsPath = path.join(moduleRoot, "ui/languages/en/strings.xml");
+    await mkdir(path.dirname(stringsPath), { recursive: true });
+    await writeFile(
+        stringsPath,
+        '<resources><string name="module.title">Meetings</string></resources>',
+    );
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "meetings",
+                uuid,
+                entrypoints: { ui: "./ui/app.js" },
+                ui: {
+                    stringsBaseUrl: "/static/modules/meetings/languages",
+                },
+            },
+        ],
+    } as any);
+    const recorder = createResponseRecorder();
+
+    try {
+        assert.equal(
+            await route(
+                { headers: {} } as any,
+                recorder.res as any,
+                new URL(
+                    "http://localhost/static/modules/meetings/languages/en/strings.xml",
+                ),
+            ),
+            true,
+        );
+        assert.equal(recorder.status, 200);
+        assert.match(recorder.body, /module\.title/);
+    } finally {
+        await rm(moduleRoot, { recursive: true, force: true });
+    }
+});
+
+test("installed modules use their conventional language bundle when undeclared", async () => {
+    const uuid = "d7425ca1-6895-4aa3-a87f-2ed6d7698d01";
+    const moduleRoot = path.resolve("external-modules", uuid);
+    const stringsPath = path.join(moduleRoot, "ui/languages/en/strings.xml");
+    await mkdir(path.dirname(stringsPath), { recursive: true });
+    await writeFile(
+        stringsPath,
+        '<resources><string name="module.example.name">Example</string></resources>',
+    );
+    const route = createUiRoutes({
+        listManifests: async () => [
+            {
+                id: "example",
+                uuid,
+                entrypoints: { bootstrap: "./bootstrap.js" },
+            },
+        ],
+    } as any);
+    const recorder = createResponseRecorder();
+
+    try {
+        assert.equal(
+            await route(
+                { headers: {} } as any,
+                recorder.res as any,
+                new URL(
+                    "http://localhost/static/modules/example/languages/en/strings.xml",
+                ),
+            ),
+            true,
+        );
+        assert.equal(recorder.status, 200);
+        assert.match(recorder.body, /module\.example\.name/);
+    } finally {
+        await rm(moduleRoot, { recursive: true, force: true });
+    }
 });

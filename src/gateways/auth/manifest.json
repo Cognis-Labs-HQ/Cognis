@@ -1,8 +1,9 @@
 {
     "id": "auth",
+    "uuid": "a77dac5a-fe42-5bab-8036-54e319cf5313",
     "name": "Authentication Gateway",
-    "version": "1.9.7",
+    "version": "1.9.10",
     "publisher": "Cognis Labs HQ",
     "required": true,
-    "requires": ["db"]
+    "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"]
 }

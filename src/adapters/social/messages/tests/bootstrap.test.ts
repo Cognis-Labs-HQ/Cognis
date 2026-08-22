@@ -14,6 +14,23 @@ function readMessagesUiBundle() {
         .join("\n");
 }
 
+test("messages manifest declares component dependencies by UUID", () => {
+    const manifest = JSON.parse(
+        readFileSync(
+            resolve(ROOT, "src/adapters/social/messages/manifest.json"),
+            "utf8",
+        ),
+    ) as { requires: string[] };
+
+    assert.ok(
+        manifest.requires.every((uuid) =>
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+                uuid,
+            ),
+        ),
+    );
+});
+
 test("messages asset registrations do not use query-string versioning", () => {
     const adapterSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/index.ts"),

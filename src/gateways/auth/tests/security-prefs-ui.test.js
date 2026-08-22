@@ -192,8 +192,10 @@ test("expired API sessions redirect to login with expiry messaging", () => {
     assert.match(SESSION_FLOW_SOURCE, /event\.detail\?\.status !== 401/);
     assert.match(
         SESSION_FLOW_SOURCE,
-        /window\.location\.replace\("\/login\?reason=session_expired"\)/,
+        /uiCtx\.runFlow\("authenticate-session", \{\}\)/,
     );
+    assert.match(SESSION_FLOW_SOURCE, /session\?\.authenticated === true/);
+    assert.match(SESSION_FLOW_SOURCE, /suppressAccessDeniedEvent: true/);
     assert.match(
         PASSWORD_CONFIRMATION_SOURCE,
         /suppressAccessDeniedEvent: true/,

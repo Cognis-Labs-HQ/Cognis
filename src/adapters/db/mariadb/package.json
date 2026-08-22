@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-db-mariadb",
-    "version": "0.5.4",
+    "version": "0.5.12",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.9",
-        "@cognis/gateways": "<=0.1.7"
+        "@cognis/core": "<=0.3.68",
+        "@cognis/gateways": "<=0.1.9"
     }
 }

@@ -22,18 +22,18 @@
 
 ### 主要なソースの場所
 
-| パス                                    | 目的                                                                   |
-| --------------------------------------- | ---------------------------------------------------------------------- |
-| `src/core/contracts/auth-account.ts`    | `AuthAccount`、`ExternalIdentity`、`AuthAccountStore` インターフェース |
-| `src/core/contracts/module-manifest.ts` | `ModuleManifest` インターフェース                                      |
-| `src/core/services/module-service.ts`   | `ModuleService` クラス                                                 |
-| `src/core/services/health-service.ts`   | `HealthService` クラス                                                 |
-| `src/core/services/gateway-service.ts`  | ゲートウェイレジストリサービス                                         |
-| `src/core/index.ts`                     | `@cognis/core` パッケージのパブリックエクスポート                      |
+| パス                                                | 目的                                                                   |
+| --------------------------------------------------- | ---------------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`                | `AuthAccount`、`ExternalIdentity`、`AuthAccountStore` インターフェース |
+| `src/core/contracts/module-manifest.ts`             | `ModuleManifest` インターフェース                                      |
+| `src/core/services/module-loader/module-service.ts` | `ModuleService` クラス                                                 |
+| `src/core/services/health-service.ts`               | `HealthService` クラス                                                 |
+| `src/core/services/gateway-service.ts`              | ゲートウェイレジストリサービス                                         |
+| `src/core/index.ts`                                 | `@cognis/core` パッケージのパブリックエクスポート                      |
 
 ### ModuleService
 
-`src/core/services/module-service.ts` の `ModuleService` は完全なモジュールライフサイクルを管理します。`ModuleRuntimeGateway` 抽象化とオプションの `ModulePathResolver` で動作します。パスリゾルバーが存在する場合、有効化/無効化操作は信頼された内部ディレクトリまたは外部アーカイブのランタイム抽出ディレクトリを指すポインターファイル（nginx スタイルの `<id>.load` シンボリックリンク）を書き込み、削除します。
+`src/core/services/module-loader/module-service.ts` の `ModuleService` は完全なモジュールライフサイクルを管理します。`ModuleRuntimeGateway` 抽象化とオプションの `ModulePathResolver` で動作します。パスリゾルバーが存在する場合、有効化/無効化操作は信頼された内部ディレクトリまたは外部アーカイブのランタイム抽出ディレクトリを指すポインターファイル（nginx スタイルの `<id>.load` シンボリックリンク）を書き込み、削除します。
 
 モジュールを有効化する前に、`ModuleService` は2つのガードレールを強制します：
 
@@ -43,7 +43,7 @@
 ルート安全性はモジュールが有効化される前に強制されます：モジュールの `routes.json` が保護されたプレフィックス（`/api/v1/system`、`/api/v1/auth`、`/api/v1/users`、`/public`、`/ui`）の下のパスを宣言している場合、有効化は拒否されます。
 
 ```ts
-// src/core/services/module-service.ts
+// src/core/services/module-loader/module-service.ts
 export class ModuleService {
     async enable(
         moduleId: string,

@@ -47,7 +47,7 @@ Gateways werden beim Start durch Scannen von `src/gateways/` erkannt. Jedes Gate
 
 Adapter werden von jedem Gateway erkannt, indem es beim eigenen Bootstrap `src/adapters/<gateway-id>/` durchsucht. Weder Core noch der Server haben Kenntnis davon, welche Adapter installiert sind.
 
-Module werden aus `src/modules/` (intern, vertrauenswürdig) und `COGNIS_MODULES_ROOT/external` (externe Archive, erfordern explizite Zustimmungsbestätigung) erkannt. Ein Zeigerdatei-Mechanismus (nginx-Stil-`<id>.load`-Symlinks) steuert, welche Module aktiv sind.
+Module werden ausschließlich aus installierten Repositorys unter `COGNIS_EXTERNAL_MODULES_ROOT` erkannt. Ein Zeigerdatei-Mechanismus (nginx-Stil-`<id>.load`-Symlinks) steuert, welche Module aktiv sind.
 
 ### Wichtige Quellpfade
 
@@ -69,4 +69,4 @@ Cognis wird durch drei Mechanismen erweitert:
 
 - **Gateways**: Fügen Sie ein Verzeichnis unter `src/gateways/` mit `bootstrap.ts` und `manifest.json` hinzu. Der Server erkennt es automatisch.
 - **Adapter**: Fügen Sie ein Verzeichnis unter `src/adapters/<gateway-id>/` hinzu. Das zugehörige Gateway erkennt und lädt es.
-- **Module**: Platzieren Sie ein Modulverzeichnis unter `src/modules/` (intern) oder ein Modularchiv unter dem konfigurierten externen Pfad. Aktivieren Sie es über die Admin-Oberfläche oder `cognisctl`.
+- **Module**: Installieren Sie ein Repository über den Modul-Marktplatz in den konfigurierten externen Modulpfad. Aktivieren Sie es über die Admin-Oberfläche oder `cognisctl`.

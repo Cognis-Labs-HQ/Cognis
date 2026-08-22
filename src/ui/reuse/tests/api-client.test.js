@@ -134,6 +134,10 @@ test("apiFetch preserves Headers input while attaching account authorization", a
 });
 
 test("apiFetch shows one permanent warning toast for repeated API network failures", async () => {
+    assert.match(
+        apiClientSource,
+        /Symbol\.for\("cognis\.connectionRecoveryState"\)/,
+    );
     const networkError = new Error("network down");
     networkError.name = "TypeError";
     const { apiClient, showToastCalls } = loadApiClientForTests({

@@ -22,18 +22,18 @@ Tidak bertanggung jawab atas: mengimplementasikan autentikasi, menyimpan data, m
 
 ### Lokasi sumber utama
 
-| Jalur                                   | Tujuan                                                          |
-| --------------------------------------- | --------------------------------------------------------------- |
-| `src/core/contracts/auth-account.ts`    | Antarmuka `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` |
-| `src/core/contracts/module-manifest.ts` | Antarmuka `ModuleManifest`                                      |
-| `src/core/services/module-service.ts`   | Kelas `ModuleService`                                           |
-| `src/core/services/health-service.ts`   | Kelas `HealthService`                                           |
-| `src/core/services/gateway-service.ts`  | Layanan registri gateway                                        |
-| `src/core/index.ts`                     | Ekspor publik untuk paket `@cognis/core`                        |
+| Jalur                                               | Tujuan                                                          |
+| --------------------------------------------------- | --------------------------------------------------------------- |
+| `src/core/contracts/auth-account.ts`                | Antarmuka `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` |
+| `src/core/contracts/module-manifest.ts`             | Antarmuka `ModuleManifest`                                      |
+| `src/core/services/module-loader/module-service.ts` | Kelas `ModuleService`                                           |
+| `src/core/services/health-service.ts`               | Kelas `HealthService`                                           |
+| `src/core/services/gateway-service.ts`              | Layanan registri gateway                                        |
+| `src/core/index.ts`                                 | Ekspor publik untuk paket `@cognis/core`                        |
 
 ### ModuleService
 
-`ModuleService` di `src/core/services/module-service.ts` mengatur siklus hidup modul penuh. Beroperasi pada abstraksi `ModuleRuntimeGateway` dan `ModulePathResolver` opsional. Ketika resolver jalur ada, operasi aktifkan/nonaktifkan menulis dan menghapus file pointer (symlink nginx-style `<id>.load`) yang menunjuk ke direktori internal tepercaya atau direktori ekstraksi runtime untuk arsip eksternal.
+`ModuleService` di `src/core/services/module-loader/module-service.ts` mengatur siklus hidup modul penuh. Beroperasi pada abstraksi `ModuleRuntimeGateway` dan `ModulePathResolver` opsional. Ketika resolver jalur ada, operasi aktifkan/nonaktifkan menulis dan menghapus file pointer (symlink nginx-style `<id>.load`) yang menunjuk ke direktori internal tepercaya atau direktori ekstraksi runtime untuk arsip eksternal.
 
 Sebelum mengaktifkan modul apapun, `ModuleService` memberlakukan dua pengaman:
 
@@ -43,7 +43,7 @@ Sebelum mengaktifkan modul apapun, `ModuleService` memberlakukan dua pengaman:
 Keamanan rute diberlakukan sebelum modul diaktifkan: jika `routes.json` modul mendeklarasikan jalur di bawah awalan yang dilindungi (`/api/v1/system`, `/api/v1/auth`, `/api/v1/users`, `/public`, `/ui`), pengaktifan ditolak.
 
 ```ts
-// src/core/services/module-service.ts
+// src/core/services/module-loader/module-service.ts
 export class ModuleService {
     async enable(
         moduleId: string,

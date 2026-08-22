@@ -41,6 +41,7 @@ Komponen ini tidak memiliki konfigurasi variabel lingkungan runtime.
 ## Titik Ekstensi
 
 - Kontribusikan kapabilitas lintas komponen lewat `ctx.contributeCapability(key, value)`.
+- Hapus kapabilitas milik komponen saat pembongkaran dengan `ctx.removeCapability(key)`; bootstrap modul terbatas melakukannya secara otomatis.
 - Daftarkan pipeline orkestrasi baru lewat `ctx.registerFlow({ id, stages })`.
 - Suntikkan perilaku flow lewat `ctx.addFlowStageHook(flowId, stageId, hook, handler)`.
 - Lepaskan perilaku saat komponen dinonaktifkan lewat `ctx.removeFlowStageHook(...)` dan `ctx.unregisterFlow(...)`.
@@ -72,3 +73,9 @@ if (ctx.flow.exists("construct-settings-ui")) {
     );
 }
 ```
+
+## Deklarasi kapabilitas modul
+
+Modul menyatakan layanan yang digunakan melalui field manifes tingkat atas `requiresCapabilities`. Kapabilitas server memakai ID terdaftar, misalnya `auth:requireAuth`; kapabilitas peramban memakai namespace `ui:`, misalnya `ui:profileAvatarRenderer`. Cognis menghubungkan kebutuhan UI yang dinyatakan ke rute SPA modul dan hanya mengimpor skrip penyedia terdaftar yang cocok sebelum memasang rute. Aktivasi menyelesaikan kapabilitas server melalui konteks server dan kapabilitas `ui:` melalui penyedia registri UI yang aktif; perutean SPA memeriksa kembali penyedia peramban sebelum memasang.
+
+Penyedia harus menerbitkan ID kapabilitas dalam dokumentasi komponennya dan mendaftarkan penyedia peramban melalui `providesCapabilities`. Operator pemilik dapat memeriksa registri aktif melalui `GET /api/v1/system/capabilities` atau `cognisctl system:capabilities`.

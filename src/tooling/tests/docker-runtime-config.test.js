@@ -43,5 +43,11 @@ for (const profile of ["postgres", "mariadb"]) {
         );
         assert.match(configuration, /EXTERNAL_HOST: \$\{EXTERNAL_HOST:\?/);
         assert.match(configuration, /PASSWORD: \$\{[A-Z_]+PASSWORD:\?/);
+        assert.match(
+            configuration,
+            /COGNIS_EXTERNAL_MODULES_ROOT: \/app\/external-modules/,
+        );
+        assert.match(configuration, /appmodules:\/app\/external-modules/);
+        assert.match(configuration, /^    appmodules:$/m);
     });
 }

@@ -28,7 +28,7 @@ Neue oder neu organisierte Komponenten sollen auf dieselben Top-Level-Namen für
 | Plattform / Core-Ebene | `src/`                         | `docs/`, `api/`, `ui/` | `src/docs/` enthält Entwicklerdokumentation, `src/api/` HTTP-/Server-Code und `src/ui/` Browser-Assets. `src/core/` bleibt die anbieterneutrale Vertrags- und Diensteebene. |
 | Gateway                | `src/gateways/<id>/`           | `docs/`, `api/`, `ui/` | Gateway-eigene Server-Handler, Routenregistrierung und Bootstrap-Helfer gehören unter `api/`; Admin-/Browser-Assets unter `ui/`.                                            |
 | Adapter                | `src/adapters/<gateway>/<id>/` | `docs/`, `api/`, `ui/` | `api/` ist für adaptereigene Bootstrap- oder Server-Helfer, `ui/` für adaptereigene Browser-Assets, wenn der Adapter sie bereitstellt.                                      |
-| Modul                  | `src/modules/<id>/`            | `docs/`, `api/`, `ui/` | `docs/` und `ui/` sind die stabilen Orte für Moduldokumentation und Browser-Assets. `api/` ist der stabile Ort für modulseitigen Server-Code.                               |
+| Modul                  | `<module-repository>/`         | `docs/`, `api/`, `ui/` | `docs/` und `ui/` sind die stabilen Orte für Moduldokumentation und Browser-Assets. `api/` ist der stabile Ort für modulseitigen Server-Code.                               |
 
 Unterstützende Verzeichnisse wie `tests/`, `languages/`, `sql/`, `templates/`, `bootstrap/`, `cli/`, `db/`, `content/` und `reuse/` dürfen daneben liegen, ergänzen diese Wurzeln aber nur und dürfen sie nicht ersetzen. Für neue oder neu organisierte Komponenten `api/routes/` statt eines Top-Level-`routes/`-Geschwisters und `docs/index.<lang>.md` statt benutzerdefinierter Dokumentations-Einstiegsdateien bevorzugen.
 
@@ -61,7 +61,7 @@ Verschiedene Komponententypen erfordern unterschiedliche Tiefe:
 | Plattform / Core | `src/docs/`-Plattformdocs      | Alle Abschnitte vollständig                                                         |
 | Gateway          | `src/gateways/<id>/docs/`      | Leichtere Architektur; Konfiguration + API-Routen einschließen                      |
 | Adapter          | `src/adapters/<gw>/<id>/docs/` | Vollständiger Standard (alle anwendbaren Abschnitte)                                |
-| Modul            | `src/modules/<id>/docs/`       | Vollständiger Standard; API-Routen einschließen, wenn das Modul welche bereitstellt |
+| Modul            | `<module-repository>/docs/`    | Vollständiger Standard; API-Routen einschließen, wenn das Modul welche bereitstellt |
 
 ### Code-Snippets
 
@@ -109,3 +109,7 @@ Alle vier Sprachen (en, de, ja, id) sind für alle in der Benutzeroberfläche si
 Jeder Zeichenkettenwert in einem übersetzten Dokument muss in der Sprache verfasst sein, die diese Datei repräsentiert. Die einzigen Ausnahmen sind Markennamen (`Cognis`), universelle technische Abkürzungen (`LDAP`, `TLS`, `STARTTLS`), Formatplatzhalter und der lateinische Slogan (`Disce. Loquere. Vive.`).
 
 Wenn Sie ein Markdown-Dokument ändern, für das übersetzte Varianten existieren, aktualisieren Sie die entsprechenden Sprachdateien in derselben Änderung, damit alle unterstützten Sprachen synchron bleiben.
+
+## Konvention für Funktionsdokumentation
+
+Die verborgene Beitragsvorlage `.github/DOCUMENTATION_TEMPLATE.en.md` definiert die verbindliche Eröffnungsstruktur jeder echten Dokumentationsdatei. Direkt nach der H1 folgt eine informative Aussage darüber, was die dokumentierte Funktion oder Oberfläche leistet. Die nächste H2 enthält konkrete Verwendungsbeispiele für Importe, Capability-Auflösungen, Routenaufrufe, Konfiguration und erwartete Ergebnisse. Die folgende H2 beginnt die vollständige technische Spezifikation; Eingaben, Ausgaben, Lebenszyklus, Validierung, Autorisierung, Fehler, Nebenwirkungen, Persistenz, Sicherheit, Bereinigung und Erweiterungsdetails gehören dort hinein oder in untergeordnete H3-Abschnitte. Der Architekturtest vergleicht die ersten drei Überschriftenebenen jeder Nicht-Changelog-Dokumentation mit der verborgenen Vorlage.

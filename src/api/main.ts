@@ -28,12 +28,13 @@ import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
 import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
 import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
+import { isExcludedModuleIntegrityFile } from "./reuse/module-integrity.js";
 import { requirePublicEnvironment } from "./reuse/environment.js";
 
 requirePublicEnvironment();
 
 class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
-    private readonly manifests: ModuleManifest[];
+    private manifests: ModuleManifest[];
     private readonly states = new Map<string, ModuleState>();
 
     constructor(manifests: ModuleManifest[]) {
@@ -48,6 +49,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
         const manifests: ModuleManifest[] = [
             {
                 id: "cognis-core",
+                uuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
                 name: "Cognis Core",
                 version: "1.0.0",
                 class: "core",
@@ -62,9 +64,9 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 publisher: "Cognis Labs HQ",
             },
         ];
-        const modulesRoot =
-            process.env.COGNIS_MODULES_ROOT ??
-            path.resolve(process.cwd(), "src", "modules");
+        const externalModulesRoot =
+            process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+            path.resolve(process.cwd(), "external-modules");
 
         async function scanManifestDir(dir: string): Promise<void> {
             let dirEntries: Awaited<ReturnType<typeof readdir>>;
@@ -93,7 +95,19 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 );
                 try {
                     const raw = await readFile(manifestPath, "utf8");
-                    manifests.push(JSON.parse(raw));
+                    const manifest = JSON.parse(raw) as ModuleManifest;
+                    if (
+                        manifests.some(
+                            (existing) =>
+                                existing.id === manifest.id ||
+                                existing.uuid === manifest.uuid,
+                        )
+                    ) {
+                        throw new Error(
+                            `duplicate_module_identity:${manifest.id}:${manifest.uuid}`,
+                        );
+                    }
+                    manifests.push(manifest);
                 } catch (error) {
                     if (
                         error instanceof Error &&
@@ -118,13 +132,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             }
         }
 
-        await Promise.all([
-            scanManifestDir(modulesRoot),
-            // Study language modules live under study/languages/<code>/ and each
-            // carries its own manifest — scan that nested path so they appear in
-            // the modules list alongside top-level modules.
-            scanManifestDir(path.join(modulesRoot, "study", "languages")),
-        ]);
+        await scanManifestDir(externalModulesRoot);
 
         return new InMemoryModuleRuntimeGateway(manifests);
     }
@@ -149,6 +157,25 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
         const state = { moduleId, enabled: false };
         this.states.set(moduleId, state);
         return state;
+    }
+
+    async refresh(): Promise<void> {
+        const refreshed = await InMemoryModuleRuntimeGateway.bootstrap();
+        this.manifests = await refreshed.listManifests();
+        const currentIds = new Set(
+            this.manifests.map((manifest) => manifest.id),
+        );
+        for (const moduleId of this.states.keys()) {
+            if (!currentIds.has(moduleId)) this.states.delete(moduleId);
+        }
+        for (const manifest of this.manifests) {
+            if (!this.states.has(manifest.id)) {
+                this.states.set(manifest.id, {
+                    moduleId: manifest.id,
+                    enabled: manifest.class === "core",
+                });
+            }
+        }
     }
 }
 
@@ -189,6 +216,14 @@ const routeRegistry = new RouteRegistry();
 const gatewayRegistry = new GatewayRegistry();
 const capabilities = new CapabilityStore();
 const uiRegistry = new UIRegistry();
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/feedback-capabilities.js",
+    providesCapabilities: ["ui:log", "ui:showToast", "ui:openErrorPopup"],
+});
+uiRegistry.registerCapabilityProvider({
+    scriptUrl: "/static/reuse/resource-loader.js",
+    providesCapabilities: ["ui:resourceLoader"],
+});
 const healthService = new HealthService();
 
 const gatewayService = new GatewayService(gatewayRegistry);
@@ -230,6 +265,15 @@ capabilities.contribute(
 systemCtx.contributePublicCapability(
     "system:health:contribute",
     healthService.contribute.bind(healthService),
+);
+const listRegisteredCapabilities = (): string[] =>
+    Array.from(
+        new Set([...capabilities.list(), ...systemCtx.listCapabilities()]),
+    ).sort();
+capabilities.contribute("system:listCapabilities", listRegisteredCapabilities);
+systemCtx.contributeCapability(
+    "system:listCapabilities",
+    listRegisteredCapabilities,
 );
 
 const gatewaysRoot =
@@ -434,6 +478,7 @@ const profileLifecycle = capabilities.get<{
 }>("social:profileLifecycle");
 
 const server = buildServer({
+    discoverModulesOnStartup: false,
     moduleRuntimeGateway: runtime,
     accountStore,
     preferenceStore,
@@ -515,18 +560,64 @@ const server = buildServer({
         const report = [] as Array<{
             moduleId: string;
             file: string;
-            expected: string;
+            expected: string | null;
             actual: string | null;
-            status: "ok" | "mismatch" | "missing";
+            status: "ok" | "mismatch" | "missing" | "missing_shasum";
         }>;
         for (const manifest of manifests) {
+            if (!manifest.uuid) continue;
+            const moduleRoot = path.resolve(
+                process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
+                    path.resolve(process.cwd(), "external-modules"),
+                manifest.uuid,
+            );
+            const declaredFiles = new Set(
+                (manifest.files ?? [])
+                    .map((file) =>
+                        file.path.replaceAll("\\", "/").replace(/^\.\//, ""),
+                    )
+                    .filter(
+                        (relativePath) =>
+                            !isExcludedModuleIntegrityFile(relativePath),
+                    ),
+            );
+            const visit = async (directory: string, prefix = "") => {
+                for (const entry of await readdir(directory, {
+                    withFileTypes: true,
+                }).catch(() => [])) {
+                    if (!prefix && entry.name === ".git") continue;
+                    const relativePath = prefix
+                        ? `${prefix}/${entry.name}`
+                        : entry.name;
+                    const candidate = path.join(directory, entry.name);
+                    if (entry.isDirectory()) {
+                        await visit(candidate, relativePath);
+                        continue;
+                    }
+                    if (
+                        isExcludedModuleIntegrityFile(relativePath) ||
+                        declaredFiles.has(relativePath)
+                    ) {
+                        continue;
+                    }
+                    const actual = entry.isFile()
+                        ? createHash("sha256")
+                              .update(await readFile(candidate))
+                              .digest("hex")
+                        : null;
+                    report.push({
+                        moduleId: manifest.id,
+                        file: relativePath,
+                        expected: null,
+                        actual,
+                        status: "missing_shasum",
+                    });
+                }
+            };
+            await visit(moduleRoot);
             for (const file of manifest.files ?? []) {
-                const candidate = path.resolve(
-                    process.env.COGNIS_MODULES_ROOT ??
-                        path.resolve(process.cwd(), "src", "modules"),
-                    manifest.id,
-                    file.path,
-                );
+                if (isExcludedModuleIntegrityFile(file.path)) continue;
+                const candidate = path.resolve(moduleRoot, file.path);
                 try {
                     const raw = await readFile(candidate);
                     const actual = createHash("sha256")

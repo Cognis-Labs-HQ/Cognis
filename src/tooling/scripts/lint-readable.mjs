@@ -57,16 +57,4 @@ for (const file of structuredClassFiles) {
     }
 }
 
-const jitsiApp = readFileSync("src/modules/jitsi-meet/ui/app.js", "utf8");
-if (
-    !/state\.availableParticipants = [\s\S]*?;\n\n    const composer = createPageComposer/.test(
-        jitsiApp,
-    )
-) {
-    console.error(
-        "Readability lint failed (Jitsi state and composer blocks require separation)",
-    );
-    failed = true;
-}
-
 if (failed) process.exit(1);

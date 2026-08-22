@@ -85,6 +85,7 @@ async function bootstrapStudyGateway() {
         ) => callback(dbExecutor),
     };
     capabilities.contribute("db:executor", dbExecutor);
+    capabilities.contribute("system:ctx", systemCtx);
 
     await bootstrap({
         capabilities,
@@ -97,15 +98,28 @@ async function bootstrapStudyGateway() {
 
     return {
         routeRegistry,
-        setLanguageModuleEnabled: capabilities.get<
-            (moduleId: string, enabled: boolean) => void
-        >("modules:onStateChanged"),
+        systemCtx,
     };
 }
 
-test("study registered languages reflect Japanese module enablement state", async () => {
-    const { routeRegistry, setLanguageModuleEnabled } =
-        await bootstrapStudyGateway();
+const japaneseLanguageCapability = {
+    moduleId: "study-language-ja",
+    languageCode: "ja",
+    languageName: "日本語",
+    languageFlag: "🇯🇵",
+    version: "1.2.12",
+    childComponents: [
+        {
+            id: "hiragana-alphabet",
+            label: "Hiragana Alphabet",
+            pageUrl: "/study/hiragana",
+            order: 0,
+        },
+    ],
+};
+
+test("study registered languages reflect installed language capabilities", async () => {
+    const { routeRegistry, systemCtx } = await bootstrapStudyGateway();
     const userToken = issueAccessToken("learner", "user", 60);
 
     const disabledResponse = new ResponseRecorder();
@@ -120,7 +134,10 @@ test("study registered languages reflect Japanese module enablement state", asyn
     assert.equal(disabledResponse.statusCode, 200);
     assert.deepEqual(JSON.parse(disabledResponse.payload), { data: [] });
 
-    setLanguageModuleEnabled?.("study-language-ja", true);
+    systemCtx.contributePublicCapability(
+        "study:language:ja",
+        japaneseLanguageCapability,
+    );
 
     const enabledResponse = new ResponseRecorder();
     const enabledHandled = await dispatchRoute(
@@ -141,11 +158,9 @@ test("study registered languages reflect Japanese module enablement state", asyn
     );
 });
 
-test("study Japanese child routes are only active while module is enabled", async () => {
-    const { routeRegistry, setLanguageModuleEnabled } =
-        await bootstrapStudyGateway();
+test("study child components come from installed language capabilities", async () => {
+    const { routeRegistry, systemCtx } = await bootstrapStudyGateway();
     const userBearerToken = issueAccessToken("learner", "user", 60);
-    const userCookieToken = issueAccessToken("learner", "user", 60);
 
     const disabledModulesResponse = new ResponseRecorder();
     const disabledModulesHandled = await dispatchRoute(
@@ -159,17 +174,10 @@ test("study Japanese child routes are only active while module is enabled", asyn
     assert.equal(disabledModulesResponse.statusCode, 200);
     assert.deepEqual(JSON.parse(disabledModulesResponse.payload), { data: [] });
 
-    const disabledPageResponse = new ResponseRecorder();
-    const disabledPageHandled = await dispatchRoute(
-        routeRegistry,
-        new RequestRecorder({ method: "GET", cookieToken: userCookieToken }),
-        disabledPageResponse,
-        new URL("http://localhost/study/hiragana"),
+    systemCtx.contributePublicCapability(
+        "study:language:ja",
+        japaneseLanguageCapability,
     );
-
-    assert.equal(disabledPageHandled, false);
-
-    setLanguageModuleEnabled?.("study-language-ja", true);
 
     const enabledModulesResponse = new ResponseRecorder();
     const enabledModulesHandled = await dispatchRoute(
@@ -194,16 +202,30 @@ test("study Japanese child routes are only active while module is enabled", asyn
         true,
     );
 
-    const enabledPageResponse = new ResponseRecorder();
-    const enabledPageHandled = await dispatchRoute(
+    systemCtx.contributePublicCapability("study:language:ja", {
+        ...japaneseLanguageCapability,
+        childComponents: [
+            {
+                id: "updated-library",
+                label: "Updated Library",
+                pageUrl: "/study/library",
+            },
+        ],
+    });
+    const refreshedResponse = new ResponseRecorder();
+    await dispatchRoute(
         routeRegistry,
-        new RequestRecorder({ method: "GET", cookieToken: userCookieToken }),
-        enabledPageResponse,
-        new URL("http://localhost/study/hiragana"),
+        new RequestRecorder({ method: "GET", bearerToken: userBearerToken }),
+        refreshedResponse,
+        new URL("http://localhost/api/v1/study/languages/ja/modules"),
     );
-
-    assert.equal(enabledPageHandled, true);
-    assert.equal(enabledPageResponse.statusCode, 200);
+    const refreshedPayload = JSON.parse(refreshedResponse.payload) as {
+        data: Array<{ id: string }>;
+    };
+    assert.deepEqual(
+        refreshedPayload.data.map((component) => component.id),
+        ["updated-library"],
+    );
 });
 
 test("study adapter routes announce controls and support disable toggles", async () => {

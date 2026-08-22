@@ -127,6 +127,48 @@ test("docs route handles docs index with markdown slugs", async () => {
     assert.match(body, /"slug":"ui"/);
 });
 
+test("docs route discovers external module docs and changelogs", async () => {
+    const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-external-docs-"));
+    const sourceRoot = join(fixtureRoot, "src");
+    const externalRoot = join(fixtureRoot, "external-modules");
+    const moduleRoot = join(externalRoot, "module-uuid");
+    await mkdir(join(sourceRoot, "docs"), { recursive: true });
+    await mkdir(join(moduleRoot, "docs", "changelog"), { recursive: true });
+    await writeFile(
+        join(sourceRoot, "package.json"),
+        JSON.stringify({ version: "1.0.0" }),
+    );
+    await writeFile(join(sourceRoot, "docs", "index.en.md"), "# Core\n");
+    await writeFile(
+        join(moduleRoot, "package.json"),
+        JSON.stringify({ version: "2.0.0" }),
+    );
+    await writeFile(
+        join(moduleRoot, "docs", "standard.en.md"),
+        "# External module\n",
+    );
+    await writeFile(
+        join(moduleRoot, "docs", "changelog", "2.0.0.en.md"),
+        "# External release\n",
+    );
+    try {
+        const response = await request(
+            createDocsRoutes({
+                sourceRoot: [sourceRoot, externalRoot],
+                archiveRoot: join(fixtureRoot, "archive"),
+            }),
+            "/api/v1/docs",
+        );
+        const slugs = response.body.data.map(
+            (entry: { slug: string }) => entry.slug,
+        );
+        assert.ok(slugs.includes("module-uuid/standard"));
+        assert.ok(slugs.includes("changelog/module-uuid/2.0.0"));
+    } finally {
+        await rm(fixtureRoot, { recursive: true, force: true });
+    }
+});
+
 test("docs route supports slug lookup", async () => {
     const route = createDocsRoutes();
     let status = 0;

@@ -47,7 +47,7 @@ Gateways are discovered by scanning `src/gateways/` at startup. Each gateway dir
 
 Adapters are discovered by each gateway scanning `src/adapters/<gateway-id>/` at its own bootstrap time. Neither core nor the server has any knowledge of which adapters are installed.
 
-Modules are discovered from `src/modules/` (internal, trusted) and `COGNIS_MODULES_ROOT/external` (external archives, requiring explicit enablement acknowledgement). A pointer file mechanism (nginx-style `<id>.load` symlinks) controls which modules are active.
+Modules are discovered only from installed repositories under `COGNIS_EXTERNAL_MODULES_ROOT`. A pointer file mechanism (nginx-style `<id>.load` symlinks) controls which modules are active.
 
 ### Key source locations
 
@@ -69,4 +69,4 @@ Cognis is extended through three mechanisms:
 
 - **Gateways**: add a directory under `src/gateways/` with `bootstrap.ts` and `manifest.json`. The server picks it up automatically.
 - **Adapters**: add a directory under `src/adapters/<gateway-id>/`. The owning gateway discovers and loads it.
-- **Modules**: place a module directory under `src/modules/` (internal) or a module archive under the configured external path. Enable via the admin UI or `cognisctl`.
+- **Modules**: install a repository through the Module Marketplace into the configured external module path. Enable via the admin UI or `cognisctl`.
