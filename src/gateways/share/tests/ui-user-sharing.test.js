@@ -371,6 +371,7 @@ test("share buttons always render the gateway-localized label with a share icon"
     );
     assert.match(shareButtonSource, /shareI18n\.t\("share\.action"\)/);
     assert.match(shareButtonSource, /share-button-icon/);
+    assert.match(shareButtonSource, /icon\.textContent = "🔗"/);
     assert.match(shareButtonSource, /share-button\.css/);
 });
 

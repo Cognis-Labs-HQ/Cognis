@@ -31,3 +31,7 @@ Freigabeseiten aktualisieren nun die Host-Capability-Anbieter nach Aktivierung i
 ## Navigation und Modul-UI stabilisiert
 
 Primäre Navigationslinks können nun in eine kontoweise gespeicherte Reihenfolge gezogen werden. Ein einziger Browser-Capability-Kontext umfasst kompilierte und statische Assets, erhält Profilanbieter bei der Modulnavigation und Freigabesteuerungen verwenden das etablierte themenabhängige Freigabe-Asset.
+
+## Stabile Modulaktionsmenüs
+
+Erweiterte Modulaktionen ersetzen den Hamburger-Auslöser während einer laufenden Aktion nicht mehr durch einen Ladekreisel. Teilen-Schaltflächen verwenden nun dasselbe Verknüpfungssymbol wie das kanonische Kopiersteuerelement für Freigabelinks.

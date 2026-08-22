@@ -98,10 +98,7 @@ export function mountShareButton({
     const icon = document.createElement("span");
     icon.className = "share-button-icon";
     icon.setAttribute("aria-hidden", "true");
-    /*
-     * The gateway asset is the canonical icon used by module Share controls;
-     * CSS selects its light/dark variant from the active Cognis theme.
-     */
+    icon.textContent = "🔗";
     const label = document.createElement("span");
     label.textContent = shareI18n.t("share.action");
     button.append(icon, label);

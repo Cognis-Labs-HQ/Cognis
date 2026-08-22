@@ -587,6 +587,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /openHamburgerMenu/);
     assert.match(source, /data-module-menu/);
     assert.match(
+        source,
+        /const finishLoading = target\.dataset\.moduleMenu[\s\S]*\? null[\s\S]*: beginButtonLoading\(target\)/,
+    );
+    assert.match(
         marketplaceStyles,
         /\[data-floating-slot="module-actions"\][\s\S]*align-items: center/,
     );

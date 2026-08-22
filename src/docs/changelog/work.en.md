@@ -31,3 +31,7 @@ Share pages now refresh host capability providers after activating their scoped 
 ## Navigation and module UI stabilized
 
 Primary navigation links can now be dragged into an account-persisted order. A single browser capability context now spans compiled and static assets, preserving profile providers across module navigation, while Share controls use the established themed Share asset.
+
+## Module action menus stay stable
+
+Advanced module actions no longer replace the hamburger trigger with a loading spinner while an action runs. Share buttons now use the same link icon as the canonical share-links copy control.

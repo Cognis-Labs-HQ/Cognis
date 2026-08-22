@@ -31,3 +31,7 @@ Halaman berbagi kini menyegarkan penyedia kapabilitas host setelah mengaktifkan 
 ## Navigasi dan UI modul distabilkan
 
 Tautan navigasi utama kini dapat diseret ke urutan yang disimpan per akun. Satu konteks kapabilitas browser kini mencakup aset terkompilasi dan statis, mempertahankan penyedia profil selama navigasi modul, sedangkan kontrol Bagikan memakai aset Bagikan bertema yang telah ditetapkan.
+
+## Menu tindakan modul tetap stabil
+
+Tindakan modul lanjutan tidak lagi mengganti pemicu hamburger dengan indikator pemuatan saat tindakan berjalan. Tombol Bagikan kini menggunakan ikon tautan yang sama dengan kontrol penyalinan tautan berbagi kanonis.

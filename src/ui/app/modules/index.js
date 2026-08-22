@@ -734,7 +734,9 @@ function bindInteractions(root, signal) {
             if (action && module) {
                 if (pendingModuleActions.has(module.uuid)) return;
                 pendingModuleActions.set(module.uuid, action);
-                const finishLoading = beginButtonLoading(target);
+                const finishLoading = target.dataset.moduleMenu
+                    ? null
+                    : beginButtonLoading(target);
                 refreshDetailActions();
                 try {
                     await runLifecycleAction(module, action);
@@ -755,7 +757,7 @@ function bindInteractions(root, signal) {
                     );
                 } finally {
                     pendingModuleActions.delete(module.uuid);
-                    finishLoading();
+                    finishLoading?.();
                     refreshDetailActions();
                 }
                 return;
