@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 
 class FakeElement {
     constructor() {
@@ -93,4 +95,16 @@ test("toast hover restarts the full dismissal timeout when hover ends", async ()
     } finally {
         Object.assign(globalThis, originalGlobals);
     }
+});
+
+test("toast hover hides the dismissal timebar", () => {
+    const stylesheet = readFileSync(
+        fileURLToPath(new URL("../../styles/reuse/toast.css", import.meta.url)),
+        "utf8",
+    );
+
+    assert.match(
+        stylesheet,
+        /\.toast:hover \.toast-timebar\s*{\s*display:\s*none;/,
+    );
 });

@@ -2,4 +2,4 @@
 
 ## Toast menunggu saat disorot
 
-Menyorot toast sementara kini menjeda masa tampilnya. Ketika penunjuk meninggalkan toast, seluruh batas waktu yang dikonfigurasi dan bilah waktu visual dimulai kembali.
+Menyorot toast sementara kini menjeda masa tampilnya dan menyembunyikan bilah waktunya. Ketika penunjuk meninggalkan toast, bilah waktu ditampilkan kembali dan seluruh batas waktu yang dikonfigurasi dimulai ulang.

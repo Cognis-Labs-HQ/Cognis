@@ -2,4 +2,4 @@
 
 ## Toasts wait while hovered
 
-Hovering over a temporary toast now pauses its decay. Moving the pointer away restarts the toast's full configured timeout and its visual time bar.
+Hovering over a temporary toast now pauses its decay and hides its time bar. Moving the pointer away restores the time bar and restarts the toast's full configured timeout.
