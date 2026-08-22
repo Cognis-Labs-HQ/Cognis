@@ -176,10 +176,24 @@ export function showToast(
     tray.appendChild(toast);
 
     let dismissed = false;
+    let dismissTimer = null;
+
+    function startDismissTimer() {
+        dismissTimer = setTimeout(dismiss, effectiveDuration);
+    }
+
+    function restartTimebar() {
+        const timebar = toast.querySelector(".toast-timebar");
+        if (!timebar) return;
+        timebar.style.animation = "none";
+        void timebar.offsetWidth;
+        timebar.style.removeProperty("animation");
+    }
 
     function dismiss() {
         if (dismissed) return;
         dismissed = true;
+        if (dismissTimer !== null) clearTimeout(dismissTimer);
         toast.classList.remove("toast--visible");
         toast.classList.add("toast--hiding");
         const onEnd = () => toast.remove();
@@ -196,7 +210,16 @@ export function showToast(
     });
 
     if (effectiveDuration !== null) {
-        setTimeout(dismiss, effectiveDuration);
+        toast.addEventListener("mouseenter", () => {
+            clearTimeout(dismissTimer);
+            dismissTimer = null;
+        });
+        toast.addEventListener("mouseleave", () => {
+            if (dismissed) return;
+            restartTimebar();
+            startDismissTimer();
+        });
+        startDismissTimer();
     }
 
     return dismiss;

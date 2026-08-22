@@ -46,6 +46,10 @@
     animation: toast-timebar-erode var(--toast-duration, 4000ms) linear forwards;
 }
 
+.toast:hover .toast-timebar {
+    animation-play-state: paused;
+}
+
 .toast--visible {
     transform: translateX(0);
     opacity: 1;
