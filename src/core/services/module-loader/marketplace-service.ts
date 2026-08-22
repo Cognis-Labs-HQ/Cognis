@@ -727,8 +727,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
     }
 
     async getAsset(id: string): Promise<MarketplaceAsset | undefined> {
-        const cached = this.assets.get(id);
-        if (cached) return cached;
+        if (!/^[a-f0-9]{64}$/i.test(id)) return undefined;
         try {
             const [body, metadata] = await Promise.all([
                 readFile(path.join(this.assetCacheRoot, id)),
@@ -738,9 +737,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 contentType?: unknown;
             };
             if (typeof contentType !== "string") return undefined;
-            const asset = { body, contentType };
-            this.assets.set(id, asset);
-            return asset;
+            return { body, contentType };
         } catch (error) {
             if ((error as NodeJS.ErrnoException).code === "ENOENT") {
                 return undefined;

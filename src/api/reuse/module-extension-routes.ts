@@ -182,6 +182,7 @@ export interface ModuleExtensionOptions {
     routeContext: RouteContext;
     bootstrapTimeoutMs?: number;
     onBootstrapFailed?: (moduleId: string) => Promise<void> | void;
+    getProtectedRoutePrefixes?: () => readonly string[];
 }
 
 export interface ModuleExtensionRoutes {
@@ -280,9 +281,14 @@ export function createModuleExtensionRoutes(
                 "/api/v1/users",
                 "/public",
                 "/ui",
+                ...(options?.getProtectedRoutePrefixes?.() ?? []),
             ];
             if (
-                protectedPrefixes.some((prefix) => routePath.startsWith(prefix))
+                protectedPrefixes.some(
+                    (prefix) =>
+                        routePath === prefix ||
+                        routePath.startsWith(`${prefix}/`),
+                )
             ) {
                 throw new Error(
                     `Module ${moduleId} attempts to register protected route: ${routePath}`,

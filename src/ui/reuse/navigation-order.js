@@ -50,6 +50,36 @@ function markLinksDraggable(container) {
     }
 }
 
+function moveWithDisplacementAnimation(
+    container,
+    draggedLink,
+    target,
+    placeAfter,
+) {
+    const links = navigationLinks(container).filter(
+        (link) => link !== draggedLink,
+    );
+    const previousPositions = new Map(
+        links.map((link) => [link, link.getBoundingClientRect()]),
+    );
+    target[placeAfter ? "after" : "before"](draggedLink);
+    for (const link of links) {
+        const previous = previousPositions.get(link);
+        const current = link.getBoundingClientRect();
+        const offsetX = previous.left - current.left;
+        const offsetY = previous.top - current.top;
+        if (offsetX || offsetY) {
+            link.animate(
+                [
+                    { transform: `translate(${offsetX}px, ${offsetY}px)` },
+                    { transform: "translate(0, 0)" },
+                ],
+                { duration: 160, easing: "ease-out" },
+            );
+        }
+    }
+}
+
 export async function bindNavigationOrdering(
     container,
     { loadPreferences, savePreferences, onSaveError } = {},
@@ -66,6 +96,12 @@ export async function bindNavigationOrdering(
     markLinksDraggable(container);
 
     let draggedLink = null;
+    let orderCommitted = false;
+    async function commitOrder() {
+        const order = navigationLinks(container).map(linkId);
+        savedOrder.splice(0, savedOrder.length, ...order);
+        await savePreferences?.({ [NAVIGATION_ORDER_KEY]: order });
+    }
     container.addEventListener("dragstart", (event) => {
         const link =
             event.target instanceof Element
@@ -73,6 +109,7 @@ export async function bindNavigationOrdering(
                 : null;
         if (!link) return;
         draggedLink = link;
+        orderCommitted = false;
         link.classList.add("is-dragging");
         if (event.dataTransfer) {
             event.dataTransfer.effectAllowed = "move";
@@ -90,16 +127,30 @@ export async function bindNavigationOrdering(
         const placeAfter =
             event.clientX >
             target.getBoundingClientRect().left + target.offsetWidth / 2;
-        target[placeAfter ? "after" : "before"](draggedLink);
+        moveWithDisplacementAnimation(
+            container,
+            draggedLink,
+            target,
+            placeAfter,
+        );
+    });
+    container.addEventListener("drop", async (event) => {
+        if (!draggedLink) return;
+        event.preventDefault();
+        orderCommitted = true;
+        try {
+            await commitOrder();
+        } catch (error) {
+            onSaveError?.(error);
+        }
     });
     container.addEventListener("dragend", async () => {
         if (!draggedLink) return;
         draggedLink.classList.remove("is-dragging");
         draggedLink = null;
-        const order = navigationLinks(container).map(linkId);
-        savedOrder.splice(0, savedOrder.length, ...order);
+        if (orderCommitted) return;
         try {
-            await savePreferences?.({ [NAVIGATION_ORDER_KEY]: order });
+            await commitOrder();
         } catch (error) {
             onSaveError?.(error);
         }

@@ -493,3 +493,44 @@ The published recommendation UUIDs remain in the default catalog. Marketplace ca
 ## Correct authenticated module administration
 
 Capability-provider discovery now waits for a logged-in session. Module filters leave detail URLs, source settings receive their localization dependency explicitly, and uninstall operations clear module configuration before removing the installation. Data-deletion wording no longer assumes what a module stores.
+
+
+## Profile status light restored
+
+The dashboard shell now initializes signed-in account enhancements when the guest-session capability reports a normal authenticated session, restoring the availability light over the navigation avatar.
+
+## Release-channel refreshes bypass caches
+
+Marketplace repository pagination now bypasses intermediary HTTP caches so a manual refresh retrieves newly created module branches and tags immediately.
+
+## Share capabilities and controls unified
+
+Share guest renderers now receive standalone profile capabilities and fully loaded avatar styles before mounting. Gateway-owned share controls consistently display the localized Share label beside the canonical share icon.
+
+## UI ownership clarified
+
+SPA route cleanup now preserves shell-owned stylesheets. The module contract clearly separates host-owned reusable UI and navigation from module-namespaced content styling.
+
+## Installation failures protected
+
+Module installation polling now returns stable public error codes without exposing internal filesystem, repository, or validation details.
+
+## Module prerequisites restored
+
+The conventional root README alias no longer participates in module integrity checks, disabled module configuration probes no longer surface expected missing-route errors, and the Share gateway now publishes its canonical browser trigger capability for dependent modules.
+
+## Shared-page providers refreshed
+
+Share pages now refresh host capability providers after activating their scoped guest session, and Cognis publishes a validated runtime resource loader required by module pages.
+
+## Navigation and module UI stabilized
+
+Primary navigation links can now be dragged into an account-persisted order. A single browser capability context now spans compiled and static assets, preserving profile providers across module navigation, while Share controls use the established themed Share asset.
+
+## Module action menus stay stable
+
+Advanced module actions no longer replace the hamburger trigger with a loading spinner while an action runs. Share buttons now use the same link icon as the canonical share-links copy control.
+
+## Disable modules atomically and harden lifecycle boundaries
+
+Disabling a module now removes its navigation, UI contributions, routes, flows, hooks, and capabilities before the lifecycle request completes. Failed enable refreshes roll back the requested module, uninstall configuration remains available until cleanup succeeds, marketplace assets are served from bounded disk storage, every claimed gateway API prefix is protected, and changelogs are excluded from integrity hashes while continuing through the sanitized Markdown renderer.

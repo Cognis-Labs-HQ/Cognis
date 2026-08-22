@@ -7,6 +7,11 @@ test("module integrity excludes host-managed and conventional alias files", () =
     assert.equal(isExcludedModuleIntegrityFile("manifest.json"), true);
     assert.equal(isExcludedModuleIntegrityFile("README.md"), true);
     assert.equal(isExcludedModuleIntegrityFile("./README.md"), true);
+    assert.equal(isExcludedModuleIntegrityFile("CHANGELOG.md"), true);
+    assert.equal(
+        isExcludedModuleIntegrityFile("docs/changelog/1.2.3.en.md"),
+        true,
+    );
     assert.equal(isExcludedModuleIntegrityFile("ui/app.js"), false);
     assert.equal(
         isExcludedModuleIntegrityFile("nested/.cognis-install.json"),

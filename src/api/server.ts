@@ -310,6 +310,8 @@ export function buildServer(deps: ApiDependencies) {
         {
             uiRegistry: deps.uiRegistry,
             routeContext,
+            getProtectedRoutePrefixes: () =>
+                deps.routeRegistry?.getClaimedPrefixes() ?? [],
             onBootstrapFailed: async (moduleId) => {
                 enabledModules.delete(moduleId);
                 await deps.onModuleStateChanged?.(moduleId, false);
@@ -359,15 +361,26 @@ export function buildServer(deps: ApiDependencies) {
             },
             onEnabled: async (moduleId) => {
                 enabledModules.add(moduleId);
-                await deps.onModuleStateChanged?.(moduleId, true);
-                await deps.persistModuleState?.(moduleId, true);
-                await moduleExtensionRoutes.refresh({ throwOnFailure: true });
+                try {
+                    await deps.onModuleStateChanged?.(moduleId, true);
+                    await deps.persistModuleState?.(moduleId, true);
+                    await moduleExtensionRoutes.refresh({
+                        throwOnFailure: true,
+                    });
+                } catch (error) {
+                    enabledModules.delete(moduleId);
+                    await deps.onModuleStateChanged?.(moduleId, false);
+                    await deps.persistModuleState?.(moduleId, false);
+                    await moduleExtensionRoutes.refresh();
+                    throw error;
+                }
             },
             onDisabled: async (moduleId) => {
                 enabledModules.delete(moduleId);
+                deps.uiRegistry?.unregisterModuleContributions(moduleId);
+                await moduleExtensionRoutes.refresh();
                 await deps.onModuleStateChanged?.(moduleId, false);
                 await deps.persistModuleState?.(moduleId, false);
-                await moduleExtensionRoutes.refresh();
             },
             onImported: async () => {
                 await deps.moduleRuntimeGateway.refresh?.();

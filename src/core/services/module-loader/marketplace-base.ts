@@ -3,7 +3,6 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { ModuleManifest } from "../../contracts/module-manifest.js";
 import type {
-    MarketplaceAsset,
     MarketplaceModule,
     ModuleMarketplaceLog,
     ModuleSource,
@@ -21,7 +20,6 @@ const CANONICAL_UUID =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export class MarketplaceServiceBase {
-    protected readonly assets = new Map<string, MarketplaceAsset>();
     protected catalogMutation: Promise<void> = Promise.resolve();
 
     constructor(
@@ -573,7 +571,6 @@ export class MarketplaceServiceBase {
         if (!body || body.length > MAX_MARKETPLACE_ASSET_BYTES)
             return undefined;
         const id = createHash("sha256").update(body).digest("hex");
-        this.assets.set(id, { body, contentType });
         const assetRoot = this.assetCacheRoot;
         await mkdir(assetRoot, { recursive: true });
         await Promise.all([
@@ -691,7 +688,7 @@ export class MarketplaceServiceBase {
                     if (!id) return undefined;
                     return {
                         id,
-                        contentType: this.assets.get(id)!.contentType,
+                        contentType: this.repositoryAssetContentType(mediaPath),
                     };
                 }),
         );

@@ -259,17 +259,3 @@
 **Deferred scope:** The design plan suggested an admin-only panel (likely under Administration) listing every registered namespace with its default quota, editable by admins, reusing `createPageComposer` contribution patterns.
 
 **Reason deferred:** `src/ui/app/administration/index.js` is already at 990 lines (the repository's own 1000-line file-size ceiling), and adding a full namespace-defaults panel would either push it over that limit or require a larger restructuring (splitting the file into a subdirectory with focused sibling modules) that is out of proportion to this task's core requirement (namespace/ACL/quota enforcement + the one real existing consumer's migration). The backend admin routes (`GET/PUT /api/v1/files/admin/namespace-defaults[...]`, `PUT /api/v1/files/admin/global-default`) are fully implemented and tested; only the UI panel is deferred. The higher-value, directly-tied-to-existing-UI per-user "Storage Quotas" popup (in `src/ui/app/users/index.js`) was implemented instead. A follow-up task should split `administration/index.js` per the file-size convention and add the namespace-defaults panel as a new contributed section.
-
-## External module follow-ups — 2026-08-22
-
-### Meeting module canonical Share trigger
-
-**Required external change:** The current external meeting module still constructs a text-only Share button instead of consuming the host `share:uiGateway.mountTrigger` capability. Its manifest must declare `share:uiGateway`, its button binding must mount the gateway trigger and retain its destroy handle, and its generated manifest SHASUMs/version must be updated.
-
-**Reason not implemented here:** The meeting module is maintained in a separate repository and is not part of this checkout. Adding module-name-specific DOM rewriting to Cognis would violate the documented host/module viewport boundary and the explicit prohibition on special handling for individual external modules.
-
-### Whiteboard mount-root type error
-
-**Required external change:** The current external whiteboard module stores an unchecked `mountRoot` and later passes it to `setOverlayVisible`, which assumes an Element and calls `querySelector`. Its `mount` entrypoint must validate the supplied root, keep the composer content root distinct from page/composer objects, and make `setOverlayVisible` accept only an Element. The module tests must reproduce SPA board selection, not only direct load.
-
-**Reason not implemented here:** The failing whiteboard source is delivered from a separate module repository and does not exist in this checkout. Cognis now passes the documented Element root to module mounts; coercing or patching a named module at runtime would introduce prohibited compatibility and module-specific behavior.

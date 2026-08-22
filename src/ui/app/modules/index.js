@@ -406,8 +406,8 @@ async function runLifecycleAction(module, action) {
     if (action === "uninstall") {
         const options = await confirmModuleUninstall(i18n);
         if (!options) return;
-        await deleteModuleConfig(module.id);
         await uninstallModule(module.uuid, options);
+        await deleteModuleConfig(module.id);
         module.installed = false;
         delete module.status;
     }
