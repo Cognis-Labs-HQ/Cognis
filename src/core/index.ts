@@ -11,7 +11,7 @@ export * from "./contracts/module-manifest.js";
 export * from "./contracts/modules/runtime-gateway.js";
 export * from "./ctx/index.js";
 export * from "./services/module-loader/module-service.js";
-export * from "./services/module-loader/marketplace-service.js";
+export * from "./services/module-loader/marketplace/index.js";
 export * from "./services/module-loader/module-test-service.js";
 export * from "./services/module-loader/repository-validator.js";
 export * from "./services/health-service.js";
