@@ -10,7 +10,7 @@ import {
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 export function createSettingsSection({ i18n, root }) {
-    const eventPageSize = 25;
+    const eventPageSize = 10;
     const settingsRoot = root ?? document;
     const createKeyringScope = uiCtx.capabilities.get("keyring:forComponent");
     const deleteKeyringValue = uiCtx.capabilities.get("keyring:delete");
