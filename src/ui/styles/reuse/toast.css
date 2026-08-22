@@ -50,6 +50,17 @@
     display: none;
 }
 
+.toast--dismissible {
+    cursor: grab;
+    touch-action: pan-y;
+}
+
+.toast--dragging {
+    cursor: grabbing;
+    transition: none;
+    user-select: none;
+}
+
 .toast--visible {
     transform: translateX(0);
     opacity: 1;

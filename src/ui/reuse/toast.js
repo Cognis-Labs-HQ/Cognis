@@ -148,6 +148,7 @@ export function showToast(
 
     const toast = document.createElement("div");
     toast.className = `toast ${variantClass}`;
+    if (!permanent) toast.classList.add("toast--dismissible");
     if (effectiveDuration !== null) {
         toast.style.setProperty("--toast-duration", `${effectiveDuration}ms`);
     }
@@ -177,8 +178,12 @@ export function showToast(
 
     let dismissed = false;
     let dismissTimer = null;
+    let dragPointerId = null;
+    let dragStartX = 0;
+    const dragDismissDistance = 64;
 
     function startDismissTimer() {
+        if (dismissTimer !== null) clearTimeout(dismissTimer);
         dismissTimer = setTimeout(dismiss, effectiveDuration);
     }
 
@@ -190,10 +195,18 @@ export function showToast(
         timebar.style.removeProperty("animation");
     }
 
+    function resetDrag() {
+        dragPointerId = null;
+        toast.classList.remove("toast--dragging");
+        toast.style.removeProperty("transform");
+        toast.style.removeProperty("opacity");
+    }
+
     function dismiss() {
         if (dismissed) return;
         dismissed = true;
         if (dismissTimer !== null) clearTimeout(dismissTimer);
+        resetDrag();
         toast.classList.remove("toast--visible");
         toast.classList.add("toast--hiding");
         const onEnd = () => toast.remove();
@@ -215,10 +228,39 @@ export function showToast(
             dismissTimer = null;
         });
         toast.addEventListener("mouseleave", () => {
-            if (dismissed) return;
+            if (dismissed || dragPointerId !== null) return;
             restartTimebar();
             startDismissTimer();
         });
+        toast.addEventListener("pointerdown", (event) => {
+            if (!event.isPrimary || (event.pointerType === "mouse" && event.button !== 0)) {
+                return;
+            }
+            dragPointerId = event.pointerId;
+            dragStartX = event.clientX;
+            clearTimeout(dismissTimer);
+            dismissTimer = null;
+            toast.setPointerCapture(event.pointerId);
+            toast.classList.add("toast--dragging");
+        });
+        toast.addEventListener("pointermove", (event) => {
+            if (event.pointerId !== dragPointerId) return;
+            const distance = Math.max(0, event.clientX - dragStartX);
+            toast.style.transform = `translateX(${distance}px)`;
+            toast.style.opacity = `${Math.max(0.4, 1 - distance / 240)}`;
+            if (distance >= dragDismissDistance) dismiss();
+        });
+
+        const cancelDrag = (event) => {
+            if (event.pointerId !== dragPointerId) return;
+            resetDrag();
+            if (event.pointerType !== "mouse" || !toast.matches(":hover")) {
+                restartTimebar();
+                startDismissTimer();
+            }
+        };
+        toast.addEventListener("pointerup", cancelDrag);
+        toast.addEventListener("pointercancel", cancelDrag);
         startDismissTimer();
     }
 

@@ -9,12 +9,19 @@ class FakeElement {
         this.listeners = new Map();
         this.style = {
             animation: "",
+            opacity: "",
+            transform: "",
             removeProperty: (property) => {
-                if (property === "animation") this.style.animation = "";
+                this.style[property] = "";
             },
             setProperty() {},
         };
-        this.classList = { add() {}, remove() {} };
+        this.classes = new Set();
+        this.classList = {
+            add: (className) => this.classes.add(className),
+            contains: (className) => this.classes.has(className),
+            remove: (className) => this.classes.delete(className),
+        };
     }
 
     set innerHTML(value) {
@@ -33,8 +40,8 @@ class FakeElement {
         this.listeners.set(type, listener);
     }
 
-    dispatch(type) {
-        this.listeners.get(type)?.();
+    dispatch(type, event = {}) {
+        this.listeners.get(type)?.(event);
     }
 
     querySelector(selector) {
@@ -43,6 +50,12 @@ class FakeElement {
     }
 
     setAttribute() {}
+
+    matches() {
+        return false;
+    }
+
+    setPointerCapture() {}
 
     get offsetWidth() {
         return 1;
@@ -92,6 +105,27 @@ test("toast hover restarts the full dismissal timeout when hover ends", async ()
         assert.equal(timers.size, 1);
         assert.equal([...timers.values()][0].delay, 2_500);
         assert.equal(toast.querySelector(".toast-timebar").style.animation, "");
+
+        toast.dispatch("pointerdown", {
+            button: 0,
+            clientX: 20,
+            isPrimary: true,
+            pointerId: 1,
+            pointerType: "touch",
+        });
+        toast.dispatch("pointermove", {
+            clientX: 84,
+            pointerId: 1,
+        });
+        assert.equal(toast.classList.contains("toast--hiding"), true);
+
+        showToast("Permanent", { permanent: true });
+        const permanentToast = tray.children.at(-1);
+        assert.equal(permanentToast.listeners.has("pointerdown"), false);
+        assert.equal(
+            permanentToast.classList.contains("toast--dismissible"),
+            false,
+        );
     } finally {
         Object.assign(globalThis, originalGlobals);
     }
