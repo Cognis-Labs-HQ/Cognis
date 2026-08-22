@@ -45,11 +45,11 @@ import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
 import { createPresenceTracker } from "./presence-tracker.js";
 import { pageActions } from "../page-actions.js";
+import { createFocusControlCoordinator } from "../focus-control.js";
 import {
     getFloatingSlot as findFloatingSlot,
     restoreWindowScrollPosition,
 } from "./dom-position.js";
-
 import { renderToolbarToggleIcon } from "./toolbar-icons.js";
 export function createPageComposer(
     root,
@@ -108,6 +108,7 @@ export function createPageComposer(
     let layoutProfiles = { layoutsByGrid: {} };
     let activePresenceTracker = null;
     let composerDestroyed = false;
+    let focusControl = null;
 
     function destroy() {
         if (composerDestroyed) return;
@@ -116,16 +117,16 @@ export function createPageComposer(
         activePresenceTracker = null;
         resizeObserver?.disconnect();
         resizeObserver = null;
+        focusControl?.destroy();
+        focusControl = null;
     }
 
     if (signal?.aborted) destroy();
     else signal?.addEventListener("abort", destroy, { once: true });
 
-    const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
+    const UNIT = PAGE_COMPOSER_GRID_UNIT;
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
     const MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT = 640;
-    // Treat narrow grids as compact so single-pane rows expand and avoid
-    // visibly wasted horizontal space on small screens.
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
@@ -671,6 +672,14 @@ export function createPageComposer(
         });
         composerEditToggleButton = root.querySelector("#composer-edit-toggle");
         pageActions.mount(root, { signal });
+        focusControl = createFocusControlCoordinator({
+            root,
+            manifest: pageManifest,
+            elements,
+            i18n,
+            signal,
+        });
+        await focusControl.mount();
 
         if (Array.isArray(floatingMenu) && floatingMenu.length > 0) {
             const floatingToolbar = root.querySelector(".floating-toolbar");
@@ -929,9 +938,6 @@ export function createPageComposer(
         if (persistLayoutPreferences) {
             loadLayout()
                 .then((loadedLayout) => {
-                    // Skip applying async-loaded layout data when the grid has
-                    // been unmounted, the user has already started editing, or
-                    // there is no stored layout/profile data to apply.
                     if (
                         !contentGrid ||
                         !document.contains(contentGrid) ||
