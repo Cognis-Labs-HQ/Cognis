@@ -180,6 +180,7 @@ export function showToast(
     let dismissTimer = null;
     let dragPointerId = null;
     let dragStartX = 0;
+    let dragDistance = 0;
     const dragDismissDistance = 64;
 
     function startDismissTimer() {
@@ -197,6 +198,7 @@ export function showToast(
 
     function resetDrag() {
         dragPointerId = null;
+        dragDistance = 0;
         toast.classList.remove("toast--dragging");
         toast.style.removeProperty("transform");
         toast.style.removeProperty("opacity");
@@ -245,10 +247,9 @@ export function showToast(
         });
         toast.addEventListener("pointermove", (event) => {
             if (event.pointerId !== dragPointerId) return;
-            const distance = Math.max(0, event.clientX - dragStartX);
-            toast.style.transform = `translateX(${distance}px)`;
-            toast.style.opacity = `${Math.max(0.4, 1 - distance / 240)}`;
-            if (distance >= dragDismissDistance) dismiss();
+            dragDistance = Math.max(0, event.clientX - dragStartX);
+            toast.style.transform = `translateX(${dragDistance}px)`;
+            toast.style.opacity = `${Math.max(0.4, 1 - dragDistance / 240)}`;
         });
 
         const cancelDrag = (event) => {
@@ -259,7 +260,14 @@ export function showToast(
                 startDismissTimer();
             }
         };
-        toast.addEventListener("pointerup", cancelDrag);
+        toast.addEventListener("pointerup", (event) => {
+            if (event.pointerId !== dragPointerId) return;
+            if (dragDistance >= dragDismissDistance) {
+                dismiss();
+                return;
+            }
+            cancelDrag(event);
+        });
         toast.addEventListener("pointercancel", cancelDrag);
         startDismissTimer();
     }

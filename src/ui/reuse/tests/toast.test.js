@@ -62,7 +62,7 @@ class FakeElement {
     }
 }
 
-test("toast hover restarts the full dismissal timeout when hover ends", async () => {
+test("temporary toast hover and drag gestures control dismissal", async () => {
     const originalGlobals = {
         document: globalThis.document,
         requestAnimationFrame: globalThis.requestAnimationFrame,
@@ -116,6 +116,33 @@ test("toast hover restarts the full dismissal timeout when hover ends", async ()
         toast.dispatch("pointermove", {
             clientX: 84,
             pointerId: 1,
+        });
+        assert.equal(toast.classList.contains("toast--hiding"), false);
+        toast.dispatch("pointermove", {
+            clientX: 40,
+            pointerId: 1,
+        });
+        toast.dispatch("pointerup", {
+            pointerId: 1,
+            pointerType: "touch",
+        });
+        assert.equal(toast.classList.contains("toast--hiding"), false);
+        assert.equal(timers.size, 1);
+
+        toast.dispatch("pointerdown", {
+            button: 0,
+            clientX: 20,
+            isPrimary: true,
+            pointerId: 2,
+            pointerType: "touch",
+        });
+        toast.dispatch("pointermove", {
+            clientX: 84,
+            pointerId: 2,
+        });
+        toast.dispatch("pointerup", {
+            pointerId: 2,
+            pointerType: "touch",
         });
         assert.equal(toast.classList.contains("toast--hiding"), true);
 
