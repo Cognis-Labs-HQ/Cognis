@@ -1,5 +1,5 @@
-# Pengujian Pasar Portabel
+# Penemuan Modul Terlokalisasi
 
-## Lewati pengujian checkout tanpa Git
+## Nama modul langsung dimuat
 
-Pengujian integrasi checkout pasar kini mendeteksi ketersediaan Git dan hanya melewati skenario yang bergantung pada Git di lingkungan CI minimal.
+Bursa modul kini menyimpan dan menyediakan string terlokalisasi milik setiap modul yang ditemukan, sehingga nama, ringkasan, kategori, dan tag telah diterjemahkan sebelum pemasangan pada pemuatan pertama.

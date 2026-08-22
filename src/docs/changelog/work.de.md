@@ -1,5 +1,5 @@
-# Portable Marktplatztests
+# Lokalisierte Modulsuche
 
-## Git-Checkout-Test ohne Git überspringen
+## Modulnamen erscheinen sofort
 
-Der Integrationstest für den Marktplatz-Checkout erkennt nun, ob Git installiert ist, und überspringt in minimalen CI-Umgebungen ausschließlich das von Git abhängige Szenario.
+Der Modulmarktplatz speichert nun die lokalisierten Texte jedes gefundenen Moduls zwischen und stellt sie bereit. Namen, Zusammenfassungen, Kategorien und Schlagwörter werden dadurch bereits vor der Installation beim ersten Laden übersetzt.

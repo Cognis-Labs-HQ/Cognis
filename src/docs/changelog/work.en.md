@@ -1,5 +1,5 @@
-# Portable Marketplace Tests
+# Localized Module Discovery
 
-## Skip Git checkout coverage when Git is unavailable
+## Module names load immediately
 
-The marketplace checkout integration test now detects whether Git is installed and skips only its Git-dependent scenario in minimal CI environments.
+The module marketplace now caches and serves each discovered module's localized strings, so names, summaries, categories, and tags are translated before installation on the first marketplace load.

@@ -16,6 +16,7 @@ interface ModuleInstallProvenance {
 }
 
 const MAX_MARKETPLACE_ASSET_BYTES = 10 * 1024 * 1024;
+const MARKETPLACE_STRING_LOCALES = ["de", "en", "id", "ja"];
 const CANONICAL_UUID =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -193,30 +194,32 @@ export class MarketplaceServiceBase {
                         headers,
                     );
                     const assetIds =
-                        manifest.assets || media.length
+                        manifest.assets ||
+                        media.length ||
+                        manifest.ui?.stringsBaseUrl
                             ? {
-                                  icon: manifest.assets.icon
+                                  icon: manifest.assets?.icon
                                       ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
                                             catalogRef,
-                                            manifest.assets.icon,
+                                            manifest.assets?.icon,
                                             headers,
                                         )
                                       : undefined,
-                                  banner: manifest.assets.banner
+                                  banner: manifest.assets?.banner
                                       ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
                                             catalogRef,
-                                            manifest.assets.banner,
+                                            manifest.assets?.banner,
                                             headers,
                                         )
                                       : undefined,
                                   screenshots: (
                                       await Promise.all(
                                           (
-                                              manifest.assets.screenshots ?? []
+                                              manifest.assets?.screenshots ?? []
                                           ).map((assetPath) =>
                                               this.cacheRepositoryAsset(
                                                   source,
@@ -232,6 +235,32 @@ export class MarketplaceServiceBase {
                                           typeof assetId === "string",
                                   ),
                                   media,
+                                  strings: manifest.ui?.stringsBaseUrl
+                                      ? Object.fromEntries(
+                                            (
+                                                await Promise.all(
+                                                    MARKETPLACE_STRING_LOCALES.map(
+                                                        async (locale) => [
+                                                            locale,
+                                                            await this.cacheRepositoryAsset(
+                                                                source,
+                                                                projectPath,
+                                                                catalogRef,
+                                                                `ui/languages/${locale}/strings.xml`,
+                                                                headers,
+                                                            ),
+                                                        ],
+                                                    ),
+                                                )
+                                            ).filter(
+                                                (
+                                                    entry,
+                                                ): entry is [string, string] =>
+                                                    typeof entry[1] ===
+                                                    "string",
+                                            ),
+                                        )
+                                      : undefined,
                               }
                             : undefined;
                     const installedVersion = await this.readInstalledVersion(
@@ -558,6 +587,8 @@ export class MarketplaceServiceBase {
                 "video/mp4",
                 "video/webm",
                 "video/ogg",
+                "application/xml",
+                "text/xml",
             ].includes(contentType)
         ) {
             return undefined;
@@ -931,6 +962,7 @@ export class MarketplaceServiceBase {
                 ".mp4": "video/mp4",
                 ".webm": "video/webm",
                 ".ogg": "video/ogg",
+                ".xml": "application/xml",
             }[extension] ?? "application/octet-stream"
         );
     }

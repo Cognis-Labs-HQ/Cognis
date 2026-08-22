@@ -484,7 +484,13 @@ test("module catalog discovery accepts caller-selected sources", async () => {
                     {
                         id: "notes",
                         uuid: "notes-uuid",
-                        assetIds: { icon: "a".repeat(64) },
+                        ui: {
+                            stringsBaseUrl: "/static/modules/notes/languages",
+                        },
+                        assetIds: {
+                            icon: "a".repeat(64),
+                            strings: { en: "b".repeat(64) },
+                        },
                     },
                 ];
             },
@@ -519,6 +525,10 @@ test("module catalog discovery accepts caller-selected sources", async () => {
     assert.deepEqual(selectedSources, ["source-one"]);
     assert.equal(forceRefresh, true);
     assert.match(responseBody, /\/api\/v1\/modules\/catalog\/assets\/a{64}/);
+    assert.match(
+        responseBody,
+        /\/api\/v1\/modules\/catalog\/strings\/notes-uuid/,
+    );
 });
 
 test("module catalog returns persisted discoveries without refreshing sources", async () => {
@@ -558,6 +568,58 @@ test("module catalog returns persisted discoveries without refreshing sources", 
     );
     assert.match(body, /example-module/);
     assert.equal(discoveryCalled, false);
+});
+
+test("module catalog serves localized strings before module installation", async () => {
+    const moduleUuid = "f055f2e5-227a-5fb4-b934-5397ec32cf2d";
+    const stringAssetId = "a".repeat(64);
+    const marketplace = {
+        listCachedModules: async () => [
+            {
+                id: "example-module",
+                uuid: moduleUuid,
+                ui: { stringsBaseUrl: "/static/modules/example/languages" },
+                assetIds: { strings: { en: stringAssetId } },
+            },
+        ],
+        getAsset: async (id: string) =>
+            id === stringAssetId
+                ? {
+                      body: Buffer.from(
+                          '<resources><string name="module.example.name">Example</string></resources>',
+                      ),
+                      contentType: "application/xml",
+                  }
+                : undefined,
+    } as any;
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        undefined,
+        undefined,
+        marketplace,
+    );
+    const token = issueAccessToken("admin-user", "admin", 60);
+    let status = 0;
+    let body = "";
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead(code: number) {
+                status = code;
+            },
+            end(payload: Buffer) {
+                body = payload.toString();
+            },
+        } as any,
+        new URL(
+            `http://localhost/api/v1/modules/catalog/strings/${moduleUuid}/en/strings.xml`,
+        ),
+    );
+    assert.equal(status, 200);
+    assert.match(body, />Example</);
 });
 
 test("module marketplace install forwards the selected branch", async () => {

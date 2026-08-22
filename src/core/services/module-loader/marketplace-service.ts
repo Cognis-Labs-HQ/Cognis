@@ -68,6 +68,7 @@ export interface MarketplaceModule extends ModuleManifest {
         banner?: string;
         screenshots?: string[];
         media?: Array<{ id: string; contentType: string }>;
+        strings?: Record<string, string>;
     };
     readme?: string;
     readmes?: Record<string, string>;

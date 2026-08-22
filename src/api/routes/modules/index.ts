@@ -91,12 +91,19 @@ function withMarketplaceAssetUrls<T extends { assetIds?: unknown }>(
               banner?: string;
               screenshots?: string[];
               media?: Array<{ id: string; contentType: string }>;
+              strings?: Record<string, string>;
           }
         | undefined;
     const assetUrl = (id: string) =>
         `/api/v1/modules/catalog/assets/${encodeURIComponent(id)}`;
     return {
         ...module,
+        ui: assetIds?.strings
+            ? {
+                  ...((module as { ui?: Record<string, unknown> }).ui ?? {}),
+                  stringsBaseUrl: `/api/v1/modules/catalog/strings/${encodeURIComponent(String((module as { uuid?: unknown }).uuid ?? ""))}`,
+              }
+            : (module as { ui?: Record<string, unknown> }).ui,
         assets: assetIds
             ? {
                   icon: assetIds.icon ? assetUrl(assetIds.icon) : undefined,
@@ -236,6 +243,40 @@ export function createModuleRoutes(
         const assetMatch = url.pathname.match(
             /^\/api\/v1\/modules\/catalog\/assets\/([a-f0-9]{64})$/,
         );
+        const stringsMatch = url.pathname.match(
+            /^\/api\/v1\/modules\/catalog\/strings\/([^/]+)\/([a-z]{2})\/strings\.xml$/,
+        );
+        if (marketplace && stringsMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "admin");
+            if (!claims) return true;
+            const moduleUuid = decodeURIComponent(stringsMatch[1]);
+            const module = (await marketplace.listCachedModules()).find(
+                (entry) => entry.uuid === moduleUuid,
+            );
+            const assetId = module?.assetIds?.strings?.[stringsMatch[2]];
+            const asset = assetId
+                ? await marketplace.getAsset(assetId)
+                : undefined;
+            if (!asset) {
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "module_strings_not_found",
+                            message: "Module strings not found.",
+                        },
+                    }),
+                );
+                return true;
+            }
+            res.writeHead(200, {
+                "content-type": asset.contentType,
+                "cache-control": "private, max-age=3600",
+                "x-content-type-options": "nosniff",
+            });
+            res.end(asset.body);
+            return true;
+        }
         if (marketplace && assetMatch && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;

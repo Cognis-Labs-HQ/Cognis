@@ -5,7 +5,7 @@
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.3.68",
+        "@cognis/core": "<=0.3.69",
         "qrcode": "^1.5.4",
         "@cognis/gateways": "<=0.1.9"
     }
