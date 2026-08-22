@@ -7,3 +7,7 @@ Bursa modul kini menyimpan dan menyediakan string terlokalisasi milik setiap mod
 ## Inti tetap di runtime inti
 
 Pemuat rute modul eksternal kini mengabaikan manifes inti sehingga tidak lagi mencari Cognis Core di dalam direktori pemasangan modul eksternal.
+
+## Struktur pemuat bursa lebih jelas
+
+Pemuatan bursa kini berada dalam direktori khusus dengan penemuan katalog, akses repositori, dan layanan publik yang dipisahkan menjadi berkas lebih kecil dan jauh di bawah batas ukuran sumber.

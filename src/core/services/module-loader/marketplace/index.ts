@@ -10,10 +10,10 @@ import {
 } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { ModuleManifest } from "../../contracts/module-manifest.js";
-import { validateModuleRepository } from "./repository-validator.js";
-import { commandFailureText } from "../reuse/command-failure-text.js";
-import { MarketplaceServiceBase } from "./marketplace-base.js";
+import type { ModuleManifest } from "../../../contracts/module-manifest.js";
+import { validateModuleRepository } from "../repository-validator.js";
+import { commandFailureText } from "../../reuse/command-failure-text.js";
+import { MarketplaceServiceBase } from "./base.js";
 
 const execFileAsync = promisify(execFile);
 const GIT_CLONE_ATTEMPTS = 3;
