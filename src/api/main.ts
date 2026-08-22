@@ -568,9 +568,14 @@ const server = buildServer({
                 manifest.uuid,
             );
             const declaredFiles = new Set(
-                (manifest.files ?? []).map((file) =>
-                    file.path.replaceAll("\\", "/").replace(/^\.\//, ""),
-                ),
+                (manifest.files ?? [])
+                    .map((file) =>
+                        file.path.replaceAll("\\", "/").replace(/^\.\//, ""),
+                    )
+                    .filter(
+                        (relativePath) =>
+                            !isExcludedModuleIntegrityFile(relativePath),
+                    ),
             );
             const visit = async (directory: string, prefix = "") => {
                 for (const entry of await readdir(directory, {
@@ -607,6 +612,7 @@ const server = buildServer({
             };
             await visit(moduleRoot);
             for (const file of manifest.files ?? []) {
+                if (isExcludedModuleIntegrityFile(file.path)) continue;
                 const candidate = path.resolve(moduleRoot, file.path);
                 try {
                     const raw = await readFile(candidate);

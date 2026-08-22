@@ -9,3 +9,5 @@ Impor `uiCtx`, wajibkan `share:uiClient`, lalu panggil `getGuestProfile()`. Peri
 ## Spesifikasi teknis
 
 Klien memiliki `/api/v1/share/guest-profile`, mengembalikan `Response` asli, dan mengandalkan klien API host untuk autentikasi serta penanganan koneksi. Penyedianya hanya aktif bersama gateway Share, sehingga rute dependen harus mendeklarasikan `share:uiClient` ketika membutuhkannya saat pemasangan.
+
+Komponen browser yang merender tindakan Bagikan mewajibkan `share:uiGateway` dan memanggil `mountTrigger(container, options)`. Gateway memiliki markup ikon dan label yang dilokalkan, gaya konsekuensi, penyembunyian sesi tamu, serta pegangan pembersihan; konsumen hanya menyediakan kontainer dan callback aktivasi.

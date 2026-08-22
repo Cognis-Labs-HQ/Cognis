@@ -32,20 +32,26 @@ export function enableModuleWithIntegrityCheck(moduleId, i18n) {
 
 export async function activateModule(module, i18n) {
     const requiredMessage = i18n.t("ui.app.modules.config_required");
-    let configRouteAvailable = true;
-    try {
-        configRouteAvailable = await assertRequiredModulePreferences(
-            module,
-            requiredMessage,
-        );
-    } catch (error) {
-        if (error.code !== "module_config_required") throw error;
-        const savedValues = await openModulePreferences(
-            module,
-            modulePreferenceLabels(i18n),
-        );
-        if (!savedValues) return null;
-        assertSavedRequiredPreferences(module, savedValues, requiredMessage);
+    let configRouteAvailable = module.status === "enabled";
+    if (configRouteAvailable) {
+        try {
+            configRouteAvailable = await assertRequiredModulePreferences(
+                module,
+                requiredMessage,
+            );
+        } catch (error) {
+            if (error.code !== "module_config_required") throw error;
+            const savedValues = await openModulePreferences(
+                module,
+                modulePreferenceLabels(i18n),
+            );
+            if (!savedValues) return null;
+            assertSavedRequiredPreferences(
+                module,
+                savedValues,
+                requiredMessage,
+            );
+        }
     }
     if (!configRouteAvailable) {
         const result = await enableModuleWithIntegrityCheck(module.id, i18n);

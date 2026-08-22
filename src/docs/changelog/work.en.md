@@ -19,3 +19,7 @@ SPA route cleanup now preserves shell-owned stylesheets. The module contract cle
 ## Installation failures protected
 
 Module installation polling now returns stable public error codes without exposing internal filesystem, repository, or validation details.
+
+## Module prerequisites restored
+
+The conventional root README alias no longer participates in module integrity checks, disabled module configuration probes no longer surface expected missing-route errors, and the Share gateway now publishes its canonical browser trigger capability for dependent modules.

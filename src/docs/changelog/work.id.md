@@ -19,3 +19,7 @@ Pembersihan rute SPA kini mempertahankan stylesheet milik shell. Kontrak modul m
 ## Kegagalan instalasi dilindungi
 
 Polling instalasi modul kini mengembalikan kode galat publik yang stabil tanpa mengekspos detail internal sistem berkas, repositori, atau validasi.
+
+## Prasyarat modul dipulihkan
+
+Alias README konvensional di direktori akar tidak lagi mengikuti pemeriksaan integritas modul, pemeriksaan konfigurasi modul nonaktif tidak lagi menampilkan rute hilang yang diharapkan sebagai galat, dan gateway Share kini menerbitkan kapabilitas pemicu browser kanonis untuk modul dependen.

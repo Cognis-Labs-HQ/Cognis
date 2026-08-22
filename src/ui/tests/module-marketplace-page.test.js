@@ -97,6 +97,7 @@ test("module settings use manifest translations and module-owned config routes",
         /\/modules\/\$\{encodeURIComponent\(moduleId\)\}\/config/,
     );
     assert.match(moduleApiSource, /method: "PUT"/);
+    assert.match(moduleApiSource, /response\.status === 404\) return null/);
     assert.match(modulePreferencesSource, /definition\.labelKey/);
     assert.match(modulePreferencesSource, /definition\.descriptionKey/);
     assert.match(modulePreferencesSource, /module\.ui\?\.stringsBaseUrl/);
@@ -943,11 +944,7 @@ test("disabled modules defer required config checks when their owned route is no
     );
     assert.match(
         activationSource,
-        /configRouteAvailable[\s\S]*openModulePreferences[\s\S]*setModuleEnabled\(module\.id, false\)/,
-    );
-    assert.doesNotMatch(
-        activationSource,
-        /if \(!result \|\| configRouteAvailable\)/,
+        /configRouteAvailable = module\.status === "enabled"[\s\S]*openModulePreferences[\s\S]*setModuleEnabled\(module\.id, false\)/,
     );
     assert.match(modulePreferencesSource, /readModulePreferenceValues/);
     assert.match(

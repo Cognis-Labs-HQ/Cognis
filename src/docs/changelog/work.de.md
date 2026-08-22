@@ -19,3 +19,7 @@ Die Bereinigung von SPA-Routen bewahrt nun hosteigene Stylesheets. Der Modulvert
 ## Installationsfehler geschützt
 
 Die Abfrage von Modulinstallationen liefert nun stabile öffentliche Fehlercodes, ohne interne Details zu Dateisystem, Repository oder Validierung offenzulegen.
+
+## Modulvoraussetzungen wiederhergestellt
+
+Der herkömmliche README-Alias im Stammverzeichnis nimmt nicht mehr an Modul-Integritätsprüfungen teil, Konfigurationsabfragen deaktivierter Module zeigen erwartete fehlende Routen nicht mehr als Fehler an, und das Share-Gateway veröffentlicht nun seine kanonische Browser-Trigger-Capability für abhängige Module.

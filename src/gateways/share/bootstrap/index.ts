@@ -293,6 +293,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         undefined,
         ["share:uiClient"],
     );
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/share/ui/provider.js",
+        providesCapabilities: ["share:uiGateway"],
+    });
     uiHooks.registerNavbarPlugin(
         "/static/adapters/share/link/ui/share-links-popup/index.js",
         () => gateway.isAdapterEnabled("link"),
@@ -303,7 +307,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.gatewayRegistry.register({
         id: "share",
         name: "Share Gateway",
-        version: "1.7.27",
+        version: "1.7.31",
         description: "Public share token orchestration for Cognis resources.",
         publisher: "Cognis Labs HQ",
     });

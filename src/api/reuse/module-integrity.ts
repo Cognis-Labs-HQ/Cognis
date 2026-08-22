@@ -1,7 +1,11 @@
 export function isExcludedModuleIntegrityFile(relativePath: string): boolean {
+    const normalizedPath = relativePath
+        .replaceAll("\\", "/")
+        .replace(/^\.\//, "");
     return (
-        relativePath === "manifest.json" ||
-        relativePath === ".cognis-install.json" ||
-        relativePath.endsWith("/.cognis-install.json")
+        normalizedPath === "manifest.json" ||
+        normalizedPath === "README.md" ||
+        normalizedPath === ".cognis-install.json" ||
+        normalizedPath.endsWith("/.cognis-install.json")
     );
 }

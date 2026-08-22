@@ -22,6 +22,10 @@ const apiSource = await readFile(
     new URL("../ui/reuse/share-api.js", import.meta.url),
     "utf8",
 );
+const providerSource = await readFile(
+    new URL("../ui/provider.js", import.meta.url),
+    "utf8",
+);
 const linkPageSource = await readFile(
     new URL("../../../adapters/share/link/page.js", import.meta.url),
     "utf8",
@@ -35,6 +39,19 @@ test("link share popup is an active browser capability provider", () => {
     assert.match(
         bootstrapSource,
         /share-links-popup\/index\.js"[\s\S]*isAdapterEnabled\("link"\)[\s\S]*"share:openPopup"/,
+    );
+});
+
+test("share gateway provides its canonical trigger renderer", () => {
+    assert.match(
+        bootstrapSource,
+        /providesCapabilities: \["share:uiGateway"\]/,
+    );
+    assert.match(providerSource, /mountShareButton/);
+    assert.match(providerSource, /mountTrigger\(container, options = \{\}\)/);
+    assert.match(
+        providerSource,
+        /uiCtx\.capabilities\.contribute\("share:uiGateway", shareUiGateway\)/,
     );
 });
 const sessionFlowSource = await readFile(
