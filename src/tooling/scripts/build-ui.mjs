@@ -159,6 +159,11 @@ await cp(
     path.join(outputRoot, "public"),
     { recursive: true },
 );
+await cp(
+    path.join(repositoryRoot, "src", "ui", "public", "assets"),
+    assetRoot,
+    { recursive: true },
+);
 await writeFile(
     path.join(outputRoot, "asset-manifest.json"),
     `${JSON.stringify(manifest, null, 2)}\n`,
