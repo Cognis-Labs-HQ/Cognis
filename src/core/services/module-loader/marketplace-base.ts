@@ -240,25 +240,23 @@ export class MarketplaceServiceBase {
                                             (
                                                 await Promise.all(
                                                     MARKETPLACE_STRING_LOCALES.map(
-                                                        async (locale) => [
-                                                            locale,
-                                                            await this.cacheRepositoryAsset(
-                                                                source,
-                                                                projectPath,
-                                                                catalogRef,
-                                                                `ui/languages/${locale}/strings.xml`,
-                                                                headers,
-                                                            ),
-                                                        ],
+                                                        async (locale) => {
+                                                            const id =
+                                                                await this.cacheRepositoryAsset(
+                                                                    source,
+                                                                    projectPath,
+                                                                    catalogRef,
+                                                                    `ui/languages/${locale}/strings.xml`,
+                                                                    headers,
+                                                                );
+                                                            return [
+                                                                locale,
+                                                                id,
+                                                            ] as const;
+                                                        },
                                                     ),
                                                 )
-                                            ).filter(
-                                                (
-                                                    entry,
-                                                ): entry is [string, string] =>
-                                                    typeof entry[1] ===
-                                                    "string",
-                                            ),
+                                            ).filter((entry) => entry[1]),
                                         )
                                       : undefined,
                               }
@@ -987,7 +985,6 @@ export class MarketplaceServiceBase {
         )
             throw new Error("invalid_module_source");
     }
-
     protected assertCloneUrl(cloneUrl: string): string {
         const parsed = new URL(cloneUrl);
         if (

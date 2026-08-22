@@ -582,6 +582,7 @@ export function createModuleExtensionRoutes(
         const manifests = await runtime.listManifests();
 
         for (const manifest of manifests) {
+            if (manifest.class === "core") continue;
             if (!isModuleEnabled(manifest.id)) continue;
             if (!manifest.uuid) {
                 log?.("error", "External module is missing its UUID.", {

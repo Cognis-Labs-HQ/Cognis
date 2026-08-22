@@ -8,6 +8,31 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
+test("core manifests are not loaded from the external module directory", async () => {
+    const errors: string[] = [];
+    const extensions = createModuleExtensionRoutes(
+        {
+            listManifests: async () => [
+                {
+                    id: "cognis-core",
+                    uuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+                    class: "core",
+                    entrypoints: {},
+                },
+            ],
+        } as any,
+        () => true,
+        (level, message) => {
+            if (level === "error") errors.push(message);
+        },
+        { routeContext: createDefaultRouteContext() },
+    );
+
+    await extensions.refresh();
+
+    assert.deepEqual(errors, []);
+});
+
 test("a timed-out module bootstrap is disabled without blocking refresh", async () => {
     const modulesRoot = await mkdtemp(path.join(tmpdir(), "cognis-modules-"));
     const moduleUuid = "41ad9d2b-463e-4f50-8a62-f02d02d5e303";
