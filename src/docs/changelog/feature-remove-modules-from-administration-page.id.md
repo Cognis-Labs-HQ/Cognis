@@ -494,7 +494,6 @@ UUID rekomendasi yang dipublikasikan tetap tersedia dalam katalog bawaan. Kartu,
 
 Penemuan penyedia kapabilitas kini menunggu sesi pengguna yang sudah masuk. Filter modul meninggalkan URL detail, pengaturan sumber menerima dependensi pelokalannya secara eksplisit, dan pencopotan menghapus konfigurasi modul sebelum instalasi dihapus. Teks penghapusan data tidak lagi berasumsi tentang data yang disimpan modul.
 
-
 ## Lampu status profil dipulihkan
 
 Shell dasbor kini menginisialisasi penyempurnaan akun yang telah masuk dengan benar saat kapabilitas sesi tamu melaporkan sesi terautentikasi biasa, sehingga lampu ketersediaan kembali tampil di atas avatar navigasi.
@@ -534,3 +533,7 @@ Tindakan modul lanjutan tidak lagi mengganti pemicu hamburger dengan indikator p
 ## Nonaktifkan modul secara atomik dan perketat batas siklus hidup
 
 Menonaktifkan modul kini menghapus navigasi, kontribusi UI, rute, alur, kait, dan kapabilitasnya sebelum permintaan siklus hidup selesai. Aktivasi yang gagal dibatalkan, konfigurasi tetap tersedia hingga pembersihan berhasil, aset marketplace disajikan dari penyimpanan cakram terbatas, setiap prefiks API gateway yang diklaim dilindungi, dan catatan perubahan dikecualikan dari hash integritas sambil tetap dirender dengan aman.
+
+## Aktifkan pengurutan navigasi secara sengaja
+
+Setiap entri navigasi utama kini memiliki pegangan enam titik. Tautan mempertahankan penunjuk normal dan tidak dapat diatur ulang sampai pegangannya diklik; entri yang bergeser dianimasikan selama penyeretan dan urutan disimpan saat dilepas. Dokumentasi modul eksternal kini mengikuti templat kontributor serta menjelaskan penonaktifan atomik dan pembersihan penghapusan secara akurat. Fixture regresi antrean SMTP kini menggunakan timer pengujian yang tidak menahan proses sehingga rangkaian pengujian lengkap dapat berakhir setelah pemeriksaan.

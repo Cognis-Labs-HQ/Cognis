@@ -212,6 +212,8 @@ test("primary navigation supports persisted drag ordering", () => {
     assert.match(orderingSource, /navigationOrder/);
     assert.match(orderingSource, /addEventListener\("dragstart"/);
     assert.match(orderingSource, /addEventListener\("dragover"/);
+    assert.match(orderingSource, /navigation-drag-handle/);
+    assert.match(orderingSource, /draggable = false/);
     assert.match(orderingSource, /savePreferences/);
     assert.match(orderingSource, /MutationObserver/);
 });

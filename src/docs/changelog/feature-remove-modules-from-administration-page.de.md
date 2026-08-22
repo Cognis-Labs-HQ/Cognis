@@ -494,7 +494,6 @@ Die veröffentlichten Empfehlungs-UUIDs bleiben im Standardkatalog enthalten. Ma
 
 Die Ermittlung von Capability-Providern wartet jetzt auf eine angemeldete Sitzung. Modulfilter verlassen Detail-URLs, Modulquellen-Einstellungen erhalten ihre Lokalisierungsabhängigkeit ausdrücklich, und Deinstallationen löschen die Modulkonfiguration vor dem Entfernen der Installation. Der Hinweis zur Datenlöschung macht keine Annahmen mehr darüber, was ein Modul speichert.
 
-
 ## Profilstatusanzeige wiederhergestellt
 
 Die Dashboard-Oberfläche initialisiert Erweiterungen für angemeldete Konten nun korrekt, wenn die Gastsitzungsfunktion eine normale authentifizierte Sitzung meldet. Dadurch erscheint die Verfügbarkeitsanzeige wieder über dem Navigationsavatar.
@@ -534,3 +533,7 @@ Erweiterte Modulaktionen ersetzen den Hamburger-Auslöser während einer laufend
 ## Module atomar deaktivieren und Lebenszyklusgrenzen härten
 
 Beim Deaktivieren eines Moduls werden Navigation, UI-Beiträge, Routen, Abläufe, Hooks und Fähigkeiten entfernt, bevor die Lebenszyklusanfrage abgeschlossen ist. Fehlgeschlagene Aktivierungen werden zurückgesetzt, die Konfiguration bleibt bis zur erfolgreichen Bereinigung erhalten, Marketplace-Medien werden aus einem begrenzten Plattenspeicher ausgeliefert, alle beanspruchten Gateway-API-Präfixe sind geschützt und Änderungsprotokolle sind von Integritäts-Hashes ausgenommen, werden aber weiterhin sicher gerendert.
+
+## Navigationssortierung bewusst aktivieren
+
+Jeder primäre Navigationseintrag besitzt nun einen Griff mit sechs Punkten. Links behalten ihren normalen Zeiger und können erst nach einem Klick auf ihren Griff verschoben werden; verdrängte Einträge werden während des Ziehens animiert und die Reihenfolge wird beim Ablegen gespeichert. Die Dokumentation externer Module folgt nun der Beitragsvorlage und beschreibt atomare Deaktivierung sowie Deinstallationsbereinigung korrekt. Die SMTP-Warteschlangen-Testvorrichtung verwendet nun einen nicht blockierenden Test-Timer, damit der vollständige Testlauf nach seinen Prüfungen beendet wird.

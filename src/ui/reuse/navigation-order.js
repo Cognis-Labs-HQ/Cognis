@@ -14,7 +14,7 @@
  * ```
  *
  * @param {Element | null} container
- * @param {{loadPreferences: () => Promise<object | null>, savePreferences: (patch: object) => Promise<void>, onSaveError?: (error: unknown) => void}} options
+ * @param {{loadPreferences: () => Promise<object | null>, savePreferences: (patch: object) => Promise<void>, moveLabel?: string, onSaveError?: (error: unknown) => void}} options
  * @returns {Promise<void>}
  */
 
@@ -40,13 +40,29 @@ function applyOrder(container, order) {
         return leftPosition - rightPosition;
     });
     if (links.every((link, index) => link === sortedLinks[index])) return;
-    container.append(...sortedLinks);
+    container.append(
+        ...sortedLinks.flatMap((link) => [ensureDragHandle(link), link]),
+    );
 }
 
-function markLinksDraggable(container) {
+function ensureDragHandle(link, moveLabel = "") {
+    const existing = link.previousElementSibling;
+    if (existing?.classList.contains("navigation-drag-handle")) {
+        if (moveLabel) existing.setAttribute("aria-label", moveLabel);
+        return existing;
+    }
+    const handle = document.createElement("button");
+    handle.type = "button";
+    handle.className = "navigation-drag-handle btn-neutral";
+    handle.setAttribute("aria-label", moveLabel);
+    link.before(handle);
+    return handle;
+}
+
+function prepareLinks(container, moveLabel) {
     for (const link of navigationLinks(container)) {
-        link.draggable = true;
-        link.dataset.navigationDraggable = "true";
+        link.draggable = false;
+        ensureDragHandle(link, moveLabel);
     }
 }
 
@@ -82,7 +98,7 @@ function moveWithDisplacementAnimation(
 
 export async function bindNavigationOrdering(
     container,
-    { loadPreferences, savePreferences, onSaveError } = {},
+    { loadPreferences, savePreferences, moveLabel = "", onSaveError } = {},
 ) {
     if (!(container instanceof Element)) return;
     if (container.dataset.navigationOrderingBound === "true") return;
@@ -92,11 +108,28 @@ export async function bindNavigationOrdering(
     const savedOrder = Array.isArray(preferences?.[NAVIGATION_ORDER_KEY])
         ? preferences[NAVIGATION_ORDER_KEY].map(String)
         : [];
+    prepareLinks(container, moveLabel);
     applyOrder(container, savedOrder);
-    markLinksDraggable(container);
 
     let draggedLink = null;
     let orderCommitted = false;
+    container.addEventListener("click", (event) => {
+        const handle =
+            event.target instanceof Element
+                ? event.target.closest(".navigation-drag-handle")
+                : null;
+        if (!handle) return;
+        const link = handle.nextElementSibling;
+        if (!(link instanceof HTMLAnchorElement)) return;
+        for (const candidate of navigationLinks(container)) {
+            candidate.draggable = candidate === link;
+            candidate.classList.toggle(
+                "is-reorder-enabled",
+                candidate === link,
+            );
+        }
+        link.focus();
+    });
     async function commitOrder() {
         const order = navigationLinks(container).map(linkId);
         savedOrder.splice(0, savedOrder.length, ...order);
@@ -147,6 +180,8 @@ export async function bindNavigationOrdering(
     container.addEventListener("dragend", async () => {
         if (!draggedLink) return;
         draggedLink.classList.remove("is-dragging");
+        draggedLink.classList.remove("is-reorder-enabled");
+        draggedLink.draggable = false;
         draggedLink = null;
         if (orderCommitted) return;
         try {
@@ -157,7 +192,7 @@ export async function bindNavigationOrdering(
     });
 
     new MutationObserver(() => {
+        prepareLinks(container, moveLabel);
         applyOrder(container, savedOrder);
-        markLinksDraggable(container);
     }).observe(container, { childList: true });
 }

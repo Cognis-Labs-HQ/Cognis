@@ -579,7 +579,7 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /uninstallModule\(module\.uuid, options\)/);
     assert.match(
         source,
-        /deleteModuleConfig\(module\.id\);[\s\S]*uninstallModule\(module\.uuid, options\)/,
+        /uninstallModule\(module\.uuid, options\);[\s\S]*deleteModuleConfig\(module\.id\)/,
     );
     assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);

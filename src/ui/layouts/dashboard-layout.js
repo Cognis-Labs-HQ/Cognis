@@ -147,6 +147,7 @@ async function bindPrimaryNavigationOrdering(root, i18n) {
     await bindNavigationOrdering(root.querySelector(".topnav"), {
         loadPreferences: loadUiPreferences,
         savePreferences: saveUiPreferences,
+        moveLabel: i18n.t("ui.reuse.move"),
         onSaveError: () =>
             showToast(i18n.t("ui.reuse.error"), { variant: "error" }),
     });

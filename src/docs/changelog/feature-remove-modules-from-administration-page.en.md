@@ -494,7 +494,6 @@ The published recommendation UUIDs remain in the default catalog. Marketplace ca
 
 Capability-provider discovery now waits for a logged-in session. Module filters leave detail URLs, source settings receive their localization dependency explicitly, and uninstall operations clear module configuration before removing the installation. Data-deletion wording no longer assumes what a module stores.
 
-
 ## Profile status light restored
 
 The dashboard shell now initializes signed-in account enhancements when the guest-session capability reports a normal authenticated session, restoring the availability light over the navigation avatar.
@@ -534,3 +533,7 @@ Advanced module actions no longer replace the hamburger trigger with a loading s
 ## Disable modules atomically and harden lifecycle boundaries
 
 Disabling a module now removes its navigation, UI contributions, routes, flows, hooks, and capabilities before the lifecycle request completes. Failed enable refreshes roll back the requested module, uninstall configuration remains available until cleanup succeeds, marketplace assets are served from bounded disk storage, every claimed gateway API prefix is protected, and changelogs are excluded from integrity hashes while continuing through the sanitized Markdown renderer.
+
+## Make navigation reordering deliberate
+
+Each primary navigation entry now has a six-dot handle. Links keep their normal pointer and cannot be rearranged until their handle is clicked; displaced entries animate during the drag and the resulting order is saved on drop. External-module documentation now follows the contributor template and accurately describes atomic disablement and uninstall cleanup. The SMTP queue regression fixture now uses a non-blocking test timer so the complete test runner can terminate after its assertions.
