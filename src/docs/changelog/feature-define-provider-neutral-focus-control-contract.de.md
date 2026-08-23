@@ -23,3 +23,7 @@ Externe Module können geeignete SPA-Seiten ausdrücklich freigeben. Andere Komp
 ## Integrierte Seiten nutzen den Broker
 
 Cognis-Dashboard- und Study-Seiten veröffentlichen nun stabile, UUID-gebundene Komponentenseitendeklarationen. Dadurch verwenden integrierte und externe Seiten denselben Anfrage- und Fokussteuerungspfad.
+
+## Authentifizierte Modultexte
+
+Geschützte Marketplace-Textpakete verwenden nun den authentifizierten API-Client. Die Moduldokumentation stellt außerdem klar, dass Punkte – nicht Unterstriche oder Bindestriche – Wörter in Lokalisierungsschlüsseln trennen.

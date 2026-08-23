@@ -20,6 +20,8 @@ Ein Whiteboard-Modul verweist auf seine entdeckte Modulroute. Nur Ressourcenkenn
 
 Eine Seite eines externen Moduls steht anderen Komponenten nur zur Verfügung, wenn ihr Bootstrap die SPA-Route mit `componentPage` registriert. Die Deklaration muss kleingeschriebene Lokalisierungsschlüssel in `labelKey` und `descriptionKey` sowie mindestens einen unterstützten Modus (`overlay`, `fullscreen` oder `pip`) enthalten. Cognis ergänzt die Modul-UUID aus dem geprüften Manifest; Module dürfen weder den Dateipfad noch die Skript-URL eines anderen Moduls angeben oder herleiten.
 
+Verwenden Sie in jedem neuen Lokalisierungsschlüssel Punkte als Worttrenner, zum Beispiel `module.example.canvas.label`. Zwischen Wörtern dürfen keine Unterstriche oder Bindestriche eingeführt werden; nur eine bereits registrierte Modul-ID mit Bindestrich darf diesen im Modul-Namensraumsegment behalten.
+
 ```js
 ctx.registerSpaRoute({
     id: "whiteboard.canvas",
@@ -27,8 +29,8 @@ ctx.registerSpaRoute({
     base: "/whiteboards",
     scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
     componentPage: {
-        labelKey: "module.nextcloud-whiteboard.canvas_label",
-        descriptionKey: "module.nextcloud-whiteboard.canvas_description",
+        labelKey: "module.nextcloud-whiteboard.canvas.label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas.description",
         modes: ["overlay", "fullscreen"],
     },
 });

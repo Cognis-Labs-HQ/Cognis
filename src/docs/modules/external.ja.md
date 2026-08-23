@@ -49,6 +49,8 @@ export async function bootstrapModule(ctx) {
 
 マニフェストは、`uuid`、`id`、`name`、`version`、`publisher`、`class`、`coreApiVersion`、`summary`、`description`、`categories`、`recommended`、`license`、`homepage`、を宣言します。 `repository`、`support`、`capabilities`、UUID ベースの `requires`、`entrypoints`、および `assets`。アセット パスはリポジトリ相対です。 `assets.icon` は正方形のストア アイコンを示し、`assets.banner` は詳細ヒーローを示し、`assets.screenshots` は注文されたギャラリーを示します。パスはリポジトリ内に残す必要があります。
 
+ローカライズキーでは、単語の区切りにピリオドを使用してください。`module.example.canvas_label` や `module.example.canvas-label` ではなく、`module.example.canvas.label` と記述します。ピリオド区切りのセグメントにより、所有関係、検索、検証、ツールの動作が予測可能になります。登録済みモジュール ID 自体にハイフンが含まれる場合、その不変 ID だけが意図された例外です。
+
 ### ソースとプライベート リポジトリ
 
 Cognis には、デフォルトで、`https://github.com/Cognis-Labs-HQ` 組織が不変の信頼できるソースとして含まれています。管理者は、ユーザー メニューの [モジュール]、[モジュール ソース] から GitHub 組織または GitLab グループをさらに追加できます。 Cognis はプロバイダー API にクエリを実行し、有効なルート マニフェストを含む各リポジトリをモジュールとして処理し、カタログを動的に取得します。ソースは、サインインしている管理者のキーリングに保存されているオプションの PAT を参照できます。ソース レコードにはキーリング識別子のみが保存されます。リポジトリとメタデータへのアクセスには、最小権限の読み取り専用トークンを使用します。トークンは検出とクローン作成のためにのみ提供され、ソース構成に書き込まれることはありません。 **非公開リポジトリをスキャン** を有効にしない限り非公開リポジトリは除外され、有効にすると PAT が必須になります。

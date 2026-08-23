@@ -1,6 +1,8 @@
 /**
  * Authenticated fetch wrapper. Reads the Bearer token from localStorage
  * and attaches it as an Authorization header on every request.
+ * `requestTargetsApi(path)` identifies relative and same-origin API URLs so
+ * other reusable loaders can select this authenticated transport.
  *
  * Usage:
  *   const res = await apiFetch('/api/v1/users');
@@ -36,7 +38,7 @@ export function configureConnectionRecoveryPrompt(message) {
     connectionRecoveryPrompt = trimmedMessage;
 }
 
-function requestTargetsApi(path) {
+export function requestTargetsApi(path) {
     if (typeof path !== "string") return false;
     if (path.startsWith("/api/")) return true;
     try {

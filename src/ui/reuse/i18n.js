@@ -21,6 +21,8 @@
  *   i18n.t('ui.reuse.save');   // → 'Guardar'
  *   applyStaticTranslations(i18n);
  */
+import { apiFetch, requestTargetsApi } from "./api-client.js";
+
 export const DEFAULT_LOCALE = "en";
 const STRINGS_BASE_PATH = "/static/languages";
 
@@ -31,7 +33,8 @@ const STRING_REQUEST_TIMEOUT_MS = 15_000;
 async function fetchStrings(path) {
     let request = stringRequestCache.get(path);
     if (!request) {
-        request = fetch(path, {
+        const requestFunction = requestTargetsApi(path) ? apiFetch : fetch;
+        request = requestFunction(path, {
             signal: globalThis.AbortSignal?.timeout?.(
                 STRING_REQUEST_TIMEOUT_MS,
             ),

@@ -20,6 +20,8 @@ An external whiteboard declares a `module-route` loader with its discovered modu
 
 An external module page is unavailable to other components unless its bootstrap registers the SPA route with `componentPage`. The declaration must provide lowercase localization keys in `labelKey` and `descriptionKey`, plus at least one supported mode (`overlay`, `fullscreen`, or `pip`). Cognis attaches the module UUID from its verified manifest; modules must never supply or infer another module's filesystem path or script URL.
 
+Use periods as word separators in every new localization key (for example, `module.example.canvas.label`). Do not introduce underscores or hyphens between words; only an already-registered hyphenated module ID may retain its hyphen inside the module namespace segment.
+
 ```js
 ctx.registerSpaRoute({
     id: "whiteboard.canvas",
@@ -27,8 +29,8 @@ ctx.registerSpaRoute({
     base: "/whiteboards",
     scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
     componentPage: {
-        labelKey: "module.nextcloud-whiteboard.canvas_label",
-        descriptionKey: "module.nextcloud-whiteboard.canvas_description",
+        labelKey: "module.nextcloud-whiteboard.canvas.label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas.description",
         modes: ["overlay", "fullscreen"],
     },
 });

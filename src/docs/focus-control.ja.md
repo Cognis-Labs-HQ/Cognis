@@ -20,6 +20,8 @@
 
 外部モジュールのページは、Bootstrap が SPA ルートを `componentPage` 付きで登録した場合に限り、他のコンポーネントから利用できます。宣言には `labelKey` と `descriptionKey` の小文字ローカライズキー、および対応モード（`overlay`、`fullscreen`、`pip`）を1つ以上指定します。Cognis は検証済みマニフェストからモジュール UUID を付与します。モジュールが別モジュールのファイルパスやスクリプト URL を指定または推測してはいけません。
 
+新しいローカライズキーでは、`module.example.canvas.label` のように単語区切りへピリオドを使用します。単語間にアンダースコアやハイフンを追加してはいけません。すでに登録されたモジュール ID にハイフンが含まれる場合のみ、モジュール名前空間セグメント内で維持できます。
+
 ```js
 ctx.registerSpaRoute({
     id: "whiteboard.canvas",
@@ -27,8 +29,8 @@ ctx.registerSpaRoute({
     base: "/whiteboards",
     scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
     componentPage: {
-        labelKey: "module.nextcloud-whiteboard.canvas_label",
-        descriptionKey: "module.nextcloud-whiteboard.canvas_description",
+        labelKey: "module.nextcloud-whiteboard.canvas.label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas.description",
         modes: ["overlay", "fullscreen"],
     },
 });

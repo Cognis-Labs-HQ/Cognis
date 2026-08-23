@@ -20,6 +20,8 @@ Modul papan tulis menunjuk rute modul yang ditemukan. Hanya referensi sumber day
 
 Halaman modul eksternal tidak tersedia bagi komponen lain kecuali bootstrap-nya mendaftarkan rute SPA dengan `componentPage`. Deklarasi harus menyediakan kunci pelokalan huruf kecil pada `labelKey` dan `descriptionKey`, serta setidaknya satu mode yang didukung (`overlay`, `fullscreen`, atau `pip`). Cognis menambahkan UUID modul dari manifes terverifikasi; modul tidak boleh menyediakan atau menyimpulkan path berkas maupun URL skrip modul lain.
 
+Gunakan titik sebagai pemisah kata pada setiap kunci pelokalan baru, misalnya `module.example.canvas.label`. Jangan menambahkan garis bawah atau tanda hubung di antara kata; hanya ID modul bertanda hubung yang sudah terdaftar yang boleh mempertahankan tanda hubung di segmen namespace modul.
+
 ```js
 ctx.registerSpaRoute({
     id: "whiteboard.canvas",
@@ -27,8 +29,8 @@ ctx.registerSpaRoute({
     base: "/whiteboards",
     scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
     componentPage: {
-        labelKey: "module.nextcloud-whiteboard.canvas_label",
-        descriptionKey: "module.nextcloud-whiteboard.canvas_description",
+        labelKey: "module.nextcloud-whiteboard.canvas.label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas.description",
         modes: ["overlay", "fullscreen"],
     },
 });

@@ -23,3 +23,7 @@ Modul eksternal dapat secara eksplisit membuka halaman SPA yang memenuhi syarat.
 ## Halaman bawaan memakai broker
 
 Halaman dasbor Cognis dan Study kini menerbitkan deklarasi halaman komponen stabil yang dimiliki UUID, sehingga halaman bawaan dan eksternal menggunakan jalur permintaan dan Focus Control yang sama.
+
+## String modul terautentikasi
+
+Bundel string marketplace yang dilindungi kini menggunakan klien API terautentikasi. Dokumentasi modul juga menegaskan bahwa titik—bukan garis bawah atau tanda hubung—memisahkan kata dalam kunci pelokalan.

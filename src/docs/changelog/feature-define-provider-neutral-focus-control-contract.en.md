@@ -23,3 +23,7 @@ External modules can explicitly expose eligible SPA pages and other components c
 ## Built-in pages use the broker
 
 Cognis dashboard and Study pages now publish stable UUID-owned component page declarations, so built-in and external pages use the same request and Focus Control path.
+
+## Authenticated module strings
+
+Protected marketplace string bundles now use the authenticated API client, and module documentation clarifies that periods—not underscores or hyphens—separate words in localization keys.
