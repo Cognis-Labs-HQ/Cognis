@@ -214,6 +214,11 @@ test("primary navigation supports persisted drag ordering", () => {
     assert.match(orderingSource, /addEventListener\("dragover"/);
     assert.match(orderingSource, /navigation-order-toggle/);
     assert.match(orderingSource, /aria-pressed/);
+    assert.match(
+        orderingSource,
+        /links\.every\(\(link, index\) => link === sorted\[index\]\)/,
+        "the mutation observer must not rewrite an already ordered navbar",
+    );
     assert.match(orderingSource, /savePreferences/);
     assert.match(orderingSource, /MutationObserver/);
 });

@@ -37,6 +37,7 @@ function applyOrder(container, order) {
         if (b == null) return -1;
         return a - b;
     });
+    if (links.every((link, index) => link === sorted[index])) return;
     for (const link of sorted) container.append(link);
 }
 
