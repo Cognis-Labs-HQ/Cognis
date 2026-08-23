@@ -146,7 +146,10 @@ export function createFocusControlCoordinator({
             (candidate) => candidate.id === session.surface?.id,
         );
         if (!surface) throw new Error("focus_surface_unavailable");
-        const route = await routeResolver?.(surface.loader);
+        const route = await routeResolver?.({
+            ...surface.loader,
+            requestedMode: session.mode,
+        });
         if (!route?.load || signal?.aborted)
             throw new Error("focus_route_unavailable");
         restore = {

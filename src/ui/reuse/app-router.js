@@ -54,12 +54,14 @@ import {
 } from "./guest-blocked-popup.js";
 import "./page-flow-catalog.js";
 import { uiCtx } from "./ui-ctx.js";
+import { installComponentPageBroker } from "./component-page-broker.js";
 import {
     observePerformance,
     recordRouteMount,
 } from "./performance-telemetry.js";
 
 observePerformance();
+installComponentPageBroker();
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",

@@ -15,3 +15,38 @@ Providers authenticate every request, scope it to a collaboration resource, vali
 ## External module example
 
 An external whiteboard declares a `module-route` loader with its discovered module ID and route ID. Its Focus state contains only the stable whiteboard resource reference and presentation metadata; document updates continue through its own gateway.
+
+## Component page eligibility
+
+An external module page is unavailable to other components unless its bootstrap registers the SPA route with `componentPage`. The declaration must provide lowercase localization keys in `labelKey` and `descriptionKey`, plus at least one supported mode (`overlay`, `fullscreen`, or `pip`). Cognis attaches the module UUID from its verified manifest; modules must never supply or infer another module's filesystem path or script URL.
+
+```js
+ctx.registerSpaRoute({
+    id: "whiteboard.canvas",
+    pattern: "^/whiteboards/[^/]+$",
+    base: "/whiteboards",
+    scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
+    componentPage: {
+        labelKey: "module.nextcloud-whiteboard.canvas_label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas_description",
+        modes: ["overlay", "fullscreen"],
+    },
+});
+```
+
+The page entry module must export `mount(root, { signal, focusState })`, honor the abort signal, render only inside `root`, and accept serializable caller context through `focusState`. Declaring eligibility exposes presentation only; the providing module remains responsible for authorization, resource creation, participant access, persistence, and live document synchronization.
+
+## Requesting another component page
+
+A requester identifies the provider by immutable manifest UUID and its stable route ID. Browser code obtains `component-pages:request` from `uiCtx.capabilities`; it must not import the provider or construct its asset URL. The capability returns `null` when the module is disabled, inaccessible, missing, or has not opted the route into component use.
+
+```js
+const requestPage = uiCtx.capabilities.get("component-pages:request");
+const page = await requestPage?.({
+    componentUuid: WHITEBOARD_MODULE_UUID,
+    routeId: "whiteboard.canvas",
+    context: { meetingId },
+});
+```
+
+For synchronized Focus Control, declare a `module-route` loader whose `moduleId` is that UUID and whose `routeId` is the eligible route ID. A collaboration provider must still authorize the request, create or resolve the whiteboard through server-side ctx capabilities, grant meeting participants access, and publish only stable resource identifiers through `focus:transport`.

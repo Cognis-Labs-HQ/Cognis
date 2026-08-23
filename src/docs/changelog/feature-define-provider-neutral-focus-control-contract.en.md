@@ -15,3 +15,7 @@ Focus providers can declare picture-in-picture mode, whose resizable meeting pan
 ## Stable primary navigation
 
 Primary navigation now keeps its application-defined order. Drag controls and user-specific ordering were removed to keep the page shell simple and reliable.
+
+## External component pages
+
+External modules can explicitly expose eligible SPA pages and other components can request them by immutable module UUID and stable route ID without importing provider code or guessing asset paths.

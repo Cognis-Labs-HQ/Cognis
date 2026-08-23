@@ -15,3 +15,29 @@ Setiap operasi diautentikasi, dibatasi pada sumber daya kolaborasi, serta memval
 ## Modul eksternal
 
 Modul papan tulis menunjuk rute modul yang ditemukan. Hanya referensi sumber daya dan metadata presentasi yang disinkronkan; dokumen tetap melalui penyedia papan tulis.
+
+## Kelayakan halaman komponen
+
+Halaman modul eksternal tidak tersedia bagi komponen lain kecuali bootstrap-nya mendaftarkan rute SPA dengan `componentPage`. Deklarasi harus menyediakan kunci pelokalan huruf kecil pada `labelKey` dan `descriptionKey`, serta setidaknya satu mode yang didukung (`overlay`, `fullscreen`, atau `pip`). Cognis menambahkan UUID modul dari manifes terverifikasi; modul tidak boleh menyediakan atau menyimpulkan path berkas maupun URL skrip modul lain.
+
+```js
+ctx.registerSpaRoute({
+    id: "whiteboard.canvas",
+    pattern: "^/whiteboards/[^/]+$",
+    base: "/whiteboards",
+    scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
+    componentPage: {
+        labelKey: "module.nextcloud-whiteboard.canvas_label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas_description",
+        modes: ["overlay", "fullscreen"],
+    },
+});
+```
+
+Modul entri halaman harus mengekspor `mount(root, { signal, focusState })`, mematuhi sinyal pembatalan, merender hanya di dalam `root`, dan menerima konteks pemanggil yang dapat diserialkan melalui `focusState`. Pernyataan kelayakan hanya membuka presentasi; modul penyedia tetap bertanggung jawab atas otorisasi, pembuatan sumber daya, akses peserta, persistensi, dan sinkronisasi dokumen langsung.
+
+## Meminta halaman komponen lain
+
+Peminta mengidentifikasi penyedia dengan UUID manifes yang tidak berubah dan ID rute stabil. Kode browser memperoleh `component-pages:request` dari `uiCtx.capabilities`; kode tidak boleh mengimpor penyedia atau menyusun URL asetnya. Capability mengembalikan `null` ketika modul dinonaktifkan, tidak dapat diakses, tidak tersedia, atau belum mengizinkan penggunaan rute oleh komponen.
+
+Untuk Focus Control tersinkron, deklarasikan loader `module-route` dengan `moduleId` berupa UUID tersebut dan `routeId` berupa ID rute yang memenuhi syarat. Penyedia kolaborasi tetap harus mengotorisasi permintaan, membuat atau menemukan whiteboard melalui capability ctx sisi server, memberikan akses kepada peserta rapat, dan hanya menerbitkan pengenal sumber daya stabil melalui `focus:transport`.

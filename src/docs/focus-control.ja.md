@@ -15,3 +15,29 @@
 ## 外部モジュール
 
 ホワイトボードは検出済みモジュールルートを指定します。同期状態は安定したリソース参照と表示メタデータだけを含み、文書共同編集は専用プロバイダーを使い続けます。
+
+## コンポーネントページの利用条件
+
+外部モジュールのページは、Bootstrap が SPA ルートを `componentPage` 付きで登録した場合に限り、他のコンポーネントから利用できます。宣言には `labelKey` と `descriptionKey` の小文字ローカライズキー、および対応モード（`overlay`、`fullscreen`、`pip`）を1つ以上指定します。Cognis は検証済みマニフェストからモジュール UUID を付与します。モジュールが別モジュールのファイルパスやスクリプト URL を指定または推測してはいけません。
+
+```js
+ctx.registerSpaRoute({
+    id: "whiteboard.canvas",
+    pattern: "^/whiteboards/[^/]+$",
+    base: "/whiteboards",
+    scriptUrl: "/static/modules/nextcloud-whiteboard/app.js",
+    componentPage: {
+        labelKey: "module.nextcloud-whiteboard.canvas_label",
+        descriptionKey: "module.nextcloud-whiteboard.canvas_description",
+        modes: ["overlay", "fullscreen"],
+    },
+});
+```
+
+ページエントリーモジュールは `mount(root, { signal, focusState })` をエクスポートし、中断シグナルに従い、`root` 内だけに描画し、`focusState` でシリアライズ可能な呼び出し元コンテキストを受け取る必要があります。利用許可は表示だけを公開します。認可、リソース作成、参加者アクセス、永続化、文書のライブ同期は提供モジュールの責任です。
+
+## 別コンポーネントのページを要求
+
+要求側は、不変のマニフェスト UUID と安定したルート ID で提供元を指定します。ブラウザーコードは `uiCtx.capabilities` から `component-pages:request` を取得し、提供元を直接インポートしたり Asset URL を組み立てたりしてはいけません。モジュールが無効、アクセス不能、未導入、またはルートをコンポーネント利用に公開していない場合、Capability は `null` を返します。
+
+同期 Focus Control では、その UUID を `moduleId`、利用可能なルート ID を `routeId` とする `module-route` ローダーを宣言します。コラボレーションプロバイダーは引き続き要求を認可し、サーバー側の ctx Capability を通じて Whiteboard を作成または解決し、会議参加者へアクセス権を付与し、`focus:transport` では安定したリソース識別子だけを公開する必要があります。

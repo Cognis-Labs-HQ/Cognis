@@ -15,3 +15,7 @@ Fokusanbieter können einen Bild-im-Bild-Modus deklarieren, dessen größenverä
 ## Stabile primäre Navigation
 
 Die primäre Navigation behält nun die von der Anwendung festgelegte Reihenfolge. Ziehsteuerung und benutzerspezifische Sortierung wurden entfernt, damit die Seitenoberfläche einfach und zuverlässig bleibt.
+
+## Seiten externer Komponenten
+
+Externe Module können geeignete SPA-Seiten ausdrücklich freigeben. Andere Komponenten können sie anhand der unveränderlichen Modul-UUID und einer stabilen Routen-ID anfordern, ohne Anbietercode zu importieren oder Asset-Pfade zu erraten.

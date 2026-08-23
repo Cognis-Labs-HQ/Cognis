@@ -281,6 +281,12 @@ test("GET /api/v1/ui/app-routes returns registered routes for authenticated user
         base: "/messages",
         scriptUrl: "/static/adapters/social/messages/app.js",
         stylesheets: ["/static/adapters/social/messages/messages.css"],
+        ownerUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
+        componentPage: {
+            labelKey: "module.messages.page_label",
+            descriptionKey: "module.messages.page_description",
+            modes: ["overlay", "fullscreen"],
+        },
     });
     const route = createUiRoutes(undefined, uiRegistry);
 
@@ -303,6 +309,34 @@ test("GET /api/v1/ui/app-routes returns registered routes for authenticated user
     const payload = JSON.parse(recorder.body);
     assert.equal(payload.data.length, 1);
     assert.equal(payload.data[0].id, "messages-page");
+    assert.equal(
+        payload.data[0].ownerUuid,
+        "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
+    );
+    assert.deepEqual(payload.data[0].componentPage.modes, [
+        "overlay",
+        "fullscreen",
+    ]);
+});
+
+test("component pages require a canonical owner UUID and localized metadata", () => {
+    const uiRegistry = new UIRegistry();
+    assert.throws(
+        () =>
+            uiRegistry.registerSpaRoute({
+                id: "unsafe-page",
+                pattern: "^/unsafe$",
+                base: "/unsafe",
+                scriptUrl: "/unsafe.js",
+                ownerUuid: "not-a-uuid",
+                componentPage: {
+                    labelKey: "Unsafe Label",
+                    descriptionKey: "unsafe.description",
+                    modes: ["fullscreen"],
+                },
+            }),
+        /invalid_component_page_declaration/,
+    );
 });
 
 test("GET registered SPA route serves the dashboard shell on refresh", async () => {

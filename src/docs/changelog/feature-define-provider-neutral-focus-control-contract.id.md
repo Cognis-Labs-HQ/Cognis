@@ -15,3 +15,7 @@ Penyedia fokus dapat mendeklarasikan mode gambar-dalam-gambar dengan panel rapat
 ## Navigasi utama yang stabil
 
 Navigasi utama kini mempertahankan urutan yang ditetapkan aplikasi. Kontrol seret dan pengurutan khusus pengguna dihapus agar shell halaman tetap sederhana dan andal.
+
+## Halaman komponen eksternal
+
+Modul eksternal dapat secara eksplisit membuka halaman SPA yang memenuhi syarat. Komponen lain dapat memintanya berdasarkan UUID modul yang tidak berubah dan ID rute stabil tanpa mengimpor kode penyedia atau menebak path aset.
