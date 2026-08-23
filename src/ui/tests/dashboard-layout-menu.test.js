@@ -199,30 +199,6 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
     );
 });
 
-test("primary navigation supports persisted drag ordering", () => {
-    const layoutSource = readFileSync(
-        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
-        "utf8",
-    );
-    const orderingSource = readFileSync(
-        resolve(ROOT, "src/ui/reuse/navigation-order.js"),
-        "utf8",
-    );
-    assert.match(layoutSource, /bindNavigationOrdering/);
-    assert.match(orderingSource, /navigationOrder/);
-    assert.match(orderingSource, /addEventListener\("dragstart"/);
-    assert.match(orderingSource, /addEventListener\("dragover"/);
-    assert.match(orderingSource, /navigation-order-toggle/);
-    assert.match(orderingSource, /aria-pressed/);
-    assert.match(
-        orderingSource,
-        /links\.every\(\(link, index\) => link === sorted\[index\]\)/,
-        "the mutation observer must not rewrite an already ordered navbar",
-    );
-    assert.match(orderingSource, /savePreferences/);
-    assert.match(orderingSource, /MutationObserver/);
-});
-
 test("profile dropdown opens on hover or click and closes only on click away", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),

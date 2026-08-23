@@ -297,29 +297,6 @@
     cursor: pointer;
     margin-right: 14px;
 }
-.topnav .navigation-order-toggle {
-    align-self: center;
-    width: 28px;
-    height: 28px;
-    min-width: 28px;
-    padding: 2px;
-    cursor: pointer;
-    opacity: 0.65;
-}
-.topnav .navigation-order-toggle:hover,
-.topnav .navigation-order-toggle:focus-visible,
-.topnav .navigation-order-toggle[aria-pressed="true"] {
-    opacity: 1;
-}
-.topnav.is-reordering a {
-    cursor: grab;
-    outline: 1px dashed var(--border);
-    outline-offset: 2px;
-}
-.topnav a.is-dragging {
-    cursor: grabbing;
-    opacity: 0.55;
-}
 .topnav a:hover,
 .topnav a.active {
     color: var(--text);

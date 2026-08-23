@@ -12,10 +12,6 @@ Elemen composer yang dapat difokuskan kini menampilkan ikon layar penuh. Sesi fo
 
 Penyedia fokus dapat mendeklarasikan mode gambar-dalam-gambar dengan panel rapat yang dapat diubah ukurannya dan dipindahkan sementara konten dasbor lain tetap tersedia.
 
-## Pengurutan ulang navigasi yang andal
+## Navigasi utama yang stabil
 
-Satu tombol kini mengaktifkan penyuntingan seluruh bilah navigasi. Entri yang diseret ditempatkan pada posisi pelepasan dan urutan hasilnya disimpan.
-
-## Perulangan pemuatan dihapus
-
-Penerapan urutan navigasi tersimpan kini hanya mengubah DOM saat urutannya benar-benar berbeda. Dengan demikian, pengamat tidak lagi memicu rangkaian mutasinya sendiri tanpa henti dan shell halaman tetap responsif selama dimuat.
+Navigasi utama kini mempertahankan urutan yang ditetapkan aplikasi. Kontrol seret dan pengurutan khusus pengguna dihapus agar shell halaman tetap sederhana dan andal.

@@ -12,10 +12,6 @@ Fokussierbare Composer-Elemente zeigen nun ein Vollbildsymbol. Aktive Fokussitzu
 
 Fokusanbieter können einen Bild-im-Bild-Modus deklarieren, dessen größenveränderbarer Besprechungsbereich verschoben werden kann, während andere Dashboard-Inhalte verfügbar bleiben.
 
-## Zuverlässige Neuanordnung der Navigation
+## Stabile primäre Navigation
 
-Ein einzelner Umschalter aktiviert die Bearbeitung der gesamten Navigationsleiste. Gezogene Einträge werden an der angezeigten Ablageposition eingefügt und die Reihenfolge wird gespeichert.
-
-## Endlosschleife beim Laden behoben
-
-Die gespeicherte Navigationsreihenfolge verändert das DOM nur noch, wenn sich die Reihenfolge tatsächlich unterscheidet. Dadurch löst der Beobachter keine endlose Folge eigener Änderungen mehr aus und die Seitenoberfläche bleibt beim Laden bedienbar.
+Die primäre Navigation behält nun die von der Anwendung festgelegte Reihenfolge. Ziehsteuerung und benutzerspezifische Sortierung wurden entfernt, damit die Seitenoberfläche einfach und zuverlässig bleibt.
