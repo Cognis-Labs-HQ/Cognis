@@ -27,3 +27,7 @@ Cognis-Dashboard- und Study-Seiten veröffentlichen nun stabile, UUID-gebundene 
 ## Authentifizierte Modultexte
 
 Geschützte Marketplace-Textpakete verwenden nun den authentifizierten API-Client. Die Moduldokumentation stellt außerdem klar, dass Punkte – nicht Unterstriche oder Bindestriche – Wörter in Lokalisierungsschlüsseln trennen.
+
+## Empfehlungen bleiben aktuell
+
+Zwischengespeicherte Marketplace-Antworten behalten Cognis-Empfehlungen nun auch nach dem Neuladen der Seite. Die Modulseite fragt Cognis außerdem alle fünfzehn Sekunden ab, solange sie eingebunden ist.

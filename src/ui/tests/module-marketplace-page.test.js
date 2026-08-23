@@ -49,6 +49,17 @@ const sourceSettingsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/source-settings.js"),
     "utf8",
 );
+const marketplaceSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/index.js"),
+    "utf8",
+);
+
+test("module marketplace polls Cognis for current recommendations", () => {
+    assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
+    assert.match(marketplaceSource, /window\.setInterval\(poll/);
+    assert.match(marketplaceSource, /loadKnownModules\(false, signal\)/);
+    assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
+});
 
 test("modules navigation derives its width from its content", () => {
     assert.match(
@@ -80,10 +91,6 @@ test("module preference fields use the form builder and secret controls", () => 
     assert.match(
         popupSource,
         /querySelector\("input, textarea, select"\) \?\?[\s\S]*button:not\(\.popup-close-btn\)/,
-    );
-    const marketplaceSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
     );
     assert.match(
         marketplaceSource,

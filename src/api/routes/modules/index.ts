@@ -353,9 +353,7 @@ export function createModuleRoutes(
                   )
                 : undefined;
             const recommended = new Set(
-                req.method === "POST"
-                    ? await marketplace.listRecommendedModuleUuids()
-                    : [],
+                await marketplace.listRecommendedModuleUuids(),
             );
             const modules =
                 req.method === "POST"

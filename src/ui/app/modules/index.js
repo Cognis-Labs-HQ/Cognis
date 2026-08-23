@@ -66,12 +66,50 @@ const filters = createModuleFilters();
 let selectedModule = null;
 let discoverySequence = 0;
 let marketplaceRefreshPending = false;
+let marketplacePollPending = false;
 let refreshScreenshotCarousels = () => {};
 let pageMountController = null;
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
+const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
+
+function startMarketplacePolling(signal) {
+    const poll = () => {
+        if (
+            signal.aborted ||
+            marketplaceRefreshPending ||
+            marketplacePollPending
+        )
+            return;
+        marketplacePollPending = true;
+        void loadKnownModules(false, signal)
+            .catch((error) => {
+                if (error?.name !== "AbortError") {
+                    uiCtx.capabilities.get("ui:log")?.(
+                        "error",
+                        "Marketplace polling failed.",
+                        {
+                            component: "modules-page",
+                            operation: "poll-marketplace",
+                            error:
+                                error instanceof Error
+                                    ? error.message
+                                    : String(error),
+                        },
+                    );
+                }
+            })
+            .finally(() => {
+                marketplacePollPending = false;
+            });
+    };
+    const interval = window.setInterval(poll, MARKETPLACE_POLL_INTERVAL_MS);
+    signal.addEventListener("abort", () => window.clearInterval(interval), {
+        once: true,
+    });
+}
 
 function renderAvailableVersion(module) {
     if (!module.installed) return "";
@@ -836,6 +874,7 @@ export async function mount(root, { signal } = {}) {
         void loadKnownModules(true, mountSignal).catch((error) => {
             showToast(error.message, { type: "error" });
         });
+        startMarketplacePolling(mountSignal);
     } finally {
         finishPageLoading();
     }

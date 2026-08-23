@@ -27,3 +27,7 @@ Cognis dashboard and Study pages now publish stable UUID-owned component page de
 ## Authenticated module strings
 
 Protected marketplace string bundles now use the authenticated API client, and module documentation clarifies that periods—not underscores or hyphens—separate words in localization keys.
+
+## Recommendations stay current
+
+Cached marketplace responses now retain Cognis recommendations after page refreshes, and the Modules page polls Cognis every fifteen seconds while mounted.

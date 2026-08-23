@@ -531,6 +531,39 @@ test("module catalog discovery accepts caller-selected sources", async () => {
     );
 });
 
+test("cached module catalog retains current recommendations", async () => {
+    const token = issueAccessToken("admin-user", "admin", 60);
+    const route = createModuleRoutes(
+        { list: async () => [] } as any,
+        undefined,
+        undefined,
+        {
+            listRecommendedModuleUuids: async () => ["recommended-uuid"],
+            listCachedModules: async () => [
+                { id: "recommended", uuid: "recommended-uuid" },
+                { id: "ordinary", uuid: "ordinary-uuid" },
+            ],
+        } as any,
+    );
+    let body = "";
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${token}` },
+        } as any,
+        {
+            writeHead() {},
+            end(payload: string) {
+                body = payload;
+            },
+        } as any,
+        new URL("http://localhost/api/v1/modules/catalog"),
+    );
+    const modules = JSON.parse(body).data;
+    assert.equal(modules[0].recommended, true);
+    assert.equal(modules[1].recommended, false);
+});
+
 test("module catalog returns persisted discoveries without refreshing sources", async () => {
     let discoveryCalled = false;
     const route = createModuleRoutes(

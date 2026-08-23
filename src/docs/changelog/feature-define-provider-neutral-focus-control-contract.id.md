@@ -27,3 +27,7 @@ Halaman dasbor Cognis dan Study kini menerbitkan deklarasi halaman komponen stab
 ## String modul terautentikasi
 
 Bundel string marketplace yang dilindungi kini menggunakan klien API terautentikasi. Dokumentasi modul juga menegaskan bahwa titik—bukan garis bawah atau tanda hubung—memisahkan kata dalam kunci pelokalan.
+
+## Rekomendasi tetap mutakhir
+
+Respons marketplace yang disimpan kini mempertahankan rekomendasi Cognis setelah halaman dimuat ulang. Halaman Modul juga melakukan polling Cognis setiap lima belas detik selama terpasang.
