@@ -25,7 +25,13 @@ export async function requestComponentPage(request) {
     return result.data.route ?? null;
 }
 
-export function installComponentPageBroker() {
+/**
+ * Installs component-page flow hooks and optionally resolves built-in pages.
+ *
+ * @param {{resolveLocal?: (request: object) => Promise<object | null>}} options
+ * @returns {void}
+ */
+export function installComponentPageBroker({ resolveLocal } = {}) {
     if (globalThis[INSTALL_KEY]) return;
     globalThis[INSTALL_KEY] = true;
     uiCtx.extendFlow(
@@ -48,7 +54,9 @@ export function installComponentPageBroker() {
         "resolve",
         { id: "core:resolve-component-page" },
         async ({ data }) => {
-            data.route = await resolveComponentPage(data.request);
+            data.route =
+                (await resolveLocal?.(data.request)) ??
+                (await resolveComponentPage(data.request));
         },
     );
     uiCtx.extendFlow(

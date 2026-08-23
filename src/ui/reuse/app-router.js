@@ -61,7 +61,6 @@ import {
 } from "./performance-telemetry.js";
 
 observePerformance();
-installComponentPageBroker();
 
 const STUDY_BASE_STYLESHEETS = [
     "/static/styles/page-builder.css",
@@ -243,32 +242,73 @@ async function loadStudyChildRouteModule(path) {
     }
 }
 
+const CORE_COMPONENT_UUID = "b4d49c4a-61d0-5db2-84fd-f89b80fd6398";
+const STUDY_COMPONENT_UUID = "338b9237-a2c8-5bcf-9437-bccc9abd9a27";
+
+function componentPage(
+    labelKey,
+    descriptionKey,
+    modes = ["overlay", "fullscreen"],
+) {
+    return { labelKey, descriptionKey, modes };
+}
+
 const STATIC_ROUTES = [
     {
+        id: "core.dashboard",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.dashboard",
+            "ui.app.dashboard.page_subtitle",
+        ),
         pattern: /^\/dashboard$/,
         base: "/dashboard",
         stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
         load: () => import("../app/dashboard/index.js"),
     },
     {
+        id: "core.settings",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.settings",
+            "ui.app.settings.page_subtitle",
+        ),
         pattern: /^\/settings/,
         base: "/settings",
         stylesheets: ROUTE_STYLE_BUNDLES.settings,
         load: () => import("../app/settings/index.js"),
     },
     {
+        id: "core.users",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.users",
+            "ui.app.users.page_subtitle",
+        ),
         pattern: /^\/users/,
         base: "/users",
         stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
         load: () => import("../app/users/index.js"),
     },
     {
+        id: "core.invite",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.invite",
+            "ui.app.invite.page_subtitle",
+        ),
         pattern: /^\/invite$/,
         base: "/invite",
         stylesheets: ROUTE_STYLE_BUNDLES.pageSections,
         load: () => import("../app/invite/index.js"),
     },
     {
+        id: "core.modules",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.modules",
+            "ui.app.modules.subtitle",
+        ),
         pattern: /^\/administration\/modules/,
         base: "/administration/modules",
         stylesheets: [
@@ -278,6 +318,12 @@ const STATIC_ROUTES = [
         load: () => import("../app/modules/index.js"),
     },
     {
+        id: "core.administration",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.administration",
+            "ui.app.admin.page_subtitle",
+        ),
         pattern: /^\/administration/,
         base: "/administration",
         stylesheets: [
@@ -287,24 +333,48 @@ const STATIC_ROUTES = [
         load: () => import("../app/administration/index.js"),
     },
     {
+        id: "core.docs",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.docs",
+            "ui.app.docs.page_subtitle",
+        ),
         pattern: /^\/docs/,
         base: "/docs",
         stylesheets: ROUTE_STYLE_BUNDLES.docs,
         load: () => import("../app/docs/index.js"),
     },
     {
+        id: "core.changelogs",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.app.changelogs.page_title",
+            "ui.app.changelogs.page_subtitle",
+        ),
         pattern: /^\/changelogs/,
         base: "/changelogs",
         stylesheets: ROUTE_STYLE_BUNDLES.docs,
         load: () => import("../app/changelogs/index.js"),
     },
     {
+        id: "core.license",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.app.license.page_title",
+            "ui.app.license.page_subtitle",
+        ),
         pattern: /^\/license$/,
         base: "/license",
         stylesheets: ROUTE_STYLE_BUNDLES.license,
         load: () => import("../app/license/index.js"),
     },
     {
+        id: "core.error",
+        ownerUuid: CORE_COMPONENT_UUID,
+        componentPage: componentPage(
+            "ui.reuse.error",
+            "ui.app.error.page_subtitle",
+        ),
         pattern: /^\/error$/,
         base: "/error",
         public: true,
@@ -316,18 +386,41 @@ const STATIC_ROUTES = [
         load: () => import("../app/error/index.js"),
     },
     {
+        id: "gateway.study",
+        ownerUuid: STUDY_COMPONENT_UUID,
+        componentPage: componentPage(
+            "gateway.study.page_title",
+            "gateway.study.page_subtitle",
+        ),
         pattern: /^\/study(?:\/welcome|\/settings)?$/,
         base: "/study",
         stylesheets: ROUTE_STYLE_BUNDLES.study,
         load: () => import("/static/gateways/study/study.js"),
     },
     {
+        id: "gateway.study.child",
+        ownerUuid: STUDY_COMPONENT_UUID,
+        componentPage: componentPage(
+            "gateway.study.page_title",
+            "gateway.study.page_subtitle",
+        ),
         pattern: STUDY_CHILD_ROUTE_PATTERN,
         base: "/study",
         stylesheets: ROUTE_STYLE_BUNDLES.study,
         load: (path) => loadStudyChildRouteModule(path),
     },
 ];
+
+installComponentPageBroker({
+    resolveLocal: async ({ componentUuid, routeId, mode }) =>
+        STATIC_ROUTES.find(
+            (route) =>
+                route.id === routeId &&
+                route.ownerUuid === componentUuid &&
+                route.componentPage &&
+                (!mode || route.componentPage.modes.includes(mode)),
+        ) ?? null,
+});
 
 let _allRoutes = null;
 let _allRoutesPromise = null;

@@ -19,3 +19,7 @@ Die primäre Navigation behält nun die von der Anwendung festgelegte Reihenfolg
 ## Seiten externer Komponenten
 
 Externe Module können geeignete SPA-Seiten ausdrücklich freigeben. Andere Komponenten können sie anhand der unveränderlichen Modul-UUID und einer stabilen Routen-ID anfordern, ohne Anbietercode zu importieren oder Asset-Pfade zu erraten.
+
+## Integrierte Seiten nutzen den Broker
+
+Cognis-Dashboard- und Study-Seiten veröffentlichen nun stabile, UUID-gebundene Komponentenseitendeklarationen. Dadurch verwenden integrierte und externe Seiten denselben Anfrage- und Fokussteuerungspfad.

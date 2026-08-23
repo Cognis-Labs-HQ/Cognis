@@ -199,6 +199,35 @@ test("dashboard layout re-shows theme toggle on shell reuse when enabled", () =>
     );
 });
 
+test("built-in dashboard pages expose UUID-owned component page metadata", () => {
+    const routerSource = readFileSync(
+        resolve(ROOT, "src/ui/reuse/app-router.js"),
+        "utf8",
+    );
+    for (const routeId of [
+        "core.dashboard",
+        "core.settings",
+        "core.users",
+        "core.invite",
+        "core.modules",
+        "core.administration",
+        "core.docs",
+        "core.changelogs",
+        "core.license",
+        "core.error",
+        "gateway.study",
+        "gateway.study.child",
+    ]) {
+        assert.match(
+            routerSource,
+            new RegExp(`id: "${routeId.replaceAll(".", "\\.")}"`),
+        );
+    }
+    assert.match(routerSource, /ownerUuid: CORE_COMPONENT_UUID/);
+    assert.match(routerSource, /componentPage: componentPage/);
+    assert.match(routerSource, /installComponentPageBroker\(\{/);
+});
+
 test("profile dropdown opens on hover or click and closes only on click away", () => {
     const layoutSource = readFileSync(
         resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),

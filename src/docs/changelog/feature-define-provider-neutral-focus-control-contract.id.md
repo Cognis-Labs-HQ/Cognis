@@ -19,3 +19,7 @@ Navigasi utama kini mempertahankan urutan yang ditetapkan aplikasi. Kontrol sere
 ## Halaman komponen eksternal
 
 Modul eksternal dapat secara eksplisit membuka halaman SPA yang memenuhi syarat. Komponen lain dapat memintanya berdasarkan UUID modul yang tidak berubah dan ID rute stabil tanpa mengimpor kode penyedia atau menebak path aset.
+
+## Halaman bawaan memakai broker
+
+Halaman dasbor Cognis dan Study kini menerbitkan deklarasi halaman komponen stabil yang dimiliki UUID, sehingga halaman bawaan dan eksternal menggunakan jalur permintaan dan Focus Control yang sama.

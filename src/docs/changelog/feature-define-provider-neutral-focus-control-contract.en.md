@@ -19,3 +19,7 @@ Primary navigation now keeps its application-defined order. Drag controls and us
 ## External component pages
 
 External modules can explicitly expose eligible SPA pages and other components can request them by immutable module UUID and stable route ID without importing provider code or guessing asset paths.
+
+## Built-in pages use the broker
+
+Cognis dashboard and Study pages now publish stable UUID-owned component page declarations, so built-in and external pages use the same request and Focus Control path.

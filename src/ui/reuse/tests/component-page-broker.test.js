@@ -39,7 +39,13 @@ test("component pages resolve only by matching UUID, route ID, and opt-in", asyn
     const { installComponentPageBroker } =
         await import("../component-page-broker.js");
     const { uiCtx } = await import("../ui-ctx.js");
-    installComponentPageBroker();
+    installComponentPageBroker({
+        resolveLocal: async ({ componentUuid, routeId }) =>
+            componentUuid === "b4d49c4a-61d0-5db2-84fd-f89b80fd6398" &&
+            routeId === "core.dashboard"
+                ? { id: routeId, load: async () => ({}) }
+                : null,
+    });
     assert.equal(
         (
             await resolveComponentPage({
@@ -57,6 +63,15 @@ test("component pages resolve only by matching UUID, route ID, and opt-in", asyn
         null,
     );
     const requestPage = uiCtx.capabilities.get("component-pages:request");
+    assert.equal(
+        (
+            await requestPage({
+                componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+                routeId: "core.dashboard",
+            })
+        )?.id,
+        "core.dashboard",
+    );
     assert.equal(
         (
             await requestPage({

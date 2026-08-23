@@ -41,3 +41,7 @@ Modul entri halaman harus mengekspor `mount(root, { signal, focusState })`, mema
 Peminta mengidentifikasi penyedia dengan UUID manifes yang tidak berubah dan ID rute stabil. Kode browser memperoleh `component-pages:request` dari `uiCtx.capabilities`; kode tidak boleh mengimpor penyedia atau menyusun URL asetnya. Capability mengembalikan `null` ketika modul dinonaktifkan, tidak dapat diakses, tidak tersedia, atau belum mengizinkan penggunaan rute oleh komponen.
 
 Untuk Focus Control tersinkron, deklarasikan loader `module-route` dengan `moduleId` berupa UUID tersebut dan `routeId` berupa ID rute yang memenuhi syarat. Penyedia kolaborasi tetap harus mengotorisasi permintaan, membuat atau menemukan whiteboard melalui capability ctx sisi server, memberikan akses kepada peserta rapat, dan hanya menerbitkan pengenal sumber daya stabil melalui `focus:transport`.
+
+## Halaman komponen bawaan
+
+Halaman dasbor terautentikasi yang disertakan bersama Cognis menggunakan UUID Cognis Core `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study menggunakan UUID gateway `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. ID rute stabilnya adalah `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study`, dan `gateway.study.child`. Semuanya menggunakan kontrak `component-pages:request` yang sama dengan modul eksternal dan mendukung penyematan overlay atau layar penuh. Entri login dan demonstrasi bukan halaman komponen shell dasbor sehingga tidak memenuhi syarat.
