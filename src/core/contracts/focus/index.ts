@@ -1,5 +1,9 @@
 /** Provider-neutral Focus Control contracts. */
-export const FOCUS_PRESENTATION_MODES = ["overlay", "fullscreen"] as const;
+export const FOCUS_PRESENTATION_MODES = [
+    "overlay",
+    "fullscreen",
+    "pip",
+] as const;
 export const FOCUS_LIFECYCLE_STATUSES = [
     "starting",
     "active",

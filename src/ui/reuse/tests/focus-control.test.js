@@ -67,3 +67,12 @@ test("rejects executable state, HTML state, invalid modes, and undeclared loader
         0,
     );
 });
+
+test("accepts picture-in-picture presentation for persistent meeting panes", () => {
+    assert.equal(
+        normalizeFocusManifest({
+            focusControl: { ...surface("meeting"), modes: ["pip"] },
+        }).length,
+        1,
+    );
+});

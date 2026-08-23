@@ -70,7 +70,7 @@ export function normalizeFocusManifest(manifest, elements = []) {
                 Array.isArray(surface?.modes) &&
                 surface.modes.length > 0 &&
                 surface.modes.every((mode) =>
-                    ["overlay", "fullscreen"].includes(mode),
+                    ["overlay", "fullscreen", "pip"].includes(mode),
                 ) &&
                 serializable(surface.initialState),
         );
@@ -91,6 +91,35 @@ export function createFocusControlCoordinator({
     let overlay = null;
     let restore = null;
     const removers = [];
+
+    function makeMovable(panel, handle) {
+        let origin = null;
+        handle.addEventListener(
+            "pointerdown",
+            (event) => {
+                origin = {
+                    x: event.clientX,
+                    y: event.clientY,
+                    left: panel.getBoundingClientRect().left,
+                    top: panel.getBoundingClientRect().top,
+                };
+                handle.setPointerCapture(event.pointerId);
+            },
+            { signal },
+        );
+        handle.addEventListener(
+            "pointermove",
+            (event) => {
+                if (!origin) return;
+                panel.style.left = `${Math.max(0, origin.left + event.clientX - origin.x)}px`;
+                panel.style.top = `${Math.max(0, origin.top + event.clientY - origin.y)}px`;
+                panel.style.right = "auto";
+                panel.style.bottom = "auto";
+            },
+            { signal },
+        );
+        handle.addEventListener("pointerup", () => (origin = null), { signal });
+    }
 
     function announce(message) {
         overlay
@@ -126,16 +155,61 @@ export function createFocusControlCoordinator({
             focus: document.activeElement,
         };
         overlay = document.createElement("section");
-        overlay.className = `focus-control-overlay${session.mode === "fullscreen" ? " focus-control-fullscreen" : ""}`;
+        overlay.className = `focus-control-overlay focus-control-${session.mode ?? "overlay"}`;
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute(
             "aria-label",
             text(i18n, surface.labelKey, surface.id),
         );
-        overlay.innerHTML =
-            '<div class="focus-control-status" role="status" aria-live="polite" data-focus-status></div><div class="focus-control-target" data-focus-target></div>';
+        overlay.innerHTML = `<div class="focus-control-controls">
+            <button type="button" class="btn-neutral" data-focus-follow aria-pressed="true">${text(i18n, "focus.control.follow", "Follow presenter")}</button>
+            <button type="button" class="btn-cancel" data-focus-dismiss aria-label="${text(i18n, "focus.control.dismiss", "Close focused content")}">×</button>
+        </div><div class="focus-control-status" role="status" aria-live="polite" data-focus-status></div><div class="focus-control-target" data-focus-target></div>`;
         root.append(overlay);
+        overlay
+            .querySelector("[data-focus-dismiss]")
+            ?.addEventListener("click", () => dismiss(), { signal });
+        overlay.querySelector("[data-focus-follow]")?.addEventListener(
+            "click",
+            (event) => {
+                following = !following;
+                event.currentTarget.setAttribute(
+                    "aria-pressed",
+                    String(following),
+                );
+            },
+            { signal },
+        );
+        if (session.mode === "pip") {
+            makeMovable(
+                overlay,
+                overlay.querySelector(".focus-control-controls"),
+            );
+        }
+        for (const alternative of surfaces.filter(
+            (candidate) => candidate.id !== surface.id,
+        )) {
+            const switchButton = document.createElement("button");
+            switchButton.type = "button";
+            switchButton.className = "btn-confirm";
+            switchButton.textContent = text(
+                i18n,
+                alternative.labelKey,
+                alternative.id,
+            );
+            switchButton.addEventListener(
+                "click",
+                async () => {
+                    await dismiss();
+                    await start(alternative);
+                },
+                { signal },
+            );
+            overlay
+                .querySelector(".focus-control-controls")
+                ?.prepend(switchButton);
+        }
         active = session;
         sessionsByRoot.set(root, session);
         try {
@@ -196,6 +270,18 @@ export function createFocusControlCoordinator({
             signal?.aborted
         )
             return;
+        root.addEventListener(
+            "click",
+            (event) => {
+                const trigger = event.target.closest?.("[data-focus-surface]");
+                const surface = surfaces.find(
+                    (candidate) =>
+                        candidate.id === trigger?.dataset.focusSurface,
+                );
+                if (surface) void start(surface);
+            },
+            { signal },
+        );
         for (const surface of surfaces) {
             const button = document.createElement("button");
             button.type = "button";
@@ -228,6 +314,7 @@ export function createFocusControlCoordinator({
         receive,
         dismiss,
         destroy,
+        start,
         follow(value = true) {
             following = Boolean(value);
         },

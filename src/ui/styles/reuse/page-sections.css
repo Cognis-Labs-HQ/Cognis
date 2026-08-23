@@ -2,6 +2,22 @@
     min-width: 0;
 }
 
+.widget-card:has(> .focus-control-trigger) {
+    position: relative;
+}
+
+.focus-control-trigger {
+    position: absolute;
+    z-index: 2;
+    top: 10px;
+    right: 10px;
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+}
+
 .content-panel > .content-section {
     --composer-grid-inset: 28px;
     padding: var(--composer-grid-inset);
@@ -590,6 +606,39 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     height: 1px;
     overflow: hidden;
     clip-path: inset(50%);
+}
+
+.focus-control-overlay {
+    position: fixed;
+    z-index: 1200;
+    inset: 5vh 5vw;
+    overflow: auto;
+    padding: 44px 12px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: var(--shadow-lg);
+}
+
+.focus-control-fullscreen {
+    inset: 0;
+    border: 0;
+    border-radius: 0;
+}
+
+.focus-control-pip {
+    inset: auto 18px 18px auto;
+    width: min(420px, calc(100vw - 36px));
+    height: min(300px, calc(100vh - 36px));
+    resize: both;
+}
+
+.focus-control-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
 }
 
 .focus-control-target {
