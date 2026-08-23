@@ -31,3 +31,7 @@ Geschützte Marketplace-Textpakete verwenden nun den authentifizierten API-Clien
 ## Empfehlungen bleiben aktuell
 
 Zwischengespeicherte Marketplace-Antworten behalten Cognis-Empfehlungen nun auch nach dem Neuladen der Seite. Die Modulseite fragt Cognis außerdem alle fünfzehn Sekunden ab, solange sie eingebunden ist.
+
+## Ausgewogene Modulkarten
+
+Das Modulraster reserviert nun mehr Platz für jede Karte und ordnet Lebenszyklusaktionen in ausgewogenen Reihen an, damit Bedienelemente bei üblichen Desktopbreiten weder gedrängt erscheinen noch überlappen.

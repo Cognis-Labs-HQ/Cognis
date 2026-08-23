@@ -190,7 +190,15 @@ test("module marketplace cards keep consistent content and action geometry", () 
     assert.match(marketplaceStyles, /-webkit-line-clamp: 2/);
     assert.match(
         marketplaceStyles,
-        /\.module-store-card-actions[\s\S]*grid-auto-columns: minmax\(0, 1fr\)[\s\S]*grid-auto-flow: column/,
+        /\.module-store-grid[\s\S]*minmax\(min\(100%, 22rem\), 1fr\)/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /\.module-store-card-actions[\s\S]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/,
+    );
+    assert.match(
+        marketplaceStyles,
+        /button:last-child:nth-child\(odd\)[\s\S]*grid-column: 1 \/ -1/,
     );
     assert.doesNotMatch(marketplaceStyles, /flex-wrap: nowrap/);
 });

@@ -31,3 +31,7 @@ Protected marketplace string bundles now use the authenticated API client, and m
 ## Recommendations stay current
 
 Cached marketplace responses now retain Cognis recommendations after page refreshes, and the Modules page polls Cognis every fifteen seconds while mounted.
+
+## Balanced module cards
+
+The Modules grid now reserves more room for each card and arranges lifecycle actions in balanced rows, preventing controls from crowding or overlapping at common desktop widths.

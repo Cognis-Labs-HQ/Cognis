@@ -31,3 +31,7 @@ Bundel string marketplace yang dilindungi kini menggunakan klien API terautentik
 ## Rekomendasi tetap mutakhir
 
 Respons marketplace yang disimpan kini mempertahankan rekomendasi Cognis setelah halaman dimuat ulang. Halaman Modul juga melakukan polling Cognis setiap lima belas detik selama terpasang.
+
+## Kartu modul yang seimbang
+
+Kisi Modul kini menyediakan ruang lebih luas untuk setiap kartu dan menata tindakan siklus hidup dalam baris yang seimbang, sehingga kontrol tidak berhimpitan atau tumpang tindih pada lebar desktop yang umum.
