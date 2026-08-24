@@ -38,6 +38,10 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         );
         const candidates = await Promise.all(
             repositories.map(async (repository) => {
+                const privateRepository =
+                    repository.private === true ||
+                    repository.visibility === "private" ||
+                    repository.visibility === "internal";
                 const cloneUrl = String(
                     repository.clone_url ?? repository.http_url_to_repo ?? "",
                 );
@@ -262,7 +266,19 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                 : undefined,
                         } satisfies MarketplaceModule,
                     };
-                } catch {
+                } catch (error) {
+                    if (
+                        source.scanPrivateRepos === true &&
+                        privateRepository &&
+                        error instanceof Error &&
+                        /module_manifest_discovery_failed:(401|403)/.test(
+                            error.message,
+                        )
+                    ) {
+                        throw new Error(
+                            "private_repository_contents_access_failed",
+                        );
+                    }
                     return { cloneUrl, module: null };
                 }
             }),

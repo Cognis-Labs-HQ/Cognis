@@ -74,6 +74,23 @@ const pendingModuleActions = new Map();
 const screenshotIndexes = new Map();
 const MODULE_ICON_FALLBACK_URL = "/static/assets/reuse/module-icon-unknown.svg";
 const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
+const PRIVATE_SOURCE_FAILURE_KEYS = new Set([
+    "private_repository_credential_missing",
+    "private_repository_access_failed",
+    "private_repository_contents_access_failed",
+]);
+
+function reportSourceFailures(sourceFailures) {
+    for (const failure of sourceFailures) {
+        if (!PRIVATE_SOURCE_FAILURE_KEYS.has(failure?.code)) continue;
+        showToast(
+            i18n
+                .t(`ui.app.modules.${failure.code}`)
+                .replace("{{source}}", String(failure.sourceName ?? "")),
+            { type: "warning" },
+        );
+    }
+}
 
 function startMarketplacePolling(signal) {
     const poll = () => {
@@ -89,7 +106,7 @@ function startMarketplacePolling(signal) {
                 if (error?.name !== "AbortError") {
                     uiCtx.capabilities.get("ui:log")?.(
                         "error",
-                        "Marketplace polling failed.",
+                        i18n.t("ui.app.modules.polling_failed"),
                         {
                             component: "modules-page",
                             operation: "poll-marketplace",
@@ -580,12 +597,13 @@ async function discoverConfiguredSources(
         ]),
     );
     const tokens = Object.fromEntries(resolvedTokens);
-    const discovered = await loadAvailableModules(
+    const { modules: discovered, sourceFailures } = await loadAvailableModules(
         tokens,
         sources.map((source) => source.uuid),
         forceRefresh,
     );
     if (sequence !== discoverySequence || signal?.aborted) return;
+    reportSourceFailures(sourceFailures);
     await loadAuthenticatedModuleAssets(discovered, { signal });
     if (signal?.aborted) return;
     {

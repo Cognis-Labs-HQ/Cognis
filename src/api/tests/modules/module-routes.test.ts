@@ -369,7 +369,10 @@ test("module source mutations and scans emit lifecycle logs", async () => {
             saveSource: async () => source,
             removeSource: async () => undefined,
             listRecommendedModuleUuids: async () => [],
-            discover: async () => [{ uuid: "module-one" }],
+            discoverWithReport: async () => ({
+                modules: [{ uuid: "module-one" }],
+                sourceFailures: [],
+            }),
         } as any,
     );
     const request = async (method: string, pathname: string, body?: unknown) =>
@@ -477,22 +480,32 @@ test("module catalog discovery accepts caller-selected sources", async () => {
         undefined,
         {
             listRecommendedModuleUuids: async () => ["notes-uuid"],
-            discover: async (_tokens, sourceUuids, force) => {
+            discoverWithReport: async (_tokens, sourceUuids, force) => {
                 selectedSources = sourceUuids;
                 forceRefresh = force;
-                return [
-                    {
-                        id: "notes",
-                        uuid: "notes-uuid",
-                        ui: {
-                            stringsBaseUrl: "/static/modules/notes/languages",
+                return {
+                    modules: [
+                        {
+                            id: "notes",
+                            uuid: "notes-uuid",
+                            ui: {
+                                stringsBaseUrl:
+                                    "/static/modules/notes/languages",
+                            },
+                            assetIds: {
+                                icon: "a".repeat(64),
+                                strings: { en: "b".repeat(64) },
+                            },
                         },
-                        assetIds: {
-                            icon: "a".repeat(64),
-                            strings: { en: "b".repeat(64) },
+                    ],
+                    sourceFailures: [
+                        {
+                            sourceUuid: "source-one",
+                            sourceName: "Private source",
+                            code: "private_repository_access_failed",
                         },
-                    },
-                ];
+                    ],
+                };
             },
         } as any,
     );
@@ -529,6 +542,7 @@ test("module catalog discovery accepts caller-selected sources", async () => {
         responseBody,
         /\/api\/v1\/modules\/catalog\/strings\/notes-uuid/,
     );
+    assert.match(responseBody, /private_repository_access_failed/);
 });
 
 test("cached module catalog retains current recommendations", async () => {

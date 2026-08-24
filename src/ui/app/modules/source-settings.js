@@ -19,6 +19,33 @@ let settingsFormBuilder = null;
 let sourceFormController = null;
 let settingsFormController = null;
 
+function reportCredentialValidation(i18n, validation, source, privateScan) {
+    if (!privateScan) {
+        showToast(i18n.t("ui.app.modules.credential_validation_warning"), {
+            type: "warning",
+        });
+        return;
+    }
+    const messageKeys = new Set(
+        validation.warnings.map((warning) =>
+            warning === "credential_empty"
+                ? "private_repository_credential_missing"
+                : warning === "private_repository_contents_read_missing" ||
+                    warning === "github_contents_read_missing"
+                  ? "private_repository_contents_access_failed"
+                  : "private_repository_access_failed",
+        ),
+    );
+    for (const messageKey of messageKeys) {
+        showToast(
+            i18n
+                .t(`ui.app.modules.${messageKey}`)
+                .replace("{{source}}", String(source.name ?? "")),
+            { type: "warning" },
+        );
+    }
+}
+
 function renderSourceManager(i18n) {
     const rows = sources
         .map((source) => {
@@ -255,7 +282,24 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
             const credentialId = tokenChanged
                 ? (selectedSource?.credentialId ?? `module-source:${uuid}:pat`)
                 : selectedSource?.credentialId;
-            if (tokenChanged) {
+            const scope = uiCtx.capabilities.get("keyring:forComponent")?.(
+                i18n.t("ui.app.modules.keyring_component"),
+            );
+            const privateScan = values.scanPrivateRepos === true;
+            const validationToken = tokenChanged
+                ? values.token
+                : credentialId
+                  ? await scope?.resolve(credentialId, {
+                        request: {
+                            action: i18n.t(
+                                "ui.app.modules.credential_validation_warning",
+                            ),
+                            process: sourceValues.namespace,
+                        },
+                        validate: (value) => Boolean(value.trim()),
+                    })
+                  : "";
+            if (tokenChanged || privateScan) {
                 const validation = await validateModuleSourceCredential(
                     {
                         uuid,
@@ -263,19 +307,21 @@ export async function openMarketplaceSettings(i18n, initialPage = "settings") {
                         provider: sourceValues.provider,
                         namespace: sourceValues.namespace,
                         baseUrl: sourceValues.baseUrl,
+                        scanPrivateRepos: privateScan,
                     },
-                    values.token,
+                    validationToken ?? "",
                 );
                 if (!validation.valid) {
-                    showToast(
-                        i18n.t("ui.app.modules.credential_validation_warning"),
-                        { type: "warning" },
+                    reportCredentialValidation(
+                        i18n,
+                        validation,
+                        sourceValues,
+                        privateScan,
                     );
                     return false;
                 }
-                const scope = uiCtx.capabilities.get("keyring:forComponent")?.(
-                    i18n.t("ui.app.modules.keyring_component"),
-                );
+            }
+            if (tokenChanged) {
                 await scope?.set(credentialId, values.token, {
                     label: sourceValues.name,
                     source: sourceValues.provider,

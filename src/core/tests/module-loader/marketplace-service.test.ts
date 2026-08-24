@@ -49,6 +49,15 @@ test("module marketplace persists source metadata without PAT values", async () 
             trusted: false,
         },
     ]);
+    assert.equal(
+        (
+            await new ModuleMarketplaceService(
+                path.join(root, "sources.json"),
+                path.join(root, "modules"),
+            ).listSources()
+        )[1].scanPrivateRepos,
+        true,
+    );
 });
 
 test("module marketplace always provides an immutable trusted source", async () => {
@@ -225,19 +234,39 @@ test("GitHub credential validation requires private repository scope", async () 
         },
     );
     const originalFetch = globalThis.fetch;
+    let requests = 0;
     globalThis.fetch = async (_input, init) => {
+        requests += 1;
         assert.equal(
             new Headers(init?.headers).get("authorization"),
             "Bearer limited-token",
         );
-        return new Response("[]", {
-            headers: { "x-oauth-scopes": "read:org, public_repo" },
-        });
+        return requests === 1
+            ? new Response(
+                  JSON.stringify([
+                      {
+                          full_name: "Cognis-Labs-HQ/private-module",
+                          private: true,
+                      },
+                  ]),
+                  {
+                      headers: {
+                          "content-type": "application/json",
+                          "x-oauth-scopes": "read:org, public_repo",
+                      },
+                  },
+              )
+            : new Response("[]", {
+                  headers: { "content-type": "application/json" },
+              });
     };
     try {
         assert.deepEqual(
             await service.validateSourceCredential(
-                { ...DEFAULT_TRUSTED_MODULE_SOURCE },
+                {
+                    ...DEFAULT_TRUSTED_MODULE_SOURCE,
+                    scanPrivateRepos: true,
+                },
                 "limited-token",
             ),
             {
@@ -253,6 +282,67 @@ test("GitHub credential validation requires private repository scope", async () 
                     .fineGrained,
             ),
             /Metadata: read; Contents: read/,
+        );
+    } finally {
+        globalThis.fetch = originalFetch;
+    }
+});
+
+test("private source scans report a missing stored credential", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    await service.saveSource({
+        ...source,
+        credentialId: "module-source:private:pat",
+        scanPrivateRepos: true,
+    });
+    const result = await service.discoverWithReport({}, [source.uuid], true);
+    assert.deepEqual(result.modules, []);
+    assert.deepEqual(result.sourceFailures, [
+        {
+            sourceUuid: source.uuid,
+            sourceName: source.name,
+            code: "private_repository_credential_missing",
+        },
+    ]);
+});
+
+test("private credential validation proves repository contents access", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        path.join(root, "modules"),
+    );
+    const originalFetch = globalThis.fetch;
+    let requests = 0;
+    globalThis.fetch = async () => {
+        requests += 1;
+        return requests === 1
+            ? new Response(
+                  JSON.stringify([
+                      {
+                          full_name: "example/private-module",
+                          private: true,
+                      },
+                  ]),
+                  { headers: { "content-type": "application/json" } },
+              )
+            : new Response("forbidden", { status: 403 });
+    };
+    try {
+        assert.deepEqual(
+            await service.validateSourceCredential(
+                { ...source, scanPrivateRepos: true },
+                "fine-grained-token",
+            ),
+            {
+                valid: false,
+                warnings: ["private_repository_contents_read_missing"],
+                scopes: [],
+            },
         );
     } finally {
         globalThis.fetch = originalFetch;

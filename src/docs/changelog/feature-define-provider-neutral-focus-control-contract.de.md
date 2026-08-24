@@ -47,3 +47,7 @@ Die Suche nach Komponentenseiten bindet keine Oberfläche mehr ein. Eine ausdrü
 ## Stabiles Benutzermenü
 
 Die Cognis-Shell gleicht Beiträge zum Benutzermenü nun beim Laden der Anbieter ab und entfernt doppelte Zieleinträge, die durch gleichzeitige Aktualisierungen externer Seiten und der Navigationsleiste entstehen.
+
+## Scans privater Repositorys prüfen und beibehalten
+
+Die Einstellungen der Marketplace-Quellen behalten die Option zum Scannen privater Repositorys nun auch nach Neustarts bei. Beim Aktivieren wird vor dem Speichern geprüft, ob das konfigurierte PAT private Repositorys auflisten und deren Inhalte lesen kann. Katalogaktualisierungen melden fehlende Zugangsdaten sowie verweigerten Zugriff auf private Repositorys oder deren Inhalte, ohne zwischengespeicherte Module zu verwerfen.

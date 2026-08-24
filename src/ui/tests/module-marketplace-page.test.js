@@ -317,9 +317,9 @@ test("module marketplace identifies immutable trusted sources", () => {
     );
     assert.match(sourceSettingsSource, /const STORED_PAT_MASK = "\*\*\*\*"/);
     assert.match(sourceSettingsSource, /values\.token !== STORED_PAT_MASK/);
-    assert.match(sourceSettingsSource, /await validateModuleSourceCredential/);
+    assert.match(sourceSettingsSource, /scanPrivateRepos: privateScan/);
     assert.match(sourceSettingsSource, /if \(!validation\.valid\)/);
-    assert.match(sourceSettingsSource, /credential_validation_warning/);
+    assert.match(sourceSettingsSource, /scope\?\.resolve\(credentialId/);
 });
 
 test("recommended modules retain the published defaults", () => {
@@ -497,7 +497,7 @@ test("module marketplace refreshes every configured source on demand", () => {
     assert.match(source, /loadModuleSources\(\)/);
     assert.match(
         source,
-        /loadAvailableModules\(\s*tokens,\s*sources\.map\(\(source\) => source\.uuid\),\s*forceRefresh/,
+        /\{ modules: discovered, sourceFailures \} = await loadAvailableModules\([\s\S]*reportSourceFailures\(sourceFailures\)/,
     );
     assert.match(source, /discoverConfiguredSources\(true\)/);
     assert.match(source, /target\.id === "module-source-refresh"/);

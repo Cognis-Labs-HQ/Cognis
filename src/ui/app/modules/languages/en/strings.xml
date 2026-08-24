@@ -63,6 +63,9 @@
   <string name="ui.app.modules.github_repo_scope_missing">This GitHub token requires the repo scope to load private repositories.</string>
   <string name="ui.app.modules.source_access_failed">The provider could not verify access with this token.</string>
   <string name="ui.app.modules.credential_validation_warning">PAT validation failed. Check the server log for required permissions.</string>
+  <string name="ui.app.modules.private_repository_credential_missing">Private repository scanning for {{source}} requires its stored PAT.</string>
+  <string name="ui.app.modules.private_repository_access_failed">The PAT cannot list private repositories for {{source}}. Check repository access, scopes, and organization SSO authorization.</string>
+  <string name="ui.app.modules.private_repository_contents_access_failed">The PAT can see a private repository for {{source}} but cannot read its contents.</string>
   <string name="ui.app.modules.preferences_title">Module settings</string>
   <string name="ui.app.modules.preferences_saved">Module settings saved.</string>
   <string name="ui.app.modules.config_required">Set every required module setting before enabling this module.</string>
@@ -78,4 +81,5 @@
   <string name="ui.app.modules.uninstall_warning">Uninstalling always clears this module’s saved configuration. The module will require setup again if reinstalled.</string>
   <string name="ui.app.modules.uninstall_delete_content">Also permanently delete the module’s data</string>
   <string name="ui.app.modules.scan_private_repos">Scan Private Repositories</string>
+  <string name="ui.app.modules.polling_failed">Marketplace polling failed.</string>
 </resources>

@@ -355,14 +355,18 @@ export function createModuleRoutes(
             const recommended = new Set(
                 await marketplace.listRecommendedModuleUuids(),
             );
-            const modules =
+            const discovery =
                 req.method === "POST"
-                    ? await marketplace.discover(
+                    ? await marketplace.discoverWithReport(
                           (body.tokens ?? {}) as Record<string, string>,
                           sourceUuids,
                           body.forceRefresh === true,
                       )
-                    : await marketplace.listCachedModules();
+                    : {
+                          modules: await marketplace.listCachedModules(),
+                          sourceFailures: [],
+                      };
+            const { modules, sourceFailures } = discovery;
             hooks?.log?.(
                 "info",
                 req.method === "POST"
@@ -383,7 +387,7 @@ export function createModuleRoutes(
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data }));
+            res.end(JSON.stringify({ data, meta: { sourceFailures } }));
             return true;
         }
         if (

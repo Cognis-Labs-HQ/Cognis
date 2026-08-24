@@ -89,6 +89,20 @@ export interface ModuleCredentialValidation {
     scopes: string[];
 }
 
+export interface ModuleSourceScanFailure {
+    sourceUuid: string;
+    sourceName: string;
+    code:
+        | "private_repository_credential_missing"
+        | "private_repository_access_failed"
+        | "private_repository_contents_access_failed";
+}
+
+export interface ModuleDiscoveryResult {
+    modules: MarketplaceModule[];
+    sourceFailures: ModuleSourceScanFailure[];
+}
+
 export type ModuleMarketplaceLog = (
     level: "info" | "warn",
     message: string,
@@ -233,10 +247,11 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         } else {
             headers["private-token"] = normalizedToken;
         }
+        const privateScan = source.scanPrivateRepos === true;
         const endpoint =
             source.provider === "github"
-                ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=1&type=all`
-                : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=1&include_subgroups=true`;
+                ? `${source.baseUrl}/orgs/${encodeURIComponent(source.namespace)}/repos?per_page=${privateScan ? "100" : "1"}&type=${privateScan ? "private" : "all"}`
+                : `${source.baseUrl}/groups/${encodeURIComponent(source.namespace)}/projects?per_page=${privateScan ? "100" : "1"}&include_subgroups=true${privateScan ? "&visibility=private" : ""}`;
         const response = await fetch(endpoint, { headers }).catch(
             () => undefined,
         );
@@ -255,6 +270,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         if (response.status === 401) warnings.push("credential_invalid");
         if (response.status === 403) warnings.push("source_access_denied");
         if (
+            privateScan &&
             source.provider === "github" &&
             scopes.length > 0 &&
             !scopes.includes("repo")
@@ -264,18 +280,24 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         if (!response.ok && warnings.length === 0) {
             warnings.push("source_access_failed");
         }
-        if (source.provider === "github" && response.ok) {
-            const repositories = (await response.json()) as Array<{
-                full_name?: unknown;
-            }>;
-            const repository = String(repositories[0]?.full_name ?? "");
-            if (repository) {
-                const contentsResponse = await fetch(
-                    `${source.baseUrl}/repos/${repository}/contents/manifest.json`,
-                    { headers },
-                ).catch(() => undefined);
-                if (contentsResponse?.status === 403) {
-                    warnings.push("github_contents_read_missing");
+        if (response.ok) {
+            const repositories = (await response.json()) as Array<
+                Record<string, unknown>
+            >;
+            if (privateScan && repositories.length === 0) {
+                warnings.push("private_repository_not_visible");
+            }
+            const repository = repositories[0];
+            if (privateScan && repository) {
+                const contentsEndpoint =
+                    source.provider === "github"
+                        ? `${source.baseUrl}/repos/${String(repository.full_name ?? "")}/contents`
+                        : `${source.baseUrl}/projects/${encodeURIComponent(String(repository.id ?? ""))}/repository/tree?per_page=1`;
+                const contentsResponse = await fetch(contentsEndpoint, {
+                    headers,
+                }).catch(() => undefined);
+                if (!contentsResponse?.ok) {
+                    warnings.push("private_repository_contents_read_missing");
                 }
             }
         }
@@ -331,11 +353,11 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         );
     }
 
-    async discover(
+    async discoverWithReport(
         tokens: Record<string, string> = {},
         sourceUuids?: string[],
         forceRefresh = false,
-    ): Promise<MarketplaceModule[]> {
+    ): Promise<ModuleDiscoveryResult> {
         const sources = await this.listSources();
         const selectedSources = (
             sourceUuids
@@ -349,6 +371,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             sources.map((source) => source.uuid),
         );
         const discovered: MarketplaceModule[] = [];
+        const sourceFailures: ModuleSourceScanFailure[] = [];
         const claimedUuids = new Map<
             string,
             { module: MarketplaceModule; cached: boolean }
@@ -378,14 +401,35 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                     sourceName: source.name,
                 });
                 try {
-                    modules = await this.discoverSource(
-                        source,
-                        source.credentialId
-                            ? tokens[source.credentialId]
-                            : undefined,
-                    );
+                    const token = source.credentialId
+                        ? tokens[source.credentialId]
+                        : undefined;
+                    if (source.scanPrivateRepos === true && !token) {
+                        throw new Error(
+                            "private_repository_credential_missing",
+                        );
+                    }
+                    modules = await this.discoverSource(source, token);
                 } catch (error) {
                     modules = cachedModules;
+                    const errorMessage =
+                        error instanceof Error ? error.message : String(error);
+                    if (source.scanPrivateRepos === true) {
+                        const code = errorMessage.includes(
+                            "private_repository_contents_access_failed",
+                        )
+                            ? "private_repository_contents_access_failed"
+                            : errorMessage.includes(
+                                    "private_repository_credential_missing",
+                                )
+                              ? "private_repository_credential_missing"
+                              : "private_repository_access_failed";
+                        sourceFailures.push({
+                            sourceUuid: source.uuid,
+                            sourceName: source.name,
+                            code,
+                        });
+                    }
                     this.log(
                         "warn",
                         "Module source scan failed; cached results retained.",
@@ -393,10 +437,9 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                             sourceUuid: source.uuid,
                             sourceName: source.name,
                             modulesRetained: modules.length,
-                            error:
-                                error instanceof Error
-                                    ? error.message
-                                    : String(error),
+                            error: errorMessage,
+                            privateRepositories:
+                                source.scanPrivateRepos === true,
                         },
                     );
                 }
@@ -432,9 +475,22 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             });
             discovered.push(...accepted);
         }
-        return Promise.all(
-            discovered.map((module) => this.attachInstalledReadmes(module)),
-        );
+        return {
+            modules: await Promise.all(
+                discovered.map((module) => this.attachInstalledReadmes(module)),
+            ),
+            sourceFailures,
+        };
+    }
+
+    async discover(
+        tokens: Record<string, string> = {},
+        sourceUuids?: string[],
+        forceRefresh = false,
+    ): Promise<MarketplaceModule[]> {
+        return (
+            await this.discoverWithReport(tokens, sourceUuids, forceRefresh)
+        ).modules;
     }
 
     async listCachedModules(): Promise<MarketplaceModule[]> {

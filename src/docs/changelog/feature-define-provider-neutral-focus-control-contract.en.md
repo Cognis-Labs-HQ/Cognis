@@ -47,3 +47,7 @@ Component-page discovery no longer mounts UI. An explicit, user-activated spawn 
 ## Stable user menu
 
 The Cognis shell now reconciles user-menu contributions as providers load, removing duplicate destination entries caused by concurrent external-page and navbar refreshes.
+
+## Validate and retain private repository scanning
+
+Marketplace source settings now retain the private-repository scan preference after restarts. Enabling it validates that the configured PAT can list private repositories and read repository contents before saving, while catalog refreshes report missing credentials, denied private-repository access, and denied content access without discarding cached modules.
