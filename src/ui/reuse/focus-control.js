@@ -14,6 +14,7 @@
  */
 import { uiCtx } from "./ui-ctx.js";
 import { pageActions } from "./page-actions.js";
+import { makeFloatingWindow } from "./floating-window.js";
 
 const sessionsByRoot = new WeakMap();
 const SAFE_ID = /^[a-z0-9][a-z0-9._:-]{0,127}$/;
@@ -90,36 +91,8 @@ export function createFocusControlCoordinator({
     let following = true;
     let overlay = null;
     let restore = null;
+    let releaseFloatingWindow = null;
     const removers = [];
-
-    function makeMovable(panel, handle) {
-        let origin = null;
-        handle.addEventListener(
-            "pointerdown",
-            (event) => {
-                origin = {
-                    x: event.clientX,
-                    y: event.clientY,
-                    left: panel.getBoundingClientRect().left,
-                    top: panel.getBoundingClientRect().top,
-                };
-                handle.setPointerCapture(event.pointerId);
-            },
-            { signal },
-        );
-        handle.addEventListener(
-            "pointermove",
-            (event) => {
-                if (!origin) return;
-                panel.style.left = `${Math.max(0, origin.left + event.clientX - origin.x)}px`;
-                panel.style.top = `${Math.max(0, origin.top + event.clientY - origin.y)}px`;
-                panel.style.right = "auto";
-                panel.style.bottom = "auto";
-            },
-            { signal },
-        );
-        handle.addEventListener("pointerup", () => (origin = null), { signal });
-    }
 
     function announce(message) {
         overlay
@@ -130,6 +103,8 @@ export function createFocusControlCoordinator({
     async function dismiss({ remote = false } = {}) {
         if (!active) return;
         await uiCtx.runFlow("end-focus", { session: active, remote });
+        releaseFloatingWindow?.();
+        releaseFloatingWindow = null;
         overlay?.remove();
         overlay = null;
         sessionsByRoot.delete(root);
@@ -158,7 +133,12 @@ export function createFocusControlCoordinator({
             focus: document.activeElement,
         };
         overlay = document.createElement("section");
-        overlay.className = `focus-control-overlay focus-control-${session.mode ?? "overlay"}`;
+        overlay.className = "focus-control-overlay";
+        if (session.mode === "pip") {
+            overlay.classList.add("focus-control-pip");
+        } else if (session.mode === "fullscreen") {
+            overlay.classList.add("focus-control-fullscreen");
+        }
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
         overlay.setAttribute(
@@ -185,10 +165,10 @@ export function createFocusControlCoordinator({
             { signal },
         );
         if (session.mode === "pip") {
-            makeMovable(
-                overlay,
-                overlay.querySelector(".focus-control-controls"),
-            );
+            releaseFloatingWindow = makeFloatingWindow(overlay, {
+                handle: overlay.querySelector(".focus-control-controls"),
+                signal,
+            });
         }
         for (const alternative of surfaces.filter(
             (candidate) => candidate.id !== surface.id,

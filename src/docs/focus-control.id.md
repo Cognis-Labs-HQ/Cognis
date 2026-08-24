@@ -53,3 +53,9 @@ Untuk Focus Control tersinkron, deklarasikan loader `module-route` dengan `modul
 ## Halaman komponen bawaan
 
 Halaman dasbor terautentikasi yang disertakan bersama Cognis menggunakan UUID Cognis Core `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study menggunakan UUID gateway `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. ID rute stabilnya adalah `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study`, dan `gateway.study.child`. Semuanya menggunakan kontrak `component-pages:request` yang sama dengan modul eksternal dan mendukung penyematan overlay atau layar penuh. Entri login dan demonstrasi bukan halaman komponen shell dasbor sehingga tidak memenuhi syarat.
+
+## Jendela PiP yang dapat dipindahkan dan diubah ukurannya
+
+Permukaan yang mendeklarasikan `pip` ditampilkan melalui perilaku jendela mengambang Cognis yang dapat digunakan kembali. Pengguna dapat menyeret area noninteraktif pada kepala Focus Control dan mengubah ukuran jendela melalui kontrol ukuran peramban. Cognis menjaga jendela tetap di dalam area pandang dan melepaskan semua listener saat sesi fokus berakhir. Modul penyedia cukup mendeklarasikan `pip` dan memasang konten ke root yang diberikan; modul tidak boleh memasang handler seret atau ubah ukuran tingkat dokumen yang bersaing.
+
+Modul yang memiliki elemen PiP terpisah, seperti bingkai rapat, memperoleh `ui:makeFloatingWindow` melalui `uiCtx.capabilities`, meneruskan elemen, pegangan seret, dan sinyal halaman, lalu menyimpan fungsi pembersihan yang dikembalikan. Utility tidak boleh diimpor secara langsung.

@@ -55,3 +55,7 @@ Pengaturan sumber Marketplace kini mempertahankan pilihan pemindaian repositori 
 ## Melindungi evaluasi entri halaman komponen
 
 Broker halaman komponen kini mengevaluasi modul entri penyedia melalui pelindung impor dengan penghitungan referensi yang sama seperti navigasi SPA. Modul entri yang memanggil `mountWhenDirect(mount)` tidak dapat mengganti halaman host selama impor; pelindung dilepas sebelum broker memasang komponen ke jendela yang diminta.
+
+## Memindahkan dan mengubah ukuran jendela PiP rapat
+
+Panel PiP Focus Control kini menggunakan pengendali jendela mengambang yang dapat digunakan kembali. Panel rapat dapat diseret melalui bagian kepalanya dan diubah ukurannya sambil tetap berada di area pandang, serta melepaskan seluruh sumber daya interaksi saat ditutup.

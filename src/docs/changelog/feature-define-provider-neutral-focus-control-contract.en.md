@@ -55,3 +55,7 @@ Marketplace source settings now retain the private-repository scan preference af
 ## Guard component-page entry evaluation
 
 The component-page broker now evaluates provider entry modules through the same reference-counted import guard as SPA navigation. Entry modules that call `mountWhenDirect(mount)` cannot replace the host page during import; the guard is released before the broker mounts the component into its requested window.
+
+## Move and resize meeting PiP windows
+
+Focus Control PiP panes now use a reusable floating-window controller. Meeting panes can be dragged by their header and resized while remaining constrained to the visible viewport, with all interaction resources released when the pane closes.

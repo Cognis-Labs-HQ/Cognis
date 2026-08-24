@@ -62,3 +62,7 @@ For synchronized Focus Control, declare a `module-route` loader whose `moduleId`
 ## Built-in component pages
 
 Authenticated dashboard pages shipped with Cognis use the Cognis Core UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study uses its gateway UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Their stable route IDs are `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study`, and `gateway.study.child`. They use the same `component-pages:request` contract as external modules and support overlay or fullscreen embedding. Login and demonstration entry points are not dashboard-shell component pages and are not eligible.
+
+## Movable and resizable PiP windows
+
+A surface that declares `pip` is presented through Cognis' reusable floating-window behavior. Users can drag the non-interactive area of the Focus Control header and resize the window from its browser resize affordance; Cognis keeps the window within the visible viewport and releases all listeners when the focus session ends. Provider modules normally only declare `pip` and mount into the supplied root. A module that owns a separate PiP element, such as a meeting frame, can obtain `ui:makeFloatingWindow` from `uiCtx.capabilities`, pass its element, drag handle, and page signal, and retain the returned cleanup function. Modules must not import the utility directly or install competing document-level drag or resize handlers.

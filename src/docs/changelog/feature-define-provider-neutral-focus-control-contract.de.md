@@ -55,3 +55,7 @@ Die Einstellungen der Marketplace-Quellen behalten die Option zum Scannen privat
 ## Auswertung von Komponentenseiten-Einstiegen absichern
 
 Der Broker für Komponentenseiten wertet Einstiegsmodule von Anbietern nun mit derselben referenzgezählten Importsperre wie die SPA-Navigation aus. Einstiegsmodule, die `mountWhenDirect(mount)` aufrufen, können die Hostseite beim Import nicht ersetzen; die Sperre wird aufgehoben, bevor der Broker die Komponente in ihr angefordertes Fenster einhängt.
+
+## Meeting-PiP-Fenster verschieben und skalieren
+
+PiP-Bereiche von Focus Control verwenden nun eine wiederverwendbare Steuerung für schwebende Fenster. Meeting-Bereiche können an ihrer Kopfzeile verschoben und in der Größe geändert werden, bleiben dabei im sichtbaren Bereich und geben beim Schließen alle Interaktionsressourcen frei.

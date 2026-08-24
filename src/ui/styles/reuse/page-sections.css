@@ -630,7 +630,22 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     inset: auto 18px 18px auto;
     width: min(420px, calc(100vw - 36px));
     height: min(300px, calc(100vh - 36px));
+}
+
+.floating-window {
+    max-width: 100vw;
+    max-height: 100vh;
     resize: both;
+}
+
+.floating-window-handle {
+    cursor: move;
+    touch-action: none;
+    user-select: none;
+}
+
+.floating-window-handle :is(button, a, input, select, textarea) {
+    cursor: pointer;
 }
 
 .focus-control-controls {

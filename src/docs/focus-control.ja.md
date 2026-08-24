@@ -53,3 +53,9 @@ Spawn Capability は `discard()` を持つハンドルを返します。閉じ�
 ## 組み込みコンポーネントページ
 
 Cognis に同梱される認証済み Dashboard ページは Cognis Core UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398` を使用し、Study は Gateway UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27` を使用します。安定したルート ID は `core.dashboard`、`core.settings`、`core.users`、`core.invite`、`core.modules`、`core.administration`、`core.docs`、`core.changelogs`、`core.license`、`core.error`、`gateway.study`、`gateway.study.child` です。外部モジュールと同じ `component-pages:request` 契約を使用し、Overlay または全画面の埋め込みに対応します。Login とデモ用エントリーは Dashboard Shell のコンポーネントページではないため利用対象外です。
+
+## 移動およびサイズ変更が可能な PiP ウィンドウ
+
+`pip` を宣言したサーフェスは、Cognis の再利用可能なフローティングウィンドウ動作で表示されます。ユーザーは Focus Control ヘッダーの非対話領域をドラッグし、ブラウザーのリサイズ操作でウィンドウサイズを変更できます。Cognis はウィンドウを表示領域内に保ち、フォーカスセッション終了時にすべてのリスナーを解除します。プロバイダーモジュールは `pip` を宣言して提供されたルートへマウントするだけにし、競合するドキュメント全体のドラッグまたはリサイズハンドラーを追加してはいけません。
+
+ミーティングフレームなど独自の PiP 要素を所有するモジュールは、`uiCtx.capabilities` から `ui:makeFloatingWindow` を取得し、要素、ドラッグハンドル、ページシグナルを渡して、返されたクリーンアップ関数を保持します。このユーティリティを直接インポートしてはいけません。

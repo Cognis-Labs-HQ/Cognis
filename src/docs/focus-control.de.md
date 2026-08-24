@@ -53,3 +53,9 @@ Für synchronisierte Fokussteuerung wird ein `module-route`-Loader deklariert, d
 ## Integrierte Komponentenseiten
 
 Mit Cognis ausgelieferte authentifizierte Dashboard-Seiten verwenden die Cognis-Core-UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study verwendet seine Gateway-UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Ihre stabilen Routen-IDs sind `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study` und `gateway.study.child`. Sie nutzen denselben Vertrag `component-pages:request` wie externe Module und unterstützen die Einbettung als Overlay oder Vollbild. Anmelde- und Demonstrationseinstiege sind keine Komponentenseiten der Dashboard-Shell und daher nicht freigegeben.
+
+## Verschiebbare und größenveränderbare PiP-Fenster
+
+Eine Oberfläche, die `pip` deklariert, wird mit dem wiederverwendbaren Verhalten für schwebende Fenster von Cognis dargestellt. Benutzer können den nicht interaktiven Bereich der Focus-Control-Kopfzeile ziehen und die Fenstergröße über die Größensteuerung des Browsers ändern. Cognis hält das Fenster im sichtbaren Bereich und entfernt alle Listener beim Ende der Fokussitzung. Anbietermodule deklarieren nur `pip` und hängen sich in die bereitgestellte Wurzel ein; sie dürfen keine konkurrierenden dokumentweiten Handler zum Ziehen oder Ändern der Größe installieren.
+
+Ein Modul mit einem eigenen PiP-Element, beispielsweise einem Meeting-Frame, bezieht `ui:makeFloatingWindow` über `uiCtx.capabilities`, übergibt Element, Ziehbereich und Seitensignal und bewahrt die zurückgegebene Bereinigungsfunktion auf. Die Utility darf nicht direkt importiert werden.
