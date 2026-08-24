@@ -47,13 +47,15 @@ const requestPage = uiCtx.capabilities.get("component-pages:request");
 const page = await requestPage?.({
     componentUuid: WHITEBOARD_MODULE_UUID,
     routeId: "whiteboard.canvas",
-    elementId: "meeting-whiteboard",
     context: { meetingId },
-    signal,
 });
 ```
 
-When `elementId` is present, Cognis resolves that existing DOM element, loads the declared component-page styles and entry module, and calls `mount` with that element plus the caller context as `focusState`. The caller must create and own the host element before requesting the page, use an ID containing only letters, digits, dots, underscores, colons, or hyphens, and pass its page `AbortSignal` so the provider can release listeners when the caller unmounts. A missing or invalid host returns `null`. Omitting `elementId` preserves descriptor-only resolution for Focus Control and other coordinators that manage their own host.
+`component-pages:request` only checks availability and never mounts UI. To open a component window, obtain `component-pages:spawn` and call it synchronously from the Whiteboard button's click or keyboard activation handler. Pass the ID of an existing caller-owned stage and the page `AbortSignal`. Cognis requires active user activation, creates a paint-contained window inside the stage, blocks link and form navigation from escaping into the dashboard router, and passes `navigationAllowed: false` to the provider.
+
+The spawn capability returns a handle with `discard()`. The caller must discard the handle when its close or back control is used; Cognis also discards it when the caller's signal aborts. `component-pages:discard` accepts the stage ID for callers that do not retain the handle. Discovery during meeting-page mount must use only `component-pages:request`: calling the spawn capability during discovery is invalid and prevents the Whiteboard button from being the user's explicit opening action.
+
+The stage ID may contain only letters, digits, dots, underscores, colons, or hyphens. The provider must render only inside the supplied root, honor the signal, return a cleanup function or an object exposing `destroy`/`unmount` when it owns additional resources, and avoid direct history, location, router, anchor, or form navigation while embedded.
 
 For synchronized Focus Control, declare a `module-route` loader whose `moduleId` is that UUID and whose `routeId` is the eligible route ID. A collaboration provider must still authorize the request, create or resolve the whiteboard through server-side ctx capabilities, grant meeting participants access, and publish only stable resource identifiers through `focus:transport`.
 

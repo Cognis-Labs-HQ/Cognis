@@ -42,4 +42,4 @@ Einträge der Dashboard-Navigation werden alphabetisch sortiert, sobald ein Modu
 
 ## Gezielte Komponentenfenster
 
-Aufrufer von Komponentenseiten können nun die ID eines vorhandenen Elements angeben, damit Cognis das angeforderte Komponentenfenster direkt in diesem aufrufereigenen Ziel lädt und einbindet.
+Die Suche nach Komponentenseiten bindet keine Oberfläche mehr ein. Eine ausdrückliche, benutzeraktivierte Spawn-Capability öffnet ein navigationsgeschütztes Fenster innerhalb der aufrufereigenen Bühne und liefert ein verwerfbares Handle mit automatischer Bereinigung beim Abbruch.

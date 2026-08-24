@@ -31,7 +31,8 @@ export const BROWSER_FLOW_CONTRACTS = Object.freeze({
         "publish",
     ]),
     "end-focus": Object.freeze(["authorize", "end", "restore", "publish"]),
-    "request-component-page": Object.freeze([
+    "request-component-page": Object.freeze(["validate", "resolve", "prepare"]),
+    "spawn-component-page": Object.freeze([
         "validate",
         "resolve",
         "prepare",

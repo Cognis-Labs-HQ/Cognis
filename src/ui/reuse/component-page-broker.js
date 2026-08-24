@@ -1,27 +1,31 @@
 /**
- * Resolves pages that external components explicitly expose for embedding.
+ * Resolves and explicitly spawns pages exposed for component embedding.
  *
  * Public exports:
- * - `requestComponentPage` — resolves an eligible page and optionally mounts it in a caller-owned element.
- * - `installComponentPageBroker` — registers the browser flow hooks and capabilities once.
+ * - `requestComponentPage` — resolves an eligible page without mounting it.
+ * - `spawnComponentPage` — mounts an eligible page in a protected caller-owned stage.
+ * - `discardComponentPage` — tears down the component window in a stage.
+ * - `installComponentPageBroker` — registers browser flow hooks and capabilities once.
  *
  * @example
- * const page = await requestComponentPage({
- *     componentUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
- *     routeId: "whiteboard.canvas",
- *     elementId: "meeting-whiteboard",
+ * const requestPage = uiCtx.capabilities.get("component-pages:request");
+ * const spawnPage = uiCtx.capabilities.get("component-pages:spawn");
+ * const page = await requestPage({ componentUuid, routeId });
+ * button.addEventListener("click", () => spawnPage({
+ *     componentUuid,
+ *     routeId,
+ *     elementId: "meeting-whiteboard-stage",
  *     context: { meetingId: "meeting-1" },
- * });
- *
- * @param {{componentUuid: string, routeId: string, mode?: string, elementId?: string, context?: object, signal?: AbortSignal}} request
- * @returns {Promise<object | null>} An eligible route, optionally mounted in `elementId`, or null.
+ *     signal,
+ * }));
  */
-import { resolveComponentPage } from "./spa-route-registry.js";
 import { ensurePageStylesheet } from "./page-styles.js";
+import { resolveComponentPage } from "./spa-route-registry.js";
 import { uiCtx } from "./ui-ctx.js";
 
 const INSTALL_KEY = Symbol.for("cognis.componentPageBrokerInstalled");
 const ELEMENT_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/;
+const activeWindows = new Map();
 
 function isAbortSignal(value) {
     return (
@@ -32,18 +36,74 @@ function isAbortSignal(value) {
     );
 }
 
+function defaultSpawnAuthorization() {
+    return globalThis.navigator?.userActivation?.isActive === true;
+}
+
+function blockNavigation(event) {
+    const target = event.target;
+    const isNavigation =
+        event.type === "submit" || target?.closest?.("a[href], area[href]");
+    if (!isNavigation) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+}
+
+async function releaseMountResult(result) {
+    if (typeof result === "function") {
+        await result();
+        return;
+    }
+    const release = result?.destroy ?? result?.unmount;
+    if (typeof release === "function") await release.call(result);
+}
+
+/**
+ * Resolves an eligible component page without mounting it.
+ *
+ * @param {{componentUuid: string, routeId: string, mode?: string, context?: object}} request
+ * @returns {Promise<object | null>} An eligible route descriptor or null.
+ */
 export async function requestComponentPage(request) {
     const result = await uiCtx.runFlow("request-component-page", request);
     return result.data.route ?? null;
 }
 
 /**
+ * Mounts an eligible component page in a protected, caller-owned stage.
+ *
+ * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal}} request
+ * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
+ */
+export async function spawnComponentPage(request) {
+    const result = await uiCtx.runFlow("spawn-component-page", request);
+    return result.data.window ?? null;
+}
+
+/**
+ * Discards the active component window mounted in an element.
+ *
+ * @param {string} elementId
+ * @returns {Promise<boolean>} Whether an active component window was discarded.
+ */
+export async function discardComponentPage(elementId) {
+    const normalizedElementId = String(elementId ?? "").trim();
+    const activeWindow = activeWindows.get(normalizedElementId);
+    if (!activeWindow) return false;
+    await activeWindow.discard();
+    return true;
+}
+
+/**
  * Installs component-page flow hooks and optionally resolves built-in pages.
  *
- * @param {{resolveLocal?: (request: object) => Promise<object | null>}} options
+ * @param {{resolveLocal?: (request: object) => Promise<object | null>, authorizeSpawn?: () => boolean}} options
  * @returns {void}
  */
-export function installComponentPageBroker({ resolveLocal } = {}) {
+export function installComponentPageBroker({
+    resolveLocal,
+    authorizeSpawn = defaultSpawnAuthorization,
+} = {}) {
     if (globalThis[INSTALL_KEY]) return;
     globalThis[INSTALL_KEY] = true;
     uiCtx.extendFlow(
@@ -51,21 +111,14 @@ export function installComponentPageBroker({ resolveLocal } = {}) {
         "validate",
         { id: "core:validate-component-page-request" },
         ({ input, data }) => {
-            const elementId = String(input?.elementId ?? "").trim();
-            const signal = input?.signal ?? null;
             data.request = {
                 componentUuid: String(input?.componentUuid ?? "")
                     .trim()
                     .toLowerCase(),
                 routeId: String(input?.routeId ?? "").trim(),
                 mode: String(input?.mode ?? "").trim() || null,
-                elementId: elementId || null,
                 context: input?.context ?? null,
-                signal,
             };
-            data.valid =
-                (!elementId || ELEMENT_ID_PATTERN.test(elementId)) &&
-                isAbortSignal(signal);
         },
     );
     uiCtx.extendFlow(
@@ -73,7 +126,6 @@ export function installComponentPageBroker({ resolveLocal } = {}) {
         "resolve",
         { id: "core:resolve-component-page" },
         async ({ data }) => {
-            if (!data.valid) return;
             data.route =
                 (await resolveLocal?.(data.request)) ??
                 (await resolveComponentPage(data.request));
@@ -85,46 +137,165 @@ export function installComponentPageBroker({ resolveLocal } = {}) {
         { id: "core:prepare-component-page" },
         ({ data }) => {
             if (!data.route) return;
-            const { context, elementId } = data.request;
             data.route = {
                 ...data.route,
-                requestContext: context,
-                targetElementId: elementId,
+                requestContext: data.request.context,
             };
         },
     );
     uiCtx.extendFlow(
-        "request-component-page",
+        "spawn-component-page",
+        "validate",
+        { id: "core:validate-component-page-spawn" },
+        ({ input, data }) => {
+            const elementId = String(input?.elementId ?? "").trim();
+            const signal = input?.signal ?? null;
+            data.request = {
+                componentUuid: String(input?.componentUuid ?? "")
+                    .trim()
+                    .toLowerCase(),
+                routeId: String(input?.routeId ?? "").trim(),
+                mode: String(input?.mode ?? "").trim() || null,
+                context: input?.context ?? null,
+                elementId,
+                signal,
+            };
+            data.valid =
+                ELEMENT_ID_PATTERN.test(elementId) &&
+                isAbortSignal(signal) &&
+                !signal?.aborted &&
+                authorizeSpawn();
+        },
+    );
+    uiCtx.extendFlow(
+        "spawn-component-page",
+        "resolve",
+        { id: "core:resolve-component-page-spawn" },
+        async ({ data }) => {
+            if (!data.valid) return;
+            data.route = await requestComponentPage(data.request);
+        },
+    );
+    uiCtx.extendFlow(
+        "spawn-component-page",
+        "prepare",
+        { id: "core:prepare-component-page-stage" },
+        async ({ data }) => {
+            if (!data.route) return;
+            const stage = document.getElementById(data.request.elementId);
+            if (!stage) return;
+            await discardComponentPage(data.request.elementId);
+            const windowElement = document.createElement("section");
+            windowElement.className = "component-page-window";
+            windowElement.dataset.componentPageOwner =
+                data.request.componentUuid;
+            windowElement.dataset.componentPageRoute = data.request.routeId;
+            windowElement.setAttribute("role", "region");
+            stage.classList.add("component-page-stage");
+            stage.append(windowElement);
+            data.stage = stage;
+            data.windowElement = windowElement;
+        },
+    );
+    uiCtx.extendFlow(
+        "spawn-component-page",
         "mount",
         { id: "core:mount-component-page" },
         async ({ data }) => {
-            if (!data.route) return;
-            const { context, elementId, signal } = data.request;
-            if (!elementId) return;
-            const target = document.getElementById(elementId);
-            if (!target || signal?.aborted) {
-                data.route = null;
-                return;
-            }
-            await Promise.all(
-                (data.route.stylesheets ?? []).map(ensurePageStylesheet),
+            if (!data.windowElement || data.request.signal?.aborted) return;
+            const controller = new AbortController();
+            let mountResult;
+            let discarded = false;
+            const discard = async () => {
+                if (discarded) return;
+                discarded = true;
+                controller.abort();
+                try {
+                    await releaseMountResult(mountResult);
+                } catch (error) {
+                    console.error("component_page_cleanup_failed", {
+                        componentUuid: data.request.componentUuid,
+                        routeId: data.request.routeId,
+                        elementId: data.request.elementId,
+                        error,
+                    });
+                } finally {
+                    data.windowElement.remove();
+                    if (!data.stage.querySelector?.(".component-page-window")) {
+                        data.stage.classList.remove("component-page-stage");
+                    }
+                    if (
+                        activeWindows.get(data.request.elementId)?.discard ===
+                        discard
+                    ) {
+                        activeWindows.delete(data.request.elementId);
+                    }
+                }
+            };
+            const handle = {
+                elementId: data.request.elementId,
+                ownerUuid: data.request.componentUuid,
+                routeId: data.request.routeId,
+                discard,
+            };
+            activeWindows.set(data.request.elementId, handle);
+            data.request.signal?.addEventListener(
+                "abort",
+                () => void discard(),
+                { once: true },
             );
-            const module = await data.route.load({ signal });
-            if (typeof module?.mount !== "function" || signal?.aborted) {
-                data.route = null;
-                return;
-            }
-            target.dataset.componentPageOwner = data.request.componentUuid;
-            target.dataset.componentPageRoute = data.request.routeId;
-            await module.mount(target, {
-                signal,
-                focusState: context,
+            data.windowElement.addEventListener("click", blockNavigation, {
+                capture: true,
+                signal: controller.signal,
             });
+            data.windowElement.addEventListener("submit", blockNavigation, {
+                capture: true,
+                signal: controller.signal,
+            });
+            try {
+                await Promise.all(
+                    (data.route.stylesheets ?? []).map(ensurePageStylesheet),
+                );
+                const module = await data.route.load({
+                    signal: controller.signal,
+                });
+                if (
+                    typeof module?.mount !== "function" ||
+                    controller.signal.aborted
+                ) {
+                    await discard();
+                    return;
+                }
+                mountResult = await module.mount(data.windowElement, {
+                    signal: controller.signal,
+                    focusState: data.request.context,
+                    navigationAllowed: false,
+                });
+                if (controller.signal.aborted) {
+                    await releaseMountResult(mountResult);
+                    return;
+                }
+                data.window = handle;
+            } catch (error) {
+                console.error("component_page_mount_failed", {
+                    componentUuid: data.request.componentUuid,
+                    routeId: data.request.routeId,
+                    elementId: data.request.elementId,
+                    error,
+                });
+                await discard();
+                throw error;
+            }
         },
     );
     uiCtx.capabilities.contribute(
         "component-pages:request",
         requestComponentPage,
+    );
+    uiCtx.capabilities.contribute("component-pages:spawn", spawnComponentPage);
+    uiCtx.capabilities.contribute(
+        "component-pages:discard",
+        discardComponentPage,
     );
     uiCtx.capabilities.contribute(
         "router:resolveDeclaredRoute",

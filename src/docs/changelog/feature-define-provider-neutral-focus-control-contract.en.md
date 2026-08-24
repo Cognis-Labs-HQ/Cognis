@@ -42,4 +42,4 @@ Dashboard navigation entries are sorted alphabetically whenever a module or anot
 
 ## Targeted component windows
 
-Component-page callers can now provide an existing element ID to have Cognis load and mount the requested component window directly inside that caller-owned host.
+Component-page discovery no longer mounts UI. An explicit, user-activated spawn capability opens a navigation-protected window inside the caller-owned stage and returns a discardable handle with automatic abort cleanup.

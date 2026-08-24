@@ -42,4 +42,4 @@ Entri navigasi dasbor diurutkan secara alfabetis setiap kali modul atau penyedia
 
 ## Jendela komponen bertarget
 
-Pemanggil halaman komponen kini dapat memberikan ID elemen yang sudah ada agar Cognis memuat dan memasang jendela komponen yang diminta langsung di dalam tujuan milik pemanggil tersebut.
+Penemuan halaman komponen tidak lagi memasang UI. Capability spawn yang eksplisit dan diaktifkan pengguna membuka jendela terlindung dari navigasi di dalam panggung milik pemanggil serta mengembalikan handle yang dapat dibuang dengan pembersihan otomatis saat dibatalkan.

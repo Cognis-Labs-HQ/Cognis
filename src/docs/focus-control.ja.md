@@ -42,7 +42,11 @@ ctx.registerSpaRoute({
 
 要求側は、不変のマニフェスト UUID と安定したルート ID で提供元を指定します。ブラウザーコードは `uiCtx.capabilities` から `component-pages:request` を取得し、提供元を直接インポートしたり Asset URL を組み立てたりしてはいけません。モジュールが無効、アクセス不能、未導入、またはルートをコンポーネント利用に公開していない場合、Capability は `null` を返します。
 
-`elementId` を渡した場合、Cognis は既存の DOM 要素を取得し、宣言済みのコンポーネントページ用スタイルとエントリーモジュールを読み込み、その要素と呼び出し元コンテキストを `focusState` として `mount` に渡します。呼び出し元は要求前にホスト要素を作成して所有し、英数字、ピリオド、アンダースコア、コロン、ハイフンだけで構成した ID とページの `AbortSignal` を渡す必要があります。対象が存在しないか無効な場合は `null` を返します。`elementId` を省略した場合は、従来どおりルート記述子だけを解決します。
+`component-pages:request` は利用可否だけを確認し、UI をマウントしません。コンポーネントウィンドウは、Whiteboard ボタンのクリックまたはキーボード操作ハンドラー内で `component-pages:spawn` を同期的に呼び出して開きます。呼び出し元が所有する既存ステージの ID とページの `AbortSignal` を渡します。Cognis は有効なユーザー操作を必須とし、ウィンドウをステージ内に封じ込め、リンクやフォームによる Dashboard Router へのナビゲーションを遮断し、提供側へ `navigationAllowed: false` を渡します。
+
+Spawn Capability は `discard()` を持つハンドルを返します。閉じる操作や戻る操作で呼び出し元が破棄する必要があり、シグナルの中断時にも自動的に破棄されます。ハンドルを保持しない場合は、`component-pages:discard` にステージ ID を渡せます。Meeting ページの読み込み時に行う利用可否確認では `component-pages:request` だけを使います。提供側は渡された Root 内だけに描画し、シグナルを尊重し、破棄時にリソースを解放し、埋め込み中に直接ナビゲーションを実行してはいけません。
+
+ステージ ID に使用できる文字は英数字、ピリオド、アンダースコア、コロン、ハイフンだけです。提供側が追加リソースを所有する場合、`mount` はクリーンアップ関数または `destroy` か `unmount` を持つオブジェクトを返します。
 
 同期 Focus Control では、その UUID を `moduleId`、利用可能なルート ID を `routeId` とする `module-route` ローダーを宣言します。コラボレーションプロバイダーは引き続き要求を認可し、サーバー側の ctx Capability を通じて Whiteboard を作成または解決し、会議参加者へアクセス権を付与し、`focus:transport` では安定したリソース識別子だけを公開する必要があります。
 

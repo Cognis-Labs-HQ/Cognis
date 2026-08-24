@@ -1,51 +1,111 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 
-test("component pages resolve only by matching UUID, route ID, and opt-in", async () => {
+const pageSectionStyles = readFileSync(
+    new URL("../../styles/reuse/page-sections.css", import.meta.url),
+    "utf8",
+);
+
+class FakeElement {
+    constructor() {
+        this.attributes = {};
+        this.children = [];
+        this.dataset = {};
+        this.listeners = new Map();
+        this.classNames = new Set();
+        this.classList = {
+            add: (name) => this.classNames.add(name),
+            remove: (name) => this.classNames.delete(name),
+        };
+    }
+
+    addEventListener(type, listener) {
+        this.listeners.set(type, listener);
+    }
+
+    append(child) {
+        child.parentElement = this;
+        this.children.push(child);
+    }
+
+    querySelector(selector) {
+        if (selector !== ".component-page-window") return null;
+        return (
+            this.children.find((child) =>
+                child.className?.split(" ").includes("component-page-window"),
+            ) ?? null
+        );
+    }
+
+    remove() {
+        if (!this.parentElement) return;
+        this.parentElement.children = this.parentElement.children.filter(
+            (child) => child !== this,
+        );
+        this.parentElement = null;
+    }
+
+    setAttribute(name, value) {
+        this.attributes[name] = value;
+    }
+}
+
+function catalogResponse() {
+    return new Response(
+        JSON.stringify({
+            data: [
+                {
+                    id: "whiteboard.canvas",
+                    ownerUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
+                    pattern: "^/whiteboards/[^/]+$",
+                    base: "/whiteboards",
+                    scriptUrl: "/static/modules/whiteboard/app.js",
+                    componentPage: {
+                        labelKey: "module.whiteboard.canvas_label",
+                        descriptionKey: "module.whiteboard.canvas_description",
+                        modes: ["fullscreen"],
+                    },
+                },
+                {
+                    id: "private.settings",
+                    ownerUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
+                    pattern: "^/private$",
+                    base: "/private",
+                    scriptUrl: "/private.js",
+                },
+            ],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } },
+    );
+}
+
+test("component pages resolve, spawn on activation, contain navigation, and discard", async () => {
     globalThis.localStorage = { getItem: () => "test-token" };
     globalThis.window = {
         location: { origin: "https://cognis.test" },
         dispatchEvent() {},
     };
-    const componentTarget = { dataset: {} };
+    const componentStage = new FakeElement();
     globalThis.document = {
+        createElement: () => new FakeElement(),
         getElementById: (elementId) =>
-            elementId === "meeting-whiteboard" ? componentTarget : null,
+            elementId === "meeting-whiteboard-stage" ? componentStage : null,
     };
-    globalThis.fetch = async () =>
-        new Response(
-            JSON.stringify({
-                data: [
-                    {
-                        id: "whiteboard.canvas",
-                        ownerUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
-                        pattern: "^/whiteboards/[^/]+$",
-                        base: "/whiteboards",
-                        scriptUrl: "/static/modules/whiteboard/app.js",
-                        componentPage: {
-                            labelKey: "module.whiteboard.canvas_label",
-                            descriptionKey:
-                                "module.whiteboard.canvas_description",
-                            modes: ["fullscreen"],
-                        },
-                    },
-                    {
-                        id: "private.settings",
-                        ownerUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
-                        pattern: "^/private$",
-                        base: "/private",
-                        scriptUrl: "/private.js",
-                    },
-                ],
-            }),
-            { status: 200, headers: { "content-type": "application/json" } },
-        );
+    globalThis.fetch = async () => catalogResponse();
+
     const { resolveComponentPage } = await import("../spa-route-registry.js");
-    const { installComponentPageBroker } =
-        await import("../component-page-broker.js");
+    const {
+        installComponentPageBroker,
+        requestComponentPage,
+        spawnComponentPage,
+    } = await import("../component-page-broker.js");
     const { uiCtx } = await import("../ui-ctx.js");
+    let spawnAuthorized = false;
     let mountedComponentPage = null;
+    let releasedMount = false;
     installComponentPageBroker({
+        authorizeSpawn: () => spawnAuthorized,
         resolveLocal: async ({ componentUuid, routeId }) =>
             componentUuid === "b4d49c4a-61d0-5db2-84fd-f89b80fd6398" &&
             routeId === "core.dashboard"
@@ -54,11 +114,15 @@ test("component pages resolve only by matching UUID, route ID, and opt-in", asyn
                       load: async () => ({
                           mount: async (root, options) => {
                               mountedComponentPage = { root, options };
+                              return () => {
+                                  releasedMount = true;
+                              };
                           },
                       }),
                   }
                 : null,
     });
+
     assert.equal(
         (
             await resolveComponentPage({
@@ -75,87 +139,98 @@ test("component pages resolve only by matching UUID, route ID, and opt-in", asyn
         }),
         null,
     );
-    const requestPage = uiCtx.capabilities.get("component-pages:request");
-    assert.equal(
-        (
-            await requestPage({
-                componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
-                routeId: "core.dashboard",
-            })
-        )?.id,
-        "core.dashboard",
-    );
-    assert.equal(
-        (
-            await requestPage({
-                componentUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
-                routeId: "whiteboard.canvas",
-                mode: "fullscreen",
-                context: { meetingId: "meeting-1" },
-            })
-        )?.requestContext?.meetingId,
-        "meeting-1",
-    );
-    const componentPageController = new AbortController();
-    const spawnedPage = await requestPage({
+
+    const resolvedPage = await requestComponentPage({
         componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
         routeId: "core.dashboard",
-        elementId: "meeting-whiteboard",
-        context: { meetingId: "meeting-2" },
-        signal: componentPageController.signal,
+        elementId: "meeting-whiteboard-stage",
+        context: { meetingId: "meeting-1" },
     });
-    assert.equal(spawnedPage?.targetElementId, "meeting-whiteboard");
-    assert.equal(mountedComponentPage?.root, componentTarget);
+    assert.equal(resolvedPage?.id, "core.dashboard");
+    assert.equal(componentStage.children.length, 0);
+    assert.equal(mountedComponentPage, null);
+    assert.equal(
+        await spawnComponentPage({
+            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+            routeId: "core.dashboard",
+            elementId: "meeting-whiteboard-stage",
+        }),
+        null,
+    );
+
+    spawnAuthorized = true;
+    const callerController = new AbortController();
+    const componentWindow = await uiCtx.capabilities.get(
+        "component-pages:spawn",
+    )({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        context: { meetingId: "meeting-2" },
+        signal: callerController.signal,
+    });
+    assert.equal(componentWindow?.elementId, "meeting-whiteboard-stage");
+    assert.equal(componentStage.children.length, 1);
+    assert.equal(componentStage.classNames.has("component-page-stage"), true);
+    assert.equal(mountedComponentPage?.root, componentStage.children[0]);
     assert.equal(
         mountedComponentPage?.options.focusState.meetingId,
         "meeting-2",
     );
-    assert.equal(
+    assert.equal(mountedComponentPage?.options.navigationAllowed, false);
+    assert.notEqual(
         mountedComponentPage?.options.signal,
-        componentPageController.signal,
+        callerController.signal,
     );
-    assert.deepEqual(componentTarget.dataset, {
-        componentPageOwner: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
-        componentPageRoute: "core.dashboard",
+
+    let navigationPrevented = false;
+    let navigationStopped = false;
+    componentStage.children[0].listeners.get("click")({
+        type: "click",
+        target: { closest: () => ({ href: "/settings" }) },
+        preventDefault: () => (navigationPrevented = true),
+        stopImmediatePropagation: () => (navigationStopped = true),
     });
+    assert.equal(navigationPrevented, true);
+    assert.equal(navigationStopped, true);
+
     assert.equal(
-        await requestPage({
-            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
-            routeId: "core.dashboard",
-            elementId: "missing-target",
-        }),
-        null,
+        await uiCtx.capabilities.get("component-pages:discard")(
+            "meeting-whiteboard-stage",
+        ),
+        true,
     );
+    assert.equal(releasedMount, true);
+    assert.equal(componentStage.children.length, 0);
+    assert.equal(componentStage.classNames.has("component-page-stage"), false);
     assert.equal(
-        await requestPage({
-            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
-            routeId: "core.dashboard",
-            elementId: "meeting-whiteboard",
-            signal: "not-an-abort-signal",
-        }),
-        null,
+        await uiCtx.capabilities.get("component-pages:discard")(
+            "meeting-whiteboard-stage",
+        ),
+        false,
     );
-    assert.equal(
-        await requestPage({
-            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
-            routeId: "core.dashboard",
-            elementId: "invalid target",
-        }),
-        null,
+
+    releasedMount = false;
+    const navigationController = new AbortController();
+    await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        signal: navigationController.signal,
+    });
+    navigationController.abort();
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(releasedMount, true);
+    assert.equal(componentStage.children.length, 0);
+});
+
+test("component windows are paint-contained within their requested stage", () => {
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-stage\s*{[^}]*overflow: hidden;[^}]*contain: layout paint style;/,
     );
-    assert.equal(
-        await resolveComponentPage({
-            componentUuid: "b7bf4a0a-a07a-483e-a736-21f97d703ce6",
-            routeId: "whiteboard.canvas",
-            mode: "pip",
-        }),
-        null,
-    );
-    assert.equal(
-        await resolveComponentPage({
-            componentUuid: "not-a-uuid",
-            routeId: "whiteboard.canvas",
-        }),
-        null,
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window\s*{[^}]*position: absolute;[^}]*inset: 0;[^}]*overflow: auto;/,
     );
 });

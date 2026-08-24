@@ -645,3 +645,24 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     width: 100%;
     height: 100%;
 }
+
+.component-page-stage {
+    position: relative;
+    min-height: 12rem;
+    overflow: hidden;
+    contain: layout paint style;
+    isolation: isolate;
+}
+
+.component-page-window {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    background: var(--surface-color);
+}
+
+.component-page-window > .app-shell {
+    min-height: 100%;
+}
