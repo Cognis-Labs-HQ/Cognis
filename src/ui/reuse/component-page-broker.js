@@ -21,6 +21,7 @@
  * }));
  */
 import { ensurePageStylesheet } from "./page-styles.js";
+import { loadWithSpaImportGuard } from "./page-entry.js";
 import { resolveComponentPage } from "./spa-route-registry.js";
 import { uiCtx } from "./ui-ctx.js";
 
@@ -276,9 +277,9 @@ export function installComponentPageBroker({
                 await Promise.all(
                     (data.route.stylesheets ?? []).map(ensurePageStylesheet),
                 );
-                const module = await data.route.load({
-                    signal: controller.signal,
-                });
+                const module = await loadWithSpaImportGuard(() =>
+                    data.route.load({ signal: controller.signal }),
+                );
                 if (
                     typeof module?.mount !== "function" ||
                     controller.signal.aborted

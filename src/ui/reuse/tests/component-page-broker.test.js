@@ -87,13 +87,19 @@ test("component windows stay disposable across activation and SPA navigation", a
         addEventListener: (type, listener) =>
             windowListeners.set(type, listener),
         dispatchEvent: (event) => windowListeners.get(event.type)?.(event),
-        location: { origin: "https://cognis.test" },
+        location: {
+            origin: "https://cognis.test",
+            pathname: "/meetings/meeting-2",
+        },
     };
     const componentStage = new FakeElement();
+    const appRoot = new FakeElement();
+    appRoot.dataset.activePage = "meetings";
     globalThis.document = {
         createElement: () => new FakeElement(),
         getElementById: (elementId) =>
             elementId === "meeting-whiteboard-stage" ? componentStage : null,
+        querySelector: (selector) => (selector === "#app" ? appRoot : null),
     };
     globalThis.fetch = async () => catalogResponse();
 
@@ -108,11 +114,31 @@ test("component windows stay disposable across activation and SPA navigation", a
     let mountedComponentPage = null;
     let releasedMount = false;
     let routeLoadGate = null;
+    const entryModuleUrl = new URL("../page-entry.js", import.meta.url).href;
+    const directEntrySource = `
+        import { mountWhenDirect } from ${JSON.stringify(entryModuleUrl)};
+        export async function mount(root) {
+            globalThis.__componentPageMountRoots.push(root);
+            return () => globalThis.__componentPageDiscards++;
+        }
+        await mountWhenDirect(mount);
+    `;
+    const directEntryUrl = `data:text/javascript,${encodeURIComponent(directEntrySource)}`;
+    globalThis.__componentPageMountRoots = [];
+    globalThis.__componentPageDiscards = 0;
     installComponentPageBroker({
         authorizeSpawn: () => spawnAuthorized,
-        resolveLocal: async ({ componentUuid, routeId }) =>
-            componentUuid === "b4d49c4a-61d0-5db2-84fd-f89b80fd6398" &&
-            routeId === "core.dashboard"
+        resolveLocal: async ({ componentUuid, routeId }) => {
+            if (componentUuid !== "b4d49c4a-61d0-5db2-84fd-f89b80fd6398") {
+                return null;
+            }
+            if (routeId === "direct-entry") {
+                return {
+                    id: routeId,
+                    load: () => import(directEntryUrl),
+                };
+            }
+            return routeId === "core.dashboard"
                 ? {
                       id: routeId,
                       load: async () => {
@@ -127,7 +153,8 @@ test("component windows stay disposable across activation and SPA navigation", a
                           };
                       },
                   }
-                : null,
+                : null;
+        },
     });
 
     assert.equal(
@@ -241,6 +268,24 @@ test("component windows stay disposable across activation and SPA navigation", a
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(releasedMount, true);
     assert.equal(componentStage.children.length, 0);
+
+    const originalPathname = window.location.pathname;
+    const directEntryWindow = await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "direct-entry",
+        elementId: "meeting-whiteboard-stage",
+    });
+    assert.equal(directEntryWindow?.routeId, "direct-entry");
+    assert.deepEqual(globalThis.__componentPageMountRoots, [
+        componentStage.children[0],
+    ]);
+    assert.equal(globalThis.__componentPageMountRoots.includes(appRoot), false);
+    assert.equal(window.location.pathname, originalPathname);
+    assert.equal(appRoot.dataset.activePage, "meetings");
+    await uiCtx.capabilities.get("component-pages:discardAll")();
+    assert.equal(globalThis.__componentPageDiscards, 1);
+    assert.equal(componentStage.children.length, 0);
+    assert.equal(appRoot.dataset.activePage, "meetings");
 
     let releaseRouteLoad;
     routeLoadGate = new Promise((resolve) => (releaseRouteLoad = resolve));

@@ -51,3 +51,7 @@ Die Cognis-Shell gleicht Beiträge zum Benutzermenü nun beim Laden der Anbieter
 ## Scans privater Repositorys prüfen und beibehalten
 
 Die Einstellungen der Marketplace-Quellen behalten die Option zum Scannen privater Repositorys nun auch nach Neustarts bei. Beim Aktivieren wird vor dem Speichern geprüft, ob das konfigurierte PAT private Repositorys auflisten und deren Inhalte lesen kann. Katalogaktualisierungen melden fehlende Zugangsdaten sowie verweigerten Zugriff auf private Repositorys oder deren Inhalte, ohne zwischengespeicherte Module zu verwerfen.
+
+## Auswertung von Komponentenseiten-Einstiegen absichern
+
+Der Broker für Komponentenseiten wertet Einstiegsmodule von Anbietern nun mit derselben referenzgezählten Importsperre wie die SPA-Navigation aus. Einstiegsmodule, die `mountWhenDirect(mount)` aufrufen, können die Hostseite beim Import nicht ersetzen; die Sperre wird aufgehoben, bevor der Broker die Komponente in ihr angefordertes Fenster einhängt.

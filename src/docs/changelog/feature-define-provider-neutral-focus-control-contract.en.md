@@ -51,3 +51,7 @@ The Cognis shell now reconciles user-menu contributions as providers load, remov
 ## Validate and retain private repository scanning
 
 Marketplace source settings now retain the private-repository scan preference after restarts. Enabling it validates that the configured PAT can list private repositories and read repository contents before saving, while catalog refreshes report missing credentials, denied private-repository access, and denied content access without discarding cached modules.
+
+## Guard component-page entry evaluation
+
+The component-page broker now evaluates provider entry modules through the same reference-counted import guard as SPA navigation. Entry modules that call `mountWhenDirect(mount)` cannot replace the host page during import; the guard is released before the broker mounts the component into its requested window.

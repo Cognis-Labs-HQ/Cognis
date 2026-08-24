@@ -359,7 +359,7 @@ test("router loads destination flow hooks before authenticating an SPA route", (
     );
     const loadRouteStart = source.indexOf("async function loadRoute(path)");
     const routeModuleLoad = source.indexOf(
-        "mod = await route.load(path)",
+        "mod = await loadWithSpaImportGuard(() => route.load(path))",
         loadRouteStart,
     );
     const authentication = source.indexOf(

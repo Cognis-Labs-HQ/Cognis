@@ -41,7 +41,11 @@
 
 import { ensurePageStylesheet, preparePageStylesheets } from "./page-styles.js";
 import { apiFetch } from "./api-client.js";
-import { beginPageLoading, ensureHostUiProviders } from "./page-entry.js";
+import {
+    beginPageLoading,
+    ensureHostUiProviders,
+    loadWithSpaImportGuard,
+} from "./page-entry.js";
 import { getCurrentRoutePath } from "./route-path.js";
 import { clearSpaRouteCache, loadSpaRoutes } from "./spa-route-registry.js";
 import {
@@ -497,12 +501,10 @@ async function loadRoute(path) {
     // Load the destination entry before authentication so its gateway-owned
     // flow hooks participate in this navigation's authenticate-session run.
     // The router flag prevents the entry's direct-load mount from running.
-    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
-    globalThis.__spaRouter = true;
     let mod;
     try {
         await ensureHostUiProviders();
-        mod = await route.load(path);
+        mod = await loadWithSpaImportGuard(() => route.load(path));
     } catch (error) {
         console.error("[router] route load error for", path, error);
         await openRuntimeErrorPopup({
@@ -511,11 +513,6 @@ async function loadRoute(path) {
             contextDetail: path,
         });
         return false;
-    } finally {
-        globalThis.__spaRouterCount--;
-        if (globalThis.__spaRouterCount === 0) {
-            globalThis.__spaRouter = false;
-        }
     }
     if (signal.aborted || navigationSequence !== _navigationSequence) {
         return false;

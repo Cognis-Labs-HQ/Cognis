@@ -51,3 +51,7 @@ Shell Cognis kini merekonsiliasi kontribusi menu pengguna saat penyedia dimuat d
 ## Memvalidasi dan mempertahankan pemindaian repositori privat
 
 Pengaturan sumber Marketplace kini mempertahankan pilihan pemindaian repositori privat setelah aplikasi dimulai ulang. Saat diaktifkan, Cognis memvalidasi bahwa PAT yang dikonfigurasi dapat melihat repositori privat dan membaca isinya sebelum menyimpan. Penyegaran katalog juga melaporkan kredensial yang hilang, penolakan akses repositori privat, dan penolakan akses isi tanpa membuang modul yang tersimpan dalam cache.
+
+## Melindungi evaluasi entri halaman komponen
+
+Broker halaman komponen kini mengevaluasi modul entri penyedia melalui pelindung impor dengan penghitungan referensi yang sama seperti navigasi SPA. Modul entri yang memanggil `mountWhenDirect(mount)` tidak dapat mengganti halaman host selama impor; pelindung dilepas sebelum broker memasang komponen ke jendela yang diminta.

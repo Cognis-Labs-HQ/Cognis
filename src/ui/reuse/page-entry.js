@@ -8,6 +8,8 @@
  *   mountWhenDirect(mount, options) — runs a page mount on direct URL loads
  *     while skipping SPA-router navigations and automatically updates the
  *     loading overlay state around the mount.
+ *   loadWithSpaImportGuard(load) — evaluates an SPA entry without its direct
+ *     mount and reference-counts concurrent entry imports.
  *   ensureHostUiProviders() — waits for every active host UI provider before
  *     mounting component code that consumes browser capabilities.
  *
@@ -355,4 +357,25 @@ export async function mountWhenDirect(mount, { rootSelector = "#app" } = {}) {
         contextKey: "ui.reuse.runtime_error_context_route_mount",
         contextDetail,
     }).catch(() => {});
+}
+
+/**
+ * Loads an SPA entry module while suppressing its direct-load mount. Concurrent
+ * imports share a reference-counted guard so one completion cannot expose
+ * another entry that is still evaluating.
+ *
+ * @param {() => Promise<unknown>} load - Entry-module import operation.
+ * @returns {Promise<unknown>} The loaded entry module.
+ */
+export async function loadWithSpaImportGuard(load) {
+    globalThis.__spaRouterCount = (globalThis.__spaRouterCount ?? 0) + 1;
+    globalThis.__spaRouter = true;
+    try {
+        return await load();
+    } finally {
+        globalThis.__spaRouterCount--;
+        if (globalThis.__spaRouterCount === 0) {
+            globalThis.__spaRouter = false;
+        }
+    }
 }
