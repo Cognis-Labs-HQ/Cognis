@@ -27,6 +27,7 @@ import { highlightSearchTarget } from "../reuse/search-util/indexing.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { showToast } from "../reuse/toast.js";
 import { bindLanguageToggle } from "../reuse/language-toggle.js";
+import { bindUserMenuIntegrity } from "./user-menu.js";
 import {
     ensureNavbarPluginsLoaded as loadNavbarPlugins,
     ensureUiProvidersLoaded,
@@ -179,6 +180,8 @@ function bindTopbarActions() {
     const dropdown = document.querySelector("#profile-dropdown");
     const logout = document.querySelector("#profile-logout");
     const nameEl = document.querySelector("#profile-name");
+
+    if (dropdown) bindUserMenuIntegrity(dropdown);
 
     if (nameEl) nameEl.textContent = getDisplayName();
     refreshDisplayNameFromProfile().catch(() => {});

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { reconcileUserMenuEntries } from "../layouts/user-menu.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -272,5 +273,45 @@ test("dashboard navigation alphabetizes and redraws entries as plugins add them"
     assert.match(
         layoutSource,
         /new MutationObserver\(redrawNavigation\)[\s\S]*observe\(topnav, \{ childList: true \}\)/,
+    );
+});
+
+test("core reconciles duplicate provider entries in the user menu", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    const integritySource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/user-menu.js"),
+        "utf8",
+    );
+    const dropdown = { children: [] };
+    const entry = (href) => {
+        const item = {
+            querySelector: () => ({ getAttribute: () => href }),
+            remove: () => {
+                dropdown.children = dropdown.children.filter(
+                    (candidate) => candidate !== item,
+                );
+            },
+        };
+        return item;
+    };
+    dropdown.children = [
+        entry("/shares"),
+        entry("/settings"),
+        entry("/shares"),
+        entry("/shares"),
+    ];
+    assert.equal(reconcileUserMenuEntries(dropdown), 2);
+    assert.equal(dropdown.children.length, 2);
+    assert.match(
+        integritySource,
+        /function bindUserMenuIntegrity\(dropdown\)[\s\S]*new MutationObserver[\s\S]*observer\.observe\(dropdown, \{ childList: true \}\)/,
+    );
+    assert.match(layoutSource, /import \{ bindUserMenuIntegrity \}/);
+    assert.match(
+        layoutSource,
+        /if \(dropdown\) bindUserMenuIntegrity\(dropdown\)/,
     );
 });

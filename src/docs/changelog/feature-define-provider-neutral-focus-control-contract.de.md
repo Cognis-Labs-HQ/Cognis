@@ -43,3 +43,7 @@ Einträge der Dashboard-Navigation werden alphabetisch sortiert, sobald ein Modu
 ## Gezielte Komponentenfenster
 
 Die Suche nach Komponentenseiten bindet keine Oberfläche mehr ein. Eine ausdrückliche, benutzeraktivierte Spawn-Capability öffnet ein navigationsgeschütztes Fenster innerhalb der aufrufereigenen Bühne und liefert ein verwerfbares Handle mit automatischer Bereinigung beim Abbruch und vor jedem SPA-Routenwechsel.
+
+## Stabiles Benutzermenü
+
+Die Cognis-Shell gleicht Beiträge zum Benutzermenü nun beim Laden der Anbieter ab und entfernt doppelte Zieleinträge, die durch gleichzeitige Aktualisierungen externer Seiten und der Navigationsleiste entstehen.

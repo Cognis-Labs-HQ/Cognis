@@ -43,3 +43,7 @@ Entri navigasi dasbor diurutkan secara alfabetis setiap kali modul atau penyedia
 ## Jendela komponen bertarget
 
 Penemuan halaman komponen tidak lagi memasang UI. Capability spawn yang eksplisit dan diaktifkan pengguna membuka jendela terlindung dari navigasi di dalam panggung milik pemanggil serta mengembalikan handle yang dapat dibuang dengan pembersihan otomatis saat dibatalkan dan sebelum setiap perpindahan rute SPA.
+
+## Menu pengguna yang stabil
+
+Shell Cognis kini merekonsiliasi kontribusi menu pengguna saat penyedia dimuat dan menghapus entri tujuan duplikat yang disebabkan oleh pembaruan halaman eksternal dan bilah navigasi secara bersamaan.
