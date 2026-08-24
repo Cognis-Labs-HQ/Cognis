@@ -35,3 +35,7 @@ Zwischengespeicherte Marketplace-Antworten behalten Cognis-Empfehlungen nun auch
 ## Ausgewogene Modulkarten
 
 Das Modulraster reserviert nun mehr Platz für jede Karte und ordnet Lebenszyklusaktionen in ausgewogenen Reihen an, damit Bedienelemente bei üblichen Desktopbreiten weder gedrängt erscheinen noch überlappen.
+
+## Navigation bleibt alphabetisch
+
+Einträge der Dashboard-Navigation werden alphabetisch sortiert, sobald ein Modul oder ein anderer UI-Anbieter einen Eintrag hinzufügt. Das kompakte Navigationsmenü wird anschließend in der aktualisierten Reihenfolge neu aufgebaut.

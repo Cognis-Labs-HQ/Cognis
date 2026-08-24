@@ -85,15 +85,47 @@ async function refreshDisplayNameFromProfile() {
 
 function applyActiveNavigation() {
     const currentPath = window.location.pathname;
-    document.querySelectorAll(".topnav a").forEach((link) => {
-        const isActive = isNavigationLinkActive(
-            currentPath,
-            link.getAttribute("href"),
-        );
-        link.classList.toggle("active", isActive);
-        if (isActive) link.setAttribute("aria-current", "page");
-        else link.removeAttribute("aria-current");
-    });
+    document
+        .querySelectorAll(".topnav a, .nav-drawer-nav a")
+        .forEach((link) => {
+            const isActive = isNavigationLinkActive(
+                currentPath,
+                link.getAttribute("href"),
+            );
+            link.classList.toggle("active", isActive);
+            if (isActive) link.setAttribute("aria-current", "page");
+            else link.removeAttribute("aria-current");
+        });
+}
+
+function navigationEntryLabel(entry) {
+    return (
+        entry.textContent.trim() ||
+        entry.dataset.i18n ||
+        entry.getAttribute("href") ||
+        ""
+    );
+}
+
+function sortNavigationEntries(topnav) {
+    const entries = Array.from(topnav.children).filter((entry) =>
+        entry.matches("a[href]"),
+    );
+    const collator = new Intl.Collator(
+        document.documentElement.lang || undefined,
+        {
+            numeric: true,
+            sensitivity: "base",
+        },
+    );
+    const sortedEntries = [...entries].sort((left, right) =>
+        collator.compare(
+            navigationEntryLabel(left),
+            navigationEntryLabel(right),
+        ),
+    );
+    if (entries.every((entry, index) => entry === sortedEntries[index])) return;
+    topnav.append(...sortedEntries);
 }
 
 function isNavigationLinkActive(currentPath, href) {
@@ -386,6 +418,15 @@ function applyCompactNav(root) {
 
     let drawerOpen = false;
 
+    function redrawNavigation() {
+        sortNavigationEntries(topnav);
+        if (drawerNav) {
+            drawerNav.innerHTML = topnav.innerHTML;
+            applyActiveNavigation();
+        }
+        syncCompactState();
+    }
+
     function syncCompactState() {
         const overflows = topnav.scrollWidth > topnav.clientWidth + 2;
         navrow.classList.toggle("global-navrow--compact", overflows);
@@ -396,18 +437,7 @@ function applyCompactNav(root) {
     function openDrawer() {
         if (drawerOpen) return;
         drawerOpen = true;
-        if (drawerNav) {
-            drawerNav.innerHTML = topnav.innerHTML;
-            drawerNav.querySelectorAll("a").forEach((link) => {
-                const isActive = isNavigationLinkActive(
-                    window.location.pathname,
-                    link.getAttribute("href"),
-                );
-                link.classList.toggle("active", isActive);
-                if (isActive) link.setAttribute("aria-current", "page");
-                else link.removeAttribute("aria-current");
-            });
-        }
+        redrawNavigation();
         drawer.classList.add("nav-drawer--open");
         drawer.setAttribute("aria-hidden", "false");
         compactToggle.setAttribute("aria-expanded", "true");
@@ -445,7 +475,9 @@ function applyCompactNav(root) {
     const resizeObserver = new ResizeObserver(syncCompactState);
     resizeObserver.observe(topnav);
     resizeObserver.observe(navrow);
-    syncCompactState();
+    const navigationObserver = new MutationObserver(redrawNavigation);
+    navigationObserver.observe(topnav, { childList: true });
+    redrawNavigation();
 }
 
 function syncHeaderScrollState(root) {

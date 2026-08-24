@@ -255,3 +255,22 @@ test("user menu entries gain an outline on hover", () => {
         /\.dropdown-item:hover,[\s\S]+outline: 1px solid var\(--accent\);/,
     );
 });
+
+test("dashboard navigation alphabetizes and redraws entries as plugins add them", () => {
+    const layoutSource = readFileSync(
+        resolve(ROOT, "src/ui/layouts/dashboard-layout.js"),
+        "utf8",
+    );
+    assert.match(
+        layoutSource,
+        /function sortNavigationEntries\(topnav\)[\s\S]*new Intl\.Collator[\s\S]*topnav\.append\(\.\.\.sortedEntries\)/,
+    );
+    assert.match(
+        layoutSource,
+        /function redrawNavigation\(\)[\s\S]*sortNavigationEntries\(topnav\)[\s\S]*drawerNav\.innerHTML = topnav\.innerHTML/,
+    );
+    assert.match(
+        layoutSource,
+        /new MutationObserver\(redrawNavigation\)[\s\S]*observe\(topnav, \{ childList: true \}\)/,
+    );
+});

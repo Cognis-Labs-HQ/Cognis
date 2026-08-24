@@ -35,3 +35,7 @@ Cached marketplace responses now retain Cognis recommendations after page refres
 ## Balanced module cards
 
 The Modules grid now reserves more room for each card and arranges lifecycle actions in balanced rows, preventing controls from crowding or overlapping at common desktop widths.
+
+## Navigation stays alphabetical
+
+Dashboard navigation entries are sorted alphabetically whenever a module or another UI provider adds an entry, and the compact navigation drawer is redrawn from the updated order.

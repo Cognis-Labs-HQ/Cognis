@@ -35,3 +35,7 @@ Respons marketplace yang disimpan kini mempertahankan rekomendasi Cognis setelah
 ## Kartu modul yang seimbang
 
 Kisi Modul kini menyediakan ruang lebih luas untuk setiap kartu dan menata tindakan siklus hidup dalam baris yang seimbang, sehingga kontrol tidak berhimpitan atau tumpang tindih pada lebar desktop yang umum.
+
+## Navigasi tetap alfabetis
+
+Entri navigasi dasbor diurutkan secara alfabetis setiap kali modul atau penyedia UI lain menambahkan entri, lalu panel navigasi ringkas digambar ulang mengikuti urutan terbaru.
