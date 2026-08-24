@@ -42,6 +42,8 @@ Modul entri halaman harus mengekspor `mount(root, { signal, focusState })`, mema
 
 Peminta mengidentifikasi penyedia dengan UUID manifes yang tidak berubah dan ID rute stabil. Kode browser memperoleh `component-pages:request` dari `uiCtx.capabilities`; kode tidak boleh mengimpor penyedia atau menyusun URL asetnya. Capability mengembalikan `null` ketika modul dinonaktifkan, tidak dapat diakses, tidak tersedia, atau belum mengizinkan penggunaan rute oleh komponen.
 
+Jika `elementId` diberikan, Cognis mencari elemen DOM yang sudah ada tersebut, memuat gaya dan modul entri halaman komponen yang dideklarasikan, lalu memanggil `mount` dengan elemen itu serta konteks pemanggil sebagai `focusState`. Pemanggil harus membuat dan memiliki elemen tujuan sebelum meminta halaman, memakai ID yang hanya berisi huruf, angka, titik, garis bawah, titik dua, atau tanda hubung, serta meneruskan `AbortSignal` halamannya. Tujuan yang hilang atau tidak valid menghasilkan `null`. Tanpa `elementId`, hanya deskriptor rute yang diselesaikan seperti sebelumnya.
+
 Untuk Focus Control tersinkron, deklarasikan loader `module-route` dengan `moduleId` berupa UUID tersebut dan `routeId` berupa ID rute yang memenuhi syarat. Penyedia kolaborasi tetap harus mengotorisasi permintaan, membuat atau menemukan whiteboard melalui capability ctx sisi server, memberikan akses kepada peserta rapat, dan hanya menerbitkan pengenal sumber daya stabil melalui `focus:transport`.
 
 ## Halaman komponen bawaan

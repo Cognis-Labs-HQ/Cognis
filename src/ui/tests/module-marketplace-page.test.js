@@ -53,14 +53,12 @@ const marketplaceSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/index.js"),
     "utf8",
 );
-
 test("module marketplace polls Cognis for current recommendations", () => {
     assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
     assert.match(marketplaceSource, /window\.setInterval\(poll/);
     assert.match(marketplaceSource, /loadKnownModules\(false, signal\)/);
     assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
 });
-
 test("modules navigation derives its width from its content", () => {
     assert.match(
         marketplaceStyles,

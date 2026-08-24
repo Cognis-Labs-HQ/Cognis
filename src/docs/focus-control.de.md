@@ -42,6 +42,8 @@ Das Seitenmodul muss `mount(root, { signal, focusState })` exportieren, das Abbr
 
 Eine anfordernde Komponente benennt den Anbieter anhand seiner unveränderlichen Manifest-UUID und der stabilen Routen-ID. Browsercode bezieht `component-pages:request` aus `uiCtx.capabilities`; er darf den Anbieter weder importieren noch dessen Asset-URL zusammensetzen. Die Capability liefert `null`, wenn das Modul deaktiviert, unzugänglich oder nicht vorhanden ist oder die Route nicht ausdrücklich freigegeben wurde.
 
+Wird `elementId` übergeben, löst Cognis dieses vorhandene DOM-Element auf, lädt die deklarierten Stile und das Einstiegsmodul der Komponentenseite und ruft `mount` mit diesem Element sowie dem Aufruferkontext als `focusState` auf. Der Aufrufer muss das Zielelement vor der Anfrage erstellen und besitzen, eine ID ausschließlich aus Buchstaben, Ziffern, Punkten, Unterstrichen, Doppelpunkten oder Bindestrichen verwenden und das `AbortSignal` seiner Seite übergeben. Bei einem fehlenden oder ungültigen Ziel wird `null` geliefert. Ohne `elementId` wird weiterhin nur der Routendeskriptor aufgelöst.
+
 Für synchronisierte Fokussteuerung wird ein `module-route`-Loader deklariert, dessen `moduleId` diese UUID und dessen `routeId` die freigegebene Routen-ID ist. Ein Kollaborationsanbieter muss die Anfrage weiterhin autorisieren, das Whiteboard über serverseitige ctx-Capabilities erstellen oder auflösen, Teilnehmerzugriff vergeben und über `focus:transport` ausschließlich stabile Ressourcenkennungen veröffentlichen.
 
 ## Integrierte Komponentenseiten

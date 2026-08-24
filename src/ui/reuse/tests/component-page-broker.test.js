@@ -7,6 +7,11 @@ test("component pages resolve only by matching UUID, route ID, and opt-in", asyn
         location: { origin: "https://cognis.test" },
         dispatchEvent() {},
     };
+    const componentTarget = { dataset: {} };
+    globalThis.document = {
+        getElementById: (elementId) =>
+            elementId === "meeting-whiteboard" ? componentTarget : null,
+    };
     globalThis.fetch = async () =>
         new Response(
             JSON.stringify({
@@ -39,11 +44,19 @@ test("component pages resolve only by matching UUID, route ID, and opt-in", asyn
     const { installComponentPageBroker } =
         await import("../component-page-broker.js");
     const { uiCtx } = await import("../ui-ctx.js");
+    let mountedComponentPage = null;
     installComponentPageBroker({
         resolveLocal: async ({ componentUuid, routeId }) =>
             componentUuid === "b4d49c4a-61d0-5db2-84fd-f89b80fd6398" &&
             routeId === "core.dashboard"
-                ? { id: routeId, load: async () => ({}) }
+                ? {
+                      id: routeId,
+                      load: async () => ({
+                          mount: async (root, options) => {
+                              mountedComponentPage = { root, options };
+                          },
+                      }),
+                  }
                 : null,
     });
     assert.equal(
@@ -82,6 +95,53 @@ test("component pages resolve only by matching UUID, route ID, and opt-in", asyn
             })
         )?.requestContext?.meetingId,
         "meeting-1",
+    );
+    const componentPageController = new AbortController();
+    const spawnedPage = await requestPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard",
+        context: { meetingId: "meeting-2" },
+        signal: componentPageController.signal,
+    });
+    assert.equal(spawnedPage?.targetElementId, "meeting-whiteboard");
+    assert.equal(mountedComponentPage?.root, componentTarget);
+    assert.equal(
+        mountedComponentPage?.options.focusState.meetingId,
+        "meeting-2",
+    );
+    assert.equal(
+        mountedComponentPage?.options.signal,
+        componentPageController.signal,
+    );
+    assert.deepEqual(componentTarget.dataset, {
+        componentPageOwner: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        componentPageRoute: "core.dashboard",
+    });
+    assert.equal(
+        await requestPage({
+            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+            routeId: "core.dashboard",
+            elementId: "missing-target",
+        }),
+        null,
+    );
+    assert.equal(
+        await requestPage({
+            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+            routeId: "core.dashboard",
+            elementId: "meeting-whiteboard",
+            signal: "not-an-abort-signal",
+        }),
+        null,
+    );
+    assert.equal(
+        await requestPage({
+            componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+            routeId: "core.dashboard",
+            elementId: "invalid target",
+        }),
+        null,
     );
     assert.equal(
         await resolveComponentPage({

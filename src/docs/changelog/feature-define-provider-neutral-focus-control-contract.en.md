@@ -39,3 +39,7 @@ The Modules grid now reserves more room for each card and arranges lifecycle act
 ## Navigation stays alphabetical
 
 Dashboard navigation entries are sorted alphabetically whenever a module or another UI provider adds an entry, and the compact navigation drawer is redrawn from the updated order.
+
+## Targeted component windows
+
+Component-page callers can now provide an existing element ID to have Cognis load and mount the requested component window directly inside that caller-owned host.

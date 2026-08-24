@@ -47,9 +47,13 @@ const requestPage = uiCtx.capabilities.get("component-pages:request");
 const page = await requestPage?.({
     componentUuid: WHITEBOARD_MODULE_UUID,
     routeId: "whiteboard.canvas",
+    elementId: "meeting-whiteboard",
     context: { meetingId },
+    signal,
 });
 ```
+
+When `elementId` is present, Cognis resolves that existing DOM element, loads the declared component-page styles and entry module, and calls `mount` with that element plus the caller context as `focusState`. The caller must create and own the host element before requesting the page, use an ID containing only letters, digits, dots, underscores, colons, or hyphens, and pass its page `AbortSignal` so the provider can release listeners when the caller unmounts. A missing or invalid host returns `null`. Omitting `elementId` preserves descriptor-only resolution for Focus Control and other coordinators that manage their own host.
 
 For synchronized Focus Control, declare a `module-route` loader whose `moduleId` is that UUID and whose `routeId` is the eligible route ID. A collaboration provider must still authorize the request, create or resolve the whiteboard through server-side ctx capabilities, grant meeting participants access, and publish only stable resource identifiers through `focus:transport`.
 

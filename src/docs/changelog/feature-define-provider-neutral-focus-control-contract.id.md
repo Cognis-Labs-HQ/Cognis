@@ -39,3 +39,7 @@ Kisi Modul kini menyediakan ruang lebih luas untuk setiap kartu dan menata tinda
 ## Navigasi tetap alfabetis
 
 Entri navigasi dasbor diurutkan secara alfabetis setiap kali modul atau penyedia UI lain menambahkan entri, lalu panel navigasi ringkas digambar ulang mengikuti urutan terbaru.
+
+## Jendela komponen bertarget
+
+Pemanggil halaman komponen kini dapat memberikan ID elemen yang sudah ada agar Cognis memuat dan memasang jendela komponen yang diminta langsung di dalam tujuan milik pemanggil tersebut.
