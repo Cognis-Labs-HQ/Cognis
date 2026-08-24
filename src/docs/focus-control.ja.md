@@ -44,7 +44,7 @@ ctx.registerSpaRoute({
 
 `component-pages:request` は利用可否だけを確認し、UI をマウントしません。コンポーネントウィンドウは、Whiteboard ボタンのクリックまたはキーボード操作ハンドラー内で `component-pages:spawn` を同期的に呼び出して開きます。呼び出し元が所有する既存ステージの ID とページの `AbortSignal` を渡します。Cognis は有効なユーザー操作を必須とし、ウィンドウをステージ内に封じ込め、リンクやフォームによる Dashboard Router へのナビゲーションを遮断し、提供側へ `navigationAllowed: false` を渡します。
 
-Spawn Capability は `discard()` を持つハンドルを返します。閉じる操作や戻る操作で呼び出し元が破棄する必要があり、シグナルの中断時にも自動的に破棄されます。ハンドルを保持しない場合は、`component-pages:discard` にステージ ID を渡せます。Meeting ページの読み込み時に行う利用可否確認では `component-pages:request` だけを使います。提供側は渡された Root 内だけに描画し、シグナルを尊重し、破棄時にリソースを解放し、埋め込み中に直接ナビゲーションを実行してはいけません。
+Spawn Capability は `discard()` を持つハンドルを返します。閉じる操作や戻る操作で呼び出し元が破棄する必要があり、シグナルの中断時や SPA ルートの切り替え前にも自動的に破棄されます。ハンドルを保持しない場合は `component-pages:discard` にステージ ID を渡せ、Shell のライフサイクル調整には `component-pages:discardAll` を利用できます。Meeting ページの読み込み時に行う利用可否確認では `component-pages:request` だけを使います。提供側は渡された Root 内だけに描画し、シグナルを尊重し、破棄時にリソースを解放し、埋め込み中に直接ナビゲーションを実行してはいけません。
 
 ステージ ID に使用できる文字は英数字、ピリオド、アンダースコア、コロン、ハイフンだけです。提供側が追加リソースを所有する場合、`mount` はクリーンアップ関数または `destroy` か `unmount` を持つオブジェクトを返します。
 

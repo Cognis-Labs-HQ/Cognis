@@ -42,4 +42,4 @@ Dashboard navigation entries are sorted alphabetically whenever a module or anot
 
 ## Targeted component windows
 
-Component-page discovery no longer mounts UI. An explicit, user-activated spawn capability opens a navigation-protected window inside the caller-owned stage and returns a discardable handle with automatic abort cleanup.
+Component-page discovery no longer mounts UI. An explicit, user-activated spawn capability opens a navigation-protected window inside the caller-owned stage and returns a discardable handle with automatic cleanup on abort and before every SPA route change.

@@ -80,11 +80,14 @@ function catalogResponse() {
     );
 }
 
-test("component pages resolve, spawn on activation, contain navigation, and discard", async () => {
+test("component windows stay disposable across activation and SPA navigation", async () => {
     globalThis.localStorage = { getItem: () => "test-token" };
+    const windowListeners = new Map();
     globalThis.window = {
+        addEventListener: (type, listener) =>
+            windowListeners.set(type, listener),
+        dispatchEvent: (event) => windowListeners.get(event.type)?.(event),
         location: { origin: "https://cognis.test" },
-        dispatchEvent() {},
     };
     const componentStage = new FakeElement();
     globalThis.document = {
@@ -104,6 +107,7 @@ test("component pages resolve, spawn on activation, contain navigation, and disc
     let spawnAuthorized = false;
     let mountedComponentPage = null;
     let releasedMount = false;
+    let routeLoadGate = null;
     installComponentPageBroker({
         authorizeSpawn: () => spawnAuthorized,
         resolveLocal: async ({ componentUuid, routeId }) =>
@@ -111,14 +115,17 @@ test("component pages resolve, spawn on activation, contain navigation, and disc
             routeId === "core.dashboard"
                 ? {
                       id: routeId,
-                      load: async () => ({
-                          mount: async (root, options) => {
-                              mountedComponentPage = { root, options };
-                              return () => {
-                                  releasedMount = true;
-                              };
-                          },
-                      }),
+                      load: async () => {
+                          await routeLoadGate;
+                          return {
+                              mount: async (root, options) => {
+                                  mountedComponentPage = { root, options };
+                                  return () => {
+                                      releasedMount = true;
+                                  };
+                              },
+                          };
+                      },
                   }
                 : null,
     });
@@ -218,9 +225,34 @@ test("component pages resolve, spawn on activation, contain navigation, and disc
         elementId: "meeting-whiteboard-stage",
         signal: navigationController.signal,
     });
+    window.dispatchEvent({ type: "cognis:route-will-change" });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    assert.equal(releasedMount, true);
+    assert.equal(componentStage.children.length, 0);
+
+    releasedMount = false;
+    await spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+        signal: navigationController.signal,
+    });
     navigationController.abort();
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(releasedMount, true);
+    assert.equal(componentStage.children.length, 0);
+
+    let releaseRouteLoad;
+    routeLoadGate = new Promise((resolve) => (releaseRouteLoad = resolve));
+    const racingSpawn = spawnComponentPage({
+        componentUuid: "b4d49c4a-61d0-5db2-84fd-f89b80fd6398",
+        routeId: "core.dashboard",
+        elementId: "meeting-whiteboard-stage",
+    });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    window.dispatchEvent({ type: "cognis:route-will-change" });
+    releaseRouteLoad();
+    assert.equal(await racingSpawn, null);
     assert.equal(componentStage.children.length, 0);
 });
 

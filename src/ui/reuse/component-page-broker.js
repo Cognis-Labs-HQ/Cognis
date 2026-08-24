@@ -5,6 +5,7 @@
  * - `requestComponentPage` — resolves an eligible page without mounting it.
  * - `spawnComponentPage` — mounts an eligible page in a protected caller-owned stage.
  * - `discardComponentPage` — tears down the component window in a stage.
+ * - `discardAllComponentPages` — tears down every active component window.
  * - `installComponentPageBroker` — registers browser flow hooks and capabilities once.
  *
  * @example
@@ -92,6 +93,19 @@ export async function discardComponentPage(elementId) {
     if (!activeWindow) return false;
     await activeWindow.discard();
     return true;
+}
+
+/**
+ * Discards every active component window before the SPA replaces page content.
+ *
+ * @returns {Promise<void>}
+ */
+export async function discardAllComponentPages() {
+    await Promise.all(
+        [...activeWindows.values()].map((activeWindow) =>
+            activeWindow.discard(),
+        ),
+    );
 }
 
 /**
@@ -206,6 +220,7 @@ export function installComponentPageBroker({
             const controller = new AbortController();
             let mountResult;
             let discarded = false;
+            let discardOnCallerAbort;
             const discard = async () => {
                 if (discarded) return;
                 discarded = true;
@@ -220,6 +235,10 @@ export function installComponentPageBroker({
                         error,
                     });
                 } finally {
+                    data.request.signal?.removeEventListener(
+                        "abort",
+                        discardOnCallerAbort,
+                    );
                     data.windowElement.remove();
                     if (!data.stage.querySelector?.(".component-page-window")) {
                         data.stage.classList.remove("component-page-stage");
@@ -239,9 +258,10 @@ export function installComponentPageBroker({
                 discard,
             };
             activeWindows.set(data.request.elementId, handle);
+            discardOnCallerAbort = () => void discard();
             data.request.signal?.addEventListener(
                 "abort",
-                () => void discard(),
+                discardOnCallerAbort,
                 { once: true },
             );
             data.windowElement.addEventListener("click", blockNavigation, {
@@ -297,6 +317,13 @@ export function installComponentPageBroker({
         "component-pages:discard",
         discardComponentPage,
     );
+    uiCtx.capabilities.contribute(
+        "component-pages:discardAll",
+        discardAllComponentPages,
+    );
+    window.addEventListener("cognis:route-will-change", () => {
+        void discardAllComponentPages();
+    });
     uiCtx.capabilities.contribute(
         "router:resolveDeclaredRoute",
         async (loader) => {

@@ -42,4 +42,4 @@ Einträge der Dashboard-Navigation werden alphabetisch sortiert, sobald ein Modu
 
 ## Gezielte Komponentenfenster
 
-Die Suche nach Komponentenseiten bindet keine Oberfläche mehr ein. Eine ausdrückliche, benutzeraktivierte Spawn-Capability öffnet ein navigationsgeschütztes Fenster innerhalb der aufrufereigenen Bühne und liefert ein verwerfbares Handle mit automatischer Bereinigung beim Abbruch.
+Die Suche nach Komponentenseiten bindet keine Oberfläche mehr ein. Eine ausdrückliche, benutzeraktivierte Spawn-Capability öffnet ein navigationsgeschütztes Fenster innerhalb der aufrufereigenen Bühne und liefert ein verwerfbares Handle mit automatischer Bereinigung beim Abbruch und vor jedem SPA-Routenwechsel.
