@@ -55,6 +55,18 @@ Localization keys must use periods as word separators: write `module.example.can
 
 Cognis includes the `https://github.com/Cognis-Labs-HQ` organization as an immutable trusted source by default. Administrators can add further GitHub organizations or GitLab groups from Modules in the user menu, then Module Sources. Cognis queries the provider API, treats each repository containing a valid root manifest as a module, and derives the catalog dynamically. A source can reference an optional PAT stored in the signed-in administrator's keyring; the source record stores only the keyring identifier. Use a least-privilege, read-only token with repository and metadata access. Tokens are supplied only for discovery and cloning and are never written to source configuration. Private repositories are excluded unless **Scan Private Repositories** is enabled; enabling it makes the PAT mandatory.
 
+### GitHub PAT permissions for private scans
+
+Prefer a fine-grained PAT and configure it as follows:
+
+- **Resource owner:** select the GitHub organization configured as the Cognis module source.
+- **Repository access:** select **All repositories**, or every private repository Cognis must discover and install.
+- **Repository permissions:** set **Metadata** and **Contents** to **Read-only**. Metadata permits repository listing; Contents permits manifest discovery and authenticated Git cloning.
+- **Organization permissions:** none are required. Cognis does not require **Administration**, **Members**, **Secrets**, or any Copilot permission.
+- **Approval and SSO:** complete organization approval and SAML SSO authorization when required by organization policy.
+
+For a personal access token (classic), grant the `repo` scope and authorize it for organization SSO when applicable. The token owner must already be allowed to access every selected private repository. Cognis rejects the source setting when the token cannot list a private repository and read its contents.
+
 ### Installation and safety
 
 Installation clones the selected HTTPS repository without an interactive credential prompt, validates the downloaded root manifest and immutable UUID, and atomically moves it under the external module root. Before committing the checkout, Cognis verifies the package and manifest versions, route declaration, entry points, required artwork, safe repository-relative paths, and every declared SHA-256 file digest. A failed check removes the temporary checkout and leaves the installed version untouched. Updating repeats that operation for the same UUID. Uninstalling removes that UUID's checkout. Enabling remains a separate lifecycle action so code is not executed merely by browsing or installing it. Routes must be declared in `routes.json`; protected core prefixes cannot be claimed.

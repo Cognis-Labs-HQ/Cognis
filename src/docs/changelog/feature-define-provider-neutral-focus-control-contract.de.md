@@ -63,3 +63,7 @@ PiP-Bereiche von Focus Control verwenden nun eine wiederverwendbare Steuerung f�
 ## PiP-Unterstützung laden und eingebettete Bedienelemente ausblenden
 
 Der Seiten-Host registriert die Funktion für schwebende Fenster nun vor dem Einhängen externer Seiten, sodass Jitsi Meet sein verschiebbares Meeting-PiP zuverlässig erstellen kann. In Komponentenfenstern eingebundene Seiten-Composer blenden verschachtelte Kopfzeilen, Navigation, Sprach- und Designsteuerung, Fußzeilen, Einstellungsabrufe und Kontoerweiterungen automatisch aus.
+
+## PAT-Berechtigungen für private Repositorys erklären
+
+Die Felder für Modulquellen enthalten nun Informationstooltips mit den genauen Anforderungen an differenzierte und klassische GitHub-PATs. Die Dokumentation externer Module nennt Ressourcenbesitzer, Repository-Auswahl, schreibgeschützte Berechtigungen für Metadata und Contents sowie Genehmigungs- und SSO-Anforderungen und stellt klar, dass keine auswählbare GitHub-Organisationsberechtigung nötig ist.

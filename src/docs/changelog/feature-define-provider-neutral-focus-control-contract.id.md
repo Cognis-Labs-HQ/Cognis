@@ -63,3 +63,7 @@ Panel PiP Focus Control kini menggunakan pengendali jendela mengambang yang dapa
 ## Memuat dukungan PiP dan menyembunyikan krom tersemat
 
 Host entri halaman kini mendaftarkan kapabilitas jendela mengambang sebelum halaman eksternal dipasang, sehingga Jitsi Meet dapat membuat PiP rapat yang dapat dipindahkan secara andal. Komposer halaman di dalam jendela komponen otomatis menghilangkan bilah atas, navigasi, kontrol bahasa dan tema, footer, pemuatan preferensi, serta peningkatan akun yang bersarang.
+
+## Menjelaskan izin PAT repositori privat
+
+Kolom Sumber Modul kini memiliki tooltip informasi dengan persyaratan PAT fine-grained dan klasik GitHub yang tepat. Dokumentasi modul eksternal kini menjelaskan resource owner, pemilihan repositori, izin baca-saja Metadata dan Contents, persetujuan serta SSO, dan menegaskan bahwa tidak ada Organization permission GitHub yang perlu dipilih.

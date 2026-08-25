@@ -55,6 +55,18 @@ Lokalisierungsschlüssel müssen Punkte als Worttrenner verwenden: `module.examp
 
 Cognis schließt die `https://github.com/Cognis-Labs-HQ`-Organisation standardmäßig als unveränderliche vertrauenswürdige Quelle ein. Administratoren können weitere GitHub-Organisationen oder GitLab-Gruppen über „Module“ im Benutzermenü und dann über „Modulquellen“ hinzufügen. Cognis fragt die Anbieter-API ab, behandelt jedes Repository, das ein gültiges Root-Manifest enthält, als Modul und leitet den Katalog dynamisch ab. Eine Quelle kann auf eine optionale PAT verweisen, die im Schlüsselbund des angemeldeten Administrators gespeichert ist. Der Quelldatensatz speichert nur die Schlüsselbund-ID. Verwenden Sie ein schreibgeschütztes Token mit den geringsten Berechtigungen und Repository- und Metadatenzugriff. Token werden nur zur Erkennung und zum Klonen bereitgestellt und niemals in die Quellkonfiguration geschrieben. Private Repositories werden ausgeschlossen, sofern **Private Repositories durchsuchen** nicht aktiviert ist; bei Aktivierung ist das PAT verpflichtend.
 
+### GitHub-PAT-Berechtigungen für private Scans
+
+Bevorzugen Sie einen PAT mit differenzierten Berechtigungen und konfigurieren Sie ihn wie folgt:
+
+- **Ressourcenbesitzer:** Wählen Sie die GitHub-Organisation der Cognis-Modulquelle.
+- **Repository-Zugriff:** Wählen Sie **Alle Repositorys** oder jedes private Repository, das Cognis erkennen und installieren soll.
+- **Repository-Berechtigungen:** Setzen Sie **Metadata** und **Contents** auf **Read-only**. Metadata erlaubt die Repository-Auflistung; Contents erlaubt Manifest-Erkennung und authentifiziertes Klonen.
+- **Organisationsberechtigungen:** Keine ist erforderlich. Cognis benötigt weder **Administration**, **Members**, **Secrets** noch eine Copilot-Berechtigung.
+- **Genehmigung und SSO:** Schließen Sie bei entsprechender Organisationsrichtlinie die Genehmigung und SAML-SSO-Autorisierung ab.
+
+Gewähren Sie einem klassischen persönlichen Zugriffstoken den Umfang `repo` und autorisieren Sie es gegebenenfalls für das Organisations-SSO. Der Tokenbesitzer muss bereits auf jedes ausgewählte private Repository zugreifen dürfen. Cognis lehnt die Quelleinstellung ab, wenn das Token kein privates Repository auflisten und dessen Inhalte lesen kann.
+
 ### Installation und Sicherheit
 
 Die Installation klont das ausgewählte HTTPS-Repository ohne interaktive Eingabeaufforderung für Anmeldeinformationen, validiert das heruntergeladene Root-Manifest und die unveränderliche UUID und verschiebt es atomar unter das Stammverzeichnis des externen Moduls. Vor dem Auschecken überprüft Cognis die Paket- und Manifestversionen, die Routendeklaration, die Einstiegspunkte, die erforderliche Grafik, sichere Repository-relative Pfade und jeden deklarierten SHA-256-Datei-Digest. Bei einer fehlgeschlagenen Prüfung wird das temporäre Auschecken entfernt und die installierte Version bleibt unberührt. Beim Aktualisieren wird dieser Vorgang für dieselbe UUID wiederholt. Durch die Deinstallation wird der Checkout dieser UUID entfernt. Die Aktivierung bleibt eine separate Lebenszyklusaktion, sodass Code nicht einfach durch Durchsuchen oder Installieren ausgeführt wird. Routen müssen in `routes.json` deklariert werden; Geschützte Kernpräfixe können nicht beansprucht werden.

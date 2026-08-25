@@ -55,6 +55,18 @@ Kunci pelokalan harus menggunakan titik sebagai pemisah kata: tulis `module.exam
 
 Cognis menyertakan organisasi `https://github.com/Cognis-Labs-HQ` sebagai sumber tepercaya yang tidak dapat diubah secara default. Administrator dapat menambahkan lebih lanjut organisasi GitHub atau grup GitLab dari Modul di menu pengguna, lalu Sumber Modul. Cognis menanyakan API penyedia, memperlakukan setiap repositori yang berisi manifes root yang valid sebagai modul, dan mendapatkan katalog secara dinamis. Sumber dapat mereferensikan PAT opsional yang disimpan dalam keyring administrator yang masuk; catatan sumber hanya menyimpan pengidentifikasi keyring. Gunakan token dengan hak istimewa paling rendah dan hanya baca dengan akses repositori dan metadata. Token diberikan hanya untuk penemuan dan kloning dan tidak pernah ditulis ke konfigurasi sumber. Repositori privat dikecualikan kecuali **Pindai Repositori Privat** diaktifkan; mengaktifkannya membuat PAT wajib.
 
+### Izin PAT GitHub untuk pemindaian privat
+
+Utamakan PAT fine-grained dan konfigurasikan sebagai berikut:
+
+- **Resource owner:** pilih organisasi GitHub untuk sumber modul Cognis.
+- **Repository access:** pilih **All repositories** atau setiap repositori privat yang harus ditemukan dan dipasang Cognis.
+- **Repository permissions:** atur **Metadata** dan **Contents** ke **Read-only**. Metadata mengizinkan daftar repositori; Contents mengizinkan penemuan manifes dan kloning terautentikasi.
+- **Organization permissions:** tidak ada yang diperlukan. Cognis tidak memerlukan **Administration**, **Members**, **Secrets**, atau izin Copilot.
+- **Persetujuan dan SSO:** selesaikan persetujuan organisasi dan otorisasi SAML SSO bila diwajibkan kebijakan organisasi.
+
+Untuk personal access token klasik, berikan cakupan `repo` dan otorisasi SSO organisasi bila berlaku. Pemilik token harus sudah dapat mengakses setiap repositori privat yang dipilih. Cognis menolak pengaturan sumber ketika token tidak dapat mencantumkan repositori privat dan membaca isinya.
+
 ### Instalasi dan keamanan
 
 Instalasi mengkloning repositori HTTPS yang dipilih tanpa perintah kredensial interaktif, memvalidasi manifes root yang diunduh dan UUID yang tidak dapat diubah, dan memindahkannya secara atom ke bawah root modul eksternal. Sebelum melakukan checkout, Cognis memverifikasi versi paket dan manifes, deklarasi rute, titik masuk, karya seni yang diperlukan, jalur relatif repositori yang aman, dan setiap intisari file SHA-256 yang dinyatakan. Pemeriksaan yang gagal akan menghapus pembayaran sementara dan membiarkan versi yang terinstal tidak tersentuh. Memperbarui mengulangi operasi itu untuk UUID yang sama. Menghapus instalasi akan menghapus checkout UUID tersebut. Pengaktifan tetap merupakan tindakan siklus hidup yang terpisah sehingga kode tidak dieksekusi hanya dengan menjelajahi atau menginstalnya. Rute harus dideklarasikan dalam `routes.json`; awalan inti yang dilindungi tidak dapat diklaim.

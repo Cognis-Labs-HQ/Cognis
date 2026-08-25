@@ -304,10 +304,6 @@ test("module details use composer refreshes and SPA deep links", () => {
 });
 
 test("module marketplace identifies immutable trusted sources", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
     assert.match(sourceSettingsSource, /source\.trusted/);
     assert.match(sourceSettingsSource, /ui\.app\.modules\.default_source/);
     assert.match(sourceSettingsSource, /const locked = source\?\.trusted/);
@@ -670,9 +666,12 @@ test("module marketplace uses curated recommendations and compact details", () =
     );
     assert.match(sourceSettingsSource, /loadModuleMarketplaceSettings/);
     assert.match(sourceSettingsSource, /recommendedModulesUrl/);
-    assert.match(sourceSettingsSource, /createFormBuilder/);
+    assert.match(sourceSettingsSource, /renderInfoTooltip/);
     assert.match(sourceSettingsSource, /name: "scanPrivateRepos"/);
-    assert.match(sourceSettingsSource, /slider: true/);
+    assert.match(
+        sourceSettingsSource,
+        /slider: true[\s\S]*scan_private_repos_hint[\s\S]*pat_permissions_hint/,
+    );
     assert.match(sourceSettingsSource, /setFieldRequired\(\s*"token"/);
     assert.match(source, /id="module-marketplace-settings"/);
     assert.match(source, /module-icon-settings/);

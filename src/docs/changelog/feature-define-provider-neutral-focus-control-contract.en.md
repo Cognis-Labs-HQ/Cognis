@@ -63,3 +63,7 @@ Focus Control PiP panes now use a reusable floating-window controller. Meeting p
 ## Load PiP support and suppress embedded chrome
 
 The page-entry host now registers the floating-window capability before external pages mount, so Jitsi Meet can reliably create its movable meeting PiP. Page composers mounted inside component windows automatically omit nested topbars, navigation, language and theme controls, footers, preference loading, and account enhancements.
+
+## Explain private-repository PAT permissions
+
+Module Source fields now include information tooltips with the exact GitHub fine-grained and classic PAT requirements. External-module documentation now identifies the required resource owner, repository selection, read-only Metadata and Contents permissions, approval and SSO requirements, and clarifies that no selectable GitHub Organization permission is needed.

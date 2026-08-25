@@ -1,5 +1,6 @@
 import { createFormBuilder } from "../../reuse/form-builder.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
@@ -63,7 +64,7 @@ function renderSourceForm(i18n, source) {
     const locked = source?.trusted === true;
     const scanPrivateRepos = source?.scanPrivateRepos === true;
     sourceFormBuilder = createFormBuilder(
-        { i18n, escapeHtml },
+        { i18n, escapeHtml, renderInfoTooltip },
         {
             formId: "module-source-form",
             formClassName: "module-source-form",
@@ -114,6 +115,10 @@ function renderSourceForm(i18n, source) {
                     type: "checkbox",
                     value: String(scanPrivateRepos),
                     slider: true,
+                    infoTooltip: {
+                        text: i18n.t("ui.app.modules.scan_private_repos_hint"),
+                        ariaLabel: i18n.t("ui.reuse.more_information"),
+                    },
                 },
                 {
                     name: "token",
@@ -123,6 +128,10 @@ function renderSourceForm(i18n, source) {
                     required: scanPrivateRepos,
                     secret: true,
                     attributes: { autocomplete: "off" },
+                    infoTooltip: {
+                        text: i18n.t("ui.app.modules.pat_permissions_hint"),
+                        ariaLabel: i18n.t("ui.reuse.more_information"),
+                    },
                 },
             ],
         },

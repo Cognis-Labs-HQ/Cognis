@@ -82,4 +82,6 @@
   <string name="ui.app.modules.uninstall_delete_content">Zusätzlich die Daten des Moduls dauerhaft löschen</string>
   <string name="ui.app.modules.scan_private_repos">Private Repositorys durchsuchen</string>
   <string name="ui.app.modules.polling_failed">Die Marketplace-Abfrage ist fehlgeschlagen.</string>
+  <string name="ui.app.modules.scan_private_repos_hint">Private Scans erfordern einen PAT und umfassen nur private Repositorys, auf die das Token zugreifen kann. Cognis prüft vor dem Speichern das Auflisten der Repositorys und das Lesen ihrer Inhalte.</string>
+  <string name="ui.app.modules.pat_permissions_hint">GitHub-PAT mit differenzierten Berechtigungen: Wählen Sie die konfigurierte Organisation als Ressourcenbesitzer, gewähren Sie Zugriff auf alle Repositorys oder jedes private Repository, das Cognis durchsuchen soll, und setzen Sie die Repository-Berechtigungen „Metadata“ und „Contents“ jeweils auf „Read-only“. Aus der Liste der GitHub-Organisationsberechtigungen ist keine Berechtigung erforderlich. Schließen Sie bei Bedarf die Genehmigung der Organisation ab. Gewähren Sie einem klassischen PAT den Umfang „repo“ und autorisieren Sie ihn gegebenenfalls für das Organisations-SSO. GitLab-Token benötigen „read_api“ und „read_repository“.</string>
 </resources>
