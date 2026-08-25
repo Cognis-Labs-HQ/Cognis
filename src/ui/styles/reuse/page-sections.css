@@ -690,3 +690,45 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     border: 0;
     border-radius: 0;
 }
+
+.component-page-window--borderless > .workspace {
+    background: transparent;
+    backdrop-filter: none;
+}
+
+.component-page-window--borderless > .workspace .composer-view-grid {
+    height: 100%;
+    min-height: 0;
+    grid-auto-rows: minmax(0, 1fr);
+    gap: 0;
+}
+
+.component-page-window--borderless
+    > .workspace
+    > .composer-view-grid
+    > .widget-card {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.component-page-window--borderless
+    > .workspace
+    :is(
+        .widget-card,
+        .content-section,
+        .content-panel,
+        .main-window,
+        .content-grid
+    ) {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.component-page-window--borderless > .workspace .content-panel {
+    min-height: 0;
+}

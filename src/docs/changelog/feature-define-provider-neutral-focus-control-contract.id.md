@@ -87,3 +87,7 @@ Cognis kini memiliki dan memuat stylesheet jendela mengambang lengkap yang digun
 ## Dukung jendela komponen tanpa bingkai
 
 Pemanggil halaman komponen dapat meminta spawn tanpa bingkai yang menghapus jarak luar jendela dan memenuhi seluruh panggung induk, sembari mempertahankan kendali penyedia atas jarak di dalam kontennya.
+
+## Penuhi kanvas tanpa bingkai dan pertahankan PiP rapat
+
+Jendela komponen tanpa bingkai kini turut menghapus jarak ruang kerja penyusun halaman dan kartu konten terluar, sehingga kanvas mencapai setiap sisi induk tanpa terpotong di bagian bawah. Jendela rapat mengambang menyesuaikan koordinatnya terhadap panggung komponen yang dibatasi dan mengamati aktivasi panggung agar PiP rapat tetap terlihat di atas kanvas.

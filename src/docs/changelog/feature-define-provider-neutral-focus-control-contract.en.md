@@ -87,3 +87,7 @@ Cognis now owns and loads the complete floating-window stylesheet used by meetin
 ## Support borderless component windows
 
 Component-page callers can request a borderless spawn that removes outer window spacing and fills the entire parent stage while preserving the provider's control over spacing inside its content.
+
+## Fill borderless canvases and retain meeting PiP
+
+Borderless component windows now also remove page-composer workspace and outer content-card spacing so canvases reach every parent edge without bottom clipping. Floating meeting windows rebase their coordinates to a paint-contained component stage and observe stage activation, keeping the meeting PiP visible above the canvas.

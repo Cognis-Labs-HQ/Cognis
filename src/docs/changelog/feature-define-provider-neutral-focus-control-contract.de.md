@@ -87,3 +87,7 @@ Cognis besitzt und lädt nun das vollständige Floating-Window-Stylesheet für M
 ## Randlose Komponentenfenster unterstützen
 
 Aufrufer von Komponentenseiten können eine randlose Einbindung anfordern, die äußere Fensterabstände entfernt und die gesamte übergeordnete Bühne ausfüllt, während der Anbieter die Abstände innerhalb seines Inhalts weiterhin steuert.
+
+## Randlose Zeichenflächen ausfüllen und Meeting-PiP erhalten
+
+Randlose Komponentenfenster entfernen nun auch die Abstände des Page-Composer-Arbeitsbereichs und der äußeren Inhaltskarten, sodass Zeichenflächen ohne Abschneiden am unteren Rand jede Kante des Elternelements erreichen. Schwebende Meeting-Fenster beziehen ihre Koordinaten auf die begrenzte Komponentenbühne und beobachten deren Aktivierung, damit das Meeting-PiP über der Zeichenfläche sichtbar bleibt.

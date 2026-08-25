@@ -100,6 +100,20 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.left, "450px");
         assert.equal(panel.style.top, "250px");
 
+        const componentStage = new FakeElement({
+            left: 100,
+            top: 50,
+            width: 600,
+            height: 400,
+        });
+        panel.closest = (selector) =>
+            selector === ".component-page-stage" ? componentStage : null;
+        panel.rect = { left: 650, top: 400, width: 280, height: 220 };
+        resizeCallback();
+        assert.equal(panel.style.left, "320px");
+        assert.equal(panel.style.top, "180px");
+
+        panel.closest = () => null;
         panel.rect = { left: 900, top: 650, width: 1200, height: 800 };
         resizeCallback();
         assert.equal(panel.style.width, "1000px");

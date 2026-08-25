@@ -331,6 +331,18 @@ test("component windows are paint-contained within their requested stage", () =>
         pageSectionStyles,
         /\.component-page-window--borderless > :first-child\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*margin: 0;[^}]*padding: 0;/,
     );
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window--borderless > \.workspace\s*{[^}]*background: transparent;[^}]*backdrop-filter: none;/,
+    );
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window--borderless > \.workspace \.composer-view-grid\s*{[^}]*height: 100%;[^}]*grid-auto-rows: minmax\(0, 1fr\);[^}]*gap: 0;/,
+    );
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window--borderless[\s\S]*:is\([\s\S]*\.widget-card,[\s\S]*\.content-panel,[\s\S]*\.content-grid[\s\S]*\)[^{]*{[\s\S]*?margin: 0;[\s\S]*?padding: 0;[\s\S]*?border: 0;/,
+    );
 });
 
 test("component windows suppress nested dashboard chrome", () => {

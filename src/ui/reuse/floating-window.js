@@ -80,20 +80,43 @@ export function makeFloatingWindow(
     element.style.minHeight = `${minHeight}px`;
     element.style.zIndex = String(zIndex);
 
+    const getBoundary = () => {
+        const stage = element.closest?.(".component-page-stage");
+        const stageRect = stage?.getBoundingClientRect?.();
+        if (stageRect?.width > 0 && stageRect?.height > 0) {
+            return {
+                element: stage,
+                left: stageRect.left,
+                top: stageRect.top,
+                width: stageRect.width,
+                height: stageRect.height,
+            };
+        }
+        return {
+            element: null,
+            left: 0,
+            top: 0,
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
+    };
     const constrain = () => {
         const rect = element.getBoundingClientRect();
+        const boundary = getBoundary();
         const convertAnchors =
             element.style.right !== "auto" || element.style.bottom !== "auto";
-        const width = Math.min(rect.width, window.innerWidth);
-        const height = Math.min(rect.height, window.innerHeight);
-        const left = Math.max(
-            0,
-            Math.min(rect.left, window.innerWidth - width),
+        const width = Math.min(rect.width, boundary.width);
+        const height = Math.min(rect.height, boundary.height);
+        const viewportLeft = Math.max(
+            boundary.left,
+            Math.min(rect.left, boundary.left + boundary.width - width),
         );
-        const top = Math.max(
-            0,
-            Math.min(rect.top, window.innerHeight - height),
+        const viewportTop = Math.max(
+            boundary.top,
+            Math.min(rect.top, boundary.top + boundary.height - height),
         );
+        const left = viewportLeft - boundary.left;
+        const top = viewportTop - boundary.top;
         if (Math.abs(rect.width - width) > 0.5)
             element.style.width = `${width}px`;
         if (Math.abs(rect.height - height) > 0.5)
@@ -139,8 +162,23 @@ export function makeFloatingWindow(
         "pointermove",
         (event) => {
             if (!drag || event.pointerId !== drag.pointerId) return;
-            element.style.left = `${Math.max(0, Math.min(drag.left + event.clientX - drag.x, window.innerWidth - drag.width))}px`;
-            element.style.top = `${Math.max(0, Math.min(drag.top + event.clientY - drag.y, window.innerHeight - drag.height))}px`;
+            const boundary = getBoundary();
+            const viewportLeft = Math.max(
+                boundary.left,
+                Math.min(
+                    drag.left + event.clientX - drag.x,
+                    boundary.left + boundary.width - drag.width,
+                ),
+            );
+            const viewportTop = Math.max(
+                boundary.top,
+                Math.min(
+                    drag.top + event.clientY - drag.y,
+                    boundary.top + boundary.height - drag.height,
+                ),
+            );
+            element.style.left = `${viewportLeft - boundary.left}px`;
+            element.style.top = `${viewportTop - boundary.top}px`;
             element.style.right = "auto";
             element.style.bottom = "auto";
         },
@@ -158,6 +196,16 @@ export function makeFloatingWindow(
             ? new ResizeObserver(constrain)
             : null;
     resizeObserver?.observe(element);
+    if (element.parentElement) resizeObserver?.observe(element.parentElement);
+    const parentObserver =
+        element.parentElement && typeof MutationObserver === "function"
+            ? new MutationObserver(constrain)
+            : null;
+    parentObserver?.observe(element.parentElement, {
+        attributes: true,
+        attributeFilter: ["class"],
+        childList: true,
+    });
     constrain();
 
     const release = () => {
@@ -165,6 +213,7 @@ export function makeFloatingWindow(
         released = true;
         controller.abort();
         resizeObserver?.disconnect();
+        parentObserver?.disconnect();
         signal?.removeEventListener("abort", release);
         element.classList.remove("floating-window");
         handle.classList.remove("floating-window-handle");
