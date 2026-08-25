@@ -45,36 +45,44 @@ function ensureFloatingWindowStyles() {
 
 function createFloatingWindowChrome(element) {
     if (typeof document === "undefined" || !document.createElement) {
-        return { toolbar: null, resizeHandle: null, remove: () => {} };
+        return { toolbar: null, resizeHandles: [], remove: () => {} };
     }
     const toolbar = document.createElement("div");
     toolbar.className = "floating-window-toolbar";
     toolbar.setAttribute("aria-hidden", "true");
-    const resizeHandle = document.createElement("div");
-    resizeHandle.className = "floating-window-resize-handle";
-    resizeHandle.setAttribute("aria-hidden", "true");
-    if (typeof document.createElementNS === "function") {
-        const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "svg",
-        );
-        svg.setAttribute("viewBox", "0 0 18 18");
-        svg.setAttribute("focusable", "false");
-        const path = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path",
-        );
-        path.setAttribute("d", "M4 16 16 4M9 16l7-7M14 16l2-2");
-        svg.append(path);
-        resizeHandle.append(svg);
-    }
-    element.append(toolbar, resizeHandle);
+    const createResizeHandle = (edge) => {
+        const resizeHandle = document.createElement("div");
+        resizeHandle.className = `floating-window-resize-handle floating-window-resize-handle--${edge}`;
+        resizeHandle.dataset.resizeEdge = edge;
+        resizeHandle.setAttribute("aria-hidden", "true");
+        if (typeof document.createElementNS === "function") {
+            const svg = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "svg",
+            );
+            svg.setAttribute("viewBox", "0 0 18 18");
+            svg.setAttribute("focusable", "false");
+            const path = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "path",
+            );
+            path.setAttribute("d", "M4 16 16 4M9 16l7-7M14 16l2-2");
+            svg.append(path);
+            resizeHandle.append(svg);
+        }
+        return resizeHandle;
+    };
+    const resizeHandles = [
+        createResizeHandle("top-left"),
+        createResizeHandle("bottom-right"),
+    ];
+    element.append(toolbar, ...resizeHandles);
     return {
         toolbar,
-        resizeHandle,
+        resizeHandles,
         remove: () => {
             toolbar.remove();
-            resizeHandle.remove();
+            for (const resizeHandle of resizeHandles) resizeHandle.remove();
         },
     };
 }
@@ -266,60 +274,85 @@ export function makeFloatingWindow(
             return;
         resizeDrag = null;
     };
-    chrome.resizeHandle?.addEventListener(
-        "pointerdown",
-        (event) => {
-            if (event.button !== undefined && event.button !== 0) return;
-            const rect = element.getBoundingClientRect();
-            resizeDrag = {
-                pointerId: event.pointerId,
-                x: event.clientX,
-                y: event.clientY,
-                left: rect.left,
-                top: rect.top,
-                width: rect.width,
-                height: rect.height,
-            };
-            chrome.resizeHandle.setPointerCapture?.(event.pointerId);
-            event.preventDefault?.();
-        },
-        { signal: controller.signal },
-    );
-    chrome.resizeHandle?.addEventListener(
-        "pointermove",
-        (event) => {
-            if (!resizeDrag || event.pointerId !== resizeDrag.pointerId) return;
-            const boundary = getBoundary();
-            const maximumWidth =
-                boundary.left + boundary.width - resizeDrag.left;
-            const maximumHeight =
-                boundary.top + boundary.height - resizeDrag.top;
-            const nextWidth = Math.max(
-                Math.min(minWidth, maximumWidth),
-                Math.min(
-                    resizeDrag.width + event.clientX - resizeDrag.x,
-                    maximumWidth,
-                ),
-            );
-            const nextHeight = Math.max(
-                Math.min(minHeight, maximumHeight),
-                Math.min(
-                    resizeDrag.height + event.clientY - resizeDrag.y,
-                    maximumHeight,
-                ),
-            );
-            element.style.width = `${nextWidth}px`;
-            element.style.height = `${nextHeight}px`;
-            event.preventDefault?.();
-        },
-        { signal: controller.signal },
-    );
-    chrome.resizeHandle?.addEventListener("pointerup", stopResizing, {
-        signal: controller.signal,
-    });
-    chrome.resizeHandle?.addEventListener("pointercancel", stopResizing, {
-        signal: controller.signal,
-    });
+    for (const resizeHandle of chrome.resizeHandles) {
+        resizeHandle.addEventListener(
+            "pointerdown",
+            (event) => {
+                if (event.button !== undefined && event.button !== 0) return;
+                const rect = element.getBoundingClientRect();
+                resizeDrag = {
+                    edge: resizeHandle.dataset.resizeEdge,
+                    pointerId: event.pointerId,
+                    x: event.clientX,
+                    y: event.clientY,
+                    left: rect.left,
+                    top: rect.top,
+                    width: rect.width,
+                    height: rect.height,
+                };
+                resizeHandle.setPointerCapture?.(event.pointerId);
+                event.preventDefault?.();
+            },
+            { signal: controller.signal },
+        );
+        resizeHandle.addEventListener(
+            "pointermove",
+            (event) => {
+                if (!resizeDrag || event.pointerId !== resizeDrag.pointerId)
+                    return;
+                const boundary = getBoundary();
+                const deltaX = event.clientX - resizeDrag.x;
+                const deltaY = event.clientY - resizeDrag.y;
+                if (resizeDrag.edge === "top-left") {
+                    const fixedRight = resizeDrag.left + resizeDrag.width;
+                    const fixedBottom = resizeDrag.top + resizeDrag.height;
+                    const nextLeft = Math.max(
+                        boundary.left,
+                        Math.min(
+                            resizeDrag.left + deltaX,
+                            fixedRight -
+                                Math.min(minWidth, fixedRight - boundary.left),
+                        ),
+                    );
+                    const nextTop = Math.max(
+                        boundary.top,
+                        Math.min(
+                            resizeDrag.top + deltaY,
+                            fixedBottom -
+                                Math.min(minHeight, fixedBottom - boundary.top),
+                        ),
+                    );
+                    element.style.left = `${nextLeft - boundary.left}px`;
+                    element.style.top = `${nextTop - boundary.top}px`;
+                    element.style.width = `${fixedRight - nextLeft}px`;
+                    element.style.height = `${fixedBottom - nextTop}px`;
+                } else {
+                    const maximumWidth =
+                        boundary.left + boundary.width - resizeDrag.left;
+                    const maximumHeight =
+                        boundary.top + boundary.height - resizeDrag.top;
+                    element.style.width = `${Math.max(
+                        Math.min(minWidth, maximumWidth),
+                        Math.min(resizeDrag.width + deltaX, maximumWidth),
+                    )}px`;
+                    element.style.height = `${Math.max(
+                        Math.min(minHeight, maximumHeight),
+                        Math.min(resizeDrag.height + deltaY, maximumHeight),
+                    )}px`;
+                }
+                element.style.right = "auto";
+                element.style.bottom = "auto";
+                event.preventDefault?.();
+            },
+            { signal: controller.signal },
+        );
+        resizeHandle.addEventListener("pointerup", stopResizing, {
+            signal: controller.signal,
+        });
+        resizeHandle.addEventListener("pointercancel", stopResizing, {
+            signal: controller.signal,
+        });
+    }
     window.addEventListener("resize", constrain, { signal: controller.signal });
     const resizeObserver =
         typeof ResizeObserver === "function"

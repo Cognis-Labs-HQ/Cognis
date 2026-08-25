@@ -55,8 +55,6 @@
 .floating-window-resize-handle {
     position: absolute;
     z-index: 3;
-    right: 0;
-    bottom: 0;
     display: grid;
     place-items: end;
     width: 1.5rem;
@@ -68,6 +66,18 @@
     user-select: none;
 }
 
+.floating-window-resize-handle--top-left {
+    top: 0;
+    left: 0;
+    cursor: nwse-resize;
+}
+
+.floating-window-resize-handle--bottom-right {
+    right: 0;
+    bottom: 0;
+    cursor: nwse-resize;
+}
+
 .floating-window-resize-handle svg {
     width: 1.15rem;
     height: 1.15rem;
@@ -75,4 +85,8 @@
     stroke: currentColor;
     stroke-width: 1.35;
     stroke-linecap: round;
+}
+
+.floating-window-resize-handle--top-left svg {
+    transform: rotate(180deg);
 }

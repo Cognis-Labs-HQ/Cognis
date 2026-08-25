@@ -107,3 +107,7 @@ Component windows now grow vertically with their content instead of creating nes
 ## Remove page margins for borderless components
 
 Spawning a borderless component now removes the containing `app-page__main` margin for a true edge-to-edge surface. Cognis reference-counts borderless windows and restores the normal page margin when the final one closes.
+
+## Resize PiP from either diagonal corner
+
+Floating PiP windows now provide SVG resize handles in both the upper-left and lower-right corners. Dragging either handle resizes within the visible boundary while preserving the opposite corner and enforcing the configured minimum dimensions.

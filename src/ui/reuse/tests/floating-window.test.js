@@ -15,6 +15,7 @@ class FakeElement {
         this.rect = rect ?? { left: 0, top: 0, width: 0, height: 0 };
         this.style = {};
         this.attributes = {};
+        this.dataset = {};
         this.children = [];
         this.listeners = new Map();
         this.classes = new Set();
@@ -151,12 +152,17 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         const toolbar = panel.children.find(
             (child) => child.className === "floating-window-toolbar",
         );
-        const resizeHandle = panel.children.find(
-            (child) => child.className === "floating-window-resize-handle",
+        const topLeftResizeHandle = panel.children.find((child) =>
+            child.className?.includes("resize-handle--top-left"),
+        );
+        const bottomRightResizeHandle = panel.children.find((child) =>
+            child.className?.includes("resize-handle--bottom-right"),
         );
         assert.ok(toolbar);
-        assert.ok(resizeHandle);
-        assert.equal(resizeHandle.children[0]?.children.length, 1);
+        assert.ok(topLeftResizeHandle);
+        assert.ok(bottomRightResizeHandle);
+        assert.equal(topLeftResizeHandle.children[0]?.children.length, 1);
+        assert.equal(bottomRightResizeHandle.children[0]?.children.length, 1);
 
         toolbar.dispatch("pointerdown", {
             button: 0,
@@ -175,14 +181,14 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.top, "250px");
 
         panel.rect = { left: 450, top: 250, width: 280, height: 220 };
-        resizeHandle.dispatch("pointerdown", {
+        bottomRightResizeHandle.dispatch("pointerdown", {
             button: 0,
             pointerId: 5,
             clientX: 730,
             clientY: 470,
             preventDefault() {},
         });
-        resizeHandle.dispatch("pointermove", {
+        bottomRightResizeHandle.dispatch("pointermove", {
             pointerId: 5,
             clientX: 850,
             clientY: 550,
@@ -190,6 +196,25 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         });
         assert.equal(panel.style.width, "400px");
         assert.equal(panel.style.height, "300px");
+
+        panel.rect = { left: 450, top: 250, width: 400, height: 300 };
+        topLeftResizeHandle.dispatch("pointerdown", {
+            button: 0,
+            pointerId: 6,
+            clientX: 450,
+            clientY: 250,
+            preventDefault() {},
+        });
+        topLeftResizeHandle.dispatch("pointermove", {
+            pointerId: 6,
+            clientX: 350,
+            clientY: 200,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.left, "350px");
+        assert.equal(panel.style.top, "200px");
+        assert.equal(panel.style.width, "500px");
+        assert.equal(panel.style.height, "350px");
 
         panel.closest = () => null;
         panel.rect = { left: 900, top: 650, width: 1200, height: 800 };
@@ -215,6 +240,14 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
             floatingWindowStyles,
             /\.floating-window-resize-handle\s*{[\s\S]*?background: transparent;/,
         );
+        assert.match(
+            floatingWindowStyles,
+            /\.floating-window-resize-handle--top-left\s*{[\s\S]*?top: 0;[\s\S]*?left: 0;/,
+        );
+        assert.match(
+            floatingWindowStyles,
+            /\.floating-window-resize-handle--bottom-right\s*{[\s\S]*?right: 0;[\s\S]*?bottom: 0;/,
+        );
 
         release();
         assert.equal(resizeDisconnected, true);
@@ -225,7 +258,8 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.height, "");
         assert.equal(panel.style.zIndex, "");
         assert.equal(panel.children.includes(toolbar), false);
-        assert.equal(panel.children.includes(resizeHandle), false);
+        assert.equal(panel.children.includes(topLeftResizeHandle), false);
+        assert.equal(panel.children.includes(bottomRightResizeHandle), false);
         assert.equal(panel.parentElement, originalParent);
         assert.equal(panel.popoverOpen, false);
         assert.equal(panel.hasAttribute("popover"), false);

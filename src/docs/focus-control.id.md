@@ -64,7 +64,7 @@ Halaman dasbor terautentikasi yang disertakan bersama Cognis menggunakan UUID Co
 
 ## Jendela PiP yang dapat dipindahkan dan diubah ukurannya
 
-Permukaan yang mendeklarasikan `pip` ditampilkan melalui perilaku jendela mengambang Cognis yang dapat digunakan kembali. Setiap jendela mengambang menyertakan toolbar tipis milik host yang dapat diseret dari sepanjang sisi atas dan pegangan ubah ukuran SVG yang terlihat di sudut kanan bawah. Cognis menjaga jendela tetap di dalam area pandang dan melepaskan semua listener saat sesi fokus berakhir. Modul penyedia cukup mendeklarasikan `pip` dan memasang konten ke root yang diberikan; modul tidak boleh memasang handler seret atau ubah ukuran tingkat dokumen yang bersaing.
+Permukaan yang mendeklarasikan `pip` ditampilkan melalui perilaku jendela mengambang Cognis yang dapat digunakan kembali. Setiap jendela mengambang menyertakan toolbar tipis milik host yang dapat diseret dari sepanjang sisi atas serta pegangan ubah ukuran SVG yang terlihat di sudut kiri atas dan kanan bawah. Cognis menjaga jendela tetap di dalam area pandang dan melepaskan semua listener saat sesi fokus berakhir. Modul penyedia cukup mendeklarasikan `pip` dan memasang konten ke root yang diberikan; modul tidak boleh memasang handler seret atau ubah ukuran tingkat dokumen yang bersaing.
 
 Modul yang memiliki elemen PiP terpisah, seperti bingkai rapat, memperoleh `ui:makeFloatingWindow` melalui `uiCtx.capabilities`, meneruskan elemen, pegangan seret, dan sinyal halaman, lalu menyimpan fungsi pembersihan yang dikembalikan. Utility tidak boleh diimpor secara langsung.
 

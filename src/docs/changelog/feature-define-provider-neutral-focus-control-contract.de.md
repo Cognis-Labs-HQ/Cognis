@@ -107,3 +107,7 @@ Komponentenfenster wachsen nun vertikal mit ihrem Inhalt, anstatt einen verschac
 ## Seitenabstände für randlose Komponenten entfernen
 
 Beim Einbinden einer randlosen Komponente wird nun der Außenabstand des umgebenden Elements `app-page__main` entfernt, sodass eine echte randlose Fläche entsteht. Cognis zählt randlose Fenster und stellt den normalen Seitenabstand wieder her, sobald das letzte geschlossen wird.
+
+## PiP an beiden diagonalen Ecken skalieren
+
+Schwebende PiP-Fenster bieten nun SVG-Größengriffe oben links und unten rechts. Das Ziehen eines der beiden Griffe ändert die Größe innerhalb der sichtbaren Begrenzung, hält die gegenüberliegende Ecke fest und wahrt die konfigurierten Mindestmaße.

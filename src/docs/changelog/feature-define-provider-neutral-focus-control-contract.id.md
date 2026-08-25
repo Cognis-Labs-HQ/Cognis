@@ -107,3 +107,7 @@ Jendela komponen kini tumbuh secara vertikal mengikuti kontennya alih-alih membu
 ## Hapus margin halaman untuk komponen tanpa bingkai
 
 Memasang komponen tanpa bingkai kini menghapus margin `app-page__main` yang memuatnya agar permukaan benar-benar mencapai setiap sisi. Cognis menghitung jendela tanpa bingkai dan memulihkan margin halaman normal ketika jendela terakhir ditutup.
+
+## Ubah ukuran PiP dari kedua sudut diagonal
+
+Jendela PiP mengambang kini menyediakan pegangan ubah ukuran SVG di sudut kiri atas dan kanan bawah. Menyeret salah satu pegangan mengubah ukuran di dalam batas yang terlihat sambil mempertahankan sudut yang berlawanan dan ukuran minimum yang dikonfigurasi.
