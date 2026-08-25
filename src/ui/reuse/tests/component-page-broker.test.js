@@ -91,6 +91,8 @@ test("component windows stay disposable across activation and SPA navigation", a
         addEventListener: (type, listener) =>
             windowListeners.set(type, listener),
         dispatchEvent: (event) => windowListeners.get(event.type)?.(event),
+        innerHeight: 800,
+        scrollBy: (options) => (globalThis.__componentPageScroll = options),
         location: {
             origin: "https://cognis.test",
             pathname: "/meetings/meeting-2",
@@ -130,6 +132,7 @@ test("component windows stay disposable across activation and SPA navigation", a
     const directEntryUrl = `data:text/javascript,${encodeURIComponent(directEntrySource)}`;
     globalThis.__componentPageMountRoots = [];
     globalThis.__componentPageDiscards = 0;
+    globalThis.__componentPageScroll = null;
     installComponentPageBroker({
         authorizeSpawn: () => spawnAuthorized,
         resolveLocal: async ({ componentUuid, routeId }) => {
@@ -241,6 +244,23 @@ test("component windows stay disposable across activation and SPA navigation", a
     assert.equal(navigationPrevented, true);
     assert.equal(navigationStopped, true);
 
+    let wheelPrevented = false;
+    let wheelStopped = false;
+    componentStage.children[0].listeners.get("wheel")({
+        deltaMode: 1,
+        deltaX: 0,
+        deltaY: 3,
+        preventDefault: () => (wheelPrevented = true),
+        stopImmediatePropagation: () => (wheelStopped = true),
+    });
+    assert.equal(wheelPrevented, true);
+    assert.equal(wheelStopped, true);
+    assert.deepEqual(globalThis.__componentPageScroll, {
+        left: 0,
+        top: 48,
+        behavior: "auto",
+    });
+
     assert.equal(
         await uiCtx.capabilities.get("component-pages:discard")(
             "meeting-whiteboard-stage",
@@ -314,22 +334,22 @@ test("component windows stay disposable across activation and SPA navigation", a
     assert.equal(componentStage.children.length, 0);
 });
 
-test("component windows are paint-contained within their requested stage", () => {
+test("component windows grow with content without nested vertical scrolling", () => {
     assert.match(
         pageSectionStyles,
-        /\.component-page-stage\s*{[^}]*overflow: hidden;[^}]*contain: layout paint style;/,
+        /\.component-page-stage\s*{[^}]*display: flex;[^}]*overflow-y: visible;[^}]*contain: layout style;/,
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window\s*{[^}]*position: absolute;[^}]*inset: 0;[^}]*overflow: auto;/,
+        /\.component-page-window\s*{[^}]*position: relative;[^}]*flex: 1 0 auto;[^}]*min-height: 100%;[^}]*overflow: visible;/,
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window--borderless\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*margin: 0;[^}]*padding: 0;[^}]*border: 0;/,
+        /\.component-page-window--borderless\s*{[^}]*width: 100%;[^}]*height: auto;[^}]*min-height: 100%;[^}]*margin: 0;[^}]*padding: 0;[^}]*overflow: visible;[^}]*border: 0;/,
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window--borderless > :first-child\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*margin: 0;[^}]*padding: 0;/,
+        /\.component-page-window--borderless > :first-child\s*{[^}]*width: 100%;[^}]*height: auto;[^}]*min-height: 100%;[^}]*margin: 0;[^}]*padding: 0;/,
     );
     assert.match(
         pageSectionStyles,
@@ -337,7 +357,7 @@ test("component windows are paint-contained within their requested stage", () =>
     );
     assert.match(
         pageSectionStyles,
-        /\.component-page-window--borderless > \.workspace \.composer-view-grid\s*{[^}]*height: 100%;[^}]*grid-auto-rows: minmax\(0, 1fr\);[^}]*gap: 0;/,
+        /\.component-page-window--borderless > \.workspace \.composer-view-grid\s*{[^}]*height: auto;[^}]*min-height: 100%;[^}]*grid-auto-rows: minmax\(min-content, auto\);[^}]*gap: 0;/,
     );
     assert.match(
         pageSectionStyles,

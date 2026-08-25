@@ -63,6 +63,8 @@ For synchronized Focus Control, declare a `module-route` loader whose `moduleId`
 
 Pass `borderless: true` to `component-pages:spawn` when the embedded page must touch every edge of its caller-owned stage. Cognis removes the component window's outer margin, padding, border, and radius, sizes it and its direct content root to the full parent, and forwards `borderless: true` to the provider mount options. Internal content spacing remains the provider's responsibility.
 
+Component windows do not create an independent vertical scroll area. Their stage and window remain in normal flex layout and grow with the embedded content, while wheel input over the component continues scrolling the main page. This keeps a single page-level scroll position regardless of pointer location.
+
 ## Built-in component pages
 
 Authenticated dashboard pages shipped with Cognis use the Cognis Core UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study uses its gateway UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Their stable route IDs are `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study`, and `gateway.study.child`. They use the same `component-pages:request` contract as external modules and support overlay or fullscreen embedding. Login and demonstration entry points are not dashboard-shell component pages and are not eligible.

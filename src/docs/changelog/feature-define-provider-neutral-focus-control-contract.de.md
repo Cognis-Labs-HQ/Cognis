@@ -99,3 +99,7 @@ Schwebende Fenster enthalten nun eine schmale Ziehleiste am oberen Rand und eine
 ## Laufende Meetings beim Öffnen von PiP erhalten
 
 Schwebende Fenster gelangen nun in die oberste Browser-Ebene, ohne das Anbieter-Element zwischen DOM-Elternelementen zu verschieben. Dadurch bleiben der Meeting-Iframe und seine aktive Verbindung beim Öffnen und Schließen von PiP bestehen; nicht unterstützte Browser verwenden eine auf das Elternelement begrenzte Alternative, die ebenfalls kein neues Einhängen erfordert.
+
+## Komponenten über die Hauptseite scrollen
+
+Komponentenfenster wachsen nun vertikal mit ihrem Inhalt, anstatt einen verschachtelten vertikalen Überlauf zu erzeugen. Radeingaben bleiben auch mit dem Zeiger über eingebetteten Inhalten auf die Hauptseite gerichtet, und der Größengriff ist transparent, sodass nur sein SVG-Raster sichtbar ist.

@@ -62,11 +62,7 @@
     width: 1.5rem;
     height: 1.5rem;
     color: var(--text-color, var(--color-text));
-    background: color-mix(
-        in srgb,
-        var(--surface, var(--color-surface-elevated)) 74%,
-        transparent
-    );
+    background: transparent;
     cursor: nwse-resize;
     touch-action: none;
     user-select: none;

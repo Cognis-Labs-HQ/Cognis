@@ -28,6 +28,8 @@ import { uiCtx } from "./ui-ctx.js";
 
 const INSTALL_KEY = Symbol.for("cognis.componentPageBrokerInstalled");
 const ELEMENT_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/;
+const WHEEL_DELTA_LINE = 1;
+const WHEEL_DELTA_PAGE = 2;
 const activeWindows = new Map();
 
 function isAbortSignal(value) {
@@ -59,6 +61,28 @@ async function releaseMountResult(result) {
     }
     const release = result?.destroy ?? result?.unmount;
     if (typeof release === "function") await release.call(result);
+}
+
+function keepPageScrollFocused(element, signal) {
+    element.addEventListener(
+        "wheel",
+        (event) => {
+            const scale =
+                event.deltaMode === WHEEL_DELTA_LINE
+                    ? 16
+                    : event.deltaMode === WHEEL_DELTA_PAGE
+                      ? window.innerHeight
+                      : 1;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            window.scrollBy({
+                left: event.deltaX * scale,
+                top: event.deltaY * scale,
+                behavior: "auto",
+            });
+        },
+        { capture: true, passive: false, signal },
+    );
 }
 
 /**
@@ -226,6 +250,7 @@ export function installComponentPageBroker({
         async ({ data }) => {
             if (!data.windowElement || data.request.signal?.aborted) return;
             const controller = new AbortController();
+            keepPageScrollFocused(data.windowElement, controller.signal);
             let mountResult;
             let discarded = false;
             let discardOnCallerAbort;

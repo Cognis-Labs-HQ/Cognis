@@ -54,6 +54,8 @@ Für synchronisierte Fokussteuerung wird ein `module-route`-Loader deklariert, d
 
 Übergeben Sie `borderless: true` an `component-pages:spawn`, wenn die eingebettete Seite jede Kante ihrer vom Aufrufer verwalteten Bühne berühren soll. Cognis entfernt Außenabstand, Innenabstand, Rahmen und Radius des Komponentenfensters, passt das Fenster und seine direkte Inhaltswurzel an die volle Größe des Elternelements an und übergibt `borderless: true` an die Mount-Optionen des Anbieters. Für interne Inhaltsabstände bleibt der Anbieter verantwortlich.
 
+Komponentenfenster erzeugen keinen eigenen vertikalen Bildlaufbereich. Bühne und Fenster verbleiben im normalen Flex-Layout und wachsen mit dem eingebetteten Inhalt, während Radeingaben über der Komponente weiterhin die Hauptseite scrollen. Dadurch gibt es unabhängig von der Zeigerposition nur eine seitenweite Bildlaufposition.
+
 ## Integrierte Komponentenseiten
 
 Mit Cognis ausgelieferte authentifizierte Dashboard-Seiten verwenden die Cognis-Core-UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study verwendet seine Gateway-UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Ihre stabilen Routen-IDs sind `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study` und `gateway.study.child`. Sie nutzen denselben Vertrag `component-pages:request` wie externe Module und unterstützen die Einbettung als Overlay oder Vollbild. Anmelde- und Demonstrationseinstiege sind keine Komponentenseiten der Dashboard-Shell und daher nicht freigegeben.

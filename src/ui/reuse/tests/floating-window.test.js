@@ -211,6 +211,10 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
             floatingWindowStyles,
             /\.floating-window-resize-handle svg\s*{[\s\S]*?stroke: currentColor;/,
         );
+        assert.match(
+            floatingWindowStyles,
+            /\.floating-window-resize-handle\s*{[\s\S]*?background: transparent;/,
+        );
 
         release();
         assert.equal(resizeDisconnected, true);

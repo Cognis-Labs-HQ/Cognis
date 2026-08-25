@@ -99,3 +99,7 @@ Jendela mengambang kini memiliki toolbar seret tipis di bagian atas dan pegangan
 ## Pertahankan rapat aktif saat membuka PiP
 
 Jendela mengambang kini memasuki lapisan teratas peramban tanpa memindahkan elemen penyedia antarpenginduk DOM. Iframe rapat beserta koneksi aktifnya tetap utuh saat PiP dibuka dan ditutup; peramban yang tidak mendukungnya memakai alternatif terbatas-induk yang juga tidak memindahkan elemen.
+
+## Pertahankan pengguliran komponen pada halaman utama
+
+Jendela komponen kini tumbuh secara vertikal mengikuti kontennya alih-alih membuat luapan vertikal bertingkat. Masukan roda tetap menggulir halaman utama meskipun penunjuk berada di atas konten tertanam, dan pegangan ubah ukuran dibuat transparan sehingga hanya raster SVG-nya yang terlihat.

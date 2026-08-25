@@ -54,6 +54,8 @@ Spawn Capability は `discard()` を持つハンドルを返します。閉じ�
 
 埋め込みページを呼び出し元所有のステージ全面に接して表示する場合は、`component-pages:spawn` に `borderless: true` を渡します。Cognis はコンポーネントウィンドウの外側の余白、内側の余白、境界線、角丸を除去し、ウィンドウと直下のコンテンツルートを親全体の大きさにして、プロバイダーのマウントオプションにも `borderless: true` を渡します。コンテンツ内部の間隔は引き続きプロバイダーが管理します。
 
+コンポーネントウィンドウは独立した縦スクロール領域を作りません。ステージとウィンドウは通常の Flex レイアウト内で埋め込みコンテンツに合わせて伸び、コンポーネント上のホイール入力でもメインページがスクロールします。ポインター位置にかかわらず、ページ全体で一つのスクロール位置が維持されます。
+
 ## 組み込みコンポーネントページ
 
 Cognis に同梱される認証済み Dashboard ページは Cognis Core UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398` を使用し、Study は Gateway UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27` を使用します。安定したルート ID は `core.dashboard`、`core.settings`、`core.users`、`core.invite`、`core.modules`、`core.administration`、`core.docs`、`core.changelogs`、`core.license`、`core.error`、`gateway.study`、`gateway.study.child` です。外部モジュールと同じ `component-pages:request` 契約を使用し、Overlay または全画面の埋め込みに対応します。Login とデモ用エントリーは Dashboard Shell のコンポーネントページではないため利用対象外です。

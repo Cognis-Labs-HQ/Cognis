@@ -647,18 +647,22 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 
 .component-page-stage {
     position: relative;
+    display: flex;
+    flex-direction: column;
     min-height: 12rem;
-    overflow: hidden;
-    contain: layout paint style;
+    overflow-x: hidden;
+    overflow-y: visible;
+    contain: layout style;
     isolation: isolate;
 }
 
 .component-page-window {
-    position: absolute;
+    position: relative;
     z-index: 1;
-    inset: 0;
-    overflow: auto;
-    overscroll-behavior: contain;
+    flex: 1 0 auto;
+    width: 100%;
+    min-height: 100%;
+    overflow: visible;
     background: var(--surface-color);
 }
 
@@ -668,12 +672,13 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 
 .component-page-window--borderless {
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     max-width: none;
     max-height: none;
     margin: 0;
     padding: 0;
-    overflow: hidden;
+    overflow: visible;
     box-sizing: border-box;
     border: 0;
     border-radius: 0;
@@ -681,9 +686,9 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 
 .component-page-window--borderless > :first-child {
     width: 100%;
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     min-width: 0;
-    min-height: 0;
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -697,9 +702,9 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 }
 
 .component-page-window--borderless > .workspace .composer-view-grid {
-    height: 100%;
-    min-height: 0;
-    grid-auto-rows: minmax(0, 1fr);
+    height: auto;
+    min-height: 100%;
+    grid-auto-rows: minmax(min-content, auto);
     gap: 0;
 }
 
@@ -707,9 +712,9 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     > .workspace
     > .composer-view-grid
     > .widget-card {
-    height: 100%;
-    min-height: 0;
-    overflow: hidden;
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
 }
 
 .component-page-window--borderless

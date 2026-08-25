@@ -99,3 +99,7 @@ Floating windows now include a thin top drag toolbar and a lower-right SVG resiz
 ## Preserve live meetings when opening PiP
 
 Floating windows now enter the browser top layer without moving the provider element between DOM parents. The meeting iframe and its live connection therefore remain intact when PiP opens and closes; unsupported browsers use a parent-constrained fallback that also avoids reparenting.
+
+## Keep component scrolling on the main page
+
+Component windows now grow vertically with their content instead of creating nested vertical overflow. Wheel input remains focused on the main page even while the pointer is over embedded content, and the resize handle is transparent so only its SVG raster is visible.
