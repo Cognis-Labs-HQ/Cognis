@@ -206,16 +206,25 @@ test("component windows stay disposable across activation and SPA navigation", a
         elementId: "meeting-whiteboard-stage",
         context: { meetingId: "meeting-2" },
         signal: callerController.signal,
+        borderless: true,
     });
     assert.equal(componentWindow?.elementId, "meeting-whiteboard-stage");
+    assert.equal(componentWindow?.borderless, true);
     assert.equal(componentStage.children.length, 1);
     assert.equal(componentStage.classNames.has("component-page-stage"), true);
+    assert.equal(
+        componentStage.children[0].classNames.has(
+            "component-page-window--borderless",
+        ),
+        true,
+    );
     assert.equal(mountedComponentPage?.root, componentStage.children[0]);
     assert.equal(
         mountedComponentPage?.options.focusState.meetingId,
         "meeting-2",
     );
     assert.equal(mountedComponentPage?.options.navigationAllowed, false);
+    assert.equal(mountedComponentPage?.options.borderless, true);
     assert.notEqual(
         mountedComponentPage?.options.signal,
         callerController.signal,
@@ -313,6 +322,14 @@ test("component windows are paint-contained within their requested stage", () =>
     assert.match(
         pageSectionStyles,
         /\.component-page-window\s*{[^}]*position: absolute;[^}]*inset: 0;[^}]*overflow: auto;/,
+    );
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window--borderless\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*margin: 0;[^}]*padding: 0;[^}]*border: 0;/,
+    );
+    assert.match(
+        pageSectionStyles,
+        /\.component-page-window--borderless > :first-child\s*{[^}]*width: 100%;[^}]*height: 100%;[^}]*margin: 0;[^}]*padding: 0;/,
     );
 });
 

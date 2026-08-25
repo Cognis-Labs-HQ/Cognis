@@ -83,3 +83,7 @@ Pemindaian sumber GitHub privat kini menggabungkan daftar repositori organisasi 
 ## Sediakan presentasi PiP rapat di Cognis
 
 Cognis kini memiliki dan memuat stylesheet jendela mengambang lengkap yang digunakan penyedia rapat. Mengaktifkan papan tulis segera mengangkat rapat menjadi PiP tetap yang terlihat, dapat dipindahkan, dan dapat diubah ukurannya di atas kanvas komponen, sementara pembersihan memulihkan tata letak inline asli elemen rapat.
+
+## Dukung jendela komponen tanpa bingkai
+
+Pemanggil halaman komponen dapat meminta spawn tanpa bingkai yang menghapus jarak luar jendela dan memenuhi seluruh panggung induk, sembari mempertahankan kendali penyedia atas jarak di dalam kontennya.

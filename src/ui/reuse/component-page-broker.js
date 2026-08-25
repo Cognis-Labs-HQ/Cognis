@@ -16,6 +16,7 @@
  *     componentUuid,
  *     routeId,
  *     elementId: "meeting-whiteboard-stage",
+ *     borderless: true,
  *     context: { meetingId: "meeting-1" },
  *     signal,
  * }));
@@ -74,8 +75,8 @@ export async function requestComponentPage(request) {
 /**
  * Mounts an eligible component page in a protected, caller-owned stage.
  *
- * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal}} request
- * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
+ * @param {{componentUuid: string, routeId: string, elementId: string, mode?: string, context?: object, signal?: AbortSignal, borderless?: boolean}} request
+ * @returns {Promise<{elementId: string, ownerUuid: string, routeId: string, borderless: boolean, discard: () => Promise<void>} | null>} A mounted component-window handle or null.
  */
 export async function spawnComponentPage(request) {
     const result = await uiCtx.runFlow("spawn-component-page", request);
@@ -174,6 +175,7 @@ export function installComponentPageBroker({
                 context: input?.context ?? null,
                 elementId,
                 signal,
+                borderless: input?.borderless === true,
             };
             data.valid =
                 ELEMENT_ID_PATTERN.test(elementId) &&
@@ -202,6 +204,11 @@ export function installComponentPageBroker({
             await discardComponentPage(data.request.elementId);
             const windowElement = document.createElement("section");
             windowElement.className = "component-page-window";
+            if (data.request.borderless) {
+                windowElement.classList.add(
+                    "component-page-window--borderless",
+                );
+            }
             windowElement.dataset.componentPageOwner =
                 data.request.componentUuid;
             windowElement.dataset.componentPageRoute = data.request.routeId;
@@ -256,6 +263,7 @@ export function installComponentPageBroker({
                 elementId: data.request.elementId,
                 ownerUuid: data.request.componentUuid,
                 routeId: data.request.routeId,
+                borderless: data.request.borderless,
                 discard,
             };
             activeWindows.set(data.request.elementId, handle);
@@ -291,6 +299,7 @@ export function installComponentPageBroker({
                     signal: controller.signal,
                     focusState: data.request.context,
                     navigationAllowed: false,
+                    borderless: data.request.borderless,
                 });
                 if (controller.signal.aborted) {
                     await releaseMountResult(mountResult);

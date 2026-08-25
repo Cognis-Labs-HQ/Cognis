@@ -83,3 +83,7 @@ Private GitHub source scans now combine the organization repository listing with
 ## Host meeting PiP presentation in Cognis
 
 Cognis now owns and loads the complete floating-window stylesheet used by meeting providers. Activating a whiteboard immediately raises the meeting into a fixed, visible, movable, and resizable PiP above the component canvas, while cleanup restores the meeting element's original inline layout.
+
+## Support borderless component windows
+
+Component-page callers can request a borderless spawn that removes outer window spacing and fills the entire parent stage while preserving the provider's control over spacing inside its content.

@@ -59,6 +59,10 @@ The stage ID may contain only letters, digits, dots, underscores, colons, or hyp
 
 For synchronized Focus Control, declare a `module-route` loader whose `moduleId` is that UUID and whose `routeId` is the eligible route ID. A collaboration provider must still authorize the request, create or resolve the whiteboard through server-side ctx capabilities, grant meeting participants access, and publish only stable resource identifiers through `focus:transport`.
 
+## Borderless component windows
+
+Pass `borderless: true` to `component-pages:spawn` when the embedded page must touch every edge of its caller-owned stage. Cognis removes the component window's outer margin, padding, border, and radius, sizes it and its direct content root to the full parent, and forwards `borderless: true` to the provider mount options. Internal content spacing remains the provider's responsibility.
+
 ## Built-in component pages
 
 Authenticated dashboard pages shipped with Cognis use the Cognis Core UUID `b4d49c4a-61d0-5db2-84fd-f89b80fd6398`; Study uses its gateway UUID `338b9237-a2c8-5bcf-9437-bccc9abd9a27`. Their stable route IDs are `core.dashboard`, `core.settings`, `core.users`, `core.invite`, `core.modules`, `core.administration`, `core.docs`, `core.changelogs`, `core.license`, `core.error`, `gateway.study`, and `gateway.study.child`. They use the same `component-pages:request` contract as external modules and support overlay or fullscreen embedding. Login and demonstration entry points are not dashboard-shell component pages and are not eligible.

@@ -83,3 +83,7 @@ Private GitHub-Quellenscans kombinieren nun die Repository-Liste der Organisatio
 ## Meeting-PiP-Darstellung in Cognis bereitstellen
 
 Cognis besitzt und lädt nun das vollständige Floating-Window-Stylesheet für Meeting-Anbieter. Beim Aktivieren eines Whiteboards wird das Meeting sofort als festes, sichtbares, verschiebbares und größenveränderbares PiP über die Komponenten-Zeichenfläche gehoben; beim Aufräumen wird das ursprüngliche Inline-Layout des Meeting-Elements wiederhergestellt.
+
+## Randlose Komponentenfenster unterstützen
+
+Aufrufer von Komponentenseiten können eine randlose Einbindung anfordern, die äußere Fensterabstände entfernt und die gesamte übergeordnete Bühne ausfüllt, während der Anbieter die Abstände innerhalb seines Inhalts weiterhin steuert.
