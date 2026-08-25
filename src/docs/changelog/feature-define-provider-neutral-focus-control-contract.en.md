@@ -67,3 +67,7 @@ The page-entry host now registers the floating-window capability before external
 ## Explain private-repository PAT permissions
 
 Module Source fields now include information tooltips with the exact GitHub fine-grained and classic PAT requirements. External-module documentation now identifies the required resource owner, repository selection, read-only Metadata and Contents permissions, approval and SSO requirements, and clarifies that no selectable GitHub Organization permission is needed.
+
+## Keep slider labels independent from help buttons
+
+Form Builder now renders information-tooltip buttons beside, rather than inside, the field label associated with an input. Clicking the private-repository slider therefore toggles the checkbox, while the adjacent information button remains an independent help control.

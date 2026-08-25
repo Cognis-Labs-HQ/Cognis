@@ -67,3 +67,7 @@ Der Seiten-Host registriert die Funktion für schwebende Fenster nun vor dem Ein
 ## PAT-Berechtigungen für private Repositorys erklären
 
 Die Felder für Modulquellen enthalten nun Informationstooltips mit den genauen Anforderungen an differenzierte und klassische GitHub-PATs. Die Dokumentation externer Module nennt Ressourcenbesitzer, Repository-Auswahl, schreibgeschützte Berechtigungen für Metadata und Contents sowie Genehmigungs- und SSO-Anforderungen und stellt klar, dass keine auswählbare GitHub-Organisationsberechtigung nötig ist.
+
+## Schiebereglerbeschriftungen von Hilfeschaltflächen trennen
+
+Der Formular-Builder stellt Informationstooltips nun neben der mit dem Eingabefeld verknüpften Beschriftung statt innerhalb davon dar. Ein Klick auf den Schieberegler für private Repositorys schaltet damit das Kontrollkästchen um, während die benachbarte Informationsschaltfläche ein eigenständiges Hilfselement bleibt.

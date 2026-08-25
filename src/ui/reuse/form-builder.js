@@ -252,13 +252,13 @@ export function createFormBuilder(ctx, options) {
             : "";
 
         return `
-      <label class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
-        <span class="form-builder-label-text">${escapeHtml(label)}${requiredFlagInline}${infoTooltip}</span>
+      <div class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
+        <span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${escapeHtml(label)}${requiredFlagInline}</label>${infoTooltip}</span>
         ${inputMarkup}
         ${counterMarkup}
         ${inlineCriteria}
         ${floatingAlert}
-      </label>
+      </div>
     `;
     }
 

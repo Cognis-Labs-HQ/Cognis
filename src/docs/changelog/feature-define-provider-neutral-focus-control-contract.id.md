@@ -67,3 +67,7 @@ Host entri halaman kini mendaftarkan kapabilitas jendela mengambang sebelum hala
 ## Menjelaskan izin PAT repositori privat
 
 Kolom Sumber Modul kini memiliki tooltip informasi dengan persyaratan PAT fine-grained dan klasik GitHub yang tepat. Dokumentasi modul eksternal kini menjelaskan resource owner, pemilihan repositori, izin baca-saja Metadata dan Contents, persetujuan serta SSO, dan menegaskan bahwa tidak ada Organization permission GitHub yang perlu dipilih.
+
+## Memisahkan label slider dari tombol bantuan
+
+Form Builder kini merender tombol tooltip informasi di samping, bukan di dalam, label kolom yang terkait dengan input. Karena itu, mengeklik slider repositori privat akan mengubah status kotak centang, sedangkan tombol informasi di sebelahnya tetap menjadi kontrol bantuan yang terpisah.
