@@ -103,3 +103,7 @@ Schwebende Fenster gelangen nun in die oberste Browser-Ebene, ohne das Anbieter-
 ## Komponenten über die Hauptseite scrollen
 
 Komponentenfenster wachsen nun vertikal mit ihrem Inhalt, anstatt einen verschachtelten vertikalen Überlauf zu erzeugen. Radeingaben bleiben auch mit dem Zeiger über eingebetteten Inhalten auf die Hauptseite gerichtet, und der Größengriff ist transparent, sodass nur sein SVG-Raster sichtbar ist.
+
+## Seitenabstände für randlose Komponenten entfernen
+
+Beim Einbinden einer randlosen Komponente wird nun der Außenabstand des umgebenden Elements `app-page__main` entfernt, sodass eine echte randlose Fläche entsteht. Cognis zählt randlose Fenster und stellt den normalen Seitenabstand wieder her, sobald das letzte geschlossen wird.

@@ -99,6 +99,9 @@ test("component windows stay disposable across activation and SPA navigation", a
         },
     };
     const componentStage = new FakeElement();
+    const appPageMain = new FakeElement();
+    componentStage.closest = (selector) =>
+        selector === ".app-page__main" ? appPageMain : null;
     const appRoot = new FakeElement();
     appRoot.dataset.activePage = "meetings";
     globalThis.document = {
@@ -216,6 +219,10 @@ test("component windows stay disposable across activation and SPA navigation", a
     assert.equal(componentStage.children.length, 1);
     assert.equal(componentStage.classNames.has("component-page-stage"), true);
     assert.equal(
+        appPageMain.classNames.has("app-page__main--component-borderless"),
+        true,
+    );
+    assert.equal(
         componentStage.children[0].classNames.has(
             "component-page-window--borderless",
         ),
@@ -270,6 +277,10 @@ test("component windows stay disposable across activation and SPA navigation", a
     assert.equal(releasedMount, true);
     assert.equal(componentStage.children.length, 0);
     assert.equal(componentStage.classNames.has("component-page-stage"), false);
+    assert.equal(
+        appPageMain.classNames.has("app-page__main--component-borderless"),
+        false,
+    );
     assert.equal(
         await uiCtx.capabilities.get("component-pages:discard")(
             "meeting-whiteboard-stage",
@@ -335,6 +346,10 @@ test("component windows stay disposable across activation and SPA navigation", a
 });
 
 test("component windows grow with content without nested vertical scrolling", () => {
+    assert.match(
+        pageSectionStyles,
+        /\.app-page__main--component-borderless\s*{[^}]*margin: 0;/,
+    );
     assert.match(
         pageSectionStyles,
         /\.component-page-stage\s*{[^}]*display: flex;[^}]*overflow-y: visible;[^}]*contain: layout style;/,

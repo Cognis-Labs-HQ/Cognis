@@ -63,6 +63,8 @@ For synchronized Focus Control, declare a `module-route` loader whose `moduleId`
 
 Pass `borderless: true` to `component-pages:spawn` when the embedded page must touch every edge of its caller-owned stage. Cognis removes the component window's outer margin, padding, border, and radius, sizes it and its direct content root to the full parent, and forwards `borderless: true` to the provider mount options. Internal content spacing remains the provider's responsibility.
 
+While a borderless component is mounted, Cognis also removes the outer margin from the containing `.app-page__main`. The normal page margin is restored automatically when the last borderless component in that page is discarded.
+
 Component windows do not create an independent vertical scroll area. Their stage and window remain in normal flex layout and grow with the embedded content, while wheel input over the component continues scrolling the main page. This keeps a single page-level scroll position regardless of pointer location.
 
 ## Built-in component pages

@@ -103,3 +103,7 @@ Jendela mengambang kini memasuki lapisan teratas peramban tanpa memindahkan elem
 ## Pertahankan pengguliran komponen pada halaman utama
 
 Jendela komponen kini tumbuh secara vertikal mengikuti kontennya alih-alih membuat luapan vertikal bertingkat. Masukan roda tetap menggulir halaman utama meskipun penunjuk berada di atas konten tertanam, dan pegangan ubah ukuran dibuat transparan sehingga hanya raster SVG-nya yang terlihat.
+
+## Hapus margin halaman untuk komponen tanpa bingkai
+
+Memasang komponen tanpa bingkai kini menghapus margin `app-page__main` yang memuatnya agar permukaan benar-benar mencapai setiap sisi. Cognis menghitung jendela tanpa bingkai dan memulihkan margin halaman normal ketika jendela terakhir ditutup.

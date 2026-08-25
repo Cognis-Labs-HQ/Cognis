@@ -31,6 +31,7 @@ const ELEMENT_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/;
 const WHEEL_DELTA_LINE = 1;
 const WHEEL_DELTA_PAGE = 2;
 const activeWindows = new Map();
+const borderlessHosts = new WeakMap();
 
 function isAbortSignal(value) {
     return (
@@ -83,6 +84,22 @@ function keepPageScrollFocused(element, signal) {
         },
         { capture: true, passive: false, signal },
     );
+}
+
+function activateBorderlessHost(stage) {
+    const host = stage.closest?.(".app-page__main");
+    if (!host) return () => {};
+    borderlessHosts.set(host, (borderlessHosts.get(host) ?? 0) + 1);
+    host.classList.add("app-page__main--component-borderless");
+    return () => {
+        const remaining = Math.max((borderlessHosts.get(host) ?? 1) - 1, 0);
+        if (remaining > 0) {
+            borderlessHosts.set(host, remaining);
+            return;
+        }
+        borderlessHosts.delete(host);
+        host.classList.remove("app-page__main--component-borderless");
+    };
 }
 
 /**
@@ -251,6 +268,9 @@ export function installComponentPageBroker({
             if (!data.windowElement || data.request.signal?.aborted) return;
             const controller = new AbortController();
             keepPageScrollFocused(data.windowElement, controller.signal);
+            const releaseBorderlessHost = data.request.borderless
+                ? activateBorderlessHost(data.stage)
+                : () => {};
             let mountResult;
             let discarded = false;
             let discardOnCallerAbort;
@@ -268,6 +288,7 @@ export function installComponentPageBroker({
                         error,
                     });
                 } finally {
+                    releaseBorderlessHost();
                     data.request.signal?.removeEventListener(
                         "abort",
                         discardOnCallerAbort,

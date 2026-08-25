@@ -103,3 +103,7 @@ Floating windows now enter the browser top layer without moving the provider ele
 ## Keep component scrolling on the main page
 
 Component windows now grow vertically with their content instead of creating nested vertical overflow. Wheel input remains focused on the main page even while the pointer is over embedded content, and the resize handle is transparent so only its SVG raster is visible.
+
+## Remove page margins for borderless components
+
+Spawning a borderless component now removes the containing `app-page__main` margin for a true edge-to-edge surface. Cognis reference-counts borderless windows and restores the normal page margin when the final one closes.

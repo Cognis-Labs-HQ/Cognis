@@ -54,6 +54,8 @@ Für synchronisierte Fokussteuerung wird ein `module-route`-Loader deklariert, d
 
 Übergeben Sie `borderless: true` an `component-pages:spawn`, wenn die eingebettete Seite jede Kante ihrer vom Aufrufer verwalteten Bühne berühren soll. Cognis entfernt Außenabstand, Innenabstand, Rahmen und Radius des Komponentenfensters, passt das Fenster und seine direkte Inhaltswurzel an die volle Größe des Elternelements an und übergibt `borderless: true` an die Mount-Optionen des Anbieters. Für interne Inhaltsabstände bleibt der Anbieter verantwortlich.
 
+Solange eine randlose Komponente eingebunden ist, entfernt Cognis auch den Außenabstand des umgebenden Elements `.app-page__main`. Der normale Seitenabstand wird automatisch wiederhergestellt, sobald die letzte randlose Komponente dieser Seite entfernt wird.
+
 Komponentenfenster erzeugen keinen eigenen vertikalen Bildlaufbereich. Bühne und Fenster verbleiben im normalen Flex-Layout und wachsen mit dem eingebetteten Inhalt, während Radeingaben über der Komponente weiterhin die Hauptseite scrollen. Dadurch gibt es unabhängig von der Zeigerposition nur eine seitenweite Bildlaufposition.
 
 ## Integrierte Komponentenseiten

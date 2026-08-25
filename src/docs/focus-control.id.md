@@ -54,6 +54,8 @@ Untuk Focus Control tersinkron, deklarasikan loader `module-route` dengan `modul
 
 Teruskan `borderless: true` ke `component-pages:spawn` ketika halaman tertanam harus menyentuh setiap sisi panggung milik pemanggil. Cognis menghapus margin luar, padding, bingkai, dan radius jendela komponen, mengukur jendela beserta akar konten langsungnya agar memenuhi induk, serta meneruskan `borderless: true` ke opsi mount penyedia. Jarak internal konten tetap menjadi tanggung jawab penyedia.
 
+Selama komponen tanpa bingkai terpasang, Cognis juga menghapus margin luar dari `.app-page__main` yang memuatnya. Margin halaman normal dipulihkan secara otomatis ketika komponen tanpa bingkai terakhir pada halaman tersebut dilepas.
+
 Jendela komponen tidak membuat area gulir vertikal tersendiri. Panggung dan jendela tetap berada dalam tata letak flex normal serta tumbuh mengikuti konten tertanam, sementara masukan roda di atas komponen tetap menggulir halaman utama. Dengan demikian, posisi gulir tetap berada pada tingkat halaman di mana pun penunjuk berada.
 
 ## Halaman komponen bawaan

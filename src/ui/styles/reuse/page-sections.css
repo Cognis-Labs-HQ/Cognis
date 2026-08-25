@@ -656,6 +656,10 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     isolation: isolate;
 }
 
+.app-page__main--component-borderless {
+    margin: 0;
+}
+
 .component-page-window {
     position: relative;
     z-index: 1;
