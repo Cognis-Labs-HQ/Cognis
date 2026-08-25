@@ -5,8 +5,8 @@ import { readFileSync } from "node:fs";
 import { makeFloatingWindow } from "../floating-window.js";
 import { uiCtx } from "../ui-ctx.js";
 
-const pageSectionStyles = readFileSync(
-    new URL("../../styles/reuse/page-sections.css", import.meta.url),
+const floatingWindowStyles = readFileSync(
+    new URL("../../styles/reuse/floating-window.css", import.meta.url),
     "utf8",
 );
 
@@ -77,6 +77,10 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(handle.classes.has("floating-window-handle"), true);
         assert.equal(panel.style.minWidth, "240px");
         assert.equal(panel.style.minHeight, "160px");
+        assert.equal(panel.style.position, "fixed");
+        assert.equal(panel.style.zIndex, "1201");
+        assert.equal(panel.style.width, "min(32vw, 24rem)");
+        assert.equal(panel.style.height, "min(32vh, 15rem)");
         assert.equal(panel.style.left, "700px");
         assert.equal(panel.style.top, "450px");
 
@@ -104,14 +108,18 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.top, "0px");
         assert.equal(typeof windowListeners.get("resize"), "function");
         assert.match(
-            pageSectionStyles,
-            /\.floating-window\s*{[^}]*resize: both;/,
+            floatingWindowStyles,
+            /\.floating-window\s*{[\s\S]*?position: fixed;[\s\S]*?z-index: 1201;[\s\S]*?resize: both;/,
         );
 
         release();
         assert.equal(resizeDisconnected, true);
         assert.equal(panel.classes.has("floating-window"), false);
         assert.equal(handle.classes.has("floating-window-handle"), false);
+        assert.equal(panel.style.position, "");
+        assert.equal(panel.style.width, "");
+        assert.equal(panel.style.height, "");
+        assert.equal(panel.style.zIndex, "");
     } finally {
         globalThis.window = originalWindow;
         globalThis.ResizeObserver = originalResizeObserver;

@@ -79,3 +79,7 @@ Slider tracks are now explicit input labels, so clicking anywhere on the private
 ## Discover private repositories through the authenticated GitHub account
 
 Private GitHub source scans now combine the organization repository listing with the authenticated account's accessible private repositories, restricted back to the configured organization. Fine-grained PATs can therefore discover selected private module repositories even when GitHub omits them from the organization listing.
+
+## Host meeting PiP presentation in Cognis
+
+Cognis now owns and loads the complete floating-window stylesheet used by meeting providers. Activating a whiteboard immediately raises the meeting into a fixed, visible, movable, and resizable PiP above the component canvas, while cleanup restores the meeting element's original inline layout.

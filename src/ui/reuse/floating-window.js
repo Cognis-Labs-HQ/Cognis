@@ -14,24 +14,71 @@
  * });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number}} options
+ * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number}} options
  * @returns {() => void} Idempotent listener and observer cleanup.
  */
 import { uiCtx } from "./ui-ctx.js";
 
+const FLOATING_WINDOW_STYLESHEET = "/static/styles/reuse/floating-window.css";
+const MANAGED_STYLE_PROPERTIES = [
+    "position",
+    "left",
+    "top",
+    "right",
+    "bottom",
+    "width",
+    "height",
+    "minWidth",
+    "minHeight",
+    "zIndex",
+];
+
+function ensureFloatingWindowStyles() {
+    if (typeof document === "undefined" || !document.head) return;
+    if (document.querySelector(`link[href="${FLOATING_WINDOW_STYLESHEET}"]`))
+        return;
+    const link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = FLOATING_WINDOW_STYLESHEET;
+    document.head.append(link);
+}
+
 export function makeFloatingWindow(
     element,
-    { handle = element, signal, minWidth = 240, minHeight = 160 } = {},
+    {
+        handle = element,
+        signal,
+        minWidth = 240,
+        minHeight = 160,
+        width = "min(32vw, 24rem)",
+        height = "min(32vh, 15rem)",
+        right = "1rem",
+        bottom = "1rem",
+        zIndex = 1201,
+    } = {},
 ) {
     if (!element || !handle) return () => {};
     const controller = new AbortController();
     let drag = null;
     let released = false;
+    const previousStyles = Object.fromEntries(
+        MANAGED_STYLE_PROPERTIES.map((property) => [
+            property,
+            element.style[property] ?? "",
+        ]),
+    );
 
+    ensureFloatingWindowStyles();
     element.classList.add("floating-window");
     handle.classList.add("floating-window-handle");
+    element.style.position = "fixed";
+    element.style.right = right;
+    element.style.bottom = bottom;
+    element.style.width = width;
+    element.style.height = height;
     element.style.minWidth = `${minWidth}px`;
     element.style.minHeight = `${minHeight}px`;
+    element.style.zIndex = String(zIndex);
 
     const constrain = () => {
         const rect = element.getBoundingClientRect();
@@ -121,10 +168,14 @@ export function makeFloatingWindow(
         signal?.removeEventListener("abort", release);
         element.classList.remove("floating-window");
         handle.classList.remove("floating-window-handle");
+        for (const [property, value] of Object.entries(previousStyles)) {
+            element.style[property] = value;
+        }
     };
     signal?.addEventListener("abort", release, { once: true });
     if (signal?.aborted) release();
     return release;
 }
 
+ensureFloatingWindowStyles();
 uiCtx.capabilities.contribute("ui:makeFloatingWindow", makeFloatingWindow);

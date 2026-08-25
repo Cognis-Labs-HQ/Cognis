@@ -79,3 +79,7 @@ Trek slider kini menjadi label input eksplisit, sehingga klik di mana pun pada s
 ## Temukan repositori privat melalui akun GitHub terautentikasi
 
 Pemindaian sumber GitHub privat kini menggabungkan daftar repositori organisasi dengan repositori privat yang dapat diakses akun terautentikasi, lalu membatasi hasilnya kembali ke organisasi yang dikonfigurasi. Dengan demikian, PAT terperinci dapat menemukan repositori modul privat yang dipilih meskipun GitHub tidak menyertakannya dalam daftar organisasi.
+
+## Sediakan presentasi PiP rapat di Cognis
+
+Cognis kini memiliki dan memuat stylesheet jendela mengambang lengkap yang digunakan penyedia rapat. Mengaktifkan papan tulis segera mengangkat rapat menjadi PiP tetap yang terlihat, dapat dipindahkan, dan dapat diubah ukurannya di atas kanvas komponen, sementara pembersihan memulihkan tata letak inline asli elemen rapat.

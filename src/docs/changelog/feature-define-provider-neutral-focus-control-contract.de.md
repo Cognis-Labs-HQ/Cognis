@@ -79,3 +79,7 @@ Schalterflächen sind nun explizite Eingabebeschriftungen, sodass ein Klick auf 
 ## Private Repositorys über das authentifizierte GitHub-Konto erkennen
 
 Private GitHub-Quellenscans kombinieren nun die Repository-Liste der Organisation mit den privaten Repositorys, auf die das authentifizierte Konto zugreifen kann, und beschränken das Ergebnis wieder auf die konfigurierte Organisation. Fein abgestufte PATs können dadurch ausgewählte private Modul-Repositorys erkennen, selbst wenn GitHub sie in der Organisationsliste auslässt.
+
+## Meeting-PiP-Darstellung in Cognis bereitstellen
+
+Cognis besitzt und lädt nun das vollständige Floating-Window-Stylesheet für Meeting-Anbieter. Beim Aktivieren eines Whiteboards wird das Meeting sofort als festes, sichtbares, verschiebbares und größenveränderbares PiP über die Komponenten-Zeichenfläche gehoben; beim Aufräumen wird das ursprüngliche Inline-Layout des Meeting-Elements wiederhergestellt.
