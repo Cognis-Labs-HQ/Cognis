@@ -245,7 +245,7 @@ export function createFormBuilder(ctx, options) {
         const inputMarkup = fieldConfig.secret
             ? `<span class="secret-visibility-control">${plainInputMarkup}<button type="button" class="secret-visibility-toggle" data-secret-visibility-toggle="${escapeHtml(inputId)}" aria-controls="${escapeHtml(inputId)}" aria-pressed="false" aria-label="${escapeHtml(i18n.t("ui.reuse.toggle_secret_visibility"))}"><span class="secret-visibility-eye" aria-hidden="true"></span></button></span>`
             : fieldConfig.slider && type === "checkbox"
-              ? `<span class="switch">${plainInputMarkup}<span class="slider"></span></span>`
+              ? `<label class="switch" for="${escapeHtml(inputId)}">${plainInputMarkup}<span class="slider"></span></label>`
               : plainInputMarkup;
         const counterMarkup = hasMaxCharacters
             ? `<span class="form-builder-char-counter" data-form-builder-char-counter="${escapeHtml(fieldName)}">${escapeHtml(String(value.length))} / ${escapeHtml(String(maxCharacters))}</span>`
@@ -497,7 +497,7 @@ export function createFormBuilder(ctx, options) {
             fieldConfig.required = required === true;
             fieldInput.toggleAttribute("required", fieldConfig.required);
             const label = formElement.querySelector(
-                `[data-form-builder-field="${CSS.escape(fieldName)}"] .form-builder-label-text`,
+                `[data-form-builder-field="${CSS.escape(fieldName)}"] .form-builder-label-text > label`,
             );
             const existingFlag = label?.querySelector(
                 "[data-form-builder-required]",

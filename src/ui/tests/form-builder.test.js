@@ -67,11 +67,23 @@ test("form builder keeps tooltip buttons outside field labels", () => {
         },
     );
     const markup = builder.render();
-    assert.match(markup, /<label for="form-builder-privateRepos">/);
-    assert.match(markup, /<\/label><button[^>]*info-tooltip__btn/);
-    assert.doesNotMatch(
+    assert.match(
         markup,
-        /<label[^>]*>[\s\S]*info-tooltip__btn[\s\S]*<\/label>/,
+        /<span class="form-builder-label-text"><label for="form-builder-privateRepos">/,
+    );
+    assert.match(markup, /<\/label><button[^>]*info-tooltip__btn/);
+    assert.match(
+        markup,
+        /<label class="switch" for="form-builder-privateRepos"><input[\s\S]*<span class="slider"><\/span><\/label>/,
+    );
+});
+
+test("module source fields retain balanced popup grid sizing", () => {
+    const styles = read("src/ui/styles/modules.css");
+    assert.match(styles, /\.module-source-form \.form-builder-field \{/);
+    assert.match(
+        styles,
+        /\.module-source-form \.form-builder-field:nth-last-child\(-n \+ 2\) \{[\s\S]*grid-column: 1 \/ -1;/,
     );
 });
 

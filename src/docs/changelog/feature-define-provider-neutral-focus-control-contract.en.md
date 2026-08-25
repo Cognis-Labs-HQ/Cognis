@@ -71,3 +71,7 @@ Module Source fields now include information tooltips with the exact GitHub fine
 ## Keep slider labels independent from help buttons
 
 Form Builder now renders information-tooltip buttons beside, rather than inside, the field label associated with an input. Clicking the private-repository slider therefore toggles the checkbox, while the adjacent information button remains an independent help control.
+
+## Restore slider interaction and source-form balance
+
+Slider tracks are now explicit input labels, so clicking anywhere on the private-repository switch reliably toggles its checkbox without activating adjacent help. Module Source popup fields again use their intended grid spans, keeping credential controls aligned and balanced.

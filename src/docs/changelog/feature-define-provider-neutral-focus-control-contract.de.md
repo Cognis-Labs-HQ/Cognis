@@ -71,3 +71,7 @@ Die Felder für Modulquellen enthalten nun Informationstooltips mit den genauen 
 ## Schiebereglerbeschriftungen von Hilfeschaltflächen trennen
 
 Der Formular-Builder stellt Informationstooltips nun neben der mit dem Eingabefeld verknüpften Beschriftung statt innerhalb davon dar. Ein Klick auf den Schieberegler für private Repositorys schaltet damit das Kontrollkästchen um, während die benachbarte Informationsschaltfläche ein eigenständiges Hilfselement bleibt.
+
+## Schalterinteraktion und ausgewogenes Quellenformular wiederherstellen
+
+Schalterflächen sind nun explizite Eingabebeschriftungen, sodass ein Klick auf den Schalter für private Repositorys zuverlässig das Kontrollkästchen umschaltet, ohne die benachbarte Hilfe zu öffnen. Die Felder im Modulquellen-Popup verwenden wieder ihre vorgesehenen Rasterbreiten, wodurch die Zugangsdaten-Steuerelemente ausgerichtet und ausgewogen bleiben.

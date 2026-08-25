@@ -71,3 +71,7 @@ Kolom Sumber Modul kini memiliki tooltip informasi dengan persyaratan PAT fine-g
 ## Memisahkan label slider dari tombol bantuan
 
 Form Builder kini merender tombol tooltip informasi di samping, bukan di dalam, label kolom yang terkait dengan input. Karena itu, mengeklik slider repositori privat akan mengubah status kotak centang, sedangkan tombol informasi di sebelahnya tetap menjadi kontrol bantuan yang terpisah.
+
+## Pulihkan interaksi slider dan keseimbangan formulir sumber
+
+Trek slider kini menjadi label input eksplisit, sehingga klik di mana pun pada sakelar repositori privat akan mengubah kotak centang secara andal tanpa mengaktifkan bantuan di sebelahnya. Kolom popup Sumber Modul kembali memakai rentang kisi yang dirancang, sehingga kontrol kredensial tetap sejajar dan seimbang.
