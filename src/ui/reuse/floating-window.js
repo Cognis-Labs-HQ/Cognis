@@ -14,7 +14,7 @@
  * });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number}} options
+ * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean}} options
  * @returns {() => void} Idempotent listener and observer cleanup.
  */
 import { uiCtx } from "./ui-ctx.js";
@@ -43,6 +43,42 @@ function ensureFloatingWindowStyles() {
     document.head.append(link);
 }
 
+function createFloatingWindowChrome(element) {
+    if (typeof document === "undefined" || !document.createElement) {
+        return { toolbar: null, resizeHandle: null, remove: () => {} };
+    }
+    const toolbar = document.createElement("div");
+    toolbar.className = "floating-window-toolbar";
+    toolbar.setAttribute("aria-hidden", "true");
+    const resizeHandle = document.createElement("div");
+    resizeHandle.className = "floating-window-resize-handle";
+    resizeHandle.setAttribute("aria-hidden", "true");
+    if (typeof document.createElementNS === "function") {
+        const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "svg",
+        );
+        svg.setAttribute("viewBox", "0 0 18 18");
+        svg.setAttribute("focusable", "false");
+        const path = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path",
+        );
+        path.setAttribute("d", "M4 16 16 4M9 16l7-7M14 16l2-2");
+        svg.append(path);
+        resizeHandle.append(svg);
+    }
+    element.append(toolbar, resizeHandle);
+    return {
+        toolbar,
+        resizeHandle,
+        remove: () => {
+            toolbar.remove();
+            resizeHandle.remove();
+        },
+    };
+}
+
 export function makeFloatingWindow(
     element,
     {
@@ -55,12 +91,23 @@ export function makeFloatingWindow(
         right = "1rem",
         bottom = "1rem",
         zIndex = 1201,
+        portal = true,
     } = {},
 ) {
     if (!element || !handle) return () => {};
     const controller = new AbortController();
     let drag = null;
+    let resizeDrag = null;
     let released = false;
+    const originalParent = element.parentElement;
+    const originalNextSibling = element.nextSibling;
+    const portaled = Boolean(
+        portal &&
+        originalParent &&
+        typeof document !== "undefined" &&
+        document.body &&
+        originalParent !== document.body,
+    );
     const previousStyles = Object.fromEntries(
         MANAGED_STYLE_PROPERTIES.map((property) => [
             property,
@@ -69,8 +116,11 @@ export function makeFloatingWindow(
     );
 
     ensureFloatingWindowStyles();
+    if (portaled) document.body.append(element);
+    const chrome = createFloatingWindowChrome(element);
     element.classList.add("floating-window");
     handle.classList.add("floating-window-handle");
+    chrome.toolbar?.classList.add("floating-window-handle");
     element.style.position = "fixed";
     element.style.right = right;
     element.style.bottom = bottom;
@@ -136,15 +186,76 @@ export function makeFloatingWindow(
             return;
         drag = null;
     };
-
-    handle.addEventListener(
+    const startDragging = (event) => {
+        if (event.button !== undefined && event.button !== 0) return;
+        if (event.target?.closest?.("button, a, input, select, textarea"))
+            return;
+        const rect = element.getBoundingClientRect();
+        drag = {
+            pointerId: event.pointerId,
+            x: event.clientX,
+            y: event.clientY,
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+        };
+        event.currentTarget?.setPointerCapture?.(event.pointerId);
+        event.preventDefault?.();
+    };
+    const moveDragging = (event) => {
+        if (!drag || event.pointerId !== drag.pointerId) return;
+        const boundary = getBoundary();
+        const viewportLeft = Math.max(
+            boundary.left,
+            Math.min(
+                drag.left + event.clientX - drag.x,
+                boundary.left + boundary.width - drag.width,
+            ),
+        );
+        const viewportTop = Math.max(
+            boundary.top,
+            Math.min(
+                drag.top + event.clientY - drag.y,
+                boundary.top + boundary.height - drag.height,
+            ),
+        );
+        element.style.left = `${viewportLeft - boundary.left}px`;
+        element.style.top = `${viewportTop - boundary.top}px`;
+        element.style.right = "auto";
+        element.style.bottom = "auto";
+    };
+    const dragHandles = [handle, chrome.toolbar].filter(
+        (entry, index, entries) => entry && entries.indexOf(entry) === index,
+    );
+    for (const dragHandle of dragHandles) {
+        dragHandle.addEventListener("pointerdown", startDragging, {
+            signal: controller.signal,
+        });
+        dragHandle.addEventListener("pointermove", moveDragging, {
+            signal: controller.signal,
+        });
+        dragHandle.addEventListener("pointerup", stopDragging, {
+            signal: controller.signal,
+        });
+        dragHandle.addEventListener("pointercancel", stopDragging, {
+            signal: controller.signal,
+        });
+    }
+    const stopResizing = (event) => {
+        if (
+            event?.pointerId !== undefined &&
+            event.pointerId !== resizeDrag?.pointerId
+        )
+            return;
+        resizeDrag = null;
+    };
+    chrome.resizeHandle?.addEventListener(
         "pointerdown",
         (event) => {
             if (event.button !== undefined && event.button !== 0) return;
-            if (event.target?.closest?.("button, a, input, select, textarea"))
-                return;
             const rect = element.getBoundingClientRect();
-            drag = {
+            resizeDrag = {
                 pointerId: event.pointerId,
                 x: event.clientX,
                 y: event.clientY,
@@ -153,41 +264,44 @@ export function makeFloatingWindow(
                 width: rect.width,
                 height: rect.height,
             };
-            handle.setPointerCapture?.(event.pointerId);
+            chrome.resizeHandle.setPointerCapture?.(event.pointerId);
             event.preventDefault?.();
         },
         { signal: controller.signal },
     );
-    handle.addEventListener(
+    chrome.resizeHandle?.addEventListener(
         "pointermove",
         (event) => {
-            if (!drag || event.pointerId !== drag.pointerId) return;
+            if (!resizeDrag || event.pointerId !== resizeDrag.pointerId) return;
             const boundary = getBoundary();
-            const viewportLeft = Math.max(
-                boundary.left,
+            const maximumWidth =
+                boundary.left + boundary.width - resizeDrag.left;
+            const maximumHeight =
+                boundary.top + boundary.height - resizeDrag.top;
+            const nextWidth = Math.max(
+                Math.min(minWidth, maximumWidth),
                 Math.min(
-                    drag.left + event.clientX - drag.x,
-                    boundary.left + boundary.width - drag.width,
+                    resizeDrag.width + event.clientX - resizeDrag.x,
+                    maximumWidth,
                 ),
             );
-            const viewportTop = Math.max(
-                boundary.top,
+            const nextHeight = Math.max(
+                Math.min(minHeight, maximumHeight),
                 Math.min(
-                    drag.top + event.clientY - drag.y,
-                    boundary.top + boundary.height - drag.height,
+                    resizeDrag.height + event.clientY - resizeDrag.y,
+                    maximumHeight,
                 ),
             );
-            element.style.left = `${viewportLeft - boundary.left}px`;
-            element.style.top = `${viewportTop - boundary.top}px`;
-            element.style.right = "auto";
-            element.style.bottom = "auto";
+            element.style.width = `${nextWidth}px`;
+            element.style.height = `${nextHeight}px`;
+            event.preventDefault?.();
         },
         { signal: controller.signal },
     );
-    handle.addEventListener("pointerup", stopDragging, {
+    chrome.resizeHandle?.addEventListener("pointerup", stopResizing, {
         signal: controller.signal,
     });
-    handle.addEventListener("pointercancel", stopDragging, {
+    chrome.resizeHandle?.addEventListener("pointercancel", stopResizing, {
         signal: controller.signal,
     });
     window.addEventListener("resize", constrain, { signal: controller.signal });
@@ -196,9 +310,13 @@ export function makeFloatingWindow(
             ? new ResizeObserver(constrain)
             : null;
     resizeObserver?.observe(element);
-    if (element.parentElement) resizeObserver?.observe(element.parentElement);
+    if (!portaled && element.parentElement) {
+        resizeObserver?.observe(element.parentElement);
+    }
     const parentObserver =
-        element.parentElement && typeof MutationObserver === "function"
+        !portaled &&
+        element.parentElement &&
+        typeof MutationObserver === "function"
             ? new MutationObserver(constrain)
             : null;
     parentObserver?.observe(element.parentElement, {
@@ -217,8 +335,19 @@ export function makeFloatingWindow(
         signal?.removeEventListener("abort", release);
         element.classList.remove("floating-window");
         handle.classList.remove("floating-window-handle");
+        chrome.remove();
         for (const [property, value] of Object.entries(previousStyles)) {
             element.style[property] = value;
+        }
+        if (portaled) {
+            if (
+                originalNextSibling &&
+                originalNextSibling.parentElement === originalParent
+            ) {
+                originalParent.insertBefore(element, originalNextSibling);
+            } else {
+                originalParent.append(element);
+            }
         }
     };
     signal?.addEventListener("abort", release, { once: true });

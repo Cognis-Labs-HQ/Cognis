@@ -90,4 +90,8 @@ Component-page callers can request a borderless spawn that removes outer window 
 
 ## Fill borderless canvases and retain meeting PiP
 
-Borderless component windows now also remove page-composer workspace and outer content-card spacing so canvases reach every parent edge without bottom clipping. Floating meeting windows rebase their coordinates to a paint-contained component stage and observe stage activation, keeping the meeting PiP visible above the canvas.
+Borderless component windows now also remove page-composer workspace and outer content-card spacing so canvases reach every parent edge without bottom clipping. Floating meeting windows move into the host layer outside the paint-contained component stage, keeping the meeting PiP visible above the canvas across the page.
+
+## Add explicit floating-window controls
+
+Floating windows now include a thin top drag toolbar and a lower-right SVG resize handle. The host owns both pointer interactions, removes browser scrollbars and native resize ambiguity, constrains resizing to the visible page viewport, and removes the controls during cleanup.

@@ -90,4 +90,8 @@ Pemanggil halaman komponen dapat meminta spawn tanpa bingkai yang menghapus jara
 
 ## Penuhi kanvas tanpa bingkai dan pertahankan PiP rapat
 
-Jendela komponen tanpa bingkai kini turut menghapus jarak ruang kerja penyusun halaman dan kartu konten terluar, sehingga kanvas mencapai setiap sisi induk tanpa terpotong di bagian bawah. Jendela rapat mengambang menyesuaikan koordinatnya terhadap panggung komponen yang dibatasi dan mengamati aktivasi panggung agar PiP rapat tetap terlihat di atas kanvas.
+Jendela komponen tanpa bingkai kini turut menghapus jarak ruang kerja penyusun halaman dan kartu konten terluar, sehingga kanvas mencapai setiap sisi induk tanpa terpotong di bagian bawah. Jendela rapat mengambang dipindahkan ke lapisan host di luar panggung komponen yang dibatasi agar PiP rapat tetap terlihat di atas kanvas di seluruh halaman.
+
+## Tambahkan kontrol jendela mengambang yang eksplisit
+
+Jendela mengambang kini memiliki toolbar seret tipis di bagian atas dan pegangan ubah ukuran SVG di kanan bawah. Host mengelola kedua interaksi penunjuk, menghapus bilah gulir peramban serta kontrol ukuran bawaan yang ambigu, membatasi perubahan ukuran pada area pandang halaman, dan menghapus kontrol saat pembersihan.

@@ -90,4 +90,8 @@ Aufrufer von Komponentenseiten können eine randlose Einbindung anfordern, die �
 
 ## Randlose Zeichenflächen ausfüllen und Meeting-PiP erhalten
 
-Randlose Komponentenfenster entfernen nun auch die Abstände des Page-Composer-Arbeitsbereichs und der äußeren Inhaltskarten, sodass Zeichenflächen ohne Abschneiden am unteren Rand jede Kante des Elternelements erreichen. Schwebende Meeting-Fenster beziehen ihre Koordinaten auf die begrenzte Komponentenbühne und beobachten deren Aktivierung, damit das Meeting-PiP über der Zeichenfläche sichtbar bleibt.
+Randlose Komponentenfenster entfernen nun auch die Abstände des Page-Composer-Arbeitsbereichs und der äußeren Inhaltskarten, sodass Zeichenflächen ohne Abschneiden am unteren Rand jede Kante des Elternelements erreichen. Schwebende Meeting-Fenster werden in die Host-Ebene außerhalb der begrenzten Komponentenbühne verschoben, damit das Meeting-PiP seitenweit über der Zeichenfläche sichtbar bleibt.
+
+## Explizite Steuerelemente für schwebende Fenster hinzufügen
+
+Schwebende Fenster enthalten nun eine schmale Ziehleiste am oberen Rand und einen SVG-Größengriff unten rechts. Der Host verwaltet beide Zeigerinteraktionen, entfernt Browser-Bildlaufleisten und uneindeutige native Größensteuerungen, begrenzt die Größenänderung auf den sichtbaren Seitenbereich und entfernt die Steuerelemente bei der Bereinigung.

@@ -12,8 +12,10 @@ const floatingWindowStyles = readFileSync(
 
 class FakeElement {
     constructor(rect) {
-        this.rect = rect;
+        this.rect = rect ?? { left: 0, top: 0, width: 0, height: 0 };
         this.style = {};
+        this.attributes = {};
+        this.children = [];
         this.listeners = new Map();
         this.classes = new Set();
         this.classList = {
@@ -27,7 +29,36 @@ class FakeElement {
     }
 
     dispatch(type, event) {
-        this.listeners.get(type)?.(event);
+        this.listeners.get(type)?.({ ...event, currentTarget: this });
+    }
+
+    append(...children) {
+        for (const child of children) child.remove();
+        this.children.push(...children);
+        for (const child of children) child.parentElement = this;
+    }
+
+    insertBefore(child, sibling) {
+        child.remove();
+        const index = this.children.indexOf(sibling);
+        this.children.splice(
+            index < 0 ? this.children.length : index,
+            0,
+            child,
+        );
+        child.parentElement = this;
+    }
+
+    remove() {
+        if (!this.parentElement) return;
+        this.parentElement.children = this.parentElement.children.filter(
+            (child) => child !== this,
+        );
+        this.parentElement = null;
+    }
+
+    setAttribute(name, value) {
+        this.attributes[name] = value;
     }
 
     getBoundingClientRect() {
@@ -45,6 +76,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         makeFloatingWindow,
     );
     const originalWindow = globalThis.window;
+    const originalDocument = globalThis.document;
     const originalResizeObserver = globalThis.ResizeObserver;
     const windowListeners = new Map();
     let resizeCallback;
@@ -54,6 +86,15 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         innerHeight: 700,
         addEventListener: (type, listener) =>
             windowListeners.set(type, listener),
+    };
+    const head = new FakeElement();
+    const body = new FakeElement();
+    globalThis.document = {
+        head,
+        body,
+        querySelector: () => null,
+        createElement: () => new FakeElement(),
+        createElementNS: () => new FakeElement(),
     };
     globalThis.ResizeObserver = class {
         constructor(callback) {
@@ -71,8 +112,11 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
             width: 280,
             height: 220,
         });
+        const originalParent = new FakeElement();
+        originalParent.append(panel);
         const handle = new FakeElement(panel.rect);
         const release = makeFloatingWindow(panel, { handle });
+        assert.equal(panel.parentElement, body);
         assert.equal(panel.classes.has("floating-window"), true);
         assert.equal(handle.classes.has("floating-window-handle"), true);
         assert.equal(panel.style.minWidth, "240px");
@@ -83,8 +127,17 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.height, "min(32vh, 15rem)");
         assert.equal(panel.style.left, "700px");
         assert.equal(panel.style.top, "450px");
+        const toolbar = panel.children.find(
+            (child) => child.className === "floating-window-toolbar",
+        );
+        const resizeHandle = panel.children.find(
+            (child) => child.className === "floating-window-resize-handle",
+        );
+        assert.ok(toolbar);
+        assert.ok(resizeHandle);
+        assert.equal(resizeHandle.children[0]?.children.length, 1);
 
-        handle.dispatch("pointerdown", {
+        toolbar.dispatch("pointerdown", {
             button: 0,
             pointerId: 4,
             clientX: 750,
@@ -92,13 +145,30 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
             target: { closest: () => null },
             preventDefault() {},
         });
-        handle.dispatch("pointermove", {
+        toolbar.dispatch("pointermove", {
             pointerId: 4,
             clientX: 500,
             clientY: 300,
         });
         assert.equal(panel.style.left, "450px");
         assert.equal(panel.style.top, "250px");
+
+        panel.rect = { left: 450, top: 250, width: 280, height: 220 };
+        resizeHandle.dispatch("pointerdown", {
+            button: 0,
+            pointerId: 5,
+            clientX: 730,
+            clientY: 470,
+            preventDefault() {},
+        });
+        resizeHandle.dispatch("pointermove", {
+            pointerId: 5,
+            clientX: 850,
+            clientY: 550,
+            preventDefault() {},
+        });
+        assert.equal(panel.style.width, "400px");
+        assert.equal(panel.style.height, "300px");
 
         const componentStage = new FakeElement({
             left: 100,
@@ -123,7 +193,15 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(typeof windowListeners.get("resize"), "function");
         assert.match(
             floatingWindowStyles,
-            /\.floating-window\s*{[\s\S]*?position: fixed;[\s\S]*?z-index: 1201;[\s\S]*?resize: both;/,
+            /\.floating-window\s*{[\s\S]*?position: fixed;[\s\S]*?z-index: 1201;[\s\S]*?overflow: hidden;/,
+        );
+        assert.match(
+            floatingWindowStyles,
+            /\.floating-window-toolbar\s*{[\s\S]*?height: 0\.8rem;[\s\S]*?cursor: move;/,
+        );
+        assert.match(
+            floatingWindowStyles,
+            /\.floating-window-resize-handle svg\s*{[\s\S]*?stroke: currentColor;/,
         );
 
         release();
@@ -134,8 +212,12 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.width, "");
         assert.equal(panel.style.height, "");
         assert.equal(panel.style.zIndex, "");
+        assert.equal(panel.children.includes(toolbar), false);
+        assert.equal(panel.children.includes(resizeHandle), false);
+        assert.equal(panel.parentElement, originalParent);
     } finally {
         globalThis.window = originalWindow;
+        globalThis.document = originalDocument;
         globalThis.ResizeObserver = originalResizeObserver;
     }
 });
