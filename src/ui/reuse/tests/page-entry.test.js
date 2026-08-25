@@ -6,6 +6,7 @@ import {
     loadWithSpaImportGuard,
     mountWhenDirect,
 } from "../page-entry.js";
+import { uiCtx } from "../ui-ctx.js";
 
 function createMockBody() {
     const children = [];
@@ -21,6 +22,13 @@ function createMockBody() {
         },
     };
 }
+
+test("page entry publishes floating windows before external pages mount", () => {
+    assert.equal(
+        typeof uiCtx.capabilities.get("ui:makeFloatingWindow"),
+        "function",
+    );
+});
 
 function createMockElement(tagName) {
     return {

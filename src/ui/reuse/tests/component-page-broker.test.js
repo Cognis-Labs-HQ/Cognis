@@ -6,6 +6,10 @@ const pageSectionStyles = readFileSync(
     new URL("../../styles/reuse/page-sections.css", import.meta.url),
     "utf8",
 );
+const dashboardLayoutSource = readFileSync(
+    new URL("../../layouts/dashboard-layout.js", import.meta.url),
+    "utf8",
+);
 
 class FakeElement {
     constructor() {
@@ -309,5 +313,12 @@ test("component windows are paint-contained within their requested stage", () =>
     assert.match(
         pageSectionStyles,
         /\.component-page-window\s*{[^}]*position: absolute;[^}]*inset: 0;[^}]*overflow: auto;/,
+    );
+});
+
+test("component windows suppress nested dashboard chrome", () => {
+    assert.match(
+        dashboardLayoutSource,
+        /root\.closest\?\.\("\.component-page-window"\)[\s\S]*showTopbar: false,[\s\S]*showNavbar: false,[\s\S]*showThemeToggle: false,[\s\S]*showFooter: false,[\s\S]*enableAccountEnhancements: false[\s\S]*if \(!componentWindow\) {[\s\S]*bindLanguageToggle/,
     );
 });

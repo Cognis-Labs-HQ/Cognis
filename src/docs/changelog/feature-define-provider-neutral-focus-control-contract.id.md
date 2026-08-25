@@ -59,3 +59,7 @@ Broker halaman komponen kini mengevaluasi modul entri penyedia melalui pelindung
 ## Memindahkan dan mengubah ukuran jendela PiP rapat
 
 Panel PiP Focus Control kini menggunakan pengendali jendela mengambang yang dapat digunakan kembali. Panel rapat dapat diseret melalui bagian kepalanya dan diubah ukurannya sambil tetap berada di area pandang, serta melepaskan seluruh sumber daya interaksi saat ditutup.
+
+## Memuat dukungan PiP dan menyembunyikan krom tersemat
+
+Host entri halaman kini mendaftarkan kapabilitas jendela mengambang sebelum halaman eksternal dipasang, sehingga Jitsi Meet dapat membuat PiP rapat yang dapat dipindahkan secara andal. Komposer halaman di dalam jendela komponen otomatis menghilangkan bilah atas, navigasi, kontrol bahasa dan tema, footer, pemuatan preferensi, serta peningkatan akun yang bersarang.

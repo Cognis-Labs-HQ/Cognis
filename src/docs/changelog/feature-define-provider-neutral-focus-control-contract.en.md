@@ -59,3 +59,7 @@ The component-page broker now evaluates provider entry modules through the same 
 ## Move and resize meeting PiP windows
 
 Focus Control PiP panes now use a reusable floating-window controller. Meeting panes can be dragged by their header and resized while remaining constrained to the visible viewport, with all interaction resources released when the pane closes.
+
+## Load PiP support and suppress embedded chrome
+
+The page-entry host now registers the floating-window capability before external pages mount, so Jitsi Meet can reliably create its movable meeting PiP. Page composers mounted inside component windows automatically omit nested topbars, navigation, language and theme controls, footers, preference loading, and account enhancements.

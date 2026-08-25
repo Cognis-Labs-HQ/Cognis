@@ -26,6 +26,7 @@ import {
 } from "./runtime-error-popup.js";
 import { uiCtx } from "./ui-ctx.js";
 import "./feedback-capabilities.js";
+import "./floating-window.js";
 import { ensureUiProvidersLoaded } from "./ui-provider-loader.js";
 
 const activePageLoadingTokens = new Set();

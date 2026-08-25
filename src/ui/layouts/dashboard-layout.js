@@ -525,6 +525,19 @@ function shellMatchesConfig(root, showTopbar, showNavbar, showFooter) {
 }
 
 export async function renderDashboardLayout(root, slots = {}) {
+    const componentWindow = Boolean(root.closest?.(".component-page-window"));
+    if (componentWindow) {
+        slots = {
+            ...slots,
+            showTopbar: false,
+            showNavbar: false,
+            showThemeToggle: false,
+            showFooter: false,
+            usePreferenceApi: false,
+            requireAccountSession: false,
+            enableAccountEnhancements: false,
+        };
+    }
     const {
         showTopbar = true,
         showNavbar = true,
@@ -657,9 +670,11 @@ export async function renderDashboardLayout(root, slots = {}) {
             ensureReleaseChangelogPopupChecked(i18n);
         }
         bindHeaderScrollState(root);
-        bindThemeToggle({ usePreferenceApi });
-        bindLanguageToggle({ i18n, navigateTo, showToast });
-        bindSwitcherSettingsLinks(root);
+        if (!componentWindow) {
+            bindThemeToggle({ usePreferenceApi });
+            bindLanguageToggle({ i18n, navigateTo, showToast });
+            bindSwitcherSettingsLinks(root);
+        }
         return;
     }
 
@@ -717,9 +732,11 @@ export async function renderDashboardLayout(root, slots = {}) {
         ensureReleaseChangelogPopupChecked(i18n);
     }
     bindHeaderScrollState(root);
-    bindThemeToggle({ usePreferenceApi });
-    bindLanguageToggle({ i18n, navigateTo, showToast });
-    bindSwitcherSettingsLinks(root);
+    if (!componentWindow) {
+        bindThemeToggle({ usePreferenceApi });
+        bindLanguageToggle({ i18n, navigateTo, showToast });
+        bindSwitcherSettingsLinks(root);
+    }
     registerServiceWorker();
 }
 

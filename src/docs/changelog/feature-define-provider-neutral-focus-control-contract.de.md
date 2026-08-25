@@ -59,3 +59,7 @@ Der Broker für Komponentenseiten wertet Einstiegsmodule von Anbietern nun mit d
 ## Meeting-PiP-Fenster verschieben und skalieren
 
 PiP-Bereiche von Focus Control verwenden nun eine wiederverwendbare Steuerung für schwebende Fenster. Meeting-Bereiche können an ihrer Kopfzeile verschoben und in der Größe geändert werden, bleiben dabei im sichtbaren Bereich und geben beim Schließen alle Interaktionsressourcen frei.
+
+## PiP-Unterstützung laden und eingebettete Bedienelemente ausblenden
+
+Der Seiten-Host registriert die Funktion für schwebende Fenster nun vor dem Einhängen externer Seiten, sodass Jitsi Meet sein verschiebbares Meeting-PiP zuverlässig erstellen kann. In Komponentenfenstern eingebundene Seiten-Composer blenden verschachtelte Kopfzeilen, Navigation, Sprach- und Designsteuerung, Fußzeilen, Einstellungsabrufe und Kontoerweiterungen automatisch aus.
