@@ -75,3 +75,7 @@ Der Formular-Builder stellt Informationstooltips nun neben der mit dem Eingabefe
 ## Schalterinteraktion und ausgewogenes Quellenformular wiederherstellen
 
 Schalterflächen sind nun explizite Eingabebeschriftungen, sodass ein Klick auf den Schalter für private Repositorys zuverlässig das Kontrollkästchen umschaltet, ohne die benachbarte Hilfe zu öffnen. Die Felder im Modulquellen-Popup verwenden wieder ihre vorgesehenen Rasterbreiten, wodurch die Zugangsdaten-Steuerelemente ausgerichtet und ausgewogen bleiben.
+
+## Private Repositorys über das authentifizierte GitHub-Konto erkennen
+
+Private GitHub-Quellenscans kombinieren nun die Repository-Liste der Organisation mit den privaten Repositorys, auf die das authentifizierte Konto zugreifen kann, und beschränken das Ergebnis wieder auf die konfigurierte Organisation. Fein abgestufte PATs können dadurch ausgewählte private Modul-Repositorys erkennen, selbst wenn GitHub sie in der Organisationsliste auslässt.

@@ -80,7 +80,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.3.73`   |
+| Core Package   | `src/core/` | `0.3.74`   |
 
 ## API
 

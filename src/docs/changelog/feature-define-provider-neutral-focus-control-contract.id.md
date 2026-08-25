@@ -75,3 +75,7 @@ Form Builder kini merender tombol tooltip informasi di samping, bukan di dalam, 
 ## Pulihkan interaksi slider dan keseimbangan formulir sumber
 
 Trek slider kini menjadi label input eksplisit, sehingga klik di mana pun pada sakelar repositori privat akan mengubah kotak centang secara andal tanpa mengaktifkan bantuan di sebelahnya. Kolom popup Sumber Modul kembali memakai rentang kisi yang dirancang, sehingga kontrol kredensial tetap sejajar dan seimbang.
+
+## Temukan repositori privat melalui akun GitHub terautentikasi
+
+Pemindaian sumber GitHub privat kini menggabungkan daftar repositori organisasi dengan repositori privat yang dapat diakses akun terautentikasi, lalu membatasi hasilnya kembali ke organisasi yang dikonfigurasi. Dengan demikian, PAT terperinci dapat menemukan repositori modul privat yang dipilih meskipun GitHub tidak menyertakannya dalam daftar organisasi.

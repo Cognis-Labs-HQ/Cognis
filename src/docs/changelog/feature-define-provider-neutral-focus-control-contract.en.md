@@ -75,3 +75,7 @@ Form Builder now renders information-tooltip buttons beside, rather than inside,
 ## Restore slider interaction and source-form balance
 
 Slider tracks are now explicit input labels, so clicking anywhere on the private-repository switch reliably toggles its checkbox without activating adjacent help. Module Source popup fields again use their intended grid spans, keeping credential controls aligned and balanced.
+
+## Discover private repositories through the authenticated GitHub account
+
+Private GitHub source scans now combine the organization repository listing with the authenticated account's accessible private repositories, restricted back to the configured organization. Fine-grained PATs can therefore discover selected private module repositories even when GitHub omits them from the organization listing.
