@@ -16,6 +16,15 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
+.floating-window[popover] {
+    inset: auto;
+    margin: 0;
+}
+
+.floating-window[popover]::backdrop {
+    display: none;
+}
+
 .floating-window-handle {
     cursor: move;
     touch-action: none;

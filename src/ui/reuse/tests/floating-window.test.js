@@ -61,6 +61,26 @@ class FakeElement {
         this.attributes[name] = value;
     }
 
+    hasAttribute(name) {
+        return Object.hasOwn(this.attributes, name);
+    }
+
+    getAttribute(name) {
+        return this.hasAttribute(name) ? this.attributes[name] : null;
+    }
+
+    removeAttribute(name) {
+        delete this.attributes[name];
+    }
+
+    showPopover() {
+        this.popoverOpen = true;
+    }
+
+    hidePopover() {
+        this.popoverOpen = false;
+    }
+
     getBoundingClientRect() {
         return this.rect;
     }
@@ -116,7 +136,8 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         originalParent.append(panel);
         const handle = new FakeElement(panel.rect);
         const release = makeFloatingWindow(panel, { handle });
-        assert.equal(panel.parentElement, body);
+        assert.equal(panel.parentElement, originalParent);
+        assert.equal(panel.popoverOpen, true);
         assert.equal(panel.classes.has("floating-window"), true);
         assert.equal(handle.classes.has("floating-window-handle"), true);
         assert.equal(panel.style.minWidth, "240px");
@@ -170,19 +191,6 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.width, "400px");
         assert.equal(panel.style.height, "300px");
 
-        const componentStage = new FakeElement({
-            left: 100,
-            top: 50,
-            width: 600,
-            height: 400,
-        });
-        panel.closest = (selector) =>
-            selector === ".component-page-stage" ? componentStage : null;
-        panel.rect = { left: 650, top: 400, width: 280, height: 220 };
-        resizeCallback();
-        assert.equal(panel.style.left, "320px");
-        assert.equal(panel.style.top, "180px");
-
         panel.closest = () => null;
         panel.rect = { left: 900, top: 650, width: 1200, height: 800 };
         resizeCallback();
@@ -215,6 +223,26 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.children.includes(toolbar), false);
         assert.equal(panel.children.includes(resizeHandle), false);
         assert.equal(panel.parentElement, originalParent);
+        assert.equal(panel.popoverOpen, false);
+        assert.equal(panel.hasAttribute("popover"), false);
+
+        const componentStage = new FakeElement({
+            left: 100,
+            top: 50,
+            width: 600,
+            height: 400,
+        });
+        panel.closest = (selector) =>
+            selector === ".component-page-stage" ? componentStage : null;
+        panel.rect = { left: 650, top: 400, width: 280, height: 220 };
+        const releaseFallback = makeFloatingWindow(panel, {
+            handle,
+            topLayer: false,
+        });
+        assert.equal(panel.popoverOpen, false);
+        assert.equal(panel.style.left, "320px");
+        assert.equal(panel.style.top, "180px");
+        releaseFallback();
     } finally {
         globalThis.window = originalWindow;
         globalThis.document = originalDocument;

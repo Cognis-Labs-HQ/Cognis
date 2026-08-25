@@ -14,7 +14,7 @@
  * });
  *
  * @param {HTMLElement} element - Floating window to control.
- * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean}} options
+ * @param {{handle?: HTMLElement | null, signal?: AbortSignal, minWidth?: number, minHeight?: number, width?: string, height?: string, right?: string, bottom?: string, zIndex?: number, portal?: boolean, topLayer?: boolean}} options
  * @returns {() => void} Idempotent listener and observer cleanup.
  */
 import { uiCtx } from "./ui-ctx.js";
@@ -92,6 +92,7 @@ export function makeFloatingWindow(
         bottom = "1rem",
         zIndex = 1201,
         portal = true,
+        topLayer = portal,
     } = {},
 ) {
     if (!element || !handle) return () => {};
@@ -99,15 +100,9 @@ export function makeFloatingWindow(
     let drag = null;
     let resizeDrag = null;
     let released = false;
-    const originalParent = element.parentElement;
-    const originalNextSibling = element.nextSibling;
-    const portaled = Boolean(
-        portal &&
-        originalParent &&
-        typeof document !== "undefined" &&
-        document.body &&
-        originalParent !== document.body,
-    );
+    const hadPopoverAttribute = element.hasAttribute?.("popover") ?? false;
+    const previousPopoverValue = element.getAttribute?.("popover");
+    let shownInTopLayer = false;
     const previousStyles = Object.fromEntries(
         MANAGED_STYLE_PROPERTIES.map((property) => [
             property,
@@ -116,7 +111,6 @@ export function makeFloatingWindow(
     );
 
     ensureFloatingWindowStyles();
-    if (portaled) document.body.append(element);
     const chrome = createFloatingWindowChrome(element);
     element.classList.add("floating-window");
     handle.classList.add("floating-window-handle");
@@ -129,8 +123,30 @@ export function makeFloatingWindow(
     element.style.minWidth = `${minWidth}px`;
     element.style.minHeight = `${minHeight}px`;
     element.style.zIndex = String(zIndex);
+    if (topLayer && typeof element.showPopover === "function") {
+        element.setAttribute("popover", "manual");
+        try {
+            element.showPopover();
+            shownInTopLayer = true;
+        } catch {
+            if (hadPopoverAttribute) {
+                element.setAttribute("popover", previousPopoverValue ?? "");
+            } else {
+                element.removeAttribute("popover");
+            }
+        }
+    }
 
     const getBoundary = () => {
+        if (shownInTopLayer) {
+            return {
+                element: null,
+                left: 0,
+                top: 0,
+                width: window.innerWidth,
+                height: window.innerHeight,
+            };
+        }
         const stage = element.closest?.(".component-page-stage");
         const stageRect = stage?.getBoundingClientRect?.();
         if (stageRect?.width > 0 && stageRect?.height > 0) {
@@ -310,11 +326,11 @@ export function makeFloatingWindow(
             ? new ResizeObserver(constrain)
             : null;
     resizeObserver?.observe(element);
-    if (!portaled && element.parentElement) {
+    if (!shownInTopLayer && element.parentElement) {
         resizeObserver?.observe(element.parentElement);
     }
     const parentObserver =
-        !portaled &&
+        !shownInTopLayer &&
         element.parentElement &&
         typeof MutationObserver === "function"
             ? new MutationObserver(constrain)
@@ -339,15 +355,11 @@ export function makeFloatingWindow(
         for (const [property, value] of Object.entries(previousStyles)) {
             element.style[property] = value;
         }
-        if (portaled) {
-            if (
-                originalNextSibling &&
-                originalNextSibling.parentElement === originalParent
-            ) {
-                originalParent.insertBefore(element, originalNextSibling);
-            } else {
-                originalParent.append(element);
-            }
+        if (shownInTopLayer) element.hidePopover?.();
+        if (hadPopoverAttribute) {
+            element.setAttribute("popover", previousPopoverValue ?? "");
+        } else {
+            element.removeAttribute?.("popover");
         }
     };
     signal?.addEventListener("abort", release, { once: true });

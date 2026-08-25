@@ -95,3 +95,7 @@ Borderless component windows now also remove page-composer workspace and outer c
 ## Add explicit floating-window controls
 
 Floating windows now include a thin top drag toolbar and a lower-right SVG resize handle. The host owns both pointer interactions, removes browser scrollbars and native resize ambiguity, constrains resizing to the visible page viewport, and removes the controls during cleanup.
+
+## Preserve live meetings when opening PiP
+
+Floating windows now enter the browser top layer without moving the provider element between DOM parents. The meeting iframe and its live connection therefore remain intact when PiP opens and closes; unsupported browsers use a parent-constrained fallback that also avoids reparenting.

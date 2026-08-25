@@ -95,3 +95,7 @@ Jendela komponen tanpa bingkai kini turut menghapus jarak ruang kerja penyusun h
 ## Tambahkan kontrol jendela mengambang yang eksplisit
 
 Jendela mengambang kini memiliki toolbar seret tipis di bagian atas dan pegangan ubah ukuran SVG di kanan bawah. Host mengelola kedua interaksi penunjuk, menghapus bilah gulir peramban serta kontrol ukuran bawaan yang ambigu, membatasi perubahan ukuran pada area pandang halaman, dan menghapus kontrol saat pembersihan.
+
+## Pertahankan rapat aktif saat membuka PiP
+
+Jendela mengambang kini memasuki lapisan teratas peramban tanpa memindahkan elemen penyedia antarpenginduk DOM. Iframe rapat beserta koneksi aktifnya tetap utuh saat PiP dibuka dan ditutup; peramban yang tidak mendukungnya memakai alternatif terbatas-induk yang juga tidak memindahkan elemen.

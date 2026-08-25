@@ -95,3 +95,7 @@ Randlose Komponentenfenster entfernen nun auch die Abstände des Page-Composer-A
 ## Explizite Steuerelemente für schwebende Fenster hinzufügen
 
 Schwebende Fenster enthalten nun eine schmale Ziehleiste am oberen Rand und einen SVG-Größengriff unten rechts. Der Host verwaltet beide Zeigerinteraktionen, entfernt Browser-Bildlaufleisten und uneindeutige native Größensteuerungen, begrenzt die Größenänderung auf den sichtbaren Seitenbereich und entfernt die Steuerelemente bei der Bereinigung.
+
+## Laufende Meetings beim Öffnen von PiP erhalten
+
+Schwebende Fenster gelangen nun in die oberste Browser-Ebene, ohne das Anbieter-Element zwischen DOM-Elternelementen zu verschieben. Dadurch bleiben der Meeting-Iframe und seine aktive Verbindung beim Öffnen und Schließen von PiP bestehen; nicht unterstützte Browser verwenden eine auf das Elternelement begrenzte Alternative, die ebenfalls kein neues Einhängen erfordert.
