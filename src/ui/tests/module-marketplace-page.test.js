@@ -50,6 +50,10 @@ const sourceSettingsSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/source-settings.js"),
     "utf8",
 );
+const credentialsSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/credentials.js"),
+    "utf8",
+);
 const marketplaceSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/index.js"),
     "utf8",
@@ -209,7 +213,7 @@ test("module marketplace content keeps a stable Modules heading", () => {
     );
 
     assert.match(
-        source,
+        marketplaceSource,
         /<h2>\$\{escapeHtml\(i18n\.t\("ui\.reuse\.modules"\)\)\}<\/h2>/,
     );
     assert.doesNotMatch(
@@ -317,6 +321,10 @@ test("module marketplace identifies immutable trusted sources", () => {
     assert.match(sourceSettingsSource, /scanPrivateRepos: privateScan/);
     assert.match(sourceSettingsSource, /if \(!validation\.valid\)/);
     assert.match(sourceSettingsSource, /scope\?\.resolve\(credentialId/);
+    assert.match(marketplaceSource, /promptWhenLocked:\s*forceRefresh/);
+    assert.match(credentialsSource, /keyring\?\.resolve\(source\.credentialId/);
+    assert.match(credentialsSource, /promptWhenLocked,/);
+    assert.doesNotMatch(credentialsSource, /keyring\?\.get/);
 });
 
 test("recommended modules retain the published defaults", () => {
@@ -540,10 +548,14 @@ test("module marketplace refreshes every configured source on demand", () => {
         /\{ modules: discovered, sourceFailures \} = await loadAvailableModules\([\s\S]*reportSourceFailures\(sourceFailures\)/,
     );
     assert.match(source, /discoverConfiguredSources\(true\)/);
+    assert.match(source, /discoverConfiguredSources\(false, signal\)/);
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);
     assert.match(source, /await refreshMarketplaceData\(\)/);
-    assert.match(source, /void loadKnownModules\(\)\.catch/);
+    assert.match(
+        source,
+        /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,
+    );
 });
 
 test("module installation failures stay local to the marketplace action", () => {

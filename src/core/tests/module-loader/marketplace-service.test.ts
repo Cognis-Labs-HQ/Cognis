@@ -39,6 +39,7 @@ test("module marketplace persists source metadata without PAT values", async () 
             namespace: "Cognis-Labs-HQ",
             baseUrl: "https://api.github.com",
             homepage: "https://github.com/Cognis-Labs-HQ",
+            scanPrivateRepos: false,
             trusted: true,
             credentialId: undefined,
         },
@@ -93,6 +94,26 @@ test("trusted source updates accept credentials without mutable metadata", async
         path.join(root, "modules"),
     ).listSources();
     assert.equal(restartedSource.credentialId, "module-source:trusted:pat");
+});
+
+test("trusted source private scanning survives a service restart", async () => {
+    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const statePath = path.join(root, "sources.json");
+    const installRoot = path.join(root, "modules");
+    const service = new ModuleMarketplaceService(statePath, installRoot);
+    await service.saveSource({
+        ...DEFAULT_TRUSTED_MODULE_SOURCE,
+        credentialId: "module-source:trusted:pat",
+        scanPrivateRepos: true,
+    });
+
+    const stored = JSON.parse(await readFile(statePath, "utf8"));
+    assert.equal(stored[0].scanPrivateRepos, true);
+    const [restartedSource] = await new ModuleMarketplaceService(
+        statePath,
+        installRoot,
+    ).listSources();
+    assert.equal(restartedSource.scanPrivateRepos, true);
 });
 
 test("cached UUID collisions prefer the trusted Cognis source", async () => {
@@ -430,6 +451,7 @@ test("private scans include organization repositories visible through the authen
         );
         assert.deepEqual(result.sourceFailures, []);
         assert.ok(requestedUrls.some((url) => url.includes("/user/repos?")));
+        assert.ok(requestedUrls.every((url) => !url.includes("affiliation=")));
     } finally {
         globalThis.fetch = originalFetch;
     }
@@ -680,16 +702,16 @@ test("module marketplace discovers repository manifests", async () => {
         assert.deepEqual(
             scanLogs.map(({ message, meta }) => ({
                 message,
-                modulesFound: meta.modulesFound,
+                catalogModulesFound: meta.catalogModulesFound,
             })),
             [
                 {
                     message: "Module source scan started.",
-                    modulesFound: undefined,
+                    catalogModulesFound: undefined,
                 },
                 {
                     message: "Module source scan completed.",
-                    modulesFound: 1,
+                    catalogModulesFound: 1,
                 },
             ],
         );
@@ -801,9 +823,13 @@ test("module marketplace discovers repository manifests", async () => {
 
 test("module marketplace ignores incomplete module registrations", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const warnings: Array<Record<string, unknown>> = [];
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
+        (level, _message, meta) => {
+            if (level === "warn") warnings.push(meta);
+        },
     );
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input) =>
@@ -820,6 +846,8 @@ test("module marketplace ignores incomplete module registrations", async () => {
             : new Response(JSON.stringify({ id: "incomplete" }));
     try {
         assert.deepEqual(await service.discover(), []);
+        assert.equal(warnings[0]?.repository, "acme/incomplete");
+        assert.equal(warnings[0]?.error, "invalid_module_manifest");
     } finally {
         globalThis.fetch = originalFetch;
     }

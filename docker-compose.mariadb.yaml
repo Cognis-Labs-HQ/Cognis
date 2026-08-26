@@ -29,6 +29,7 @@ services:
             DATA_ENCRYPTION_KEY: ${DATA_ENCRYPTION_KEY:?Set DATA_ENCRYPTION_KEY}
             EXTERNAL_HOST: ${EXTERNAL_HOST:?Set EXTERNAL_HOST to the public Cognis URL}
             COGNIS_EXTERNAL_MODULES_ROOT: /app/external-modules
+            COGNIS_MODULE_SOURCES_PATH: /app/config/module-sources.json
         volumes:
             - applogs:/app/logs
             - appconfig:/app/config
