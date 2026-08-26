@@ -76,3 +76,12 @@ test("accepts picture-in-picture presentation for persistent meeting panes", () 
         1,
     );
 });
+
+test("accepts a surface that omits optional initial state", () => {
+    const withoutInitialState = surface("defaults");
+    delete withoutInitialState.initialState;
+    assert.equal(
+        normalizeFocusManifest({ focusControl: withoutInitialState }).length,
+        1,
+    );
+});

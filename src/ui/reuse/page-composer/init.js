@@ -43,6 +43,10 @@ import { createSubComposerHandlers } from "./sub-composer.js";
 import { uiCtx } from "../ui-ctx.js";
 import { createComposerRenderer } from "./composer-render.js";
 import { PAGE_COMPOSER_GRID_UNIT } from "./grid-math.js";
+import {
+    resolveElementGridSize,
+    resolveGridColumnCount,
+} from "./grid-sizing.js";
 import { createPresenceTracker } from "./presence-tracker.js";
 import { pageActions } from "../page-actions.js";
 import { createFocusControlCoordinator } from "../focus-control.js";
@@ -51,6 +55,7 @@ import {
     restoreWindowScrollPosition,
 } from "./dom-position.js";
 import { renderToolbarToggleIcon } from "./toolbar-icons.js";
+
 export function createPageComposer(
     root,
     {
@@ -124,9 +129,11 @@ export function createPageComposer(
     if (signal?.aborted) destroy();
     else signal?.addEventListener("abort", destroy, { once: true });
 
-    const UNIT = PAGE_COMPOSER_GRID_UNIT;
+    const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     const MOBILE_TOOLBAR_BREAKPOINT = 900;
     const MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT = 640;
+    // Treat narrow grids as compact so single-pane rows expand and avoid
+    // visibly wasted horizontal space on small screens.
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
@@ -203,113 +210,9 @@ export function createPageComposer(
         return true;
     }
 
-    /**
-     * Resolves a stable column count by trying progressively broader width
-     * containers. This prevents transient 0-width reads during init from
-     * incorrectly selecting a narrow layout profile.
-     *
-     * @returns {number}
-     */
-    function getPreferredGridColumnCount() {
-        const widthCandidates = [];
-        if (contentGrid) {
-            contentGrid.style.width = "";
-        }
-        widthCandidates.push(
-            contentGrid ? contentGrid.getBoundingClientRect().width : 0,
-        );
-        widthCandidates.push(
-            contentGrid?.parentElement?.getBoundingClientRect().width ?? 0,
-        );
-        widthCandidates.push(
-            root.querySelector(".main-window")?.getBoundingClientRect().width ??
-                0,
-        );
-        widthCandidates.push(
-            root.querySelector(".workspace")?.getBoundingClientRect().width ??
-                0,
-        );
-        widthCandidates.push(window.innerWidth);
-        const resolvedWidth = widthCandidates.find(
-            (width) => Number.isFinite(width) && width > 0,
-        );
-        return Math.max(1, Math.floor((resolvedWidth ?? UNIT) / UNIT));
-    }
-
-    function getGridSize(el) {
-        const maxVal = el.gridSize?.max;
-
-        if (maxVal === "full") {
-            return {
-                default: el.gridSize.default ?? [4, 3],
-                min: el.gridSize.min ?? [2, 2],
-                max: null,
-                fullWidth: true,
-                fillWidth: false,
-                halfWidth: false,
-                halfHeight: false,
-                fillHeight: false,
-            };
-        }
-
-        if (maxVal === "fill") {
-            return {
-                default: el.gridSize?.default ?? [4, 3],
-                min: el.gridSize?.min ?? [2, 2],
-                max: null,
-                fullWidth: false,
-                fillWidth: true,
-                halfWidth: false,
-                halfHeight: false,
-                fillHeight: false,
-            };
-        }
-
-        if (maxVal === "half") {
-            return {
-                default: el.gridSize?.default ?? [4, 3],
-                min: el.gridSize?.min ?? [2, 2],
-                max: null,
-                fullWidth: false,
-                fillWidth: false,
-                halfWidth: true,
-                halfHeight: false,
-                fillHeight: false,
-            };
-        }
-
-        let resolvedMax = maxVal ?? null;
-        let halfWidth = false;
-        let halfHeight = false;
-        let fillWidth = false;
-        let fillHeight = false;
-
-        if (Array.isArray(maxVal)) {
-            halfWidth = maxVal[0] === "half";
-            fillWidth = maxVal[0] === "fill";
-            halfHeight = maxVal[1] === "half";
-            fillHeight = maxVal[1] === "fill";
-            const resolvedWidth =
-                halfWidth || fillWidth ? null : (maxVal[0] ?? null);
-            const resolvedHeight =
-                halfHeight || fillHeight ? null : (maxVal[1] ?? null);
-            resolvedMax =
-                resolvedWidth === null && resolvedHeight === null
-                    ? null
-                    : [resolvedWidth, resolvedHeight];
-        }
-
-        return {
-            default: el.gridSize?.default ?? [4, 3],
-            min: el.gridSize?.min ?? [2, 2],
-            max: resolvedMax,
-            fullWidth: false,
-            fillWidth,
-            halfWidth,
-            halfHeight,
-            fillHeight,
-        };
-    }
+    const getPreferredGridColumnCount = () =>
+        resolveGridColumnCount({ contentGrid, root, unit: UNIT });
+    const getGridSize = resolveElementGridSize;
 
     function getSubPanelId(preferenceKey) {
         return (
@@ -938,6 +841,9 @@ export function createPageComposer(
         if (persistLayoutPreferences) {
             loadLayout()
                 .then((loadedLayout) => {
+                    // Skip applying async-loaded layout data when the grid has
+                    // been unmounted, the user has already started editing, or
+                    // there is no stored layout/profile data to apply.
                     if (
                         !contentGrid ||
                         !document.contains(contentGrid) ||

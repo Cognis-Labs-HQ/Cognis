@@ -417,12 +417,13 @@ const STATIC_ROUTES = [
 
 installComponentPageBroker({
     resolveLocal: async ({ componentUuid, routeId, mode }) =>
-        STATIC_ROUTES.find(
+        (await loadAllRoutes()).find(
             (route) =>
                 route.id === routeId &&
-                route.ownerUuid === componentUuid &&
-                route.componentPage &&
-                (!mode || route.componentPage.modes.includes(mode)),
+                (!componentUuid || route.ownerUuid === componentUuid) &&
+                (!componentUuid ||
+                    (route.componentPage &&
+                        (!mode || route.componentPage.modes.includes(mode)))),
         ) ?? null,
 });
 

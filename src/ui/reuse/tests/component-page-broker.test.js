@@ -141,7 +141,10 @@ test("component windows stay disposable across activation and SPA navigation", a
     installComponentPageBroker({
         authorizeSpawn: () => spawnAuthorized,
         resolveLocal: async ({ componentUuid, routeId }) => {
-            if (componentUuid !== "b4d49c4a-61d0-5db2-84fd-f89b80fd6398") {
+            if (
+                componentUuid &&
+                componentUuid !== "b4d49c4a-61d0-5db2-84fd-f89b80fd6398"
+            ) {
                 return null;
             }
             if (routeId === "direct-entry") {
@@ -168,6 +171,19 @@ test("component windows stay disposable across activation and SPA navigation", a
                 : null;
         },
     });
+
+    const declaredRouteResolver = uiCtx.capabilities.get(
+        "router:resolveDeclaredRoute",
+    );
+    assert.equal(
+        (
+            await declaredRouteResolver({
+                kind: "route",
+                routeId: "core.dashboard",
+            })
+        )?.id,
+        "core.dashboard",
+    );
 
     assert.equal(
         (

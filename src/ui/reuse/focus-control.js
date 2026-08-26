@@ -73,7 +73,7 @@ export function normalizeFocusManifest(manifest, elements = []) {
                 surface.modes.every((mode) =>
                     ["overlay", "fullscreen", "pip"].includes(mode),
                 ) &&
-                serializable(surface.initialState),
+                serializable(surface.initialState ?? null),
         );
 }
 
@@ -100,9 +100,8 @@ export function createFocusControlCoordinator({
             ?.replaceChildren(document.createTextNode(message));
     }
 
-    async function dismiss({ remote = false } = {}) {
+    function dismiss() {
         if (!active) return;
-        await uiCtx.runFlow("end-focus", { session: active, remote });
         releaseFloatingWindow?.();
         releaseFloatingWindow = null;
         overlay?.remove();
@@ -112,6 +111,12 @@ export function createFocusControlCoordinator({
         active = null;
         window.scrollTo(snapshot?.x ?? 0, snapshot?.y ?? 0);
         snapshot?.focus?.focus?.();
+    }
+
+    async function end() {
+        if (!active) return;
+        await uiCtx.runFlow("end-focus", { session: active });
+        dismiss();
     }
 
     async function load(session) {
@@ -184,7 +189,7 @@ export function createFocusControlCoordinator({
             switchButton.addEventListener(
                 "click",
                 async () => {
-                    await dismiss();
+                    await end();
                     await start(alternative);
                 },
                 { signal },
@@ -213,7 +218,7 @@ export function createFocusControlCoordinator({
                 text(i18n, "focus.control.started", "Focused content started"),
             );
         } catch (error) {
-            await dismiss();
+            dismiss();
             throw error;
         }
     }
@@ -237,6 +242,11 @@ export function createFocusControlCoordinator({
             return false;
         if (active?.id === session.id && session.revision <= active.revision)
             return false;
+        if (["ending", "ended"].includes(session.status)) {
+            if (active?.id !== session.id) return false;
+            dismiss();
+            return true;
+        }
         if (!following) return false;
         if (!active) await load(session);
         else if (active.id !== session.id) return false;
@@ -289,13 +299,14 @@ export function createFocusControlCoordinator({
 
     function destroy() {
         removers.splice(0).forEach((remove) => remove());
-        if (active) void dismiss();
+        dismiss();
     }
     signal?.addEventListener("abort", destroy, { once: true });
     return {
         mount,
         receive,
         dismiss,
+        end,
         destroy,
         start,
         follow(value = true) {

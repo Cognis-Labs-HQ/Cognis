@@ -392,6 +392,12 @@ export function installComponentPageBroker({
     uiCtx.capabilities.contribute(
         "router:resolveDeclaredRoute",
         async (loader) => {
+            if (loader?.kind === "route") {
+                return resolveLocal({
+                    routeId: loader.routeId,
+                    mode: loader.requestedMode,
+                });
+            }
             if (loader?.kind !== "module-route") return null;
             return requestComponentPage({
                 componentUuid: loader.moduleId,

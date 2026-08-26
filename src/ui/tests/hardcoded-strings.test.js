@@ -29,6 +29,8 @@ function isAllowed(value) {
     if (/^Inter, Arial, sans-serif$/.test(v)) return true;
     // Space-separated CSS class name tokens are not user-facing strings.
     if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)+$/.test(v)) return true;
+    // Comma-separated element names are CSS selectors, not visible labels.
+    if (/^[a-z][a-z0-9-]*(,\s*[a-z][a-z0-9-]*)+$/.test(v)) return true;
     if (v.includes("${")) return true;
     if (v.startsWith(".")) return true;
     if (/^aria-[a-z-]+="[a-z-]+"$/.test(v)) return true;
