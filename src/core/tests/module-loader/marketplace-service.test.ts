@@ -451,6 +451,9 @@ test("private scans include organization repositories visible through the authen
         );
         assert.deepEqual(result.sourceFailures, []);
         assert.ok(requestedUrls.some((url) => url.includes("/user/repos?")));
+        assert.ok(
+            requestedUrls.every((url) => !url.includes("affiliation=")),
+        );
     } finally {
         globalThis.fetch = originalFetch;
     }
@@ -701,16 +704,16 @@ test("module marketplace discovers repository manifests", async () => {
         assert.deepEqual(
             scanLogs.map(({ message, meta }) => ({
                 message,
-                modulesFound: meta.modulesFound,
+                catalogModulesFound: meta.catalogModulesFound,
             })),
             [
                 {
                     message: "Module source scan started.",
-                    modulesFound: undefined,
+                    catalogModulesFound: undefined,
                 },
                 {
                     message: "Module source scan completed.",
-                    modulesFound: 1,
+                    catalogModulesFound: 1,
                 },
             ],
         );
@@ -822,9 +825,13 @@ test("module marketplace discovers repository manifests", async () => {
 
 test("module marketplace ignores incomplete module registrations", async () => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const warnings: Array<Record<string, unknown>> = [];
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
+        (level, _message, meta) => {
+            if (level === "warn") warnings.push(meta);
+        },
     );
     const originalFetch = globalThis.fetch;
     globalThis.fetch = async (input) =>
@@ -841,6 +848,8 @@ test("module marketplace ignores incomplete module registrations", async () => {
             : new Response(JSON.stringify({ id: "incomplete" }));
     try {
         assert.deepEqual(await service.discover(), []);
+        assert.equal(warnings[0]?.repository, "acme/incomplete");
+        assert.equal(warnings[0]?.error, "invalid_module_manifest");
     } finally {
         globalThis.fetch = originalFetch;
     }

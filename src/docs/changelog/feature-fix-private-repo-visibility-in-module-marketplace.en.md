@@ -7,3 +7,7 @@ The Cognis Labs HQ marketplace source now persists its private-repository scan s
 ## Background scans no longer unlock the keyring
 
 Automatic marketplace polling reads a PAT only when the keyring is already unlocked. Provider authentication failures are reported without unexpectedly prompting for the account keyring password; an explicit refresh can still request access.
+
+## Every accessible private repository is considered
+
+Private discovery no longer restricts GitHub's authenticated repository list by affiliation, which could omit explicitly granted fine-grained PAT repositories. Scan logs now distinguish catalog results from installed modules and identify repositories rejected because of invalid manifests or enrichment failures.

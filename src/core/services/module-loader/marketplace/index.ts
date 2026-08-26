@@ -471,7 +471,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             this.log("info", "Module source scan completed.", {
                 sourceUuid: source.uuid,
                 sourceName: source.name,
-                modulesFound: accepted.length,
+                catalogModulesFound: accepted.length,
             });
             discovered.push(...accepted);
         }
