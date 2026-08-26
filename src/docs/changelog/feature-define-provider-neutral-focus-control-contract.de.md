@@ -123,3 +123,7 @@ Browsermodule können nun jedes Produktionswerkzeug unter `src/ui/reuse/` und je
 ## Wiederverwendungsfähigkeit bei der Modulaktivierung bekanntgeben
 
 Die API registriert `ui:reuse` nun im Katalog der Host-UI-Fähigkeitsanbieter. Module, die diese Fähigkeit deklarieren, bestehen damit die Aktivierungsprüfung, bevor derselbe Anbieter die Browser-ctx-Ressourcenoberfläche initialisiert.
+
+## Jedes Modul mit seinem Quell-Repository verlinken
+
+Marketplace-Karten und Moduldetailköpfe zeigen nun direkt unter dem Titel ein Hyperlink-SVG gefolgt von der bereinigten URL des Quell-Repositorys. Repository-Links öffnen sich separat, ohne die umgebende Modulkarte zu aktivieren; unsichere URLs oder URLs mit Zugangsdaten werden nicht dargestellt.

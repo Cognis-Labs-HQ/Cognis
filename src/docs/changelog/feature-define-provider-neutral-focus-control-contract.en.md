@@ -123,3 +123,7 @@ Browser modules can now obtain every production utility under `src/ui/reuse/` an
 ## Advertise the reuse capability during module enablement
 
 The API now registers `ui:reuse` in the host UI capability-provider catalog. Modules that declare the capability can therefore pass enablement validation before the same provider initializes the browser ctx resource surface.
+
+## Link every module to its source repository
+
+Marketplace cards and module detail headers now show a hyperlink SVG followed by the module’s sanitized source repository URL directly below its title. Repository links open separately without activating the surrounding module card, and unsafe or credential-bearing URLs are never rendered.

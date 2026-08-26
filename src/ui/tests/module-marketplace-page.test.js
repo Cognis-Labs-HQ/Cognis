@@ -18,6 +18,7 @@ import { resolveModuleAssetUrl } from "../app/modules/assets.js";
 import {
     localizeModulePresentation,
     resolveLocalizedReadme,
+    resolveModuleRepositoryUrl,
 } from "../app/modules/presentation.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -427,6 +428,39 @@ test("module marketplace does not resolve repository-relative avatars against th
         "",
     );
     assert.equal(resolveModuleAssetUrl("/static/icon.svg"), "/static/icon.svg");
+});
+
+test("module marketplace renders safe source repository links below module titles", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/index.js"),
+        "utf8",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({
+            cloneUrl: "https://github.com/Cognis-Labs-HQ/example.git",
+        }),
+        "https://github.com/Cognis-Labs-HQ/example",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({
+            repository: "https://gitlab.com/cognis/example/",
+        }),
+        "https://gitlab.com/cognis/example",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({ cloneUrl: "javascript:alert(1)" }),
+        "",
+    );
+    assert.equal(
+        resolveModuleRepositoryUrl({
+            cloneUrl: "https://token@github.com/cognis/private.git",
+        }),
+        "",
+    );
+    assert.match(source, /function renderRepositoryLink\(module\)/);
+    assert.match(source, /static\/assets\/reuse\/hyperlink\.svg/);
+    assert.match(source, /target="_blank" rel="noopener noreferrer"/);
+    assert.match(source, /event\.target\.closest\("a"\)/);
 });
 
 test("module marketplace replaces unavailable icons with the unknown icon", () => {

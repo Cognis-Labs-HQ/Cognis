@@ -123,3 +123,7 @@ Modul browser kini dapat memperoleh setiap utilitas produksi di bawah `src/ui/re
 ## Umumkan kapabilitas penggunaan ulang saat mengaktifkan modul
 
 API kini mendaftarkan `ui:reuse` dalam katalog penyedia kapabilitas UI host. Modul yang mendeklarasikan kapabilitas tersebut dapat melewati validasi pengaktifan sebelum penyedia yang sama menginisialisasi permukaan sumber daya ctx browser.
+
+## Tautkan setiap modul ke repositori sumbernya
+
+Kartu marketplace dan header detail modul kini menampilkan SVG hyperlink yang diikuti URL repositori sumber modul yang telah disanitasi tepat di bawah judul. Tautan repositori dibuka secara terpisah tanpa mengaktifkan kartu modul di sekitarnya, dan URL yang tidak aman atau memuat kredensial tidak pernah dirender.

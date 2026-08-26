@@ -47,6 +47,7 @@ import {
     hasModuleUpdate,
     localizeModulePresentation,
     moduleChangeDirection,
+    resolveModuleRepositoryUrl,
     resolveLocalizedReadme,
 } from "./presentation.js";
 import { openModulePreferences } from "./preferences.js";
@@ -151,12 +152,20 @@ function renderCard(module) {
       ${avatar}
       <div class="module-store-card-copy">
         <div class="module-store-card-heading"><h3>${escapeHtml(presentation.name)}${renderRestartWarning(module)}</h3>${module.recommended ? `<span class="state-pill pill-active">${escapeHtml(i18n.t("ui.app.modules.recommended"))}</span>` : ""}</div>
+        ${renderRepositoryLink(module)}
         <p>${escapeHtml(presentation.summary ?? presentation.description ?? "")}</p>
         <span class="module-store-publisher">${escapeHtml(module.publisher ?? "")} · ${escapeHtml(formatVersion(module.installed ? (module.installedVersion ?? module.version) : module.version))}</span>
         ${renderAvailableVersion(module)}
       </div>
       <div class="module-store-card-actions">${renderLifecycleActions(module)}</div>
     </article>`;
+}
+
+function renderRepositoryLink(module) {
+    const repositoryUrl = resolveModuleRepositoryUrl(module);
+    if (!repositoryUrl) return "";
+    const escapedUrl = escapeHtml(repositoryUrl);
+    return `<a class="module-repository-link" href="${escapedUrl}" target="_blank" rel="noopener noreferrer"><img src="/static/assets/reuse/hyperlink.svg" alt="" aria-hidden="true"><span>${escapedUrl}</span></a>`;
 }
 
 function renderRestartWarning(module) {
@@ -278,7 +287,7 @@ function renderModuleDetails(module) {
         advanced || settings
             ? `<div class="module-detail-header-actions">${advanced}${settings}</div>`
             : "";
-    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2><p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(resolveLocalizedReadme(module, i18n.locale))}</div></article>`;
+    return `<article class="module-detail">${bannerUrl ? `<img class="module-detail-banner module-picture" src="${escapeHtml(bannerUrl)}" alt="">` : ""}<header class="module-detail-header"><div><h2>${escapeHtml(presentation.name)}</h2>${renderRepositoryLink(module)}<p>${escapeHtml(presentation.summary ?? "")}</p><p class="module-detail-provider"><strong>${escapeHtml(module.publisher ?? "")}</strong></p>${release}${license}<div class="module-detail-metadata">${metadata}</div>${branchSelector}</div>${headerActions}</header>${media ? `<div class="module-detail-media" aria-label="${escapeHtml(i18n.t("ui.app.modules.media"))}">${media}</div>` : ""}${screenshotCarousel}<div class="module-detail-readme">${renderMarkdown(resolveLocalizedReadme(module, i18n.locale))}</div></article>`;
 }
 
 function renderDetailActions(module) {
@@ -660,7 +669,7 @@ function bindInteractions(root, signal) {
         (event) => {
             if (!["Enter", " "].includes(event.key)) return;
             const card = event.target.closest(".module-store-card");
-            if (!card || event.target.closest("button")) return;
+            if (!card || event.target.closest("a, button")) return;
             event.preventDefault();
             card.click();
         },
@@ -669,6 +678,7 @@ function bindInteractions(root, signal) {
     root.addEventListener(
         "click",
         async (event) => {
+            if (event.target.closest("a")) return;
             const target =
                 event.target.closest("button") ??
                 event.target.closest(".module-store-card");
